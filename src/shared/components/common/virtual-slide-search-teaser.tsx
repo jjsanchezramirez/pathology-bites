@@ -1,107 +1,107 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Search, Loader2 } from 'lucide-react'
-import { Button } from '@/shared/components/ui/button'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import { Search, Loader2 } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
 
 export function VirtualSlideSearchTeaser() {
-  const [searchQuery, setSearchQuery] = useState('')
-  const [isLuckyLoading, setIsLuckyLoading] = useState(false)
-  const [isRandomLoading, setIsRandomLoading] = useState(false)
-  const router = useRouter()
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isLuckyLoading, setIsLuckyLoading] = useState(false);
+  const [isRandomLoading, setIsRandomLoading] = useState(false);
+  const router = useRouter();
 
   const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/tools/virtual-slides?search=${encodeURIComponent(searchQuery.trim())}`)
+      router.push(`/tools/virtual-slides?search=${encodeURIComponent(searchQuery.trim())}`);
     } else {
-      router.push('/tools/virtual-slides')
+      router.push("/tools/virtual-slides");
     }
-  }
+  };
 
   const handleFeelingLucky = async () => {
-    const query = searchQuery.trim()
+    const query = searchQuery.trim();
     if (!query) {
       // If no search query, just go to virtual slides page
-      router.push('/tools/virtual-slides')
-      return
+      router.push("/tools/virtual-slides");
+      return;
     }
 
-    setIsLuckyLoading(true)
+    setIsLuckyLoading(true);
     try {
       // Use the same client-side data loading as the search page
-      const { VIRTUAL_SLIDES_JSON_URL } = await import('@/shared/config/virtual-slides')
+      const { VIRTUAL_SLIDES_JSON_URL } = await import("@/shared/config/virtual-slides");
 
       const response = await fetch(VIRTUAL_SLIDES_JSON_URL, {
-        cache: 'force-cache'
-      })
+        cache: "force-cache",
+      });
 
-      if (!response.ok) throw new Error('Failed to fetch slides')
+      if (!response.ok) throw new Error("Failed to fetch slides");
 
-      const json = await response.json()
-      const slides = Array.isArray(json) ? json : (json.data ?? [])
+      const json = await response.json();
+      const slides = Array.isArray(json) ? json : (json.data ?? []);
 
       // Simple search: find first slide that matches query in diagnosis
-      const term = query.toLowerCase()
+      const term = query.toLowerCase();
       const firstMatch = slides.find((slide: unknown) =>
         slide.diagnosis?.toLowerCase().includes(term)
-      )
+      );
 
       if (firstMatch) {
-        const slideUrl = firstMatch.slide_url || firstMatch.case_url
+        const slideUrl = firstMatch.slide_url || firstMatch.case_url;
         if (slideUrl) {
-          window.location.href = slideUrl
+          window.location.href = slideUrl;
         } else {
-          router.push(`/tools/virtual-slides?search=${encodeURIComponent(query)}`)
+          router.push(`/tools/virtual-slides?search=${encodeURIComponent(query)}`);
         }
       } else {
         // No results found, go to search page
-        router.push(`/tools/virtual-slides?search=${encodeURIComponent(query)}`)
+        router.push(`/tools/virtual-slides?search=${encodeURIComponent(query)}`);
       }
     } catch (error) {
-      console.error('Feeling lucky search failed:', error)
+      console.error("Feeling lucky search failed:", error);
       // Fallback to regular search
-      router.push(`/tools/virtual-slides?search=${encodeURIComponent(query)}`)
+      router.push(`/tools/virtual-slides?search=${encodeURIComponent(query)}`);
     } finally {
-      setIsLuckyLoading(false)
+      setIsLuckyLoading(false);
     }
-  }
+  };
 
   const handleRandomSlide = async () => {
-    setIsRandomLoading(true)
+    setIsRandomLoading(true);
     try {
       // Use the same client-side data loading as the search page
-      const { VIRTUAL_SLIDES_JSON_URL } = await import('@/shared/config/virtual-slides')
+      const { VIRTUAL_SLIDES_JSON_URL } = await import("@/shared/config/virtual-slides");
 
       const response = await fetch(VIRTUAL_SLIDES_JSON_URL, {
-        cache: 'force-cache'
-      })
+        cache: "force-cache",
+      });
 
-      if (!response.ok) throw new Error('Failed to fetch slides')
+      if (!response.ok) throw new Error("Failed to fetch slides");
 
-      const json = await response.json()
-      const slides = Array.isArray(json) ? json : (json.data ?? [])
+      const json = await response.json();
+      const slides = Array.isArray(json) ? json : (json.data ?? []);
 
       if (slides.length > 0) {
-        const randomSlide = slides[Math.floor(Math.random() * slides.length)]
-        const slideUrl = randomSlide.slide_url || randomSlide.case_url
+        const randomSlide = slides[Math.floor(Math.random() * slides.length)];
+        const slideUrl = randomSlide.slide_url || randomSlide.case_url;
 
         if (slideUrl) {
-          window.location.href = slideUrl
+          window.location.href = slideUrl;
         } else {
-          router.push('/tools/virtual-slides?random=true')
+          router.push("/tools/virtual-slides?random=true");
         }
       } else {
-        router.push('/tools/virtual-slides?random=true')
+        router.push("/tools/virtual-slides?random=true");
       }
     } catch (error) {
-      console.error('Random slide fetch failed:', error)
-      router.push('/tools/virtual-slides?random=true')
+      console.error("Random slide fetch failed:", error);
+      router.push("/tools/virtual-slides?random=true");
     } finally {
-      setIsRandomLoading(false)
+      setIsRandomLoading(false);
     }
-  }
+  };
 
   return (
     <div className="max-w-2xl mx-auto lg:mx-0">
@@ -164,6 +164,5 @@ export function VirtualSlideSearchTeaser() {
         </div>
       </form>
     </div>
-  )
+  );
 }
-

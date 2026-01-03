@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card'
-import { Skeleton } from '@/shared/components/ui/skeleton'
+import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 
 export function SettingsLoading() {
   return (
@@ -87,6 +87,5 @@ export function SettingsLoading() {
         </div>
       </div>
     </div>
-  )
+  );
 }
-

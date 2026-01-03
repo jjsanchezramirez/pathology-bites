@@ -1,8 +1,8 @@
 // src/components/questions/question-table/question-table-empty.tsx
-import { AlertCircle } from 'lucide-react'
+import { AlertCircle } from "lucide-react";
 
 interface QuestionTableEmptyProps {
-  hasFilters: boolean
+  hasFilters: boolean;
 }
 
 export function QuestionTableEmpty({ hasFilters }: QuestionTableEmptyProps) {
@@ -12,9 +12,9 @@ export function QuestionTableEmpty({ hasFilters }: QuestionTableEmptyProps) {
       <p className="text-muted-foreground">No questions found</p>
       <p className="text-sm text-muted-foreground">
         {hasFilters
-          ? 'Try adjusting your search or filters'
+          ? "Try adjusting your search or filters"
           : 'Click "Add Question" to create your first question'}
       </p>
     </div>
-  )
+  );
 }

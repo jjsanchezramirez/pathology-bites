@@ -1,7 +1,7 @@
 // src/shared/hooks/use-mobile.ts
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 
 /**
  * Hook to detect if the current screen size is mobile
@@ -10,28 +10,28 @@ import { useState, useEffect } from 'react'
  */
 export function useMobile() {
   // Initialize as true (mobile-first) to prevent layout shift on mobile devices
-  const [isMobile, setIsMobile] = useState(true)
+  const [isMobile, setIsMobile] = useState(true);
 
   useEffect(() => {
     // Use fixed breakpoint based on actual viewport width only
-    const mediaQuery = window.matchMedia('(max-width: 767px)')
+    const mediaQuery = window.matchMedia("(max-width: 767px)");
 
     // Set initial value
-    setIsMobile(mediaQuery.matches)
+    setIsMobile(mediaQuery.matches);
 
     // Create event listener
     const handleChange = (e: MediaQueryListEvent) => {
-      setIsMobile(e.matches)
-    }
+      setIsMobile(e.matches);
+    };
 
     // Add listener
-    mediaQuery.addEventListener('change', handleChange)
+    mediaQuery.addEventListener("change", handleChange);
 
     // Cleanup
     return () => {
-      mediaQuery.removeEventListener('change', handleChange)
-    }
-  }, []) // No dependencies - only respond to viewport changes
+      mediaQuery.removeEventListener("change", handleChange);
+    };
+  }, []); // No dependencies - only respond to viewport changes
 
-  return isMobile
+  return isMobile;
 }

@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import {
   Dialog,
   DialogContent,
@@ -13,11 +13,11 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
-import { AlertTriangle } from 'lucide-react';
-import { QuestionWithDetails } from '@/features/questions/types/questions';
-import { useUserRole } from '@/shared/hooks/use-user-role';
-import { useAuth } from '@/shared/hooks/use-auth';
-import { canDeleteQuestion } from '@/features/questions/utils/deletion-helpers';
+import { AlertTriangle } from "lucide-react";
+import { QuestionWithDetails } from "@/features/questions/types/questions";
+import { useUserRole } from "@/shared/hooks/use-user-role";
+import { useAuth } from "@/shared/hooks/use-auth";
+import { canDeleteQuestion } from "@/features/questions/utils/deletion-helpers";
 
 interface DeleteQuestionDialogProps {
   open: boolean;
@@ -32,7 +32,7 @@ export function DeleteQuestionDialog({
   onOpenChange,
   question,
   onSuccess,
-  onDelete
+  onDelete,
 }: DeleteQuestionDialogProps) {
   const [isDeleting, setIsDeleting] = React.useState(false);
   const { role } = useUserRole();
@@ -63,7 +63,7 @@ export function DeleteQuestionDialog({
         <DialogContent className="max-w-md">
           <DialogHeader>
             <DialogTitle>
-              {deletionCheck.canDelete ? 'Confirm Deletion' : 'Cannot Delete Question'}
+              {deletionCheck.canDelete ? "Confirm Deletion" : "Cannot Delete Question"}
             </DialogTitle>
             <DialogDescription>
               {deletionCheck.canDelete ? (
@@ -71,7 +71,8 @@ export function DeleteQuestionDialog({
                   Are you sure you want to delete "{question?.title}"?
                   <br />
                   <br />
-                  This action cannot be undone. All associated answer options and images will also be removed.
+                  This action cannot be undone. All associated answer options and images will also
+                  be removed.
                 </>
               ) : (
                 `Cannot delete "${question?.title}"`
@@ -83,32 +84,22 @@ export function DeleteQuestionDialog({
             <div className="px-6">
               <Alert>
                 <AlertTriangle className="h-4 w-4" />
-                <AlertDescription>
-                  {deletionCheck.reason}
-                </AlertDescription>
+                <AlertDescription>{deletionCheck.reason}</AlertDescription>
               </Alert>
             </div>
           )}
 
-        <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isDeleting}
-          >
-            {deletionCheck.canDelete ? 'Cancel' : 'Close'}
-          </Button>
-          {deletionCheck.canDelete && (
-            <Button
-              variant="destructive"
-              onClick={handleDelete}
-              disabled={isDeleting}
-            >
-              {isDeleting ? 'Deleting...' : 'Confirm Deletion'}
+          <DialogFooter>
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isDeleting}>
+              {deletionCheck.canDelete ? "Cancel" : "Close"}
             </Button>
-          )}
-        </DialogFooter>
-      </DialogContent>
+            {deletionCheck.canDelete && (
+              <Button variant="destructive" onClick={handleDelete} disabled={isDeleting}>
+                {isDeleting ? "Deleting..." : "Confirm Deletion"}
+              </Button>
+            )}
+          </DialogFooter>
+        </DialogContent>
       </DialogPortal>
     </Dialog>
   );

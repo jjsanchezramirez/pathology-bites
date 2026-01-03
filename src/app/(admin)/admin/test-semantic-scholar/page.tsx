@@ -1,54 +1,66 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
-import { Checkbox } from '@/shared/components/ui/checkbox'
-import { Loader2, Search, ExternalLink, BookOpen } from 'lucide-react'
-import { Badge } from '@/shared/components/ui/badge'
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import { Loader2, Search, ExternalLink, BookOpen } from "lucide-react";
+import { Badge } from "@/shared/components/ui/badge";
 
 interface Paper {
-  paperId: string
-  title: string
-  authors: string[]
-  year: number
-  venue: string
-  journal: string
-  publicationDate: string
-  citationCount: number
-  influentialCitationCount: number
-  abstract: string
-  isOpenAccess: boolean
-  openAccessPdf: string | null
-  publicationTypes: string[]
-  url: string
+  paperId: string;
+  title: string;
+  authors: string[];
+  year: number;
+  venue: string;
+  journal: string;
+  publicationDate: string;
+  citationCount: number;
+  influentialCitationCount: number;
+  abstract: string;
+  isOpenAccess: boolean;
+  openAccessPdf: string | null;
+  publicationTypes: string[];
+  url: string;
 }
 
 export default function SemanticScholarTestPage() {
-  const [query, setQuery] = useState('colorectal adenocarcinoma')
-  const [limit, setLimit] = useState('20')
-  const [sortBy, setSortBy] = useState('citations')
-  const [minCitations, setMinCitations] = useState('0')
-  const [onlyOpenAccess, setOnlyOpenAccess] = useState(false)
-  const [onlyReviews, setOnlyReviews] = useState(false)
-  const [yearRange, setYearRange] = useState('all')
-  const [venue, setVenue] = useState('pathology-journals')
-  const [publicationType, setPublicationType] = useState('all')
-  const [minInfluentialCitations, setMinInfluentialCitations] = useState('0')
+  const [query, setQuery] = useState("colorectal adenocarcinoma");
+  const [limit, setLimit] = useState("20");
+  const [sortBy, setSortBy] = useState("citations");
+  const [minCitations, setMinCitations] = useState("0");
+  const [onlyOpenAccess, setOnlyOpenAccess] = useState(false);
+  const [onlyReviews, setOnlyReviews] = useState(false);
+  const [yearRange, setYearRange] = useState("all");
+  const [venue, setVenue] = useState("pathology-journals");
+  const [publicationType, setPublicationType] = useState("all");
+  const [minInfluentialCitations, setMinInfluentialCitations] = useState("0");
 
-  const [results, setResults] = useState<Paper[]>([])
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState<string | null>(null)
-  const [totalResults, setTotalResults] = useState(0)
-  const [apiUrl, setApiUrl] = useState('')
+  const [results, setResults] = useState<Paper[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [totalResults, setTotalResults] = useState(0);
+  const [apiUrl, setApiUrl] = useState("");
 
   const handleSearch = async () => {
-    setLoading(true)
-    setError(null)
-    setResults([])
+    setLoading(true);
+    setError(null);
+    setResults([]);
 
     try {
       const params = new URLSearchParams({
@@ -59,39 +71,39 @@ export default function SemanticScholarTestPage() {
         onlyOpenAccess: onlyOpenAccess.toString(),
         onlyReviews: onlyReviews.toString(),
         yearRange,
-        venue: venue === 'all' ? '' : venue,
-        publicationType: publicationType === 'all' ? '' : publicationType,
-      })
+        venue: venue === "all" ? "" : venue,
+        publicationType: publicationType === "all" ? "" : publicationType,
+      });
 
-      const apiUrlBuilt = `/api/admin/fetch-references?${params.toString()}`
-      setApiUrl(apiUrlBuilt)
+      const apiUrlBuilt = `/api/admin/fetch-references?${params.toString()}`;
+      setApiUrl(apiUrlBuilt);
 
-      const response = await fetch(apiUrlBuilt)
+      const response = await fetch(apiUrlBuilt);
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`)
+        throw new Error(`API error: ${response.status}`);
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
       // Apply client-side influential citation filter
-      let filteredPapers = data.papers || []
-      const minInfluential = parseInt(minInfluentialCitations)
+      let filteredPapers = data.papers || [];
+      const minInfluential = parseInt(minInfluentialCitations);
       if (minInfluential > 0) {
-        filteredPapers = filteredPapers.filter((paper: Paper) =>
-          (paper.influentialCitationCount || 0) >= minInfluential
-        )
+        filteredPapers = filteredPapers.filter(
+          (paper: Paper) => (paper.influentialCitationCount || 0) >= minInfluential
+        );
       }
 
-      setResults(filteredPapers)
-      setTotalResults(filteredPapers.length)
+      setResults(filteredPapers);
+      setTotalResults(filteredPapers.length);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to fetch results')
-      console.error('Search error:', err)
+      setError(err instanceof Error ? err.message : "Failed to fetch results");
+      console.error("Search error:", err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="container mx-auto p-6 space-y-6 max-w-7xl">
@@ -104,13 +116,20 @@ export default function SemanticScholarTestPage() {
           <Badge variant="outline">Query: {query}</Badge>
           <Badge variant="outline">Limit: {limit}</Badge>
           <Badge variant="outline">Sort: {sortBy}</Badge>
-          <Badge variant="outline">Year: {yearRange === 'all' ? 'All' : yearRange === 'last5' ? 'Last 5 years' : 'Last 10 years'}</Badge>
-          <Badge variant="outline">Venue: {venue === 'all' ? 'All' : 'Pathology only'}</Badge>
-          {minCitations !== '0' && <Badge variant="secondary">Min citations: {minCitations}</Badge>}
-          {minInfluentialCitations !== '0' && <Badge variant="secondary">Min influential: {minInfluentialCitations}</Badge>}
-          {onlyOpenAccess && <Badge className="bg-green-100 text-green-800">Open Access only</Badge>}
+          <Badge variant="outline">
+            Year:{" "}
+            {yearRange === "all" ? "All" : yearRange === "last5" ? "Last 5 years" : "Last 10 years"}
+          </Badge>
+          <Badge variant="outline">Venue: {venue === "all" ? "All" : "Pathology only"}</Badge>
+          {minCitations !== "0" && <Badge variant="secondary">Min citations: {minCitations}</Badge>}
+          {minInfluentialCitations !== "0" && (
+            <Badge variant="secondary">Min influential: {minInfluentialCitations}</Badge>
+          )}
+          {onlyOpenAccess && (
+            <Badge className="bg-green-100 text-green-800">Open Access only</Badge>
+          )}
           {onlyReviews && <Badge className="bg-purple-100 text-purple-800">Reviews only</Badge>}
-          {publicationType !== 'all' && <Badge variant="secondary">Type: {publicationType}</Badge>}
+          {publicationType !== "all" && <Badge variant="secondary">Type: {publicationType}</Badge>}
         </div>
       </div>
 
@@ -130,8 +149,8 @@ export default function SemanticScholarTestPage() {
               onChange={(e) => setQuery(e.target.value)}
               placeholder="Enter search terms..."
               onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleSearch()
+                if (e.key === "Enter") {
+                  handleSearch();
                 }
               }}
             />
@@ -298,9 +317,7 @@ export default function SemanticScholarTestPage() {
             <CardTitle className="text-sm font-mono">API Request</CardTitle>
           </CardHeader>
           <CardContent>
-            <code className="text-xs bg-muted p-2 rounded block overflow-x-auto">
-              {apiUrl}
-            </code>
+            <code className="text-xs bg-muted p-2 rounded block overflow-x-auto">{apiUrl}</code>
           </CardContent>
         </Card>
       )}
@@ -323,7 +340,7 @@ export default function SemanticScholarTestPage() {
           <CardHeader>
             <CardTitle>Results ({totalResults})</CardTitle>
             <CardDescription>
-              Found {totalResults} paper{totalResults !== 1 ? 's' : ''} matching your criteria
+              Found {totalResults} paper{totalResults !== 1 ? "s" : ""} matching your criteria
             </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
@@ -334,9 +351,7 @@ export default function SemanticScholarTestPage() {
               >
                 {/* Title and Link */}
                 <div className="flex items-start justify-between gap-4">
-                  <h3 className="font-semibold text-lg leading-tight flex-1">
-                    {paper.title}
-                  </h3>
+                  <h3 className="font-semibold text-lg leading-tight flex-1">{paper.title}</h3>
                   <a
                     href={paper.url}
                     target="_blank"
@@ -351,15 +366,13 @@ export default function SemanticScholarTestPage() {
 
                 {/* Authors */}
                 <p className="text-sm text-muted-foreground">
-                  {paper.authors.slice(0, 5).join(', ')}
+                  {paper.authors.slice(0, 5).join(", ")}
                   {paper.authors.length > 5 && ` et al.`}
                 </p>
 
                 {/* Metadata Row */}
                 <div className="flex flex-wrap gap-2 items-center">
-                  {paper.year && (
-                    <Badge variant="secondary">{paper.year}</Badge>
-                  )}
+                  {paper.year && <Badge variant="secondary">{paper.year}</Badge>}
                   {paper.journal && (
                     <Badge variant="outline" className="font-normal">
                       <BookOpen className="h-3 w-3 mr-1" />
@@ -367,7 +380,7 @@ export default function SemanticScholarTestPage() {
                     </Badge>
                   )}
                   <Badge variant="outline">
-                    {paper.citationCount} citation{paper.citationCount !== 1 ? 's' : ''}
+                    {paper.citationCount} citation{paper.citationCount !== 1 ? "s" : ""}
                   </Badge>
                   {paper.influentialCitationCount > 0 && (
                     <Badge variant="outline" className="bg-blue-50 text-blue-700 border-blue-200">
@@ -375,12 +388,19 @@ export default function SemanticScholarTestPage() {
                     </Badge>
                   )}
                   {paper.isOpenAccess && (
-                    <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200">
+                    <Badge
+                      variant="outline"
+                      className="bg-green-50 text-green-700 border-green-200"
+                    >
                       Open Access
                     </Badge>
                   )}
-                  {paper.publicationTypes.map(type => (
-                    <Badge key={type} variant="outline" className="bg-purple-50 text-purple-700 border-purple-200">
+                  {paper.publicationTypes.map((type) => (
+                    <Badge
+                      key={type}
+                      variant="outline"
+                      className="bg-purple-50 text-purple-700 border-purple-200"
+                    >
                       {type}
                     </Badge>
                   ))}
@@ -388,9 +408,7 @@ export default function SemanticScholarTestPage() {
 
                 {/* Abstract */}
                 {paper.abstract && (
-                  <p className="text-sm text-muted-foreground line-clamp-3">
-                    {paper.abstract}
-                  </p>
+                  <p className="text-sm text-muted-foreground line-clamp-3">{paper.abstract}</p>
                 )}
 
                 {/* Open Access PDF Link */}
@@ -414,10 +432,12 @@ export default function SemanticScholarTestPage() {
       {!loading && results.length === 0 && !error && query && totalResults === 0 && (
         <Card>
           <CardContent className="flex flex-col items-center justify-center py-12">
-            <p className="text-muted-foreground">No results found. Try adjusting your search parameters.</p>
+            <p className="text-muted-foreground">
+              No results found. Try adjusting your search parameters.
+            </p>
           </CardContent>
         </Card>
       )}
     </div>
-  )
+  );
 }

@@ -1,16 +1,16 @@
 // src/app/(admin)/admin/images/page.tsx
-'use client'
+"use client";
 
-import { useRef } from 'react'
-import { ImagesTable } from '@/features/images/components/image-table'
-import { StorageStatsCards, StorageStatsRef } from '@/features/images/components/storage-stats'
+import { useRef } from "react";
+import { ImagesTable } from "@/features/images/components/image-table";
+import { StorageStatsCards, StorageStatsRef } from "@/features/images/components/storage-stats";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
-} from "@/shared/components/ui/card"
+  CardTitle,
+} from "@/shared/components/ui/card";
 
 export default function ImagesPage() {
   const storageStatsRef = useRef<StorageStatsRef>(null);
@@ -37,8 +37,9 @@ export default function ImagesPage() {
         <CardHeader>
           <CardTitle>Image Management</CardTitle>
           <CardDescription>
-            Upload, edit, and organize your image collection. Images larger than 1MB will be automatically compressed.
-            Use the search to find images by name, description, or source reference.
+            Upload, edit, and organize your image collection. Images larger than 1MB will be
+            automatically compressed. Use the search to find images by name, description, or source
+            reference.
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -46,5 +47,5 @@ export default function ImagesPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

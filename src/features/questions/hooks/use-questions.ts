@@ -1,11 +1,16 @@
 // src/hooks/use-questions.ts
-import { useState, useCallback } from 'react';
-import { createClient } from '@/shared/services/client';
-import { toast } from '@/shared/utils/toast';
-import { QuestionData, QuestionInsert, QuestionUpdate, QuestionWithDetails } from '@/features/questions/types/questions';
+import { useState, useCallback } from "react";
+import { createClient } from "@/shared/services/client";
+import { toast } from "@/shared/utils/toast";
+import {
+  QuestionData,
+  QuestionInsert,
+  QuestionUpdate,
+  QuestionWithDetails,
+} from "@/features/questions/types/questions";
 
-import { TABLE_NAMES } from '@/shared/constants/database-types';
-import { apiClient } from '@/shared/utils/api-client';
+import { TABLE_NAMES } from "@/shared/constants/database-types";
+import { apiClient } from "@/shared/utils/api-client";
 
 export interface UseQuestionsParams {
   page?: number;
@@ -27,7 +32,7 @@ export interface UseQuestionsReturn {
     questionId: string,
     data: QuestionUpdate,
     options?: {
-      updateType?: 'patch' | 'minor' | 'major';
+      updateType?: "patch" | "minor" | "major";
       changeSummary?: string;
       answerOptions?: unknown[];
       questionImages?: unknown[];
@@ -42,10 +47,10 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
   const {
     page = 0,
     pageSize = 10,
-    searchTerm = '',
-    difficulty = 'all',
-    status = 'all',
-    questionSetId = 'all'
+    searchTerm = "",
+    difficulty = "all",
+    status = "all",
+    questionSetId = "all",
   } = params;
 
   const [questions, setQuestions] = useState<QuestionWithDetails[]>([]);
@@ -61,9 +66,8 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
 
     try {
       // Build the base query - SELECT only needed fields
-      let query = supabase
-        .from(TABLE_NAMES.QUESTIONS)
-        .select(`
+      let query = supabase.from(TABLE_NAMES.QUESTIONS).select(
+        `
           id,
           title,
           stem,
@@ -106,7 +110,9 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
               name
             )
           )
-        `, { count: 'exact' });
+        `,
+        { count: "exact" }
+      );
 
       // Apply filters
       if (searchTerm && searchTerm.trim()) {
@@ -114,16 +120,16 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         query = query.or(`title.ilike.${searchPattern},stem.ilike.${searchPattern}`);
       }
 
-      if (difficulty !== 'all') {
-        query = query.eq('difficulty', difficulty);
+      if (difficulty !== "all") {
+        query = query.eq("difficulty", difficulty);
       }
 
-      if (status !== 'all') {
-        query = query.eq('status', status);
+      if (status !== "all") {
+        query = query.eq("status", status);
       }
 
-      if (questionSetId !== 'all') {
-        query = query.eq('question_set_id', questionSetId);
+      if (questionSetId !== "all") {
+        query = query.eq("question_set_id", questionSetId);
       }
 
       // Apply pagination
@@ -132,7 +138,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
       query = query.range(from, to);
 
       // Order by created_at desc
-      query = query.order('created_at', { ascending: false });
+      query = query.order("created_at", { ascending: false });
 
       const { data, error: fetchError, count } = await query;
 
@@ -141,23 +147,25 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
       }
 
       // Fetch categories for all questions that have category_id
-      const questionIds = (data || []).map(q => q.id);
-      const categoryIds = [...new Set((data || []).map(q => q.category_id).filter(Boolean))];
+      const questionIds = (data || []).map((q) => q.id);
+      const categoryIds = [...new Set((data || []).map((q) => q.category_id).filter(Boolean))];
       let categoriesData: unknown[] = [];
       let latestVersionsData: unknown[] = [];
 
       if (categoryIds.length > 0) {
         const { data: categoriesResult } = await supabase
           .from(TABLE_NAMES.CATEGORIES)
-          .select(`
+          .select(
+            `
             id,
             name,
             color,
             level,
             parent_id,
             short_form
-          `)
-          .in('id', categoryIds);
+          `
+          )
+          .in("id", categoryIds);
 
         categoriesData = categoriesResult || [];
       }
@@ -165,53 +173,58 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
       // Fetch latest versions for all questions
       if (questionIds.length > 0) {
         const { data: versionsResult } = await supabase
-          .from('question_versions')
-          .select(`
+          .from("question_versions")
+          .select(
+            `
             question_id,
             version_string,
             created_at
-          `)
-          .in('question_id', questionIds)
-          .order('created_at', { ascending: false });
+          `
+          )
+          .in("question_id", questionIds)
+          .order("created_at", { ascending: false });
 
         // Group by question_id and get the latest version for each
-        const versionsByQuestion = (versionsResult || []).reduce((acc: unknown, version: unknown) => {
-          if (!acc[version.question_id]) {
-            acc[version.question_id] = version.version_string;
-          }
-          return acc;
-        }, {});
+        const versionsByQuestion = (versionsResult || []).reduce(
+          (acc: unknown, version: unknown) => {
+            if (!acc[version.question_id]) {
+              acc[version.question_id] = version.version_string;
+            }
+            return acc;
+          },
+          {}
+        );
 
         latestVersionsData = versionsByQuestion;
       }
 
       // Transform the data
-      const transformedQuestions: QuestionWithDetails[] = (data || []).map(question => {
+      const transformedQuestions: QuestionWithDetails[] = (data || []).map((question) => {
         // Find the category for this question
         const questionCategory = question.category_id
-          ? categoriesData.find(cat => cat.id === question.category_id)
+          ? categoriesData.find((cat) => cat.id === question.category_id)
           : null;
 
         // Get the latest version for this question
-        const latestVersion = latestVersionsData[question.id] || question.version || '1.0.0';
+        const latestVersion = latestVersionsData[question.id] || question.version || "1.0.0";
 
         return {
           ...question,
           created_by_name: question.created_by_user
-            ? `${question.created_by_user.first_name || ''} ${question.created_by_user.last_name || ''}`.trim()
-            : 'Unknown',
+            ? `${question.created_by_user.first_name || ""} ${question.created_by_user.last_name || ""}`.trim()
+            : "Unknown",
           image_count: question.question_images?.[0]?.count || 0,
           categories: questionCategory ? [questionCategory] : [],
           tags: question.question_tags?.map((qt: unknown) => qt.tag).filter(Boolean) || [],
           version_string: latestVersion,
-          version: latestVersion // Update the version field with the latest version
+          version: latestVersion, // Update the version field with the latest version
         };
       });
 
       setQuestions(transformedQuestions);
       setTotal(count || 0);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch questions';
+      const message = err instanceof Error ? err.message : "Failed to fetch questions";
       setError(message);
       toast.error(message);
     } finally {
@@ -219,106 +232,115 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
     }
   }, [page, pageSize, searchTerm, difficulty, status, questionSetId, supabase]);
 
-  const deleteQuestion = useCallback(async (questionId: string) => {
-    try {
-      const response = await apiClient.delete(`/api/admin/questions/${questionId}/delete`);
+  const deleteQuestion = useCallback(
+    async (questionId: string) => {
+      try {
+        const response = await apiClient.delete(`/api/admin/questions/${questionId}/delete`);
 
-      // Check if response is JSON
-      const contentType = response.headers.get('content-type');
-      let data;
+        // Check if response is JSON
+        const contentType = response.headers.get("content-type");
+        let data;
 
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        // If not JSON, get text for debugging
-        const text = await response.text();
-        console.error('Non-JSON response:', text);
-        throw new Error(`Server returned non-JSON response (${response.status})`);
+        if (contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          // If not JSON, get text for debugging
+          const text = await response.text();
+          console.error("Non-JSON response:", text);
+          throw new Error(`Server returned non-JSON response (${response.status})`);
+        }
+
+        if (!response.ok) {
+          throw new Error(data.error || "Failed to delete question");
+        }
+
+        toast.success(data.message || "Question deleted successfully");
+
+        // Refetch questions
+        await fetchQuestions();
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to delete question";
+        toast.error(message);
+        throw err;
       }
+    },
+    [fetchQuestions]
+  );
 
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to delete question');
+  const updateQuestion = useCallback(
+    async (
+      questionId: string,
+      data: QuestionUpdate,
+      options?: {
+        updateType?: "patch" | "minor" | "major";
+        changeSummary?: string;
+        answerOptions?: unknown[];
+        questionImages?: unknown[];
+        tagIds?: string[];
+        categoryId?: string;
+        isPatchEdit?: boolean;
+        patchEditReason?: string;
       }
+    ) => {
+      try {
+        // Use the new versioning API for comprehensive updates
+        const response = await apiClient.patch(`/api/admin/questions/${questionId}`, {
+          questionData: data,
+          updateType: options?.updateType,
+          changeSummary: options?.changeSummary,
+          answerOptions: options?.answerOptions,
+          questionImages: options?.questionImages,
+          tagIds: options?.tagIds,
+          categoryId: options?.categoryId,
+          isPatchEdit: options?.isPatchEdit,
+          patchEditReason: options?.patchEditReason,
+        });
 
-      toast.success(data.message || 'Question deleted successfully');
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || "Failed to update question");
+        }
 
-      // Refetch questions
-      await fetchQuestions();
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to delete question';
-      toast.error(message);
-      throw err;
-    }
-  }, [fetchQuestions]);
+        const result = await response.json();
 
-  const updateQuestion = useCallback(async (
-    questionId: string,
-    data: QuestionUpdate,
-    options?: {
-      updateType?: 'patch' | 'minor' | 'major';
-      changeSummary?: string;
-      answerOptions?: unknown[];
-      questionImages?: unknown[];
-      tagIds?: string[];
-      categoryId?: string;
-      isPatchEdit?: boolean;
-      patchEditReason?: string;
-    }
-  ) => {
-    try {
-      // Use the new versioning API for comprehensive updates
-      const response = await apiClient.patch(`/api/admin/questions/${questionId}`, {
-        questionData: data,
-        updateType: options?.updateType,
-        changeSummary: options?.changeSummary,
-        answerOptions: options?.answerOptions,
-        questionImages: options?.questionImages,
-        tagIds: options?.tagIds,
-        categoryId: options?.categoryId,
-        isPatchEdit: options?.isPatchEdit,
-        patchEditReason: options?.patchEditReason,
-      });
+        // Refetch questions to update the list
+        await fetchQuestions();
 
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || 'Failed to update question');
+        return result;
+      } catch (error) {
+        throw error;
       }
+    },
+    [fetchQuestions]
+  );
 
-      const result = await response.json();
+  const createQuestion = useCallback(
+    async (data: QuestionInsert): Promise<QuestionData> => {
+      try {
+        const { data: newQuestion, error } = await supabase
+          .from(TABLE_NAMES.QUESTIONS)
+          .insert(data)
+          .select()
+          .single();
 
-      // Refetch questions to update the list
-      await fetchQuestions();
+        if (error) {
+          throw new Error(error.message);
+        }
 
-      return result;
-    } catch (error) {
-      throw error;
-    }
-  }, [fetchQuestions]);
+        toast.success("Question created successfully");
 
-  const createQuestion = useCallback(async (data: QuestionInsert): Promise<QuestionData> => {
-    try {
-      const { data: newQuestion, error } = await supabase
-        .from(TABLE_NAMES.QUESTIONS)
-        .insert(data)
-        .select()
-        .single();
+        // Refetch questions
+        await fetchQuestions();
 
-      if (error) {
-        throw new Error(error.message);
+        return newQuestion;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to create question";
+        toast.error(message);
+        throw err;
       }
-
-      toast.success('Question created successfully');
-
-      // Refetch questions
-      await fetchQuestions();
-
-      return newQuestion;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create question';
-      toast.error(message);
-      throw err;
-    }
-  }, [supabase, fetchQuestions]);
+    },
+    [supabase, fetchQuestions]
+  );
 
   return {
     questions,

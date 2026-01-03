@@ -1,50 +1,50 @@
 // src/features/dashboard/components/performance-analytics.tsx
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Badge } from '@/shared/components/ui/badge'
-import { TrendingUp, TrendingDown, Target, Users } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Badge } from "@/shared/components/ui/badge";
+import { TrendingUp, TrendingDown, Target, Users } from "lucide-react";
 
 interface PerformanceData {
-  userPercentile: number
-  peerRank: number
-  totalUsers: number
-  completedQuizzes: number
+  userPercentile: number;
+  peerRank: number;
+  totalUsers: number;
+  completedQuizzes: number;
   subjectsForImprovement: Array<{
-    name: string
-    score: number
-    attempts: number
-  }>
+    name: string;
+    score: number;
+    attempts: number;
+  }>;
   subjectsMastered: Array<{
-    name: string
-    score: number
-    attempts: number
-  }>
-  overallScore: number
+    name: string;
+    score: number;
+    attempts: number;
+  }>;
+  overallScore: number;
 }
 
 interface PerformanceAnalyticsProps {
-  data: PerformanceData
+  data: PerformanceData;
 }
 
 // Circle progress component
-function CircleProgress({ 
-  percentage, 
-  size = 120, 
-  strokeWidth = 8, 
-  color = '#3b82f6',
-  backgroundColor = '#e5e7eb'
+function CircleProgress({
+  percentage,
+  size = 120,
+  strokeWidth = 8,
+  color = "#3b82f6",
+  backgroundColor = "#e5e7eb",
 }: {
-  percentage: number
-  size?: number
-  strokeWidth?: number
-  color?: string
-  backgroundColor?: string
+  percentage: number;
+  size?: number;
+  strokeWidth?: number;
+  color?: string;
+  backgroundColor?: string;
 }) {
-  const radius = (size - strokeWidth) / 2
-  const circumference = radius * 2 * Math.PI
-  const strokeDasharray = circumference
-  const strokeDashoffset = circumference - (percentage / 100) * circumference
+  const radius = (size - strokeWidth) / 2;
+  const circumference = radius * 2 * Math.PI;
+  const strokeDasharray = circumference;
+  const strokeDashoffset = circumference - (percentage / 100) * circumference;
 
   return (
     <div className="relative inline-flex items-center justify-center">
@@ -74,34 +74,36 @@ function CircleProgress({
       </svg>
       {/* Percentage text */}
       <div className="absolute inset-0 flex items-center justify-center">
-        <span className="text-2xl font-bold text-gray-900">
-          {Math.round(percentage)}%
-        </span>
+        <span className="text-2xl font-bold text-gray-900">{Math.round(percentage)}%</span>
       </div>
     </div>
-  )
+  );
 }
 
 export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
   const getPercentileColor = (percentile: number) => {
-    if (percentile >= 90) return '#10b981' // green
-    if (percentile >= 75) return '#3b82f6' // blue
-    if (percentile >= 50) return '#f59e0b' // yellow
-    return '#ef4444' // red
-  }
+    if (percentile >= 90) return "#10b981"; // green
+    if (percentile >= 75) return "#3b82f6"; // blue
+    if (percentile >= 50) return "#f59e0b"; // yellow
+    return "#ef4444"; // red
+  };
 
   const getRankSuffix = (rank: number) => {
-    if (rank % 100 >= 11 && rank % 100 <= 13) return 'th'
+    if (rank % 100 >= 11 && rank % 100 <= 13) return "th";
     switch (rank % 10) {
-      case 1: return 'st'
-      case 2: return 'nd'
-      case 3: return 'rd'
-      default: return 'th'
+      case 1:
+        return "st";
+      case 2:
+        return "nd";
+      case 3:
+        return "rd";
+      default:
+        return "th";
     }
-  }
+  };
 
   // Only show percentile and ranking if user has completed at least 3 quizzes
-  const showRankingData = data.completedQuizzes >= 3
+  const showRankingData = data.completedQuizzes >= 3;
 
   return (
     <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
@@ -134,9 +136,7 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
             <div className="text-center">
-              <div className="text-2xl font-bold text-muted-foreground mb-2">
-                Coming Soon
-              </div>
+              <div className="text-2xl font-bold text-muted-foreground mb-2">Coming Soon</div>
               <p className="text-xs text-muted-foreground">
                 Percentile ranking available after completing 3 quizzes
               </p>
@@ -160,14 +160,13 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
           <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
             <div className="text-center">
               <div className="text-4xl font-bold text-purple-600 mb-2">
-                {data.peerRank}{getRankSuffix(data.peerRank)}
+                {data.peerRank}
+                {getRankSuffix(data.peerRank)}
               </div>
               <div className="text-sm text-muted-foreground mb-3">
                 out of {data.totalUsers.toLocaleString()} users
               </div>
-              <p className="text-xs text-muted-foreground">
-                Based on overall performance
-              </p>
+              <p className="text-xs text-muted-foreground">Based on overall performance</p>
             </div>
           </CardContent>
         </Card>
@@ -181,9 +180,7 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
             <div className="text-center">
-              <div className="text-2xl font-bold text-muted-foreground mb-2">
-                Coming Soon
-              </div>
+              <div className="text-2xl font-bold text-muted-foreground mb-2">Coming Soon</div>
               <p className="text-xs text-muted-foreground">
                 Peer ranking available after completing 3 quizzes
               </p>
@@ -206,14 +203,11 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
             <div className="text-center">
-              <div className="text-4xl font-bold text-green-600 mb-2">
-                {data.overallScore}%
-              </div>
-              <div className="text-sm text-muted-foreground mb-3">
-                Average across all quizzes
-              </div>
+              <div className="text-4xl font-bold text-green-600 mb-2">{data.overallScore}%</div>
+              <div className="text-sm text-muted-foreground mb-3">Average across all quizzes</div>
               <p className="text-xs text-muted-foreground">
-                Based on {data.completedQuizzes} completed {data.completedQuizzes === 1 ? 'quiz' : 'quizzes'}
+                Based on {data.completedQuizzes} completed{" "}
+                {data.completedQuizzes === 1 ? "quiz" : "quizzes"}
               </p>
             </div>
           </CardContent>
@@ -228,9 +222,7 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
           </CardHeader>
           <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
             <div className="text-center">
-              <div className="text-2xl font-bold text-muted-foreground mb-2">
-                Coming Soon
-              </div>
+              <div className="text-2xl font-bold text-muted-foreground mb-2">Coming Soon</div>
               <p className="text-xs text-muted-foreground">
                 Complete your first quiz to see your overall score
               </p>
@@ -254,9 +246,7 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex-1">
                     <p className="text-sm font-medium">{subject.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {subject.attempts} attempts
-                    </p>
+                    <p className="text-xs text-muted-foreground">{subject.attempts} attempts</p>
                   </div>
                   <Badge variant="destructive" className="text-xs">
                     {subject.score}%
@@ -287,9 +277,7 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
                 <div key={index} className="flex items-center justify-between">
                   <div className="flex-1">
                     <p className="text-sm font-medium">{subject.name}</p>
-                    <p className="text-xs text-muted-foreground">
-                      {subject.attempts} attempts
-                    </p>
+                    <p className="text-xs text-muted-foreground">{subject.attempts} attempts</p>
                   </div>
                   <Badge variant="default" className="text-xs bg-green-100 text-green-800">
                     {subject.score}%
@@ -307,5 +295,5 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

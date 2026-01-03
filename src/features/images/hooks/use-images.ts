@@ -1,7 +1,13 @@
 // src/hooks/use-images.ts
-import { useState, useCallback } from 'react';
-import { fetchImages, deleteImage, updateImage, uploadImage, getImageById } from '@/features/images/services/images';
-import { ImageData, ImageCategory } from '@/features/images/types/images';
+import { useState, useCallback } from "react";
+import {
+  fetchImages,
+  deleteImage,
+  updateImage,
+  uploadImage,
+  getImageById,
+} from "@/features/images/services/images";
+import { ImageData, ImageCategory } from "@/features/images/types/images";
 
 export interface UseImagesParams {
   page?: number;
@@ -17,25 +23,26 @@ export interface UseImagesReturn {
   error: string | null;
   refetch: () => Promise<void>;
   deleteImageById: (imagePath: string, imageId: string) => Promise<void>;
-  updateImageById: (imageId: string, data: { description: string; alt_text: string; category: ImageCategory; source_ref?: string }) => Promise<void>;
-  uploadNewImage: (file: File, metadata: {
-    description: string;
-    alt_text: string;
-    category: ImageCategory;
-    file_type: string;
-    created_by: string;
-    source_ref?: string;
-  }) => Promise<ImageData>;
+  updateImageById: (
+    imageId: string,
+    data: { description: string; alt_text: string; category: ImageCategory; source_ref?: string }
+  ) => Promise<void>;
+  uploadNewImage: (
+    file: File,
+    metadata: {
+      description: string;
+      alt_text: string;
+      category: ImageCategory;
+      file_type: string;
+      created_by: string;
+      source_ref?: string;
+    }
+  ) => Promise<ImageData>;
   getImage: (imageId: string) => Promise<ImageData | null>;
 }
 
 export function useImages(params: UseImagesParams = {}): UseImagesReturn {
-  const {
-    page = 0,
-    pageSize = 10,
-    searchTerm = '',
-    category = 'all'
-  } = params;
+  const { page = 0, pageSize = 10, searchTerm = "", category = "all" } = params;
 
   const [images, setImages] = useState<ImageData[]>([]);
   const [total, setTotal] = useState(0);
@@ -52,7 +59,7 @@ export function useImages(params: UseImagesParams = {}): UseImagesReturn {
         pageSize,
         searchTerm,
         category,
-        showUnusedOnly: false
+        showUnusedOnly: false,
       });
 
       if (result.error) {
@@ -64,7 +71,7 @@ export function useImages(params: UseImagesParams = {}): UseImagesReturn {
         setTotal(result.total);
       }
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to fetch images';
+      const errorMessage = err instanceof Error ? err.message : "Failed to fetch images";
       setError(errorMessage);
       setImages([]);
       setTotal(0);
@@ -77,60 +84,65 @@ export function useImages(params: UseImagesParams = {}): UseImagesReturn {
     try {
       await deleteImage(imagePath, imageId);
       // Remove the deleted image from local state
-      setImages(prev => prev.filter(img => img.id !== imageId));
-      setTotal(prev => prev - 1);
+      setImages((prev) => prev.filter((img) => img.id !== imageId));
+      setTotal((prev) => prev - 1);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to delete image';
+      const errorMessage = err instanceof Error ? err.message : "Failed to delete image";
       setError(errorMessage);
       throw err;
     }
   }, []);
 
-  const updateImageById = useCallback(async (
-    imageId: string,
-    data: { description: string; alt_text: string; category: ImageCategory }
-  ) => {
-    try {
-      await updateImage(imageId, data);
-      // Update the image in local state
-      setImages(prev => prev.map(img =>
-        img.id === imageId
-          ? { ...img, ...data }
-          : img
-      ));
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to update image';
-      setError(errorMessage);
-      throw err;
-    }
-  }, []);
+  const updateImageById = useCallback(
+    async (
+      imageId: string,
+      data: { description: string; alt_text: string; category: ImageCategory }
+    ) => {
+      try {
+        await updateImage(imageId, data);
+        // Update the image in local state
+        setImages((prev) => prev.map((img) => (img.id === imageId ? { ...img, ...data } : img)));
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "Failed to update image";
+        setError(errorMessage);
+        throw err;
+      }
+    },
+    []
+  );
 
-  const uploadNewImage = useCallback(async (file: File, metadata: {
-    description: string;
-    alt_text: string;
-    category: ImageCategory;
-    file_type: string;
-    created_by: string;
-    source_ref?: string;
-  }) => {
-    try {
-      const newImage = await uploadImage(file, metadata);
-      // Add the new image to local state
-      setImages(prev => [newImage, ...prev]);
-      setTotal(prev => prev + 1);
-      return newImage;
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to upload image';
-      setError(errorMessage);
-      throw err;
-    }
-  }, []);
+  const uploadNewImage = useCallback(
+    async (
+      file: File,
+      metadata: {
+        description: string;
+        alt_text: string;
+        category: ImageCategory;
+        file_type: string;
+        created_by: string;
+        source_ref?: string;
+      }
+    ) => {
+      try {
+        const newImage = await uploadImage(file, metadata);
+        // Add the new image to local state
+        setImages((prev) => [newImage, ...prev]);
+        setTotal((prev) => prev + 1);
+        return newImage;
+      } catch (err) {
+        const errorMessage = err instanceof Error ? err.message : "Failed to upload image";
+        setError(errorMessage);
+        throw err;
+      }
+    },
+    []
+  );
 
   const getImage = useCallback(async (imageId: string) => {
     try {
       return await getImageById(imageId);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Failed to get image';
+      const errorMessage = err instanceof Error ? err.message : "Failed to get image";
       setError(errorMessage);
       throw err;
     }
@@ -145,6 +157,6 @@ export function useImages(params: UseImagesParams = {}): UseImagesReturn {
     deleteImageById,
     updateImageById,
     uploadNewImage,
-    getImage
+    getImage,
   };
 }

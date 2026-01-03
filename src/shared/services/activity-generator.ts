@@ -2,171 +2,170 @@
 // Simple activity generator - keeping it focused and clean
 
 interface ActivityData {
-  type: string
-  title: string
-  description: string
-  quiz_id?: string
-  goal_id?: string
-  subject_id?: string
-  data?: Record<string, unknown>
-  priority?: 'low' | 'medium' | 'high'
+  type: string;
+  title: string;
+  description: string;
+  quiz_id?: string;
+  goal_id?: string;
+  subject_id?: string;
+  data?: Record<string, unknown>;
+  priority?: "low" | "medium" | "high";
 }
 
 export class ActivityGenerator {
-  
   // Quiz completed activity
   static createQuizCompletedActivity(quizData: {
-    id: string
-    title: string
-    score: number
-    totalQuestions: number
-    timeSpent?: number
-    previousScore?: number
+    id: string;
+    title: string;
+    score: number;
+    totalQuestions: number;
+    timeSpent?: number;
+    previousScore?: number;
   }): ActivityData {
-    const improvement = quizData.previousScore ? quizData.score - quizData.previousScore : null
-    
+    const improvement = quizData.previousScore ? quizData.score - quizData.previousScore : null;
+
     return {
-      type: 'quiz_completed',
+      type: "quiz_completed",
       title: `Completed "${quizData.title}"`,
       description: `Scored ${quizData.score}% on ${quizData.totalQuestions} questions${
-        improvement ? ` (${improvement > 0 ? '+' : ''}${improvement}% improvement)` : ''
+        improvement ? ` (${improvement > 0 ? "+" : ""}${improvement}% improvement)` : ""
       }`,
       quiz_id: quizData.id,
       data: {
         score: quizData.score,
         totalQuestions: quizData.totalQuestions,
         timeSpent: quizData.timeSpent,
-        improvement
+        improvement,
       },
-      priority: quizData.score >= 90 ? 'high' : quizData.score >= 70 ? 'medium' : 'low'
-    }
+      priority: quizData.score >= 90 ? "high" : quizData.score >= 70 ? "medium" : "low",
+    };
   }
 
   // Quiz started activity
   static createQuizStartedActivity(quizData: {
-    id: string
-    title: string
-    totalQuestions: number
+    id: string;
+    title: string;
+    totalQuestions: number;
   }): ActivityData {
     return {
-      type: 'quiz_started',
+      type: "quiz_started",
       title: `Started "${quizData.title}"`,
       description: `${quizData.totalQuestions} questions to complete`,
       quiz_id: quizData.id,
       data: {
-        totalQuestions: quizData.totalQuestions
+        totalQuestions: quizData.totalQuestions,
       },
-      priority: 'medium'
-    }
+      priority: "medium",
+    };
   }
 
   // Goal achieved activity
   static createGoalAchievedActivity(goalData: {
-    id: string
-    title: string
-    type: string
-    category: string
-    targetValue: number
+    id: string;
+    title: string;
+    type: string;
+    category: string;
+    targetValue: number;
   }): ActivityData {
     return {
-      type: 'goal_achieved',
-      title: '🎯 Goal Achieved!',
-      description: `Completed "${goalData.title}" ${goalData.type === 'daily' ? 'today' : 'this week'}`,
+      type: "goal_achieved",
+      title: "🎯 Goal Achieved!",
+      description: `Completed "${goalData.title}" ${goalData.type === "daily" ? "today" : "this week"}`,
       goal_id: goalData.id,
       data: {
         goalType: goalData.type,
         category: goalData.category,
-        targetValue: goalData.targetValue
+        targetValue: goalData.targetValue,
       },
-      priority: 'high'
-    }
+      priority: "high",
+    };
   }
 
   // Study streak activity
   static createStudyStreakActivity(streakData: {
-    days: number
-    isNewRecord?: boolean
+    days: number;
+    isNewRecord?: boolean;
   }): ActivityData {
     return {
-      type: 'study_streak',
+      type: "study_streak",
       title: `🔥 ${streakData.days} Day Streak!`,
-      description: `Keep up the great work!${streakData.isNewRecord ? ' New personal record!' : ''}`,
+      description: `Keep up the great work!${streakData.isNewRecord ? " New personal record!" : ""}`,
       data: {
         days: streakData.days,
-        isNewRecord: streakData.isNewRecord
+        isNewRecord: streakData.isNewRecord,
       },
-      priority: streakData.days >= 7 ? 'high' : 'medium'
-    }
+      priority: streakData.days >= 7 ? "high" : "medium",
+    };
   }
 
   // Subject mastered activity
   static createSubjectMasteredActivity(subjectData: {
-    id: string
-    name: string
-    accuracy: number
+    id: string;
+    name: string;
+    accuracy: number;
   }): ActivityData {
     return {
-      type: 'subject_mastered',
-      title: '🏆 Subject Mastered!',
+      type: "subject_mastered",
+      title: "🏆 Subject Mastered!",
       description: `Achieved mastery in ${subjectData.name} with ${subjectData.accuracy}% accuracy`,
       subject_id: subjectData.id,
       data: {
         subjectName: subjectData.name,
-        accuracy: subjectData.accuracy
+        accuracy: subjectData.accuracy,
       },
-      priority: 'high'
-    }
+      priority: "high",
+    };
   }
 
   // Performance milestone activity
   static createPerformanceMilestoneActivity(milestoneData: {
-    milestone: string
-    description: string
-    previousValue?: number
-    newValue: number
+    milestone: string;
+    description: string;
+    previousValue?: number;
+    newValue: number;
   }): ActivityData {
     return {
-      type: 'performance_milestone',
+      type: "performance_milestone",
       title: `📈 ${milestoneData.milestone}`,
       description: milestoneData.description,
       data: {
         milestone: milestoneData.milestone,
         previousValue: milestoneData.previousValue,
-        newValue: milestoneData.newValue
+        newValue: milestoneData.newValue,
       },
-      priority: 'medium'
-    }
+      priority: "medium",
+    };
   }
 
   // Badge earned activity
   static createBadgeEarnedActivity(badgeData: {
-    id: string
-    name: string
-    description: string
+    id: string;
+    name: string;
+    description: string;
   }): ActivityData {
     return {
-      type: 'badge_earned',
-      title: '🏅 Badge Earned!',
+      type: "badge_earned",
+      title: "🏅 Badge Earned!",
       description: `Earned "${badgeData.name}" - ${badgeData.description}`,
       data: {
         badgeId: badgeData.id,
-        badgeName: badgeData.name
+        badgeName: badgeData.name,
       },
-      priority: 'high'
-    }
+      priority: "high",
+    };
   }
 
   // Weak area improved activity
   static createWeakAreaImprovedActivity(improvementData: {
-    subjectId: string
-    subjectName: string
-    oldAccuracy: number
-    newAccuracy: number
+    subjectId: string;
+    subjectName: string;
+    oldAccuracy: number;
+    newAccuracy: number;
   }): ActivityData {
-    const improvement = improvementData.newAccuracy - improvementData.oldAccuracy
-    
+    const improvement = improvementData.newAccuracy - improvementData.oldAccuracy;
+
     return {
-      type: 'weak_area_improved',
+      type: "weak_area_improved",
       title: `💪 Improvement in ${improvementData.subjectName}`,
       description: `Accuracy improved from ${improvementData.oldAccuracy}% to ${improvementData.newAccuracy}% (+${improvement}%)`,
       subject_id: improvementData.subjectId,
@@ -174,30 +173,30 @@ export class ActivityGenerator {
         subjectName: improvementData.subjectName,
         oldAccuracy: improvementData.oldAccuracy,
         newAccuracy: improvementData.newAccuracy,
-        improvement
+        improvement,
       },
-      priority: improvement >= 10 ? 'high' : 'medium'
-    }
+      priority: improvement >= 10 ? "high" : "medium",
+    };
   }
 
   // Helper method to create activity via API
   static async createActivity(userId: string, activityData: ActivityData): Promise<boolean> {
     try {
-      const response = await fetch('/api/dashboard/activities', {
-        method: 'POST',
+      const response = await fetch("/api/dashboard/activities", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(activityData)
-      })
+        body: JSON.stringify(activityData),
+      });
 
       if (!response.ok) {
-        return false
+        return false;
       }
 
-      return true
+      return true;
     } catch {
-      return false
+      return false;
     }
   }
 }

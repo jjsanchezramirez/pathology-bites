@@ -1,86 +1,84 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from "react"
-import { createPortal } from "react-dom"
-import Image from "next/image"
-import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache'
-import { ChevronLeft, ChevronRight, X } from "lucide-react"
-import { useMobile } from "@/shared/hooks/use-mobile"
-import { SilentErrorBoundary } from "@/shared/components/error-boundaries/silent-error-boundary"
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import Image from "next/image";
+import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
+import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { useMobile } from "@/shared/hooks/use-mobile";
+import { SilentErrorBoundary } from "@/shared/components/error-boundaries/silent-error-boundary";
 
 interface ImageProps {
-  url: string
-  alt: string
-  caption?: string
+  url: string;
+  alt: string;
+  caption?: string;
 }
 
 interface ImageCarouselProps {
-  images: ImageProps[]
-  className?: string
+  images: ImageProps[];
+  className?: string;
 }
 
 // Internal component that can throw errors
-function ImageCarouselInternal({ images, className = '' }: ImageCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const [showModal, setShowModal] = useState(false)
-  const isMobile = useMobile()
-  
+function ImageCarouselInternal({ images, className = "" }: ImageCarouselProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [showModal, setShowModal] = useState(false);
+  const isMobile = useMobile();
+
   // Get the current image for hook usage
-  const currentImage = images && images.length > 0 ? images[currentIndex] : null
-  const handleImageLoad = useImageCacheHandler(currentImage?.url || '')
+  const currentImage = images && images.length > 0 ? images[currentIndex] : null;
+  const handleImageLoad = useImageCacheHandler(currentImage?.url || "");
 
   // Reset to first image when images array changes (e.g., new question)
   useEffect(() => {
-    setCurrentIndex(0)
-  }, [images])
+    setCurrentIndex(0);
+  }, [images]);
 
   // Keyboard navigation for fullscreen - must be before early return
   useEffect(() => {
-    if (!showModal || !images || images.length === 0) return
+    if (!showModal || !images || images.length === 0) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
       switch (e.key) {
-        case 'Escape':
-          setShowModal(false)
-          break
-        case 'ArrowLeft':
+        case "Escape":
+          setShowModal(false);
+          break;
+        case "ArrowLeft":
           if (images.length > 1) {
-            setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
+            setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
           }
-          break
-        case 'ArrowRight':
+          break;
+        case "ArrowRight":
           if (images.length > 1) {
-            setCurrentIndex((prev) => (prev + 1) % images.length)
+            setCurrentIndex((prev) => (prev + 1) % images.length);
           }
-          break
+          break;
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [showModal, images])
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [showModal, images]);
 
-  if (!images || images.length === 0) return null
+  if (!images || images.length === 0) return null;
 
-  const hasMultiple = images.length > 1
+  const hasMultiple = images.length > 1;
 
   const nextImage = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length)
-  }
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
 
   const prevImage = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
-  }
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
 
   const openModal = () => {
     // Disable zoom on mobile devices
     if (!isMobile) {
-      setShowModal(true)
+      setShowModal(true);
     }
-  }
-  const _closeModal = () => setShowModal(false)
-
-
+  };
+  const _closeModal = () => setShowModal(false);
 
   return (
     <>
@@ -89,9 +87,9 @@ function ImageCarouselInternal({ images, className = '' }: ImageCarouselProps) {
         {/* Main image */}
         <div
           className={`relative rounded-lg overflow-hidden bg-muted group ${
-            isMobile ? 'cursor-default' : 'cursor-pointer'
+            isMobile ? "cursor-default" : "cursor-pointer"
           }`}
-          style={{ aspectRatio: '16/10' }}
+          style={{ aspectRatio: "16/10" }}
           onClick={openModal}
         >
           {currentImage?.url ? (
@@ -116,17 +114,17 @@ function ImageCarouselInternal({ images, className = '' }: ImageCarouselProps) {
               <div
                 className={`absolute left-2 top-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-sm rounded-full transition-all duration-200 ${
                   isMobile
-                    ? 'opacity-70' // Always visible on mobile
-                    : 'opacity-0 group-hover:opacity-100' // Original behavior on desktop
+                    ? "opacity-70" // Always visible on mobile
+                    : "opacity-0 group-hover:opacity-100" // Original behavior on desktop
                 }`}
               >
                 <button
                   onClick={(e) => {
-                    e.stopPropagation()
-                    prevImage()
+                    e.stopPropagation();
+                    prevImage();
                   }}
                   className={`p-2 hover:bg-black/10 rounded-full transition-all duration-200 ${
-                    isMobile ? 'p-3' : 'p-2'
+                    isMobile ? "p-3" : "p-2"
                   }`}
                   aria-label="Previous image"
                 >
@@ -136,17 +134,17 @@ function ImageCarouselInternal({ images, className = '' }: ImageCarouselProps) {
               <div
                 className={`absolute right-2 top-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-sm rounded-full transition-all duration-200 ${
                   isMobile
-                    ? 'opacity-70' // Always visible on mobile
-                    : 'opacity-0 group-hover:opacity-100' // Original behavior on desktop
+                    ? "opacity-70" // Always visible on mobile
+                    : "opacity-0 group-hover:opacity-100" // Original behavior on desktop
                 }`}
               >
                 <button
                   onClick={(e) => {
-                    e.stopPropagation()
-                    nextImage()
+                    e.stopPropagation();
+                    nextImage();
                   }}
                   className={`p-2 hover:bg-black/10 rounded-full transition-all duration-200 ${
-                    isMobile ? 'p-3' : 'p-2'
+                    isMobile ? "p-3" : "p-2"
                   }`}
                   aria-label="Next image"
                 >
@@ -166,99 +164,107 @@ function ImageCarouselInternal({ images, className = '' }: ImageCarouselProps) {
                 onClick={() => setCurrentIndex(index)}
                 className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
                   index === currentIndex
-                    ? 'bg-white scale-125'
-                    : 'bg-white/60 hover:bg-white/80 hover:scale-110'
+                    ? "bg-white scale-125"
+                    : "bg-white/60 hover:bg-white/80 hover:scale-110"
                 }`}
                 aria-label={`View image ${index + 1}`}
               />
             ))}
           </div>
         )}
-
-
       </div>
 
       {/* Beautiful modal with subtle blur background */}
-      {showModal && createPortal(
-        <div
-          className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-8"
-          onClick={() => setShowModal(false)}
-        >
-          {/* Image container - let image determine size within viewport limits */}
-          <div className="relative bg-white/5 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
-            {currentImage?.url ? (
-              <div className="relative max-w-[90vw] max-h-[90vh]" onClick={(e) => e.stopPropagation()}>
-                <Image
-                  src={currentImage.url}
-                  alt={currentImage.alt}
-                  width={1200}
-                  height={800}
-                  className="max-w-[90vw] max-h-[90vh] object-contain"
-                  unoptimized={true}
-                  onLoad={handleImageLoad}
-                />
-              </div>
-            ) : (
-              <div className="w-full h-full flex items-center justify-center text-white/70 min-w-[300px] min-h-[200px]">
-                No image available
-              </div>
+      {showModal &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-8"
+            onClick={() => setShowModal(false)}
+          >
+            {/* Image container - let image determine size within viewport limits */}
+            <div className="relative bg-white/5 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+              {currentImage?.url ? (
+                <div
+                  className="relative max-w-[90vw] max-h-[90vh]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <Image
+                    src={currentImage.url}
+                    alt={currentImage.alt}
+                    width={1200}
+                    height={800}
+                    className="max-w-[90vw] max-h-[90vh] object-contain"
+                    unoptimized={true}
+                    onLoad={handleImageLoad}
+                  />
+                </div>
+              ) : (
+                <div className="w-full h-full flex items-center justify-center text-white/70 min-w-[300px] min-h-[200px]">
+                  No image available
+                </div>
+              )}
+
+              {/* Close button */}
+              <button
+                onClick={() => setShowModal(false)}
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-white/20 shadow-lg z-10"
+                aria-label="Close image"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Navigation controls (only if multiple images) */}
+            {hasMultiple && (
+              <>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    prevImage();
+                  }}
+                  className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-white/20 shadow-lg z-10"
+                  aria-label="Previous image"
+                >
+                  <ChevronLeft className="w-6 h-6" />
+                </button>
+
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    nextImage();
+                  }}
+                  className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-white/20 shadow-lg z-10"
+                  aria-label="Next image"
+                >
+                  <ChevronRight className="w-6 h-6" />
+                </button>
+
+                {/* Image counter */}
+                <div className="absolute top-4 left-4 bg-white/15 text-white text-sm px-3 py-1.5 rounded-full border border-white/20 shadow-lg z-10">
+                  {currentIndex + 1} / {images.length}
+                </div>
+              </>
             )}
-
-            {/* Close button */}
-            <button
-              onClick={() => setShowModal(false)}
-              className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-white/20 shadow-lg z-10"
-              aria-label="Close image"
-            >
-              <X className="w-5 h-5" />
-            </button>
-          </div>
-
-          {/* Navigation controls (only if multiple images) */}
-          {hasMultiple && (
-            <>
-              <button
-                onClick={(e) => { e.stopPropagation(); prevImage(); }}
-                className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-white/20 shadow-lg z-10"
-                aria-label="Previous image"
-              >
-                <ChevronLeft className="w-6 h-6" />
-              </button>
-
-              <button
-                onClick={(e) => { e.stopPropagation(); nextImage(); }}
-                className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-white/20 shadow-lg z-10"
-                aria-label="Next image"
-              >
-                <ChevronRight className="w-6 h-6" />
-              </button>
-
-              {/* Image counter */}
-              <div className="absolute top-4 left-4 bg-white/15 text-white text-sm px-3 py-1.5 rounded-full border border-white/20 shadow-lg z-10">
-                {currentIndex + 1} / {images.length}
-              </div>
-            </>
-          )}
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </>
-  )
+  );
 }
 
 // Exported component with error boundary
-export function ImageCarousel({ images, className = '' }: ImageCarouselProps) {
+export function ImageCarousel({ images, className = "" }: ImageCarouselProps) {
   return (
     <SilentErrorBoundary
       maxRetries={2}
       retryDelay={1000}
       fallbackMessage="Image gallery temporarily unavailable"
-      showErrorDetails={process.env.NODE_ENV === 'development'}
+      showErrorDetails={process.env.NODE_ENV === "development"}
       onError={(error, retryCount) => {
-        console.warn(`ImageCarousel error (attempt ${retryCount + 1}):`, error.message)
+        console.warn(`ImageCarousel error (attempt ${retryCount + 1}):`, error.message);
       }}
     >
       <ImageCarouselInternal images={images} className={className} />
     </SilentErrorBoundary>
-  )
+  );
 }

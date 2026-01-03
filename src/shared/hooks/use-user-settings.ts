@@ -1,14 +1,14 @@
 // src/shared/hooks/use-user-settings.ts
 // Cached hook for user settings with SWR
 
-import useSWR from 'swr'
-import { userSettingsService, type UserSettings } from '@/shared/services/user-settings'
+import useSWR from "swr";
+import { userSettingsService, type UserSettings } from "@/shared/services/user-settings";
 
 interface UseUserSettingsOptions {
-  enabled?: boolean
-  refetchOnMount?: boolean
-  onSuccess?: (data: UserSettings) => void
-  onError?: (error: Error) => void
+  enabled?: boolean;
+  refetchOnMount?: boolean;
+  onSuccess?: (data: UserSettings) => void;
+  onError?: (error: Error) => void;
 }
 
 /**
@@ -41,20 +41,16 @@ interface UseUserSettingsOptions {
  * ```
  */
 export function useUserSettings(options: UseUserSettingsOptions = {}) {
-  const {
-    enabled = true,
-    onSuccess,
-    onError
-  } = options
+  const { enabled = true, onSuccess, onError } = options;
 
   // IMPORTANT: Always use the same SWR key to ensure proper deduplication
   // The enabled flag is handled by returning null data, not by changing the key
   const { data, error, isLoading, mutate } = useSWR<UserSettings>(
-    '/api/user/settings', // Always use same key for deduplication
+    "/api/user/settings", // Always use same key for deduplication
     async () => {
-      const result = await userSettingsService.getUserSettings()
-      if (onSuccess) onSuccess(result)
-      return result
+      const result = await userSettingsService.getUserSettings();
+      if (onSuccess) onSuccess(result);
+      return result;
     },
     {
       // Cache is fresh for 30 minutes (good balance - settings don't change often)
@@ -83,7 +79,7 @@ export function useUserSettings(options: UseUserSettingsOptions = {}) {
       // Respect the enabled flag by pausing SWR
       isPaused: () => !enabled,
     }
-  )
+  );
 
   return {
     data: enabled ? data : null,
@@ -91,51 +87,50 @@ export function useUserSettings(options: UseUserSettingsOptions = {}) {
     error: enabled ? error : null,
     refetch: mutate,
     invalidate: mutate,
-  }
+  };
 }
 
 /**
  * Hook for quiz settings only (subset of user settings)
  */
 export function useQuizSettings(options: UseUserSettingsOptions = {}) {
-  const { data: settings, isLoading, error, refetch, invalidate } = useUserSettings(options)
-  
+  const { data: settings, isLoading, error, refetch, invalidate } = useUserSettings(options);
+
   return {
     data: settings?.quiz_settings ?? null,
     isLoading,
     error,
     refetch,
-    invalidate
-  }
+    invalidate,
+  };
 }
 
 /**
  * Hook for UI settings only (subset of user settings)
  */
 export function useUISettings(options: UseUserSettingsOptions = {}) {
-  const { data: settings, isLoading, error, refetch, invalidate } = useUserSettings(options)
-  
+  const { data: settings, isLoading, error, refetch, invalidate } = useUserSettings(options);
+
   return {
     data: settings?.ui_settings ?? null,
     isLoading,
     error,
     refetch,
-    invalidate
-  }
+    invalidate,
+  };
 }
 
 /**
  * Hook for notification settings only (subset of user settings)
  */
 export function useNotificationSettings(options: UseUserSettingsOptions = {}) {
-  const { data: settings, isLoading, error, refetch, invalidate } = useUserSettings(options)
-  
+  const { data: settings, isLoading, error, refetch, invalidate } = useUserSettings(options);
+
   return {
     data: settings?.notification_settings ?? null,
     isLoading,
     error,
     refetch,
-    invalidate
-  }
+    invalidate,
+  };
 }
-

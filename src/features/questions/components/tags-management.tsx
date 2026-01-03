@@ -1,9 +1,9 @@
 // src/features/questions/components/tags-management.tsx
-'use client'
+"use client";
 
-import { useState, useCallback, useEffect, memo } from 'react'
-import { createClient } from '@/shared/services/client'
-import { toast } from '@/shared/utils/toast'
+import { useState, useCallback, useEffect, memo } from "react";
+import { createClient } from "@/shared/services/client";
+import { toast } from "@/shared/utils/toast";
 import {
   Table,
   TableBody,
@@ -11,16 +11,16 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table'
-import { Input } from '@/shared/components/ui/input'
-import { Button } from '@/shared/components/ui/button'
-import { Badge } from '@/shared/components/ui/badge'
+} from "@/shared/components/ui/table";
+import { Input } from "@/shared/components/ui/input";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu'
+} from "@/shared/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,37 +30,29 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/shared/components/ui/alert-dialog'
-import {
-  Search,
-  Loader2,
-  MoreVertical,
-  Plus,
-  Trash2,
-  RefreshCw,
-  Edit
-} from 'lucide-react'
-import { format } from 'date-fns'
-import { CreateTagDialog } from './create-tag-dialog'
-import { EditTagDialog } from './edit-tag-dialog'
+} from "@/shared/components/ui/alert-dialog";
+import { Search, Loader2, MoreVertical, Plus, Trash2, RefreshCw, Edit } from "lucide-react";
+import { format } from "date-fns";
+import { CreateTagDialog } from "./create-tag-dialog";
+import { EditTagDialog } from "./edit-tag-dialog";
 
 interface Tag {
-  id: string
-  name: string
-  created_at: string
-  question_count?: number
+  id: string;
+  name: string;
+  created_at: string;
+  question_count?: number;
 }
 
-const PAGE_SIZE = 10
+const PAGE_SIZE = 10;
 
 const TagRow = memo(function TagRow({
   tag,
   onEdit,
-  onDelete
+  onDelete,
 }: {
-  tag: Tag
-  onEdit: (tag: Tag) => void
-  onDelete: (tag: Tag) => void
+  tag: Tag;
+  onEdit: (tag: Tag) => void;
+  onDelete: (tag: Tag) => void;
 }) {
   return (
     <TableRow key={tag.id}>
@@ -68,13 +60,14 @@ const TagRow = memo(function TagRow({
         <div className="font-medium">{tag.name}</div>
       </TableCell>
       <TableCell>
-        <Badge variant="outline" className="bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-900/20 dark:text-slate-300 dark:border-slate-800">
+        <Badge
+          variant="outline"
+          className="bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-900/20 dark:text-slate-300 dark:border-slate-800"
+        >
           {tag.question_count || 0} questions
         </Badge>
       </TableCell>
-      <TableCell>
-        {format(new Date(tag.created_at), 'MMM d, yyyy')}
-      </TableCell>
+      <TableCell>{format(new Date(tag.created_at), "MMM d, yyyy")}</TableCell>
       <TableCell>
         <DropdownMenu modal={false}>
           <DropdownMenuTrigger asChild>
@@ -98,112 +91,112 @@ const TagRow = memo(function TagRow({
         </DropdownMenu>
       </TableCell>
     </TableRow>
-  )
-})
+  );
+});
 
 export function TagsManagement() {
-  const [tags, setTags] = useState<Tag[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [page, setPage] = useState(0)
-  const [totalPages, setTotalPages] = useState(0)
-  const [totalTags, setTotalTags] = useState(0)
-  const [selectedTag, setSelectedTag] = useState<Tag | null>(null)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [showEditDialog, setShowEditDialog] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalTags, setTotalTags] = useState(0);
+  const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
 
-  const _supabase = createClient()
+  const _supabase = createClient();
 
   const loadTags = useCallback(async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       // Use the admin API endpoint instead of direct Supabase queries
       const params = new URLSearchParams({
         page: page.toString(),
         pageSize: PAGE_SIZE.toString(),
-        ...(searchTerm && { search: searchTerm })
-      })
+        ...(searchTerm && { search: searchTerm }),
+      });
 
-      const response = await fetch(`/api/admin/tags?${params}`)
+      const response = await fetch(`/api/admin/tags?${params}`);
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to load tags')
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to load tags");
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
-      setTags(data.tags || [])
-      setTotalTags(data.totalTags || 0)
-      setTotalPages(data.totalPages || 0)
+      setTags(data.tags || []);
+      setTotalTags(data.totalTags || 0);
+      setTotalPages(data.totalPages || 0);
     } catch (error) {
-      console.error('Error loading tags:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to load tags')
+      console.error("Error loading tags:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to load tags");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [searchTerm, page])
+  }, [searchTerm, page]);
 
   const handleDelete = async () => {
-    if (!selectedTag) return
+    if (!selectedTag) return;
 
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
-      const response = await fetch('/api/admin/tags', {
-        method: 'DELETE',
+      const response = await fetch("/api/admin/tags", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
-          tagId: selectedTag.id
-        })
-      })
+          tagId: selectedTag.id,
+        }),
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to delete tag')
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete tag");
       }
 
-      toast.success('Tag deleted successfully')
+      toast.success("Tag deleted successfully");
 
-      setShowDeleteDialog(false)
-      setSelectedTag(null)
-      loadTags()
+      setShowDeleteDialog(false);
+      setSelectedTag(null);
+      loadTags();
     } catch (error) {
-      console.error('Error deleting tag:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to delete tag')
+      console.error("Error deleting tag:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete tag");
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
   const handleCreateSuccess = () => {
-    setShowCreateDialog(false)
-    loadTags()
-  }
+    setShowCreateDialog(false);
+    loadTags();
+  };
 
   const handleEditSuccess = () => {
-    setShowEditDialog(false)
-    setSelectedTag(null)
-    loadTags()
-  }
+    setShowEditDialog(false);
+    setSelectedTag(null);
+    loadTags();
+  };
 
   const handleEditTag = useCallback((tag: Tag) => {
-    setSelectedTag(tag)
-    setShowEditDialog(true)
-  }, [])
+    setSelectedTag(tag);
+    setShowEditDialog(true);
+  }, []);
 
   const handleDeleteTag = useCallback((tag: Tag) => {
-    setSelectedTag(tag)
-    setShowDeleteDialog(true)
-  }, [])
+    setSelectedTag(tag);
+    setShowDeleteDialog(true);
+  }, []);
 
   useEffect(() => {
-    loadTags()
-  }, [loadTags])
+    loadTags();
+  }, [loadTags]);
 
   return (
     <div className="space-y-4">
@@ -216,19 +209,14 @@ export function TagsManagement() {
               placeholder="Search tags..."
               value={searchTerm}
               onChange={(e) => {
-                setSearchTerm(e.target.value)
-                setPage(0)
+                setSearchTerm(e.target.value);
+                setPage(0);
               }}
               className="pl-8"
             />
           </div>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => loadTags()}
-            disabled={loading}
-          >
-            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+          <Button variant="outline" size="sm" onClick={() => loadTags()} disabled={loading}>
+            <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
             Refresh
           </Button>
         </div>
@@ -241,9 +229,7 @@ export function TagsManagement() {
       {/* Stats */}
       <div className="flex items-center gap-4 text-sm text-muted-foreground">
         <span>Total: {totalTags} tags</span>
-        {searchTerm && (
-          <span>Showing results for "{searchTerm}"</span>
-        )}
+        {searchTerm && <span>Showing results for "{searchTerm}"</span>}
       </div>
 
       {/* Table */}
@@ -267,17 +253,12 @@ export function TagsManagement() {
             ) : tags.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
-                  {searchTerm ? 'No tags found matching your search' : 'No tags found'}
+                  {searchTerm ? "No tags found matching your search" : "No tags found"}
                 </TableCell>
               </TableRow>
             ) : (
               tags.map((tag) => (
-                <TagRow
-                  key={tag.id}
-                  tag={tag}
-                  onEdit={handleEditTag}
-                  onDelete={handleDeleteTag}
-                />
+                <TagRow key={tag.id} tag={tag} onEdit={handleEditTag} onDelete={handleDeleteTag} />
               ))
             )}
           </TableBody>
@@ -317,8 +298,8 @@ export function TagsManagement() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Tag</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete the tag "{selectedTag?.name}"?
-              This will remove it from all associated questions and cannot be undone.
+              Are you sure you want to delete the tag "{selectedTag?.name}"? This will remove it
+              from all associated questions and cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -334,7 +315,7 @@ export function TagsManagement() {
                   Deleting...
                 </>
               ) : (
-                'Delete'
+                "Delete"
               )}
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -356,5 +337,5 @@ export function TagsManagement() {
         tag={selectedTag}
       />
     </div>
-  )
+  );
 }

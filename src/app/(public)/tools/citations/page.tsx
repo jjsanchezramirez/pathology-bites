@@ -1,16 +1,28 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
-import { Copy, BookOpen, FileText, Globe, Search, CheckCircle, Edit, Save, X, Plus, Minus } from 'lucide-react'
-import { PublicHero } from '@/shared/components/common/public-hero'
-import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
-import { useSmartCitations } from '@/shared/hooks/use-smart-citations'
-import { CitationData } from '@/shared/utils/citation-extractor'
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import {
+  Copy,
+  BookOpen,
+  FileText,
+  Globe,
+  Search,
+  CheckCircle,
+  Edit,
+  Save,
+  X,
+  Plus,
+  Minus,
+} from "lucide-react";
+import { PublicHero } from "@/shared/components/common/public-hero";
+import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
+import { useSmartCitations } from "@/shared/hooks/use-smart-citations";
+import { CitationData } from "@/shared/utils/citation-extractor";
 import {
   formatAPA,
   formatMLA,
@@ -18,172 +30,168 @@ import {
   formatVancouver,
   formatNLM,
   getJournalAbbreviationStats,
-  forceReloadJournalAbbreviations
-} from '@/shared/utils/citation-formatters'
+  forceReloadJournalAbbreviations,
+} from "@/shared/utils/citation-formatters";
 
 export default function CitationGeneratorPage() {
-  const [input, setInput] = useState('')
-  const [citationData, setCitationData] = useState<CitationData | null>(null)
-  const [editableData, setEditableData] = useState<CitationData | null>(null)
-  const [isEditing, setIsEditing] = useState(false)
-  const [copiedFormat, setCopiedFormat] = useState<string | null>(null)
-  
-  const { generateCitation, isLoading, error } = useSmartCitations()
+  const [input, setInput] = useState("");
+  const [citationData, setCitationData] = useState<CitationData | null>(null);
+  const [editableData, setEditableData] = useState<CitationData | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [copiedFormat, setCopiedFormat] = useState<string | null>(null);
+
+  const { generateCitation, isLoading, error } = useSmartCitations();
 
   // Ensure NLM journal abbreviations are loaded
   useEffect(() => {
     // Force reload journal abbreviations and show debug info
     forceReloadJournalAbbreviations()
       .then(() => {
-        const stats = getJournalAbbreviationStats()
-        console.log('✅ NLM journal abbreviations loaded:', stats.total, 'entries')
-        console.log('📋 Sample entries:', stats.sampleEntries)
+        const stats = getJournalAbbreviationStats();
+        console.log("✅ NLM journal abbreviations loaded:", stats.total, "entries");
+        console.log("📋 Sample entries:", stats.sampleEntries);
       })
-      .catch(err => {
-        console.warn('⚠️ Failed to load NLM journal abbreviations:', err)
-        const stats = getJournalAbbreviationStats()
-        console.log('📊 Current abbreviations count:', stats.total)
-      })
-  }, [])
+      .catch((err) => {
+        console.warn("⚠️ Failed to load NLM journal abbreviations:", err);
+        const stats = getJournalAbbreviationStats();
+        console.log("📊 Current abbreviations count:", stats.total);
+      });
+  }, []);
 
-
-  const detectInputType = (input: string): 'url' | 'doi' | 'isbn' | 'unknown' => {
+  const detectInputType = (input: string): "url" | "doi" | "isbn" | "unknown" => {
     // Trim whitespace
-    const trimmedInput = input.trim()
+    const trimmedInput = input.trim();
 
     // DOI patterns - more flexible
     if (trimmedInput.match(/^10\.\d{4,}\/[-._;()\/:a-zA-Z0-9]+$/)) {
-      return 'doi'
+      return "doi";
     }
-    if (trimmedInput.includes('doi.org/') || trimmedInput.includes('dx.doi.org/')) {
-      return 'doi'
+    if (trimmedInput.includes("doi.org/") || trimmedInput.includes("dx.doi.org/")) {
+      return "doi";
     }
     // Handle DOI with doi: prefix
     if (trimmedInput.match(/^doi:\s*10\.\d{4,}\/[-._;()\/:a-zA-Z0-9]+$/i)) {
-      return 'doi'
+      return "doi";
     }
 
     // ISBN patterns - more flexible
-    const isbnPattern = /^(?:ISBN(?:-1[03])?:?\s*)?(?=[-0-9\sX]{10,17}$)(?:97[89][-\s]?)?[0-9]{1,5}[-\s]?(?:[0-9]+[-\s]?){2}[0-9X]$/i
+    const isbnPattern =
+      /^(?:ISBN(?:-1[03])?:?\s*)?(?=[-0-9\sX]{10,17}$)(?:97[89][-\s]?)?[0-9]{1,5}[-\s]?(?:[0-9]+[-\s]?){2}[0-9X]$/i;
     if (trimmedInput.match(isbnPattern)) {
-      return 'isbn'
+      return "isbn";
     }
     // Simple ISBN check for 10 or 13 digit sequences
-    const cleanIsbn = trimmedInput.replace(/[-\s]/g, '').replace(/^isbn:?/i, '')
+    const cleanIsbn = trimmedInput.replace(/[-\s]/g, "").replace(/^isbn:?/i, "");
     if (cleanIsbn.match(/^[0-9]{9}[0-9X]$|^97[89][0-9]{10}$/i)) {
-      return 'isbn'
+      return "isbn";
     }
 
     // URL patterns - more flexible
     if (trimmedInput.match(/^https?:\/\/.+/)) {
-      return 'url'
+      return "url";
     }
     // Handle URLs without protocol
     if (trimmedInput.match(/^(www\.|[a-zA-Z0-9-]+\.)[a-zA-Z0-9-]+\.[a-zA-Z]{2,}(\/.*)?$/)) {
-      return 'url'
+      return "url";
     }
     // Handle common domain patterns
     if (trimmedInput.match(/^[a-zA-Z0-9-]+\.(com|org|edu|gov|net|io|co\.uk|ca|au)(\/.*)?$/i)) {
-      return 'url'
+      return "url";
     }
 
-    return 'unknown'
-  }
+    return "unknown";
+  };
 
   const handleGenerate = async () => {
-    if (!input.trim()) return
+    if (!input.trim()) return;
 
-    setCitationData(null)
+    setCitationData(null);
 
     try {
-      const trimmedInput = input.trim()
-      const inputType = detectInputType(trimmedInput)
+      const trimmedInput = input.trim();
+      const inputType = detectInputType(trimmedInput);
 
-      if (inputType === 'unknown') {
-        throw new Error('Unable to detect input type. Please enter a valid URL, DOI, or ISBN.')
+      if (inputType === "unknown") {
+        throw new Error("Unable to detect input type. Please enter a valid URL, DOI, or ISBN.");
       }
 
       // Process the input based on type
-      let processedInput = trimmedInput
-      if (inputType === 'url' && !trimmedInput.match(/^https?:\/\//)) {
+      let processedInput = trimmedInput;
+      if (inputType === "url" && !trimmedInput.match(/^https?:\/\//)) {
         // Add protocol if missing
-        processedInput = `https://${trimmedInput}`
+        processedInput = `https://${trimmedInput}`;
       }
 
-      const metadata = await generateCitation(processedInput, inputType)
-      setCitationData(metadata)
-      setEditableData(metadata)
-      setIsEditing(false)
+      const metadata = await generateCitation(processedInput, inputType);
+      setCitationData(metadata);
+      setEditableData(metadata);
+      setIsEditing(false);
     } catch (err) {
-      console.error('Citation generation error:', err)
+      console.error("Citation generation error:", err);
       // Error is already handled by the hook
     }
-  }
-
-
+  };
 
   const copyToClipboard = async (text: string, format: string) => {
     try {
-      await navigator.clipboard.writeText(text)
-      setCopiedFormat(format)
-      setTimeout(() => setCopiedFormat(null), 2000)
+      await navigator.clipboard.writeText(text);
+      setCopiedFormat(format);
+      setTimeout(() => setCopiedFormat(null), 2000);
     } catch (err) {
-      console.error('Failed to copy to clipboard:', err)
+      console.error("Failed to copy to clipboard:", err);
     }
-  }
+  };
 
   const handleEdit = () => {
-    setIsEditing(true)
-  }
+    setIsEditing(true);
+  };
 
   const handleSaveEdit = () => {
-    setIsEditing(false)
-  }
+    setIsEditing(false);
+  };
 
   const handleCancelEdit = () => {
-    setEditableData(citationData)
-    setIsEditing(false)
-  }
+    setEditableData(citationData);
+    setIsEditing(false);
+  };
 
   const updateEditableField = (field: keyof CitationData, value: string | string[]) => {
     if (editableData) {
       setEditableData({
         ...editableData,
-        [field]: value
-      })
+        [field]: value,
+      });
     }
-  }
+  };
 
   const addAuthor = () => {
     if (editableData) {
       setEditableData({
         ...editableData,
-        authors: [...editableData.authors, '']
-      })
+        authors: [...editableData.authors, ""],
+      });
     }
-  }
+  };
 
   const removeAuthor = (index: number) => {
     if (editableData) {
       setEditableData({
         ...editableData,
-        authors: editableData.authors.filter((_, i) => i !== index)
-      })
+        authors: editableData.authors.filter((_, i) => i !== index),
+      });
     }
-  }
+  };
 
   const updateAuthor = (index: number, value: string) => {
     if (editableData) {
-      const newAuthors = [...editableData.authors]
-      newAuthors[index] = value
+      const newAuthors = [...editableData.authors];
+      newAuthors[index] = value;
       setEditableData({
         ...editableData,
-        authors: newAuthors
-      })
+        authors: newAuthors,
+      });
     }
-  }
-
-
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -226,7 +234,7 @@ export default function CitationGeneratorPage() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     className="flex-1"
-                    onKeyDown={(e) => e.key === 'Enter' && handleGenerate()}
+                    onKeyDown={(e) => e.key === "Enter" && handleGenerate()}
                   />
                   <Button
                     onClick={handleGenerate}
@@ -245,15 +253,19 @@ export default function CitationGeneratorPage() {
                 </div>
                 {input && (
                   <p className="text-sm text-muted-foreground">
-                    Detected type: <span className="font-medium">{
-                      detectInputType(input) === 'doi' ? 'DOI' :
-                      detectInputType(input) === 'isbn' ? 'ISBN' :
-                      detectInputType(input) === 'url' ? 'URL' :
-                      detectInputType(input).charAt(0).toUpperCase() + detectInputType(input).slice(1)
-                    }</span>
+                    Detected type:{" "}
+                    <span className="font-medium">
+                      {detectInputType(input) === "doi"
+                        ? "DOI"
+                        : detectInputType(input) === "isbn"
+                          ? "ISBN"
+                          : detectInputType(input) === "url"
+                            ? "URL"
+                            : detectInputType(input).charAt(0).toUpperCase() +
+                              detectInputType(input).slice(1)}
+                    </span>
                   </p>
                 )}
-
               </div>
 
               {/* Error Display */}
@@ -308,7 +320,8 @@ export default function CitationGeneratorPage() {
                       <div className="mb-6 p-4 bg-gray-50 rounded-lg border">
                         <h4 className="font-semibold mb-2">Edit Citation Information</h4>
                         <p className="text-sm text-muted-foreground mb-4">
-                          Modify any incorrect or missing information. Changes will be reflected in all citation formats.
+                          Modify any incorrect or missing information. Changes will be reflected in
+                          all citation formats.
                         </p>
                         <div className="space-y-4">
                           {/* Title */}
@@ -317,7 +330,7 @@ export default function CitationGeneratorPage() {
                             <Input
                               id="edit-title"
                               value={editableData.title}
-                              onChange={(e) => updateEditableField('title', e.target.value)}
+                              onChange={(e) => updateEditableField("title", e.target.value)}
                               className="mt-1"
                             />
                           </div>
@@ -368,20 +381,20 @@ export default function CitationGeneratorPage() {
                             <Input
                               id="edit-year"
                               value={editableData.year}
-                              onChange={(e) => updateEditableField('year', e.target.value)}
+                              onChange={(e) => updateEditableField("year", e.target.value)}
                               className="mt-1"
                             />
                           </div>
 
                           {/* Conditional fields based on type */}
-                          {editableData.type === 'journal' && (
+                          {editableData.type === "journal" && (
                             <>
                               <div>
                                 <Label htmlFor="edit-journal">Journal</Label>
                                 <Input
                                   id="edit-journal"
-                                  value={editableData.journal || ''}
-                                  onChange={(e) => updateEditableField('journal', e.target.value)}
+                                  value={editableData.journal || ""}
+                                  onChange={(e) => updateEditableField("journal", e.target.value)}
                                   className="mt-1"
                                 />
                               </div>
@@ -390,8 +403,8 @@ export default function CitationGeneratorPage() {
                                   <Label htmlFor="edit-volume">Volume</Label>
                                   <Input
                                     id="edit-volume"
-                                    value={editableData.volume || ''}
-                                    onChange={(e) => updateEditableField('volume', e.target.value)}
+                                    value={editableData.volume || ""}
+                                    onChange={(e) => updateEditableField("volume", e.target.value)}
                                     className="mt-1"
                                   />
                                 </div>
@@ -399,8 +412,8 @@ export default function CitationGeneratorPage() {
                                   <Label htmlFor="edit-issue">Issue</Label>
                                   <Input
                                     id="edit-issue"
-                                    value={editableData.issue || ''}
-                                    onChange={(e) => updateEditableField('issue', e.target.value)}
+                                    value={editableData.issue || ""}
+                                    onChange={(e) => updateEditableField("issue", e.target.value)}
                                     className="mt-1"
                                   />
                                 </div>
@@ -408,8 +421,8 @@ export default function CitationGeneratorPage() {
                                   <Label htmlFor="edit-pages">Pages</Label>
                                   <Input
                                     id="edit-pages"
-                                    value={editableData.pages || ''}
-                                    onChange={(e) => updateEditableField('pages', e.target.value)}
+                                    value={editableData.pages || ""}
+                                    onChange={(e) => updateEditableField("pages", e.target.value)}
                                     className="mt-1"
                                   />
                                 </div>
@@ -418,22 +431,22 @@ export default function CitationGeneratorPage() {
                                 <Label htmlFor="edit-doi">DOI</Label>
                                 <Input
                                   id="edit-doi"
-                                  value={editableData.doi || ''}
-                                  onChange={(e) => updateEditableField('doi', e.target.value)}
+                                  value={editableData.doi || ""}
+                                  onChange={(e) => updateEditableField("doi", e.target.value)}
                                   className="mt-1"
                                 />
                               </div>
                             </>
                           )}
 
-                          {editableData.type === 'book' && (
+                          {editableData.type === "book" && (
                             <>
                               <div>
                                 <Label htmlFor="edit-publisher">Publisher</Label>
                                 <Input
                                   id="edit-publisher"
-                                  value={editableData.publisher || ''}
-                                  onChange={(e) => updateEditableField('publisher', e.target.value)}
+                                  value={editableData.publisher || ""}
+                                  onChange={(e) => updateEditableField("publisher", e.target.value)}
                                   className="mt-1"
                                 />
                               </div>
@@ -441,8 +454,8 @@ export default function CitationGeneratorPage() {
                                 <Label htmlFor="edit-edition">Edition</Label>
                                 <Input
                                   id="edit-edition"
-                                  value={editableData.edition || ''}
-                                  onChange={(e) => updateEditableField('edition', e.target.value)}
+                                  value={editableData.edition || ""}
+                                  onChange={(e) => updateEditableField("edition", e.target.value)}
                                   placeholder="e.g., 6"
                                   className="mt-1"
                                 />
@@ -450,14 +463,14 @@ export default function CitationGeneratorPage() {
                             </>
                           )}
 
-                          {editableData.type === 'website' && (
+                          {editableData.type === "website" && (
                             <>
                               <div>
                                 <Label htmlFor="edit-publisher">Website/Publisher</Label>
                                 <Input
                                   id="edit-publisher"
-                                  value={editableData.publisher || ''}
-                                  onChange={(e) => updateEditableField('publisher', e.target.value)}
+                                  value={editableData.publisher || ""}
+                                  onChange={(e) => updateEditableField("publisher", e.target.value)}
                                   className="mt-1"
                                 />
                               </div>
@@ -465,8 +478,8 @@ export default function CitationGeneratorPage() {
                                 <Label htmlFor="edit-url">URL</Label>
                                 <Input
                                   id="edit-url"
-                                  value={editableData.url || ''}
-                                  onChange={(e) => updateEditableField('url', e.target.value)}
+                                  value={editableData.url || ""}
+                                  onChange={(e) => updateEditableField("url", e.target.value)}
                                   className="mt-1"
                                 />
                               </div>
@@ -475,8 +488,10 @@ export default function CitationGeneratorPage() {
                                 <Input
                                   id="edit-access-date"
                                   type="date"
-                                  value={editableData.accessDate || ''}
-                                  onChange={(e) => updateEditableField('accessDate', e.target.value)}
+                                  value={editableData.accessDate || ""}
+                                  onChange={(e) =>
+                                    updateEditableField("accessDate", e.target.value)
+                                  }
                                   className="mt-1"
                                 />
                               </div>
@@ -497,18 +512,28 @@ export default function CitationGeneratorPage() {
                         </TabsTrigger>
                         <TabsTrigger value="nlm">NLM</TabsTrigger>
                       </TabsList>
-                      
+
                       <TabsContent value="apa" className="space-y-4">
                         <div className="p-4 bg-gray-50 rounded-lg border">
-                          <p className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: formatAPA(editableData).replace(/\*(.*?)\*/g, '<em>$1</em>') }} />
+                          <p
+                            className="text-sm leading-relaxed"
+                            dangerouslySetInnerHTML={{
+                              __html: formatAPA(editableData).replace(/\*(.*?)\*/g, "<em>$1</em>"),
+                            }}
+                          />
                         </div>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => copyToClipboard(formatAPA(editableData).replace(/\*(.*?)\*/g, '$1'), 'apa')}
+                          onClick={() =>
+                            copyToClipboard(
+                              formatAPA(editableData).replace(/\*(.*?)\*/g, "$1"),
+                              "apa"
+                            )
+                          }
                           className="w-full"
                         >
-                          {copiedFormat === 'apa' ? (
+                          {copiedFormat === "apa" ? (
                             <>
                               <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                               Copied!
@@ -524,15 +549,25 @@ export default function CitationGeneratorPage() {
 
                       <TabsContent value="mla" className="space-y-4">
                         <div className="p-4 bg-gray-50 rounded-lg border">
-                          <p className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: formatMLA(editableData).replace(/\*(.*?)\*/g, '<em>$1</em>') }} />
+                          <p
+                            className="text-sm leading-relaxed"
+                            dangerouslySetInnerHTML={{
+                              __html: formatMLA(editableData).replace(/\*(.*?)\*/g, "<em>$1</em>"),
+                            }}
+                          />
                         </div>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => copyToClipboard(formatMLA(editableData).replace(/\*(.*?)\*/g, '$1'), 'mla')}
+                          onClick={() =>
+                            copyToClipboard(
+                              formatMLA(editableData).replace(/\*(.*?)\*/g, "$1"),
+                              "mla"
+                            )
+                          }
                           className="w-full"
                         >
-                          {copiedFormat === 'mla' ? (
+                          {copiedFormat === "mla" ? (
                             <>
                               <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                               Copied!
@@ -548,15 +583,25 @@ export default function CitationGeneratorPage() {
 
                       <TabsContent value="ama" className="space-y-4">
                         <div className="p-4 bg-gray-50 rounded-lg border">
-                          <p className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: formatAMA(editableData).replace(/\*(.*?)\*/g, '<em>$1</em>') }} />
+                          <p
+                            className="text-sm leading-relaxed"
+                            dangerouslySetInnerHTML={{
+                              __html: formatAMA(editableData).replace(/\*(.*?)\*/g, "<em>$1</em>"),
+                            }}
+                          />
                         </div>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => copyToClipboard(formatAMA(editableData).replace(/\*(.*?)\*/g, '$1'), 'ama')}
+                          onClick={() =>
+                            copyToClipboard(
+                              formatAMA(editableData).replace(/\*(.*?)\*/g, "$1"),
+                              "ama"
+                            )
+                          }
                           className="w-full"
                         >
-                          {copiedFormat === 'ama' ? (
+                          {copiedFormat === "ama" ? (
                             <>
                               <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                               Copied!
@@ -572,15 +617,28 @@ export default function CitationGeneratorPage() {
 
                       <TabsContent value="vancouver" className="space-y-4">
                         <div className="p-4 bg-gray-50 rounded-lg border">
-                          <p className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: formatVancouver(editableData).replace(/\*(.*?)\*/g, '<em>$1</em>') }} />
+                          <p
+                            className="text-sm leading-relaxed"
+                            dangerouslySetInnerHTML={{
+                              __html: formatVancouver(editableData).replace(
+                                /\*(.*?)\*/g,
+                                "<em>$1</em>"
+                              ),
+                            }}
+                          />
                         </div>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => copyToClipboard(formatVancouver(editableData).replace(/\*(.*?)\*/g, '$1'), 'vancouver')}
+                          onClick={() =>
+                            copyToClipboard(
+                              formatVancouver(editableData).replace(/\*(.*?)\*/g, "$1"),
+                              "vancouver"
+                            )
+                          }
                           className="w-full"
                         >
-                          {copiedFormat === 'vancouver' ? (
+                          {copiedFormat === "vancouver" ? (
                             <>
                               <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                               Copied!
@@ -596,15 +654,25 @@ export default function CitationGeneratorPage() {
 
                       <TabsContent value="nlm" className="space-y-4">
                         <div className="p-4 bg-gray-50 rounded-lg border">
-                          <p className="text-sm leading-relaxed" dangerouslySetInnerHTML={{ __html: formatNLM(editableData).replace(/\*(.*?)\*/g, '<em>$1</em>') }} />
+                          <p
+                            className="text-sm leading-relaxed"
+                            dangerouslySetInnerHTML={{
+                              __html: formatNLM(editableData).replace(/\*(.*?)\*/g, "<em>$1</em>"),
+                            }}
+                          />
                         </div>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => copyToClipboard(formatNLM(editableData).replace(/\*(.*?)\*/g, '$1'), 'nlm')}
+                          onClick={() =>
+                            copyToClipboard(
+                              formatNLM(editableData).replace(/\*(.*?)\*/g, "$1"),
+                              "nlm"
+                            )
+                          }
                           className="w-full"
                         >
-                          {copiedFormat === 'nlm' ? (
+                          {copiedFormat === "nlm" ? (
                             <>
                               <CheckCircle className="h-4 w-4 mr-2 text-green-600" />
                               Copied!
@@ -630,9 +698,7 @@ export default function CitationGeneratorPage() {
       <div className="flex-1" />
 
       {/* Join Our Learning Community */}
-      <JoinCommunitySection
-        description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone."
-      />
+      <JoinCommunitySection description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone." />
     </div>
-  )
+  );
 }

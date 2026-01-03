@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { WSIQuestionGenerator } from '@/shared/components/features/wsi-question-generator'
+import { WSIQuestionGenerator } from "@/shared/components/features/wsi-question-generator";
 
 // Note: Metadata would be exported from a parent layout or server component
 // This is a client component so metadata is handled by the layout
@@ -17,12 +17,7 @@ export default function WSIQuestionsPage() {
       </div>
 
       {/* WSI Question Generator Component */}
-      <WSIQuestionGenerator
-        showCategoryFilter={true}
-        compact={false}
-        className="w-full"
-      />
+      <WSIQuestionGenerator showCategoryFilter={true} compact={false} className="w-full" />
     </div>
-  )
+  );
 }
-

@@ -1,138 +1,138 @@
 // src/components/question-management/create-category-dialog.tsx
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/shared/services/client'
-import { toast } from '@/shared/utils/toast'
-import { BlurredDialog } from '@/shared/components/ui/blurred-dialog'
-import { Button } from '@/shared/components/ui/button'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
+import { useState, useEffect } from "react";
+import { createClient } from "@/shared/services/client";
+import { toast } from "@/shared/utils/toast";
+import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select'
-import { Loader2 } from 'lucide-react'
-import { strongColors, lightColors } from '../utils/category-colors'
+} from "@/shared/components/ui/select";
+import { Loader2 } from "lucide-react";
+import { strongColors, lightColors } from "../utils/category-colors";
 
 interface CreateCategoryDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSuccess: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
 }
 
 interface Category {
-  id: string
-  name: string
-  level: number
-  color?: string
-  short_form?: string
+  id: string;
+  name: string;
+  level: number;
+  color?: string;
+  short_form?: string;
 }
 
 export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCategoryDialogProps) {
-  const [name, setName] = useState('')
-  const [shortForm, setShortForm] = useState('')
-  const [parentId, setParentId] = useState<string>('none')
-  const [color, setColor] = useState<string>('')
-  const [isCreating, setIsCreating] = useState(false)
-  const [categories, setCategories] = useState<Category[]>([])
-  const [loadingCategories, setLoadingCategories] = useState(false)
+  const [name, setName] = useState("");
+  const [shortForm, setShortForm] = useState("");
+  const [parentId, setParentId] = useState<string>("none");
+  const [color, setColor] = useState<string>("");
+  const [isCreating, setIsCreating] = useState(false);
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(false);
 
-  const _supabase = createClient()
+  const _supabase = createClient();
 
   // Use the shared color arrays (no need to generate them again)
 
   const loadCategories = async () => {
-    setLoadingCategories(true)
+    setLoadingCategories(true);
     try {
       // Use a large page size to get all categories for the dropdown
-      const response = await fetch('/api/admin/categories?page=0&pageSize=1000')
+      const response = await fetch("/api/admin/categories?page=0&pageSize=1000");
 
       if (!response.ok) {
-        throw new Error('Failed to load categories')
+        throw new Error("Failed to load categories");
       }
 
-      const data = await response.json()
-      setCategories(data.categories || [])
+      const data = await response.json();
+      setCategories(data.categories || []);
     } catch (error) {
-      console.error('Error loading categories:', error)
+      console.error("Error loading categories:", error);
     } finally {
-      setLoadingCategories(false)
+      setLoadingCategories(false);
     }
-  }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!name.trim()) {
-      toast.error('Category name is required')
-      return
+      toast.error("Category name is required");
+      return;
     }
 
-    setIsCreating(true)
+    setIsCreating(true);
     try {
-      const response = await fetch('/api/admin/categories', {
-        method: 'POST',
+      const response = await fetch("/api/admin/categories", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           name: name.trim(),
           shortForm: shortForm.trim() || null,
-          parentId: parentId && parentId !== 'none' ? parentId : null,
-          color: color || null
-        })
-      })
+          parentId: parentId && parentId !== "none" ? parentId : null,
+          color: color || null,
+        }),
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create category')
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create category");
       }
 
-      toast.success('Category created successfully')
+      toast.success("Category created successfully");
 
-      setName('')
-      setShortForm('')
-      setParentId('none')
-      setColor('')
+      setName("");
+      setShortForm("");
+      setParentId("none");
+      setColor("");
       // Close dialog first, then refresh data
-      onOpenChange(false)
+      onOpenChange(false);
       setTimeout(() => {
-        onSuccess()
-      }, 100)
+        onSuccess();
+      }, 100);
     } catch (error) {
-      console.error('Error creating category:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to create category')
+      console.error("Error creating category:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to create category");
     } finally {
-      setIsCreating(false)
+      setIsCreating(false);
     }
-  }
+  };
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!isCreating) {
-      onOpenChange(newOpen)
+      onOpenChange(newOpen);
       if (!newOpen) {
-        setName('')
-        setShortForm('')
-        setParentId('none')
-        setColor('')
+        setName("");
+        setShortForm("");
+        setParentId("none");
+        setColor("");
       }
     }
-  }
+  };
 
   const renderCategoryOption = (category: Category) => {
-    const indent = '  '.repeat(category.level - 1)
-    return `${indent}${category.name}`
-  }
+    const indent = "  ".repeat(category.level - 1);
+    return `${indent}${category.name}`;
+  };
 
   useEffect(() => {
     if (open) {
-      loadCategories()
+      loadCategories();
     }
-  }, [open])
+  }, [open]);
 
   return (
     <BlurredDialog
@@ -151,24 +151,19 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
           >
             Cancel
           </Button>
-          <Button
-            type="submit"
-            disabled={isCreating || !name.trim()}
-            onClick={handleSubmit}
-          >
+          <Button type="submit" disabled={isCreating || !name.trim()} onClick={handleSubmit}>
             {isCreating ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Creating...
               </>
             ) : (
-              'Create Category'
+              "Create Category"
             )}
           </Button>
         </>
       }
     >
-
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="space-y-2">
           <Label htmlFor="name">Category Name</Label>
@@ -199,7 +194,11 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
 
         <div className="space-y-2">
           <Label htmlFor="parent">Parent Category (Optional)</Label>
-          <Select value={parentId} onValueChange={setParentId} disabled={isCreating || loadingCategories}>
+          <Select
+            value={parentId}
+            onValueChange={setParentId}
+            disabled={isCreating || loadingCategories}
+          >
             <SelectTrigger>
               <SelectValue placeholder="Select parent category..." />
             </SelectTrigger>
@@ -217,7 +216,9 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
         <div className="space-y-4">
           <div>
             <Label>Category Color (Optional)</Label>
-            <p className="text-xs text-muted-foreground mt-1">Choose a color to override the automatic color assignment</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Choose a color to override the automatic color assignment
+            </p>
           </div>
 
           {/* Color palette selection - two rows */}
@@ -230,17 +231,17 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
                   type="button"
                   className={`w-8 h-8 rounded border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                     color === colorOption.value
-                      ? 'border-foreground scale-110 ring-2 ring-primary'
-                      : 'border-border hover:border-foreground/50'
+                      ? "border-foreground scale-110 ring-2 ring-primary"
+                      : "border-border hover:border-foreground/50"
                   }`}
                   style={{ backgroundColor: colorOption.value }}
-                  onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
+                  onClick={() => setColor(color === colorOption.value ? "" : colorOption.value)}
                   disabled={isCreating}
                   title={`Color ${idx + 1}`}
                 />
               ))}
             </div>
-            
+
             {/* Bottom row - lighter colors */}
             <div className="grid grid-cols-15 gap-2">
               {lightColors.map((colorOption, idx) => (
@@ -249,11 +250,11 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
                   type="button"
                   className={`w-8 h-8 rounded border-2 transition-all hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 ${
                     color === colorOption.value
-                      ? 'border-foreground scale-110 ring-2 ring-primary'
-                      : 'border-border hover:border-foreground/50'
+                      ? "border-foreground scale-110 ring-2 ring-primary"
+                      : "border-border hover:border-foreground/50"
                   }`}
                   style={{ backgroundColor: colorOption.value }}
-                  onClick={() => setColor(color === colorOption.value ? '' : colorOption.value)}
+                  onClick={() => setColor(color === colorOption.value ? "" : colorOption.value)}
                   disabled={isCreating}
                   title={`Light color ${idx + 1}`}
                 />
@@ -263,5 +264,5 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
         </div>
       </form>
     </BlurredDialog>
-  )
+  );
 }

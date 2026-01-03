@@ -34,23 +34,23 @@
  * ```
  */
 
-import { toast as sonnerToast, type ExternalToast } from "sonner"
+import { toast as sonnerToast, type ExternalToast } from "sonner";
 
 // Configuration
-const DEDUPLICATION_WINDOW = 1000 // ms - how long to prevent duplicates
-const MAX_TOAST_HISTORY = 100 // Maximum number of toast IDs to track
+const DEDUPLICATION_WINDOW = 1000; // ms - how long to prevent duplicates
+const MAX_TOAST_HISTORY = 100; // Maximum number of toast IDs to track
 
 // Utility to prevent duplicate toasts
-const recentToasts = new Map<string, number>()
+const recentToasts = new Map<string, number>();
 
 /**
  * Generates a consistent ID for a toast message
  */
 function generateToastId(message: string, type?: string, category?: string): string {
-  const prefix = category ? `${category}-${type}` : type || 'default'
+  const prefix = category ? `${category}-${type}` : type || "default";
   // Use first 100 chars to balance uniqueness and deduplication
-  const messageKey = message.slice(0, 100).toLowerCase().trim()
-  return `${prefix}-${messageKey}`
+  const messageKey = message.slice(0, 100).toLowerCase().trim();
+  return `${prefix}-${messageKey}`;
 }
 
 /**
@@ -58,19 +58,19 @@ function generateToastId(message: string, type?: string, category?: string): str
  */
 function clearToastId(id: string, delay = DEDUPLICATION_WINDOW) {
   setTimeout(() => {
-    recentToasts.delete(id)
-  }, delay)
+    recentToasts.delete(id);
+  }, delay);
 }
 
 /**
  * Checks if a toast should be prevented (duplicate within window)
  */
 function shouldPreventToast(id: string): boolean {
-  const lastShown = recentToasts.get(id)
-  if (!lastShown) return false
+  const lastShown = recentToasts.get(id);
+  if (!lastShown) return false;
 
-  const timeSinceLastShown = Date.now() - lastShown
-  return timeSinceLastShown < DEDUPLICATION_WINDOW
+  const timeSinceLastShown = Date.now() - lastShown;
+  return timeSinceLastShown < DEDUPLICATION_WINDOW;
 }
 
 /**
@@ -79,33 +79,33 @@ function shouldPreventToast(id: string): boolean {
 function trackToast(id: string) {
   // Prevent memory leaks by limiting history size
   if (recentToasts.size >= MAX_TOAST_HISTORY) {
-    const firstKey = recentToasts.keys().next().value
-    recentToasts.delete(firstKey)
+    const firstKey = recentToasts.keys().next().value;
+    recentToasts.delete(firstKey);
   }
 
-  recentToasts.set(id, Date.now())
-  clearToastId(id)
+  recentToasts.set(id, Date.now());
+  clearToastId(id);
 }
 
 /**
  * Core toast display function with deduplication
  */
 function showToast(
-  type: 'success' | 'error' | 'warning' | 'info' | 'default',
+  type: "success" | "error" | "warning" | "info" | "default",
   message: string,
   options?: ExternalToast,
   category?: string
 ) {
-  const id = String(options?.id || generateToastId(message, type, category))
+  const id = String(options?.id || generateToastId(message, type, category));
 
   if (shouldPreventToast(id)) {
-    return id
+    return id;
   }
 
-  trackToast(id)
+  trackToast(id);
 
-  const toastFn = type === 'default' ? sonnerToast : sonnerToast[type]
-  return toastFn(message, { ...options, id })
+  const toastFn = type === "default" ? sonnerToast : sonnerToast[type];
+  return toastFn(message, { ...options, id });
 }
 
 // Main toast interface
@@ -114,35 +114,35 @@ export const toast = {
    * Success toast - for successful operations
    */
   success: (message: string, options?: ExternalToast) => {
-    return showToast('success', message, options)
+    return showToast("success", message, options);
   },
 
   /**
    * Error toast - for errors and failures
    */
   error: (message: string, options?: ExternalToast) => {
-    return showToast('error', message, options)
+    return showToast("error", message, options);
   },
 
   /**
    * Warning toast - for warnings and cautions
    */
   warning: (message: string, options?: ExternalToast) => {
-    return showToast('warning', message, options)
+    return showToast("warning", message, options);
   },
 
   /**
    * Info toast - for informational messages
    */
   info: (message: string, options?: ExternalToast) => {
-    return showToast('info', message, options)
+    return showToast("info", message, options);
   },
 
   /**
    * Default toast - neutral messages
    */
   message: (message: string, options?: ExternalToast) => {
-    return showToast('default', message, options)
+    return showToast("default", message, options);
   },
 
   /**
@@ -150,8 +150,8 @@ export const toast = {
    * Returns toast ID that can be used to dismiss or update
    */
   loading: (message: string, options?: ExternalToast) => {
-    const id = String(options?.id || generateToastId(message, 'loading'))
-    return sonnerToast.loading(message, { ...options, id })
+    const id = String(options?.id || generateToastId(message, "loading"));
+    return sonnerToast.loading(message, { ...options, id });
   },
 
   /**
@@ -183,11 +183,10 @@ export const toast = {
    */
   auth: {
     success: (message: string, options?: ExternalToast) =>
-      showToast('success', message, options, 'auth'),
+      showToast("success", message, options, "auth"),
     error: (message: string, options?: ExternalToast) =>
-      showToast('error', message, options, 'auth'),
-    info: (message: string, options?: ExternalToast) =>
-      showToast('info', message, options, 'auth'),
+      showToast("error", message, options, "auth"),
+    info: (message: string, options?: ExternalToast) => showToast("info", message, options, "auth"),
   },
 
   /**
@@ -195,11 +194,11 @@ export const toast = {
    */
   question: {
     success: (message: string, options?: ExternalToast) =>
-      showToast('success', message, options, 'question'),
+      showToast("success", message, options, "question"),
     error: (message: string, options?: ExternalToast) =>
-      showToast('error', message, options, 'question'),
+      showToast("error", message, options, "question"),
     info: (message: string, options?: ExternalToast) =>
-      showToast('info', message, options, 'question'),
+      showToast("info", message, options, "question"),
   },
 
   /**
@@ -207,11 +206,10 @@ export const toast = {
    */
   quiz: {
     success: (message: string, options?: ExternalToast) =>
-      showToast('success', message, options, 'quiz'),
+      showToast("success", message, options, "quiz"),
     error: (message: string, options?: ExternalToast) =>
-      showToast('error', message, options, 'quiz'),
-    info: (message: string, options?: ExternalToast) =>
-      showToast('info', message, options, 'quiz'),
+      showToast("error", message, options, "quiz"),
+    info: (message: string, options?: ExternalToast) => showToast("info", message, options, "quiz"),
   },
 
   /**
@@ -219,13 +217,13 @@ export const toast = {
    */
   upload: {
     success: (message: string, options?: ExternalToast) =>
-      showToast('success', message, options, 'upload'),
+      showToast("success", message, options, "upload"),
     error: (message: string, options?: ExternalToast) =>
-      showToast('error', message, options, 'upload'),
+      showToast("error", message, options, "upload"),
     info: (message: string, options?: ExternalToast) =>
-      showToast('info', message, options, 'upload'),
+      showToast("info", message, options, "upload"),
   },
-}
+};
 
 // Default export for backward compatibility
-export default toast
+export default toast;

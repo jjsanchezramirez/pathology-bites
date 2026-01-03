@@ -1,8 +1,8 @@
 // src/hooks/use-question-sets.ts
-import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@/shared/services/client';
-import { QuestionSetData } from '@/features/questions/types/question-sets';
-import { TABLE_NAMES } from '@/shared/constants/database-types';
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@/shared/services/client";
+import { QuestionSetData } from "@/features/questions/types/question-sets";
+import { TABLE_NAMES } from "@/shared/constants/database-types";
 
 export interface UseQuestionSetsReturn {
   questionSets: QuestionSetData[];
@@ -25,9 +25,9 @@ export function useQuestionSets(): UseQuestionSetsReturn {
     try {
       const { data, error: fetchError } = await supabase
         .from(TABLE_NAMES.QUESTION_SETS)
-        .select('*')
-        .eq('is_active', true)
-        .order('name');
+        .select("*")
+        .eq("is_active", true)
+        .order("name");
 
       if (fetchError) {
         throw new Error(fetchError.message);
@@ -35,7 +35,7 @@ export function useQuestionSets(): UseQuestionSetsReturn {
 
       setQuestionSets(data || []);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch question sets';
+      const message = err instanceof Error ? err.message : "Failed to fetch question sets";
       setError(message);
     } finally {
       setLoading(false);

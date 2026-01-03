@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { Skeleton } from "@/shared/components/ui/skeleton"
-import { Button } from "@/shared/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { Button } from "@/shared/components/ui/button";
 import {
   BookOpen,
   TrendingUp,
@@ -11,8 +11,8 @@ import {
   Microscope,
   Library,
   ClipboardList,
-} from "lucide-react"
-import Link from "next/link"
+} from "lucide-react";
+import Link from "next/link";
 
 export function StudentQuickActions() {
   return (
@@ -95,7 +95,7 @@ export function StudentQuickActions() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 export function StudentQuickActionsLoading() {
@@ -110,6 +110,5 @@ export function StudentQuickActionsLoading() {
         ))}
       </CardContent>
     </Card>
-  )
+  );
 }
-

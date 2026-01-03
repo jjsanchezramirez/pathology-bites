@@ -1,25 +1,33 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import Image from 'next/image';
-import { QuestionWithDetails, QuestionImageFormData } from '@/features/questions/types/questions';
+import React, { useState, useEffect, useCallback } from "react";
+import Image from "next/image";
+import { QuestionWithDetails, QuestionImageFormData } from "@/features/questions/types/questions";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogPortal, DialogOverlay } from "@/shared/components/ui/dialog";
-import { Plus, X, Search } from 'lucide-react';
-import { ImageData } from '@/features/images/types/images';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogPortal,
+  DialogOverlay,
+} from "@/shared/components/ui/dialog";
+import { Plus, X, Search } from "lucide-react";
+import { ImageData } from "@/features/images/types/images";
 
 interface MediaTabProps {
   question?: QuestionWithDetails;
   questionImages: QuestionImageFormData[];
   setQuestionImages: (images: QuestionImageFormData[]) => void;
   onUnsavedChanges: () => void;
-  mode?: 'create' | 'edit';
+  mode?: "create" | "edit";
 }
 
 interface MediaSectionProps {
   images: QuestionImageFormData[];
-  section: 'stem' | 'explanation';
+  section: "stem" | "explanation";
   maxImages: number;
   onImagesChange: (images: QuestionImageFormData[]) => void;
 }
@@ -28,12 +36,18 @@ interface MediaSectionPropsWithQuestion extends MediaSectionProps {
   question?: QuestionWithDetails;
 }
 
-function MediaSection({ images, section, maxImages, onImagesChange, question }: MediaSectionPropsWithQuestion) {
+function MediaSection({
+  images,
+  section,
+  maxImages,
+  onImagesChange,
+  question,
+}: MediaSectionPropsWithQuestion) {
   const [availableImages, setAvailableImages] = useState<ImageData[]>([]);
   const [showImagePicker, setShowImagePicker] = useState(false);
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
 
   // Debounce search term
   useEffect(() => {
@@ -44,26 +58,29 @@ function MediaSection({ images, section, maxImages, onImagesChange, question }: 
   }, [searchTerm]);
 
   // Get image data from question object for existing images
-  const getImageInfo = useCallback((imageId: string) => {
-    // First try to find the image in the question's image data
-    const questionImage = question?.question_images?.find(qi => qi.image_id === imageId);
-    if (questionImage?.image) {
-      return questionImage.image;
-    }
+  const getImageInfo = useCallback(
+    (imageId: string) => {
+      // First try to find the image in the question's image data
+      const questionImage = question?.question_images?.find((qi) => qi.image_id === imageId);
+      if (questionImage?.image) {
+        return questionImage.image;
+      }
 
-    // Fallback to availableImages if not found in question data
-    return availableImages.find(img => img.id === imageId);
-  }, [question?.question_images, availableImages]);
+      // Fallback to availableImages if not found in question data
+      return availableImages.find((img) => img.id === imageId);
+    },
+    [question?.question_images, availableImages]
+  );
 
   // Load images for the picker dialog
   const loadPickerImages = useCallback(async () => {
     try {
-      const { fetchImages } = await import('@/features/images/services/images');
+      const { fetchImages } = await import("@/features/images/services/images");
       const result = await fetchImages({
         page: 0,
         pageSize: 10, // Load exactly 10 images (2 rows of 5)
         searchTerm: debouncedSearchTerm || undefined,
-        showUnusedOnly: false
+        showUnusedOnly: false,
       });
 
       if (result.error) {
@@ -72,7 +89,7 @@ function MediaSection({ images, section, maxImages, onImagesChange, question }: 
 
       setAvailableImages(result.data);
     } catch (error) {
-      console.error('Failed to load images:', error);
+      console.error("Failed to load images:", error);
     }
   }, [debouncedSearchTerm]);
 
@@ -90,14 +107,14 @@ function MediaSection({ images, section, maxImages, onImagesChange, question }: 
 
   const handleImageToggle = (imageId: string) => {
     // Check if image is already added to this section
-    const imageAlreadyExists = images.some(img => img.image_id === imageId);
+    const imageAlreadyExists = images.some((img) => img.image_id === imageId);
     if (imageAlreadyExists) {
       return; // Don't allow selecting already added images
     }
 
-    setSelectedImageIds(prev => {
+    setSelectedImageIds((prev) => {
       if (prev.includes(imageId)) {
-        return prev.filter(id => id !== imageId);
+        return prev.filter((id) => id !== imageId);
       } else {
         // Check if we would exceed the limit
         const remainingSlots = maxImages - images.length;
@@ -124,7 +141,7 @@ function MediaSection({ images, section, maxImages, onImagesChange, question }: 
   const handleCancelSelection = () => {
     setSelectedImageIds([]);
     setShowImagePicker(false);
-    setSearchTerm('');
+    setSearchTerm("");
   };
 
   return (
@@ -141,7 +158,7 @@ function MediaSection({ images, section, maxImages, onImagesChange, question }: 
                 {imageInfo ? (
                   <Image
                     src={imageInfo.url}
-                    alt={imageInfo.alt_text || ''}
+                    alt={imageInfo.alt_text || ""}
                     fill
                     className="object-cover"
                     sizes="150px"
@@ -186,10 +203,14 @@ function MediaSection({ images, section, maxImages, onImagesChange, question }: 
           <DialogOverlay className="backdrop-blur-md bg-black/30" />
           <DialogContent className="!max-w-[1090px] !w-[1090px] max-h-[85vh] overflow-hidden border-0">
             <DialogHeader>
-              <DialogTitle>Select Images for {section === 'stem' ? 'Question Body' : 'Explanation'}</DialogTitle>
+              <DialogTitle>
+                Select Images for {section === "stem" ? "Question Body" : "Explanation"}
+              </DialogTitle>
               <DialogDescription>
-                Choose up to {maxImages - images.length} more image{maxImages - images.length !== 1 ? 's' : ''} for this section.
-                {selectedImageIds.length > 0 && ` ${selectedImageIds.length} image${selectedImageIds.length !== 1 ? 's' : ''} selected.`}
+                Choose up to {maxImages - images.length} more image
+                {maxImages - images.length !== 1 ? "s" : ""} for this section.
+                {selectedImageIds.length > 0 &&
+                  ` ${selectedImageIds.length} image${selectedImageIds.length !== 1 ? "s" : ""} selected.`}
               </DialogDescription>
             </DialogHeader>
 
@@ -210,28 +231,32 @@ function MediaSection({ images, section, maxImages, onImagesChange, question }: 
                 <div className="grid grid-cols-5 gap-4 p-1">
                   {availableImages.map((image) => {
                     const isSelected = selectedImageIds.includes(image.id);
-                    const isAlreadyAdded = images.some(img => img.image_id === image.id);
-                    const canSelect = !isAlreadyAdded && (selectedImageIds.length < (maxImages - images.length) || isSelected);
+                    const isAlreadyAdded = images.some((img) => img.image_id === image.id);
+                    const canSelect =
+                      !isAlreadyAdded &&
+                      (selectedImageIds.length < maxImages - images.length || isSelected);
 
                     return (
                       <div
                         key={image.id}
                         className={`relative cursor-pointer rounded border-2 transition-all ${
                           isAlreadyAdded
-                            ? 'border-muted bg-muted/50 opacity-50 cursor-not-allowed'
+                            ? "border-muted bg-muted/50 opacity-50 cursor-not-allowed"
                             : isSelected
-                              ? 'border-primary bg-primary/10'
+                              ? "border-primary bg-primary/10"
                               : canSelect
-                                ? 'border-border hover:border-primary/50'
-                                : 'border-muted opacity-50 cursor-not-allowed'
+                                ? "border-border hover:border-primary/50"
+                                : "border-muted opacity-50 cursor-not-allowed"
                         }`}
                         onClick={() => canSelect && handleImageToggle(image.id)}
-                        title={isAlreadyAdded ? 'Already added to this section' : image.alt_text || ''}
+                        title={
+                          isAlreadyAdded ? "Already added to this section" : image.alt_text || ""
+                        }
                       >
                         <div className="aspect-square overflow-hidden rounded relative">
                           <Image
                             src={image.url}
-                            alt={image.alt_text || ''}
+                            alt={image.alt_text || ""}
                             fill
                             className="object-cover"
                             sizes="120px"
@@ -264,7 +289,7 @@ function MediaSection({ images, section, maxImages, onImagesChange, question }: 
                   onClick={handleSelectImages}
                   disabled={selectedImageIds.length === 0}
                 >
-                  Add {selectedImageIds.length} Image{selectedImageIds.length !== 1 ? 's' : ''}
+                  Add {selectedImageIds.length} Image{selectedImageIds.length !== 1 ? "s" : ""}
                 </Button>
               </div>
             </div>
@@ -275,14 +300,20 @@ function MediaSection({ images, section, maxImages, onImagesChange, question }: 
   );
 }
 
-export function MediaTab({ question, questionImages, setQuestionImages, onUnsavedChanges, _mode = 'edit' }: MediaTabProps) {
+export function MediaTab({
+  question,
+  questionImages,
+  setQuestionImages,
+  onUnsavedChanges,
+  _mode = "edit",
+}: MediaTabProps) {
   const handleImagesChange = (newImages: QuestionImageFormData[]) => {
     setQuestionImages(newImages);
     onUnsavedChanges();
   };
 
-  const stemImages = questionImages.filter(img => img.question_section === 'stem');
-  const explanationImages = questionImages.filter(img => img.question_section === 'explanation');
+  const stemImages = questionImages.filter((img) => img.question_section === "stem");
+  const explanationImages = questionImages.filter((img) => img.question_section === "explanation");
 
   return (
     <div className="space-y-8">
@@ -290,9 +321,7 @@ export function MediaTab({ question, questionImages, setQuestionImages, onUnsave
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium">Question Body Images</h3>
-          <span className="text-sm text-muted-foreground">
-            {stemImages.length}/3 images
-          </span>
+          <span className="text-sm text-muted-foreground">{stemImages.length}/3 images</span>
         </div>
         <MediaSection
           images={stemImages}
@@ -300,7 +329,9 @@ export function MediaTab({ question, questionImages, setQuestionImages, onUnsave
           maxImages={3}
           question={question}
           onImagesChange={(newImages) => {
-            const explanationImages = questionImages.filter(img => img.question_section === 'explanation');
+            const explanationImages = questionImages.filter(
+              (img) => img.question_section === "explanation"
+            );
             handleImagesChange([...newImages, ...explanationImages]);
           }}
         />
@@ -310,9 +341,7 @@ export function MediaTab({ question, questionImages, setQuestionImages, onUnsave
       <div>
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-lg font-medium">Explanation Images</h3>
-          <span className="text-sm text-muted-foreground">
-            {explanationImages.length}/1 images
-          </span>
+          <span className="text-sm text-muted-foreground">{explanationImages.length}/1 images</span>
         </div>
         <MediaSection
           images={explanationImages}
@@ -320,7 +349,7 @@ export function MediaTab({ question, questionImages, setQuestionImages, onUnsave
           maxImages={1}
           question={question}
           onImagesChange={(newImages) => {
-            const stemImages = questionImages.filter(img => img.question_section === 'stem');
+            const stemImages = questionImages.filter((img) => img.question_section === "stem");
             handleImagesChange([...stemImages, ...newImages]);
           }}
         />

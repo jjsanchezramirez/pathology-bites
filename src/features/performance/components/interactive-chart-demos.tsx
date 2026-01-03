@@ -1,11 +1,17 @@
 // src/features/performance/components/interactive-chart-demos.tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card'
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/shared/components/ui/card";
 
-import { Skeleton } from '@/shared/components/ui/skeleton'
-import { TrendingUp, Calendar, Target } from 'lucide-react'
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { TrendingUp, Calendar, Target } from "lucide-react";
 import {
   RadarChart,
   Radar,
@@ -18,49 +24,49 @@ import {
   Tooltip,
   ResponsiveContainer,
   Area,
-  AreaChart
-} from 'recharts'
+  AreaChart,
+} from "recharts";
 
 interface TimelineData {
-  date: string
-  accuracy: number
-  quizzes: number
+  date: string;
+  accuracy: number;
+  quizzes: number;
 }
 
 interface HeatmapData {
-  date: string
-  quizzes: number
-  questions: number
+  date: string;
+  quizzes: number;
+  questions: number;
 }
 
 interface HeatmapStats {
-  avgQuestionsPerDay: number
-  avgQuizzesPerDay: string
-  longestStreak: number
-  currentStreak: number
-  totalQuestions: number
-  totalQuizzes: number
-  daysWithActivity: number
+  avgQuestionsPerDay: number;
+  avgQuizzesPerDay: string;
+  longestStreak: number;
+  currentStreak: number;
+  totalQuestions: number;
+  totalQuizzes: number;
+  daysWithActivity: number;
 }
 
 interface CategoryData {
-  category_name: string
-  accuracy: number
+  category_name: string;
+  accuracy: number;
 }
 
 /**
  * Chart 1: Performance Timeline
  */
 interface PerformanceTimelineChartProps {
-  data?: TimelineData[]
-  loading?: boolean
+  data?: TimelineData[];
+  loading?: boolean;
 }
 
 export function PerformanceTimelineChart({
   data = [],
-  loading = false
+  loading = false,
 }: PerformanceTimelineChartProps) {
-  const [error] = useState<string | null>(null)
+  const [error] = useState<string | null>(null);
 
   if (loading) {
     return (
@@ -76,7 +82,7 @@ export function PerformanceTimelineChart({
           <Skeleton className="h-[300px] w-full" />
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (error) {
@@ -95,7 +101,7 @@ export function PerformanceTimelineChart({
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (data.length === 0) {
@@ -114,7 +120,7 @@ export function PerformanceTimelineChart({
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -138,13 +144,20 @@ export function PerformanceTimelineChart({
             <CartesianGrid strokeDasharray="3 3" stroke="#3b82f6" opacity={0.1} />
             <XAxis
               dataKey="date"
-              tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+              tickFormatter={(value) =>
+                new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+              }
+              tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }}
             />
             <YAxis
-              label={{ value: 'Accuracy (%)', angle: -90, position: 'insideLeft', style: { fill: 'hsl(var(--foreground))' } }}
+              label={{
+                value: "Accuracy (%)",
+                angle: -90,
+                position: "insideLeft",
+                style: { fill: "hsl(var(--foreground))" },
+              }}
               domain={[0, 100]}
-              tick={{ fill: 'hsl(var(--foreground))', fontSize: 12 }}
+              tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }}
             />
             <Tooltip
               content={({ active, payload }) => {
@@ -154,16 +167,17 @@ export function PerformanceTimelineChart({
                       <p className="font-semibold">
                         {new Date(payload[0].payload.date).toLocaleDateString()}
                       </p>
-                      <p className="text-sm" style={{ color: '#3b82f6' }}>
+                      <p className="text-sm" style={{ color: "#3b82f6" }}>
                         Accuracy: {payload[0].value?.toFixed(1)}%
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {payload[0].payload.quizzes} quiz{payload[0].payload.quizzes !== 1 ? 'zes' : ''}
+                        {payload[0].payload.quizzes} quiz
+                        {payload[0].payload.quizzes !== 1 ? "zes" : ""}
                       </p>
                     </div>
-                  )
+                  );
                 }
-                return null
+                return null;
               }}
             />
             <Area
@@ -172,29 +186,26 @@ export function PerformanceTimelineChart({
               stroke="#3b82f6"
               strokeWidth={2}
               fill="url(#colorAccuracy)"
-              dot={{ fill: '#3b82f6', r: 4 }}
+              dot={{ fill: "#3b82f6", r: 4 }}
               activeDot={{ r: 6 }}
             />
           </AreaChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 /**
  * Chart 2: Category Radar Chart
  */
 interface CategoryRadarChartProps {
-  data?: CategoryData[]
-  loading?: boolean
+  data?: CategoryData[];
+  loading?: boolean;
 }
 
-export function CategoryRadarChart({
-  data = [],
-  loading = false
-}: CategoryRadarChartProps) {
-  const [error] = useState<string | null>(null)
+export function CategoryRadarChart({ data = [], loading = false }: CategoryRadarChartProps) {
+  const [error] = useState<string | null>(null);
 
   if (loading) {
     return (
@@ -210,7 +221,7 @@ export function CategoryRadarChart({
           <Skeleton className="h-[400px] w-full" />
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (error) {
@@ -229,7 +240,7 @@ export function CategoryRadarChart({
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (data.length === 0) {
@@ -248,7 +259,7 @@ export function CategoryRadarChart({
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -266,12 +277,12 @@ export function CategoryRadarChart({
             <PolarGrid stroke="#3b82f6" opacity={0.2} />
             <PolarAngleAxis
               dataKey="category_name"
-              tick={{ fontSize: 12, fill: 'hsl(var(--foreground))' }}
+              tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
             />
             <PolarRadiusAxis
               angle={90}
               domain={[0, 100]}
-              tick={{ fontSize: 10, fill: 'hsl(var(--foreground))' }}
+              tick={{ fontSize: 10, fill: "hsl(var(--foreground))" }}
             />
             <Radar
               name="Accuracy"
@@ -287,46 +298,46 @@ export function CategoryRadarChart({
                   return (
                     <div className="bg-popover border rounded-lg p-3 shadow-lg">
                       <p className="font-semibold">{payload[0].payload.category_name}</p>
-                      <p className="text-sm" style={{ color: '#3b82f6' }}>
+                      <p className="text-sm" style={{ color: "#3b82f6" }}>
                         Accuracy: {payload[0].value?.toFixed(1)}%
                       </p>
                     </div>
-                  )
+                  );
                 }
-                return null
+                return null;
               }}
             />
           </RadarChart>
         </ResponsiveContainer>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 /**
  * Chart 3: Activity Heatmap - Anki-style with months
  */
 interface ActivityHeatmapProps {
-  data?: HeatmapData[]
-  stats?: HeatmapStats | null
-  loading?: boolean
+  data?: HeatmapData[];
+  stats?: HeatmapStats | null;
+  loading?: boolean;
 }
 
 export function ActivityHeatmap({
   data = [],
   stats = null,
-  loading = false
+  loading = false,
 }: ActivityHeatmapProps) {
-  const [error] = useState<string | null>(null)
+  const [error] = useState<string | null>(null);
 
   const getColor = (questions: number) => {
-    if (questions === 0) return 'bg-muted/50 dark:bg-muted/30'
-    if (questions <= 5) return 'bg-green-300 dark:bg-green-700'
-    if (questions <= 10) return 'bg-green-400 dark:bg-green-600'
-    if (questions <= 20) return 'bg-green-500 dark:bg-green-500'
-    if (questions <= 30) return 'bg-green-600 dark:bg-green-400'
-    return 'bg-green-700 dark:bg-green-300'
-  }
+    if (questions === 0) return "bg-muted/50 dark:bg-muted/30";
+    if (questions <= 5) return "bg-green-300 dark:bg-green-700";
+    if (questions <= 10) return "bg-green-400 dark:bg-green-600";
+    if (questions <= 20) return "bg-green-500 dark:bg-green-500";
+    if (questions <= 30) return "bg-green-600 dark:bg-green-400";
+    return "bg-green-700 dark:bg-green-300";
+  };
 
   if (loading) {
     return (
@@ -342,7 +353,7 @@ export function ActivityHeatmap({
           <Skeleton className="h-[200px] w-full" />
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (error) {
@@ -361,7 +372,7 @@ export function ActivityHeatmap({
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   if (data.length === 0) {
@@ -380,66 +391,68 @@ export function ActivityHeatmap({
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   // Create a map for quick lookup
-  const dataMap = new Map(data.map(d => [d.date, d]))
+  const dataMap = new Map(data.map((d) => [d.date, d]));
 
   // Start from one year ago
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
 
-  const oneYearAgo = new Date(today)
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1)
+  const oneYearAgo = new Date(today);
+  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
 
   // Find the first Sunday on or before one year ago
-  const startDate = new Date(oneYearAgo)
-  const dayOfWeek = startDate.getDay() // 0 = Sunday, 1 = Monday, etc.
-  startDate.setDate(startDate.getDate() - dayOfWeek) // Go back to Sunday
+  const startDate = new Date(oneYearAgo);
+  const dayOfWeek = startDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
+  startDate.setDate(startDate.getDate() - dayOfWeek); // Go back to Sunday
 
   // Build all days from start to today
-  const allDays: HeatmapData[] = []
-  const currentDate = new Date(startDate)
+  const allDays: HeatmapData[] = [];
+  const currentDate = new Date(startDate);
 
   while (currentDate <= today) {
-    const dateStr = currentDate.toISOString().split('T')[0]
-    const dayData = dataMap.get(dateStr) || { date: dateStr, quizzes: 0, questions: 0 }
-    allDays.push(dayData)
-    currentDate.setDate(currentDate.getDate() + 1)
+    const dateStr = currentDate.toISOString().split("T")[0];
+    const dayData = dataMap.get(dateStr) || { date: dateStr, quizzes: 0, questions: 0 };
+    allDays.push(dayData);
+    currentDate.setDate(currentDate.getDate() + 1);
   }
 
   // Group into weeks (Sunday to Saturday)
-  const weeks: HeatmapData[][] = []
+  const weeks: HeatmapData[][] = [];
   for (let i = 0; i < allDays.length; i += 7) {
-    const week = allDays.slice(i, i + 7)
+    const week = allDays.slice(i, i + 7);
     if (week.length === 7) {
-      weeks.push(week)
+      weeks.push(week);
     }
   }
 
   // Calculate month labels based on weeks
-  const monthLabels: Array<{ month: string; weekIndex: number }> = []
-  let lastMonth = ''
+  const monthLabels: Array<{ month: string; weekIndex: number }> = [];
+  let lastMonth = "";
 
   weeks.forEach((week, weekIndex) => {
     // Use the Sunday (first day) of the week to determine the month
-    const weekStartDate = new Date(week[0].date)
-    const monthName = weekStartDate.toLocaleDateString('en-US', { month: 'short' })
+    const weekStartDate = new Date(week[0].date);
+    const monthName = weekStartDate.toLocaleDateString("en-US", { month: "short" });
 
     if (monthName !== lastMonth) {
-      monthLabels.push({ month: monthName, weekIndex })
-      lastMonth = monthName
+      monthLabels.push({ month: monthName, weekIndex });
+      lastMonth = monthName;
     }
-  })
+  });
 
-  console.log('[ActivityHeatmap] Rendering:', {
+  console.log("[ActivityHeatmap] Rendering:", {
     totalWeeks: weeks.length,
     totalDays: allDays.length,
-    daysWithActivity: allDays.filter(d => d.questions > 0).length,
-    monthLabels: monthLabels.map(m => `${m.month} (week ${m.weekIndex})`),
-    activeDates: allDays.filter(d => d.questions > 0).map(d => ({ date: d.date, questions: d.questions, color: getColor(d.questions) }))
-  })
+    daysWithActivity: allDays.filter((d) => d.questions > 0).length,
+    monthLabels: monthLabels.map((m) => `${m.month} (week ${m.weekIndex})`),
+    activeDates: allDays
+      .filter((d) => d.questions > 0)
+      .map((d) => ({ date: d.date, questions: d.questions, color: getColor(d.questions) })),
+  });
 
   return (
     <Card>
@@ -487,9 +500,9 @@ export function ActivityHeatmap({
               {/* Month labels */}
               <div className="flex mb-2 pl-8">
                 {monthLabels.map((label, index) => {
-                  const nextLabelIndex = monthLabels[index + 1]?.weekIndex || weeks.length
-                  const widthInWeeks = nextLabelIndex - label.weekIndex
-                  const widthPx = widthInWeeks * 12 // 10px width + 2px gap
+                  const nextLabelIndex = monthLabels[index + 1]?.weekIndex || weeks.length;
+                  const widthInWeeks = nextLabelIndex - label.weekIndex;
+                  const widthPx = widthInWeeks * 12; // 10px width + 2px gap
 
                   return (
                     <div
@@ -499,7 +512,7 @@ export function ActivityHeatmap({
                     >
                       {label.month}
                     </div>
-                  )
+                  );
                 })}
               </div>
 
@@ -507,10 +520,10 @@ export function ActivityHeatmap({
               <div className="flex">
                 {/* Day labels */}
                 <div className="flex flex-col gap-[2px] mr-2">
-                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map((day, index) => (
+                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
                     <div key={index} className="h-[10px] flex items-center">
                       <span className="text-[10px] text-muted-foreground w-6 text-right">
-                        {index % 2 === 1 ? day : ''}
+                        {index % 2 === 1 ? day : ""}
                       </span>
                     </div>
                   ))}
@@ -521,14 +534,14 @@ export function ActivityHeatmap({
                   {weeks.map((week, weekIndex) => (
                     <div key={weekIndex} className="flex flex-col gap-[2px]">
                       {week.map((day, dayIndex) => {
-                        const hasActivity = day.questions > 0
+                        const hasActivity = day.questions > 0;
                         return (
                           <div
                             key={dayIndex}
-                            className={`w-[10px] h-[10px] rounded-sm ${getColor(day.questions)} ${hasActivity ? 'cursor-pointer hover:ring-2 hover:ring-primary' : 'cursor-default'} transition-all`}
-                            title={`${new Date(day.date).toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric', year: 'numeric' })}\n${day.questions} question${day.questions !== 1 ? 's' : ''}\n${day.quizzes} quiz${day.quizzes !== 1 ? 'zes' : ''}`}
+                            className={`w-[10px] h-[10px] rounded-sm ${getColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-2 hover:ring-primary" : "cursor-default"} transition-all`}
+                            title={`${new Date(day.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}\n${day.questions} question${day.questions !== 1 ? "s" : ""}\n${day.quizzes} quiz${day.quizzes !== 1 ? "zes" : ""}`}
                           />
-                        )
+                        );
                       })}
                     </div>
                   ))}
@@ -554,5 +567,5 @@ export function ActivityHeatmap({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

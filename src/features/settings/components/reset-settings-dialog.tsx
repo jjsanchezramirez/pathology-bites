@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   Dialog,
@@ -9,22 +9,22 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-} from '@/shared/components/ui/dialog'
-import { Button } from '@/shared/components/ui/button'
-import { RefreshCw, RotateCcw } from 'lucide-react'
+} from "@/shared/components/ui/dialog";
+import { Button } from "@/shared/components/ui/button";
+import { RefreshCw, RotateCcw } from "lucide-react";
 
 interface ResetSettingsDialogProps {
-  open: boolean
-  isResetting: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: () => void
+  open: boolean;
+  isResetting: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
 }
 
 export function ResetSettingsDialog({
   open,
   isResetting,
   onOpenChange,
-  onConfirm
+  onConfirm,
 }: ResetSettingsDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -50,18 +50,10 @@ export function ResetSettingsDialog({
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isResetting}
-            >
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isResetting}>
               Cancel
             </Button>
-            <Button
-              variant="destructive"
-              onClick={onConfirm}
-              disabled={isResetting}
-            >
+            <Button variant="destructive" onClick={onConfirm} disabled={isResetting}>
               {isResetting ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -78,6 +70,5 @@ export function ResetSettingsDialog({
         </DialogContent>
       </DialogPortal>
     </Dialog>
-  )
+  );
 }
-

@@ -1,16 +1,22 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo, useCallback } from 'react';
-import { useSmartABPath } from '@/shared/hooks/use-smart-abpath';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Input } from '@/shared/components/ui/input';
-import { Badge } from '@/shared/components/ui/badge';
-import { Button } from '@/shared/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Search, BookOpen, X, ChevronDown, ChevronRight, Download } from 'lucide-react';
-import { ABPathPDFGenerator } from './pdf-generator';
+import { useState, useEffect, useMemo, useCallback } from "react";
+import { useSmartABPath } from "@/shared/hooks/use-smart-abpath";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Input } from "@/shared/components/ui/input";
+import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { Search, BookOpen, X, ChevronDown, ChevronRight, Download } from "lucide-react";
+import { ABPathPDFGenerator } from "./pdf-generator";
 import { PublicHero } from "@/shared/components/common/public-hero";
-import { JoinCommunitySection } from '@/shared/components/common/join-community-section';
+import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
 
 interface PathologyItem {
   number?: number;
@@ -39,28 +45,18 @@ interface PathologySubsection {
 interface PathologySection {
   section: number;
   title: string;
-  type: 'ap' | 'cp';
+  type: "ap" | "cp";
   items?: PathologyItem[];
   subsections?: PathologySubsection[];
   line?: number;
   note?: string;
 }
 
-
-
-
-
-
-
-
-
-
-
 export default function ABPathContentPage() {
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [expandedSections, setExpandedSections] = useState<Set<string>>(new Set());
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
   // Toggle states for sections and designations
   const [showAP, setShowAP] = useState(true);
@@ -79,13 +75,13 @@ export default function ABPathContentPage() {
     isLoading: loading,
     error: loadingError,
     actions,
-    strategy
+    strategy,
   } = useSmartABPath({
     search: debouncedSearchTerm || undefined,
-    category: selectedCategory !== 'all' ? selectedCategory : undefined,
+    category: selectedCategory !== "all" ? selectedCategory : undefined,
     showAP,
     showCP,
-    sectionsPerPage: 7
+    sectionsPerPage: 7,
   });
 
   // Create compatibility data structure
@@ -93,21 +89,21 @@ export default function ABPathContentPage() {
     if (!metadata) return null;
     return {
       content_specifications: {
-        ap_sections: paginatedSections.filter(s => s.type === 'ap'),
-        cp_sections: paginatedSections.filter(s => s.type === 'cp')
+        ap_sections: paginatedSections.filter((s) => s.type === "ap"),
+        cp_sections: paginatedSections.filter((s) => s.type === "cp"),
       },
-      metadata
+      metadata,
     };
   }, [paginatedSections, metadata]);
 
   // Debounce search term to reduce processing
   useEffect(() => {
     const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm)
-    }, 150) // Reduced delay for better responsiveness
+      setDebouncedSearchTerm(searchTerm);
+    }, 150); // Reduced delay for better responsiveness
 
-    return () => clearTimeout(timer)
-  }, [searchTerm])
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   // Memoized helper function to check if an item or its subitems match search
   const itemMatchesSearch = useCallback((item: PathologyItem, search: string): boolean => {
@@ -122,38 +118,43 @@ export default function ABPathContentPage() {
 
     // Check if any subitems match
     if (item.subitems) {
-      return item.subitems.some(subitem => itemMatchesSearch(subitem, search));
+      return item.subitems.some((subitem) => itemMatchesSearch(subitem, search));
     }
 
     return false;
   }, []);
 
   // Memoized filterItems function to prevent re-creation
-  const filterItems = useCallback((items: PathologyItem[], search: string): PathologyItem[] => {
-    return items.filter(item => {
-      // Apply search filter first
-      if (search && !itemMatchesSearch(item, search)) {
-        return false;
-      }
+  const filterItems = useCallback(
+    (items: PathologyItem[], search: string): PathologyItem[] => {
+      return items
+        .filter((item) => {
+          // Apply search filter first
+          if (search && !itemMatchesSearch(item, search)) {
+            return false;
+          }
 
-      // Apply designation filter
-      const matchesDesignation =
-        (item.designation === 'C' && showC) ||
-        (item.designation === 'AR' && showAR) ||
-        (item.designation === 'F' && showF) ||
-        (!item.designation); // Show items without designation
+          // Apply designation filter
+          const matchesDesignation =
+            (item.designation === "C" && showC) ||
+            (item.designation === "AR" && showAR) ||
+            (item.designation === "F" && showF) ||
+            !item.designation; // Show items without designation
 
-      return matchesDesignation;
-    }).map(item => {
-      if (item.subitems) {
-        return {
-          ...item,
-          subitems: filterItems(item.subitems, search)
-        };
-      }
-      return item;
-    });
-  }, [showC, showAR, showF, itemMatchesSearch]);
+          return matchesDesignation;
+        })
+        .map((item) => {
+          if (item.subitems) {
+            return {
+              ...item,
+              subitems: filterItems(item.subitems, search),
+            };
+          }
+          return item;
+        });
+    },
+    [showC, showAR, showF, itemMatchesSearch]
+  );
 
   // Smart pagination handler
   const handlePageChange = (page: number) => {
@@ -167,10 +168,10 @@ export default function ABPathContentPage() {
     // For now, we'll need to build categories from what we can see
     // This could be enhanced by adding a separate endpoint for all categories
     const visibleSections = paginatedSections;
-    return visibleSections.map(section => ({
+    return visibleSections.map((section) => ({
       value: `${section.type.toUpperCase()}_${section.section}`,
       label: `${section.type.toUpperCase()} ${section.section}: ${section.title}`,
-      title: section.title
+      title: section.title,
     }));
   }, [data, paginatedSections]);
 
@@ -178,69 +179,94 @@ export default function ABPathContentPage() {
   const filteredData = useMemo(() => {
     // Check if user has deselected all designations (C, AR, F)
     if (!showC && !showAR && !showF) {
-      return []
+      return [];
     }
-    
+
     if (!paginatedSections.length) {
-      return []
+      return [];
     }
 
     // Apply only designation filtering since the hook handles type, category, and search
-    const sections = paginatedSections.map(section => {
-      const filteredSection = { ...section };
+    const sections = paginatedSections
+      .map((section) => {
+        const filteredSection = { ...section };
 
-      if (section.items) {
-        filteredSection.items = filterItems(section.items, '');
-      }
+        if (section.items) {
+          filteredSection.items = filterItems(section.items, "");
+        }
 
-      if (section.subsections) {
-        filteredSection.subsections = section.subsections.map(subsection => {
-          const filteredSubsection = { ...subsection };
+        if (section.subsections) {
+          filteredSection.subsections = section.subsections
+            .map((subsection) => {
+              const filteredSubsection = { ...subsection };
 
-          if (subsection.items) {
-            filteredSubsection.items = filterItems(subsection.items, '');
-          }
+              if (subsection.items) {
+                filteredSubsection.items = filterItems(subsection.items, "");
+              }
 
-          if (subsection.sections) {
-            filteredSubsection.sections = subsection.sections.map((subSection: unknown) => ({
-              ...subSection,
-              items: subSection.items ? filterItems(subSection.items, '') : undefined
-            })).filter((subSection: unknown) => !subSection.items || subSection.items.length > 0);
-          }
+              if (subsection.sections) {
+                filteredSubsection.sections = subsection.sections
+                  .map((subSection: unknown) => ({
+                    ...subSection,
+                    items: subSection.items ? filterItems(subSection.items, "") : undefined,
+                  }))
+                  .filter(
+                    (subSection: unknown) => !subSection.items || subSection.items.length > 0
+                  );
+              }
 
-          return filteredSubsection;
-        }).filter(subsection =>
-          (subsection.items && subsection.items.length > 0) ||
-          (subsection.sections && subsection.sections.length > 0)
-        );
-      }
+              return filteredSubsection;
+            })
+            .filter(
+              (subsection) =>
+                (subsection.items && subsection.items.length > 0) ||
+                (subsection.sections && subsection.sections.length > 0)
+            );
+        }
 
-      return filteredSection;
-    }).filter(section =>
-      (section.items && section.items.length > 0) ||
-      (section.subsections && section.subsections.length > 0) ||
-      (showC && showAR && showF) // Keep sections without items if all designations shown
-    );
+        return filteredSection;
+      })
+      .filter(
+        (section) =>
+          (section.items && section.items.length > 0) ||
+          (section.subsections && section.subsections.length > 0) ||
+          (showC && showAR && showF) // Keep sections without items if all designations shown
+      );
 
     return sections;
   }, [paginatedSections, showC, showAR, showF, filterItems]);
 
   // Simplified statistics calculation using filtered data
   const stats = useMemo(() => {
-    const defaultStats = { totalVisible: 0, totalAll: 0, cCount: 0, arCount: 0, fCount: 0, totalPercentage: 0, cPercentage: 0, arPercentage: 0, fPercentage: 0 };
+    const defaultStats = {
+      totalVisible: 0,
+      totalAll: 0,
+      cCount: 0,
+      arCount: 0,
+      fCount: 0,
+      totalPercentage: 0,
+      cPercentage: 0,
+      arPercentage: 0,
+      fPercentage: 0,
+    };
 
     if (!allSections.length) return defaultStats;
 
     // Helper function to count items recursively
-    const countItems = (items: PathologyItem[]): { total: number; c: number; ar: number; f: number } => {
-      let total = 0, c = 0, ar = 0, f = 0;
-      
-      items.forEach(item => {
+    const countItems = (
+      items: PathologyItem[]
+    ): { total: number; c: number; ar: number; f: number } => {
+      let total = 0,
+        c = 0,
+        ar = 0,
+        f = 0;
+
+      items.forEach((item) => {
         total++;
-        if (item.designation === 'C') c++;
-        else if (item.designation === 'AR') ar++;
-        else if (item.designation === 'F') f++;
-        
+        if (item.designation === "C") c++;
+        else if (item.designation === "AR") ar++;
+        else if (item.designation === "F") f++;
+
         if (item.subitems) {
           const subCounts = countItems(item.subitems);
           total += subCounts.total;
@@ -249,14 +275,14 @@ export default function ABPathContentPage() {
           f += subCounts.f;
         }
       });
-      
+
       return { total, c, ar, f };
     };
 
     // Helper function to count all items in a section
     const countSection = (section: PathologySection) => {
       const counts = { total: 0, c: 0, ar: 0, f: 0 };
-      
+
       if (section.items) {
         const itemCounts = countItems(section.items);
         counts.total += itemCounts.total;
@@ -264,9 +290,9 @@ export default function ABPathContentPage() {
         counts.ar += itemCounts.ar;
         counts.f += itemCounts.f;
       }
-      
+
       if (section.subsections) {
-        section.subsections.forEach(subsection => {
+        section.subsections.forEach((subsection) => {
           if (subsection.items) {
             const itemCounts = countItems(subsection.items);
             counts.total += itemCounts.total;
@@ -274,9 +300,9 @@ export default function ABPathContentPage() {
             counts.ar += itemCounts.ar;
             counts.f += itemCounts.f;
           }
-          
+
           if (subsection.sections) {
-            subsection.sections.forEach(subSection => {
+            subsection.sections.forEach((subSection) => {
               if (subSection.items) {
                 const itemCounts = countItems(subSection.items);
                 counts.total += itemCounts.total;
@@ -288,43 +314,46 @@ export default function ABPathContentPage() {
           }
         });
       }
-      
+
       return counts;
     };
 
     // Count ALL items from complete dataset (baseline)
-    const allCounts = allSections.reduce((acc, section) => {
-      const sectionCounts = countSection(section);
-      acc.total += sectionCounts.total;
-      acc.c += sectionCounts.c;
-      acc.ar += sectionCounts.ar;
-      acc.f += sectionCounts.f;
-      return acc;
-    }, { total: 0, c: 0, ar: 0, f: 0 });
+    const allCounts = allSections.reduce(
+      (acc, section) => {
+        const sectionCounts = countSection(section);
+        acc.total += sectionCounts.total;
+        acc.c += sectionCounts.c;
+        acc.ar += sectionCounts.ar;
+        acc.f += sectionCounts.f;
+        return acc;
+      },
+      { total: 0, c: 0, ar: 0, f: 0 }
+    );
 
     // Apply designation filtering to hook-filtered data for accurate statistics
-    const statsFilteredData = filteredSections.map(section => {
+    const statsFilteredData = filteredSections.map((section) => {
       if (!showC && !showAR && !showF) return { ...section, items: [], subsections: [] };
 
       const filteredSection = { ...section };
 
       if (section.items) {
-        filteredSection.items = filterItems(section.items, '');
+        filteredSection.items = filterItems(section.items, "");
       }
 
       if (section.subsections) {
-        filteredSection.subsections = section.subsections.map(subsection => {
+        filteredSection.subsections = section.subsections.map((subsection) => {
           const filteredSubsection = { ...subsection };
 
           if (subsection.items) {
-            filteredSubsection.items = filterItems(subsection.items, '');
+            filteredSubsection.items = filterItems(subsection.items, "");
           }
 
           if (subsection.sections) {
-            filteredSubsection.sections = subsection.sections.map(subSection => {
+            filteredSubsection.sections = subsection.sections.map((subSection) => {
               const filteredSubSection = { ...subSection };
               if (subSection.items) {
-                filteredSubSection.items = filterItems(subSection.items, '');
+                filteredSubSection.items = filterItems(subSection.items, "");
               }
               return filteredSubSection;
             });
@@ -338,14 +367,17 @@ export default function ABPathContentPage() {
     });
 
     // Count currently visible items from fully filtered data (AP/CP + designation filtering)
-    const visibleCounts = statsFilteredData.reduce((acc, section) => {
-      const sectionCounts = countSection(section);
-      acc.total += sectionCounts.total;
-      acc.c += sectionCounts.c;
-      acc.ar += sectionCounts.ar;
-      acc.f += sectionCounts.f;
-      return acc;
-    }, { total: 0, c: 0, ar: 0, f: 0 });
+    const visibleCounts = statsFilteredData.reduce(
+      (acc, section) => {
+        const sectionCounts = countSection(section);
+        acc.total += sectionCounts.total;
+        acc.c += sectionCounts.c;
+        acc.ar += sectionCounts.ar;
+        acc.f += sectionCounts.f;
+        return acc;
+      },
+      { total: 0, c: 0, ar: 0, f: 0 }
+    );
 
     // Visible items should be the sum of items with designations (C + AR + F)
     const totalVisible = visibleCounts.c + visibleCounts.ar + visibleCounts.f;
@@ -363,7 +395,7 @@ export default function ABPathContentPage() {
       totalPercentage: totalAll > 0 ? Math.round((totalVisible / totalAll) * 100) : 0,
       cPercentage: totalVisible > 0 ? Math.round((cCount / totalVisible) * 100) : 0,
       arPercentage: totalVisible > 0 ? Math.round((arCount / totalVisible) * 100) : 0,
-      fPercentage: totalVisible > 0 ? Math.round((fCount / totalVisible) * 100) : 0
+      fPercentage: totalVisible > 0 ? Math.round((fCount / totalVisible) * 100) : 0,
     };
   }, [allSections, filteredSections, showC, showAR, showF, filterItems]);
 
@@ -372,47 +404,49 @@ export default function ABPathContentPage() {
     if (!data) return;
 
     const generator = new ABPathPDFGenerator();
-    const timestamp = new Date().toISOString().split('T')[0];
+    const timestamp = new Date().toISOString().split("T")[0];
 
     // Determine filter suffix for filename
-    let filterSuffix = '';
-    if (!showAP && showCP) filterSuffix += 'CP';
-    else if (showAP && !showCP) filterSuffix += 'AP';
+    let filterSuffix = "";
+    if (!showAP && showCP) filterSuffix += "CP";
+    else if (showAP && !showCP) filterSuffix += "AP";
 
-    if (selectedCategory !== 'all') {
-      const categoryInfo = categories.find(c => c.value === selectedCategory);
+    if (selectedCategory !== "all") {
+      const categoryInfo = categories.find((c) => c.value === selectedCategory);
       if (categoryInfo) {
-        filterSuffix += (filterSuffix ? '_' : '') + categoryInfo.title.replace(/[^a-zA-Z0-9]/g, '').substring(0, 10);
+        filterSuffix +=
+          (filterSuffix ? "_" : "") +
+          categoryInfo.title.replace(/[^a-zA-Z0-9]/g, "").substring(0, 10);
       }
     }
 
     const designations = [];
-    if (showC) designations.push('C');
-    if (showAR) designations.push('AR');
-    if (showF) designations.push('F');
-    if (designations.length < 3) filterSuffix += (filterSuffix ? '_' : '') + designations.join('');
+    if (showC) designations.push("C");
+    if (showAR) designations.push("AR");
+    if (showF) designations.push("F");
+    if (designations.length < 3) filterSuffix += (filterSuffix ? "_" : "") + designations.join("");
 
-    if (searchTerm) filterSuffix += (filterSuffix ? '_' : '') + 'filtered';
+    if (searchTerm) filterSuffix += (filterSuffix ? "_" : "") + "filtered";
 
     try {
       const pdf = await generator.generatePDF(filteredData, {
         searchTerm,
-        selectedType: showAP && showCP ? 'all' : showAP ? 'ap' : 'cp',
-        selectedDesignation: designations.length === 3 ? 'all' : designations.join(','),
-        stats
+        selectedType: showAP && showCP ? "all" : showAP ? "ap" : "cp",
+        selectedDesignation: designations.length === 3 ? "all" : designations.join(","),
+        stats,
       });
 
-      const filename = `abpath-content_${timestamp}${filterSuffix ? '_' + filterSuffix : ''}.pdf`;
+      const filename = `abpath-content_${timestamp}${filterSuffix ? "_" + filterSuffix : ""}.pdf`;
       pdf.save(filename);
     } catch (error) {
-      console.error('Error generating PDF:', error);
+      console.error("Error generating PDF:", error);
       // You might want to show a user-friendly error message here
     }
   };
 
-  const renderItem = (item: PathologyItem, level: number = 0, parentKey: string = '') => {
+  const renderItem = (item: PathologyItem, level: number = 0, parentKey: string = "") => {
     const indent = level * 16;
-    const itemKey = `${parentKey}-${item.number || ''}-${item.letter || ''}-${item.roman || ''}-${item.title}-${level}`;
+    const itemKey = `${parentKey}-${item.number || ""}-${item.letter || ""}-${item.roman || ""}-${item.title}-${level}`;
 
     return (
       <div key={itemKey} className="mb-1">
@@ -430,31 +464,27 @@ export default function ABPathContentPage() {
             {item.designation && (
               <Badge
                 variant={
-                  item.designation === 'C' ? 'default' :
-                  item.designation === 'AR' ? 'secondary' :
-                  'outline'
+                  item.designation === "C"
+                    ? "default"
+                    : item.designation === "AR"
+                      ? "secondary"
+                      : "outline"
                 }
                 className="ml-2 text-xs"
               >
                 {item.designation}
               </Badge>
             )}
-            {item.note && (
-              <div className="text-xs text-gray-500 mt-1 italic">
-                {item.note}
-              </div>
-            )}
+            {item.note && <div className="text-xs text-gray-500 mt-1 italic">{item.note}</div>}
           </div>
         </div>
-        {item.subitems && item.subitems.map(subitem =>
-          renderItem(subitem, level + 1, itemKey)
-        )}
+        {item.subitems && item.subitems.map((subitem) => renderItem(subitem, level + 1, itemKey))}
       </div>
     );
   };
 
   const toggleSection = (sectionKey: string) => {
-    setExpandedSections(prev => {
+    setExpandedSections((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(sectionKey)) {
         newSet.delete(sectionKey);
@@ -566,12 +596,10 @@ export default function ABPathContentPage() {
         <section className="flex-1 py-12">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="text-center py-8">
-              <p className="text-red-600">Error loading content specifications: {loadingError.message}</p>
-              <Button 
-                onClick={() => window.location.reload()} 
-                className="mt-4"
-                variant="outline"
-              >
+              <p className="text-red-600">
+                Error loading content specifications: {loadingError.message}
+              </p>
+              <Button onClick={() => window.location.reload()} className="mt-4" variant="outline">
                 Try Again
               </Button>
             </div>
@@ -615,12 +643,14 @@ export default function ABPathContentPage() {
               <span>{data.metadata.total_sections} sections</span>
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
-              <span>{data.metadata.ap_sections} AP • {data.metadata.cp_sections} CP</span>
+              <span>
+                {data.metadata.ap_sections} AP • {data.metadata.cp_sections} CP
+              </span>
             </div>
             {strategy && (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span>•</span>
-                <span className="capitalize">{strategy.replace('-', ' ')}</span>
+                <span className="capitalize">{strategy.replace("-", " ")}</span>
               </div>
             )}
           </div>
@@ -640,7 +670,9 @@ export default function ABPathContentPage() {
                   <Input
                     placeholder="Search topics..."
                     value={searchTerm}
-                    onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchTerm(e.target.value)}
+                    onChange={(e: React.ChangeEvent<HTMLInputElement>) =>
+                      setSearchTerm(e.target.value)
+                    }
                     className="pl-10"
                   />
                 </div>
@@ -652,7 +684,7 @@ export default function ABPathContentPage() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
-                    {categories.map(category => (
+                    {categories.map((category) => (
                       <SelectItem key={category.value} value={category.value}>
                         {category.label}
                       </SelectItem>
@@ -704,13 +736,19 @@ export default function ABPathContentPage() {
                 </div>
 
                 {/* Clear Filters */}
-                {(searchTerm || selectedCategory !== 'all' || !showAP || !showCP || !showC || !showAR || !showF) && (
+                {(searchTerm ||
+                  selectedCategory !== "all" ||
+                  !showAP ||
+                  !showCP ||
+                  !showC ||
+                  !showAR ||
+                  !showF) && (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      setSearchTerm('');
-                      setSelectedCategory('all');
+                      setSearchTerm("");
+                      setSelectedCategory("all");
                       setShowAP(true);
                       setShowCP(true);
                       setShowC(true);
@@ -723,7 +761,6 @@ export default function ABPathContentPage() {
                     Clear
                   </Button>
                 )}
-
 
                 {/* PDF Export */}
                 <Button
@@ -778,83 +815,108 @@ export default function ABPathContentPage() {
                 </Card>
               ) : (
                 filteredData.map((section, sectionIndex) => (
-                  <Card key={`section-${section.type}-${section.section}-${sectionIndex}`} className="overflow-hidden">
+                  <Card
+                    key={`section-${section.type}-${section.section}-${sectionIndex}`}
+                    className="overflow-hidden"
+                  >
                     <CardHeader className="pb-3">
                       <CardTitle className="flex items-center gap-2 text-lg">
-                        <span className={`px-2 py-1 rounded text-sm font-medium ${
-                          section.type === 'ap'
-                            ? 'bg-blue-100 text-blue-800'
-                            : 'bg-purple-100 text-purple-800'
-                        }`}>
+                        <span
+                          className={`px-2 py-1 rounded text-sm font-medium ${
+                            section.type === "ap"
+                              ? "bg-blue-100 text-blue-800"
+                              : "bg-purple-100 text-purple-800"
+                          }`}
+                        >
                           {section.type.toUpperCase()} {section.section}
                         </span>
                         <span className="text-base">{section.title}</span>
                       </CardTitle>
                     </CardHeader>
                     <CardContent className="pt-0">
-                      {section.note && !section.note.includes("This section is directed toward AP/CP residents") && (
-                        <div className="mb-3 p-2 bg-yellow-50 border-l-4 border-yellow-200 text-sm text-yellow-800">
-                          <strong>Note:</strong> {section.note}
-                        </div>
-                      )}
+                      {section.note &&
+                        !section.note.includes(
+                          "This section is directed toward AP/CP residents"
+                        ) && (
+                          <div className="mb-3 p-2 bg-yellow-50 border-l-4 border-yellow-200 text-sm text-yellow-800">
+                            <strong>Note:</strong> {section.note}
+                          </div>
+                        )}
 
                       {/* Direct items */}
                       {section.items && section.items.length > 0 && (
                         <div className="mb-4">
-                          {section.items.map(item => renderItem(item, 0, `section-${section.type}-${section.section}`))}
+                          {section.items.map((item) =>
+                            renderItem(item, 0, `section-${section.type}-${section.section}`)
+                          )}
                         </div>
                       )}
 
                       {/* Subsections */}
-                      {section.subsections && section.subsections.map((subsection, subsectionIndex) => {
-                        const subsectionKey = `subsection-${section.type}-${section.section}-${subsectionIndex}`;
-                        const isExpanded = expandedSections.has(subsectionKey);
+                      {section.subsections &&
+                        section.subsections.map((subsection, subsectionIndex) => {
+                          const subsectionKey = `subsection-${section.type}-${section.section}-${subsectionIndex}`;
+                          const isExpanded = expandedSections.has(subsectionKey);
 
-                        return (
-                          <div key={subsectionKey} className="mb-4 last:mb-0">
-                            <button
-                              onClick={() => toggleSection(subsectionKey)}
-                              className="flex items-center gap-2 w-full text-left p-2 hover:bg-gray-50 rounded border-b"
-                            >
-                              {isExpanded ? (
-                                <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-gray-500" />
-                              ) : (
-                                <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 text-gray-500" />
-                              )}
-                              <span className="font-medium text-gray-700">
-                                {subsection.number && `${subsection.number}. `}
-                                {subsection.letter && `${subsection.letter}. `}
-                                {subsection.title}
-                              </span>
-                            </button>
-
-                            {isExpanded && (
-                              <div className="mt-2 ml-6">
-                                {/* Subsection direct items */}
-                                {subsection.items && subsection.items.length > 0 && (
-                                  <div className="mb-3">
-                                    {subsection.items.map((item: unknown) => renderItem(item, 0, subsectionKey))}
-                                  </div>
+                          return (
+                            <div key={subsectionKey} className="mb-4 last:mb-0">
+                              <button
+                                onClick={() => toggleSection(subsectionKey)}
+                                className="flex items-center gap-2 w-full text-left p-2 hover:bg-gray-50 rounded border-b"
+                              >
+                                {isExpanded ? (
+                                  <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200 text-gray-500" />
+                                ) : (
+                                  <ChevronRight className="h-4 w-4 shrink-0 transition-transform duration-200 text-gray-500" />
                                 )}
+                                <span className="font-medium text-gray-700">
+                                  {subsection.number && `${subsection.number}. `}
+                                  {subsection.letter && `${subsection.letter}. `}
+                                  {subsection.title}
+                                </span>
+                              </button>
 
-                                {/* Subsection sections */}
-                                {subsection.sections && subsection.sections.map((subSection: unknown, subSectionIndex: number) => (
-                                  <div key={`${subsectionKey}-section-${subSectionIndex}`} className="mb-3 last:mb-0">
-                                    <div className="font-medium text-sm text-gray-600 mb-1 pl-2 border-l-2 border-gray-200">
-                                      {subSection.title}
+                              {isExpanded && (
+                                <div className="mt-2 ml-6">
+                                  {/* Subsection direct items */}
+                                  {subsection.items && subsection.items.length > 0 && (
+                                    <div className="mb-3">
+                                      {subsection.items.map((item: unknown) =>
+                                        renderItem(item, 0, subsectionKey)
+                                      )}
                                     </div>
-                                    {subSection.items && subSection.items.length > 0 && (
-                                      <div className="ml-4">
-                                        {subSection.items.map((item: unknown) => renderItem(item, 0, `${subsectionKey}-section-${subSectionIndex}`))}
-                                      </div>
+                                  )}
+
+                                  {/* Subsection sections */}
+                                  {subsection.sections &&
+                                    subsection.sections.map(
+                                      (subSection: unknown, subSectionIndex: number) => (
+                                        <div
+                                          key={`${subsectionKey}-section-${subSectionIndex}`}
+                                          className="mb-3 last:mb-0"
+                                        >
+                                          <div className="font-medium text-sm text-gray-600 mb-1 pl-2 border-l-2 border-gray-200">
+                                            {subSection.title}
+                                          </div>
+                                          {subSection.items && subSection.items.length > 0 && (
+                                            <div className="ml-4">
+                                              {subSection.items.map((item: unknown) =>
+                                                renderItem(
+                                                  item,
+                                                  0,
+                                                  `${subsectionKey}-section-${subSectionIndex}`
+                                                )
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+                                      )
                                     )}
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-                          </div>
-                        );
-                      })}
+                                </div>
+                              )}
+                            </div>
+                          );
+                        })}
                     </CardContent>
                   </Card>
                 ))
@@ -869,11 +931,9 @@ export default function ABPathContentPage() {
                     Page {pagination.currentPage} of {pagination.totalPages}
                   </span>
                   <span>•</span>
-                  <span>
-                    {pagination.totalSections} sections total
-                  </span>
+                  <span>{pagination.totalSections} sections total</span>
                 </div>
-                
+
                 <div className="flex items-center gap-2">
                   <Button
                     variant="outline"
@@ -883,7 +943,7 @@ export default function ABPathContentPage() {
                   >
                     Previous
                   </Button>
-                  
+
                   {/* Page numbers */}
                   <div className="flex items-center gap-1">
                     {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
@@ -896,9 +956,9 @@ export default function ABPathContentPage() {
                         const adjustedStart = Math.max(1, end - 4);
                         pageNum = adjustedStart + i;
                       }
-                      
+
                       if (pageNum > pagination.totalPages) return null;
-                      
+
                       return (
                         <Button
                           key={pageNum}
@@ -913,7 +973,7 @@ export default function ABPathContentPage() {
                       );
                     }).filter(Boolean)}
                   </div>
-                  
+
                   <Button
                     variant="outline"
                     size="sm"

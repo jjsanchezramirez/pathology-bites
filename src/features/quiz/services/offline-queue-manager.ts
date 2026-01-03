@@ -1,20 +1,20 @@
 // src/features/quiz/services/offline-queue-manager.ts
 
-import { 
-  AUTO_SAVE_CONFIG, 
-  OfflineQueueItem, 
+import {
+  AUTO_SAVE_CONFIG,
+  OfflineQueueItem,
   AutoSaveTrigger,
   calculateRetryDelay,
   shouldRetry,
-  debugLog
-} from '../config/auto-save-config';
+  debugLog,
+} from "../config/auto-save-config";
 
 /**
  * Manages offline queue for failed sync operations
  * Stores failed syncs in localStorage and retries with exponential backoff
  */
 export class OfflineQueueManager {
-  private static readonly QUEUE_KEY = 'quiz_offline_queue';
+  private static readonly QUEUE_KEY = "quiz_offline_queue";
   private retryTimer: NodeJS.Timeout | null = null;
 
   constructor() {
@@ -25,16 +25,12 @@ export class OfflineQueueManager {
   /**
    * Add item to offline queue
    */
-  addToQueue(
-    sessionId: string,
-    data: unknown,
-    trigger: AutoSaveTrigger
-  ): OfflineQueueItem {
+  addToQueue(sessionId: string, data: unknown, trigger: AutoSaveTrigger): OfflineQueueItem {
     const queue = this.getQueue();
-    
+
     // Check queue size limit
     if (queue.length >= AUTO_SAVE_CONFIG.maxQueueSize) {
-      debugLog('Queue full, removing oldest item');
+      debugLog("Queue full, removing oldest item");
       queue.shift(); // Remove oldest
     }
 
@@ -45,17 +41,17 @@ export class OfflineQueueManager {
       trigger,
       timestamp: Date.now(),
       retryCount: 0,
-      nextRetryAt: Date.now() + AUTO_SAVE_CONFIG.initialRetryDelay
+      nextRetryAt: Date.now() + AUTO_SAVE_CONFIG.initialRetryDelay,
     };
 
     queue.push(item);
     this.saveQueue(queue);
-    
-    debugLog('Added to queue', item);
-    
+
+    debugLog("Added to queue", item);
+
     // Start retry loop if not already running
     this.startRetryLoop();
-    
+
     return item;
   }
 
@@ -64,11 +60,11 @@ export class OfflineQueueManager {
    */
   getQueue(): OfflineQueueItem[] {
     try {
-      if (typeof window === 'undefined') return []; // SSR guard
+      if (typeof window === "undefined") return []; // SSR guard
       const stored = localStorage.getItem(OfflineQueueManager.QUEUE_KEY);
       return stored ? JSON.parse(stored) : [];
     } catch (error) {
-      console.error('Failed to read offline queue:', error);
+      console.error("Failed to read offline queue:", error);
       return [];
     }
   }
@@ -78,10 +74,10 @@ export class OfflineQueueManager {
    */
   private saveQueue(queue: OfflineQueueItem[]): void {
     try {
-      if (typeof window === 'undefined') return; // SSR guard
+      if (typeof window === "undefined") return; // SSR guard
       localStorage.setItem(OfflineQueueManager.QUEUE_KEY, JSON.stringify(queue));
     } catch (error) {
-      console.error('Failed to save offline queue:', error);
+      console.error("Failed to save offline queue:", error);
     }
   }
 
@@ -89,9 +85,9 @@ export class OfflineQueueManager {
    * Remove item from queue
    */
   removeFromQueue(itemId: string): void {
-    const queue = this.getQueue().filter(item => item.id !== itemId);
+    const queue = this.getQueue().filter((item) => item.id !== itemId);
     this.saveQueue(queue);
-    debugLog('Removed from queue', itemId);
+    debugLog("Removed from queue", itemId);
   }
 
   /**
@@ -99,13 +95,13 @@ export class OfflineQueueManager {
    */
   private updateRetryCount(itemId: string): void {
     const queue = this.getQueue();
-    const item = queue.find(i => i.id === itemId);
-    
+    const item = queue.find((i) => i.id === itemId);
+
     if (item) {
       item.retryCount++;
       item.nextRetryAt = Date.now() + calculateRetryDelay(item.retryCount);
       this.saveQueue(queue);
-      debugLog('Updated retry count', item);
+      debugLog("Updated retry count", item);
     }
   }
 
@@ -126,31 +122,31 @@ export class OfflineQueueManager {
     let succeeded = 0;
     let failed = 0;
 
-    debugLog('Processing queue', { itemCount: items.length });
+    debugLog("Processing queue", { itemCount: items.length });
 
     for (const item of items) {
       try {
         const success = await syncFunction(item.sessionId, item.data);
-        
+
         if (success) {
           this.removeFromQueue(item.id);
           succeeded++;
-          debugLog('Queue item synced successfully', item.id);
+          debugLog("Queue item synced successfully", item.id);
         } else {
           // Check if max retries reached
           if (item.retryCount >= AUTO_SAVE_CONFIG.maxRetries - 1) {
             this.removeFromQueue(item.id);
             failed++;
-            debugLog('Queue item failed - max retries reached', item.id);
+            debugLog("Queue item failed - max retries reached", item.id);
           } else {
             this.updateRetryCount(item.id);
             failed++;
-            debugLog('Queue item failed - will retry', item.id);
+            debugLog("Queue item failed - will retry", item.id);
           }
         }
       } catch (error) {
-        debugLog('Queue item error', item.id, error);
-        
+        debugLog("Queue item error", item.id, error);
+
         if (item.retryCount >= AUTO_SAVE_CONFIG.maxRetries - 1) {
           this.removeFromQueue(item.id);
           failed++;
@@ -162,7 +158,7 @@ export class OfflineQueueManager {
     }
 
     const queued = this.getQueue().length;
-    debugLog('Queue processing complete', { succeeded, failed, queued });
+    debugLog("Queue processing complete", { succeeded, failed, queued });
 
     return { succeeded, failed, queued };
   }
@@ -175,7 +171,7 @@ export class OfflineQueueManager {
 
     this.retryTimer = setInterval(() => {
       const queue = this.getQueue();
-      
+
       if (queue.length === 0) {
         this.stopRetryLoop();
         return;
@@ -184,7 +180,7 @@ export class OfflineQueueManager {
       // Check if any items are ready for retry
       const readyItems = this.getItemsReadyForRetry();
       if (readyItems.length > 0) {
-        debugLog('Retry loop found items ready', readyItems.length);
+        debugLog("Retry loop found items ready", readyItems.length);
         // Trigger will be handled by external processor
       }
     }, 5000); // Check every 5 seconds
@@ -197,7 +193,7 @@ export class OfflineQueueManager {
     if (this.retryTimer) {
       clearInterval(this.retryTimer);
       this.retryTimer = null;
-      debugLog('Retry loop stopped');
+      debugLog("Retry loop stopped");
     }
   }
 
@@ -206,7 +202,7 @@ export class OfflineQueueManager {
    */
   clearQueue(): void {
     this.saveQueue([]);
-    debugLog('Queue cleared');
+    debugLog("Queue cleared");
   }
 
   /**
@@ -219,12 +215,11 @@ export class OfflineQueueManager {
   } {
     const queue = this.getQueue();
     const ready = this.getItemsReadyForRetry();
-    
+
     return {
       total: queue.length,
       ready: ready.length,
-      waiting: queue.length - ready.length
+      waiting: queue.length - ready.length,
     };
   }
 }
-

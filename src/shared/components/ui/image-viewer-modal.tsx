@@ -1,34 +1,34 @@
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import { X } from 'lucide-react'
-import Image from 'next/image'
+import { useEffect } from "react";
+import { X } from "lucide-react";
+import Image from "next/image";
 
 interface ImageViewerModalProps {
-  src: string
-  alt: string
-  description?: string
-  onClose: () => void
+  src: string;
+  alt: string;
+  description?: string;
+  onClose: () => void;
 }
 
 export function ImageViewerModal({ src, alt, description, onClose }: ImageViewerModalProps) {
   useEffect(() => {
     // Prevent body scrolling when modal is open
-    document.body.style.overflow = 'hidden'
+    document.body.style.overflow = "hidden";
 
     // Keyboard support
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onClose()
+      if (e.key === "Escape") {
+        onClose();
       }
-    }
-    document.addEventListener('keydown', handleKeyDown)
+    };
+    document.addEventListener("keydown", handleKeyDown);
 
     return () => {
-      document.body.style.overflow = 'auto'
-      document.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [onClose])
+      document.body.style.overflow = "auto";
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [onClose]);
 
   return (
     <div
@@ -68,5 +68,5 @@ export function ImageViewerModal({ src, alt, description, onClose }: ImageViewer
         )}
       </div>
     </div>
-  )
+  );
 }

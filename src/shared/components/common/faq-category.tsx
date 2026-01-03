@@ -1,15 +1,15 @@
 // src/shared/components/common/faq-category.tsx
-import { Card } from "@/shared/components/ui/card"
+import { Card } from "@/shared/components/ui/card";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/shared/components/ui/accordion"
-import { FAQCategory as FAQCategoryType } from "@/shared/data/faq-data"
+} from "@/shared/components/ui/accordion";
+import { FAQCategory as FAQCategoryType } from "@/shared/data/faq-data";
 
 interface FAQCategoryProps {
-  category: FAQCategoryType
+  category: FAQCategoryType;
 }
 
 export function FAQCategory({ category }: FAQCategoryProps) {
@@ -20,13 +20,10 @@ export function FAQCategory({ category }: FAQCategoryProps) {
         {category.items.map((item) => (
           <AccordionItem key={item.value} value={item.value}>
             <AccordionTrigger className="text-left">{item.question}</AccordionTrigger>
-            <AccordionContent className="text-muted-foreground">
-              {item.answer}
-            </AccordionContent>
+            <AccordionContent className="text-muted-foreground">{item.answer}</AccordionContent>
           </AccordionItem>
         ))}
       </Accordion>
     </Card>
-  )
+  );
 }
-

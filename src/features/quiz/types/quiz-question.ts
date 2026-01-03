@@ -1,6 +1,6 @@
 /**
  * Standardized Quiz Question Types for the Hybrid Quiz System
- * 
+ *
  * This file defines the authoritative interfaces for quiz questions
  * to ensure consistency across the entire quiz system.
  */
@@ -20,7 +20,7 @@ export interface QuizQuestion {
   question_options: QuizQuestionOption[];
   explanation?: string; // Teaching point
   category?: string;
-  difficulty?: 'easy' | 'medium' | 'hard';
+  difficulty?: "easy" | "medium" | "hard";
   metadata?: {
     images?: unknown[];
     tags?: string[];
@@ -65,13 +65,13 @@ export interface QuizAnswer {
 export interface QuizState {
   // Session Info
   sessionId: string;
-  status: 'not_started' | 'in_progress' | 'completed';
-  
+  status: "not_started" | "in_progress" | "completed";
+
   // Questions & Navigation
   questions: QuizQuestion[];
   currentQuestionIndex: number;
   totalQuestions: number;
-  
+
   // Answers & Progress
   answers: Map<string, QuizAnswer>;
   progress: {
@@ -80,20 +80,20 @@ export interface QuizState {
     incorrect: number;
     percentage: number;
   };
-  
+
   // Timing
   startTime?: number;
   endTime?: number;
   totalTimeSpent: number;
-  
+
   // Configuration
   config: {
-    mode: 'tutor' | 'exam';
-    timing: 'timed' | 'untimed';
+    mode: "tutor" | "exam";
+    timing: "timed" | "untimed";
     showExplanations: boolean;
     allowReview: boolean;
   };
-  
+
   // Sync Status
   syncStatus: {
     lastSyncTime?: number;
@@ -117,7 +117,7 @@ export class QuizQuestionTransformer {
         id: opt.id,
         text: opt.text,
         is_correct: opt.is_correct || opt.isCorrect,
-        explanation: opt.explanation
+        explanation: opt.explanation,
       })),
       explanation: apiQuestion.teaching_point || apiQuestion.explanation,
       category: apiQuestion.category?.name || apiQuestion.category,
@@ -128,9 +128,9 @@ export class QuizQuestionTransformer {
         originalData: {
           ...apiQuestion,
           title: apiQuestion.title,
-          question_references: apiQuestion.question_references
-        }
-      }
+          question_references: apiQuestion.question_references,
+        },
+      },
     };
   }
 
@@ -140,17 +140,17 @@ export class QuizQuestionTransformer {
   static hybridToUI(hybridQuestion: QuizQuestion): UIQuizQuestion {
     return {
       id: hybridQuestion.id,
-      title: hybridQuestion.metadata?.originalData?.title || '',
+      title: hybridQuestion.metadata?.originalData?.title || "",
       stem: hybridQuestion.text,
       teaching_point: hybridQuestion.explanation,
-      question_references: hybridQuestion.metadata?.originalData?.question_references || '',
-      question_options: hybridQuestion.question_options.map(opt => ({
+      question_references: hybridQuestion.metadata?.originalData?.question_references || "",
+      question_options: hybridQuestion.question_options.map((opt) => ({
         id: opt.id,
         text: opt.text,
         is_correct: opt.is_correct,
-        explanation: opt.explanation
+        explanation: opt.explanation,
       })),
-      question_images: hybridQuestion.metadata?.images || []
+      question_images: hybridQuestion.metadata?.images || [],
     };
   }
 }

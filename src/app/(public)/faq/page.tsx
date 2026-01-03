@@ -1,12 +1,12 @@
 // src/app/faq/page.tsx
-'use client'
+"use client";
 
-import { Button } from "@/shared/components/ui/button"
-import Link from "next/link"
-import { PublicHero } from "@/shared/components/common/public-hero"
-import { FAQCategory } from "@/shared/components/common/faq-category"
-import { PublicPageCTA } from "@/shared/components/common/public-page-cta"
-import { faqData } from "@/shared/data/faq-data"
+import { Button } from "@/shared/components/ui/button";
+import Link from "next/link";
+import { PublicHero } from "@/shared/components/common/public-hero";
+import { FAQCategory } from "@/shared/components/common/faq-category";
+import { PublicPageCTA } from "@/shared/components/common/public-page-cta";
+import { faqData } from "@/shared/data/faq-data";
 
 export default function FAQPage() {
   return (
@@ -18,10 +18,7 @@ export default function FAQPage() {
         actions={
           <div className="flex gap-4 pt-2">
             <Link href="/contact">
-              <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
-              >
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 Contact Us
               </Button>
             </Link>
@@ -49,5 +46,5 @@ export default function FAQPage() {
         buttonHref="/contact"
       />
     </div>
-  )
+  );
 }

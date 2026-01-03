@@ -1,51 +1,47 @@
 // src/features/auth/components/forms/forgot-password-form.tsx
-"use client"
+"use client";
 
-import { useState, useEffect, useRef } from 'react'
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { toast } from '@/shared/utils/toast'
-import { Turnstile, type TurnstileInstance } from '@marsidev/react-turnstile'
-import { AuthCard } from "@/features/auth/components/ui/auth-card"
-import { FormField } from "@/features/auth/components/ui/form-field"
-import { FormButton } from "@/features/auth/components/ui/form-button"
-import { createClient } from '@/shared/services/client'
-import { useTurnstile } from '@/features/auth/hooks/use-turnstile'
+import { useState, useEffect, useRef } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "@/shared/utils/toast";
+import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
+import { AuthCard } from "@/features/auth/components/ui/auth-card";
+import { FormField } from "@/features/auth/components/ui/form-field";
+import { FormButton } from "@/features/auth/components/ui/form-button";
+import { createClient } from "@/shared/services/client";
+import { useTurnstile } from "@/features/auth/hooks/use-turnstile";
 
 // Form schema definition
 const formSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
-})
+});
 
 // Define type for form data
-type FormData = z.infer<typeof formSchema>
+type FormData = z.infer<typeof formSchema>;
 
 interface ForgotPasswordFormProps {
-  className?: string
-  initialError?: string
+  className?: string;
+  initialError?: string;
 }
 
-export function ForgotPasswordForm({
-  className,
-  initialError,
-  ...props
-}: ForgotPasswordFormProps) {
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const supabase = createClient()
-  const { captchaToken, setCaptchaToken } = useTurnstile()
-  const turnstileRef = useRef<TurnstileInstance | null>(null)
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY
+export function ForgotPasswordForm({ className, initialError, ...props }: ForgotPasswordFormProps) {
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
+  const { captchaToken, setCaptchaToken } = useTurnstile();
+  const turnstileRef = useRef<TurnstileInstance | null>(null);
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY;
 
   // Show initial error as toast
   useEffect(() => {
     if (initialError) {
-      toast.error(initialError)
+      toast.error(initialError);
     }
-  }, [initialError])
+  }, [initialError]);
 
   // Initialize form with useForm hook
   const {
@@ -57,41 +53,41 @@ export function ForgotPasswordForm({
     defaultValues: {
       email: "",
     },
-  })
+  });
 
   // Form submission handler
   async function onSubmit(values: FormData) {
     try {
-      setLoading(true)
+      setLoading(true);
 
       // Send password reset link
-      const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/confirm?type=recovery&next=/reset-password`
+      const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/confirm?type=recovery&next=/reset-password`;
 
       const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
         redirectTo: redirectTo,
         captchaToken: captchaToken || undefined,
-      })
+      });
 
       if (error) {
-        toast.error(error.message)
+        toast.error(error.message);
         // Reset CAPTCHA on error
-        turnstileRef.current?.reset()
-        setCaptchaToken(null)
-        return
+        turnstileRef.current?.reset();
+        setCaptchaToken(null);
+        return;
       }
 
-      toast.success('Password reset link sent! Check your email.')
+      toast.success("Password reset link sent! Check your email.");
 
       // Success - redirect to check email page
-      router.push('/check-email')
+      router.push("/check-email");
     } catch (error) {
-      console.error("Forgot password error:", error)
-      toast.error("An unexpected error occurred. Please try again.")
+      console.error("Forgot password error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
       // Reset CAPTCHA on error
-      turnstileRef.current?.reset()
-      setCaptchaToken(null)
+      turnstileRef.current?.reset();
+      setCaptchaToken(null);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
@@ -125,37 +121,33 @@ export function ForgotPasswordForm({
               ref={turnstileRef}
               siteKey={siteKey}
               options={{
-                theme: 'auto',
-                size: 'normal',
-                retry: 'auto',
-                'retry-interval': 8000,
+                theme: "auto",
+                size: "normal",
+                retry: "auto",
+                "retry-interval": 8000,
               }}
               onSuccess={(token) => {
-                setCaptchaToken(token)
-                console.log('[ForgotPasswordForm] CAPTCHA verification successful')
+                setCaptchaToken(token);
+                console.log("[ForgotPasswordForm] CAPTCHA verification successful");
               }}
               onError={(error) => {
-                setCaptchaToken(null)
-                console.log('[ForgotPasswordForm] CAPTCHA verification error:', error)
+                setCaptchaToken(null);
+                console.log("[ForgotPasswordForm] CAPTCHA verification error:", error);
                 // Don't show toast on error - Turnstile will auto-retry
               }}
               onExpire={() => {
-                setCaptchaToken(null)
-                console.log('[ForgotPasswordForm] CAPTCHA verification expired')
+                setCaptchaToken(null);
+                console.log("[ForgotPasswordForm] CAPTCHA verification expired");
                 // Don't show toast on expire - it will auto-reload
               }}
             />
           </div>
         )}
 
-        <FormButton
-          type="submit"
-          fullWidth
-          disabled={loading || (siteKey && !captchaToken)}
-        >
-          {loading ? 'Sending reset link...' : 'Send reset link'}
+        <FormButton type="submit" fullWidth disabled={loading || (siteKey && !captchaToken)}>
+          {loading ? "Sending reset link..." : "Send reset link"}
         </FormButton>
       </form>
     </AuthCard>
-  )
+  );
 }

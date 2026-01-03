@@ -1,10 +1,10 @@
 // src/app/(admin)/admin/my-revision-queue/page.tsx
-'use client'
+"use client";
 
-import React, { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { useUserRole } from '@/shared/hooks/use-user-role'
-import { useMyRevisionQueue } from '@/features/questions/hooks'
+import React, { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useUserRole } from "@/shared/hooks/use-user-role";
+import { useMyRevisionQueue } from "@/features/questions/hooks";
 import {
   Table,
   TableBody,
@@ -12,11 +12,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/components/ui/table"
-import { Button } from "@/shared/components/ui/button"
-import { Badge } from "@/shared/components/ui/badge"
-import { Input } from "@/shared/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
+} from "@/shared/components/ui/table";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import { Input } from "@/shared/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import {
   Eye,
   Search,
@@ -25,86 +25,97 @@ import {
   RefreshCw,
   MessageSquare,
   ChevronDown,
-  ChevronRight
-} from 'lucide-react'
-import { Skeleton } from '@/shared/components/ui/skeleton'
-import { QuestionPreviewDialog } from '@/features/questions/components/question-preview-dialog'
-import { formatDistanceToNow } from 'date-fns'
-import { AccessDenied, AccessDeniedPresets } from '@/shared/components/common/access-denied'
+  ChevronRight,
+} from "lucide-react";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { QuestionPreviewDialog } from "@/features/questions/components/question-preview-dialog";
+import { formatDistanceToNow } from "date-fns";
+import { AccessDenied, AccessDeniedPresets } from "@/shared/components/common/access-denied";
 
 export default function MyRevisionQueuePage() {
-  const router = useRouter()
-  const { canAccess } = useUserRole()
+  const router = useRouter();
+  const { canAccess } = useUserRole();
 
   // Use SWR hook for data fetching
-  const { questions, isLoading, refresh } = useMyRevisionQueue()
+  const { questions, isLoading, refresh } = useMyRevisionQueue();
 
-  const [filteredQuestions, setFilteredQuestions] = useState(questions)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedQuestion, setSelectedQuestion] = useState<typeof questions[0] | null>(null)
-  const [previewOpen, setPreviewOpen] = useState(false)
-  const [collapsedFeedback, setCollapsedFeedback] = useState<Set<string>>(new Set())
+  const [filteredQuestions, setFilteredQuestions] = useState(questions);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedQuestion, setSelectedQuestion] = useState<(typeof questions)[0] | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [collapsedFeedback, setCollapsedFeedback] = useState<Set<string>>(new Set());
 
   // Update filtered questions when questions or searchTerm changes
   useEffect(() => {
     if (searchTerm) {
-      const filtered = questions.filter(q =>
-        q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.stem.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      setFilteredQuestions(filtered)
+      const filtered = questions.filter(
+        (q) =>
+          q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          q.stem.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredQuestions(filtered);
     } else {
-      setFilteredQuestions(questions)
+      setFilteredQuestions(questions);
     }
-  }, [searchTerm, questions])
+  }, [searchTerm, questions]);
 
   // Refresh data when page becomes visible (e.g., returning from edit page)
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === 'visible') {
-        refresh()
+      if (document.visibilityState === "visible") {
+        refresh();
       }
-    }
+    };
 
-    document.addEventListener('visibilitychange', handleVisibilityChange)
+    document.addEventListener("visibilitychange", handleVisibilityChange);
     return () => {
-      document.removeEventListener('visibilitychange', handleVisibilityChange)
-    }
-  }, [refresh])
+      document.removeEventListener("visibilitychange", handleVisibilityChange);
+    };
+  }, [refresh]);
 
-  const handlePreview = (question: typeof questions[0]) => {
-    setSelectedQuestion(question)
-    setPreviewOpen(true)
-  }
+  const handlePreview = (question: (typeof questions)[0]) => {
+    setSelectedQuestion(question);
+    setPreviewOpen(true);
+  };
 
   const handleEditAndResubmit = (questionId: string) => {
-    router.push(`/admin/questions/${questionId}/edit?returnUrl=/admin/my-revision-queue`)
-  }
+    router.push(`/admin/questions/${questionId}/edit?returnUrl=/admin/my-revision-queue`);
+  };
 
   const toggleFeedback = (questionId: string) => {
-    const newCollapsed = new Set(collapsedFeedback)
+    const newCollapsed = new Set(collapsedFeedback);
     if (newCollapsed.has(questionId)) {
-      newCollapsed.delete(questionId)
+      newCollapsed.delete(questionId);
     } else {
-      newCollapsed.add(questionId)
+      newCollapsed.add(questionId);
     }
-    setCollapsedFeedback(newCollapsed)
-  }
+    setCollapsedFeedback(newCollapsed);
+  };
 
   // Get age indicator badge based on time since rejection
   const getAgeIndicator = (updatedAt: string) => {
-    const daysOld = Math.floor((Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24))
+    const daysOld = Math.floor(
+      (Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24)
+    );
     if (daysOld > 7) {
-      return <Badge variant="destructive" className="ml-2">Urgent</Badge>
+      return (
+        <Badge variant="destructive" className="ml-2">
+          Urgent
+        </Badge>
+      );
     } else if (daysOld > 3) {
-      return <Badge variant="secondary" className="ml-2">Aging</Badge>
+      return (
+        <Badge variant="secondary" className="ml-2">
+          Aging
+        </Badge>
+      );
     }
-    return null
-  }
+    return null;
+  };
 
   // Access control - only creators and admins can access
-  if (!canAccess('questions.create')) {
-    return <AccessDenied {...AccessDeniedPresets.creatorOnly} />
+  if (!canAccess("questions.create")) {
+    return <AccessDenied {...AccessDeniedPresets.creatorOnly} />;
   }
 
   if (isLoading) {
@@ -150,7 +161,7 @@ export default function MyRevisionQueuePage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -188,13 +199,8 @@ export default function MyRevisionQueuePage() {
             className="pl-8"
           />
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => refresh()}
-          disabled={isLoading}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+        <Button variant="outline" size="sm" onClick={() => refresh()} disabled={isLoading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
           Refresh
         </Button>
       </div>
@@ -217,14 +223,16 @@ export default function MyRevisionQueuePage() {
                     <AlertTriangle className="h-12 w-12 mx-auto mb-4" />
                     <h3 className="text-lg font-medium mb-2">No results</h3>
                     <p className="text-muted-foreground">
-                      {searchTerm ? 'No questions found matching your search' : 'You have no questions needing revision. Great work!'}
+                      {searchTerm
+                        ? "No questions found matching your search"
+                        : "You have no questions needing revision. Great work!"}
                     </p>
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
               filteredQuestions.map((question) => {
-                const isCollapsed = collapsedFeedback.has(question.id)
+                const isCollapsed = collapsedFeedback.has(question.id);
 
                 return (
                   <React.Fragment key={question.id}>
@@ -278,7 +286,8 @@ export default function MyRevisionQueuePage() {
                                     </p>
                                     {question.resubmission_date && (
                                       <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                        {formatDistanceToNow(new Date(question.resubmission_date))} ago
+                                        {formatDistanceToNow(new Date(question.resubmission_date))}{" "}
+                                        ago
                                       </p>
                                     )}
                                   </div>
@@ -290,23 +299,20 @@ export default function MyRevisionQueuePage() {
                       </TableCell>
                       <TableCell>
                         <div className="text-sm text-muted-foreground">
-                          {question.updated_at ? formatDistanceToNow(new Date(question.updated_at), { addSuffix: true }) : 'N/A'}
+                          {question.updated_at
+                            ? formatDistanceToNow(new Date(question.updated_at), {
+                                addSuffix: true,
+                              })
+                            : "N/A"}
                         </div>
                       </TableCell>
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={() => handlePreview(question)}
-                          >
+                          <Button variant="ghost" size="sm" onClick={() => handlePreview(question)}>
                             <Eye className="h-4 w-4 mr-1" />
                             Preview
                           </Button>
-                          <Button
-                            size="sm"
-                            onClick={() => handleEditAndResubmit(question.id)}
-                          >
+                          <Button size="sm" onClick={() => handleEditAndResubmit(question.id)}>
                             <Edit3 className="h-4 w-4 mr-1" />
                             Edit & Resubmit
                           </Button>
@@ -323,9 +329,7 @@ export default function MyRevisionQueuePage() {
                               <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
                             </div>
                             <div className="flex-1">
-                              <h4 className="text-sm font-semibold mb-2">
-                                Reviewer Feedback
-                              </h4>
+                              <h4 className="text-sm font-semibold mb-2">Reviewer Feedback</h4>
                               <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
                                 {question.reviewer_feedback}
                               </p>
@@ -335,7 +339,7 @@ export default function MyRevisionQueuePage() {
                       </TableRow>
                     )}
                   </React.Fragment>
-                )
+                );
               })
             )}
           </TableBody>
@@ -351,5 +355,5 @@ export default function MyRevisionQueuePage() {
         />
       )}
     </div>
-  )
+  );
 }

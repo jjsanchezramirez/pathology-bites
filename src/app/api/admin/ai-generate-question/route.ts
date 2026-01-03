@@ -1,210 +1,242 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from '@/shared/config/ai-models'
+import { NextRequest, NextResponse } from "next/server";
+import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
 
 // Accept all available models for admin question generation
-const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter(model => model.available).map(model => model.id)
+const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
+  (model) => model.id
+);
 
 interface QuestionGenerationRequest {
-  mode?: 'educational_content' | 'refinement' | 'enhance_question' | 'metadata_suggestion'
+  mode?: "educational_content" | "refinement" | "enhance_question" | "metadata_suggestion";
   content?: {
-    category: string
-    subject: string
-    lesson: string
-    topic: string
-    content?: unknown
+    category: string;
+    subject: string;
+    lesson: string;
+    topic: string;
+    content?: unknown;
     // For metadata suggestion mode
-    title?: string
-    stem?: string
-    teaching_point?: string
-    available_categories?: Array<{ id: string; name: string }>
-    available_question_sets?: Array<{ id: string; name: string }>
-    available_tags?: Array<{ id: string; name: string }>
-  }
+    title?: string;
+    stem?: string;
+    teaching_point?: string;
+    available_categories?: Array<{ id: string; name: string }>;
+    available_question_sets?: Array<{ id: string; name: string }>;
+    available_tags?: Array<{ id: string; name: string }>;
+  };
   currentQuestion?: {
-    title: string
-    stem: string
-    answer_options: unknown[]
-    teaching_point: string
-    question_references: string
-  }
-  instructions: string
-  additionalContext?: string
-  model?: string
+    title: string;
+    stem: string;
+    answer_options: unknown[];
+    teaching_point: string;
+    question_references: string;
+  };
+  instructions: string;
+  additionalContext?: string;
+  model?: string;
 }
 
 // AI API call functions
-async function callAIService(provider: string, prompt: string, modelId: string, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
+async function callAIService(
+  provider: string,
+  prompt: string,
+  modelId: string,
+  apiKey: string
+): Promise<{ content: string; tokenUsage?: unknown }> {
   switch (provider) {
-    case 'llama':
-      return await callMetaAPI(prompt, modelId, apiKey)
-    case 'google':
-      return await callGoogleAPI(prompt, modelId, apiKey)
-    case 'mistral':
-      return await callMistralAPI(prompt, modelId, apiKey)
+    case "llama":
+      return await callMetaAPI(prompt, modelId, apiKey);
+    case "google":
+      return await callGoogleAPI(prompt, modelId, apiKey);
+    case "mistral":
+      return await callMistralAPI(prompt, modelId, apiKey);
     default:
-      throw new Error(`Unsupported model provider: ${provider}`)
+      throw new Error(`Unsupported model provider: ${provider}`);
   }
 }
 
-async function callMetaAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
-  const controller = new AbortController()
-  const timeoutId = setTimeout(() => controller.abort(), 20000) // 20 second timeout
+async function callMetaAPI(
+  prompt: string,
+  model: string,
+  apiKey: string
+): Promise<{ content: string; tokenUsage?: unknown }> {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
 
-  let response: Response
+  let response: Response;
   try {
-    response = await fetch('https://api.llama.com/v1/chat/completions', {
-      method: 'POST',
+    response = await fetch("https://api.llama.com/v1/chat/completions", {
+      method: "POST",
       headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json'
+        Authorization: `Bearer ${apiKey}`,
+        "Content-Type": "application/json",
       },
       signal: controller.signal,
       body: JSON.stringify({
         model: model,
         messages: [
           {
-            role: 'system',
-            content: 'You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.'
+            role: "system",
+            content:
+              "You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.",
           },
           {
-            role: 'user',
-            content: prompt
-          }
+            role: "user",
+            content: prompt,
+          },
         ],
         max_completion_tokens: 4000,
-        temperature: 0.7
-      })
-    })
-    clearTimeout(timeoutId)
+        temperature: 0.7,
+      }),
+    });
+    clearTimeout(timeoutId);
   } catch (error) {
-    clearTimeout(timeoutId)
-    if (error instanceof Error && error.name === 'AbortError') {
-      throw new Error('Meta LLAMA API timeout after 20 seconds')
+    clearTimeout(timeoutId);
+    if (error instanceof Error && error.name === "AbortError") {
+      throw new Error("Meta LLAMA API timeout after 20 seconds");
     }
-    throw error
+    throw error;
   }
 
   if (!response.ok) {
-    const errorText = await response.text()
-    let errorMessage = `Meta LLAMA API error: ${response.status} ${response.statusText}`
-    
+    const errorText = await response.text();
+    let errorMessage = `Meta LLAMA API error: ${response.status} ${response.statusText}`;
+
     try {
-      const errorData = JSON.parse(errorText)
+      const errorData = JSON.parse(errorText);
       if (errorData.error?.message) {
-        errorMessage = errorData.error.message
+        errorMessage = errorData.error.message;
       }
     } catch {
       // Use default error message if JSON parsing fails
     }
-    
-    throw new Error(errorMessage)
+
+    throw new Error(errorMessage);
   }
 
-  const data = await response.json()
-  
+  const data = await response.json();
+
   // Handle Meta LLAMA API response format (match WSI implementation)
-  let content = ''
+  let content = "";
   if (data.completion_message?.content?.text) {
-    content = data.completion_message.content.text
+    content = data.completion_message.content.text;
   } else if (data.choices?.[0]?.message?.content) {
-    content = data.choices[0].message.content
+    content = data.choices[0].message.content;
   }
-  
+
   // Check for token usage in various possible locations
-  let tokenUsage = undefined
+  let tokenUsage = undefined;
   if (data.usage) {
     tokenUsage = {
       prompt_tokens: data.usage.prompt_tokens || 0,
       completion_tokens: data.usage.completion_tokens || 0,
-      total_tokens: data.usage.total_tokens || 0
-    }
+      total_tokens: data.usage.total_tokens || 0,
+    };
   } else if (data.token_usage) {
     tokenUsage = {
       prompt_tokens: data.token_usage.prompt_tokens || 0,
       completion_tokens: data.token_usage.completion_tokens || 0,
-      total_tokens: data.token_usage.total_tokens || 0
-    }
+      total_tokens: data.token_usage.total_tokens || 0,
+    };
   } else if (data.completion_message?.usage) {
     tokenUsage = {
       prompt_tokens: data.completion_message.usage.prompt_tokens || 0,
       completion_tokens: data.completion_message.usage.completion_tokens || 0,
-      total_tokens: data.completion_message.usage.total_tokens || 0
-    }
+      total_tokens: data.completion_message.usage.total_tokens || 0,
+    };
   }
 
-  return { content: content || '', tokenUsage }
+  return { content: content || "", tokenUsage };
 }
 
-async function callGoogleAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
-  const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: {
-        temperature: 0.7,
-        maxOutputTokens: 4000
-      }
-    })
-  })
+async function callGoogleAPI(
+  prompt: string,
+  model: string,
+  apiKey: string
+): Promise<{ content: string; tokenUsage?: unknown }> {
+  const response = await fetch(
+    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        contents: [{ parts: [{ text: prompt }] }],
+        generationConfig: {
+          temperature: 0.7,
+          maxOutputTokens: 4000,
+        },
+      }),
+    }
+  );
 
   if (!response.ok) {
-    throw new Error(`Google API error: ${response.status} ${response.statusText}`)
+    throw new Error(`Google API error: ${response.status} ${response.statusText}`);
   }
 
-  const data = await response.json()
+  const data = await response.json();
   return {
-    content: data.candidates?.[0]?.content?.parts?.[0]?.text || '',
-    tokenUsage: data.usageMetadata ? {
-      prompt_tokens: data.usageMetadata.promptTokenCount || 0,
-      completion_tokens: data.usageMetadata.candidatesTokenCount || 0,
-      total_tokens: data.usageMetadata.totalTokenCount || 0
-    } : undefined
-  }
+    content: data.candidates?.[0]?.content?.parts?.[0]?.text || "",
+    tokenUsage: data.usageMetadata
+      ? {
+          prompt_tokens: data.usageMetadata.promptTokenCount || 0,
+          completion_tokens: data.usageMetadata.candidatesTokenCount || 0,
+          total_tokens: data.usageMetadata.totalTokenCount || 0,
+        }
+      : undefined,
+  };
 }
 
-async function callMistralAPI(prompt: string, model: string, apiKey: string): Promise<{ content: string; tokenUsage?: unknown }> {
-  const response = await fetch('https://api.mistral.ai/v1/chat/completions', {
-    method: 'POST',
+async function callMistralAPI(
+  prompt: string,
+  model: string,
+  apiKey: string
+): Promise<{ content: string; tokenUsage?: unknown }> {
+  const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
+    method: "POST",
     headers: {
-      'Authorization': `Bearer ${apiKey}`,
-      'Content-Type': 'application/json'
+      Authorization: `Bearer ${apiKey}`,
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       model: model,
       messages: [
         {
-          role: 'system',
-          content: 'You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.'
+          role: "system",
+          content:
+            "You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.",
         },
         {
-          role: 'user',
-          content: prompt
-        }
+          role: "user",
+          content: prompt,
+        },
       ],
       max_tokens: 4000,
-      temperature: 0.7
-    })
-  })
+      temperature: 0.7,
+    }),
+  });
 
   if (!response.ok) {
-    throw new Error(`Mistral API error: ${response.status} ${response.statusText}`)
+    throw new Error(`Mistral API error: ${response.status} ${response.statusText}`);
   }
 
-  const data = await response.json()
+  const data = await response.json();
   return {
-    content: data.choices[0]?.message?.content || '',
-    tokenUsage: data.usage ? {
-      prompt_tokens: data.usage.prompt_tokens,
-      completion_tokens: data.usage.completion_tokens,
-      total_tokens: data.usage.total_tokens
-    } : undefined
-  }
+    content: data.choices[0]?.message?.content || "",
+    tokenUsage: data.usage
+      ? {
+          prompt_tokens: data.usage.prompt_tokens,
+          completion_tokens: data.usage.completion_tokens,
+          total_tokens: data.usage.total_tokens,
+        }
+      : undefined,
+  };
 }
 
-
-function buildAdminQuestionPrompt(content: unknown, instructions: string, additionalContext: string, mode: string = 'educational_content'): string {
-  if (mode === 'educational_content') {
+function buildAdminQuestionPrompt(
+  content: unknown,
+  instructions: string,
+  additionalContext: string,
+  mode: string = "educational_content"
+): string {
+  if (mode === "educational_content") {
     return `Create a high-quality medical/pathology question based on the following educational content:
 
 EDUCATIONAL CONTENT:
@@ -217,7 +249,7 @@ INSTRUCTIONS:
 ${instructions}
 
 ADDITIONAL CONTEXT:
-${additionalContext || 'None provided'}
+${additionalContext || "None provided"}
 
 CRITICAL REQUIREMENTS:
 1. Create a clinically relevant multiple-choice question
@@ -282,24 +314,24 @@ IMPORTANT: For suggested_tags, provide 3-5 relevant medical/pathology tags that 
 - Concise (1-3 words each)`;
   }
 
-  if (mode === 'metadata_suggestion') {
+  if (mode === "metadata_suggestion") {
     return `Analyze the following question content and suggest appropriate metadata:
 
 QUESTION CONTENT:
 Title: ${content.title}
 Stem: ${content.stem}
-Teaching Point: ${content.teaching_point || 'Not provided'}
+Teaching Point: ${content.teaching_point || "Not provided"}
 
 AVAILABLE OPTIONS:
 
 Categories:
-${content.available_categories?.map((cat: unknown) => `- ${cat.name} (ID: ${cat.id})`).join('\n') || 'None available'}
+${content.available_categories?.map((cat: unknown) => `- ${cat.name} (ID: ${cat.id})`).join("\n") || "None available"}
 
 Question Sets:
-${content.available_question_sets?.map((qs: unknown) => `- ${qs.name} (ID: ${qs.id})`).join('\n') || 'None available'}
+${content.available_question_sets?.map((qs: unknown) => `- ${qs.name} (ID: ${qs.id})`).join("\n") || "None available"}
 
 Available Tags:
-${content.available_tags?.map((tag: unknown) => `- ${tag.name} (ID: ${tag.id})`).join('\n') || 'None available'}
+${content.available_tags?.map((tag: unknown) => `- ${tag.name} (ID: ${tag.id})`).join("\n") || "None available"}
 
 INSTRUCTIONS:
 Based on the question content, suggest the most appropriate:
@@ -329,9 +361,12 @@ Teaching Point: ${content.teaching_point}
 References: ${content.question_references}
 
 CURRENT ANSWER OPTIONS:
-${content.answer_options.map((opt: unknown, i: number) =>
-  `${String.fromCharCode(65 + i)}. ${opt.text} ${opt.is_correct ? '(CORRECT)' : '(INCORRECT)'}\n   Explanation: ${opt.explanation}`
-).join('\n')}
+${content.answer_options
+  .map(
+    (opt: unknown, i: number) =>
+      `${String.fromCharCode(65 + i)}. ${opt.text} ${opt.is_correct ? "(CORRECT)" : "(INCORRECT)"}\n   Explanation: ${opt.explanation}`
+  )
+  .join("\n")}
 
 REFINEMENT INSTRUCTIONS:
 ${instructions}
@@ -382,36 +417,36 @@ Return your response in this EXACT JSON format:
 
 // Helper function to sanitize JSON string by removing/escaping control characters
 function sanitizeJSONString(jsonStr: string): string {
-  return jsonStr
-    // Replace unescaped newlines, tabs, and carriage returns with escaped versions
-    .replace(/(?<!\\)\n/g, '\\n')
-    .replace(/(?<!\\)\t/g, '\\t')
-    .replace(/(?<!\\)\r/g, '\\r')
-    // Remove other control characters that might break JSON parsing
-    .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
-    // Fix common issues with quotes - be more careful here
-    .replace(/\\"/g, '___ESCAPED_QUOTE___') // Temporarily replace escaped quotes
-    .replace(/"/g, '\\"') // Escape all remaining quotes
-    .replace(/___ESCAPED_QUOTE___/g, '\\"') // Restore escaped quotes
+  return (
+    jsonStr
+      // Replace unescaped newlines, tabs, and carriage returns with escaped versions
+      .replace(/(?<!\\)\n/g, "\\n")
+      .replace(/(?<!\\)\t/g, "\\t")
+      .replace(/(?<!\\)\r/g, "\\r")
+      // Remove other control characters that might break JSON parsing
+      .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, "")
+      // Fix common issues with quotes - be more careful here
+      .replace(/\\"/g, "___ESCAPED_QUOTE___") // Temporarily replace escaped quotes
+      .replace(/"/g, '\\"') // Escape all remaining quotes
+      .replace(/___ESCAPED_QUOTE___/g, '\\"')
+  ); // Restore escaped quotes
 }
 
 function extractJSON(text: string): unknown {
-  console.log(`[Admin AI] Extracting JSON from response (${text.length} chars)`)
+  console.log(`[Admin AI] Extracting JSON from response (${text.length} chars)`);
 
   // Handle Mistral thinking format first
-  let cleanedText = text
+  let cleanedText = text;
   try {
     // Check if it's a Mistral thinking format (array with thinking objects)
-    if (text.trim().startsWith('[')) {
-      const parsed = JSON.parse(text)
+    if (text.trim().startsWith("[")) {
+      const parsed = JSON.parse(text);
       if (Array.isArray(parsed)) {
         // Find the actual text response (not thinking)
-        const textResponse = parsed.find(item =>
-          item.type === 'text' && !item.thinking
-        )
+        const textResponse = parsed.find((item) => item.type === "text" && !item.thinking);
         if (textResponse?.text) {
-          cleanedText = textResponse.text
-          console.log('[Admin AI] Extracted content from Mistral thinking format')
+          cleanedText = textResponse.text;
+          console.log("[Admin AI] Extracted content from Mistral thinking format");
         }
       }
     }
@@ -420,211 +455,271 @@ function extractJSON(text: string): unknown {
   }
 
   // Strategy 1: Smart brace counting (handles extra content after JSON)
-  const firstBrace = cleanedText.indexOf('{')
+  const firstBrace = cleanedText.indexOf("{");
   if (firstBrace !== -1) {
-    let braceCount = 0
-    let i = firstBrace
-    let inString = false
-    let escapeNext = false
+    let braceCount = 0;
+    let i = firstBrace;
+    let inString = false;
+    let escapeNext = false;
 
     while (i < cleanedText.length) {
-      const char = cleanedText[i]
+      const char = cleanedText[i];
 
       if (escapeNext) {
-        escapeNext = false
-      } else if (char === '\\' && inString) {
-        escapeNext = true
+        escapeNext = false;
+      } else if (char === "\\" && inString) {
+        escapeNext = true;
       } else if (char === '"' && !escapeNext) {
-        inString = !inString
+        inString = !inString;
       } else if (!inString) {
-        if (char === '{') {
-          braceCount++
-        } else if (char === '}') {
-          braceCount--
+        if (char === "{") {
+          braceCount++;
+        } else if (char === "}") {
+          braceCount--;
           if (braceCount === 0) {
-            const jsonStr = cleanedText.substring(firstBrace, i + 1)
+            const jsonStr = cleanedText.substring(firstBrace, i + 1);
             try {
-              return JSON.parse(sanitizeJSONString(jsonStr))
+              return JSON.parse(sanitizeJSONString(jsonStr));
             } catch {
               // Try without sanitization as fallback
               try {
-                return JSON.parse(jsonStr)
+                return JSON.parse(jsonStr);
               } catch {
-                console.log('[Admin AI] JSON parsing failed, trying next strategy')
-                break
+                console.log("[Admin AI] JSON parsing failed, trying next strategy");
+                break;
               }
             }
           }
         }
       }
-      i++
+      i++;
     }
   }
 
   // Strategy 2: Look for JSON between code blocks
-  const codeBlockMatch = cleanedText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/)
+  const codeBlockMatch = cleanedText.match(/```(?:json)?\s*(\{[\s\S]*?\})\s*```/);
   if (codeBlockMatch) {
     try {
-      return JSON.parse(sanitizeJSONString(codeBlockMatch[1]))
+      return JSON.parse(sanitizeJSONString(codeBlockMatch[1]));
     } catch {
       try {
-        return JSON.parse(codeBlockMatch[1])
+        return JSON.parse(codeBlockMatch[1]);
       } catch {
-        console.log('[Admin AI] Code block JSON parsing failed')
+        console.log("[Admin AI] Code block JSON parsing failed");
       }
     }
   }
 
   // Strategy 3: Greedy match (fallback)
-  const greedyMatch = cleanedText.match(/\{[\s\S]*\}/)
+  const greedyMatch = cleanedText.match(/\{[\s\S]*\}/);
   if (greedyMatch) {
     try {
-      return JSON.parse(sanitizeJSONString(greedyMatch[0]))
+      return JSON.parse(sanitizeJSONString(greedyMatch[0]));
     } catch {
       try {
-        return JSON.parse(greedyMatch[0])
+        return JSON.parse(greedyMatch[0]);
       } catch {
         // Try to fix common JSON issues
         const fixedJson = greedyMatch[0]
           .replace(/([{,]\s*)(\w+):/g, '$1"$2":') // Add quotes to unquoted keys
           .replace(/:\s*'([^']*)'/g, ': "$1"') // Replace single quotes with double quotes
-          .replace(/,(\s*[}\]])/g, '$1') // Remove trailing commas
-          .trim()
+          .replace(/,(\s*[}\]])/g, "$1") // Remove trailing commas
+          .trim();
 
         try {
-          return JSON.parse(sanitizeJSONString(fixedJson))
+          return JSON.parse(sanitizeJSONString(fixedJson));
         } catch (_sanitizeError) {
           try {
-            return JSON.parse(fixedJson)
+            return JSON.parse(fixedJson);
           } catch (finalError) {
-            console.error('[Admin AI] All JSON parsing strategies failed.')
-            console.error('[Admin AI] Response preview (first 1000 chars):', text.substring(0, 1000))
-            console.error('[Admin AI] Response preview (last 500 chars):', text.substring(Math.max(0, text.length - 500)))
+            console.error("[Admin AI] All JSON parsing strategies failed.");
+            console.error(
+              "[Admin AI] Response preview (first 1000 chars):",
+              text.substring(0, 1000)
+            );
+            console.error(
+              "[Admin AI] Response preview (last 500 chars):",
+              text.substring(Math.max(0, text.length - 500))
+            );
 
             // Provide more helpful error message
-            const errorMsg = `AI model returned invalid JSON. Try: (1) Use a different model like Gemini 2.5 Flash or LLAMA 3.3 70B, (2) Simplify instructions, or (3) Try again (responses vary). Error: ${finalError instanceof Error ? finalError.message : 'Parse error'}`
-            throw new Error(errorMsg)
+            const errorMsg = `AI model returned invalid JSON. Try: (1) Use a different model like Gemini 2.5 Flash or LLAMA 3.3 70B, (2) Simplify instructions, or (3) Try again (responses vary). Error: ${finalError instanceof Error ? finalError.message : "Parse error"}`;
+            throw new Error(errorMsg);
           }
         }
       }
     }
   }
 
-  console.error('[Admin AI] Failed to extract JSON. Response preview (first 1000 chars):', text.substring(0, 1000))
-  console.error('[Admin AI] Response preview (last 500 chars):', text.substring(Math.max(0, text.length - 500)))
-  throw new Error('No JSON found in AI response. The model may have returned plain text instead of JSON. Try using a different AI model (e.g., Gemini 2.5 Flash or LLAMA 3.3 70B) or simplify your instructions.')
+  console.error(
+    "[Admin AI] Failed to extract JSON. Response preview (first 1000 chars):",
+    text.substring(0, 1000)
+  );
+  console.error(
+    "[Admin AI] Response preview (last 500 chars):",
+    text.substring(Math.max(0, text.length - 500))
+  );
+  throw new Error(
+    "No JSON found in AI response. The model may have returned plain text instead of JSON. Try using a different AI model (e.g., Gemini 2.5 Flash or LLAMA 3.3 70B) or simplify your instructions."
+  );
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const body: QuestionGenerationRequest = await request.json()
-    const { mode = 'educational_content', content, _currentQuestion, instructions, additionalContext = '', model } = body
+    const body: QuestionGenerationRequest = await request.json();
+    const {
+      mode = "educational_content",
+      content,
+      _currentQuestion,
+      instructions,
+      additionalContext = "",
+      model,
+    } = body;
 
     // Normalize mode (enhance_question is an alias for refinement)
-    const normalizedMode = mode === 'enhance_question' ? 'refinement' : mode
+    const normalizedMode = mode === "enhance_question" ? "refinement" : mode;
 
     // Validate inputs based on mode
-    if (normalizedMode === 'educational_content') {
+    if (normalizedMode === "educational_content") {
       if (!content || !instructions) {
         return NextResponse.json(
-          { success: false, error: 'Missing required fields for educational_content mode: content, instructions' },
+          {
+            success: false,
+            error: "Missing required fields for educational_content mode: content, instructions",
+          },
           { status: 400 }
-        )
+        );
       }
-    } else if (normalizedMode === 'refinement') {
+    } else if (normalizedMode === "refinement") {
       if (!content || !instructions) {
         return NextResponse.json(
-          { success: false, error: 'Missing required fields for refinement/enhance_question mode: content, instructions' },
+          {
+            success: false,
+            error:
+              "Missing required fields for refinement/enhance_question mode: content, instructions",
+          },
           { status: 400 }
-        )
+        );
       }
-    } else if (normalizedMode === 'metadata_suggestion') {
+    } else if (normalizedMode === "metadata_suggestion") {
       if (!content || !content.title || !content.stem) {
         return NextResponse.json(
-          { success: false, error: 'Missing required fields for metadata_suggestion mode: content.title, content.stem' },
+          {
+            success: false,
+            error:
+              "Missing required fields for metadata_suggestion mode: content.title, content.stem",
+          },
           { status: 400 }
-        )
+        );
       }
     }
 
     // Use default model for educational content mode if not specified
-    const selectedModel = model || 'Llama-3.3-8B-Instruct'
+    const selectedModel = model || "Llama-3.3-8B-Instruct";
 
     // Validate model
     if (!ADMIN_AI_MODELS.includes(selectedModel)) {
       return NextResponse.json(
-        { success: false, error: `Unsupported model: ${selectedModel}. Supported: ${ADMIN_AI_MODELS.join(', ')}` },
+        {
+          success: false,
+          error: `Unsupported model: ${selectedModel}. Supported: ${ADMIN_AI_MODELS.join(", ")}`,
+        },
         { status: 400 }
-      )
+      );
     }
 
     // Get API configuration
-    const provider = getModelProvider(selectedModel)
-    const apiKey = getApiKey(provider)
+    const provider = getModelProvider(selectedModel);
+    const apiKey = getApiKey(provider);
 
     if (!apiKey) {
       return NextResponse.json(
         { success: false, error: `No API key found for provider: ${provider}` },
         { status: 500 }
-      )
+      );
     }
 
-    console.log(`[Admin AI] Generating question using ${selectedModel} (${provider}) in ${mode} mode`)
+    console.log(
+      `[Admin AI] Generating question using ${selectedModel} (${provider}) in ${mode} mode`
+    );
 
     // Build the prompt based on mode
-    const promptData = normalizedMode === 'refinement' ? content : content
-    const prompt = buildAdminQuestionPrompt(promptData, instructions, additionalContext, normalizedMode)
+    const promptData = normalizedMode === "refinement" ? content : content;
+    const prompt = buildAdminQuestionPrompt(
+      promptData,
+      instructions,
+      additionalContext,
+      normalizedMode
+    );
 
     // Call AI service
-    const startTime = Date.now()
-    const aiResponse = await callAIService(provider, prompt, selectedModel, apiKey)
-    const generationTime = Date.now() - startTime
+    const startTime = Date.now();
+    const aiResponse = await callAIService(provider, prompt, selectedModel, apiKey);
+    const generationTime = Date.now() - startTime;
 
-    console.log(`[Admin AI] Generated response in ${generationTime}ms`)
-    console.log(`[Admin AI] Raw AI response (${mode} mode):`, aiResponse.content.substring(0, 500) + '...')
+    console.log(`[Admin AI] Generated response in ${generationTime}ms`);
+    console.log(
+      `[Admin AI] Raw AI response (${mode} mode):`,
+      aiResponse.content.substring(0, 500) + "..."
+    );
 
     // Parse the AI response
-    let questionData
+    let questionData;
     try {
-      questionData = extractJSON(aiResponse.content)
-      console.log(`[Admin AI] Extracted JSON (${mode} mode):`, JSON.stringify(questionData, null, 2))
+      questionData = extractJSON(aiResponse.content);
+      console.log(
+        `[Admin AI] Extracted JSON (${mode} mode):`,
+        JSON.stringify(questionData, null, 2)
+      );
     } catch (parseError) {
-      console.error(`[Admin AI] JSON extraction failed for model ${selectedModel} (${provider})`)
-      throw parseError
+      console.error(`[Admin AI] JSON extraction failed for model ${selectedModel} (${provider})`);
+      throw parseError;
     }
 
     // Normalize options field - AI models sometimes use different field names despite our prompt
     // Accept question_options (preferred), answer_options, or options, then normalize to question_options
     if (!questionData.question_options && (questionData.answer_options || questionData.options)) {
-      console.log('[Admin AI] Normalizing options field from:', questionData.answer_options ? 'answer_options' : 'options')
-      questionData.question_options = questionData.answer_options || questionData.options
+      console.log(
+        "[Admin AI] Normalizing options field from:",
+        questionData.answer_options ? "answer_options" : "options"
+      );
+      questionData.question_options = questionData.answer_options || questionData.options;
       // Clean up the old field
-      delete questionData.answer_options
-      delete questionData.options
+      delete questionData.answer_options;
+      delete questionData.options;
     }
 
     // Validate the response structure based on mode
-    if (normalizedMode === 'metadata_suggestion') {
+    if (normalizedMode === "metadata_suggestion") {
       // For metadata suggestion, we expect different fields
-      const hasMetadataFields = questionData.category_id || questionData.question_set_id || questionData.difficulty || questionData.suggested_tag_ids
+      const hasMetadataFields =
+        questionData.category_id ||
+        questionData.question_set_id ||
+        questionData.difficulty ||
+        questionData.suggested_tag_ids;
 
       if (!hasMetadataFields) {
-        console.error('[Admin AI] Metadata suggestion validation failed. Response structure:', {
+        console.error("[Admin AI] Metadata suggestion validation failed. Response structure:", {
           hasCategoryId: !!questionData.category_id,
           hasQuestionSetId: !!questionData.question_set_id,
           hasDifficulty: !!questionData.difficulty,
           hasSuggestedTagIds: !!questionData.suggested_tag_ids,
           actualKeys: Object.keys(questionData),
-          mode: mode
-        })
-        throw new Error('AI response missing metadata fields. Expected at least one of: category_id, question_set_id, difficulty, suggested_tag_ids')
+          mode: mode,
+        });
+        throw new Error(
+          "AI response missing metadata fields. Expected at least one of: category_id, question_set_id, difficulty, suggested_tag_ids"
+        );
       }
     } else {
       // For question generation modes, validate question structure
-      const hasRequiredFields = questionData.stem && questionData.question_options && Array.isArray(questionData.question_options)
+      const hasRequiredFields =
+        questionData.stem &&
+        questionData.question_options &&
+        Array.isArray(questionData.question_options);
 
       if (!hasRequiredFields) {
-        console.error('[Admin AI] Validation failed. Response structure:', {
+        console.error("[Admin AI] Validation failed. Response structure:", {
           hasTitle: !!questionData.title,
           hasStem: !!questionData.stem,
           hasQuestionOptions: !!questionData.question_options,
@@ -632,47 +727,53 @@ export async function POST(request: NextRequest) {
           hasOptions: !!questionData.options,
           isQuestionOptionsArray: Array.isArray(questionData.question_options),
           actualKeys: Object.keys(questionData),
-          mode: mode
-        })
-        throw new Error(`AI response missing required fields for ${mode} mode. Required: stem, question_options (array)`)
+          mode: mode,
+        });
+        throw new Error(
+          `AI response missing required fields for ${mode} mode. Required: stem, question_options (array)`
+        );
       }
 
       // For refinement mode, title is optional (can keep existing)
-      if (normalizedMode === 'educational_content' && !questionData.title) {
-        throw new Error('AI response missing title field (required for educational_content mode)')
+      if (normalizedMode === "educational_content" && !questionData.title) {
+        throw new Error("AI response missing title field (required for educational_content mode)");
       }
 
       if (questionData.question_options.length !== 5) {
-        throw new Error('AI response must contain exactly 5 options')
+        throw new Error("AI response must contain exactly 5 options");
       }
 
-      const correctCount = questionData.question_options.filter((opt: unknown) => opt.is_correct).length
+      const correctCount = questionData.question_options.filter(
+        (opt: unknown) => opt.is_correct
+      ).length;
       if (correctCount !== 1) {
-        throw new Error(`AI response must have exactly 1 correct answer, found ${correctCount}`)
+        throw new Error(`AI response must have exactly 1 correct answer, found ${correctCount}`);
       }
     }
 
     // Return the data in the format expected by the frontend
-    let responseData: unknown
+    let responseData: unknown;
 
-    if (normalizedMode === 'metadata_suggestion') {
+    if (normalizedMode === "metadata_suggestion") {
       responseData = {
         category_id: questionData.category_id || null,
         question_set_id: questionData.question_set_id || null,
         difficulty: questionData.difficulty || null,
-        suggested_tag_ids: questionData.suggested_tag_ids || []
-      }
+        suggested_tag_ids: questionData.suggested_tag_ids || [],
+      };
     } else {
       responseData = {
-        title: questionData.title || (normalizedMode === 'refinement' ? 'Refined Question' : 'Generated Question'),
+        title:
+          questionData.title ||
+          (normalizedMode === "refinement" ? "Refined Question" : "Generated Question"),
         stem: questionData.stem,
         answer_options: questionData.question_options || questionData.answer_options,
-        teaching_point: questionData.teaching_point || '',
-        question_references: '',
-        difficulty: questionData.difficulty || 'medium',
-        status: questionData.status || 'draft',
-        suggested_tags: questionData.suggested_tags || []
-      }
+        teaching_point: questionData.teaching_point || "",
+        question_references: "",
+        difficulty: questionData.difficulty || "medium",
+        status: questionData.status || "draft",
+        suggested_tags: questionData.suggested_tags || [],
+      };
     }
 
     return NextResponse.json({
@@ -684,18 +785,17 @@ export async function POST(request: NextRequest) {
         model: selectedModel,
         provider: provider,
         token_usage: aiResponse.tokenUsage,
-        mode: mode
-      }
-    })
-
+        mode: mode,
+      },
+    });
   } catch (error) {
-    console.error('[Admin AI] Error:', error)
+    console.error("[Admin AI] Error:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      {
+        success: false,
+        error: error instanceof Error ? error.message : "Unknown error occurred",
       },
       { status: 500 }
-    )
+    );
   }
 }

@@ -1,11 +1,11 @@
 // src/components/landing/demo-question-error.tsx
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { AlertCircle } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { AlertCircle } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
 
 interface DemoQuestionErrorProps {
-  message: string
-  onRetry: () => void
+  message: string;
+  onRetry: () => void;
 }
 
 export default function DemoQuestionError({ message, onRetry }: DemoQuestionErrorProps) {
@@ -21,17 +21,13 @@ export default function DemoQuestionError({ message, onRetry }: DemoQuestionErro
         <div className="text-sm text-muted-foreground">
           {message || "We encountered an issue loading the demo question. Please try again later."}
         </div>
-        
+
         <div className="flex justify-end">
-          <Button 
-            onClick={onRetry}
-            variant="default"
-            size="sm"
-          >
+          <Button onClick={onRetry} variant="default" size="sm">
             Try Again
           </Button>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }

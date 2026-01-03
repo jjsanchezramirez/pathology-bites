@@ -1,116 +1,127 @@
 // src/lib/auth/client-actions.ts
-'use client'
+"use client";
 
-import { createClient } from '@/shared/services/client'
-import { useRouter } from 'next/navigation'
-import { useCallback } from 'react'
+import { createClient } from "@/shared/services/client";
+import { useRouter } from "next/navigation";
+import { useCallback } from "react";
 // Error handling removed - simplified to basic try/catch
-import { apiClient } from '@/shared/utils/api-client'
+import { apiClient } from "@/shared/utils/api-client";
 
 export function useAuthActions() {
-  const router = useRouter()
-  const supabase = createClient()
+  const router = useRouter();
+  const supabase = createClient();
 
   const signOut = useCallback(async () => {
     try {
-      const { error } = await supabase.auth.signOut()
+      const { error } = await supabase.auth.signOut();
 
       if (error) {
-        console.error('Sign out error:', error)
-        throw error
+        console.error("Sign out error:", error);
+        throw error;
       }
 
       // Clear any local storage or cached data
-      if (typeof window !== 'undefined') {
-        localStorage.clear()
-        sessionStorage.clear()
+      if (typeof window !== "undefined") {
+        localStorage.clear();
+        sessionStorage.clear();
 
         // Clear admin-mode cookie to prevent it from persisting across sessions
-        document.cookie = 'admin-mode=; path=/; max-age=0'
+        document.cookie = "admin-mode=; path=/; max-age=0";
       }
 
       // Clear cached CSRF token
-      apiClient.clearToken()
+      apiClient.clearToken();
 
       // Force a hard refresh to clear all cached data
-      window.location.href = '/login'
+      window.location.href = "/login";
     } catch (error) {
-      console.error('Error during sign out:', error)
+      console.error("Error during sign out:", error);
       // Still redirect to login even if there's an error
-      window.location.href = '/login'
+      window.location.href = "/login";
     }
-  }, [supabase.auth])
+  }, [supabase.auth]);
 
   const refreshSession = useCallback(async () => {
-    const { data: { session }, error } = await supabase.auth.refreshSession()
+    const {
+      data: { session },
+      error,
+    } = await supabase.auth.refreshSession();
 
     if (error) {
-      throw error
+      throw error;
     }
 
     // Only refresh router if not in a form interaction to prevent data loss
     // Check if user is actively working on forms (has unsaved changes)
-    const hasUnsavedWork = typeof window !== 'undefined' && (
-      window.location.pathname.includes('/create-question') ||
-      window.location.pathname.includes('/edit-question') ||
-      document.querySelector('[data-unsaved-changes="true"]')
-    )
+    const hasUnsavedWork =
+      typeof window !== "undefined" &&
+      (window.location.pathname.includes("/create-question") ||
+        window.location.pathname.includes("/edit-question") ||
+        document.querySelector('[data-unsaved-changes="true"]'));
 
     if (!hasUnsavedWork) {
       // Safe to refresh router when not in critical form interactions
-      router.refresh()
+      router.refresh();
     } else {
       // Log that session was refreshed but router refresh was skipped
-      console.log('Session refreshed silently to preserve form data')
+      console.log("Session refreshed silently to preserve form data");
 
       // Show subtle notification that session was refreshed without disrupting work
-      if (typeof window !== 'undefined') {
+      if (typeof window !== "undefined") {
         // Use a custom event to notify components about silent session refresh
-        window.dispatchEvent(new CustomEvent('session-refreshed-silently', {
-          detail: { timestamp: Date.now() }
-        }))
+        window.dispatchEvent(
+          new CustomEvent("session-refreshed-silently", {
+            detail: { timestamp: Date.now() },
+          })
+        );
       }
     }
 
-    return session
-  }, [supabase.auth, router])
+    return session;
+  }, [supabase.auth, router]);
 
   const getSession = useCallback(async () => {
     try {
-      const { data: { session }, error } = await supabase.auth.getSession()
+      const {
+        data: { session },
+        error,
+      } = await supabase.auth.getSession();
 
       if (error) {
-        console.error('Get session error:', error)
-        throw error
+        console.error("Get session error:", error);
+        throw error;
       }
 
-      return session
+      return session;
     } catch (error) {
-      console.error('Error getting session:', error)
-      throw error
+      console.error("Error getting session:", error);
+      throw error;
     }
-  }, [supabase.auth])
+  }, [supabase.auth]);
 
   const getCurrentUser = useCallback(async () => {
     try {
-      const { data: { user }, error } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error,
+      } = await supabase.auth.getUser();
 
       if (error) {
-        console.error('Get user error:', error)
-        throw error
+        console.error("Get user error:", error);
+        throw error;
       }
 
-      return user
+      return user;
     } catch (error) {
-      console.error('Error getting user:', error)
-      throw error
+      console.error("Error getting user:", error);
+      throw error;
     }
-  }, [supabase.auth])
+  }, [supabase.auth]);
 
   return {
     signOut,
     refreshSession,
     getSession,
     getCurrentUser,
-  }
+  };
 }

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 
 import {
@@ -8,7 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 
 interface EnhancedPaginationProps {
   currentPage: number;
@@ -29,7 +29,7 @@ export function EnhancedPagination({
   onPageChange,
   onPageSizeChange,
 }: EnhancedPaginationProps) {
-  const [pageInput, setPageInput] = useState('');
+  const [pageInput, setPageInput] = useState("");
 
   const startItem = totalItems > 0 ? currentPage * pageSize + 1 : 0;
   const endItem = Math.min((currentPage + 1) * pageSize, totalItems);
@@ -39,7 +39,7 @@ export function EnhancedPagination({
     const pageNum = parseInt(pageInput, 10);
     if (pageNum >= 1 && pageNum <= totalPages) {
       onPageChange(pageNum - 1); // Convert to 0-based index
-      setPageInput('');
+      setPageInput("");
     }
   };
 
@@ -48,10 +48,13 @@ export function EnhancedPagination({
       {/* Left side: Items info and page size selector */}
       <div className="flex items-center gap-4 text-sm">
         <span className="text-muted-foreground whitespace-nowrap">
-          Showing <span className="font-medium text-foreground">{startItem}-{endItem}</span> of{' '}
-          <span className="font-medium text-foreground">{totalItems}</span> images
+          Showing{" "}
+          <span className="font-medium text-foreground">
+            {startItem}-{endItem}
+          </span>{" "}
+          of <span className="font-medium text-foreground">{totalItems}</span> images
         </span>
-        
+
         <div className="flex items-center gap-2">
           <span className="text-muted-foreground whitespace-nowrap">Per page:</span>
           <Select
@@ -130,4 +133,3 @@ export function EnhancedPagination({
     </div>
   );
 }
-

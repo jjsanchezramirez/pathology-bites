@@ -1,15 +1,15 @@
 // src/features/quiz/services/auto-save-manager.ts
 
-import { 
-  AUTO_SAVE_CONFIG, 
-  AutoSaveTrigger, 
+import {
+  AUTO_SAVE_CONFIG,
+  AutoSaveTrigger,
   AutoSaveResult,
   SyncStatus,
-  debugLog
-} from '../config/auto-save-config';
-import { OfflineQueueManager } from './offline-queue-manager';
-import { DatabaseSyncManager } from '../hybrid/core/database-sync-manager';
-import type { QuizState } from '../hybrid/core/quiz-state-machine';
+  debugLog,
+} from "../config/auto-save-config";
+import { OfflineQueueManager } from "./offline-queue-manager";
+import { DatabaseSyncManager } from "../hybrid/core/database-sync-manager";
+import type { QuizState } from "../hybrid/core/quiz-state-machine";
 
 /**
  * Manages all auto-save operations for quiz sessions
@@ -23,14 +23,11 @@ export class AutoSaveManager {
   private saveInProgress: boolean = false;
   private syncStatusCallback?: (status: SyncStatus) => void;
 
-  constructor(
-    syncManager: DatabaseSyncManager,
-    onSyncStatusChange?: (status: SyncStatus) => void
-  ) {
+  constructor(syncManager: DatabaseSyncManager, onSyncStatusChange?: (status: SyncStatus) => void) {
     this.syncManager = syncManager;
     this.offlineQueue = new OfflineQueueManager();
     this.syncStatusCallback = onSyncStatusChange;
-    
+
     // Start processing offline queue
     this.startQueueProcessor();
   }
@@ -47,17 +44,17 @@ export class AutoSaveManager {
   ): Promise<AutoSaveResult> {
     // Prevent concurrent saves
     if (this.saveInProgress) {
-      debugLog('Save already in progress, skipping', trigger);
+      debugLog("Save already in progress, skipping", trigger);
       return {
         success: false,
         trigger,
         timestamp: Date.now(),
-        error: 'Save already in progress'
+        error: "Save already in progress",
       };
     }
 
     this.saveInProgress = true;
-    this.updateSyncStatus({ state: 'syncing', message: 'Syncing...' });
+    this.updateSyncStatus({ state: "syncing", message: "Syncing..." });
 
     try {
       // Step 1: Fetch current database state for conflict resolution
@@ -68,7 +65,7 @@ export class AutoSaveManager {
 
       // Step 3: Attempt to sync
       // Use saveProgress for non-completion triggers, syncQuizData for completion
-      const isCompletion = trigger === 'completion';
+      const isCompletion = trigger === "completion";
       const result = isCompletion
         ? await this.syncManager.syncQuizData(resolvedState)
         : await this.syncManager.saveProgress(resolvedState, timeRemaining);
@@ -76,74 +73,74 @@ export class AutoSaveManager {
       if (result.success) {
         this.lastSaveTime = Date.now();
         this.lastAnswerCount = quizState.answers.size;
-        
-        const message = trigger === 'manual' ? 'Quiz saved' : 'All changes synced';
-        this.updateSyncStatus({ state: 'synced', message });
-        
-        debugLog('Auto-save successful', { trigger, timestamp: result.timestamp });
-        
+
+        const message = trigger === "manual" ? "Quiz saved" : "All changes synced";
+        this.updateSyncStatus({ state: "synced", message });
+
+        debugLog("Auto-save successful", { trigger, timestamp: result.timestamp });
+
         return {
           success: true,
           trigger,
-          timestamp: result.timestamp
+          timestamp: result.timestamp,
         };
       } else {
         // Sync failed - add to offline queue
         if (AUTO_SAVE_CONFIG.enableOfflineQueue) {
           this.offlineQueue.addToQueue(sessionId, resolvedState, trigger);
-          this.updateSyncStatus({ 
-            state: 'queued', 
-            message: 'Changes queued for sync' 
+          this.updateSyncStatus({
+            state: "queued",
+            message: "Changes queued for sync",
           });
-          
-          debugLog('Auto-save queued', { trigger, error: result.error });
-          
+
+          debugLog("Auto-save queued", { trigger, error: result.error });
+
           return {
             success: false,
             trigger,
             timestamp: Date.now(),
             error: result.error,
-            queued: true
+            queued: true,
           };
         } else {
-          this.updateSyncStatus({ 
-            state: 'error', 
-            message: 'Sync failed - retrying...' 
+          this.updateSyncStatus({
+            state: "error",
+            message: "Sync failed - retrying...",
           });
-          
+
           return {
             success: false,
             trigger,
             timestamp: Date.now(),
-            error: result.error
+            error: result.error,
           };
         }
       }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
-      
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
       // Add to offline queue on error
       if (AUTO_SAVE_CONFIG.enableOfflineQueue) {
         this.offlineQueue.addToQueue(sessionId, quizState, trigger);
-        this.updateSyncStatus({ 
-          state: 'queued', 
-          message: 'Changes queued for sync' 
+        this.updateSyncStatus({
+          state: "queued",
+          message: "Changes queued for sync",
         });
       } else {
-        this.updateSyncStatus({ 
-          state: 'error', 
-          message: 'Sync failed - retrying...' 
+        this.updateSyncStatus({
+          state: "error",
+          message: "Sync failed - retrying...",
         });
       }
-      
-      debugLog('Auto-save error', { trigger, error: errorMessage });
-      
+
+      debugLog("Auto-save error", { trigger, error: errorMessage });
+
       return {
         success: false,
         trigger,
         timestamp: Date.now(),
         error: errorMessage,
-        queued: AUTO_SAVE_CONFIG.enableOfflineQueue
+        queued: AUTO_SAVE_CONFIG.enableOfflineQueue,
       };
     } finally {
       this.saveInProgress = false;
@@ -169,11 +166,11 @@ export class AutoSaveManager {
     try {
       const response = await fetch(`/api/quiz/sessions/${sessionId}`);
       if (!response.ok) return null;
-      
+
       const data = await response.json();
       return data.state || null;
     } catch (error) {
-      debugLog('Failed to fetch database state', error);
+      debugLog("Failed to fetch database state", error);
       return null;
     }
   }
@@ -185,13 +182,13 @@ export class AutoSaveManager {
   private resolveConflicts(localState: QuizState, dbState: QuizState | null): QuizState {
     if (!dbState) {
       // No database state - use local
-      debugLog('No database state, using local');
+      debugLog("No database state, using local");
       return localState;
     }
 
     // Database exists - merge with database as source of truth
-    debugLog('Resolving conflicts - database is source of truth');
-    
+    debugLog("Resolving conflicts - database is source of truth");
+
     return {
       ...localState,
       // Use database values for these fields if they exist
@@ -202,7 +199,7 @@ export class AutoSaveManager {
       // Keep local progress if more advanced
       progress: Math.max(localState.progress, dbState.progress || 0),
       // Sum time spent
-      totalTimeSpent: (localState.totalTimeSpent || 0) + (dbState.totalTimeSpent || 0)
+      totalTimeSpent: (localState.totalTimeSpent || 0) + (dbState.totalTimeSpent || 0),
     };
   }
 
@@ -224,10 +221,10 @@ export class AutoSaveManager {
     // Process queue every 10 seconds
     setInterval(async () => {
       const status = this.offlineQueue.getQueueStatus();
-      
+
       if (status.ready > 0) {
-        debugLog('Processing offline queue', status);
-        
+        debugLog("Processing offline queue", status);
+
         await this.offlineQueue.processQueue(async (sessionId, data) => {
           try {
             const result = await this.syncManager.syncQuizData(data);
@@ -254,4 +251,3 @@ export class AutoSaveManager {
     return this.lastSaveTime;
   }
 }
-

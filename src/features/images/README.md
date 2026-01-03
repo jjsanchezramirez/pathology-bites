@@ -31,6 +31,7 @@ src/features/images/
 ## 🎯 Key Features
 
 ### R2-Optimized Storage
+
 - **Cloudflare R2 Integration**: All content images served from R2 CDN
 - **Zero Egress Costs**: No bandwidth charges for image delivery
 - **Smart Caching**: Client-side caching with configurable TTL
@@ -38,6 +39,7 @@ src/features/images/
 - **Global CDN**: Fast worldwide delivery via Cloudflare network
 
 ### Image Operations
+
 - **Upload**: Single/multiple files with drag & drop
 - **Search**: Full-text search with prefix matching
 - **Filter**: By category and usage status
@@ -45,6 +47,7 @@ src/features/images/
 - **Delete**: Individual and batch deletion
 
 ### Advanced Features
+
 - **Usage tracking**: Real-time orphaned image detection
 - **Category management**: Microscopic, Gross, Figure, Table
 - **Search optimization**: PostgreSQL full-text search with GIN indexes
@@ -53,80 +56,83 @@ src/features/images/
 ## 🔧 Components
 
 ### StorageStatsCards
+
 Real-time storage statistics dashboard with auto-refresh.
 
 ```tsx
-import { StorageStatsCards, StorageStatsRef } from '@/features/images/components';
+import { StorageStatsCards, StorageStatsRef } from "@/features/images/components";
 
 const ref = useRef<StorageStatsRef>(null);
 
 // Refresh stats programmatically
 ref.current?.refresh();
 
-<StorageStatsCards ref={ref} />
+<StorageStatsCards ref={ref} />;
 ```
 
 ### ImagesTable
+
 Main table component with search, filtering, and pagination.
 
 ```tsx
-import { ImagesTable } from '@/features/images/components';
+import { ImagesTable } from "@/features/images/components";
 
-<ImagesTable onImageChange={() => {
-  // Called when images are added/deleted/edited
-  statsRef.current?.refresh();
-}} />
+<ImagesTable
+  onImageChange={() => {
+    // Called when images are added/deleted/edited
+    statsRef.current?.refresh();
+  }}
+/>;
 ```
 
 ### Upload/Edit Dialogs
+
 Modal dialogs for image operations with proper validation.
 
 ```tsx
-import { UploadDialog, EditDialog } from '@/features/images/components';
+import { UploadDialog, EditDialog } from "@/features/images/components";
 
-<UploadDialog
-  open={showUpload}
-  onOpenChange={setShowUpload}
-  onUpload={handleUploadComplete}
-/>
+<UploadDialog open={showUpload} onOpenChange={setShowUpload} onUpload={handleUploadComplete} />;
 ```
 
 ## 🗄️ Services
 
 ### Core Operations
+
 ```typescript
-import { 
-  fetchImages, 
-  uploadImage, 
-  updateImage, 
-  deleteImage 
-} from '@/features/images/services/images';
+import {
+  fetchImages,
+  uploadImage,
+  updateImage,
+  deleteImage,
+} from "@/features/images/services/images";
 
 // Fetch with pagination and filters
 const result = await fetchImages({
   page: 1,
   pageSize: 20,
-  searchTerm: 'microscopic',
-  category: 'microscopic',
-  showUnusedOnly: false
+  searchTerm: "microscopic",
+  category: "microscopic",
+  showUnusedOnly: false,
 });
 
 // Upload with compression
 await uploadImage({
   file: imageFile,
-  category: 'microscopic',
-  description: 'Sample image',
-  sourceRef: 'Reference'
+  category: "microscopic",
+  description: "Sample image",
+  sourceRef: "Reference",
 });
 ```
 
 ### Analytics
+
 ```typescript
-import { 
-  getStorageStats, 
+import {
+  getStorageStats,
   getImageUsageStats,
-  getOrphanedImages 
-} from '@/features/images/services/image-analytics';
+  getOrphanedImages,
+} from "@/features/images/services/image-analytics";
 
 // Get storage overview
 const stats = await getStorageStats();
@@ -134,7 +140,7 @@ console.log(`${stats.total_images} images, ${stats.formatted_total_size}`);
 
 // Get detailed usage data
 const usage = await getImageUsageStats();
-usage.forEach(img => {
+usage.forEach((img) => {
   console.log(`${img.alt_text}: used in ${img.usage_count} questions`);
 });
 ```
@@ -142,9 +148,11 @@ usage.forEach(img => {
 ## 🔗 External Image Handling
 
 ### Image Types
+
 The system handles two distinct types of images:
 
 #### Uploaded Images
+
 - Stored in Cloudflare R2 storage bucket (pathology-bites-images/library/)
 - Part of overall R2 account usage (10GB total limit shared with data files)
 - Included in all analytics and statistics
@@ -152,6 +160,7 @@ The system handles two distinct types of images:
 - Categories: microscopic, gross, figure, table
 
 #### External Images
+
 - URL references only (PathOutlines images)
 - Do not use R2 storage
 - **Excluded from all analytics and statistics**
@@ -159,6 +168,7 @@ The system handles two distinct types of images:
 - Category: always 'external'
 
 ### Analytics Exclusion
+
 All database views and analytics exclude external images:
 
 ```sql
@@ -171,6 +181,7 @@ This ensures accurate storage calculations and prevents external images from aff
 ## 📊 Database Integration
 
 ### Views Used
+
 - `v_image_usage_stats` - Complete image data with usage analytics (excludes external)
 - `v_storage_stats` - Storage utilization summary (excludes external)
 - `v_orphaned_images` - Unused images for cleanup (excludes external)
@@ -178,14 +189,15 @@ This ensures accurate storage calculations and prevents external images from aff
 - `v_dashboard_stats` - Dashboard statistics (excludes external)
 
 ### Search Implementation
+
 ```sql
 -- Full-text search with GIN index
-SELECT * FROM images 
+SELECT * FROM images
 WHERE search_vector @@ to_tsquery('english', 'microscopic:*')
 AND category != 'external';
 
 -- Fallback ILIKE search
-SELECT * FROM images 
+SELECT * FROM images
 WHERE (alt_text ILIKE '%term%' OR description ILIKE '%term%')
 AND category != 'external';
 ```
@@ -193,13 +205,16 @@ AND category != 'external';
 ## 🎨 Styling & UX
 
 ### Design Principles
+
 - **Consistent dialogs**: Blurred backgrounds, standard confirmation patterns
 - **Real-time feedback**: Immediate updates on all operations
 - **Progressive disclosure**: Advanced features available but not overwhelming
 - **Mobile-first**: Responsive design for all screen sizes
 
 ### Dialog Patterns
+
 All confirmation dialogs follow the same pattern:
+
 ```
 Title: "Confirm [Action]"
 Message: "Are you sure you want to [action details]?"
@@ -210,6 +225,7 @@ Buttons: [Cancel] [Confirm Action]
 ## 🧪 Testing
 
 ### Test Coverage
+
 - Database schema and views
 - Search functionality (prefix and ILIKE)
 - Analytics calculations
@@ -217,11 +233,12 @@ Buttons: [Cancel] [Confirm Action]
 - Error handling
 
 ### Running Tests
+
 ```bash
 # Component tests
 npm test src/features/images
 
-# Integration tests  
+# Integration tests
 npm run test:integration images
 
 # E2E tests
@@ -231,12 +248,14 @@ npm run test:e2e images
 ## 🚀 Performance
 
 ### Optimizations
+
 - **Database indexes**: GIN indexes for full-text search
 - **Lazy loading**: Paginated results with virtual scrolling
 - **Image compression**: Automatic size reduction
 - **View caching**: Pre-calculated analytics
 
 ### Benchmarks
+
 - Search queries: <300ms average
 - Storage stats: <150ms average
 - Upload processing: <2s for 1MB images
@@ -245,12 +264,14 @@ npm run test:e2e images
 ## 🔮 Future Enhancements
 
 ### Planned Features
+
 - **Image versioning**: Track changes over time
 - **Bulk operations**: Multi-select for batch editing
 - **Advanced search**: Metadata-based queries
 - **CDN integration**: Faster global delivery
 
 ### Scalability Considerations
+
 - **Storage tiers**: Migration to paid Cloudflare R2 plans
 - **Background processing**: Async image optimization
 - **Microservices**: Separate image processing service

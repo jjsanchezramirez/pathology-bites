@@ -1,15 +1,15 @@
-import { Metadata } from 'next'
-import { RequirePermission } from '@/shared/components/auth/role-guard'
-import { PageErrorBoundary } from '@/shared/components/common'
-import { EditQuestionClient } from './edit-question-client'
+import { Metadata } from "next";
+import { RequirePermission } from "@/shared/components/auth/role-guard";
+import { PageErrorBoundary } from "@/shared/components/common";
+import { EditQuestionClient } from "./edit-question-client";
 
 export const metadata: Metadata = {
-  title: 'Edit Question | Pathology Bites Admin',
-  description: 'Edit question details, images, and metadata',
-}
+  title: "Edit Question | Pathology Bites Admin",
+  description: "Edit question details, images, and metadata",
+};
 
 export default async function EditQuestionPage({ params }: { params: Promise<{ id: string }> }) {
-  const { id } = await params
+  const { id } = await params;
 
   return (
     <RequirePermission permission="questions.update">
@@ -17,15 +17,12 @@ export default async function EditQuestionPage({ params }: { params: Promise<{ i
         <div className="space-y-6">
           <div>
             <h1 className="text-3xl font-bold tracking-tight">Edit Question</h1>
-            <p className="text-muted-foreground">
-              Update question content, images, and metadata
-            </p>
+            <p className="text-muted-foreground">Update question content, images, and metadata</p>
           </div>
 
           <EditQuestionClient questionId={id} />
         </div>
       </PageErrorBoundary>
     </RequirePermission>
-  )
+  );
 }
-

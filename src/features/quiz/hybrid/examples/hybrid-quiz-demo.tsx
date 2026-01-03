@@ -1,9 +1,9 @@
 /**
  * Pure Serverless Hybrid Quiz System - Integration Demo
- * 
+ *
  * This component demonstrates how to integrate the hybrid quiz system
  * with existing quiz UI components to achieve 96.7% API call reduction.
- * 
+ *
  * Key Features Demonstrated:
  * - Only 2 API calls per quiz (vs 15-30 in legacy system)
  * - Instant UI responses (0ms latency)
@@ -12,17 +12,17 @@
  * - Seamless integration with existing components
  */
 
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { useHybridQuiz, HybridUtils } from '../index';
+import React, { useState } from "react";
+import { useHybridQuiz, HybridUtils } from "../index";
 
 interface HybridQuizDemoProps {
   sessionId: string;
-  mode?: 'tutor' | 'exam' | 'practice' | 'offline';
+  mode?: "tutor" | "exam" | "practice" | "offline";
 }
 
-export function HybridQuizDemo({ sessionId, mode = 'tutor' }: HybridQuizDemoProps) {
+export function HybridQuizDemo({ sessionId, mode = "tutor" }: HybridQuizDemoProps) {
   const [showMetrics, setShowMetrics] = useState(false);
 
   // Initialize hybrid quiz system
@@ -30,17 +30,19 @@ export function HybridQuizDemo({ sessionId, mode = 'tutor' }: HybridQuizDemoProp
     sessionId,
     ...HybridUtils.createConfig(mode),
     onAnswerSubmitted: (questionId, answerId, result) => {
-      console.log(`Answer submitted: ${questionId} -> ${answerId} (${result.isCorrect ? 'Correct' : 'Incorrect'})`);
+      console.log(
+        `Answer submitted: ${questionId} -> ${answerId} (${result.isCorrect ? "Correct" : "Incorrect"})`
+      );
     },
     onQuizCompleted: (result) => {
       console.log(`Quiz completed! Score: ${result.score}/${result.totalQuestions}`);
     },
     onError: (error) => {
-      console.error('Hybrid quiz error:', error);
+      console.error("Hybrid quiz error:", error);
     },
     onSyncStatusChange: (status) => {
-      console.log('Sync status:', status);
-    }
+      console.log("Sync status:", status);
+    },
   });
 
   const currentQuestion = actions.getCurrentQuestion();
@@ -72,11 +74,9 @@ export function HybridQuizDemo({ sessionId, mode = 'tutor' }: HybridQuizDemoProp
       <div className="bg-gradient-to-r from-blue-50 to-green-50 rounded-lg p-4 border border-blue-200">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              Pure Serverless Hybrid Quiz
-            </h1>
+            <h1 className="text-2xl font-bold text-gray-900">Pure Serverless Hybrid Quiz</h1>
             <p className="text-gray-600">
-              {performanceMetrics.apiCallReduction}% API call reduction • 
+              {performanceMetrics.apiCallReduction}% API call reduction •
               {state.realtimeStats.latency}ms response time
             </p>
           </div>
@@ -84,7 +84,7 @@ export function HybridQuizDemo({ sessionId, mode = 'tutor' }: HybridQuizDemoProp
             onClick={() => setShowMetrics(!showMetrics)}
             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
           >
-            {showMetrics ? 'Hide' : 'Show'} Metrics
+            {showMetrics ? "Hide" : "Show"} Metrics
           </button>
         </div>
 
@@ -93,7 +93,9 @@ export function HybridQuizDemo({ sessionId, mode = 'tutor' }: HybridQuizDemoProp
             <div className="bg-white rounded p-3 border">
               <div className="font-semibold text-green-600">API Calls</div>
               <div className="text-2xl font-bold">{state.metrics.totalApiCalls}</div>
-              <div className="text-gray-500">vs {performanceMetrics.estimatedLegacyCalls} legacy</div>
+              <div className="text-gray-500">
+                vs {performanceMetrics.estimatedLegacyCalls} legacy
+              </div>
             </div>
             <div className="bg-white rounded p-3 border">
               <div className="font-semibold text-blue-600">Reduction</div>
@@ -109,7 +111,7 @@ export function HybridQuizDemo({ sessionId, mode = 'tutor' }: HybridQuizDemoProp
               <div className="font-semibold text-orange-600">Status</div>
               <div className="text-2xl font-bold capitalize">{state.status}</div>
               <div className="text-gray-500">
-                {state.realtimeStats.connected ? 'Online' : 'Offline'}
+                {state.realtimeStats.connected ? "Online" : "Offline"}
               </div>
             </div>
           </div>
@@ -122,62 +124,59 @@ export function HybridQuizDemo({ sessionId, mode = 'tutor' }: HybridQuizDemoProp
           <h2 className="text-lg font-semibold">
             Question {state.currentQuestion} of {state.totalQuestions}
           </h2>
-          <div className="text-sm text-gray-600">
-            Progress: {state.progress.percentage}%
-          </div>
+          <div className="text-sm text-gray-600">Progress: {state.progress.percentage}%</div>
         </div>
-        
+
         <div className="w-full bg-gray-200 rounded-full h-2 mb-4">
-          <div 
+          <div
             className="bg-blue-600 h-2 rounded-full transition-all duration-300"
             style={{ width: `${state.progress.percentage}%` }}
           ></div>
         </div>
 
         <div className="text-sm text-gray-600 mb-4">
-          Answered: {state.progress.current} • 
-          Correct: {actions.getProgress().correct} • 
-          Time: {Math.round(actions.getTimeSpent() / 1000)}s
+          Answered: {state.progress.current} • Correct: {actions.getProgress().correct} • Time:{" "}
+          {Math.round(actions.getTimeSpent() / 1000)}s
         </div>
       </div>
 
       {/* Current Question */}
       <div className="bg-white rounded-lg shadow-sm border p-6">
         <h3 className="text-xl font-medium mb-6">{currentQuestion.text}</h3>
-        
+
         <div className="space-y-3">
           {currentQuestion.options.map((option) => {
             const isAnswered = actions.getAnswerForQuestion(currentQuestion.id);
             const isSelected = isAnswered?.selectedOptionId === option.id;
-            
+
             return (
               <button
                 key={option.id}
                 onClick={() => {
                   if (!isAnswered) {
                     const result = actions.submitAnswer(currentQuestion.id, option.id);
-                    console.log('Instant response:', result);
+                    console.log("Instant response:", result);
                   }
                 }}
                 disabled={!!isAnswered}
                 className={`w-full text-left p-4 rounded-lg border-2 transition-all ${
                   isSelected
                     ? isAnswered?.isCorrect
-                      ? 'border-green-500 bg-green-50 text-green-800'
-                      : 'border-red-500 bg-red-50 text-red-800'
+                      ? "border-green-500 bg-green-50 text-green-800"
+                      : "border-red-500 bg-red-50 text-red-800"
                     : isAnswered
-                    ? option.isCorrect
-                      ? 'border-green-500 bg-green-50 text-green-800'
-                      : 'border-gray-200 bg-gray-50 text-gray-500'
-                    : 'border-gray-200 hover:border-blue-300 hover:bg-blue-50'
+                      ? option.isCorrect
+                        ? "border-green-500 bg-green-50 text-green-800"
+                        : "border-gray-200 bg-gray-50 text-gray-500"
+                      : "border-gray-200 hover:border-blue-300 hover:bg-blue-50"
                 }`}
               >
                 <div className="flex items-center justify-between">
                   <span>{option.text}</span>
                   {isAnswered && (
                     <span className="text-sm">
-                      {isSelected && (isAnswered.isCorrect ? '✓ Your answer' : '✗ Your answer')}
-                      {!isSelected && option.isCorrect && '✓ Correct'}
+                      {isSelected && (isAnswered.isCorrect ? "✓ Your answer" : "✗ Your answer")}
+                      {!isSelected && option.isCorrect && "✓ Correct"}
                     </span>
                   )}
                 </div>
@@ -206,7 +205,7 @@ export function HybridQuizDemo({ sessionId, mode = 'tutor' }: HybridQuizDemoProp
         </button>
 
         <div className="flex space-x-4">
-          {state.status === 'not_started' && (
+          {state.status === "not_started" && (
             <button
               onClick={() => actions.startQuiz()}
               className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
@@ -215,7 +214,7 @@ export function HybridQuizDemo({ sessionId, mode = 'tutor' }: HybridQuizDemoProp
             </button>
           )}
 
-          {state.status === 'in_progress' && (
+          {state.status === "in_progress" && (
             <>
               <button
                 onClick={() => actions.pauseQuiz()}
@@ -223,22 +222,23 @@ export function HybridQuizDemo({ sessionId, mode = 'tutor' }: HybridQuizDemoProp
               >
                 Pause
               </button>
-              
-              {state.currentQuestion === state.totalQuestions && state.progress.current === state.totalQuestions && (
-                <button
-                  onClick={async () => {
-                    const result = await actions.completeQuiz();
-                    console.log('Quiz completion result:', result);
-                  }}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                  Complete Quiz (API Call #2)
-                </button>
-              )}
+
+              {state.currentQuestion === state.totalQuestions &&
+                state.progress.current === state.totalQuestions && (
+                  <button
+                    onClick={async () => {
+                      const result = await actions.completeQuiz();
+                      console.log("Quiz completion result:", result);
+                    }}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                  >
+                    Complete Quiz (API Call #2)
+                  </button>
+                )}
             </>
           )}
 
-          {state.status === 'paused' && (
+          {state.status === "paused" && (
             <button
               onClick={() => actions.resumeQuiz()}
               className="px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors"
@@ -247,7 +247,7 @@ export function HybridQuizDemo({ sessionId, mode = 'tutor' }: HybridQuizDemoProp
             </button>
           )}
 
-          {state.status === 'completed' && (
+          {state.status === "completed" && (
             <div className="text-center">
               <div className="text-lg font-semibold text-green-600">Quiz Completed!</div>
               <div className="text-sm text-gray-600">
@@ -269,10 +269,8 @@ export function HybridQuizDemo({ sessionId, mode = 'tutor' }: HybridQuizDemoProp
       {/* System Status */}
       <div className="text-center text-sm text-gray-500">
         <p>
-          Hybrid System v1.0.0 • 
-          {state.realtimeStats.connected ? 'Online' : 'Offline'} • 
-          {state.metrics.totalApiCalls} API calls • 
-          {performanceMetrics.apiCallReduction}% reduction
+          Hybrid System v1.0.0 •{state.realtimeStats.connected ? "Online" : "Offline"} •
+          {state.metrics.totalApiCalls} API calls •{performanceMetrics.apiCallReduction}% reduction
         </p>
       </div>
     </div>

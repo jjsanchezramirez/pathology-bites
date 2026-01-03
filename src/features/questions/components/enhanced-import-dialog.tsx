@@ -1,10 +1,10 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { toast } from '@/shared/utils/toast';
+import React, { useState, useEffect, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "@/shared/utils/toast";
 import {
   Dialog,
   DialogContent,
@@ -13,7 +13,7 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-} from '@/shared/components/ui/dialog';
+} from "@/shared/components/ui/dialog";
 import {
   Form,
   FormControl,
@@ -21,28 +21,34 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/shared/components/ui/form';
-import { Button } from '@/shared/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select';
-import { Alert, AlertDescription } from '@/shared/components/ui/alert';
-import { Badge } from '@/shared/components/ui/badge';
-import { Progress } from '@/shared/components/ui/progress';
-import { 
-  Loader2, 
-  FileText, 
-  AlertCircle, 
-  Upload, 
-  FolderTree, 
+} from "@/shared/components/ui/form";
+import { Button } from "@/shared/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { Alert, AlertDescription } from "@/shared/components/ui/alert";
+import { Badge } from "@/shared/components/ui/badge";
+import { Progress } from "@/shared/components/ui/progress";
+import {
+  Loader2,
+  FileText,
+  AlertCircle,
+  Upload,
+  FolderTree,
   CheckCircle2,
   X,
-  Download
-} from 'lucide-react';
-import { useQuestions } from '@/features/questions/hooks/use-questions';
-import { useAuth } from '@/shared/hooks/use-auth';
+  Download,
+} from "lucide-react";
+import { useQuestions } from "@/features/questions/hooks/use-questions";
+import { useAuth } from "@/shared/hooks/use-auth";
 
 // Enhanced schema that supports external image URLs
 const questionOptionSchema = z.object({
-  text: z.string().min(1, 'Question option text is required'),
+  text: z.string().min(1, "Question option text is required"),
   is_correct: z.boolean(),
   explanation: z.string().optional(),
   order_index: z.number().int().min(0),
@@ -52,31 +58,40 @@ const questionOptionSchema = z.object({
 const answerOptionSchema = questionOptionSchema;
 
 const questionImageSchema = z.object({
-  image_url: z.string().url('Invalid image URL').optional(),
-  image_id: z.string().uuid('Invalid image ID format').optional(),
-  question_section: z.enum(['stem', 'explanation']),
+  image_url: z.string().url("Invalid image URL").optional(),
+  image_id: z.string().uuid("Invalid image ID format").optional(),
+  question_section: z.enum(["stem", "explanation"]),
   order_index: z.number().int().min(0),
   alt_text: z.string().optional(),
   caption: z.string().optional(),
 });
 
 const importQuestionSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
-  stem: z.string().min(10, 'Question stem must be at least 10 characters').max(2000, 'Question stem too long'),
-  difficulty: z.enum(['easy', 'medium', 'hard']),
-  teaching_point: z.string().min(10, 'Teaching point must be at least 10 characters').max(1000, 'Teaching point too long'),
-  question_references: z.string().max(1000, 'References too long (max 1000 characters)').optional(),
-  status: z.enum(['draft', 'approved']).default('draft'),
-  question_set_id: z.string().uuid('Invalid question set ID').optional().nullable(),
-  question_options: z.array(answerOptionSchema).min(2, 'At least 2 question options required').max(10, 'Maximum 10 question options allowed'),
+  title: z.string().min(1, "Title is required").max(200, "Title too long"),
+  stem: z
+    .string()
+    .min(10, "Question stem must be at least 10 characters")
+    .max(2000, "Question stem too long"),
+  difficulty: z.enum(["easy", "medium", "hard"]),
+  teaching_point: z
+    .string()
+    .min(10, "Teaching point must be at least 10 characters")
+    .max(1000, "Teaching point too long"),
+  question_references: z.string().max(1000, "References too long (max 1000 characters)").optional(),
+  status: z.enum(["draft", "approved"]).default("draft"),
+  question_set_id: z.string().uuid("Invalid question set ID").optional().nullable(),
+  question_options: z
+    .array(answerOptionSchema)
+    .min(2, "At least 2 question options required")
+    .max(10, "Maximum 10 question options allowed"),
   question_images: z.array(questionImageSchema).optional().default([]),
-  tag_ids: z.array(z.string().uuid('Invalid tag ID')).optional().default([]),
-  category_ids: z.array(z.string().uuid('Invalid category ID')).optional().default([]),
+  tag_ids: z.array(z.string().uuid("Invalid tag ID")).optional().default([]),
+  category_ids: z.array(z.string().uuid("Invalid category ID")).optional().default([]),
 });
 
 const formSchema = z.object({
   selectedCategory: z.string().optional(),
-  selectedQuestionSet: z.string().min(1, 'Please select a question set'),
+  selectedQuestionSet: z.string().min(1, "Please select a question set"),
   jsonFile: z.any().optional(),
 });
 
@@ -127,8 +142,8 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
   const form = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      selectedCategory: 'none',
-      selectedQuestionSet: '',
+      selectedCategory: "none",
+      selectedQuestionSet: "",
     },
   });
 
@@ -143,16 +158,16 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
   const loadCategories = async () => {
     setLoadingCategories(true);
     try {
-      const response = await fetch('/api/admin/categories?page=0&pageSize=1000', {
-        credentials: 'include'
+      const response = await fetch("/api/admin/categories?page=0&pageSize=1000", {
+        credentials: "include",
       });
-      if (!response.ok) throw new Error('Failed to load categories');
+      if (!response.ok) throw new Error("Failed to load categories");
 
       const data = await response.json();
       setCategories(data.categories || []);
     } catch (error) {
-      console.error('Error loading categories:', error);
-      toast.error('Failed to load categories');
+      console.error("Error loading categories:", error);
+      toast.error("Failed to load categories");
     } finally {
       setLoadingCategories(false);
     }
@@ -161,29 +176,32 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
   const loadQuestionSets = async () => {
     setLoadingQuestionSets(true);
     try {
-      const response = await fetch('/api/admin/question-sets?page=0&pageSize=1000');
-      if (!response.ok) throw new Error('Failed to load question sets');
+      const response = await fetch("/api/admin/question-sets?page=0&pageSize=1000");
+      if (!response.ok) throw new Error("Failed to load question sets");
 
       const data = await response.json();
       setQuestionSets(data.questionSets || []);
     } catch (error) {
-      console.error('Error loading question sets:', error);
-      toast.error('Failed to load question sets');
+      console.error("Error loading question sets:", error);
+      toast.error("Failed to load question sets");
     } finally {
       setLoadingQuestionSets(false);
     }
   };
 
-  const handleFileChange = useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      handleFileSelection(file);
-    }
-  }, [handleFileSelection]);
+  const handleFileChange = useCallback(
+    (event: React.ChangeEvent<HTMLInputElement>) => {
+      const file = event.target.files?.[0];
+      if (file) {
+        handleFileSelection(file);
+      }
+    },
+    [handleFileSelection]
+  );
 
   const handleFileSelection = useCallback((file: File) => {
-    if (!file.name.endsWith('.json')) {
-      toast.error('Please select a JSON file');
+    if (!file.name.endsWith(".json")) {
+      toast.error("Please select a JSON file");
       return;
     }
 
@@ -196,10 +214,10 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
       try {
         const content = e.target?.result as string;
         const jsonData = JSON.parse(content);
-        
+
         // Validate if it's an array of questions
         if (!Array.isArray(jsonData)) {
-          throw new Error('JSON file must contain an array of questions');
+          throw new Error("JSON file must contain an array of questions");
         }
 
         // Validate each question
@@ -212,7 +230,9 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
             validatedQuestions.push(validated);
           } catch (error) {
             if (error instanceof z.ZodError) {
-              errors.push(`Question ${index + 1}: ${error.errors.map(e => e.message).join(', ')}`);
+              errors.push(
+                `Question ${index + 1}: ${error.errors.map((e) => e.message).join(", ")}`
+              );
             } else {
               errors.push(`Question ${index + 1}: Invalid format`);
             }
@@ -220,14 +240,16 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
         });
 
         if (errors.length > 0) {
-          setValidationError(`Validation errors:\n${errors.slice(0, 5).join('\n')}${errors.length > 5 ? `\n... and ${errors.length - 5} more errors` : ''}`);
+          setValidationError(
+            `Validation errors:\n${errors.slice(0, 5).join("\n")}${errors.length > 5 ? `\n... and ${errors.length - 5} more errors` : ""}`
+          );
           setParsedQuestions([]);
         } else {
           setParsedQuestions(validatedQuestions);
           toast.success(`Successfully parsed ${validatedQuestions.length} questions`);
         }
       } catch {
-        setValidationError('Invalid JSON file format');
+        setValidationError("Invalid JSON file format");
         setParsedQuestions([]);
       }
     };
@@ -245,33 +267,36 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
     setIsDragging(false);
   }, []);
 
-  const handleDrop = useCallback((e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    
-    const files = Array.from(e.dataTransfer.files);
-    const jsonFile = files.find(file => file.name.endsWith('.json'));
-    
-    if (jsonFile) {
-      handleFileSelection(jsonFile);
-    } else {
-      toast.error('Please drop a JSON file');
-    }
-  }, [handleFileSelection]);
+  const handleDrop = useCallback(
+    (e: React.DragEvent) => {
+      e.preventDefault();
+      setIsDragging(false);
+
+      const files = Array.from(e.dataTransfer.files);
+      const jsonFile = files.find((file) => file.name.endsWith(".json"));
+
+      if (jsonFile) {
+        handleFileSelection(jsonFile);
+      } else {
+        toast.error("Please drop a JSON file");
+      }
+    },
+    [handleFileSelection]
+  );
 
   const formatCategoryName = (category: Category) => {
-    const indent = '  '.repeat(category.level - 1);
+    const indent = "  ".repeat(category.level - 1);
     return `${indent}${category.name}`;
   };
 
   const onSubmit = async (data: FormData) => {
     if (!user) {
-      toast.error('You must be logged in to import questions');
+      toast.error("You must be logged in to import questions");
       return;
     }
 
     if (parsedQuestions.length === 0) {
-      toast.error('Please select a valid JSON file with questions');
+      toast.error("Please select a valid JSON file with questions");
       return;
     }
 
@@ -279,22 +304,26 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
     setImportProgress({
       total: parsedQuestions.length,
       completed: 0,
-      current: '',
-      errors: []
+      current: "",
+      errors: [],
     });
 
     try {
-      const selectedCategoryId = data.selectedCategory === 'none' ? null : data.selectedCategory;
+      const selectedCategoryId = data.selectedCategory === "none" ? null : data.selectedCategory;
       const selectedQuestionSetId = data.selectedQuestionSet;
 
       for (let i = 0; i < parsedQuestions.length; i++) {
         const questionData = parsedQuestions[i];
 
-        setImportProgress(prev => prev ? {
-          ...prev,
-          current: questionData.title,
-          completed: i
-        } : null);
+        setImportProgress((prev) =>
+          prev
+            ? {
+                ...prev,
+                current: questionData.title,
+                completed: i,
+              }
+            : null
+        );
 
         try {
           // Create the core question data
@@ -319,7 +348,7 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
 
           // 1. Create question options
           if (questionData.question_options.length > 0) {
-            const answerOptionsData = questionData.question_options.map(option => ({
+            const answerOptionsData = questionData.question_options.map((option) => ({
               question_id: newQuestion.id,
               text: option.text,
               is_correct: option.is_correct,
@@ -328,58 +357,63 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
             }));
 
             promises.push(
-              fetch('/api/questions/answer-options', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+              fetch("/api/questions/answer-options", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ answerOptions: answerOptionsData }),
               })
             );
-            promiseLabels.push('Question Options');
+            promiseLabels.push("Question Options");
           }
 
           // 2. Create question categories (JSON category takes precedence over selected category)
-          const categoriesToUse = questionData.category_ids && questionData.category_ids.length > 0
-            ? questionData.category_ids
-            : (selectedCategoryId ? [selectedCategoryId] : []);
+          const categoriesToUse =
+            questionData.category_ids && questionData.category_ids.length > 0
+              ? questionData.category_ids
+              : selectedCategoryId
+                ? [selectedCategoryId]
+                : [];
 
           if (categoriesToUse.length > 0) {
-            const categoryData = categoriesToUse.map(categoryId => ({
+            const categoryData = categoriesToUse.map((categoryId) => ({
               question_id: newQuestion.id,
               category_id: categoryId,
             }));
 
             promises.push(
-              fetch('/api/question-categories', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+              fetch("/api/question-categories", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ questionCategories: categoryData }),
               })
             );
-            promiseLabels.push('Categories');
+            promiseLabels.push("Categories");
           }
 
           // 3. Handle images (if any) - for now we'll skip external image download
           // TODO: Implement image download and upload functionality
           if (questionData.question_images && questionData.question_images.length > 0) {
-            console.log(`Skipping ${questionData.question_images.length} images for question: ${questionData.title}`);
+            console.log(
+              `Skipping ${questionData.question_images.length} images for question: ${questionData.title}`
+            );
             // This will be implemented in the next phase
           }
 
           // 4. Create tags (if any)
           if (questionData.tag_ids && questionData.tag_ids.length > 0) {
-            const tagData = questionData.tag_ids.map(tagId => ({
+            const tagData = questionData.tag_ids.map((tagId) => ({
               question_id: newQuestion.id,
               tag_id: tagId,
             }));
 
             promises.push(
-              fetch('/api/questions/tags', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
+              fetch("/api/questions/tags", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ questionTags: tagData }),
               })
             );
-            promiseLabels.push('Tags');
+            promiseLabels.push("Tags");
           }
 
           // Execute all promises
@@ -387,37 +421,49 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
 
           // Check for any failures in related data creation
           results.forEach((result, index) => {
-            if (result.status === 'rejected') {
-              console.warn(`Failed to create ${promiseLabels[index]} for question ${newQuestion.id}:`, result.reason);
+            if (result.status === "rejected") {
+              console.warn(
+                `Failed to create ${promiseLabels[index]} for question ${newQuestion.id}:`,
+                result.reason
+              );
             }
           });
-
         } catch (error) {
           console.error(`Error importing question ${i + 1}:`, error);
-          setImportProgress(prev => prev ? {
-            ...prev,
-            errors: [...prev.errors, `Question ${i + 1} (${questionData.title}): ${error instanceof Error ? error.message : 'Unknown error'}`]
-          } : null);
+          setImportProgress((prev) =>
+            prev
+              ? {
+                  ...prev,
+                  errors: [
+                    ...prev.errors,
+                    `Question ${i + 1} (${questionData.title}): ${error instanceof Error ? error.message : "Unknown error"}`,
+                  ],
+                }
+              : null
+          );
         }
       }
 
-      setImportProgress(prev => prev ? {
-        ...prev,
-        completed: parsedQuestions.length,
-        current: 'Complete'
-      } : null);
+      setImportProgress((prev) =>
+        prev
+          ? {
+              ...prev,
+              completed: parsedQuestions.length,
+              current: "Complete",
+            }
+          : null
+      );
 
       const successCount = parsedQuestions.length - (importProgress?.errors.length || 0);
       toast.success(`Successfully imported ${successCount} of ${parsedQuestions.length} questions`);
-      
+
       if (importProgress?.errors.length === 0) {
         onSave();
         onOpenChange(false);
       }
-      
     } catch (error) {
-      console.error('Import error:', error);
-      toast.error('Failed to import questions');
+      console.error("Import error:", error);
+      toast.error("Failed to import questions");
     } finally {
       setIsSubmitting(false);
     }
@@ -430,8 +476,8 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
       setValidationError(null);
       setImportProgress(null);
       form.reset({
-        selectedCategory: 'none',
-        selectedQuestionSet: '',
+        selectedCategory: "none",
+        selectedQuestionSet: "",
       });
       onOpenChange(false);
     }
@@ -442,211 +488,234 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
       <DialogPortal>
         <DialogOverlay className="backdrop-blur-md bg-black/20" />
         <DialogContent className="w-full max-w-[min(90vw,600px)] max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Upload className="h-5 w-5" />
-            Import Questions from JSON
-          </DialogTitle>
-          <DialogDescription>
-            Upload a JSON file containing questions and select a category to organize them.
-          </DialogDescription>
-        </DialogHeader>
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Upload className="h-5 w-5" />
+              Import Questions from JSON
+            </DialogTitle>
+            <DialogDescription>
+              Upload a JSON file containing questions and select a category to organize them.
+            </DialogDescription>
+          </DialogHeader>
 
-        <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-            {/* Category Selection */}
-            <FormField
-              control={form.control}
-              name="selectedCategory"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <FolderTree className="h-4 w-4" />
-                    Category (Optional)
-                  </FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} disabled={loadingCategories}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={loadingCategories ? "Loading categories..." : "Select a category (optional)"} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      <SelectItem value="none">No category</SelectItem>
-                      {categories.map((category) => (
-                        <SelectItem key={category.id} value={category.id}>
-                          {formatCategoryName(category)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+              {/* Category Selection */}
+              <FormField
+                control={form.control}
+                name="selectedCategory"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <FolderTree className="h-4 w-4" />
+                      Category (Optional)
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={loadingCategories}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={
+                              loadingCategories
+                                ? "Loading categories..."
+                                : "Select a category (optional)"
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        <SelectItem value="none">No category</SelectItem>
+                        {categories.map((category) => (
+                          <SelectItem key={category.id} value={category.id}>
+                            {formatCategoryName(category)}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* Question Set Selection */}
-            <FormField
-              control={form.control}
-              name="selectedQuestionSet"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="flex items-center gap-2">
-                    <FileText className="h-4 w-4" />
-                    Question Set *
-                  </FormLabel>
-                  <Select onValueChange={field.onChange} value={field.value} disabled={loadingQuestionSets}>
-                    <FormControl>
-                      <SelectTrigger>
-                        <SelectValue placeholder={loadingQuestionSets ? "Loading question sets..." : "Select a question set"} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {questionSets.map((questionSet) => (
-                        <SelectItem key={questionSet.id} value={questionSet.id}>
-                          {questionSet.name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
+              {/* Question Set Selection */}
+              <FormField
+                control={form.control}
+                name="selectedQuestionSet"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Question Set *
+                    </FormLabel>
+                    <Select
+                      onValueChange={field.onChange}
+                      value={field.value}
+                      disabled={loadingQuestionSets}
+                    >
+                      <FormControl>
+                        <SelectTrigger>
+                          <SelectValue
+                            placeholder={
+                              loadingQuestionSets
+                                ? "Loading question sets..."
+                                : "Select a question set"
+                            }
+                          />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {questionSets.map((questionSet) => (
+                          <SelectItem key={questionSet.id} value={questionSet.id}>
+                            {questionSet.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
 
-            {/* File Upload Area */}
-            <div className="space-y-4">
-              <label className="text-sm font-medium">JSON File</label>
-              <div
-                onDragOver={handleDragOver}
-                onDragLeave={handleDragLeave}
-                onDrop={handleDrop}
-                className={`
+              {/* File Upload Area */}
+              <div className="space-y-4">
+                <label className="text-sm font-medium">JSON File</label>
+                <div
+                  onDragOver={handleDragOver}
+                  onDragLeave={handleDragLeave}
+                  onDrop={handleDrop}
+                  className={`
                   relative flex flex-col items-center justify-center w-full h-32
                   border-2 border-dashed rounded-lg cursor-pointer
                   transition-colors duration-200
-                  ${isDragging
-                    ? 'border-primary bg-primary/5'
-                    : 'border-muted hover:bg-muted/50'
-                  }
+                  ${isDragging ? "border-primary bg-primary/5" : "border-muted hover:bg-muted/50"}
                 `}
-              >
-                <input
-                  type="file"
-                  className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                  accept=".json"
-                  onChange={handleFileChange}
-                  disabled={isSubmitting}
-                />
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                  {isSubmitting ? (
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                  ) : (
-                    <>
-                      <FileText className="h-8 w-8 mb-2 text-muted-foreground" />
-                      <p className="text-sm text-muted-foreground">
-                        {isDragging
-                          ? 'Drop JSON file here'
-                          : 'Drag & drop JSON file or click to select'}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        JSON files containing question arrays
-                      </p>
-                    </>
-                  )}
-                </div>
-              </div>
-
-              {selectedFile && (
-                <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <FileText className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-medium">{selectedFile.name}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Badge variant="secondary">{parsedQuestions.length} questions</Badge>
-                    {!isSubmitting && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => {
-                          setSelectedFile(null);
-                          setParsedQuestions([]);
-                          setValidationError(null);
-                        }}
-                      >
-                        <X className="h-4 w-4" />
-                      </Button>
+                >
+                  <input
+                    type="file"
+                    className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    accept=".json"
+                    onChange={handleFileChange}
+                    disabled={isSubmitting}
+                  />
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    {isSubmitting ? (
+                      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+                    ) : (
+                      <>
+                        <FileText className="h-8 w-8 mb-2 text-muted-foreground" />
+                        <p className="text-sm text-muted-foreground">
+                          {isDragging
+                            ? "Drop JSON file here"
+                            : "Drag & drop JSON file or click to select"}
+                        </p>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          JSON files containing question arrays
+                        </p>
+                      </>
                     )}
                   </div>
                 </div>
-              )}
-            </div>
 
-            {validationError && (
-              <Alert variant="destructive">
-                <AlertCircle className="h-4 w-4" />
-                <AlertDescription className="whitespace-pre-line">
-                  {validationError}
-                </AlertDescription>
-              </Alert>
-            )}
-
-            {/* Import Progress */}
-            {importProgress && (
-              <div className="space-y-3">
-                <div className="flex items-center justify-between text-sm">
-                  <span>Importing questions...</span>
-                  <span>{importProgress.completed} / {importProgress.total}</span>
-                </div>
-                <Progress 
-                  value={(importProgress.completed / importProgress.total) * 100} 
-                  className="w-full"
-                />
-                {importProgress.current && (
-                  <p className="text-sm text-muted-foreground">
-                    Current: {importProgress.current}
-                  </p>
-                )}
-                {importProgress.errors.length > 0 && (
-                  <Alert variant="destructive">
-                    <AlertCircle className="h-4 w-4" />
-                    <AlertDescription>
-                      {importProgress.errors.length} error(s) occurred during import
-                    </AlertDescription>
-                  </Alert>
+                {selectedFile && (
+                  <div className="flex items-center justify-between p-3 bg-muted rounded-lg">
+                    <div className="flex items-center gap-2">
+                      <FileText className="h-4 w-4 text-muted-foreground" />
+                      <span className="text-sm font-medium">{selectedFile.name}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary">{parsedQuestions.length} questions</Badge>
+                      {!isSubmitting && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => {
+                            setSelectedFile(null);
+                            setParsedQuestions([]);
+                            setValidationError(null);
+                          }}
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
                 )}
               </div>
-            )}
 
-            <div className="flex justify-end gap-3">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleClose}
-                disabled={isSubmitting}
-              >
-                Cancel
-              </Button>
-              <Button
-                type="submit"
-                disabled={isSubmitting || parsedQuestions.length === 0 || !form.watch('selectedQuestionSet')}
-              >
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Importing...
-                  </>
-                ) : (
-                  <>
-                    <Upload className="h-4 w-4 mr-2" />
-                    Import {parsedQuestions.length} Questions
-                  </>
-                )}
-              </Button>
-            </div>
-          </form>
-        </Form>
+              {validationError && (
+                <Alert variant="destructive">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription className="whitespace-pre-line">
+                    {validationError}
+                  </AlertDescription>
+                </Alert>
+              )}
+
+              {/* Import Progress */}
+              {importProgress && (
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm">
+                    <span>Importing questions...</span>
+                    <span>
+                      {importProgress.completed} / {importProgress.total}
+                    </span>
+                  </div>
+                  <Progress
+                    value={(importProgress.completed / importProgress.total) * 100}
+                    className="w-full"
+                  />
+                  {importProgress.current && (
+                    <p className="text-sm text-muted-foreground">
+                      Current: {importProgress.current}
+                    </p>
+                  )}
+                  {importProgress.errors.length > 0 && (
+                    <Alert variant="destructive">
+                      <AlertCircle className="h-4 w-4" />
+                      <AlertDescription>
+                        {importProgress.errors.length} error(s) occurred during import
+                      </AlertDescription>
+                    </Alert>
+                  )}
+                </div>
+              )}
+
+              <div className="flex justify-end gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={handleClose}
+                  disabled={isSubmitting}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={
+                    isSubmitting ||
+                    parsedQuestions.length === 0 ||
+                    !form.watch("selectedQuestionSet")
+                  }
+                >
+                  {isSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      Importing...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Import {parsedQuestions.length} Questions
+                    </>
+                  )}
+                </Button>
+              </div>
+            </form>
+          </Form>
         </DialogContent>
       </DialogPortal>
     </Dialog>

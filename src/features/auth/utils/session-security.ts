@@ -1,5 +1,5 @@
 // src/features/auth/utils/session-security.ts
-'use client'
+"use client";
 
 // Re-export from the auth services
 export {
@@ -8,9 +8,5 @@ export {
   type SecurityFingerprint,
   type SecurityEvent,
   type SessionData,
-  type RiskAssessment
-} from '@/features/auth/services/session-security'
-
-
-
-
+  type RiskAssessment,
+} from "@/features/auth/services/session-security";

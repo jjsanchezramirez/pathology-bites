@@ -1,260 +1,278 @@
-'use client'
+"use client";
 
-import { useState, useRef, useEffect } from 'react'
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Check, X, RotateCcw, ArrowLeft, ArrowRight, ChevronRight, ExternalLink } from 'lucide-react'
-import Image from 'next/image'
-import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache'
-import { PublicHero } from '@/shared/components/common/public-hero'
-import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
-import { useClientCellQuiz } from '@/shared/hooks/use-client-cell-quiz'
-import { generateLookAlikeOptions, generateBiologicalOptions } from '@/features/cell-quiz/data/cell-pathways'
+import { useState, useRef, useEffect } from "react";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import {
+  Check,
+  X,
+  RotateCcw,
+  ArrowLeft,
+  ArrowRight,
+  ChevronRight,
+  ExternalLink,
+} from "lucide-react";
+import Image from "next/image";
+import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
+import { PublicHero } from "@/shared/components/common/public-hero";
+import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
+import { useClientCellQuiz } from "@/shared/hooks/use-client-cell-quiz";
+import {
+  generateLookAlikeOptions,
+  generateBiologicalOptions,
+} from "@/features/cell-quiz/data/cell-pathways";
 
 interface Question {
-  cellType: string
-  imagePath: string
-  options: string[]
-  correctAnswer: string
-  explanation: string
+  cellType: string;
+  imagePath: string;
+  options: string[];
+  correctAnswer: string;
+  explanation: string;
 }
 
 // Helper function to find reference cell info by cell data key
 function findReferenceCellInfo(cellDataKey: string, bloodCellsReference: unknown) {
   if (!bloodCellsReference?.cells) {
-    console.warn('⚠️ No reference cells available for matching')
-    return null
+    console.warn("⚠️ No reference cells available for matching");
+    return null;
   }
-  
+
   const match = bloodCellsReference.cells.find((refCell: unknown) => {
     // Convert reference cell name to match cellData key format (lowercase, underscores)
-    const normalizedRefName = refCell.name.toLowerCase().replace(/\s+/g, '_')
-    const isMatch = normalizedRefName === cellDataKey
-    
+    const normalizedRefName = refCell.name.toLowerCase().replace(/\s+/g, "_");
+    const isMatch = normalizedRefName === cellDataKey;
+
     // Debug logging for troubleshooting
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🔍 Matching "${cellDataKey}" with "${refCell.name}" (normalized: "${normalizedRefName}") = ${isMatch}`)
+    if (process.env.NODE_ENV === "development") {
+      console.log(
+        `🔍 Matching "${cellDataKey}" with "${refCell.name}" (normalized: "${normalizedRefName}") = ${isMatch}`
+      );
     }
-    
-    return isMatch
-  })
-  
-  if (!match && process.env.NODE_ENV === 'development') {
-    console.warn(`⚠️ No reference match found for cell key: "${cellDataKey}"`)
-    console.log('Available reference cell names:', bloodCellsReference.cells.map((c: unknown) => c.name))
+
+    return isMatch;
+  });
+
+  if (!match && process.env.NODE_ENV === "development") {
+    console.warn(`⚠️ No reference match found for cell key: "${cellDataKey}"`);
+    console.log(
+      "Available reference cell names:",
+      bloodCellsReference.cells.map((c: unknown) => c.name)
+    );
   }
-  
-  return match
+
+  return match;
 }
 
 // Helper function to generate a single random question with biological relationships
 function generateRandomQuestion(cellData: unknown, bloodCellsReference: unknown): Question {
   if (!cellData || !bloodCellsReference) {
-    throw new Error('Cell data not loaded')
+    throw new Error("Cell data not loaded");
   }
 
-  const allCells = Object.keys(cellData)
+  const allCells = Object.keys(cellData);
   if (allCells.length === 0) {
-    throw new Error('No cell data available')
+    throw new Error("No cell data available");
   }
-  
+
   // Find cells that have both image data and reference data
-  const validCells = allCells.filter(cellKey => {
-    const hasImages = cellData[cellKey]?.images?.length > 0
-    const hasReference = findReferenceCellInfo(cellKey, bloodCellsReference)
-    return hasImages && hasReference
-  })
-  
+  const validCells = allCells.filter((cellKey) => {
+    const hasImages = cellData[cellKey]?.images?.length > 0;
+    const hasReference = findReferenceCellInfo(cellKey, bloodCellsReference);
+    return hasImages && hasReference;
+  });
+
   if (validCells.length === 0) {
-    console.error('❌ No cells found with both image and reference data')
-    console.log('Available cell keys:', allCells)
-    console.log('Available reference names:', bloodCellsReference?.cells?.map((c: unknown) => c.name) || [])
-    throw new Error('No valid cells found for quiz generation')
+    console.error("❌ No cells found with both image and reference data");
+    console.log("Available cell keys:", allCells);
+    console.log(
+      "Available reference names:",
+      bloodCellsReference?.cells?.map((c: unknown) => c.name) || []
+    );
+    throw new Error("No valid cells found for quiz generation");
   }
-  
-  const correctCellType = validCells[Math.floor(Math.random() * validCells.length)]
-  const cellInfo = cellData[correctCellType as keyof typeof cellData]
-  const referenceInfo = findReferenceCellInfo(correctCellType, bloodCellsReference)
+
+  const correctCellType = validCells[Math.floor(Math.random() * validCells.length)];
+  const cellInfo = cellData[correctCellType as keyof typeof cellData];
+  const referenceInfo = findReferenceCellInfo(correctCellType, bloodCellsReference);
 
   // Pick a random image for this cell type
-  const randomImage = cellInfo.images[Math.floor(Math.random() * cellInfo.images.length)]
+  const randomImage = cellInfo.images[Math.floor(Math.random() * cellInfo.images.length)];
 
   // Use reference name if available, otherwise fall back to cell data name
-  const correctAnswerName = referenceInfo ? referenceInfo.name : cellInfo.name
+  const correctAnswerName = referenceInfo ? referenceInfo.name : cellInfo.name;
 
   // Generate challenging options using look-alikes data
-  const lookAlikeOptions = generateLookAlikeOptions(correctCellType, cellData)
+  const lookAlikeOptions = generateLookAlikeOptions(correctCellType, cellData);
 
   // Map cell types to display names, preferring reference names when available
-  const options = lookAlikeOptions.map(cellType => {
-    const cellInfo = cellData[cellType as keyof typeof cellData]
-    if (!cellInfo) return null
+  const options = lookAlikeOptions
+    .map((cellType) => {
+      const cellInfo = cellData[cellType as keyof typeof cellData];
+      if (!cellInfo) return null;
 
-    const referenceInfo = findReferenceCellInfo(cellType, bloodCellsReference)
-    return referenceInfo ? referenceInfo.name : cellInfo.name
-  }).filter(Boolean) as string[]
+      const referenceInfo = findReferenceCellInfo(cellType, bloodCellsReference);
+      return referenceInfo ? referenceInfo.name : cellInfo.name;
+    })
+    .filter(Boolean) as string[];
 
   // Ensure we have exactly 4 options, fallback to biological options if needed
   if (options.length < 4) {
-    const biologicalOptions = generateBiologicalOptions(correctCellType)
+    const biologicalOptions = generateBiologicalOptions(correctCellType);
     const fallbackOptions = biologicalOptions
-      .filter(cellType => !lookAlikeOptions.includes(cellType))
+      .filter((cellType) => !lookAlikeOptions.includes(cellType))
       .slice(0, 4 - options.length)
-      .map(cell => {
-        const cellInfo = cellData[cell as keyof typeof cellData]
-        if (!cellInfo) return null
-        const referenceInfo = findReferenceCellInfo(cell, bloodCellsReference)
-        return referenceInfo ? referenceInfo.name : cellInfo.name
+      .map((cell) => {
+        const cellInfo = cellData[cell as keyof typeof cellData];
+        if (!cellInfo) return null;
+        const referenceInfo = findReferenceCellInfo(cell, bloodCellsReference);
+        return referenceInfo ? referenceInfo.name : cellInfo.name;
       })
-      .filter(Boolean) as string[]
+      .filter(Boolean) as string[];
 
-    options.push(...fallbackOptions)
+    options.push(...fallbackOptions);
   }
 
   // Shuffle the final options
-  const shuffledOptions = options.sort(() => Math.random() - 0.5)
+  const shuffledOptions = options.sort(() => Math.random() - 0.5);
 
   return {
     cellType: correctCellType,
     imagePath: randomImage,
     options: shuffledOptions,
     correctAnswer: correctAnswerName,
-    explanation: referenceInfo ?
-      `${referenceInfo.key_features || cellInfo.description}` :
-      cellInfo.description
-  }
+    explanation: referenceInfo
+      ? `${referenceInfo.key_features || cellInfo.description}`
+      : cellInfo.description,
+  };
 }
 
 export default function CellQuizPage() {
   // ✅ Use optimized client-side R2 direct fetch - zero Vercel usage in production
-  const { cellData, bloodCellsReference, isLoading, error } = useClientCellQuiz()
+  const { cellData, bloodCellsReference, isLoading, error } = useClientCellQuiz();
 
-  const [mode, setMode] = useState<'menu' | 'quiz' | 'tutorial'>('menu')
-  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null)
-  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
-  const [showExplanation, setShowExplanation] = useState(false)
-  const [score, setScore] = useState(0)
-  const [totalQuestions, setTotalQuestions] = useState(0)
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
+  const [mode, setMode] = useState<"menu" | "quiz" | "tutorial">("menu");
+  const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
+  const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
+  const [showExplanation, setShowExplanation] = useState(false);
+  const [score, setScore] = useState(0);
+  const [totalQuestions, setTotalQuestions] = useState(0);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // ✅ Fix: Call useImageCacheHandler at top level to avoid hook rule violations
-  const handleImageLoad = useImageCacheHandler(currentQuestion?.imagePath || '', true)
+  const handleImageLoad = useImageCacheHandler(currentQuestion?.imagePath || "", true);
 
   // Show loading state while data is being fetched
-  const hasError = error
+  const hasError = error;
 
   // Keyboard navigation for quiz mode (desktop only)
   useEffect(() => {
-    if (mode !== 'quiz' || !currentQuestion) return
+    if (mode !== "quiz" || !currentQuestion) return;
 
     // Check if we're on a mobile device (screen width < 768px)
-    const isMobile = () => window.innerWidth < 768
+    const isMobile = () => window.innerWidth < 768;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       // Skip keyboard handling on mobile devices
-      if (isMobile()) return
+      if (isMobile()) return;
 
       // Prevent default behavior for our handled keys
-      if (['ArrowLeft', 'ArrowRight', 'Space', 'Enter', '1', '2', '3', '4'].includes(event.code)) {
-        event.preventDefault()
+      if (["ArrowLeft", "ArrowRight", "Space", "Enter", "1", "2", "3", "4"].includes(event.code)) {
+        event.preventDefault();
       }
 
       // Number keys (1-4) for selecting options
-      if (['Digit1', 'Digit2', 'Digit3', 'Digit4'].includes(event.code)) {
-        const optionIndex = parseInt(event.code.replace('Digit', '')) - 1
+      if (["Digit1", "Digit2", "Digit3", "Digit4"].includes(event.code)) {
+        const optionIndex = parseInt(event.code.replace("Digit", "")) - 1;
         if (optionIndex < currentQuestion.options.length && !selectedAnswer) {
-          handleAnswerSelect(currentQuestion.options[optionIndex])
+          handleAnswerSelect(currentQuestion.options[optionIndex]);
         }
-        return
+        return;
       }
 
       // Space or Enter to proceed to next question (when explanation is shown)
-      if ((event.code === 'Space' || event.code === 'Enter') && showExplanation) {
-        nextQuestion()
-        return
+      if ((event.code === "Space" || event.code === "Enter") && showExplanation) {
+        nextQuestion();
+        return;
       }
 
       // Arrow keys for navigation (when explanation is shown)
-      if (event.code === 'ArrowRight' && showExplanation) {
-        nextQuestion()
-        return
+      if (event.code === "ArrowRight" && showExplanation) {
+        nextQuestion();
+        return;
       }
 
       // Left arrow key is disabled during quiz to prevent accidental menu return
-      if (event.code === 'ArrowLeft') {
+      if (event.code === "ArrowLeft") {
         // Do nothing - prevents accidental return to menu
-        return
+        return;
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [mode, currentQuestion, selectedAnswer, showExplanation, handleAnswerSelect, nextQuestion])
-
-
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [mode, currentQuestion, selectedAnswer, showExplanation, handleAnswerSelect, nextQuestion]);
 
   const startGame = () => {
-    if (!cellData || !bloodCellsReference) return
-    setMode('quiz')
-    setCurrentQuestion(generateRandomQuestion(cellData, bloodCellsReference))
-    setSelectedAnswer(null)
-    setShowExplanation(false)
-    setScore(0)
-    setTotalQuestions(0)
-  }
+    if (!cellData || !bloodCellsReference) return;
+    setMode("quiz");
+    setCurrentQuestion(generateRandomQuestion(cellData, bloodCellsReference));
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setScore(0);
+    setTotalQuestions(0);
+  };
 
   const startTutorial = () => {
-    setMode('tutorial')
-  }
+    setMode("tutorial");
+  };
 
   const backToMenu = () => {
-    setMode('menu')
-  }
-
+    setMode("menu");
+  };
 
   const handleAnswerSelect = (answer: string) => {
-    if (selectedAnswer) return // Already answered
+    if (selectedAnswer) return; // Already answered
 
-    const correct = answer === currentQuestion?.correctAnswer
-    setSelectedAnswer(answer)
-    setShowExplanation(true)
-    setIsCorrect(correct)
-    setTotalQuestions(prev => prev + 1)
+    const correct = answer === currentQuestion?.correctAnswer;
+    setSelectedAnswer(answer);
+    setShowExplanation(true);
+    setIsCorrect(correct);
+    setTotalQuestions((prev) => prev + 1);
 
     if (correct) {
-      setScore(prev => prev + 1)
+      setScore((prev) => prev + 1);
     }
-  }
+  };
 
   const nextQuestion = () => {
-    if (!cellData || !bloodCellsReference) return
-    setCurrentQuestion(generateRandomQuestion(cellData, bloodCellsReference))
-    setSelectedAnswer(null)
-    setShowExplanation(false)
-    setIsCorrect(null)
+    if (!cellData || !bloodCellsReference) return;
+    setCurrentQuestion(generateRandomQuestion(cellData, bloodCellsReference));
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setIsCorrect(null);
 
     // Scroll to top of the quiz component with padding above
     if (containerRef.current) {
       const elementTop = containerRef.current.getBoundingClientRect().top + window.scrollY;
       const offsetPosition = elementTop - 100; // 100px above the element
-      
+
       window.scrollTo({
         top: Math.max(0, offsetPosition), // Don't scroll past top of page
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }
-  }
+  };
 
   const resetGame = () => {
-    setMode('menu')
-    setCurrentQuestion(null)
-    setSelectedAnswer(null)
-    setShowExplanation(false)
-    setIsCorrect(null)
-    setScore(0)
-    setTotalQuestions(0)
-  }
+    setMode("menu");
+    setCurrentQuestion(null);
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setIsCorrect(null);
+    setScore(0);
+    setTotalQuestions(0);
+  };
 
   // Show loading state
   if (isLoading) {
@@ -279,14 +297,14 @@ export default function CellQuizPage() {
           </div>
         </section>
       </div>
-    )
+    );
   }
 
   // Show error state
   if (hasError) {
-    const errorMessage = error || 'Unknown error occurred'
-    const isR2Error = errorMessage.includes('Failed to fetch')
-    
+    const errorMessage = error || "Unknown error occurred";
+    const isR2Error = errorMessage.includes("Failed to fetch");
+
     return (
       <div className="flex min-h-screen flex-col">
         <PublicHero
@@ -300,13 +318,12 @@ export default function CellQuizPage() {
                 <div className="text-red-600">
                   <X className="h-8 w-8 mx-auto mb-2" />
                   <h3 className="font-semibold">Failed to Load Quiz Data</h3>
-                  <p className="text-sm text-muted-foreground mt-2">
-                    {errorMessage}
-                  </p>
+                  <p className="text-sm text-muted-foreground mt-2">{errorMessage}</p>
                   {isR2Error && (
                     <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded text-left">
                       <p className="text-xs text-yellow-800">
-                        <strong>R2 Data Missing:</strong> Please upload the following files to Cloudflare R2 bucket 'pathology-bites-data':
+                        <strong>R2 Data Missing:</strong> Please upload the following files to
+                        Cloudflare R2 bucket 'pathology-bites-data':
                       </p>
                       <ul className="text-xs text-yellow-700 mt-2 space-y-1">
                         <li>• cell-quiz-images.json</li>
@@ -326,12 +343,18 @@ export default function CellQuizPage() {
           </div>
         </section>
       </div>
-    )
+    );
   }
 
   // Tutorial mode
-  if (mode === 'tutorial') {
-    return <CellTutorial onBack={backToMenu} bloodCellsReference={bloodCellsReference} cellData={cellData} />
+  if (mode === "tutorial") {
+    return (
+      <CellTutorial
+        onBack={backToMenu}
+        bloodCellsReference={bloodCellsReference}
+        cellData={cellData}
+      />
+    );
   }
 
   return (
@@ -345,7 +368,7 @@ export default function CellQuizPage() {
       {/* Quiz Content Section */}
       <section className="relative py-8">
         <div className="flex items-center justify-center p-4">
-          {mode === 'menu' ? (
+          {mode === "menu" ? (
             <Card className="w-full max-w-sm p-6 md:p-8 text-center shadow-lg">
               <CardContent className="space-y-4 md:space-y-6">
                 <h1 className="text-xl md:text-2xl font-bold">Cell Quiz</h1>
@@ -364,7 +387,7 @@ export default function CellQuizPage() {
                 </div>
               </CardContent>
             </Card>
-          ) : mode === 'quiz' && currentQuestion ? (
+          ) : mode === "quiz" && currentQuestion ? (
             <Card ref={containerRef} className="w-full max-w-4xl p-4 md:p-8 shadow-lg">
               <CardContent className="space-y-4 md:space-y-6">
                 {/* Header */}
@@ -380,7 +403,9 @@ export default function CellQuizPage() {
 
                 {/* Question */}
                 <div>
-                  <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-center">What cell type is this?</h2>
+                  <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-center">
+                    What cell type is this?
+                  </h2>
 
                   {/* Responsive Layout: Vertical on mobile, Horizontal on desktop */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
@@ -402,16 +427,18 @@ export default function CellQuizPage() {
                     <div className="space-y-3 md:space-y-4">
                       <div className="grid grid-cols-1 gap-2 md:gap-3">
                         {currentQuestion.options.map((option, index) => {
-                          const isSelected = selectedAnswer === option
-                          const isCorrect = option === currentQuestion.correctAnswer
-                          const showResult = showExplanation
+                          const isSelected = selectedAnswer === option;
+                          const isCorrect = option === currentQuestion.correctAnswer;
+                          const showResult = showExplanation;
 
-                          let buttonClass = ""
+                          let buttonClass = "";
                           if (showResult) {
                             if (isCorrect) {
-                              buttonClass = "bg-green-100 hover:bg-green-200 text-green-800 border-green-500 dark:bg-green-900/20 dark:text-green-300 dark:border-green-600"
+                              buttonClass =
+                                "bg-green-100 hover:bg-green-200 text-green-800 border-green-500 dark:bg-green-900/20 dark:text-green-300 dark:border-green-600";
                             } else if (isSelected) {
-                              buttonClass = "bg-red-100 hover:bg-red-200 text-red-800 border-red-500 dark:bg-red-900/20 dark:text-red-300 dark:border-red-600"
+                              buttonClass =
+                                "bg-red-100 hover:bg-red-200 text-red-800 border-red-500 dark:bg-red-900/20 dark:text-red-300 dark:border-red-600";
                             }
                           }
 
@@ -424,13 +451,19 @@ export default function CellQuizPage() {
                               disabled={!!selectedAnswer}
                             >
                               <div className="flex items-center gap-2 md:gap-3">
-                                <span className="text-muted-foreground font-medium flex-shrink-0">{index + 1}.</span>
-                                {showResult && isCorrect && <Check className="h-4 w-4 flex-shrink-0" />}
-                                {showResult && isSelected && !isCorrect && <X className="h-4 w-4 flex-shrink-0" />}
+                                <span className="text-muted-foreground font-medium flex-shrink-0">
+                                  {index + 1}.
+                                </span>
+                                {showResult && isCorrect && (
+                                  <Check className="h-4 w-4 flex-shrink-0" />
+                                )}
+                                {showResult && isSelected && !isCorrect && (
+                                  <X className="h-4 w-4 flex-shrink-0" />
+                                )}
                                 <span className="break-words">{option}</span>
                               </div>
                             </Button>
-                          )
+                          );
                         })}
                       </div>
                     </div>
@@ -440,22 +473,38 @@ export default function CellQuizPage() {
                   {showExplanation && (
                     <div className="mt-4 md:mt-6 p-3 md:p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-left">
                       <h3 className="font-semibold mb-2 text-sm md:text-base">
-                        {isCorrect ? 'Correct!' : `Correct Answer: ${currentQuestion.correctAnswer}`}
+                        {isCorrect
+                          ? "Correct!"
+                          : `Correct Answer: ${currentQuestion.correctAnswer}`}
                       </h3>
 
                       {/* Get detailed information for the correct answer */}
                       {(() => {
                         // Find the cell data for the correct answer
-                        const correctCellEntry = Object.entries(cellData).find(([cellKey, cell]) => {
-                          const referenceInfo = findReferenceCellInfo(cellKey, bloodCellsReference)
-                          return (referenceInfo ? referenceInfo.name : (cell as unknown).name) === currentQuestion.correctAnswer
-                        })
+                        const correctCellEntry = Object.entries(cellData).find(
+                          ([cellKey, cell]) => {
+                            const referenceInfo = findReferenceCellInfo(
+                              cellKey,
+                              bloodCellsReference
+                            );
+                            return (
+                              (referenceInfo ? referenceInfo.name : (cell as unknown).name) ===
+                              currentQuestion.correctAnswer
+                            );
+                          }
+                        );
 
-                        const correctCellKey = correctCellEntry?.[0]
-                        const referenceInfo = correctCellKey ? findReferenceCellInfo(correctCellKey, bloodCellsReference) : null
+                        const correctCellKey = correctCellEntry?.[0];
+                        const referenceInfo = correctCellKey
+                          ? findReferenceCellInfo(correctCellKey, bloodCellsReference)
+                          : null;
 
                         if (!referenceInfo) {
-                          return <p className="text-xs md:text-sm text-muted-foreground">{currentQuestion.explanation}</p>
+                          return (
+                            <p className="text-xs md:text-sm text-muted-foreground">
+                              {currentQuestion.explanation}
+                            </p>
+                          );
                         }
 
                         return (
@@ -463,16 +512,23 @@ export default function CellQuizPage() {
                             {/* Lineage, Size, and N:C Ratio - responsive layout */}
                             <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4">
                               <div>
-                                <span className="font-semibold text-muted-foreground">Lineage:</span> {referenceInfo.lineage}
+                                <span className="font-semibold text-muted-foreground">
+                                  Lineage:
+                                </span>{" "}
+                                {referenceInfo.lineage}
                               </div>
                               {referenceInfo.size && (
                                 <div>
-                                  <span className="font-semibold text-muted-foreground">Size:</span> {referenceInfo.size}
+                                  <span className="font-semibold text-muted-foreground">Size:</span>{" "}
+                                  {referenceInfo.size}
                                 </div>
                               )}
                               {referenceInfo.nc_ratio && (
                                 <div>
-                                  <span className="font-semibold text-muted-foreground">N:C Ratio:</span> {referenceInfo.nc_ratio}
+                                  <span className="font-semibold text-muted-foreground">
+                                    N:C Ratio:
+                                  </span>{" "}
+                                  {referenceInfo.nc_ratio}
                                 </div>
                               )}
                             </div>
@@ -480,39 +536,52 @@ export default function CellQuizPage() {
                             {/* Percentage */}
                             {referenceInfo.normal_percentage && (
                               <div>
-                                <span className="font-semibold text-muted-foreground">Normal Percentage:</span> {referenceInfo.normal_percentage}
+                                <span className="font-semibold text-muted-foreground">
+                                  Normal Percentage:
+                                </span>{" "}
+                                {referenceInfo.normal_percentage}
                               </div>
                             )}
 
                             {/* Key Features */}
                             {referenceInfo.key_features && (
                               <div>
-                                <span className="font-semibold text-muted-foreground">Key Features:</span> {referenceInfo.key_features}
+                                <span className="font-semibold text-muted-foreground">
+                                  Key Features:
+                                </span>{" "}
+                                {referenceInfo.key_features}
                               </div>
                             )}
 
                             {/* Nucleus */}
                             {referenceInfo.nucleus && (
                               <div>
-                                <span className="font-semibold text-muted-foreground">Nucleus:</span> {referenceInfo.nucleus}
+                                <span className="font-semibold text-muted-foreground">
+                                  Nucleus:
+                                </span>{" "}
+                                {referenceInfo.nucleus}
                               </div>
                             )}
 
                             {/* Clinical Significance */}
                             {referenceInfo.clinical_significance && (
                               <div>
-                                <span className="font-semibold text-muted-foreground">Clinical Significance:</span> {referenceInfo.clinical_significance}
+                                <span className="font-semibold text-muted-foreground">
+                                  Clinical Significance:
+                                </span>{" "}
+                                {referenceInfo.clinical_significance}
                               </div>
                             )}
 
                             {/* Notes */}
                             {referenceInfo.notes && (
                               <div>
-                                <span className="font-semibold text-muted-foreground">Notes:</span> {referenceInfo.notes}
+                                <span className="font-semibold text-muted-foreground">Notes:</span>{" "}
+                                {referenceInfo.notes}
                               </div>
                             )}
                           </div>
-                        )
+                        );
                       })()}
                     </div>
                   )}
@@ -531,7 +600,19 @@ export default function CellQuizPage() {
                   <div className="border-t pt-6 mt-4 hidden md:block">
                     <div className="text-center">
                       <p className="text-xs text-muted-foreground">
-                        <strong>Keyboard shortcuts:</strong> Press <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">1-4</kbd> to select options and <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Space</kbd> or <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Enter</kbd> to advance
+                        <strong>Keyboard shortcuts:</strong> Press{" "}
+                        <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                          1-4
+                        </kbd>{" "}
+                        to select options and{" "}
+                        <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                          Space
+                        </kbd>{" "}
+                        or{" "}
+                        <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                          Enter
+                        </kbd>{" "}
+                        to advance
                       </p>
                     </div>
                   </div>
@@ -548,97 +629,105 @@ export default function CellQuizPage() {
       <div className="flex-1" />
 
       {/* Join Our Learning Community */}
-      <JoinCommunitySection
-        description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone."
-      />
+      <JoinCommunitySection description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone." />
     </div>
-  )
+  );
 }
 
 // Cell Tutorial Component
-function CellTutorial({ onBack, bloodCellsReference, cellData }: {
-  onBack: () => void
-  bloodCellsReference: unknown
-  cellData: unknown
+function CellTutorial({
+  onBack,
+  bloodCellsReference,
+  cellData,
+}: {
+  onBack: () => void;
+  bloodCellsReference: unknown;
+  cellData: unknown;
 }) {
-  const [currentCellIndex, setCurrentCellIndex] = useState(0)
+  const [currentCellIndex, setCurrentCellIndex] = useState(0);
 
   // Get current cell data for image cache handler
-  const currentReferenceCell = bloodCellsReference?.cells?.[currentCellIndex]
+  const currentReferenceCell = bloodCellsReference?.cells?.[currentCellIndex];
 
   // Find matching cell data using the same logic as below
-  const matchingCellDataEntry = currentReferenceCell ? Object.entries(cellData || {}).find(([cellKey, cellValue]) => {
-    const normalizedRefName = currentReferenceCell.name.toLowerCase().replace(/\s+/g, '_')
-    const cellValueName = (cellValue as unknown)?.name?.toLowerCase()
-    const refCellName = currentReferenceCell.name.toLowerCase()
-    return cellKey === normalizedRefName || cellValueName === refCellName
-  }) : null
+  const matchingCellDataEntry = currentReferenceCell
+    ? Object.entries(cellData || {}).find(([cellKey, cellValue]) => {
+        const normalizedRefName = currentReferenceCell.name.toLowerCase().replace(/\s+/g, "_");
+        const cellValueName = (cellValue as unknown)?.name?.toLowerCase();
+        const refCellName = currentReferenceCell.name.toLowerCase();
+        return cellKey === normalizedRefName || cellValueName === refCellName;
+      })
+    : null;
 
-  const currentImageSrc = matchingCellDataEntry ? (matchingCellDataEntry[1] as unknown)?.images?.[0] || '' : ''
+  const currentImageSrc = matchingCellDataEntry
+    ? (matchingCellDataEntry[1] as unknown)?.images?.[0] || ""
+    : "";
 
   // ✅ Fix: Call useImageCacheHandler at top level to avoid hook rule violations
-  const handleTutorialImageLoad = useImageCacheHandler(currentImageSrc, true)
+  const handleTutorialImageLoad = useImageCacheHandler(currentImageSrc, true);
 
   // Debug logging
-  console.log('🔍 Tutorial Debug Info:', {
+  console.log("🔍 Tutorial Debug Info:", {
     bloodCellsReference: {
       exists: !!bloodCellsReference,
       hasCells: !!bloodCellsReference?.cells,
       cellCount: bloodCellsReference?.cells?.length || 0,
-      sampleCellNames: bloodCellsReference?.cells?.slice(0, 5)?.map((c: unknown) => c.name) || []
+      sampleCellNames: bloodCellsReference?.cells?.slice(0, 5)?.map((c: unknown) => c.name) || [],
     },
     cellData: {
       exists: !!cellData,
       cellCount: cellData ? Object.keys(cellData).length : 0,
-      sampleKeys: cellData ? Object.keys(cellData).slice(0, 5) : []
-    }
-  })
+      sampleKeys: cellData ? Object.keys(cellData).slice(0, 5) : [],
+    },
+  });
 
   // Keyboard navigation for tutorial mode (desktop only) - must be before early returns
   useEffect(() => {
-    if (!bloodCellsReference?.cells) return // Don't set up keyboard handling if no data
-    
+    if (!bloodCellsReference?.cells) return; // Don't set up keyboard handling if no data
+
     // Check if we're on a mobile device (screen width < 768px)
-    const isMobile = () => window.innerWidth < 768
+    const isMobile = () => window.innerWidth < 768;
 
     const handleKeyDown = (event: KeyboardEvent) => {
       // Skip keyboard handling on mobile devices
-      if (isMobile()) return
+      if (isMobile()) return;
 
       // Prevent default behavior for our handled keys
-      if (['ArrowLeft', 'ArrowRight', 'Space', 'Enter'].includes(event.code)) {
-        event.preventDefault()
+      if (["ArrowLeft", "ArrowRight", "Space", "Enter"].includes(event.code)) {
+        event.preventDefault();
       }
 
       // Arrow keys for navigation
-      if (event.code === 'ArrowRight' || event.code === 'Space' || event.code === 'Enter') {
+      if (event.code === "ArrowRight" || event.code === "Space" || event.code === "Enter") {
         if (currentCellIndex < bloodCellsReference.cells.length - 1) {
-          setCurrentCellIndex(prev => prev + 1)
+          setCurrentCellIndex((prev) => prev + 1);
         }
-        return
+        return;
       }
 
-      if (event.code === 'ArrowLeft') {
+      if (event.code === "ArrowLeft") {
         if (currentCellIndex > 0) {
-          setCurrentCellIndex(prev => prev - 1)
+          setCurrentCellIndex((prev) => prev - 1);
         }
-        return
+        return;
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [currentCellIndex, bloodCellsReference?.cells])
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [currentCellIndex, bloodCellsReference?.cells]);
 
   if (!bloodCellsReference?.cells) {
-    console.error('❌ No reference cells data available in tutorial')
+    console.error("❌ No reference cells data available in tutorial");
     return (
       <div className="flex min-h-screen flex-col">
         <section className="relative py-8">
           <div className="container px-4 max-w-5xl mx-auto">
             <div className="text-center">
               <h2 className="text-2xl font-bold mb-4">Loading Tutorial...</h2>
-              <p className="text-muted-foreground">Please wait while we load the cell reference data.</p>
+              <p className="text-muted-foreground">
+                Please wait while we load the cell reference data.
+              </p>
               <button onClick={onBack} className="mt-4 px-4 py-2 bg-blue-500 text-white rounded">
                 Back to Menu
               </button>
@@ -646,59 +735,65 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
           </div>
         </section>
       </div>
-    )
+    );
   }
 
-  const referenceCells = bloodCellsReference.cells
+  const referenceCells = bloodCellsReference.cells;
   // currentReferenceCell is already declared above for image cache handler
 
-  console.log('📋 Current cell data:', {
+  console.log("📋 Current cell data:", {
     index: currentCellIndex,
     cell: currentReferenceCell,
-    hasDetailedFields: !!(currentReferenceCell?.size || currentReferenceCell?.lineage || currentReferenceCell?.key_features)
-  })
+    hasDetailedFields: !!(
+      currentReferenceCell?.size ||
+      currentReferenceCell?.lineage ||
+      currentReferenceCell?.key_features
+    ),
+  });
 
   // Find matching cell data for images by converting names to match the cellData keys
   const matchingCellData = Object.entries(cellData || {}).find(([cellKey, cellValue]) => {
     // Convert reference cell name to match cellData key format (lowercase, underscores)
-    const normalizedRefName = currentReferenceCell.name.toLowerCase().replace(/\s+/g, '_')
+    const normalizedRefName = currentReferenceCell.name.toLowerCase().replace(/\s+/g, "_");
     // Also check if the cellValue name matches (case insensitive)
-    const cellValueName = (cellValue as unknown)?.name?.toLowerCase()
-    const refCellName = currentReferenceCell.name.toLowerCase()
+    const cellValueName = (cellValue as unknown)?.name?.toLowerCase();
+    const refCellName = currentReferenceCell.name.toLowerCase();
 
-    const keyMatch = cellKey === normalizedRefName
-    const nameMatch = cellValueName === refCellName
-    const isMatch = keyMatch || nameMatch
-    
+    const keyMatch = cellKey === normalizedRefName;
+    const nameMatch = cellValueName === refCellName;
+    const isMatch = keyMatch || nameMatch;
+
     // Debug logging for tutorial image matching
-    if (process.env.NODE_ENV === 'development') {
-      console.log(`🖼️ Tutorial image matching "${currentReferenceCell.name}":`)
-      console.log(`   - Looking for key: "${normalizedRefName}" in cellData`)
-      console.log(`   - Checking cellKey: "${cellKey}" = ${keyMatch}`)
-      console.log(`   - Checking cellValue.name: "${cellValueName}" vs "${refCellName}" = ${nameMatch}`)
-      console.log(`   - Final match: ${isMatch}`)
+    if (process.env.NODE_ENV === "development") {
+      console.log(`🖼️ Tutorial image matching "${currentReferenceCell.name}":`);
+      console.log(`   - Looking for key: "${normalizedRefName}" in cellData`);
+      console.log(`   - Checking cellKey: "${cellKey}" = ${keyMatch}`);
+      console.log(
+        `   - Checking cellValue.name: "${cellValueName}" vs "${refCellName}" = ${nameMatch}`
+      );
+      console.log(`   - Final match: ${isMatch}`);
     }
 
-    return isMatch
-  })?.[1]
-  
+    return isMatch;
+  })?.[1];
+
   // Debug log if no matching cell data found
-  if (!matchingCellData && process.env.NODE_ENV === 'development') {
-    console.warn(`⚠️ No image data found for tutorial cell: "${currentReferenceCell.name}"`)
-    console.log('Available cellData keys:', Object.keys(cellData || {}))
+  if (!matchingCellData && process.env.NODE_ENV === "development") {
+    console.warn(`⚠️ No image data found for tutorial cell: "${currentReferenceCell.name}"`);
+    console.log("Available cellData keys:", Object.keys(cellData || {}));
   }
 
   const handleNext = () => {
     if (currentCellIndex < bloodCellsReference.cells.length - 1) {
-      setCurrentCellIndex(prev => prev + 1)
+      setCurrentCellIndex((prev) => prev + 1);
     }
-  }
+  };
 
   const handlePrevious = () => {
     if (currentCellIndex > 0) {
-      setCurrentCellIndex(prev => prev - 1)
+      setCurrentCellIndex((prev) => prev - 1);
     }
-  }
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -718,11 +813,7 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
                 <div className="text-xs md:text-sm text-muted-foreground">
                   {currentCellIndex + 1} of {referenceCells.length} cells
                 </div>
-                <Button
-                  variant="outline"
-                  onClick={onBack}
-                  size="sm"
-                >
+                <Button variant="outline" onClick={onBack} size="sm">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   <span className="hidden sm:inline">Back</span>
                 </Button>
@@ -732,7 +823,9 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                 {/* Image - Smaller area */}
                 <div className="flex justify-center">
-                  {matchingCellData && (matchingCellData as unknown).images && (matchingCellData as unknown).images.length > 0 ? (
+                  {matchingCellData &&
+                  (matchingCellData as unknown).images &&
+                  (matchingCellData as unknown).images.length > 0 ? (
                     <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-lg overflow-hidden border bg-gray-50 dark:bg-gray-900">
                       <Image
                         src={(matchingCellData as unknown).images[0]}
@@ -752,24 +845,29 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
 
                 {/* Information - Larger area (2 columns) */}
                 <div className="md:col-span-2 space-y-3 md:space-y-4">
-                  <h2 className="text-2xl md:text-3xl font-bold">{currentReferenceCell?.name || 'Unknown Cell'}</h2>
+                  <h2 className="text-2xl md:text-3xl font-bold">
+                    {currentReferenceCell?.name || "Unknown Cell"}
+                  </h2>
 
                   <div className="space-y-2 md:space-y-3">
                     {/* Size, N:C Ratio, and Normal Range - responsive layout */}
                     <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4 text-xs md:text-sm">
                       {currentReferenceCell?.size && (
                         <div>
-                          <span className="font-semibold text-muted-foreground">Size:</span> {currentReferenceCell.size}
+                          <span className="font-semibold text-muted-foreground">Size:</span>{" "}
+                          {currentReferenceCell.size}
                         </div>
                       )}
                       {currentReferenceCell?.nc_ratio && (
                         <div>
-                          <span className="font-semibold text-muted-foreground">N:C Ratio:</span> {currentReferenceCell.nc_ratio}
+                          <span className="font-semibold text-muted-foreground">N:C Ratio:</span>{" "}
+                          {currentReferenceCell.nc_ratio}
                         </div>
                       )}
                       {currentReferenceCell?.normal_percentage && (
                         <div>
-                          <span className="font-semibold text-muted-foreground">Normal Range:</span> {currentReferenceCell.normal_percentage}
+                          <span className="font-semibold text-muted-foreground">Normal Range:</span>{" "}
+                          {currentReferenceCell.normal_percentage}
                         </div>
                       )}
                     </div>
@@ -795,14 +893,16 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
                     )}
 
                     {/* Normal Percentage (if not shown above) */}
-                    {currentReferenceCell?.normal_percentage && !currentReferenceCell?.size && !currentReferenceCell?.nc_ratio && (
-                      <div>
-                        <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-1">
-                          Normal Percentage
-                        </h3>
-                        <p className="text-sm">{currentReferenceCell.normal_percentage}</p>
-                      </div>
-                    )}
+                    {currentReferenceCell?.normal_percentage &&
+                      !currentReferenceCell?.size &&
+                      !currentReferenceCell?.nc_ratio && (
+                        <div>
+                          <h3 className="font-semibold text-sm uppercase tracking-wide text-muted-foreground mb-1">
+                            Normal Percentage
+                          </h3>
+                          <p className="text-sm">{currentReferenceCell.normal_percentage}</p>
+                        </div>
+                      )}
 
                     {/* Clinical Significance */}
                     {currentReferenceCell?.clinical_significance && (
@@ -855,7 +955,22 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
               <div className="border-t pt-6 mt-4 hidden md:block">
                 <div className="text-center">
                   <p className="text-xs text-muted-foreground">
-                    <strong>Keyboard shortcuts:</strong> Press <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Space</kbd> or <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Enter</kbd> or <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">◀</kbd> <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">▶</kbd> to navigate
+                    <strong>Keyboard shortcuts:</strong> Press{" "}
+                    <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                      Space
+                    </kbd>{" "}
+                    or{" "}
+                    <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                      Enter
+                    </kbd>{" "}
+                    or{" "}
+                    <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                      ◀
+                    </kbd>{" "}
+                    <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                      ▶
+                    </kbd>{" "}
+                    to navigate
                   </p>
                 </div>
               </div>
@@ -876,7 +991,8 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
               </a>
               <span className="break-words">
                 Parmentier S, Kramer M, Weller S, Schuler U, Ordemann R, Rall G, et al. (2020).
-                Reevaluation of reference values for bone marrow differential counts in 236 healthy bone marrow donors.
+                Reevaluation of reference values for bone marrow differential counts in 236 healthy
+                bone marrow donors.
                 <em> Ann Hematol</em>, 99(12), 2723-2729.
               </span>
             </div>
@@ -888,9 +1004,7 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
       <div className="flex-1" />
 
       {/* Join Our Learning Community */}
-      <JoinCommunitySection
-        description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone."
-      />
+      <JoinCommunitySection description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone." />
     </div>
-  )
+  );
 }

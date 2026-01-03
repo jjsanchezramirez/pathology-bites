@@ -1,15 +1,13 @@
 // src/features/questions/components/compact-answer-options.tsx
-'use client';
+"use client";
 
-import React, { useCallback } from 'react';
+import React, { useCallback } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 
-
-
-import { Plus, Trash2 } from 'lucide-react';
-import { AnswerOptionFormData } from '@/features/questions/types/questions';
+import { Plus, Trash2 } from "lucide-react";
+import { AnswerOptionFormData } from "@/features/questions/types/questions";
 
 interface CompactAnswerOptionsProps {
   options: AnswerOptionFormData[];
@@ -18,73 +16,84 @@ interface CompactAnswerOptionsProps {
 }
 
 export function CompactAnswerOptions({ options, onChange, errors }: CompactAnswerOptionsProps) {
-
   const addOption = useCallback(() => {
     const newOption: AnswerOptionFormData = {
-      text: '',
+      text: "",
       is_correct: false,
-      explanation: '',
-      order_index: options.length
+      explanation: "",
+      order_index: options.length,
     };
     onChange([...options, newOption]);
   }, [options, onChange]);
 
-  const removeOption = useCallback((index: number) => {
-    if (options.length <= 2) return; // Minimum 2 options
+  const removeOption = useCallback(
+    (index: number) => {
+      if (options.length <= 2) return; // Minimum 2 options
 
-    const updatedOptions = options.filter((_, i) => i !== index);
-    // Reorder indices
-    const reorderedOptions = updatedOptions.map((option, i) => ({
-      ...option,
-      order_index: i
-    }));
+      const updatedOptions = options.filter((_, i) => i !== index);
+      // Reorder indices
+      const reorderedOptions = updatedOptions.map((option, i) => ({
+        ...option,
+        order_index: i,
+      }));
 
-    // If we removed the correct answer, make the first option correct
-    const hasCorrectAnswer = reorderedOptions.some(opt => opt.is_correct);
-    if (!hasCorrectAnswer && reorderedOptions.length > 0) {
-      reorderedOptions[0].is_correct = true;
-    }
-
-    onChange(reorderedOptions);
-  }, [options, onChange]);
-
-  const updateOption = useCallback((index: number, field: keyof AnswerOptionFormData, value: unknown) => {
-    const updatedOptions = options.map((option, i) => {
-      if (i === index) {
-        return { ...option, [field]: value };
+      // If we removed the correct answer, make the first option correct
+      const hasCorrectAnswer = reorderedOptions.some((opt) => opt.is_correct);
+      if (!hasCorrectAnswer && reorderedOptions.length > 0) {
+        reorderedOptions[0].is_correct = true;
       }
-      return option;
-    });
-    onChange(updatedOptions);
-  }, [options, onChange]);
 
-  const setCorrectAnswer = useCallback((index: number) => {
-    const updatedOptions = options.map((option, i) => ({
-      ...option,
-      is_correct: i === index
-    }));
-    onChange(updatedOptions);
-  }, [options, onChange]);
+      onChange(reorderedOptions);
+    },
+    [options, onChange]
+  );
 
-  const _moveOption = useCallback((index: number, direction: 'up' | 'down') => {
-    const newIndex = direction === 'up' ? index - 1 : index + 1;
-    if (newIndex < 0 || newIndex >= options.length) return;
+  const updateOption = useCallback(
+    (index: number, field: keyof AnswerOptionFormData, value: unknown) => {
+      const updatedOptions = options.map((option, i) => {
+        if (i === index) {
+          return { ...option, [field]: value };
+        }
+        return option;
+      });
+      onChange(updatedOptions);
+    },
+    [options, onChange]
+  );
 
-    const updatedOptions = [...options];
-    const temp = updatedOptions[index];
-    updatedOptions[index] = updatedOptions[newIndex];
-    updatedOptions[newIndex] = temp;
+  const setCorrectAnswer = useCallback(
+    (index: number) => {
+      const updatedOptions = options.map((option, i) => ({
+        ...option,
+        is_correct: i === index,
+      }));
+      onChange(updatedOptions);
+    },
+    [options, onChange]
+  );
 
-    // Update order indices
-    const reorderedOptions = updatedOptions.map((option, i) => ({
-      ...option,
-      order_index: i
-    }));
+  const _moveOption = useCallback(
+    (index: number, direction: "up" | "down") => {
+      const newIndex = direction === "up" ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= options.length) return;
 
-    onChange(reorderedOptions);
-  }, [options, onChange]);
+      const updatedOptions = [...options];
+      const temp = updatedOptions[index];
+      updatedOptions[index] = updatedOptions[newIndex];
+      updatedOptions[newIndex] = temp;
 
-  const _correctAnswerIndex = options.findIndex(opt => opt.is_correct);
+      // Update order indices
+      const reorderedOptions = updatedOptions.map((option, i) => ({
+        ...option,
+        order_index: i,
+      }));
+
+      onChange(reorderedOptions);
+    },
+    [options, onChange]
+  );
+
+  const _correctAnswerIndex = options.findIndex((opt) => opt.is_correct);
 
   return (
     <div className="space-y-2">
@@ -103,9 +112,7 @@ export function CompactAnswerOptions({ options, onChange, errors }: CompactAnswe
         </Button>
       </div>
 
-      {errors?.options && (
-        <p className="text-xs text-red-600">{errors.options}</p>
-      )}
+      {errors?.options && <p className="text-xs text-red-600">{errors.options}</p>}
 
       <div className="space-y-1">
         {options.map((option, index) => (
@@ -118,29 +125,29 @@ export function CompactAnswerOptions({ options, onChange, errors }: CompactAnswe
               onClick={() => setCorrectAnswer(index)}
               className={`h-8 w-8 p-0 shrink-0 mt-1 transition-colors ${
                 option.is_correct
-                  ? 'bg-green-100 text-green-700 hover:bg-green-200'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                  ? "bg-green-100 text-green-700 hover:bg-green-200"
+                  : "text-muted-foreground hover:bg-muted hover:text-foreground"
               }`}
             >
-              <span className="text-xs font-bold">
-                {option.is_correct ? '✓' : '○'}
-              </span>
+              <span className="text-xs font-bold">{option.is_correct ? "✓" : "○"}</span>
             </Button>
 
             {/* Option Container */}
             <div
               className={`flex-1 border rounded p-2 transition-colors ${
                 option.is_correct
-                  ? 'border-green-200 bg-green-50/50'
-                  : 'border-border hover:border-muted-foreground/30'
+                  ? "border-green-200 bg-green-50/50"
+                  : "border-border hover:border-muted-foreground/30"
               }`}
             >
               {/* Option Text Row */}
               <div className="flex items-center gap-1">
                 {/* Letter Label */}
-                <span className={`text-sm font-medium min-w-[20px] ${
-                  option.is_correct ? 'text-green-700' : 'text-muted-foreground'
-                }`}>
+                <span
+                  className={`text-sm font-medium min-w-[20px] ${
+                    option.is_correct ? "text-green-700" : "text-muted-foreground"
+                  }`}
+                >
                   {String.fromCharCode(65 + index)}.
                 </span>
 
@@ -148,9 +155,9 @@ export function CompactAnswerOptions({ options, onChange, errors }: CompactAnswe
                 <Input
                   placeholder={`Option ${String.fromCharCode(65 + index)}...`}
                   value={option.text}
-                  onChange={(e) => updateOption(index, 'text', e.target.value)}
+                  onChange={(e) => updateOption(index, "text", e.target.value)}
                   className={`border-0 bg-transparent p-0 h-auto text-sm focus-visible:ring-0 focus-visible:ring-offset-0 outline-none flex-1 ${
-                    errors?.[`option_${index}_text`] ? 'text-red-600' : ''
+                    errors?.[`option_${index}_text`] ? "text-red-600" : ""
                   }`}
                 />
               </div>
@@ -162,21 +169,21 @@ export function CompactAnswerOptions({ options, onChange, errors }: CompactAnswe
               {/* Explanation Row */}
               <div className="flex items-start gap-1 mt-1">
                 {/* Empty space to align with letter */}
-                <span className="min-w-[20px] text-xs text-muted-foreground">
-
-                </span>
+                <span className="min-w-[20px] text-xs text-muted-foreground"></span>
 
                 {/* Explanation */}
                 <Textarea
                   placeholder="Explanation..."
-                  value={option.explanation || ''}
-                  onChange={(e) => updateOption(index, 'explanation', e.target.value)}
+                  value={option.explanation || ""}
+                  onChange={(e) => updateOption(index, "explanation", e.target.value)}
                   className="border-0 bg-transparent p-0 text-xs text-muted-foreground resize-none min-h-[32px] focus-visible:ring-0 focus-visible:ring-offset-0 outline-none flex-1"
                 />
               </div>
 
               {errors?.[`option_${index}_explanation`] && (
-                <p className="text-xs text-red-600 mt-1 ml-5">{errors[`option_${index}_explanation`]}</p>
+                <p className="text-xs text-red-600 mt-1 ml-5">
+                  {errors[`option_${index}_explanation`]}
+                </p>
               )}
             </div>
 

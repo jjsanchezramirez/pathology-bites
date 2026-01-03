@@ -1,8 +1,8 @@
 // Cache invalidation and management helpers
 // Centralized utilities for cache management across the app
 
-import { mutate } from 'swr'
-import { clearSWRCache } from '@/shared/providers/swr-cache-provider'
+import { mutate } from "swr";
+import { clearSWRCache } from "@/shared/providers/swr-cache-provider";
 
 /**
  * Invalidate unified data cache
@@ -11,14 +11,14 @@ import { clearSWRCache } from '@/shared/providers/swr-cache-provider'
  * @param revalidate - Whether to immediately fetch fresh data (default: true)
  */
 export async function invalidateUnifiedData(revalidate = true) {
-  console.log('[Cache] 🔄 Invalidating unified data cache')
+  console.log("[Cache] 🔄 Invalidating unified data cache");
 
   if (revalidate) {
     // Invalidate and immediately refetch
-    await mutate('/api/user/data')
+    await mutate("/api/user/data");
   } else {
     // Invalidate only (next access will fetch fresh data)
-    await mutate('/api/user/data', undefined, { revalidate: false })
+    await mutate("/api/user/data", undefined, { revalidate: false });
   }
 }
 
@@ -29,12 +29,12 @@ export async function invalidateUnifiedData(revalidate = true) {
  * @param revalidate - Whether to immediately fetch fresh data (default: true)
  */
 export async function invalidateUserSettings(revalidate = true) {
-  console.log('[Cache] 🔄 Invalidating user settings cache')
+  console.log("[Cache] 🔄 Invalidating user settings cache");
 
   if (revalidate) {
-    await mutate('/api/user/settings')
+    await mutate("/api/user/settings");
   } else {
-    await mutate('/api/user/settings', undefined, { revalidate: false })
+    await mutate("/api/user/settings", undefined, { revalidate: false });
   }
 }
 
@@ -43,17 +43,17 @@ export async function invalidateUserSettings(revalidate = true) {
  * Useful for logout, critical errors, etc.
  */
 export async function invalidateAllCaches() {
-  console.log('[Cache] 🗑️ Invalidating all caches')
+  console.log("[Cache] 🗑️ Invalidating all caches");
 
   // Invalidate all SWR keys
   await mutate(
     () => true, // Match all keys
     undefined,
     { revalidate: false }
-  )
+  );
 
   // Also clear localStorage cache
-  clearSWRCache()
+  clearSWRCache();
 }
 
 /**
@@ -61,13 +61,13 @@ export async function invalidateAllCaches() {
  * Useful when you want to ensure fresh data everywhere
  */
 export async function refreshAllCaches() {
-  console.log('[Cache] 🔄 Refreshing all caches')
+  console.log("[Cache] 🔄 Refreshing all caches");
 
   // Refresh unified data
-  await invalidateUnifiedData(true)
+  await invalidateUnifiedData(true);
 
   // Refresh settings
-  await invalidateUserSettings(true)
+  await invalidateUserSettings(true);
 }
 
 /**
@@ -75,10 +75,10 @@ export async function refreshAllCaches() {
  * Invalidates unified data to reflect new quiz results, achievements, etc.
  */
 export async function onQuizComplete() {
-  console.log('[Cache] 🎯 Quiz completed, invalidating caches')
+  console.log("[Cache] 🎯 Quiz completed, invalidating caches");
 
   // Invalidate unified data (will fetch fresh data with new quiz results)
-  await invalidateUnifiedData(true)
+  await invalidateUnifiedData(true);
 
   // Settings don't change on quiz completion, so no need to invalidate
 }
@@ -88,10 +88,10 @@ export async function onQuizComplete() {
  * Invalidates settings cache to reflect changes
  */
 export async function onSettingsUpdate() {
-  console.log('[Cache] ⚙️ Settings updated, invalidating cache')
+  console.log("[Cache] ⚙️ Settings updated, invalidating cache");
 
   // Invalidate settings cache
-  await invalidateUserSettings(true)
+  await invalidateUserSettings(true);
 
   // Unified data doesn't include settings, so no need to invalidate
 }
@@ -101,10 +101,10 @@ export async function onSettingsUpdate() {
  * Clears all caches to prevent data leakage
  */
 export async function onLogout() {
-  console.log('[Cache] 👋 Logging out, clearing all caches')
+  console.log("[Cache] 👋 Logging out, clearing all caches");
 
   // Clear all caches
-  await invalidateAllCaches()
+  await invalidateAllCaches();
 }
 
 /**
@@ -112,18 +112,18 @@ export async function onLogout() {
  * Useful for warming up cache before navigation
  */
 export async function prefetchUnifiedData() {
-  console.log('[Cache] 🔮 Pre-fetching unified data')
+  console.log("[Cache] 🔮 Pre-fetching unified data");
 
   try {
-    const res = await fetch('/api/user/data')
+    const res = await fetch("/api/user/data");
     if (res.ok) {
-      const data = await res.json()
+      const data = await res.json();
       // Cache will be populated automatically by SWR
-      console.log('[Cache] ✅ Pre-fetch successful')
-      return data
+      console.log("[Cache] ✅ Pre-fetch successful");
+      return data;
     }
   } catch (error) {
-    console.error('[Cache] ❌ Pre-fetch failed:', error)
+    console.error("[Cache] ❌ Pre-fetch failed:", error);
   }
 }
 
@@ -135,7 +135,7 @@ export function isCacheStale(_cacheKey: string, _maxAge: number): boolean {
   // This is a simplified implementation
   // In a real scenario, you'd need to access the SWR cache metadata
   // For now, we rely on SWR's built-in staleness checking
-  return false
+  return false;
 }
 
 const cacheHelpers = {
@@ -148,6 +148,6 @@ const cacheHelpers = {
   onLogout,
   prefetchUnifiedData,
   isCacheStale,
-}
+};
 
-export default cacheHelpers
+export default cacheHelpers;

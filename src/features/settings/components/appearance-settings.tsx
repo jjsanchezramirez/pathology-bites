@@ -1,23 +1,35 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Label } from '@/shared/components/ui/label'
-import { Separator } from '@/shared/components/ui/separator'
-import { Button } from '@/shared/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
-import { Moon, Sun, Minus, Plus } from 'lucide-react'
-import { getTextZoomConfig, getValidZoomLevel } from '@/shared/utils/text-zoom'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
+import { Label } from "@/shared/components/ui/label";
+import { Separator } from "@/shared/components/ui/separator";
+import { Button } from "@/shared/components/ui/button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { Moon, Sun, Minus, Plus } from "lucide-react";
+import { getTextZoomConfig, getValidZoomLevel } from "@/shared/utils/text-zoom";
 
 interface AppearanceSettingsProps {
-  theme: string
-  mounted: boolean
-  saving: boolean
-  dashboardTheme: { id: string; name: string; preview: string }
-  availableThemes: Array<{ id: string; name: string; preview: string }>
-  textZoom: number
-  onThemeChange: (theme: string) => void
-  onDashboardThemeChange: (theme: string) => void
-  onTextZoomChange: (zoom: number) => void
+  theme: string;
+  mounted: boolean;
+  saving: boolean;
+  dashboardTheme: { id: string; name: string; preview: string };
+  availableThemes: Array<{ id: string; name: string; preview: string }>;
+  textZoom: number;
+  onThemeChange: (theme: string) => void;
+  onDashboardThemeChange: (theme: string) => void;
+  onTextZoomChange: (zoom: number) => void;
 }
 
 export function AppearanceSettings({
@@ -29,31 +41,23 @@ export function AppearanceSettings({
   textZoom,
   onThemeChange,
   onDashboardThemeChange,
-  onTextZoomChange
+  onTextZoomChange,
 }: AppearanceSettingsProps) {
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          {mounted && theme === 'dark' ? (
-            <Moon className="h-5 w-5" />
-          ) : (
-            <Sun className="h-5 w-5" />
-          )}
+          {mounted && theme === "dark" ? <Moon className="h-5 w-5" /> : <Sun className="h-5 w-5" />}
           Appearance
         </CardTitle>
-        <CardDescription>
-          Customize how the application looks and feels.
-        </CardDescription>
+        <CardDescription>Customize how the application looks and feels.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label>Light/Dark Mode</Label>
-          <p className="text-sm text-muted-foreground">
-            Choose your preferred color scheme
-          </p>
+          <p className="text-sm text-muted-foreground">Choose your preferred color scheme</p>
           <Select
-            value={mounted ? theme : 'system'}
+            value={mounted ? theme : "system"}
             onValueChange={onThemeChange}
             disabled={!mounted || saving}
           >
@@ -122,10 +126,10 @@ export function AppearanceSettings({
               variant="outline"
               size="icon"
               onClick={() => {
-                const config = getTextZoomConfig()
-                const newZoom = Math.max(config.min, textZoom - config.step)
-                const validZoom = getValidZoomLevel(newZoom)
-                onTextZoomChange(validZoom)
+                const config = getTextZoomConfig();
+                const newZoom = Math.max(config.min, textZoom - config.step);
+                const validZoom = getValidZoomLevel(newZoom);
+                onTextZoomChange(validZoom);
               }}
               disabled={saving || textZoom <= getTextZoomConfig().min}
               className="h-8 w-8"
@@ -142,10 +146,10 @@ export function AppearanceSettings({
               variant="outline"
               size="icon"
               onClick={() => {
-                const config = getTextZoomConfig()
-                const newZoom = Math.min(config.max, textZoom + config.step)
-                const validZoom = getValidZoomLevel(newZoom)
-                onTextZoomChange(validZoom)
+                const config = getTextZoomConfig();
+                const newZoom = Math.min(config.max, textZoom + config.step);
+                const validZoom = getValidZoomLevel(newZoom);
+                onTextZoomChange(validZoom);
               }}
               disabled={saving || textZoom >= getTextZoomConfig().max}
               className="h-8 w-8"
@@ -155,11 +159,11 @@ export function AppearanceSettings({
             </Button>
           </div>
           <div className="text-xs text-muted-foreground text-center">
-            Range: {Math.round(getTextZoomConfig().min * 100)}% - {Math.round(getTextZoomConfig().max * 100)}%
+            Range: {Math.round(getTextZoomConfig().min * 100)}% -{" "}
+            {Math.round(getTextZoomConfig().max * 100)}%
           </div>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

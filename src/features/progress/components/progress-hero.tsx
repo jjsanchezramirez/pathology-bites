@@ -1,8 +1,8 @@
 // src/features/progress/components/progress-hero.tsx
 
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Badge } from '@/shared/components/ui/badge'
-import { TrendingUp } from 'lucide-react'
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Badge } from "@/shared/components/ui/badge";
+import { TrendingUp } from "lucide-react";
 
 export function ProgressHero() {
   return (
@@ -13,15 +13,15 @@ export function ProgressHero() {
           Progress Tracking In Development
         </h2>
         <p className="text-purple-700 mb-6 max-w-2xl mx-auto">
-          We're building a comprehensive progress tracking system to help you monitor your learning journey, 
-          track milestones, view learning streaks, and celebrate achievements. This will include detailed 
-          analytics of your study patterns and personalized insights for improvement.
+          We're building a comprehensive progress tracking system to help you monitor your learning
+          journey, track milestones, view learning streaks, and celebrate achievements. This will
+          include detailed analytics of your study patterns and personalized insights for
+          improvement.
         </p>
         <Badge variant="secondary" className="mb-4">
           Launching Soon
         </Badge>
       </CardContent>
     </Card>
-  )
+  );
 }
-

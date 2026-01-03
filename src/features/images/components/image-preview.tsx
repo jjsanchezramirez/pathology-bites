@@ -1,9 +1,8 @@
 // src/components/images/image-preview.tsx
-import { useState, useRef, useEffect, useCallback } from 'react';
-import { createPortal } from 'react-dom';
-import { cn } from '@/shared/utils';
-import Image from 'next/image';
-
+import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
+import { cn } from "@/shared/utils";
+import Image from "next/image";
 
 interface Position {
   top: number;
@@ -14,22 +13,22 @@ interface ImagePreviewProps {
   src: string;
   alt: string;
   className?: string;
-  size?: 'sm' | 'md' | 'lg';
+  size?: "sm" | "md" | "lg";
   disableFullscreen?: boolean;
 }
 
 const sizeClasses = {
-  sm: 'w-16 h-16 md:w-20 md:h-20',
-  md: 'w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28',
-  lg: 'w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36'
+  sm: "w-16 h-16 md:w-20 md:h-20",
+  md: "w-20 h-20 md:w-24 md:h-24 lg:w-28 lg:h-28",
+  lg: "w-24 h-24 md:w-32 md:h-32 lg:w-36 lg:h-36",
 };
 
 export function ImagePreview({
   src,
   alt,
   className,
-  size = 'sm',
-  disableFullscreen = false
+  size = "sm",
+  disableFullscreen = false,
 }: ImagePreviewProps) {
   const [isPreviewVisible, setIsPreviewVisible] = useState(false);
   const [isFullSizeVisible, setIsFullSizeVisible] = useState(false);
@@ -108,12 +107,12 @@ export function ImagePreview({
     };
 
     // Add event listeners
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    window.addEventListener('resize', handleResize, { passive: true });
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    window.addEventListener("resize", handleResize, { passive: true });
 
     return () => {
-      window.removeEventListener('scroll', handleScroll);
-      window.removeEventListener('resize', handleResize);
+      window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("resize", handleResize);
     };
   }, [isPreviewVisible, updatePosition]);
 
@@ -140,18 +139,26 @@ export function ImagePreview({
           "transition-all duration-200 ease-in-out",
           !disableFullscreen && "hover:ring-2 hover:ring-primary/50",
           // Only apply size classes if className doesn't contain sizing
-          !className?.includes('w-') && !className?.includes('h-') && !className?.includes('aspect-') ? sizeClasses[size] : '',
+          !className?.includes("w-") &&
+            !className?.includes("h-") &&
+            !className?.includes("aspect-")
+            ? sizeClasses[size]
+            : "",
           className
         )}
         onMouseEnter={handleShowPreview}
         onMouseLeave={handleHidePreview}
         onClick={!disableFullscreen ? () => setIsFullSizeVisible(true) : undefined}
-        onKeyDown={!disableFullscreen ? (e) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            setIsFullSizeVisible(true);
-          }
-        } : undefined}
+        onKeyDown={
+          !disableFullscreen
+            ? (e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  setIsFullSizeVisible(true);
+                }
+              }
+            : undefined
+        }
         role={!disableFullscreen ? "button" : undefined}
         tabIndex={!disableFullscreen ? 0 : undefined}
         aria-label={!disableFullscreen ? `View ${alt}` : undefined}
@@ -161,12 +168,8 @@ export function ImagePreview({
           alt={alt}
           fill
           unoptimized
-          className={cn(
-            "object-cover",
-            "transition-transform duration-200",
-            "hover:scale-105"
-          )}
-          sizes={`(max-width: 768px) ${size === 'sm' ? '64px' : size === 'md' ? '96px' : '128px'}, ${size === 'sm' ? '64px' : size === 'md' ? '96px' : '128px'}`}
+          className={cn("object-cover", "transition-transform duration-200", "hover:scale-105")}
+          sizes={`(max-width: 768px) ${size === "sm" ? "64px" : size === "md" ? "96px" : "128px"}, ${size === "sm" ? "64px" : size === "md" ? "96px" : "128px"}`}
         />
       </div>
 
@@ -179,9 +182,9 @@ export function ImagePreview({
             top: position.top,
             left: position.left,
             opacity: 0,
-            animation: 'preview-fade-in 200ms ease-out forwards',
-            maxWidth: '480px',
-            maxHeight: '480px'
+            animation: "preview-fade-in 200ms ease-out forwards",
+            maxWidth: "480px",
+            maxHeight: "480px",
           }}
         >
           <style jsx>{`
@@ -205,52 +208,60 @@ export function ImagePreview({
             sizes="480px"
             className="w-full h-full object-cover rounded-lg"
             style={{
-              width: '100%',
-              height: '100%',
+              width: "100%",
+              height: "100%",
             }}
           />
         </div>
       )}
 
       {/* Full Size Modal - True fullscreen with Portal */}
-      {!disableFullscreen && isFullSizeVisible && typeof document !== 'undefined' && createPortal(
-        <div
-          className="fixed inset-0 z-[9999] bg-black/20 backdrop-blur-md flex items-center justify-center p-4"
-          onClick={() => setIsFullSizeVisible(false)}
-        >
-          {/* Image container */}
-          <div className="relative max-w-[95vw] max-h-[95vh] w-full h-full flex items-center justify-center">
-            <div className="relative">
-              <Image
-                src={src}
-                alt={alt}
-                width={0}
-                height={0}
-                sizes="95vw"
-                unoptimized
-                className="max-w-full max-h-full w-auto h-auto object-contain rounded-lg shadow-2xl"
-                onClick={(e) => e.stopPropagation()}
-                style={{
-                  width: 'auto',
-                  height: 'auto',
-                }}
-              />
+      {!disableFullscreen &&
+        isFullSizeVisible &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            className="fixed inset-0 z-[9999] bg-black/20 backdrop-blur-md flex items-center justify-center p-4"
+            onClick={() => setIsFullSizeVisible(false)}
+          >
+            {/* Image container */}
+            <div className="relative max-w-[95vw] max-h-[95vh] w-full h-full flex items-center justify-center">
+              <div className="relative">
+                <Image
+                  src={src}
+                  alt={alt}
+                  width={0}
+                  height={0}
+                  sizes="95vw"
+                  unoptimized
+                  className="max-w-full max-h-full w-auto h-auto object-contain rounded-lg shadow-2xl"
+                  onClick={(e) => e.stopPropagation()}
+                  style={{
+                    width: "auto",
+                    height: "auto",
+                  }}
+                />
 
-              {/* Close button positioned on image */}
-              <button
-                onClick={() => setIsFullSizeVisible(false)}
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-gray-800 transition-all duration-200 hover:scale-110 shadow-lg border border-gray-200"
-                aria-label="Close image"
-              >
-                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                </svg>
-              </button>
+                {/* Close button positioned on image */}
+                <button
+                  onClick={() => setIsFullSizeVisible(false)}
+                  className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 hover:bg-white flex items-center justify-center text-gray-800 transition-all duration-200 hover:scale-110 shadow-lg border border-gray-200"
+                  aria-label="Close image"
+                >
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
+                    />
+                  </svg>
+                </button>
+              </div>
             </div>
-          </div>
-        </div>,
-        document.body
-      )}
+          </div>,
+          document.body
+        )}
     </>
   );
 }

@@ -17,6 +17,7 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 **🚀 Production-Ready Educational Platform with Advanced Question Management Workflow**
 
 ✅ **Question Management Workflow**
+
 - **Creator Dashboard**: Streamlined workflow for question creation, editing, and submission
 - **Review System**: Multi-role review process with approve/reject/request changes actions
 - **Resubmission Notes**: Creators can communicate changes to reviewers during resubmission
@@ -24,6 +25,7 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 - **Status Tracking**: Real-time status updates across draft → review → published lifecycle
 
 ✅ **Advanced Tool Suite**
+
 - **Citations Generator**: Smart caching, 24h TTL, supports URL/DOI/ISBN with external API integration
 - **Gene Finder**: 7-day caching, pre-loading of common pathology genes, HGNC/Harmonizome integration
 - **Lupus Anticoagulant Calculator**: Pure client-side calculations, zero API calls (gold standard)
@@ -32,6 +34,7 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 - **Cell Quiz**: Optimized image delivery with smart caching strategies
 
 ✅ **Performance Optimizations**
+
 - Client-side caching reduces API calls by 80-90% for repeat operations
 - R2 zero egress costs enable aggressive caching without bandwidth penalties
 - Smart batching prevents API overwhelming with intelligent request queuing
@@ -44,12 +47,14 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
   - React 18 Strict Mode guards prevent duplicate initialization
 
 ✅ **Security & Infrastructure**
+
 - Cloudflare R2 private bucket access with S3Client authentication
 - All images unoptimized to avoid Vercel transformation costs
 - Content Security Policy configured for external medical repositories
 - Row Level Security (RLS) with 58 policies across 21 database tables
 
 ✅ **Quality & Testing**
+
 - Build: ✅ Successful production build with zero warnings
 - Tests: 95%+ pass rate with comprehensive coverage
 - TypeScript: ✅ Strict compilation without errors
@@ -60,6 +65,7 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 ### Optimized Quiz Flow (Per User)
 
 **Complete Quiz Flow** (Dashboard → Create → Take → Results):
+
 - Dashboard visit: 2 API calls (settings + stats)
 - Quiz creation: 3 API calls (init + csrf + session)
 - Quiz taking: 3 API calls (fetch + batch submit + complete)
@@ -69,23 +75,29 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 ### Usage Scenarios & Capacity
 
 #### Scenario 1: Moderate Usage (1000 Users)
+
 **Assumptions**: Mixed user activity (20% light, 60% medium, 20% heavy)
+
 - Light users: 5 dashboard visits, 2 quizzes/month
 - Medium users: 15 dashboard visits, 10 quizzes/month
 - Heavy users: 30 dashboard visits, 30 quizzes/month
 
 **Monthly Metrics**:
+
 - API calls: ~150,000/month
 - Bandwidth: ~1.2 GB/month
 - Database growth: ~22 MB/month
 - **Cost**: $0/month (within free tier limits)
 
 #### Scenario 2: High-Intensity Usage (1000 Users)
+
 **Assumptions**: 2 quizzes/day (10 questions each) per user
+
 - Daily activity: 2 dashboard visits, 2 complete quiz flows
 - Monthly: 60 quizzes, 600 questions per user
 
 **Monthly Metrics**:
+
 - API calls: ~660,000/month
 - Bandwidth: ~5.64 GB/month
 - Database growth: ~105 MB/month
@@ -94,33 +106,35 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 
 ### Free Tier Capacity
 
-| Resource | Vercel Free | Supabase Free | Usage (1000 users, high-intensity) | Status |
-|----------|-------------|---------------|-------------------------------------|--------|
-| **Bandwidth** | 100 GB/month | 5 GB/month | 5.64 GB/month | 🔴 **Exceeds Supabase** |
-| **Database Storage** | N/A | 500 MB | 105 MB/month growth | ⚠️ **Full in 5 months** |
-| **Function Invocations** | Unlimited | Unlimited | 660,000/month | ✅ **Within limits** |
-| **Monthly Active Users** | N/A | 50,000 | 1,000 | ✅ **2% used** |
+| Resource                 | Vercel Free  | Supabase Free | Usage (1000 users, high-intensity) | Status                  |
+| ------------------------ | ------------ | ------------- | ---------------------------------- | ----------------------- |
+| **Bandwidth**            | 100 GB/month | 5 GB/month    | 5.64 GB/month                      | 🔴 **Exceeds Supabase** |
+| **Database Storage**     | N/A          | 500 MB        | 105 MB/month growth                | ⚠️ **Full in 5 months** |
+| **Function Invocations** | Unlimited    | Unlimited     | 660,000/month                      | ✅ **Within limits**    |
+| **Monthly Active Users** | N/A          | 50,000        | 1,000                              | ✅ **2% used**          |
 
 **Maximum users on free tier** (high-intensity usage): ~887 users
 
 ### Scaling Projections
 
-| User Count | Monthly Cost | Tier Required | Cost/User | Bandwidth | Storage Growth |
-|------------|--------------|---------------|-----------|-----------|----------------|
-| **0-887** | $0 | Free | $0 | 4.9 GB | 93 MB/month |
-| **888-8,800** | $25 | Supabase Pro | $0.003-$0.028 | 5-50 GB | 105-1,050 MB/month |
-| **8,800-40,000** | $45 | + Vercel Pro | $0.001-$0.005 | 50+ GB | 1+ GB/month |
-| **40,000+** | $599+ | Supabase Team | $0.015+ | 1+ TB | 4+ GB/month |
+| User Count       | Monthly Cost | Tier Required | Cost/User     | Bandwidth | Storage Growth     |
+| ---------------- | ------------ | ------------- | ------------- | --------- | ------------------ |
+| **0-887**        | $0           | Free          | $0            | 4.9 GB    | 93 MB/month        |
+| **888-8,800**    | $25          | Supabase Pro  | $0.003-$0.028 | 5-50 GB   | 105-1,050 MB/month |
+| **8,800-40,000** | $45          | + Vercel Pro  | $0.001-$0.005 | 50+ GB    | 1+ GB/month        |
+| **40,000+**      | $599+        | Supabase Team | $0.015+       | 1+ TB     | 4+ GB/month        |
 
 ### Optimization Impact
 
 **Without our December 2024 optimizations**, the same 1000 high-intensity users would require:
+
 - API calls: ~1,320,000/month (2× current)
 - Bandwidth: ~10.7 GB/month (2.1× Supabase free tier limit)
 - **Would require Supabase Pro immediately** (no free tier option)
 - **Annual savings**: $300/year by staying in Pro tier vs Team tier
 
 **Key Optimizations Implemented**:
+
 1. **Global Deduplication**: Prevents concurrent duplicate requests across components
 2. **Hybrid Quiz Architecture**: Minimizes API calls during quiz taking
 3. **Smart Caching**: 5-minute TTL for results, localStorage for settings
@@ -130,6 +144,7 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 ### Performance Benchmarks
 
 **API Response Times** (P95):
+
 - User settings: <200ms
 - Dashboard stats: <800ms
 - Quiz creation: <2s
@@ -139,6 +154,7 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 - Results fetch: <400ms
 
 **Database Operations**:
+
 - Question analytics update: <100ms (batch function)
 - User settings sync: <150ms
 - Quiz session creation: <500ms
@@ -146,6 +162,7 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 ### Recommendations for Production
 
 **For 1000+ Active Users**:
+
 1. ✅ Implement data retention policy (delete sessions >6 months old)
 2. ✅ Monitor Supabase bandwidth usage weekly
 3. ✅ Consider Supabase Pro at 900+ users for high-intensity usage
@@ -153,6 +170,7 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 5. ✅ Set up monitoring alerts for bandwidth thresholds
 
 **Cost Optimization Strategies**:
+
 - Archive old quiz sessions to reduce storage growth by ~50%
 - Implement progressive data loading for large datasets
 - Use edge caching for static content (categories, question sets)
@@ -198,22 +216,25 @@ public async dedupe<T>(
 ### Hybrid Quiz Architecture
 
 **Design**: Pure serverless with only 2 API calls during quiz taking:
+
 1. Initial fetch: Get all questions and configuration
 2. Final submission: Batch submit all answers at once
 
 **Benefits**:
+
 - Minimizes edge function invocations
 - Reduces cold start impact
 - Enables offline quiz taking
 - Simplifies state management
 
 **Implementation**:
+
 ```typescript
 // src/features/quiz/hybrid/use-hybrid-quiz.ts
 const initializeQuiz = useCallback(async () => {
   // Prevent duplicate initialization (React 18 Strict Mode)
   if (isInitializingRef.current) {
-    console.log('[Hybrid] Already initializing, skipping duplicate fetch');
+    console.log("[Hybrid] Already initializing, skipping duplicate fetch");
     return;
   }
 
@@ -227,7 +248,6 @@ const initializeQuiz = useCallback(async () => {
     // Store in local state for offline access
     stateActions.setQuestions(questions);
     stateActions.setConfig(config);
-
   } finally {
     isInitializingRef.current = false;
   }
@@ -292,6 +312,7 @@ $$;
 ```
 
 **Features**:
+
 - Bypasses RLS with `SECURITY DEFINER`
 - Batch processes multiple questions in single call
 - Calculates difficulty score on 1-5 scale (1=easiest, 5=hardest)
@@ -316,6 +337,7 @@ $$;
    - Materialized views for complex queries
 
 **Implementation**:
+
 ```typescript
 // src/shared/hooks/use-cached-data.ts
 const { data, isLoading, error } = useCachedData<QuizResult>(
@@ -326,11 +348,11 @@ const { data, isLoading, error } = useCachedData<QuizResult>(
   },
   {
     enabled: !!sessionId,
-    ttl: 5 * 60 * 1000,        // 5 minutes cache
-    staleTime: 2 * 60 * 1000,  // 2 minutes stale time
-    storage: 'memory',
-    prefix: 'pathology-bites-quiz',
-    onError: (error) => console.error('Error:', error)
+    ttl: 5 * 60 * 1000, // 5 minutes cache
+    staleTime: 2 * 60 * 1000, // 2 minutes stale time
+    storage: "memory",
+    prefix: "pathology-bites-quiz",
+    onError: (error) => console.error("Error:", error),
   }
 );
 ```
@@ -346,7 +368,7 @@ const isInitializingRef = useRef(false);
 
 const initializeQuiz = useCallback(async () => {
   if (isInitializingRef.current) {
-    console.log('[Hybrid] Already initializing, skipping duplicate fetch');
+    console.log("[Hybrid] Already initializing, skipping duplicate fetch");
     return;
   }
 
@@ -360,6 +382,7 @@ const initializeQuiz = useCallback(async () => {
 ```
 
 **Why refs instead of state**:
+
 - Refs don't trigger re-renders
 - Synchronous updates prevent race conditions
 - Persists across re-renders during Strict Mode
@@ -400,6 +423,7 @@ graph LR
 ### Database Tables Modified by Workflow
 
 #### Core Question Creation/Editing
+
 ```sql
 -- Main question data
 questions (title, stem, teaching_point, status, version, created_by, updated_by)
@@ -416,6 +440,7 @@ question_tags (question_id, tag_id)
 ```
 
 #### Submit for Review Process
+
 ```sql
 -- Status change and reviewer assignment
 UPDATE questions SET
@@ -440,6 +465,7 @@ INSERT INTO notification_states (user_id, type, data)
 ```
 
 #### Review Process (Approve/Reject)
+
 ```sql
 -- Review decision record
 INSERT INTO question_reviews (
@@ -461,6 +487,7 @@ UPDATE questions SET
 ```
 
 #### Versioning (Published Questions Only)
+
 ```sql
 -- Only happens for approved/published questions being updated
 CALL create_question_version_simplified(question_id, change_summary, changed_by)
@@ -485,16 +512,19 @@ UPDATE questions SET version = new_version_string
 When creators resubmit rejected questions, they can provide notes explaining what changes were made:
 
 #### Creator Experience
+
 1. **Submit Dialog**: Shows textarea for resubmission notes (required for rejected questions)
 2. **Change Communication**: Notes are stored in `question_reviews.changes_made` JSONB field
 3. **Workflow Dashboard**: Shows resubmission status and change summaries
 
 #### Reviewer Experience
+
 1. **Review Interface**: Displays creator's change notes prominently
 2. **Context**: Helps reviewers understand what was modified since last review
 3. **History**: Full audit trail of all resubmissions and reviews
 
 #### Technical Implementation
+
 ```typescript
 // API: Submit for Review
 {
@@ -519,6 +549,7 @@ When creators resubmit rejected questions, they can provide notes explaining wha
 ## 🔧 Architecture Overview
 
 ### Technology Stack
+
 - **Frontend**: Next.js 15.5.3 + React 19 + TypeScript
 - **Styling**: Tailwind CSS v4 + shadcn/ui components
 - **Database**: Supabase (PostgreSQL) with Row Level Security
@@ -527,6 +558,7 @@ When creators resubmit rejected questions, they can provide notes explaining wha
 - **Authentication**: Supabase Auth with role-based access
 
 ### Database Architecture
+
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   Questions     │───▶│ Question Options │    │ Question Images │
@@ -541,6 +573,7 @@ When creators resubmit rejected questions, they can provide notes explaining wha
 ```
 
 ### Question Workflow Data Flow
+
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │   Creator       │───▶│   Submit for     │───▶│    Reviewer     │
@@ -555,6 +588,7 @@ When creators resubmit rejected questions, they can provide notes explaining wha
 ```
 
 ### Security & Performance
+
 ```
 ┌─────────────────┐    ┌──────────────────┐    ┌─────────────────┐
 │ Row Level       │───▶│    API Routes    │───▶│ Client-Side     │
@@ -599,6 +633,7 @@ The application follows a feature-based API organization:
 ### Database Schema (Key Tables)
 
 #### Core Question Tables
+
 ```sql
 -- Main questions table
 questions (
@@ -657,6 +692,7 @@ question_versions (
 ```
 
 #### Supporting Tables
+
 ```sql
 -- User management
 users (id, email, role, first_name, last_name, created_at, updated_at)
@@ -677,6 +713,7 @@ notification_states (user_id, type, data, read_at, created_at)
 ### Complete Database Architecture
 
 #### Database Overview
+
 - **Database**: PostgreSQL via Supabase
 - **Total Tables**: 32 tables
 - **Row Level Security**: 100% coverage with 58 policies
@@ -686,6 +723,7 @@ notification_states (user_id, type, data, read_at, created_at)
 #### User Management & Authentication
 
 **`users` Table** - Core user data (references `auth.users`)
+
 - `id` (UUID, PK) - Matches `auth.users.id`
 - `email` (VARCHAR, NOT NULL, UNIQUE)
 - `first_name`, `last_name` (VARCHAR)
@@ -700,16 +738,19 @@ notification_states (user_id, type, data, read_at, created_at)
   - Student/User: Hard delete (CASCADE removes all data)
 
 **`user_settings` Table** - User preferences
+
 - `user_id` (UUID, FK → users.id, CASCADE DELETE)
 - `quiz_settings` (JSONB) - Quiz preferences
 - `notification_settings` (JSONB) - Notification preferences
 - `ui_settings` (JSONB) - Theme, font size, sidebar state
 
 **`user_favorites` Table** - Favorited questions
+
 - `user_id` (UUID, FK → users.id, CASCADE DELETE)
 - `question_id` (UUID, FK → questions.id)
 
 **`user_achievements` Table** - User achievements/notifications
+
 - `user_id` (UUID, FK → users.id, CASCADE DELETE)
 - `type`, `title`, `description` - Achievement details
 - `group_key` - For grouping related achievements
@@ -718,6 +759,7 @@ notification_states (user_id, type, data, read_at, created_at)
 #### Question Management
 
 **`questions` Table** - Main question data
+
 - `id` (UUID, PK)
 - `title`, `stem`, `teaching_point`, `question_references` (TEXT)
 - `status` (ENUM: draft, pending_review, rejected, published, flagged, archived)
@@ -732,6 +774,7 @@ notification_states (user_id, type, data, read_at, created_at)
 - `search_vector` (TSVECTOR) - Full-text search
 
 **`question_options` Table** - Answer choices
+
 - `question_id` (UUID, FK → questions.id, CASCADE DELETE)
 - `text` (TEXT, NOT NULL)
 - `is_correct` (BOOLEAN, DEFAULT FALSE)
@@ -739,16 +782,19 @@ notification_states (user_id, type, data, read_at, created_at)
 - `order_index` (INTEGER)
 
 **`question_images` Table** - Question-image associations
+
 - `question_id` (UUID, FK → questions.id, CASCADE DELETE)
 - `image_id` (UUID, FK → images.id)
 - `question_section` (VARCHAR) - Where image appears
 - `order_index` (INTEGER)
 
 **`question_tags` Table** - Question-tag associations
+
 - `question_id` (UUID, FK → questions.id, CASCADE DELETE)
 - `tag_id` (UUID, FK → tags.id)
 
 **`question_reviews` Table** - Review audit trail
+
 - `question_id` (UUID, FK → questions.id, CASCADE DELETE)
 - `reviewer_id` (UUID, FK → users.id, CASCADE DELETE)
 - `action` (TEXT) - approve, reject, request_changes, resubmitted
@@ -756,6 +802,7 @@ notification_states (user_id, type, data, read_at, created_at)
 - `changes_made` (JSONB) - Resubmission notes and metadata
 
 **`question_versions` Table** - Version history for published questions
+
 - `question_id` (UUID, FK → questions.id, CASCADE DELETE)
 - `version_string` (TEXT) - Semantic version (e.g., "1.2.3")
 - `question_data` (JSONB) - Full question snapshot
@@ -764,6 +811,7 @@ notification_states (user_id, type, data, read_at, created_at)
 - `changed_by` (UUID, FK → users.id, SET NULL)
 
 **`question_flags` Table** - User-reported issues
+
 - `question_id` (UUID, FK → questions.id)
 - `flagged_by`, `resolved_by` (UUID, FK → users.id, SET NULL)
 - `flag_type`, `description`, `resolution_notes` (TEXT)
@@ -771,6 +819,7 @@ notification_states (user_id, type, data, read_at, created_at)
 - `resolved_at` (TIMESTAMPTZ)
 
 **`question_reports` Table** - Question reports
+
 - `question_id` (UUID, FK → questions.id)
 - `reported_by` (UUID, FK → users.id, SET NULL)
 - `report_type` (ENUM: incorrect_answer, unclear_explanation, broken_image, inappropriate_content, other)
@@ -778,6 +827,7 @@ notification_states (user_id, type, data, read_at, created_at)
 - `status` (VARCHAR, DEFAULT 'pending')
 
 **`question_analytics` Table** - Question performance metrics
+
 - `question_id` (UUID, FK → questions.id)
 - `total_attempts`, `correct_attempts` (INTEGER)
 - `avg_time_spent`, `median_time_spent` (INTERVAL)
@@ -787,6 +837,7 @@ notification_states (user_id, type, data, read_at, created_at)
 #### Content Organization
 
 **`categories` Table** - Hierarchical categories
+
 - `id` (UUID, PK)
 - `name` (VARCHAR, NOT NULL)
 - `parent_id` (UUID, FK → categories.id) - For hierarchy
@@ -794,10 +845,12 @@ notification_states (user_id, type, data, read_at, created_at)
 - `color`, `short_form` (VARCHAR)
 
 **`tags` Table** - Question tags
+
 - `id` (UUID, PK)
 - `name` (VARCHAR, NOT NULL, UNIQUE)
 
 **`question_sets` Table** - Question collections
+
 - `id` (UUID, PK)
 - `name`, `description`, `short_form` (VARCHAR/TEXT)
 - `source_type` (VARCHAR) - Type of source
@@ -806,6 +859,7 @@ notification_states (user_id, type, data, read_at, created_at)
 - `created_by` (UUID, FK → users.id, SET NULL)
 
 **`demo_questions` Table** - Featured demo questions
+
 - `question_id` (UUID, FK → questions.id)
 - `is_active` (BOOLEAN, DEFAULT TRUE)
 - `display_order` (INTEGER)
@@ -813,6 +867,7 @@ notification_states (user_id, type, data, read_at, created_at)
 #### Media Management
 
 **`images` Table** - Image metadata
+
 - `id` (UUID, PK)
 - `url`, `storage_path` (TEXT)
 - `file_type`, `description`, `alt_text`, `source_ref` (TEXT)
@@ -825,6 +880,7 @@ notification_states (user_id, type, data, read_at, created_at)
 #### Quiz System
 
 **`quiz_sessions` Table** - Quiz instances
+
 - `user_id` (UUID, FK → users.id, CASCADE DELETE)
 - `title` (TEXT)
 - `config` (JSONB) - Quiz configuration
@@ -836,6 +892,7 @@ notification_states (user_id, type, data, read_at, created_at)
 - `score`, `correct_answers`, `total_questions` (INTEGER)
 
 **`quiz_attempts` Table** - Individual question attempts
+
 - `quiz_session_id` (UUID, FK → quiz_sessions.id)
 - `user_id` (UUID, FK → users.id, CASCADE DELETE)
 - `question_id` (UUID, FK → questions.id)
@@ -846,6 +903,7 @@ notification_states (user_id, type, data, read_at, created_at)
 - `category_id` (UUID, FK → categories.id)
 
 **`performance_analytics` Table** - User performance by category
+
 - `user_id` (UUID, FK → users.id, CASCADE DELETE)
 - `category_id` (UUID, FK → categories.id)
 - `total_questions`, `questions_answered`, `correct_answers` (INTEGER)
@@ -856,6 +914,7 @@ notification_states (user_id, type, data, read_at, created_at)
 #### Learning Modules
 
 **`learning_modules` Table** - Educational modules
+
 - `id` (UUID, PK)
 - `title`, `slug`, `description`, `content` (TEXT)
 - `learning_objectives` (TEXT[])
@@ -875,6 +934,7 @@ notification_states (user_id, type, data, read_at, created_at)
 - `published_at` (TIMESTAMPTZ)
 
 **`learning_paths` Table** - Structured learning paths
+
 - `id` (UUID, PK)
 - `title`, `slug`, `description` (TEXT)
 - `learning_objectives`, `prerequisites`, `tags` (TEXT[])
@@ -889,6 +949,7 @@ notification_states (user_id, type, data, read_at, created_at)
 - `created_by` (UUID, FK → users.id, SET NULL)
 
 **`learning_path_modules` Table** - Path-module associations
+
 - `learning_path_id` (UUID, FK → learning_paths.id)
 - `module_id` (UUID, FK → learning_modules.id)
 - `sort_order` (INTEGER)
@@ -898,17 +959,20 @@ notification_states (user_id, type, data, read_at, created_at)
 - `estimated_duration_override` (INTEGER)
 
 **`module_prerequisites` Table** - Module dependencies
+
 - `module_id` (UUID, FK → learning_modules.id)
 - `prerequisite_module_id` (UUID, FK → learning_modules.id)
 - `requirement_type` (TEXT, DEFAULT 'required')
 
 **`module_images` Table** - Module-image associations
+
 - `module_id` (UUID, FK → learning_modules.id)
 - `image_id` (UUID, FK → images.id)
 - `usage_type`, `caption`, `alt_text`, `content_section` (TEXT)
 - `sort_order` (INTEGER)
 
 **`user_learning` Table** - User learning path enrollments
+
 - `user_id` (UUID, FK → users.id, CASCADE DELETE)
 - `learning_path_id` (UUID, FK → learning_paths.id)
 - `status` (TEXT, DEFAULT 'active')
@@ -920,6 +984,7 @@ notification_states (user_id, type, data, read_at, created_at)
 - `average_score` (NUMERIC)
 
 **`module_sessions` Table** - Module viewing sessions
+
 - `user_id` (UUID, FK → users.id, CASCADE DELETE)
 - `module_id` (UUID, FK → learning_modules.id)
 - `learning_path_id` (UUID, FK → learning_paths.id)
@@ -930,6 +995,7 @@ notification_states (user_id, type, data, read_at, created_at)
 - `accessed_via` (TEXT, DEFAULT 'direct')
 
 **`module_attempts` Table** - Module completion attempts
+
 - `user_id` (UUID, FK → users.id, CASCADE DELETE)
 - `module_id` (UUID, FK → learning_modules.id)
 - `learning_path_id` (UUID, FK → learning_paths.id)
@@ -947,15 +1013,18 @@ notification_states (user_id, type, data, read_at, created_at)
 #### System Tables
 
 **`notification_states` Table** - User notification tracking
+
 - `user_id` (UUID, FK → users.id, CASCADE DELETE)
 - `source_type`, `source_id` (TEXT/UUID)
 - `read` (BOOLEAN, DEFAULT FALSE)
 
 **`inquiries` Table** - Contact form submissions
+
 - `request_type`, `first_name`, `last_name`, `organization`, `email`, `inquiry` (TEXT/VARCHAR)
 - `status` (VARCHAR, DEFAULT 'pending')
 
 **`waitlist` Table** - Email waitlist
+
 - `email` (TEXT, NOT NULL)
 - `type` (TEXT, DEFAULT 'launch')
 
@@ -969,6 +1038,7 @@ notification_states (user_id, type, data, read_at, created_at)
 When a user signs up (via email or OAuth), they are created in `auth.users` by Supabase. The application code then creates the corresponding records in `public.users` and `public.user_settings`.
 
 **Auth Callback Routes** (`/api/public/auth/callback`, `/api/public/auth/confirm`):
+
 - **Responsibility**: Manually create `public.users` and `public.user_settings` entries
 - **Process**:
   1. User is created in `auth.users` by Supabase
@@ -986,6 +1056,7 @@ When a user signs up (via email or OAuth), they are created in `auth.users` by S
 When a user is deleted (via admin or self-deletion), the deletion is handled in APPLICATION CODE.
 
 **Deletion Service**: `src/shared/services/user-deletion.ts`
+
 - **Functions**:
   - `deleteUser()` - Handles soft/hard deletion of user data
   - `deleteUserFromAuth()` - Deletes user from auth system
@@ -996,6 +1067,7 @@ When a user is deleted (via admin or self-deletion), the deletion is handled in 
   4. Sign out the user (for self-deletion)
 
 **Deletion Types**:
+
 - **Soft Delete** (admin/creator/reviewer):
   - Sets `deleted_at = NOW()`
   - Sets `status = 'deleted'`
@@ -1010,30 +1082,36 @@ When a user is deleted (via admin or self-deletion), the deletion is handled in 
   - Deletes from `auth.users`
 
 **API Routes**:
+
 - `DELETE /api/user/account/delete` - Self-deletion (requires password verification)
 - `DELETE /api/admin/users` - Admin deletion (requires admin role)
 
 ##### Other Database Triggers
 
 **Question Analytics Triggers**:
+
 - `quiz_attempts_analytics_trigger` - Updates question analytics after quiz attempts
 - `question_flags_analytics_trigger` - Updates analytics when questions are flagged
 - `question_reviews_analytics_trigger` - Updates analytics after reviews
 
 **Search Vector Triggers**:
+
 - `images_search_vector_trigger` - Updates full-text search vector for images
 - `questions_search_vector_trigger` - Updates full-text search vector for questions
 
 **Timestamp Triggers**:
+
 - `update_updated_at_column` - Auto-updates `updated_at` on various tables
 - `update_questions_updated_by` - Auto-updates `updated_by` on questions table
 
 **Public Stats Triggers**:
+
 - **Removed**: Automatic refresh triggers were causing conflicts during user deletion
   - API now uses 24-hour cache instead of real-time refresh
   - Manual refresh available via `get_public_stats()` function if needed
 
 **Foreign Key Cascade Rules**:
+
 - **CASCADE DELETE**: user_settings, user_favorites, user_achievements, performance_analytics, notification_states, quiz_sessions, quiz_attempts, module_sessions, module_attempts, user_learning, question_reviews
 - **SET NULL**: questions.created_by, questions.updated_by, questions.reviewer_id, question_sets.created_by, question_versions.changed_by, question_flags.flagged_by, question_flags.resolved_by, question_reports.reported_by, learning_modules.created_by, learning_modules.reviewed_by, learning_paths.created_by, images.created_by
 
@@ -1044,6 +1122,7 @@ The application provides a comprehensive REST API organized by feature area. All
 #### Admin APIs (`/api/admin/*`)
 
 **Question Management**
+
 - `POST /api/admin/ai-generate-question` - Generate questions using AI models (OpenAI, Anthropic, Meta Llama)
 - `POST /api/admin/question-generator` - Legacy question generator endpoint
 - `POST /api/admin/questions-create` - Create new question with full validation
@@ -1055,6 +1134,7 @@ The application provides a comprehensive REST API organized by feature area. All
 - `POST /api/admin/questions/bulk` - Bulk operations (submit_for_review, approve, reject, delete, export)
 
 **Category Management**
+
 - `GET /api/admin/categories` - List all categories with hierarchy
 - `POST /api/admin/categories` - Create new category
 - `PATCH /api/admin/categories` - Update category details
@@ -1063,6 +1143,7 @@ The application provides a comprehensive REST API organized by feature area. All
 - `POST /api/admin/categories/bulk-delete` - Bulk delete unused categories
 
 **Question Set Management**
+
 - `GET /api/admin/question-sets` - List all question sets
 - `POST /api/admin/question-sets` - Create new question set
 - `PATCH /api/admin/question-sets` - Update question set
@@ -1071,6 +1152,7 @@ The application provides a comprehensive REST API organized by feature area. All
 - `POST /api/admin/question-sets/bulk-delete` - Bulk delete question sets
 
 **Tag Management**
+
 - `GET /api/admin/tags` - List all tags with usage counts
 - `POST /api/admin/tags` - Create new tag
 - `PATCH /api/admin/tags` - Update tag name/color
@@ -1079,12 +1161,14 @@ The application provides a comprehensive REST API organized by feature area. All
 - `GET /api/admin/tags/[tagId]/questions` - Get all questions with specific tag
 
 **User Management**
+
 - `GET /api/admin/users` - List all users with filtering and pagination
 - `POST /api/admin/users` - Create new user account
 - `PATCH /api/admin/users` - Update user role/status
 - `DELETE /api/admin/users` - Soft/hard delete user (role-based)
 
 **Inquiry Management**
+
 - `GET /api/admin/inquiries/[id]` - Get inquiry details
 - `PATCH /api/admin/inquiries/[id]` - Update inquiry
 - `DELETE /api/admin/inquiries/[id]` - Delete inquiry
@@ -1093,12 +1177,14 @@ The application provides a comprehensive REST API organized by feature area. All
 - `POST /api/admin/inquiries/bulk-delete` - Bulk delete inquiries
 
 **Learning Module Management**
+
 - `GET /api/admin/learning-modules` - List all learning modules
 - `POST /api/admin/learning-modules` - Create new module
 - `PATCH /api/admin/learning-modules` - Update module content
 - `DELETE /api/admin/learning-modules` - Delete module
 
 **System Management**
+
 - `GET /api/admin/system-status` - Get system health and metrics
 - `GET /api/admin/r2-storage-stats` - Get R2 bucket usage statistics
 - `GET /api/admin/rate-limit-status` - Check rate limit status for user
@@ -1112,10 +1198,12 @@ The application provides a comprehensive REST API organized by feature area. All
 #### Content APIs (`/api/content/*`)
 
 **Demo Questions**
+
 - `GET /api/content/demo-questions` - List featured demo questions (public access)
 - `GET /api/content/demo-questions/[id]` - Get single demo question with full details
 
 **Question Operations**
+
 - `GET /api/content/questions/[id]/export` - Export question as JSON
 - `POST /api/content/questions/[id]/submit-for-review` - Submit draft for review
 - `GET /api/content/questions/export` - Export multiple questions
@@ -1131,12 +1219,14 @@ The application provides a comprehensive REST API organized by feature area. All
 - `POST /api/content/questions/tags` - Add tags to question
 
 **Learning Paths & Modules**
+
 - `GET /api/content/learning/modules` - List learning modules with user progress
 - `GET /api/content/learning/paths` - List learning paths
 - `GET /api/content/learning/paths/[id]` - Get learning path details
 - `POST /api/content/learning/paths/[id]/enroll` - Enroll in learning path
 
 **Quiz System**
+
 - `GET /api/content/quiz/sessions` - List user's quiz sessions
 - `POST /api/content/quiz/sessions` - Create new quiz session
 - `GET /api/content/quiz/sessions/[id]` - Get quiz session details
@@ -1153,12 +1243,14 @@ The application provides a comprehensive REST API organized by feature area. All
 #### Media APIs (`/api/media/*`)
 
 **Image Management**
+
 - `POST /api/media/images/upload` - Upload image to R2 storage
 - `DELETE /api/media/images/delete` - Delete image from R2 and database
 - `POST /api/media/images/replace` - Replace existing image
 - `POST /api/media/images/bulk-delete` - Bulk delete images
 
 **R2 Storage Operations**
+
 - `POST /api/media/r2/signed-url` - Generate signed URL for single file
 - `POST /api/media/r2/signed-urls/batch` - Generate batch signed URLs
 - `GET /api/media/r2/download` - Download file from R2
@@ -1168,17 +1260,20 @@ The application provides a comprehensive REST API organized by feature area. All
 #### Public APIs (`/api/public/*`)
 
 **Authentication**
+
 - `GET /api/public/auth/callback` - OAuth callback handler
 - `POST /api/public/auth/check-email` - Check if email exists
 - `GET /api/public/auth/confirm` - Email confirmation handler
 
 **Data Endpoints** (No authentication required)
+
 - `GET /api/public/data/cell-quiz-images` - Cell quiz image dataset (24h cache)
 - `GET /api/public/data/cell-quiz-references` - Cell quiz references (24h cache)
 - `GET /api/public/data/virtual-slides` - Full virtual slides dataset (15MB)
 - `GET /api/public/data/virtual-slides/paginated` - Paginated virtual slides
 
 **Educational Tools**
+
 - `POST /api/public/tools/citation-generator/extract-url-metadata` - Extract citation from URL
 - `POST /api/public/tools/citation-generator/extract-journal-metadata` - Extract DOI metadata
 - `POST /api/public/tools/citation-generator/extract-book-metadata` - Extract ISBN metadata
@@ -1187,6 +1282,7 @@ The application provides a comprehensive REST API organized by feature area. All
 - `POST /api/public/tools/wsi-question-generator/generate` - Generate WSI questions with AI
 
 **System Endpoints**
+
 - `GET /api/public/health` - Health check endpoint
 - `GET /api/public/csrf-token` - Get CSRF token
 - `GET /api/public/stats` - Public statistics
@@ -1198,32 +1294,38 @@ The application provides a comprehensive REST API organized by feature area. All
 #### Question Review APIs (`/api/questions/*`)
 
 **Review Workflow**
+
 - `POST /api/questions/[id]/submit-for-review` - Submit question for review
 - `POST /api/questions/[id]/approve` - Approve question (reviewer/admin)
 - `POST /api/questions/[id]/reject` - Reject question with feedback
 - `POST /api/questions/[id]/reassign` - Reassign to different reviewer
 
 **Reviewer Management**
+
 - `GET /api/admin/reviewers` - List all reviewers with workload stats
 
 #### User APIs (`/api/user/*`)
 
 **Account Management**
+
 - `DELETE /api/user/account/delete` - Delete user account (soft/hard based on role)
 - `POST /api/user/password-reset` - Request password reset
 - `POST /api/user/data-export` - Export all user data (GDPR compliance)
 
 **User Settings**
+
 - `GET /api/user/settings` - Get user settings
 - `PATCH /api/user/settings` - Update user settings
 - `POST /api/user/settings/sync` - Sync settings from localStorage to database
 
 **Dashboard Data**
+
 - `GET /api/user/dashboard/stats` - Get dashboard statistics
 - `GET /api/user/dashboard/activities` - Get recent activities
 - `GET /api/user/dashboard/consolidated` - Get consolidated dashboard data
 
 **Favorites**
+
 - `GET /api/user/favorites` - Get user's favorite questions
 - `POST /api/user/favorites` - Add question to favorites
 - `DELETE /api/user/favorites` - Remove from favorites
@@ -1231,26 +1333,31 @@ The application provides a comprehensive REST API organized by feature area. All
 #### API Features
 
 **Authentication & Authorization**
+
 - All authenticated endpoints use Supabase JWT tokens
 - Role-based access control (Admin, Creator, Reviewer, User)
 - Row Level Security (RLS) enforced at database level
 
 **Caching Strategy**
+
 - Public data endpoints: 24h cache with stale-while-revalidate
 - R2 data: Zero-egress optimization with aggressive caching
 - Client-side caching for educational tools (localStorage)
 
 **Rate Limiting**
+
 - Admin endpoints: 200 requests/minute
 - Public endpoints: 100 requests/minute
 - Tool endpoints: 50 requests/minute
 
 **Error Handling**
+
 - Consistent error response format
 - HTTP status codes: 200 (success), 400 (bad request), 401 (unauthorized), 403 (forbidden), 404 (not found), 500 (server error)
 - Detailed error messages in development, sanitized in production
 
 **Performance Optimizations**
+
 - Batch operations for bulk updates
 - Optimized database queries with proper indexing
 - Pagination for large datasets
@@ -1259,13 +1366,15 @@ The application provides a comprehensive REST API organized by feature area. All
 ## 🛠️ Educational Tools
 
 ### 📚 Citations Creator
+
 - **Smart Caching**: 24-hour TTL with localStorage persistence
 - **Multi-format Support**: URL, DOI, ISBN automatic detection
 - **Citation Formats**: APA, MLA, AMA, Vancouver with live editing
 - **External Integration**: CrossRef, OpenLibrary, Google Books APIs
 - **Cache Management**: 100-entry limit with automatic cleanup
 
-### 🧬 Gene Finder Tool  
+### 🧬 Gene Finder Tool
+
 - **Comprehensive Database**: HGNC and Harmonizome integration
 - **7-day Caching**: Long-term storage for stable gene information
 - **Pre-loading**: Background loading of 30+ common pathology genes
@@ -1273,6 +1382,7 @@ The application provides a comprehensive REST API organized by feature area. All
 - **External Links**: Direct links to gene databases and protein resources
 
 ### 🩸 Lupus Anticoagulant Interpreter
+
 - **Pure Client-Side**: Zero API calls, instant results
 - **Medical Accuracy**: Complex coagulation pathway analysis
 - **Comprehensive Logic**: PT, INR, aPTT, dRVVT, Hexagonal Phase interpretation
@@ -1280,6 +1390,7 @@ The application provides a comprehensive REST API organized by feature area. All
 - **Reference Standards**: Based on current laboratory guidelines
 
 ### 🔬 Virtual Slides Search Engine
+
 - **R2 Optimized**: Private bucket access with progressive loading
 - **Medical Repositories**: Integration with 7+ pathology slide libraries
 - **Smart Loading**: Pagination → full dataset based on usage patterns
@@ -1287,6 +1398,7 @@ The application provides a comprehensive REST API organized by feature area. All
 - **Repository Links**: Direct access to source institutions
 
 ### 📋 ABPath Content Specifications
+
 - **Full Dataset Access**: Complete ASCP content specifications
 - **Client-Side Filtering**: Real-time search and categorization
 - **AP/CP Organization**: Anatomic and Clinical Pathology sections
@@ -1294,6 +1406,7 @@ The application provides a comprehensive REST API organized by feature area. All
 - **Export Options**: PDF generation with customizable content
 
 ### 🩸 Hemepath Quiz
+
 - **Image Optimization**: Cloudflare R2 delivery with smart caching
 - **Reference Integration**: Comprehensive blood cell morphology database
 - **Progressive Learning**: Adaptive difficulty based on performance
@@ -1306,7 +1419,7 @@ pathology-bites/
 ├── src/                           # Application source code
 │   ├── app/                      # Next.js app router pages
 │   │   ├── (admin)/             # Admin dashboard routes
-│   │   ├── (auth)/              # Authentication routes  
+│   │   ├── (auth)/              # Authentication routes
 │   │   ├── (public)/            # Public pages and tools
 │   │   │   └── tools/           # Educational tool suite
 │   │   │       ├── citations/   # Citation generator
@@ -1352,6 +1465,7 @@ pathology-bites/
 The platform implements comprehensive role-based access control with the following roles:
 
 #### Creator
+
 - **Permissions**: Create, edit, and submit questions for review
 - **Dashboard**: My Questions workflow dashboard
 - **Features**:
@@ -1361,6 +1475,7 @@ The platform implements comprehensive role-based access control with the followi
   - Preview questions before submission
 
 #### Reviewer
+
 - **Permissions**: Review submitted questions, approve/reject with feedback
 - **Dashboard**: Review Queue with pending questions
 - **Features**:
@@ -1370,6 +1485,7 @@ The platform implements comprehensive role-based access control with the followi
   - View creator's resubmission notes and change summaries
 
 #### Admin
+
 - **Permissions**: Full access to all questions and administrative functions
 - **Dashboard**: Complete admin interface
 - **Features**:
@@ -1380,6 +1496,7 @@ The platform implements comprehensive role-based access control with the followi
   - Version control for published questions
 
 #### Editor
+
 - **Permissions**: Edit approved questions and manage content
 - **Features**:
   - Edit published questions (creates versions)
@@ -1388,22 +1505,23 @@ The platform implements comprehensive role-based access control with the followi
 
 ### Workflow Permissions Matrix
 
-| Action | Creator | Reviewer | Editor | Admin |
-|--------|---------|----------|--------|-------|
-| Create Question | ✅ | ❌ | ❌ | ✅ |
-| Edit Own Draft | ✅ | ❌ | ❌ | ✅ |
-| Submit for Review | ✅ | ❌ | ❌ | ✅ |
-| Review Questions | ❌ | ✅ | ❌ | ✅ |
-| Approve/Reject | ❌ | ✅ | ❌ | ✅ |
-| Edit Published | ❌ | ❌ | ✅ | ✅ |
-| Manage Users | ❌ | ❌ | ❌ | ✅ |
-| View Analytics | ❌ | ❌ | ❌ | ✅ |
+| Action            | Creator | Reviewer | Editor | Admin |
+| ----------------- | ------- | -------- | ------ | ----- |
+| Create Question   | ✅      | ❌       | ❌     | ✅    |
+| Edit Own Draft    | ✅      | ❌       | ❌     | ✅    |
+| Submit for Review | ✅      | ❌       | ❌     | ✅    |
+| Review Questions  | ❌      | ✅       | ❌     | ✅    |
+| Approve/Reject    | ❌      | ✅       | ❌     | ✅    |
+| Edit Published    | ❌      | ❌       | ✅     | ✅    |
+| Manage Users      | ❌      | ❌       | ❌     | ✅    |
+| View Analytics    | ❌      | ❌       | ❌     | ✅    |
 
 ## 🔄 Development Workflow
 
 ### Question Development Lifecycle
 
 1. **Local Development**
+
    ```bash
    npm run dev          # Start development server
    npm run lint         # Check code quality
@@ -1411,6 +1529,7 @@ The platform implements comprehensive role-based access control with the followi
    ```
 
 2. **Testing**
+
    ```bash
    npm run test         # Run test suite
    npm run test:watch   # Watch mode for development
@@ -1418,6 +1537,7 @@ The platform implements comprehensive role-based access control with the followi
    ```
 
 3. **Pre-commit Validation**
+
    ```bash
    npm run lint         # Must pass
    npm run build        # Must build successfully
@@ -1462,24 +1582,28 @@ src/
 ### Best Practices
 
 #### Database Operations
+
 - Always use RLS policies for data access
-- Use database views (v_ prefix) for complex queries
+- Use database views (v\_ prefix) for complex queries
 - Implement proper error handling for all database operations
 - Use transactions for multi-table operations
 
 #### API Development
+
 - Follow RESTful conventions
 - Implement proper error responses with status codes
 - Use TypeScript for request/response validation
 - Add comprehensive logging for debugging
 
 #### Frontend Development
+
 - Use React hooks for state management
 - Implement loading states and error boundaries
 - Follow accessibility guidelines (WCAG 2.1)
 - Use semantic HTML and proper ARIA labels
 
 #### Testing Strategy
+
 - Unit tests for utility functions
 - Integration tests for API endpoints
 - Component tests for React components
@@ -1497,6 +1621,7 @@ src/
 ### Quick Setup
 
 1. **Clone and install:**
+
    ```bash
    git clone https://github.com/jjsanchezramirez/pathology-bites.git
    cd pathology-bites
@@ -1504,17 +1629,19 @@ src/
    ```
 
 2. **Environment configuration:**
+
    ```bash
    cp .env.example .env.local
    ```
-   
+
    Configure your environment:
+
    ```env
    # Supabase (Required)
    NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
    NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
    SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
-   
+
    # Cloudflare R2 (Optional - uses fallback data if not configured)
    R2_ACCOUNT_ID=your_r2_account_id
    R2_ACCESS_KEY_ID=your_r2_access_key
@@ -1522,6 +1649,7 @@ src/
    ```
 
 3. **Start development:**
+
    ```bash
    npm run dev
    ```
@@ -1538,7 +1666,7 @@ src/
 npm run dev              # Standard development server
 npm run dev:turbo        # Faster development with Turbo
 
-# Quality Assurance  
+# Quality Assurance
 npm run lint             # ESLint checking
 npm run lint:fix         # Auto-fix linting issues
 npm run type-check       # TypeScript validation
@@ -1553,6 +1681,7 @@ npm run start            # Production server
 ## 🛠️ Technology Stack
 
 ### Frontend & UI
+
 - **Framework**: Next.js 15.3.2 with App Router
 - **React**: React 19.1.0 with latest features
 - **Styling**: Tailwind CSS v4.1.7 with modern syntax
@@ -1561,6 +1690,7 @@ npm run start            # Production server
 - **Animations**: Framer Motion for smooth interactions
 
 ### Backend & Storage
+
 - **Database**: Supabase PostgreSQL with Row Level Security
 - **Storage**: Cloudflare R2 for zero-egress cost optimization
 - **Authentication**: Supabase Auth with magic links
@@ -1568,6 +1698,7 @@ npm run start            # Production server
 - **APIs**: External integration with medical databases
 
 ### Performance & Optimization
+
 - **Caching**: Smart client-side caching with TTL management
 - **Pre-loading**: Background loading of common medical data
 - **Image Delivery**: Cloudflare R2 CDN with unoptimized strategy
@@ -1575,6 +1706,7 @@ npm run start            # Production server
 - **Edge Computing**: Vercel Edge Functions where applicable
 
 ### External Integrations
+
 - **Medical Databases**: HGNC, Harmonizome, CrossRef
 - **Reference Sources**: OpenLibrary, Google Books, PubMed
 - **Virtual Slides**: 15+ medical institution repositories
@@ -1583,6 +1715,7 @@ npm run start            # Production server
 ## 📚 Core Features
 
 ### Educational Tools Suite
+
 - **6 Specialized Tools**: Citations, Gene Finder, LAC Interpreter, Virtual Slides, ABPath, Hemepath Quiz
 - **Smart Caching**: Reduces repeat API calls by 80-90%
 - **Client-Side Processing**: Instant results for complex calculations
@@ -1590,6 +1723,7 @@ npm run start            # Production server
 - **Progressive Enhancement**: Works with and without external APIs
 
 ### Question Management System
+
 - **Comprehensive Question Bank**: Expertly curated pathology questions
 - **Multiple Sources**: AI-generated, expert-reviewed, book-sourced content
 - **Rich Media**: High-quality pathology images with advanced viewer
@@ -1597,6 +1731,7 @@ npm run start            # Production server
 - **Performance Analytics**: Detailed progress tracking and insights
 
 ### Advanced Quiz System
+
 - **Multiple Modes**: Tutor, timed, and untimed learning experiences
 - **Adaptive Learning**: Question selection based on performance
 - **Detailed Explanations**: Comprehensive teaching points for each question
@@ -1604,6 +1739,7 @@ npm run start            # Production server
 - **Subspecialty Focus**: Organized by pathology specializations
 
 ### Admin & Content Management
+
 - **Comprehensive Dashboard**: User, question, and image management
 - **Bulk Operations**: Efficient tools for large-scale content management
 - **Analytics Integration**: Platform usage and performance monitoring
@@ -1613,6 +1749,7 @@ npm run start            # Production server
 ## 🧪 Development & Testing
 
 ### Testing Strategy
+
 ```bash
 # Unit Testing (95%+ coverage)
 npm run test              # Jest + Testing Library
@@ -1634,6 +1771,7 @@ npm run test:performance  # Performance benchmarks
 For a detailed guide on testing the complete authentication flow from start to finish, see [Authentication Testing Guide](./docs/auth-testing-guide.md).
 
 The guide covers:
+
 - **Sign Up Flow**: Email validation, password requirements, CAPTCHA, rate limiting
 - **Email Verification**: Confirmation links, expired tokens, resend functionality
 - **Login Flow**: Email/password, OAuth, session management, role-based redirects
@@ -1644,6 +1782,7 @@ The guide covers:
 - **Performance**: Concurrent logins, network interruption, database failover
 
 Quick test checklist:
+
 ```bash
 # 1. Sign Up & Verification
 □ Valid signup with email verification
@@ -1675,6 +1814,7 @@ Quick test checklist:
 ```
 
 ### Code Quality
+
 - **TypeScript Strict Mode**: Full type safety with strict configuration
 - **ESLint**: Comprehensive linting with medical terminology support
 - **Prettier**: Consistent code formatting
@@ -1682,6 +1822,7 @@ Quick test checklist:
 - **Conventional Commits**: Standardized commit message format
 
 ### Performance Monitoring
+
 - **Bundle Analysis**: Automatic bundle size monitoring
 - **Lighthouse Scores**: 95+ performance, accessibility, SEO
 - **Real User Monitoring**: Vercel Analytics integration
@@ -1691,6 +1832,7 @@ Quick test checklist:
 ## 🚀 Deployment & Production
 
 ### Vercel Deployment (Recommended)
+
 - **Automatic Deployment**: Main branch auto-deploys to production
 - **Preview Deployments**: Feature branches generate preview links
 - **Environment Management**: Secure environment variable handling
@@ -1698,6 +1840,7 @@ Quick test checklist:
 - **Analytics**: Built-in performance and usage analytics
 
 ### Environment Configuration
+
 ```env
 # Production Environment Variables
 NEXT_PUBLIC_SUPABASE_URL=production_supabase_url
@@ -1710,6 +1853,7 @@ RESEND_API_KEY=email_service_key
 ```
 
 ### Production Optimizations
+
 - **Image Optimization Disabled**: Unoptimized strategy to avoid Vercel costs
 - **R2 Zero Egress**: Cloudflare R2 eliminates bandwidth charges
 - **Smart Caching**: Client-side caching reduces server load
@@ -1717,6 +1861,7 @@ RESEND_API_KEY=email_service_key
 - **Bundle Splitting**: Optimized code splitting for faster loading
 
 ### Monitoring & Health Checks
+
 ```bash
 # Health Check Endpoint
 curl https://pathologybites.com/api/health
@@ -1724,16 +1869,17 @@ curl https://pathologybites.com/api/health
 
 # Performance Monitoring
 - Vercel Analytics: Real-time performance metrics
-- Cache Hit Rates: Client-side caching effectiveness  
+- Cache Hit Rates: Client-side caching effectiveness
 - API Response Times: External service integration health
 - Error Tracking: Automatic error reporting and alerting
 ```
 
 ## 🤝 Contributing
 
-We welcome contributions from the medical and developer communities! 
+We welcome contributions from the medical and developer communities!
 
 ### Contribution Areas
+
 - **Medical Content**: Add pathology questions, cases, and explanations
 - **Educational Tools**: Develop new learning utilities and calculators
 - **Performance**: Optimize caching strategies and loading times
@@ -1742,6 +1888,7 @@ We welcome contributions from the medical and developer communities!
 - **Documentation**: Enhance guides and technical documentation
 
 ### Development Workflow
+
 1. **Fork & Clone**: Fork the repository and clone locally
 2. **Setup**: Install dependencies and configure environment
 3. **Branch**: Create feature branch from main
@@ -1750,6 +1897,7 @@ We welcome contributions from the medical and developer communities!
 6. **Submit**: Open pull request with clear description
 
 ### Code Standards
+
 - **TypeScript**: Strict mode compliance required
 - **Testing**: Unit tests for new features and bug fixes
 - **Performance**: Maintain optimization standards
@@ -1761,6 +1909,7 @@ We welcome contributions from the medical and developer communities!
 **License**: MIT License - see [LICENSE](LICENSE) file for details
 
 **Support Channels**:
+
 - **GitHub Issues**: [Bug reports and feature requests](https://github.com/jjsanchezramirez/pathology-bites/issues)
 - **Documentation**: Comprehensive guides in `/docs` folder
 - **Email**: support@pathologybites.com for direct assistance
@@ -1768,18 +1917,21 @@ We welcome contributions from the medical and developer communities!
 ## 🎯 Roadmap
 
 ### Near-term (Q1 2024)
+
 - **Mobile App**: Native iOS/Android applications
 - **Advanced Analytics**: Detailed learning progression insights
 - **Content Expansion**: Additional subspecialty coverage
 - **API Optimization**: Further performance improvements
 
-### Medium-term (Q2-Q3 2024)  
+### Medium-term (Q2-Q3 2024)
+
 - **Collaborative Features**: Study groups and peer learning
 - **AI Enhancement**: Personalized learning recommendations
 - **Offline Capabilities**: Full offline functionality
 - **Accessibility**: Enhanced accessibility compliance
 
 ### Long-term (Q4 2024+)
+
 - **Multi-language Support**: International educational access
 - **Public API**: Educational platform integrations
 - **Advanced Simulations**: Interactive case simulations
@@ -1789,4 +1941,4 @@ We welcome contributions from the medical and developer communities!
 
 **🔬 Made with precision for the pathology education community**
 
-*Pathology Bites - Advancing pathology education through innovative technology, smart optimization, and comprehensive learning tools designed for medical professionals worldwide.*
+_Pathology Bites - Advancing pathology education through innovative technology, smart optimization, and comprehensive learning tools designed for medical professionals worldwide._

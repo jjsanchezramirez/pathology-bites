@@ -1,9 +1,9 @@
 // src/shared/components/common/dr-albright.tsx
-'use client'
+"use client";
 
-import { useEffect, useState, useCallback, useRef } from 'react';
-import Image from 'next/image';
-import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache';
+import { useEffect, useState, useCallback, useRef } from "react";
+import Image from "next/image";
+import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
 
 interface Particle {
   id: string;
@@ -20,29 +20,18 @@ interface FloatingCharacterProps {
 const DEFAULT_SIZE = 288;
 const SMOKE_POSITION = { x: 33, y: 40 };
 
-const Smoke = ({ 
-  offset, 
-  containerSize 
-}: { 
-  offset: number;
-  containerSize: number;
-}) => {
+const Smoke = ({ offset, containerSize }: { offset: number; containerSize: number }) => {
   const particleSize = Math.max(containerSize / 96, 8);
 
   const style = {
-    '--smoke-offset': `${offset}%`,
-    '--smoke-x': `${SMOKE_POSITION.x}%`,
-    '--smoke-y': `${SMOKE_POSITION.y}%`,
+    "--smoke-offset": `${offset}%`,
+    "--smoke-x": `${SMOKE_POSITION.x}%`,
+    "--smoke-y": `${SMOKE_POSITION.y}%`,
     width: `${particleSize}px`,
     height: `${particleSize}px`,
   } as React.CSSProperties;
 
-  return (
-    <div
-      className="smoke-particle absolute rounded-full bg-primary/20 z-10"
-      style={style}
-    />
-  );
+  return <div className="smoke-particle absolute rounded-full bg-primary/20 z-10" style={style} />;
 };
 
 const FloatingCharacter = ({
@@ -62,23 +51,23 @@ const FloatingCharacter = ({
 
   const addParticle = useCallback(() => {
     if (!mounted) return;
-    
+
     particleCounter.current += 1;
     const newParticle = {
       id: `particle-${particleCounter.current}`,
-      offset: (particleCounter.current * 7) % 20 - 10 // Deterministic offset
+      offset: ((particleCounter.current * 7) % 20) - 10, // Deterministic offset
     };
 
-    setParticles(prev => [...prev, newParticle]);
+    setParticles((prev) => [...prev, newParticle]);
 
     setTimeout(() => {
-      setParticles(prev => prev.filter(p => p.id !== newParticle.id));
+      setParticles((prev) => prev.filter((p) => p.id !== newParticle.id));
     }, 2000);
   }, [mounted]);
 
   useEffect(() => {
     if (!mounted) return;
-    
+
     const particleInterval = setInterval(addParticle, 300);
 
     const resetInterval = setInterval(() => {
@@ -99,8 +88,13 @@ const FloatingCharacter = ({
     <>
       <style jsx global>{`
         @keyframes float {
-          0%, 100% { transform: translateY(-8px); }
-          50% { transform: translateY(8px); }
+          0%,
+          100% {
+            transform: translateY(-8px);
+          }
+          50% {
+            transform: translateY(8px);
+          }
         }
 
         @keyframes smoke {
@@ -133,22 +127,19 @@ const FloatingCharacter = ({
         }
       `}</style>
 
-      <div 
-        className={`relative ${wrapperClassName}`} 
-        style={{ 
+      <div
+        className={`relative ${wrapperClassName}`}
+        style={{
           width: `${size}px`,
           height: `${size}px`,
-          maxWidth: '100%'
+          maxWidth: "100%",
         }}
       >
-        {mounted && particles.map((particle) => (
-          <Smoke 
-            key={particle.id} 
-            offset={particle.offset} 
-            containerSize={size}
-          />
-        ))}
-        
+        {mounted &&
+          particles.map((particle) => (
+            <Smoke key={particle.id} offset={particle.offset} containerSize={size} />
+          ))}
+
         <div className="floating relative w-full h-full z-0">
           {mounted ? (
             <Image
@@ -163,7 +154,7 @@ const FloatingCharacter = ({
           ) : (
             <div
               className="w-full h-full bg-muted/20 rounded animate-pulse"
-              style={{ aspectRatio: '1' }}
+              style={{ aspectRatio: "1" }}
             />
           )}
         </div>

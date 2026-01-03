@@ -2,74 +2,74 @@
 // Prevents sensitive data exposure in logs
 
 const SENSITIVE_FIELDS = [
-  'password',
-  'token',
-  'secret',
-  'key',
-  'authorization',
-  'cookie',
-  'session',
-  'jwt',
-  'api_key',
-  'access_token',
-  'refresh_token'
-]
+  "password",
+  "token",
+  "secret",
+  "key",
+  "authorization",
+  "cookie",
+  "session",
+  "jwt",
+  "api_key",
+  "access_token",
+  "refresh_token",
+];
 
 export function sanitizeForLogging(obj: unknown): unknown {
-  if (obj === null || obj === undefined) return obj
-  
-  if (typeof obj === 'string') {
+  if (obj === null || obj === undefined) return obj;
+
+  if (typeof obj === "string") {
     // Check if string contains sensitive patterns
-    const lowerStr = obj.toLowerCase()
-    if (SENSITIVE_FIELDS.some(field => lowerStr.includes(field))) {
-      return '[REDACTED]'
+    const lowerStr = obj.toLowerCase();
+    if (SENSITIVE_FIELDS.some((field) => lowerStr.includes(field))) {
+      return "[REDACTED]";
     }
-    return obj
+    return obj;
   }
-  
+
   if (Array.isArray(obj)) {
-    return obj.map(item => sanitizeForLogging(item))
+    return obj.map((item) => sanitizeForLogging(item));
   }
-  
-  if (typeof obj === 'object') {
-    const sanitized: unknown = {}
+
+  if (typeof obj === "object") {
+    const sanitized: unknown = {};
     for (const [key, value] of Object.entries(obj)) {
-      const lowerKey = key.toLowerCase()
-      if (SENSITIVE_FIELDS.some(field => lowerKey.includes(field))) {
-        sanitized[key] = '[REDACTED]'
+      const lowerKey = key.toLowerCase();
+      if (SENSITIVE_FIELDS.some((field) => lowerKey.includes(field))) {
+        sanitized[key] = "[REDACTED]";
       } else {
-        sanitized[key] = sanitizeForLogging(value)
+        sanitized[key] = sanitizeForLogging(value);
       }
     }
-    return sanitized
+    return sanitized;
   }
-  
-  return obj
+
+  return obj;
 }
 
 // Secure console methods
 export const secureLog = {
   info: (message: string, data?: unknown) => {
-    console.info(message, data ? sanitizeForLogging(data) : '')
+    console.info(message, data ? sanitizeForLogging(data) : "");
   },
-  
+
   warn: (message: string, data?: unknown) => {
-    console.warn(message, data ? sanitizeForLogging(data) : '')
+    console.warn(message, data ? sanitizeForLogging(data) : "");
   },
-  
+
   error: (message: string, error?: unknown) => {
     // For errors, log the message and stack trace but sanitize any data
     if (error instanceof Error) {
       console.error(message, {
         name: error.name,
         message: error.message,
-        stack: error.stack
-      })
+        stack: error.stack,
+      });
     } else {
-      console.error(message, sanitizeForLogging(error))
+      console.error(message, sanitizeForLogging(error));
     }
-  }
-}
+  },
+};
 
 // Usage example:
 // Instead of: console.log('User data:', userData)

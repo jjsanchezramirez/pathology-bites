@@ -1,14 +1,14 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Textarea } from '@/shared/components/ui/textarea';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs';
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Textarea } from "@/shared/components/ui/textarea";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import {
   Form,
   FormControl,
@@ -16,40 +16,46 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/shared/components/ui/form';
+} from "@/shared/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
-import { Icons } from '@/shared/components/common/icons';
-import { toast } from '@/shared/utils/toast';
+} from "@/shared/components/ui/select";
+import { Icons } from "@/shared/components/common/icons";
+import { toast } from "@/shared/utils/toast";
 
 // Import existing components
-import { CompactAnswerOptions } from './compact-answer-options';
-import { TagAutocomplete } from '../../../app/(admin)/admin/create-question/components/tag-autocomplete';
-import { ImageAttachmentsTab } from '../../../app/(admin)/admin/create-question/components/image-attachments-tab';
+import { CompactAnswerOptions } from "./compact-answer-options";
+import { TagAutocomplete } from "../../../app/(admin)/admin/create-question/components/tag-autocomplete";
+import { ImageAttachmentsTab } from "../../../app/(admin)/admin/create-question/components/image-attachments-tab";
 
 // Import types
-import { 
-  QuestionFormData, 
-  QuestionOptionFormData, 
-  QuestionImageFormData 
-} from '@/features/questions/types/questions';
+import {
+  QuestionFormData,
+  QuestionOptionFormData,
+  QuestionImageFormData,
+} from "@/features/questions/types/questions";
 
 // Import hooks
-import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
+import { useQuestionSets } from "@/features/questions/hooks/use-question-sets";
 
 // Define the enhanced form schema
 const enhancedQuestionSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
-  stem: z.string().min(10, 'Question stem must be at least 10 characters').max(2000, 'Question stem too long'),
-  difficulty: z.enum(['easy', 'medium', 'hard']),
-  teaching_point: z.string().min(10, 'Teaching point must be at least 10 characters').max(1000, 'Teaching point too long'),
-  question_references: z.string().max(1000, 'References too long (max 1000 characters)').optional(),
-  status: z.enum(['draft', 'pending_review', 'approved', 'flagged']),
+  title: z.string().min(1, "Title is required").max(200, "Title too long"),
+  stem: z
+    .string()
+    .min(10, "Question stem must be at least 10 characters")
+    .max(2000, "Question stem too long"),
+  difficulty: z.enum(["easy", "medium", "hard"]),
+  teaching_point: z
+    .string()
+    .min(10, "Teaching point must be at least 10 characters")
+    .max(1000, "Teaching point too long"),
+  question_references: z.string().max(1000, "References too long (max 1000 characters)").optional(),
+  status: z.enum(["draft", "pending_review", "approved", "flagged"]),
   question_set_id: z.string(),
   category_id: z.string().nullable().optional(),
 });
@@ -62,27 +68,27 @@ interface EnhancedManualQuestionFormProps {
   initialData?: Partial<QuestionFormData>;
 }
 
-export function EnhancedManualQuestionForm({ 
-  onSubmit, 
-  isEdit = false, 
-  initialData 
+export function EnhancedManualQuestionForm({
+  onSubmit,
+  isEdit = false,
+  initialData,
 }: EnhancedManualQuestionFormProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
-  const [activeTab, setActiveTab] = useState('basic');
+  const [activeTab, setActiveTab] = useState("basic");
 
   // Form state for complex fields
   const [answerOptions, setAnswerOptions] = useState<QuestionOptionFormData[]>([
-    { text: '', is_correct: true, explanation: '', order_index: 0 },
-    { text: '', is_correct: false, explanation: '', order_index: 1 },
-    { text: '', is_correct: false, explanation: '', order_index: 2 },
-    { text: '', is_correct: false, explanation: '', order_index: 3 },
-    { text: '', is_correct: false, explanation: '', order_index: 4 }
+    { text: "", is_correct: true, explanation: "", order_index: 0 },
+    { text: "", is_correct: false, explanation: "", order_index: 1 },
+    { text: "", is_correct: false, explanation: "", order_index: 2 },
+    { text: "", is_correct: false, explanation: "", order_index: 3 },
+    { text: "", is_correct: false, explanation: "", order_index: 4 },
   ]);
-  
+
   const [questionImages, setQuestionImages] = useState<QuestionImageFormData[]>([]);
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
-  const [selectedCategoryId, setSelectedCategoryId] = useState<string>('');
+  const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [availableTags, setAvailableTags] = useState<unknown[]>([]);
   const [availableCategories, setAvailableCategories] = useState<unknown[]>([]);
 
@@ -92,13 +98,14 @@ export function EnhancedManualQuestionForm({
   const form = useForm<EnhancedQuestionFormData>({
     resolver: zodResolver(enhancedQuestionSchema),
     defaultValues: {
-      title: initialData?.title || '',
-      stem: initialData?.stem || '',
-      difficulty: (initialData?.difficulty as 'easy' | 'medium' | 'hard') || 'medium',
-      teaching_point: initialData?.teaching_point || '',
-      question_references: initialData?.question_references || '',
-      status: (initialData?.status as 'draft' | 'pending_review' | 'approved' | 'flagged') || 'draft',
-      question_set_id: initialData?.question_set_id || 'none',
+      title: initialData?.title || "",
+      stem: initialData?.stem || "",
+      difficulty: (initialData?.difficulty as "easy" | "medium" | "hard") || "medium",
+      teaching_point: initialData?.teaching_point || "",
+      question_references: initialData?.question_references || "",
+      status:
+        (initialData?.status as "draft" | "pending_review" | "approved" | "flagged") || "draft",
+      question_set_id: initialData?.question_set_id || "none",
       category_id: initialData?.category_id || null,
     },
   });
@@ -108,16 +115,18 @@ export function EnhancedManualQuestionForm({
     const loadData = async () => {
       try {
         // Load tags (latest 10 created)
-        const tagsResponse = await fetch('/api/admin/tags?page=0&pageSize=10&sortBy=created_at&sortOrder=desc');
+        const tagsResponse = await fetch(
+          "/api/admin/tags?page=0&pageSize=10&sortBy=created_at&sortOrder=desc"
+        );
         const tagsData = await tagsResponse.json();
         setAvailableTags(tagsData.tags || []);
 
         // Load categories
-        const categoriesResponse = await fetch('/api/admin/categories?page=0&pageSize=1000');
+        const categoriesResponse = await fetch("/api/admin/categories?page=0&pageSize=1000");
         const categoriesData = await categoriesResponse.json();
         setAvailableCategories(categoriesData.categories || []);
       } catch (error) {
-        console.error('Failed to load tags/categories:', error);
+        console.error("Failed to load tags/categories:", error);
       }
     };
 
@@ -129,27 +138,31 @@ export function EnhancedManualQuestionForm({
     if (isEdit && initialData) {
       // Set answer options
       if (initialData.question_options) {
-        setAnswerOptions(initialData.question_options.map((opt, index) => ({
-          id: opt.id,
-          text: opt.text,
-          is_correct: opt.is_correct,
-          explanation: opt.explanation || '',
-          order_index: index,
-        })));
+        setAnswerOptions(
+          initialData.question_options.map((opt, index) => ({
+            id: opt.id,
+            text: opt.text,
+            is_correct: opt.is_correct,
+            explanation: opt.explanation || "",
+            order_index: index,
+          }))
+        );
       }
 
       // Set question images
       if (initialData.question_images) {
-        setQuestionImages(initialData.question_images.map((img, index) => ({
-          image_id: img.image_id,
-          question_section: img.question_section,
-          order_index: index,
-        })));
+        setQuestionImages(
+          initialData.question_images.map((img, index) => ({
+            image_id: img.image_id,
+            question_section: img.question_section,
+            order_index: index,
+          }))
+        );
       }
 
       // Set selected tags and category
       setSelectedTagIds(initialData.tag_ids || []);
-      setSelectedCategoryId(initialData.category_id || '');
+      setSelectedCategoryId(initialData.category_id || "");
     }
   }, [isEdit, initialData]);
 
@@ -158,21 +171,21 @@ export function EnhancedManualQuestionForm({
     const errors: Record<string, string> = {};
 
     if (answerOptions.length < 2) {
-      errors.options = 'At least 2 answer options are required';
+      errors.options = "At least 2 answer options are required";
       return errors;
     }
 
-    const correctAnswers = answerOptions.filter(opt => opt.is_correct);
+    const correctAnswers = answerOptions.filter((opt) => opt.is_correct);
     if (correctAnswers.length !== 1) {
-      errors.options = 'Exactly one correct answer must be selected';
+      errors.options = "Exactly one correct answer must be selected";
     }
 
     answerOptions.forEach((option, index) => {
       if (!option.text.trim()) {
-        errors[`option_${index}_text`] = 'Option text is required';
+        errors[`option_${index}_text`] = "Option text is required";
       }
       if (!option.is_correct && !option.explanation?.trim()) {
-        errors[`option_${index}_explanation`] = 'Explanation is required for incorrect answers';
+        errors[`option_${index}_explanation`] = "Explanation is required for incorrect answers";
       }
     });
 
@@ -181,12 +194,12 @@ export function EnhancedManualQuestionForm({
 
   const handleSubmit = async (data: EnhancedQuestionFormData) => {
     setHasAttemptedSubmit(true);
-    
+
     // Validate answer options
     const optionErrors = validateAnswerOptions();
     if (Object.keys(optionErrors).length > 0) {
-      toast.error('Please fix the answer options errors');
-      setActiveTab('options');
+      toast.error("Please fix the answer options errors");
+      setActiveTab("options");
       return;
     }
 
@@ -198,17 +211,17 @@ export function EnhancedManualQuestionForm({
         stem: data.stem,
         difficulty: data.difficulty,
         teaching_point: data.teaching_point,
-        question_references: data.question_references || '',
+        question_references: data.question_references || "",
         status: data.status,
-        question_set_id: data.question_set_id === 'none' ? '' : data.question_set_id,
-        category_id: selectedCategoryId || '',
+        question_set_id: data.question_set_id === "none" ? "" : data.question_set_id,
+        category_id: selectedCategoryId || "",
         question_options: answerOptions.map((option, index) => ({
           text: option.text,
           is_correct: option.is_correct,
-          explanation: option.explanation || '',
+          explanation: option.explanation || "",
           order_index: index,
         })),
-        question_images: questionImages.map(img => ({
+        question_images: questionImages.map((img) => ({
           image_id: img.image_id,
           question_section: img.question_section,
           order_index: img.order_index,
@@ -225,7 +238,7 @@ export function EnhancedManualQuestionForm({
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{isEdit ? 'Edit Question' : 'Create New Question'}</CardTitle>
+        <CardTitle>{isEdit ? "Edit Question" : "Create New Question"}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -406,18 +419,15 @@ export function EnhancedManualQuestionForm({
             </Tabs>
 
             {/* Submit Button */}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting}
-            >
-              {isSubmitting && (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-              )}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
               {isSubmitting
-                ? isEdit ? 'Saving...' : 'Creating...'
-                : isEdit ? 'Save Changes' : 'Create Question'
-              }
+                ? isEdit
+                  ? "Saving..."
+                  : "Creating..."
+                : isEdit
+                  ? "Save Changes"
+                  : "Create Question"}
             </Button>
           </form>
         </Form>

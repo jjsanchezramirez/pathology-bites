@@ -1,13 +1,13 @@
 // src/features/questions/components/universal-tag-selector.tsx
-'use client';
+"use client";
 
-import { useState, useRef, useEffect, useCallback } from 'react';
+import { useState, useRef, useEffect, useCallback } from "react";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
-import { X, Tag, Loader2 } from 'lucide-react';
-import { useUniversalTags } from '@/features/questions/hooks/use-universal-tags';
-import { TagData } from '@/features/questions/types/questions';
+import { X, Tag, Loader2 } from "lucide-react";
+import { useUniversalTags } from "@/features/questions/hooks/use-universal-tags";
+import { TagData } from "@/features/questions/types/questions";
 
 interface UniversalTagSelectorProps {
   selectedTagIds: string[];
@@ -26,51 +26,54 @@ export function UniversalTagSelector({
   placeholder = "Search tags or type to create new...",
   maxTags = 5,
   disabled = false,
-  label = "Tags"
+  label = "Tags",
 }: UniversalTagSelectorProps) {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [searchResults, setSearchResults] = useState<TagData[]>([]);
   const [isSearching, setIsSearching] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  
+
   const inputRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  
+
   const { recentTags, searchTags, createTag, loading } = useUniversalTags();
 
   // Get currently displayed tags (search results or recent tags)
   const displayedTags = inputValue.trim() ? searchResults : recentTags;
-  
+
   // Filter out already selected tags
-  const availableTags = displayedTags.filter(tag => 
-    !selectedTagIds.includes(tag.id)
-  );
+  const availableTags = displayedTags.filter((tag) => !selectedTagIds.includes(tag.id));
 
   // Get selected tag objects
   const selectedTags = selectedTagIds
-    .map(id => recentTags.find(tag => tag.id === id) || searchResults.find(tag => tag.id === id))
+    .map(
+      (id) => recentTags.find((tag) => tag.id === id) || searchResults.find((tag) => tag.id === id)
+    )
     .filter(Boolean) as TagData[];
 
   // Handle search with debouncing
-  const handleSearch = useCallback(async (query: string) => {
-    if (!query.trim()) {
-      setSearchResults([]);
-      setIsSearching(false);
-      return;
-    }
+  const handleSearch = useCallback(
+    async (query: string) => {
+      if (!query.trim()) {
+        setSearchResults([]);
+        setIsSearching(false);
+        return;
+      }
 
-    setIsSearching(true);
-    try {
-      const results = await searchTags(query);
-      setSearchResults(results);
-    } catch (error) {
-      console.error('Search error:', error);
-      setSearchResults([]);
-    } finally {
-      setIsSearching(false);
-    }
-  }, [searchTags]);
+      setIsSearching(true);
+      try {
+        const results = await searchTags(query);
+        setSearchResults(results);
+      } catch (error) {
+        console.error("Search error:", error);
+        setSearchResults([]);
+      } finally {
+        setIsSearching(false);
+      }
+    },
+    [searchTags]
+  );
 
   // Debounced search effect
   useEffect(() => {
@@ -89,11 +92,11 @@ export function UniversalTagSelector({
     } else {
       onTagsChange([tag.id]);
     }
-    
-    setInputValue('');
+
+    setInputValue("");
     setShowDropdown(false);
     setHighlightedIndex(-1);
-    
+
     // Focus back on input for multiple selection
     if (multiple) {
       setTimeout(() => inputRef.current?.focus(), 0);
@@ -102,13 +105,13 @@ export function UniversalTagSelector({
 
   // Handle tag removal
   const handleTagRemove = (tagId: string) => {
-    onTagsChange(selectedTagIds.filter(id => id !== tagId));
+    onTagsChange(selectedTagIds.filter((id) => id !== tagId));
   };
 
   // Handle tag creation
   const handleCreateTag = async (tagName: string) => {
     if (!tagName.trim()) return;
-    
+
     try {
       const newTag = await createTag(tagName.trim());
       handleTagSelect(newTag);
@@ -118,14 +121,15 @@ export function UniversalTagSelector({
   };
 
   // Check if we can create a new tag
-  const canCreateNewTag = inputValue.trim() && 
-    !availableTags.some(tag => tag.name.toLowerCase() === inputValue.trim().toLowerCase()) &&
+  const canCreateNewTag =
+    inputValue.trim() &&
+    !availableTags.some((tag) => tag.name.toLowerCase() === inputValue.trim().toLowerCase()) &&
     (multiple ? selectedTagIds.length < maxTags : selectedTagIds.length === 0);
 
   // Keyboard navigation
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (!showDropdown) {
-      if (e.key === 'ArrowDown' || e.key === 'Enter') {
+      if (e.key === "ArrowDown" || e.key === "Enter") {
         e.preventDefault();
         setShowDropdown(true);
         setHighlightedIndex(0);
@@ -136,17 +140,17 @@ export function UniversalTagSelector({
     const totalItems = availableTags.length + (canCreateNewTag ? 1 : 0);
 
     switch (e.key) {
-      case 'ArrowDown':
+      case "ArrowDown":
         e.preventDefault();
-        setHighlightedIndex(prev => (prev + 1) % totalItems);
+        setHighlightedIndex((prev) => (prev + 1) % totalItems);
         break;
-      
-      case 'ArrowUp':
+
+      case "ArrowUp":
         e.preventDefault();
-        setHighlightedIndex(prev => prev <= 0 ? totalItems - 1 : prev - 1);
+        setHighlightedIndex((prev) => (prev <= 0 ? totalItems - 1 : prev - 1));
         break;
-      
-      case 'Enter':
+
+      case "Enter":
         e.preventDefault();
         if (highlightedIndex >= 0 && highlightedIndex < availableTags.length) {
           handleTagSelect(availableTags[highlightedIndex]);
@@ -156,12 +160,12 @@ export function UniversalTagSelector({
           handleCreateTag(inputValue.trim());
         }
         break;
-      
-      case 'Escape':
+
+      case "Escape":
         e.preventDefault();
         setShowDropdown(false);
         setHighlightedIndex(-1);
-        setInputValue('');
+        setInputValue("");
         break;
     }
   };
@@ -182,7 +186,7 @@ export function UniversalTagSelector({
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        dropdownRef.current && 
+        dropdownRef.current &&
         !dropdownRef.current.contains(event.target as Node) &&
         inputRef.current &&
         !inputRef.current.contains(event.target as Node)
@@ -192,17 +196,21 @@ export function UniversalTagSelector({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Don't show input if single mode and tag is selected, or if max tags reached
-  const showInput = !disabled && (multiple ? selectedTagIds.length < maxTags : selectedTagIds.length === 0);
+  const showInput =
+    !disabled && (multiple ? selectedTagIds.length < maxTags : selectedTagIds.length === 0);
 
   return (
     <div className="space-y-3">
       {label && (
-        <label htmlFor="universal-tag-input" className="text-sm font-medium flex items-center gap-2">
+        <label
+          htmlFor="universal-tag-input"
+          className="text-sm font-medium flex items-center gap-2"
+        >
           <Tag className="h-4 w-4" />
           {label}
         </label>
@@ -238,7 +246,7 @@ export function UniversalTagSelector({
                       key={tag.id}
                       type="button"
                       className={`w-full text-left px-3 py-2 text-sm hover:bg-muted ${
-                        index === highlightedIndex ? 'bg-muted' : ''
+                        index === highlightedIndex ? "bg-muted" : ""
                       }`}
                       onClick={() => handleTagSelect(tag)}
                     >
@@ -251,7 +259,7 @@ export function UniversalTagSelector({
                     <button
                       type="button"
                       className={`w-full text-left px-3 py-2 text-sm border-t hover:bg-muted ${
-                        availableTags.length === highlightedIndex ? 'bg-muted' : ''
+                        availableTags.length === highlightedIndex ? "bg-muted" : ""
                       }`}
                       onClick={() => handleCreateTag(inputValue.trim())}
                     >
@@ -262,7 +270,7 @@ export function UniversalTagSelector({
                   {/* No results message */}
                   {availableTags.length === 0 && !canCreateNewTag && (
                     <div className="px-3 py-2 text-sm text-muted-foreground">
-                      {inputValue.trim() ? 'No tags found' : 'No available tags'}
+                      {inputValue.trim() ? "No tags found" : "No available tags"}
                     </div>
                   )}
                 </>

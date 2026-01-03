@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import React, { useState } from "react";
+import { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -11,26 +11,24 @@ import {
 } from "@/shared/components/ui/form";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
-import { BookOpen } from 'lucide-react';
-import { FetchReferencesDialog } from '../fetch-references-dialog';
+import { BookOpen } from "lucide-react";
+import { FetchReferencesDialog } from "../fetch-references-dialog";
 
 interface ReferencesTabProps {
   form: UseFormReturn<unknown>;
   onUnsavedChanges: () => void;
-  mode?: 'create' | 'edit';
+  mode?: "create" | "edit";
 }
 
-export function ReferencesTab({ form, _mode = 'edit' }: ReferencesTabProps) {
+export function ReferencesTab({ form, _mode = "edit" }: ReferencesTabProps) {
   const [fetchDialogOpen, setFetchDialogOpen] = useState(false);
 
   const handleReferencesSelected = (references: string[]) => {
-    const currentRefs = form.getValues('question_references') || '';
-    const newRefs = references.join('\n\n');
-    const updatedRefs = currentRefs
-      ? `${currentRefs}\n\n${newRefs}`
-      : newRefs;
+    const currentRefs = form.getValues("question_references") || "";
+    const newRefs = references.join("\n\n");
+    const updatedRefs = currentRefs ? `${currentRefs}\n\n${newRefs}` : newRefs;
 
-    form.setValue('question_references', updatedRefs);
+    form.setValue("question_references", updatedRefs);
     if (onUnsavedChanges) {
       onUnsavedChanges();
     }
@@ -38,8 +36,8 @@ export function ReferencesTab({ form, _mode = 'edit' }: ReferencesTabProps) {
 
   // Get search query from question title or stem
   const getSearchQuery = () => {
-    const title = form.getValues('title') || '';
-    const stem = form.getValues('stem') || '';
+    const title = form.getValues("title") || "";
+    const stem = form.getValues("stem") || "";
     return title || stem.slice(0, 100);
   };
 

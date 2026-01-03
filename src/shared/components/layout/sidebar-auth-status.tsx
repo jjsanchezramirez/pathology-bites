@@ -1,8 +1,8 @@
 // src/components/admin/sidebar-auth-status.tsx
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/shared/services/client'
+import { useState, useEffect } from "react";
+import { createClient } from "@/shared/services/client";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -10,209 +10,218 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu'
-import {
-  RefreshCw,
-  LogOut,
-  ChevronUp,
-  Shield,
-  ShieldAlert,
-  ShieldCheck
-} from 'lucide-react'
-import { useAuth } from '@/shared/hooks/use-auth'
-import { apiClient } from '@/shared/utils/api-client'
+} from "@/shared/components/ui/dropdown-menu";
+import { RefreshCw, LogOut, ChevronUp, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
+import { useAuth } from "@/shared/hooks/use-auth";
+import { apiClient } from "@/shared/utils/api-client";
 
 interface UserProfile {
-  id: string
-  email: string | null
-  role: string
-  first_name: string | null
-  last_name: string | null
+  id: string;
+  email: string | null;
+  role: string;
+  first_name: string | null;
+  last_name: string | null;
 }
 
 interface SidebarAuthStatusProps {
-  isCollapsed?: boolean
+  isCollapsed?: boolean;
 }
 
 export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProps) {
-  const { user, isLoading, isAuthenticated, error } = useAuth({ minimal: true })
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null)
-  const [profileLoading, setProfileLoading] = useState(false)
-  const [isHydrated, setIsHydrated] = useState(false)
+  const { user, isLoading, isAuthenticated, error } = useAuth({ minimal: true });
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
-  const supabase = createClient()
+  const supabase = createClient();
 
   // Handle hydration
   useEffect(() => {
-    setIsHydrated(true)
-  }, [])
+    setIsHydrated(true);
+  }, []);
 
   // Manual refresh function to replace useAuth's refreshAuth
   const refreshAuth = async () => {
     try {
-      await supabase.auth.refreshSession()
+      await supabase.auth.refreshSession();
       // Reload profile after refresh
       if (user) {
-        setProfileLoading(true)
+        setProfileLoading(true);
         const { data: profile } = await supabase
-          .from('users')
-          .select('id, email, role, first_name, last_name')
-          .eq('id', user.id)
-          .maybeSingle()
-        setUserProfile(profile)
-        setProfileLoading(false)
+          .from("users")
+          .select("id, email, role, first_name, last_name")
+          .eq("id", user.id)
+          .maybeSingle();
+        setUserProfile(profile);
+        setProfileLoading(false);
       }
     } catch (error) {
-      console.error('Failed to refresh auth:', error)
+      console.error("Failed to refresh auth:", error);
     }
-  }
+  };
 
   // Load user profile when user changes
   useEffect(() => {
-    let mounted = true
+    let mounted = true;
 
     const loadProfile = async () => {
       if (!user || !isAuthenticated) {
-        setUserProfile(null)
-        return
+        setUserProfile(null);
+        return;
       }
 
       try {
-        setProfileLoading(true)
+        setProfileLoading(true);
 
         const { data: profile, error: profileError } = await supabase
-          .from('users')
-          .select('id, email, role, first_name, last_name')
-          .eq('id', user.id)
-          .maybeSingle()
+          .from("users")
+          .select("id, email, role, first_name, last_name")
+          .eq("id", user.id)
+          .maybeSingle();
 
-        if (!mounted) return
+        if (!mounted) return;
 
         if (profileError) {
           // Only log meaningful errors (empty objects are often false positives from RLS)
           if (profileError.message || profileError.code) {
-            console.error('Profile error:', profileError)
+            console.error("Profile error:", profileError);
           }
           // Fallback to auth metadata when database query fails
           const fallbackProfile = {
             id: user.id,
             email: user.email || null,
-            role: 'user',
-            first_name: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || null,
-            last_name: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null
-          }
-          setUserProfile(fallbackProfile)
+            role: "user",
+            first_name:
+              user.user_metadata?.first_name ||
+              user.user_metadata?.full_name?.split(" ")[0] ||
+              null,
+            last_name:
+              user.user_metadata?.last_name ||
+              user.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
+              null,
+          };
+          setUserProfile(fallbackProfile);
         } else if (profile) {
-          setUserProfile(profile)
+          setUserProfile(profile);
         } else {
           // User exists in auth but not found in database - use auth metadata as fallback
           const fallbackProfile = {
             id: user.id,
             email: user.email || null,
-            role: 'user',
-            first_name: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || null,
-            last_name: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null
-          }
-          setUserProfile(fallbackProfile)
+            role: "user",
+            first_name:
+              user.user_metadata?.first_name ||
+              user.user_metadata?.full_name?.split(" ")[0] ||
+              null,
+            last_name:
+              user.user_metadata?.last_name ||
+              user.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
+              null,
+          };
+          setUserProfile(fallbackProfile);
         }
       } catch (err) {
-        if (!mounted) return
-        console.error('Profile fetch error:', err)
+        if (!mounted) return;
+        console.error("Profile fetch error:", err);
         // Fallback to auth metadata on exception
         const fallbackProfile = {
           id: user.id,
           email: user.email || null,
-          role: 'user',
-          first_name: user.user_metadata?.first_name || user.user_metadata?.full_name?.split(' ')[0] || null,
-          last_name: user.user_metadata?.last_name || user.user_metadata?.full_name?.split(' ').slice(1).join(' ') || null
-        }
-        setUserProfile(fallbackProfile)
+          role: "user",
+          first_name:
+            user.user_metadata?.first_name || user.user_metadata?.full_name?.split(" ")[0] || null,
+          last_name:
+            user.user_metadata?.last_name ||
+            user.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
+            null,
+        };
+        setUserProfile(fallbackProfile);
       } finally {
         if (mounted) {
-          setProfileLoading(false)
+          setProfileLoading(false);
         }
       }
-    }
+    };
 
-    loadProfile()
+    loadProfile();
 
     return () => {
-      mounted = false
-    }
-  }, [user?.id, isAuthenticated, supabase, user])
+      mounted = false;
+    };
+  }, [user?.id, isAuthenticated, supabase, user]);
 
   const handleSignOut = async () => {
     try {
       // Clear settings session flag so next login fetches fresh settings
-      sessionStorage.removeItem('pathology-bites-settings-loaded')
+      sessionStorage.removeItem("pathology-bites-settings-loaded");
 
-      const { error } = await supabase.auth.signOut()
+      const { error } = await supabase.auth.signOut();
 
       if (error) {
-        console.error('Sign out error:', error)
-        throw error
+        console.error("Sign out error:", error);
+        throw error;
       }
 
       // Clear any local storage or cached data
-      if (typeof window !== 'undefined') {
-        localStorage.clear()
-        sessionStorage.clear()
+      if (typeof window !== "undefined") {
+        localStorage.clear();
+        sessionStorage.clear();
 
         // Clear admin-mode cookie to prevent it from persisting across sessions
-        document.cookie = 'admin-mode=; path=/; max-age=0'
+        document.cookie = "admin-mode=; path=/; max-age=0";
       }
 
       // Clear cached CSRF token
-      apiClient.clearToken()
+      apiClient.clearToken();
 
       // Force a hard refresh to clear all cached data and redirect to login
-      window.location.href = '/login'
+      window.location.href = "/login";
     } catch (err) {
-      console.error('Error during sign out:', err)
+      console.error("Error during sign out:", err);
       // Still redirect to login even if there's an error
-      window.location.href = '/login'
+      window.location.href = "/login";
     }
-  }
+  };
 
   const getStatusIcon = () => {
     // Show spinner for ANY loading state
     if (!isHydrated || isLoading || profileLoading || (user && !userProfile)) {
-      return <RefreshCw className="h-5 w-5 animate-spin" />
+      return <RefreshCw className="h-5 w-5 animate-spin" />;
     }
-    
+
     // Show appropriate icon only when everything is loaded
-    if (user && userProfile?.role === 'admin') {
-      return <ShieldCheck className="h-5 w-5 text-green-400" />
+    if (user && userProfile?.role === "admin") {
+      return <ShieldCheck className="h-5 w-5 text-green-400" />;
     }
-    
+
     if (user && userProfile) {
-      return <Shield className="h-5 w-5 text-blue-400" />
+      return <Shield className="h-5 w-5 text-blue-400" />;
     }
-    
-    return <ShieldAlert className="h-5 w-5 text-red-400" />
-  }
+
+    return <ShieldAlert className="h-5 w-5 text-red-400" />;
+  };
 
   const getDisplayName = () => {
-    if (!isHydrated) return 'Loading...'
-    if (!user) return 'Not logged in'
-    if (profileLoading) return 'Loading profile...'
-    if (!userProfile) return user.email?.split('@')[0] || 'Unknown'
+    if (!isHydrated) return "Loading...";
+    if (!user) return "Not logged in";
+    if (profileLoading) return "Loading profile...";
+    if (!userProfile) return user.email?.split("@")[0] || "Unknown";
     if (userProfile.first_name) {
-      return `${userProfile.first_name} ${userProfile.last_name || ''}`.trim()
+      return `${userProfile.first_name} ${userProfile.last_name || ""}`.trim();
     }
-    return user.email?.split('@')[0] || 'Unknown'
-  }
+    return user.email?.split("@")[0] || "Unknown";
+  };
 
   const getStatusText = () => {
-    if (!isHydrated) return 'Initializing...'
-    if (isLoading) return 'Checking...'
-    if (profileLoading) return 'Loading...'
-    if (error) return 'Auth Error'
-    if (user && userProfile?.role === 'admin') return 'Admin'
-    if (user && userProfile) return userProfile.role
-    if (user) return 'User'
-    return 'Not logged in'
-  }
+    if (!isHydrated) return "Initializing...";
+    if (isLoading) return "Checking...";
+    if (profileLoading) return "Loading...";
+    if (error) return "Auth Error";
+    if (user && userProfile?.role === "admin") return "Admin";
+    if (user && userProfile) return userProfile.role;
+    if (user) return "User";
+    return "Not logged in";
+  };
 
   // Don't render until hydrated - FIXED: Match container structure to prevent position shift
   if (!isHydrated) {
@@ -223,9 +232,9 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
             <RefreshCw className="h-5 w-5 animate-spin" />
           </div>
         </div>
-      )
+      );
     }
-    
+
     return (
       <div className="flex h-14 px-2 rounded-lg text-sm font-medium transition-colors duration-200 relative items-center w-full">
         <div className="flex items-center min-w-0 flex-1">
@@ -234,7 +243,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // Collapsed view
@@ -250,7 +259,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
             <ShieldAlert className="h-5 w-5 text-red-400" />
           </div>
         </a>
-      )
+      );
     }
 
     return (
@@ -266,40 +275,50 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
               </div>
             </button>
           </DropdownMenuTrigger>
-        <DropdownMenuContent side="right" align="end" className="w-64 ml-2">
-          <DropdownMenuLabel>Authentication Status</DropdownMenuLabel>
-          <DropdownMenuSeparator />
+          <DropdownMenuContent side="right" align="end" className="w-64 ml-2">
+            <DropdownMenuLabel>Authentication Status</DropdownMenuLabel>
+            <DropdownMenuSeparator />
 
-          <div className="px-2 py-1.5 text-sm space-y-1">
-            <div><strong>Name:</strong> {getDisplayName()}</div>
-            <div><strong>Email:</strong> {user.email}</div>
-            <div><strong>Role:</strong> {(userProfile?.role || 'User').charAt(0).toUpperCase() + (userProfile?.role || 'User').slice(1).toLowerCase()}</div>
-            <div><strong>User ID:</strong> <span className="font-mono text-xs">{user.id}</span></div>
-          </div>
-
-          {error && (
-            <>
-              <DropdownMenuSeparator />
-              <div className="px-2 py-1.5 text-sm text-red-600">
-                <strong>Error:</strong> {String(error)}
+            <div className="px-2 py-1.5 text-sm space-y-1">
+              <div>
+                <strong>Name:</strong> {getDisplayName()}
               </div>
-            </>
-          )}
+              <div>
+                <strong>Email:</strong> {user.email}
+              </div>
+              <div>
+                <strong>Role:</strong>{" "}
+                {(userProfile?.role || "User").charAt(0).toUpperCase() +
+                  (userProfile?.role || "User").slice(1).toLowerCase()}
+              </div>
+              <div>
+                <strong>User ID:</strong> <span className="font-mono text-xs">{user.id}</span>
+              </div>
+            </div>
 
-          <DropdownMenuSeparator />
-          <DropdownMenuItem onClick={refreshAuth} disabled={isLoading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
-            Refresh Status
-          </DropdownMenuItem>
+            {error && (
+              <>
+                <DropdownMenuSeparator />
+                <div className="px-2 py-1.5 text-sm text-red-600">
+                  <strong>Error:</strong> {String(error)}
+                </div>
+              </>
+            )}
 
-          <DropdownMenuItem onClick={handleSignOut}>
-            <LogOut className="h-4 w-4 mr-2" />
-            Sign Out
-          </DropdownMenuItem>
-        </DropdownMenuContent>
-      </DropdownMenu>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={refreshAuth} disabled={isLoading}>
+              <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
+              Refresh Status
+            </DropdownMenuItem>
+
+            <DropdownMenuItem onClick={handleSignOut}>
+              <LogOut className="h-4 w-4 mr-2" />
+              Sign Out
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
-    )
+    );
   }
 
   // Expanded view
@@ -314,7 +333,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
         </div>
         <span className="truncate">Login Required</span>
       </a>
-    )
+    );
   }
 
   return (
@@ -327,11 +346,10 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
                 {getStatusIcon()}
               </div>
               <div className="min-w-0 flex-1">
-                <div className="text-sm font-medium truncate text-left">
-                  {getDisplayName()}
-                </div>
+                <div className="text-sm font-medium truncate text-left">{getDisplayName()}</div>
                 <div className="text-xs text-slate-400 truncate text-left">
-                  {(userProfile?.role || 'User').charAt(0).toUpperCase() + (userProfile?.role || 'User').slice(1).toLowerCase()}
+                  {(userProfile?.role || "User").charAt(0).toUpperCase() +
+                    (userProfile?.role || "User").slice(1).toLowerCase()}
                 </div>
               </div>
             </div>
@@ -343,10 +361,20 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
           <DropdownMenuSeparator />
 
           <div className="px-2 py-1.5 text-sm space-y-1">
-            <div><strong>Name:</strong> {getDisplayName()}</div>
-            <div><strong>Email:</strong> {user.email}</div>
-            <div><strong>Role:</strong> {(userProfile?.role || 'User').charAt(0).toUpperCase() + (userProfile?.role || 'User').slice(1).toLowerCase()}</div>
-            <div><strong>User ID:</strong> <span className="font-mono text-xs">{user.id}</span></div>
+            <div>
+              <strong>Name:</strong> {getDisplayName()}
+            </div>
+            <div>
+              <strong>Email:</strong> {user.email}
+            </div>
+            <div>
+              <strong>Role:</strong>{" "}
+              {(userProfile?.role || "User").charAt(0).toUpperCase() +
+                (userProfile?.role || "User").slice(1).toLowerCase()}
+            </div>
+            <div>
+              <strong>User ID:</strong> <span className="font-mono text-xs">{user.id}</span>
+            </div>
           </div>
 
           {error && (
@@ -360,7 +388,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
 
           <DropdownMenuSeparator />
           <DropdownMenuItem onClick={refreshAuth} disabled={isLoading}>
-            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? 'animate-spin' : ''}`} />
+            <RefreshCw className={`h-4 w-4 mr-2 ${isLoading ? "animate-spin" : ""}`} />
             Refresh Status
           </DropdownMenuItem>
 
@@ -371,5 +399,5 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
         </DropdownMenuContent>
       </DropdownMenu>
     </div>
-  )
+  );
 }

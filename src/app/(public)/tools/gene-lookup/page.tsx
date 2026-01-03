@@ -1,84 +1,81 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
+import { useState } from "react";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
 
-import { 
-  Search, 
-  Copy, 
-  ExternalLink, 
-  Dna, 
-  MapPin, 
-  FileText, 
+import {
+  Search,
+  Copy,
+  ExternalLink,
+  Dna,
+  MapPin,
+  FileText,
   CheckCircle,
   AlertCircle,
-  Loader2
-} from 'lucide-react'
-import { PublicHero } from '@/shared/components/common/public-hero'
-import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
-import { useSmartGeneLookup } from '@/shared/hooks/use-smart-gene-lookup'
+  Loader2,
+} from "lucide-react";
+import { PublicHero } from "@/shared/components/common/public-hero";
+import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
+import { useSmartGeneLookup } from "@/shared/hooks/use-smart-gene-lookup";
 
 interface GeneInfo {
-  hgncId: string
-  geneName: string
-  geneProduct: string
-  previousNames: string[]
-  aliasSymbols: string[]
-  chromosomeLocation: string
-  description: string
+  hgncId: string;
+  geneName: string;
+  geneProduct: string;
+  previousNames: string[];
+  aliasSymbols: string[];
+  chromosomeLocation: string;
+  description: string;
 }
 
 export default function GeneLookupPage() {
-  const [input, setInput] = useState('')
-  const [geneInfo, setGeneInfo] = useState<GeneInfo | null>(null)
-  const [copiedField, setCopiedField] = useState<string | null>(null)
-  const [searchHistory, setSearchHistory] = useState<GeneInfo[]>([])
-  
-  const { lookupGene, isLoading, error } = useSmartGeneLookup()
+  const [input, setInput] = useState("");
+  const [geneInfo, setGeneInfo] = useState<GeneInfo | null>(null);
+  const [copiedField, setCopiedField] = useState<string | null>(null);
+  const [searchHistory, setSearchHistory] = useState<GeneInfo[]>([]);
+
+  const { lookupGene, isLoading, error } = useSmartGeneLookup();
 
   const fetchGeneInformation = async () => {
     if (!input.trim()) {
-      return
+      return;
     }
 
     // Don't clear geneInfo immediately to prevent flashing
     // Let the loading state handle the UI transition
 
     try {
-      const geneInfo = await lookupGene(input.trim())
-      setGeneInfo(geneInfo)
+      const geneInfo = await lookupGene(input.trim());
+      setGeneInfo(geneInfo);
 
       // Add to search history (keep last 5)
-      setSearchHistory(prev => {
-        const newHistory = [geneInfo, ...prev.filter(g => g.geneName !== geneInfo.geneName)]
-        return newHistory.slice(0, 5)
-      })
-
+      setSearchHistory((prev) => {
+        const newHistory = [geneInfo, ...prev.filter((g) => g.geneName !== geneInfo.geneName)];
+        return newHistory.slice(0, 5);
+      });
     } catch (error) {
-      console.error('Error fetching gene information:', error)
+      console.error("Error fetching gene information:", error);
       // Clear gene info only on error to show error state
-      setGeneInfo(null)
+      setGeneInfo(null);
     }
-  }
-
-
+  };
 
   const copyToClipboard = async (text: string, field: string) => {
     try {
-      await navigator.clipboard.writeText(text)
-      setCopiedField(field)
-      setTimeout(() => setCopiedField(null), 2000)
+      await navigator.clipboard.writeText(text);
+      setCopiedField(field);
+      setTimeout(() => setCopiedField(null), 2000);
     } catch (err) {
-      console.error('Failed to copy to clipboard:', err)
+      console.error("Failed to copy to clipboard:", err);
     }
-  }
+  };
 
   const openExternalLink = (url: string) => {
-    window.open(url, '_blank', 'noopener,noreferrer')
-  }
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -100,8 +97,6 @@ export default function GeneLookupPage() {
         }
       />
 
-
-
       {/* Gene Search Tool */}
       <section className="relative py-16">
         <div className="container px-4 mx-auto max-w-4xl">
@@ -119,7 +114,7 @@ export default function GeneLookupPage() {
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     className="flex-1"
-                    onKeyDown={(e) => e.key === 'Enter' && fetchGeneInformation()}
+                    onKeyDown={(e) => e.key === "Enter" && fetchGeneInformation()}
                   />
                   <Button
                     onClick={fetchGeneInformation}
@@ -162,15 +157,15 @@ export default function GeneLookupPage() {
                           title="Gene Product"
                           content={geneInfo.geneProduct}
                           icon={<FileText className="h-4 w-4" />}
-                          onCopy={() => copyToClipboard(geneInfo.geneProduct, 'product')}
-                          copied={copiedField === 'product'}
+                          onCopy={() => copyToClipboard(geneInfo.geneProduct, "product")}
+                          copied={copiedField === "product"}
                         />
                         <InfoCard
                           title="Chromosome Location"
                           content={geneInfo.chromosomeLocation}
                           icon={<MapPin className="h-4 w-4" />}
-                          onCopy={() => copyToClipboard(geneInfo.chromosomeLocation, 'location')}
-                          copied={copiedField === 'location'}
+                          onCopy={() => copyToClipboard(geneInfo.chromosomeLocation, "location")}
+                          copied={copiedField === "location"}
                         />
                       </div>
 
@@ -178,18 +173,22 @@ export default function GeneLookupPage() {
                       {geneInfo.previousNames.length > 0 && (
                         <InfoCard
                           title="Previous Names"
-                          content={geneInfo.previousNames.join(', ')}
-                          onCopy={() => copyToClipboard(geneInfo.previousNames.join(', '), 'previous')}
-                          copied={copiedField === 'previous'}
+                          content={geneInfo.previousNames.join(", ")}
+                          onCopy={() =>
+                            copyToClipboard(geneInfo.previousNames.join(", "), "previous")
+                          }
+                          copied={copiedField === "previous"}
                         />
                       )}
 
                       {geneInfo.aliasSymbols.length > 0 && (
                         <InfoCard
                           title="Alias Symbols"
-                          content={geneInfo.aliasSymbols.join(', ')}
-                          onCopy={() => copyToClipboard(geneInfo.aliasSymbols.join(', '), 'aliases')}
-                          copied={copiedField === 'aliases'}
+                          content={geneInfo.aliasSymbols.join(", ")}
+                          onCopy={() =>
+                            copyToClipboard(geneInfo.aliasSymbols.join(", "), "aliases")
+                          }
+                          copied={copiedField === "aliases"}
                         />
                       )}
 
@@ -198,8 +197,8 @@ export default function GeneLookupPage() {
                         <InfoCard
                           title="Description"
                           content={geneInfo.description}
-                          onCopy={() => copyToClipboard(geneInfo.description, 'description')}
-                          copied={copiedField === 'description'}
+                          onCopy={() => copyToClipboard(geneInfo.description, "description")}
+                          copied={copiedField === "description"}
                         />
                       )}
 
@@ -213,7 +212,11 @@ export default function GeneLookupPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => openExternalLink(`https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/${geneInfo.hgncId}`)}
+                            onClick={() =>
+                              openExternalLink(
+                                `https://www.genenames.org/data/gene-symbol-report/#!/hgnc_id/${geneInfo.hgncId}`
+                              )
+                            }
                             className="justify-start"
                           >
                             <ExternalLink className="h-3 w-3 mr-2" />
@@ -222,7 +225,11 @@ export default function GeneLookupPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => openExternalLink(`https://maayanlab.cloud/Harmonizome/gene/${geneInfo.geneName}`)}
+                            onClick={() =>
+                              openExternalLink(
+                                `https://maayanlab.cloud/Harmonizome/gene/${geneInfo.geneName}`
+                              )
+                            }
                             className="justify-start"
                           >
                             <ExternalLink className="h-3 w-3 mr-2" />
@@ -231,7 +238,11 @@ export default function GeneLookupPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => openExternalLink(`https://maayanlab.cloud/Harmonizome/protein/${geneInfo.geneName}_HUMAN`)}
+                            onClick={() =>
+                              openExternalLink(
+                                `https://maayanlab.cloud/Harmonizome/protein/${geneInfo.geneName}_HUMAN`
+                              )
+                            }
                             className="justify-start"
                           >
                             <ExternalLink className="h-3 w-3 mr-2" />
@@ -240,7 +251,11 @@ export default function GeneLookupPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => openExternalLink(`https://cancer.sanger.ac.uk/cosmic/gene/analysis?ln=${geneInfo.geneName}`)}
+                            onClick={() =>
+                              openExternalLink(
+                                `https://cancer.sanger.ac.uk/cosmic/gene/analysis?ln=${geneInfo.geneName}`
+                              )
+                            }
                             className="justify-start"
                           >
                             <ExternalLink className="h-3 w-3 mr-2" />
@@ -249,7 +264,11 @@ export default function GeneLookupPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => openExternalLink(`https://cancer.sanger.ac.uk/cosmic/census-page/${geneInfo.geneName}`)}
+                            onClick={() =>
+                              openExternalLink(
+                                `https://cancer.sanger.ac.uk/cosmic/census-page/${geneInfo.geneName}`
+                              )
+                            }
                             className="justify-start"
                           >
                             <ExternalLink className="h-3 w-3 mr-2" />
@@ -273,8 +292,8 @@ export default function GeneLookupPage() {
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          setInput(gene.geneName)
-                          setGeneInfo(gene)
+                          setInput(gene.geneName);
+                          setGeneInfo(gene);
                         }}
                         className="text-xs"
                       >
@@ -293,20 +312,18 @@ export default function GeneLookupPage() {
       <div className="flex-1" />
 
       {/* Join Our Learning Community */}
-      <JoinCommunitySection
-        description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone."
-      />
+      <JoinCommunitySection description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone." />
     </div>
-  )
+  );
 }
 
 // Helper component for displaying information cards
 interface InfoCardProps {
-  title: string
-  content: string
-  icon?: React.ReactNode
-  onCopy: () => void
-  copied: boolean
+  title: string;
+  content: string;
+  icon?: React.ReactNode;
+  onCopy: () => void;
+  copied: boolean;
 }
 
 function InfoCard({ title, content, icon, onCopy, copied }: InfoCardProps) {
@@ -317,12 +334,7 @@ function InfoCard({ title, content, icon, onCopy, copied }: InfoCardProps) {
           {icon}
           {title}
         </h4>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={onCopy}
-          className="h-8 w-8 p-0"
-        >
+        <Button variant="ghost" size="sm" onClick={onCopy} className="h-8 w-8 p-0">
           {copied ? (
             <CheckCircle className="h-4 w-4 text-green-500" />
           ) : (
@@ -332,5 +344,5 @@ function InfoCard({ title, content, icon, onCopy, copied }: InfoCardProps) {
       </div>
       <p className="text-gray-700 text-sm leading-relaxed">{content}</p>
     </div>
-  )
+  );
 }

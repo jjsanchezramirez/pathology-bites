@@ -1,115 +1,121 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Label } from '@/shared/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
-import { Button } from '@/shared/components/ui/button'
-import { Brain, Loader2, Sparkles } from 'lucide-react'
-import { FormState } from '../multi-step-question-form'
-import { TagAutocomplete } from '../tag-autocomplete'
-import { createClient } from '@/shared/services/client'
-import { toast } from '@/shared/utils/toast'
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Label } from "@/shared/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { Button } from "@/shared/components/ui/button";
+import { Brain, Loader2, Sparkles } from "lucide-react";
+import { FormState } from "../multi-step-question-form";
+import { TagAutocomplete } from "../tag-autocomplete";
+import { createClient } from "@/shared/services/client";
+import { toast } from "@/shared/utils/toast";
 
 interface StepMetadataProps {
-  formState: FormState
-  updateFormState: (updates: Partial<FormState>) => void
-  initialQuestionSetId?: string
+  formState: FormState;
+  updateFormState: (updates: Partial<FormState>) => void;
+  initialQuestionSetId?: string;
 }
 
 interface Category {
-  id: string
-  name: string
-  created_at: string
+  id: string;
+  name: string;
+  created_at: string;
 }
 
 interface QuestionSet {
-  id: string
-  name: string
-  created_at: string
+  id: string;
+  name: string;
+  created_at: string;
 }
 
 interface Tag {
-  id: string
-  name: string
-  created_at: string
+  id: string;
+  name: string;
+  created_at: string;
 }
 
-export function StepMetadata({ formState, updateFormState, initialQuestionSetId }: StepMetadataProps) {
-  const [categories, setCategories] = useState<Category[]>([])
-  const [questionSets, setQuestionSets] = useState<QuestionSet[]>([])
-  const [tags, setTags] = useState<Tag[]>([])
-  const [loadingCategories, setLoadingCategories] = useState(true)
-  const [loadingQuestionSets, setLoadingQuestionSets] = useState(true)
-  const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false)
-  const [hasAutoAssignedQuestionSet, setHasAutoAssignedQuestionSet] = useState(false)
+export function StepMetadata({
+  formState,
+  updateFormState,
+  initialQuestionSetId,
+}: StepMetadataProps) {
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [questionSets, setQuestionSets] = useState<QuestionSet[]>([]);
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
+  const [loadingQuestionSets, setLoadingQuestionSets] = useState(true);
+  const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false);
+  const [hasAutoAssignedQuestionSet, setHasAutoAssignedQuestionSet] = useState(false);
 
   // Fetch categories
   useEffect(() => {
     const fetchCategories = async () => {
-      const supabase = createClient()
+      const supabase = createClient();
       const { data, error } = await supabase
-        .from('categories')
-        .select('id, name, created_at')
-        .order('name')
+        .from("categories")
+        .select("id, name, created_at")
+        .order("name");
 
       if (data && !error) {
-        setCategories(data)
+        setCategories(data);
       }
-      setLoadingCategories(false)
-    }
+      setLoadingCategories(false);
+    };
 
-    fetchCategories()
-  }, [])
+    fetchCategories();
+  }, []);
 
   // Fetch question sets
   useEffect(() => {
     const fetchQuestionSets = async () => {
-      const supabase = createClient()
+      const supabase = createClient();
       const { data, error } = await supabase
-        .from('question_sets')
-        .select('id, name, created_at')
-        .order('name')
+        .from("question_sets")
+        .select("id, name, created_at")
+        .order("name");
 
       if (data && !error) {
-        setQuestionSets(data)
+        setQuestionSets(data);
       }
-      setLoadingQuestionSets(false)
-    }
+      setLoadingQuestionSets(false);
+    };
 
-    fetchQuestionSets()
-  }, [])
+    fetchQuestionSets();
+  }, []);
 
   // Fetch tags
   useEffect(() => {
     const fetchTags = async () => {
-      const supabase = createClient()
+      const supabase = createClient();
       const { data, error } = await supabase
-        .from('tags')
-        .select('id, name, created_at')
-        .order('name')
+        .from("tags")
+        .select("id, name, created_at")
+        .order("name");
 
       if (data && !error) {
-        setTags(data)
+        setTags(data);
       }
-    }
+    };
 
-    fetchTags()
-  }, [])
+    fetchTags();
+  }, []);
 
   // Auto-assign category and question set if not already set
   useEffect(() => {
     // Auto-assign category if not already set
-    if (
-      !formState.category_id &&
-      !loadingCategories &&
-      categories.length > 0
-    ) {
+    if (!formState.category_id && !loadingCategories && categories.length > 0) {
       // Auto-assign first category as default
-      const firstCategory = categories[0]
+      const firstCategory = categories[0];
       if (firstCategory) {
-        updateFormState({ category_id: firstCategory.id })
-        console.log('Auto-assigned default category:', firstCategory.name)
+        updateFormState({ category_id: firstCategory.id });
+        console.log("Auto-assigned default category:", firstCategory.name);
       }
     }
 
@@ -122,76 +128,86 @@ export function StepMetadata({ formState, updateFormState, initialQuestionSetId 
     ) {
       // If there's an initial question set ID, use that
       if (initialQuestionSetId) {
-        updateFormState({ question_set_id: initialQuestionSetId })
-        setHasAutoAssignedQuestionSet(true)
-        console.log('Auto-assigned question set from initial data:', initialQuestionSetId)
+        updateFormState({ question_set_id: initialQuestionSetId });
+        setHasAutoAssignedQuestionSet(true);
+        console.log("Auto-assigned question set from initial data:", initialQuestionSetId);
       } else {
         // Otherwise, auto-assign PathOutlines as the default
-        const pathOutlinesSet = questionSets.find(set => set.name === 'PathOutlines')
+        const pathOutlinesSet = questionSets.find((set) => set.name === "PathOutlines");
         if (pathOutlinesSet) {
-          updateFormState({ question_set_id: pathOutlinesSet.id })
-          setHasAutoAssignedQuestionSet(true)
-          console.log('Auto-assigned default question set: PathOutlines')
+          updateFormState({ question_set_id: pathOutlinesSet.id });
+          setHasAutoAssignedQuestionSet(true);
+          console.log("Auto-assigned default question set: PathOutlines");
         }
       }
     }
-  }, [initialQuestionSetId, formState.question_set_id, formState.category_id, hasAutoAssignedQuestionSet, loadingCategories, loadingQuestionSets, categories, questionSets, updateFormState])
+  }, [
+    initialQuestionSetId,
+    formState.question_set_id,
+    formState.category_id,
+    hasAutoAssignedQuestionSet,
+    loadingCategories,
+    loadingQuestionSets,
+    categories,
+    questionSets,
+    updateFormState,
+  ]);
 
   // Auto-suggest metadata based on question content
   const handleAIMetadataSuggestion = async () => {
     if (!formState.title || !formState.stem) {
-      toast.error('Please fill in the question title and stem first')
-      return
+      toast.error("Please fill in the question title and stem first");
+      return;
     }
 
-    setIsGeneratingMetadata(true)
+    setIsGeneratingMetadata(true);
     try {
-      const response = await fetch('/api/admin/ai-generate-question', {
-        method: 'POST',
+      const response = await fetch("/api/admin/ai-generate-question", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          mode: 'metadata_suggestion',
+          mode: "metadata_suggestion",
           content: {
             title: formState.title,
             stem: formState.stem,
             teaching_point: formState.teaching_point,
-            available_categories: categories.map(c => ({ id: c.id, name: c.name })),
-            available_question_sets: questionSets.map(qs => ({ id: qs.id, name: qs.name })),
-            available_tags: tags.map(t => ({ id: t.id, name: t.name }))
-          }
+            available_categories: categories.map((c) => ({ id: c.id, name: c.name })),
+            available_question_sets: questionSets.map((qs) => ({ id: qs.id, name: qs.name })),
+            available_tags: tags.map((t) => ({ id: t.id, name: t.name })),
+          },
         }),
-      })
+      });
 
       if (!response.ok) {
-        throw new Error('Failed to generate metadata suggestions')
+        throw new Error("Failed to generate metadata suggestions");
       }
 
-      const result = await response.json()
+      const result = await response.json();
 
       // Apply AI suggestions
       if (result.category_id) {
-        updateFormState({ category_id: result.category_id })
+        updateFormState({ category_id: result.category_id });
       }
       if (result.question_set_id) {
-        updateFormState({ question_set_id: result.question_set_id })
+        updateFormState({ question_set_id: result.question_set_id });
       }
       if (result.difficulty) {
-        updateFormState({ difficulty: result.difficulty })
+        updateFormState({ difficulty: result.difficulty });
       }
       if (result.suggested_tag_ids && result.suggested_tag_ids.length > 0) {
-        updateFormState({ tag_ids: result.suggested_tag_ids })
+        updateFormState({ tag_ids: result.suggested_tag_ids });
       }
 
-      toast.success('AI metadata suggestions applied!')
+      toast.success("AI metadata suggestions applied!");
     } catch (error) {
-      console.error('Error generating metadata suggestions:', error)
-      toast.error('Failed to generate metadata suggestions')
+      console.error("Error generating metadata suggestions:", error);
+      toast.error("Failed to generate metadata suggestions");
     } finally {
-      setIsGeneratingMetadata(false)
+      setIsGeneratingMetadata(false);
     }
-  }
+  };
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -206,7 +222,8 @@ export function StepMetadata({ formState, updateFormState, initialQuestionSetId 
               <div>
                 <h3 className="font-semibold text-base mb-1">AI Metadata Suggestions</h3>
                 <p className="text-sm text-muted-foreground">
-                  Let AI analyze your question content and suggest appropriate category, question set, difficulty, and tags.
+                  Let AI analyze your question content and suggest appropriate category, question
+                  set, difficulty, and tags.
                 </p>
               </div>
               <Button
@@ -264,7 +281,9 @@ export function StepMetadata({ formState, updateFormState, initialQuestionSetId 
           onValueChange={(value) => updateFormState({ question_set_id: value })}
         >
           <SelectTrigger id="question_set" className="h-11">
-            <SelectValue placeholder={loadingQuestionSets ? "Loading..." : "Select a question set"} />
+            <SelectValue
+              placeholder={loadingQuestionSets ? "Loading..." : "Select a question set"}
+            />
           </SelectTrigger>
           <SelectContent>
             {questionSets.map((set) => (
@@ -278,10 +297,14 @@ export function StepMetadata({ formState, updateFormState, initialQuestionSetId 
 
       {/* Difficulty Selection */}
       <div className="space-y-3">
-        <Label htmlFor="difficulty" className="text-base font-semibold">Difficulty</Label>
+        <Label htmlFor="difficulty" className="text-base font-semibold">
+          Difficulty
+        </Label>
         <Select
           value={formState.difficulty}
-          onValueChange={(value: 'easy' | 'medium' | 'hard') => updateFormState({ difficulty: value })}
+          onValueChange={(value: "easy" | "medium" | "hard") =>
+            updateFormState({ difficulty: value })
+          }
         >
           <SelectTrigger id="difficulty" className="h-11">
             <SelectValue />
@@ -318,10 +341,9 @@ export function StepMetadata({ formState, updateFormState, initialQuestionSetId 
           selectedTags={formState.tag_ids}
           onTagsChange={(tagIds) => updateFormState({ tag_ids: tagIds })}
           allTags={tags}
-          onTagCreated={(newTag) => setTags(prev => [...prev, newTag])}
+          onTagCreated={(newTag) => setTags((prev) => [...prev, newTag])}
         />
       </div>
     </div>
-  )
+  );
 }
-

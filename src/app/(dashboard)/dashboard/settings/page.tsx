@@ -1,20 +1,20 @@
 // src/app/(dashboard)/dashboard/settings/page.tsx
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { useAuth } from '@/shared/hooks/use-auth'
-import { useTheme } from 'next-themes'
-import { toast } from '@/shared/utils/toast'
-import { getTextZoomConfig, getValidZoomLevel } from '@/shared/utils/text-zoom'
-import { useDashboardSettings } from '@/shared/contexts/dashboard-settings-provider'
-import { useDashboardTheme } from '@/shared/contexts/dashboard-theme-context'
+import { useState, useEffect } from "react";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { useAuth } from "@/shared/hooks/use-auth";
+import { useTheme } from "next-themes";
+import { toast } from "@/shared/utils/toast";
+import { getTextZoomConfig, getValidZoomLevel } from "@/shared/utils/text-zoom";
+import { useDashboardSettings } from "@/shared/contexts/dashboard-settings-provider";
+import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 import {
   userSettingsService,
   type QuizSettings,
-  type NotificationSettings
-} from '@/shared/services/user-settings'
-import { useUserSettings } from '@/shared/hooks/use-user-settings'
+  type NotificationSettings,
+} from "@/shared/services/user-settings";
+import { useUserSettings } from "@/shared/hooks/use-user-settings";
 import {
   AppearanceSettings,
   NotificationSettingsCard,
@@ -24,266 +24,266 @@ import {
   DangerZone,
   DeleteAccountDialog,
   ResetSettingsDialog,
-  SettingsLoading
-} from '@/features/settings/components'
+  SettingsLoading,
+} from "@/features/settings/components";
 
 export default function SettingsPage() {
-  const { user, isAuthenticated, isLoading } = useAuth({ minimal: true })
-  const { theme, setTheme } = useTheme()
-  const { currentTheme: dashboardTheme, setTheme: setDashboardTheme, availableThemes } = useDashboardTheme()
+  const { user, isAuthenticated, isLoading } = useAuth({ minimal: true });
+  const { theme, setTheme } = useTheme();
+  const {
+    currentTheme: dashboardTheme,
+    setTheme: setDashboardTheme,
+    availableThemes,
+  } = useDashboardTheme();
 
   // Use cached user settings hook
   const { data: userSettings, isLoading: settingsLoading } = useUserSettings({
-    enabled: isAuthenticated && !!user
-  })
+    enabled: isAuthenticated && !!user,
+  });
 
   const [preferences, setPreferences] = useState<NotificationSettings>({
     email_notifications: true,
     quiz_reminders: true,
-    progress_updates: true
-  })
+    progress_updates: true,
+  });
   const [quizSettings, setQuizSettings] = useState<QuizSettings>({
     default_question_count: 10,
-    default_mode: 'tutor',
-    default_timing: 'untimed',
-    default_question_type: 'unused',
-    default_category_selection: 'all'
-  })
-  const [saving, setSaving] = useState(false)
-  const [mounted, setMounted] = useState(false)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [showResetDialog, setShowResetDialog] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [isResetting, setIsResetting] = useState(false)
-  const [isExporting, setIsExporting] = useState(false)
+    default_mode: "tutor",
+    default_timing: "untimed",
+    default_question_type: "unused",
+    default_category_selection: "all",
+  });
+  const [saving, setSaving] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showResetDialog, setShowResetDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isResetting, setIsResetting] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Use shared text zoom context
-  const { textZoom, setTextZoom: setTextZoomContext } = useDashboardSettings()
+  const { textZoom, setTextZoom: setTextZoomContext } = useDashboardSettings();
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   // Apply settings when loaded from cache
   useEffect(() => {
     if (userSettings) {
-      setPreferences(userSettings.notification_settings)
-      setQuizSettings(userSettings.quiz_settings)
+      setPreferences(userSettings.notification_settings);
+      setQuizSettings(userSettings.quiz_settings);
       // Note: textZoom is already handled by DashboardSettingsProvider
       // We just read it from context, we don't set it here to avoid infinite loops
     }
-  }, [userSettings])
+  }, [userSettings]);
 
   // fetchUserPreferences is now deprecated - settings are loaded via useUserSettings hook
 
   const handlePreferenceChange = async (key: keyof NotificationSettings, value: boolean) => {
     try {
-      setSaving(true)
-      const newPreferences = { ...preferences, [key]: value }
-      setPreferences(newPreferences)
+      setSaving(true);
+      const newPreferences = { ...preferences, [key]: value };
+      setPreferences(newPreferences);
 
       // Save to database
-      await userSettingsService.updateNotificationSettings(newPreferences)
+      await userSettingsService.updateNotificationSettings(newPreferences);
       // Don't invalidate cache immediately - local state is already updated
       // Cache will be refreshed on next page load
     } catch (error) {
-      console.error('Error updating preference:', error)
-      toast.error('Failed to update preference')
+      console.error("Error updating preference:", error);
+      toast.error("Failed to update preference");
       // Revert the change
-      setPreferences(prev => ({ ...prev, [key]: !value }))
+      setPreferences((prev) => ({ ...prev, [key]: !value }));
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const handleQuizSettingChange = async (key: keyof QuizSettings, value: unknown) => {
     try {
-      setSaving(true)
-      const newSettings = { ...quizSettings, [key]: value }
-      setQuizSettings(newSettings)
+      setSaving(true);
+      const newSettings = { ...quizSettings, [key]: value };
+      setQuizSettings(newSettings);
 
       // Save to database
-      await userSettingsService.updateQuizSettings(newSettings)
+      await userSettingsService.updateQuizSettings(newSettings);
       // Don't invalidate cache immediately - local state is already updated
       // Cache will be refreshed on next page load
     } catch (error) {
-      console.error('Error updating quiz setting:', error)
-      toast.error('Failed to update quiz setting')
+      console.error("Error updating quiz setting:", error);
+      toast.error("Failed to update quiz setting");
       // Revert the change
-      setQuizSettings(prev => ({ ...prev, [key]: quizSettings[key] }))
+      setQuizSettings((prev) => ({ ...prev, [key]: quizSettings[key] }));
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
-
-
+  };
 
   const handleTextZoomChange = (newZoom: number) => {
     try {
-      setSaving(true)
-      const validZoom = getValidZoomLevel(newZoom)
+      setSaving(true);
+      const validZoom = getValidZoomLevel(newZoom);
 
       // Use context to set text zoom (this will update localStorage and mark as dirty)
-      setTextZoomContext(validZoom)
+      setTextZoomContext(validZoom);
 
       // UI feedback is immediate - no API call needed!
       // Settings will sync when user leaves the page or closes the popover
     } catch (error) {
-      console.error('Error updating text size:', error)
-      toast.error('Failed to update text size')
+      console.error("Error updating text size:", error);
+      toast.error("Failed to update text size");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const handleDashboardThemeChange = async (newTheme: string) => {
     try {
-      setSaving(true)
+      setSaving(true);
       // Use DashboardThemeProvider's setTheme which handles saving to correct field
       // (dashboard_theme_admin or dashboard_theme_user based on admin mode)
-      setDashboardTheme(newTheme)
-      toast.success('Dashboard theme updated')
+      setDashboardTheme(newTheme);
+      toast.success("Dashboard theme updated");
     } catch (error) {
-      console.error('Error updating dashboard theme:', error)
-      toast.error('Failed to update dashboard theme')
+      console.error("Error updating dashboard theme:", error);
+      toast.error("Failed to update dashboard theme");
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const handleResetAllSettings = async () => {
     try {
-      setIsResetting(true)
+      setIsResetting(true);
 
       // Reset to defaults
-      const config = getTextZoomConfig()
+      const config = getTextZoomConfig();
       const defaultPreferences = {
         email_notifications: true,
         quiz_reminders: true,
-        progress_updates: true
-      }
+        progress_updates: true,
+      };
       const defaultQuizSettings = {
         default_question_count: 10,
-        default_mode: 'tutor' as const,
-        default_timing: 'untimed' as const,
-        default_question_type: 'unused' as const,
-        default_category_selection: 'all' as const
-      }
+        default_mode: "tutor" as const,
+        default_timing: "untimed" as const,
+        default_question_type: "unused" as const,
+        default_category_selection: "all" as const,
+      };
       const defaultUISettings = {
         text_zoom: config.default,
-        welcome_message_seen: false
-      }
+        welcome_message_seen: false,
+      };
 
       // Update local state
-      setPreferences(defaultPreferences)
-      setQuizSettings(defaultQuizSettings)
-      setTextZoomContext(config.default)
-      setTheme('system')
+      setPreferences(defaultPreferences);
+      setQuizSettings(defaultQuizSettings);
+      setTextZoomContext(config.default);
+      setTheme("system");
       // Reset dashboard theme using DashboardThemeProvider which handles admin mode
-      setDashboardTheme('default')
+      setDashboardTheme("default");
 
       // Save to database
-      await userSettingsService.updateNotificationSettings(defaultPreferences)
-      await userSettingsService.updateQuizSettings(defaultQuizSettings)
-      await userSettingsService.updateUISettings(defaultUISettings)
+      await userSettingsService.updateNotificationSettings(defaultPreferences);
+      await userSettingsService.updateQuizSettings(defaultQuizSettings);
+      await userSettingsService.updateUISettings(defaultUISettings);
 
-      toast.success('All settings have been reset to defaults')
-      setShowResetDialog(false)
+      toast.success("All settings have been reset to defaults");
+      setShowResetDialog(false);
     } catch (error) {
-      console.error('Error resetting settings:', error)
-      toast.error('Failed to reset settings')
+      console.error("Error resetting settings:", error);
+      toast.error("Failed to reset settings");
     } finally {
-      setIsResetting(false)
+      setIsResetting(false);
     }
-  }
-
-
+  };
 
   const handleDataExport = async () => {
     try {
-      setIsExporting(true)
+      setIsExporting(true);
 
       // Get CSRF token
-      const csrfResponse = await fetch('/api/public/csrf-token', {
-        method: 'GET',
-        credentials: 'same-origin',
-        headers: { 'Accept': 'application/json' }
-      })
-      const csrfData = await csrfResponse.json()
-      const csrfToken = csrfData.token
+      const csrfResponse = await fetch("/api/public/csrf-token", {
+        method: "GET",
+        credentials: "same-origin",
+        headers: { Accept: "application/json" },
+      });
+      const csrfData = await csrfResponse.json();
+      const csrfToken = csrfData.token;
 
-      const response = await fetch('/api/user/data-export', {
-        method: 'POST',
+      const response = await fetch("/api/user/data-export", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'x-csrf-token': csrfToken,
+          "Content-Type": "application/json",
+          "x-csrf-token": csrfToken,
         },
-        credentials: 'include',
-      })
+        credentials: "include",
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to export data')
+        const error = await response.json();
+        throw new Error(error.error || "Failed to export data");
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
       // Create and download the file
-      const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: 'application/json' })
-      const url = URL.createObjectURL(blob)
-      const a = document.createElement('a')
-      a.href = url
-      a.download = `pathology-bites-data-export-${new Date().toISOString().split('T')[0]}.json`
-      document.body.appendChild(a)
-      a.click()
-      document.body.removeChild(a)
-      URL.revokeObjectURL(url)
+      const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `pathology-bites-data-export-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
 
-      toast.success('Data export completed successfully')
+      toast.success("Data export completed successfully");
     } catch (error) {
-      console.error('Error exporting data:', error)
-      toast.error('Failed to export data')
+      console.error("Error exporting data:", error);
+      toast.error("Failed to export data");
     } finally {
-      setIsExporting(false)
+      setIsExporting(false);
     }
-  }
+  };
 
   const handleDeleteAccount = async (password: string) => {
     try {
-      setIsDeleting(true)
+      setIsDeleting(true);
 
-      const response = await fetch('/api/user/account/delete', {
-        method: 'DELETE',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ password })
-      })
+      const response = await fetch("/api/user/account/delete", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ password }),
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to delete account')
+        const error = await response.json();
+        throw new Error(error.error || "Failed to delete account");
       }
 
-      toast.success('Account deleted successfully')
+      toast.success("Account deleted successfully");
 
       // Clear local storage and session storage
-      if (typeof window !== 'undefined') {
-        localStorage.clear()
-        sessionStorage.clear()
+      if (typeof window !== "undefined") {
+        localStorage.clear();
+        sessionStorage.clear();
       }
 
       // Force a hard redirect to clear all cached data and session
-      window.location.href = '/'
+      window.location.href = "/";
     } catch (error) {
-      console.error('Error deleting account:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to delete account')
+      console.error("Error deleting account:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete account");
     } finally {
-      setIsDeleting(false)
-      setShowDeleteDialog(false)
+      setIsDeleting(false);
+      setShowDeleteDialog(false);
     }
-  }
+  };
 
   if (isLoading || settingsLoading) {
-    return <SettingsLoading />
+    return <SettingsLoading />;
   }
 
   if (!isAuthenticated || !user) {
@@ -291,13 +291,11 @@ export default function SettingsPage() {
       <div className="py-8">
         <Card>
           <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">
-              Please log in to access settings.
-            </p>
+            <p className="text-center text-muted-foreground">Please log in to access settings.</p>
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -312,7 +310,7 @@ export default function SettingsPage() {
 
         <div className="space-y-6">
           <AppearanceSettings
-            theme={theme || 'system'}
+            theme={theme || "system"}
             mounted={mounted}
             saving={saving}
             dashboardTheme={dashboardTheme}
@@ -335,19 +333,11 @@ export default function SettingsPage() {
             onQuizSettingChange={handleQuizSettingChange}
           />
 
-          <PrivacySecuritySettings
-            isExporting={isExporting}
-            onDataExport={handleDataExport}
-          />
+          <PrivacySecuritySettings isExporting={isExporting} onDataExport={handleDataExport} />
 
-          <ResetSettingsCard
-            saving={saving}
-            onResetClick={() => setShowResetDialog(true)}
-          />
+          <ResetSettingsCard saving={saving} onResetClick={() => setShowResetDialog(true)} />
 
-          <DangerZone
-            onDeleteAccountClick={() => setShowDeleteDialog(true)}
-          />
+          <DangerZone onDeleteAccountClick={() => setShowDeleteDialog(true)} />
         </div>
 
         <DeleteAccountDialog
@@ -365,5 +355,5 @@ export default function SettingsPage() {
         />
       </div>
     </div>
-  )
+  );
 }

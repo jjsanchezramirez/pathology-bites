@@ -1,8 +1,8 @@
 // src/components/auth/social-button.tsx
-import { ReactNode } from "react"
-import { Button } from "@/shared/components/ui/button"
-import { Icons } from "@/shared/components/common/icons"
-import { cn } from "@/shared/utils"
+import { ReactNode } from "react";
+import { Button } from "@/shared/components/ui/button";
+import { Icons } from "@/shared/components/common/icons";
+import { cn } from "@/shared/utils";
 
 interface SocialButtonProps {
   provider: "google" | "github" | "twitter" | "facebook";
@@ -48,7 +48,7 @@ export function SocialButton({
 
   // Get props for the selected provider
   const { icon, defaultLabel } = providerProps[provider];
-  
+
   // Use custom label or default
   const buttonLabel = label || defaultLabel;
 
@@ -60,11 +60,7 @@ export function SocialButton({
       onClick={onClick}
       disabled={isLoading || disabled}
     >
-      {isLoading ? (
-        <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-      ) : (
-        icon
-      )}
+      {isLoading ? <Icons.spinner className="mr-2 h-4 w-4 animate-spin" /> : icon}
       {buttonLabel}
     </Button>
   );

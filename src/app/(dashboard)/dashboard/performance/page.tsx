@@ -1,45 +1,45 @@
 // src/app/(dashboard)/dashboard/performance/page.tsx
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 
-import { PerformanceAnalytics, FeaturePlaceholder } from '@/features/dashboard/components'
-import { PerformanceLoading, CategoryPerformanceCard } from '@/features/performance/components'
+import { PerformanceAnalytics, FeaturePlaceholder } from "@/features/dashboard/components";
+import { PerformanceLoading, CategoryPerformanceCard } from "@/features/performance/components";
 import {
   PerformanceTimelineChart,
   CategoryRadarChart,
-  ActivityHeatmap
-} from '@/features/performance/components/interactive-chart-demos'
-import { isQuizFeaturesEnabled } from '@/shared/config/feature-flags'
-import { useUnifiedData } from '@/shared/hooks/use-unified-data'
+  ActivityHeatmap,
+} from "@/features/performance/components/interactive-chart-demos";
+import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags";
+import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 
 interface DashboardStats {
   performance?: {
-    userPercentile: number
-    peerRank: number
-    totalUsers: number
-    completedQuizzes: number
+    userPercentile: number;
+    peerRank: number;
+    totalUsers: number;
+    completedQuizzes: number;
     subjectsForImprovement: Array<{
-      name: string
-      score: number
-      attempts: number
-    }>
+      name: string;
+      score: number;
+      attempts: number;
+    }>;
     subjectsMastered: Array<{
-      name: string
-      score: number
-      attempts: number
-    }>
-    overallScore: number
-  }
+      name: string;
+      score: number;
+      attempts: number;
+    }>;
+    overallScore: number;
+  };
 }
 
 export default function PerformancePage() {
-  const featuresEnabled = isQuizFeaturesEnabled()
-  const { data: unifiedData, isLoading } = useUnifiedData()
-  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const featuresEnabled = isQuizFeaturesEnabled();
+  const { data: unifiedData, isLoading } = useUnifiedData();
+  const [stats, setStats] = useState<DashboardStats | null>(null);
 
   useEffect(() => {
-    if (!featuresEnabled || !unifiedData) return
+    if (!featuresEnabled || !unifiedData) return;
 
     // Transform unified API response to match component expectations
     setStats({
@@ -50,10 +50,10 @@ export default function PerformancePage() {
         completedQuizzes: unifiedData.summary.completedQuizzes,
         subjectsForImprovement: unifiedData.subjects.needsImprovement,
         subjectsMastered: unifiedData.subjects.mastered,
-        overallScore: unifiedData.summary.overallScore
-      }
-    })
-  }, [featuresEnabled, unifiedData])
+        overallScore: unifiedData.summary.overallScore,
+      },
+    });
+  }, [featuresEnabled, unifiedData]);
 
   // Show placeholder if features are disabled
   if (!featuresEnabled) {
@@ -63,11 +63,11 @@ export default function PerformancePage() {
         description="We're preparing comprehensive performance analytics to help you track your mastery of pathology topics. Soon you'll be able to see detailed insights into your quiz performance, identify knowledge gaps, and measure your progress across different subjects."
         status="launching-soon"
       />
-    )
+    );
   }
 
   if (isLoading) {
-    return <PerformanceLoading />
+    return <PerformanceLoading />;
   }
 
   if (!stats?.performance) {
@@ -80,7 +80,7 @@ export default function PerformancePage() {
           </p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -97,15 +97,14 @@ export default function PerformancePage() {
 
       {/* Interactive Charts - All data from single API call */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <PerformanceTimelineChart
-          data={unifiedData?.timeline || []}
-          loading={isLoading}
-        />
+        <PerformanceTimelineChart data={unifiedData?.timeline || []} loading={isLoading} />
         <CategoryRadarChart
-          data={unifiedData?.categories.map(cat => ({
-            category_name: cat.category_name,
-            accuracy: cat.accuracy
-          })) || []}
+          data={
+            unifiedData?.categories.map((cat) => ({
+              category_name: cat.category_name,
+              accuracy: cat.accuracy,
+            })) || []
+          }
           loading={isLoading}
         />
       </div>
@@ -119,5 +118,5 @@ export default function PerformancePage() {
       {/* Detailed Category Breakdown */}
       <CategoryPerformanceCard categoryDetails={unifiedData?.categories || []} />
     </div>
-  )
+  );
 }

@@ -1,29 +1,29 @@
-import { ImageCategory } from '@/features/images/types/images';
-import Compressor from 'compressorjs';
+import { ImageCategory } from "@/features/images/types/images";
+import Compressor from "compressorjs";
 
 // Get descriptive text for each category
 export const getCategoryDescription = (category: ImageCategory): string => {
   switch (category) {
-    case 'microscopic':
-      return 'Histological images taken through a microscope';
-    case 'gross':
-      return 'Macroscopic specimens and gross surgical pathology images';
-    case 'figure':
-      return 'Diagrams, illustrations, charts, and other explanatory graphics';
-    case 'table':
-      return 'Statistical data, classification systems, and other tabular information';
+    case "microscopic":
+      return "Histological images taken through a microscope";
+    case "gross":
+      return "Macroscopic specimens and gross surgical pathology images";
+    case "figure":
+      return "Diagrams, illustrations, charts, and other explanatory graphics";
+    case "table":
+      return "Statistical data, classification systems, and other tabular information";
     default:
-      return '';
+      return "";
   }
 };
 
 // Format file size for display
 export const formatSize = (bytes: number): string => {
-  if (!bytes || bytes === 0) return '0 Bytes';
-  if (typeof bytes !== 'number' || isNaN(bytes)) return 'Unknown';
+  if (!bytes || bytes === 0) return "0 Bytes";
+  if (typeof bytes !== "number" || isNaN(bytes)) return "Unknown";
 
   const k = 1024;
-  const sizes = ['Bytes', 'KB', 'MB', 'GB', 'TB'];
+  const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
   const i = Math.floor(Math.log(bytes) / Math.log(k));
 
   // Ensure we don't go beyond our sizes array
@@ -36,31 +36,32 @@ export const formatSize = (bytes: number): string => {
 export const formatImageName = (filename: string): string => {
   // Remove file extension and replace hyphens with spaces
   const nameWithoutExt = filename.replace(/\.[^/.]+$/, "").replace(/-/g, " ");
-  
+
   // Convert to sentence case (capitalize first letter, rest lowercase)
-  return nameWithoutExt.charAt(0).toUpperCase() + 
-         nameWithoutExt.slice(1).toLowerCase();
+  return nameWithoutExt.charAt(0).toUpperCase() + nameWithoutExt.slice(1).toLowerCase();
 };
 
 // Clean filename for storage with graceful special character handling
 export const cleanFileName = (filename: string): string => {
-  const nameParts = filename.split('.');
-  const extension = nameParts.pop()?.toLowerCase() || 'jpg';
-  const baseName = nameParts.join('.')
-    .toLowerCase()
-    .trim()
-    // Replace common special characters with meaningful equivalents
-    .replace(/&/g, 'and')
-    .replace(/\+/g, 'plus')
-    .replace(/%/g, 'percent')
-    .replace(/@/g, 'at')
-    .replace(/\$/g, 'dollar')
-    // Replace whitespace and punctuation with single hyphens
-    .replace(/[\s\-_]+/g, '-') // Multiple spaces, hyphens, underscores → single hyphen
-    .replace(/[^\w\-]/g, '-') // Non-word characters (except existing hyphens) → hyphen
-    .replace(/-+/g, '-') // Multiple consecutive hyphens → single hyphen
-    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
-    || 'file'; // Fallback if name becomes empty
+  const nameParts = filename.split(".");
+  const extension = nameParts.pop()?.toLowerCase() || "jpg";
+  const baseName =
+    nameParts
+      .join(".")
+      .toLowerCase()
+      .trim()
+      // Replace common special characters with meaningful equivalents
+      .replace(/&/g, "and")
+      .replace(/\+/g, "plus")
+      .replace(/%/g, "percent")
+      .replace(/@/g, "at")
+      .replace(/\$/g, "dollar")
+      // Replace whitespace and punctuation with single hyphens
+      .replace(/[\s\-_]+/g, "-") // Multiple spaces, hyphens, underscores → single hyphen
+      .replace(/[^\w\-]/g, "-") // Non-word characters (except existing hyphens) → hyphen
+      .replace(/-+/g, "-") // Multiple consecutive hyphens → single hyphen
+      .replace(/^-+|-+$/g, "") || // Remove leading/trailing hyphens
+    "file"; // Fallback if name becomes empty
 
   return `${baseName}.${extension}`;
 };
@@ -72,7 +73,7 @@ export const getImageDimensions = (file: File): Promise<{ width: number; height:
     img.onload = () => {
       resolve({
         width: img.naturalWidth,
-        height: img.naturalHeight
+        height: img.naturalHeight,
       });
       URL.revokeObjectURL(img.src); // Clean up
     };
@@ -95,7 +96,7 @@ export const compressImage = (file: File, maxSizeBytes = 1000000): Promise<File>
         success: (result) => {
           const compressedFile = new File([result], file.name, {
             type: result.type,
-            lastModified: new Date().getTime()
+            lastModified: new Date().getTime(),
           });
 
           if (compressedFile.size <= maxSizeBytes) {
@@ -106,7 +107,7 @@ export const compressImage = (file: File, maxSizeBytes = 1000000): Promise<File>
           if (settings.quality > 0.6) {
             compressRecursively({
               ...settings,
-              quality: Math.max(0.6, settings.quality - 0.05)
+              quality: Math.max(0.6, settings.quality - 0.05),
             });
           } else {
             resolve(compressedFile);
@@ -116,12 +117,12 @@ export const compressImage = (file: File, maxSizeBytes = 1000000): Promise<File>
           if (settings.quality > 0.6) {
             compressRecursively({
               ...settings,
-              quality: Math.max(0.6, settings.quality - 0.05)
+              quality: Math.max(0.6, settings.quality - 0.05),
             });
           } else {
             reject(err);
           }
-        }
+        },
       });
     };
 
@@ -129,7 +130,7 @@ export const compressImage = (file: File, maxSizeBytes = 1000000): Promise<File>
       maxWidth: 2048,
       maxHeight: 2048,
       convertSize: maxSizeBytes,
-      quality: 0.8
+      quality: 0.8,
     });
   });
 };

@@ -1,21 +1,20 @@
 // src/shared/components/common/feature-showcase.tsx
-'use client'
+"use client";
 
-import { Check } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
-import Link from "next/link"
-
+import { Check } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import Link from "next/link";
 
 interface FeatureShowcaseProps {
-  title: string
-  description: string
-  features: string[]
-  screenshot: string
-  screenshotAlt: string
-  ctaText: string
-  ctaHref: string
-  imageOnLeft?: boolean
-  className?: string
+  title: string;
+  description: string;
+  features: string[];
+  screenshot: string;
+  screenshotAlt: string;
+  ctaText: string;
+  ctaHref: string;
+  imageOnLeft?: boolean;
+  className?: string;
 }
 
 export function FeatureShowcase({
@@ -27,19 +26,19 @@ export function FeatureShowcase({
   ctaText,
   ctaHref,
   imageOnLeft = false,
-  className = ""
+  className = "",
 }: FeatureShowcaseProps) {
   return (
     <section className={`relative py-24 ${className}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-7xl mx-auto ${imageOnLeft ? 'lg:grid-flow-dense' : ''}`}>
+        <div
+          className={`grid grid-cols-1 lg:grid-cols-2 gap-12 items-center max-w-7xl mx-auto ${imageOnLeft ? "lg:grid-flow-dense" : ""}`}
+        >
           {/* Content */}
-          <div className={`space-y-6 ${imageOnLeft ? 'lg:col-start-2' : ''}`}>
+          <div className={`space-y-6 ${imageOnLeft ? "lg:col-start-2" : ""}`}>
             <div className="space-y-4">
               <h2 className="text-4xl font-bold">{title}</h2>
-              <p className="text-xl text-muted-foreground leading-relaxed">
-                {description}
-              </p>
+              <p className="text-xl text-muted-foreground leading-relaxed">{description}</p>
             </div>
 
             <ul className="space-y-3">
@@ -63,7 +62,7 @@ export function FeatureShowcase({
           </div>
 
           {/* Screenshot */}
-          <div className={`relative ${imageOnLeft ? 'lg:col-start-1 lg:row-start-1' : ''}`}>
+          <div className={`relative ${imageOnLeft ? "lg:col-start-1 lg:row-start-1" : ""}`}>
             <div className="relative rounded-xl overflow-hidden shadow-2xl border border-border bg-muted">
               {/* Placeholder - will be replaced with actual screenshot */}
               <div className="aspect-[4/3] bg-gradient-to-br from-primary/5 to-primary/10 flex items-center justify-center">
@@ -93,5 +92,5 @@ export function FeatureShowcase({
         </div>
       </div>
     </section>
-  )
+  );
 }

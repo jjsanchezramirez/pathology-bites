@@ -1,55 +1,55 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from "react"
-import Image from "next/image"
-import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache'
-import { ChevronLeft, ChevronRight } from "lucide-react"
-import { useMobile } from "@/shared/hooks/use-mobile"
-import { SilentErrorBoundary } from "@/shared/components/error-boundaries/silent-error-boundary"
+import { useState, useEffect } from "react";
+import Image from "next/image";
+import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
+import { ChevronLeft, ChevronRight } from "lucide-react";
+import { useMobile } from "@/shared/hooks/use-mobile";
+import { SilentErrorBoundary } from "@/shared/components/error-boundaries/silent-error-boundary";
 
 interface ImageProps {
-  url: string
-  alt: string
-  caption?: string
+  url: string;
+  alt: string;
+  caption?: string;
 }
 
 interface SimpleImageCarouselProps {
-  images: ImageProps[]
-  className?: string
+  images: ImageProps[];
+  className?: string;
 }
 
 // Internal component that can throw errors
-function SimpleImageCarouselInternal({ images, className = '' }: SimpleImageCarouselProps) {
-  const [currentIndex, setCurrentIndex] = useState(0)
-  const isMobile = useMobile()
+function SimpleImageCarouselInternal({ images, className = "" }: SimpleImageCarouselProps) {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const isMobile = useMobile();
 
   // Get the current image for hook usage
-  const currentImage = images && images.length > 0 ? images[currentIndex] : null
-  const handleImageLoad = useImageCacheHandler(currentImage?.url || '')
+  const currentImage = images && images.length > 0 ? images[currentIndex] : null;
+  const handleImageLoad = useImageCacheHandler(currentImage?.url || "");
 
   // Reset to first image when images array changes (e.g., new question)
   useEffect(() => {
-    setCurrentIndex(0)
-  }, [images])
+    setCurrentIndex(0);
+  }, [images]);
 
-  if (!images || images.length === 0) return null
+  if (!images || images.length === 0) return null;
 
-  const hasMultiple = images.length > 1
+  const hasMultiple = images.length > 1;
 
   const nextImage = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length)
-  }
+    setCurrentIndex((prev) => (prev + 1) % images.length);
+  };
 
   const prevImage = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length)
-  }
+    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
 
   return (
     <div className={`relative ${className}`}>
       {/* Main image */}
       <div
         className="relative rounded-lg overflow-hidden bg-muted group cursor-default"
-        style={{ aspectRatio: '16/10' }}
+        style={{ aspectRatio: "16/10" }}
       >
         {currentImage?.url ? (
           <Image
@@ -73,17 +73,17 @@ function SimpleImageCarouselInternal({ images, className = '' }: SimpleImageCaro
             <div
               className={`absolute left-2 top-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-sm rounded-full transition-all duration-200 ${
                 isMobile
-                  ? 'opacity-70' // Always visible on mobile
-                  : 'opacity-0 group-hover:opacity-100' // Original behavior on desktop
+                  ? "opacity-70" // Always visible on mobile
+                  : "opacity-0 group-hover:opacity-100" // Original behavior on desktop
               }`}
             >
               <button
                 onClick={(e) => {
-                  e.stopPropagation()
-                  prevImage()
+                  e.stopPropagation();
+                  prevImage();
                 }}
                 className={`p-2 hover:bg-black/10 rounded-full transition-all duration-200 ${
-                  isMobile ? 'p-3' : 'p-2'
+                  isMobile ? "p-3" : "p-2"
                 }`}
                 aria-label="Previous image"
               >
@@ -93,17 +93,17 @@ function SimpleImageCarouselInternal({ images, className = '' }: SimpleImageCaro
             <div
               className={`absolute right-2 top-1/2 -translate-y-1/2 bg-black/20 backdrop-blur-sm rounded-full transition-all duration-200 ${
                 isMobile
-                  ? 'opacity-70' // Always visible on mobile
-                  : 'opacity-0 group-hover:opacity-100' // Original behavior on desktop
+                  ? "opacity-70" // Always visible on mobile
+                  : "opacity-0 group-hover:opacity-100" // Original behavior on desktop
               }`}
             >
               <button
                 onClick={(e) => {
-                  e.stopPropagation()
-                  nextImage()
+                  e.stopPropagation();
+                  nextImage();
                 }}
                 className={`p-2 hover:bg-black/10 rounded-full transition-all duration-200 ${
-                  isMobile ? 'p-3' : 'p-2'
+                  isMobile ? "p-3" : "p-2"
                 }`}
                 aria-label="Next image"
               >
@@ -123,8 +123,8 @@ function SimpleImageCarouselInternal({ images, className = '' }: SimpleImageCaro
               onClick={() => setCurrentIndex(index)}
               className={`w-2.5 h-2.5 rounded-full transition-all duration-200 ${
                 index === currentIndex
-                  ? 'bg-white scale-125'
-                  : 'bg-white/60 hover:bg-white/80 hover:scale-110'
+                  ? "bg-white scale-125"
+                  : "bg-white/60 hover:bg-white/80 hover:scale-110"
               }`}
               aria-label={`View image ${index + 1}`}
             />
@@ -132,22 +132,22 @@ function SimpleImageCarouselInternal({ images, className = '' }: SimpleImageCaro
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // Exported component with error boundary
-export function SimpleImageCarousel({ images, className = '' }: SimpleImageCarouselProps) {
+export function SimpleImageCarousel({ images, className = "" }: SimpleImageCarouselProps) {
   return (
     <SilentErrorBoundary
       maxRetries={2}
       retryDelay={1000}
       fallbackMessage="Image gallery temporarily unavailable"
-      showErrorDetails={process.env.NODE_ENV === 'development'}
+      showErrorDetails={process.env.NODE_ENV === "development"}
       onError={(error, retryCount) => {
-        console.warn(`SimpleImageCarousel error (attempt ${retryCount + 1}):`, error.message)
+        console.warn(`SimpleImageCarousel error (attempt ${retryCount + 1}):`, error.message);
       }}
     >
       <SimpleImageCarouselInternal images={images} className={className} />
     </SilentErrorBoundary>
-  )
+  );
 }

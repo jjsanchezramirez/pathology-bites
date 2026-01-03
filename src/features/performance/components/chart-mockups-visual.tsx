@@ -1,31 +1,39 @@
 // src/features/performance/components/chart-mockups-visual.tsx
 // Visual mockups with actual SVG-based chart representations
 
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card'
-import { Badge } from '@/shared/components/ui/badge'
-import { TrendingUp, Calendar, Target, Zap, Award } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/shared/components/ui/card";
+import { Badge } from "@/shared/components/ui/badge";
+import { TrendingUp, Calendar, Target, Zap, Award } from "lucide-react";
 
 /**
  * MOCKUP 1: Performance Over Time Line Chart
  */
 export function PerformanceTimelineChartMockup() {
   // Sample data points for the mockup
-  const data = [65, 68, 72, 70, 75, 78, 82, 80, 85, 88, 90, 87, 89, 92, 90]
-  const width = 600
-  const height = 200
-  const padding = 20
+  const data = [65, 68, 72, 70, 75, 78, 82, 80, 85, 88, 90, 87, 89, 92, 90];
+  const width = 600;
+  const height = 200;
+  const padding = 20;
 
-  const max = Math.max(...data)
-  const min = Math.min(...data)
-  const range = max - min
+  const max = Math.max(...data);
+  const min = Math.min(...data);
+  const range = max - min;
 
-  const points = data.map((value, index) => {
-    const x = padding + (index / (data.length - 1)) * (width - padding * 2)
-    const y = padding + ((max - value) / range) * (height - padding * 2)
-    return `${x},${y}`
-  }).join(' ')
+  const points = data
+    .map((value, index) => {
+      const x = padding + (index / (data.length - 1)) * (width - padding * 2);
+      const y = padding + ((max - value) / range) * (height - padding * 2);
+      return `${x},${y}`;
+    })
+    .join(" ");
 
   return (
     <Card>
@@ -47,7 +55,7 @@ export function PerformanceTimelineChartMockup() {
           <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
             {/* Grid lines */}
             {[0, 25, 50, 75, 100].map((percent) => {
-              const y = padding + ((100 - percent) / 100) * (height - padding * 2)
+              const y = padding + ((100 - percent) / 100) * (height - padding * 2);
               return (
                 <g key={percent}>
                   <line
@@ -70,7 +78,7 @@ export function PerformanceTimelineChartMockup() {
                     {percent}%
                   </text>
                 </g>
-              )
+              );
             })}
 
             {/* Area fill */}
@@ -94,8 +102,8 @@ export function PerformanceTimelineChartMockup() {
 
             {/* Points */}
             {data.map((value, index) => {
-              const x = padding + (index / (data.length - 1)) * (width - padding * 2)
-              const y = padding + ((max - value) / range) * (height - padding * 2)
+              const x = padding + (index / (data.length - 1)) * (width - padding * 2);
+              const y = padding + ((max - value) / range) * (height - padding * 2);
               return (
                 <circle
                   key={index}
@@ -105,7 +113,7 @@ export function PerformanceTimelineChartMockup() {
                   fill="currentColor"
                   className="text-blue-500"
                 />
-              )
+              );
             })}
           </svg>
 
@@ -116,7 +124,7 @@ export function PerformanceTimelineChartMockup() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 /**
@@ -124,27 +132,29 @@ export function PerformanceTimelineChartMockup() {
  */
 export function CategoryRadarChartMockup() {
   const categories = [
-    { name: 'Cardiovascular', value: 85 },
-    { name: 'Respiratory', value: 72 },
-    { name: 'GI', value: 90 },
-    { name: 'Renal', value: 68 },
-    { name: 'Neuro', value: 78 },
-    { name: 'Heme', value: 82 }
-  ]
+    { name: "Cardiovascular", value: 85 },
+    { name: "Respiratory", value: 72 },
+    { name: "GI", value: 90 },
+    { name: "Renal", value: 68 },
+    { name: "Neuro", value: 78 },
+    { name: "Heme", value: 82 },
+  ];
 
-  const size = 300
-  const center = size / 2
-  const radius = (size / 2) - 60
-  const angleStep = (2 * Math.PI) / categories.length
+  const size = 300;
+  const center = size / 2;
+  const radius = size / 2 - 60;
+  const angleStep = (2 * Math.PI) / categories.length;
 
   // Calculate polygon points
-  const points = categories.map((cat, i) => {
-    const angle = i * angleStep - Math.PI / 2
-    const r = (cat.value / 100) * radius
-    const x = center + r * Math.cos(angle)
-    const y = center + r * Math.sin(angle)
-    return `${x},${y}`
-  }).join(' ')
+  const points = categories
+    .map((cat, i) => {
+      const angle = i * angleStep - Math.PI / 2;
+      const r = (cat.value / 100) * radius;
+      const x = center + r * Math.cos(angle);
+      const y = center + r * Math.sin(angle);
+      return `${x},${y}`;
+    })
+    .join(" ");
 
   return (
     <Card>
@@ -173,11 +183,11 @@ export function CategoryRadarChartMockup() {
 
           {/* Axes */}
           {categories.map((cat, i) => {
-            const angle = i * angleStep - Math.PI / 2
-            const x = center + radius * Math.cos(angle)
-            const y = center + radius * Math.sin(angle)
-            const labelX = center + (radius + 30) * Math.cos(angle)
-            const labelY = center + (radius + 30) * Math.sin(angle)
+            const angle = i * angleStep - Math.PI / 2;
+            const x = center + radius * Math.cos(angle);
+            const y = center + radius * Math.sin(angle);
+            const labelX = center + (radius + 30) * Math.cos(angle);
+            const labelY = center + (radius + 30) * Math.sin(angle);
 
             return (
               <g key={cat.name}>
@@ -201,7 +211,7 @@ export function CategoryRadarChartMockup() {
                   {cat.name}
                 </text>
               </g>
-            )
+            );
           })}
 
           {/* Data polygon */}
@@ -216,26 +226,19 @@ export function CategoryRadarChartMockup() {
 
           {/* Data points */}
           {categories.map((cat, i) => {
-            const angle = i * angleStep - Math.PI / 2
-            const r = (cat.value / 100) * radius
-            const x = center + r * Math.cos(angle)
-            const y = center + r * Math.sin(angle)
+            const angle = i * angleStep - Math.PI / 2;
+            const r = (cat.value / 100) * radius;
+            const x = center + r * Math.cos(angle);
+            const y = center + r * Math.sin(angle);
 
             return (
-              <circle
-                key={i}
-                cx={x}
-                cy={y}
-                r={5}
-                fill="currentColor"
-                className="text-purple-500"
-              />
-            )
+              <circle key={i} cx={x} cy={y} r={5} fill="currentColor" className="text-purple-500" />
+            );
           })}
         </svg>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 /**
@@ -243,20 +246,20 @@ export function CategoryRadarChartMockup() {
  */
 export function ActivityHeatmapMockup() {
   // Generate sample activity data for the last 12 weeks
-  const weeks = 12
-  const days = 7
-  const activityData: number[][] = []
+  const weeks = 12;
+  const days = 7;
+  const activityData: number[][] = [];
 
   for (let week = 0; week < weeks; week++) {
-    const weekData: number[] = []
+    const weekData: number[] = [];
     for (let day = 0; day < days; day++) {
-      weekData.push(Math.floor(Math.random() * 5)) // 0-4 activity level
+      weekData.push(Math.floor(Math.random() * 5)); // 0-4 activity level
     }
-    activityData.push(weekData)
+    activityData.push(weekData);
   }
 
-  const cellSize = 12
-  const cellGap = 3
+  const cellSize = 12;
+  const cellGap = 3;
 
   return (
     <Card>
@@ -276,7 +279,7 @@ export function ActivityHeatmapMockup() {
               className="mx-auto"
             >
               {/* Day labels */}
-              {['Mon', 'Wed', 'Fri'].map((day, index) => (
+              {["Mon", "Wed", "Fri"].map((day, index) => (
                 <text
                   key={day}
                   x={-5}
@@ -294,12 +297,12 @@ export function ActivityHeatmapMockup() {
               {activityData.map((week, weekIndex) =>
                 week.map((activity, dayIndex) => {
                   const colors = [
-                    'fill-gray-200 dark:fill-gray-800',
-                    'fill-green-200 dark:fill-green-900',
-                    'fill-green-400 dark:fill-green-700',
-                    'fill-green-600 dark:fill-green-500',
-                    'fill-green-800 dark:fill-green-400'
-                  ]
+                    "fill-gray-200 dark:fill-gray-800",
+                    "fill-green-200 dark:fill-green-900",
+                    "fill-green-400 dark:fill-green-700",
+                    "fill-green-600 dark:fill-green-500",
+                    "fill-green-800 dark:fill-green-400",
+                  ];
 
                   return (
                     <rect
@@ -311,7 +314,7 @@ export function ActivityHeatmapMockup() {
                       rx={2}
                       className={colors[activity]}
                     />
-                  )
+                  );
                 })
               )}
             </svg>
@@ -322,18 +325,13 @@ export function ActivityHeatmapMockup() {
             <div className="flex gap-1">
               {[0, 1, 2, 3, 4].map((level) => {
                 const colors = [
-                  'bg-gray-200 dark:bg-gray-800',
-                  'bg-green-200 dark:bg-green-900',
-                  'bg-green-400 dark:bg-green-700',
-                  'bg-green-600 dark:bg-green-500',
-                  'bg-green-800 dark:bg-green-400'
-                ]
-                return (
-                  <div
-                    key={level}
-                    className={`w-3 h-3 rounded-sm ${colors[level]}`}
-                  />
-                )
+                  "bg-gray-200 dark:bg-gray-800",
+                  "bg-green-200 dark:bg-green-900",
+                  "bg-green-400 dark:bg-green-700",
+                  "bg-green-600 dark:bg-green-500",
+                  "bg-green-800 dark:bg-green-400",
+                ];
+                return <div key={level} className={`w-3 h-3 rounded-sm ${colors[level]}`} />;
               })}
             </div>
             <span className="text-muted-foreground">More</span>
@@ -341,7 +339,7 @@ export function ActivityHeatmapMockup() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 /**
@@ -351,12 +349,12 @@ export function SpeedAccuracyScatterMockup() {
   // Generate sample data points
   const dataPoints = Array.from({ length: 50 }, () => ({
     time: Math.random() * 120 + 10, // 10-130 seconds
-    correct: Math.random() > 0.3 // 70% correct rate
-  }))
+    correct: Math.random() > 0.3, // 70% correct rate
+  }));
 
-  const width = 400
-  const height = 300
-  const padding = 40
+  const width = 400;
+  const height = 300;
+  const padding = 40;
 
   return (
     <Card>
@@ -412,10 +410,10 @@ export function SpeedAccuracyScatterMockup() {
 
           {/* Data points */}
           {dataPoints.map((point, i) => {
-            const x = padding + (point.time / 130) * (width - padding * 2)
+            const x = padding + (point.time / 130) * (width - padding * 2);
             const y = point.correct
               ? height - padding - 20
-              : height - padding - (height - padding * 2) + 20
+              : height - padding - (height - padding * 2) + 20;
 
             return (
               <circle
@@ -425,9 +423,9 @@ export function SpeedAccuracyScatterMockup() {
                 r={4}
                 fill="currentColor"
                 fillOpacity={0.6}
-                className={point.correct ? 'text-green-500' : 'text-red-500'}
+                className={point.correct ? "text-green-500" : "text-red-500"}
               />
-            )
+            );
           })}
 
           {/* Legend */}
@@ -444,7 +442,7 @@ export function SpeedAccuracyScatterMockup() {
         </svg>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 /**
@@ -452,21 +450,21 @@ export function SpeedAccuracyScatterMockup() {
  */
 export function WeeklyBarChartMockup() {
   const weeks = [
-    { week: 'Week 1', quizzes: 5, accuracy: 72, time: 45 },
-    { week: 'Week 2', quizzes: 8, accuracy: 78, time: 60 },
-    { week: 'Week 3', quizzes: 6, accuracy: 85, time: 50 },
-    { week: 'Week 4', quizzes: 10, accuracy: 88, time: 75 }
-  ]
+    { week: "Week 1", quizzes: 5, accuracy: 72, time: 45 },
+    { week: "Week 2", quizzes: 8, accuracy: 78, time: 60 },
+    { week: "Week 3", quizzes: 6, accuracy: 85, time: 50 },
+    { week: "Week 4", quizzes: 10, accuracy: 88, time: 75 },
+  ];
 
-  const width = 500
-  const height = 250
-  const padding = 40
-  const barWidth = 40
-  const groupGap = 20
-  const barGap = 5
+  const width = 500;
+  const height = 250;
+  const padding = 40;
+  const barWidth = 40;
+  const groupGap = 20;
+  const barGap = 5;
 
-  const maxQuizzes = Math.max(...weeks.map(w => w.quizzes))
-  const chartHeight = height - padding * 2
+  const maxQuizzes = Math.max(...weeks.map((w) => w.quizzes));
+  const chartHeight = height - padding * 2;
 
   return (
     <Card>
@@ -480,9 +478,15 @@ export function WeeklyBarChartMockup() {
       <CardContent>
         <div className="space-y-4">
           <div className="flex gap-2 justify-center">
-            <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-950">Quizzes</Badge>
-            <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-950">Accuracy</Badge>
-            <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-950">Time (min)</Badge>
+            <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-950">
+              Quizzes
+            </Badge>
+            <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-950">
+              Accuracy
+            </Badge>
+            <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-950">
+              Time (min)
+            </Badge>
           </div>
 
           <svg viewBox={`0 0 ${width} ${height}`} className="w-full h-auto">
@@ -498,14 +502,14 @@ export function WeeklyBarChartMockup() {
 
             {/* Bars */}
             {weeks.map((week, weekIndex) => {
-              const groupX = padding + weekIndex * (barWidth * 3 + barGap * 2 + groupGap)
+              const groupX = padding + weekIndex * (barWidth * 3 + barGap * 2 + groupGap);
 
               // Quizzes bar
-              const quizzesHeight = (week.quizzes / maxQuizzes) * chartHeight
+              const quizzesHeight = (week.quizzes / maxQuizzes) * chartHeight;
               // Accuracy bar (scale to max)
-              const accuracyHeight = (week.accuracy / 100) * chartHeight
+              const accuracyHeight = (week.accuracy / 100) * chartHeight;
               // Time bar (scale to max)
-              const timeHeight = (week.time / 75) * chartHeight
+              const timeHeight = (week.time / 75) * chartHeight;
 
               return (
                 <g key={weekIndex}>
@@ -549,13 +553,13 @@ export function WeeklyBarChartMockup() {
                     {week.week}
                   </text>
                 </g>
-              )
+              );
             })}
           </svg>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 /**
@@ -567,7 +571,8 @@ export function ChartMockupsShowcase() {
       <div>
         <h2 className="text-2xl font-bold mb-2">Chart Options</h2>
         <p className="text-muted-foreground">
-          Here are visual mockups of different chart types. These are SVG representations - let me know which ones you'd like to implement with real interactive charts!
+          Here are visual mockups of different chart types. These are SVG representations - let me
+          know which ones you'd like to implement with real interactive charts!
         </p>
       </div>
 
@@ -591,26 +596,38 @@ export function ChartMockupsShowcase() {
           <div>
             <h4 className="font-semibold mb-2">These are static SVG mockups</h4>
             <p className="text-sm text-muted-foreground">
-              The real implementation would use <strong>Recharts</strong> library for interactive charts with hover states, tooltips, animations, and responsive behavior.
+              The real implementation would use <strong>Recharts</strong> library for interactive
+              charts with hover states, tooltips, animations, and responsive behavior.
             </p>
           </div>
           <div>
             <h4 className="font-semibold mb-2">Recommended Priority:</h4>
             <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
-              <li><strong>Performance Timeline</strong> - Shows improvement trends (most valuable)</li>
-              <li><strong>Category Radar</strong> - Great for visualizing strengths/weaknesses</li>
-              <li><strong>Activity Heatmap</strong> - Motivating consistency tracker</li>
-              <li><strong>Weekly Bar Chart</strong> - Good for weekly review</li>
-              <li><strong>Speed vs Accuracy</strong> - Advanced insight</li>
+              <li>
+                <strong>Performance Timeline</strong> - Shows improvement trends (most valuable)
+              </li>
+              <li>
+                <strong>Category Radar</strong> - Great for visualizing strengths/weaknesses
+              </li>
+              <li>
+                <strong>Activity Heatmap</strong> - Motivating consistency tracker
+              </li>
+              <li>
+                <strong>Weekly Bar Chart</strong> - Good for weekly review
+              </li>
+              <li>
+                <strong>Speed vs Accuracy</strong> - Advanced insight
+              </li>
             </ol>
           </div>
           <div>
             <p className="text-sm text-muted-foreground">
-              Which charts would you like to implement? I can build them with real data and interactivity using Recharts.
+              Which charts would you like to implement? I can build them with real data and
+              interactivity using Recharts.
             </p>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -1,59 +1,59 @@
 // src/app/api/user/achievements/unlock/route.ts
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/shared/services/server'
-import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/shared/services/server";
+import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 
 interface UnlockAchievementRequest {
-  achievementId: string
-  title: string
-  description: string
-  category: string
-  quizId?: string
-  subjectId?: string
-  metadata?: Record<string, unknown>
+  achievementId: string;
+  title: string;
+  description: string;
+  category: string;
+  quizId?: string;
+  subjectId?: string;
+  metadata?: Record<string, unknown>;
 }
 
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = await createClient();
 
     // Get authenticated user
-    const userId = getUserIdFromHeaders(request)
+    const userId = getUserIdFromHeaders(request);
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const body: UnlockAchievementRequest = await request.json()
+    const body: UnlockAchievementRequest = await request.json();
 
     // Validate required fields
     if (!body.achievementId || !body.title || !body.description || !body.category) {
       return NextResponse.json(
-        { error: 'Missing required fields: achievementId, title, description, category' },
+        { error: "Missing required fields: achievementId, title, description, category" },
         { status: 400 }
-      )
+      );
     }
 
     // Check if achievement already exists for this user
     const { data: existing } = await supabase
-      .from('user_achievements')
-      .select('id')
-      .eq('user_id', userId)
-      .eq('group_key', body.achievementId)
-      .single()
+      .from("user_achievements")
+      .select("id")
+      .eq("user_id", userId)
+      .eq("group_key", body.achievementId)
+      .single();
 
     if (existing) {
       return NextResponse.json({
         success: false,
-        message: 'Achievement already unlocked'
-      })
+        message: "Achievement already unlocked",
+      });
     }
 
     // Insert new achievement
     const { data: achievement, error: insertError } = await supabase
-      .from('user_achievements')
+      .from("user_achievements")
       .insert({
         user_id: userId,
-        type: 'achievement',
+        type: "achievement",
         title: body.title,
         description: body.description,
         group_key: body.achievementId,
@@ -61,23 +61,23 @@ export async function POST(request: NextRequest) {
         subject_id: body.subjectId || null,
         data: body.metadata || {},
         is_read: false,
-        priority: 'normal'
+        priority: "normal",
       })
       .select()
-      .single()
+      .single();
 
     if (insertError) {
-      console.error('Error unlocking achievement:', insertError)
-      return NextResponse.json({ error: 'Failed to unlock achievement' }, { status: 500 })
+      console.error("Error unlocking achievement:", insertError);
+      return NextResponse.json({ error: "Failed to unlock achievement" }, { status: 500 });
     }
 
     return NextResponse.json({
       success: true,
       achievement,
-      message: 'Achievement unlocked!'
-    })
+      message: "Achievement unlocked!",
+    });
   } catch (error) {
-    console.error('Unexpected error in unlock achievement API:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    console.error("Unexpected error in unlock achievement API:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

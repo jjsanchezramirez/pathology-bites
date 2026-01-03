@@ -1,149 +1,155 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
+import { useState, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
 
-import { Input } from '@/shared/components/ui/input'
-import { Dialog, DialogTrigger, DialogPortal } from '@/shared/components/ui/dialog'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
+import { Input } from "@/shared/components/ui/input";
+import { Dialog, DialogTrigger, DialogPortal } from "@/shared/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 
-import { Search, X, Plus, Image as ImageIcon } from 'lucide-react'
-import { fetchImages } from '@/features/images/services/images'
-import { ImageData } from '@/features/images/types/images'
-import { ImagePreview } from '@/features/images/components/image-preview'
-import Image from 'next/image'
+import { Search, X, Plus, Image as ImageIcon } from "lucide-react";
+import { fetchImages } from "@/features/images/services/images";
+import { ImageData } from "@/features/images/types/images";
+import { ImagePreview } from "@/features/images/components/image-preview";
+import Image from "next/image";
 
 interface ImageAttachment {
-  image_id: string
-  question_section: 'stem' | 'explanation'
-  order_index: number
+  image_id: string;
+  question_section: "stem" | "explanation";
+  order_index: number;
 }
 
 interface ImageAttachmentsTabProps {
-  attachedImages: ImageAttachment[]
-  onAttachedImagesChange: (images: ImageAttachment[]) => void
+  attachedImages: ImageAttachment[];
+  onAttachedImagesChange: (images: ImageAttachment[]) => void;
 }
 
 interface MediaSectionProps {
-  images: ImageAttachment[]
-  section: 'stem' | 'explanation'
-  maxImages: number
-  onImagesChange: (images: ImageAttachment[]) => void
+  images: ImageAttachment[];
+  section: "stem" | "explanation";
+  maxImages: number;
+  onImagesChange: (images: ImageAttachment[]) => void;
 }
 
 function MediaSection({ images, section, maxImages, onImagesChange }: MediaSectionProps) {
-  const [availableImages, setAvailableImages] = useState<ImageData[]>([])
-  const [loading, setLoading] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [categoryFilter, setCategoryFilter] = useState('all')
-  const [showImagePicker, setShowImagePicker] = useState(false)
-  const [selectedImageIds, setSelectedImageIds] = useState<string[]>([])
-  const [imageCache, setImageCache] = useState<Map<string, ImageData>>(new Map())
+  const [availableImages, setAvailableImages] = useState<ImageData[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("all");
+  const [showImagePicker, setShowImagePicker] = useState(false);
+  const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
+  const [imageCache, setImageCache] = useState<Map<string, ImageData>>(new Map());
 
   const loadImages = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       const result = await fetchImages({
         page: 0,
         pageSize: 100, // Fetch more images to ensure we have 20 available
         searchTerm: searchTerm || undefined,
-        category: categoryFilter === 'all' ? undefined : categoryFilter,
-        showUnusedOnly: false
-      })
+        category: categoryFilter === "all" ? undefined : categoryFilter,
+        showUnusedOnly: false,
+      });
 
       if (result.error) {
-        console.error('Failed to load images:', result.error)
-        throw new Error(typeof result.error === 'string' ? result.error : 'Failed to load images')
+        console.error("Failed to load images:", result.error);
+        throw new Error(typeof result.error === "string" ? result.error : "Failed to load images");
       }
 
-      setAvailableImages(result.data)
+      setAvailableImages(result.data);
       // Cache images by ID for quick lookup
-      const newCache = new Map(imageCache)
-      result.data.forEach(img => newCache.set(img.id, img))
-      setImageCache(newCache)
+      const newCache = new Map(imageCache);
+      result.data.forEach((img) => newCache.set(img.id, img));
+      setImageCache(newCache);
     } catch (error) {
-      console.error('Failed to load images:', error)
+      console.error("Failed to load images:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
     if (showImagePicker) {
-      loadImages()
+      loadImages();
       // Pre-populate selectedImageIds with already attached images
-      setSelectedImageIds(images.map(img => img.image_id))
+      setSelectedImageIds(images.map((img) => img.image_id));
     }
-  }, [showImagePicker, searchTerm, categoryFilter, images, loadImages])
+  }, [showImagePicker, searchTerm, categoryFilter, images, loadImages]);
 
   // Load metadata for already attached images on mount and when images change
   useEffect(() => {
     const loadAttachedImagesMetadata = async () => {
-      if (images.length === 0) return
+      if (images.length === 0) return;
 
       // Get image IDs that aren't already in cache
       const uncachedImageIds = images
-        .map(img => img.image_id)
-        .filter(id => !imageCache.has(id))
+        .map((img) => img.image_id)
+        .filter((id) => !imageCache.has(id));
 
-      if (uncachedImageIds.length === 0) return
+      if (uncachedImageIds.length === 0) return;
 
       try {
         // Fetch a larger set to catch our attached images
         const result = await fetchImages({
           page: 0,
           pageSize: 100,
-          showUnusedOnly: false
-        })
+          showUnusedOnly: false,
+        });
 
         if (!result.error && result.data) {
           // Update cache with fetched images
-          const newCache = new Map(imageCache)
-          result.data.forEach(img => {
+          const newCache = new Map(imageCache);
+          result.data.forEach((img) => {
             if (uncachedImageIds.includes(img.id)) {
-              newCache.set(img.id, img)
+              newCache.set(img.id, img);
             }
-          })
-          setImageCache(newCache)
+          });
+          setImageCache(newCache);
         }
       } catch (error) {
-        console.error('Failed to load attached images metadata:', error)
+        console.error("Failed to load attached images metadata:", error);
       }
-    }
+    };
 
-    loadAttachedImagesMetadata()
-  }, [images, imageCache])
+    loadAttachedImagesMetadata();
+  }, [images, imageCache]);
 
   const getImageInfo = (imageId: string): ImageData | null => {
     // First check cache, then check availableImages
-    return imageCache.get(imageId) || availableImages.find(img => img.id === imageId) || null
-  }
+    return imageCache.get(imageId) || availableImages.find((img) => img.id === imageId) || null;
+  };
 
   const handleRemoveImage = (imageId: string, index: number) => {
-    const newImages = images.filter((_, i) => i !== index)
+    const newImages = images.filter((_, i) => i !== index);
     // Reorder remaining images
     const reorderedImages = newImages.map((img, idx) => ({
       ...img,
-      order_index: idx + 1
-    }))
-    onImagesChange(reorderedImages)
-  }
+      order_index: idx + 1,
+    }));
+    onImagesChange(reorderedImages);
+  };
 
   const handleImageToggle = (imageId: string) => {
-    setSelectedImageIds(prev => {
+    setSelectedImageIds((prev) => {
       if (prev.includes(imageId)) {
         // Allow deselection
-        return prev.filter(id => id !== imageId)
+        return prev.filter((id) => id !== imageId);
       } else {
         // Check if we would exceed the limit
         if (prev.length >= maxImages) {
-          return prev // Don't add more if it would exceed limit
+          return prev; // Don't add more if it would exceed limit
         }
-        return [...prev, imageId]
+        return [...prev, imageId];
       }
-    })
-  }
+    });
+  };
 
   const handleSelectImages = () => {
     // Replace images with current selection
@@ -151,26 +157,26 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
       image_id: imageId,
       question_section: section,
       order_index: index + 1,
-    }))
+    }));
 
-    onImagesChange(newImages)
-    setSelectedImageIds([])
-    setShowImagePicker(false)
-  }
+    onImagesChange(newImages);
+    setSelectedImageIds([]);
+    setShowImagePicker(false);
+  };
 
   const handleCancelSelection = () => {
-    setSelectedImageIds([])
-    setShowImagePicker(false)
-    setSearchTerm('')
-  }
+    setSelectedImageIds([]);
+    setShowImagePicker(false);
+    setSearchTerm("");
+  };
 
   return (
     <div>
       <div className="flex flex-wrap gap-4">
         {/* Existing Images - Stacked to Left with Space for 5 */}
         {images.map((imageItem, index) => {
-          const uniqueKey = `${imageItem.image_id}-${index}`
-          const imageInfo = getImageInfo(imageItem.image_id)
+          const uniqueKey = `${imageItem.image_id}-${index}`;
+          const imageInfo = getImageInfo(imageItem.image_id);
 
           return (
             <div key={uniqueKey} className="relative group">
@@ -178,7 +184,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                 {imageInfo ? (
                   <Image
                     src={imageInfo.url}
-                    alt={imageInfo.alt_text || ''}
+                    alt={imageInfo.alt_text || ""}
                     fill
                     className="object-cover"
                     sizes="128px"
@@ -200,7 +206,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                 <X className="h-3 w-3" />
               </Button>
             </div>
-          )
+          );
         })}
 
         {/* Add Image Button */}
@@ -218,10 +224,15 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
             </DialogTrigger>
             <DialogPortal>
               <div className="fixed inset-0 z-50 flex items-center justify-center">
-                <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowImagePicker(false)} />
+                <div
+                  className="fixed inset-0 bg-black/50 backdrop-blur-sm"
+                  onClick={() => setShowImagePicker(false)}
+                />
                 <div className="relative bg-background border rounded-lg shadow-lg w-[1200px] max-w-[95vw] h-[75vh] flex flex-col overflow-hidden">
                   <div className="p-6 border-b flex-shrink-0">
-                    <h2 className="text-xl font-semibold">Select Images for {section === 'stem' ? 'Question Body' : 'Explanation'}</h2>
+                    <h2 className="text-xl font-semibold">
+                      Select Images for {section === "stem" ? "Question Body" : "Explanation"}
+                    </h2>
                   </div>
 
                   <div className="p-6 space-y-4 flex flex-col flex-1 overflow-hidden">
@@ -249,12 +260,15 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                         </SelectContent>
                       </Select>
                       <Button onClick={loadImages} disabled={loading}>
-                        {loading ? 'Loading...' : 'Search'}
+                        {loading ? "Loading..." : "Search"}
                       </Button>
                     </div>
 
                     {/* Image Grid - 6 columns with smaller thumbnails */}
-                    <div className="grid grid-cols-6 gap-2 overflow-y-auto flex-1" style={{ minHeight: 0 }}>
+                    <div
+                      className="grid grid-cols-6 gap-2 overflow-y-auto flex-1"
+                      style={{ minHeight: 0 }}
+                    >
                       {availableImages.length === 0 && !loading ? (
                         <div className="col-span-6 flex flex-col items-center justify-center h-full text-muted-foreground">
                           <ImageIcon className="h-12 w-12 mb-2 opacity-50" />
@@ -263,26 +277,28 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                         </div>
                       ) : (
                         availableImages.map((image) => {
-                          const isSelected = selectedImageIds.includes(image.id)
-                          const canSelect = selectedImageIds.length < maxImages || isSelected
-                          const orderNumber = isSelected ? selectedImageIds.indexOf(image.id) + 1 : null
+                          const isSelected = selectedImageIds.includes(image.id);
+                          const canSelect = selectedImageIds.length < maxImages || isSelected;
+                          const orderNumber = isSelected
+                            ? selectedImageIds.indexOf(image.id) + 1
+                            : null;
 
                           return (
                             <div key={image.id} className="relative group">
                               <div
                                 className={`aspect-square overflow-hidden rounded border-2 transition-all relative ${
                                   isSelected
-                                    ? 'border-primary ring-2 ring-primary/20'
+                                    ? "border-primary ring-2 ring-primary/20"
                                     : canSelect
-                                      ? 'border-border hover:border-primary/50 cursor-pointer'
-                                      : 'border-muted opacity-50 cursor-not-allowed'
+                                      ? "border-border hover:border-primary/50 cursor-pointer"
+                                      : "border-muted opacity-50 cursor-not-allowed"
                                 }`}
                                 onClick={() => canSelect && handleImageToggle(image.id)}
-                                title={image.alt_text || ''}
+                                title={image.alt_text || ""}
                               >
                                 <ImagePreview
                                   src={image.url}
-                                  alt={image.alt_text || ''}
+                                  alt={image.alt_text || ""}
                                   size="sm"
                                   className="w-full h-full !rounded-none"
                                   disableFullscreen={true}
@@ -294,7 +310,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                                 )}
                               </div>
                             </div>
-                          )
+                          );
                         })
                       )}
                     </div>
@@ -309,7 +325,8 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                         onClick={handleSelectImages}
                         disabled={selectedImageIds.length === 0}
                       >
-                        Save {selectedImageIds.length} Image{selectedImageIds.length !== 1 ? 's' : ''}
+                        Save {selectedImageIds.length} Image
+                        {selectedImageIds.length !== 1 ? "s" : ""}
                       </Button>
                     </div>
                   </div>
@@ -320,16 +337,19 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
         )}
       </div>
     </div>
-  )
+  );
 }
 
-export function ImageAttachmentsTab({ attachedImages, onAttachedImagesChange }: ImageAttachmentsTabProps) {
+export function ImageAttachmentsTab({
+  attachedImages,
+  onAttachedImagesChange,
+}: ImageAttachmentsTabProps) {
   const handleImagesChange = (newImages: ImageAttachment[]) => {
-    onAttachedImagesChange(newImages)
-  }
+    onAttachedImagesChange(newImages);
+  };
 
-  const stemImages = attachedImages.filter(img => img.question_section === 'stem')
-  const explanationImages = attachedImages.filter(img => img.question_section === 'explanation')
+  const stemImages = attachedImages.filter((img) => img.question_section === "stem");
+  const explanationImages = attachedImages.filter((img) => img.question_section === "explanation");
 
   return (
     <div className="space-y-8">
@@ -347,8 +367,10 @@ export function ImageAttachmentsTab({ attachedImages, onAttachedImagesChange }: 
             section="stem"
             maxImages={5}
             onImagesChange={(newImages) => {
-              const explanationImages = attachedImages.filter(img => img.question_section === 'explanation')
-              handleImagesChange([...newImages, ...explanationImages])
+              const explanationImages = attachedImages.filter(
+                (img) => img.question_section === "explanation"
+              );
+              handleImagesChange([...newImages, ...explanationImages]);
             }}
           />
         </CardContent>
@@ -368,12 +390,12 @@ export function ImageAttachmentsTab({ attachedImages, onAttachedImagesChange }: 
             section="explanation"
             maxImages={5}
             onImagesChange={(newImages) => {
-              const stemImages = attachedImages.filter(img => img.question_section === 'stem')
-              handleImagesChange([...stemImages, ...newImages])
+              const stemImages = attachedImages.filter((img) => img.question_section === "stem");
+              handleImagesChange([...stemImages, ...newImages]);
             }}
           />
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

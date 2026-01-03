@@ -1,25 +1,24 @@
-'use client'
+"use client";
 
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Input } from '@/shared/components/ui/input'
-
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Input } from "@/shared/components/ui/input";
 
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue
-} from '@/shared/components/ui/select'
-import { Search } from 'lucide-react'
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { Search } from "lucide-react";
 
 interface QuizFiltersProps {
-  searchTerm: string
-  selectedFilter: string
-  sortBy: string
-  onSearchChange: (value: string) => void
-  onFilterChange: (filter: string) => void
-  onSortChange: (sort: string) => void
+  searchTerm: string;
+  selectedFilter: string;
+  sortBy: string;
+  onSearchChange: (value: string) => void;
+  onFilterChange: (filter: string) => void;
+  onSortChange: (sort: string) => void;
 }
 
 export function QuizFilters({
@@ -28,7 +27,7 @@ export function QuizFilters({
   sortBy,
   onSearchChange,
   onFilterChange,
-  onSortChange
+  onSortChange,
 }: QuizFiltersProps) {
   return (
     <Card>
@@ -84,6 +83,5 @@ export function QuizFilters({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

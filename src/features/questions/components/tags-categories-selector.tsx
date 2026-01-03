@@ -1,21 +1,17 @@
 // src/components/questions/tags-categories-selector.tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badge";
 import { Checkbox } from "@/shared/components/ui/checkbox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/components/ui/popover";
-import { Plus, X, Tag, FolderTree } from 'lucide-react';
-import { useTags } from '@/features/questions/hooks/use-tags';
-import { useCategories } from '@/features/questions/hooks/use-categories';
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/components/ui/popover";
+import { Plus, X, Tag, FolderTree } from "lucide-react";
+import { useTags } from "@/features/questions/hooks/use-tags";
+import { useCategories } from "@/features/questions/hooks/use-categories";
 
-import { getCategoryDisplayName } from '@/features/questions/utils/display-helpers';
+import { getCategoryDisplayName } from "@/features/questions/utils/display-helpers";
 
 interface TagsCategoriesSelectorProps {
   selectedTagIds: string[];
@@ -28,17 +24,17 @@ export function TagsCategoriesSelector({
   selectedTagIds,
   selectedCategoryIds,
   onTagsChange,
-  onCategoriesChange
+  onCategoriesChange,
 }: TagsCategoriesSelectorProps) {
-  const [newTagName, setNewTagName] = useState('');
+  const [newTagName, setNewTagName] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
-  
+
   const { tags, createTag } = useTags();
   const { categories } = useCategories();
 
   const handleTagToggle = (tagId: string) => {
     if (selectedTagIds.includes(tagId)) {
-      onTagsChange(selectedTagIds.filter(id => id !== tagId));
+      onTagsChange(selectedTagIds.filter((id) => id !== tagId));
     } else {
       onTagsChange([...selectedTagIds, tagId]);
     }
@@ -46,7 +42,7 @@ export function TagsCategoriesSelector({
 
   const handleCategoryToggle = (categoryId: string) => {
     if (selectedCategoryIds.includes(categoryId)) {
-      onCategoriesChange(selectedCategoryIds.filter(id => id !== categoryId));
+      onCategoriesChange(selectedCategoryIds.filter((id) => id !== categoryId));
     } else {
       onCategoriesChange([...selectedCategoryIds, categoryId]);
     }
@@ -54,19 +50,19 @@ export function TagsCategoriesSelector({
 
   const handleCreateTag = async () => {
     if (!newTagName.trim()) return;
-    
+
     try {
       const newTag = await createTag(newTagName.trim());
       onTagsChange([...selectedTagIds, newTag.id]);
-      setNewTagName('');
+      setNewTagName("");
       setShowTagInput(false);
     } catch {
       // Error handled in hook
     }
   };
 
-  const selectedTags = tags.filter(tag => selectedTagIds.includes(tag.id));
-  const selectedCategories = categories.filter(cat => selectedCategoryIds.includes(cat.id));
+  const selectedTags = tags.filter((tag) => selectedTagIds.includes(tag.id));
+  const selectedCategories = categories.filter((cat) => selectedCategoryIds.includes(cat.id));
 
   return (
     <div className="space-y-4">
@@ -87,7 +83,7 @@ export function TagsCategoriesSelector({
             <PopoverContent className="w-80">
               <div className="space-y-3">
                 <h4 className="font-medium">Select Tags</h4>
-                
+
                 {/* Create new tag */}
                 <div className="space-y-2">
                   {showTagInput ? (
@@ -97,13 +93,13 @@ export function TagsCategoriesSelector({
                         value={newTagName}
                         onChange={(e) => setNewTagName(e.target.value)}
                         onKeyDown={(e) => {
-                          if (e.key === 'Enter') {
+                          if (e.key === "Enter") {
                             e.preventDefault();
                             handleCreateTag();
                           }
-                          if (e.key === 'Escape') {
+                          if (e.key === "Escape") {
                             setShowTagInput(false);
-                            setNewTagName('');
+                            setNewTagName("");
                           }
                         }}
                         autoFocus
@@ -111,12 +107,12 @@ export function TagsCategoriesSelector({
                       <Button size="sm" onClick={handleCreateTag}>
                         Add
                       </Button>
-                      <Button 
-                        size="sm" 
-                        variant="outline" 
+                      <Button
+                        size="sm"
+                        variant="outline"
                         onClick={() => {
                           setShowTagInput(false);
-                          setNewTagName('');
+                          setNewTagName("");
                         }}
                       >
                         Cancel
@@ -199,7 +195,7 @@ export function TagsCategoriesSelector({
             <PopoverContent className="w-80">
               <div className="space-y-3">
                 <h4 className="font-medium">Select Categories</h4>
-                
+
                 <div className="max-h-48 overflow-y-auto space-y-2">
                   {categories.map((category) => (
                     <div key={category.id} className="flex items-center space-x-2">
@@ -232,11 +228,7 @@ export function TagsCategoriesSelector({
         {selectedCategories.length > 0 && (
           <div className="flex flex-wrap gap-2">
             {selectedCategories.map((category) => (
-              <Badge
-                key={category.id}
-                variant="outline"
-                className="flex items-center gap-1"
-              >
+              <Badge key={category.id} variant="outline" className="flex items-center gap-1">
                 {getCategoryDisplayName(category)}
                 <button
                   type="button"

@@ -1,14 +1,14 @@
-'use client'
+"use client";
 
-import { Button } from '@/shared/components/ui/button'
-import { BookOpen, WifiOff } from 'lucide-react'
+import { Button } from "@/shared/components/ui/button";
+import { BookOpen, WifiOff } from "lucide-react";
 
 interface StartQuizButtonProps {
-  creating: boolean
-  isOnline: boolean
-  isValid: boolean
-  validationError: string | null
-  onClick: () => void
+  creating: boolean;
+  isOnline: boolean;
+  isValid: boolean;
+  validationError: string | null;
+  onClick: () => void;
 }
 
 export function StartQuizButton({
@@ -16,7 +16,7 @@ export function StartQuizButton({
   isOnline,
   isValid,
   validationError,
-  onClick
+  onClick,
 }: StartQuizButtonProps) {
   return (
     <div className="space-y-3">
@@ -48,11 +48,8 @@ export function StartQuizButton({
 
       {/* Show helpful message when button is disabled */}
       {!creating && !isValid && validationError && (
-        <p className="text-sm text-muted-foreground text-center">
-          {validationError}
-        </p>
+        <p className="text-sm text-muted-foreground text-center">{validationError}</p>
       )}
     </div>
-  )
+  );
 }
-

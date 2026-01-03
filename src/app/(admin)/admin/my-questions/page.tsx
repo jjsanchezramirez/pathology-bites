@@ -1,11 +1,11 @@
 // src/app/(admin)/admin/my-questions/page.tsx
-'use client'
+"use client";
 
-import { useState, useEffect, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/shared/services/client'
-import { useAuth } from '@/shared/hooks/use-auth'
-import { useUserRole } from '@/shared/hooks/use-user-role'
+import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/shared/services/client";
+import { useAuth } from "@/shared/hooks/use-auth";
+import { useUserRole } from "@/shared/hooks/use-user-role";
 import {
   Table,
   TableBody,
@@ -13,12 +13,12 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/components/ui/table"
-import { Button } from "@/shared/components/ui/button"
-import { Badge } from "@/shared/components/ui/badge"
-import { Input } from "@/shared/components/ui/input"
-import { Card } from "@/shared/components/ui/card"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs"
+} from "@/shared/components/ui/table";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import { Input } from "@/shared/components/ui/input";
+import { Card } from "@/shared/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import {
   Eye,
   Search,
@@ -27,53 +27,51 @@ import {
   CheckCheck,
   Clock,
   XCircle,
-  Layers
-} from 'lucide-react'
-import { Skeleton } from '@/shared/components/ui/skeleton'
-import { QuestionPreviewDialog } from '@/features/questions/components/question-preview-dialog'
-import { toast } from '@/shared/utils/toast'
-import { formatDistanceToNow } from 'date-fns'
-import { QuestionWithDetails, STATUS_CONFIG } from '@/features/questions/types/questions'
-import { AccessDenied, AccessDeniedPresets } from '@/shared/components/common/access-denied'
+  Layers,
+} from "lucide-react";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { QuestionPreviewDialog } from "@/features/questions/components/question-preview-dialog";
+import { toast } from "@/shared/utils/toast";
+import { formatDistanceToNow } from "date-fns";
+import { QuestionWithDetails, STATUS_CONFIG } from "@/features/questions/types/questions";
+import { AccessDenied, AccessDeniedPresets } from "@/shared/components/common/access-denied";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select"
+} from "@/shared/components/ui/select";
 
 interface MyQuestion extends QuestionWithDetails {
-  creator_name?: string
+  creator_name?: string;
 }
 
 export default function MyQuestionsPage() {
-  const _router = useRouter()
-  const [questions, setQuestions] = useState<MyQuestion[]>([])
-  const [filteredQuestions, setFilteredQuestions] = useState<MyQuestion[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [difficultyFilter, setDifficultyFilter] = useState<string>('all')
-  const [activeTab, setActiveTab] = useState<string>('all')
-  const [selectedQuestion, setSelectedQuestion] = useState<MyQuestion | null>(null)
-  const [previewOpen, setPreviewOpen] = useState(false)
+  const _router = useRouter();
+  const [questions, setQuestions] = useState<MyQuestion[]>([]);
+  const [filteredQuestions, setFilteredQuestions] = useState<MyQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
+  const [activeTab, setActiveTab] = useState<string>("all");
+  const [selectedQuestion, setSelectedQuestion] = useState<MyQuestion | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
-  const { user } = useAuth({ minimal: true })
-  const { role, canAccess } = useUserRole()
-  const supabase = createClient()
+  const { user } = useAuth({ minimal: true });
+  const { role, canAccess } = useUserRole();
+  const supabase = createClient();
 
-  const isCreator = role === 'creator' || role === 'admin'
-  const isReviewer = role === 'reviewer' || role === 'admin'
+  const isCreator = role === "creator" || role === "admin";
+  const isReviewer = role === "reviewer" || role === "admin";
 
   const fetchMyQuestions = useCallback(async () => {
-    if (!user) return
+    if (!user) return;
 
     try {
-      setLoading(true)
+      setLoading(true);
 
-      let query = supabase
-        .from('questions')
-        .select(`
+      let query = supabase.from("questions").select(`
           id,
           title,
           stem,
@@ -109,77 +107,79 @@ export default function MyQuestionsPage() {
             first_name,
             last_name
           )
-        `)
+        `);
 
       // Filter based on role
       if (isCreator) {
         // Creators see only their own questions
-        query = query.eq('created_by', user.id)
+        query = query.eq("created_by", user.id);
       } else if (isReviewer) {
         // Reviewers see questions they've reviewed or are assigned to review
-        query = query.or(`reviewer_id.eq.${user.id},created_by.eq.${user.id}`)
+        query = query.or(`reviewer_id.eq.${user.id},created_by.eq.${user.id}`);
       }
 
-      query = query.order('updated_at', { ascending: false })
+      query = query.order("updated_at", { ascending: false });
 
-      const { data, error } = await query
+      const { data, error } = await query;
 
       if (error) {
-        console.error('Error fetching questions:', error)
-        toast.error(`Failed to load questions: ${error.message}`)
-        return
+        console.error("Error fetching questions:", error);
+        toast.error(`Failed to load questions: ${error.message}`);
+        return;
       }
 
-      setQuestions(data || [])
-      setFilteredQuestions(data || [])
+      setQuestions(data || []);
+      setFilteredQuestions(data || []);
     } catch (error) {
-      console.error('Unexpected error fetching questions:', error)
-      toast.error('Failed to load questions')
+      console.error("Unexpected error fetching questions:", error);
+      toast.error("Failed to load questions");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [user, supabase, isCreator, isReviewer])
+  }, [user, supabase, isCreator, isReviewer]);
 
   useEffect(() => {
-    fetchMyQuestions()
-  }, [fetchMyQuestions])
+    fetchMyQuestions();
+  }, [fetchMyQuestions]);
 
   useEffect(() => {
-    let filtered = questions
+    let filtered = questions;
 
     // Apply tab filter
-    if (activeTab !== 'all') {
-      if (activeTab === 'published') {
-        filtered = filtered.filter(q => q.status === 'published')
-      } else if (activeTab === 'under-review') {
-        filtered = filtered.filter(q => q.status === 'pending_review')
-      } else if (activeTab === 'rejected') {
-        filtered = filtered.filter(q => q.status === 'rejected')
+    if (activeTab !== "all") {
+      if (activeTab === "published") {
+        filtered = filtered.filter((q) => q.status === "published");
+      } else if (activeTab === "under-review") {
+        filtered = filtered.filter((q) => q.status === "pending_review");
+      } else if (activeTab === "rejected") {
+        filtered = filtered.filter((q) => q.status === "rejected");
       }
     }
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(q =>
-        q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.stem.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      filtered = filtered.filter(
+        (q) =>
+          q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          q.stem.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
 
     // Apply difficulty filter
-    if (difficultyFilter !== 'all') {
-      filtered = filtered.filter(q => q.difficulty?.toLowerCase() === difficultyFilter)
+    if (difficultyFilter !== "all") {
+      filtered = filtered.filter((q) => q.difficulty?.toLowerCase() === difficultyFilter);
     }
 
-    setFilteredQuestions(filtered)
-  }, [searchTerm, difficultyFilter, activeTab, questions])
+    setFilteredQuestions(filtered);
+  }, [searchTerm, difficultyFilter, activeTab, questions]);
 
   const handlePreview = async (questionId: string) => {
     try {
-      const supabase = createClient()
+      const supabase = createClient();
       const { data: fullQuestion, error } = await supabase
-        .from('questions')
-        .select(`
+        .from("questions")
+        .select(
+          `
           *,
           question_options(*),
           question_images(*, image:images(*)),
@@ -188,45 +188,46 @@ export default function MyQuestionsPage() {
           created_by_user:users!questions_created_by_fkey(first_name, last_name),
           updated_by_user:users!questions_updated_by_fkey(first_name, last_name),
           reviewer_user:users!questions_reviewer_id_fkey(first_name, last_name)
-        `)
-        .eq('id', questionId)
-        .single()
+        `
+        )
+        .eq("id", questionId)
+        .single();
 
       if (error) {
-        console.error('Error fetching question:', error)
-        toast.error('Failed to load question preview')
-        return
+        console.error("Error fetching question:", error);
+        toast.error("Failed to load question preview");
+        return;
       }
 
-      setSelectedQuestion(fullQuestion)
-      setPreviewOpen(true)
+      setSelectedQuestion(fullQuestion);
+      setPreviewOpen(true);
     } catch (error) {
-      console.error('Error fetching question for preview:', error)
-      toast.error('Failed to load question preview')
+      console.error("Error fetching question for preview:", error);
+      toast.error("Failed to load question preview");
     }
-  }
+  };
 
   const getStatusBadge = (status: string) => {
-    const statusConfig = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG]
+    const statusConfig = STATUS_CONFIG[status as keyof typeof STATUS_CONFIG];
     return (
       <Badge
         variant="outline"
-        className={`${statusConfig?.color || 'border-gray-300 bg-gray-50 text-gray-700'} text-xs`}
+        className={`${statusConfig?.color || "border-gray-300 bg-gray-50 text-gray-700"} text-xs`}
       >
         {statusConfig?.label || status}
       </Badge>
-    )
-  }
+    );
+  };
 
   // Calculate stats
-  const allCount = questions.length
-  const publishedCount = questions.filter(q => q.status === 'published').length
-  const underReviewCount = questions.filter(q => q.status === 'pending_review').length
-  const rejectedCount = questions.filter(q => q.status === 'rejected').length
+  const allCount = questions.length;
+  const publishedCount = questions.filter((q) => q.status === "published").length;
+  const underReviewCount = questions.filter((q) => q.status === "pending_review").length;
+  const rejectedCount = questions.filter((q) => q.status === "rejected").length;
 
   // Access control
-  if (!canAccess('questions.view')) {
-    return <AccessDenied {...AccessDeniedPresets.creatorOrAbove} />
+  if (!canAccess("questions.view")) {
+    return <AccessDenied {...AccessDeniedPresets.creatorOrAbove} />;
   }
 
   if (loading) {
@@ -273,7 +274,7 @@ export default function MyQuestionsPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -282,7 +283,9 @@ export default function MyQuestionsPage() {
       <div>
         <h1 className="text-3xl font-bold tracking-tight">My Questions</h1>
         <p className="text-muted-foreground mt-2">
-          {isCreator ? 'View and track all your questions' : 'Questions you have reviewed or are assigned to review'}
+          {isCreator
+            ? "View and track all your questions"
+            : "Questions you have reviewed or are assigned to review"}
         </p>
       </div>
 
@@ -310,13 +313,8 @@ export default function MyQuestionsPage() {
             </SelectContent>
           </Select>
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={fetchMyQuestions}
-          disabled={loading}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+        <Button variant="outline" size="sm" onClick={fetchMyQuestions} disabled={loading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           Refresh
         </Button>
       </div>
@@ -376,9 +374,9 @@ export default function MyQuestionsPage() {
                           <FileQuestion className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
                           <h3 className="text-lg font-medium mb-2">No questions found</h3>
                           <p className="text-muted-foreground">
-                            {searchTerm || difficultyFilter !== 'all'
-                              ? 'No questions match your filters'
-                              : 'You don\'t have any questions yet'}
+                            {searchTerm || difficultyFilter !== "all"
+                              ? "No questions match your filters"
+                              : "You don't have any questions yet"}
                           </p>
                         </div>
                       </TableCell>
@@ -399,12 +397,12 @@ export default function MyQuestionsPage() {
                             )}
                           </div>
                         </TableCell>
-                        <TableCell>
-                          {getStatusBadge(question.status)}
-                        </TableCell>
+                        <TableCell>{getStatusBadge(question.status)}</TableCell>
                         <TableCell>
                           <div className="text-sm text-muted-foreground">
-                            {formatDistanceToNow(new Date(question.updated_at), { addSuffix: true })}
+                            {formatDistanceToNow(new Date(question.updated_at), {
+                              addSuffix: true,
+                            })}
                           </div>
                         </TableCell>
                         <TableCell>
@@ -439,5 +437,5 @@ export default function MyQuestionsPage() {
         />
       )}
     </div>
-  )
+  );
 }

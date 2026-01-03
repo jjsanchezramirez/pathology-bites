@@ -1,34 +1,34 @@
 // src/features/questions/hooks/use-question-queries.ts
 // SWR-based hooks for fetching questions by role and context
 
-import useSWR from 'swr'
-import { createClient } from '@/shared/services/client'
-import { useAuth } from '@/shared/hooks/use-auth'
-import { toast } from '@/shared/utils/toast'
-import { QuestionWithDetails } from '@/features/questions/types/questions'
-
+import useSWR from "swr";
+import { createClient } from "@/shared/services/client";
+import { useAuth } from "@/shared/hooks/use-auth";
+import { toast } from "@/shared/utils/toast";
+import { QuestionWithDetails } from "@/features/questions/types/questions";
 
 interface RejectedQuestion extends QuestionWithDetails {
-  creator_name?: string
-  resubmission_notes?: string | null
-  resubmission_date?: string | null
+  creator_name?: string;
+  resubmission_notes?: string | null;
+  resubmission_date?: string | null;
 }
 
 interface UseQuestionQueryOptions {
-  enabled?: boolean
-  onError?: (error: Error) => void
+  enabled?: boolean;
+  onError?: (error: Error) => void;
 }
 
 /**
  * Fetch rejected questions for the current user (revision queue)
  */
 async function fetchRejectedQuestions(userId: string) {
-  const supabase = createClient()
+  const supabase = createClient();
 
   // Fetch rejected questions created by current user
   const { data, error } = await supabase
-    .from('questions')
-    .select(`
+    .from("questions")
+    .select(
+      `
       id,
       title,
       stem,
@@ -63,67 +63,69 @@ async function fetchRejectedQuestions(userId: string) {
         first_name,
         last_name
       )
-    `)
-    .eq('created_by', userId)
-    .eq('status', 'rejected')
-    .order('updated_at', { ascending: false })
+    `
+    )
+    .eq("created_by", userId)
+    .eq("status", "rejected")
+    .order("updated_at", { ascending: false });
 
   if (error) {
-    console.error('Error fetching rejected questions:', error)
+    console.error("Error fetching rejected questions:", error);
 
     // Detect network errors
-    const isNetworkError = error instanceof TypeError &&
-                          (error.message?.includes('fetch') || error.message?.includes('network'))
+    const isNetworkError =
+      error instanceof TypeError &&
+      (error.message?.includes("fetch") || error.message?.includes("network"));
 
     if (isNetworkError) {
-      throw new Error('Network connection interrupted. Please refresh the page.')
-    } else if (error.message?.includes('Timed out')) {
-      throw new Error('Request timed out. Please check your network connection.')
+      throw new Error("Network connection interrupted. Please refresh the page.");
+    } else if (error.message?.includes("Timed out")) {
+      throw new Error("Request timed out. Please check your network connection.");
     } else {
-      throw new Error(error.message || 'Failed to load revision queue')
+      throw new Error(error.message || "Failed to load revision queue");
     }
   }
 
   // Fetch resubmission notes
-  const questionIds = (data || []).map(q => q.id)
-  let questionsWithResubmissionNotes = data || []
+  const questionIds = (data || []).map((q) => q.id);
+  let questionsWithResubmissionNotes = data || [];
 
   if (questionIds.length > 0) {
     try {
       const { data: resubmissionData, error: resubmissionError } = await supabase
-        .from('question_reviews')
-        .select('question_id, changes_made, created_at')
-        .in('question_id', questionIds)
-        .eq('action', 'resubmitted')
-        .order('created_at', { ascending: false })
+        .from("question_reviews")
+        .select("question_id, changes_made, created_at")
+        .in("question_id", questionIds)
+        .eq("action", "resubmitted")
+        .order("created_at", { ascending: false });
 
       if (!resubmissionError && resubmissionData) {
-        const resubmissionMap = new Map()
-        resubmissionData.forEach(review => {
+        const resubmissionMap = new Map();
+        resubmissionData.forEach((review) => {
           if (!resubmissionMap.has(review.question_id) && review.changes_made?.resubmission_notes) {
             resubmissionMap.set(review.question_id, {
               notes: review.changes_made.resubmission_notes,
-              date: review.created_at
-            })
+              date: review.created_at,
+            });
           }
-        })
+        });
 
-        questionsWithResubmissionNotes = (data || []).map(question => {
-          const resubmissionInfo = resubmissionMap.get(question.id)
+        questionsWithResubmissionNotes = (data || []).map((question) => {
+          const resubmissionInfo = resubmissionMap.get(question.id);
           return {
             ...question,
             resubmission_notes: resubmissionInfo?.notes || null,
-            resubmission_date: resubmissionInfo?.date || null
-          }
-        })
+            resubmission_date: resubmissionInfo?.date || null,
+          };
+        });
       }
     } catch (error) {
-      console.error('Error fetching resubmission notes:', error)
+      console.error("Error fetching resubmission notes:", error);
       // Continue with partial data rather than failing completely
     }
   }
 
-  return questionsWithResubmissionNotes as RejectedQuestion[]
+  return questionsWithResubmissionNotes as RejectedQuestion[];
 }
 
 /**
@@ -144,11 +146,11 @@ async function fetchRejectedQuestions(userId: string) {
  * ```
  */
 export function useMyRevisionQueue(options: UseQuestionQueryOptions = {}) {
-  const { enabled = true, onError } = options
-  const { user } = useAuth({ minimal: true })
+  const { enabled = true, onError } = options;
+  const { user } = useAuth({ minimal: true });
 
   const { data, error, isLoading, mutate } = useSWR<RejectedQuestion[]>(
-    user && enabled ? ['revision-queue', user.id] : null,
+    user && enabled ? ["revision-queue", user.id] : null,
     () => fetchRejectedQuestions(user!.id),
     {
       // Always fetch fresh data on mount
@@ -169,15 +171,15 @@ export function useMyRevisionQueue(options: UseQuestionQueryOptions = {}) {
 
       // Error handling
       onError: (err) => {
-        console.error('SWR error in useMyRevisionQueue:', err)
-        toast.error(err.message || 'Failed to load revision queue')
-        if (onError) onError(err)
+        console.error("SWR error in useMyRevisionQueue:", err);
+        toast.error(err.message || "Failed to load revision queue");
+        if (onError) onError(err);
       },
 
       errorRetryCount: 2,
       errorRetryInterval: 5000,
     }
-  )
+  );
 
   return {
     questions: data || [],
@@ -185,18 +187,19 @@ export function useMyRevisionQueue(options: UseQuestionQueryOptions = {}) {
     error,
     refresh: mutate,
     mutate, // Alias for compatibility
-  }
+  };
 }
 
 /**
  * Fetch questions pending review (for reviewers)
  */
 async function fetchPendingReviewQuestions(_userId: string) {
-  const supabase = createClient()
+  const supabase = createClient();
 
   const { data, error } = await supabase
-    .from('questions')
-    .select(`
+    .from("questions")
+    .select(
+      `
       id,
       title,
       stem,
@@ -222,16 +225,17 @@ async function fetchPendingReviewQuestions(_userId: string) {
         first_name,
         last_name
       )
-    `)
-    .eq('status', 'pending_review')
-    .order('created_at', { ascending: true }) // Oldest first for fairness
+    `
+    )
+    .eq("status", "pending_review")
+    .order("created_at", { ascending: true }); // Oldest first for fairness
 
   if (error) {
-    console.error('Error fetching pending review questions:', error)
-    throw new Error(error.message || 'Failed to load review queue')
+    console.error("Error fetching pending review questions:", error);
+    throw new Error(error.message || "Failed to load review queue");
   }
 
-  return data || []
+  return data || [];
 }
 
 /**
@@ -243,11 +247,11 @@ async function fetchPendingReviewQuestions(_userId: string) {
  * ```
  */
 export function useMyReviewQueue(options: UseQuestionQueryOptions = {}) {
-  const { enabled = true, onError } = options
-  const { user } = useAuth({ minimal: true })
+  const { enabled = true, onError } = options;
+  const { user } = useAuth({ minimal: true });
 
   const { data, error, isLoading, mutate } = useSWR(
-    user && enabled ? ['review-queue', user.id] : null,
+    user && enabled ? ["review-queue", user.id] : null,
     () => fetchPendingReviewQuestions(user!.id),
     {
       revalidateIfStale: false,
@@ -257,14 +261,14 @@ export function useMyReviewQueue(options: UseQuestionQueryOptions = {}) {
       revalidateOnReconnect: false,
       keepPreviousData: true,
       onError: (err) => {
-        console.error('SWR error in useMyReviewQueue:', err)
-        toast.error(err.message || 'Failed to load review queue')
-        if (onError) onError(err)
+        console.error("SWR error in useMyReviewQueue:", err);
+        toast.error(err.message || "Failed to load review queue");
+        if (onError) onError(err);
       },
       errorRetryCount: 2,
       errorRetryInterval: 5000,
     }
-  )
+  );
 
   return {
     questions: data || [],
@@ -272,18 +276,19 @@ export function useMyReviewQueue(options: UseQuestionQueryOptions = {}) {
     error,
     refresh: mutate,
     mutate,
-  }
+  };
 }
 
 /**
  * Fetch draft questions for the current user
  */
 async function fetchMyDrafts(userId: string) {
-  const supabase = createClient()
+  const supabase = createClient();
 
   const { data, error } = await supabase
-    .from('questions')
-    .select(`
+    .from("questions")
+    .select(
+      `
       id,
       title,
       stem,
@@ -299,17 +304,18 @@ async function fetchMyDrafts(userId: string) {
       question_sets(id, name),
       question_options(id, text, is_correct, explanation, order_index),
       categories(*)
-    `)
-    .eq('created_by', userId)
-    .eq('status', 'draft')
-    .order('updated_at', { ascending: false })
+    `
+    )
+    .eq("created_by", userId)
+    .eq("status", "draft")
+    .order("updated_at", { ascending: false });
 
   if (error) {
-    console.error('Error fetching draft questions:', error)
-    throw new Error(error.message || 'Failed to load drafts')
+    console.error("Error fetching draft questions:", error);
+    throw new Error(error.message || "Failed to load drafts");
   }
 
-  return data || []
+  return data || [];
 }
 
 /**
@@ -321,11 +327,11 @@ async function fetchMyDrafts(userId: string) {
  * ```
  */
 export function useMyDrafts(options: UseQuestionQueryOptions = {}) {
-  const { enabled = true, onError } = options
-  const { user } = useAuth({ minimal: true })
+  const { enabled = true, onError } = options;
+  const { user } = useAuth({ minimal: true });
 
   const { data, error, isLoading, mutate } = useSWR(
-    user && enabled ? ['my-drafts', user.id] : null,
+    user && enabled ? ["my-drafts", user.id] : null,
     () => fetchMyDrafts(user!.id),
     {
       revalidateIfStale: false,
@@ -335,14 +341,14 @@ export function useMyDrafts(options: UseQuestionQueryOptions = {}) {
       revalidateOnReconnect: false,
       keepPreviousData: true,
       onError: (err) => {
-        console.error('SWR error in useMyDrafts:', err)
-        toast.error(err.message || 'Failed to load drafts')
-        if (onError) onError(err)
+        console.error("SWR error in useMyDrafts:", err);
+        toast.error(err.message || "Failed to load drafts");
+        if (onError) onError(err);
       },
       errorRetryCount: 2,
       errorRetryInterval: 5000,
     }
-  )
+  );
 
   return {
     questions: data || [],
@@ -350,18 +356,19 @@ export function useMyDrafts(options: UseQuestionQueryOptions = {}) {
     error,
     refresh: mutate,
     mutate,
-  }
+  };
 }
 
 /**
  * Fetch all questions created by the current user
  */
 async function fetchMyQuestions(userId: string) {
-  const supabase = createClient()
+  const supabase = createClient();
 
   const { data, error } = await supabase
-    .from('questions')
-    .select(`
+    .from("questions")
+    .select(
+      `
       id,
       title,
       stem,
@@ -385,16 +392,17 @@ async function fetchMyQuestions(userId: string) {
         images(id, url, alt_text, description)
       ),
       categories(*)
-    `)
-    .eq('created_by', userId)
-    .order('updated_at', { ascending: false })
+    `
+    )
+    .eq("created_by", userId)
+    .order("updated_at", { ascending: false });
 
   if (error) {
-    console.error('Error fetching my questions:', error)
-    throw new Error(error.message || 'Failed to load questions')
+    console.error("Error fetching my questions:", error);
+    throw new Error(error.message || "Failed to load questions");
   }
 
-  return data || []
+  return data || [];
 }
 
 /**
@@ -406,11 +414,11 @@ async function fetchMyQuestions(userId: string) {
  * ```
  */
 export function useMyQuestions(options: UseQuestionQueryOptions = {}) {
-  const { enabled = true, onError } = options
-  const { user } = useAuth({ minimal: true })
+  const { enabled = true, onError } = options;
+  const { user } = useAuth({ minimal: true });
 
   const { data, error, isLoading, mutate } = useSWR(
-    user && enabled ? ['my-questions', user.id] : null,
+    user && enabled ? ["my-questions", user.id] : null,
     () => fetchMyQuestions(user!.id),
     {
       revalidateIfStale: false,
@@ -420,14 +428,14 @@ export function useMyQuestions(options: UseQuestionQueryOptions = {}) {
       revalidateOnReconnect: false,
       keepPreviousData: true,
       onError: (err) => {
-        console.error('SWR error in useMyQuestions:', err)
-        toast.error(err.message || 'Failed to load questions')
-        if (onError) onError(err)
+        console.error("SWR error in useMyQuestions:", err);
+        toast.error(err.message || "Failed to load questions");
+        if (onError) onError(err);
       },
       errorRetryCount: 2,
       errorRetryInterval: 5000,
     }
-  )
+  );
 
   return {
     questions: data || [],
@@ -435,5 +443,5 @@ export function useMyQuestions(options: UseQuestionQueryOptions = {}) {
     error,
     refresh: mutate,
     mutate,
-  }
+  };
 }

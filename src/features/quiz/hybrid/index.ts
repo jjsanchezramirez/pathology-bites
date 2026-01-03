@@ -1,47 +1,39 @@
 /**
  * Pure Serverless Hybrid Quiz System - Main Exports
- * 
+ *
  * This module exports all the components of the hybrid quiz system
  * for easy integration with the existing quiz interface.
  */
 
 // Main Hook
-export { useHybridQuiz } from './use-hybrid-quiz';
-export type { 
-  UseHybridQuizOptions, 
-  HybridQuizState, 
-  HybridQuizActions 
-} from './use-hybrid-quiz';
+export { useHybridQuiz } from "./use-hybrid-quiz";
+export type { UseHybridQuizOptions, HybridQuizState, HybridQuizActions } from "./use-hybrid-quiz";
 
 // Core State Machine
 export {
   quizStateReducer,
   createInitialQuizState,
-  QuizStateUtils
-} from './core/quiz-state-machine';
-export type { QuizAction } from './core/quiz-state-machine';
+  QuizStateUtils,
+} from "./core/quiz-state-machine";
+export type { QuizAction } from "./core/quiz-state-machine";
 
 // Re-export types from the main types module
-export type { 
-  QuizState, 
-  QuizQuestion, 
-  QuizAnswer 
-} from '../types/quiz-question';
+export type { QuizState, QuizQuestion, QuizAnswer } from "../types/quiz-question";
 
 // State Machine Hook
-export { useQuizStateMachine } from './hooks/use-quiz-state-machine';
+export { useQuizStateMachine } from "./hooks/use-quiz-state-machine";
 export type {
   UseQuizStateMachineOptions,
-  QuizStateMachineActions
-} from './hooks/use-quiz-state-machine';
+  QuizStateMachineActions,
+} from "./hooks/use-quiz-state-machine";
 
 // Database Sync Manager
-export { DatabaseSyncManager, SyncUtils } from './core/database-sync-manager';
+export { DatabaseSyncManager, SyncUtils } from "./core/database-sync-manager";
 export type {
   QuizSyncData,
   SyncResult,
-  DatabaseSyncManagerOptions
-} from './core/database-sync-manager';
+  DatabaseSyncManagerOptions,
+} from "./core/database-sync-manager";
 
 // Preset Configurations
 export const HybridPresets = {
@@ -50,14 +42,14 @@ export const HybridPresets = {
    * Optimized for learning and practice
    */
   TUTOR_MODE: {
-    mode: 'tutor' as const,
-    timing: 'untimed' as const,
+    mode: "tutor" as const,
+    timing: "untimed" as const,
     showExplanations: true,
     allowReview: true,
     enableRealtime: false,
     enableOfflineSupport: true,
     autoSync: false,
-    syncOnComplete: true
+    syncOnComplete: true,
   },
 
   /**
@@ -65,14 +57,14 @@ export const HybridPresets = {
    * Optimized for assessment and testing
    */
   EXAM_MODE: {
-    mode: 'exam' as const,
-    timing: 'timed' as const,
+    mode: "exam" as const,
+    timing: "timed" as const,
     showExplanations: false,
     allowReview: false,
     enableRealtime: true,
     enableOfflineSupport: false,
     autoSync: true,
-    syncOnComplete: true
+    syncOnComplete: true,
   },
 
   /**
@@ -80,14 +72,14 @@ export const HybridPresets = {
    * Good default for most use cases
    */
   PRACTICE_MODE: {
-    mode: 'tutor' as const,
-    timing: 'untimed' as const,
+    mode: "tutor" as const,
+    timing: "untimed" as const,
     showExplanations: true,
     allowReview: true,
     enableRealtime: false,
     enableOfflineSupport: true,
     autoSync: false,
-    syncOnComplete: true
+    syncOnComplete: true,
   },
 
   /**
@@ -95,15 +87,15 @@ export const HybridPresets = {
    * For use in low-connectivity environments
    */
   OFFLINE_MODE: {
-    mode: 'tutor' as const,
-    timing: 'untimed' as const,
+    mode: "tutor" as const,
+    timing: "untimed" as const,
     showExplanations: true,
     allowReview: true,
     enableRealtime: false,
     enableOfflineSupport: true,
     autoSync: false,
-    syncOnComplete: false
-  }
+    syncOnComplete: false,
+  },
 } as const;
 
 // Utility Functions
@@ -132,7 +124,10 @@ export const HybridUtils = {
   /**
    * Get performance metrics summary
    */
-  getPerformanceSummary: (state: { totalQuestions: number; metrics: { totalApiCalls: number; averageResponseTime: number } }): {
+  getPerformanceSummary: (state: {
+    totalQuestions: number;
+    metrics: { totalApiCalls: number; averageResponseTime: number };
+  }): {
     apiCallReduction: number;
     averageResponseTime: number;
     totalApiCalls: number;
@@ -148,7 +143,7 @@ export const HybridUtils = {
       apiCallReduction,
       averageResponseTime: state.metrics.averageResponseTime,
       totalApiCalls: state.metrics.totalApiCalls,
-      estimatedLegacyCalls
+      estimatedLegacyCalls,
     };
   },
 
@@ -165,35 +160,55 @@ export const HybridUtils = {
    * Create a hybrid configuration based on quiz type
    */
   createConfig: (
-    type: 'tutor' | 'exam' | 'practice' | 'offline',
-    overrides?: Partial<{ sessionId: string; mode?: string; timing?: string; showExplanations?: boolean; allowReview?: boolean; enableRealtime?: boolean; enableOfflineSupport?: boolean; autoSync?: boolean; syncOnComplete?: boolean }>
-  ): { sessionId: string; mode?: string; timing?: string; showExplanations?: boolean; allowReview?: boolean; enableRealtime?: boolean; enableOfflineSupport?: boolean; autoSync?: boolean; syncOnComplete?: boolean } => {
+    type: "tutor" | "exam" | "practice" | "offline",
+    overrides?: Partial<{
+      sessionId: string;
+      mode?: string;
+      timing?: string;
+      showExplanations?: boolean;
+      allowReview?: boolean;
+      enableRealtime?: boolean;
+      enableOfflineSupport?: boolean;
+      autoSync?: boolean;
+      syncOnComplete?: boolean;
+    }>
+  ): {
+    sessionId: string;
+    mode?: string;
+    timing?: string;
+    showExplanations?: boolean;
+    allowReview?: boolean;
+    enableRealtime?: boolean;
+    enableOfflineSupport?: boolean;
+    autoSync?: boolean;
+    syncOnComplete?: boolean;
+  } => {
     const baseConfig = HybridPresets[`${type.toUpperCase()}_MODE` as keyof typeof HybridPresets];
     return {
-      sessionId: '',
+      sessionId: "",
       ...baseConfig,
-      ...overrides
+      ...overrides,
     };
-  }
+  },
 };
 
 // Version and metadata
-export const HYBRID_SYSTEM_VERSION = '1.0.0';
+export const HYBRID_SYSTEM_VERSION = "1.0.0";
 export const HYBRID_SYSTEM_INFO = {
   version: HYBRID_SYSTEM_VERSION,
-  apiCallReduction: '96.7%',
+  apiCallReduction: "96.7%",
   targetApiCalls: 2,
   features: [
-    'Client-side state management',
-    'Batched server synchronization', 
-    'Offline capability',
-    'Instant UI responses (0ms latency)',
-    'Optimized for Vercel free tier',
-    'No Edge Functions required'
+    "Client-side state management",
+    "Batched server synchronization",
+    "Offline capability",
+    "Instant UI responses (0ms latency)",
+    "Optimized for Vercel free tier",
+    "No Edge Functions required",
   ],
   compatibility: {
-    nextjs: '>=13.0.0',
-    react: '>=18.0.0',
-    typescript: '>=4.5.0'
-  }
+    nextjs: ">=13.0.0",
+    react: ">=18.0.0",
+    typescript: ">=4.5.0",
+  },
 } as const;

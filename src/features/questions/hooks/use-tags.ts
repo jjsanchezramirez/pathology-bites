@@ -1,8 +1,8 @@
 // src/hooks/use-tags.ts
-import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@/shared/services/client';
-import { TagData } from '@/features/questions/types/questions';
-import { toast } from '@/shared/utils/toast';
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@/shared/services/client";
+import { TagData } from "@/features/questions/types/questions";
+import { toast } from "@/shared/utils/toast";
 
 export interface UseTagsReturn {
   tags: TagData[];
@@ -24,10 +24,7 @@ export function useTags(): UseTagsReturn {
     setError(null);
 
     try {
-      const { data, error: fetchError } = await supabase
-        .from('tags')
-        .select('*')
-        .order('name');
+      const { data, error: fetchError } = await supabase.from("tags").select("*").order("name");
 
       if (fetchError) {
         throw new Error(fetchError.message);
@@ -35,37 +32,36 @@ export function useTags(): UseTagsReturn {
 
       setTags(data || []);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch tags';
+      const message = err instanceof Error ? err.message : "Failed to fetch tags";
       setError(message);
     } finally {
       setLoading(false);
     }
   }, [supabase]);
 
-  const createTag = useCallback(async (name: string): Promise<TagData> => {
-    try {
-      const { data, error } = await supabase
-        .from('tags')
-        .insert({ name })
-        .select()
-        .single();
+  const createTag = useCallback(
+    async (name: string): Promise<TagData> => {
+      try {
+        const { data, error } = await supabase.from("tags").insert({ name }).select().single();
 
-      if (error) {
-        throw new Error(error.message);
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        toast.success("Tag created successfully");
+
+        // Refetch tags
+        await fetchTags();
+
+        return data;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to create tag";
+        toast.error(message);
+        throw err;
       }
-
-      toast.success('Tag created successfully');
-
-      // Refetch tags
-      await fetchTags();
-
-      return data;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create tag';
-      toast.error(message);
-      throw err;
-    }
-  }, [supabase, fetchTags]);
+    },
+    [supabase, fetchTags]
+  );
 
   useEffect(() => {
     fetchTags();

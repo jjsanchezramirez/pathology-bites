@@ -1,5 +1,5 @@
 // src/types/auth.ts
-import type { User, Session } from '@supabase/supabase-js';
+import type { User, Session } from "@supabase/supabase-js";
 
 export interface SignupFormData {
   email: string;
@@ -25,7 +25,11 @@ export interface AuthService {
   updatePassword: (password: string) => Promise<boolean>;
   logout: () => Promise<boolean>;
   resendVerification: (email: string) => Promise<boolean>;
-  checkAuth: () => Promise<{ isAuthenticated: boolean; user: User | null; session: Session | null }>;
+  checkAuth: () => Promise<{
+    isAuthenticated: boolean;
+    user: User | null;
+    session: Session | null;
+  }>;
   getUserRole: () => Promise<string | null>;
   isLoading: boolean;
   isConnected?: boolean;

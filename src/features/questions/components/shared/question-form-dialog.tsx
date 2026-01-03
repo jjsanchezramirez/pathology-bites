@@ -1,9 +1,9 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
+import React, { useState, useEffect } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import {
   Dialog,
   DialogContent,
@@ -14,29 +14,39 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Form } from "@/shared/components/ui/form";
 import { Button } from "@/shared/components/ui/button";
-import { toast } from '@/shared/utils/toast';
-import { Loader2 } from 'lucide-react';
-import { useAuth } from '@/shared/hooks/use-auth';
-import { useUserRole } from '@/shared/hooks/use-user-role';
-import { QuestionWithDetails, QuestionOptionFormData, QuestionImageFormData } from '@/features/questions/types/questions';
+import { toast } from "@/shared/utils/toast";
+import { Loader2 } from "lucide-react";
+import { useAuth } from "@/shared/hooks/use-auth";
+import { useUserRole } from "@/shared/hooks/use-user-role";
+import {
+  QuestionWithDetails,
+  QuestionOptionFormData,
+  QuestionImageFormData,
+} from "@/features/questions/types/questions";
 
 // Shared tab components
-import { GeneralTab } from './general-tab';
-import { OptionsTab } from './options-tab';
-import { ReferencesTab } from './references-tab';
-import { MediaTab } from './media-tab';
-import { TabNavigation } from './tab-navigation';
-import { UnsavedChangesDialog } from './unsaved-changes-dialog';
-import { QuestionMetadata } from './question-metadata';
+import { GeneralTab } from "./general-tab";
+import { OptionsTab } from "./options-tab";
+import { ReferencesTab } from "./references-tab";
+import { MediaTab } from "./media-tab";
+import { TabNavigation } from "./tab-navigation";
+import { UnsavedChangesDialog } from "./unsaved-changes-dialog";
+import { QuestionMetadata } from "./question-metadata";
 
 // Schema for both create and edit modes
 const questionFormSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
-  stem: z.string().min(10, 'Question stem must be at least 10 characters').max(2000, 'Question stem too long'),
-  difficulty: z.enum(['easy', 'medium', 'hard']),
-  teaching_point: z.string().min(10, 'Teaching point must be at least 10 characters').max(1000, 'Teaching point too long'),
-  question_references: z.string().max(1000, 'References too long (max 1000 characters)').optional(),
-  status: z.enum(['draft', 'pending_review', 'rejected', 'published', 'flagged', 'archived']),
+  title: z.string().min(1, "Title is required").max(200, "Title too long"),
+  stem: z
+    .string()
+    .min(10, "Question stem must be at least 10 characters")
+    .max(2000, "Question stem too long"),
+  difficulty: z.enum(["easy", "medium", "hard"]),
+  teaching_point: z
+    .string()
+    .min(10, "Teaching point must be at least 10 characters")
+    .max(1000, "Teaching point too long"),
+  question_references: z.string().max(1000, "References too long (max 1000 characters)").optional(),
+  status: z.enum(["draft", "pending_review", "rejected", "published", "flagged", "archived"]),
   question_set_id: z.string(),
   category_id: z.string().nullable().optional(),
 });
@@ -47,7 +57,7 @@ interface QuestionFormDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSave: () => void;
-  mode: 'create' | 'edit';
+  mode: "create" | "edit";
   question?: QuestionWithDetails; // Only required for edit mode
   onSubmit: (
     data: QuestionFormData,
@@ -66,15 +76,15 @@ export function QuestionFormDialog({
   onSave,
   mode,
   question,
-  onSubmit
+  onSubmit,
 }: QuestionFormDialogProps) {
   // State
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState("general");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isInitializing, setIsInitializing] = useState(true);
-  
+
   // Form state
   const [answerOptions, setAnswerOptions] = useState<QuestionOptionFormData[]>([]);
   const [questionImages, setQuestionImages] = useState<QuestionImageFormData[]>([]);
@@ -88,67 +98,71 @@ export function QuestionFormDialog({
   const form = useForm<QuestionFormData>({
     resolver: zodResolver(questionFormSchema),
     defaultValues: {
-      title: '',
-      stem: '',
-      difficulty: 'medium',
-      teaching_point: '',
-      question_references: '',
-      status: 'draft',
-      question_set_id: 'none',
+      title: "",
+      stem: "",
+      difficulty: "medium",
+      teaching_point: "",
+      question_references: "",
+      status: "draft",
+      question_set_id: "none",
       category_id: null,
     },
   });
 
   // Initialize form data for edit mode
   useEffect(() => {
-    if (mode === 'edit' && question && open) {
+    if (mode === "edit" && question && open) {
       setIsInitializing(true);
-      
+
       // Set form values
       form.reset({
-        title: question.title || '',
-        stem: question.stem || '',
-        difficulty: (question.difficulty as 'easy' | 'medium' | 'hard') || 'medium',
-        teaching_point: question.teaching_point || '',
-        question_references: question.question_references || '',
-        status: (question.status as 'draft' | 'pending' | 'approved' | 'flagged') || 'draft',
-        question_set_id: question.question_set_id || 'none',
+        title: question.title || "",
+        stem: question.stem || "",
+        difficulty: (question.difficulty as "easy" | "medium" | "hard") || "medium",
+        teaching_point: question.teaching_point || "",
+        question_references: question.question_references || "",
+        status: (question.status as "draft" | "pending" | "approved" | "flagged") || "draft",
+        question_set_id: question.question_set_id || "none",
         category_id: question.category_id || null,
       });
 
       // Set answer options
       const options = question.question_options || [];
-      setAnswerOptions(options.map((opt, index) => ({
-        id: opt.id,
-        text: opt.text,
-        is_correct: opt.is_correct,
-        explanation: opt.explanation || '',
-        order_index: index,
-      })));
+      setAnswerOptions(
+        options.map((opt, index) => ({
+          id: opt.id,
+          text: opt.text,
+          is_correct: opt.is_correct,
+          explanation: opt.explanation || "",
+          order_index: index,
+        }))
+      );
 
       // Set question images
       const images = question.question_images || [];
-      setQuestionImages(images.map((img, index) => ({
-        image_id: img.image_id,
-        question_section: img.question_section as 'stem' | 'explanation',
-        order_index: index,
-      })));
+      setQuestionImages(
+        images.map((img, index) => ({
+          image_id: img.image_id,
+          question_section: img.question_section as "stem" | "explanation",
+          order_index: index,
+        }))
+      );
 
       // Set selected tags
       const tags = question.tags || [];
-      setSelectedTagIds(tags.map(tag => tag.id));
+      setSelectedTagIds(tags.map((tag) => tag.id));
 
       setIsInitializing(false);
       setHasUnsavedChanges(false);
-    } else if (mode === 'create' && open) {
+    } else if (mode === "create" && open) {
       // Reset for create mode
       form.reset();
       setAnswerOptions([
-        { text: '', is_correct: true, explanation: '', order_index: 0 },
-        { text: '', is_correct: false, explanation: '', order_index: 1 },
-        { text: '', is_correct: false, explanation: '', order_index: 2 },
-        { text: '', is_correct: false, explanation: '', order_index: 3 },
-        { text: '', is_correct: false, explanation: '', order_index: 4 },
+        { text: "", is_correct: true, explanation: "", order_index: 0 },
+        { text: "", is_correct: false, explanation: "", order_index: 1 },
+        { text: "", is_correct: false, explanation: "", order_index: 2 },
+        { text: "", is_correct: false, explanation: "", order_index: 3 },
+        { text: "", is_correct: false, explanation: "", order_index: 4 },
       ]);
       setQuestionImages([]);
       setSelectedTagIds([]);
@@ -160,7 +174,7 @@ export function QuestionFormDialog({
   // Track form changes
   useEffect(() => {
     const subscription = form.watch((_, { type }) => {
-      if (type === 'change' && !isInitializing) {
+      if (type === "change" && !isInitializing) {
         setHasUnsavedChanges(true);
       }
     });
@@ -174,7 +188,7 @@ export function QuestionFormDialog({
     } else {
       onOpenChange(newOpen);
       if (!newOpen) {
-        setActiveTab('general');
+        setActiveTab("general");
         setHasUnsavedChanges(false);
       }
     }
@@ -184,7 +198,7 @@ export function QuestionFormDialog({
     setShowConfirmDialog(false);
     setHasUnsavedChanges(false);
     onOpenChange(false);
-    setActiveTab('general');
+    setActiveTab("general");
   };
 
   const handleCancelClose = () => {
@@ -193,13 +207,13 @@ export function QuestionFormDialog({
 
   // Form submission
   const handleSubmit = async (data: QuestionFormData) => {
-    if (mode === 'edit' && !question) {
-      toast.error('Missing question data');
+    if (mode === "edit" && !question) {
+      toast.error("Missing question data");
       return;
     }
 
-    if (mode === 'edit' && question?.status === 'approved' && !isAdmin) {
-      toast.error('Only admins can edit published questions');
+    if (mode === "edit" && question?.status === "approved" && !isAdmin) {
+      toast.error("Only admins can edit published questions");
       return;
     }
 
@@ -207,7 +221,7 @@ export function QuestionFormDialog({
     try {
       const updateData = {
         ...data,
-        question_set_id: data.question_set_id === 'none' ? 'none' : data.question_set_id,
+        question_set_id: data.question_set_id === "none" ? "none" : data.question_set_id,
         question_references: data.question_references || undefined,
       };
 
@@ -218,19 +232,21 @@ export function QuestionFormDialog({
         categoryId: data.category_id || undefined,
       });
 
-      toast.success(mode === 'create' ? 'Question created successfully' : 'Question updated successfully');
+      toast.success(
+        mode === "create" ? "Question created successfully" : "Question updated successfully"
+      );
       setHasUnsavedChanges(false);
       onSave();
       onOpenChange(false);
     } catch (error) {
-      console.error(`Error ${mode === 'create' ? 'creating' : 'updating'} question:`, error);
-      toast.error(`Failed to ${mode === 'create' ? 'create' : 'update'} question`);
+      console.error(`Error ${mode === "create" ? "creating" : "updating"} question:`, error);
+      toast.error(`Failed to ${mode === "create" ? "create" : "update"} question`);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const dialogTitle = mode === 'create' ? 'Create New Question' : 'Edit Question';
+  const dialogTitle = mode === "create" ? "Create New Question" : "Edit Question";
 
   return (
     <>
@@ -248,7 +264,7 @@ export function QuestionFormDialog({
                   <TabNavigation activeTab={activeTab} onTabChange={setActiveTab} />
 
                   <div className="flex-1 overflow-y-auto px-6 py-4">
-                    {activeTab === 'general' && (
+                    {activeTab === "general" && (
                       <GeneralTab
                         form={form}
                         question={question}
@@ -258,7 +274,7 @@ export function QuestionFormDialog({
                         mode={mode}
                       />
                     )}
-                    {activeTab === 'options' && (
+                    {activeTab === "options" && (
                       <OptionsTab
                         question={question}
                         answerOptions={answerOptions}
@@ -269,14 +285,14 @@ export function QuestionFormDialog({
                         mode={mode}
                       />
                     )}
-                    {activeTab === 'references' && (
+                    {activeTab === "references" && (
                       <ReferencesTab
                         form={form}
                         onUnsavedChanges={() => setHasUnsavedChanges(true)}
                         mode={mode}
                       />
                     )}
-                    {activeTab === 'media' && (
+                    {activeTab === "media" && (
                       <MediaTab
                         question={question}
                         questionImages={questionImages}
@@ -288,8 +304,8 @@ export function QuestionFormDialog({
                   </div>
 
                   <div className="flex justify-between items-center gap-3 px-6 py-4 flex-shrink-0 border-t bg-background">
-                    {mode === 'edit' && question && <QuestionMetadata question={question} />}
-                    {mode === 'create' && <div />}
+                    {mode === "edit" && question && <QuestionMetadata question={question} />}
+                    {mode === "create" && <div />}
 
                     <div className="flex gap-3">
                       <Button
@@ -302,16 +318,19 @@ export function QuestionFormDialog({
                       </Button>
                       <Button
                         type="submit"
-                        disabled={isSubmitting || (mode === 'edit' && !hasUnsavedChanges)}
+                        disabled={isSubmitting || (mode === "edit" && !hasUnsavedChanges)}
                       >
                         {isSubmitting ? (
                           <>
                             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            {mode === 'create' ? 'Creating...' : 'Updating...'}
+                            {mode === "create" ? "Creating..." : "Updating..."}
                           </>
+                        ) : mode === "create" ? (
+                          "Create Question"
+                        ) : hasUnsavedChanges ? (
+                          "Update Question"
                         ) : (
-                          mode === 'create' ? 'Create Question' : 
-                          hasUnsavedChanges ? 'Update Question' : 'No Changes'
+                          "No Changes"
                         )}
                       </Button>
                     </div>

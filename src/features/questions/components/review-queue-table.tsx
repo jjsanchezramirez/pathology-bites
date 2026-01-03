@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/shared/components/ui/button'
-import { Badge } from '@/shared/components/ui/badge'
+import { useState, useEffect } from "react";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
 import {
   Table,
   TableBody,
@@ -10,58 +10,58 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from '@/shared/components/ui/table'
-import { Input } from '@/shared/components/ui/input'
+} from "@/shared/components/ui/table";
+import { Input } from "@/shared/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select'
-import { toast } from '@/shared/utils/toast'
-import { createClient } from '@/shared/services/client'
-import { 
-  QuestionWithReviewDetails, 
-  STATUS_CONFIG 
-} from '@/features/questions/types/questions'
-import { QuestionReviewDialog } from './question-review-dialog'
-import { QuestionFlagDialog } from './question-flag-dialog'
-import { QuestionPreviewDialog } from './question-preview-dialog'
-import { 
-  Eye, 
-  Search, 
-  Filter, 
-  Clock, 
-  User, 
+} from "@/shared/components/ui/select";
+import { toast } from "@/shared/utils/toast";
+import { createClient } from "@/shared/services/client";
+import { QuestionWithReviewDetails, STATUS_CONFIG } from "@/features/questions/types/questions";
+import { QuestionReviewDialog } from "./question-review-dialog";
+import { QuestionFlagDialog } from "./question-flag-dialog";
+import { QuestionPreviewDialog } from "./question-preview-dialog";
+import {
+  Eye,
+  Search,
+  Filter,
+  Clock,
+  User,
   Flag,
   AlertTriangle,
   CheckCircle,
-  XCircle
-} from 'lucide-react'
+  XCircle,
+} from "lucide-react";
 
 export function ReviewQueueTable() {
-  const [questions, setQuestions] = useState<QuestionWithReviewDetails[]>([])
-  const [filteredQuestions, setFilteredQuestions] = useState<QuestionWithReviewDetails[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState<string>('all')
-  const [selectedQuestion, setSelectedQuestion] = useState<QuestionWithReviewDetails | null>(null)
-  const [reviewDialogOpen, setReviewDialogOpen] = useState(false)
-  const [flagDialogOpen, setFlagDialogOpen] = useState(false)
-  const [previewDialogOpen, setPreviewDialogOpen] = useState(false)
-  const [questionToPreview, setQuestionToPreview] = useState<QuestionWithReviewDetails | null>(null)
+  const [questions, setQuestions] = useState<QuestionWithReviewDetails[]>([]);
+  const [filteredQuestions, setFilteredQuestions] = useState<QuestionWithReviewDetails[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [selectedQuestion, setSelectedQuestion] = useState<QuestionWithReviewDetails | null>(null);
+  const [reviewDialogOpen, setReviewDialogOpen] = useState(false);
+  const [flagDialogOpen, setFlagDialogOpen] = useState(false);
+  const [previewDialogOpen, setPreviewDialogOpen] = useState(false);
+  const [questionToPreview, setQuestionToPreview] = useState<QuestionWithReviewDetails | null>(
+    null
+  );
 
-  const supabase = createClient()
+  const supabase = createClient();
 
   const fetchQuestions = async () => {
     try {
-      setLoading(true)
-      
+      setLoading(true);
+
       // Fetch questions that need review - SELECT only needed fields
       const { data, error } = await supabase
-        .from('questions')
-        .select(`
+        .from("questions")
+        .select(
+          `
           id,
           title,
           stem,
@@ -76,79 +76,82 @@ export function ReviewQueueTable() {
           question_set:question_sets(name),
           question_options(id, text, is_correct, order_index),
           question_images(question_section, order_index, image:images(id, url))
-        `)
-        .in('status', ['pending_review', 'flagged'])
-        .order('created_at', { ascending: false })
+        `
+        )
+        .in("status", ["pending_review", "flagged"])
+        .order("created_at", { ascending: false });
 
       if (error) {
-        console.error('Error fetching questions:', error)
-        toast.error('Failed to load questions')
-        return
+        console.error("Error fetching questions:", error);
+        toast.error("Failed to load questions");
+        return;
       }
 
       // Transform the data to match our interface
-      const transformedQuestions: QuestionWithReviewDetails[] = data.map(q => {
+      const transformedQuestions: QuestionWithReviewDetails[] = data.map((q) => {
         return {
           ...q,
-          created_by_name: q.created_by_user ?
-            `${q.created_by_user.first_name} ${q.created_by_user.last_name}`.trim() :
-            'Unknown',
+          created_by_name: q.created_by_user
+            ? `${q.created_by_user.first_name} ${q.created_by_user.last_name}`.trim()
+            : "Unknown",
           reviewer_name: undefined, // Will be fetched separately if needed
           flagger_name: undefined, // Will be fetched separately if needed
           reviews: [], // Will be fetched separately if needed
-          flags: [] // Will be fetched separately if needed
+          flags: [], // Will be fetched separately if needed
         };
-      })
+      });
 
-      setQuestions(transformedQuestions)
+      setQuestions(transformedQuestions);
     } catch (error) {
-      console.error('Error fetching questions:', error)
-      toast.error('An unexpected error occurred')
+      console.error("Error fetching questions:", error);
+      toast.error("An unexpected error occurred");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    fetchQuestions()
-  }, [fetchQuestions])
+    fetchQuestions();
+  }, [fetchQuestions]);
 
   useEffect(() => {
-    let filtered = questions
+    let filtered = questions;
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(q => 
-        q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.stem.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.created_by_name?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      filtered = filtered.filter(
+        (q) =>
+          q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          q.stem.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          q.created_by_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
 
     // Apply status filter
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(q => q.status === statusFilter)
+    if (statusFilter !== "all") {
+      filtered = filtered.filter((q) => q.status === statusFilter);
     }
 
-    setFilteredQuestions(filtered)
-  }, [questions, searchTerm, statusFilter])
+    setFilteredQuestions(filtered);
+  }, [questions, searchTerm, statusFilter]);
 
   const handleReviewQuestion = (question: QuestionWithReviewDetails) => {
-    setSelectedQuestion(question)
-    setReviewDialogOpen(true)
-  }
+    setSelectedQuestion(question);
+    setReviewDialogOpen(true);
+  };
 
   const handleFlagQuestion = (question: QuestionWithReviewDetails) => {
-    setSelectedQuestion(question)
-    setFlagDialogOpen(true)
-  }
+    setSelectedQuestion(question);
+    setFlagDialogOpen(true);
+  };
 
   const handlePreviewQuestion = async (question: QuestionWithReviewDetails) => {
     try {
       // Fetch complete question data with options and images for preview - SELECT only needed fields
       const { data: fullQuestion, error } = await supabase
-        .from('questions')
-        .select(`
+        .from("questions")
+        .select(
+          `
           id,
           title,
           stem,
@@ -162,53 +165,54 @@ export function ReviewQueueTable() {
           question_options(id, text, is_correct, explanation, order_index),
           question_images(question_section, order_index, image:images(id, url, alt_text, description)),
           categories(id, name, description)
-        `)
-        .eq('id', question.id)
-        .single()
+        `
+        )
+        .eq("id", question.id)
+        .single();
 
       if (error) {
-        console.error('Error fetching full question data:', error)
-        toast.error('Failed to load question details')
-        return
+        console.error("Error fetching full question data:", error);
+        toast.error("Failed to load question details");
+        return;
       }
 
-      setQuestionToPreview(fullQuestion)
-      setPreviewDialogOpen(true)
+      setQuestionToPreview(fullQuestion);
+      setPreviewDialogOpen(true);
     } catch (error) {
-      console.error('Error fetching question for preview:', error)
-      toast.error('Failed to load question preview')
+      console.error("Error fetching question for preview:", error);
+      toast.error("Failed to load question preview");
     }
-  }
+  };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
-      case 'draft':
-        return <Clock className="h-4 w-4" />
-      case 'under_review':
-        return <Eye className="h-4 w-4" />
-      case 'flagged':
-        return <AlertTriangle className="h-4 w-4" />
+      case "draft":
+        return <Clock className="h-4 w-4" />;
+      case "under_review":
+        return <Eye className="h-4 w-4" />;
+      case "flagged":
+        return <AlertTriangle className="h-4 w-4" />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   const getPriorityLevel = (question: QuestionWithReviewDetails) => {
-    if (question.status === 'flagged') return 'high'
-    if (question.status === 'pending_review') return 'medium'
-    return 'low'
-  }
+    if (question.status === "flagged") return "high";
+    if (question.status === "pending_review") return "medium";
+    return "low";
+  };
 
   const getPriorityColor = (priority: string) => {
     switch (priority) {
-      case 'high':
-        return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300'
-      case 'medium':
-        return 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300'
+      case "high":
+        return "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300";
       default:
-        return 'bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300'
+        return "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300";
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -218,7 +222,7 @@ export function ReviewQueueTable() {
           <p className="mt-2 text-sm text-muted-foreground">Loading questions...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -264,15 +268,17 @@ export function ReviewQueueTable() {
               <TableRow>
                 <TableCell colSpan={6} className="text-center py-8">
                   <div className="text-muted-foreground">
-                    {questions.length === 0 ? 'No questions need review' : 'No questions match your filters'}
+                    {questions.length === 0
+                      ? "No questions need review"
+                      : "No questions match your filters"}
                   </div>
                 </TableCell>
               </TableRow>
             ) : (
               filteredQuestions.map((question) => {
-                const statusConfig = STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]
-                const priority = getPriorityLevel(question)
-                
+                const statusConfig = STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG];
+                const priority = getPriorityLevel(question);
+
                 return (
                   <TableRow key={question.id}>
                     <TableCell>
@@ -302,9 +308,7 @@ export function ReviewQueueTable() {
                         {question.created_by_name}
                       </div>
                     </TableCell>
-                    <TableCell>
-                      {new Date(question.created_at).toLocaleDateString()}
-                    </TableCell>
+                    <TableCell>{new Date(question.created_at).toLocaleDateString()}</TableCell>
                     <TableCell>
                       <div className="flex items-center gap-2">
                         <Button
@@ -321,7 +325,7 @@ export function ReviewQueueTable() {
                         >
                           <CheckCircle className="h-4 w-4" />
                         </Button>
-                        {question.status === 'approved' && (
+                        {question.status === "approved" && (
                           <Button
                             variant="ghost"
                             size="sm"
@@ -333,7 +337,7 @@ export function ReviewQueueTable() {
                       </div>
                     </TableCell>
                   </TableRow>
-                )
+                );
               })
             )}
           </TableBody>
@@ -363,5 +367,5 @@ export function ReviewQueueTable() {
         onFlagComplete={fetchQuestions}
       />
     </div>
-  )
+  );
 }

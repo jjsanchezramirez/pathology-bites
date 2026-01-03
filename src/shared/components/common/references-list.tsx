@@ -1,21 +1,26 @@
 // Component to display references with clickable links
 
-'use client'
+"use client";
 
-import { ExternalLink, FileText } from 'lucide-react'
-import { parseReferences, getPrimaryLink, getPDFLink, getLinkTypeLabel } from '@/shared/utils/reference-parser'
-import { Button } from '@/shared/components/ui/button'
+import { ExternalLink, FileText } from "lucide-react";
+import {
+  parseReferences,
+  getPrimaryLink,
+  getPDFLink,
+  getLinkTypeLabel,
+} from "@/shared/utils/reference-parser";
+import { Button } from "@/shared/components/ui/button";
 
 interface ReferencesListProps {
-  references: string
-  className?: string
+  references: string;
+  className?: string;
 }
 
-export function ReferencesList({ references, className = '' }: ReferencesListProps) {
-  const parsedReferences = parseReferences(references)
+export function ReferencesList({ references, className = "" }: ReferencesListProps) {
+  const parsedReferences = parseReferences(references);
 
   if (parsedReferences.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -23,9 +28,9 @@ export function ReferencesList({ references, className = '' }: ReferencesListPro
       <h4 className="font-medium uppercase mb-2">References</h4>
       <div className="space-y-3">
         {parsedReferences.map((ref, index) => {
-          const primaryLink = getPrimaryLink(ref)
-          const pdfLink = getPDFLink(ref)
-          const linkLabel = getLinkTypeLabel(ref)
+          const primaryLink = getPrimaryLink(ref);
+          const pdfLink = getPDFLink(ref);
+          const linkLabel = getLinkTypeLabel(ref);
 
           return (
             <div key={index} className="flex items-start gap-2">
@@ -43,34 +48,21 @@ export function ReferencesList({ references, className = '' }: ReferencesListPro
               )}
 
               {/* Reference text */}
-              <span className="break-words flex-1">
-                {ref.text}
-              </span>
+              <span className="break-words flex-1">{ref.text}</span>
 
               {/* PDF button if available */}
               {pdfLink && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-6 px-2 text-xs"
-                  asChild
-                >
-                  <a
-                    href={pdfLink}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    title="View PDF"
-                  >
+                <Button variant="ghost" size="sm" className="h-6 px-2 text-xs" asChild>
+                  <a href={pdfLink} target="_blank" rel="noopener noreferrer" title="View PDF">
                     <FileText className="w-3 h-3 mr-1" />
                     PDF
                   </a>
                 </Button>
               )}
             </div>
-          )
+          );
         })}
       </div>
     </div>
-  )
+  );
 }
-

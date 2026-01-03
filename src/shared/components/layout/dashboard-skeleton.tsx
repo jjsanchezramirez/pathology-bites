@@ -1,16 +1,16 @@
 // src/shared/components/layout/dashboard-skeleton.tsx
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Skeleton } from '@/shared/components/ui/skeleton'
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 
 interface DashboardSkeletonProps {
-  mode: 'admin' | 'user'
+  mode: "admin" | "user";
 }
 
 export function DashboardSkeleton({ mode }: DashboardSkeletonProps) {
-  if (mode === 'admin') {
-    return <AdminDashboardSkeleton />
+  if (mode === "admin") {
+    return <AdminDashboardSkeleton />;
   }
-  return <StudentDashboardSkeleton />
+  return <StudentDashboardSkeleton />;
 }
 
 function AdminDashboardSkeleton() {
@@ -87,7 +87,7 @@ function AdminDashboardSkeleton() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 function StudentDashboardSkeleton() {
@@ -187,6 +187,5 @@ function StudentDashboardSkeleton() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-

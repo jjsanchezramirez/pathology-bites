@@ -3,24 +3,24 @@
  * Works with full slide data from unified search API
  */
 
-import { VirtualSlide } from '@/shared/types/virtual-slides'
-import { ExternalLink, Eye, Microscope } from 'lucide-react'
-import Image from 'next/image'
+import { VirtualSlide } from "@/shared/types/virtual-slides";
+import { ExternalLink, Eye, Microscope } from "lucide-react";
+import Image from "next/image";
 
 interface SlideRowUnifiedProps {
-  slide: VirtualSlide
-  index: number
-  showDiagnoses: boolean
-  isRevealed?: boolean
-  onToggleReveal?: () => void
+  slide: VirtualSlide;
+  index: number;
+  showDiagnoses: boolean;
+  isRevealed?: boolean;
+  onToggleReveal?: () => void;
 }
 
-export function SlideRowUnified({ 
-  slide, 
-  index, 
+export function SlideRowUnified({
+  slide,
+  index,
   showDiagnoses,
   isRevealed = false,
-  onToggleReveal
+  onToggleReveal,
 }: SlideRowUnifiedProps) {
   return (
     <tr className="border-b border-gray-200 hover:bg-gray-50">
@@ -55,18 +55,14 @@ export function SlideRowUnified({
               <div className="space-y-1">
                 {(slide.age || slide.gender) && (
                   <p className="text-xs text-gray-600">
-                    {[slide.age, slide.gender].filter(Boolean).join(', ')}
+                    {[slide.age, slide.gender].filter(Boolean).join(", ")}
                   </p>
                 )}
                 {slide.patient_info && (
-                  <p className="text-xs text-gray-600">
-                    {slide.patient_info}
-                  </p>
+                  <p className="text-xs text-gray-600">{slide.patient_info}</p>
                 )}
                 {slide.clinical_history && (
-                  <p className="text-xs text-gray-600 italic">
-                    {slide.clinical_history}
-                  </p>
+                  <p className="text-xs text-gray-600 italic">{slide.clinical_history}</p>
                 )}
               </div>
             </>
@@ -81,18 +77,14 @@ export function SlideRowUnified({
                   <div className="space-y-1">
                     {(slide.age || slide.gender) && (
                       <p className="text-xs text-gray-600">
-                        {[slide.age, slide.gender].filter(Boolean).join(', ')}
+                        {[slide.age, slide.gender].filter(Boolean).join(", ")}
                       </p>
                     )}
                     {slide.patient_info && (
-                      <p className="text-xs text-gray-600">
-                        {slide.patient_info}
-                      </p>
+                      <p className="text-xs text-gray-600">{slide.patient_info}</p>
                     )}
                     {slide.clinical_history && (
-                      <p className="text-xs text-gray-600 italic">
-                        {slide.clinical_history}
-                      </p>
+                      <p className="text-xs text-gray-600 italic">{slide.clinical_history}</p>
                     )}
                   </div>
                 </div>
@@ -119,9 +111,7 @@ export function SlideRowUnified({
       <td className="p-2 md:p-4 hidden md:table-cell">
         <div className="space-y-1">
           <p className="text-sm text-gray-600">{slide.category}</p>
-          {slide.subcategory && (
-            <p className="text-xs text-gray-500">{slide.subcategory}</p>
-          )}
+          {slide.subcategory && <p className="text-xs text-gray-500">{slide.subcategory}</p>}
         </div>
       </td>
 
@@ -152,20 +142,23 @@ export function SlideRowUnified({
               <span className="hidden md:inline ml-1">View Slide</span>
             </a>
           )}
-          {slide.repository === 'Hematopathology eTutorial' && slide.other_urls && slide.other_urls.length > 0 && slide.other_urls[0] && (
-            <a
-              href={slide.other_urls[0]}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Study Notes"
-              className="inline-flex items-center justify-center rounded-md text-foreground bg-background border border-border hover:bg-muted transition-colors p-2 md:px-3 md:py-1 text-xs font-medium"
-            >
-              <ExternalLink className="w-4 h-4" />
-              <span className="hidden md:inline ml-1">Study Notes</span>
-            </a>
-          )}
+          {slide.repository === "Hematopathology eTutorial" &&
+            slide.other_urls &&
+            slide.other_urls.length > 0 &&
+            slide.other_urls[0] && (
+              <a
+                href={slide.other_urls[0]}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Study Notes"
+                className="inline-flex items-center justify-center rounded-md text-foreground bg-background border border-border hover:bg-muted transition-colors p-2 md:px-3 md:py-1 text-xs font-medium"
+              >
+                <ExternalLink className="w-4 h-4" />
+                <span className="hidden md:inline ml-1">Study Notes</span>
+              </a>
+            )}
         </div>
       </td>
     </tr>
-  )
+  );
 }

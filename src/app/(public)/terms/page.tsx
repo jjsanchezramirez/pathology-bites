@@ -1,9 +1,9 @@
 // src/app/terms/page.tsx
-'use client'
+"use client";
 
-import { PublicHero } from "@/shared/components/common/public-hero"
-import { PolicyCard } from "@/shared/components/common/policy-card"
-import { PublicPageCTA } from "@/shared/components/common/public-page-cta"
+import { PublicHero } from "@/shared/components/common/public-hero";
+import { PolicyCard } from "@/shared/components/common/policy-card";
+import { PublicPageCTA } from "@/shared/components/common/public-page-cta";
 
 export default function TermsPage() {
   return (
@@ -20,8 +20,9 @@ export default function TermsPage() {
         <div className="container px-4 max-w-3xl mx-auto text-center relative">
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Agreement to Terms</h2>
           <p className="text-xl mb-8 leading-relaxed text-white/90">
-            By using PathologyBites, you acknowledge that you have read, understood, and agree to be bound by 
-            these terms. If you do not agree with any part of these terms, please do not use our platform.
+            By using PathologyBites, you acknowledge that you have read, understood, and agree to be
+            bound by these terms. If you do not agree with any part of these terms, please do not
+            use our platform.
           </p>
         </div>
       </section>
@@ -40,7 +41,10 @@ export default function TermsPage() {
             </PolicyCard>
 
             <PolicyCard title="Disclaimer of Warranties">
-              <p>Our platform and its contents are provided "as is" without any warranties of any kind, including:</p>
+              <p>
+                Our platform and its contents are provided "as is" without any warranties of any
+                kind, including:
+              </p>
               <ul className="list-disc pl-6 space-y-2">
                 <li>Merchantability</li>
                 <li>Fitness for a particular purpose</li>
@@ -51,14 +55,14 @@ export default function TermsPage() {
 
             <PolicyCard title="Intellectual Property">
               <p>
-                All content on PathologyBites is protected by copyright and other intellectual property
-                rights. You may download material for personal, non-commercial use only, while
-                maintaining all copyright notices and identifying information.
+                All content on PathologyBites is protected by copyright and other intellectual
+                property rights. You may download material for personal, non-commercial use only,
+                while maintaining all copyright notices and identifying information.
               </p>
               <p>
-                Our trademarks and logos are registered and unregistered trademarks of PathologyBites.
-                Nothing on our platform should be construed as granting any license to use these
-                trademarks.
+                Our trademarks and logos are registered and unregistered trademarks of
+                PathologyBites. Nothing on our platform should be construed as granting any license
+                to use these trademarks.
               </p>
             </PolicyCard>
 
@@ -83,27 +87,28 @@ export default function TermsPage() {
             <PolicyCard title="Governing Law">
               <p>
                 These terms shall be governed by and construed in accordance with the laws of the
-                state of Delaware, United States of America, without regard to its conflict of
-                law provisions.
+                state of Delaware, United States of America, without regard to its conflict of law
+                provisions.
               </p>
             </PolicyCard>
 
             <PolicyCard title="Third-Party Content Disclaimer">
               <p>
-                Our Virtual Slide Search Engine provides links to third-party whole slide image (WSI) repositories.
-                We do not host, store, or claim ownership of any of the content linked. All copyrights remain with
-                the respective content owners. Accessing and using external content is subject to each source's
-                terms and conditions. No affiliation or endorsement is implied.
+                Our Virtual Slide Search Engine provides links to third-party whole slide image
+                (WSI) repositories. We do not host, store, or claim ownership of any of the content
+                linked. All copyrights remain with the respective content owners. Accessing and
+                using external content is subject to each source's terms and conditions. No
+                affiliation or endorsement is implied.
               </p>
             </PolicyCard>
 
             <PolicyCard title="Medical Disclaimer">
               <p>
-                PathologyBites is an educational platform intended for learning purposes only and does not
-                constitute medical advice, diagnosis, or treatment recommendations. The content provided should
-                not be used as a substitute for professional medical judgment or clinical decision-making.
-                Always consult qualified healthcare professionals for medical decisions, patient care, and
-                diagnostic interpretations.
+                PathologyBites is an educational platform intended for learning purposes only and
+                does not constitute medical advice, diagnosis, or treatment recommendations. The
+                content provided should not be used as a substitute for professional medical
+                judgment or clinical decision-making. Always consult qualified healthcare
+                professionals for medical decisions, patient care, and diagnostic interpretations.
               </p>
             </PolicyCard>
           </div>
@@ -121,5 +126,5 @@ export default function TermsPage() {
         buttonHref="/contact"
       />
     </div>
-  )
+  );
 }

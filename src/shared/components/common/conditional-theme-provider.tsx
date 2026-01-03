@@ -28,51 +28,47 @@
  * - Dashboard routes (/dashboard/*): User can toggle color mode, theme based on role
  * - Admin routes (/admin/*): User can toggle color mode, Default theme only
  */
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import { usePathname } from 'next/navigation'
-import { ThemeProvider as NextThemesProvider } from 'next-themes'
-import type { ThemeProviderProps } from 'next-themes'
+import { useEffect } from "react";
+import { usePathname } from "next/navigation";
+import { ThemeProvider as NextThemesProvider } from "next-themes";
+import type { ThemeProviderProps } from "next-themes";
 
 export function ConditionalThemeProvider({ children, ...props }: ThemeProviderProps) {
-  const pathname = usePathname()
+  const pathname = usePathname();
 
   // Define which routes allow color mode customization
-  const themedRoutes = ['/admin', '/dashboard']
-  const isThemedRoute = pathname ? themedRoutes.some(route => pathname.startsWith(route)) : false
-  
+  const themedRoutes = ["/admin", "/dashboard"];
+  const isThemedRoute = pathname ? themedRoutes.some((route) => pathname.startsWith(route)) : false;
+
   // Theme configuration
   const themeProps: ThemeProviderProps = {
-    attribute: 'class',
-    defaultTheme: 'system',
+    attribute: "class",
+    defaultTheme: "system",
     enableSystem: true,
     disableTransitionOnChange: false,
-    storageKey: 'pathology-bites-theme',
+    storageKey: "pathology-bites-theme",
     ...props,
     // Force light theme on public routes
-    forcedTheme: isThemedRoute ? undefined : 'light'
-  }
-  
+    forcedTheme: isThemedRoute ? undefined : "light",
+  };
+
   // Clean up theme classes on route changes
   useEffect(() => {
-    const html = document.documentElement
-    
+    const html = document.documentElement;
+
     if (!isThemedRoute) {
       // Force light mode on public pages
-      html.classList.remove('dark')
-      html.classList.add('light')
+      html.classList.remove("dark");
+      html.classList.add("light");
       // Optional: Add a data attribute to identify forced theme state
-      html.setAttribute('data-theme-forced', 'true')
+      html.setAttribute("data-theme-forced", "true");
     } else {
       // Remove forced theme indicator on themed routes
-      html.removeAttribute('data-theme-forced')
+      html.removeAttribute("data-theme-forced");
     }
-  }, [isThemedRoute, pathname])
+  }, [isThemedRoute, pathname]);
 
-  return (
-    <NextThemesProvider {...themeProps}>
-      {children}
-    </NextThemesProvider>
-  )
+  return <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>;
 }

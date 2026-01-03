@@ -1,36 +1,40 @@
 // src/app/(dashboard)/dashboard/quiz/[id]/results/page.tsx
-"use client"
+"use client";
 
-import { useParams } from "next/navigation"
-import { Button } from "@/shared/components/ui/button"
-import { QuizResultsSummary } from "@/features/quiz/components/quiz-results-summary"
-import { QuizResultsSkeleton } from "@/features/quiz/components/quiz-results-skeleton"
-import { QuizResult } from "@/features/quiz/types/quiz"
-import { toast } from '@/shared/utils/toast'
-import Link from "next/link"
-import { useCachedData } from "@/shared/hooks/use-cached-data"
+import { useParams } from "next/navigation";
+import { Button } from "@/shared/components/ui/button";
+import { QuizResultsSummary } from "@/features/quiz/components/quiz-results-summary";
+import { QuizResultsSkeleton } from "@/features/quiz/components/quiz-results-skeleton";
+import { QuizResult } from "@/features/quiz/types/quiz";
+import { toast } from "@/shared/utils/toast";
+import Link from "next/link";
+import { useCachedData } from "@/shared/hooks/use-cached-data";
 
 export default function QuizResultsPage() {
-  const params = useParams()
-  const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id
+  const params = useParams();
+  const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id;
 
-  console.log('[Results Page] sessionId:', sessionId)
+  console.log("[Results Page] sessionId:", sessionId);
 
   // Fetch results with caching and deduplication
-  const { data: result, isLoading: loading, error: fetchError } = useCachedData<QuizResult>(
+  const {
+    data: result,
+    isLoading: loading,
+    error: fetchError,
+  } = useCachedData<QuizResult>(
     `quiz-results-${sessionId}`,
     async () => {
       const resultsResponse = await fetch(`/api/quiz/sessions/${sessionId}/results`);
 
       if (!resultsResponse.ok) {
-        const resultsError = await resultsResponse.text()
-        throw new Error(`Failed to fetch results: ${resultsError}`)
+        const resultsError = await resultsResponse.text();
+        throw new Error(`Failed to fetch results: ${resultsError}`);
       }
 
       const resultsData = await resultsResponse.json();
 
       if (!resultsData?.success || !resultsData?.data) {
-        throw new Error('Quiz results not found - quiz may not be completed')
+        throw new Error("Quiz results not found - quiz may not be completed");
       }
 
       return resultsData.data;
@@ -39,18 +43,18 @@ export default function QuizResultsPage() {
       enabled: !!sessionId,
       ttl: 7 * 24 * 60 * 60 * 1000, // 7 days cache (results immutable, needed for review)
       staleTime: 7 * 24 * 60 * 60 * 1000, // 7 days stale time
-      storage: 'localStorage', // Use localStorage for persistence - results are cached from completion
-      prefix: 'pathology-bites-quiz',
+      storage: "localStorage", // Use localStorage for persistence - results are cached from completion
+      prefix: "pathology-bites-quiz",
       onError: (error) => {
-        console.error('Error fetching results:', error)
-        toast.error(error.message)
-      }
+        console.error("Error fetching results:", error);
+        toast.error(error.message);
+      },
     }
-  )
+  );
 
-  const error = fetchError?.message || null
+  const error = fetchError?.message || null;
 
-  console.log('[Results Page] State:', {
+  console.log("[Results Page] State:", {
     loading,
     hasResult: !!result,
     error,
@@ -61,8 +65,8 @@ export default function QuizResultsPage() {
     hasQuestionDetails: !!result?.questionDetails,
     questionDetailsLength: result?.questionDetails?.length,
     hasCategoryBreakdown: !!result?.categoryBreakdown,
-    categoryBreakdownLength: result?.categoryBreakdown?.length
-  })
+    categoryBreakdownLength: result?.categoryBreakdown?.length,
+  });
 
   // Loading state
   if (loading) {
@@ -70,7 +74,7 @@ export default function QuizResultsPage() {
       <div className="container mx-auto py-8">
         <QuizResultsSkeleton />
       </div>
-    )
+    );
   }
 
   // Error state - keep within dashboard layout
@@ -84,9 +88,7 @@ export default function QuizResultsPage() {
               {error || "The quiz results you're looking for don't exist or couldn't be loaded."}
             </p>
             <div className="flex justify-center gap-2 mt-4">
-              <Button onClick={() => window.location.reload()}>
-                Try Again
-              </Button>
+              <Button onClick={() => window.location.reload()}>Try Again</Button>
               <Link href="/dashboard">
                 <Button variant="outline">Back to Dashboard</Button>
               </Link>
@@ -94,7 +96,7 @@ export default function QuizResultsPage() {
           </div>
         </div>
       </div>
-    )
+    );
   }
 
   // Results display
@@ -103,16 +105,16 @@ export default function QuizResultsPage() {
       <div className="max-w-5xl mx-auto">
         <QuizResultsSummary
           result={result}
-          sessionId={sessionId || ''}
+          sessionId={sessionId || ""}
           onReviewQuestions={() => {
-            window.location.href = `/dashboard/quiz/${sessionId}?review=true`
+            window.location.href = `/dashboard/quiz/${sessionId}?review=true`;
           }}
           onRetakeMissed={() => {
             // TODO: Implement retake missed questions functionality
-            toast.info("Retake missed questions feature coming soon!")
+            toast.info("Retake missed questions feature coming soon!");
           }}
         />
       </div>
     </div>
-  )
+  );
 }

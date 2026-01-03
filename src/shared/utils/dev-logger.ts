@@ -5,10 +5,10 @@
  * Automatically disabled in production to reduce noise
  */
 
-import { secureLog } from './secure-logging';
+import { secureLog } from "./secure-logging";
 
-const isDevelopment = process.env.NODE_ENV === 'development';
-const isVerbose = process.env.LOG_LEVEL === 'verbose' || process.env.LOG_LEVEL === 'debug';
+const isDevelopment = process.env.NODE_ENV === "development";
+const isVerbose = process.env.LOG_LEVEL === "verbose" || process.env.LOG_LEVEL === "debug";
 
 export interface RequestLogContext {
   method: string;
@@ -44,9 +44,9 @@ export const devLog = {
 
     const { method, path, userId, ip, requestId } = context;
     console.log(`[API Request] ${method} ${path}`, {
-      userId: userId || 'anonymous',
-      ip: ip || 'unknown',
-      requestId: requestId || 'N/A',
+      userId: userId || "anonymous",
+      ip: ip || "unknown",
+      requestId: requestId || "N/A",
       timestamp: new Date().toISOString(),
     });
   },
@@ -58,11 +58,11 @@ export const devLog = {
     if (!isDevelopment) return;
 
     const { method, path, status, duration, userId, error, requestId } = context;
-    const statusEmoji = status >= 500 ? '❌' : status >= 400 ? '⚠️' : '✅';
+    const statusEmoji = status >= 500 ? "❌" : status >= 400 ? "⚠️" : "✅";
 
     console.log(`[API Response] ${statusEmoji} ${method} ${path} - ${status} (${duration}ms)`, {
-      userId: userId || 'anonymous',
-      requestId: requestId || 'N/A',
+      userId: userId || "anonymous",
+      requestId: requestId || "N/A",
       error: error || undefined,
       timestamp: new Date().toISOString(),
     });
@@ -75,7 +75,7 @@ export const devLog = {
     if (!isDevelopment || !isVerbose) return;
 
     const { query, duration, rows, error } = context;
-    console.log(`[Database Query] ${query.substring(0, 100)}${query.length > 100 ? '...' : ''}`, {
+    console.log(`[Database Query] ${query.substring(0, 100)}${query.length > 100 ? "..." : ""}`, {
       duration: `${duration}ms`,
       rows: rows || 0,
       error: error || undefined,
@@ -89,7 +89,7 @@ export const devLog = {
   debug: (message: string, data?: unknown) => {
     if (!isDevelopment || !isVerbose) return;
 
-    console.log(`[Debug] ${message}`, data ? { ...data, timestamp: new Date().toISOString() } : '');
+    console.log(`[Debug] ${message}`, data ? { ...data, timestamp: new Date().toISOString() } : "");
   },
 
   /**
@@ -97,7 +97,7 @@ export const devLog = {
    */
   info: (message: string, data?: unknown) => {
     if (isDevelopment) {
-      console.log(`[Info] ${message}`, data || '');
+      console.log(`[Info] ${message}`, data || "");
     }
     // Always use secure logging for info level
     secureLog.info(message, data);
@@ -108,7 +108,7 @@ export const devLog = {
    */
   warn: (message: string, data?: unknown) => {
     if (isDevelopment) {
-      console.warn(`[Warning] ${message}`, data || '');
+      console.warn(`[Warning] ${message}`, data || "");
     }
     secureLog.warn(message, data);
   },
@@ -118,7 +118,7 @@ export const devLog = {
    */
   error: (message: string, error?: unknown) => {
     if (isDevelopment) {
-      console.error(`[Error] ${message}`, error || '');
+      console.error(`[Error] ${message}`, error || "");
     }
     secureLog.error(message, error);
   },
@@ -139,12 +139,16 @@ export const devLog = {
   /**
    * Log authentication events (only in development)
    */
-  auth: (event: 'login' | 'logout' | 'token_refresh' | 'auth_check', userId?: string, success: boolean = true) => {
+  auth: (
+    event: "login" | "logout" | "token_refresh" | "auth_check",
+    userId?: string,
+    success: boolean = true
+  ) => {
     if (!isDevelopment) return;
 
-    const eventEmoji = success ? '🔓' : '🔒';
+    const eventEmoji = success ? "🔓" : "🔒";
     console.log(`[Auth] ${eventEmoji} ${event}`, {
-      userId: userId || 'unknown',
+      userId: userId || "unknown",
       success,
       timestamp: new Date().toISOString(),
     });
@@ -153,7 +157,7 @@ export const devLog = {
   /**
    * Log cache operations (only in development with verbose logging)
    */
-  cache: (operation: 'hit' | 'miss' | 'set' | 'delete', key: string, ttl?: number) => {
+  cache: (operation: "hit" | "miss" | "set" | "delete", key: string, ttl?: number) => {
     if (!isDevelopment || !isVerbose) return;
 
     console.log(`[Cache] ${operation.toUpperCase()} - ${key}`, {
@@ -168,8 +172,8 @@ export const devLog = {
   performance: (operation: string, duration: number, metadata?: unknown) => {
     if (!isDevelopment) return;
 
-    const performanceEmoji = duration > 1000 ? '🐌' : duration > 500 ? '⚡' : '🚀';
-    console.log(`[Performance] ${performanceEmoji} ${operation} - ${duration}ms`, metadata || '');
+    const performanceEmoji = duration > 1000 ? "🐌" : duration > 500 ? "⚡" : "🚀";
+    console.log(`[Performance] ${performanceEmoji} ${operation} - ${duration}ms`, metadata || "");
   },
 };
 
@@ -185,10 +189,10 @@ export function generateRequestId(): string {
  */
 export function getClientIP(headers: Headers): string {
   return (
-    headers.get('x-forwarded-for')?.split(',')[0]?.trim() ||
-    headers.get('x-real-ip') ||
-    headers.get('cf-connecting-ip') ||
-    'unknown'
+    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
+    headers.get("x-real-ip") ||
+    headers.get("cf-connecting-ip") ||
+    "unknown"
   );
 }
 

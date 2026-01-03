@@ -1,73 +1,73 @@
 // src/shared/components/common/cookie-consent-banner.tsx
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { Button } from '@/shared/components/ui/button'
-import { Card } from '@/shared/components/ui/card'
-import { X, Cookie } from 'lucide-react'
+import { useEffect, useState } from "react";
+import { Button } from "@/shared/components/ui/button";
+import { Card } from "@/shared/components/ui/card";
+import { X, Cookie } from "lucide-react";
 
-const CONSENT_KEY = 'pathology-bites-cookie-consent'
-const CONSENT_VERSION = '1.0' // Increment this if you update the policy
+const CONSENT_KEY = "pathology-bites-cookie-consent";
+const CONSENT_VERSION = "1.0"; // Increment this if you update the policy
 
 interface CookieConsent {
-  version: string
-  essential: boolean // Always true
-  analytics: boolean
-  timestamp: string
+  version: string;
+  essential: boolean; // Always true
+  analytics: boolean;
+  timestamp: string;
 }
 
 export function CookieConsentBanner() {
-  const [showBanner, setShowBanner] = useState(false)
-  const [mounted, setMounted] = useState(false)
+  const [showBanner, setShowBanner] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
     // Only run on client side
-    if (typeof window === 'undefined') return
+    if (typeof window === "undefined") return;
 
-    setMounted(true)
+    setMounted(true);
 
     // Check if user has already consented
     try {
-      const savedConsent = localStorage.getItem(CONSENT_KEY)
+      const savedConsent = localStorage.getItem(CONSENT_KEY);
 
       if (savedConsent) {
-        const consent: CookieConsent = JSON.parse(savedConsent)
+        const consent: CookieConsent = JSON.parse(savedConsent);
 
         // Check if consent version matches
         if (consent.version === CONSENT_VERSION) {
           // Apply consent preferences and don't show banner
-          applyConsent(consent)
-          setShowBanner(false)
-          return
+          applyConsent(consent);
+          setShowBanner(false);
+          return;
         }
       }
     } catch (e) {
-      console.warn('[CookieConsent] Failed to parse saved consent:', e)
+      console.warn("[CookieConsent] Failed to parse saved consent:", e);
       // Invalid consent data, show banner
     }
 
     // Show banner after a short delay for better UX
-    const timer = setTimeout(() => setShowBanner(true), 500)
-    return () => clearTimeout(timer)
-  }, [])
+    const timer = setTimeout(() => setShowBanner(true), 500);
+    return () => clearTimeout(timer);
+  }, []);
 
   const applyConsent = (consent: CookieConsent) => {
     // Apply analytics consent
-    if (consent.analytics && typeof window !== 'undefined') {
+    if (consent.analytics && typeof window !== "undefined") {
       // Enable Google Analytics
       if (process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID) {
         // GA4 is already loaded in layout, just enable it
-        window.gtag?.('consent', 'update', {
-          analytics_storage: 'granted'
-        })
+        window.gtag?.("consent", "update", {
+          analytics_storage: "granted",
+        });
       }
     } else {
       // Disable analytics
-      window.gtag?.('consent', 'update', {
-        analytics_storage: 'denied'
-      })
+      window.gtag?.("consent", "update", {
+        analytics_storage: "denied",
+      });
     }
-  }
+  };
 
   const saveConsent = (analytics: boolean) => {
     try {
@@ -75,43 +75,43 @@ export function CookieConsentBanner() {
         version: CONSENT_VERSION,
         essential: true,
         analytics,
-        timestamp: new Date().toISOString()
-      }
+        timestamp: new Date().toISOString(),
+      };
 
       // Save to localStorage
-      localStorage.setItem(CONSENT_KEY, JSON.stringify(consent))
+      localStorage.setItem(CONSENT_KEY, JSON.stringify(consent));
 
       // Verify it was saved
-      const saved = localStorage.getItem(CONSENT_KEY)
+      const saved = localStorage.getItem(CONSENT_KEY);
       if (!saved) {
-        console.warn('[CookieConsent] Failed to save consent to localStorage')
-        return
+        console.warn("[CookieConsent] Failed to save consent to localStorage");
+        return;
       }
 
       // Apply consent preferences
-      applyConsent(consent)
-      setShowBanner(false)
-      console.log('[CookieConsent] Consent saved:', { analytics, timestamp: consent.timestamp })
+      applyConsent(consent);
+      setShowBanner(false);
+      console.log("[CookieConsent] Consent saved:", { analytics, timestamp: consent.timestamp });
     } catch (error) {
-      console.error('[CookieConsent] Failed to save consent:', error)
+      console.error("[CookieConsent] Failed to save consent:", error);
     }
-  }
+  };
 
   const handleAcceptAll = () => {
-    saveConsent(true)
-  }
+    saveConsent(true);
+  };
 
   const handleAcceptEssential = () => {
-    saveConsent(false)
-  }
+    saveConsent(false);
+  };
 
   const handleReject = () => {
-    saveConsent(false)
-  }
+    saveConsent(false);
+  };
 
   // Don't render on server or if already consented
   if (!mounted || !showBanner) {
-    return null
+    return null;
   }
 
   return (
@@ -180,7 +180,7 @@ export function CookieConsentBanner() {
                 <a href="/privacy" className="text-primary hover:underline font-medium">
                   Privacy Policy
                 </a>
-                {' • '}
+                {" • "}
                 <a href="/terms" className="text-primary hover:underline font-medium">
                   Terms
                 </a>
@@ -190,6 +190,5 @@ export function CookieConsentBanner() {
         </Card>
       </div>
     </>
-  )
+  );
 }
-

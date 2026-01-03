@@ -1,6 +1,6 @@
 // src/lib/network/network-service.ts
 
-import { createClient } from '@/shared/services/client'
+import { createClient } from "@/shared/services/client";
 
 type NetworkStatusListener = (isConnected: boolean) => void;
 type AuthStatusListener = (isAuthenticated: boolean) => void;
@@ -8,7 +8,7 @@ type CombinedStatusListener = (isConnected: boolean, isAuthenticated: boolean) =
 
 class NetworkService {
   private static instance: NetworkService;
-  private isOnline: boolean = typeof navigator !== 'undefined' ? navigator.onLine : true;
+  private isOnline: boolean = typeof navigator !== "undefined" ? navigator.onLine : true;
   private hasConnectivity: boolean = true;
   private isAuthenticated: boolean = false;
 
@@ -19,20 +19,20 @@ class NetworkService {
   private pingIntervalId?: NodeJS.Timeout;
   private authCheckIntervalId?: NodeJS.Timeout;
   private reconnectAttempts: number = 0;
-  private pingUrl: string = '/health.json'; // Use static file to avoid function calls
+  private pingUrl: string = "/health.json"; // Use static file to avoid function calls
   private lastConnectivityCheck: number = 0;
   private lastAuthCheck: number = 0;
   private readonly CONNECTIVITY_CACHE_MS = 120000; // Cache connectivity status for 2 minutes
   private readonly AUTH_CACHE_MS = 300000; // Cache auth status for 5 minutes
 
   private constructor() {
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       this.setupListeners();
-      
+
       // In production, disable periodic checks to minimize function calls
       // Browser events (online/offline/focus) will handle immediate status changes
-      if (process.env.NODE_ENV === 'production') {
-        console.log('Network service: Production mode - periodic checks disabled');
+      if (process.env.NODE_ENV === "production") {
+        console.log("Network service: Production mode - periodic checks disabled");
         // Only rely on browser events in production
       } else {
         this.startPeriodicChecks();
@@ -48,11 +48,11 @@ class NetworkService {
   }
 
   private setupListeners(): void {
-    window.addEventListener('online', this.handleOnline);
-    window.addEventListener('offline', this.handleOffline);
+    window.addEventListener("online", this.handleOnline);
+    window.addEventListener("offline", this.handleOffline);
     // Temporarily disable focus listener to prevent admin dashboard refresh on tab changes
     // window.addEventListener('focus', this.handleWindowFocus);
-    window.addEventListener('storage', this.handleStorageChange);
+    window.addEventListener("storage", this.handleStorageChange);
   }
 
   private handleOnline = (): void => {
@@ -64,7 +64,7 @@ class NetworkService {
     this.isOnline = false;
     this.hasConnectivity = false;
     this.notifyListeners();
-    console.log('Network appears to be offline');
+    console.log("Network appears to be offline");
   };
 
   private handleWindowFocus = (): void => {
@@ -75,12 +75,15 @@ class NetworkService {
 
   private handleStorageChange = (event: StorageEvent): void => {
     // Check for auth-related storage changes
-    if (event.key?.includes('supabase.auth') || event.key === null) {
+    if (event.key?.includes("supabase.auth") || event.key === null) {
       this.checkAuthStatus();
     }
   };
 
-  private startPeriodicChecks(pingInterval: number = 1800000, authInterval: number = 3600000): void {
+  private startPeriodicChecks(
+    pingInterval: number = 1800000,
+    authInterval: number = 3600000
+  ): void {
     // Ultra-conservative: check connectivity every 30 minutes, auth every 60 minutes
     // Use browser events (online/offline, focus) for immediate status changes
     // This dramatically reduces function invocations from 2k+ to ~50/day
@@ -119,14 +122,14 @@ class NetworkService {
     try {
       const controller = new AbortController();
       // Exponential backoff for timeout based on attempts
-      const timeout = Math.min(8000 + (this.reconnectAttempts * 2000), 20000);
+      const timeout = Math.min(8000 + this.reconnectAttempts * 2000, 20000);
       const timeoutId = setTimeout(() => controller.abort(), timeout);
 
       // Try to ping our own API first (more reliable than external)
       const response = await fetch(this.pingUrl, {
-        method: 'HEAD',
-        cache: 'no-store',
-        signal: controller.signal
+        method: "HEAD",
+        cache: "no-store",
+        signal: controller.signal,
       });
 
       clearTimeout(timeoutId);
@@ -139,7 +142,7 @@ class NetworkService {
         this.lastConnectivityCheck = now; // Update cache timestamp
 
         if (wasOffline) {
-          console.log('Network connectivity restored');
+          console.log("Network connectivity restored");
           this.notifyListeners();
           // Also check auth status when connectivity is restored
           this.checkAuthStatus();
@@ -159,7 +162,9 @@ class NetworkService {
       } else {
         // Exponential backoff delay before next attempt
         const delay = Math.min(1000 * Math.pow(2, this.reconnectAttempts), 30000);
-        console.log(`Connectivity check failed (attempt ${this.reconnectAttempts}/${maxAttempts}), retrying in ${delay}ms...`);
+        console.log(
+          `Connectivity check failed (attempt ${this.reconnectAttempts}/${maxAttempts}), retrying in ${delay}ms...`
+        );
 
         setTimeout(() => {
           if (this.reconnectAttempts < maxAttempts) {
@@ -186,7 +191,10 @@ class NetworkService {
 
       // First try getSession which is more reliable
       try {
-        const { data: { session }, error } = await supabase.auth.getSession();
+        const {
+          data: { session },
+          error,
+        } = await supabase.auth.getSession();
 
         if (error) {
           throw error;
@@ -197,15 +205,22 @@ class NetworkService {
         this.lastAuthCheck = now; // Update cache timestamp
 
         if (wasUnauthenticated !== !this.isAuthenticated) {
-          console.log('Authentication status changed:', this.isAuthenticated ? 'authenticated' : 'unauthenticated');
+          console.log(
+            "Authentication status changed:",
+            this.isAuthenticated ? "authenticated" : "unauthenticated"
+          );
           this.notifyListeners();
         }
 
         return;
-      } catch { // Remove the 'error' parameter
+      } catch {
+        // Remove the 'error' parameter
         // If getSession fails, try getUser as fallback
         try {
-          const { data: { user }, error } = await supabase.auth.getUser();
+          const {
+            data: { user },
+            error,
+          } = await supabase.auth.getUser();
 
           if (error) {
             throw error;
@@ -216,22 +231,26 @@ class NetworkService {
           this.lastAuthCheck = now; // Update cache timestamp
 
           if (wasUnauthenticated !== !this.isAuthenticated) {
-            console.log('Authentication status changed:', this.isAuthenticated ? 'authenticated' : 'unauthenticated');
+            console.log(
+              "Authentication status changed:",
+              this.isAuthenticated ? "authenticated" : "unauthenticated"
+            );
             this.notifyListeners();
           }
 
           return;
-        } catch { // Remove the 'fallbackError' parameter
+        } catch {
+          // Remove the 'fallbackError' parameter
           // Both methods failed, assume not authenticated
           if (this.isAuthenticated) {
             this.isAuthenticated = false;
-            console.log('User is no longer authenticated');
+            console.log("User is no longer authenticated");
             this.notifyListeners();
           }
         }
       }
     } catch (error) {
-      console.error('Error checking auth status:', error);
+      console.error("Error checking auth status:", error);
       // Don't change auth status on network/unexpected errors
     }
   }
@@ -263,7 +282,7 @@ class NetworkService {
    */
   public disablePeriodicChecks(): void {
     this.stopPeriodicChecks();
-    console.log('Network service: Periodic checks disabled, using browser events only');
+    console.log("Network service: Periodic checks disabled, using browser events only");
   }
 
   /**
@@ -292,7 +311,7 @@ class NetworkService {
 
     // Return a function to remove the listener
     return () => {
-      this.networkListeners = this.networkListeners.filter(l => l !== listener);
+      this.networkListeners = this.networkListeners.filter((l) => l !== listener);
     };
   }
 
@@ -304,7 +323,7 @@ class NetworkService {
 
     // Return a function to remove the listener
     return () => {
-      this.authListeners = this.authListeners.filter(l => l !== listener);
+      this.authListeners = this.authListeners.filter((l) => l !== listener);
     };
   }
 
@@ -316,7 +335,7 @@ class NetworkService {
 
     // Return a function to remove the listener
     return () => {
-      this.combinedListeners = this.combinedListeners.filter(l => l !== listener);
+      this.combinedListeners = this.combinedListeners.filter((l) => l !== listener);
     };
   }
 
@@ -325,29 +344,29 @@ class NetworkService {
     const isAuthenticated = this.isUserAuthenticated();
 
     // Notify network-only listeners
-    this.networkListeners.forEach(listener => {
+    this.networkListeners.forEach((listener) => {
       try {
         listener(isConnected);
       } catch (error) {
-        console.error('Error in network status listener:', error);
+        console.error("Error in network status listener:", error);
       }
     });
 
     // Notify auth-only listeners
-    this.authListeners.forEach(listener => {
+    this.authListeners.forEach((listener) => {
       try {
         listener(isAuthenticated);
       } catch (error) {
-        console.error('Error in auth status listener:', error);
+        console.error("Error in auth status listener:", error);
       }
     });
 
     // Notify combined listeners
-    this.combinedListeners.forEach(listener => {
+    this.combinedListeners.forEach((listener) => {
       try {
         listener(isConnected, isAuthenticated);
       } catch (error) {
-        console.error('Error in combined status listener:', error);
+        console.error("Error in combined status listener:", error);
       }
     });
   }
@@ -356,11 +375,11 @@ class NetworkService {
    * Clean up resources
    */
   public cleanup(): void {
-    if (typeof window !== 'undefined') {
-      window.removeEventListener('online', this.handleOnline);
-      window.removeEventListener('offline', this.handleOffline);
+    if (typeof window !== "undefined") {
+      window.removeEventListener("online", this.handleOnline);
+      window.removeEventListener("offline", this.handleOffline);
       // window.removeEventListener('focus', this.handleWindowFocus);
-      window.removeEventListener('storage', this.handleStorageChange);
+      window.removeEventListener("storage", this.handleStorageChange);
     }
     this.stopPeriodicChecks();
     this.networkListeners = [];

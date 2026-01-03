@@ -1,8 +1,8 @@
 // src/features/questions/components/draft-questions-table.tsx
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/shared/services/client'
+import { useState, useEffect } from "react";
+import { createClient } from "@/shared/services/client";
 import {
   Table,
   TableBody,
@@ -10,75 +10,76 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/components/ui/table"
-import { Button } from "@/shared/components/ui/button"
-import { Badge } from "@/shared/components/ui/badge"
-import { Input } from "@/shared/components/ui/input"
+} from "@/shared/components/ui/table";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import { Input } from "@/shared/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select"
-import { Checkbox } from "@/shared/components/ui/checkbox"
-import { Eye, Search, Filter, Check, X, FileQuestion, Send } from 'lucide-react'
-import { QuestionPreviewDialog } from './question-preview-dialog'
-import { SubmitForReviewButton } from './submit-for-review-button'
-import { toast } from '@/shared/utils/toast'
-import { SetData } from '@/features/questions/types/question-sets'
+} from "@/shared/components/ui/select";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import { Eye, Search, Filter, Check, X, FileQuestion, Send } from "lucide-react";
+import { QuestionPreviewDialog } from "./question-preview-dialog";
+import { SubmitForReviewButton } from "./submit-for-review-button";
+import { toast } from "@/shared/utils/toast";
+import { SetData } from "@/features/questions/types/question-sets";
 
 interface DraftQuestion {
-  id: string
-  title: string
-  stem: string
-  difficulty: "easy" | "medium" | "hard"
-  status: "draft" | "pending_review" | "approved" | "flagged" | "archived"
-  created_at: string
-  updated_at: string
-  created_by: string
-  updated_by: string
-  question_set_id: string | null
-  category_id: string | null
-  teaching_point: string
-  question_references: string | null
-  version: string
-  version_major: number
-  version_minor: number
-  version_patch: number
-  version_string: string
+  id: string;
+  title: string;
+  stem: string;
+  difficulty: "easy" | "medium" | "hard";
+  status: "draft" | "pending_review" | "approved" | "flagged" | "archived";
+  created_at: string;
+  updated_at: string;
+  created_by: string;
+  updated_by: string;
+  question_set_id: string | null;
+  category_id: string | null;
+  teaching_point: string;
+  question_references: string | null;
+  version: string;
+  version_major: number;
+  version_minor: number;
+  version_patch: number;
+  version_string: string;
   // Joined data
   creator?: {
-    first_name: string
-    last_name: string
-    email: string
-  }
-  question_set?: SetData
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
+  question_set?: SetData;
 }
 
 export function DraftQuestionsTable() {
-  const [questions, setQuestions] = useState<DraftQuestion[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [difficultyFilter, setDifficultyFilter] = useState('all')
-  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([])
-  const [selectedQuestion, setSelectedQuestion] = useState<DraftQuestion | null>(null)
-  const [previewOpen, setPreviewOpen] = useState(false)
+  const [questions, setQuestions] = useState<DraftQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState("all");
+  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
+  const [selectedQuestion, setSelectedQuestion] = useState<DraftQuestion | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
 
-  const supabase = createClient()
+  const supabase = createClient();
 
   useEffect(() => {
-    fetchDraftQuestions()
-  }, [fetchDraftQuestions])
+    fetchDraftQuestions();
+  }, [fetchDraftQuestions]);
 
   const fetchDraftQuestions = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
 
       // First, get the basic question data
       const { data: questionsData, error: questionsError } = await supabase
-        .from('questions')
-        .select(`
+        .from("questions")
+        .select(
+          `
           id,
           title,
           stem,
@@ -97,47 +98,45 @@ export function DraftQuestionsTable() {
           version_minor,
           version_patch,
           version_string
-        `)
-        .eq('status', 'draft')
-        .order('created_at', { ascending: false })
+        `
+        )
+        .eq("status", "draft")
+        .order("created_at", { ascending: false });
 
       if (questionsError) {
-        console.error('Error fetching draft questions:', questionsError)
-        toast.error(`Failed to load draft questions: ${questionsError.message || 'Unknown error'}`)
-        return
+        console.error("Error fetching draft questions:", questionsError);
+        toast.error(`Failed to load draft questions: ${questionsError.message || "Unknown error"}`);
+        return;
       }
 
       if (!questionsData || questionsData.length === 0) {
-        setQuestions([])
-        console.log('No draft questions found')
-        return
+        setQuestions([]);
+        console.log("No draft questions found");
+        return;
       }
 
       // Get user data for creators
-      const creatorIds = [...new Set(questionsData.map(q => q.created_by))]
+      const creatorIds = [...new Set(questionsData.map((q) => q.created_by))];
       const { data: usersData } = await supabase
-        .from('users')
-        .select('id, first_name, last_name, email')
-        .in('id', creatorIds)
+        .from("users")
+        .select("id, first_name, last_name, email")
+        .in("id", creatorIds);
 
       // Get question set data
       const questionSetIds = questionsData
-        .map(q => q.question_set_id)
-        .filter(id => id !== null)
+        .map((q) => q.question_set_id)
+        .filter((id) => id !== null);
 
-      let questionSetsData: unknown[] = []
+      let questionSetsData: unknown[] = [];
       if (questionSetIds.length > 0) {
-        const { data } = await supabase
-          .from('question_sets')
-          .select('*')
-          .in('id', questionSetIds)
-        questionSetsData = data || []
+        const { data } = await supabase.from("question_sets").select("*").in("id", questionSetIds);
+        questionSetsData = data || [];
       }
 
       // Transform and combine the data
       const transformedQuestions: DraftQuestion[] = questionsData.map((question) => {
-        const creator = usersData?.find(user => user.id === question.created_by)
-        const questionSet = questionSetsData.find(qs => qs.id === question.question_set_id)
+        const creator = usersData?.find((user) => user.id === question.created_by);
+        const questionSet = questionSetsData.find((qs) => qs.id === question.question_set_id);
 
         return {
           id: question.id,
@@ -158,113 +157,134 @@ export function DraftQuestionsTable() {
           version_minor: question.version_minor,
           version_patch: question.version_patch,
           version_string: question.version_string,
-          creator: creator ? {
-            first_name: creator.first_name,
-            last_name: creator.last_name,
-            email: creator.email
-          } : undefined,
-          question_set: questionSet || undefined
-        }
-      })
+          creator: creator
+            ? {
+                first_name: creator.first_name,
+                last_name: creator.last_name,
+                email: creator.email,
+              }
+            : undefined,
+          question_set: questionSet || undefined,
+        };
+      });
 
-      setQuestions(transformedQuestions)
-
+      setQuestions(transformedQuestions);
     } catch (error) {
-      console.error('Unexpected error fetching draft questions:', error)
-      toast.error('An unexpected error occurred while loading draft questions')
+      console.error("Unexpected error fetching draft questions:", error);
+      toast.error("An unexpected error occurred while loading draft questions");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const filteredQuestions = questions.filter(question => {
-    const matchesSearch = 
+  const filteredQuestions = questions.filter((question) => {
+    const matchesSearch =
       question.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       question.creator?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      question.creator?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      question.creator?.last_name?.toLowerCase().includes(searchTerm.toLowerCase());
 
-    const matchesDifficulty = difficultyFilter === 'all' || question.difficulty === difficultyFilter
+    const matchesDifficulty =
+      difficultyFilter === "all" || question.difficulty === difficultyFilter;
 
-    return matchesSearch && matchesDifficulty
-  })
+    return matchesSearch && matchesDifficulty;
+  });
 
   const handleSelectQuestion = (questionId: string, checked: boolean) => {
     if (checked) {
-      setSelectedQuestions(prev => [...prev, questionId])
+      setSelectedQuestions((prev) => [...prev, questionId]);
     } else {
-      setSelectedQuestions(prev => prev.filter(id => id !== questionId))
+      setSelectedQuestions((prev) => prev.filter((id) => id !== questionId));
     }
-  }
+  };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedQuestions(filteredQuestions.map(q => q.id))
+      setSelectedQuestions(filteredQuestions.map((q) => q.id));
     } else {
-      setSelectedQuestions([])
+      setSelectedQuestions([]);
     }
-  }
+  };
 
   const handlePreviewQuestion = (question: DraftQuestion) => {
-    setSelectedQuestion(question)
-    setPreviewOpen(true)
-  }
+    setSelectedQuestion(question);
+    setPreviewOpen(true);
+  };
 
-  const updateQuestionStatus = async (questionIds: string[], newStatus: 'published' | 'rejected' | 'pending_review') => {
+  const updateQuestionStatus = async (
+    questionIds: string[],
+    newStatus: "published" | "rejected" | "pending_review"
+  ) => {
     try {
       const { error } = await supabase
-        .from('questions')
+        .from("questions")
         .update({
           status: newStatus,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .in('id', questionIds)
+        .in("id", questionIds);
 
       if (error) {
-        console.error('Error updating question status:', error)
-        toast.error(`Failed to update question status: ${error.message || 'Unknown error'}`)
-        return
+        console.error("Error updating question status:", error);
+        toast.error(`Failed to update question status: ${error.message || "Unknown error"}`);
+        return;
       }
 
-      const action = newStatus === 'published' ? 'approved' :
-                    newStatus === 'rejected' ? 'rejected' : 'submitted for review'
-      toast.success(`${questionIds.length} question(s) ${action} successfully`)
+      const action =
+        newStatus === "published"
+          ? "approved"
+          : newStatus === "rejected"
+            ? "rejected"
+            : "submitted for review";
+      toast.success(`${questionIds.length} question(s) ${action} successfully`);
 
       // Refresh the data and clear selections
-      fetchDraftQuestions()
-      setSelectedQuestions([])
+      fetchDraftQuestions();
+      setSelectedQuestions([]);
     } catch (error) {
-      console.error('Unexpected error updating question status:', error)
-      toast.error('An unexpected error occurred while updating question status')
+      console.error("Unexpected error updating question status:", error);
+      toast.error("An unexpected error occurred while updating question status");
     }
-  }
+  };
 
   const handleApproveSelected = () => {
-    if (selectedQuestions.length === 0) return
-    updateQuestionStatus(selectedQuestions, 'published')
-  }
+    if (selectedQuestions.length === 0) return;
+    updateQuestionStatus(selectedQuestions, "published");
+  };
 
   const handleRejectSelected = () => {
-    if (selectedQuestions.length === 0) return
-    updateQuestionStatus(selectedQuestions, 'rejected')
-  }
+    if (selectedQuestions.length === 0) return;
+    updateQuestionStatus(selectedQuestions, "rejected");
+  };
 
   const handleSubmitForReviewSelected = () => {
-    if (selectedQuestions.length === 0) return
-    updateQuestionStatus(selectedQuestions, 'under_review')
-  }
+    if (selectedQuestions.length === 0) return;
+    updateQuestionStatus(selectedQuestions, "under_review");
+  };
 
   const getDifficultyBadge = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
-      case 'easy':
-        return <Badge variant="outline" className="text-green-600 border-green-600">Easy</Badge>
-      case 'medium':
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-600">Medium</Badge>
-      case 'hard':
-        return <Badge variant="outline" className="text-red-600 border-red-600">Hard</Badge>
+      case "easy":
+        return (
+          <Badge variant="outline" className="text-green-600 border-green-600">
+            Easy
+          </Badge>
+        );
+      case "medium":
+        return (
+          <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+            Medium
+          </Badge>
+        );
+      case "hard":
+        return (
+          <Badge variant="outline" className="text-red-600 border-red-600">
+            Hard
+          </Badge>
+        );
       default:
-        return <Badge variant="outline">{difficulty}</Badge>
+        return <Badge variant="outline">{difficulty}</Badge>;
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -280,7 +300,7 @@ export function DraftQuestionsTable() {
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -352,7 +372,10 @@ export function DraftQuestionsTable() {
             <TableRow>
               <TableHead className="w-[50px]">
                 <Checkbox
-                  checked={selectedQuestions.length === filteredQuestions.length && filteredQuestions.length > 0}
+                  checked={
+                    selectedQuestions.length === filteredQuestions.length &&
+                    filteredQuestions.length > 0
+                  }
                   onCheckedChange={handleSelectAll}
                 />
               </TableHead>
@@ -372,13 +395,14 @@ export function DraftQuestionsTable() {
                     <FileQuestion className="h-12 w-12 text-muted-foreground/50" />
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-muted-foreground">
-                        {questions.length === 0 ? 'No draft questions available' : 'No questions match your search'}
+                        {questions.length === 0
+                          ? "No draft questions available"
+                          : "No questions match your search"}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {questions.length === 0
-                          ? 'Draft questions will appear here when they are submitted for review.'
-                          : 'Try adjusting your search terms or filters.'
-                        }
+                          ? "Draft questions will appear here when they are submitted for review."
+                          : "Try adjusting your search terms or filters."}
                       </p>
                     </div>
                   </div>
@@ -390,31 +414,28 @@ export function DraftQuestionsTable() {
                   <TableCell>
                     <Checkbox
                       checked={selectedQuestions.includes(question.id)}
-                      onCheckedChange={(checked) => handleSelectQuestion(question.id, checked as boolean)}
+                      onCheckedChange={(checked) =>
+                        handleSelectQuestion(question.id, checked as boolean)
+                      }
                     />
                   </TableCell>
                   <TableCell className="font-medium max-w-[300px] truncate">
                     {question.title}
                   </TableCell>
                   <TableCell>
-                    {question.creator ? 
-                      `${question.creator.first_name} ${question.creator.last_name}` : 
-                      'Unknown'
-                    }
+                    {question.creator
+                      ? `${question.creator.first_name} ${question.creator.last_name}`
+                      : "Unknown"}
                   </TableCell>
                   <TableCell>{getDifficultyBadge(question.difficulty)}</TableCell>
                   <TableCell>
                     {question.question_set ? (
-                      <Badge variant="secondary">
-                        {question.question_set.name}
-                      </Badge>
+                      <Badge variant="secondary">{question.question_set.name}</Badge>
                     ) : (
-                      '-'
+                      "-"
                     )}
                   </TableCell>
-                  <TableCell>
-                    {new Date(question.created_at).toLocaleDateString()}
-                  </TableCell>
+                  <TableCell>{new Date(question.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button
@@ -447,5 +468,5 @@ export function DraftQuestionsTable() {
         onOpenChange={setPreviewOpen}
       />
     </div>
-  )
+  );
 }

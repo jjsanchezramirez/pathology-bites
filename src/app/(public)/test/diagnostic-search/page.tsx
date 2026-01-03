@@ -1,132 +1,130 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
-import { Badge } from '@/shared/components/ui/badge'
-import {
-  Search,
-  Loader2,
-  AlertCircle,
-  Info,
-  Sparkles,
-  Image as ImageIcon,
-} from 'lucide-react'
-import Image from 'next/image'
-import { PublicHero } from '@/shared/components/common/public-hero'
-import { JoinCommunitySection } from '@/shared/components/common/join-community-section'
-import { DiagnosticContent } from '@/shared/components/features/diagnostic-content'
-import { NCIEVSTester } from '@/shared/components/features/nci-evs-tester'
+import { useState } from "react";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { Badge } from "@/shared/components/ui/badge";
+import { Search, Loader2, AlertCircle, Info, Sparkles, Image as ImageIcon } from "lucide-react";
+import Image from "next/image";
+import { PublicHero } from "@/shared/components/common/public-hero";
+import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
+import { DiagnosticContent } from "@/shared/components/features/diagnostic-content";
+import { NCIEVSTester } from "@/shared/components/features/nci-evs-tester";
 
 interface DisambiguationOption {
-  topicName: string
-  lessonName: string
-  fileName: string
-  category: string
-  subcategory: string
+  topicName: string;
+  lessonName: string;
+  fileName: string;
+  category: string;
+  subcategory: string;
 }
 
 interface RelatedImage {
-  id: string
-  url: string
-  description: string | null
-  alt_text: string | null
-  category: string
-  relevanceScore: number
+  id: string;
+  url: string;
+  description: string | null;
+  alt_text: string | null;
+  category: string;
+  relevanceScore: number;
 }
 
 export default function DiagnosticSearchPage() {
-  const [entity, setEntity] = useState('')
-  const [isLoading, setIsLoading] = useState(false)
-  const [content, setContent] = useState<unknown>(null)
-  const [matchInfo, setMatchInfo] = useState<unknown>(null)
-  const [metadata, setMetadata] = useState<unknown>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [disambiguationOptions, setDisambiguationOptions] = useState<DisambiguationOption[] | null>(null)
-  const [relatedImages, setRelatedImages] = useState<RelatedImage[]>([])
+  const [entity, setEntity] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [content, setContent] = useState<unknown>(null);
+  const [matchInfo, setMatchInfo] = useState<unknown>(null);
+  const [metadata, setMetadata] = useState<unknown>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [disambiguationOptions, setDisambiguationOptions] = useState<DisambiguationOption[] | null>(
+    null
+  );
+  const [relatedImages, setRelatedImages] = useState<RelatedImage[]>([]);
 
   const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!entity.trim()) {
-      setError('Please enter a diagnostic entity to search')
-      return
+      setError("Please enter a diagnostic entity to search");
+      return;
     }
 
-    performSearch(entity.trim())
-  }
+    performSearch(entity.trim());
+  };
 
-  const performSearch = async (searchTerm: string, topicDetails?: { fileName: string; topicName: string; lessonName: string }) => {
-    setIsLoading(true)
-    setError(null)
-    setContent(null)
-    setMatchInfo(null)
-    setMetadata(null)
-    setDisambiguationOptions(null)
-    setRelatedImages([])
+  const performSearch = async (
+    searchTerm: string,
+    topicDetails?: { fileName: string; topicName: string; lessonName: string }
+  ) => {
+    setIsLoading(true);
+    setError(null);
+    setContent(null);
+    setMatchInfo(null);
+    setMetadata(null);
+    setDisambiguationOptions(null);
+    setRelatedImages([]);
 
     try {
       const requestBody = topicDetails
         ? { entity: searchTerm, ...topicDetails }
-        : { entity: searchTerm }
+        : { entity: searchTerm };
 
-      const response = await fetch('/api/public/tools/diagnostic-search', {
-        method: 'POST',
+      const response = await fetch("/api/public/tools/diagnostic-search", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify(requestBody),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        throw new Error(data.error || 'Search failed')
+        throw new Error(data.error || "Search failed");
       }
 
       // Set related images if available
       if (data.related_images && data.related_images.length > 0) {
-        setRelatedImages(data.related_images)
+        setRelatedImages(data.related_images);
       }
 
       // Handle different response types
-      if (data.type === 'no_matches') {
-        setError(data.message || 'No matches found')
-        setMetadata(data.metadata)
-      } else if (data.type === 'disambiguation_needed') {
-        setDisambiguationOptions(data.options)
-        setMetadata(data.metadata)
-      } else if (data.type === 'single_match') {
+      if (data.type === "no_matches") {
+        setError(data.message || "No matches found");
+        setMetadata(data.metadata);
+      } else if (data.type === "disambiguation_needed") {
+        setDisambiguationOptions(data.options);
+        setMetadata(data.metadata);
+      } else if (data.type === "single_match") {
         // Use AI-parsed results if available, fall back to raw content
-        setContent(data.results || data.content)
-        setMatchInfo(data.match)
-        setMetadata(data.metadata)
+        setContent(data.results || data.content);
+        setMatchInfo(data.match);
+        setMetadata(data.metadata);
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred during search')
+      setError(err instanceof Error ? err.message : "An error occurred during search");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleDisambiguationSelect = (option: DisambiguationOption) => {
     performSearch(entity, {
       fileName: option.fileName,
       topicName: option.topicName,
       lessonName: option.lessonName,
-    })
-  }
+    });
+  };
 
   const handleClear = () => {
-    setEntity('')
-    setContent(null)
-    setMatchInfo(null)
-    setMetadata(null)
-    setError(null)
-    setDisambiguationOptions(null)
-  }
+    setEntity("");
+    setContent(null);
+    setMatchInfo(null);
+    setMetadata(null);
+    setError(null);
+    setDisambiguationOptions(null);
+  };
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -170,7 +168,7 @@ export default function DiagnosticSearchPage() {
                       ) : (
                         <Search className="h-4 w-4" />
                       )}
-                      {isLoading ? 'Searching...' : 'Search'}
+                      {isLoading ? "Searching..." : "Search"}
                     </Button>
                     {(content || error || disambiguationOptions) && (
                       <Button type="button" variant="outline" onClick={handleClear}>
@@ -191,9 +189,7 @@ export default function DiagnosticSearchPage() {
                   <Loader2 className="h-12 w-12 animate-spin mx-auto text-primary" />
                   <div className="space-y-2">
                     <h3 className="text-lg font-semibold">Searching...</h3>
-                    <p className="text-sm text-muted-foreground">
-                      Looking for "{entity}"
-                    </p>
+                    <p className="text-sm text-muted-foreground">Looking for "{entity}"</p>
                   </div>
                 </div>
               </CardContent>
@@ -272,7 +268,9 @@ export default function DiagnosticSearchPage() {
                   {metadata.match_type && (
                     <div>
                       <span className="text-muted-foreground">Match Type:</span>
-                      <p className="font-medium capitalize">{metadata.match_type.replace('_', ' ')}</p>
+                      <p className="font-medium capitalize">
+                        {metadata.match_type.replace("_", " ")}
+                      </p>
                     </div>
                   )}
                 </div>
@@ -299,7 +297,7 @@ export default function DiagnosticSearchPage() {
                   <ImageIcon className="h-5 w-5 text-primary" />
                   <h3 className="text-lg font-semibold">Related Images</h3>
                   <Badge variant="secondary" className="ml-auto">
-                    {relatedImages.length} {relatedImages.length === 1 ? 'image' : 'images'}
+                    {relatedImages.length} {relatedImages.length === 1 ? "image" : "images"}
                   </Badge>
                 </div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -313,14 +311,17 @@ export default function DiagnosticSearchPage() {
                     >
                       <Image
                         src={image.url}
-                        alt={image.alt_text || image.description || 'Related pathology image'}
+                        alt={image.alt_text || image.description || "Related pathology image"}
                         fill
                         unoptimized={true}
                         className="object-cover group-hover:scale-105 transition-transform duration-200"
                       />
                       <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity">
                         <div className="absolute bottom-0 left-0 right-0 p-3">
-                          <Badge variant="outline" className="mb-2 bg-background/80 backdrop-blur-sm">
+                          <Badge
+                            variant="outline"
+                            className="mb-2 bg-background/80 backdrop-blur-sm"
+                          >
                             {image.category}
                           </Badge>
                           {(image.description || image.alt_text) && (
@@ -338,14 +339,12 @@ export default function DiagnosticSearchPage() {
           )}
 
           {/* Results */}
-          {content && (
-            <DiagnosticContent content={content} entity={entity} />
-          )}
+          {content && <DiagnosticContent content={content} entity={entity} />}
         </div>
       </main>
 
       {/* Join Community Section */}
       <JoinCommunitySection />
     </div>
-  )
+  );
 }

@@ -1,212 +1,199 @@
-import { createClient } from '@/shared/services/server'
-import { NextResponse } from 'next/server'
-import { NotificationTriggers } from '@/shared/services/notification-triggers'
-import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
+import { createClient } from "@/shared/services/server";
+import { NextResponse } from "next/server";
+import { NotificationTriggers } from "@/shared/services/notification-triggers";
+import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 
 /**
  * POST /api/questions/:id/submit-for-review
- * 
+ *
  * Submit a question for review (creator action)
  * - Changes status from draft → pending_review OR rejected → pending_review
  * - Requires reviewer_id in request body
  * - Clears reviewer_feedback when resubmitting rejected question
  * - Only creator or admin can submit
  */
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const supabase = await createClient()
-    const { id: questionId } = await params
+    const supabase = await createClient();
+    const { id: questionId } = await params;
 
     // Get current user
-    const userId = getUserIdFromHeaders(request)
+    const userId = getUserIdFromHeaders(request);
     if (!userId) {
       return NextResponse.json(
-        { error: 'Unauthorized. Please sign in and try again.' },
+        { error: "Unauthorized. Please sign in and try again." },
         { status: 401 }
-      )
+      );
     }
 
     // Parse request body with error handling
-    let body
+    let body;
     try {
-      body = await request.json()
+      body = await request.json();
     } catch (_parseError) {
       return NextResponse.json(
-        { error: 'Invalid request body. Expected JSON format.' },
+        { error: "Invalid request body. Expected JSON format." },
         { status: 400 }
-      )
+      );
     }
 
-    const { reviewer_id, resubmission_notes } = body
+    const { reviewer_id, resubmission_notes } = body;
 
     // Validate reviewer_id is provided
-    if (!reviewer_id || typeof reviewer_id !== 'string') {
-      return NextResponse.json(
-        { error: 'reviewer_id is required' },
-        { status: 400 }
-      )
+    if (!reviewer_id || typeof reviewer_id !== "string") {
+      return NextResponse.json({ error: "reviewer_id is required" }, { status: 400 });
     }
 
     // Verify reviewer exists and has appropriate role
     const { data: reviewer, error: reviewerError } = await supabase
-      .from('users')
-      .select('id, role')
-      .eq('id', reviewer_id)
-      .single()
+      .from("users")
+      .select("id, role")
+      .eq("id", reviewer_id)
+      .single();
 
     if (reviewerError) {
-      console.error('Error fetching reviewer:', reviewerError)
+      console.error("Error fetching reviewer:", reviewerError);
       return NextResponse.json(
-        { error: 'Database error while validating reviewer. Please try again.' },
+        { error: "Database error while validating reviewer. Please try again." },
         { status: 500 }
-      )
+      );
     }
 
     if (!reviewer) {
       return NextResponse.json(
-        { error: 'Invalid reviewer_id: reviewer not found' },
+        { error: "Invalid reviewer_id: reviewer not found" },
         { status: 400 }
-      )
+      );
     }
 
     // Verify reviewer is admin or has reviewer role
-    if (reviewer.role !== 'admin' && reviewer.role !== 'reviewer') {
+    if (reviewer.role !== "admin" && reviewer.role !== "reviewer") {
       return NextResponse.json(
-        { error: 'Selected user is not a reviewer or admin' },
+        { error: "Selected user is not a reviewer or admin" },
         { status: 400 }
-      )
+      );
     }
 
     // Get the question to verify ownership and status
     const { data: question, error: fetchError } = await supabase
-      .from('questions')
-      .select('id, status, created_by')
-      .eq('id', questionId)
-      .single()
+      .from("questions")
+      .select("id, status, created_by")
+      .eq("id", questionId)
+      .single();
 
     if (fetchError) {
-      console.error('Error fetching question:', fetchError)
+      console.error("Error fetching question:", fetchError);
       return NextResponse.json(
-        { error: 'Database error while fetching question. Please try again.' },
+        { error: "Database error while fetching question. Please try again." },
         { status: 500 }
-      )
+      );
     }
 
     if (!question) {
-      return NextResponse.json(
-        { error: 'Question not found' },
-        { status: 404 }
-      )
+      return NextResponse.json({ error: "Question not found" }, { status: 404 });
     }
 
     // Verify question is in draft or rejected state
-    if (question.status !== 'draft' && question.status !== 'rejected') {
+    if (question.status !== "draft" && question.status !== "rejected") {
       return NextResponse.json(
         { error: `Cannot submit question with status: ${question.status}` },
         { status: 400 }
-      )
+      );
     }
 
     // Check if user is the creator or admin
     const { data: userProfile } = await supabase
-      .from('users')
-      .select('role')
-      .eq('id', userId)
-      .single()
+      .from("users")
+      .select("role")
+      .eq("id", userId)
+      .single();
 
-    const isAdmin = userProfile?.role === 'admin'
-    const isCreator = question.created_by === userId
+    const isAdmin = userProfile?.role === "admin";
+    const isCreator = question.created_by === userId;
 
     if (!isAdmin && !isCreator) {
       return NextResponse.json(
-        { error: 'Only the creator or admin can submit this question for review' },
+        { error: "Only the creator or admin can submit this question for review" },
         { status: 403 }
-      )
+      );
     }
 
     // Update question to pending_review
     // Clear reviewer_feedback when resubmitting (feedback has been addressed)
     const { data: updatedQuestion, error: updateError } = await supabase
-      .from('questions')
+      .from("questions")
       .update({
-        status: 'pending_review',
+        status: "pending_review",
         reviewer_id: reviewer_id,
         reviewer_feedback: null, // Clear old feedback
         updated_at: new Date().toISOString(),
         updated_by: userId,
       })
-      .eq('id', questionId)
+      .eq("id", questionId)
       .select()
-      .single()
+      .single();
 
     if (updateError) {
-      console.error('Error submitting question for review:', updateError)
+      console.error("Error submitting question for review:", updateError);
       return NextResponse.json(
         { error: `Failed to submit question: ${updateError.message}` },
         { status: 500 }
-      )
+      );
     }
 
     // Create review record if resubmission notes are provided (for rejected → pending_review transitions)
-    if (resubmission_notes && question.status === 'rejected') {
+    if (resubmission_notes && question.status === "rejected") {
       try {
-        const { error: reviewError } = await supabase
-          .from('question_reviews')
-          .insert({
-            question_id: questionId,
-            reviewer_id: userId, // Creator is the "reviewer" of their own changes
-            action: 'resubmitted',
-            feedback: null,
-            changes_made: {
-              resubmission_notes: resubmission_notes.trim(),
-              timestamp: new Date().toISOString(),
-              previous_status: 'rejected',
-              new_status: 'pending_review'
-            }
-          })
+        const { error: reviewError } = await supabase.from("question_reviews").insert({
+          question_id: questionId,
+          reviewer_id: userId, // Creator is the "reviewer" of their own changes
+          action: "resubmitted",
+          feedback: null,
+          changes_made: {
+            resubmission_notes: resubmission_notes.trim(),
+            timestamp: new Date().toISOString(),
+            previous_status: "rejected",
+            new_status: "pending_review",
+          },
+        });
 
         if (reviewError) {
-          console.error('Error creating resubmission review record:', reviewError)
+          console.error("Error creating resubmission review record:", reviewError);
           // Don't fail the request if review record creation fails
         }
       } catch (error) {
-        console.error('Unexpected error creating resubmission review record:', error)
+        console.error("Unexpected error creating resubmission review record:", error);
         // Don't fail the request if review record creation fails
       }
     }
 
     // Send notification to reviewer
     try {
-      const notificationTriggers = new NotificationTriggers()
+      const notificationTriggers = new NotificationTriggers();
       await notificationTriggers.onQuestionSubmittedForReview(
         reviewer_id,
         questionId,
         updatedQuestion.title,
         userId
-      )
+      );
     } catch (error) {
-      console.error('Error sending submission notification:', error)
+      console.error("Error sending submission notification:", error);
       // Don't fail the request if notification fails
     }
 
     return NextResponse.json({
       success: true,
       question: updatedQuestion,
-    })
-
+    });
   } catch (error) {
-    console.error('Unexpected error submitting question for review:', error)
-    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error("Unexpected error submitting question for review:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       {
-        error: 'Internal server error. Please try again later.',
-        details: process.env.NODE_ENV === 'development' ? errorMessage : undefined
+        error: "Internal server error. Please try again later.",
+        details: process.env.NODE_ENV === "development" ? errorMessage : undefined,
       },
       { status: 500 }
-    )
+    );
   }
 }
-

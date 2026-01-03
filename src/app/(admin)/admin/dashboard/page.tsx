@@ -1,70 +1,84 @@
 // src/app/(admin)/admin/dashboard/page.tsx
-'use client'
+"use client";
 
-import { UserRole } from '@/shared/utils/auth-helpers'
-import { useEffect, useState } from "react"
-import { clientDashboardService } from "@/features/dashboard/services/client-service"
-import { DashboardStats, RecentActivity } from "@/features/dashboard/services/service"
-import { StatsCards } from "@/shared/components/layout/dashboard/stats-cards"
-import { RecentActivityCard } from "@/shared/components/layout/dashboard/recent-activity"
-import { QuickActionsCard } from "@/shared/components/layout/dashboard/quick-actions"
-import { SystemStatus } from "@/shared/components/layout/dashboard/system-status"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { Skeleton } from "@/shared/components/ui/skeleton"
-import { useUserRole } from "@/shared/hooks/use-user-role"
-import { useAuth } from "@/shared/hooks/use-auth"
-import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context"
+import { UserRole } from "@/shared/utils/auth-helpers";
+import { useEffect, useState } from "react";
+import { clientDashboardService } from "@/features/dashboard/services/client-service";
+import { DashboardStats, RecentActivity } from "@/features/dashboard/services/service";
+import { StatsCards } from "@/shared/components/layout/dashboard/stats-cards";
+import { RecentActivityCard } from "@/shared/components/layout/dashboard/recent-activity";
+import { QuickActionsCard } from "@/shared/components/layout/dashboard/quick-actions";
+import { SystemStatus } from "@/shared/components/layout/dashboard/system-status";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { useUserRole } from "@/shared/hooks/use-user-role";
+import { useAuth } from "@/shared/hooks/use-auth";
+import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 
 export default function AdminDashboardPage() {
-  const { role, isLoading: roleLoading } = useUserRole()
-  const { user } = useAuth({ minimal: true })
-  const { adminMode, isTransitioning } = useDashboardTheme()
+  const { role, isLoading: roleLoading } = useUserRole();
+  const { user } = useAuth({ minimal: true });
+  const { adminMode, isTransitioning } = useDashboardTheme();
 
-  const [stats, setStats] = useState<DashboardStats | null>(null)
-  const [activities, setActivities] = useState<RecentActivity[] | null>(null)
-  const [error, setError] = useState<string | null>(null)
+  const [stats, setStats] = useState<DashboardStats | null>(null);
+  const [activities, setActivities] = useState<RecentActivity[] | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    console.log('[AdminDashboard] Effect triggered - role:', role, 'user?.id:', user?.id, 'roleLoading:', roleLoading)
+    console.log(
+      "[AdminDashboard] Effect triggered - role:",
+      role,
+      "user?.id:",
+      user?.id,
+      "roleLoading:",
+      roleLoading
+    );
 
     // Don't fetch until we have a user and role is not loading
     if (!user || roleLoading || role === undefined) {
-      console.log('[AdminDashboard] Skipping fetch - waiting for user/role')
-      return
+      console.log("[AdminDashboard] Skipping fetch - waiting for user/role");
+      return;
     }
 
     async function fetchDashboardData() {
       try {
-        setError(null)
-        console.log('[AdminDashboard] 🔄 FETCHING dashboard data for role:', role, 'user:', user?.id)
+        setError(null);
+        console.log(
+          "[AdminDashboard] 🔄 FETCHING dashboard data for role:",
+          role,
+          "user:",
+          user?.id
+        );
 
         // Use adminMode for determining what data to fetch and show
-        const effectiveRole = adminMode === 'user' ? 'user' : adminMode
+        const effectiveRole = adminMode === "user" ? "user" : adminMode;
 
         // Fetch dashboard stats and activities in parallel
         const [dashboardStats, recentActivities] = await Promise.all([
           clientDashboardService.getDashboardStats(),
-          clientDashboardService.getRecentActivity(effectiveRole as UserRole, user?.id)
-        ])
+          clientDashboardService.getRecentActivity(effectiveRole as UserRole, user?.id),
+        ]);
 
-        setStats(dashboardStats)
-        setActivities(recentActivities)
-        console.log('[AdminDashboard] ✅ Dashboard data loaded successfully')
+        setStats(dashboardStats);
+        setActivities(recentActivities);
+        console.log("[AdminDashboard] ✅ Dashboard data loaded successfully");
       } catch (err) {
-        console.error('Error fetching dashboard data:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load dashboard data')
+        console.error("Error fetching dashboard data:", err);
+        setError(err instanceof Error ? err.message : "Failed to load dashboard data");
       }
     }
 
-    fetchDashboardData()
-  }, [adminMode, user?.id, roleLoading, role, user]) // Use adminMode instead of role
+    fetchDashboardData();
+  }, [adminMode, user?.id, roleLoading, role, user]); // Use adminMode instead of role
 
   // Use adminMode for determining quick actions
-  const quickActions = stats ? clientDashboardService.getQuickActions(stats, effectiveRole as UserRole) : []
+  const quickActions = stats
+    ? clientDashboardService.getQuickActions(stats, effectiveRole as UserRole)
+    : [];
 
   // Single loading state - show skeleton until ALL data is ready
   // Only show loading if we don't have user yet, or if role is still loading, or if we don't have data yet, or if transitioning
-  const isLoading = !user || roleLoading || !stats || !activities || isTransitioning
+  const isLoading = !user || roleLoading || !stats || !activities || isTransitioning;
 
   return (
     <div className="space-y-6">
@@ -76,7 +90,7 @@ export default function AdminDashboardPage() {
             <div className="h-9 bg-muted animate-pulse rounded w-64"></div>
             <div className="h-5 bg-muted animate-pulse rounded w-96"></div>
           </div>
-          
+
           {/* Stats skeleton */}
           <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
             {Array.from({ length: 8 }).map((_, i) => (
@@ -97,15 +111,22 @@ export default function AdminDashboardPage() {
         <>
           <div>
             <h1 className="text-3xl font-bold tracking-tight" suppressHydrationWarning>
-              {adminMode === 'creator' ? 'Creator Dashboard' :
-               adminMode === 'reviewer' ? 'Reviewer Dashboard' :
-               adminMode === 'user' ? 'Student Dashboard' : 'Admin Dashboard'}
+              {adminMode === "creator"
+                ? "Creator Dashboard"
+                : adminMode === "reviewer"
+                  ? "Reviewer Dashboard"
+                  : adminMode === "user"
+                    ? "Student Dashboard"
+                    : "Admin Dashboard"}
             </h1>
             <p className="text-muted-foreground" suppressHydrationWarning>
-              {adminMode === 'creator' ? 'Question creation and content management.' :
-               adminMode === 'reviewer' ? 'Review queue and question approval.' :
-               adminMode === 'user' ? 'Learning progress and quiz performance.' :
-               'Administrative overview and system management.'}
+              {adminMode === "creator"
+                ? "Question creation and content management."
+                : adminMode === "reviewer"
+                  ? "Review queue and question approval."
+                  : adminMode === "user"
+                    ? "Learning progress and quiz performance."
+                    : "Administrative overview and system management."}
             </p>
           </div>
 
@@ -113,12 +134,14 @@ export default function AdminDashboardPage() {
             <Card className="border-red-200 bg-red-50">
               <CardContent className="pt-6">
                 <div className="text-center">
-                  <h3 className="text-lg font-semibold text-red-800 mb-2">Error Loading Dashboard</h3>
+                  <h3 className="text-lg font-semibold text-red-800 mb-2">
+                    Error Loading Dashboard
+                  </h3>
                   <p className="text-red-600 mb-4">{error}</p>
                   <button
                     onClick={() => {
-                      if (typeof window !== 'undefined') {
-                        window.location.reload()
+                      if (typeof window !== "undefined") {
+                        window.location.reload();
                       }
                     }}
                     className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
@@ -203,11 +226,11 @@ export default function AdminDashboardPage() {
               </div>
 
               {/* System Status - Only show for admin mode */}
-              {adminMode === 'admin' && <SystemStatus />}
+              {adminMode === "admin" && <SystemStatus />}
             </>
           )}
         </>
       )}
     </div>
-  )
+  );
 }

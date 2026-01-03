@@ -1,37 +1,35 @@
 // src/features/dashboard/components/feature-placeholder.tsx
-'use client'
+"use client";
 
-import { Button } from '@/shared/components/ui/button'
-import { Construction, ArrowLeft } from 'lucide-react'
-import Link from 'next/link'
-import { useRouter } from 'next/navigation'
+import { Button } from "@/shared/components/ui/button";
+import { Construction, ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 
 interface FeaturePlaceholderProps {
-  title: string
-  description: string
-  status: 'launching-soon' | 'coming-very-soon' | 'almost-ready' | 'in-final-stages'
-  discordUrl?: string
+  title: string;
+  description: string;
+  status: "launching-soon" | "coming-very-soon" | "almost-ready" | "in-final-stages";
+  discordUrl?: string;
 }
 
 export function FeaturePlaceholder({
   title,
   description,
-  discordUrl = 'https://discord.gg/2v64p2fzsC',
+  discordUrl = "https://discord.gg/2v64p2fzsC",
 }: FeaturePlaceholderProps) {
-  const router = useRouter()
+  const router = useRouter();
 
   return (
     <div className="min-h-screen flex items-start justify-center px-4 pt-32">
       <div className="w-full max-w-md text-center space-y-6">
         {/* Icon */}
-        <Construction className="h-16 w-16 mx-auto" style={{ color: 'var(--color-accent)' }} />
+        <Construction className="h-16 w-16 mx-auto" style={{ color: "var(--color-accent)" }} />
 
         {/* Title & Description */}
         <div className="space-y-3">
           <h1 className="text-3xl font-semibold">{title}</h1>
-          <p className="text-muted-foreground leading-relaxed">
-            {description}
-          </p>
+          <p className="text-muted-foreground leading-relaxed">{description}</p>
         </div>
 
         {/* Action Buttons */}
@@ -61,6 +59,5 @@ export function FeaturePlaceholder({
         </div>
       </div>
     </div>
-  )
+  );
 }
-

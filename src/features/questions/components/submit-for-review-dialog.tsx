@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,35 +8,35 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/shared/components/ui/dialog"
-import { Button } from "@/shared/components/ui/button"
-import { Label } from "@/shared/components/ui/label"
-import { Textarea } from "@/shared/components/ui/textarea"
+} from "@/shared/components/ui/dialog";
+import { Button } from "@/shared/components/ui/button";
+import { Label } from "@/shared/components/ui/label";
+import { Textarea } from "@/shared/components/ui/textarea";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select"
-import { Loader2, UserCheck } from 'lucide-react'
-import { toast } from '@/shared/utils/toast'
+} from "@/shared/components/ui/select";
+import { Loader2, UserCheck } from "lucide-react";
+import { toast } from "@/shared/utils/toast";
 
 interface Reviewer {
-  id: string
-  full_name: string
-  email: string
-  role: string
-  pending_count: number
+  id: string;
+  full_name: string;
+  email: string;
+  role: string;
+  pending_count: number;
 }
 
 interface SubmitForReviewDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  questionId: string
-  questionTitle: string
-  questionStatus?: string  // To determine if this is a resubmission
-  onSuccess: (reviewerId?: string) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  questionId: string;
+  questionTitle: string;
+  questionStatus?: string; // To determine if this is a resubmission
+  onSuccess: (reviewerId?: string) => void;
 }
 
 export function SubmitForReviewDialog({
@@ -47,101 +47,105 @@ export function SubmitForReviewDialog({
   questionStatus,
   onSuccess,
 }: SubmitForReviewDialogProps) {
-  const [reviewers, setReviewers] = useState<Reviewer[]>([])
-  const [selectedReviewerId, setSelectedReviewerId] = useState<string>('')
-  const [resubmissionNotes, setResubmissionNotes] = useState<string>('')
-  const [loading, setLoading] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
+  const [reviewers, setReviewers] = useState<Reviewer[]>([]);
+  const [selectedReviewerId, setSelectedReviewerId] = useState<string>("");
+  const [resubmissionNotes, setResubmissionNotes] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const isResubmission = questionStatus === 'rejected'
+  const isResubmission = questionStatus === "rejected";
 
   // Fetch reviewers when dialog opens
   useEffect(() => {
     if (open) {
-      fetchReviewers()
+      fetchReviewers();
     }
-  }, [open])
+  }, [open]);
 
   const fetchReviewers = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const response = await fetch('/api/admin/reviewers')
+      const response = await fetch("/api/admin/reviewers");
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        throw new Error(errorData.error || `Failed to fetch reviewers: ${response.status}`)
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Failed to fetch reviewers: ${response.status}`);
       }
-      const data = await response.json()
-      setReviewers(data.reviewers || [])
+      const data = await response.json();
+      setReviewers(data.reviewers || []);
     } catch (error) {
-      console.error('Error fetching reviewers:', error)
+      console.error("Error fetching reviewers:", error);
 
       // Detect network errors (laptop sleep/wake, offline, etc.)
-      const isNetworkError = error instanceof TypeError &&
-                            (error.message?.includes('fetch') || error.message?.includes('network'))
+      const isNetworkError =
+        error instanceof TypeError &&
+        (error.message?.includes("fetch") || error.message?.includes("network"));
 
       if (isNetworkError) {
-        toast.error('Network connection interrupted. Please refresh and try again.')
-      } else if (error.message?.includes('Timed out')) {
-        toast.error('Request timed out. Please check your network connection.')
+        toast.error("Network connection interrupted. Please refresh and try again.");
+      } else if (error.message?.includes("Timed out")) {
+        toast.error("Request timed out. Please check your network connection.");
       } else {
-        const errorMessage = error instanceof Error ? error.message : 'Failed to load reviewers'
-        toast.error(errorMessage)
+        const errorMessage = error instanceof Error ? error.message : "Failed to load reviewers";
+        toast.error(errorMessage);
       }
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleSubmit = async () => {
     if (!selectedReviewerId) {
-      toast.error('Please select a reviewer')
-      return
+      toast.error("Please select a reviewer");
+      return;
     }
 
     if (isResubmission && !resubmissionNotes.trim()) {
-      toast.error('Please describe what changes you made')
-      return
+      toast.error("Please describe what changes you made");
+      return;
     }
 
-    setSubmitting(true)
+    setSubmitting(true);
     try {
       const response = await fetch(`/api/questions/${questionId}/submit-for-review`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           reviewer_id: selectedReviewerId,
-          resubmission_notes: isResubmission ? resubmissionNotes.trim() : null
+          resubmission_notes: isResubmission ? resubmissionNotes.trim() : null,
         }),
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to submit question')
+        const error = await response.json();
+        throw new Error(error.error || "Failed to submit question");
       }
 
-      toast.success(isResubmission ? 'Question resubmitted for review' : 'Question submitted for review')
-      onSuccess(selectedReviewerId)
-      onOpenChange(false)
-      setSelectedReviewerId('')
-      setResubmissionNotes('')
+      toast.success(
+        isResubmission ? "Question resubmitted for review" : "Question submitted for review"
+      );
+      onSuccess(selectedReviewerId);
+      onOpenChange(false);
+      setSelectedReviewerId("");
+      setResubmissionNotes("");
     } catch (error) {
-      console.error('Error submitting question:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to submit question')
+      console.error("Error submitting question:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to submit question");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[500px]">
         <DialogHeader>
-          <DialogTitle>{isResubmission ? 'Resubmit Question for Review' : 'Submit Question for Review'}</DialogTitle>
+          <DialogTitle>
+            {isResubmission ? "Resubmit Question for Review" : "Submit Question for Review"}
+          </DialogTitle>
           <DialogDescription>
             {isResubmission
-              ? 'Describe the changes you made and select a reviewer to re-evaluate this question.'
-              : 'Select a reviewer to evaluate this question. They will be able to approve or reject it with feedback.'
-            }
+              ? "Describe the changes you made and select a reviewer to re-evaluate this question."
+              : "Select a reviewer to evaluate this question. They will be able to approve or reject it with feedback."}
           </DialogDescription>
         </DialogHeader>
 
@@ -210,30 +214,23 @@ export function SubmitForReviewDialog({
           {selectedReviewerId && (
             <div className="rounded-lg bg-muted p-3">
               <p className="text-sm text-muted-foreground">
-                <strong>Tip:</strong> Consider reviewer workload when assigning. Questions are typically reviewed within 2-3 days.
+                <strong>Tip:</strong> Consider reviewer workload when assigning. Questions are
+                typically reviewed within 2-3 days.
               </p>
             </div>
           )}
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={submitting}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={!selectedReviewerId || submitting}
-          >
+          <Button onClick={handleSubmit} disabled={!selectedReviewerId || submitting}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Submit for Review
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

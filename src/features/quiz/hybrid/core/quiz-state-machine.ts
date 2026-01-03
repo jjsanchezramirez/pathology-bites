@@ -11,21 +11,32 @@
  * - Optimized for Vercel's free tier without Edge Functions
  */
 
-import { QuizQuestion, QuizAnswer, QuizState } from '../../types/quiz-question';
+import { QuizQuestion, QuizAnswer, QuizState } from "../../types/quiz-question";
 
 // QuizState is now imported from the standardized types
 
 export type QuizAction =
-  | { type: 'INITIALIZE'; payload: { sessionId: string; questions: QuizQuestion[]; config: QuizState['config']; status?: string } }
-  | { type: 'START_QUIZ' }
-  | { type: 'PAUSE_QUIZ' }
-  | { type: 'RESUME_QUIZ' }
-  | { type: 'SUBMIT_ANSWER'; payload: { questionId: string; selectedOptionId: string; timeSpent: number } }
-  | { type: 'NAVIGATE_TO_QUESTION'; payload: { index: number } }
-  | { type: 'COMPLETE_QUIZ' }
-  | { type: 'SYNC_SUCCESS'; payload: { timestamp: number } }
-  | { type: 'SYNC_FAILED' }
-  | { type: 'SET_ONLINE_STATUS'; payload: { isOnline: boolean } };
+  | {
+      type: "INITIALIZE";
+      payload: {
+        sessionId: string;
+        questions: QuizQuestion[];
+        config: QuizState["config"];
+        status?: string;
+      };
+    }
+  | { type: "START_QUIZ" }
+  | { type: "PAUSE_QUIZ" }
+  | { type: "RESUME_QUIZ" }
+  | {
+      type: "SUBMIT_ANSWER";
+      payload: { questionId: string; selectedOptionId: string; timeSpent: number };
+    }
+  | { type: "NAVIGATE_TO_QUESTION"; payload: { index: number } }
+  | { type: "COMPLETE_QUIZ" }
+  | { type: "SYNC_SUCCESS"; payload: { timestamp: number } }
+  | { type: "SYNC_FAILED" }
+  | { type: "SET_ONLINE_STATUS"; payload: { isOnline: boolean } };
 
 /**
  * Pure function that handles all quiz state transitions
@@ -33,11 +44,16 @@ export type QuizAction =
  */
 export function quizStateReducer(state: QuizState, action: QuizAction): QuizState {
   switch (action.type) {
-    case 'INITIALIZE':
+    case "INITIALIZE":
       // Use server-provided status if available, otherwise default to 'not_started'
       // This ensures we properly handle completed quizzes when user navigates back
-      const initialStatus = (action.payload.status as QuizState['status']) || 'not_started';
-      console.log('[State Machine] INITIALIZE action - received status:', action.payload.status, 'using:', initialStatus);
+      const initialStatus = (action.payload.status as QuizState["status"]) || "not_started";
+      console.log(
+        "[State Machine] INITIALIZE action - received status:",
+        action.payload.status,
+        "using:",
+        initialStatus
+      );
 
       return {
         ...state,
@@ -52,74 +68,74 @@ export function quizStateReducer(state: QuizState, action: QuizAction): QuizStat
           answered: 0,
           correct: 0,
           incorrect: 0,
-          percentage: 0
+          percentage: 0,
         },
         totalTimeSpent: 0,
         syncStatus: {
           pendingChanges: true,
-          isOnline: navigator?.onLine ?? true
-        }
+          isOnline: navigator?.onLine ?? true,
+        },
       };
 
-    case 'START_QUIZ':
+    case "START_QUIZ":
       return {
         ...state,
-        status: 'in_progress',
+        status: "in_progress",
         startTime: Date.now(),
         syncStatus: {
           ...state.syncStatus,
-          pendingChanges: true
-        }
+          pendingChanges: true,
+        },
       };
 
-    case 'PAUSE_QUIZ':
+    case "PAUSE_QUIZ":
       // Keep status as 'in_progress' - pause state is tracked locally
       return {
         ...state,
         syncStatus: {
           ...state.syncStatus,
-          pendingChanges: true
-        }
+          pendingChanges: true,
+        },
       };
 
-    case 'RESUME_QUIZ':
+    case "RESUME_QUIZ":
       // Keep status as 'in_progress' - resume just continues the quiz
       return {
         ...state,
         syncStatus: {
           ...state.syncStatus,
-          pendingChanges: true
-        }
+          pendingChanges: true,
+        },
       };
 
-    case 'SUBMIT_ANSWER': {
+    case "SUBMIT_ANSWER": {
       const { questionId, selectedOptionId, timeSpent } = action.payload;
-      const question = state.questions.find(q => q.id === questionId);
+      const question = state.questions.find((q) => q.id === questionId);
 
       if (!question) return state;
 
-      const selectedOption = question.question_options.find(opt => opt.id === selectedOptionId);
+      const selectedOption = question.question_options.find((opt) => opt.id === selectedOptionId);
       const isCorrect = selectedOption?.is_correct ?? false;
-      
+
       const newAnswer: QuizAnswer = {
         questionId,
         selectedOptionId,
         isCorrect,
         timestamp: Date.now(),
-        timeSpent
+        timeSpent,
       };
-      
+
       const newAnswers = new Map(state.answers);
       const _wasAlreadyAnswered = newAnswers.has(questionId);
       const _previousAnswer = newAnswers.get(questionId);
-      
+
       newAnswers.set(questionId, newAnswer);
-      
+
       // Calculate new progress
       const answeredCount = newAnswers.size;
-      const correctCount = Array.from(newAnswers.values()).filter(a => a.isCorrect).length;
+      const correctCount = Array.from(newAnswers.values()).filter((a) => a.isCorrect).length;
       const incorrectCount = answeredCount - correctCount;
-      
+
       return {
         ...state,
         answers: newAnswers,
@@ -128,62 +144,62 @@ export function quizStateReducer(state: QuizState, action: QuizAction): QuizStat
           answered: answeredCount,
           correct: correctCount,
           incorrect: incorrectCount,
-          percentage: Math.round((answeredCount / state.totalQuestions) * 100)
+          percentage: Math.round((answeredCount / state.totalQuestions) * 100),
         },
         syncStatus: {
           ...state.syncStatus,
-          pendingChanges: true
-        }
+          pendingChanges: true,
+        },
       };
     }
 
-    case 'NAVIGATE_TO_QUESTION': {
+    case "NAVIGATE_TO_QUESTION": {
       const { index } = action.payload;
       if (index < 0 || index >= state.totalQuestions) return state;
-      
+
       return {
         ...state,
-        currentQuestionIndex: index
+        currentQuestionIndex: index,
       };
     }
 
-    case 'COMPLETE_QUIZ':
+    case "COMPLETE_QUIZ":
       return {
         ...state,
-        status: 'completed',
+        status: "completed",
         endTime: Date.now(),
         syncStatus: {
           ...state.syncStatus,
-          pendingChanges: true
-        }
+          pendingChanges: true,
+        },
       };
 
-    case 'SYNC_SUCCESS':
+    case "SYNC_SUCCESS":
       return {
         ...state,
         syncStatus: {
           ...state.syncStatus,
           lastSyncTime: action.payload.timestamp,
-          pendingChanges: false
-        }
+          pendingChanges: false,
+        },
       };
 
-    case 'SYNC_FAILED':
+    case "SYNC_FAILED":
       return {
         ...state,
         syncStatus: {
           ...state.syncStatus,
-          pendingChanges: true
-        }
+          pendingChanges: true,
+        },
       };
 
-    case 'SET_ONLINE_STATUS':
+    case "SET_ONLINE_STATUS":
       return {
         ...state,
         syncStatus: {
           ...state.syncStatus,
-          isOnline: action.payload.isOnline
-        }
+          isOnline: action.payload.isOnline,
+        },
       };
 
     default:
@@ -196,8 +212,8 @@ export function quizStateReducer(state: QuizState, action: QuizAction): QuizStat
  */
 export function createInitialQuizState(): QuizState {
   return {
-    sessionId: '',
-    status: 'not_started',
+    sessionId: "",
+    status: "not_started",
     questions: [],
     currentQuestionIndex: 0,
     totalQuestions: 0,
@@ -206,19 +222,19 @@ export function createInitialQuizState(): QuizState {
       answered: 0,
       correct: 0,
       incorrect: 0,
-      percentage: 0
+      percentage: 0,
     },
     totalTimeSpent: 0,
     config: {
-      mode: 'tutor',
-      timing: 'untimed',
+      mode: "tutor",
+      timing: "untimed",
       showExplanations: true,
-      allowReview: true
+      allowReview: true,
     },
     syncStatus: {
       pendingChanges: false,
-      isOnline: typeof navigator !== 'undefined' ? (navigator?.onLine ?? true) : true
-    }
+      isOnline: typeof navigator !== "undefined" ? (navigator?.onLine ?? true) : true,
+    },
   };
 }
 
@@ -229,28 +245,28 @@ export const QuizStateUtils = {
   getCurrentQuestion: (state: QuizState): QuizQuestion | null => {
     return state.questions[state.currentQuestionIndex] || null;
   },
-  
+
   getAnswerForQuestion: (state: QuizState, questionId: string): QuizAnswer | null => {
     return state.answers.get(questionId) || null;
   },
-  
+
   isQuestionAnswered: (state: QuizState, questionId: string): boolean => {
     return state.answers.has(questionId);
   },
-  
+
   canNavigateNext: (state: QuizState): boolean => {
     return state.currentQuestionIndex < state.totalQuestions - 1;
   },
-  
+
   canNavigatePrevious: (state: QuizState): boolean => {
     return state.currentQuestionIndex > 0;
   },
-  
+
   getCompletionPercentage: (state: QuizState): number => {
     return state.progress.percentage;
   },
-  
+
   needsSync: (state: QuizState): boolean => {
     return state.syncStatus.pendingChanges && state.syncStatus.isOnline;
-  }
+  },
 };

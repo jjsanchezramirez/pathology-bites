@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import React, { useState, useEffect, useCallback } from "react";
+import { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -19,10 +19,10 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Button } from "@/shared/components/ui/button";
-import { X } from 'lucide-react';
-import { QuestionWithDetails } from '@/features/questions/types/questions';
-import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
-import { createClient } from '@/shared/services/client';
+import { X } from "lucide-react";
+import { QuestionWithDetails } from "@/features/questions/types/questions";
+import { useQuestionSets } from "@/features/questions/hooks/use-question-sets";
+import { createClient } from "@/shared/services/client";
 // Remove unused import
 
 interface Tag {
@@ -41,14 +41,21 @@ interface GeneralTabProps {
   selectedTagIds: string[];
   setSelectedTagIds: (tagIds: string[]) => void;
   onUnsavedChanges: () => void;
-  mode?: 'create' | 'edit';
+  mode?: "create" | "edit";
 }
 
-export function GeneralTab({ form, question, selectedTagIds, setSelectedTagIds, onUnsavedChanges, mode = 'edit' }: GeneralTabProps) {
+export function GeneralTab({
+  form,
+  question,
+  selectedTagIds,
+  setSelectedTagIds,
+  onUnsavedChanges,
+  mode = "edit",
+}: GeneralTabProps) {
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
-  const [tagSearch, setTagSearch] = useState('');
-  
+  const [tagSearch, setTagSearch] = useState("");
+
   const { questionSets } = useQuestionSets();
 
   // Load initial tags and categories
@@ -59,8 +66,8 @@ export function GeneralTab({ form, question, selectedTagIds, setSelectedTagIds, 
 
         const [tagsResult, categoriesResult] = await Promise.all([
           // Get 50 most recently created tags
-          supabase.from('tags').select('*').order('created_at', { ascending: false }).limit(50),
-          supabase.from('categories').select('*').order('name')
+          supabase.from("tags").select("*").order("created_at", { ascending: false }).limit(50),
+          supabase.from("categories").select("*").order("name"),
         ]);
 
         if (tagsResult.data) {
@@ -68,7 +75,7 @@ export function GeneralTab({ form, question, selectedTagIds, setSelectedTagIds, 
         }
         if (categoriesResult.data) setAvailableCategories(categoriesResult.data);
       } catch (error) {
-        console.error('Error loading tags/categories:', error);
+        console.error("Error loading tags/categories:", error);
       }
     };
 
@@ -78,13 +85,13 @@ export function GeneralTab({ form, question, selectedTagIds, setSelectedTagIds, 
   // Merge question tags with available tags when question changes
   useEffect(() => {
     if (question?.tags && question.tags.length > 0) {
-      setAvailableTags(prevTags => {
+      setAvailableTags((prevTags) => {
         const existingTags = question.tags || [];
         const allTags = [...prevTags];
 
         // Add any question tags that aren't in the available tags
-        existingTags.forEach(existingTag => {
-          if (!allTags.find(tag => tag.id === existingTag.id)) {
+        existingTags.forEach((existingTag) => {
+          if (!allTags.find((tag) => tag.id === existingTag.id)) {
             allTags.push(existingTag);
           }
         });
@@ -97,7 +104,7 @@ export function GeneralTab({ form, question, selectedTagIds, setSelectedTagIds, 
   // Initialize selected tags and category
   useEffect(() => {
     if (question && question.tags && question.tags.length > 0) {
-      const tagIds = question.tags.map(tag => tag.id);
+      const tagIds = question.tags.map((tag) => tag.id);
       setSelectedTagIds(tagIds);
     } else {
       setSelectedTagIds([]);
@@ -106,65 +113,71 @@ export function GeneralTab({ form, question, selectedTagIds, setSelectedTagIds, 
 
   useEffect(() => {
     if (question) {
-      const categoryId = question.categories?.[0]?.id || 'none';
-      const formCategoryValue = categoryId === 'none' ? null : categoryId;
-      form.setValue('category_id', formCategoryValue);
+      const categoryId = question.categories?.[0]?.id || "none";
+      const formCategoryValue = categoryId === "none" ? null : categoryId;
+      form.setValue("category_id", formCategoryValue);
     }
   }, [question, form]);
 
   // Initialize selected tags from question data
   useEffect(() => {
-    if (question && mode === 'edit') {
-      const tagIds = question.tags?.map(tag => tag.id) || [];
+    if (question && mode === "edit") {
+      const tagIds = question.tags?.map((tag) => tag.id) || [];
       setSelectedTagIds(tagIds);
     }
   }, [question, mode, setSelectedTagIds]);
 
-  const filteredTags = availableTags.filter(tag =>
+  const filteredTags = availableTags.filter((tag) =>
     tag.name.toLowerCase().includes(tagSearch.toLowerCase())
   );
 
-  const handleTagToggle = useCallback((tagId: string) => {
-    const newIds = selectedTagIds.includes(tagId)
-      ? selectedTagIds.filter((id: string) => id !== tagId)
-      : [...selectedTagIds, tagId];
+  const handleTagToggle = useCallback(
+    (tagId: string) => {
+      const newIds = selectedTagIds.includes(tagId)
+        ? selectedTagIds.filter((id: string) => id !== tagId)
+        : [...selectedTagIds, tagId];
 
-    setSelectedTagIds(newIds);
-    onUnsavedChanges();
-  }, [selectedTagIds, setSelectedTagIds, onUnsavedChanges]);
+      setSelectedTagIds(newIds);
+      onUnsavedChanges();
+    },
+    [selectedTagIds, setSelectedTagIds, onUnsavedChanges]
+  );
 
-  const handleCreateTag = useCallback(async (tagName: string) => {
-    try {
-      const supabase = createClient();
-      const { data: newTag, error } = await supabase
-        .from('tags')
-        .insert([{ name: tagName }])
-        .select()
-        .single();
+  const handleCreateTag = useCallback(
+    async (tagName: string) => {
+      try {
+        const supabase = createClient();
+        const { data: newTag, error } = await supabase
+          .from("tags")
+          .insert([{ name: tagName }])
+          .select()
+          .single();
 
-      if (error) {
-        console.error('Error creating tag:', error);
-        return;
+        if (error) {
+          console.error("Error creating tag:", error);
+          return;
+        }
+
+        if (newTag) {
+          // Add to available tags
+          setAvailableTags((prev) => [...prev, newTag]);
+
+          // Select the new tag
+          const newIds = [...selectedTagIds, newTag.id];
+          setSelectedTagIds(newIds);
+          onUnsavedChanges();
+
+          // Clear search
+          setTagSearch("");
+        }
+      } catch (error) {
+        console.error("Error creating tag:", error);
       }
+    },
+    [selectedTagIds, setSelectedTagIds, onUnsavedChanges]
+  );
 
-      if (newTag) {
-        // Add to available tags
-        setAvailableTags(prev => [...prev, newTag]);
-
-        // Select the new tag
-        const newIds = [...selectedTagIds, newTag.id];
-        setSelectedTagIds(newIds);
-        onUnsavedChanges();
-
-        // Clear search
-        setTagSearch('');
-      }
-    } catch (error) {
-      console.error('Error creating tag:', error);
-    }
-  }, [selectedTagIds, setSelectedTagIds, onUnsavedChanges]);
-
-  const selectedTags = availableTags.filter(tag => selectedTagIds.includes(tag.id));
+  const selectedTags = availableTags.filter((tag) => selectedTagIds.includes(tag.id));
 
   return (
     <div className="space-y-6">
@@ -191,8 +204,8 @@ export function GeneralTab({ form, question, selectedTagIds, setSelectedTagIds, 
           <FormItem>
             <FormLabel>Question</FormLabel>
             <FormControl>
-              <Textarea 
-                {...field} 
+              <Textarea
+                {...field}
                 placeholder="Enter the question text"
                 className="min-h-[120px]"
               />
@@ -235,9 +248,9 @@ export function GeneralTab({ form, question, selectedTagIds, setSelectedTagIds, 
             <FormItem>
               <FormLabel>Category</FormLabel>
               <Select
-                value={field.value || 'none'}
+                value={field.value || "none"}
                 onValueChange={(value) => {
-                  const categoryValue = value === 'none' ? null : value;
+                  const categoryValue = value === "none" ? null : value;
                   field.onChange(categoryValue);
                   onUnsavedChanges();
                 }}
@@ -292,7 +305,7 @@ export function GeneralTab({ form, question, selectedTagIds, setSelectedTagIds, 
       {/* Tags Section */}
       <div>
         <FormLabel>Tags</FormLabel>
-        
+
         {/* Selected Tags */}
         {selectedTags.length > 0 && (
           <div className="flex flex-wrap gap-2 mb-3">
@@ -323,21 +336,21 @@ export function GeneralTab({ form, question, selectedTagIds, setSelectedTagIds, 
             value={tagSearch}
             onChange={(e) => setTagSearch(e.target.value)}
             onKeyDown={(e) => {
-              if (e.key === 'Enter' && tagSearch.trim()) {
+              if (e.key === "Enter" && tagSearch.trim()) {
                 e.preventDefault();
-                const existingTag = availableTags.find(tag =>
-                  tag.name.toLowerCase() === tagSearch.trim().toLowerCase()
+                const existingTag = availableTags.find(
+                  (tag) => tag.name.toLowerCase() === tagSearch.trim().toLowerCase()
                 );
                 if (existingTag) {
                   handleTagToggle(existingTag.id);
-                  setTagSearch('');
+                  setTagSearch("");
                 } else {
                   handleCreateTag(tagSearch.trim());
                 }
               }
             }}
           />
-          
+
           {/* Available Tags */}
           <div className="max-h-32 overflow-y-auto border rounded-md p-2">
             {filteredTags.length > 0 ? (
@@ -363,7 +376,7 @@ export function GeneralTab({ form, question, selectedTagIds, setSelectedTagIds, 
                 {tagSearch.trim() ? (
                   <>No tags found. Press Enter to create "{tagSearch.trim()}"</>
                 ) : (
-                  'No tags available'
+                  "No tags available"
                 )}
               </div>
             )}

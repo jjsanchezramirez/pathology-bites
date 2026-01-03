@@ -1,64 +1,59 @@
 // src/shared/components/common/font-size-control.tsx
-'use client'
+"use client";
 
-import { Minus, Plus, Type, Check } from 'lucide-react'
-import { Button } from '@/shared/components/ui/button'
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from '@/shared/components/ui/popover'
-import { Separator } from '@/shared/components/ui/separator'
-import { useState } from 'react'
-import { useDashboardSettings } from '@/shared/contexts/dashboard-settings-provider'
-import { getTextZoomConfig } from '@/shared/utils/text-zoom'
-import { useDashboardTheme } from '@/shared/contexts/dashboard-theme-context'
-import { cn } from '@/shared/utils'
-
+import { Minus, Plus, Type, Check } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/components/ui/popover";
+import { Separator } from "@/shared/components/ui/separator";
+import { useState } from "react";
+import { useDashboardSettings } from "@/shared/contexts/dashboard-settings-provider";
+import { getTextZoomConfig } from "@/shared/utils/text-zoom";
+import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
+import { cn } from "@/shared/utils";
 
 export function FontSizeControl() {
-  const [isOpen, setIsOpen] = useState(false)
-  const { textZoom, setTextZoom, isLoading: settingsLoading } = useDashboardSettings()
-  const config = getTextZoomConfig()
+  const [isOpen, setIsOpen] = useState(false);
+  const { textZoom, setTextZoom, isLoading: settingsLoading } = useDashboardSettings();
+  const config = getTextZoomConfig();
 
   // Theme selection functionality
-  const { currentTheme, setTheme, availableThemes, isLoading: themeLoading } = useDashboardTheme()
+  const { currentTheme, setTheme, availableThemes, isLoading: themeLoading } = useDashboardTheme();
 
-  const fontSizePercentage = Math.round(textZoom * 100)
-  const minPercentage = Math.round(config.min * 100)
-  const maxPercentage = Math.round(config.max * 100)
-  const isLoading = settingsLoading || themeLoading
+  const fontSizePercentage = Math.round(textZoom * 100);
+  const minPercentage = Math.round(config.min * 100);
+  const maxPercentage = Math.round(config.max * 100);
+  const isLoading = settingsLoading || themeLoading;
 
-  const canIncrease = textZoom < config.max
-  const canDecrease = textZoom > config.min
+  const canIncrease = textZoom < config.max;
+  const canDecrease = textZoom > config.min;
 
   const increaseTextZoom = () => {
     if (canIncrease) {
-      const newZoom = textZoom + config.step
-      setTextZoom(newZoom)
+      const newZoom = textZoom + config.step;
+      setTextZoom(newZoom);
     }
-  }
+  };
 
   const decreaseTextZoom = () => {
     if (canDecrease) {
-      const newZoom = textZoom - config.step
-      setTextZoom(newZoom)
+      const newZoom = textZoom - config.step;
+      setTextZoom(newZoom);
     }
-  }
+  };
 
   const resetTextZoom = () => {
-    setTextZoom(config.default)
-  }
+    setTextZoom(config.default);
+  };
 
   // Handle theme selection - update immediately
   const handleThemeSelect = (themeId: string) => {
-    setTheme(themeId)
-  }
+    setTheme(themeId);
+  };
 
   // Handle popover close
   const handleOpenChange = (open: boolean) => {
-    setIsOpen(open)
-  }
+    setIsOpen(open);
+  };
 
   return (
     <Popover open={isOpen} onOpenChange={handleOpenChange}>
@@ -77,9 +72,7 @@ export function FontSizeControl() {
         <div className="space-y-4">
           {/* Text Size Section */}
           <div className="space-y-3">
-            <div className="text-sm font-medium text-center">
-              Text Size
-            </div>
+            <div className="text-sm font-medium text-center">Text Size</div>
 
             <div className="flex items-center justify-between">
               <Button
@@ -131,9 +124,7 @@ export function FontSizeControl() {
 
           {/* Theme Selection Section */}
           <div className="space-y-3">
-            <div className="text-sm font-medium text-center">
-              Dashboard Theme
-            </div>
+            <div className="text-sm font-medium text-center">Dashboard Theme</div>
 
             <div className="grid gap-1">
               {availableThemes.map((theme) => (
@@ -158,9 +149,7 @@ export function FontSizeControl() {
                   <span className="text-sm flex-1">{theme.name}</span>
 
                   {/* Check Mark */}
-                  {currentTheme.id === theme.id && (
-                    <Check className="h-3 w-3 text-primary" />
-                  )}
+                  {currentTheme.id === theme.id && <Check className="h-3 w-3 text-primary" />}
                 </button>
               ))}
             </div>
@@ -168,5 +157,5 @@ export function FontSizeControl() {
         </div>
       </PopoverContent>
     </Popover>
-  )
+  );
 }

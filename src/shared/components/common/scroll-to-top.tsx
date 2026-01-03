@@ -1,49 +1,46 @@
 /**
  * @source src/components/landing/scroll-to-top.tsx
- * 
- * A React component that renders a "Scroll to Top" button which becomes visible 
- * when the user scrolls past a specified threshold. The button smoothly scrolls 
+ *
+ * A React component that renders a "Scroll to Top" button which becomes visible
+ * when the user scrolls past a specified threshold. The button smoothly scrolls
  * the page back to the top when clicked.
  */
 
-'use client'
+"use client";
 
-import { useState, useEffect } from "react"
-import { ArrowUpIcon } from "lucide-react"
-import { cn } from "@/shared/utils"
+import { useState, useEffect } from "react";
+import { ArrowUpIcon } from "lucide-react";
+import { cn } from "@/shared/utils";
 
 interface ScrollToTopProps {
-  threshold?: number // Scroll threshold in pixels
-  className?: string // Additional classes for the button
+  threshold?: number; // Scroll threshold in pixels
+  className?: string; // Additional classes for the button
 }
 
-export function ScrollToTopButton({ 
-  threshold = 500, 
-  className 
-}: ScrollToTopProps) {
-  const [isVisible, setIsVisible] = useState(false)
+export function ScrollToTopButton({ threshold = 500, className }: ScrollToTopProps) {
+  const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
     const toggleVisibility = () => {
-      setIsVisible(window.scrollY > threshold)
-    }
+      setIsVisible(window.scrollY > threshold);
+    };
 
     // Initial check
-    toggleVisibility()
-    
+    toggleVisibility();
+
     // Add event listener with passive option for better performance
-    window.addEventListener('scroll', toggleVisibility, { passive: true })
-    
+    window.addEventListener("scroll", toggleVisibility, { passive: true });
+
     // Cleanup
-    return () => window.removeEventListener('scroll', toggleVisibility)
-  }, [threshold])
+    return () => window.removeEventListener("scroll", toggleVisibility);
+  }, [threshold]);
 
   const scrollToTop = () => {
     window.scrollTo({
       top: 0,
-      behavior: 'smooth'
-    })
-  }
+      behavior: "smooth",
+    });
+  };
 
   return (
     <button
@@ -60,5 +57,5 @@ export function ScrollToTopButton({
     >
       <ArrowUpIcon className="h-5 w-5" />
     </button>
-  )
+  );
 }

@@ -1,7 +1,7 @@
 // src/features/profile/components/profile-loading.tsx
 
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card'
-import { Skeleton } from '@/shared/components/ui/skeleton'
+import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 
 export function ProfileLoading() {
   return (
@@ -48,6 +48,5 @@ export function ProfileLoading() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
-

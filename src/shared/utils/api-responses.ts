@@ -1,65 +1,70 @@
 // Standardized API Response Templates
-import { NextResponse } from 'next/server'
+import { NextResponse } from "next/server";
 
 export interface APIResponse<T = any> {
-  success: boolean
-  data?: T
-  error?: string
-  message?: string
-  details?: unknown
+  success: boolean;
+  data?: T;
+  error?: string;
+  message?: string;
+  details?: unknown;
 }
 
 export class APIResponseBuilder {
   static success<T>(data: T, message?: string, status: number = 200): NextResponse {
-    return NextResponse.json({
-      success: true,
-      data,
-      message
-    } as APIResponse<T>, { status })
+    return NextResponse.json(
+      {
+        success: true,
+        data,
+        message,
+      } as APIResponse<T>,
+      { status }
+    );
   }
 
   static created<T>(data: T, message?: string): NextResponse {
-    return NextResponse.json({
-      success: true,
-      data,
-      message: message || 'Resource created successfully'
-    } as APIResponse<T>, { status: 201 })
+    return NextResponse.json(
+      {
+        success: true,
+        data,
+        message: message || "Resource created successfully",
+      } as APIResponse<T>,
+      { status: 201 }
+    );
   }
 
-  static error(
-    error: string,
-    status: number = 500,
-    details?: unknown
-  ): NextResponse {
-    return NextResponse.json({
-      success: false,
-      error,
-      details
-    } as APIResponse, { status })
+  static error(error: string, status: number = 500, details?: unknown): NextResponse {
+    return NextResponse.json(
+      {
+        success: false,
+        error,
+        details,
+      } as APIResponse,
+      { status }
+    );
   }
 
   static badRequest(error: string, details?: unknown): NextResponse {
-    return this.error(error, 400, details)
+    return this.error(error, 400, details);
   }
 
-  static unauthorized(error: string = 'Authentication required'): NextResponse {
-    return this.error(error, 401)
+  static unauthorized(error: string = "Authentication required"): NextResponse {
+    return this.error(error, 401);
   }
 
-  static forbidden(error: string = 'Insufficient privileges'): NextResponse {
-    return this.error(error, 403)
+  static forbidden(error: string = "Insufficient privileges"): NextResponse {
+    return this.error(error, 403);
   }
 
-  static notFound(error: string = 'Resource not found'): NextResponse {
-    return this.error(error, 404)
+  static notFound(error: string = "Resource not found"): NextResponse {
+    return this.error(error, 404);
   }
 
   static conflict(error: string, details?: unknown): NextResponse {
-    return this.error(error, 409, details)
+    return this.error(error, 409, details);
   }
 
-  static internalError(error: string = 'Internal server error'): NextResponse {
-    return this.error(error, 500)
+  static internalError(error: string = "Internal server error"): NextResponse {
+    return this.error(error, 500);
   }
 }
 

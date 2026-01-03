@@ -1,12 +1,18 @@
 // src/app/(admin)/admin/labels/page.tsx
-import { Metadata } from 'next'
-import { QuestionManagementTable } from '@/features/questions/components/question-management-table'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
+import { Metadata } from "next";
+import { QuestionManagementTable } from "@/features/questions/components/question-management-table";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 
 export const metadata: Metadata = {
-  title: 'Label Management - Admin Dashboard',
-  description: 'Manage question tags, categories, and sets',
-}
+  title: "Label Management - Admin Dashboard",
+  description: "Manage question tags, categories, and sets",
+};
 
 export default function LabelManagementPage() {
   return (
@@ -22,7 +28,8 @@ export default function LabelManagementPage() {
         <CardHeader>
           <CardTitle>Organization Tools</CardTitle>
           <CardDescription>
-            Create and manage tags, categories, and question sets to organize your questions effectively
+            Create and manage tags, categories, and question sets to organize your questions
+            effectively
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -30,5 +37,5 @@ export default function LabelManagementPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -1,22 +1,36 @@
 /**
  * Cloudflare R2 Storage Service
- * 
+ *
  * Centralized service for all R2 storage operations, replacing Supabase Storage.
  * Provides S3-compatible API for image upload, deletion, and management.
  */
 
-import { S3Client, PutObjectCommand, DeleteObjectCommand, DeleteObjectsCommand, HeadObjectCommand, ListObjectsV2Command, CopyObjectCommand, GetObjectCommand } from '@aws-sdk/client-s3'
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+  DeleteObjectsCommand,
+  HeadObjectCommand,
+  ListObjectsV2Command,
+  CopyObjectCommand,
+  GetObjectCommand,
+} from "@aws-sdk/client-s3";
 
 // R2 Configuration - Load dynamically to support scripts
 function getR2Config() {
-  const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID
-  const CLOUDFLARE_R2_ACCESS_KEY_ID = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID
-  const CLOUDFLARE_R2_SECRET_ACCESS_KEY = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY
-  const CLOUDFLARE_R2_BUCKET_NAME = process.env.CLOUDFLARE_R2_BUCKET_NAME || 'pathology-bites-images'
-  const CLOUDFLARE_R2_PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL || (CLOUDFLARE_ACCOUNT_ID ? `https://pub-${CLOUDFLARE_ACCOUNT_ID}.r2.dev` : '')
+  const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
+  const CLOUDFLARE_R2_ACCESS_KEY_ID = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
+  const CLOUDFLARE_R2_SECRET_ACCESS_KEY = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
+  const CLOUDFLARE_R2_BUCKET_NAME =
+    process.env.CLOUDFLARE_R2_BUCKET_NAME || "pathology-bites-images";
+  const CLOUDFLARE_R2_PUBLIC_URL =
+    process.env.CLOUDFLARE_R2_PUBLIC_URL ||
+    (CLOUDFLARE_ACCOUNT_ID ? `https://pub-${CLOUDFLARE_ACCOUNT_ID}.r2.dev` : "");
 
   if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_R2_ACCESS_KEY_ID || !CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
-    throw new Error('Missing required Cloudflare R2 environment variables. Please check CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_R2_ACCESS_KEY_ID, and CLOUDFLARE_R2_SECRET_ACCESS_KEY.')
+    throw new Error(
+      "Missing required Cloudflare R2 environment variables. Please check CLOUDFLARE_ACCOUNT_ID, CLOUDFLARE_R2_ACCESS_KEY_ID, and CLOUDFLARE_R2_SECRET_ACCESS_KEY."
+    );
   }
 
   return {
@@ -24,54 +38,54 @@ function getR2Config() {
     CLOUDFLARE_R2_ACCESS_KEY_ID,
     CLOUDFLARE_R2_SECRET_ACCESS_KEY,
     CLOUDFLARE_R2_BUCKET_NAME,
-    CLOUDFLARE_R2_PUBLIC_URL
-  }
+    CLOUDFLARE_R2_PUBLIC_URL,
+  };
 }
 
 // Create R2 client dynamically
 function createR2Client() {
-  const config = getR2Config()
+  const config = getR2Config();
 
   return new S3Client({
-    region: 'auto',
+    region: "auto",
     endpoint: `https://${config.CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com`,
     credentials: {
       accessKeyId: config.CLOUDFLARE_R2_ACCESS_KEY_ID,
       secretAccessKey: config.CLOUDFLARE_R2_SECRET_ACCESS_KEY,
     },
     forcePathStyle: false,
-  })
+  });
 }
 
 export interface R2UploadResult {
-  url: string
-  key: string
-  size: number
-  contentType: string
+  url: string;
+  key: string;
+  size: number;
+  contentType: string;
 }
 
 export interface R2FileInfo {
-  size: number
-  lastModified: Date
-  contentType: string
-  exists: boolean
+  size: number;
+  lastModified: Date;
+  contentType: string;
+  exists: boolean;
 }
 
 export interface R2FileListItem {
-  key: string
-  url: string
-  size: number
-  lastModified: Date
-  contentType?: string
-  etag?: string
+  key: string;
+  url: string;
+  size: number;
+  lastModified: Date;
+  contentType?: string;
+  etag?: string;
 }
 
 export interface R2ListResult {
-  files: R2FileListItem[]
-  totalCount: number
-  isTruncated: boolean
-  nextContinuationToken?: string
-  prefix?: string
+  files: R2FileListItem[];
+  totalCount: number;
+  isTruncated: boolean;
+  nextContinuationToken?: string;
+  prefix?: string;
 }
 
 /**
@@ -81,43 +95,46 @@ export async function uploadToR2(
   file: File | Buffer,
   key: string,
   options: {
-    contentType?: string
-    metadata?: Record<string, string>
-    cacheControl?: string
-    bucket?: string
+    contentType?: string;
+    metadata?: Record<string, string>;
+    cacheControl?: string;
+    bucket?: string;
   } = {}
 ): Promise<R2UploadResult> {
   try {
-    const config = getR2Config()
-    const r2Client = createR2Client()
+    const config = getR2Config();
+    const r2Client = createR2Client();
 
-    const contentType = options.contentType || (file instanceof File ? file.type : 'application/octet-stream')
-    const fileBuffer = file instanceof File ? Buffer.from(await file.arrayBuffer()) : file
-    const bucketName = options.bucket || config.CLOUDFLARE_R2_BUCKET_NAME
+    const contentType =
+      options.contentType || (file instanceof File ? file.type : "application/octet-stream");
+    const fileBuffer = file instanceof File ? Buffer.from(await file.arrayBuffer()) : file;
+    const bucketName = options.bucket || config.CLOUDFLARE_R2_BUCKET_NAME;
 
     const command = new PutObjectCommand({
       Bucket: bucketName,
       Key: key,
       Body: fileBuffer,
       ContentType: contentType,
-      CacheControl: options.cacheControl || '3600',
-      Metadata: options.metadata || {}
-    })
+      CacheControl: options.cacheControl || "3600",
+      Metadata: options.metadata || {},
+    });
 
-    await r2Client.send(command)
+    await r2Client.send(command);
 
     // Use custom bucket URL if specified
-    const baseUrl = options.bucket ? `https://${options.bucket}.r2.dev` : config.CLOUDFLARE_R2_PUBLIC_URL
-    const publicUrl = `${baseUrl}/${key}`
+    const baseUrl = options.bucket
+      ? `https://${options.bucket}.r2.dev`
+      : config.CLOUDFLARE_R2_PUBLIC_URL;
+    const publicUrl = `${baseUrl}/${key}`;
 
     return {
       url: publicUrl,
       key,
       size: fileBuffer.length,
-      contentType
-    }
+      contentType,
+    };
   } catch (error) {
-    throw new Error(`Failed to upload to R2: ${error}`)
+    throw new Error(`Failed to upload to R2: ${error}`);
   }
 }
 
@@ -126,40 +143,43 @@ export async function uploadToR2(
  */
 export async function deleteFromR2(key: string, bucket?: string): Promise<void> {
   try {
-    const config = getR2Config()
-    const r2Client = createR2Client()
+    const config = getR2Config();
+    const r2Client = createR2Client();
 
-    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME
+    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME;
 
     const command = new DeleteObjectCommand({
       Bucket: bucketName,
-      Key: key
-    })
+      Key: key,
+    });
 
-    await r2Client.send(command)
+    await r2Client.send(command);
   } catch (error) {
-    throw new Error(`Failed to delete from R2: ${error}`)
+    throw new Error(`Failed to delete from R2: ${error}`);
   }
 }
 
 /**
  * Delete multiple files from R2 storage
  */
-export async function bulkDeleteFromR2(keys: string[], bucket?: string): Promise<{ deleted: string[], errors: string[] }> {
-  const result = { deleted: [] as string[], errors: [] as string[] }
+export async function bulkDeleteFromR2(
+  keys: string[],
+  bucket?: string
+): Promise<{ deleted: string[]; errors: string[] }> {
+  const result = { deleted: [] as string[], errors: [] as string[] };
 
-  if (keys.length === 0) return result
+  if (keys.length === 0) return result;
 
   try {
-    const config = getR2Config()
-    const r2Client = createR2Client()
+    const config = getR2Config();
+    const r2Client = createR2Client();
 
-    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME
+    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME;
 
     // R2 supports bulk delete up to 1000 objects
-    const chunks = []
+    const chunks = [];
     for (let i = 0; i < keys.length; i += 1000) {
-      chunks.push(keys.slice(i, i + 1000))
+      chunks.push(keys.slice(i, i + 1000));
     }
 
     for (const chunk of chunks) {
@@ -167,34 +187,34 @@ export async function bulkDeleteFromR2(keys: string[], bucket?: string): Promise
         const command = new DeleteObjectsCommand({
           Bucket: bucketName,
           Delete: {
-            Objects: chunk.map(key => ({ Key: key }))
-          }
-        })
+            Objects: chunk.map((key) => ({ Key: key })),
+          },
+        });
 
-        const response = await r2Client.send(command)
-        
+        const response = await r2Client.send(command);
+
         // Track successful deletions
-        response.Deleted?.forEach(deleted => {
-          if (deleted.Key) result.deleted.push(deleted.Key)
-        })
+        response.Deleted?.forEach((deleted) => {
+          if (deleted.Key) result.deleted.push(deleted.Key);
+        });
 
         // Track errors
-        response.Errors?.forEach(error => {
-          result.errors.push(`${error.Key}: ${error.Message}`)
-        })
+        response.Errors?.forEach((error) => {
+          result.errors.push(`${error.Key}: ${error.Message}`);
+        });
       } catch (error) {
-        chunk.forEach(key => {
-          result.errors.push(`${key}: ${error}`)
-        })
+        chunk.forEach((key) => {
+          result.errors.push(`${key}: ${error}`);
+        });
       }
     }
   } catch (error) {
-    keys.forEach(key => {
-      result.errors.push(`${key}: ${error}`)
-    })
+    keys.forEach((key) => {
+      result.errors.push(`${key}: ${error}`);
+    });
   }
 
-  return result
+  return result;
 }
 
 /**
@@ -202,32 +222,32 @@ export async function bulkDeleteFromR2(keys: string[], bucket?: string): Promise
  */
 export async function getR2FileInfo(key: string): Promise<R2FileInfo | null> {
   try {
-    const config = getR2Config()
-    const r2Client = createR2Client()
+    const config = getR2Config();
+    const r2Client = createR2Client();
 
     const command = new HeadObjectCommand({
       Bucket: config.CLOUDFLARE_R2_BUCKET_NAME,
-      Key: key
-    })
+      Key: key,
+    });
 
-    const response = await r2Client.send(command)
+    const response = await r2Client.send(command);
 
     return {
       size: response.ContentLength || 0,
       lastModified: response.LastModified || new Date(),
-      contentType: response.ContentType || 'application/octet-stream',
-      exists: true
-    }
+      contentType: response.ContentType || "application/octet-stream",
+      exists: true,
+    };
   } catch (error) {
-    if (error.name === 'NotFound' || error.$metadata?.httpStatusCode === 404) {
+    if (error.name === "NotFound" || error.$metadata?.httpStatusCode === 404) {
       return {
         size: 0,
         lastModified: new Date(),
-        contentType: 'application/octet-stream',
-        exists: false
-      }
+        contentType: "application/octet-stream",
+        exists: false,
+      };
     }
-    return null
+    return null;
   }
 }
 
@@ -236,58 +256,58 @@ export async function getR2FileInfo(key: string): Promise<R2FileInfo | null> {
  */
 export async function getFileContent(bucket: string, key: string): Promise<Uint8Array | null> {
   try {
-    const r2Client = createR2Client()
+    const r2Client = createR2Client();
 
     const command = new GetObjectCommand({
       Bucket: bucket,
-      Key: key
-    })
+      Key: key,
+    });
 
-    const response = await r2Client.send(command)
-    
+    const response = await r2Client.send(command);
+
     if (!response.Body) {
-      return null
+      return null;
     }
 
     // Convert stream to bytes
-    const chunks: unknown[] = []
-    const stream = response.Body as unknown
-    
+    const chunks: unknown[] = [];
+    const stream = response.Body as unknown;
+
     // Handle different stream types
     if (stream.transformToByteArray) {
       // AWS SDK v3 stream
-      return await stream.transformToByteArray()
+      return await stream.transformToByteArray();
     } else if (stream.getReader) {
       // Web Streams API
-      const reader = stream.getReader()
+      const reader = stream.getReader();
       while (true) {
-        const { done, value } = await reader.read()
-        if (done) break
-        chunks.push(value)
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value);
       }
     } else {
       // Node.js stream
       for await (const chunk of stream) {
-        chunks.push(chunk)
+        chunks.push(chunk);
       }
     }
 
     // Combine all chunks
-    const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0)
-    const result = new Uint8Array(totalLength)
-    let offset = 0
-    
+    const totalLength = chunks.reduce((acc, chunk) => acc + chunk.length, 0);
+    const result = new Uint8Array(totalLength);
+    let offset = 0;
+
     for (const chunk of chunks) {
-      result.set(chunk, offset)
-      offset += chunk.length
+      result.set(chunk, offset);
+      offset += chunk.length;
     }
 
-    return result
+    return result;
   } catch (error) {
-    if (error.name === 'NoSuchKey' || error.$metadata?.httpStatusCode === 404) {
-      return null
+    if (error.name === "NoSuchKey" || error.$metadata?.httpStatusCode === 404) {
+      return null;
     }
-    throw error
+    throw error;
   }
 }
 
@@ -297,38 +317,41 @@ export async function getFileContent(bucket: string, key: string): Promise<Uint8
  */
 export function getR2PublicUrl(key: string, bucket?: string): string {
   try {
-    const config = getR2Config()
-    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME
+    const config = getR2Config();
+    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME;
 
     // Public access buckets
-    if (bucketName === 'pathology-bites-images') {
-      return `${config.CLOUDFLARE_R2_PUBLIC_URL}/${key}`
+    if (bucketName === "pathology-bites-images") {
+      return `${config.CLOUDFLARE_R2_PUBLIC_URL}/${key}`;
     }
-    
+
     // Anki media bucket uses its own domain
-    if (bucketName === 'pathology-bites-anki') {
-      return `https://pathology-bites-anki.r2.dev/${key}`
+    if (bucketName === "pathology-bites-anki") {
+      return `https://pathology-bites-anki.r2.dev/${key}`;
     }
 
     // For private buckets, return a placeholder that indicates signed URL needed
-    return `[PRIVATE:${bucketName}]${key}`
+    return `[PRIVATE:${bucketName}]${key}`;
   } catch {
     // Fallback for client-side or when env vars are not available
-    const bucketName = bucket || 'pathology-bites-images'
+    const bucketName = bucket || "pathology-bites-images";
 
     // Public access buckets
-    if (bucketName === 'pathology-bites-images') {
-      const publicUrl = process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL || process.env.CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev'
-      return `${publicUrl}/${key}`
+    if (bucketName === "pathology-bites-images") {
+      const publicUrl =
+        process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL ||
+        process.env.CLOUDFLARE_R2_PUBLIC_URL ||
+        "https://pub-a4bec7073d99465f99043c842be6318c.r2.dev";
+      return `${publicUrl}/${key}`;
     }
-    
+
     // Anki media bucket uses its own domain
-    if (bucketName === 'pathology-bites-anki') {
-      return `https://pathology-bites-anki.r2.dev/${key}`
+    if (bucketName === "pathology-bites-anki") {
+      return `https://pathology-bites-anki.r2.dev/${key}`;
     }
 
     // For private buckets, return a placeholder that indicates signed URL needed
-    return `[PRIVATE:${bucketName}]${key}`
+    return `[PRIVATE:${bucketName}]${key}`;
   }
 }
 
@@ -337,13 +360,16 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
  */
 export function extractR2KeyFromUrl(url: string): string | null {
   try {
-    const urlObj = new URL(url)
-    if (urlObj.hostname.includes('r2.dev') || urlObj.hostname.includes('r2.cloudflarestorage.com')) {
-      return urlObj.pathname.substring(1) // Remove leading slash
+    const urlObj = new URL(url);
+    if (
+      urlObj.hostname.includes("r2.dev") ||
+      urlObj.hostname.includes("r2.cloudflarestorage.com")
+    ) {
+      return urlObj.pathname.substring(1); // Remove leading slash
     }
-    return null
+    return null;
   } catch {
-    return null
+    return null;
   }
 }
 
@@ -352,73 +378,76 @@ export function extractR2KeyFromUrl(url: string): string | null {
  * Format: library/YYYYMMDDHHMMSS-{cleaned-filename}
  */
 export function generateImageStoragePath(filename: string, _category: string): string {
-  const now = new Date()
-  const dateStr = now.toISOString().slice(0, 19).replace(/[-:T]/g, '').slice(0, 14) // YYYYMMDDHHMMSS (no hyphens)
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 19).replace(/[-:T]/g, "").slice(0, 14); // YYYYMMDDHHMMSS (no hyphens)
 
   // Clean filename with graceful special character handling, preserve extension
-  const nameParts = filename.split('.')
-  const extension = nameParts.pop()?.toLowerCase() || 'jpg'
-  const baseName = nameParts.join('.')
+  const nameParts = filename.split(".");
+  const extension = nameParts.pop()?.toLowerCase() || "jpg";
+  const baseName = nameParts
+    .join(".")
     .toLowerCase()
     .trim()
     // Replace common special characters with meaningful equivalents
-    .replace(/&/g, 'and')
-    .replace(/\+/g, 'plus')
-    .replace(/%/g, 'percent')
-    .replace(/@/g, 'at')
-    .replace(/\$/g, 'dollar')
+    .replace(/&/g, "and")
+    .replace(/\+/g, "plus")
+    .replace(/%/g, "percent")
+    .replace(/@/g, "at")
+    .replace(/\$/g, "dollar")
     // Replace whitespace and punctuation with single hyphens
-    .replace(/[\s\-_]+/g, '-') // Multiple spaces, hyphens, underscores → single hyphen
-    .replace(/[^\w\-]/g, '-') // Non-word characters (except existing hyphens) → hyphen
-    .replace(/-+/g, '-') // Multiple consecutive hyphens → single hyphen
-    .replace(/^-+|-+$/g, '') // Remove leading/trailing hyphens
+    .replace(/[\s\-_]+/g, "-") // Multiple spaces, hyphens, underscores → single hyphen
+    .replace(/[^\w\-]/g, "-") // Non-word characters (except existing hyphens) → hyphen
+    .replace(/-+/g, "-") // Multiple consecutive hyphens → single hyphen
+    .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
 
   // Format: library/YYYYMMDDHHMMSS-{cleaned-name}.{ext}
-  return `library/${dateStr}-${baseName}.${extension}`
+  return `library/${dateStr}-${baseName}.${extension}`;
 }
 
 /**
  * List files in R2 storage with pagination support
  */
-export async function listR2Files(options: {
-  prefix?: string
-  maxKeys?: number
-  continuationToken?: string
-  bucket?: string
-} = {}): Promise<R2ListResult> {
+export async function listR2Files(
+  options: {
+    prefix?: string;
+    maxKeys?: number;
+    continuationToken?: string;
+    bucket?: string;
+  } = {}
+): Promise<R2ListResult> {
   try {
-    const config = getR2Config()
-    const r2Client = createR2Client()
+    const config = getR2Config();
+    const r2Client = createR2Client();
 
     // Use provided bucket or default to configured bucket
-    const bucketName = options.bucket || config.CLOUDFLARE_R2_BUCKET_NAME
+    const bucketName = options.bucket || config.CLOUDFLARE_R2_BUCKET_NAME;
 
     const command = new ListObjectsV2Command({
       Bucket: bucketName,
       Prefix: options.prefix,
       MaxKeys: Math.min(options.maxKeys || 1000, 1000), // AWS S3 limit is 1000
-      ContinuationToken: options.continuationToken
-    })
+      ContinuationToken: options.continuationToken,
+    });
 
-    const response = await r2Client.send(command)
+    const response = await r2Client.send(command);
 
-    const files: R2FileListItem[] = (response.Contents || []).map(object => ({
-      key: object.Key || '',
-      url: getR2PublicUrl(object.Key || '', bucketName),
+    const files: R2FileListItem[] = (response.Contents || []).map((object) => ({
+      key: object.Key || "",
+      url: getR2PublicUrl(object.Key || "", bucketName),
       size: object.Size || 0,
       lastModified: object.LastModified || new Date(),
-      etag: object.ETag
-    }))
+      etag: object.ETag,
+    }));
 
     return {
       files,
       totalCount: response.KeyCount || 0,
       isTruncated: response.IsTruncated || false,
       nextContinuationToken: response.NextContinuationToken,
-      prefix: options.prefix
-    }
+      prefix: options.prefix,
+    };
   } catch (error) {
-    throw new Error(`Failed to list R2 files: ${error}`)
+    throw new Error(`Failed to list R2 files: ${error}`);
   }
 }
 
@@ -426,123 +455,137 @@ export async function listR2Files(options: {
  * Generate storage path for data files
  */
 export function generateDataStoragePath(filename: string): string {
-  return `data/${filename}`
+  return `data/${filename}`;
 }
 
 /**
  * Copy an object within R2 storage
  */
-export async function copyR2Object(sourceKey: string, destinationKey: string, sourceBucket?: string, destinationBucket?: string): Promise<void> {
+export async function copyR2Object(
+  sourceKey: string,
+  destinationKey: string,
+  sourceBucket?: string,
+  destinationBucket?: string
+): Promise<void> {
   try {
-    const config = getR2Config()
-    const r2Client = createR2Client()
+    const config = getR2Config();
+    const r2Client = createR2Client();
 
-    const srcBucket = sourceBucket || config.CLOUDFLARE_R2_BUCKET_NAME
-    const destBucket = destinationBucket || config.CLOUDFLARE_R2_BUCKET_NAME
+    const srcBucket = sourceBucket || config.CLOUDFLARE_R2_BUCKET_NAME;
+    const destBucket = destinationBucket || config.CLOUDFLARE_R2_BUCKET_NAME;
 
     const command = new CopyObjectCommand({
       Bucket: destBucket,
       CopySource: `${srcBucket}/${sourceKey}`,
-      Key: destinationKey
-    })
+      Key: destinationKey,
+    });
 
-    await r2Client.send(command)
+    await r2Client.send(command);
   } catch (error) {
-    throw new Error(`Failed to copy R2 object: ${error}`)
+    throw new Error(`Failed to copy R2 object: ${error}`);
   }
 }
 
 /**
  * Move an object within R2 storage (copy then delete)
  */
-export async function moveR2Object(sourceKey: string, destinationKey: string, bucket?: string): Promise<void> {
+export async function moveR2Object(
+  sourceKey: string,
+  destinationKey: string,
+  bucket?: string
+): Promise<void> {
   try {
     // First copy the object
-    await copyR2Object(sourceKey, destinationKey, bucket, bucket)
+    await copyR2Object(sourceKey, destinationKey, bucket, bucket);
 
     // Then delete the original
-    await deleteFromR2(sourceKey, bucket)
-
+    await deleteFromR2(sourceKey, bucket);
   } catch (error) {
-    throw new Error(`Failed to move R2 object: ${error}`)
+    throw new Error(`Failed to move R2 object: ${error}`);
   }
 }
 
 /**
  * Move multiple objects with a common prefix (folder rename)
  */
-export async function moveR2Folder(sourcePrefix: string, destinationPrefix: string, bucket?: string): Promise<{ moved: number; errors: string[] }> {
+export async function moveR2Folder(
+  sourcePrefix: string,
+  destinationPrefix: string,
+  bucket?: string
+): Promise<{ moved: number; errors: string[] }> {
   try {
-    const config = getR2Config()
-    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME
+    const config = getR2Config();
+    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME;
 
     // List all objects with the source prefix
     const listResult = await listR2Files({
       prefix: sourcePrefix,
       maxKeys: 1000,
-      bucket: bucketName
-    })
+      bucket: bucketName,
+    });
 
     const results = {
       moved: 0,
-      errors: [] as string[]
-    }
+      errors: [] as string[],
+    };
 
     // Move each file
     for (const file of listResult.files) {
       try {
         // Calculate new key by replacing the prefix
-        const newKey = file.key.replace(sourcePrefix, destinationPrefix)
-        await moveR2Object(file.key, newKey, bucketName)
-        results.moved++
+        const newKey = file.key.replace(sourcePrefix, destinationPrefix);
+        await moveR2Object(file.key, newKey, bucketName);
+        results.moved++;
       } catch (error) {
-        const errorMsg = `Failed to move ${file.key}: ${error}`
-        results.errors.push(errorMsg)
+        const errorMsg = `Failed to move ${file.key}: ${error}`;
+        results.errors.push(errorMsg);
       }
     }
 
-    return results
+    return results;
   } catch (error) {
-    throw new Error(`Failed to move R2 folder: ${error}`)
+    throw new Error(`Failed to move R2 folder: ${error}`);
   }
 }
 
 /**
  * Get the total size of a bucket by listing all objects and summing their sizes
  */
-export async function getBucketSize(bucketName?: string): Promise<{ totalSize: number; objectCount: number }> {
+export async function getBucketSize(
+  bucketName?: string
+): Promise<{ totalSize: number; objectCount: number }> {
   try {
-    const config = getR2Config()
-    const r2Client = createR2Client()
-    const targetBucket = bucketName || config.CLOUDFLARE_R2_BUCKET_NAME
+    const config = getR2Config();
+    const r2Client = createR2Client();
+    const targetBucket = bucketName || config.CLOUDFLARE_R2_BUCKET_NAME;
 
-    let totalSize = 0
-    let objectCount = 0
-    let continuationToken: string | undefined
+    let totalSize = 0;
+    let objectCount = 0;
+    let continuationToken: string | undefined;
 
     do {
       const command = new ListObjectsV2Command({
         Bucket: targetBucket,
         MaxKeys: 1000,
-        ContinuationToken: continuationToken
-      })
+        ContinuationToken: continuationToken,
+      });
 
-      const response = await r2Client.send(command)
+      const response = await r2Client.send(command);
 
       if (response.Contents) {
         for (const object of response.Contents) {
-          totalSize += object.Size || 0
-          objectCount++
+          totalSize += object.Size || 0;
+          objectCount++;
         }
       }
 
-      continuationToken = response.NextContinuationToken
-    } while (continuationToken)
+      continuationToken = response.NextContinuationToken;
+    } while (continuationToken);
 
-    return { totalSize, objectCount }
+    return { totalSize, objectCount };
   } catch (error) {
-    console.error(`Failed to get bucket size for ${bucketName}:`, error)
-    throw new Error(`Failed to get bucket size: ${error}`)
+    console.error(`Failed to get bucket size for ${bucketName}:`, error);
+    throw new Error(`Failed to get bucket size: ${error}`);
   }
 }
 
@@ -560,7 +603,7 @@ const r2Storage = {
   copyObject: copyR2Object,
   moveObject: moveR2Object,
   moveFolder: moveR2Folder,
-  getBucketSize: getBucketSize
-}
+  getBucketSize: getBucketSize,
+};
 
-export default r2Storage
+export default r2Storage;

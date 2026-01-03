@@ -1,10 +1,10 @@
 /**
  * Pure Serverless Hybrid Quiz System - Main Hook
- * 
+ *
  * This is the primary interface for the hybrid quiz system that combines
  * the client-side state machine with the database sync manager to achieve
  * 96.7% API call reduction while maintaining full functionality.
- * 
+ *
  * Features:
  * - Instant UI responses (0ms latency)
  * - Only 2 API calls per quiz (vs 15-30 in legacy system)
@@ -13,15 +13,20 @@
  * - Optimized for Vercel's free tier
  */
 
-import { useEffect, useCallback, useRef, useState } from 'react';
-import { useRouter } from 'next/navigation';
-import { useQuizStateMachine } from './hooks/use-quiz-state-machine';
-import { DatabaseSyncManager, SyncResult } from './core/database-sync-manager';
-import { AutoSaveManager } from '../services/auto-save-manager';
-import { AUTO_SAVE_CONFIG, SyncStatus, type } from '../config/auto-save-config';
-import { QuizAnswer, QuizState, QuizQuestionTransformer, UIQuizQuestion } from '../types/quiz-question';
-import { toast } from '@/shared/utils/toast';
-import { onQuizComplete } from '@/shared/utils/cache-helpers';
+import { useEffect, useCallback, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useQuizStateMachine } from "./hooks/use-quiz-state-machine";
+import { DatabaseSyncManager, SyncResult } from "./core/database-sync-manager";
+import { AutoSaveManager } from "../services/auto-save-manager";
+import { AUTO_SAVE_CONFIG, SyncStatus, type } from "../config/auto-save-config";
+import {
+  QuizAnswer,
+  QuizState,
+  QuizQuestionTransformer,
+  UIQuizQuestion,
+} from "../types/quiz-question";
+import { toast } from "@/shared/utils/toast";
+import { onQuizComplete } from "@/shared/utils/cache-helpers";
 
 export interface UseHybridQuizOptions {
   sessionId: string;
@@ -30,10 +35,14 @@ export interface UseHybridQuizOptions {
   autoSync?: boolean;
   syncOnComplete?: boolean;
   csrfTokenGetter?: () => Promise<string>;
-  onAnswerSubmitted?: (questionId: string, answerId: string, result: { isCorrect: boolean; feedback?: unknown }) => void;
+  onAnswerSubmitted?: (
+    questionId: string,
+    answerId: string,
+    result: { isCorrect: boolean; feedback?: unknown }
+  ) => void;
   onQuizCompleted?: (result: { score: number; totalQuestions: number; timeSpent: number }) => void;
   onError?: (error: string) => void;
-  onSyncStatusChange?: (status: 'syncing' | 'synced' | 'error' | 'offline') => void;
+  onSyncStatusChange?: (status: "syncing" | "synced" | "error" | "offline") => void;
 }
 
 export interface HybridQuizState {
@@ -43,7 +52,7 @@ export interface HybridQuizState {
   error: string | null;
 
   // Current State
-  status: QuizState['status'];
+  status: QuizState["status"];
   currentQuestion: number;
   totalQuestions: number;
 
@@ -89,7 +98,10 @@ export interface HybridQuizActions {
   completeQuiz: () => Promise<SyncResult>;
 
   // Answer Management
-  submitAnswer: (questionId: string, answerId: string) => { isCorrect: boolean; feedback?: unknown } | null;
+  submitAnswer: (
+    questionId: string,
+    answerId: string
+  ) => { isCorrect: boolean; feedback?: unknown } | null;
 
   // Navigation
   nextQuestion: () => boolean;
@@ -100,7 +112,7 @@ export interface HybridQuizActions {
   getCurrentQuestion: () => UIQuizQuestion | null; // UI-compatible question format
   getQuestions: () => UIQuizQuestion[]; // UI-compatible question format
   getAnswerForQuestion: (questionId: string) => QuizAnswer | null;
-  getQuizConfig: () => QuizState['config'] | null;
+  getQuizConfig: () => QuizState["config"] | null;
 
   // Sync Management
   forceSync: () => Promise<SyncResult>;
@@ -123,14 +135,14 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     onAnswerSubmitted,
     onQuizCompleted,
     onError,
-    onSyncStatusChange
+    onSyncStatusChange,
   } = options;
 
   // Router for navigation detection
   const router = useRouter();
 
   // Sync status state
-  const [syncStatus, setSyncStatus] = useState<SyncStatus>({ state: 'idle', message: '' });
+  const [syncStatus, setSyncStatus] = useState<SyncStatus>({ state: "idle", message: "" });
   const [lastSyncTime, setLastSyncTime] = useState<number | null>(null);
 
   // Initialize sync manager
@@ -139,34 +151,31 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     syncManager.current = new DatabaseSyncManager({
       csrfTokenGetter,
       onSyncStart: () => {
-        setSyncStatus({ state: 'syncing', message: 'Syncing...' });
-        onSyncStatusChange?.('syncing');
+        setSyncStatus({ state: "syncing", message: "Syncing..." });
+        onSyncStatusChange?.("syncing");
       },
       onSyncSuccess: () => {
-        setSyncStatus({ state: 'synced', message: 'All changes synced' });
+        setSyncStatus({ state: "synced", message: "All changes synced" });
         setLastSyncTime(Date.now());
-        onSyncStatusChange?.('synced');
+        onSyncStatusChange?.("synced");
       },
       onSyncError: (error) => {
-        setSyncStatus({ state: 'error', message: 'Sync failed - retrying...' });
+        setSyncStatus({ state: "error", message: "Sync failed - retrying..." });
         onError?.(error);
-        onSyncStatusChange?.('error');
-      }
+        onSyncStatusChange?.("error");
+      },
     });
   }
 
   // Initialize auto-save manager
   const autoSaveManager = useRef<AutoSaveManager | null>(null);
   if (!autoSaveManager.current && syncManager.current) {
-    autoSaveManager.current = new AutoSaveManager(
-      syncManager.current,
-      (status) => {
-        setSyncStatus(status);
-        if (status.state === 'synced') {
-          setLastSyncTime(Date.now());
-        }
+    autoSaveManager.current = new AutoSaveManager(syncManager.current, (status) => {
+      setSyncStatus(status);
+      if (status.state === "synced") {
+        setLastSyncTime(Date.now());
       }
-    );
+    });
   }
 
   // Initialize state machine
@@ -176,26 +185,26 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     currentQuestion,
     isInitialized,
     isActive,
-    isCompleted
+    isCompleted,
   } = useQuizStateMachine({
     sessionId,
     enableLocalStorage: enableOfflineSupport,
     onAnswerSubmitted: (questionId, answer, isCorrect) => {
       onAnswerSubmitted?.(questionId, answer.selectedOptionId, {
         isCorrect,
-        feedback: { timeSpent: answer.timeSpent }
+        feedback: { timeSpent: answer.timeSpent },
       });
     },
     onQuizCompleted: () => {
       // This will be handled in the completion handler where we have access to current state
-    }
+    },
   });
 
   // Track performance metrics
   const metricsRef = useRef({
     totalApiCalls: 0,
     responseTimeSum: 0,
-    responseCount: 0
+    responseCount: 0,
   });
 
   // Timer state for timed quizzes
@@ -221,7 +230,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   const initializeQuiz = useCallback(async () => {
     // Prevent duplicate initialization
     if (isInitializingRef.current) {
-      console.log('[Hybrid] Already initializing, skipping duplicate fetch');
+      console.log("[Hybrid] Already initializing, skipping duplicate fetch");
       return;
     }
 
@@ -230,14 +239,21 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       const startTime = Date.now();
 
       // API Call #1: Fetch quiz data
-      const { questions, config, status, existingAnswers, timeRemaining: savedTimeRemaining, totalTimeLimit: savedTotalTimeLimit } = await syncManager.current!.fetchQuizData(sessionId);
+      const {
+        questions,
+        config,
+        status,
+        existingAnswers,
+        timeRemaining: savedTimeRemaining,
+        totalTimeLimit: savedTotalTimeLimit,
+      } = await syncManager.current!.fetchQuizData(sessionId);
 
-      console.log('[Hybrid] Fetched quiz data - status:', status);
+      console.log("[Hybrid] Fetched quiz data - status:", status);
 
       // EARLY EXIT: If quiz is already completed, trigger redirect immediately
-      if (status === 'completed') {
-        console.log('[Hybrid] Quiz already completed - triggering early redirect');
-        onError?.('Quiz session is already completed');
+      if (status === "completed") {
+        console.log("[Hybrid] Quiz already completed - triggering early redirect");
+        onError?.("Quiz session is already completed");
         isInitializingRef.current = false;
         return;
       }
@@ -249,15 +265,19 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       metricsRef.current.responseCount += 1;
 
       // Initialize state machine with fetched data
-      console.log('[Hybrid] Initializing quiz with status:', status);
+      console.log("[Hybrid] Initializing quiz with status:", status);
       stateActions.initializeQuiz(questions, config, status);
 
       // Initialize timer for timed quizzes
-      if (config.timing === 'timed') {
-        const limit = savedTotalTimeLimit || config.totalTimeLimit || (questions.length * 60); // 60 seconds per question
+      if (config.timing === "timed") {
+        const limit = savedTotalTimeLimit || config.totalTimeLimit || questions.length * 60; // 60 seconds per question
         setTotalTimeLimit(limit);
         // Use saved time remaining if available (resuming quiz), otherwise use full limit (new quiz)
-        setTimeRemaining(savedTimeRemaining !== null && savedTimeRemaining !== undefined ? savedTimeRemaining : limit);
+        setTimeRemaining(
+          savedTimeRemaining !== null && savedTimeRemaining !== undefined
+            ? savedTimeRemaining
+            : limit
+        );
       }
 
       // Try to recover from localStorage first
@@ -266,22 +286,26 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       // Restore existing answers (prioritize localStorage over server data)
       const answersToRestore = localData?.answers || existingAnswers;
       if (answersToRestore && answersToRestore.length > 0) {
-        answersToRestore.forEach(answer => {
+        answersToRestore.forEach((answer) => {
           const questionId = Array.isArray(answer) ? answer[0] : answer.questionId;
-          const selectedOptionId = Array.isArray(answer) ? answer[1].selectedOptionId : answer.selectedOptionId;
+          const selectedOptionId = Array.isArray(answer)
+            ? answer[1].selectedOptionId
+            : answer.selectedOptionId;
           stateActions.submitAnswer(questionId, selectedOptionId);
         });
       }
 
       // Restore other state if available from localStorage
       if (localData) {
-        if (localData.currentIndex !== undefined && localData.currentIndex !== quizState.currentQuestionIndex) {
+        if (
+          localData.currentIndex !== undefined &&
+          localData.currentIndex !== quizState.currentQuestionIndex
+        ) {
           stateActions.navigateToQuestion(localData.currentIndex);
         }
       }
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
       const fullErrorMessage = `Failed to initialize quiz: ${errorMessage}`;
       onError?.(fullErrorMessage);
     } finally {
@@ -296,13 +320,13 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       if (saved) {
         const data = JSON.parse(saved);
         // Check if data is recent (within 24 hours) and for the same session
-        const twentyFourHoursAgo = Date.now() - (24 * 60 * 60 * 1000);
+        const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
         if (data.sessionId === sessionId && data.lastSaved > twentyFourHoursAgo) {
           return data;
         }
       }
     } catch (error) {
-      console.warn('Failed to recover local quiz state:', error);
+      console.warn("Failed to recover local quiz state:", error);
     }
     return null;
   }, [sessionId]);
@@ -312,7 +336,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     try {
       // Prevent duplicate completion calls
       if (hasCompletedRef.current) {
-        console.log('[Hybrid] Quiz already completed, skipping duplicate completion');
+        console.log("[Hybrid] Quiz already completed, skipping duplicate completion");
         return { success: true, timestamp: Date.now() };
       }
 
@@ -326,9 +350,9 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       try {
         localStorage.removeItem(`quiz_${sessionId}`);
         syncManager.current?.clearSessionCache(sessionId);
-        console.log('[Hybrid] Cleared quiz cache after completion');
+        console.log("[Hybrid] Cleared quiz cache after completion");
       } catch (error) {
-        console.warn('Failed to clear quiz data after completion:', error);
+        console.warn("Failed to clear quiz data after completion:", error);
       }
 
       // Call the completion callback with current state
@@ -339,7 +363,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         callbacksRef.current.onQuizCompleted?.({
           score: currentState.progress.correct,
           totalQuestions: currentState.totalQuestions,
-          timeSpent: currentState.totalTimeSpent
+          timeSpent: currentState.totalTimeSpent,
         });
       }, 0);
 
@@ -358,14 +382,14 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         stateActions.markSyncSuccess(result.timestamp);
 
         // If the quiz was already completed, log this for debugging
-        if (result.serverResponse?.message?.includes('already completed')) {
-          console.log('[Hybrid] Quiz was already completed on server, sync treated as success');
+        if (result.serverResponse?.message?.includes("already completed")) {
+          console.log("[Hybrid] Quiz was already completed on server, sync treated as success");
         }
 
         // Invalidate unified data cache to update dashboard stats, achievements, etc.
         // This runs in background, doesn't block navigation
-        onQuizComplete().catch(err => {
-          console.warn('[Hybrid] Failed to invalidate cache after quiz completion:', err);
+        onQuizComplete().catch((err) => {
+          console.warn("[Hybrid] Failed to invalidate cache after quiz completion:", err);
           // Non-critical error, don't throw
         });
       } else {
@@ -374,7 +398,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
       return result;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Failed to complete quiz';
+      const errorMessage = error instanceof Error ? error.message : "Failed to complete quiz";
       onError?.(errorMessage);
       hasCompletedRef.current = false; // Reset on error so user can retry
       return { success: false, timestamp: Date.now(), error: errorMessage };
@@ -390,7 +414,12 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
   // Auto-sync on completion
   useEffect(() => {
-    if (isCompleted && syncOnComplete && quizState.syncStatus.pendingChanges && !hasCompletedRef.current) {
+    if (
+      isCompleted &&
+      syncOnComplete &&
+      quizState.syncStatus.pendingChanges &&
+      !hasCompletedRef.current
+    ) {
       handleCompleteQuiz();
     }
   }, [isCompleted, syncOnComplete, quizState.syncStatus.pendingChanges, handleCompleteQuiz]);
@@ -407,17 +436,25 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
             currentIndex: quizState.currentQuestionIndex,
             status: quizState.status,
             totalTimeSpent: quizState.totalTimeSpent,
-            lastSaved: Date.now()
+            lastSaved: Date.now(),
           };
           localStorage.setItem(`quiz_${sessionId}`, JSON.stringify(quizData));
         } catch (error) {
-          console.warn('Failed to save quiz state to localStorage:', error);
+          console.warn("Failed to save quiz state to localStorage:", error);
         }
       };
 
       saveToLocal();
     }
-  }, [isInitialized, sessionId, quizState.answers, quizState.progress, quizState.currentQuestionIndex, quizState.status, quizState.totalTimeSpent]);
+  }, [
+    isInitialized,
+    sessionId,
+    quizState.answers,
+    quizState.progress,
+    quizState.currentQuestionIndex,
+    quizState.status,
+    quizState.totalTimeSpent,
+  ]);
 
   // Periodic auto-save (every 5 answers)
   useEffect(() => {
@@ -425,14 +462,19 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
     const answersCount = quizState.answers.size;
     if (answersCount > 0 && autoSaveManager.current.shouldPeriodicSave(answersCount)) {
-      autoSaveManager.current.autoSave(sessionId, quizState, 'periodic', timeRemaining);
+      autoSaveManager.current.autoSave(sessionId, quizState, "periodic", timeRemaining);
     }
   }, [quizState.answers.size, sessionId, timeRemaining, quizState]);
 
   // Timer countdown for timed quizzes
   useEffect(() => {
     // Only run timer if quiz is timed, in progress, and not paused
-    if (quizState.config.timing !== 'timed' || quizState.status !== 'in_progress' || timeRemaining === null || isTimerPaused) {
+    if (
+      quizState.config.timing !== "timed" ||
+      quizState.status !== "in_progress" ||
+      timeRemaining === null ||
+      isTimerPaused
+    ) {
       // Clear timer if paused
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
@@ -448,7 +490,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
     // Start countdown
     timerIntervalRef.current = setInterval(() => {
-      setTimeRemaining(prev => {
+      setTimeRemaining((prev) => {
         if (prev === null || prev <= 0) {
           // Time's up - complete the quiz
           if (timerIntervalRef.current) {
@@ -474,22 +516,22 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     if (!AUTO_SAVE_CONFIG.enableAutoSaveOnNavigation || !autoSaveManager.current) return;
 
     const handleRouteChange = async () => {
-      if (quizState.status === 'in_progress' && quizState.answers.size > 0) {
-        await autoSaveManager.current?.autoSave(sessionId, quizState, 'navigation', timeRemaining);
+      if (quizState.status === "in_progress" && quizState.answers.size > 0) {
+        await autoSaveManager.current?.autoSave(sessionId, quizState, "navigation", timeRemaining);
       }
     };
 
     // Use beforeunload for now (Next.js 15 App Router doesn't have route change events)
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      if (quizState.status === 'in_progress' && quizState.answers.size > 0) {
+      if (quizState.status === "in_progress" && quizState.answers.size > 0) {
         handleRouteChange();
         e.preventDefault();
         return "Quiz progress is being saved...";
       }
     };
 
-    window.addEventListener('beforeunload', handleBeforeUnload);
-    return () => window.removeEventListener('beforeunload', handleBeforeUnload);
+    window.addEventListener("beforeunload", handleBeforeUnload);
+    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
   }, [quizState.status, quizState.answers.size, sessionId, timeRemaining, quizState]);
 
   // Create hybrid state
@@ -503,23 +545,24 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     progress: {
       current: quizState.progress.answered,
       total: quizState.totalQuestions,
-      percentage: quizState.progress.percentage
+      percentage: quizState.progress.percentage,
     },
     metrics: {
       totalApiCalls: metricsRef.current.totalApiCalls,
-      averageResponseTime: metricsRef.current.responseCount > 0
-        ? Math.round(metricsRef.current.responseTimeSum / metricsRef.current.responseCount)
-        : 0
+      averageResponseTime:
+        metricsRef.current.responseCount > 0
+          ? Math.round(metricsRef.current.responseTimeSum / metricsRef.current.responseCount)
+          : 0,
     },
     realtimeStats: {
       connected: enableRealtime && quizState.syncStatus.isOnline,
-      latency: 0 // Client-side operations have 0ms latency
+      latency: 0, // Client-side operations have 0ms latency
     },
     syncStatus,
     lastSyncTime,
     queueStatus: autoSaveManager.current?.getQueueStatus() || { total: 0, ready: 0, waiting: 0 },
     timeRemaining,
-    totalTimeLimit
+    totalTimeLimit,
   };
 
   // Create hybrid actions
@@ -529,7 +572,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
       // Save status to database when quiz starts
       if (autoSaveManager.current) {
-        await autoSaveManager.current.autoSave(sessionId, quizState, 'manual', timeRemaining);
+        await autoSaveManager.current.autoSave(sessionId, quizState, "manual", timeRemaining);
       }
 
       return true;
@@ -541,7 +584,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
       // Auto-save when pausing
       if (autoSaveManager.current) {
-        await autoSaveManager.current.autoSave(sessionId, quizState, 'pause', timeRemaining);
+        await autoSaveManager.current.autoSave(sessionId, quizState, "pause", timeRemaining);
       }
     }, [stateActions, sessionId, quizState, timeRemaining]),
 
@@ -555,16 +598,16 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
       try {
         // Save current state to database
-        await autoSaveManager.current.autoSave(sessionId, quizState, 'manual', timeRemaining);
+        await autoSaveManager.current.autoSave(sessionId, quizState, "manual", timeRemaining);
 
         // Show success toast
-        toast.success('Quiz saved successfully');
+        toast.success("Quiz saved successfully");
 
         // Navigate to My Quizzes page
-        router.push('/dashboard/quizzes');
+        router.push("/dashboard/quizzes");
       } catch (error) {
-        console.error('Failed to save and exit:', error);
-        toast.error('Failed to save quiz. Please try again.');
+        console.error("Failed to save and exit:", error);
+        toast.error("Failed to save quiz. Please try again.");
       }
     }, [sessionId, quizState, router, timeRemaining]),
 
@@ -572,16 +615,19 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       return await handleCompleteQuiz();
     }, [handleCompleteQuiz]),
 
-    submitAnswer: useCallback((questionId: string, answerId: string) => {
-      const isCorrect = stateActions.submitAnswer(questionId, answerId);
-      return {
-        isCorrect,
-        feedback: {
-          instant: true,
-          responseTime: 0 // Instant client-side response
-        }
-      };
-    }, [stateActions]),
+    submitAnswer: useCallback(
+      (questionId: string, answerId: string) => {
+        const isCorrect = stateActions.submitAnswer(questionId, answerId);
+        return {
+          isCorrect,
+          feedback: {
+            instant: true,
+            responseTime: 0, // Instant client-side response
+          },
+        };
+      },
+      [stateActions]
+    ),
 
     nextQuestion: useCallback(() => {
       return stateActions.nextQuestion();
@@ -591,9 +637,12 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       return stateActions.previousQuestion();
     }, [stateActions]),
 
-    navigateToQuestion: useCallback((index: number) => {
-      return stateActions.navigateToQuestion(index);
-    }, [stateActions]),
+    navigateToQuestion: useCallback(
+      (index: number) => {
+        return stateActions.navigateToQuestion(index);
+      },
+      [stateActions]
+    ),
 
     getCurrentQuestion: useCallback(() => {
       const question = stateActions.getCurrentQuestion();
@@ -605,14 +654,15 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
     getQuestions: useCallback(() => {
       // Transform hybrid format to UI component format using standardized transformer
-      return quizState.questions.map(question =>
-        QuizQuestionTransformer.hybridToUI(question)
-      );
+      return quizState.questions.map((question) => QuizQuestionTransformer.hybridToUI(question));
     }, [quizState.questions]),
 
-    getAnswerForQuestion: useCallback((questionId: string) => {
-      return stateActions.getAnswerForQuestion(questionId);
-    }, [stateActions]),
+    getAnswerForQuestion: useCallback(
+      (questionId: string) => {
+        return stateActions.getAnswerForQuestion(questionId);
+      },
+      [stateActions]
+    ),
 
     getQuizConfig: useCallback(() => {
       return quizState.config;
@@ -622,11 +672,14 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       return await syncManager.current!.syncQuizData(quizState);
     }, [quizState]),
 
-    getProgress: useCallback(() => ({
-      answered: quizState.progress.answered,
-      correct: quizState.progress.correct,
-      total: quizState.totalQuestions
-    }), [quizState.progress, quizState.totalQuestions]),
+    getProgress: useCallback(
+      () => ({
+        answered: quizState.progress.answered,
+        correct: quizState.progress.correct,
+        total: quizState.totalQuestions,
+      }),
+      [quizState.progress, quizState.totalQuestions]
+    ),
 
     getTimeSpent: useCallback(() => {
       return quizState.totalTimeSpent;
@@ -635,12 +688,12 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     // Utility functions
     cleanupOldQuizData: useCallback(() => {
       try {
-        const oneWeekAgo = Date.now() - (7 * 24 * 60 * 60 * 1000);
+        const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
         Object.keys(localStorage)
-          .filter(key => key.startsWith('quiz_'))
-          .forEach(key => {
+          .filter((key) => key.startsWith("quiz_"))
+          .forEach((key) => {
             try {
-              const data = JSON.parse(localStorage.getItem(key) || '{}');
+              const data = JSON.parse(localStorage.getItem(key) || "{}");
               if (data.lastSaved && data.lastSaved < oneWeekAgo) {
                 localStorage.removeItem(key);
               }
@@ -650,7 +703,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
             }
           });
       } catch (error) {
-        console.warn('Failed to cleanup old quiz data:', error);
+        console.warn("Failed to cleanup old quiz data:", error);
       }
     }, []),
 
@@ -658,9 +711,9 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       try {
         localStorage.removeItem(`quiz_${sessionId}`);
       } catch (error) {
-        console.warn('Failed to clear current quiz data:', error);
+        console.warn("Failed to clear current quiz data:", error);
       }
-    }, [sessionId])
+    }, [sessionId]),
   };
 
   return [hybridState, hybridActions];

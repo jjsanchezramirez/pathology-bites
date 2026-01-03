@@ -1,16 +1,16 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { Skeleton } from "@/shared/components/ui/skeleton"
-import { BookOpen, Target, TrendingUp, Calendar } from "lucide-react"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { BookOpen, Target, TrendingUp, Calendar } from "lucide-react";
 
 interface StudentStatsCardsProps {
   stats: {
-    needsReview?: number
-    mastered?: number
-    unused?: number
-    completedQuestions: number
-  }
+    needsReview?: number;
+    mastered?: number;
+    unused?: number;
+    completedQuestions: number;
+  };
 }
 
 export function StudentStatsCards({ stats }: StudentStatsCardsProps) {
@@ -22,10 +22,10 @@ export function StudentStatsCards({ stats }: StudentStatsCardsProps) {
           <BookOpen className="h-4 w-4 text-[hsl(var(--chart-5))]" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-[hsl(var(--chart-5))]">{stats.needsReview || 0}</div>
-          <p className="text-xs text-muted-foreground">
-            Questions to practice more
-          </p>
+          <div className="text-2xl font-bold text-[hsl(var(--chart-5))]">
+            {stats.needsReview || 0}
+          </div>
+          <p className="text-xs text-muted-foreground">Questions to practice more</p>
         </CardContent>
       </Card>
 
@@ -36,9 +36,7 @@ export function StudentStatsCards({ stats }: StudentStatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-[hsl(var(--chart-1))]">{stats.mastered || 0}</div>
-          <p className="text-xs text-muted-foreground">
-            Questions answered correctly
-          </p>
+          <p className="text-xs text-muted-foreground">Questions answered correctly</p>
         </CardContent>
       </Card>
 
@@ -49,9 +47,7 @@ export function StudentStatsCards({ stats }: StudentStatsCardsProps) {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-[hsl(var(--chart-2))]">{stats.unused || 0}</div>
-          <p className="text-xs text-muted-foreground">
-            Questions to explore
-          </p>
+          <p className="text-xs text-muted-foreground">Questions to explore</p>
         </CardContent>
       </Card>
 
@@ -61,14 +57,14 @@ export function StudentStatsCards({ stats }: StudentStatsCardsProps) {
           <Calendar className="h-4 w-4 text-[hsl(var(--chart-3))]" />
         </CardHeader>
         <CardContent>
-          <div className="text-2xl font-bold text-[hsl(var(--chart-3))]">{stats.completedQuestions || 0}</div>
-          <p className="text-xs text-muted-foreground">
-            Questions attempted
-          </p>
+          <div className="text-2xl font-bold text-[hsl(var(--chart-3))]">
+            {stats.completedQuestions || 0}
+          </div>
+          <p className="text-xs text-muted-foreground">Questions attempted</p>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
 
 export function StudentStatsCardsLoading() {
@@ -87,6 +83,5 @@ export function StudentStatsCardsLoading() {
         </Card>
       ))}
     </div>
-  )
+  );
 }
-

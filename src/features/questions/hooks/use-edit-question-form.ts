@@ -1,29 +1,42 @@
 // src/features/questions/hooks/use-edit-question-form.ts
-'use client';
+"use client";
 
-import { useState, useEffect, useCallback } from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { toast } from '@/shared/utils/toast';
-import { QuestionWithDetails, QuestionOptionFormData, QuestionImageFormData } from '@/features/questions/types/questions';
-import { useQuestions } from './use-questions';
+import { useState, useEffect, useCallback } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { toast } from "@/shared/utils/toast";
+import {
+  QuestionWithDetails,
+  QuestionOptionFormData,
+  QuestionImageFormData,
+} from "@/features/questions/types/questions";
+import { useQuestions } from "./use-questions";
 
 // Form schema
 const editQuestionSchema = z.object({
-  title: z.string().min(1, 'Title is required').max(200, 'Title too long'),
-  stem: z.string().min(10, 'Question stem must be at least 10 characters').max(2000, 'Question stem too long'),
-  difficulty: z.enum(['easy', 'medium', 'hard']),
-  teaching_point: z.string().min(10, 'Teaching point must be at least 10 characters').max(1000, 'Teaching point too long'),
-  question_references: z.string().max(1000, 'References too long (max 1000 characters)').optional(),
-  status: z.enum(['draft', 'pending_review', 'flagged', 'rejected', 'published', 'archived']),
+  title: z.string().min(1, "Title is required").max(200, "Title too long"),
+  stem: z
+    .string()
+    .min(10, "Question stem must be at least 10 characters")
+    .max(2000, "Question stem too long"),
+  difficulty: z.enum(["easy", "medium", "hard"]),
+  teaching_point: z
+    .string()
+    .min(10, "Teaching point must be at least 10 characters")
+    .max(1000, "Teaching point too long"),
+  question_references: z.string().max(1000, "References too long (max 1000 characters)").optional(),
+  status: z.enum(["draft", "pending_review", "flagged", "rejected", "published", "archived"]),
   question_set_id: z.string(),
   category_id: z.string().nullable().optional(),
-  anki_card_id: z.union([z.number().positive(), z.string().min(1)]).nullable().optional(),
-  anki_deck_name: z.string().max(100, 'Deck name too long').nullable().optional(),
-  updateType: z.enum(['patch', 'minor', 'major']).optional(),
+  anki_card_id: z
+    .union([z.number().positive(), z.string().min(1)])
+    .nullable()
+    .optional(),
+  anki_deck_name: z.string().max(100, "Deck name too long").nullable().optional(),
+  updateType: z.enum(["patch", "minor", "major"]).optional(),
   isPatchEdit: z.boolean().optional(),
-  patchEditReason: z.string().max(500, 'Reason too long').optional(),
+  patchEditReason: z.string().max(500, "Reason too long").optional(),
 });
 
 export type EditQuestionFormData = z.infer<typeof editQuestionSchema>;
@@ -44,7 +57,7 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
   const [answerOptions, setAnswerOptions] = useState<QuestionOptionFormData[]>([]);
   const [questionImages, setQuestionImages] = useState<QuestionImageFormData[]>([]);
   const [isPatchEdit, setIsPatchEdit] = useState(false);
-  const [patchEditReason, setPatchEditReason] = useState('');
+  const [patchEditReason, setPatchEditReason] = useState("");
 
   // Hooks
   const { updateQuestion } = useQuestions();
@@ -53,26 +66,26 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
   const form = useForm<EditQuestionFormData>({
     resolver: zodResolver(editQuestionSchema),
     defaultValues: {
-      title: '',
-      stem: '',
-      difficulty: 'medium',
-      teaching_point: '',
-      question_references: '',
-      status: 'draft',
-      question_set_id: 'none',
+      title: "",
+      stem: "",
+      difficulty: "medium",
+      teaching_point: "",
+      question_references: "",
+      status: "draft",
+      question_set_id: "none",
       category_id: null,
       anki_card_id: null,
       anki_deck_name: null,
-      updateType: 'patch',
+      updateType: "patch",
       isPatchEdit: false,
-      patchEditReason: '',
+      patchEditReason: "",
     },
   });
 
   // Track form changes
   useEffect(() => {
     const subscription = form.watch((_, { type }) => {
-      if (type === 'change' && !isInitializing) {
+      if (type === "change" && !isInitializing) {
         setHasUnsavedChanges(true);
       }
     });
@@ -85,44 +98,45 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
       setIsInitializing(true);
 
       // For published questions, default to patch edit
-      const isPublished = question.status === 'published';
+      const isPublished = question.status === "published";
       setIsPatchEdit(isPublished);
 
       form.reset({
-        title: question.title || '',
-        stem: question.stem || '',
-        difficulty: question.difficulty as 'easy' | 'medium' | 'hard' || 'medium',
-        teaching_point: question.teaching_point || '',
-        question_references: question.question_references || '',
-        status: (question.status as 'draft' | 'pending_review' | 'approved' | 'flagged') || 'draft',
-        question_set_id: question.question_set_id || 'none',
+        title: question.title || "",
+        stem: question.stem || "",
+        difficulty: (question.difficulty as "easy" | "medium" | "hard") || "medium",
+        teaching_point: question.teaching_point || "",
+        question_references: question.question_references || "",
+        status: (question.status as "draft" | "pending_review" | "approved" | "flagged") || "draft",
+        question_set_id: question.question_set_id || "none",
         category_id: question.category_id || null,
         anki_card_id: question.anki_card_id || null,
         anki_deck_name: question.anki_deck_name || null,
-        updateType: isPublished ? 'patch' : 'minor',
+        updateType: isPublished ? "patch" : "minor",
         isPatchEdit: isPublished,
-        patchEditReason: '',
+        patchEditReason: "",
       });
 
       // Initialize selected tag IDs
-      const tagIds = question.tags?.map(tag => tag.id) || [];
+      const tagIds = question.tags?.map((tag) => tag.id) || [];
       setSelectedTagIds(tagIds);
 
       // Initialize answer options with IDs for existing options
-      const options: QuestionOptionFormData[] = question.question_options?.map((option, index) => ({
-        id: option.id, // Include the ID for existing options
-        text: option.text,
-        is_correct: option.is_correct,
-        explanation: option.explanation || '',
-        order_index: index,
-      })) || [];
+      const options: QuestionOptionFormData[] =
+        question.question_options?.map((option, index) => ({
+          id: option.id, // Include the ID for existing options
+          text: option.text,
+          is_correct: option.is_correct,
+          explanation: option.explanation || "",
+          order_index: index,
+        })) || [];
 
       // Ensure we have at least 2 options
       while (options.length < 2) {
         options.push({
-          text: '',
+          text: "",
           is_correct: false,
-          explanation: '',
+          explanation: "",
           order_index: options.length,
         });
       }
@@ -130,11 +144,12 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
       setAnswerOptions(options);
 
       // Initialize question images
-      const images = question.question_images?.map((img, index) => ({
-        image_id: img.image_id,
-        question_section: img.question_section as 'stem' | 'explanation',
-        order_index: index,
-      })) || [];
+      const images =
+        question.question_images?.map((img, index) => ({
+          image_id: img.image_id,
+          question_section: img.question_section as "stem" | "explanation",
+          order_index: index,
+        })) || [];
 
       setQuestionImages(images);
 
@@ -146,41 +161,54 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
   }, [open, question, form]);
 
   // Handle form submission
-  const handleSubmit = useCallback(async (data: EditQuestionFormData) => {
-    if (!question) return;
+  const handleSubmit = useCallback(
+    async (data: EditQuestionFormData) => {
+      if (!question) return;
 
-    setIsSubmitting(true);
-    try {
-      const updateData = {
-        ...data,
-        question_set_id: data.question_set_id === 'none' ? null : data.question_set_id,
-        question_references: data.question_references || null,
-        anki_card_id: data.anki_card_id || null,
-        anki_deck_name: data.anki_deck_name || null,
-      };
+      setIsSubmitting(true);
+      try {
+        const updateData = {
+          ...data,
+          question_set_id: data.question_set_id === "none" ? null : data.question_set_id,
+          question_references: data.question_references || null,
+          anki_card_id: data.anki_card_id || null,
+          anki_deck_name: data.anki_deck_name || null,
+        };
 
-      await updateQuestion(question.id, updateData, {
-        answerOptions: answerOptions,
-        questionImages: questionImages,
-        tagIds: selectedTagIds,
-        categoryId: data.category_id || undefined,
-        updateType: data.updateType,
-        changeSummary: isPatchEdit ? patchEditReason : 'Question updated',
-        isPatchEdit: isPatchEdit,
-        patchEditReason: patchEditReason,
-      });
+        await updateQuestion(question.id, updateData, {
+          answerOptions: answerOptions,
+          questionImages: questionImages,
+          tagIds: selectedTagIds,
+          categoryId: data.category_id || undefined,
+          updateType: data.updateType,
+          changeSummary: isPatchEdit ? patchEditReason : "Question updated",
+          isPatchEdit: isPatchEdit,
+          patchEditReason: patchEditReason,
+        });
 
-      setHasUnsavedChanges(false);
-      onSave();
-      onClose();
-    } catch (error) {
-      console.error('Error in handleSubmit:', error);
-      toast.error('Failed to update question');
-      throw error;
-    } finally {
-      setIsSubmitting(false);
-    }
-  }, [question, answerOptions, questionImages, selectedTagIds, updateQuestion, onSave, onClose, isPatchEdit, patchEditReason]);
+        setHasUnsavedChanges(false);
+        onSave();
+        onClose();
+      } catch (error) {
+        console.error("Error in handleSubmit:", error);
+        toast.error("Failed to update question");
+        throw error;
+      } finally {
+        setIsSubmitting(false);
+      }
+    },
+    [
+      question,
+      answerOptions,
+      questionImages,
+      selectedTagIds,
+      updateQuestion,
+      onSave,
+      onClose,
+      isPatchEdit,
+      patchEditReason,
+    ]
+  );
 
   // Handle unsaved changes
   const handleUnsavedChanges = useCallback(() => {

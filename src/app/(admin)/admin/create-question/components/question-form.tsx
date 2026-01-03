@@ -1,64 +1,67 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Textarea } from '@/shared/components/ui/textarea'
-import { Label } from '@/shared/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
-import { Checkbox } from '@/shared/components/ui/checkbox'
-import { Badge } from '@/shared/components/ui/badge'
-import { ScrollArea } from '@/shared/components/ui/scroll-area'
-import { Loader2, Brain, FileText } from 'lucide-react'
-import { toast } from '@/shared/utils/toast'
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Textarea } from "@/shared/components/ui/textarea";
+import { Label } from "@/shared/components/ui/label";
 import {
-  getModelProvider,
-  ACTIVE_AI_MODELS
-} from '@/shared/config/ai-models'
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import { Badge } from "@/shared/components/ui/badge";
+import { ScrollArea } from "@/shared/components/ui/scroll-area";
+import { Loader2, Brain, FileText } from "lucide-react";
+import { toast } from "@/shared/utils/toast";
+import { getModelProvider, ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
 
 // Use the full list of active models for admin UI (user choice)
-const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter(model => model.available).map(model => model.id)
+const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
+  (model) => model.id
+);
 
 interface EducationalContent {
-  category: string
-  subject: string
-  lesson: string
-  topic: string
-  content: unknown
+  category: string;
+  subject: string;
+  lesson: string;
+  topic: string;
+  content: unknown;
 }
 
 interface GeneratedQuestion {
-  title: string
-  stem: string
-  difficulty: 'easy' | 'medium' | 'hard'
-  teaching_point: string
-  question_references: string
-  status: string
-  question_set_id: string
-  category_id: string
+  title: string;
+  stem: string;
+  difficulty: "easy" | "medium" | "hard";
+  teaching_point: string;
+  question_references: string;
+  status: string;
+  question_set_id: string;
+  category_id: string;
   answer_options: Array<{
-    text: string
-    is_correct: boolean
-    explanation: string
-    order_index: number
-  }>
+    text: string;
+    is_correct: boolean;
+    explanation: string;
+    order_index: number;
+  }>;
   question_images: Array<{
-    question_section: 'stem' | 'explanation'
-    order_index: number
-    image_url: string
-    alt_text: string
-    caption: string
-  }>
-  tag_ids: string[]
-  metadata: unknown
+    question_section: "stem" | "explanation";
+    order_index: number;
+    image_url: string;
+    alt_text: string;
+    caption: string;
+  }>;
+  tag_ids: string[];
+  metadata: unknown;
 }
 
-
-
 interface QuestionFormProps {
-  selectedContent: EducationalContent | null
-  onQuestionGenerated: (question: GeneratedQuestion) => void
-  isEditMode?: boolean
+  selectedContent: EducationalContent | null;
+  onQuestionGenerated: (question: GeneratedQuestion) => void;
+  isEditMode?: boolean;
 }
 
 const DEFAULT_INSTRUCTIONS = `You are an expert pathology educator creating multiple-choice questions for medical students and residents. Generate a high-quality pathology question based on the provided content.
@@ -113,98 +116,94 @@ Return the response in this exact JSON format:
       "order_index": 4
     }
   ]
-}`
+}`;
 
 export function QuestionForm({
   selectedContent,
   onQuestionGenerated,
-  isEditMode = false
+  isEditMode = false,
 }: QuestionFormProps) {
-  const [instructions, setInstructions] = useState(DEFAULT_INSTRUCTIONS)
-  const [additionalContext, setAdditionalContext] = useState('')
-  const [selectedModelIndex, setSelectedModelIndex] = useState(0)
-  const [assumeHistologicImages, setAssumeHistologicImages] = useState(false)
-  const [isGenerating, setIsGenerating] = useState(false)
-
-
-
-
-
-
-
+  const [instructions, setInstructions] = useState(DEFAULT_INSTRUCTIONS);
+  const [additionalContext, setAdditionalContext] = useState("");
+  const [selectedModelIndex, setSelectedModelIndex] = useState(0);
+  const [assumeHistologicImages, setAssumeHistologicImages] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // Use centralized provider detection and API key management
 
   // Network retry utility with optimized backoff for form interactions
-  const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 2): Promise<Response> => {
-    let lastError: Error | null = null
+  const fetchWithRetry = async (
+    url: string,
+    options: RequestInit,
+    maxRetries = 2
+  ): Promise<Response> => {
+    let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        const controller = new AbortController()
+        const controller = new AbortController();
         // Reduced timeout for better user experience during form interactions
-        const timeoutId = setTimeout(() => controller.abort(), 45000) // 45 second timeout
+        const timeoutId = setTimeout(() => controller.abort(), 45000); // 45 second timeout
 
         const response = await fetch(url, {
           ...options,
-          signal: controller.signal
-        })
+          signal: controller.signal,
+        });
 
-        clearTimeout(timeoutId)
+        clearTimeout(timeoutId);
 
         // If successful or client error (4xx), don't retry
         if (response.ok || (response.status >= 400 && response.status < 500)) {
-          return response
+          return response;
         }
 
         // Server error (5xx), retry with conservative backoff
-        throw new Error(`Server error: ${response.status} ${response.statusText}`)
-
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
       } catch (error) {
-        lastError = error as Error
+        lastError = error as Error;
 
         // Don't retry on abort (timeout) or network errors on final attempt
         if (attempt === maxRetries - 1) {
-          break
+          break;
         }
 
         // More conservative backoff for form interactions: 2s, 4s
-        const delay = Math.pow(2, attempt + 1) * 1000
+        const delay = Math.pow(2, attempt + 1) * 1000;
 
         // Show user-friendly retry message
         if (attempt === 0) {
-          toast.info('Request failed, retrying...', { duration: 2000 })
+          toast.info("Request failed, retrying...", { duration: 2000 });
         }
 
-        await new Promise(resolve => setTimeout(resolve, delay))
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
-    throw lastError || new Error('Max retries exceeded')
-  }
+    throw lastError || new Error("Max retries exceeded");
+  };
 
   const generateQuestion = async () => {
     if (!selectedContent) {
-      toast.error('Please select content first')
-      return
+      toast.error("Please select content first");
+      return;
     }
 
     // Prevent multiple simultaneous requests
     if (isGenerating) {
-      toast.warning('Question generation already in progress')
-      return
+      toast.warning("Question generation already in progress");
+      return;
     }
 
-    setIsGenerating(true)
+    setIsGenerating(true);
 
     try {
-      const contextContent = JSON.stringify(selectedContent.content, null, 2)
-      const selectedModel = ADMIN_AI_MODELS[selectedModelIndex]
+      const contextContent = JSON.stringify(selectedContent.content, null, 2);
+      const selectedModel = ADMIN_AI_MODELS[selectedModelIndex];
 
-      const response = await fetchWithRetry('/api/admin/ai-generate-question', {
-        method: 'POST',
+      const response = await fetchWithRetry("/api/admin/ai-generate-question", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           content: {
@@ -212,94 +211,98 @@ export function QuestionForm({
             subject: selectedContent.subject,
             lesson: selectedContent.lesson,
             topic: selectedContent.topic,
-            text: contextContent
+            text: contextContent,
           },
           instructions: instructions,
           additionalContext: additionalContext,
-          model: selectedModel
-        })
-      })
+          model: selectedModel,
+        }),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
         // Admin AI generate question API returns { success: true, question: {...}, metadata: {...} }
         if (!data.success) {
-          throw new Error(data.error || 'AI service returned unsuccessful response')
+          throw new Error(data.error || "AI service returned unsuccessful response");
         }
 
-        const questionData = data.question
+        const questionData = data.question;
         if (!questionData) {
-          throw new Error('No question data received from AI service')
+          throw new Error("No question data received from AI service");
         }
 
         try {
           // Convert admin API response format to the expected format
           const completeQuestion: GeneratedQuestion = {
             ...questionData,
-            status: 'draft',
-            question_set_id: '', // Will be set during finalization
-            category_id: '', // Will be set during finalization
-            answer_options: (questionData.question_options || []).map((option: unknown, index: number) => ({
-              text: option.text,
-              is_correct: option.is_correct,
-              explanation: option.explanation,
-              order_index: index
-            })),
+            status: "draft",
+            question_set_id: "", // Will be set during finalization
+            category_id: "", // Will be set during finalization
+            answer_options: (questionData.question_options || []).map(
+              (option: unknown, index: number) => ({
+                text: option.text,
+                is_correct: option.is_correct,
+                explanation: option.explanation,
+                order_index: index,
+              })
+            ),
             question_images: questionData.question_images || [],
             tag_ids: questionData.tag_ids || [],
             metadata: {
               exported_at: new Date().toISOString(),
-              exported_by: '', // Will be set during finalization
+              exported_by: "", // Will be set during finalization
               source_content: {
                 category: selectedContent.category,
                 subject: selectedContent.subject,
                 lesson: selectedContent.lesson,
-                topic: selectedContent.topic
+                topic: selectedContent.topic,
               },
               generated_by: {
-                provider: data.metadata?.provider || 'unknown',
-                model: data.metadata?.model || selectedModel
-              }
-            }
-          }
+                provider: data.metadata?.provider || "unknown",
+                model: data.metadata?.model || selectedModel,
+              },
+            },
+          };
 
-          onQuestionGenerated(completeQuestion)
-          toast.success(`Question generated successfully using ${selectedModel}!`)
+          onQuestionGenerated(completeQuestion);
+          toast.success(`Question generated successfully using ${selectedModel}!`);
         } catch (parseError) {
-          console.error('Question processing error:', parseError)
-          toast.error('Failed to process generated question. Please try again.')
+          console.error("Question processing error:", parseError);
+          toast.error("Failed to process generated question. Please try again.");
         }
       } else {
         // Handle different types of API errors
-        const errorMessage = data.error || 'Failed to generate question'
-        throw new Error(errorMessage)
+        const errorMessage = data.error || "Failed to generate question";
+        throw new Error(errorMessage);
       }
     } catch (error) {
-      console.error('Error generating question:', error)
+      console.error("Error generating question:", error);
 
       // Provide user-friendly error messages based on error type
       if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          toast.error('Request timed out. Please check your connection and try again.')
-        } else if (error.message.includes('Failed to fetch')) {
-          toast.error('Network error. Please check your internet connection and try again.')
-        } else if (error.message.includes('Unsupported model')) {
-          toast.error(`Model ${ADMIN_AI_MODELS[selectedModelIndex]} is not supported. Please try a different model.`)
-        } else if (error.message.includes('rate limit')) {
-          toast.error('API rate limit exceeded. Please wait a moment and try again.')
-        } else if (error.message.includes('Server error: 5')) {
-          toast.error('AI service temporarily unavailable. Please try again in a few moments.')
+        if (error.name === "AbortError") {
+          toast.error("Request timed out. Please check your connection and try again.");
+        } else if (error.message.includes("Failed to fetch")) {
+          toast.error("Network error. Please check your internet connection and try again.");
+        } else if (error.message.includes("Unsupported model")) {
+          toast.error(
+            `Model ${ADMIN_AI_MODELS[selectedModelIndex]} is not supported. Please try a different model.`
+          );
+        } else if (error.message.includes("rate limit")) {
+          toast.error("API rate limit exceeded. Please wait a moment and try again.");
+        } else if (error.message.includes("Server error: 5")) {
+          toast.error("AI service temporarily unavailable. Please try again in a few moments.");
         } else {
-          toast.error(`Generation failed: ${error.message}`)
+          toast.error(`Generation failed: ${error.message}`);
         }
       } else {
-        toast.error('An unexpected error occurred. Please try again.')
+        toast.error("An unexpected error occurred. Please try again.");
       }
     } finally {
-      setIsGenerating(false)
+      setIsGenerating(false);
     }
-  }
+  };
 
   return (
     <div className="space-y-6">
@@ -333,7 +336,10 @@ export function QuestionForm({
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>AI Model</Label>
-              <Select value={selectedModelIndex.toString()} onValueChange={(value) => setSelectedModelIndex(parseInt(value))}>
+              <Select
+                value={selectedModelIndex.toString()}
+                onValueChange={(value) => setSelectedModelIndex(parseInt(value))}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -433,17 +439,11 @@ export function QuestionForm({
         </CardContent>
       </Card>
 
-
-
       {/* Generate Button */}
       <div className="flex justify-end">
         {isEditMode ? (
           <div className="text-center space-y-2">
-            <Button
-              disabled
-              size="lg"
-              className="opacity-50 cursor-not-allowed"
-            >
+            <Button disabled size="lg" className="opacity-50 cursor-not-allowed">
               <Brain className="mr-2 h-4 w-4" />
               Generate Question
             </Button>
@@ -452,11 +452,7 @@ export function QuestionForm({
             </p>
           </div>
         ) : (
-          <Button
-            onClick={generateQuestion}
-            disabled={!selectedContent || isGenerating}
-            size="lg"
-          >
+          <Button onClick={generateQuestion} disabled={!selectedContent || isGenerating} size="lg">
             {isGenerating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <Brain className="mr-2 h-4 w-4" />
             Generate Question
@@ -464,5 +460,5 @@ export function QuestionForm({
         )}
       </div>
     </div>
-  )
+  );
 }

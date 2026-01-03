@@ -1,5 +1,5 @@
 // src/shared/components/common/public-hero.tsx
-'use client'
+"use client";
 
 /**
  * PublicHero - Standardized hero section component for public pages
@@ -37,27 +37,27 @@
  * />
  */
 
-import { ReactNode } from 'react'
-import FloatingCharacter from './dr-albright'
-import { getR2PublicUrl } from '@/shared/services/r2-storage'
+import { ReactNode } from "react";
+import FloatingCharacter from "./dr-albright";
+import { getR2PublicUrl } from "@/shared/services/r2-storage";
 
 interface PublicHeroProps {
   /** Main heading text */
-  title: string | ReactNode
+  title: string | ReactNode;
   /** Supporting description text */
-  description?: string | ReactNode
+  description?: string | ReactNode;
   /** Optional action buttons or other content */
-  actions?: ReactNode
+  actions?: ReactNode;
   /** Whether to show Dr. Albright character (default: true) */
-  showCharacter?: boolean
+  showCharacter?: boolean;
   /** Whether to use full-screen hero style with gradients (default: false) */
-  fullScreen?: boolean
+  fullScreen?: boolean;
   /** Additional CSS classes for the section */
-  className?: string
+  className?: string;
   /** Additional CSS classes for the content container */
-  contentClassName?: string
+  contentClassName?: string;
   /** Custom background content (for full-screen mode) */
-  backgroundContent?: ReactNode
+  backgroundContent?: ReactNode;
 }
 
 export function PublicHero({
@@ -66,13 +66,15 @@ export function PublicHero({
   actions,
   showCharacter = true,
   fullScreen = false,
-  className = '',
-  contentClassName = '',
-  backgroundContent
+  className = "",
+  contentClassName = "",
+  backgroundContent,
 }: PublicHeroProps) {
   if (fullScreen) {
     return (
-      <section className={`relative flex min-h-[calc(100vh-3.5rem)] items-center justify-center overflow-hidden ${className}`}>
+      <section
+        className={`relative flex min-h-[calc(100vh-3.5rem)] items-center justify-center overflow-hidden ${className}`}
+      >
         {/* Default background gradients for full-screen mode */}
         {!backgroundContent && (
           <>
@@ -81,15 +83,17 @@ export function PublicHero({
             <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.13),transparent_25%)] animate-gradient" />
           </>
         )}
-        
+
         {/* Custom background content */}
         {backgroundContent}
-        
+
         {/* Content Container */}
-        <div className={`container px-4 sm:px-6 lg:px-8 relative z-10 flex justify-center ${contentClassName}`}>
+        <div
+          className={`container px-4 sm:px-6 lg:px-8 relative z-10 flex justify-center ${contentClassName}`}
+        >
           <div className="relative max-w-5xl space-y-8 text-center">
             {/* Title */}
-            {typeof title === 'string' ? (
+            {typeof title === "string" ? (
               <h1 className="font-heading text-4xl font-bold sm:text-5xl md:text-6xl lg:text-7xl animate-fade-in">
                 {title}
               </h1>
@@ -99,11 +103,12 @@ export function PublicHero({
 
             {/* Description */}
             {description && (
-              <div className="space-y-6 animate-fade-in opacity-0" style={{ animationDelay: '0.5s' }}>
-                {typeof description === 'string' ? (
-                  <p className="mx-auto max-w-2xl text-xl text-muted-foreground">
-                    {description}
-                  </p>
+              <div
+                className="space-y-6 animate-fade-in opacity-0"
+                style={{ animationDelay: "0.5s" }}
+              >
+                {typeof description === "string" ? (
+                  <p className="mx-auto max-w-2xl text-xl text-muted-foreground">{description}</p>
                 ) : (
                   description
                 )}
@@ -112,19 +117,24 @@ export function PublicHero({
 
             {/* Actions */}
             {actions && (
-              <div className="space-y-6 animate-fade-in opacity-0" style={{ animationDelay: '0.9s' }}>
+              <div
+                className="space-y-6 animate-fade-in opacity-0"
+                style={{ animationDelay: "0.9s" }}
+              >
                 {actions}
               </div>
             )}
           </div>
         </div>
       </section>
-    )
+    );
   }
 
   // Standard hero layout with optional Dr. Albright character
   return (
-    <section className={`relative min-h-[calc(400px+3.5rem)] flex items-center mt-14 overflow-hidden ${className}`}>
+    <section
+      className={`relative min-h-[calc(400px+3.5rem)] flex items-center mt-14 overflow-hidden ${className}`}
+    >
       {/* Standard background gradients */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.08),transparent_25%),radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.08),transparent_25%),linear-gradient(to_bottom,rgba(56,189,248,0.05),transparent)]" />
 
@@ -133,24 +143,19 @@ export function PublicHero({
           {/* Content */}
           <div className={`flex-1 space-y-6 max-w-2xl ${contentClassName}`}>
             {/* Title */}
-            {typeof title === 'string' ? (
-              <h1 className="text-3xl md:text-5xl font-bold">
-                {title}
-              </h1>
+            {typeof title === "string" ? (
+              <h1 className="text-3xl md:text-5xl font-bold">{title}</h1>
             ) : (
               title
             )}
 
             {/* Description */}
-            {description && (
-              typeof description === 'string' ? (
-                <p className="text-lg text-muted-foreground">
-                  {description}
-                </p>
+            {description &&
+              (typeof description === "string" ? (
+                <p className="text-lg text-muted-foreground">{description}</p>
               ) : (
                 description
-              )
-            )}
+              ))}
 
             {/* Actions */}
             {actions}
@@ -170,5 +175,5 @@ export function PublicHero({
         </div>
       </div>
     </section>
-  )
+  );
 }

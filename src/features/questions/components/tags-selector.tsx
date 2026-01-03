@@ -1,36 +1,29 @@
 // src/components/questions/tags-selector.tsx
-'use client';
+"use client";
 
-import { useState } from 'react';
+import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badge";
 import { Checkbox } from "@/shared/components/ui/checkbox";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/components/ui/popover";
-import { Plus, X, Tag } from 'lucide-react';
-import { useTags } from '@/features/questions/hooks/use-tags';
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/components/ui/popover";
+import { Plus, X, Tag } from "lucide-react";
+import { useTags } from "@/features/questions/hooks/use-tags";
 
 interface TagsSelectorProps {
   selectedTagIds: string[];
   onTagsChange: (tagIds: string[]) => void;
 }
 
-export function TagsSelector({
-  selectedTagIds,
-  onTagsChange
-}: TagsSelectorProps) {
-  const [newTagName, setNewTagName] = useState('');
+export function TagsSelector({ selectedTagIds, onTagsChange }: TagsSelectorProps) {
+  const [newTagName, setNewTagName] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
 
   const { tags, createTag } = useTags();
 
   const handleTagToggle = (tagId: string) => {
     if (selectedTagIds.includes(tagId)) {
-      onTagsChange(selectedTagIds.filter(id => id !== tagId));
+      onTagsChange(selectedTagIds.filter((id) => id !== tagId));
     } else {
       onTagsChange([...selectedTagIds, tagId]);
     }
@@ -42,14 +35,14 @@ export function TagsSelector({
     try {
       const newTag = await createTag(newTagName.trim());
       onTagsChange([...selectedTagIds, newTag.id]);
-      setNewTagName('');
+      setNewTagName("");
       setShowTagInput(false);
     } catch {
       // Error handled in hook
     }
   };
 
-  const selectedTags = tags.filter(tag => selectedTagIds.includes(tag.id));
+  const selectedTags = tags.filter((tag) => selectedTagIds.includes(tag.id));
 
   return (
     <div className="space-y-3">
@@ -78,13 +71,13 @@ export function TagsSelector({
                       value={newTagName}
                       onChange={(e) => setNewTagName(e.target.value)}
                       onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
+                        if (e.key === "Enter") {
                           e.preventDefault();
                           handleCreateTag();
                         }
-                        if (e.key === 'Escape') {
+                        if (e.key === "Escape") {
                           setShowTagInput(false);
-                          setNewTagName('');
+                          setNewTagName("");
                         }
                       }}
                       autoFocus
@@ -98,7 +91,7 @@ export function TagsSelector({
                       variant="outline"
                       onClick={() => {
                         setShowTagInput(false);
-                        setNewTagName('');
+                        setNewTagName("");
                       }}
                     >
                       Cancel

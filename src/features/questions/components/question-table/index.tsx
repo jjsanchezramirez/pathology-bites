@@ -1,18 +1,18 @@
 // src/components/questions/question-table/index.tsx
-'use client'
+"use client";
 
-import { QuestionTableHeader } from './question-table-header'
-import { QuestionTableBody } from './question-table-body'
-import { QuestionTableEmpty } from './question-table-empty'
-import { QuestionTableLoading } from './question-table-loading'
-import { Question, Category } from '@/features/questions/types/questions'
+import { QuestionTableHeader } from "./question-table-header";
+import { QuestionTableBody } from "./question-table-body";
+import { QuestionTableEmpty } from "./question-table-empty";
+import { QuestionTableLoading } from "./question-table-loading";
+import { Question, Category } from "@/features/questions/types/questions";
 
 interface QuestionTableProps {
-  questions: Question[]
-  categoryPaths: Map<number, Category>
-  isLoading: boolean
-  onDelete: (id: string) => void
-  hasFilters: boolean
+  questions: Question[];
+  categoryPaths: Map<number, Category>;
+  isLoading: boolean;
+  onDelete: (id: string) => void;
+  hasFilters: boolean;
 }
 
 export function QuestionTable({
@@ -20,14 +20,14 @@ export function QuestionTable({
   categoryPaths,
   isLoading,
   onDelete,
-  hasFilters
+  hasFilters,
 }: QuestionTableProps) {
   if (isLoading) {
-    return <QuestionTableLoading />
+    return <QuestionTableLoading />;
   }
 
   if (questions.length === 0) {
-    return <QuestionTableEmpty hasFilters={hasFilters} />
+    return <QuestionTableEmpty hasFilters={hasFilters} />;
   }
 
   return (
@@ -41,5 +41,5 @@ export function QuestionTable({
         />
       </table>
     </div>
-  )
+  );
 }

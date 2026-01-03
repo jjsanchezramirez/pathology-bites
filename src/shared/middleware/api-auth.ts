@@ -4,12 +4,12 @@
  * Provides reusable authorization for API routes
  */
 
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/shared/services/server'
-import { authorizeUser, type UserRole, type AuthResult } from '@/shared/utils/auth-helpers'
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/shared/services/server";
+import { authorizeUser, type UserRole, type AuthResult } from "@/shared/utils/auth-helpers";
 
 export interface AuthorizedRequest extends NextRequest {
-  auth: AuthResult
+  auth: AuthResult;
 }
 
 /**
@@ -27,28 +27,28 @@ export function withAuth<T extends unknown[]>(
   handler: (request: AuthorizedRequest, ...args: T) => Promise<NextResponse>
 ) {
   return async (request: NextRequest, ...args: T): Promise<NextResponse> => {
-    const supabase = await createClient()
+    const supabase = await createClient();
 
     // Authorize user
-    const auth = await authorizeUser(supabase, requiredRoles)
+    const auth = await authorizeUser(supabase, requiredRoles);
 
     if (!auth.authorized) {
       return NextResponse.json(
         {
-          error: auth.reason || 'Unauthorized',
-          requiredRoles
+          error: auth.reason || "Unauthorized",
+          requiredRoles,
         },
         { status: auth.userId ? 403 : 401 } // 401 if not logged in, 403 if wrong role
-      )
+      );
     }
 
     // Attach auth to request
-    const authorizedRequest = request as AuthorizedRequest
-    authorizedRequest.auth = auth
+    const authorizedRequest = request as AuthorizedRequest;
+    authorizedRequest.auth = auth;
 
     // Call handler
-    return handler(authorizedRequest, ...args)
-  }
+    return handler(authorizedRequest, ...args);
+  };
 }
 
 /**
@@ -57,7 +57,7 @@ export function withAuth<T extends unknown[]>(
 export function requireAuth<T extends unknown[]>(
   handler: (request: AuthorizedRequest, ...args: T) => Promise<NextResponse>
 ) {
-  return withAuth(['admin', 'creator', 'reviewer', 'user'], handler)
+  return withAuth(["admin", "creator", "reviewer", "user"], handler);
 }
 
 /**
@@ -66,7 +66,7 @@ export function requireAuth<T extends unknown[]>(
 export function requireAdmin<T extends unknown[]>(
   handler: (request: AuthorizedRequest, ...args: T) => Promise<NextResponse>
 ) {
-  return withAuth(['admin'], handler)
+  return withAuth(["admin"], handler);
 }
 
 /**
@@ -75,5 +75,5 @@ export function requireAdmin<T extends unknown[]>(
 export function requireContentRole<T extends unknown[]>(
   handler: (request: AuthorizedRequest, ...args: T) => Promise<NextResponse>
 ) {
-  return withAuth(['admin', 'creator', 'reviewer'], handler)
+  return withAuth(["admin", "creator", "reviewer"], handler);
 }

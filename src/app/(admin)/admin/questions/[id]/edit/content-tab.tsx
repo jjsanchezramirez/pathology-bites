@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import React, { useState } from "react";
+import { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -15,12 +15,12 @@ import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { BookOpen } from 'lucide-react';
-import { toast } from '@/shared/utils/toast';
+import { BookOpen } from "lucide-react";
+import { toast } from "@/shared/utils/toast";
 
-import { QuestionWithDetails } from '@/features/questions/types/questions';
-import { EditQuestionFormData } from '@/features/questions/hooks/use-edit-question-form';
-import { FetchReferencesDialog } from '@/features/questions/components/fetch-references-dialog';
+import { QuestionWithDetails } from "@/features/questions/types/questions";
+import { EditQuestionFormData } from "@/features/questions/hooks/use-edit-question-form";
+import { FetchReferencesDialog } from "@/features/questions/components/fetch-references-dialog";
 
 interface QuestionOptionFormData {
   id?: string;
@@ -43,7 +43,7 @@ export function ContentTab({
   question,
   onUnsavedChanges,
   answerOptions,
-  onAnswerOptionsChange
+  onAnswerOptionsChange,
 }: ContentTabProps) {
   const [fetchDialogOpen, setFetchDialogOpen] = useState(false);
 
@@ -53,7 +53,7 @@ export function ContentTab({
     updatedOptions[index] = { ...updatedOptions[index], [field]: value };
 
     // If marking as correct, unmark others
-    if (field === 'is_correct' && value === true) {
+    if (field === "is_correct" && value === true) {
       updatedOptions.forEach((opt, i) => {
         if (i !== index) opt.is_correct = false;
       });
@@ -71,9 +71,9 @@ export function ContentTab({
     // Add category if available (remove redundant "Pathology" words)
     if (question.categories && question.categories.length > 0) {
       const category = question.categories[0].name
-        .replace(/Anatomic Pathology/gi, '')
-        .replace(/Clinical Pathology/gi, '')
-        .replace(/Pathology/gi, '')
+        .replace(/Anatomic Pathology/gi, "")
+        .replace(/Clinical Pathology/gi, "")
+        .replace(/Pathology/gi, "")
         .trim();
       if (category) {
         searchParts.push(category);
@@ -89,17 +89,15 @@ export function ContentTab({
       searchParts.push(formValues.stem.substring(0, 100));
     }
 
-    return searchParts.join(' ');
+    return searchParts.join(" ");
   };
 
   const handleReferencesSelected = (references: string[]) => {
-    const currentRefs = form.getValues('question_references') || '';
-    const newRefs = references.join('\n\n');
-    const updatedRefs = currentRefs
-      ? `${currentRefs}\n\n${newRefs}`
-      : newRefs;
+    const currentRefs = form.getValues("question_references") || "";
+    const newRefs = references.join("\n\n");
+    const updatedRefs = currentRefs ? `${currentRefs}\n\n${newRefs}` : newRefs;
 
-    form.setValue('question_references', updatedRefs);
+    form.setValue("question_references", updatedRefs);
     onUnsavedChanges();
   };
 
@@ -161,8 +159,8 @@ export function ContentTab({
               key={index}
               className={`transition-all ${
                 option.is_correct
-                  ? 'border-primary bg-primary/5 shadow-sm'
-                  : 'border-border hover:border-muted-foreground/30'
+                  ? "border-primary bg-primary/5 shadow-sm"
+                  : "border-border hover:border-muted-foreground/30"
               }`}
             >
               <CardContent className="p-4 space-y-3">
@@ -172,23 +170,25 @@ export function ContentTab({
                     type="radio"
                     name="correct-answer"
                     checked={option.is_correct}
-                    onChange={() => updateAnswerOption(index, 'is_correct', !option.is_correct)}
+                    onChange={() => updateAnswerOption(index, "is_correct", !option.is_correct)}
                     className="h-5 w-5 text-primary focus:ring-primary cursor-pointer"
                   />
                   <Label
                     className="text-sm font-semibold min-w-[70px] cursor-pointer"
-                    onClick={() => updateAnswerOption(index, 'is_correct', true)}
+                    onClick={() => updateAnswerOption(index, "is_correct", true)}
                   >
                     Option {String.fromCharCode(65 + index)}
                   </Label>
                   <Input
                     value={option.text}
-                    onChange={(e) => updateAnswerOption(index, 'text', e.target.value)}
+                    onChange={(e) => updateAnswerOption(index, "text", e.target.value)}
                     placeholder="Answer option text..."
                     className="flex-1"
                   />
                   {option.is_correct && (
-                    <Badge variant="default" className="ml-2 bg-primary">Correct</Badge>
+                    <Badge variant="default" className="ml-2 bg-primary">
+                      Correct
+                    </Badge>
                   )}
                 </div>
 
@@ -199,7 +199,7 @@ export function ContentTab({
                   </Label>
                   <Textarea
                     value={option.explanation}
-                    onChange={(e) => updateAnswerOption(index, 'explanation', e.target.value)}
+                    onChange={(e) => updateAnswerOption(index, "explanation", e.target.value)}
                     placeholder="Explanation for this option..."
                     rows={2}
                     className="flex-1 text-sm resize-none"
@@ -252,7 +252,7 @@ export function ContentTab({
                 onClick={() => {
                   const query = getSearchQuery();
                   if (!query.trim()) {
-                    toast.error('Please add a question title, teaching point, or stem first');
+                    toast.error("Please add a question title, teaching point, or stem first");
                     return;
                   }
                   setFetchDialogOpen(true);

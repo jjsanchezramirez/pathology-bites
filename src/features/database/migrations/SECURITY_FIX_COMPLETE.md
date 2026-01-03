@@ -15,7 +15,9 @@
 **Affected Object:** `public.v_public_stats` view
 
 ### Problem
+
 The view was defined with `SECURITY DEFINER` property, which:
+
 - Enforces permissions of the view creator (postgres) instead of the querying user
 - Bypasses Row Level Security (RLS) policies
 - Creates potential security vulnerabilities
@@ -26,11 +28,13 @@ The view was defined with `SECURITY DEFINER` property, which:
 ## Fix Applied
 
 ### 1. Dropped Insecure View
+
 ```sql
 DROP VIEW IF EXISTS public.v_public_stats;
 ```
 
 ### 2. Recreated with SECURITY INVOKER (Explicit)
+
 ```sql
 CREATE VIEW public.v_public_stats
 WITH (security_invoker = true)
@@ -51,14 +55,16 @@ SELECT
 **Important:** The `WITH (security_invoker = true)` option is **required** in PostgreSQL 15+ to explicitly set SECURITY INVOKER mode and avoid the default SECURITY DEFINER behavior.
 
 ### 3. Granted Appropriate Permissions
+
 ```sql
 GRANT SELECT ON public.v_public_stats TO anon;
 GRANT SELECT ON public.v_public_stats TO authenticated;
 ```
 
 ### 4. Added Documentation
+
 ```sql
-COMMENT ON VIEW public.v_public_stats IS 
+COMMENT ON VIEW public.v_public_stats IS
   'Public statistics view showing counts of published questions, images, and categories. Uses SECURITY INVOKER for safety.';
 ```
 
@@ -67,12 +73,14 @@ COMMENT ON VIEW public.v_public_stats IS
 ## Key Improvements
 
 ### Security Enhancements
+
 ✅ **SECURITY INVOKER** - View now respects the permissions of the querying user  
 ✅ **RLS Compliance** - Properly respects Row Level Security policies  
 ✅ **Published Only** - Only counts published questions (was counting all questions)  
 ✅ **Explicit Grants** - Clear permissions for anon and authenticated roles
 
 ### Functional Improvements
+
 ✅ **Better Data Accuracy** - Public stats now only show published content  
 ✅ **Privacy Protection** - Draft/rejected questions not exposed in counts  
 ✅ **Consistent Behavior** - Aligns with RLS policies on questions table
@@ -82,6 +90,7 @@ COMMENT ON VIEW public.v_public_stats IS
 ## Verification
 
 ### Security Mode Check ✅
+
 ```sql
 SELECT
   c.relname AS view_name,
@@ -97,21 +106,28 @@ WHERE c.relkind = 'v'
 AND n.nspname = 'public'
 AND c.relname = 'v_public_stats';
 ```
+
 **Result:**
+
 - reloptions: `['security_invoker=true']`
 - security_mode: `SECURITY INVOKER` ✅
 
 ### View Definition Check ✅
+
 ```sql
 SELECT pg_get_viewdef('public.v_public_stats'::regclass, true);
 ```
+
 **Result:** View correctly filters for `status = 'published'`
 
 ### Data Test ✅
+
 ```sql
 SELECT * FROM public.v_public_stats;
 ```
+
 **Result:**
+
 - total_questions: 22 (published only)
 - total_images: 166
 - total_categories: 13 (from published questions)
@@ -122,9 +138,11 @@ SELECT * FROM public.v_public_stats;
 ## Application Integration
 
 ### Created Public Stats API Endpoint
+
 **File:** `src/app/api/public/stats/route.ts`
 
 **Features:**
+
 - Public access (no authentication required)
 - Uses the fixed `v_public_stats` view
 - 5-minute cache for performance
@@ -134,6 +152,7 @@ SELECT * FROM public.v_public_stats;
 **Endpoint:** `GET /api/public/stats`
 
 **Response Format:**
+
 ```json
 {
   "success": true,
@@ -145,7 +164,9 @@ SELECT * FROM public.v_public_stats;
 ```
 
 ### Frontend Integration
+
 The existing `usePublicStats` hook already calls this endpoint:
+
 - **Hook:** `src/shared/hooks/use-public-stats.ts`
 - **Component:** `src/shared/components/common/public-stats-section.tsx`
 - **Cache:** 24-hour localStorage cache + 5-minute API cache
@@ -155,6 +176,7 @@ The existing `usePublicStats` hook already calls this endpoint:
 ## Before vs After
 
 ### Before (Insecure)
+
 ```sql
 -- Used SECURITY DEFINER (default in PostgreSQL 15+)
 -- Counted ALL questions (including drafts)
@@ -164,6 +186,7 @@ The existing `usePublicStats` hook already calls this endpoint:
 ```
 
 ### After (Secure)
+
 ```sql
 -- Uses SECURITY INVOKER (explicit via WITH clause)
 -- Counts PUBLISHED questions only
@@ -214,13 +237,13 @@ If needed, to rollback (not recommended):
 DROP VIEW IF EXISTS public.v_public_stats;
 
 -- Recreate old version (INSECURE - not recommended)
-CREATE VIEW public.v_public_stats 
+CREATE VIEW public.v_public_stats
 SECURITY DEFINER AS
-SELECT 
+SELECT
   (SELECT COUNT(*)::integer FROM questions) AS total_questions,
   (SELECT COUNT(*)::integer FROM images) AS total_images,
-  (SELECT COUNT(DISTINCT category_id)::integer 
-   FROM questions 
+  (SELECT COUNT(DISTINCT category_id)::integer
+   FROM questions
    WHERE category_id IS NOT NULL) AS total_categories,
   NOW() AS last_refreshed;
 ```
@@ -242,4 +265,3 @@ SELECT
 **Security Issue Resolved! 🎉**
 
 The `v_public_stats` view now follows security best practices and no longer poses a security risk.
-

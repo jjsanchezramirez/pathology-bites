@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -10,7 +10,7 @@ import {
   DialogOverlay,
   DialogPortal,
 } from "@/shared/components/ui/dialog";
-import { AlertTriangle, Loader2 } from 'lucide-react';
+import { AlertTriangle, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 
 interface BulkDeleteDialogProps {
@@ -24,7 +24,7 @@ export function BulkDeleteDialog({
   open,
   onOpenChange,
   selectedCount,
-  onConfirm
+  onConfirm,
 }: BulkDeleteDialogProps) {
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -34,7 +34,7 @@ export function BulkDeleteDialog({
       await onConfirm();
       onOpenChange(false);
     } catch (error) {
-      console.error('Failed to delete images:', error);
+      console.error("Failed to delete images:", error);
     } finally {
       setIsDeleting(false);
     }
@@ -50,16 +50,15 @@ export function BulkDeleteDialog({
               <AlertTriangle className="h-5 w-5 text-destructive" />
               Confirm Bulk Deletion
             </DialogTitle>
-            <DialogDescription>
-              This action cannot be undone.
-            </DialogDescription>
+            <DialogDescription>This action cannot be undone.</DialogDescription>
           </DialogHeader>
 
           <Alert variant="destructive" className="my-4">
             <AlertTriangle className="h-4 w-4" />
             <AlertDescription>
-              You are about to permanently delete <strong>{selectedCount}</strong> image{selectedCount !== 1 ? 's' : ''}.
-              {' '}This will remove the image{selectedCount !== 1 ? 's' : ''} from storage and the database.
+              You are about to permanently delete <strong>{selectedCount}</strong> image
+              {selectedCount !== 1 ? "s" : ""}. This will remove the image
+              {selectedCount !== 1 ? "s" : ""} from storage and the database.
             </AlertDescription>
           </Alert>
 
@@ -84,7 +83,7 @@ export function BulkDeleteDialog({
                   Deleting...
                 </>
               ) : (
-                `Delete ${selectedCount} Image${selectedCount !== 1 ? 's' : ''}`
+                `Delete ${selectedCount} Image${selectedCount !== 1 ? "s" : ""}`
               )}
             </Button>
           </DialogFooter>
@@ -93,4 +92,3 @@ export function BulkDeleteDialog({
     </Dialog>
   );
 }
-

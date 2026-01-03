@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Skeleton } from '@/shared/components/ui/skeleton'
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 
 export function QuizzesLoading() {
   return (
@@ -63,6 +63,5 @@ export function QuizzesLoading() {
         ))}
       </div>
     </div>
-  )
+  );
 }
-

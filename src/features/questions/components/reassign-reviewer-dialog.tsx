@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -8,34 +8,34 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/shared/components/ui/dialog"
-import { Button } from "@/shared/components/ui/button"
-import { Label } from "@/shared/components/ui/label"
+} from "@/shared/components/ui/dialog";
+import { Button } from "@/shared/components/ui/button";
+import { Label } from "@/shared/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select"
-import { Loader2, UserCheck } from 'lucide-react'
-import { toast } from '@/shared/utils/toast'
+} from "@/shared/components/ui/select";
+import { Loader2, UserCheck } from "lucide-react";
+import { toast } from "@/shared/utils/toast";
 
 interface Reviewer {
-  id: string
-  full_name: string
-  email: string
-  role: string
-  pending_count: number
+  id: string;
+  full_name: string;
+  email: string;
+  role: string;
+  pending_count: number;
 }
 
 interface ReassignReviewerDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  questionId: string
-  questionTitle: string
-  currentReviewerId: string
-  onSuccess: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  questionId: string;
+  questionTitle: string;
+  currentReviewerId: string;
+  onSuccess: () => void;
 }
 
 export function ReassignReviewerDialog({
@@ -46,70 +46,70 @@ export function ReassignReviewerDialog({
   currentReviewerId,
   onSuccess,
 }: ReassignReviewerDialogProps) {
-  const [reviewers, setReviewers] = useState<Reviewer[]>([])
-  const [selectedReviewerId, setSelectedReviewerId] = useState<string>('')
-  const [loading, setLoading] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
+  const [reviewers, setReviewers] = useState<Reviewer[]>([]);
+  const [selectedReviewerId, setSelectedReviewerId] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
   // Fetch reviewers when dialog opens
   useEffect(() => {
     if (open) {
-      fetchReviewers()
-      setSelectedReviewerId('') // Reset selection
+      fetchReviewers();
+      setSelectedReviewerId(""); // Reset selection
     }
-  }, [open, fetchReviewers])
+  }, [open, fetchReviewers]);
 
   const fetchReviewers = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const response = await fetch('/api/admin/reviewers')
+      const response = await fetch("/api/admin/reviewers");
       if (!response.ok) {
-        throw new Error('Failed to fetch reviewers')
+        throw new Error("Failed to fetch reviewers");
       }
-      const data = await response.json()
+      const data = await response.json();
       // Filter out the current reviewer
       const availableReviewers = (data.reviewers || []).filter(
         (r: Reviewer) => r.id !== currentReviewerId
-      )
-      setReviewers(availableReviewers)
+      );
+      setReviewers(availableReviewers);
     } catch (error) {
-      console.error('Error fetching reviewers:', error)
-      toast.error('Failed to load reviewers')
+      console.error("Error fetching reviewers:", error);
+      toast.error("Failed to load reviewers");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleReassign = async () => {
     if (!selectedReviewerId) {
-      toast.error('Please select a new reviewer')
-      return
+      toast.error("Please select a new reviewer");
+      return;
     }
 
-    setSubmitting(true)
+    setSubmitting(true);
     try {
       const response = await fetch(`/api/questions/${questionId}/reassign`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ reviewer_id: selectedReviewerId }),
-      })
+      });
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.error || 'Failed to reassign question')
+        const error = await response.json();
+        throw new Error(error.error || "Failed to reassign question");
       }
 
-      toast.success('Question reassigned successfully')
-      onSuccess()
-      onOpenChange(false)
-      setSelectedReviewerId('')
+      toast.success("Question reassigned successfully");
+      onSuccess();
+      onOpenChange(false);
+      setSelectedReviewerId("");
     } catch (error) {
-      console.error('Error reassigning question:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to reassign question')
+      console.error("Error reassigning question:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to reassign question");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -173,23 +173,15 @@ export function ReassignReviewerDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={submitting}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={submitting}>
             Cancel
           </Button>
-          <Button
-            onClick={handleReassign}
-            disabled={!selectedReviewerId || submitting}
-          >
+          <Button onClick={handleReassign} disabled={!selectedReviewerId || submitting}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             Reassign
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

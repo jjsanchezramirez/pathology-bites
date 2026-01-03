@@ -1,47 +1,46 @@
 // src/shared/services/quiz-completion-handler.ts
 // Example integration of notification triggers with quiz completion
 
-import { notificationTriggers } from './notification-triggers'
-import { createClient } from '@/shared/services/client'
-import { ActivityGenerator } from './activity-generator'
+import { notificationTriggers } from "./notification-triggers";
+import { createClient } from "@/shared/services/client";
+import { ActivityGenerator } from "./activity-generator";
 
 export class QuizCompletionHandler {
-  private supabase = createClient()
+  private supabase = createClient();
 
   async handleQuizCompletion(
     userId: string,
     quizAttemptId: string,
     quizResults: {
-      score: number
-      totalQuestions: number
-      correctAnswers: number
-      incorrectAnswers: number
-      timeSpent: number
-      quizType: string
-      categories: string[]
+      score: number;
+      totalQuestions: number;
+      correctAnswers: number;
+      incorrectAnswers: number;
+      timeSpent: number;
+      quizType: string;
+      categories: string[];
       answers: Array<{
-        questionId: string
-        selectedAnswer: string
-        correctAnswer: string
-        isCorrect: boolean
-        timeSpent: number
-      }>
+        questionId: string;
+        selectedAnswer: string;
+        correctAnswer: string;
+        isCorrect: boolean;
+        timeSpent: number;
+      }>;
     }
   ): Promise<void> {
     try {
-
       // Save quiz results to database
-      await this.saveQuizResults(userId, quizAttemptId, quizResults)
+      await this.saveQuizResults(userId, quizAttemptId, quizResults);
 
       // Create activity for quiz completion
       const activityData = ActivityGenerator.createQuizCompletedActivity({
         id: quizAttemptId,
-        title: quizResults.quizType || 'Quiz',
+        title: quizResults.quizType || "Quiz",
         score: quizResults.score,
         totalQuestions: quizResults.totalQuestions,
-        timeSpent: quizResults.timeSpent
-      })
-      await ActivityGenerator.createActivity(userId, activityData)
+        timeSpent: quizResults.timeSpent,
+      });
+      await ActivityGenerator.createActivity(userId, activityData);
 
       // Trigger notification events
       await notificationTriggers.onQuizCompleted(userId, {
@@ -50,24 +49,22 @@ export class QuizCompletionHandler {
         correctAnswers: quizResults.correctAnswers,
         quizType: quizResults.quizType,
         timeSpent: quizResults.timeSpent,
-        categories: quizResults.categories
-      })
+        categories: quizResults.categories,
+      });
 
       // Additional processing for study session tracking
-      if (quizResults.timeSpent > 30) { // More than 30 minutes
+      if (quizResults.timeSpent > 30) {
+        // More than 30 minutes
         await notificationTriggers.onStudySessionCompleted(userId, {
           duration: quizResults.timeSpent,
           questionsStudied: quizResults.totalQuestions,
-          topicsReviewed: quizResults.categories
-        })
+          topicsReviewed: quizResults.categories,
+        });
       }
-
     } catch (error) {
-      throw error
+      throw error;
     }
   }
-
-
 
   private async saveQuizResults(
     userId: string,
@@ -77,7 +74,7 @@ export class QuizCompletionHandler {
     try {
       // Update quiz attempt with results
       const { error: updateError } = await this.supabase
-        .from('quiz_attempts')
+        .from("quiz_attempts")
         .update({
           score: quizResults.score,
           total_questions: quizResults.totalQuestions,
@@ -85,12 +82,12 @@ export class QuizCompletionHandler {
           incorrect_answers: quizResults.incorrectAnswers,
           time_spent: quizResults.timeSpent,
           completed_at: new Date().toISOString(),
-          status: 'completed'
+          status: "completed",
         })
-        .eq('id', quizAttemptId)
+        .eq("id", quizAttemptId);
 
       if (updateError) {
-        throw updateError
+        throw updateError;
       }
 
       // Save individual question results
@@ -101,22 +98,21 @@ export class QuizCompletionHandler {
         correct_answer: answer.correctAnswer,
         is_correct: answer.isCorrect,
         time_spent: answer.timeSpent,
-        created_at: new Date().toISOString()
-      }))
+        created_at: new Date().toISOString(),
+      }));
 
       const { error: resultsError } = await this.supabase
-        .from('quiz_question_results')
-        .insert(questionResults)
+        .from("quiz_question_results")
+        .insert(questionResults);
 
       if (resultsError) {
-        throw resultsError
+        throw resultsError;
       }
 
       // Update user statistics
-      await this.updateUserStatistics(userId, quizResults)
-
+      await this.updateUserStatistics(userId, quizResults);
     } catch (error) {
-      throw error
+      throw error;
     }
   }
 
@@ -124,13 +120,14 @@ export class QuizCompletionHandler {
     try {
       // Get current user stats
       const { data: currentStats, error: statsError } = await this.supabase
-        .from('user_statistics')
-        .select('*')
-        .eq('user_id', userId)
-        .single()
+        .from("user_statistics")
+        .select("*")
+        .eq("user_id", userId)
+        .single();
 
-      if (statsError && statsError.code !== 'PGRST116') { // Not found error
-        throw statsError
+      if (statsError && statsError.code !== "PGRST116") {
+        // Not found error
+        throw statsError;
       }
 
       const stats = currentStats || {
@@ -142,8 +139,8 @@ export class QuizCompletionHandler {
         current_quiz_streak: 0,
         best_quiz_streak: 0,
         average_score: 0,
-        last_quiz_date: null
-      }
+        last_quiz_date: null,
+      };
 
       // Update statistics
       const newStats = {
@@ -154,73 +151,67 @@ export class QuizCompletionHandler {
         total_study_time: stats.total_study_time + quizResults.timeSpent,
         last_quiz_date: new Date().toISOString(),
         average_score: Math.round(
-          ((stats.average_score * stats.total_quizzes) + quizResults.score) / 
-          (stats.total_quizzes + 1)
-        )
-      }
+          (stats.average_score * stats.total_quizzes + quizResults.score) /
+            (stats.total_quizzes + 1)
+        ),
+      };
 
       // Update quiz streak
-      const today = new Date().toISOString().split('T')[0]
-      const lastQuizDate = stats.last_quiz_date ? 
-        new Date(stats.last_quiz_date).toISOString().split('T')[0] : null
-      
+      const today = new Date().toISOString().split("T")[0];
+      const lastQuizDate = stats.last_quiz_date
+        ? new Date(stats.last_quiz_date).toISOString().split("T")[0]
+        : null;
+
       if (lastQuizDate) {
         const daysDiff = Math.floor(
-          (new Date(today).getTime() - new Date(lastQuizDate).getTime()) / 
-          (1000 * 60 * 60 * 24)
-        )
-        
+          (new Date(today).getTime() - new Date(lastQuizDate).getTime()) / (1000 * 60 * 60 * 24)
+        );
+
         if (daysDiff === 1) {
           // Consecutive day
-          newStats.current_quiz_streak = stats.current_quiz_streak + 1
+          newStats.current_quiz_streak = stats.current_quiz_streak + 1;
         } else if (daysDiff > 1) {
           // Streak broken
-          newStats.current_quiz_streak = 1
+          newStats.current_quiz_streak = 1;
         }
         // Same day doesn't change streak
       } else {
         // First quiz
-        newStats.current_quiz_streak = 1
+        newStats.current_quiz_streak = 1;
       }
 
       // Update best streak
-      newStats.best_quiz_streak = Math.max(
-        stats.best_quiz_streak, 
-        newStats.current_quiz_streak
-      )
+      newStats.best_quiz_streak = Math.max(stats.best_quiz_streak, newStats.current_quiz_streak);
 
       // Upsert statistics
-      const { error: upsertError } = await this.supabase
-        .from('user_statistics')
-        .upsert(newStats)
+      const { error: upsertError } = await this.supabase.from("user_statistics").upsert(newStats);
 
       if (upsertError) {
-        throw upsertError
+        throw upsertError;
       }
 
       // Update category-specific statistics
-      await this.updateCategoryStatistics(userId, quizResults)
-
+      await this.updateCategoryStatistics(userId, quizResults);
     } catch (error) {
-      throw error
+      throw error;
     }
   }
 
   private async updateCategoryStatistics(userId: string, quizResults: unknown): Promise<void> {
     try {
       // Group answers by category
-      const categoryStats: Record<string, { correct: number; total: number }> = {}
-      
+      const categoryStats: Record<string, { correct: number; total: number }> = {};
+
       for (const answer of quizResults.answers) {
         // This would need to be enhanced to get category from question
         // For now, we'll use the quiz categories
         for (const category of quizResults.categories) {
           if (!categoryStats[category]) {
-            categoryStats[category] = { correct: 0, total: 0 }
+            categoryStats[category] = { correct: 0, total: 0 };
           }
-          categoryStats[category].total += 1
+          categoryStats[category].total += 1;
           if (answer.isCorrect) {
-            categoryStats[category].correct += 1
+            categoryStats[category].correct += 1;
           }
         }
       }
@@ -228,14 +219,14 @@ export class QuizCompletionHandler {
       // Update category statistics in database
       for (const [category, stats] of Object.entries(categoryStats)) {
         const { data: currentCategoryStats, error: fetchError } = await this.supabase
-          .from('user_category_statistics')
-          .select('*')
-          .eq('user_id', userId)
-          .eq('category', category)
-          .single()
+          .from("user_category_statistics")
+          .select("*")
+          .eq("user_id", userId)
+          .eq("category", category)
+          .single();
 
-        if (fetchError && fetchError.code !== 'PGRST116') {
-          continue
+        if (fetchError && fetchError.code !== "PGRST116") {
+          continue;
         }
 
         const existingStats = currentCategoryStats || {
@@ -243,32 +234,32 @@ export class QuizCompletionHandler {
           category,
           total_questions: 0,
           correct_answers: 0,
-          accuracy: 0
-        }
+          accuracy: 0,
+        };
 
         const newCategoryStats = {
           ...existingStats,
           total_questions: existingStats.total_questions + stats.total,
           correct_answers: existingStats.correct_answers + stats.correct,
           accuracy: Math.round(
-            ((existingStats.correct_answers + stats.correct) / 
-             (existingStats.total_questions + stats.total)) * 100
-          )
-        }
+            ((existingStats.correct_answers + stats.correct) /
+              (existingStats.total_questions + stats.total)) *
+              100
+          ),
+        };
 
         const { error: upsertError } = await this.supabase
-          .from('user_category_statistics')
-          .upsert(newCategoryStats)
+          .from("user_category_statistics")
+          .upsert(newCategoryStats);
 
         if (upsertError) {
         }
       }
-    } catch {
-    }
+    } catch {}
   }
 }
 
-export const quizCompletionHandler = new QuizCompletionHandler()
+export const quizCompletionHandler = new QuizCompletionHandler();
 
 // Example usage in a quiz completion API endpoint:
 /*

@@ -1,8 +1,8 @@
 // src/components/auth/form-button.tsx
-import { ReactNode } from "react"
-import { Button } from "@/shared/components/ui/button"
-import { Icons } from "@/shared/components/common/icons"
-import { cn } from "@/shared/utils"
+import { ReactNode } from "react";
+import { Button } from "@/shared/components/ui/button";
+import { Icons } from "@/shared/components/common/icons";
+import { cn } from "@/shared/utils";
 
 interface FormButtonProps {
   children: ReactNode;
@@ -49,5 +49,5 @@ export function FormButton({
         </>
       )}
     </Button>
-  )
+  );
 }

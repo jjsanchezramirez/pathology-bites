@@ -1,66 +1,68 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { toast } from '@/shared/utils/toast'
-import { AlertCircle, Send, ArrowLeft, Loader2 } from 'lucide-react'
-import { Alert, AlertDescription } from "@/shared/components/ui/alert"
-import { Button } from "@/shared/components/ui/button"
-import { Card } from "@/shared/components/ui/card"
-import { Form } from "@/shared/components/ui/form"
-import { Skeleton } from "@/shared/components/ui/skeleton"
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import { toast } from "@/shared/utils/toast";
+import { AlertCircle, Send, ArrowLeft, Loader2 } from "lucide-react";
+import { Alert, AlertDescription } from "@/shared/components/ui/alert";
+import { Button } from "@/shared/components/ui/button";
+import { Card } from "@/shared/components/ui/card";
+import { Form } from "@/shared/components/ui/form";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 
-import { QuestionWithDetails } from '@/features/questions/types/questions'
-import { useEditQuestionForm } from '@/features/questions/hooks/use-edit-question-form'
+import { QuestionWithDetails } from "@/features/questions/types/questions";
+import { useEditQuestionForm } from "@/features/questions/hooks/use-edit-question-form";
 
 // Import tab components
-import { TabNavigation } from './tab-navigation'
-import { ContentTab } from './content-tab'
-import { ImagesTab } from './images-tab'
-import { MetadataTab } from './metadata-tab'
-import { AnkiLinkTab } from './anki-link-tab'
+import { TabNavigation } from "./tab-navigation";
+import { ContentTab } from "./content-tab";
+import { ImagesTab } from "./images-tab";
+import { MetadataTab } from "./metadata-tab";
+import { AnkiLinkTab } from "./anki-link-tab";
 
 interface EditQuestionClientProps {
-  questionId: string
+  questionId: string;
 }
 
 export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
-  const router = useRouter()
-  const [question, setQuestion] = useState<QuestionWithDetails | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('content')
+  const router = useRouter();
+  const [question, setQuestion] = useState<QuestionWithDetails | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("content");
 
   // Get return URL from query params, default to /admin/my-questions
-  const searchParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '')
-  const returnUrl = searchParams.get('returnUrl') || '/admin/my-questions'
+  const searchParams = new URLSearchParams(
+    typeof window !== "undefined" ? window.location.search : ""
+  );
+  const returnUrl = searchParams.get("returnUrl") || "/admin/my-questions";
 
   // Fetch question data
   useEffect(() => {
     async function fetchQuestion() {
       try {
-        setLoading(true)
+        setLoading(true);
         const response = await fetch(`/api/admin/questions/${questionId}`, {
-          credentials: 'include',
-        })
+          credentials: "include",
+        });
 
         if (!response.ok) {
-          throw new Error('Failed to fetch question')
+          throw new Error("Failed to fetch question");
         }
 
-        const data = await response.json()
-        setQuestion(data.question)
+        const data = await response.json();
+        setQuestion(data.question);
       } catch (err) {
-        console.error('Error fetching question:', err)
-        setError(err instanceof Error ? err.message : 'Failed to load question')
-        toast.error('Failed to load question')
+        console.error("Error fetching question:", err);
+        setError(err instanceof Error ? err.message : "Failed to load question");
+        toast.error("Failed to load question");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
     }
 
-    fetchQuestion()
-  }, [questionId])
+    fetchQuestion();
+  }, [questionId]);
 
   // Use the edit question form hook
   const {
@@ -83,41 +85,41 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
     question: question || undefined,
     open: !!question,
     onSave: () => {
-      toast.success('Question updated successfully!')
+      toast.success("Question updated successfully!");
       // Use replace instead of push to avoid adding to history
       // Then refresh to force data reload
-      router.replace(returnUrl)
-      router.refresh()
+      router.replace(returnUrl);
+      router.refresh();
     },
     onClose: () => {
-      router.push(returnUrl)
+      router.push(returnUrl);
     },
-  })
+  });
 
   // Handle cancel
   const handleCancel = () => {
     if (hasUnsavedChanges) {
-      if (window.confirm('You have unsaved changes. Are you sure you want to leave?')) {
-        router.push(returnUrl)
+      if (window.confirm("You have unsaved changes. Are you sure you want to leave?")) {
+        router.push(returnUrl);
       }
     } else {
-      router.push(returnUrl)
+      router.push(returnUrl);
     }
-  }
+  };
 
   // Handle save and submit for review
   const handleSaveAndSubmit = async () => {
     try {
       // Set status to pending_review
-      form.setValue('status', 'pending_review')
+      form.setValue("status", "pending_review");
 
       // Submit the form (the onSave callback will handle toast and navigation)
-      await form.handleSubmit(handleSubmit)()
+      await form.handleSubmit(handleSubmit)();
     } catch (error) {
-      console.error('Save and submit error:', error)
-      toast.error('Failed to save and submit question')
+      console.error("Save and submit error:", error);
+      toast.error("Failed to save and submit question");
     }
-  }
+  };
 
   // Loading state
   if (loading) {
@@ -172,7 +174,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
           </div>
         </Card>
       </div>
-    )
+    );
   }
 
   // Error state
@@ -181,20 +183,21 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       <div className="space-y-4">
         <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
-          <AlertDescription>{error || 'Question not found'}</AlertDescription>
+          <AlertDescription>{error || "Question not found"}</AlertDescription>
         </Alert>
         <Button variant="outline" onClick={() => router.push(returnUrl)}>
           <ArrowLeft className="h-4 w-4 mr-2" />
           Back
         </Button>
       </div>
-    )
+    );
   }
 
   // Get reviewer feedback if question was flagged or rejected
-  const reviewerFeedback = (question.status === 'flagged' || question.status === 'rejected')
-    ? question.reviewer_feedback
-    : null
+  const reviewerFeedback =
+    question.status === "flagged" || question.status === "rejected"
+      ? question.reviewer_feedback
+      : null;
 
   return (
     <div className="space-y-6">
@@ -225,7 +228,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
           {/* Tab Content */}
           <div>
-            {activeTab === 'content' && (
+            {activeTab === "content" && (
               <ContentTab
                 form={form}
                 question={question}
@@ -234,7 +237,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                 onAnswerOptionsChange={setAnswerOptions}
               />
             )}
-            {activeTab === 'images' && (
+            {activeTab === "images" && (
               <ImagesTab
                 question={question}
                 onUnsavedChanges={handleUnsavedChanges}
@@ -242,7 +245,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                 onQuestionImagesChange={setQuestionImages}
               />
             )}
-            {activeTab === 'metadata' && (
+            {activeTab === "metadata" && (
               <MetadataTab
                 form={form}
                 question={question}
@@ -251,16 +254,13 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                 onTagsChange={setSelectedTagIds}
               />
             )}
-            {activeTab === 'anki' && (
-              <AnkiLinkTab
-                form={form}
-                onUnsavedChanges={handleUnsavedChanges}
-              />
+            {activeTab === "anki" && (
+              <AnkiLinkTab form={form} onUnsavedChanges={handleUnsavedChanges} />
             )}
           </div>
 
           {/* Edit Type Selection for Published Questions */}
-          {question.status === 'published' && (
+          {question.status === "published" && (
             <Card className="p-6 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
               <div className="space-y-4">
                 <div>
@@ -276,7 +276,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                     className="flex items-start gap-3 p-3 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100/50 dark:hover:bg-blue-900/30 cursor-pointer transition-colors"
                     onClick={() => {
                       setIsPatchEdit(true);
-                      form.setValue('updateType', 'patch');
+                      form.setValue("updateType", "patch");
                       handleUnsavedChanges();
                     }}
                   >
@@ -287,13 +287,16 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                       checked={isPatchEdit}
                       onChange={() => {
                         setIsPatchEdit(true);
-                        form.setValue('updateType', 'patch');
+                        form.setValue("updateType", "patch");
                         handleUnsavedChanges();
                       }}
                       className="mt-1"
                     />
                     <div className="flex-1">
-                      <label htmlFor="editType-patch" className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer">
+                      <label
+                        htmlFor="editType-patch"
+                        className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer"
+                      >
                         Patch Edit (No Review Needed)
                       </label>
                       <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
@@ -307,7 +310,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                     className="flex items-start gap-3 p-3 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100/50 dark:hover:bg-blue-900/30 cursor-pointer transition-colors"
                     onClick={() => {
                       setIsPatchEdit(false);
-                      form.setValue('updateType', 'minor');
+                      form.setValue("updateType", "minor");
                       handleUnsavedChanges();
                     }}
                   >
@@ -315,20 +318,24 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                       type="radio"
                       id="editType-minor"
                       name="editType"
-                      checked={!isPatchEdit && form.getValues('updateType') === 'minor'}
+                      checked={!isPatchEdit && form.getValues("updateType") === "minor"}
                       onChange={() => {
                         setIsPatchEdit(false);
-                        form.setValue('updateType', 'minor');
+                        form.setValue("updateType", "minor");
                         handleUnsavedChanges();
                       }}
                       className="mt-1"
                     />
                     <div className="flex-1">
-                      <label htmlFor="editType-minor" className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer">
+                      <label
+                        htmlFor="editType-minor"
+                        className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer"
+                      >
                         Minor Edit (Requires Review)
                       </label>
                       <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                        Content changes (stem, options, explanations, teaching point). Version: 1.x.0
+                        Content changes (stem, options, explanations, teaching point). Version:
+                        1.x.0
                       </p>
                     </div>
                   </div>
@@ -338,7 +345,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                     className="flex items-start gap-3 p-3 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100/50 dark:hover:bg-blue-900/30 cursor-pointer transition-colors"
                     onClick={() => {
                       setIsPatchEdit(false);
-                      form.setValue('updateType', 'major');
+                      form.setValue("updateType", "major");
                       handleUnsavedChanges();
                     }}
                   >
@@ -346,16 +353,19 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                       type="radio"
                       id="editType-major"
                       name="editType"
-                      checked={!isPatchEdit && form.getValues('updateType') === 'major'}
+                      checked={!isPatchEdit && form.getValues("updateType") === "major"}
                       onChange={() => {
                         setIsPatchEdit(false);
-                        form.setValue('updateType', 'major');
+                        form.setValue("updateType", "major");
                         handleUnsavedChanges();
                       }}
                       className="mt-1"
                     />
                     <div className="flex-1">
-                      <label htmlFor="editType-major" className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer">
+                      <label
+                        htmlFor="editType-major"
+                        className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer"
+                      >
                         Major Edit (Requires Review)
                       </label>
                       <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
@@ -367,7 +377,10 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
                 {isPatchEdit && (
                   <div>
-                    <label htmlFor="patchEditReason" className="text-xs font-medium text-blue-900 dark:text-blue-100">
+                    <label
+                      htmlFor="patchEditReason"
+                      className="text-xs font-medium text-blue-900 dark:text-blue-100"
+                    >
                       Reason for patch edit (optional)
                     </label>
                     <textarea
@@ -389,33 +402,26 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
           {/* Action Buttons */}
           <div className="flex justify-between items-center pt-4 border-t">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               <ArrowLeft className="h-4 w-4 mr-2" />
               Cancel
             </Button>
 
             <div className="flex gap-3">
-              <Button
-                type="submit"
-                variant="outline"
-                disabled={isSubmitting || !hasUnsavedChanges}
-              >
+              <Button type="submit" variant="outline" disabled={isSubmitting || !hasUnsavedChanges}>
                 {isSubmitting ? (
                   <>
                     <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                     Saving...
                   </>
+                ) : hasUnsavedChanges ? (
+                  "Save Changes"
                 ) : (
-                  hasUnsavedChanges ? 'Save Changes' : 'No Changes'
+                  "No Changes"
                 )}
               </Button>
 
-              {question.status !== 'published' && question.status !== 'pending_review' && (
+              {question.status !== "published" && question.status !== "pending_review" && (
                 <Button
                   type="button"
                   onClick={handleSaveAndSubmit}
@@ -439,5 +445,5 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
         </form>
       </Form>
     </div>
-  )
+  );
 }

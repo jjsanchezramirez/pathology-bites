@@ -1,136 +1,143 @@
 // src/app/(dashboard)/dashboard/achievements/page.tsx
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import { AchievementsSection } from '@/features/achievements/components'
-import { Achievement, AchievementCategory } from '@/features/achievements/types/achievement'
-import { toast } from '@/shared/utils/toast'
-import { Loader2, RefreshCw } from 'lucide-react'
-import { Button } from '@/shared/components/ui/button'
-import { useUnifiedData } from '@/shared/hooks/use-unified-data'
+import { useEffect, useState } from "react";
+import { AchievementsSection } from "@/features/achievements/components";
+import { Achievement, AchievementCategory } from "@/features/achievements/types/achievement";
+import { toast } from "@/shared/utils/toast";
+import { Loader2, RefreshCw } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 
 export default function AchievementsPage() {
-  const { data: unifiedData, isLoading, mutate } = useUnifiedData()
-  const [checking, setChecking] = useState(false)
-  const [achievementCategories, setAchievementCategories] = useState<AchievementCategory[]>([])
+  const { data: unifiedData, isLoading, mutate } = useUnifiedData();
+  const [checking, setChecking] = useState(false);
+  const [achievementCategories, setAchievementCategories] = useState<AchievementCategory[]>([]);
 
   useEffect(() => {
     if (unifiedData?.achievements) {
-      processAchievementsData()
+      processAchievementsData();
     }
-  }, [unifiedData, processAchievementsData])
+  }, [unifiedData, processAchievementsData]);
 
   const checkAchievements = async () => {
     try {
-      setChecking(true)
+      setChecking(true);
       // Use GET to avoid CSRF issues with the temporary test button
-      const response = await fetch('/api/user/achievements/check', {
-        method: 'GET',
-        credentials: 'include'
-      })
-      const result = await response.json()
+      const response = await fetch("/api/user/achievements/check", {
+        method: "GET",
+        credentials: "include",
+      });
+      const result = await response.json();
 
-      console.log('Achievement check response:', result)
+      console.log("Achievement check response:", result);
 
       if (!result.success) {
-        const errorMsg = result.details || result.error || 'Failed to check achievements'
-        throw new Error(errorMsg)
+        const errorMsg = result.details || result.error || "Failed to check achievements";
+        throw new Error(errorMsg);
       }
 
       if (result.newAchievements && result.newAchievements.length > 0) {
-        toast.success(`Unlocked ${result.newAchievements.length} new achievement(s)!`)
-        console.log('New achievements:', result.newAchievements)
+        toast.success(`Unlocked ${result.newAchievements.length} new achievement(s)!`);
+        console.log("New achievements:", result.newAchievements);
         // Refresh the unified data cache
-        await mutate()
+        await mutate();
       } else {
-        toast.info('No new achievements unlocked')
+        toast.info("No new achievements unlocked");
       }
     } catch (error) {
-      console.error('Error checking achievements:', error)
-      const errorMsg = error instanceof Error ? error.message : 'Failed to check achievements'
-      toast.error(`Error: ${errorMsg}`)
+      console.error("Error checking achievements:", error);
+      const errorMsg = error instanceof Error ? error.message : "Failed to check achievements";
+      toast.error(`Error: ${errorMsg}`);
     } finally {
-      setChecking(false)
+      setChecking(false);
     }
-  }
+  };
 
   const processAchievementsData = () => {
-    if (!unifiedData?.achievements) return
+    if (!unifiedData?.achievements) return;
 
-    const { achievements: achievementsData } = unifiedData
-    const achievementProgress = achievementsData.progress as Achievement[]
+    const { achievements: achievementsData } = unifiedData;
+    const achievementProgress = achievementsData.progress as Achievement[];
 
-      // Group achievements by category (progress is already calculated by API)
-      const categories: Record<string, Achievement[]> = {
-        'diagnostic-experience': [],
-        'perfectionist': [],
-        'daily-signout': [],
-        'pattern-recognition': [],
-        'diagnostic-accuracy': [],
-        'differential-diagnosis': []
-      }
+    // Group achievements by category (progress is already calculated by API)
+    const categories: Record<string, Achievement[]> = {
+      "diagnostic-experience": [],
+      perfectionist: [],
+      "daily-signout": [],
+      "pattern-recognition": [],
+      "diagnostic-accuracy": [],
+      "differential-diagnosis": [],
+    };
 
-      const categoryTitles = {
-        'diagnostic-experience': 'Diagnostic Experience',
-        'perfectionist': 'Perfectionist',
-        'daily-signout': 'Daily Sign-Out',
-        'pattern-recognition': 'Pattern Recognition',
-        'diagnostic-accuracy': 'Diagnostic Accuracy',
-        'differential-diagnosis': 'Differential Diagnosis'
-      }
+    const categoryTitles = {
+      "diagnostic-experience": "Diagnostic Experience",
+      perfectionist: "Perfectionist",
+      "daily-signout": "Daily Sign-Out",
+      "pattern-recognition": "Pattern Recognition",
+      "diagnostic-accuracy": "Diagnostic Accuracy",
+      "differential-diagnosis": "Differential Diagnosis",
+    };
 
-      const categoryDescriptions = {
-        'diagnostic-experience': 'Complete quizzes to unlock these achievements',
-        'perfectionist': 'Achieve perfect scores on quizzes',
-        'daily-signout': 'Maintain daily learning streaks',
-        'pattern-recognition': 'Answer questions quickly and accurately',
-        'diagnostic-accuracy': 'Maintain high accuracy over your last 10 quizzes',
-        'differential-diagnosis': 'Answer questions from multiple subjects'
-      }
+    const categoryDescriptions = {
+      "diagnostic-experience": "Complete quizzes to unlock these achievements",
+      perfectionist: "Achieve perfect scores on quizzes",
+      "daily-signout": "Maintain daily learning streaks",
+      "pattern-recognition": "Answer questions quickly and accurately",
+      "diagnostic-accuracy": "Maintain high accuracy over your last 10 quizzes",
+      "differential-diagnosis": "Answer questions from multiple subjects",
+    };
 
-      // Group achievements by category using pre-calculated progress
-      achievementProgress.forEach((achievement) => {
-        const categoryId = achievement.category === 'quiz' ? 'diagnostic-experience' :
-                         achievement.category === 'perfect' ? 'perfectionist' :
-                         achievement.category === 'streak' ? 'daily-signout' :
-                         achievement.category === 'speed' ? 'pattern-recognition' :
-                         achievement.category === 'differential' ? 'differential-diagnosis' :
-                         'diagnostic-accuracy'
+    // Group achievements by category using pre-calculated progress
+    achievementProgress.forEach((achievement) => {
+      const categoryId =
+        achievement.category === "quiz"
+          ? "diagnostic-experience"
+          : achievement.category === "perfect"
+            ? "perfectionist"
+            : achievement.category === "streak"
+              ? "daily-signout"
+              : achievement.category === "speed"
+                ? "pattern-recognition"
+                : achievement.category === "differential"
+                  ? "differential-diagnosis"
+                  : "diagnostic-accuracy";
 
-        categories[categoryId].push(achievement)
-      })
+      categories[categoryId].push(achievement);
+    });
 
-      // Convert to AchievementCategory array
-      const categoryArray: AchievementCategory[] = Object.entries(categories).map(([id, achievements]) => ({
+    // Convert to AchievementCategory array
+    const categoryArray: AchievementCategory[] = Object.entries(categories).map(
+      ([id, achievements]) => ({
         id,
         title: categoryTitles[id as keyof typeof categoryTitles],
         description: categoryDescriptions[id as keyof typeof categoryDescriptions],
-        achievements
-      }))
+        achievements,
+      })
+    );
 
-      setAchievementCategories(categoryArray)
-  }
+    setAchievementCategories(categoryArray);
+  };
 
   if (isLoading) {
     return (
       <div className="flex items-center justify-center min-h-[400px]">
         <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
       </div>
-    )
+    );
   }
 
   // Calculate overall stats
   const totalAchievements = achievementCategories.reduce(
     (sum, category) => sum + category.achievements.length,
     0
-  )
+  );
   const unlockedAchievements = achievementCategories.reduce(
-    (sum, category) => sum + category.achievements.filter(a => a.isUnlocked).length,
+    (sum, category) => sum + category.achievements.filter((a) => a.isUnlocked).length,
     0
-  )
-  const completionPercentage = totalAchievements > 0
-    ? Math.round((unlockedAchievements / totalAchievements) * 100)
-    : 0
+  );
+  const completionPercentage =
+    totalAchievements > 0 ? Math.round((unlockedAchievements / totalAchievements) * 100) : 0;
 
   return (
     <div className="space-y-6">
@@ -144,12 +151,7 @@ export default function AchievementsPage() {
         </div>
 
         {/* Temporary: Check Achievements Button */}
-        <Button
-          onClick={checkAchievements}
-          disabled={checking}
-          variant="outline"
-          className="gap-2"
-        >
+        <Button onClick={checkAchievements} disabled={checking} variant="outline" className="gap-2">
           {checking ? (
             <>
               <Loader2 className="h-4 w-4 animate-spin" />
@@ -171,6 +173,5 @@ export default function AchievementsPage() {
         ))}
       </div>
     </div>
-  )
+  );
 }
-

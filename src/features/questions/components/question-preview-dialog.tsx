@@ -1,25 +1,20 @@
 // src/features/questions/components/question-preview-dialog.tsx
-'use client'
+"use client";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/components/ui/dialog"
-import { QuestionWithDetails } from '@/features/questions/types/questions'
-import { CompactQuestionPreview } from './compact-question-preview'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
+import { QuestionWithDetails } from "@/features/questions/types/questions";
+import { CompactQuestionPreview } from "./compact-question-preview";
 
 interface QuestionPreviewDialogProps {
-  question: QuestionWithDetails | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  question: QuestionWithDetails | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function QuestionPreviewDialog({
   question,
   open,
-  onOpenChange
+  onOpenChange,
 }: QuestionPreviewDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -30,5 +25,5 @@ export function QuestionPreviewDialog({
         <CompactQuestionPreview question={question} />
       </DialogContent>
     </Dialog>
-  )
+  );
 }

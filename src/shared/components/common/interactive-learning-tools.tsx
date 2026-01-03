@@ -1,27 +1,21 @@
 // src/shared/components/common/interactive-learning-tools.tsx
-import Link from "next/link"
-import { Button } from "@/shared/components/ui/button"
+import Link from "next/link";
+import { Button } from "@/shared/components/ui/button";
 
 interface InteractiveLearningToolsProps {
   /** Optional ID for the section (useful for navigation) */
-  id?: string
+  id?: string;
   /** Additional CSS classes for the section */
-  className?: string
+  className?: string;
 }
 
-export function InteractiveLearningTools({
-  id,
-  className = ""
-}: InteractiveLearningToolsProps) {
-  
+export function InteractiveLearningTools({ id, className = "" }: InteractiveLearningToolsProps) {
   return (
     <section id={id} className={`relative py-24 ${className}`}>
       <div className="absolute inset-0 bg-linear-to-b from-transparent via-primary/5 to-transparent" />
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-4xl font-bold mb-4">
-            Interactive Learning Tools
-          </h2>
+          <h2 className="text-4xl font-bold mb-4">Interactive Learning Tools</h2>
           <p className="text-xl text-muted-foreground">
             Practice with our specialized tools designed to enhance your diagnostic skills
           </p>
@@ -151,5 +145,5 @@ export function InteractiveLearningTools({
         </div>
       </div>
     </section>
-  )
+  );
 }

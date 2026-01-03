@@ -1,23 +1,23 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { X } from 'lucide-react'
-import Image from 'next/image'
+import { useState } from "react";
+import { X } from "lucide-react";
+import Image from "next/image";
 
 interface SimpleImageViewerProps {
-  src: string
-  alt: string
-  caption?: string
-  className?: string
+  src: string;
+  alt: string;
+  caption?: string;
+  className?: string;
 }
 
-export function SimpleImageViewer({ src, alt, caption, className = '' }: SimpleImageViewerProps) {
-  const [isOpen, setIsOpen] = useState(false)
+export function SimpleImageViewer({ src, alt, caption, className = "" }: SimpleImageViewerProps) {
+  const [isOpen, setIsOpen] = useState(false);
 
   return (
     <>
       {/* Thumbnail - click to open */}
-      <div 
+      <div
         className={`cursor-pointer rounded-lg overflow-hidden border bg-gray-50 ${className}`}
         onClick={() => setIsOpen(true)}
       >
@@ -32,12 +32,12 @@ export function SimpleImageViewer({ src, alt, caption, className = '' }: SimpleI
 
       {/* Modal overlay */}
       {isOpen && (
-        <div 
+        <div
           className="fixed inset-0 z-50 bg-black bg-opacity-75 flex items-center justify-center p-4"
           onClick={() => setIsOpen(false)}
         >
           {/* Image container */}
-          <div 
+          <div
             className="relative bg-white rounded-lg shadow-xl max-w-4xl max-h-[90vh] overflow-hidden"
             onClick={(e) => e.stopPropagation()}
           >
@@ -60,8 +60,8 @@ export function SimpleImageViewer({ src, alt, caption, className = '' }: SimpleI
               unoptimized
               className="w-full h-auto max-h-[80vh] object-contain"
               style={{
-                width: 'auto',
-                height: 'auto',
+                width: "auto",
+                height: "auto",
               }}
             />
 
@@ -75,5 +75,5 @@ export function SimpleImageViewer({ src, alt, caption, className = '' }: SimpleI
         </div>
       )}
     </>
-  )
+  );
 }

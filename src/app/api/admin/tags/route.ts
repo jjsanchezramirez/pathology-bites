@@ -1,47 +1,47 @@
 // src/app/api/admin/tags/route.ts
-import { NextResponse } from 'next/server'
-import { createClient } from '@/shared/services/server'
-import { requireContentRole } from '@/shared/middleware/api-auth'
+import { NextResponse } from "next/server";
+import { createClient } from "@/shared/services/server";
+import { requireContentRole } from "@/shared/middleware/api-auth";
 
 export const GET = requireContentRole(async (request) => {
   try {
-    const supabase = await createClient()
+    const supabase = await createClient();
 
     // Get query parameters
-    const { searchParams } = new URL(request.url)
-    const page = parseInt(searchParams.get('page') || '0')
-    const pageSize = parseInt(searchParams.get('pageSize') || '10')
-    const search = searchParams.get('search')
-    const sortBy = searchParams.get('sortBy')
+    const { searchParams } = new URL(request.url);
+    const page = parseInt(searchParams.get("page") || "0");
+    const pageSize = parseInt(searchParams.get("pageSize") || "10");
+    const search = searchParams.get("search");
+    const sortBy = searchParams.get("sortBy");
 
     // Build query
-    let query = supabase
-      .from('tags')
-      .select('*', { count: 'exact' })
+    let query = supabase.from("tags").select("*", { count: "exact" });
 
     if (search) {
-      query = query.ilike('name', `%${search}%`)
+      query = query.ilike("name", `%${search}%`);
     }
 
     // Get total count
-    const { count } = await query
+    const { count } = await query;
 
     // Get paginated data with appropriate sorting
-    let dataQuery = query
+    let dataQuery = query;
 
-    if (sortBy === 'recent') {
+    if (sortBy === "recent") {
       // For recent tags, we'll use a subquery to get tags that have been used recently
       // This is a simplified approach - in a real implementation, you might want to track tag usage
-      dataQuery = dataQuery.order('created_at', { ascending: false })
+      dataQuery = dataQuery.order("created_at", { ascending: false });
     } else {
-      dataQuery = dataQuery.order('name')
+      dataQuery = dataQuery.order("name");
     }
 
-    const { data, error: dataError } = await dataQuery
-      .range(page * pageSize, (page + 1) * pageSize - 1)
+    const { data, error: dataError } = await dataQuery.range(
+      page * pageSize,
+      (page + 1) * pageSize - 1
+    );
 
     if (dataError) {
-      throw dataError
+      throw dataError;
     }
 
     if (!data || data.length === 0) {
@@ -49,158 +49,141 @@ export const GET = requireContentRole(async (request) => {
         tags: [],
         totalTags: count || 0,
         totalPages: Math.ceil((count || 0) / pageSize),
-        currentPage: page
-      })
+        currentPage: page,
+      });
     }
 
     // Get question counts for all tags in a single query (eliminates N+1 problem)
-    const tagIds = data.map(tag => tag.id)
+    const tagIds = data.map((tag) => tag.id);
     const { data: questionCounts } = await supabase
-      .from('question_tags')
-      .select('tag_id')
-      .in('tag_id', tagIds)
+      .from("question_tags")
+      .select("tag_id")
+      .in("tag_id", tagIds);
 
     // Create a map of tag_id -> question_count
-    const countMap = new Map<string, number>()
-    questionCounts?.forEach(qt => {
+    const countMap = new Map<string, number>();
+    questionCounts?.forEach((qt) => {
       if (qt.tag_id) {
-        countMap.set(qt.tag_id, (countMap.get(qt.tag_id) || 0) + 1)
+        countMap.set(qt.tag_id, (countMap.get(qt.tag_id) || 0) + 1);
       }
-    })
+    });
 
     // Transform the data to include question counts
-    const tagsWithCounts = data.map(tag => ({
+    const tagsWithCounts = data.map((tag) => ({
       ...tag,
-      question_count: countMap.get(tag.id) || 0
-    }))
+      question_count: countMap.get(tag.id) || 0,
+    }));
 
     return NextResponse.json({
       tags: tagsWithCounts,
       totalTags: count || 0,
       totalPages: Math.ceil((count || 0) / pageSize),
-      currentPage: page
-    })
-
+      currentPage: page,
+    });
   } catch (error) {
-    console.error('Error in admin tags API:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error("Error in admin tags API:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-})
+});
 
 export const POST = requireContentRole(async (request) => {
   try {
-    const supabase = await createClient()
+    const supabase = await createClient();
 
-    const body = await request.json()
-    const { name } = body
+    const body = await request.json();
+    const { name } = body;
 
     if (!name || !name.trim()) {
-      return NextResponse.json({ error: 'Tag name is required' }, { status: 400 })
+      return NextResponse.json({ error: "Tag name is required" }, { status: 400 });
     }
 
     // Create tag with service role to bypass RLS
     const { data, error } = await supabase
-      .from('tags')
+      .from("tags")
       .insert({ name: name.trim() })
       .select()
-      .single()
+      .single();
 
     if (error) {
-      if (error.code === '23505') { // Unique constraint violation
-        return NextResponse.json({ error: 'A tag with this name already exists' }, { status: 409 })
+      if (error.code === "23505") {
+        // Unique constraint violation
+        return NextResponse.json({ error: "A tag with this name already exists" }, { status: 409 });
       }
-      throw error
+      throw error;
     }
 
-    return NextResponse.json({ tag: data })
-
+    return NextResponse.json({ tag: data });
   } catch (error) {
-    console.error('Error creating tag:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error("Error creating tag:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-})
+});
 
 export const PATCH = requireContentRole(async (request) => {
   try {
-    const supabase = await createClient()
+    const supabase = await createClient();
 
-    const body = await request.json()
-    const { tagId, name } = body
+    const body = await request.json();
+    const { tagId, name } = body;
 
     if (!tagId || !name || !name.trim()) {
-      return NextResponse.json({ error: 'Tag ID and name are required' }, { status: 400 })
+      return NextResponse.json({ error: "Tag ID and name are required" }, { status: 400 });
     }
 
     // Update tag with service role to bypass RLS
     const { data, error } = await supabase
-      .from('tags')
+      .from("tags")
       .update({ name: name.trim() })
-      .eq('id', tagId)
+      .eq("id", tagId)
       .select()
-      .single()
+      .single();
 
     if (error) {
-      if (error.code === '23505') { // Unique constraint violation
-        return NextResponse.json({ error: 'A tag with this name already exists' }, { status: 409 })
+      if (error.code === "23505") {
+        // Unique constraint violation
+        return NextResponse.json({ error: "A tag with this name already exists" }, { status: 409 });
       }
-      throw error
+      throw error;
     }
 
-    return NextResponse.json({ tag: data })
-
+    return NextResponse.json({ tag: data });
   } catch (error) {
-    console.error('Error updating tag:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error("Error updating tag:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-})
+});
 
 export const DELETE = requireContentRole(async (request) => {
   try {
-    const supabase = await createClient()
+    const supabase = await createClient();
 
-    const body = await request.json()
-    const { tagId } = body
+    const body = await request.json();
+    const { tagId } = body;
 
     if (!tagId) {
-      return NextResponse.json({ error: 'Tag ID is required' }, { status: 400 })
+      return NextResponse.json({ error: "Tag ID is required" }, { status: 400 });
     }
 
     // First delete all question_tags relationships
     const { error: relationError } = await supabase
-      .from('question_tags')
+      .from("question_tags")
       .delete()
-      .eq('tag_id', tagId)
+      .eq("tag_id", tagId);
 
     if (relationError) {
-      throw relationError
+      throw relationError;
     }
 
     // Then delete the tag
-    const { error } = await supabase
-      .from('tags')
-      .delete()
-      .eq('id', tagId)
+    const { error } = await supabase.from("tags").delete().eq("id", tagId);
 
     if (error) {
-      throw error
+      throw error;
     }
 
-    return NextResponse.json({ success: true })
-
+    return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Error deleting tag:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error("Error deleting tag:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-})
+});

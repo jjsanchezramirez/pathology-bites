@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
-import { FileText, Brain, Eye, Image as ImageIcon, Upload } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import { FileText, Brain, Eye, Image as ImageIcon, Upload } from "lucide-react";
 
 export function LoadingSkeleton() {
   return (
@@ -48,7 +48,10 @@ export function LoadingSkeleton() {
                 <div className="bg-gray-200 dark:bg-gray-700 h-4 w-40 rounded"></div>
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {[1, 2, 3, 4, 5, 6].map((i) => (
-                    <div key={i} className="bg-gray-100 dark:bg-gray-800 h-12 rounded border border-gray-200 dark:border-gray-700 p-3">
+                    <div
+                      key={i}
+                      className="bg-gray-100 dark:bg-gray-800 h-12 rounded border border-gray-200 dark:border-gray-700 p-3"
+                    >
                       <div className="bg-gray-200 dark:bg-gray-700 h-4 w-3/4 rounded"></div>
                     </div>
                   ))}
@@ -92,5 +95,5 @@ export function LoadingSkeleton() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

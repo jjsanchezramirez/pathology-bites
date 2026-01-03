@@ -1,12 +1,28 @@
 // src/components/images/images-table.tsx
-"use client"
+"use client";
 
-import { useState, useCallback, useEffect } from 'react';
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/shared/components/ui/table";
+import { useState, useCallback, useEffect } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/components/ui/table";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { toast } from '@/shared/utils/toast';
-import { Search, Loader2, Upload, MoreVertical, Edit, Trash2, AlertTriangle, CheckCircle } from 'lucide-react';
+import { toast } from "@/shared/utils/toast";
+import {
+  Search,
+  Loader2,
+  Upload,
+  MoreVertical,
+  Edit,
+  Trash2,
+  AlertTriangle,
+  CheckCircle,
+} from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -20,36 +36,36 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import { ImagePreview } from './image-preview';
-import { EditImageDialog } from './edit-dialog';
-import { UploadDialog } from './upload-dialog';
-import { DeleteImageDialog } from './delete-image-dialog';
-import { fetchImages } from '@/features/images/services/images';
-import { getImageUsageStats, ImageUsageStats } from '@/features/images/services/image-analytics';
+import { ImagePreview } from "./image-preview";
+import { EditImageDialog } from "./edit-dialog";
+import { UploadDialog } from "./upload-dialog";
+import { DeleteImageDialog } from "./delete-image-dialog";
+import { fetchImages } from "@/features/images/services/images";
+import { getImageUsageStats, ImageUsageStats } from "@/features/images/services/image-analytics";
 
 import {
   ImageData,
   ImageCategory,
   IMAGE_CATEGORIES,
-  PAGE_SIZE
-} from '@/features/images/types/images';
+  PAGE_SIZE,
+} from "@/features/images/types/images";
 
 // Define the valid category values type
-type CategoryFilterType = 'all' | 'unused' | ImageCategory;
+type CategoryFilterType = "all" | "unused" | ImageCategory;
 
 // Category color configurations
 const getCategoryColor = (category: ImageCategory): string => {
   switch (category) {
-    case 'microscopic':
-      return 'bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300';
-    case 'gross':
-      return 'bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300';
-    case 'figure':
-      return 'bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300';
-    case 'table':
-      return 'bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300';
+    case "microscopic":
+      return "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300";
+    case "gross":
+      return "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300";
+    case "figure":
+      return "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300";
+    case "table":
+      return "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300";
     default:
-      return 'bg-secondary text-secondary-foreground';
+      return "bg-secondary text-secondary-foreground";
   }
 };
 
@@ -93,10 +109,7 @@ function TableControls({
           </SelectContent>
         </Select>
       </div>
-      <Button
-        onClick={onUpload}
-        className="bg-primary hover:bg-primary/90"
-      >
+      <Button onClick={onUpload} className="bg-primary hover:bg-primary/90">
         <Upload className="h-4 w-4 mr-2" />
         Upload Images
       </Button>
@@ -120,8 +133,7 @@ function TablePagination({
     <div className="flex justify-between items-center">
       <p className="text-sm text-muted-foreground">
         Showing {totalItems > 0 ? currentPage * PAGE_SIZE + 1 : 0} to{" "}
-        {Math.min((currentPage + 1) * PAGE_SIZE, totalItems)} of{" "}
-        {totalItems} images
+        {Math.min((currentPage + 1) * PAGE_SIZE, totalItems)} of {totalItems} images
       </p>
       <div className="flex gap-2">
         <Button
@@ -147,7 +159,7 @@ function TablePagination({
 function RowActions({
   image,
   onEdit,
-  onDelete
+  onDelete,
 }: {
   image: ImageData;
   onEdit: (image: ImageData) => void;
@@ -166,10 +178,7 @@ function RowActions({
           <Edit className="h-4 w-4 mr-2" />
           Edit
         </DropdownMenuItem>
-        <DropdownMenuItem
-          className="text-red-600"
-          onClick={() => onDelete(image)}
-        >
+        <DropdownMenuItem className="text-red-600" onClick={() => onDelete(image)}>
           <Trash2 className="h-4 w-4 mr-2" />
           Delete
         </DropdownMenuItem>
@@ -186,9 +195,9 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
   const [images, setImages] = useState<ImageData[]>([]);
   const [imageStats, setImageStats] = useState<ImageUsageStats[]>([]);
   const [loading, setLoading] = useState(true);
-  const [searchTerm, setSearchTerm] = useState('');
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>('all');
+  const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>("all");
   const [page, setPage] = useState(0);
   const [totalPages, setTotalPages] = useState(0);
   const [totalItems, setTotalItems] = useState(0);
@@ -208,7 +217,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
   }, [searchTerm]);
 
   const loadImages = useCallback(async () => {
-    console.log('loadImages function called');
+    console.log("loadImages function called");
     setLoading(true);
     setError(null);
     try {
@@ -218,10 +227,11 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
           page,
           pageSize: PAGE_SIZE,
           searchTerm: debouncedSearchTerm || undefined,
-          category: categoryFilter === 'all' || categoryFilter === 'unused' ? undefined : categoryFilter,
-          showUnusedOnly: categoryFilter === 'unused',
+          category:
+            categoryFilter === "all" || categoryFilter === "unused" ? undefined : categoryFilter,
+          showUnusedOnly: categoryFilter === "unused",
         }),
-        getImageUsageStats()
+        getImageUsageStats(),
       ]);
 
       if (result.error) {
@@ -233,7 +243,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
       setTotalItems(result.total);
       setTotalPages(Math.ceil(result.total / PAGE_SIZE));
     } catch (error) {
-      const message = error instanceof Error ? error.message : 'Failed to load images';
+      const message = error instanceof Error ? error.message : "Failed to load images";
       setError(message);
       toast.error(message);
     } finally {
@@ -252,8 +262,6 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
     }
   }, [showEditDialog]);
 
-
-
   const handleDelete = useCallback((image: ImageData) => {
     setImageToDelete(image);
     setShowDeleteDialog(true);
@@ -262,8 +270,8 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
   const handleDeleteConfirm = useCallback(() => {
     // Remove the deleted image from the local state
     if (imageToDelete) {
-      setImages(prev => prev.filter(img => img.id !== imageToDelete.id));
-      setTotalItems(prev => prev - 1);
+      setImages((prev) => prev.filter((img) => img.id !== imageToDelete.id));
+      setTotalItems((prev) => prev - 1);
 
       // Refresh storage stats
       onImageChange?.();
@@ -271,7 +279,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
       // If this was the last image on the current page and we're not on page 0,
       // go back one page
       if (images.length === 1 && page > 0) {
-        setPage(prev => prev - 1);
+        setPage((prev) => prev - 1);
       } else {
         // Otherwise, reload the current page
         loadImages();
@@ -290,15 +298,13 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
   }, []);
 
   const handleEditSave = useCallback(() => {
-    console.log('handleEditSave called - refreshing table');
+    console.log("handleEditSave called - refreshing table");
     // Just refresh the table, dialog closing is handled separately
     loadImages();
 
     // Refresh storage stats (editing might change usage status)
     onImageChange?.();
   }, [loadImages, onImageChange]);
-
-
 
   const handleUploadComplete = useCallback(() => {
     setShowUploadDialog(false);
@@ -354,46 +360,45 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
             ) : images.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={9} className="h-24 text-center text-muted-foreground">
-                  {categoryFilter === 'unused'
-                    ? 'No unused images found'
-                    : searchTerm || categoryFilter !== 'all'
-                    ? 'No images found matching your filters'
-                    : 'No images uploaded yet'
-                  }
+                  {categoryFilter === "unused"
+                    ? "No unused images found"
+                    : searchTerm || categoryFilter !== "all"
+                      ? "No images found matching your filters"
+                      : "No images uploaded yet"}
                 </TableCell>
               </TableRow>
             ) : (
               images.map((image) => {
                 // Find the corresponding stats for this image
-                const stats = imageStats.find(stat => stat.id === image.id);
+                const stats = imageStats.find((stat) => stat.id === image.id);
 
                 return (
                   <TableRow key={image.id}>
                     <TableCell>
-                      <ImagePreview
-                        src={image.url}
-                        alt={image.alt_text || 'Image'}
-                        size="sm"
-                      />
+                      <ImagePreview src={image.url} alt={image.alt_text || "Image"} size="sm" />
                     </TableCell>
                     <TableCell className="max-w-48">
-                      <p className="line-clamp-2 text-sm font-medium">{image.alt_text || 'Untitled Image'}</p>
+                      <p className="line-clamp-2 text-sm font-medium">
+                        {image.alt_text || "Untitled Image"}
+                      </p>
                     </TableCell>
                     <TableCell className="max-w-xl">
                       <p className="line-clamp-2 text-sm text-muted-foreground">
-                        {image.description || 'No description'}
+                        {image.description || "No description"}
                       </p>
                     </TableCell>
                     <TableCell>
-                      <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(image.category as ImageCategory)}`}>
+                      <span
+                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(image.category as ImageCategory)}`}
+                      >
                         {IMAGE_CATEGORIES[image.category as ImageCategory] || image.category}
                       </span>
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {stats?.formatted_size || 'Unknown'}
+                      {stats?.formatted_size || "Unknown"}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {stats?.dimensions_text || 'Unknown'}
+                      {stats?.dimensions_text || "Unknown"}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">

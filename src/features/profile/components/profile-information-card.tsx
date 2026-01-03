@@ -1,28 +1,40 @@
 // src/features/profile/components/profile-information-card.tsx
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
-import { User, Save, RefreshCw, Edit, X } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { User, Save, RefreshCw, Edit, X } from "lucide-react";
 
 interface ProfileFormData {
-  first_name: string
-  last_name: string
-  email: string
-  institution: string
-  user_type: string
+  first_name: string;
+  last_name: string;
+  email: string;
+  institution: string;
+  user_type: string;
 }
 
 interface ProfileInformationCardProps {
-  formData: ProfileFormData
-  isEditMode: boolean
-  saving: boolean
-  onFormDataChange: (data: Partial<ProfileFormData>) => void
-  onEdit: () => void
-  onCancel: () => void
-  onSave: () => void
+  formData: ProfileFormData;
+  isEditMode: boolean;
+  saving: boolean;
+  onFormDataChange: (data: Partial<ProfileFormData>) => void;
+  onEdit: () => void;
+  onCancel: () => void;
+  onSave: () => void;
 }
 
 export function ProfileInformationCard({
@@ -32,7 +44,7 @@ export function ProfileInformationCard({
   onFormDataChange,
   onEdit,
   onCancel,
-  onSave
+  onSave,
 }: ProfileInformationCardProps) {
   return (
     <Card>
@@ -41,9 +53,7 @@ export function ProfileInformationCard({
           <User className="h-5 w-5" />
           Profile Information
         </CardTitle>
-        <CardDescription>
-          Update your personal information.
-        </CardDescription>
+        <CardDescription>Update your personal information.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="flex gap-2">
@@ -103,12 +113,7 @@ export function ProfileInformationCard({
         </div>
         <div className="grid gap-2">
           <Label htmlFor="email">Email</Label>
-          <Input
-            id="email"
-            value={formData.email}
-            disabled
-            className="bg-muted"
-          />
+          <Input id="email" value={formData.email} disabled className="bg-muted" />
         </div>
         {!isEditMode ? (
           <Button onClick={onEdit} className="w-full">
@@ -117,20 +122,11 @@ export function ProfileInformationCard({
           </Button>
         ) : (
           <div className="flex gap-2">
-            <Button
-              onClick={onCancel}
-              variant="outline"
-              className="flex-1"
-              disabled={saving}
-            >
+            <Button onClick={onCancel} variant="outline" className="flex-1" disabled={saving}>
               <X className="mr-2 h-4 w-4" />
               Cancel
             </Button>
-            <Button
-              onClick={onSave}
-              disabled={saving}
-              className="flex-1"
-            >
+            <Button onClick={onSave} disabled={saving} className="flex-1">
               {saving ? (
                 <>
                   <RefreshCw className="mr-2 h-4 w-4 animate-spin" />
@@ -147,6 +143,5 @@ export function ProfileInformationCard({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }
-

@@ -4,45 +4,45 @@
  * Implements the database optimization patterns for reduced bandwidth consumption
  */
 
-import { useState, useCallback } from 'react'
-import { useCachedData } from './use-cached-data'
+import { useState, useCallback } from "react";
+import { useCachedData } from "./use-cached-data";
 
 // Import standardized interface instead of defining a duplicate
-import { UIQuizQuestion } from '@/features/quiz/types/quiz-question'
+import { UIQuizQuestion } from "@/features/quiz/types/quiz-question";
 
 // Use the standardized interface
-type QuizQuestion = UIQuizQuestion
+type QuizQuestion = UIQuizQuestion;
 
 interface QuizOptions {
   categories: Array<{
-    id: string
-    name: string
-    shortName: string
+    id: string;
+    name: string;
+    shortName: string;
     questionStats: {
-      all: number
-      unused: number
-      incorrect: number
-      marked: number
-      correct: number
-    }
-  }>
+      all: number;
+      unused: number;
+      incorrect: number;
+      marked: number;
+      correct: number;
+    };
+  }>;
   questionTypeStats: {
-    all: unknown
-    ap_only: unknown
-    cp_only: unknown
-  }
+    all: unknown;
+    ap_only: unknown;
+    cp_only: unknown;
+  };
 }
 
 interface PaginatedQuestions {
-  data: QuizQuestion[]
+  data: QuizQuestion[];
   pagination: {
-    page: number
-    limit: number
-    totalItems: number
-    totalPages: number
-    hasNextPage: boolean
-    hasPreviousPage: boolean
-  }
+    page: number;
+    limit: number;
+    totalItems: number;
+    totalPages: number;
+    hasNextPage: boolean;
+    hasPreviousPage: boolean;
+  };
 }
 
 /**
@@ -50,59 +50,55 @@ interface PaginatedQuestions {
  */
 export function useOptimizedQuizOptions() {
   return useCachedData<QuizOptions>(
-    'quiz-options',
+    "quiz-options",
     async () => {
-      const response = await fetch('/api/quiz/options')
+      const response = await fetch("/api/quiz/options");
       if (!response.ok) {
-        throw new Error(`Failed to fetch quiz options: ${response.status}`)
+        throw new Error(`Failed to fetch quiz options: ${response.status}`);
       }
-      return response.json()
+      return response.json();
     },
     {
       refetchOnMount: true, // Always fetch on mount if no valid cache
       ttl: 5 * 60 * 1000, // 5 minutes cache
       staleTime: 2 * 60 * 1000, // 2 minutes stale time
-      storage: 'localStorage', // Persist across sessions
-      prefix: 'pathology-bites-quiz'
+      storage: "localStorage", // Persist across sessions
+      prefix: "pathology-bites-quiz",
     }
-  )
+  );
 }
 
 /**
  * Hook for paginated questions with intelligent caching
  */
-export function usePaginatedQuestions(
-  categoryId?: string,
-  page: number = 1,
-  limit: number = 10
-) {
-  const cacheKey = `questions-${categoryId || 'all'}-${page}-${limit}`
-  
+export function usePaginatedQuestions(categoryId?: string, page: number = 1, limit: number = 10) {
+  const cacheKey = `questions-${categoryId || "all"}-${page}-${limit}`;
+
   return useCachedData<PaginatedQuestions>(
     cacheKey,
     async () => {
       const params = new URLSearchParams({
         page: page.toString(),
-        limit: limit.toString()
-      })
-      
+        limit: limit.toString(),
+      });
+
       if (categoryId) {
-        params.append('category_id', categoryId)
+        params.append("category_id", categoryId);
       }
-      
-      const response = await fetch(`/api/quiz/questions/paginated?${params}`)
+
+      const response = await fetch(`/api/quiz/questions/paginated?${params}`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch questions: ${response.status}`)
+        throw new Error(`Failed to fetch questions: ${response.status}`);
       }
-      return response.json()
+      return response.json();
     },
     {
       ttl: 10 * 60 * 1000, // 10 minutes cache
       staleTime: 5 * 60 * 1000, // 5 minutes stale time
-      storage: 'localStorage',
-      prefix: 'pathology-bites-questions'
+      storage: "localStorage",
+      prefix: "pathology-bites-questions",
     }
-  )
+  );
 }
 
 /**
@@ -112,63 +108,69 @@ export function useOptimizedQuestion(questionId: string) {
   return useCachedData<QuizQuestion>(
     `question-${questionId}`,
     async () => {
-      const response = await fetch(`/api/quiz/questions/${questionId}`)
+      const response = await fetch(`/api/quiz/questions/${questionId}`);
       if (!response.ok) {
-        throw new Error(`Failed to fetch question: ${response.status}`)
+        throw new Error(`Failed to fetch question: ${response.status}`);
       }
-      return response.json()
+      return response.json();
     },
     {
       refetchOnMount: true, // Always fetch on mount if no valid cache
       ttl: 30 * 60 * 1000, // 30 minutes cache (questions don't change often)
       staleTime: 15 * 60 * 1000, // 15 minutes stale time
-      storage: 'localStorage',
-      prefix: 'pathology-bites-question'
+      storage: "localStorage",
+      prefix: "pathology-bites-question",
     }
-  )
+  );
 }
-
 
 /**
  * Utility function to preload commonly accessed data
  */
 export function useDataPreloader() {
-  const [isPreloading, setIsPreloading] = useState(false)
-  
+  const [isPreloading, setIsPreloading] = useState(false);
+
   const preloadCommonData = useCallback(async () => {
-    setIsPreloading(true)
-    
+    setIsPreloading(true);
+
     try {
       // Preload quiz options (most commonly accessed)
-      const optionsPromise = fetch('/api/quiz/options').then(r => r.json())
-      
+      const optionsPromise = fetch("/api/quiz/options").then((r) => r.json());
+
       // Preload first page of questions
-      const questionsPromise = fetch('/api/quiz/questions/paginated?page=1&limit=10')
-        .then(r => r.json())
-      
+      const questionsPromise = fetch("/api/quiz/questions/paginated?page=1&limit=10").then((r) =>
+        r.json()
+      );
+
       // Wait for both to complete
-      const [options, questions] = await Promise.all([optionsPromise, questionsPromise])
-      
+      const [options, questions] = await Promise.all([optionsPromise, questionsPromise]);
+
       // Cache the results
-      localStorage.setItem('pathology-bites-quiz-quiz-options', JSON.stringify({
-        data: options,
-        timestamp: Date.now()
-      }))
-      
-      localStorage.setItem('pathology-bites-questions-questions-all-1-10', JSON.stringify({
-        data: questions,
-        timestamp: Date.now()
-      }))
-      
-      console.log('Common data preloaded successfully')
+      localStorage.setItem(
+        "pathology-bites-quiz-quiz-options",
+        JSON.stringify({
+          data: options,
+          timestamp: Date.now(),
+        })
+      );
+
+      localStorage.setItem(
+        "pathology-bites-questions-questions-all-1-10",
+        JSON.stringify({
+          data: questions,
+          timestamp: Date.now(),
+        })
+      );
+
+      console.log("Common data preloaded successfully");
     } catch (error) {
-      console.error('Failed to preload data:', error)
+      console.error("Failed to preload data:", error);
     } finally {
-      setIsPreloading(false)
+      setIsPreloading(false);
     }
-  }, [])
-  
-  return { preloadCommonData, isPreloading }
+  }, []);
+
+  return { preloadCommonData, isPreloading };
 }
 
 /**
@@ -176,16 +178,17 @@ export function useDataPreloader() {
  */
 export function useCacheCleaner() {
   const clearQuizCache = useCallback(() => {
-    const keys = Object.keys(localStorage).filter(key => 
-      key.startsWith('pathology-bites-quiz') ||
-      key.startsWith('pathology-bites-questions') ||
-      key.startsWith('pathology-bites-question') ||
-      key.startsWith('pathology-bites-slides')
-    )
-    
-    keys.forEach(key => localStorage.removeItem(key))
-    console.log(`Cleared ${keys.length} cached items`)
-  }, [])
-  
-  return { clearQuizCache }
+    const keys = Object.keys(localStorage).filter(
+      (key) =>
+        key.startsWith("pathology-bites-quiz") ||
+        key.startsWith("pathology-bites-questions") ||
+        key.startsWith("pathology-bites-question") ||
+        key.startsWith("pathology-bites-slides")
+    );
+
+    keys.forEach((key) => localStorage.removeItem(key));
+    console.log(`Cleared ${keys.length} cached items`);
+  }, []);
+
+  return { clearQuizCache };
 }

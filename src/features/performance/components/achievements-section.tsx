@@ -1,34 +1,33 @@
 // src/features/performance/components/achievements-section.tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
-import { Badge } from '@/shared/components/ui/badge'
-import { AchievementBadge } from './achievement-badge'
-import { Achievement } from '@/shared/types/achievements'
-import { groupAchievementsByCategory, calculateTotalPoints } from '../services/achievement-service'
-import { Trophy, Star, TrendingUp } from 'lucide-react'
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import { Badge } from "@/shared/components/ui/badge";
+import { AchievementBadge } from "./achievement-badge";
+import { Achievement } from "@/shared/types/achievements";
+import { groupAchievementsByCategory, calculateTotalPoints } from "../services/achievement-service";
+import { Trophy, Star, TrendingUp } from "lucide-react";
 
 interface AchievementsSectionProps {
-  achievements: Achievement[]
+  achievements: Achievement[];
 }
 
 export function AchievementsSection({ achievements }: AchievementsSectionProps) {
-  const [selectedCategory, setSelectedCategory] = useState<string>('all')
+  const [selectedCategory, setSelectedCategory] = useState<string>("all");
 
-  const grouped = groupAchievementsByCategory(achievements)
-  const totalPoints = calculateTotalPoints(achievements)
-  const unlockedCount = achievements.filter(a => a.unlocked).length
-  const totalCount = achievements.length
+  const grouped = groupAchievementsByCategory(achievements);
+  const totalPoints = calculateTotalPoints(achievements);
+  const unlockedCount = achievements.filter((a) => a.unlocked).length;
+  const totalCount = achievements.length;
 
-  const displayAchievements = selectedCategory === 'all'
-    ? achievements
-    : grouped[selectedCategory] || []
+  const displayAchievements =
+    selectedCategory === "all" ? achievements : grouped[selectedCategory] || [];
 
   // Separate unlocked and locked achievements
-  const unlocked = displayAchievements.filter(a => a.unlocked)
-  const locked = displayAchievements.filter(a => !a.unlocked)
+  const unlocked = displayAchievements.filter((a) => a.unlocked);
+  const locked = displayAchievements.filter((a) => !a.unlocked);
 
   return (
     <Card>
@@ -45,7 +44,9 @@ export function AchievementsSection({ achievements }: AchievementsSectionProps) 
             </div>
             <div className="text-right">
               <div className="text-sm text-muted-foreground">Unlocked</div>
-              <div className="text-2xl font-bold">{unlockedCount}/{totalCount}</div>
+              <div className="text-2xl font-bold">
+                {unlockedCount}/{totalCount}
+              </div>
             </div>
           </div>
         </div>
@@ -55,23 +56,33 @@ export function AchievementsSection({ achievements }: AchievementsSectionProps) 
           <TabsList className="w-full flex-wrap h-auto">
             <TabsTrigger value="all" className="flex-1">
               All
-              <Badge variant="secondary" className="ml-2">{achievements.length}</Badge>
+              <Badge variant="secondary" className="ml-2">
+                {achievements.length}
+              </Badge>
             </TabsTrigger>
             <TabsTrigger value="quiz_completion" className="flex-1">
               Quizzes
-              <Badge variant="secondary" className="ml-2">{grouped.quiz_completion.length}</Badge>
+              <Badge variant="secondary" className="ml-2">
+                {grouped.quiz_completion.length}
+              </Badge>
             </TabsTrigger>
             <TabsTrigger value="accuracy" className="flex-1">
               Accuracy
-              <Badge variant="secondary" className="ml-2">{grouped.accuracy.length}</Badge>
+              <Badge variant="secondary" className="ml-2">
+                {grouped.accuracy.length}
+              </Badge>
             </TabsTrigger>
             <TabsTrigger value="streak" className="flex-1">
               Streaks
-              <Badge variant="secondary" className="ml-2">{grouped.streak.length}</Badge>
+              <Badge variant="secondary" className="ml-2">
+                {grouped.streak.length}
+              </Badge>
             </TabsTrigger>
             <TabsTrigger value="speed" className="flex-1">
               Speed
-              <Badge variant="secondary" className="ml-2">{grouped.speed.length}</Badge>
+              <Badge variant="secondary" className="ml-2">
+                {grouped.speed.length}
+              </Badge>
             </TabsTrigger>
           </TabsList>
 
@@ -83,12 +94,8 @@ export function AchievementsSection({ achievements }: AchievementsSectionProps) 
                   <h3 className="text-lg font-semibold">Earned ({unlocked.length})</h3>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                  {unlocked.map(achievement => (
-                    <AchievementBadge
-                      key={achievement.id}
-                      achievement={achievement}
-                      size="md"
-                    />
+                  {unlocked.map((achievement) => (
+                    <AchievementBadge key={achievement.id} achievement={achievement} size="md" />
                   ))}
                 </div>
               </div>
@@ -103,7 +110,7 @@ export function AchievementsSection({ achievements }: AchievementsSectionProps) 
                   </h3>
                 </div>
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-                  {locked.map(achievement => (
+                  {locked.map((achievement) => (
                     <AchievementBadge
                       key={achievement.id}
                       achievement={achievement}
@@ -124,5 +131,5 @@ export function AchievementsSection({ achievements }: AchievementsSectionProps) 
         </Tabs>
       </CardContent>
     </Card>
-  )
+  );
 }

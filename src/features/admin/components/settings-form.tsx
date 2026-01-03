@@ -1,49 +1,69 @@
 // src/features/admin/components/settings-form.tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from "@/shared/components/ui/button"
-import { Input } from "@/shared/components/ui/input"
-import { Label } from "@/shared/components/ui/label"
-import { Switch } from "@/shared/components/ui/switch"
+import { useState } from "react";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { Switch } from "@/shared/components/ui/switch";
 
-import { Separator } from "@/shared/components/ui/separator"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select"
-import { toast } from '@/shared/utils/toast'
-import { Save, RefreshCw, User, ClipboardList, LayoutDashboard, Bell, RotateCcw } from "lucide-react"
+import { Separator } from "@/shared/components/ui/separator";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { toast } from "@/shared/utils/toast";
+import {
+  Save,
+  RefreshCw,
+  User,
+  ClipboardList,
+  LayoutDashboard,
+  Bell,
+  RotateCcw,
+} from "lucide-react";
 
 interface SettingsData {
   // Account & Profile
-  firstName: string
-  lastName: string
-  userType: string
-  currentPassword: string
-  newPassword: string
-  confirmPassword: string
+  firstName: string;
+  lastName: string;
+  userType: string;
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 
   // Review Preferences
-  defaultSubjectFilter: string[]
-  defaultDifficultyFilter: 'easy' | 'medium' | 'hard' | 'all'
-  defaultQuestionTypeFilter: 'multiple_choice' | 'true_false' | 'all'
-  autoLoadReviewQueue: boolean
-  reviewQueuePageSize: number
+  defaultSubjectFilter: string[];
+  defaultDifficultyFilter: "easy" | "medium" | "hard" | "all";
+  defaultQuestionTypeFilter: "multiple_choice" | "true_false" | "all";
+  autoLoadReviewQueue: boolean;
+  reviewQueuePageSize: number;
 
   // Dashboard & Interface
-  showStatsWidget: boolean
-  showRecentActivityWidget: boolean
-  showQuickActionsWidget: boolean
-  showProgressWidget: boolean
-  showUpcomingReviewsWidget: boolean
-  dashboardLayout: 'compact' | 'detailed'
+  showStatsWidget: boolean;
+  showRecentActivityWidget: boolean;
+  showQuickActionsWidget: boolean;
+  showProgressWidget: boolean;
+  showUpcomingReviewsWidget: boolean;
+  dashboardLayout: "compact" | "detailed";
 
   // Notifications
-  emailNotifications: boolean
-  questionSubmissionNotifications: boolean
-  questionReviewNotifications: boolean
-  systemUpdateNotifications: boolean
-  weeklyProgressReports: boolean
-  browserNotifications: boolean
+  emailNotifications: boolean;
+  questionSubmissionNotifications: boolean;
+  questionReviewNotifications: boolean;
+  systemUpdateNotifications: boolean;
+  weeklyProgressReports: boolean;
+  browserNotifications: boolean;
 }
 
 const defaultSettings: SettingsData = {
@@ -57,8 +77,8 @@ const defaultSettings: SettingsData = {
 
   // Review Preferences
   defaultSubjectFilter: [],
-  defaultDifficultyFilter: 'all',
-  defaultQuestionTypeFilter: 'all',
+  defaultDifficultyFilter: "all",
+  defaultQuestionTypeFilter: "all",
   autoLoadReviewQueue: true,
   reviewQueuePageSize: 20,
 
@@ -68,7 +88,7 @@ const defaultSettings: SettingsData = {
   showQuickActionsWidget: true,
   showProgressWidget: true,
   showUpcomingReviewsWidget: true,
-  dashboardLayout: 'detailed',
+  dashboardLayout: "detailed",
 
   // Notifications
   emailNotifications: true,
@@ -77,29 +97,29 @@ const defaultSettings: SettingsData = {
   systemUpdateNotifications: false,
   weeklyProgressReports: true,
   browserNotifications: false,
-}
+};
 
 export function SettingsForm() {
-  const [settings, setSettings] = useState<SettingsData>(defaultSettings)
-  const [isLoading, setIsLoading] = useState(false)
+  const [settings, setSettings] = useState<SettingsData>(defaultSettings);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleSave = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
       // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1000))
-      toast.success("Settings saved successfully")
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+      toast.success("Settings saved successfully");
     } catch {
-      toast.error("Failed to save settings")
+      toast.error("Failed to save settings");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   const handleReset = () => {
-    setSettings(defaultSettings)
-    toast.info("Settings reset to defaults")
-  }
+    setSettings(defaultSettings);
+    toast.info("Settings reset to defaults");
+  };
 
   return (
     <div className="space-y-6">
@@ -121,7 +141,7 @@ export function SettingsForm() {
               <Input
                 id="firstName"
                 value={settings.firstName}
-                onChange={(e) => setSettings(prev => ({ ...prev, firstName: e.target.value }))}
+                onChange={(e) => setSettings((prev) => ({ ...prev, firstName: e.target.value }))}
                 placeholder="Enter first name"
               />
             </div>
@@ -131,7 +151,7 @@ export function SettingsForm() {
               <Input
                 id="lastName"
                 value={settings.lastName}
-                onChange={(e) => setSettings(prev => ({ ...prev, lastName: e.target.value }))}
+                onChange={(e) => setSettings((prev) => ({ ...prev, lastName: e.target.value }))}
                 placeholder="Enter last name"
               />
             </div>
@@ -139,12 +159,7 @@ export function SettingsForm() {
 
           <div className="space-y-2">
             <Label htmlFor="userType">User Type</Label>
-            <Input
-              id="userType"
-              value={settings.userType}
-              disabled
-              className="bg-muted"
-            />
+            <Input id="userType" value={settings.userType} disabled className="bg-muted" />
             <p className="text-sm text-muted-foreground">
               Your user type is managed by administrators
             </p>
@@ -161,7 +176,9 @@ export function SettingsForm() {
                 id="currentPassword"
                 type="password"
                 value={settings.currentPassword}
-                onChange={(e) => setSettings(prev => ({ ...prev, currentPassword: e.target.value }))}
+                onChange={(e) =>
+                  setSettings((prev) => ({ ...prev, currentPassword: e.target.value }))
+                }
                 placeholder="Enter current password"
               />
             </div>
@@ -173,7 +190,9 @@ export function SettingsForm() {
                   id="newPassword"
                   type="password"
                   value={settings.newPassword}
-                  onChange={(e) => setSettings(prev => ({ ...prev, newPassword: e.target.value }))}
+                  onChange={(e) =>
+                    setSettings((prev) => ({ ...prev, newPassword: e.target.value }))
+                  }
                   placeholder="Enter new password"
                 />
               </div>
@@ -184,7 +203,9 @@ export function SettingsForm() {
                   id="confirmPassword"
                   type="password"
                   value={settings.confirmPassword}
-                  onChange={(e) => setSettings(prev => ({ ...prev, confirmPassword: e.target.value }))}
+                  onChange={(e) =>
+                    setSettings((prev) => ({ ...prev, confirmPassword: e.target.value }))
+                  }
                   placeholder="Confirm new password"
                 />
               </div>
@@ -212,11 +233,16 @@ export function SettingsForm() {
             </p>
             <Input
               id="defaultSubjectFilter"
-              value={settings.defaultSubjectFilter.join(', ')}
-              onChange={(e) => setSettings(prev => ({
-                ...prev,
-                defaultSubjectFilter: e.target.value.split(',').map(s => s.trim()).filter(s => s)
-              }))}
+              value={settings.defaultSubjectFilter.join(", ")}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  defaultSubjectFilter: e.target.value
+                    .split(",")
+                    .map((s) => s.trim())
+                    .filter((s) => s),
+                }))
+              }
               placeholder="e.g., Anatomic Pathology, Clinical Pathology, Hematopathology"
             />
           </div>
@@ -228,7 +254,9 @@ export function SettingsForm() {
               <Label htmlFor="defaultDifficultyFilter">Default Difficulty Level</Label>
               <Select
                 value={settings.defaultDifficultyFilter}
-                onValueChange={(value) => setSettings(prev => ({ ...prev, defaultDifficultyFilter: value as unknown }))}
+                onValueChange={(value) =>
+                  setSettings((prev) => ({ ...prev, defaultDifficultyFilter: value as unknown }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -246,7 +274,9 @@ export function SettingsForm() {
               <Label htmlFor="defaultQuestionTypeFilter">Default Question Type</Label>
               <Select
                 value={settings.defaultQuestionTypeFilter}
-                onValueChange={(value) => setSettings(prev => ({ ...prev, defaultQuestionTypeFilter: value as unknown }))}
+                onValueChange={(value) =>
+                  setSettings((prev) => ({ ...prev, defaultQuestionTypeFilter: value as unknown }))
+                }
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -271,7 +301,9 @@ export function SettingsForm() {
             </div>
             <Switch
               checked={settings.autoLoadReviewQueue}
-              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, autoLoadReviewQueue: checked }))}
+              onCheckedChange={(checked) =>
+                setSettings((prev) => ({ ...prev, autoLoadReviewQueue: checked }))
+              }
             />
           </div>
 
@@ -288,7 +320,12 @@ export function SettingsForm() {
               min="10"
               max="100"
               value={settings.reviewQueuePageSize}
-              onChange={(e) => setSettings(prev => ({ ...prev, reviewQueuePageSize: parseInt(e.target.value) || 20 }))}
+              onChange={(e) =>
+                setSettings((prev) => ({
+                  ...prev,
+                  reviewQueuePageSize: parseInt(e.target.value) || 20,
+                }))
+              }
             />
           </div>
         </CardContent>
@@ -313,13 +350,13 @@ export function SettingsForm() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Statistics Widget</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Show overview statistics
-                  </p>
+                  <p className="text-sm text-muted-foreground">Show overview statistics</p>
                 </div>
                 <Switch
                   checked={settings.showStatsWidget}
-                  onCheckedChange={(checked) => setSettings(prev => ({ ...prev, showStatsWidget: checked }))}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({ ...prev, showStatsWidget: checked }))
+                  }
                 />
               </div>
 
@@ -328,13 +365,13 @@ export function SettingsForm() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Recent Activity</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Show recent platform activity
-                  </p>
+                  <p className="text-sm text-muted-foreground">Show recent platform activity</p>
                 </div>
                 <Switch
                   checked={settings.showRecentActivityWidget}
-                  onCheckedChange={(checked) => setSettings(prev => ({ ...prev, showRecentActivityWidget: checked }))}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({ ...prev, showRecentActivityWidget: checked }))
+                  }
                 />
               </div>
 
@@ -343,13 +380,13 @@ export function SettingsForm() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Quick Actions</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Show quick action buttons
-                  </p>
+                  <p className="text-sm text-muted-foreground">Show quick action buttons</p>
                 </div>
                 <Switch
                   checked={settings.showQuickActionsWidget}
-                  onCheckedChange={(checked) => setSettings(prev => ({ ...prev, showQuickActionsWidget: checked }))}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({ ...prev, showQuickActionsWidget: checked }))
+                  }
                 />
               </div>
 
@@ -358,13 +395,13 @@ export function SettingsForm() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Progress Widget</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Show progress tracking
-                  </p>
+                  <p className="text-sm text-muted-foreground">Show progress tracking</p>
                 </div>
                 <Switch
                   checked={settings.showProgressWidget}
-                  onCheckedChange={(checked) => setSettings(prev => ({ ...prev, showProgressWidget: checked }))}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({ ...prev, showProgressWidget: checked }))
+                  }
                 />
               </div>
 
@@ -373,13 +410,13 @@ export function SettingsForm() {
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label>Upcoming Reviews</Label>
-                  <p className="text-sm text-muted-foreground">
-                    Show questions pending review
-                  </p>
+                  <p className="text-sm text-muted-foreground">Show questions pending review</p>
                 </div>
                 <Switch
                   checked={settings.showUpcomingReviewsWidget}
-                  onCheckedChange={(checked) => setSettings(prev => ({ ...prev, showUpcomingReviewsWidget: checked }))}
+                  onCheckedChange={(checked) =>
+                    setSettings((prev) => ({ ...prev, showUpcomingReviewsWidget: checked }))
+                  }
                 />
               </div>
             </div>
@@ -391,7 +428,9 @@ export function SettingsForm() {
             <Label htmlFor="dashboardLayout">Dashboard Layout</Label>
             <Select
               value={settings.dashboardLayout}
-              onValueChange={(value) => setSettings(prev => ({ ...prev, dashboardLayout: value as unknown }))}
+              onValueChange={(value) =>
+                setSettings((prev) => ({ ...prev, dashboardLayout: value as unknown }))
+              }
             >
               <SelectTrigger>
                 <SelectValue />
@@ -412,21 +451,19 @@ export function SettingsForm() {
             <Bell className="h-5 w-5" />
             Notifications
           </CardTitle>
-          <CardDescription>
-            Control what notifications you receive.
-          </CardDescription>
+          <CardDescription>Control what notifications you receive.</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <Label>Email Notifications</Label>
-              <p className="text-sm text-muted-foreground">
-                Receive important updates via email
-              </p>
+              <p className="text-sm text-muted-foreground">Receive important updates via email</p>
             </div>
             <Switch
               checked={settings.emailNotifications}
-              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, emailNotifications: checked }))}
+              onCheckedChange={(checked) =>
+                setSettings((prev) => ({ ...prev, emailNotifications: checked }))
+              }
             />
           </div>
 
@@ -441,7 +478,9 @@ export function SettingsForm() {
             </div>
             <Switch
               checked={settings.questionSubmissionNotifications}
-              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, questionSubmissionNotifications: checked }))}
+              onCheckedChange={(checked) =>
+                setSettings((prev) => ({ ...prev, questionSubmissionNotifications: checked }))
+              }
               disabled={!settings.emailNotifications}
             />
           </div>
@@ -457,7 +496,9 @@ export function SettingsForm() {
             </div>
             <Switch
               checked={settings.questionReviewNotifications}
-              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, questionReviewNotifications: checked }))}
+              onCheckedChange={(checked) =>
+                setSettings((prev) => ({ ...prev, questionReviewNotifications: checked }))
+              }
               disabled={!settings.emailNotifications}
             />
           </div>
@@ -473,7 +514,9 @@ export function SettingsForm() {
             </div>
             <Switch
               checked={settings.systemUpdateNotifications}
-              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, systemUpdateNotifications: checked }))}
+              onCheckedChange={(checked) =>
+                setSettings((prev) => ({ ...prev, systemUpdateNotifications: checked }))
+              }
               disabled={!settings.emailNotifications}
             />
           </div>
@@ -489,7 +532,9 @@ export function SettingsForm() {
             </div>
             <Switch
               checked={settings.weeklyProgressReports}
-              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, weeklyProgressReports: checked }))}
+              onCheckedChange={(checked) =>
+                setSettings((prev) => ({ ...prev, weeklyProgressReports: checked }))
+              }
               disabled={!settings.emailNotifications}
             />
           </div>
@@ -505,7 +550,9 @@ export function SettingsForm() {
             </div>
             <Switch
               checked={settings.browserNotifications}
-              onCheckedChange={(checked) => setSettings(prev => ({ ...prev, browserNotifications: checked }))}
+              onCheckedChange={(checked) =>
+                setSettings((prev) => ({ ...prev, browserNotifications: checked }))
+              }
             />
           </div>
         </CardContent>
@@ -518,9 +565,7 @@ export function SettingsForm() {
             <RotateCcw className="h-5 w-5" />
             Reset Settings
           </CardTitle>
-          <CardDescription>
-            Reset all your settings to their default values.
-          </CardDescription>
+          <CardDescription>Reset all your settings to their default values.</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="space-y-2">
@@ -552,5 +597,5 @@ export function SettingsForm() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

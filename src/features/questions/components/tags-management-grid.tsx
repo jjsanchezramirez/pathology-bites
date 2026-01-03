@@ -1,19 +1,19 @@
 // src/features/questions/components/tags-management-grid.tsx
-'use client'
+"use client";
 
-import { useState, useCallback, useEffect, memo } from 'react'
-import { createClient } from '@/shared/services/client'
-import { toast } from '@/shared/utils/toast'
-import { apiClient } from '@/shared/utils/api-client'
-import { Input } from '@/shared/components/ui/input'
-import { Button } from '@/shared/components/ui/button'
-import { Badge } from '@/shared/components/ui/badge'
+import { useState, useCallback, useEffect, memo } from "react";
+import { createClient } from "@/shared/services/client";
+import { toast } from "@/shared/utils/toast";
+import { apiClient } from "@/shared/utils/api-client";
+import { Input } from "@/shared/components/ui/input";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu'
+} from "@/shared/components/ui/dropdown-menu";
 import {
   Search,
   Loader2,
@@ -27,23 +27,22 @@ import {
   X,
   Merge,
   FilterX,
-  Eye
-} from 'lucide-react'
-import { Checkbox } from '@/shared/components/ui/checkbox'
+  Eye,
+} from "lucide-react";
+import { Checkbox } from "@/shared/components/ui/checkbox";
 
-import { CreateTagDialog } from './create-tag-dialog'
-import { EditTagDialog } from './edit-tag-dialog'
-import { BlurredDialog } from '@/shared/components/ui/blurred-dialog'
+import { CreateTagDialog } from "./create-tag-dialog";
+import { EditTagDialog } from "./edit-tag-dialog";
+import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
 
 interface Tag {
-  id: string
-  name: string
-  created_at: string
-  question_count?: number
+  id: string;
+  name: string;
+  created_at: string;
+  question_count?: number;
 }
 
-
-const PAGE_SIZE = 100 // Increased for grid layout
+const PAGE_SIZE = 100; // Increased for grid layout
 
 const TagCard = memo(function TagCard({
   tag,
@@ -51,19 +50,21 @@ const TagCard = memo(function TagCard({
   onSelect,
   onEdit,
   onDelete,
-  onViewQuestions
+  onViewQuestions,
 }: {
-  tag: Tag
-  isSelected: boolean
-  onSelect: (id: string) => void
-  onEdit: (tag: Tag) => void
-  onDelete: (tag: Tag) => void
-  onViewQuestions: (tag: Tag) => void
+  tag: Tag;
+  isSelected: boolean;
+  onSelect: (id: string) => void;
+  onEdit: (tag: Tag) => void;
+  onDelete: (tag: Tag) => void;
+  onViewQuestions: (tag: Tag) => void;
 }) {
   return (
-    <div className={`group relative bg-card border rounded-lg p-3 hover:shadow-sm transition-all duration-200 ${
-      isSelected ? 'border-primary bg-primary/5' : 'hover:border-primary/20'
-    }`}>
+    <div
+      className={`group relative bg-card border rounded-lg p-3 hover:shadow-sm transition-all duration-200 ${
+        isSelected ? "border-primary bg-primary/5" : "hover:border-primary/20"
+      }`}
+    >
       {/* Selection checkbox and tag name */}
       <div className="flex items-center gap-2 mb-2">
         <Checkbox
@@ -78,36 +79,36 @@ const TagCard = memo(function TagCard({
 
       {/* Stats and actions */}
       <div className="flex items-center justify-between">
-        <Badge 
-          variant={tag.question_count === 0 ? "outline" : "secondary"} 
-          className={`text-xs ${tag.question_count === 0 ? 'text-muted-foreground' : ''}`}
+        <Badge
+          variant={tag.question_count === 0 ? "outline" : "secondary"}
+          className={`text-xs ${tag.question_count === 0 ? "text-muted-foreground" : ""}`}
         >
           {tag.question_count || 0} questions
         </Badge>
-        
+
         {/* Simple action buttons */}
         <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-6 w-6"
             onClick={() => onViewQuestions(tag)}
             title="View questions"
           >
             <Eye className="h-3 w-3" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-6 w-6"
             onClick={() => onEdit(tag)}
             title="Edit tag"
           >
             <Edit className="h-3 w-3" />
           </Button>
-          <Button 
-            variant="ghost" 
-            size="icon" 
+          <Button
+            variant="ghost"
+            size="icon"
             className="h-6 w-6 text-destructive hover:text-destructive"
             onClick={() => onDelete(tag)}
             title="Delete tag"
@@ -117,261 +118,268 @@ const TagCard = memo(function TagCard({
         </div>
       </div>
     </div>
-  )
-})
+  );
+});
 
 export function TagsManagementGrid() {
-  const [tags, setTags] = useState<Tag[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [page, setPage] = useState(0)
-  const [totalPages, setTotalPages] = useState(0)
-  const [_totalTags, setTotalTags] = useState(0)
-  const [selectedTag, setSelectedTag] = useState<Tag | null>(null)
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
-  const [showCreateDialog, setShowCreateDialog] = useState(false)
-  const [showEditDialog, setShowEditDialog] = useState(false)
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [sortBy, setSortBy] = useState<'name' | 'usage' | 'date' | 'oldest' | 'unused'>('name')
-  
-  // New state for enhanced features
-  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set())
-  const [showOnlyUnused, _setShowOnlyUnused] = useState(false)
-  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
-  const [showMergeDialog, setShowMergeDialog] = useState(false)
-  const [isBulkDeleting, setIsBulkDeleting] = useState(false)
-  const [isMerging, setIsMerging] = useState(false)
-  const [mergeTargetTag, setMergeTargetTag] = useState<Tag | null>(null)
-  const [showViewQuestionsDialog, setShowViewQuestionsDialog] = useState(false)
-  const [viewQuestionsTag, setViewQuestionsTag] = useState<Tag | null>(null)
-  const [tagQuestions, setTagQuestions] = useState<unknown[]>([])
-  const [loadingQuestions, setLoadingQuestions] = useState(false)
+  const [tags, setTags] = useState<Tag[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [page, setPage] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
+  const [_totalTags, setTotalTags] = useState(0);
+  const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [sortBy, setSortBy] = useState<"name" | "usage" | "date" | "oldest" | "unused">("name");
 
-  const _supabase = createClient()
+  // New state for enhanced features
+  const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
+  const [showOnlyUnused, _setShowOnlyUnused] = useState(false);
+  const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
+  const [showMergeDialog, setShowMergeDialog] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+  const [isMerging, setIsMerging] = useState(false);
+  const [mergeTargetTag, setMergeTargetTag] = useState<Tag | null>(null);
+  const [showViewQuestionsDialog, setShowViewQuestionsDialog] = useState(false);
+  const [viewQuestionsTag, setViewQuestionsTag] = useState<Tag | null>(null);
+  const [tagQuestions, setTagQuestions] = useState<unknown[]>([]);
+  const [loadingQuestions, setLoadingQuestions] = useState(false);
+
+  const _supabase = createClient();
 
   const loadTags = useCallback(async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
         pageSize: PAGE_SIZE.toString(),
-        ...(searchTerm && { search: searchTerm })
-      })
+        ...(searchTerm && { search: searchTerm }),
+      });
 
-      const response = await fetch(`/api/admin/tags?${params}`)
+      const response = await fetch(`/api/admin/tags?${params}`);
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to load tags')
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to load tags");
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
-      let sortedTags = data.tags || []
-      
+      let sortedTags = data.tags || [];
+
       // Client-side sorting and filtering
       switch (sortBy) {
-        case 'usage':
-          sortedTags.sort((a: Tag, b: Tag) => (b.question_count || 0) - (a.question_count || 0))
-          break
-        case 'date':
-          sortedTags.sort((a: Tag, b: Tag) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
-          break
-        case 'oldest':
-          sortedTags.sort((a: Tag, b: Tag) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime())
-          break
-        case 'unused':
-          sortedTags = sortedTags.filter((tag: Tag) => (tag.question_count || 0) === 0)
-          sortedTags.sort((a: Tag, b: Tag) => a.name.localeCompare(b.name))
-          break
-        case 'name':
+        case "usage":
+          sortedTags.sort((a: Tag, b: Tag) => (b.question_count || 0) - (a.question_count || 0));
+          break;
+        case "date":
+          sortedTags.sort(
+            (a: Tag, b: Tag) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+          );
+          break;
+        case "oldest":
+          sortedTags.sort(
+            (a: Tag, b: Tag) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
+          );
+          break;
+        case "unused":
+          sortedTags = sortedTags.filter((tag: Tag) => (tag.question_count || 0) === 0);
+          sortedTags.sort((a: Tag, b: Tag) => a.name.localeCompare(b.name));
+          break;
+        case "name":
         default:
-          sortedTags.sort((a: Tag, b: Tag) => a.name.localeCompare(b.name))
-          break
-      }
-      
-      // Legacy unused filter (keeping for backwards compatibility)
-      if (showOnlyUnused && sortBy !== 'unused') {
-        sortedTags = sortedTags.filter((tag: Tag) => (tag.question_count || 0) === 0)
+          sortedTags.sort((a: Tag, b: Tag) => a.name.localeCompare(b.name));
+          break;
       }
 
-      setTags(sortedTags)
-      setTotalTags(data.totalTags || 0)
-      setTotalPages(data.totalPages || 0)
+      // Legacy unused filter (keeping for backwards compatibility)
+      if (showOnlyUnused && sortBy !== "unused") {
+        sortedTags = sortedTags.filter((tag: Tag) => (tag.question_count || 0) === 0);
+      }
+
+      setTags(sortedTags);
+      setTotalTags(data.totalTags || 0);
+      setTotalPages(data.totalPages || 0);
     } catch (error) {
-      console.error('Error loading tags:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to load tags')
+      console.error("Error loading tags:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to load tags");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [searchTerm, page, sortBy, showOnlyUnused])
+  }, [searchTerm, page, sortBy, showOnlyUnused]);
 
   const handleDelete = async () => {
-    if (!selectedTag) return
+    if (!selectedTag) return;
 
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
-      const response = await apiClient.delete('/api/admin/tags', {
-        tagId: selectedTag.id
-      })
+      const response = await apiClient.delete("/api/admin/tags", {
+        tagId: selectedTag.id,
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to delete tag')
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete tag");
       }
 
-      toast.success('Tag deleted successfully')
+      toast.success("Tag deleted successfully");
 
-      setShowDeleteDialog(false)
-      setSelectedTag(null)
-      loadTags()
+      setShowDeleteDialog(false);
+      setSelectedTag(null);
+      loadTags();
     } catch (error) {
-      console.error('Error deleting tag:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to delete tag')
+      console.error("Error deleting tag:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete tag");
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }
+  };
 
   const handleCreateSuccess = () => {
-    setShowCreateDialog(false)
-    loadTags()
-  }
+    setShowCreateDialog(false);
+    loadTags();
+  };
 
   const handleEditSuccess = () => {
-    setShowEditDialog(false)
-    setSelectedTag(null)
-    loadTags()
-  }
+    setShowEditDialog(false);
+    setSelectedTag(null);
+    loadTags();
+  };
 
   const handleEditTag = useCallback((tag: Tag) => {
-    setSelectedTag(tag)
-    setShowEditDialog(true)
-  }, [])
+    setSelectedTag(tag);
+    setShowEditDialog(true);
+  }, []);
 
   const handleDeleteTag = useCallback((tag: Tag) => {
-    setSelectedTag(tag)
-    setShowDeleteDialog(true)
-  }, [])
+    setSelectedTag(tag);
+    setShowDeleteDialog(true);
+  }, []);
 
   const handleViewQuestions = useCallback(async (tag: Tag) => {
-    setViewQuestionsTag(tag)
-    setShowViewQuestionsDialog(true)
-    setLoadingQuestions(true)
-    
+    setViewQuestionsTag(tag);
+    setShowViewQuestionsDialog(true);
+    setLoadingQuestions(true);
+
     try {
-      const response = await fetch(`/api/admin/tags/${tag.id}/questions`)
+      const response = await fetch(`/api/admin/tags/${tag.id}/questions`);
       if (!response.ok) {
-        throw new Error('Failed to load questions')
+        throw new Error("Failed to load questions");
       }
-      const data = await response.json()
-      setTagQuestions(data.questions || [])
+      const data = await response.json();
+      setTagQuestions(data.questions || []);
     } catch (error) {
-      console.error('Error loading questions:', error)
-      toast.error('Failed to load questions for this tag')
-      setTagQuestions([])
+      console.error("Error loading questions:", error);
+      toast.error("Failed to load questions for this tag");
+      setTagQuestions([]);
     } finally {
-      setLoadingQuestions(false)
+      setLoadingQuestions(false);
     }
-  }, [])
+  }, []);
 
   // New handlers for enhanced features
-  const handleSelectTag = useCallback((tagId: string) => {
-    const newSelected = new Set(selectedTagIds)
-    if (newSelected.has(tagId)) {
-      newSelected.delete(tagId)
-    } else {
-      newSelected.add(tagId)
-    }
-    setSelectedTagIds(newSelected)
-  }, [selectedTagIds])
+  const handleSelectTag = useCallback(
+    (tagId: string) => {
+      const newSelected = new Set(selectedTagIds);
+      if (newSelected.has(tagId)) {
+        newSelected.delete(tagId);
+      } else {
+        newSelected.add(tagId);
+      }
+      setSelectedTagIds(newSelected);
+    },
+    [selectedTagIds]
+  );
 
   const handleSelectAll = useCallback(() => {
     if (selectedTagIds.size === tags.length) {
-      setSelectedTagIds(new Set())
+      setSelectedTagIds(new Set());
     } else {
-      setSelectedTagIds(new Set(tags.map(tag => tag.id)))
+      setSelectedTagIds(new Set(tags.map((tag) => tag.id)));
     }
-  }, [selectedTagIds.size, tags])
+  }, [selectedTagIds.size, tags]);
 
   const handleBulkDelete = async () => {
-    if (selectedTagIds.size === 0) return
+    if (selectedTagIds.size === 0) return;
 
-    setIsBulkDeleting(true)
+    setIsBulkDeleting(true);
     try {
-      const promises = Array.from(selectedTagIds).map(tagId =>
-        fetch('/api/admin/tags', {
-          method: 'DELETE',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ tagId })
+      const promises = Array.from(selectedTagIds).map((tagId) =>
+        fetch("/api/admin/tags", {
+          method: "DELETE",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ tagId }),
         })
-      )
+      );
 
-      const results = await Promise.all(promises)
-      const failedDeletes = results.filter(response => !response.ok)
+      const results = await Promise.all(promises);
+      const failedDeletes = results.filter((response) => !response.ok);
 
       if (failedDeletes.length > 0) {
-        toast.error(`Failed to delete ${failedDeletes.length} tags`)
+        toast.error(`Failed to delete ${failedDeletes.length} tags`);
       } else {
-        toast.success(`Successfully deleted ${selectedTagIds.size} tags`)
+        toast.success(`Successfully deleted ${selectedTagIds.size} tags`);
       }
 
-      setSelectedTagIds(new Set())
-      setShowBulkDeleteDialog(false)
-      loadTags()
+      setSelectedTagIds(new Set());
+      setShowBulkDeleteDialog(false);
+      loadTags();
     } catch (error) {
-      console.error('Error bulk deleting tags:', error)
-      toast.error('Failed to delete tags')
+      console.error("Error bulk deleting tags:", error);
+      toast.error("Failed to delete tags");
     } finally {
-      setIsBulkDeleting(false)
+      setIsBulkDeleting(false);
     }
-  }
+  };
 
   const handleMergeTags = async () => {
-    if (selectedTagIds.size < 2 || !mergeTargetTag) return
+    if (selectedTagIds.size < 2 || !mergeTargetTag) return;
 
-    setIsMerging(true)
+    setIsMerging(true);
     try {
-      const sourceTagIds = Array.from(selectedTagIds).filter(id => id !== mergeTargetTag.id)
-      
-      const response = await fetch('/api/admin/tags/merge', {
-        method: 'POST',
+      const sourceTagIds = Array.from(selectedTagIds).filter((id) => id !== mergeTargetTag.id);
+
+      const response = await fetch("/api/admin/tags/merge", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
+        credentials: "include",
         body: JSON.stringify({
           sourceTagIds,
-          targetTagId: mergeTargetTag.id
-        })
-      })
+          targetTagId: mergeTargetTag.id,
+        }),
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to merge tags')
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to merge tags");
       }
 
-      const result = await response.json()
-      toast.success(`Successfully merged ${result.mergedCount} tags into "${mergeTargetTag.name}"`)
+      const result = await response.json();
+      toast.success(`Successfully merged ${result.mergedCount} tags into "${mergeTargetTag.name}"`);
 
-      setShowMergeDialog(false)
-      setMergeTargetTag(null)
-      setSelectedTagIds(new Set())
-      loadTags()
+      setShowMergeDialog(false);
+      setMergeTargetTag(null);
+      setSelectedTagIds(new Set());
+      loadTags();
     } catch (error) {
-      console.error('Error merging tags:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to merge tags')
+      console.error("Error merging tags:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to merge tags");
     } finally {
-      setIsMerging(false)
+      setIsMerging(false);
     }
-  }
+  };
 
-  const unusedTagsCount = tags.filter(tag => (tag.question_count || 0) === 0).length
+  const unusedTagsCount = tags.filter((tag) => (tag.question_count || 0) === 0).length;
 
   useEffect(() => {
-    loadTags()
-  }, [loadTags])
+    loadTags();
+  }, [loadTags]);
 
   return (
     <div className="space-y-4">
@@ -385,13 +393,13 @@ export function TagsManagementGrid() {
                 placeholder="Search tags..."
                 value={searchTerm}
                 onChange={(e) => {
-                  setSearchTerm(e.target.value)
-                  setPage(0)
+                  setSearchTerm(e.target.value);
+                  setPage(0);
                 }}
                 className="pl-8"
               />
             </div>
-            
+
             {/* Filter and Sort Controls */}
             <div className="flex items-center gap-2">
               {/* Sort dropdown */}
@@ -403,37 +411,26 @@ export function TagsManagementGrid() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
-                  <DropdownMenuItem onClick={() => setSortBy('name')}>
+                  <DropdownMenuItem onClick={() => setSortBy("name")}>
                     Alphabetical
                   </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy('usage')}>
-                    Most Used
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy('date')}>
-                    Newest
-                  </DropdownMenuItem>
-                  <DropdownMenuItem onClick={() => setSortBy('oldest')}>
-                    Oldest
-                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy("usage")}>Most Used</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy("date")}>Newest</DropdownMenuItem>
+                  <DropdownMenuItem onClick={() => setSortBy("oldest")}>Oldest</DropdownMenuItem>
                   <div className="border-t my-1"></div>
-                  <DropdownMenuItem onClick={() => setSortBy('unused')}>
+                  <DropdownMenuItem onClick={() => setSortBy("unused")}>
                     Unused ({unusedTagsCount})
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>
 
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => loadTags()}
-                disabled={loading}
-              >
-                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+              <Button variant="outline" size="sm" onClick={() => loadTags()} disabled={loading}>
+                <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
                 Refresh
               </Button>
             </div>
           </div>
-          
+
           <Button onClick={() => setShowCreateDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />
             Create Tag
@@ -445,13 +442,9 @@ export function TagsManagementGrid() {
           <div className="flex items-center justify-between p-3 bg-muted/50 rounded-lg">
             <div className="flex items-center gap-4">
               <span className="text-sm font-medium">
-                {selectedTagIds.size} tag{selectedTagIds.size === 1 ? '' : 's'} selected
+                {selectedTagIds.size} tag{selectedTagIds.size === 1 ? "" : "s"} selected
               </span>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setSelectedTagIds(new Set())}
-              >
+              <Button variant="outline" size="sm" onClick={() => setSelectedTagIds(new Set())}>
                 <X className="h-4 w-4 mr-2" />
                 Clear
               </Button>
@@ -490,27 +483,27 @@ export function TagsManagementGrid() {
               className="h-4 w-4"
             />
             <span>
-              {selectedTagIds.size > 0 
-                ? `${selectedTagIds.size} of ${tags.length} selected` 
-                : `${tags.length} tags`
-              }
+              {selectedTagIds.size > 0
+                ? `${selectedTagIds.size} of ${tags.length} selected`
+                : `${tags.length} tags`}
             </span>
           </div>
-          {searchTerm && (
-            <span>Showing results for "{searchTerm}"</span>
-          )}
-          {showOnlyUnused && (
-            <span>Showing unused tags only</span>
-          )}
+          {searchTerm && <span>Showing results for "{searchTerm}"</span>}
+          {showOnlyUnused && <span>Showing unused tags only</span>}
         </div>
         <div className="text-xs">
-          Sorted by: {
-            sortBy === 'name' ? 'Alphabetical' : 
-            sortBy === 'usage' ? 'Most Used' : 
-            sortBy === 'date' ? 'Newest' : 
-            sortBy === 'oldest' ? 'Oldest' :
-            sortBy === 'unused' ? 'Unused Only' : 'Alphabetical'
-          }
+          Sorted by:{" "}
+          {sortBy === "name"
+            ? "Alphabetical"
+            : sortBy === "usage"
+              ? "Most Used"
+              : sortBy === "date"
+                ? "Newest"
+                : sortBy === "oldest"
+                  ? "Oldest"
+                  : sortBy === "unused"
+                    ? "Unused Only"
+                    : "Alphabetical"}
         </div>
       </div>
 
@@ -522,16 +515,14 @@ export function TagsManagementGrid() {
       ) : tags.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 text-center">
           <div className="text-muted-foreground">
-            {searchTerm ? 'No tags found matching your search' : 
-             sortBy === 'unused' ? 'No unused tags found' :
-             'No tags found'}
+            {searchTerm
+              ? "No tags found matching your search"
+              : sortBy === "unused"
+                ? "No unused tags found"
+                : "No tags found"}
           </div>
-          {!searchTerm && sortBy !== 'unused' && (
-            <Button 
-              onClick={() => setShowCreateDialog(true)} 
-              className="mt-4"
-              variant="outline"
-            >
+          {!searchTerm && sortBy !== "unused" && (
+            <Button onClick={() => setShowCreateDialog(true)} className="mt-4" variant="outline">
               <Plus className="h-4 w-4 mr-2" />
               Create your first tag
             </Button>
@@ -597,18 +588,14 @@ export function TagsManagementGrid() {
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleDelete}
-              disabled={isDeleting}
-              variant="destructive"
-            >
+            <Button onClick={handleDelete} disabled={isDeleting} variant="destructive">
               {isDeleting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Deleting...
                 </>
               ) : (
-                'Delete'
+                "Delete"
               )}
             </Button>
           </>
@@ -641,7 +628,7 @@ export function TagsManagementGrid() {
         open={showBulkDeleteDialog}
         onOpenChange={setShowBulkDeleteDialog}
         title="Delete Selected Tags"
-        description={`Are you sure you want to delete ${selectedTagIds.size} selected tag${selectedTagIds.size === 1 ? '' : 's'}? This will remove them from all associated questions and cannot be undone.`}
+        description={`Are you sure you want to delete ${selectedTagIds.size} selected tag${selectedTagIds.size === 1 ? "" : "s"}? This will remove them from all associated questions and cannot be undone.`}
         maxWidth="md"
         footer={
           <>
@@ -653,18 +640,14 @@ export function TagsManagementGrid() {
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleBulkDelete}
-              disabled={isBulkDeleting}
-              variant="destructive"
-            >
+            <Button onClick={handleBulkDelete} disabled={isBulkDeleting} variant="destructive">
               {isBulkDeleting ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Deleting...
                 </>
               ) : (
-                `Delete ${selectedTagIds.size} Tag${selectedTagIds.size === 1 ? '' : 's'}`
+                `Delete ${selectedTagIds.size} Tag${selectedTagIds.size === 1 ? "" : "s"}`
               )}
             </Button>
           </>
@@ -672,7 +655,8 @@ export function TagsManagementGrid() {
       >
         <div className="py-2">
           <p className="text-sm text-muted-foreground">
-            This action cannot be undone. All selected tags will be permanently removed from the system and from all associated questions.
+            This action cannot be undone. All selected tags will be permanently removed from the
+            system and from all associated questions.
           </p>
         </div>
       </BlurredDialog>
@@ -681,9 +665,9 @@ export function TagsManagementGrid() {
       <BlurredDialog
         open={showMergeDialog}
         onOpenChange={(open) => {
-          setShowMergeDialog(open)
+          setShowMergeDialog(open);
           if (!open) {
-            setMergeTargetTag(null)
+            setMergeTargetTag(null);
           }
         }}
         title="Merge Tags"
@@ -695,24 +679,21 @@ export function TagsManagementGrid() {
               type="button"
               variant="outline"
               onClick={() => {
-                setShowMergeDialog(false)
-                setMergeTargetTag(null)
+                setShowMergeDialog(false);
+                setMergeTargetTag(null);
               }}
               disabled={isMerging}
             >
               Cancel
             </Button>
-            <Button
-              onClick={handleMergeTags}
-              disabled={!mergeTargetTag || isMerging}
-            >
+            <Button onClick={handleMergeTags} disabled={!mergeTargetTag || isMerging}>
               {isMerging ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   Merging...
                 </>
               ) : (
-                'Merge Tags'
+                "Merge Tags"
               )}
             </Button>
           </>
@@ -729,16 +710,12 @@ export function TagsManagementGrid() {
               </DropdownMenuTrigger>
               <DropdownMenuContent className="w-full">
                 {tags
-                  .filter(tag => selectedTagIds.has(tag.id))
-                  .map(tag => (
-                    <DropdownMenuItem
-                      key={tag.id}
-                      onClick={() => setMergeTargetTag(tag)}
-                    >
+                  .filter((tag) => selectedTagIds.has(tag.id))
+                  .map((tag) => (
+                    <DropdownMenuItem key={tag.id} onClick={() => setMergeTargetTag(tag)}>
                       {tag.name} ({tag.question_count || 0} questions)
                     </DropdownMenuItem>
-                  ))
-                }
+                  ))}
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
@@ -749,21 +726,17 @@ export function TagsManagementGrid() {
       <BlurredDialog
         open={showViewQuestionsDialog}
         onOpenChange={(open) => {
-          setShowViewQuestionsDialog(open)
+          setShowViewQuestionsDialog(open);
           if (!open) {
-            setViewQuestionsTag(null)
-            setTagQuestions([])
+            setViewQuestionsTag(null);
+            setTagQuestions([]);
           }
         }}
-        title={`Questions with tag: ${viewQuestionsTag?.name || ''}`}
-        description={`Showing ${tagQuestions.length} question${tagQuestions.length === 1 ? '' : 's'} that use this tag.`}
+        title={`Questions with tag: ${viewQuestionsTag?.name || ""}`}
+        description={`Showing ${tagQuestions.length} question${tagQuestions.length === 1 ? "" : "s"} that use this tag.`}
         maxWidth="2xl"
         footer={
-          <Button
-            type="button"
-            variant="outline"
-            onClick={() => setShowViewQuestionsDialog(false)}
-          >
+          <Button type="button" variant="outline" onClick={() => setShowViewQuestionsDialog(false)}>
             Close
           </Button>
         }
@@ -788,7 +761,7 @@ export function TagsManagementGrid() {
                         {question.title || `Question ${index + 1}`}
                       </div>
                       <div className="text-sm text-muted-foreground line-clamp-2">
-                        {question.stem || 'No question content available'}
+                        {question.stem || "No question content available"}
                       </div>
                       {question.category && (
                         <div className="mt-2">
@@ -806,5 +779,5 @@ export function TagsManagementGrid() {
         </div>
       </BlurredDialog>
     </div>
-  )
+  );
 }

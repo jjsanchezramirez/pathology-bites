@@ -1,49 +1,55 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
-import { FileText, Brain, Upload } from 'lucide-react'
+import { useState } from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import { FileText, Brain, Upload } from "lucide-react";
 
 // Import existing components
-import { CreateQuestionClient } from './create-question-client'
-import { EnhancedImportDialog } from '@/features/questions/components/enhanced-import-dialog'
-import { QuestionForm } from '@/features/questions/components/question-form'
-import { Button } from '@/shared/components/ui/button'
-import { useRouter } from 'next/navigation'
-import { toast } from '@/shared/utils/toast'
-import { apiClient } from '@/shared/utils/api-client'
+import { CreateQuestionClient } from "./create-question-client";
+import { EnhancedImportDialog } from "@/features/questions/components/enhanced-import-dialog";
+import { QuestionForm } from "@/features/questions/components/question-form";
+import { Button } from "@/shared/components/ui/button";
+import { useRouter } from "next/navigation";
+import { toast } from "@/shared/utils/toast";
+import { apiClient } from "@/shared/utils/api-client";
 
 // Manual creation form data type
 type QuestionFormData = {
   body: string;
   explanation: string;
-  difficulty: 'easy' | 'medium' | 'hard';
-  yield: 'low' | 'medium' | 'high';
+  difficulty: "easy" | "medium" | "hard";
+  yield: "low" | "medium" | "high";
   categories: string[];
   reference_text?: string;
 };
 
 export function UnifiedCreateQuestionClient() {
-  const [activeTab, setActiveTab] = useState('manual')
-  const [showImportDialog, setShowImportDialog] = useState(false)
-  const router = useRouter()
+  const [activeTab, setActiveTab] = useState("manual");
+  const [showImportDialog, setShowImportDialog] = useState(false);
+  const router = useRouter();
 
   // Handle manual form submission
   const handleManualSubmit = async (data: QuestionFormData) => {
     try {
-      const response = await apiClient.post('/api/questions', data);
+      const response = await apiClient.post("/api/questions", data);
 
       if (!response.ok) {
-        throw new Error('Failed to create question');
+        throw new Error("Failed to create question");
       }
 
-      toast.success('Question created successfully!');
-      router.push('/admin/questions');
+      toast.success("Question created successfully!");
+      router.push("/admin/questions");
       router.refresh();
     } catch (error) {
-      console.error('Error creating question:', error);
-      toast.error('Failed to create question');
+      console.error("Error creating question:", error);
+      toast.error("Failed to create question");
     }
   };
 
@@ -73,15 +79,13 @@ export function UnifiedCreateQuestionClient() {
                 Manual Question Creation
               </CardTitle>
               <CardDescription>
-                Create questions manually using a structured form. Perfect for when you have specific content in mind.
+                Create questions manually using a structured form. Perfect for when you have
+                specific content in mind.
               </CardDescription>
             </CardHeader>
             <CardContent>
               <div className="max-w-2xl">
-                <QuestionForm
-                  onSubmit={handleManualSubmit}
-                  isEdit={false}
-                />
+                <QuestionForm onSubmit={handleManualSubmit} isEdit={false} />
               </div>
             </CardContent>
           </Card>
@@ -95,7 +99,8 @@ export function UnifiedCreateQuestionClient() {
                 AI-Assisted Question Generation
               </CardTitle>
               <CardDescription>
-                Generate high-quality questions using AI with pathology educational content as context.
+                Generate high-quality questions using AI with pathology educational content as
+                context.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -125,7 +130,8 @@ export function UnifiedCreateQuestionClient() {
                 JSON Import
               </CardTitle>
               <CardDescription>
-                Import multiple questions at once from a JSON file. Ideal for bulk operations and migrating existing content.
+                Import multiple questions at once from a JSON file. Ideal for bulk operations and
+                migrating existing content.
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -139,12 +145,8 @@ export function UnifiedCreateQuestionClient() {
                     <li>Include images, tags, and categories</li>
                   </ul>
                 </div>
-                
-                <Button 
-                  onClick={() => setShowImportDialog(true)}
-                  className="w-full"
-                  size="lg"
-                >
+
+                <Button onClick={() => setShowImportDialog(true)} className="w-full" size="lg">
                   <Upload className="h-4 w-4 mr-2" />
                   Start JSON Import
                 </Button>
@@ -160,11 +162,11 @@ export function UnifiedCreateQuestionClient() {
         onOpenChange={setShowImportDialog}
         onSave={() => {
           setShowImportDialog(false);
-          toast.success('Questions imported successfully!');
-          router.push('/admin/questions');
+          toast.success("Questions imported successfully!");
+          router.push("/admin/questions");
           router.refresh();
         }}
       />
     </div>
-  )
+  );
 }

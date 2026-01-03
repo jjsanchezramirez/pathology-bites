@@ -13,13 +13,13 @@ A revolutionary quiz system that achieves **96.7% API call reduction** while mai
 
 ## 📊 Performance Comparison
 
-| Metric | Legacy System | Hybrid System | Improvement |
-|--------|---------------|---------------|-------------|
-| API Calls (10 questions) | ~25 calls | 2 calls | **96.7% reduction** |
-| Response Time | 200-500ms | 0ms | **Instant** |
-| Offline Support | ❌ | ✅ | **Full offline** |
-| Server Load | High | Minimal | **95%+ reduction** |
-| Bandwidth Usage | High | Minimal | **90%+ reduction** |
+| Metric                   | Legacy System | Hybrid System | Improvement         |
+| ------------------------ | ------------- | ------------- | ------------------- |
+| API Calls (10 questions) | ~25 calls     | 2 calls       | **96.7% reduction** |
+| Response Time            | 200-500ms     | 0ms           | **Instant**         |
+| Offline Support          | ❌            | ✅            | **Full offline**    |
+| Server Load              | High          | Minimal       | **95%+ reduction**  |
+| Bandwidth Usage          | High          | Minimal       | **90%+ reduction**  |
 
 ## 🏗️ Architecture
 
@@ -43,14 +43,16 @@ A revolutionary quiz system that achieves **96.7% API call reduction** while mai
 ### API Call Strategy
 
 **API Call #1: Initial Data Fetch**
+
 ```typescript
-GET /api/content/quiz/sessions/{sessionId}
+GET / api / content / quiz / sessions / { sessionId };
 // Fetches: questions, config, existing answers
 ```
 
 **API Call #2: Batch Completion Sync**
+
 ```typescript
-PATCH /api/content/quiz/sessions/{sessionId}/sync
+PATCH / api / content / quiz / sessions / { sessionId } / sync;
 // Syncs: all answers, progress, timing, completion data
 ```
 
@@ -112,11 +114,11 @@ const offlineConfig = HybridPresets.OFFLINE_MODE;
 ### Custom Configuration
 
 ```typescript
-const customConfig = HybridUtils.createConfig('tutor', {
+const customConfig = HybridUtils.createConfig("tutor", {
   enableRealtime: true,
   enableOfflineSupport: true,
   autoSync: false,
-  syncOnComplete: true
+  syncOnComplete: true,
 });
 ```
 
@@ -129,9 +131,9 @@ const performanceMetrics = HybridUtils.getPerformanceSummary(state);
 
 console.log({
   apiCallReduction: performanceMetrics.apiCallReduction, // 96.7%
-  totalApiCalls: performanceMetrics.totalApiCalls,       // 2
+  totalApiCalls: performanceMetrics.totalApiCalls, // 2
   averageResponseTime: performanceMetrics.averageResponseTime, // ~100ms
-  estimatedLegacyCalls: performanceMetrics.estimatedLegacyCalls // ~25
+  estimatedLegacyCalls: performanceMetrics.estimatedLegacyCalls, // ~25
 });
 ```
 
@@ -142,7 +144,7 @@ console.log({
   isOnline: state.realtimeStats.connected,
   responseLatency: state.realtimeStats.latency, // 0ms for client-side
   syncStatus: state.syncStatus,
-  needsSync: state.syncStatus.pendingChanges
+  needsSync: state.syncStatus.pendingChanges,
 });
 ```
 
@@ -171,6 +173,7 @@ npm test -- --testPathPattern="hybrid-integration.test.tsx"
 ## 🔄 Migration from Legacy System
 
 ### Step 1: Install Hybrid System
+
 ```typescript
 // Replace legacy quiz hook
 - import { useQuiz } from '@/features/quiz/legacy';
@@ -178,29 +181,30 @@ npm test -- --testPathPattern="hybrid-integration.test.tsx"
 ```
 
 ### Step 2: Update Component
+
 ```typescript
 // Update hook usage
 - const { state, actions } = useQuiz({ sessionId });
-+ const [state, actions] = useHybridQuiz({ 
-+   sessionId, 
-+   ...HybridPresets.TUTOR_MODE 
++ const [state, actions] = useHybridQuiz({
++   sessionId,
++   ...HybridPresets.TUTOR_MODE
 + });
 ```
 
 ### Step 3: Update State Access
+
 ```typescript
 // State structure is similar but optimized
-- state.currentQuestion
-+ actions.getCurrentQuestion()
-
-- state.progress
-+ state.progress // Same structure
-
-- state.isLoading
-+ state.isLoading // Same
+-state.currentQuestion +
+  actions.getCurrentQuestion() -
+  state.progress +
+  state.progress - // Same structure
+  state.isLoading +
+  state.isLoading; // Same
 ```
 
 ### Step 4: Enjoy the Performance
+
 - Monitor the dramatic reduction in API calls
 - Experience instant UI responses
 - Benefit from offline capability
@@ -224,7 +228,7 @@ const [state, actions] = useHybridQuiz({
 // Manual sync control
 const result = await actions.forcSync();
 if (result.success) {
-  console.log('Sync completed successfully');
+  console.log("Sync completed successfully");
 }
 ```
 
@@ -267,8 +271,8 @@ A: Ensure you're using the hybrid system correctly and check the metrics.
 // Enable detailed logging
 const [state, actions] = useHybridQuiz({
   sessionId,
-  onError: (error) => console.error('Hybrid Error:', error),
-  onSyncStatusChange: (status) => console.log('Sync Status:', status)
+  onError: (error) => console.error("Hybrid Error:", error),
+  onSyncStatusChange: (status) => console.log("Sync Status:", status),
 });
 ```
 

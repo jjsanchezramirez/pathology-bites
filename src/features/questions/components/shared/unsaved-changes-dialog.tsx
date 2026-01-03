@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import React from 'react';
+import React from "react";
 import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
 import { Button } from "@/shared/components/ui/button";
 
@@ -20,18 +20,10 @@ export function UnsavedChangesDialog({ open, onConfirm, onCancel }: UnsavedChang
       maxWidth="md"
       footer={
         <>
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-          >
+          <Button type="button" variant="outline" onClick={onCancel}>
             Cancel
           </Button>
-          <Button
-            type="button"
-            variant="destructive"
-            onClick={onConfirm}
-          >
+          <Button type="button" variant="destructive" onClick={onConfirm}>
             Close Without Saving
           </Button>
         </>

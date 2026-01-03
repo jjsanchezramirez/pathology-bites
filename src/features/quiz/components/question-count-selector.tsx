@@ -1,21 +1,21 @@
-'use client'
+"use client";
 
-import { Button } from '@/shared/components/ui/button'
-import { Label } from '@/shared/components/ui/label'
-import { Slider } from '@/shared/components/ui/slider'
+import { Button } from "@/shared/components/ui/button";
+import { Label } from "@/shared/components/ui/label";
+import { Slider } from "@/shared/components/ui/slider";
 
 interface QuestionCountSelectorProps {
-  questionCount: number
-  availableQuestions: number
-  questionCountOptions: number[]
-  onChange: (count: number) => void
+  questionCount: number;
+  availableQuestions: number;
+  questionCountOptions: number[];
+  onChange: (count: number) => void;
 }
 
 export function QuestionCountSelector({
   questionCount,
   availableQuestions,
   questionCountOptions,
-  onChange
+  onChange,
 }: QuestionCountSelectorProps) {
   return (
     <div className="space-y-4">
@@ -25,8 +25,8 @@ export function QuestionCountSelector({
       </div>
       <div className="grid grid-cols-4 gap-2">
         {questionCountOptions.map((count) => {
-          const isSelected = questionCount === count
-          const isDisabled = count > availableQuestions
+          const isSelected = questionCount === count;
+          const isDisabled = count > availableQuestions;
 
           return (
             <Button
@@ -38,7 +38,7 @@ export function QuestionCountSelector({
             >
               {count}
             </Button>
-          )
+          );
         })}
       </div>
       <div className="space-y-2">
@@ -56,6 +56,5 @@ export function QuestionCountSelector({
         />
       </div>
     </div>
-  )
+  );
 }
-

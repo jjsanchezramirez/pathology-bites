@@ -7,37 +7,36 @@
  * Mobile-optimized with responsive navigation and accessible touch targets.
  */
 
-'use client'
+"use client";
 
-import Link from "next/link"
-import { MicroscopeIcon, ChevronUp } from "lucide-react"
-import { useState } from "react"
+import Link from "next/link";
+import { MicroscopeIcon, ChevronUp } from "lucide-react";
+import { useState } from "react";
 
 export function Footer() {
-  const [isToolsOpen, setIsToolsOpen] = useState(false)
-  const [isDesktopToolsOpen, setIsDesktopToolsOpen] = useState(false)
+  const [isToolsOpen, setIsToolsOpen] = useState(false);
+  const [isDesktopToolsOpen, setIsDesktopToolsOpen] = useState(false);
 
   // Check if we're in maintenance mode (hide tools and virtual slides)
-  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true'
+  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
 
   const toggleTools = () => {
-    setIsToolsOpen(!isToolsOpen)
-  }
+    setIsToolsOpen(!isToolsOpen);
+  };
 
   const handleDesktopToolsEnter = () => {
-    setIsDesktopToolsOpen(true)
-  }
+    setIsDesktopToolsOpen(true);
+  };
 
   const handleDesktopToolsLeave = () => {
-    setIsDesktopToolsOpen(false)
-  }
+    setIsDesktopToolsOpen(false);
+  };
 
   return (
     <footer className="border-t bg-background/95">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-4">
         {/* Mobile-first layout */}
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6 lg:gap-4">
-
           {/* Copyright section */}
           <div className="flex items-center justify-center lg:justify-start gap-2 order-2 lg:order-1">
             <MicroscopeIcon className="h-4 w-4 text-primary flex-shrink-0" />
@@ -102,60 +101,60 @@ export function Footer() {
                   >
                     Tools
                     <ChevronUp
-                      className={`h-4 w-4 transition-transform duration-200 ${isToolsOpen ? 'rotate-180' : ''}`}
+                      className={`h-4 w-4 transition-transform duration-200 ${isToolsOpen ? "rotate-180" : ""}`}
                     />
                   </button>
 
                   {isToolsOpen && (
                     <div id="mobile-tools-menu" className="mt-2 grid grid-cols-2 gap-2">
-                    <Link
-                      href="/tools/images"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Image Database
-                    </Link>
-                    <Link
-                      href="/tools/abpath"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      ABPath Content Specs
-                    </Link>
-                    <Link
-                      href="/tools/cell-quiz"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Hemepath Quiz
-                    </Link>
-                    <Link
-                      href="/tools/wsi-question-generator"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Digital Slides Questions
-                    </Link>
-                    <Link
-                      href="/tools/cell-counter"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Cell Counter
-                    </Link>
-                    <Link
-                      href="/tools/lupus-anticoagulant"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      LAC Calculator
-                    </Link>
-                    <Link
-                      href="/tools/gene-lookup"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Gene Finder
-                    </Link>
-                    <Link
-                      href="/tools/citations"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Citations Generator
-                    </Link>
+                      <Link
+                        href="/tools/images"
+                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                      >
+                        Image Database
+                      </Link>
+                      <Link
+                        href="/tools/abpath"
+                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                      >
+                        ABPath Content Specs
+                      </Link>
+                      <Link
+                        href="/tools/cell-quiz"
+                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                      >
+                        Hemepath Quiz
+                      </Link>
+                      <Link
+                        href="/tools/wsi-question-generator"
+                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                      >
+                        Digital Slides Questions
+                      </Link>
+                      <Link
+                        href="/tools/cell-counter"
+                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                      >
+                        Cell Counter
+                      </Link>
+                      <Link
+                        href="/tools/lupus-anticoagulant"
+                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                      >
+                        LAC Calculator
+                      </Link>
+                      <Link
+                        href="/tools/gene-lookup"
+                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                      >
+                        Gene Finder
+                      </Link>
+                      <Link
+                        href="/tools/citations"
+                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                      >
+                        Citations Generator
+                      </Link>
                     </div>
                   )}
                 </div>
@@ -166,42 +165,77 @@ export function Footer() {
             <div className="hidden lg:flex gap-6 text-sm text-muted-foreground items-center">
               {!isMaintenanceMode && (
                 <>
-                  <div className="relative" onMouseEnter={handleDesktopToolsEnter} onMouseLeave={handleDesktopToolsLeave}>
-                    <span className="hover:text-primary transition-colors cursor-pointer py-2 px-2 block">Tools</span>
-                    <div className={`absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-background border rounded-md shadow-lg p-2 min-w-96 z-50 transition-all duration-200 ${isDesktopToolsOpen ? 'opacity-100 visible' : 'opacity-0 invisible'}`}>
+                  <div
+                    className="relative"
+                    onMouseEnter={handleDesktopToolsEnter}
+                    onMouseLeave={handleDesktopToolsLeave}
+                  >
+                    <span className="hover:text-primary transition-colors cursor-pointer py-2 px-2 block">
+                      Tools
+                    </span>
+                    <div
+                      className={`absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-background border rounded-md shadow-lg p-2 min-w-96 z-50 transition-all duration-200 ${isDesktopToolsOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+                    >
                       <div className="grid grid-cols-2 gap-1">
                         {/* Core Learning Resources */}
-                        <Link href="/tools/images" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                        <Link
+                          href="/tools/images"
+                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                        >
                           Image Database
                         </Link>
-                        <Link href="/tools/abpath" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                        <Link
+                          href="/tools/abpath"
+                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                        >
                           ABPath Content Specs
                         </Link>
                         {/* Quiz & Practice Tools */}
-                        <Link href="/tools/cell-quiz" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                        <Link
+                          href="/tools/cell-quiz"
+                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                        >
                           Hemepath Quiz
                         </Link>
-                        <Link href="/tools/wsi-question-generator" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                        <Link
+                          href="/tools/wsi-question-generator"
+                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                        >
                           Digital Slides Questions
                         </Link>
                         {/* Laboratory Tools */}
-                        <Link href="/tools/cell-counter" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                        <Link
+                          href="/tools/cell-counter"
+                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                        >
                           Cell Counter
                         </Link>
-                        <Link href="/tools/lupus-anticoagulant" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                        <Link
+                          href="/tools/lupus-anticoagulant"
+                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                        >
                           LAC Calculator
                         </Link>
                         {/* Reference & Search Tools */}
-                        <Link href="/tools/gene-lookup" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                        <Link
+                          href="/tools/gene-lookup"
+                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                        >
                           Gene Finder
                         </Link>
-                        <Link href="/tools/citations" className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap">
+                        <Link
+                          href="/tools/citations"
+                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                        >
                           Citation Generator
                         </Link>
                       </div>
                     </div>
                   </div>
-                  <Link href="/tools/virtual-slides" className="hover:text-primary transition-colors py-2">
+                  <Link
+                    href="/tools/virtual-slides"
+                    className="hover:text-primary transition-colors py-2"
+                  >
                     Virtual Slides
                   </Link>
                 </>
@@ -226,5 +260,5 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  )
+  );
 }

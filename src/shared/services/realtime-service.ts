@@ -1,207 +1,197 @@
 // src/shared/services/realtime-service.ts
 // Centralized realtime subscription service to reduce duplicate subscriptions
 
-import { createClient } from '@/shared/services/client'
-import { isPublicRoute } from '@/shared/utils/route-helpers'
-import type { AuthChangeEvent, Session } from '@supabase/supabase-js'
+import { createClient } from "@/shared/services/client";
+import { isPublicRoute } from "@/shared/utils/route-helpers";
+import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
 
-type AuthListener = (event: AuthChangeEvent, session: Session | null) => void
-type DatabaseListener = (payload: unknown) => void
+type AuthListener = (event: AuthChangeEvent, session: Session | null) => void;
+type DatabaseListener = (payload: unknown) => void;
 
 interface DatabaseSubscription {
-  table: string
-  event: string
-  filter?: string
-  callback: DatabaseListener
+  table: string;
+  event: string;
+  filter?: string;
+  callback: DatabaseListener;
 }
 
 class RealtimeService {
-  private static instance: RealtimeService
-  private supabase = createClient()
+  private static instance: RealtimeService;
+  private supabase = createClient();
 
   // Auth subscription management
-  private authSubscription: unknown = null
-  private authListeners: Set<AuthListener> = new Set()
+  private authSubscription: unknown = null;
+  private authListeners: Set<AuthListener> = new Set();
 
   // Database subscription management
-  private databaseSubscriptions: Map<string, any> = new Map()
-  private databaseListeners: Map<string, Set<DatabaseListener>> = new Map()
+  private databaseSubscriptions: Map<string, any> = new Map();
+  private databaseListeners: Map<string, Set<DatabaseListener>> = new Map();
 
   private constructor() {
     // Only initialize auth subscription if not on a public page
-    if (typeof window !== 'undefined') {
+    if (typeof window !== "undefined") {
       if (!isPublicRoute(window.location.pathname)) {
-        this.initializeAuthSubscription()
+        this.initializeAuthSubscription();
       }
     } else {
       // Server-side: defer initialization
-      this.deferredInit = true
+      this.deferredInit = true;
     }
   }
 
-  private deferredInit = false
+  private deferredInit = false;
 
   public static getInstance(): RealtimeService {
     if (!RealtimeService.instance) {
-      RealtimeService.instance = new RealtimeService()
+      RealtimeService.instance = new RealtimeService();
     }
-    return RealtimeService.instance
+    return RealtimeService.instance;
   }
 
   // Auth subscription methods
   private initializeAuthSubscription(): void {
-    if (this.authSubscription) return
+    if (this.authSubscription) return;
 
+    const {
+      data: { subscription },
+    } = this.supabase.auth.onAuthStateChange((event, session) => {
+      // Notify all registered listeners
+      this.authListeners.forEach((listener) => {
+        try {
+          listener(event, session);
+        } catch {}
+      });
+    });
 
-    const { data: { subscription } } = this.supabase.auth.onAuthStateChange(
-      (event, session) => {
-
-        // Notify all registered listeners
-        this.authListeners.forEach(listener => {
-          try {
-            listener(event, session)
-          } catch {
-          }
-        })
-      }
-    )
-
-    this.authSubscription = subscription
+    this.authSubscription = subscription;
   }
 
   public addAuthListener(listener: AuthListener): () => void {
     // Check if we're on a public page and should skip auth
-    if (typeof window !== 'undefined' && isPublicRoute(window.location.pathname)) {
+    if (typeof window !== "undefined" && isPublicRoute(window.location.pathname)) {
       // Return no-op cleanup function
-      return () => {}
+      return () => {};
     }
 
     // Initialize auth subscription if deferred
     if (this.deferredInit && !this.authSubscription) {
-      this.initializeAuthSubscription()
-      this.deferredInit = false
+      this.initializeAuthSubscription();
+      this.deferredInit = false;
     }
 
-    this.authListeners.add(listener)
-
+    this.authListeners.add(listener);
 
     // Return cleanup function
     return () => {
-      this.authListeners.delete(listener)
+      this.authListeners.delete(listener);
 
       // Clean up subscription if no listeners remain
       if (this.authListeners.size === 0) {
-        this.cleanupAuthSubscription()
+        this.cleanupAuthSubscription();
       }
-    }
+    };
   }
 
   private cleanupAuthSubscription(): void {
     if (this.authSubscription) {
-      this.authSubscription.unsubscribe()
-      this.authSubscription = null
+      this.authSubscription.unsubscribe();
+      this.authSubscription = null;
     }
   }
 
   // Database subscription methods
-  public addDatabaseListener(
-    subscription: DatabaseSubscription
-  ): () => void {
-    const key = `${subscription.table}-${subscription.event}-${subscription.filter || 'all'}`
+  public addDatabaseListener(subscription: DatabaseSubscription): () => void {
+    const key = `${subscription.table}-${subscription.event}-${subscription.filter || "all"}`;
 
     // Add listener to the set
     if (!this.databaseListeners.has(key)) {
-      this.databaseListeners.set(key, new Set())
+      this.databaseListeners.set(key, new Set());
     }
-    this.databaseListeners.get(key)!.add(subscription.callback)
+    this.databaseListeners.get(key)!.add(subscription.callback);
 
     // Create subscription if it doesn't exist
     if (!this.databaseSubscriptions.has(key)) {
-      this.createDatabaseSubscription(key, subscription)
+      this.createDatabaseSubscription(key, subscription);
     }
-
 
     // Return cleanup function
     return () => {
-      const listeners = this.databaseListeners.get(key)
+      const listeners = this.databaseListeners.get(key);
       if (listeners) {
-        listeners.delete(subscription.callback)
+        listeners.delete(subscription.callback);
 
         // Clean up subscription if no listeners remain
         if (listeners.size === 0) {
-          this.cleanupDatabaseSubscription(key)
+          this.cleanupDatabaseSubscription(key);
         }
       }
-    }
+    };
   }
 
   private createDatabaseSubscription(key: string, subscription: DatabaseSubscription): void {
-
-    const channel = this.supabase.channel(`shared-${key}`)
+    const channel = this.supabase.channel(`shared-${key}`);
 
     const config: unknown = {
       event: subscription.event,
-      schema: 'public',
-      table: subscription.table
-    }
+      schema: "public",
+      table: subscription.table,
+    };
 
     if (subscription.filter) {
-      config.filter = subscription.filter
+      config.filter = subscription.filter;
     }
 
-    channel.on('postgres_changes', config, (payload) => {
-      const listeners = this.databaseListeners.get(key)
+    channel.on("postgres_changes", config, (payload) => {
+      const listeners = this.databaseListeners.get(key);
       if (listeners) {
-        listeners.forEach(listener => {
+        listeners.forEach((listener) => {
           try {
-            listener(payload)
-          } catch {
-          }
-        })
+            listener(payload);
+          } catch {}
+        });
       }
-    })
+    });
 
-    const channelSubscription = channel.subscribe()
-    this.databaseSubscriptions.set(key, channelSubscription)
+    const channelSubscription = channel.subscribe();
+    this.databaseSubscriptions.set(key, channelSubscription);
   }
 
   private cleanupDatabaseSubscription(key: string): void {
-    const subscription = this.databaseSubscriptions.get(key)
+    const subscription = this.databaseSubscriptions.get(key);
     if (subscription) {
-      subscription.unsubscribe()
-      this.databaseSubscriptions.delete(key)
-      this.databaseListeners.delete(key)
+      subscription.unsubscribe();
+      this.databaseSubscriptions.delete(key);
+      this.databaseListeners.delete(key);
     }
   }
 
   // Utility methods
   public getActiveSubscriptions(): {
-    authListeners: number
-    databaseSubscriptions: string[]
+    authListeners: number;
+    databaseSubscriptions: string[];
   } {
     return {
       authListeners: this.authListeners.size,
-      databaseSubscriptions: Array.from(this.databaseSubscriptions.keys())
-    }
+      databaseSubscriptions: Array.from(this.databaseSubscriptions.keys()),
+    };
   }
 
   public cleanup(): void {
-
     // Cleanup auth subscription
-    this.cleanupAuthSubscription()
-    this.authListeners.clear()
+    this.cleanupAuthSubscription();
+    this.authListeners.clear();
 
     // Cleanup database subscriptions
     this.databaseSubscriptions.forEach((subscription, _key) => {
-      subscription.unsubscribe()
-    })
-    this.databaseSubscriptions.clear()
-    this.databaseListeners.clear()
+      subscription.unsubscribe();
+    });
+    this.databaseSubscriptions.clear();
+    this.databaseListeners.clear();
   }
 }
 
 // Export singleton instance
-export const realtimeService = RealtimeService.getInstance()
+export const realtimeService = RealtimeService.getInstance();
 
 // Export types for consumers
-export type { AuthListener, DatabaseListener, DatabaseSubscription }
+export type { AuthListener, DatabaseListener, DatabaseSubscription };

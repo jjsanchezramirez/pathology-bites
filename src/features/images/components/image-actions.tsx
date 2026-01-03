@@ -1,5 +1,5 @@
 // src/components/images/image-actions.tsx
-"use client"
+"use client";
 
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -8,8 +8,8 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import { MoreVertical, Edit, Trash2 } from 'lucide-react';
-import type { ImageActionsProps } from '@/features/images/types/images';
+import { MoreVertical, Edit, Trash2 } from "lucide-react";
+import type { ImageActionsProps } from "@/features/images/types/images";
 
 export function ImageActions({ image, onEdit, onDelete }: ImageActionsProps) {
   return (
@@ -24,10 +24,7 @@ export function ImageActions({ image, onEdit, onDelete }: ImageActionsProps) {
           <Edit className="h-4 w-4 mr-2" />
           Edit
         </DropdownMenuItem>
-        <DropdownMenuItem
-          className="text-red-600"
-          onClick={() => onDelete(image)}
-        >
+        <DropdownMenuItem className="text-red-600" onClick={() => onDelete(image)}>
           <Trash2 className="h-4 w-4 mr-2" />
           Delete
         </DropdownMenuItem>

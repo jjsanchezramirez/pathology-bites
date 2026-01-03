@@ -1,276 +1,278 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react'
-import { Button } from '@/shared/components/ui/button'
-import { Card, CardContent } from '@/shared/components/ui/card'
+import { useState, useEffect, useRef, useCallback } from "react";
+import { Button } from "@/shared/components/ui/button";
+import { Card, CardContent } from "@/shared/components/ui/card";
 
-import {
-  ExternalLink,
-  Loader2,
-  AlertCircle,
-  Info,
-  Download,
-  RefreshCw
-} from 'lucide-react'
-import Image from 'next/image'
-import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache'
+import { ExternalLink, Loader2, AlertCircle, Info, Download, RefreshCw } from "lucide-react";
+import Image from "next/image";
+import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
 
 // Unified interface for all WSI slide types
 interface VirtualSlide {
-  id: string
-  repository: string
-  category: string
-  subcategory: string
-  diagnosis: string
-  patient_info: string
-  age: string | null
-  gender: string | null
-  clinical_history: string
-  stain_type: string
-  preview_image_url: string
-  slide_url: string
-  case_url: string
-  other_urls: string[]
-  source_metadata: Record<string, unknown>
+  id: string;
+  repository: string;
+  category: string;
+  subcategory: string;
+  diagnosis: string;
+  patient_info: string;
+  age: string | null;
+  gender: string | null;
+  clinical_history: string;
+  stain_type: string;
+  preview_image_url: string;
+  slide_url: string;
+  case_url: string;
+  other_urls: string[];
+  source_metadata: Record<string, unknown>;
 }
 
 // Props for the unified WSI viewer
 interface WSIViewerProps {
-  slide: VirtualSlide
-  showMetadata?: boolean
-  className?: string
+  slide: VirtualSlide;
+  showMetadata?: boolean;
+  className?: string;
 }
-
-
 
 // Configuration for different WSI types and repositories
 interface WSIConfig {
-  canEmbed: boolean
-  useOpenSeadragon: boolean
-  embeddingStrategy: 'iframe' | 'openseadragon' | 'fallback'
-  viewerUrl?: string
-  reason?: string
+  canEmbed: boolean;
+  useOpenSeadragon: boolean;
+  embeddingStrategy: "iframe" | "openseadragon" | "fallback";
+  viewerUrl?: string;
+  reason?: string;
 }
 
 // Helper function to try alternative URLs for blocked repositories
 function _tryAlternativeURL(originalUrl: string, slide?: VirtualSlide): string | null {
   try {
-    const urlObj = new URL(originalUrl)
-    const hostname = urlObj.hostname.toLowerCase()
+    const urlObj = new URL(originalUrl);
+    const hostname = urlObj.hostname.toLowerCase();
 
     // Leeds Virtual Pathology: Try direct image URLs
-    if (hostname.includes('virtualpathology.leeds.ac.uk')) {
+    if (hostname.includes("virtualpathology.leeds.ac.uk")) {
       // Check if slide has preview_image_url that might be a direct image
-      if (slide?.preview_image_url && slide.preview_image_url.includes('images.virtualpathology.leeds.ac.uk')) {
-        return slide.preview_image_url
+      if (
+        slide?.preview_image_url &&
+        slide.preview_image_url.includes("images.virtualpathology.leeds.ac.uk")
+      ) {
+        return slide.preview_image_url;
       }
 
       // Try to construct direct image URL from slide URL
-      const pathMatch = originalUrl.match(/path=([^&]+)/)
+      const pathMatch = originalUrl.match(/path=([^&]+)/);
       if (pathMatch) {
-        const decodedPath = decodeURIComponent(pathMatch[1])
-        const directImageUrl = `https://images.virtualpathology.leeds.ac.uk${decodedPath}?-1`
-        return directImageUrl
+        const decodedPath = decodeURIComponent(pathMatch[1]);
+        const directImageUrl = `https://images.virtualpathology.leeds.ac.uk${decodedPath}?-1`;
+        return directImageUrl;
       }
     }
 
     // University of Toronto: Try different viewer approaches
-    if (hostname.includes('lmpimg.med.utoronto.ca')) {
+    if (hostname.includes("lmpimg.med.utoronto.ca")) {
       // For now, no alternative - these are already optimized viewer URLs
-      return null
+      return null;
     }
 
-    return null
+    return null;
   } catch {
-    return null
+    return null;
   }
 }
 
 // Step 1: Dragon (OpenSeadragon) initialization and configuration
 function getWSIConfig(url: string, _repository?: string, _slide?: VirtualSlide): WSIConfig {
   try {
-    const urlObj = new URL(url)
-    const hostname = urlObj.hostname.toLowerCase()
-    
+    const urlObj = new URL(url);
+    const hostname = urlObj.hostname.toLowerCase();
+
     // Check if this is a raw WSI file
-    const isRawWSI = /\.(svs|ndpi|scn|vms|vmu|mrxs|tiff?|czi|lsm|oib|oif)(\?|$)/i.test(url)
-    
+    const isRawWSI = /\.(svs|ndpi|scn|vms|vmu|mrxs|tiff?|czi|lsm|oib|oif)(\?|$)/i.test(url);
+
     // Repository-specific configurations
-    if (hostname.includes('supabase.co') && isRawWSI) {
+    if (hostname.includes("supabase.co") && isRawWSI) {
       return {
         canEmbed: true,
         useOpenSeadragon: true,
-        embeddingStrategy: 'openseadragon',
-        reason: 'Raw WSI file from Supabase storage'
-      }
+        embeddingStrategy: "openseadragon",
+        reason: "Raw WSI file from Supabase storage",
+      };
     }
-    
-    if (hostname.includes('upmc.edu')) {
+
+    if (hostname.includes("upmc.edu")) {
       return {
         canEmbed: true,
         useOpenSeadragon: false,
-        embeddingStrategy: 'iframe',
-        reason: 'UPMC supports embedding'
-      }
+        embeddingStrategy: "iframe",
+        reason: "UPMC supports embedding",
+      };
     }
-    
-    if (hostname.includes('pathpresenter.net') || hostname.includes('pathpresenter.blob.core.windows.net')) {
+
+    if (
+      hostname.includes("pathpresenter.net") ||
+      hostname.includes("pathpresenter.blob.core.windows.net")
+    ) {
       return {
         canEmbed: true,
         useOpenSeadragon: false,
-        embeddingStrategy: 'iframe',
-        reason: 'PathPresenter supports embedding'
-      }
+        embeddingStrategy: "iframe",
+        reason: "PathPresenter supports embedding",
+      };
     }
-    
-    if (hostname.includes('virtualpathology.leeds.ac.uk')) {
+
+    if (hostname.includes("virtualpathology.leeds.ac.uk")) {
       return {
         canEmbed: false,
         useOpenSeadragon: false,
-        embeddingStrategy: 'fallback',
-        reason: 'Leeds Virtual Pathology blocks iframe embedding'
-      }
+        embeddingStrategy: "fallback",
+        reason: "Leeds Virtual Pathology blocks iframe embedding",
+      };
     }
 
-    if (hostname.includes('lmpimg.med.utoronto.ca') || hostname.includes('dlm.lmp.utoronto.ca')) {
+    if (hostname.includes("lmpimg.med.utoronto.ca") || hostname.includes("dlm.lmp.utoronto.ca")) {
       return {
         canEmbed: false,
         useOpenSeadragon: false,
-        embeddingStrategy: 'fallback',
-        reason: 'University of Toronto LMP blocks iframe embedding'
-      }
+        embeddingStrategy: "fallback",
+        reason: "University of Toronto LMP blocks iframe embedding",
+      };
     }
 
-    if (hostname.includes('recutclub.com')) {
+    if (hostname.includes("recutclub.com")) {
       return {
         canEmbed: false,
         useOpenSeadragon: false,
-        embeddingStrategy: 'fallback',
-        reason: 'Recut Club blocks iframe embedding'
-      }
-    }
-    
-    if (hostname.includes('hematopathologyetutorial.com')) {
-      return {
-        canEmbed: true,
-        useOpenSeadragon: false,
-        embeddingStrategy: 'iframe',
-        reason: 'HematopathologyeTutorial supports embedding'
-      }
+        embeddingStrategy: "fallback",
+        reason: "Recut Club blocks iframe embedding",
+      };
     }
 
-    if (hostname.includes('rosai.secondslide.com') || hostname.includes('rosaicollection.net')) {
+    if (hostname.includes("hematopathologyetutorial.com")) {
       return {
         canEmbed: true,
         useOpenSeadragon: false,
-        embeddingStrategy: 'iframe',
-        reason: 'Rosai Collection supports embedding'
-      }
+        embeddingStrategy: "iframe",
+        reason: "HematopathologyeTutorial supports embedding",
+      };
     }
-    
+
+    if (hostname.includes("rosai.secondslide.com") || hostname.includes("rosaicollection.net")) {
+      return {
+        canEmbed: true,
+        useOpenSeadragon: false,
+        embeddingStrategy: "iframe",
+        reason: "Rosai Collection supports embedding",
+      };
+    }
+
     // Default for raw WSI files
     if (isRawWSI) {
       return {
         canEmbed: true,
         useOpenSeadragon: true,
-        embeddingStrategy: 'openseadragon',
-        reason: 'Raw WSI file requires OpenSeadragon'
-      }
+        embeddingStrategy: "openseadragon",
+        reason: "Raw WSI file requires OpenSeadragon",
+      };
     }
-    
+
     // Default for web viewers
     return {
       canEmbed: true,
       useOpenSeadragon: false,
-      embeddingStrategy: 'iframe',
-      reason: 'Web-based viewer'
-    }
+      embeddingStrategy: "iframe",
+      reason: "Web-based viewer",
+    };
   } catch {
     return {
       canEmbed: false,
       useOpenSeadragon: false,
-      embeddingStrategy: 'fallback',
-      reason: 'Invalid URL'
-    }
+      embeddingStrategy: "fallback",
+      reason: "Invalid URL",
+    };
   }
 }
 
 // Step 2: OpenSeadragon viewer component
 interface OpenSeadragonViewerProps {
-  url: string
-  filename?: string
-  diagnosis?: string
-  onLoad?: () => void
-  onError?: () => void
+  url: string;
+  filename?: string;
+  diagnosis?: string;
+  onLoad?: () => void;
+  onError?: () => void;
 }
 
-function InternalOpenSeadragonViewer({ url, filename, diagnosis, onError }: OpenSeadragonViewerProps) {
-  const viewerRef = useRef<HTMLDivElement>(null)
-  const [loading, setLoading] = useState(true)
+function InternalOpenSeadragonViewer({
+  url,
+  filename,
+  diagnosis,
+  onError,
+}: OpenSeadragonViewerProps) {
+  const viewerRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const initializeOpenSeadragon = async () => {
       try {
-        setLoading(true)
+        setLoading(true);
 
-        if (!viewerRef.current) return
+        if (!viewerRef.current) return;
 
         // For now, show raw WSI file information since OpenSeadragon requires tile server
         // This is a placeholder for future OpenSeadragon integration
-        setLoading(false)
-        onError?.()
-
+        setLoading(false);
+        onError?.();
       } catch {
-        setLoading(false)
-        onError?.()
+        setLoading(false);
+        onError?.();
       }
-    }
+    };
 
-    const timer = setTimeout(initializeOpenSeadragon, 500)
-    return () => clearTimeout(timer)
-  }, [url, onError])
+    const timer = setTimeout(initializeOpenSeadragon, 500);
+    return () => clearTimeout(timer);
+  }, [url, onError]);
 
   const getFileInfo = (url: string) => {
-    const match = url.match(/\.([a-zA-Z0-9]+)(?:\?|$)/)
-    const extension = match ? match[1].toUpperCase() : 'Unknown'
-    
+    const match = url.match(/\.([a-zA-Z0-9]+)(?:\?|$)/);
+    const extension = match ? match[1].toUpperCase() : "Unknown";
+
     const supportedFormats = {
-      'SVS': 'Aperio ScanScope Virtual Slide',
-      'MRXS': '3DHISTECH MIRAX Virtual Slide',
-      'NDPI': 'Hamamatsu NanoZoomer Digital Pathology Image',
-      'SCN': 'Leica SCN Virtual Slide',
-      'VMS': 'Hamamatsu Virtual Microscopy System',
-      'VMU': 'Hamamatsu Virtual Microscopy System',
-      'TIFF': 'Tagged Image File Format',
-      'TIF': 'Tagged Image File Format',
-      'CZI': 'Carl Zeiss Image',
-      'LSM': 'Zeiss LSM Image',
-      'OIB': 'Olympus Image Binary',
-      'OIF': 'Olympus Image Format'
-    }
-    
+      SVS: "Aperio ScanScope Virtual Slide",
+      MRXS: "3DHISTECH MIRAX Virtual Slide",
+      NDPI: "Hamamatsu NanoZoomer Digital Pathology Image",
+      SCN: "Leica SCN Virtual Slide",
+      VMS: "Hamamatsu Virtual Microscopy System",
+      VMU: "Hamamatsu Virtual Microscopy System",
+      TIFF: "Tagged Image File Format",
+      TIF: "Tagged Image File Format",
+      CZI: "Carl Zeiss Image",
+      LSM: "Zeiss LSM Image",
+      OIB: "Olympus Image Binary",
+      OIF: "Olympus Image Format",
+    };
+
     return {
       extension,
-      description: supportedFormats[extension as keyof typeof supportedFormats] || 'Virtual Slide Image',
-      isSupported: extension in supportedFormats
-    }
-  }
+      description:
+        supportedFormats[extension as keyof typeof supportedFormats] || "Virtual Slide Image",
+      isSupported: extension in supportedFormats,
+    };
+  };
 
-  const fileInfo = getFileInfo(url)
-  const displayFilename = filename || url.split('/').pop() || 'Virtual Slide'
+  const fileInfo = getFileInfo(url);
+  const displayFilename = filename || url.split("/").pop() || "Virtual Slide";
 
   const openInNewTab = () => {
-    window.open(url, '_blank', 'noopener,noreferrer')
-  }
+    window.open(url, "_blank", "noopener,noreferrer");
+  };
 
   const downloadFile = () => {
-    const link = document.createElement('a')
-    link.href = url
-    link.download = displayFilename
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-  }
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = displayFilename;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
 
   if (loading) {
     return (
@@ -280,29 +282,21 @@ function InternalOpenSeadragonViewer({ url, filename, diagnosis, onError }: Open
           <p className="text-sm text-muted-foreground">Initializing OpenSeadragon...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
     <div className="text-center space-y-4 p-6">
       {/* File Icon */}
       <div className="mx-auto w-16 h-16 bg-blue-100 rounded-lg flex items-center justify-center">
-        <div className="text-blue-600 font-bold text-sm">
-          {fileInfo.extension}
-        </div>
+        <div className="text-blue-600 font-bold text-sm">{fileInfo.extension}</div>
       </div>
 
       {/* File Info */}
       <div className="space-y-2">
-        <h3 className="font-medium text-lg">
-          {diagnosis || 'Virtual Slide Image'}
-        </h3>
-        <p className="text-sm text-muted-foreground">
-          {fileInfo.description}
-        </p>
-        <p className="text-xs text-muted-foreground">
-          {displayFilename}
-        </p>
+        <h3 className="font-medium text-lg">{diagnosis || "Virtual Slide Image"}</h3>
+        <p className="text-sm text-muted-foreground">{fileInfo.description}</p>
+        <p className="text-xs text-muted-foreground">{displayFilename}</p>
       </div>
 
       {/* Status */}
@@ -314,7 +308,9 @@ function InternalOpenSeadragonViewer({ url, filename, diagnosis, onError }: Open
             <div className="text-blue-700 space-y-1 text-xs">
               <div>• This is a raw whole slide imaging file</div>
               <div>• OpenSeadragon viewer requires a tile server for full functionality</div>
-              <div>• For full viewing, use: QuPath, ImageJ with Bio-Formats, or Aperio ImageScope</div>
+              <div>
+                • For full viewing, use: QuPath, ImageJ with Bio-Formats, or Aperio ImageScope
+              </div>
               <div>• You can download the file or open it directly</div>
             </div>
           </div>
@@ -352,124 +348,124 @@ function InternalOpenSeadragonViewer({ url, filename, diagnosis, onError }: Open
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // Iframe viewer component
 interface IframeViewerProps {
-  url: string
-  title: string
-  onLoad?: () => void
-  onError?: () => void
-  loaded: boolean
+  url: string;
+  title: string;
+  onLoad?: () => void;
+  onError?: () => void;
+  loaded: boolean;
 }
 
 function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps) {
-  const iframeRef = useRef<HTMLIFrameElement>(null)
-  const containerRef = useRef<HTMLDivElement>(null)
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
+  const iframeRef = useRef<HTMLIFrameElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const [isMobile, setIsMobile] = useState(false);
 
   // Detect mobile screen size
   useEffect(() => {
     const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768)
-    }
+      setIsMobile(window.innerWidth <= 768);
+    };
 
-    checkMobile()
-    window.addEventListener('resize', checkMobile)
+    checkMobile();
+    window.addEventListener("resize", checkMobile);
 
-    return () => window.removeEventListener('resize', checkMobile)
-  }, [])
+    return () => window.removeEventListener("resize", checkMobile);
+  }, []);
 
   const handleIframeLoad = useCallback(() => {
     if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
+      clearTimeout(timeoutRef.current);
     }
-    onLoad?.()
-  }, [onLoad])
+    onLoad?.();
+  }, [onLoad]);
 
   const handleIframeError = useCallback(() => {
     if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current)
+      clearTimeout(timeoutRef.current);
     }
-    onError?.()
-  }, [onError])
+    onError?.();
+  }, [onError]);
 
   useEffect(() => {
     // Set timeout for embedding attempt
     timeoutRef.current = setTimeout(() => {
-      onError?.()
-    }, 5000)
+      onError?.();
+    }, 5000);
 
     return () => {
       if (timeoutRef.current) {
-        clearTimeout(timeoutRef.current)
+        clearTimeout(timeoutRef.current);
       }
-    }
-  }, [url, onError])
+    };
+  }, [url, onError]);
 
   // Prevent page scroll when interacting with iframe
   useEffect(() => {
-    const container = containerRef.current
-    if (!container) return
+    const container = containerRef.current;
+    if (!container) return;
 
     const handleWheel = (e: WheelEvent) => {
       // Only prevent on mobile/small screens to avoid desktop scrollbar glitch
       if (loaded && isMobile) {
-        e.stopPropagation()
+        e.stopPropagation();
       }
-    }
+    };
 
     const _handleMouseEnter = () => {
       // Don't prevent scroll on desktop - only needed for mobile
       // Desktop users can use regular page scrolling
-    }
+    };
 
     const _handleMouseLeave = () => {
       // Don't prevent scroll on desktop - only needed for mobile
       // Desktop users can use regular page scrolling
-    }
+    };
 
     // Mobile touch event handlers
     const handleTouchStart = (e: TouchEvent) => {
       if (isMobile && loaded) {
-        e.stopPropagation()
+        e.stopPropagation();
       }
-    }
+    };
 
     const handleTouchMove = (e: TouchEvent) => {
       if (isMobile && loaded) {
-        e.preventDefault()
-        e.stopPropagation()
+        e.preventDefault();
+        e.stopPropagation();
       }
-    }
+    };
 
     const handleTouchEnd = (e: TouchEvent) => {
       if (isMobile && loaded) {
-        e.stopPropagation()
+        e.stopPropagation();
       }
-    }
+    };
 
     // Add event listeners
-    container.addEventListener('wheel', handleWheel, { passive: false })
+    container.addEventListener("wheel", handleWheel, { passive: false });
 
     if (isMobile) {
-      container.addEventListener('touchstart', handleTouchStart, { passive: false })
-      container.addEventListener('touchmove', handleTouchMove, { passive: false })
-      container.addEventListener('touchend', handleTouchEnd, { passive: false })
+      container.addEventListener("touchstart", handleTouchStart, { passive: false });
+      container.addEventListener("touchmove", handleTouchMove, { passive: false });
+      container.addEventListener("touchend", handleTouchEnd, { passive: false });
     }
     // Desktop doesn't need mouse enter/leave handlers anymore - removed scroll prevention
 
     return () => {
-      container.removeEventListener('wheel', handleWheel)
-      container.removeEventListener('touchstart', handleTouchStart)
-      container.removeEventListener('touchmove', handleTouchMove)
-      container.removeEventListener('touchend', handleTouchEnd)
+      container.removeEventListener("wheel", handleWheel);
+      container.removeEventListener("touchstart", handleTouchStart);
+      container.removeEventListener("touchmove", handleTouchMove);
+      container.removeEventListener("touchend", handleTouchEnd);
       // Ensure scroll is re-enabled on cleanup (for mobile)
-      document.body.style.overflow = ''
-    }
-  }, [loaded, isMobile])
+      document.body.style.overflow = "";
+    };
+  }, [loaded, isMobile]);
 
   return (
     <div ref={containerRef} className="relative">
@@ -485,44 +481,44 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
 
       {/* Iframe viewer with mobile touch isolation */}
       <div
-        className={`relative w-full overflow-hidden ${isMobile ? 'h-[350px]' : 'h-[600px]'}`}
+        className={`relative w-full overflow-hidden ${isMobile ? "h-[350px]" : "h-[600px]"}`}
         onTouchStart={(e) => {
           // On mobile, prevent page scrolling when touching the WSI viewer
           if (isMobile && loaded) {
-            e.preventDefault()
-            e.stopPropagation()
+            e.preventDefault();
+            e.stopPropagation();
           }
         }}
         onTouchMove={(e) => {
           // On mobile, prevent page scrolling during touch gestures
           if (isMobile && loaded) {
-            e.preventDefault()
-            e.stopPropagation()
+            e.preventDefault();
+            e.stopPropagation();
           }
         }}
         onTouchEnd={(e) => {
           // On mobile, prevent page scrolling when touch ends
           if (isMobile && loaded) {
-            e.preventDefault()
-            e.stopPropagation()
+            e.preventDefault();
+            e.stopPropagation();
           }
         }}
         style={{
           // On mobile, prevent scrolling and zooming of the container
-          touchAction: isMobile ? 'none' : 'auto'
+          touchAction: isMobile ? "none" : "auto",
         }}
       >
         {/* Scaled iframe wrapper - 50% scale */}
         <div
           style={{
-            width: '200%',
-            height: '200%',
-            transformOrigin: '0 0',
-            WebkitTransform: 'scale(0.5)',
-            MozTransform: 'scale(0.5)',
-            OTransform: 'scale(0.5)',
-            transform: 'scale(0.5)',
-            msZoom: 0.5
+            width: "200%",
+            height: "200%",
+            transformOrigin: "0 0",
+            WebkitTransform: "scale(0.5)",
+            MozTransform: "scale(0.5)",
+            OTransform: "scale(0.5)",
+            transform: "scale(0.5)",
+            msZoom: 0.5,
           }}
         >
           <iframe
@@ -535,9 +531,9 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
             sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
             allow="fullscreen"
             style={{
-              pointerEvents: loaded ? 'auto' : 'none',
+              pointerEvents: loaded ? "auto" : "none",
               // On mobile, let the iframe handle all touch events
-              touchAction: isMobile ? 'manipulation' : 'auto'
+              touchAction: isMobile ? "manipulation" : "auto",
             }}
           />
         </div>
@@ -550,53 +546,53 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // Fallback viewer component
 interface FallbackViewerProps {
-  slide: VirtualSlide
-  onOpenExternal: () => void
+  slide: VirtualSlide;
+  onOpenExternal: () => void;
 }
 
 function FallbackViewer({ slide, onOpenExternal }: FallbackViewerProps) {
-  const handleImageLoad = useImageCacheHandler(slide.preview_image_url)
+  const handleImageLoad = useImageCacheHandler(slide.preview_image_url);
 
   const getEmbeddingBlockedReason = (url: string): string => {
     try {
-      const urlObj = new URL(url)
-      const hostname = urlObj.hostname.toLowerCase()
+      const urlObj = new URL(url);
+      const hostname = urlObj.hostname.toLowerCase();
 
-      if (hostname.includes('virtualpathology.leeds.ac.uk')) {
-        return 'Leeds Virtual Pathology blocks iframe embedding for security. The slide will open in a new tab.'
+      if (hostname.includes("virtualpathology.leeds.ac.uk")) {
+        return "Leeds Virtual Pathology blocks iframe embedding for security. The slide will open in a new tab.";
       }
 
-      if (hostname.includes('hematopathologyetutorial.com')) {
-        return 'HematopathologyeTutorial should support embedding. If blocked, the slide will open in a new tab.'
+      if (hostname.includes("hematopathologyetutorial.com")) {
+        return "HematopathologyeTutorial should support embedding. If blocked, the slide will open in a new tab.";
       }
 
-      if (hostname.includes('rosai.secondslide.com') || hostname.includes('rosaicollection.net')) {
-        return 'Rosai Collection should support embedding. If blocked, the slide will open in a new tab.'
+      if (hostname.includes("rosai.secondslide.com") || hostname.includes("rosaicollection.net")) {
+        return "Rosai Collection should support embedding. If blocked, the slide will open in a new tab.";
       }
 
-      if (hostname.includes('lmpimg.med.utoronto.ca') || hostname.includes('dlm.lmp.utoronto.ca')) {
-        return 'University of Toronto LMP blocks iframe embedding for security. The slide will open in a new tab.'
+      if (hostname.includes("lmpimg.med.utoronto.ca") || hostname.includes("dlm.lmp.utoronto.ca")) {
+        return "University of Toronto LMP blocks iframe embedding for security. The slide will open in a new tab.";
       }
 
-      if (hostname.includes('recutclub.com')) {
-        return 'Recut Club blocks iframe embedding for security. The slide will open in a new tab.'
+      if (hostname.includes("recutclub.com")) {
+        return "Recut Club blocks iframe embedding for security. The slide will open in a new tab.";
       }
 
-      const isRawWSI = /\.(svs|ndpi|scn|vms|vmu|mrxs|tiff?|czi|lsm|oib|oif)(\?|$)/i.test(url)
+      const isRawWSI = /\.(svs|ndpi|scn|vms|vmu|mrxs|tiff?|czi|lsm|oib|oif)(\?|$)/i.test(url);
       if (isRawWSI) {
-        return 'This raw WSI file format requires a specialized viewer application.'
+        return "This raw WSI file format requires a specialized viewer application.";
       }
 
-      return 'This virtual slide cannot be embedded but can be opened in a new tab.'
+      return "This virtual slide cannot be embedded but can be opened in a new tab.";
     } catch {
-      return 'Virtual slide viewer not available for embedding.'
+      return "Virtual slide viewer not available for embedding.";
     }
-  }
+  };
 
   return (
     <div className="relative bg-muted/20 min-h-[400px] flex flex-col items-center justify-center p-8">
@@ -611,8 +607,8 @@ function FallbackViewer({ slide, onOpenExternal }: FallbackViewerProps) {
               className="object-cover rounded-lg border"
               onLoad={handleImageLoad}
               onError={(e) => {
-                const target = e.target as HTMLImageElement
-                target.style.display = 'none'
+                const target = e.target as HTMLImageElement;
+                target.style.display = "none";
               }}
             />
           </div>
@@ -642,41 +638,43 @@ function FallbackViewer({ slide, onOpenExternal }: FallbackViewerProps) {
         </div>
       )}
     </div>
-  )
+  );
 }
 
 // Main WSI Viewer component
-export function WSIViewer({ slide, showMetadata = true, className = '' }: WSIViewerProps) {
-  const [viewerLoaded, setViewerLoaded] = useState(false)
-  const [config, setConfig] = useState<WSIConfig | null>(null)
+export function WSIViewer({ slide, showMetadata = true, className = "" }: WSIViewerProps) {
+  const [viewerLoaded, setViewerLoaded] = useState(false);
+  const [config, setConfig] = useState<WSIConfig | null>(null);
 
   // Step 1: Initialize configuration based on slide properties
   useEffect(() => {
     const initializeConfig = () => {
-      const wsiConfig = getWSIConfig(slide.slide_url, slide.repository)
-      setConfig(wsiConfig)
-      setViewerLoaded(false)
-    }
+      const wsiConfig = getWSIConfig(slide.slide_url, slide.repository);
+      setConfig(wsiConfig);
+      setViewerLoaded(false);
+    };
 
-    initializeConfig()
-  }, [slide.id, slide.slide_url, slide.repository])
+    initializeConfig();
+  }, [slide.id, slide.slide_url, slide.repository]);
 
   const handleViewerLoad = useCallback(() => {
-    setViewerLoaded(true)
-  }, [])
+    setViewerLoaded(true);
+  }, []);
 
   const handleViewerError = useCallback(() => {
     // Error handling can be added here if needed
-  }, [])
+  }, []);
 
   const openInNewTab = () => {
-    window.open(slide.slide_url, '_blank', 'noopener,noreferrer')
-  }
+    window.open(slide.slide_url, "_blank", "noopener,noreferrer");
+  };
 
   if (!config) {
-    return <div className="flex items-center justify-center p-8">
-      <Loader2 className="h-6 w-6 animate-spin" />
-    </div>
+    return (
+      <div className="flex items-center justify-center p-8">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
+    );
   }
 
   return (
@@ -684,15 +682,15 @@ export function WSIViewer({ slide, showMetadata = true, className = '' }: WSIVie
       {/* WSI Viewer */}
       <Card className="overflow-hidden">
         <CardContent className="p-0">
-          {config.embeddingStrategy === 'openseadragon' ? (
+          {config.embeddingStrategy === "openseadragon" ? (
             <InternalOpenSeadragonViewer
               url={slide.slide_url}
-              filename={slide.slide_url.split('/').pop()}
+              filename={slide.slide_url.split("/").pop()}
               diagnosis={slide.diagnosis}
               onLoad={handleViewerLoad}
               onError={handleViewerError}
             />
-          ) : config.embeddingStrategy === 'iframe' ? (
+          ) : config.embeddingStrategy === "iframe" ? (
             <IframeViewer
               url={config.viewerUrl || slide.slide_url}
               title={`Virtual slide: ${slide.diagnosis}`}
@@ -701,10 +699,7 @@ export function WSIViewer({ slide, showMetadata = true, className = '' }: WSIVie
               loaded={viewerLoaded}
             />
           ) : (
-            <FallbackViewer
-              slide={slide}
-              onOpenExternal={openInNewTab}
-            />
+            <FallbackViewer slide={slide} onOpenExternal={openInNewTab} />
           )}
         </CardContent>
       </Card>
@@ -750,7 +745,7 @@ export function WSIViewer({ slide, showMetadata = true, className = '' }: WSIVie
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => window.open(slide.case_url, '_blank')}
+                      onClick={() => window.open(slide.case_url, "_blank")}
                       className="flex items-center gap-1"
                     >
                       <ExternalLink className="h-3 w-3" />
@@ -764,9 +759,5 @@ export function WSIViewer({ slide, showMetadata = true, className = '' }: WSIVie
         </Card>
       )}
     </div>
-  )
+  );
 }
-
-
-
-

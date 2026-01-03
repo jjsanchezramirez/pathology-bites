@@ -1,14 +1,14 @@
 // src/app/(public)/tools/virtual-slides/components/pagination.tsx
 
-import { Button } from '@/shared/components/ui/button'
+import { Button } from "@/shared/components/ui/button";
 
 interface PaginationProps {
-  currentPage: number
-  totalPages: number
-  itemsPerPage: number
-  totalItems: number
-  onPageChange: (page: number) => void
-  onItemsPerPageChange: (itemsPerPage: number) => void
+  currentPage: number;
+  totalPages: number;
+  itemsPerPage: number;
+  totalItems: number;
+  onPageChange: (page: number) => void;
+  onItemsPerPageChange: (itemsPerPage: number) => void;
 }
 
 export function Pagination({
@@ -17,7 +17,7 @@ export function Pagination({
   itemsPerPage,
   totalItems,
   onPageChange,
-  onItemsPerPageChange
+  onItemsPerPageChange,
 }: PaginationProps) {
   return (
     <div className="border-t p-4">
@@ -39,7 +39,8 @@ export function Pagination({
             </select>
           </div>
           <div className="text-sm text-muted-foreground">
-            Showing {((currentPage - 1) * itemsPerPage) + 1} to {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} slides
+            Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+            {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} slides
           </div>
         </div>
         {totalPages > 1 && (
@@ -63,7 +64,7 @@ export function Pagination({
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i
+                const pageNum = Math.max(1, Math.min(totalPages - 4, currentPage - 2)) + i;
                 return (
                   <Button
                     key={pageNum}
@@ -74,7 +75,7 @@ export function Pagination({
                   >
                     {pageNum}
                   </Button>
-                )
+                );
               })}
             </div>
             <Button
@@ -116,7 +117,8 @@ export function Pagination({
             </select>
           </div>
           <div className="text-sm text-muted-foreground">
-            {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} slides
+            {(currentPage - 1) * itemsPerPage + 1}-
+            {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems} slides
           </div>
         </div>
         {totalPages > 1 && (
@@ -141,7 +143,7 @@ export function Pagination({
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
-                const pageNum = Math.max(1, Math.min(totalPages - 2, currentPage - 1)) + i
+                const pageNum = Math.max(1, Math.min(totalPages - 2, currentPage - 1)) + i;
                 return (
                   <Button
                     key={pageNum}
@@ -152,7 +154,7 @@ export function Pagination({
                   >
                     {pageNum}
                   </Button>
-                )
+                );
               })}
             </div>
             <Button
@@ -196,7 +198,8 @@ export function Pagination({
             </select>
           </div>
           <div className="text-xs text-muted-foreground">
-            {((currentPage - 1) * itemsPerPage) + 1}-{Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}
+            {(currentPage - 1) * itemsPerPage + 1}-
+            {Math.min(currentPage * itemsPerPage, totalItems)} of {totalItems}
           </div>
         </div>
 
@@ -223,7 +226,7 @@ export function Pagination({
             </Button>
             <div className="flex items-center gap-1">
               {Array.from({ length: Math.min(3, totalPages) }, (_, i) => {
-                const pageNum = Math.max(1, Math.min(totalPages - 2, currentPage - 1)) + i
+                const pageNum = Math.max(1, Math.min(totalPages - 2, currentPage - 1)) + i;
                 return (
                   <Button
                     key={pageNum}
@@ -234,7 +237,7 @@ export function Pagination({
                   >
                     {pageNum}
                   </Button>
-                )
+                );
               })}
             </div>
             <Button
@@ -259,5 +262,5 @@ export function Pagination({
         )}
       </div>
     </div>
-  )
+  );
 }

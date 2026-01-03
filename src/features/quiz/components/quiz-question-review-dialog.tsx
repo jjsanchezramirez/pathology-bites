@@ -1,109 +1,110 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/shared/components/ui/dialog'
-import { Badge } from '@/shared/components/ui/badge'
-import { Separator } from '@/shared/components/ui/separator'
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Check, X, Clock, Users, BookOpen } from 'lucide-react'
-import { createClient } from '@/shared/services/client'
-import { toast } from '@/shared/utils/toast'
-import { UIQuizQuestion } from '@/features/quiz/types/quiz-question'
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
+import { Badge } from "@/shared/components/ui/badge";
+import { Separator } from "@/shared/components/ui/separator";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Check, X, Clock, Users, BookOpen } from "lucide-react";
+import { createClient } from "@/shared/services/client";
+import { toast } from "@/shared/utils/toast";
+import { UIQuizQuestion } from "@/features/quiz/types/quiz-question";
 
 interface QuestionDetail {
-  id: string
-  title: string
-  stem: string
-  difficulty: string
-  category: string
-  isCorrect: boolean
-  selectedAnswerId: string | null
-  timeSpent: number
-  successRate: number
+  id: string;
+  title: string;
+  stem: string;
+  difficulty: string;
+  category: string;
+  isCorrect: boolean;
+  selectedAnswerId: string | null;
+  timeSpent: number;
+  successRate: number;
 }
 
 // Use standardized interface instead of defining duplicates
 type QuestionData = UIQuizQuestion & {
-  difficulty: string
-}
+  difficulty: string;
+};
 
 interface QuizQuestionReviewDialogProps {
-  questionDetail: QuestionDetail | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  questionDetail: QuestionDetail | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function QuizQuestionReviewDialog({
   questionDetail,
   open,
-  onOpenChange
+  onOpenChange,
 }: QuizQuestionReviewDialogProps) {
-  const [questionData, setQuestionData] = useState<QuestionData | null>(null)
-  const [loading, setLoading] = useState(false)
-  const supabase = createClient()
+  const [questionData, setQuestionData] = useState<QuestionData | null>(null);
+  const [loading, setLoading] = useState(false);
+  const supabase = createClient();
 
   useEffect(() => {
     if (open && questionDetail) {
-      fetchQuestionData()
+      fetchQuestionData();
     }
-  }, [open, questionDetail, fetchQuestionData])
+  }, [open, questionDetail, fetchQuestionData]);
 
   const fetchQuestionData = async () => {
-    if (!questionDetail) return
+    if (!questionDetail) return;
 
-    setLoading(true)
+    setLoading(true);
     try {
       const { data, error } = await supabase
-        .from('questions')
-        .select(`
+        .from("questions")
+        .select(
+          `
           id,
           title,
           stem,
           teaching_point,
           difficulty,
           question_options(*)
-        `)
-        .eq('id', questionDetail.id)
-        .single()
+        `
+        )
+        .eq("id", questionDetail.id)
+        .single();
 
       if (error) {
-        console.error('Error fetching question data:', error)
-        toast.error('Failed to load question details')
-        return
+        console.error("Error fetching question data:", error);
+        toast.error("Failed to load question details");
+        return;
       }
 
-      setQuestionData(data)
+      setQuestionData(data);
     } catch (error) {
-      console.error('Error fetching question data:', error)
-      toast.error('Failed to load question details')
+      console.error("Error fetching question data:", error);
+      toast.error("Failed to load question details");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
-      case 'easy': return 'bg-green-100 text-green-800 border-green-200'
-      case 'medium': return 'bg-yellow-100 text-yellow-800 border-yellow-200'
-      case 'hard': return 'bg-red-100 text-red-800 border-red-200'
-      default: return 'bg-gray-100 text-gray-800 border-gray-200'
+      case "easy":
+        return "bg-green-100 text-green-800 border-green-200";
+      case "medium":
+        return "bg-yellow-100 text-yellow-800 border-yellow-200";
+      case "hard":
+        return "bg-red-100 text-red-800 border-red-200";
+      default:
+        return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  }
+  };
 
   const formatTime = (seconds: number) => {
-    if (seconds < 60) return `${seconds}s`
-    const minutes = Math.floor(seconds / 60)
-    const remainingSeconds = seconds % 60
-    return `${minutes}m ${remainingSeconds}s`
-  }
+    if (seconds < 60) return `${seconds}s`;
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}m ${remainingSeconds}s`;
+  };
 
-  if (!questionDetail) return null
+  if (!questionDetail) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -127,9 +128,7 @@ export function QuizQuestionReviewDialog({
                 <Badge className={getDifficultyColor(questionDetail.difficulty)}>
                   {questionDetail.difficulty}
                 </Badge>
-                <Badge variant="outline">
-                  {questionDetail.category}
-                </Badge>
+                <Badge variant="outline">{questionDetail.category}</Badge>
                 <Badge variant={questionDetail.isCorrect ? "default" : "destructive"}>
                   {questionDetail.isCorrect ? (
                     <>
@@ -174,23 +173,21 @@ export function QuizQuestionReviewDialog({
                 <h3 className="font-medium mb-2">Answer Options</h3>
                 <div className="space-y-2">
                   {questionData.question_options.map((option, index) => {
-                    const isSelected = option.id === questionDetail.selectedAnswerId
-                    const isCorrect = option.is_correct
-                    
-                    let cardClass = "border"
+                    const isSelected = option.id === questionDetail.selectedAnswerId;
+                    const isCorrect = option.is_correct;
+
+                    let cardClass = "border";
                     if (isCorrect) {
-                      cardClass += " bg-green-50 border-green-200"
+                      cardClass += " bg-green-50 border-green-200";
                     } else if (isSelected && !isCorrect) {
-                      cardClass += " bg-red-50 border-red-200"
+                      cardClass += " bg-red-50 border-red-200";
                     }
 
                     return (
                       <Card key={option.id} className={cardClass}>
                         <CardContent className="p-3">
                           <div className="flex items-start gap-2">
-                            <span className="font-medium">
-                              {String.fromCharCode(65 + index)}.
-                            </span>
+                            <span className="font-medium">{String.fromCharCode(65 + index)}.</span>
                             <div className="flex-1">
                               <p>{option.text}</p>
                               <div className="flex items-center gap-2 mt-1">
@@ -210,7 +207,7 @@ export function QuizQuestionReviewDialog({
                           </div>
                         </CardContent>
                       </Card>
-                    )
+                    );
                   })}
                 </div>
               </div>
@@ -233,5 +230,5 @@ export function QuizQuestionReviewDialog({
         )}
       </DialogContent>
     </Dialog>
-  )
+  );
 }

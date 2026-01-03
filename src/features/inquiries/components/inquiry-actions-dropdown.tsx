@@ -1,15 +1,15 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { MoreHorizontal, Reply, CheckCircle, Trash2 } from 'lucide-react'
-import { Button } from '@/shared/components/ui/button'
+import { useState } from "react";
+import { MoreHorizontal, Reply, CheckCircle, Trash2 } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/shared/components/ui/dropdown-menu'
+} from "@/shared/components/ui/dropdown-menu";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,93 +19,93 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/shared/components/ui/alert-dialog'
-import { toast } from '@/shared/utils/toast'
-import { useNotificationRefresh } from '@/shared/contexts/notification-refresh-context'
+} from "@/shared/components/ui/alert-dialog";
+import { toast } from "@/shared/utils/toast";
+import { useNotificationRefresh } from "@/shared/contexts/notification-refresh-context";
 
 interface Inquiry {
-  id: string
-  request_type: string
-  first_name: string
-  last_name: string
-  organization: string | null
-  email: string
-  inquiry: string
-  status: string
-  created_at: string
-  updated_at: string
+  id: string;
+  request_type: string;
+  first_name: string;
+  last_name: string;
+  organization: string | null;
+  email: string;
+  inquiry: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface InquiryActionsDropdownProps {
-  inquiry: Inquiry
-  onReply: (inquiry: Inquiry) => void
-  onStatusUpdate: (inquiryId: string, newStatus: string) => void
-  onDelete: (inquiryId: string) => void
+  inquiry: Inquiry;
+  onReply: (inquiry: Inquiry) => void;
+  onStatusUpdate: (inquiryId: string, newStatus: string) => void;
+  onDelete: (inquiryId: string) => void;
 }
 
 export function InquiryActionsDropdown({
   inquiry,
   onReply,
   onStatusUpdate,
-  onDelete
+  onDelete,
 }: InquiryActionsDropdownProps) {
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
-  const [isUpdating, setIsUpdating] = useState(false)
-  const { refreshNotifications } = useNotificationRefresh()
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { refreshNotifications } = useNotificationRefresh();
 
   const handleMarkAsResolved = async () => {
-    if (inquiry.status === 'resolved') {
-      toast.info('Inquiry is already resolved')
-      return
+    if (inquiry.status === "resolved") {
+      toast.info("Inquiry is already resolved");
+      return;
     }
 
-    setIsUpdating(true)
+    setIsUpdating(true);
     try {
       const response = await fetch(`/api/admin/inquiries/${inquiry.id}/status`, {
-        method: 'PATCH',
+        method: "PATCH",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify({ status: 'resolved' }),
-      })
+        body: JSON.stringify({ status: "resolved" }),
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to update status')
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update status");
       }
 
-      toast.success('Inquiry marked as resolved')
-      onStatusUpdate(inquiry.id, 'resolved')
-      refreshNotifications()
+      toast.success("Inquiry marked as resolved");
+      onStatusUpdate(inquiry.id, "resolved");
+      refreshNotifications();
     } catch (error) {
-      console.error('Error updating status:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to update status')
+      console.error("Error updating status:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update status");
     } finally {
-      setIsUpdating(false)
+      setIsUpdating(false);
     }
-  }
+  };
 
   const handleDelete = async () => {
     try {
       const response = await fetch(`/api/admin/inquiries/${inquiry.id}`, {
-        method: 'DELETE',
-      })
+        method: "DELETE",
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to delete inquiry')
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete inquiry");
       }
 
-      toast.success('Inquiry deleted successfully')
-      onDelete(inquiry.id)
-      refreshNotifications()
+      toast.success("Inquiry deleted successfully");
+      onDelete(inquiry.id);
+      refreshNotifications();
     } catch (error) {
-      console.error('Error deleting inquiry:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to delete inquiry')
+      console.error("Error deleting inquiry:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete inquiry");
     } finally {
-      setDeleteDialogOpen(false)
+      setDeleteDialogOpen(false);
     }
-  }
+  };
 
   return (
     <>
@@ -121,15 +121,15 @@ export function InquiryActionsDropdown({
             <Reply className="mr-2 h-4 w-4" />
             Reply
           </DropdownMenuItem>
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onClick={handleMarkAsResolved}
-            disabled={isUpdating || inquiry.status === 'resolved'}
+            disabled={isUpdating || inquiry.status === "resolved"}
           >
             <CheckCircle className="mr-2 h-4 w-4" />
-            {inquiry.status === 'resolved' ? 'Already Resolved' : 'Mark as Resolved'}
+            {inquiry.status === "resolved" ? "Already Resolved" : "Mark as Resolved"}
           </DropdownMenuItem>
           <DropdownMenuSeparator />
-          <DropdownMenuItem 
+          <DropdownMenuItem
             onClick={() => setDeleteDialogOpen(true)}
             className="text-destructive focus:text-destructive"
           >
@@ -144,18 +144,21 @@ export function InquiryActionsDropdown({
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Inquiry</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to delete this inquiry from {inquiry.first_name} {inquiry.last_name}? 
-              This action cannot be undone.
+              Are you sure you want to delete this inquiry from {inquiry.first_name}{" "}
+              {inquiry.last_name}? This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+            <AlertDialogAction
+              onClick={handleDelete}
+              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+            >
               Delete
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
     </>
-  )
+  );
 }

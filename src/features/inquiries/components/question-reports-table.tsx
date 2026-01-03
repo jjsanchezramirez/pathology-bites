@@ -1,8 +1,8 @@
 // src/features/inquiries/components/question-reports-table.tsx
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/shared/services/client'
+import { useState, useEffect } from "react";
+import { createClient } from "@/shared/services/client";
 import {
   Table,
   TableBody,
@@ -10,161 +10,171 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/components/ui/table"
-import { Button } from "@/shared/components/ui/button"
-import { Badge } from "@/shared/components/ui/badge"
-import { Input } from "@/shared/components/ui/input"
+} from "@/shared/components/ui/table";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import { Input } from "@/shared/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select"
-import { Eye, Search, Filter, ExternalLink, AlertTriangle } from 'lucide-react'
-import { QuestionReportDetailsDialog } from './question-report-details-dialog'
-import { toast } from '@/shared/utils/toast'
-import Link from 'next/link'
+} from "@/shared/components/ui/select";
+import { Eye, Search, Filter, ExternalLink, AlertTriangle } from "lucide-react";
+import { QuestionReportDetailsDialog } from "./question-report-details-dialog";
+import { toast } from "@/shared/utils/toast";
+import Link from "next/link";
 
 interface QuestionReport {
-  id: string
-  question_id: string
-  reported_by: string
-  report_type: string
-  description: string | null
-  status: string
-  created_at: string
-  updated_at: string
+  id: string;
+  question_id: string;
+  reported_by: string;
+  report_type: string;
+  description: string | null;
+  status: string;
+  created_at: string;
+  updated_at: string;
   // Joined data
   question?: {
-    title: string
-  }
+    title: string;
+  };
   reporter?: {
-    first_name: string
-    last_name: string
-    email: string
-  }
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
 }
 
 export function QuestionReportsTable() {
-  const [reports, setReports] = useState<QuestionReport[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [statusFilter, setStatusFilter] = useState('all')
-  const [typeFilter, setTypeFilter] = useState('all')
-  const [selectedReport, setSelectedReport] = useState<QuestionReport | null>(null)
-  const [detailsOpen, setDetailsOpen] = useState(false)
+  const [reports, setReports] = useState<QuestionReport[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [selectedReport, setSelectedReport] = useState<QuestionReport | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
 
-  const supabase = createClient()
+  const supabase = createClient();
 
   useEffect(() => {
-    fetchReports()
-  }, [fetchReports])
+    fetchReports();
+  }, [fetchReports]);
 
   const fetchReports = async () => {
     try {
-      setLoading(true)
+      setLoading(true);
       const { data, error } = await supabase
-        .from('question_reports')
-        .select(`
+        .from("question_reports")
+        .select(
+          `
           *,
           questions!inner(title),
           users!question_reports_reported_by_fkey(first_name, last_name, email)
-        `)
-        .order('created_at', { ascending: false })
+        `
+        )
+        .order("created_at", { ascending: false });
 
       if (error) {
-        console.error('Error fetching question reports:', error)
-        toast.error(`Failed to load question reports: ${error.message || 'Unknown error'}`)
-        return
+        console.error("Error fetching question reports:", error);
+        toast.error(`Failed to load question reports: ${error.message || "Unknown error"}`);
+        return;
       }
 
-      const reports = data || []
-      setReports(reports)
+      const reports = data || [];
+      setReports(reports);
 
       if (reports.length === 0) {
-        console.log('No question reports found')
+        console.log("No question reports found");
       }
     } catch (error) {
-      console.error('Unexpected error fetching question reports:', error)
-      toast.error('An unexpected error occurred while loading question reports')
+      console.error("Unexpected error fetching question reports:", error);
+      toast.error("An unexpected error occurred while loading question reports");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const filteredReports = reports.filter(report => {
-    const matchesSearch = 
+  const filteredReports = reports.filter((report) => {
+    const matchesSearch =
       report.question?.title?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       report.reporter?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       report.reporter?.last_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       report.report_type.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (report.description && report.description.toLowerCase().includes(searchTerm.toLowerCase()))
+      (report.description && report.description.toLowerCase().includes(searchTerm.toLowerCase()));
 
-    const matchesStatus = statusFilter === 'all' || report.status === statusFilter
-    const matchesType = typeFilter === 'all' || report.report_type === typeFilter
+    const matchesStatus = statusFilter === "all" || report.status === statusFilter;
+    const matchesType = typeFilter === "all" || report.report_type === typeFilter;
 
-    return matchesSearch && matchesStatus && matchesType
-  })
+    return matchesSearch && matchesStatus && matchesType;
+  });
 
   const handleViewDetails = (report: QuestionReport) => {
-    setSelectedReport(report)
-    setDetailsOpen(true)
-  }
+    setSelectedReport(report);
+    setDetailsOpen(true);
+  };
 
   const updateReportStatus = async (reportId: string, newStatus: string) => {
     try {
       const { error } = await supabase
-        .from('question_reports')
+        .from("question_reports")
         .update({
           status: newStatus,
-          updated_at: new Date().toISOString()
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', reportId)
+        .eq("id", reportId);
 
       if (error) {
-        console.error('Error updating report status:', error)
-        toast.error(`Failed to update report status: ${error.message || 'Unknown error'}`)
-        return
+        console.error("Error updating report status:", error);
+        toast.error(`Failed to update report status: ${error.message || "Unknown error"}`);
+        return;
       }
 
-      toast.success(`Report status updated to ${newStatus}`)
-      fetchReports() // Refresh the data
+      toast.success(`Report status updated to ${newStatus}`);
+      fetchReports(); // Refresh the data
     } catch (error) {
-      console.error('Unexpected error updating report status:', error)
-      toast.error('An unexpected error occurred while updating report status')
+      console.error("Unexpected error updating report status:", error);
+      toast.error("An unexpected error occurred while updating report status");
     }
-  }
+  };
 
   const getStatusBadge = (status: string) => {
     switch (status.toLowerCase()) {
-      case 'pending':
-        return <Badge variant="default">Pending</Badge>
-      case 'reviewing':
-        return <Badge variant="secondary">Reviewing</Badge>
-      case 'resolved':
-        return <Badge variant="outline" className="text-green-600 border-green-600">Resolved</Badge>
-      case 'dismissed':
-        return <Badge variant="outline" className="text-gray-600 border-gray-600">Dismissed</Badge>
+      case "pending":
+        return <Badge variant="default">Pending</Badge>;
+      case "reviewing":
+        return <Badge variant="secondary">Reviewing</Badge>;
+      case "resolved":
+        return (
+          <Badge variant="outline" className="text-green-600 border-green-600">
+            Resolved
+          </Badge>
+        );
+      case "dismissed":
+        return (
+          <Badge variant="outline" className="text-gray-600 border-gray-600">
+            Dismissed
+          </Badge>
+        );
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline">{status}</Badge>;
     }
-  }
+  };
 
   const getTypeBadge = (type: string) => {
     switch (type.toLowerCase()) {
-      case 'incorrect_answer':
-        return <Badge variant="destructive">Incorrect Answer</Badge>
-      case 'unclear_question':
-        return <Badge variant="secondary">Unclear Question</Badge>
-      case 'technical_issue':
-        return <Badge variant="outline">Technical Issue</Badge>
-      case 'inappropriate_content':
-        return <Badge variant="destructive">Inappropriate</Badge>
+      case "incorrect_answer":
+        return <Badge variant="destructive">Incorrect Answer</Badge>;
+      case "unclear_question":
+        return <Badge variant="secondary">Unclear Question</Badge>;
+      case "technical_issue":
+        return <Badge variant="outline">Technical Issue</Badge>;
+      case "inappropriate_content":
+        return <Badge variant="destructive">Inappropriate</Badge>;
       default:
-        return <Badge variant="outline">{type}</Badge>
+        return <Badge variant="outline">{type}</Badge>;
     }
-  }
+  };
 
   if (loading) {
     return (
@@ -181,7 +191,7 @@ export function QuestionReportsTable() {
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -246,15 +256,13 @@ export function QuestionReportsTable() {
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-muted-foreground">
                         {reports.length === 0
-                          ? 'No question reports available'
-                          : 'No question reports match your search'
-                        }
+                          ? "No question reports available"
+                          : "No question reports match your search"}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {reports.length === 0
-                          ? 'Question reports will appear here when users report issues with questions.'
-                          : 'Try adjusting your search terms or filters.'
-                        }
+                          ? "Question reports will appear here when users report issues with questions."
+                          : "Try adjusting your search terms or filters."}
                       </p>
                     </div>
                   </div>
@@ -264,26 +272,19 @@ export function QuestionReportsTable() {
               filteredReports.map((report) => (
                 <TableRow key={report.id}>
                   <TableCell className="font-medium max-w-[200px] truncate">
-                    {report.question?.title || 'Unknown Question'}
+                    {report.question?.title || "Unknown Question"}
                   </TableCell>
                   <TableCell>
-                    {report.reporter ? 
-                      `${report.reporter.first_name} ${report.reporter.last_name}` : 
-                      'Unknown User'
-                    }
+                    {report.reporter
+                      ? `${report.reporter.first_name} ${report.reporter.last_name}`
+                      : "Unknown User"}
                   </TableCell>
                   <TableCell>{getTypeBadge(report.report_type)}</TableCell>
                   <TableCell>{getStatusBadge(report.status)}</TableCell>
-                  <TableCell>
-                    {new Date(report.created_at).toLocaleDateString()}
-                  </TableCell>
+                  <TableCell>{new Date(report.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handleViewDetails(report)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => handleViewDetails(report)}>
                         <Eye className="h-4 w-4" />
                       </Button>
                       <Link href={`/admin/questions?id=${report.question_id}`}>
@@ -308,5 +309,5 @@ export function QuestionReportsTable() {
         onStatusUpdate={updateReportStatus}
       />
     </div>
-  )
+  );
 }

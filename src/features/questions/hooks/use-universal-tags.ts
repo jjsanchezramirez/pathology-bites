@@ -1,8 +1,8 @@
 // src/features/questions/hooks/use-universal-tags.ts
-import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@/shared/services/client';
-import { TagData } from '@/features/questions/types/questions';
-import { toast } from '@/shared/utils/toast';
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@/shared/services/client";
+import { TagData } from "@/features/questions/types/questions";
+import { toast } from "@/shared/utils/toast";
 
 export interface UseUniversalTagsReturn {
   recentTags: TagData[];
@@ -27,9 +27,9 @@ export function useUniversalTags(): UseUniversalTagsReturn {
 
     try {
       const { data, error: fetchError } = await supabase
-        .from('tags')
-        .select('*')
-        .order('created_at', { ascending: false })
+        .from("tags")
+        .select("*")
+        .order("created_at", { ascending: false })
         .limit(15);
 
       if (fetchError) {
@@ -38,7 +38,7 @@ export function useUniversalTags(): UseUniversalTagsReturn {
 
       setRecentTags(data || []);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch recent tags';
+      const message = err instanceof Error ? err.message : "Failed to fetch recent tags";
       setError(message);
     } finally {
       setLoading(false);
@@ -46,53 +46,59 @@ export function useUniversalTags(): UseUniversalTagsReturn {
   }, [supabase]);
 
   // Search all tags in database
-  const searchTags = useCallback(async (query: string): Promise<TagData[]> => {
-    if (!query.trim()) {
-      return recentTags;
-    }
-
-    try {
-      const { data, error: searchError } = await supabase
-        .from('tags')
-        .select('*')
-        .ilike('name', `%${query.trim()}%`)
-        .order('name');
-
-      if (searchError) {
-        throw new Error(searchError.message);
+  const searchTags = useCallback(
+    async (query: string): Promise<TagData[]> => {
+      if (!query.trim()) {
+        return recentTags;
       }
 
-      return data || [];
-    } catch {
-      return [];
-    }
-  }, [supabase, recentTags]);
+      try {
+        const { data, error: searchError } = await supabase
+          .from("tags")
+          .select("*")
+          .ilike("name", `%${query.trim()}%`)
+          .order("name");
+
+        if (searchError) {
+          throw new Error(searchError.message);
+        }
+
+        return data || [];
+      } catch {
+        return [];
+      }
+    },
+    [supabase, recentTags]
+  );
 
   // Create a new tag
-  const createTag = useCallback(async (name: string): Promise<TagData> => {
-    try {
-      const { data, error } = await supabase
-        .from('tags')
-        .insert({ name: name.trim() })
-        .select()
-        .single();
+  const createTag = useCallback(
+    async (name: string): Promise<TagData> => {
+      try {
+        const { data, error } = await supabase
+          .from("tags")
+          .insert({ name: name.trim() })
+          .select()
+          .single();
 
-      if (error) {
-        throw new Error(error.message);
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        toast.success("Tag created successfully");
+
+        // Refetch recent tags to include the new one
+        await fetchRecentTags();
+
+        return data;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to create tag";
+        toast.error(message);
+        throw err;
       }
-
-      toast.success('Tag created successfully');
-
-      // Refetch recent tags to include the new one
-      await fetchRecentTags();
-
-      return data;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create tag';
-      toast.error(message);
-      throw err;
-    }
-  }, [supabase, fetchRecentTags]);
+    },
+    [supabase, fetchRecentTags]
+  );
 
   // Initialize by fetching recent tags
   useEffect(() => {

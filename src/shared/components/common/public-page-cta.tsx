@@ -1,12 +1,12 @@
 // src/shared/components/common/public-page-cta.tsx
-import { Button } from "@/shared/components/ui/button"
-import Link from "next/link"
+import { Button } from "@/shared/components/ui/button";
+import Link from "next/link";
 
 interface PublicPageCTAProps {
-  title: string
-  description: string
-  buttonText: string
-  buttonHref: string
+  title: string;
+  description: string;
+  buttonText: string;
+  buttonHref: string;
 }
 
 export function PublicPageCTA({ title, description, buttonText, buttonHref }: PublicPageCTAProps) {
@@ -15,9 +15,7 @@ export function PublicPageCTA({ title, description, buttonText, buttonHref }: Pu
       <div className="absolute inset-0 bg-linear-to-b from-transparent to-primary/5" />
       <div className="container px-4 max-w-3xl mx-auto text-center relative">
         <h2 className="text-3xl md:text-4xl font-bold mb-6">{title}</h2>
-        <p className="text-xl text-muted-foreground mb-8">
-          {description}
-        </p>
+        <p className="text-xl text-muted-foreground mb-8">{description}</p>
         <Link href={buttonHref}>
           <Button
             size="lg"
@@ -29,6 +27,5 @@ export function PublicPageCTA({ title, description, buttonText, buttonHref }: Pu
         </Link>
       </div>
     </section>
-  )
+  );
 }
-

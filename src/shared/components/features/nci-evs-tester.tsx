@@ -1,109 +1,110 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
-import { Badge } from '@/shared/components/ui/badge'
-import { Loader2, ChevronDown, ChevronUp, Search, ExternalLink } from 'lucide-react'
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { Badge } from "@/shared/components/ui/badge";
+import { Loader2, ChevronDown, ChevronUp, Search, ExternalLink } from "lucide-react";
 
 interface NCIEVSResult {
-  code: string
-  name: string
-  terminology: string
-  version: string
+  code: string;
+  name: string;
+  terminology: string;
+  version: string;
   synonyms?: Array<{
-    name: string
-    type: string
-    source?: string
-  }>
+    name: string;
+    type: string;
+    source?: string;
+  }>;
   definitions?: Array<{
-    definition: string
-    source?: string
-  }>
+    definition: string;
+    source?: string;
+  }>;
   properties?: Array<{
-    type: string
-    value: string
-  }>
-  relevanceScore?: number
-  semanticTypes?: string[]
-  matchReason?: string
+    type: string;
+    value: string;
+  }>;
+  relevanceScore?: number;
+  semanticTypes?: string[];
+  matchReason?: string;
 }
 
 // Semantic type color mapping
 const SEMANTIC_TYPE_COLORS: { [key: string]: string } = {
-  'Neoplastic Process': 'destructive',
-  'Disease or Syndrome': 'default',
-  'Finding': 'secondary',
-  'Pathologic Function': 'default',
-  'Anatomical Abnormality': 'outline',
-}
+  "Neoplastic Process": "destructive",
+  "Disease or Syndrome": "default",
+  Finding: "secondary",
+  "Pathologic Function": "default",
+  "Anatomical Abnormality": "outline",
+};
 
 export function NCIEVSTester() {
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [filterType, setFilterType] = useState<'neoplasms' | 'diseases' | 'pathology' | 'all'>('pathology')
-  const [isLoading, setIsLoading] = useState(false)
-  const [results, setResults] = useState<NCIEVSResult[]>([])
-  const [error, setError] = useState<string | null>(null)
-  const [metadata, setMetadata] = useState<unknown>(null)
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterType, setFilterType] = useState<"neoplasms" | "diseases" | "pathology" | "all">(
+    "pathology"
+  );
+  const [isLoading, setIsLoading] = useState(false);
+  const [results, setResults] = useState<NCIEVSResult[]>([]);
+  const [error, setError] = useState<string | null>(null);
+  const [metadata, setMetadata] = useState<unknown>(null);
 
   const handleSearch = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!searchTerm.trim()) {
-      setError('Please enter a search term')
-      return
+      setError("Please enter a search term");
+      return;
     }
 
-    setIsLoading(true)
-    setError(null)
-    setResults([])
-    setMetadata(null)
+    setIsLoading(true);
+    setError(null);
+    setResults([]);
+    setMetadata(null);
 
     try {
       // Call our proxy API route with filtering
-      const response = await fetch('/api/public/tools/nci-evs', {
-        method: 'POST',
+      const response = await fetch("/api/public/tools/nci-evs", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           term: searchTerm,
           filterType: filterType,
           maxResults: 10,
-          include: 'synonyms,definitions,properties'
-        })
-      })
+          include: "synonyms,definitions,properties",
+        }),
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || `API error: ${response.status}`)
+        const errorData = await response.json();
+        throw new Error(errorData.error || `API error: ${response.status}`);
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!data.success) {
-        throw new Error(data.error || 'Search failed')
+        throw new Error(data.error || "Search failed");
       }
 
-      setResults(data.concepts || [])
+      setResults(data.concepts || []);
       setMetadata({
         total: data.total || 0,
         filteredTotal: data.filtered_total || 0,
         returnedCount: data.returned_count || 0,
         searchTime: data.metadata?.search_time_ms || 0,
-        filterType: data.metadata?.filter_type || 'pathology',
-        terminology: data.metadata?.terminology || 'ncit'
-      })
-
+        filterType: data.metadata?.filter_type || "pathology",
+        terminology: data.metadata?.terminology || "ncit",
+      });
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred')
+      setError(err instanceof Error ? err.message : "An error occurred");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Card className="mb-8 border-2 border-dashed border-primary/30">
@@ -111,7 +112,9 @@ export function NCIEVSTester() {
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2">
             <CardTitle className="text-lg">🧪 NCI EVS API Tester</CardTitle>
-            <Badge variant="outline" className="text-xs">Development Tool</Badge>
+            <Badge variant="outline" className="text-xs">
+              Development Tool
+            </Badge>
           </div>
           {isExpanded ? <ChevronUp className="h-5 w-5" /> : <ChevronDown className="h-5 w-5" />}
         </div>
@@ -123,8 +126,8 @@ export function NCIEVSTester() {
           <div className="p-3 bg-primary/5 border border-primary/20 rounded-md text-sm">
             <p className="font-medium mb-1">🔬 About NCI EVS</p>
             <p className="text-muted-foreground">
-              Search the NCI Thesaurus to find official medical terminology, synonyms, and definitions.
-              Results are filtered and ranked by relevance to pathology terms.
+              Search the NCI Thesaurus to find official medical terminology, synonyms, and
+              definitions. Results are filtered and ranked by relevance to pathology terms.
             </p>
           </div>
 
@@ -135,32 +138,32 @@ export function NCIEVSTester() {
               <Button
                 type="button"
                 size="sm"
-                variant={filterType === 'neoplasms' ? 'default' : 'outline'}
-                onClick={() => setFilterType('neoplasms')}
+                variant={filterType === "neoplasms" ? "default" : "outline"}
+                onClick={() => setFilterType("neoplasms")}
               >
                 Neoplasms Only
               </Button>
               <Button
                 type="button"
                 size="sm"
-                variant={filterType === 'diseases' ? 'default' : 'outline'}
-                onClick={() => setFilterType('diseases')}
+                variant={filterType === "diseases" ? "default" : "outline"}
+                onClick={() => setFilterType("diseases")}
               >
                 Diseases & Neoplasms
               </Button>
               <Button
                 type="button"
                 size="sm"
-                variant={filterType === 'pathology' ? 'default' : 'outline'}
-                onClick={() => setFilterType('pathology')}
+                variant={filterType === "pathology" ? "default" : "outline"}
+                onClick={() => setFilterType("pathology")}
               >
                 All Pathology Terms
               </Button>
               <Button
                 type="button"
                 size="sm"
-                variant={filterType === 'all' ? 'default' : 'outline'}
-                onClick={() => setFilterType('all')}
+                variant={filterType === "all" ? "default" : "outline"}
+                onClick={() => setFilterType("all")}
               >
                 All Results (Unfiltered)
               </Button>
@@ -187,7 +190,7 @@ export function NCIEVSTester() {
                   ) : (
                     <Search className="h-4 w-4" />
                   )}
-                  {isLoading ? 'Searching...' : 'Search'}
+                  {isLoading ? "Searching..." : "Search"}
                 </Button>
               </div>
             </div>
@@ -271,7 +274,7 @@ export function NCIEVSTester() {
                           {result.semanticTypes.map((type, i) => (
                             <Badge
                               key={i}
-                              variant={SEMANTIC_TYPE_COLORS[type] as unknown || 'outline'}
+                              variant={(SEMANTIC_TYPE_COLORS[type] as unknown) || "outline"}
                               className="text-xs"
                             >
                               {type}
@@ -284,7 +287,9 @@ export function NCIEVSTester() {
                     {/* Definitions */}
                     {result.definitions && result.definitions.length > 0 && (
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-1">Definition:</p>
+                        <p className="text-xs font-medium text-muted-foreground mb-1">
+                          Definition:
+                        </p>
                         <p className="text-sm">{result.definitions[0].definition}</p>
                       </div>
                     )}
@@ -292,7 +297,9 @@ export function NCIEVSTester() {
                     {/* Synonyms */}
                     {result.synonyms && result.synonyms.length > 0 && (
                       <div>
-                        <p className="text-xs font-medium text-muted-foreground mb-1">Synonyms ({result.synonyms.length}):</p>
+                        <p className="text-xs font-medium text-muted-foreground mb-1">
+                          Synonyms ({result.synonyms.length}):
+                        </p>
                         <div className="flex flex-wrap gap-1">
                           {result.synonyms.slice(0, 8).map((syn, i) => (
                             <Badge key={i} variant="outline" className="text-xs">
@@ -315,6 +322,5 @@ export function NCIEVSTester() {
         </CardContent>
       )}
     </Card>
-  )
+  );
 }
-

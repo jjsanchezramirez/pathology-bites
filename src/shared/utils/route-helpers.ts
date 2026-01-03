@@ -8,48 +8,45 @@
  */
 export function isPublicRoute(pathname: string): boolean {
   const publicPatterns = [
-    '/',
-    '/login',
-    '/signup',
-    '/forgot-password',
-    '/reset-password',
-    '/verify-email',
-    '/check-email',
-    '/auth-error',
-    '/email-verified',
-    '/email-already-verified',
-    '/link-expired',
-    '/password-reset-success',
-    '/about',
-    '/faq',
-    '/contact',
-    '/privacy',
-    '/terms',
-    '/maintenance',
-    '/coming-soon',
-  ]
+    "/",
+    "/login",
+    "/signup",
+    "/forgot-password",
+    "/reset-password",
+    "/verify-email",
+    "/check-email",
+    "/auth-error",
+    "/email-verified",
+    "/email-already-verified",
+    "/link-expired",
+    "/password-reset-success",
+    "/about",
+    "/faq",
+    "/contact",
+    "/privacy",
+    "/terms",
+    "/maintenance",
+    "/coming-soon",
+  ];
 
   // Exact matches
   if (publicPatterns.includes(pathname)) {
-    return true
+    return true;
   }
 
   // Pattern matches
-  if (
-    pathname.startsWith('/tools/') ||
-    pathname.startsWith('/test/')
-  ) {
-    return true
+  if (pathname.startsWith("/tools/") || pathname.startsWith("/test/")) {
+    return true;
   }
 
-  return false
+  return false;
 }
 
 /**
  * Check if a route requires admin/creator/reviewer access
  */
 export function isAdminRoute(pathname: string): boolean {
-  return pathname.startsWith('/admin') || pathname.startsWith('/api/admin')
+  return pathname.startsWith("/admin") || pathname.startsWith("/api/admin");
 }
 
 /**
@@ -57,23 +54,21 @@ export function isAdminRoute(pathname: string): boolean {
  */
 export function isProtectedApiRoute(pathname: string): boolean {
   const protectedPatterns = [
-    '/api/admin',
-    '/api/questions',
-    '/api/content/questions',
-    '/api/media',
-    '/api/user',
-  ]
+    "/api/admin",
+    "/api/questions",
+    "/api/content/questions",
+    "/api/media",
+    "/api/user",
+  ];
 
-  return protectedPatterns.some(pattern => pathname.startsWith(pattern))
+  return protectedPatterns.some((pattern) => pathname.startsWith(pattern));
 }
 
 /**
  * Check if an API route is public (no auth required)
  */
 export function isPublicApiRoute(pathname: string): boolean {
-  const publicPatterns = [
-    '/api/public/',
-  ]
+  const publicPatterns = ["/api/public/"];
 
-  return publicPatterns.some(pattern => pathname.startsWith(pattern))
+  return publicPatterns.some((pattern) => pathname.startsWith(pattern));
 }

@@ -1,14 +1,9 @@
 // src/features/progress/components/temporary-actions-card.tsx
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import {
-  Settings,
-  BarChart3,
-  CheckCircle,
-  Trophy
-} from 'lucide-react'
-import Link from 'next/link'
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Settings, BarChart3, CheckCircle, Trophy } from "lucide-react";
+import Link from "next/link";
 
 export function TemporaryActionsCard() {
   return (
@@ -21,7 +16,8 @@ export function TemporaryActionsCard() {
       </CardHeader>
       <CardContent className="space-y-4">
         <p className="text-muted-foreground">
-          While we're building the Progress feature, you can still track your learning using these existing tools:
+          While we're building the Progress feature, you can still track your learning using these
+          existing tools:
         </p>
         <div className="flex flex-wrap gap-3">
           <Link href="/dashboard/performance">
@@ -45,6 +41,5 @@ export function TemporaryActionsCard() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

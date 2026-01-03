@@ -1,44 +1,44 @@
 // src/features/dashboard/components/sidebar-connection-status.tsx
-"use client"
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useZeroApiNetworkStatus } from '@/shared/hooks/use-zero-api-network-status'
-import { cn } from '@/shared/utils'
-import { Wifi, WifiOff } from 'lucide-react'
+import { useEffect, useState } from "react";
+import { useZeroApiNetworkStatus } from "@/shared/hooks/use-zero-api-network-status";
+import { cn } from "@/shared/utils";
+import { Wifi, WifiOff } from "lucide-react";
 
 interface SidebarConnectionStatusProps {
-  isCollapsed?: boolean
+  isCollapsed?: boolean;
 }
 
 export function SidebarConnectionStatus({ isCollapsed = false }: SidebarConnectionStatusProps) {
-  const { isOnline } = useZeroApiNetworkStatus()
-  const [show, setShow] = useState(false)
-  const [wasOffline, setWasOffline] = useState(false)
+  const { isOnline } = useZeroApiNetworkStatus();
+  const [show, setShow] = useState(false);
+  const [wasOffline, setWasOffline] = useState(false);
 
   // Show offline indicator immediately, but delay hiding it
   useEffect(() => {
     if (!isOnline) {
-      setShow(true)
-      setWasOffline(true)
+      setShow(true);
+      setWasOffline(true);
     } else if (wasOffline) {
       // If we were offline and came back online, wait a bit before hiding
       const timer = setTimeout(() => {
-        setShow(false)
+        setShow(false);
         // Reset after animation completes
         const resetTimer = setTimeout(() => {
-          setWasOffline(false)
-        }, 500) // animation duration
+          setWasOffline(false);
+        }, 500); // animation duration
 
-        return () => clearTimeout(resetTimer)
-      }, 3000)
+        return () => clearTimeout(resetTimer);
+      }, 3000);
 
-      return () => clearTimeout(timer)
+      return () => clearTimeout(timer);
     }
-  }, [isOnline, wasOffline])
+  }, [isOnline, wasOffline]);
 
   // If we've never been offline and we're online, don't render anything
   if (!wasOffline && isOnline) {
-    return null
+    return null;
   }
 
   if (isCollapsed) {
@@ -47,20 +47,14 @@ export function SidebarConnectionStatus({ isCollapsed = false }: SidebarConnecti
       <div
         className={cn(
           "flex items-center justify-center h-10 rounded-lg transition-all duration-500 mx-3 mb-2",
-          isOnline
-            ? "bg-green-800/20 text-green-300"
-            : "bg-red-800/20 text-red-300",
+          isOnline ? "bg-green-800/20 text-green-300" : "bg-red-800/20 text-red-300",
           show ? "opacity-100" : "opacity-0 pointer-events-none"
         )}
         title={isOnline ? "Back online" : "You're offline"}
       >
-        {isOnline ? (
-          <Wifi className="h-4 w-4" />
-        ) : (
-          <WifiOff className="h-4 w-4" />
-        )}
+        {isOnline ? <Wifi className="h-4 w-4" /> : <WifiOff className="h-4 w-4" />}
       </div>
-    )
+    );
   }
 
   // Expanded sidebar - show full status
@@ -68,9 +62,7 @@ export function SidebarConnectionStatus({ isCollapsed = false }: SidebarConnecti
     <div
       className={cn(
         "flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium transition-all duration-500 mx-3 mb-2",
-        isOnline
-          ? "bg-green-800/20 text-green-300"
-          : "bg-red-800/20 text-red-300",
+        isOnline ? "bg-green-800/20 text-green-300" : "bg-red-800/20 text-red-300",
         show ? "opacity-100" : "opacity-0 pointer-events-none"
       )}
     >
@@ -86,5 +78,5 @@ export function SidebarConnectionStatus({ isCollapsed = false }: SidebarConnecti
         </>
       )}
     </div>
-  )
+  );
 }

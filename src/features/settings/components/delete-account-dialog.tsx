@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,30 +10,30 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-} from '@/shared/components/ui/dialog'
-import { Button } from '@/shared/components/ui/button'
-import { Label } from '@/shared/components/ui/label'
-import { RefreshCw, Trash2 } from 'lucide-react'
+} from "@/shared/components/ui/dialog";
+import { Button } from "@/shared/components/ui/button";
+import { Label } from "@/shared/components/ui/label";
+import { RefreshCw, Trash2 } from "lucide-react";
 
 interface DeleteAccountDialogProps {
-  open: boolean
-  isDeleting: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: (password: string) => void
+  open: boolean;
+  isDeleting: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: (password: string) => void;
 }
 
 export function DeleteAccountDialog({
   open,
   isDeleting,
   onOpenChange,
-  onConfirm
+  onConfirm,
 }: DeleteAccountDialogProps) {
-  const [deletePassword, setDeletePassword] = useState('')
+  const [deletePassword, setDeletePassword] = useState("");
 
   const handleOpenChange = (newOpen: boolean) => {
-    onOpenChange(newOpen)
-    if (!newOpen) setDeletePassword('')
-  }
+    onOpenChange(newOpen);
+    if (!newOpen) setDeletePassword("");
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -46,8 +46,8 @@ export function DeleteAccountDialog({
               Are you absolutely sure you want to delete your account?
               <br />
               <br />
-              This action cannot be undone. This will permanently delete your
-              account and remove all your data from our servers.
+              This action cannot be undone. This will permanently delete your account and remove all
+              your data from our servers.
               <br />
               <br />
               Please enter your password to confirm:
@@ -68,11 +68,7 @@ export function DeleteAccountDialog({
             </div>
           </div>
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => handleOpenChange(false)}
-              disabled={isDeleting}
-            >
+            <Button variant="outline" onClick={() => handleOpenChange(false)} disabled={isDeleting}>
               Cancel
             </Button>
             <Button
@@ -96,6 +92,5 @@ export function DeleteAccountDialog({
         </DialogContent>
       </DialogPortal>
     </Dialog>
-  )
+  );
 }
-

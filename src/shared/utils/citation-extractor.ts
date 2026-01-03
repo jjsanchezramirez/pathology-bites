@@ -1,33 +1,22 @@
 // Citation metadata extraction utilities
 
 export interface CitationData {
-  title: string
-  authors: string[]
-  year: string
-  journal?: string
-  volume?: string
-  issue?: string
-  pages?: string
-  doi?: string
-  url?: string
-  publisher?: string
-  edition?: string
-  accessDate?: string
-  type: 'journal' | 'book' | 'website'
+  title: string;
+  authors: string[];
+  year: string;
+  journal?: string;
+  volume?: string;
+  issue?: string;
+  pages?: string;
+  doi?: string;
+  url?: string;
+  publisher?: string;
+  edition?: string;
+  accessDate?: string;
+  type: "journal" | "book" | "website";
 }
 
 // CrossRef API response types
-
-
-
-
-
-
-
-
-
-
-
 
 /**
  * Extract metadata from a website URL by parsing HTML meta tags
@@ -35,46 +24,52 @@ export interface CitationData {
 export async function extractWebsiteMetadata(url: string): Promise<CitationData> {
   try {
     // Validate URL format
-    new URL(url)
+    new URL(url);
 
-    const response = await fetch(`/api/public/tools/citation-generator/extract-url-metadata?url=${encodeURIComponent(url)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    const response = await fetch(
+      `/api/public/tools/citation-generator/extract-url-metadata?url=${encodeURIComponent(url)}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
-      throw new Error(errorData.error || `HTTP ${response.status}: Failed to fetch website metadata`)
+      const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+      throw new Error(
+        errorData.error || `HTTP ${response.status}: Failed to fetch website metadata`
+      );
     }
 
-    const metadata = await response.json()
+    const metadata = await response.json();
 
     return {
       title: metadata.title || extractTitleFromUrl(url),
-      authors: Array.isArray(metadata.authors) && metadata.authors.length > 0
-        ? metadata.authors
-        : ['Unknown Author'],
+      authors:
+        Array.isArray(metadata.authors) && metadata.authors.length > 0
+          ? metadata.authors
+          : ["Unknown Author"],
       year: metadata.year || new Date().getFullYear().toString(),
       url: url,
       publisher: metadata.publisher || extractDomainFromUrl(url),
-      accessDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD format
-      type: 'website'
-    }
+      accessDate: new Date().toLocaleDateString("en-CA"), // YYYY-MM-DD format
+      type: "website",
+    };
   } catch (error) {
-    console.error('Error extracting website metadata:', error)
+    console.error("Error extracting website metadata:", error);
 
     // Fallback to basic URL parsing
     return {
       title: extractTitleFromUrl(url),
-      authors: ['Unknown Author'],
+      authors: ["Unknown Author"],
       year: new Date().getFullYear().toString(),
       url: url,
       publisher: extractDomainFromUrl(url),
-      accessDate: new Date().toLocaleDateString('en-CA'), // YYYY-MM-DD format
-      type: 'website'
-    }
+      accessDate: new Date().toLocaleDateString("en-CA"), // YYYY-MM-DD format
+      type: "website",
+    };
   }
 }
 
@@ -84,50 +79,52 @@ export async function extractWebsiteMetadata(url: string): Promise<CitationData>
 export async function extractBookMetadata(isbn: string): Promise<CitationData> {
   try {
     // Clean ISBN (remove hyphens and spaces)
-    const cleanIsbn = isbn.replace(/[-\s]/g, '')
+    const cleanIsbn = isbn.replace(/[-\s]/g, "");
 
     if (!cleanIsbn || cleanIsbn.length < 10) {
-      throw new Error('Invalid ISBN format')
+      throw new Error("Invalid ISBN format");
     }
 
-    const response = await fetch(`/api/public/tools/citation-generator/extract-book-metadata?isbn=${encodeURIComponent(cleanIsbn)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    const response = await fetch(
+      `/api/public/tools/citation-generator/extract-book-metadata?isbn=${encodeURIComponent(cleanIsbn)}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
-      throw new Error(errorData.error || `HTTP ${response.status}: Failed to fetch book metadata`)
+      const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+      throw new Error(errorData.error || `HTTP ${response.status}: Failed to fetch book metadata`);
     }
 
-    const metadata = await response.json()
+    const metadata = await response.json();
 
     return {
-      title: metadata.title || 'Unknown Title',
-      authors: Array.isArray(metadata.authors) && metadata.authors.length > 0
-        ? metadata.authors
-        : ['Unknown Author'],
+      title: metadata.title || "Unknown Title",
+      authors:
+        Array.isArray(metadata.authors) && metadata.authors.length > 0
+          ? metadata.authors
+          : ["Unknown Author"],
       year: metadata.year || new Date().getFullYear().toString(),
-      publisher: metadata.publisher || 'Unknown Publisher',
-      type: 'book'
-    }
+      publisher: metadata.publisher || "Unknown Publisher",
+      type: "book",
+    };
   } catch (error) {
-    console.error('Error extracting book metadata:', error)
+    console.error("Error extracting book metadata:", error);
 
     // Fallback response
     return {
-      title: 'Unknown Title',
-      authors: ['Unknown Author'],
+      title: "Unknown Title",
+      authors: ["Unknown Author"],
       year: new Date().getFullYear().toString(),
-      publisher: 'Unknown Publisher',
-      type: 'book'
-    }
+      publisher: "Unknown Publisher",
+      type: "book",
+    };
   }
 }
-
-
 
 /**
  * Extract metadata from journal APIs using DOI
@@ -135,68 +132,70 @@ export async function extractBookMetadata(isbn: string): Promise<CitationData> {
 export async function extractJournalMetadata(doi: string): Promise<CitationData> {
   try {
     // Clean DOI (remove doi: prefix if present)
-    const cleanDoi = doi.replace(/^doi:/, '').replace(/^https?:\/\/(dx\.)?doi\.org\//, '')
+    const cleanDoi = doi.replace(/^doi:/, "").replace(/^https?:\/\/(dx\.)?doi\.org\//, "");
 
     if (!cleanDoi) {
-      throw new Error('Invalid DOI format')
+      throw new Error("Invalid DOI format");
     }
 
-    const response = await fetch(`/api/public/tools/citation-generator/extract-journal-metadata?doi=${encodeURIComponent(cleanDoi)}`, {
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-    })
+    const response = await fetch(
+      `/api/public/tools/citation-generator/extract-journal-metadata?doi=${encodeURIComponent(cleanDoi)}`,
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    );
 
     if (!response.ok) {
-      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }))
-      throw new Error(errorData.error || `HTTP ${response.status}: Failed to fetch journal metadata`)
+      const errorData = await response.json().catch(() => ({ error: "Unknown error" }));
+      throw new Error(
+        errorData.error || `HTTP ${response.status}: Failed to fetch journal metadata`
+      );
     }
 
-    const metadata = await response.json()
+    const metadata = await response.json();
 
     return {
-      title: metadata.title || 'Unknown Title',
-      authors: Array.isArray(metadata.authors) && metadata.authors.length > 0
-        ? metadata.authors
-        : ['Unknown Author'],
+      title: metadata.title || "Unknown Title",
+      authors:
+        Array.isArray(metadata.authors) && metadata.authors.length > 0
+          ? metadata.authors
+          : ["Unknown Author"],
       year: metadata.year || new Date().getFullYear().toString(),
-      journal: metadata.journal || 'Unknown Journal',
+      journal: metadata.journal || "Unknown Journal",
       volume: metadata.volume,
       issue: metadata.issue,
       pages: metadata.pages,
       doi: metadata.doi || cleanDoi,
       url: metadata.url,
-      type: 'journal'
-    }
+      type: "journal",
+    };
   } catch (error) {
-    console.error('Error extracting journal metadata:', error)
+    console.error("Error extracting journal metadata:", error);
 
     // Fallback response
     return {
-      title: 'Unknown Article',
-      authors: ['Unknown Author'],
+      title: "Unknown Article",
+      authors: ["Unknown Author"],
       year: new Date().getFullYear().toString(),
-      journal: 'Unknown Journal',
+      journal: "Unknown Journal",
       doi: doi,
-      type: 'journal'
-    }
+      type: "journal",
+    };
   }
 }
-
-
-
-
 
 /**
  * Helper function to extract domain from URL
  */
 function extractDomainFromUrl(url: string): string {
   try {
-    const urlObj = new URL(url)
-    return urlObj.hostname.replace(/^www\./, '')
+    const urlObj = new URL(url);
+    return urlObj.hostname.replace(/^www\./, "");
   } catch {
-    return 'Unknown Website'
+    return "Unknown Website";
   }
 }
 
@@ -205,38 +204,41 @@ function extractDomainFromUrl(url: string): string {
  */
 function extractTitleFromUrl(url: string): string {
   try {
-    const urlObj = new URL(url)
-    const pathname = urlObj.pathname
-    
+    const urlObj = new URL(url);
+    const pathname = urlObj.pathname;
+
     // Try to extract meaningful title from path
-    const segments = pathname.split('/').filter(segment => segment.length > 0)
-    const lastSegment = segments[segments.length - 1]
-    
-    if (lastSegment && lastSegment !== 'index.html') {
+    const segments = pathname.split("/").filter((segment) => segment.length > 0);
+    const lastSegment = segments[segments.length - 1];
+
+    if (lastSegment && lastSegment !== "index.html") {
       return lastSegment
-        .replace(/[-_]/g, ' ')
-        .replace(/\.(html?|php|aspx?)$/i, '')
-        .replace(/\b\w/g, l => l.toUpperCase())
+        .replace(/[-_]/g, " ")
+        .replace(/\.(html?|php|aspx?)$/i, "")
+        .replace(/\b\w/g, (l) => l.toUpperCase());
     }
-    
-    return urlObj.hostname.replace(/^www\./, '')
+
+    return urlObj.hostname.replace(/^www\./, "");
   } catch {
-    return 'Web Page'
+    return "Web Page";
   }
 }
 
 /**
  * Main function to extract metadata based on input type
  */
-export async function extractMetadata(input: string, type: 'url' | 'doi' | 'isbn'): Promise<CitationData> {
+export async function extractMetadata(
+  input: string,
+  type: "url" | "doi" | "isbn"
+): Promise<CitationData> {
   switch (type) {
-    case 'url':
-      return extractWebsiteMetadata(input)
-    case 'doi':
-      return extractJournalMetadata(input)
-    case 'isbn':
-      return extractBookMetadata(input)
+    case "url":
+      return extractWebsiteMetadata(input);
+    case "doi":
+      return extractJournalMetadata(input);
+    case "isbn":
+      return extractBookMetadata(input);
     default:
-      throw new Error('Unsupported input type')
+      throw new Error("Unsupported input type");
   }
 }

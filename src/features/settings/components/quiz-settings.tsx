@@ -1,10 +1,22 @@
-'use client'
+"use client";
 
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Label } from '@/shared/components/ui/label'
-import { Separator } from '@/shared/components/ui/separator'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
-import { BookOpen } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
+import { Label } from "@/shared/components/ui/label";
+import { Separator } from "@/shared/components/ui/separator";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { BookOpen } from "lucide-react";
 import {
   QuizMode,
   QuizTiming,
@@ -13,21 +25,17 @@ import {
   QUIZ_MODE_CONFIG,
   QUIZ_TIMING_CONFIG,
   QUESTION_TYPE_CONFIG,
-  CATEGORY_SELECTION_CONFIG
-} from '@/features/quiz/types/quiz'
-import { type QuizSettings } from '@/shared/services/user-settings'
+  CATEGORY_SELECTION_CONFIG,
+} from "@/features/quiz/types/quiz";
+import { type QuizSettings } from "@/shared/services/user-settings";
 
 interface QuizSettingsProps {
-  quizSettings: QuizSettings
-  saving: boolean
-  onQuizSettingChange: (key: keyof QuizSettings, value: unknown) => void
+  quizSettings: QuizSettings;
+  saving: boolean;
+  onQuizSettingChange: (key: keyof QuizSettings, value: unknown) => void;
 }
 
-export function QuizSettingsCard({
-  quizSettings,
-  saving,
-  onQuizSettingChange
-}: QuizSettingsProps) {
+export function QuizSettingsCard({ quizSettings, saving, onQuizSettingChange }: QuizSettingsProps) {
   return (
     <Card>
       <CardHeader>
@@ -35,16 +43,16 @@ export function QuizSettingsCard({
           <BookOpen className="h-5 w-5" />
           Quiz Settings
         </CardTitle>
-        <CardDescription>
-          Set your default quiz preferences.
-        </CardDescription>
+        <CardDescription>Set your default quiz preferences.</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
         <div className="space-y-2">
           <Label>Default Questions per Quiz</Label>
           <Select
             value={quizSettings.default_question_count.toString()}
-            onValueChange={(value) => onQuizSettingChange('default_question_count', parseInt(value))}
+            onValueChange={(value) =>
+              onQuizSettingChange("default_question_count", parseInt(value))
+            }
             disabled={saving}
           >
             <SelectTrigger>
@@ -63,7 +71,7 @@ export function QuizSettingsCard({
           <Label>Default Mode</Label>
           <Select
             value={quizSettings.default_mode}
-            onValueChange={(value) => onQuizSettingChange('default_mode', value as QuizMode)}
+            onValueChange={(value) => onQuizSettingChange("default_mode", value as QuizMode)}
             disabled={saving}
           >
             <SelectTrigger>
@@ -83,7 +91,7 @@ export function QuizSettingsCard({
           <Label>Default Timing</Label>
           <Select
             value={quizSettings.default_timing}
-            onValueChange={(value) => onQuizSettingChange('default_timing', value as QuizTiming)}
+            onValueChange={(value) => onQuizSettingChange("default_timing", value as QuizTiming)}
             disabled={saving}
           >
             <SelectTrigger>
@@ -103,7 +111,9 @@ export function QuizSettingsCard({
           <Label>Default Question Type</Label>
           <Select
             value={quizSettings.default_question_type}
-            onValueChange={(value) => onQuizSettingChange('default_question_type', value as QuestionType)}
+            onValueChange={(value) =>
+              onQuizSettingChange("default_question_type", value as QuestionType)
+            }
             disabled={saving}
           >
             <SelectTrigger>
@@ -123,7 +133,9 @@ export function QuizSettingsCard({
           <Label>Default Categories</Label>
           <Select
             value={quizSettings.default_category_selection}
-            onValueChange={(value) => onQuizSettingChange('default_category_selection', value as CategorySelection)}
+            onValueChange={(value) =>
+              onQuizSettingChange("default_category_selection", value as CategorySelection)
+            }
             disabled={saving}
           >
             <SelectTrigger>
@@ -140,6 +152,5 @@ export function QuizSettingsCard({
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

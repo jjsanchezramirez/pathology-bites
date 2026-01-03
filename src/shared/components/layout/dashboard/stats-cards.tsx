@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
 // src/components/admin/dashboard/stats-cards.tsx
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import {
   FileQuestion,
   Users,
@@ -9,19 +9,19 @@ import {
   MessageSquare,
   Clock,
   TrendingUp,
-  AlertCircle
-} from "lucide-react"
-import { DashboardStats } from "@/features/dashboard/services/service"
-import { useUserRole } from "@/shared/hooks/use-user-role"
-import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context"
+  AlertCircle,
+} from "lucide-react";
+import { DashboardStats } from "@/features/dashboard/services/service";
+import { useUserRole } from "@/shared/hooks/use-user-role";
+import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 
 interface StatsCardsProps {
-  stats: DashboardStats
+  stats: DashboardStats;
 }
 
 export function StatsCards({ stats }: StatsCardsProps) {
-  const { isAdmin, _isCreator, _isReviewer, canAccess } = useUserRole()
-  const { adminMode } = useDashboardTheme()
+  const { isAdmin, _isCreator, _isReviewer, canAccess } = useUserRole();
+  const { adminMode } = useDashboardTheme();
 
   const allCards = [
     // Row 1: Platform overview
@@ -32,7 +32,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: Users,
       trend: "neutral",
       permission: "users.view",
-      adminOnly: true
+      adminOnly: true,
     },
     {
       title: "User Inquiries",
@@ -41,15 +41,20 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: MessageSquare,
       trend: stats.unreadInquiries > 5 ? "warning" : "neutral",
       permission: "inquiries.manage",
-      adminOnly: true
+      adminOnly: true,
     },
     {
       title: "Published Questions",
-      value: (stats.totalQuestions - stats.draftQuestions - stats.pendingQuestions - stats.rejectedQuestions).toLocaleString(),
+      value: (
+        stats.totalQuestions -
+        stats.draftQuestions -
+        stats.pendingQuestions -
+        stats.rejectedQuestions
+      ).toLocaleString(),
       description: "Live and available",
       icon: FileQuestion,
       trend: "positive",
-      permission: "questions.view"
+      permission: "questions.view",
     },
     {
       title: "Image Library",
@@ -58,7 +63,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: ImageIcon,
       trend: "neutral",
       permission: "images.manage",
-      adminOnly: true
+      adminOnly: true,
     },
 
     // Row 2: Question workflow and issues (red cards for problems)
@@ -69,7 +74,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: FileQuestion,
       trend: "neutral",
       permission: "questions.create",
-      showToRoles: ['admin', 'creator']
+      showToRoles: ["admin", "creator"],
     },
     {
       title: "Pending Reviews",
@@ -78,7 +83,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: Clock,
       trend: stats.pendingQuestions > 0 ? "warning" : "positive",
       permission: "questions.review",
-      showToRoles: ['admin', 'reviewer']
+      showToRoles: ["admin", "reviewer"],
     },
     {
       title: "Rejected Questions",
@@ -87,7 +92,7 @@ export function StatsCards({ stats }: StatsCardsProps) {
       icon: AlertCircle,
       trend: "critical", // Always critical styling for rejected questions
       permission: "questions.create",
-      showToRoles: ['admin', 'creator']
+      showToRoles: ["admin", "creator"],
     },
     {
       title: "Flagged Questions",
@@ -95,106 +100,102 @@ export function StatsCards({ stats }: StatsCardsProps) {
       description: `${stats.pendingReports} need attention`,
       icon: AlertCircle,
       trend: "critical", // Always critical styling for flagged questions
-      permission: "questions.review"
-    }
-  ]
+      permission: "questions.review",
+    },
+  ];
 
   // Filter cards based on selected admin mode and user permissions
-  const cards = allCards.filter(card => {
+  const cards = allCards.filter((card) => {
     // Use adminMode to determine what to show, but still check actual permissions
-    const viewingAsAdmin = adminMode === 'admin'
-    const viewingAsCreator = adminMode === 'creator'
-    const viewingAsReviewer = adminMode === 'reviewer'
-    const viewingAsUser = adminMode === 'user'
+    const viewingAsAdmin = adminMode === "admin";
+    const viewingAsCreator = adminMode === "creator";
+    const viewingAsReviewer = adminMode === "reviewer";
+    const viewingAsUser = adminMode === "user";
 
     // Admin-only cards should only show when viewing as admin AND user has admin permissions
-    if (card.adminOnly && (!viewingAsAdmin || !isAdmin)) return false
+    if (card.adminOnly && (!viewingAsAdmin || !isAdmin)) return false;
 
     // Still check actual permissions for security
-    if (card.permission && !canAccess(card.permission)) return false
+    if (card.permission && !canAccess(card.permission)) return false;
 
     // Check role-specific visibility based on adminMode
     if (card.showToRoles) {
-      const currentViewRole = adminMode === 'user' ? 'user' : adminMode
-      if (!card.showToRoles.includes(currentViewRole)) return false
+      const currentViewRole = adminMode === "user" ? "user" : adminMode;
+      if (!card.showToRoles.includes(currentViewRole)) return false;
     }
 
-    return true
-  })
+    return true;
+  });
 
   const getTrendColor = (trend: string) => {
     switch (trend) {
       case "positive":
-        return "text-green-600 dark:text-green-500"
+        return "text-green-600 dark:text-green-500";
       case "warning":
-        return "text-yellow-600 dark:text-yellow-500"
+        return "text-yellow-600 dark:text-yellow-500";
       case "negative":
-        return "text-destructive"
+        return "text-destructive";
       case "critical":
-        return "text-destructive font-medium"
+        return "text-destructive font-medium";
       default:
-        return "text-muted-foreground"
+        return "text-muted-foreground";
     }
-  }
+  };
 
   const getCardBorderColor = (_trend: string) => {
     // All cards have the same border and background
-    return ""
-  }
+    return "";
+  };
 
   const getValueColor = (trend: string) => {
     switch (trend) {
       case "critical":
-        return "text-destructive"
+        return "text-destructive";
       default:
-        return ""
+        return "";
     }
-  }
+  };
 
   const getTrendIcon = (trend: string) => {
     switch (trend) {
       case "positive":
-        return <TrendingUp className="h-3 w-3" />
+        return <TrendingUp className="h-3 w-3" />;
       case "warning":
-        return <AlertCircle className="h-3 w-3" />
+        return <AlertCircle className="h-3 w-3" />;
       case "negative":
-        return <AlertCircle className="h-3 w-3" />
+        return <AlertCircle className="h-3 w-3" />;
       case "critical":
-        return <AlertCircle className="h-3 w-3" />
+        return <AlertCircle className="h-3 w-3" />;
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   const getIconColor = (trend: string) => {
     switch (trend) {
       case "critical":
-        return "text-destructive"
+        return "text-destructive";
       case "negative":
-        return "text-destructive"
+        return "text-destructive";
       case "warning":
-        return "text-yellow-500 dark:text-yellow-400"
+        return "text-yellow-500 dark:text-yellow-400";
       case "positive":
-        return "text-green-500 dark:text-green-400"
+        return "text-green-500 dark:text-green-400";
       default:
-        return "text-muted-foreground"
+        return "text-muted-foreground";
     }
-  }
+  };
 
   return (
     <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
       {cards.map((card, index) => (
         <Card key={index} className={getCardBorderColor(card.trend)}>
           <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">
-              {card.title}
-            </CardTitle>
+            <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
             <card.icon className={`h-4 w-4 ${getIconColor(card.trend)}`} />
           </CardHeader>
           <CardContent>
-            <div className={`text-2xl font-bold ${getValueColor(card.trend)}`}>
-              {card.value}
-            </div>
+            <div className={`text-2xl font-bold ${getValueColor(card.trend)}`}>{card.value}</div>
             <div className={`text-xs flex items-center gap-1 ${getTrendColor(card.trend)}`}>
               {getTrendIcon(card.trend)}
               <span>{card.description}</span>
@@ -203,5 +204,5 @@ export function StatsCards({ stats }: StatsCardsProps) {
         </Card>
       ))}
     </div>
-  )
+  );
 }

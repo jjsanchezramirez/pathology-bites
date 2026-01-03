@@ -1,15 +1,11 @@
 // src/app/(dashboard)/dashboard/layout.tsx
-'use client'
+"use client";
 
-import { UnifiedLayoutClient } from "@/shared/components/layout/unified-layout-client"
-import { DashboardSettingsProvider } from "@/shared/contexts/dashboard-settings-provider"
-import { DashboardThemeProvider } from "@/shared/contexts/dashboard-theme-context"
+import { UnifiedLayoutClient } from "@/shared/components/layout/unified-layout-client";
+import { DashboardSettingsProvider } from "@/shared/contexts/dashboard-settings-provider";
+import { DashboardThemeProvider } from "@/shared/contexts/dashboard-theme-context";
 
-export default function DashboardLayoutWrapper({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function DashboardLayoutWrapper({ children }: { children: React.ReactNode }) {
   return (
     <DashboardSettingsProvider>
       <DashboardThemeProvider>
@@ -24,5 +20,5 @@ export default function DashboardLayoutWrapper({
         </UnifiedLayoutClient>
       </DashboardThemeProvider>
     </DashboardSettingsProvider>
-  )
+  );
 }

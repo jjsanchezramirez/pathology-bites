@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Badge } from '@/shared/components/ui/badge'
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
 import {
   Play,
   Target,
@@ -20,123 +20,127 @@ import {
   CheckCircle2,
   Circle,
   Clock,
-} from 'lucide-react'
-import Link from 'next/link'
+} from "lucide-react";
+import Link from "next/link";
 
 export interface QuizSessionListItem {
-  id: string
-  title: string
-  status: string
-  mode: string
-  difficulty?: string
-  totalQuestions: number
-  score?: number
-  correctAnswers?: number
-  createdAt: string
-  completedAt?: string
-  totalTimeSpent?: number
-  currentQuestionIndex?: number
-  timeLimit?: number
-  timeRemaining?: number
-  isTimedMode?: boolean
+  id: string;
+  title: string;
+  status: string;
+  mode: string;
+  difficulty?: string;
+  totalQuestions: number;
+  score?: number;
+  correctAnswers?: number;
+  createdAt: string;
+  completedAt?: string;
+  totalTimeSpent?: number;
+  currentQuestionIndex?: number;
+  timeLimit?: number;
+  timeRemaining?: number;
+  isTimedMode?: boolean;
   config?: {
-    mode: string
-    timing: string
-    questionType: string
-    categorySelection: string
-  }
+    mode: string;
+    timing: string;
+    questionType: string;
+    categorySelection: string;
+  };
 }
 
 interface QuizCardProps {
-  quiz: QuizSessionListItem
-  onDelete: (quiz: QuizSessionListItem) => void
-  formatDate: (dateString: string) => string
-  formatTimeSpent?: (seconds: number) => string
+  quiz: QuizSessionListItem;
+  onDelete: (quiz: QuizSessionListItem) => void;
+  formatDate: (dateString: string) => string;
+  formatTimeSpent?: (seconds: number) => string;
 }
 
 const formatShortDate = (dateString: string) => {
   try {
-    const date = new Date(dateString)
-    if (isNaN(date.getTime())) return 'Invalid'
-    return date.toLocaleDateString('en-US', {
-      month: 'short',
-      day: 'numeric'
-    })
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Invalid";
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
   } catch {
-    return 'Invalid'
+    return "Invalid";
   }
-}
+};
 
 export function QuizCard({ quiz, _onDelete, formatDate, formatTimeSpent }: QuizCardProps) {
   // Default time formatter if not provided
   const defaultFormatTimeSpent = (seconds: number) => {
-    if (seconds < 60) return `${seconds}s`
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`
-    return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`
-  }
+    if (seconds < 60) return `${seconds}s`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m`;
+    return `${Math.floor(seconds / 3600)}h ${Math.floor((seconds % 3600) / 60)}m`;
+  };
 
-  const timeFormatter = formatTimeSpent || defaultFormatTimeSpent
+  const timeFormatter = formatTimeSpent || defaultFormatTimeSpent;
   const getStatusBadge = (status: string) => {
     switch (status) {
-      case 'completed':
-        return <Badge variant="default">Completed</Badge>
-      case 'in_progress':
-        return <Badge variant="secondary">In Progress</Badge>
-      case 'not_started':
-        return <Badge variant="destructive">Not Started</Badge>
+      case "completed":
+        return <Badge variant="default">Completed</Badge>;
+      case "in_progress":
+        return <Badge variant="secondary">In Progress</Badge>;
+      case "not_started":
+        return <Badge variant="destructive">Not Started</Badge>;
       default:
-        return <Badge variant="outline">{status}</Badge>
+        return <Badge variant="outline">{status}</Badge>;
     }
-  }
+  };
 
   const getModeDisplayText = (mode: string | undefined) => {
-    if (!mode) return 'Unknown'
+    if (!mode) return "Unknown";
 
     switch (mode.toLowerCase()) {
-      case 'practice':
-        return 'Practice'
-      case 'tutor':
-        return 'Tutor'
-      case 'timed':
-        return 'Timed'
-      case 'untimed':
-        return 'Untimed'
+      case "practice":
+        return "Practice";
+      case "tutor":
+        return "Tutor";
+      case "timed":
+        return "Timed";
+      case "untimed":
+        return "Untimed";
       default:
-        return mode.charAt(0).toUpperCase() + mode.slice(1)
+        return mode.charAt(0).toUpperCase() + mode.slice(1);
     }
-  }
+  };
 
   const getQuestionTypeDisplay = (quiz: QuizSessionListItem) => {
-    const questionType = quiz.config?.questionType || 'all'
+    const questionType = quiz.config?.questionType || "all";
     const questionTypeMap = {
-      'all': 'All Qs',
-      'unused': 'Unused Qs',
-      'needsReview': 'Qs for Review',
-      'marked': 'Marked Qs',
-      'mastered': 'Mastered Qs'
-    }
-    return questionTypeMap[questionType as keyof typeof questionTypeMap] || 'All Qs'
-  }
+      all: "All Qs",
+      unused: "Unused Qs",
+      needsReview: "Qs for Review",
+      marked: "Marked Qs",
+      mastered: "Mastered Qs",
+    };
+    return questionTypeMap[questionType as keyof typeof questionTypeMap] || "All Qs";
+  };
 
   const getTimingIcon = (quiz: QuizSessionListItem) => {
-    return quiz.isTimedMode ? <Timer className="h-4 w-4" /> : <TimerOff className="h-4 w-4" />
-  }
+    return quiz.isTimedMode ? <Timer className="h-4 w-4" /> : <TimerOff className="h-4 w-4" />;
+  };
 
   const getModeIcon = (quiz: QuizSessionListItem) => {
-    return quiz.mode === 'tutor' ? <GraduationCap className="h-4 w-4" /> : <BookOpen className="h-4 w-4" />
-  }
+    return quiz.mode === "tutor" ? (
+      <GraduationCap className="h-4 w-4" />
+    ) : (
+      <BookOpen className="h-4 w-4" />
+    );
+  };
 
   const getQuestionTypeIcon = (quiz: QuizSessionListItem) => {
-    const questionType = quiz.config?.questionType || 'all'
+    const questionType = quiz.config?.questionType || "all";
     const iconMap = {
-      'all': <HelpCircle className="h-4 w-4" />,
-      'unused': <Circle className="h-4 w-4" />,
-      'needsReview': <Target className="h-4 w-4" />,
-      'marked': <Star className="h-4 w-4" />,
-      'mastered': <CheckCircle2 className="h-4 w-4" />
-    }
-    return iconMap[questionType as keyof typeof iconMap] || <HelpCircle className="h-4 w-4" />
-  }
+      all: <HelpCircle className="h-4 w-4" />,
+      unused: <Circle className="h-4 w-4" />,
+      needsReview: <Target className="h-4 w-4" />,
+      marked: <Star className="h-4 w-4" />,
+      mastered: <CheckCircle2 className="h-4 w-4" />,
+    };
+    return iconMap[questionType as keyof typeof iconMap] || <HelpCircle className="h-4 w-4" />;
+  };
 
   return (
     <Card className="hover:shadow-md transition-shadow">
@@ -156,10 +160,9 @@ export function QuizCard({ quiz, _onDelete, formatDate, formatTimeSpent }: QuizC
               <div className="flex items-center gap-1">
                 <Hash className="h-4 w-4" />
                 <span>
-                  {quiz.status === 'in_progress'
-                    ? `${(quiz.currentQuestionIndex || 0) + 1} of ${quiz.totalQuestions} (${Math.round(((quiz.currentQuestionIndex || 0) + 1) / quiz.totalQuestions * 100)}%)`
-                    : `${quiz.totalQuestions} questions`
-                  }
+                  {quiz.status === "in_progress"
+                    ? `${(quiz.currentQuestionIndex || 0) + 1} of ${quiz.totalQuestions} (${Math.round((((quiz.currentQuestionIndex || 0) + 1) / quiz.totalQuestions) * 100)}%)`
+                    : `${quiz.totalQuestions} questions`}
                 </span>
               </div>
 
@@ -182,7 +185,7 @@ export function QuizCard({ quiz, _onDelete, formatDate, formatTimeSpent }: QuizC
 
               <div className="flex items-center gap-1">
                 {getTimingIcon(quiz)}
-                <span>{quiz.isTimedMode ? 'Timed' : 'Untimed'}</span>
+                <span>{quiz.isTimedMode ? "Timed" : "Untimed"}</span>
               </div>
 
               <div className="flex items-center gap-1">
@@ -190,25 +193,27 @@ export function QuizCard({ quiz, _onDelete, formatDate, formatTimeSpent }: QuizC
                 <span>{getQuestionTypeDisplay(quiz)}</span>
               </div>
 
-              {quiz.totalTimeSpent !== undefined && quiz.totalTimeSpent !== null && quiz.totalTimeSpent > 0 && (
-                <div className="flex items-center gap-1">
-                  <Clock className="h-4 w-4" />
-                  <span>{timeFormatter(quiz.totalTimeSpent)}</span>
-                </div>
-              )}
+              {quiz.totalTimeSpent !== undefined &&
+                quiz.totalTimeSpent !== null &&
+                quiz.totalTimeSpent > 0 && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    <span>{timeFormatter(quiz.totalTimeSpent)}</span>
+                  </div>
+                )}
             </div>
           </div>
 
           {/* Right side: Action buttons */}
           <div className="flex items-center gap-2 ml-4">
-            {quiz.status === 'in_progress' && (
+            {quiz.status === "in_progress" && (
               <Link href={`/dashboard/quiz/${quiz.id}`}>
                 <Button size="sm" className="w-[180px]">
                   Continue
                 </Button>
               </Link>
             )}
-            {quiz.status === 'completed' && (
+            {quiz.status === "completed" && (
               <>
                 <Link href={`/dashboard/quiz/${quiz.id}/results`}>
                   <Button size="sm" className="w-[85px]">
@@ -249,28 +254,30 @@ export function QuizCard({ quiz, _onDelete, formatDate, formatTimeSpent }: QuizC
             </div>
             <div className="flex items-center gap-1">
               {getTimingIcon(quiz)}
-              <span>{quiz.isTimedMode ? 'Timed' : 'Untimed'}</span>
+              <span>{quiz.isTimedMode ? "Timed" : "Untimed"}</span>
             </div>
-            {quiz.totalTimeSpent !== undefined && quiz.totalTimeSpent !== null && quiz.totalTimeSpent > 0 && (
-              <div className="flex items-center gap-1">
-                <Clock className="h-3.5 w-3.5" />
-                <span>{timeFormatter(quiz.totalTimeSpent)}</span>
-              </div>
-            )}
+            {quiz.totalTimeSpent !== undefined &&
+              quiz.totalTimeSpent !== null &&
+              quiz.totalTimeSpent > 0 && (
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>{timeFormatter(quiz.totalTimeSpent)}</span>
+                </div>
+              )}
             <div className="flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" />
               <span>{formatShortDate(quiz.createdAt)}</span>
             </div>
           </div>
 
-          {quiz.status === 'in_progress' && (
+          {quiz.status === "in_progress" && (
             <Link href={`/dashboard/quiz/${quiz.id}`}>
               <Button size="sm" className="w-full">
                 Continue
               </Button>
             </Link>
           )}
-          {quiz.status === 'completed' && (
+          {quiz.status === "completed" && (
             <div className="flex gap-2">
               <Link href={`/dashboard/quiz/${quiz.id}/results`} className="flex-1">
                 <Button size="sm" className="w-full">
@@ -287,6 +294,5 @@ export function QuizCard({ quiz, _onDelete, formatDate, formatTimeSpent }: QuizC
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

@@ -9,19 +9,20 @@ This directory contains API endpoints for interacting with Cloudflare R2 storage
 Lists files in the Cloudflare R2 bucket with pagination, filtering, and search capabilities.
 
 #### Authentication
+
 - **Required**: Admin or Creator role
 - **Rate Limited**: 200 requests per minute (admin rate limiter)
 
 #### Query Parameters
 
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `page` | number | 1 | Page number for pagination |
-| `limit` | number | 50 | Number of files per page (max 1000) |
-| `prefix` | string | - | Filter files by key prefix (folder path) |
-| `search` | string | - | Search files by key name (case-insensitive) |
-| `sortBy` | string | 'name' | Sort field: 'name', 'size', 'lastModified' |
-| `sortOrder` | string | 'asc' | Sort order: 'asc' or 'desc' |
+| Parameter   | Type   | Default | Description                                 |
+| ----------- | ------ | ------- | ------------------------------------------- |
+| `page`      | number | 1       | Page number for pagination                  |
+| `limit`     | number | 50      | Number of files per page (max 1000)         |
+| `prefix`    | string | -       | Filter files by key prefix (folder path)    |
+| `search`    | string | -       | Search files by key name (case-insensitive) |
+| `sortBy`    | string | 'name'  | Sort field: 'name', 'size', 'lastModified'  |
+| `sortOrder` | string | 'asc'   | Sort order: 'asc' or 'desc'                 |
 
 #### Response Format
 
@@ -80,17 +81,17 @@ Lists files in the Cloudflare R2 bucket with pagination, filtering, and search c
 
 ```typescript
 // Basic file listing
-const response = await fetch('/api/r2/files?page=1&limit=20')
-const data = await response.json()
+const response = await fetch("/api/r2/files?page=1&limit=20");
+const data = await response.json();
 
 // Filter by folder
-const imagesResponse = await fetch('/api/r2/files?prefix=images/&limit=50')
+const imagesResponse = await fetch("/api/r2/files?prefix=images/&limit=50");
 
 // Search for specific files
-const searchResponse = await fetch('/api/r2/files?search=microscopic&sortBy=size&sortOrder=desc')
+const searchResponse = await fetch("/api/r2/files?search=microscopic&sortBy=size&sortOrder=desc");
 
 // Paginate through large datasets
-const page2Response = await fetch('/api/r2/files?page=2&limit=100')
+const page2Response = await fetch("/api/r2/files?page=2&limit=100");
 ```
 
 ### Other R2 Endpoints
@@ -136,6 +137,7 @@ CLOUDFLARE_R2_PUBLIC_URL=https://pub-account.r2.dev
 ## Integration with Existing Systems
 
 This API integrates seamlessly with:
+
 - Existing R2 storage service (`/src/shared/services/r2-storage.ts`)
 - Admin authentication system
 - Rate limiting infrastructure
@@ -145,6 +147,7 @@ This API integrates seamlessly with:
 ## Future Enhancements
 
 Potential improvements for future versions:
+
 - File upload endpoint
 - Bulk file operations
 - File metadata editing

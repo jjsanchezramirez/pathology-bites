@@ -1,10 +1,10 @@
 // src/components/questions/categories-dropdown.tsx
-'use client';
+"use client";
 
-import { useMemo } from 'react';
+import { useMemo } from "react";
 
-import { useCategories } from '@/features/questions/hooks/use-categories';
-import { CategoryData } from '@/features/questions/types/questions';
+import { useCategories } from "@/features/questions/hooks/use-categories";
+import { CategoryData } from "@/features/questions/types/questions";
 
 interface CategoriesDropdownProps {
   selectedCategoryId: string;
@@ -13,7 +13,7 @@ interface CategoriesDropdownProps {
 
 export function CategoriesDropdown({
   selectedCategoryId,
-  onCategoryChange
+  onCategoryChange,
 }: CategoriesDropdownProps) {
   const { categories } = useCategories();
 
@@ -25,7 +25,7 @@ export function CategoriesDropdown({
     const childCategories = new Map<string, CategoryData[]>();
 
     // First pass: organize into map and separate roots from children
-    categories.forEach(category => {
+    categories.forEach((category) => {
       categoryMap.set(category.id, category);
       if (!category.parent_id) {
         rootCategories.push(category);
@@ -47,7 +47,7 @@ export function CategoriesDropdown({
       // Sort current level alphabetically
       parentCategories.sort(sortAlphabetically);
 
-      parentCategories.forEach(category => {
+      parentCategories.forEach((category) => {
         result.push(category);
 
         // Add children recursively
@@ -67,19 +67,17 @@ export function CategoriesDropdown({
     onCategoryChange(categoryId);
   };
 
-  const _selectedCategory = categories.find(cat => cat.id === selectedCategoryId);
+  const _selectedCategory = categories.find((cat) => cat.id === selectedCategoryId);
 
   const renderCategoryName = (category: CategoryData) => {
     const indentLevel = category.level - 1;
-    const prefix = '> '.repeat(indentLevel);
+    const prefix = "> ".repeat(indentLevel);
     return `${prefix}${category.name}`;
   };
 
   return (
     <div className="space-y-2">
-      <label className="text-sm font-medium">
-        Category
-      </label>
+      <label className="text-sm font-medium">Category</label>
       <select
         value={selectedCategoryId}
         onChange={(e) => handleCategorySelect(e.target.value)}

@@ -1,89 +1,102 @@
-"use client"
+"use client";
 
-import { useEffect, useState } from 'react'
-import { AnkomaData, AnkomaDeck } from '@/features/anki/types/anki-card'
-import { parseAnkomaData } from '@/features/anki/utils/ankoma-parser'
-import { ANKOMA_JSON_URL } from '@/shared/config/ankoma'
-import { toast } from '@/shared/utils/toast'
+import { useEffect, useState } from "react";
+import { AnkomaData, AnkomaDeck } from "@/features/anki/types/anki-card";
+import { parseAnkomaData } from "@/features/anki/utils/ankoma-parser";
+import { ANKOMA_JSON_URL } from "@/shared/config/ankoma";
+import { toast } from "@/shared/utils/toast";
 
 // Module-scope cache so we only fetch once per session
-let cachedAnkomaPromise: Promise<AnkomaData> | null = null
+let cachedAnkomaPromise: Promise<AnkomaData> | null = null;
 
 async function loadClientAnkoma(): Promise<AnkomaData> {
-  if (cachedAnkomaPromise) return cachedAnkomaPromise
+  if (cachedAnkomaPromise) return cachedAnkomaPromise;
 
   async function fetchWithFallback() {
-    const fetchWithTimeout = async (input: RequestInfo | URL, init?: RequestInit & { timeoutMs?: number }) => {
-      const controller = new AbortController()
-      const timeout = setTimeout(() => controller.abort(), init?.timeoutMs ?? 15000)
+    const fetchWithTimeout = async (
+      input: RequestInfo | URL,
+      init?: RequestInit & { timeoutMs?: number }
+    ) => {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), init?.timeoutMs ?? 15000);
       try {
-        const res = await fetch(input, { ...init, signal: controller.signal })
-        return res
+        const res = await fetch(input, { ...init, signal: controller.signal });
+        return res;
       } finally {
-        clearTimeout(timeout)
+        clearTimeout(timeout);
       }
-    }
+    };
 
     try {
-      const res = await fetchWithTimeout(ANKOMA_JSON_URL, { cache: 'force-cache', timeoutMs: 15000 })
-      if (!res.ok) throw new Error(`Failed: ${res.status}`)
-      return res
+      const res = await fetchWithTimeout(ANKOMA_JSON_URL, {
+        cache: "force-cache",
+        timeoutMs: 15000,
+      });
+      if (!res.ok) throw new Error(`Failed: ${res.status}`);
+      return res;
     } catch (e) {
-      const msg = e?.name === 'AbortError'
-        ? 'Timed out fetching Ankoma data. Please check your network and try again.'
-        : (e?.message || 'Failed to fetch Ankoma dataset.')
+      const msg =
+        e?.name === "AbortError"
+          ? "Timed out fetching Ankoma data. Please check your network and try again."
+          : e?.message || "Failed to fetch Ankoma dataset.";
 
       // In production, do NOT fall back to Vercel proxy to avoid bandwidth/invocations.
-      console.error('[Ankoma] R2 fetch failed. Check R2 CORS and network.', e)
-      throw new Error(msg)
+      console.error("[Ankoma] R2 fetch failed. Check R2 CORS and network.", e);
+      throw new Error(msg);
     }
   }
 
-  cachedAnkomaPromise = fetchWithFallback()
-    .then(async (res) => {
-      if (!res.ok) throw new Error(`Failed to fetch Ankoma data: ${res.status}`)
-      const rawData: AnkomaDeck = await res.json()
-      return parseAnkomaData(rawData)
-    })
+  cachedAnkomaPromise = fetchWithFallback().then(async (res) => {
+    if (!res.ok) throw new Error(`Failed to fetch Ankoma data: ${res.status}`);
+    const rawData: AnkomaDeck = await res.json();
+    return parseAnkomaData(rawData);
+  });
 
-  return cachedAnkomaPromise
+  return cachedAnkomaPromise;
 }
 
 export function useClientAnkoma() {
-  const [ankomaData, setAnkomaData] = useState<AnkomaData | null>(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [ankomaData, setAnkomaData] = useState<AnkomaData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    let mounted = true
-    setIsLoading(true)
+    let mounted = true;
+    setIsLoading(true);
     loadClientAnkoma()
-      .then(data => { if (mounted) setAnkomaData(data) })
-      .catch(err => {
+      .then((data) => {
+        if (mounted) setAnkomaData(data);
+      })
+      .catch((err) => {
         if (mounted) {
-          const errorMessage = err.message || 'Failed to load Ankoma data';
+          const errorMessage = err.message || "Failed to load Ankoma data";
           setError(errorMessage);
 
           // Detect network errors (laptop sleep/wake, offline, etc.)
-          const isNetworkError = err instanceof TypeError &&
-                                (err.message?.includes('fetch') || err.message?.includes('network'));
+          const isNetworkError =
+            err instanceof TypeError &&
+            (err.message?.includes("fetch") || err.message?.includes("network"));
 
           if (isNetworkError) {
-            toast.error('Network connection interrupted. Please refresh the page.');
-          } else if (err.message?.includes('Timed out')) {
-            toast.error('Request timed out. Please check your network connection.');
+            toast.error("Network connection interrupted. Please refresh the page.");
+          } else if (err.message?.includes("Timed out")) {
+            toast.error("Request timed out. Please check your network connection.");
           } else {
             toast.error(errorMessage);
           }
         }
       })
-      .finally(() => { if (mounted) setIsLoading(false) })
-    return () => { mounted = false }
-  }, [])
+      .finally(() => {
+        if (mounted) setIsLoading(false);
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
-  const totalCards = ankomaData?.totalCards || 0
-  const sections = ankomaData?.sections || []
-  const lastLoaded = ankomaData?.lastLoaded
+  const totalCards = ankomaData?.totalCards || 0;
+  const sections = ankomaData?.sections || [];
+  const lastLoaded = ankomaData?.lastLoaded;
 
   return {
     // Data
@@ -95,8 +108,8 @@ export function useClientAnkoma() {
     // Metadata
     totalCards,
     lastLoaded,
-    
+
     // Cache status
-    isDataCached: !!cachedAnkomaPromise
-  }
+    isDataCached: !!cachedAnkomaPromise,
+  };
 }

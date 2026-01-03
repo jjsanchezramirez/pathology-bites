@@ -1,15 +1,15 @@
 /**
  * Pure Serverless Hybrid Quiz System - Database Sync Manager
- * 
+ *
  * This component handles the batched synchronization with the server,
  * achieving the 96.7% API call reduction by batching all operations
  * into just 2 API calls per quiz session.
- * 
+ *
  * API Call #1: Initial quiz data fetch
  * API Call #2: Final batch submission of all answers and completion data
  */
 
-import { QuizState, QuizAnswer, QuizQuestionTransformer } from '../../types/quiz-question';
+import { QuizState, QuizAnswer, QuizQuestionTransformer } from "../../types/quiz-question";
 
 export interface QuizSyncData {
   sessionId: string;
@@ -31,7 +31,7 @@ export interface QuizSyncData {
     endTime?: number;
     totalTimeSpent: number;
   };
-  status: QuizState['status'];
+  status: QuizState["status"];
   metadata?: Record<string, unknown>;
 }
 
@@ -79,16 +79,16 @@ export class DatabaseSyncManager {
 
   constructor(options: DatabaseSyncManagerOptions = {}) {
     this.options = {
-      apiBaseUrl: '/api/quiz',
+      apiBaseUrl: "/api/quiz",
       enableCompression: true,
       enableRetry: true,
       maxRetries: 3,
       retryDelay: 1000,
-      csrfTokenGetter: async () => '', // Default no-op, should be provided by caller
+      csrfTokenGetter: async () => "", // Default no-op, should be provided by caller
       onSyncStart: () => {},
       onSyncSuccess: () => {},
       onSyncError: () => {},
-      ...options
+      ...options,
     };
   }
 
@@ -115,17 +115,17 @@ export class DatabaseSyncManager {
       const cachedData = this.getFromCache(cacheKey);
 
       if (cachedData) {
-        console.log('[Hybrid] Using cached quiz session data - 0 API calls');
+        console.log("[Hybrid] Using cached quiz session data - 0 API calls");
         return cachedData;
       }
 
-      console.log('[Hybrid] No cache found, fetching from server');
+      console.log("[Hybrid] No cache found, fetching from server");
       const response = await fetch(`${this.options.apiBaseUrl}/sessions/${sessionId}`, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include', // Include cookies for authentication
+        credentials: "include", // Include cookies for authentication
       });
 
       if (!response.ok) {
@@ -144,11 +144,11 @@ export class DatabaseSyncManager {
 
       // Transform config to hybrid system format
       const transformedConfig = {
-        mode: data.config?.mode || 'tutor',
-        timing: data.config?.timing || 'untimed',
+        mode: data.config?.mode || "tutor",
+        timing: data.config?.timing || "untimed",
         showExplanations: data.config?.showExplanations ?? true,
         allowReview: data.config?.allowReview ?? true,
-        ...data.config
+        ...data.config,
       };
 
       const result = {
@@ -157,7 +157,7 @@ export class DatabaseSyncManager {
         status: data.status,
         existingAnswers: data.answers || [],
         timeRemaining: data.timeRemaining ?? null,
-        totalTimeLimit: data.totalTimeLimit ?? null
+        totalTimeLimit: data.totalTimeLimit ?? null,
       };
 
       // OPTIMIZATION: Cache the result for future use
@@ -165,7 +165,7 @@ export class DatabaseSyncManager {
 
       return result;
     } catch (error) {
-      console.error('Failed to fetch quiz data:', error);
+      console.error("Failed to fetch quiz data:", error);
       throw error;
     }
   }
@@ -176,7 +176,7 @@ export class DatabaseSyncManager {
    */
   private getFromCache(key: string): unknown | null {
     try {
-      if (typeof window === 'undefined') return null;
+      if (typeof window === "undefined") return null;
 
       const cached = localStorage.getItem(key);
       if (!cached) return null;
@@ -184,9 +184,9 @@ export class DatabaseSyncManager {
       const parsed = JSON.parse(cached);
 
       // Check if cache is still valid using TTL from entry
-      const ttl = parsed.ttl || (7 * 24 * 60 * 60 * 1000); // Default 7 days if not set
+      const ttl = parsed.ttl || 7 * 24 * 60 * 60 * 1000; // Default 7 days if not set
       const now = Date.now();
-      if (parsed.timestamp && (now - parsed.timestamp) < ttl) {
+      if (parsed.timestamp && now - parsed.timestamp < ttl) {
         return parsed.data;
       }
 
@@ -194,7 +194,7 @@ export class DatabaseSyncManager {
       localStorage.removeItem(key);
       return null;
     } catch (error) {
-      console.warn('Failed to read from cache:', error);
+      console.warn("Failed to read from cache:", error);
       return null;
     }
   }
@@ -206,18 +206,18 @@ export class DatabaseSyncManager {
    */
   private saveToCache(key: string, data: unknown, ttl: number = 7 * 24 * 60 * 60 * 1000): void {
     try {
-      if (typeof window === 'undefined') return;
+      if (typeof window === "undefined") return;
 
       const cacheData = {
         data,
         timestamp: Date.now(),
         ttl, // Default 24 hours
-        key
+        key,
       };
 
       localStorage.setItem(key, JSON.stringify(cacheData));
     } catch (error) {
-      console.warn('Failed to save to cache:', error);
+      console.warn("Failed to save to cache:", error);
     }
   }
 
@@ -226,11 +226,11 @@ export class DatabaseSyncManager {
    */
   clearSessionCache(sessionId: string): void {
     try {
-      if (typeof window === 'undefined') return;
+      if (typeof window === "undefined") return;
       localStorage.removeItem(`quiz-session-${sessionId}`);
       localStorage.removeItem(`quiz-results-${sessionId}`);
     } catch (error) {
-      console.warn('Failed to clear cache:', error);
+      console.warn("Failed to clear cache:", error);
     }
   }
 
@@ -240,7 +240,7 @@ export class DatabaseSyncManager {
    */
   async syncQuizData(quizState: QuizState): Promise<SyncResult> {
     if (this.isSyncing) {
-      return { success: false, timestamp: Date.now(), error: 'Sync already in progress' };
+      return { success: false, timestamp: Date.now(), error: "Sync already in progress" };
     }
 
     this.isSyncing = true;
@@ -249,16 +249,16 @@ export class DatabaseSyncManager {
     try {
       const syncData = this.prepareSyncData(quizState);
       const result = await this.performSync(syncData);
-      
+
       if (result.success) {
         this.options.onSyncSuccess(result);
       } else {
-        this.options.onSyncError(result.error || 'Unknown sync error');
+        this.options.onSyncError(result.error || "Unknown sync error");
       }
-      
+
       return result;
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
       this.options.onSyncError(errorMessage);
       return { success: false, timestamp: Date.now(), error: errorMessage };
     } finally {
@@ -283,8 +283,8 @@ export class DatabaseSyncManager {
           selectedOptionId: answer.selectedOptionId,
           isCorrect: answer.isCorrect,
           timestamp: answer.timestamp,
-          timeSpent: answer.timeSpent
-        }))
+          timeSpent: answer.timeSpent,
+        })),
       };
 
       // Get CSRF token
@@ -292,29 +292,32 @@ export class DatabaseSyncManager {
 
       // OPTIMIZATION: Single API call - PATCH endpoint now accepts answers!
       // This combines what used to be 2 calls (batch + PATCH) into 1
-      console.log('[Hybrid] Saving progress with single API call (answers + progress)');
+      console.log("[Hybrid] Saving progress with single API call (answers + progress)");
 
-      const updateResponse = await fetch(`${this.options.apiBaseUrl}/sessions/${progressData.sessionId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'x-csrf-token': csrfToken,
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          status: 'in_progress', // Ensure status is set to in_progress
-          currentQuestionIndex: progressData.currentQuestionIndex,
-          timeRemaining: progressData.timeRemaining,
-          totalTimeSpent: progressData.totalTimeSpent,
-          // OPTIMIZATION: Include answers in the same request!
-          answers: progressData.answers.map(answer => ({
-            questionId: answer.questionId,
-            selectedAnswerId: answer.selectedOptionId,
-            timeSpent: answer.timeSpent,
-            timestamp: answer.timestamp
-          }))
-        })
-      });
+      const updateResponse = await fetch(
+        `${this.options.apiBaseUrl}/sessions/${progressData.sessionId}`,
+        {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            "x-csrf-token": csrfToken,
+          },
+          credentials: "include",
+          body: JSON.stringify({
+            status: "in_progress", // Ensure status is set to in_progress
+            currentQuestionIndex: progressData.currentQuestionIndex,
+            timeRemaining: progressData.timeRemaining,
+            totalTimeSpent: progressData.totalTimeSpent,
+            // OPTIMIZATION: Include answers in the same request!
+            answers: progressData.answers.map((answer) => ({
+              questionId: answer.questionId,
+              selectedAnswerId: answer.selectedOptionId,
+              timeSpent: answer.timeSpent,
+              timestamp: answer.timestamp,
+            })),
+          }),
+        }
+      );
 
       if (!updateResponse.ok) {
         const errorText = await updateResponse.text();
@@ -323,14 +326,13 @@ export class DatabaseSyncManager {
 
       const result = {
         success: true,
-        timestamp: Date.now()
+        timestamp: Date.now(),
       };
 
       this.options.onSyncSuccess(result);
       return result;
-
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Unknown error';
+      const errorMessage = error instanceof Error ? error.message : "Unknown error";
       this.options.onSyncError(errorMessage);
       return { success: false, timestamp: Date.now(), error: errorMessage };
     }
@@ -346,7 +348,7 @@ export class DatabaseSyncManager {
       selectedOptionId: answer.selectedOptionId,
       isCorrect: answer.isCorrect,
       timestamp: answer.timestamp,
-      timeSpent: answer.timeSpent // Already in seconds from state machine
+      timeSpent: answer.timeSpent, // Already in seconds from state machine
     }));
 
     return {
@@ -356,14 +358,14 @@ export class DatabaseSyncManager {
       timing: {
         startTime: quizState.startTime,
         endTime: quizState.endTime,
-        totalTimeSpent: quizState.totalTimeSpent // Already in seconds from state machine
+        totalTimeSpent: quizState.totalTimeSpent, // Already in seconds from state machine
       },
       status: quizState.status,
       metadata: {
         questionsCount: quizState.totalQuestions,
         config: quizState.config,
-        syncTimestamp: Date.now()
-      }
+        syncTimestamp: Date.now(),
+      },
     };
   }
 
@@ -381,36 +383,41 @@ export class DatabaseSyncManager {
         // OPTIMIZATION: Single API call - complete endpoint now accepts answers!
         // This combines what used to be 2 calls (batch + complete) into 1
         const completePayload = {
-          answers: syncData.answers.map(answer => ({
+          answers: syncData.answers.map((answer) => ({
             questionId: answer.questionId,
             selectedAnswerId: answer.selectedOptionId,
             timeSpent: answer.timeSpent, // Already in seconds from state machine
-            timestamp: answer.timestamp
-          }))
+            timestamp: answer.timestamp,
+          })),
         };
 
-        console.log('[Hybrid] Completing quiz with single API call (answers + completion)');
+        console.log("[Hybrid] Completing quiz with single API call (answers + completion)");
 
-        const completeResponse = await fetch(`${this.options.apiBaseUrl}/sessions/${syncData.sessionId}/complete`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'x-csrf-token': csrfToken,
-          },
-          credentials: 'include', // Include cookies for authentication
-          body: JSON.stringify(completePayload)
-        });
+        const completeResponse = await fetch(
+          `${this.options.apiBaseUrl}/sessions/${syncData.sessionId}/complete`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "x-csrf-token": csrfToken,
+            },
+            credentials: "include", // Include cookies for authentication
+            body: JSON.stringify(completePayload),
+          }
+        );
 
         if (!completeResponse.ok) {
           const errorText = await completeResponse.text();
 
           // Check if the error is because quiz is already completed - this is not really an error
-          if (errorText.includes('Quiz session is already completed') ||
-              errorText.includes('already completed')) {
+          if (
+            errorText.includes("Quiz session is already completed") ||
+            errorText.includes("already completed")
+          ) {
             return {
               success: true,
               timestamp: Date.now(),
-              serverResponse: { message: 'Quiz was already completed' }
+              serverResponse: { message: "Quiz was already completed" },
             };
           }
 
@@ -419,16 +426,16 @@ export class DatabaseSyncManager {
 
         const serverResponse = await completeResponse.json();
 
-        console.log('='.repeat(80));
-        console.log('🎯 [HYBRID SYNC MANAGER] QUIZ COMPLETION RESPONSE:');
-        console.log('='.repeat(80));
-        console.log('[Hybrid] Complete response:', {
+        console.log("=".repeat(80));
+        console.log("🎯 [HYBRID SYNC MANAGER] QUIZ COMPLETION RESPONSE:");
+        console.log("=".repeat(80));
+        console.log("[Hybrid] Complete response:", {
           success: serverResponse.success,
           hasData: !!serverResponse.data,
           hasNewAchievements: !!serverResponse.newAchievements,
-          dataKeys: serverResponse.data ? Object.keys(serverResponse.data).slice(0, 5) : []
+          dataKeys: serverResponse.data ? Object.keys(serverResponse.data).slice(0, 5) : [],
         });
-        console.log('='.repeat(80));
+        console.log("=".repeat(80));
 
         // OPTIMIZATION: Cache the quiz results for results page using same format as useCachedData
         // This eliminates the need for a separate API call to /results
@@ -439,51 +446,53 @@ export class DatabaseSyncManager {
             // Merge newAchievements into data for display
             const resultsWithAchievements = {
               ...serverResponse.data,
-              newAchievements: serverResponse.newAchievements || []
+              newAchievements: serverResponse.newAchievements || [],
             };
 
             const cacheEntry = {
               data: resultsWithAchievements,
               timestamp: Date.now(),
               ttl: 7 * 24 * 60 * 60 * 1000, // 7 days (results immutable, needed for review)
-              key: resultsKey
+              key: resultsKey,
             };
 
-            console.log('💾 [HYBRID CACHE] Caching results:', {
+            console.log("💾 [HYBRID CACHE] Caching results:", {
               key: resultsKey,
               hasData: !!cacheEntry.data,
               dataKeys: Object.keys(cacheEntry.data).slice(0, 5),
-              cacheEntryStructure: Object.keys(cacheEntry)
+              cacheEntryStructure: Object.keys(cacheEntry),
             });
 
             localStorage.setItem(resultsKey, JSON.stringify(cacheEntry));
 
             // Verify it was saved
             const verification = localStorage.getItem(resultsKey);
-            console.log('✅ [HYBRID CACHE] SAVED TO LOCALSTORAGE:', {
+            console.log("✅ [HYBRID CACHE] SAVED TO LOCALSTORAGE:", {
               saved: !!verification,
               size: verification?.length,
-              canParse: !!JSON.parse(verification || '{}')
+              canParse: !!JSON.parse(verification || "{}"),
             });
-            console.log('[Hybrid] Cached quiz results with achievements for results page - saves 1 API call');
+            console.log(
+              "[Hybrid] Cached quiz results with achievements for results page - saves 1 API call"
+            );
           } catch (error) {
-            console.warn('Failed to cache results:', error);
+            console.warn("Failed to cache results:", error);
           }
         } else {
-          console.warn('[Hybrid] NOT caching - no data in response:', { serverResponse });
+          console.warn("[Hybrid] NOT caching - no data in response:", { serverResponse });
         }
 
         return {
           success: true,
           timestamp: Date.now(),
-          serverResponse
+          serverResponse,
         };
       } catch (error) {
-        lastError = error instanceof Error ? error : new Error('Unknown error');
-        
+        lastError = error instanceof Error ? error : new Error("Unknown error");
+
         if (attempt < this.options.maxRetries) {
           // Wait before retrying
-          await new Promise(resolve => setTimeout(resolve, this.options.retryDelay * attempt));
+          await new Promise((resolve) => setTimeout(resolve, this.options.retryDelay * attempt));
         }
       }
     }
@@ -491,7 +500,7 @@ export class DatabaseSyncManager {
     return {
       success: false,
       timestamp: Date.now(),
-      error: lastError?.message || 'Sync failed after all retries'
+      error: lastError?.message || "Sync failed after all retries",
     };
   }
 
@@ -503,26 +512,26 @@ export class DatabaseSyncManager {
     // Simple compression: remove redundant data and use shorter keys
     return {
       sid: data.sessionId,
-      ans: data.answers.map(a => ({
+      ans: data.answers.map((a) => ({
         qid: a.questionId,
         oid: a.selectedOptionId,
         cor: a.isCorrect,
         ts: a.timestamp,
-        dur: a.timeSpent
+        dur: a.timeSpent,
       })),
       prog: {
         a: data.progress.answered,
         c: data.progress.correct,
         i: data.progress.incorrect,
-        p: data.progress.percentage
+        p: data.progress.percentage,
       },
       time: {
         s: data.timing.startTime,
         e: data.timing.endTime,
-        t: data.timing.totalTimeSpent
+        t: data.timing.totalTimeSpent,
       },
       stat: data.status,
-      meta: data.metadata
+      meta: data.metadata,
     };
   }
 
@@ -539,14 +548,14 @@ export class DatabaseSyncManager {
    */
   async processQueue(): Promise<SyncResult[]> {
     const results: SyncResult[] = [];
-    
+
     while (this.syncQueue.length > 0) {
       const syncData = this.syncQueue.shift();
       if (syncData) {
         try {
           const result = await this.performSync(syncData);
           results.push(result);
-          
+
           if (!result.success) {
             // Re-queue failed sync for later retry
             this.syncQueue.unshift(syncData);
@@ -556,12 +565,12 @@ export class DatabaseSyncManager {
           results.push({
             success: false,
             timestamp: Date.now(),
-            error: error instanceof Error ? error.message : 'Unknown error'
+            error: error instanceof Error ? error.message : "Unknown error",
           });
         }
       }
     }
-    
+
     return results;
   }
 
@@ -590,7 +599,7 @@ export class DatabaseSyncManager {
     return {
       queueLength: this.syncQueue.length,
       isSyncing: this.isSyncing,
-      options: { ...this.options }
+      options: { ...this.options },
     };
   }
 }
@@ -624,5 +633,5 @@ export const SyncUtils = {
    */
   createSyncSummary: (data: QuizSyncData): string => {
     return `Session: ${data.sessionId}, Answers: ${data.answers.length}, Status: ${data.status}, Score: ${data.progress.correct}/${data.progress.answered}`;
-  }
+  },
 };

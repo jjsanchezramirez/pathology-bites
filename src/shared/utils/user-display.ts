@@ -4,10 +4,10 @@
  */
 
 export interface UserDisplayInfo {
-  id: string
-  first_name: string | null
-  last_name: string | null
-  deleted_at: string | null
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  deleted_at: string | null;
 }
 
 /**
@@ -17,18 +17,18 @@ export interface UserDisplayInfo {
  */
 export function getUserDisplayName(user: UserDisplayInfo | null | undefined): string {
   if (!user) {
-    return '[Unknown User]'
+    return "[Unknown User]";
   }
 
   if (user.deleted_at) {
-    return '[Deleted User]'
+    return "[Deleted User]";
   }
 
-  const firstName = user.first_name || ''
-  const lastName = user.last_name || ''
-  const fullName = `${firstName} ${lastName}`.trim()
+  const firstName = user.first_name || "";
+  const lastName = user.last_name || "";
+  const fullName = `${firstName} ${lastName}`.trim();
 
-  return fullName || '[No Name]'
+  return fullName || "[No Name]";
 }
 
 /**
@@ -38,11 +38,11 @@ export function getUserDisplayName(user: UserDisplayInfo | null | undefined): st
  */
 export function getUserDisplayNameWithId(user: UserDisplayInfo | null | undefined): string {
   if (!user) {
-    return '[Unknown User]'
+    return "[Unknown User]";
   }
 
-  const displayName = getUserDisplayName(user)
-  return `${displayName} (${user.id})`
+  const displayName = getUserDisplayName(user);
+  return `${displayName} (${user.id})`;
 }
 
 /**
@@ -51,7 +51,7 @@ export function getUserDisplayNameWithId(user: UserDisplayInfo | null | undefine
  * @returns true if user is soft-deleted
  */
 export function isUserDeleted(user: { deleted_at: string | null } | null | undefined): boolean {
-  return !!user?.deleted_at
+  return !!user?.deleted_at;
 }
 
 /**
@@ -60,17 +60,16 @@ export function isUserDeleted(user: { deleted_at: string | null } | null | undef
  * @returns Formatted date string or null
  */
 export function formatDeletedAt(deletedAt: string | null | undefined): string | null {
-  if (!deletedAt) return null
+  if (!deletedAt) return null;
 
   try {
-    const date = new Date(deletedAt)
-    return date.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    })
+    const date = new Date(deletedAt);
+    return date.toLocaleDateString("en-US", {
+      year: "numeric",
+      month: "short",
+      day: "numeric",
+    });
   } catch {
-    return null
+    return null;
   }
 }
-

@@ -1,62 +1,57 @@
 // src/features/performance/components/category-performance-card.tsx
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Progress } from '@/shared/components/ui/progress'
-import {
-  TrendingUp,
-  TrendingDown,
-  Minus,
-  BarChart3
-} from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Progress } from "@/shared/components/ui/progress";
+import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
 
 interface CategoryDetail {
-  category_id: string
-  category_name: string
-  total_attempts: number
-  correct_attempts: number
-  accuracy: number
-  average_time: number
-  last_attempt_at: string
+  category_id: string;
+  category_name: string;
+  total_attempts: number;
+  correct_attempts: number;
+  accuracy: number;
+  average_time: number;
+  last_attempt_at: string;
   recent_performance: Array<{
-    date: string
-    accuracy: number
-    questions_answered: number
-  }>
-  trend?: 'up' | 'down' | 'stable'
+    date: string;
+    accuracy: number;
+    questions_answered: number;
+  }>;
+  trend?: "up" | "down" | "stable";
 }
 
 interface CategoryPerformanceCardProps {
-  categoryDetails: CategoryDetail[]
+  categoryDetails: CategoryDetail[];
 }
 
 const getTrendInfo = (trend?: string) => {
   switch (trend) {
-    case 'up':
+    case "up":
       return {
         icon: <TrendingUp className="h-4 w-4" />,
-        text: 'Improving',
-        color: 'text-green-600'
-      }
-    case 'down':
+        text: "Improving",
+        color: "text-green-600",
+      };
+    case "down":
       return {
         icon: <TrendingDown className="h-4 w-4" />,
-        text: 'Declining',
-        color: 'text-red-600'
-      }
+        text: "Declining",
+        color: "text-red-600",
+      };
     default:
       return {
         icon: <Minus className="h-4 w-4" />,
-        text: 'Stable',
-        color: 'text-muted-foreground'
-      }
+        text: "Stable",
+        color: "text-muted-foreground",
+      };
   }
-}
+};
 
 const getAccuracyColor = (accuracy: number) => {
-  if (accuracy >= 80) return 'text-green-600'
-  if (accuracy >= 70) return 'text-yellow-600'
-  return 'text-red-600'
-}
+  if (accuracy >= 80) return "text-green-600";
+  if (accuracy >= 70) return "text-yellow-600";
+  return "text-red-600";
+};
 
 export function CategoryPerformanceCard({ categoryDetails }: CategoryPerformanceCardProps) {
   if (categoryDetails.length === 0) {
@@ -71,11 +66,13 @@ export function CategoryPerformanceCard({ categoryDetails }: CategoryPerformance
         <CardContent>
           <div className="text-center py-8 text-muted-foreground">
             <p>No category performance data available yet.</p>
-            <p className="text-sm mt-2">Start taking quizzes to see your performance by category!</p>
+            <p className="text-sm mt-2">
+              Start taking quizzes to see your performance by category!
+            </p>
           </div>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   return (
@@ -89,7 +86,7 @@ export function CategoryPerformanceCard({ categoryDetails }: CategoryPerformance
       <CardContent>
         <div className="space-y-3">
           {categoryDetails.map((category, index) => {
-            const trendInfo = getTrendInfo(category.trend)
+            const trendInfo = getTrendInfo(category.trend);
 
             return (
               <div
@@ -108,7 +105,9 @@ export function CategoryPerformanceCard({ categoryDetails }: CategoryPerformance
                     <div className="text-right">
                       <div className="text-sm text-muted-foreground">Score</div>
                       <div className="flex items-baseline gap-1">
-                        <span className={`text-2xl font-bold tabular-nums ${getAccuracyColor(category.accuracy)}`}>
+                        <span
+                          className={`text-2xl font-bold tabular-nums ${getAccuracyColor(category.accuracy)}`}
+                        >
                           {category.accuracy}%
                         </span>
                       </div>
@@ -125,7 +124,9 @@ export function CategoryPerformanceCard({ categoryDetails }: CategoryPerformance
                     {/* Trend */}
                     <div className="text-right min-w-[90px]">
                       <div className="text-sm text-muted-foreground">Trend</div>
-                      <div className={`flex items-center gap-1 justify-end font-medium ${trendInfo.color}`}>
+                      <div
+                        className={`flex items-center gap-1 justify-end font-medium ${trendInfo.color}`}
+                      >
                         {trendInfo.icon}
                         <span className="text-sm">{trendInfo.text}</span>
                       </div>
@@ -136,11 +137,10 @@ export function CategoryPerformanceCard({ categoryDetails }: CategoryPerformance
                 {/* Progress Bar */}
                 <Progress value={category.accuracy} className="h-2" />
               </div>
-            )
+            );
           })}
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

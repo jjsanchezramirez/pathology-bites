@@ -1,7 +1,7 @@
 // src/features/performance/components/performance-loading.tsx
 
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card'
-import { Skeleton } from '@/shared/components/ui/skeleton'
+import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 
 export function PerformanceLoading() {
   return (
@@ -72,6 +72,5 @@ export function PerformanceLoading() {
         </Card>
       </div>
     </div>
-  )
+  );
 }
-

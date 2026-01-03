@@ -1,29 +1,29 @@
-'use client'
+"use client";
 
-import { useEffect, useState } from 'react'
-import Link from "next/link"
-import { ChevronDown } from "lucide-react"
-import { OrganicImageGallery } from "@/shared/components/common/organic-image-gallery"
-import { VirtualSlideSearchTeaser } from "@/shared/components/common/virtual-slide-search-teaser"
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { ChevronDown } from "lucide-react";
+import { OrganicImageGallery } from "@/shared/components/common/organic-image-gallery";
+import { VirtualSlideSearchTeaser } from "@/shared/components/common/virtual-slide-search-teaser";
 
 interface HeroSectionProps {
-  onLearnMoreClick?: () => void
+  onLearnMoreClick?: () => void;
 }
 
 export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
-  const [mounted, setMounted] = useState(false)
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    setMounted(true)
-  }, [])
+    setMounted(true);
+  }, []);
 
   const scrollToNext = () => {
-    const nextSection = document.getElementById('learn-more-section')
+    const nextSection = document.getElementById("learn-more-section");
     if (nextSection) {
-      nextSection.scrollIntoView({ behavior: 'smooth' })
+      nextSection.scrollIntoView({ behavior: "smooth" });
     }
-    onLearnMoreClick?.()
-  }
+    onLearnMoreClick?.();
+  };
 
   return (
     <section className="relative min-h-[calc(100vh-3.5rem)] flex items-center overflow-hidden">
@@ -34,14 +34,13 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
       <div className="container mx-auto px-4 relative z-10">
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-5 gap-12 items-center min-h-[calc(100vh-8rem)] pt-8 pb-24 lg:pt-0 lg:pb-0">
-
             {/* Left Column - Text Content (3/5 width) */}
             <div className="lg:col-span-3 space-y-8 lg:space-y-10 text-center lg:text-left">
               {/* Main Headline & Value Proposition */}
               <div
                 className="space-y-5 opacity-0"
                 style={{
-                  animation: mounted ? 'fadeIn 0.6s ease-out forwards' : 'none'
+                  animation: mounted ? "fadeIn 0.6s ease-out forwards" : "none",
                 }}
               >
                 <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
@@ -59,8 +58,8 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
               <div
                 className="space-y-5 opacity-0"
                 style={{
-                  animation: mounted ? 'fadeIn 0.6s ease-out forwards' : 'none',
-                  animationDelay: mounted ? '0.2s' : '0s'
+                  animation: mounted ? "fadeIn 0.6s ease-out forwards" : "none",
+                  animationDelay: mounted ? "0.2s" : "0s",
                 }}
               >
                 {/* Search Bar */}
@@ -70,7 +69,10 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
 
                 {/* Account CTA */}
                 <div className="text-center lg:text-left">
-                  <Link href="/signup" className="text-base text-primary hover:underline font-semibold">
+                  <Link
+                    href="/signup"
+                    className="text-base text-primary hover:underline font-semibold"
+                  >
                     Or try our question bank →
                   </Link>
                 </div>
@@ -81,7 +83,6 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
             <div className="hidden lg:block lg:col-span-2 relative h-[600px]">
               <OrganicImageGallery />
             </div>
-
           </div>
         </div>
       </div>
@@ -98,6 +99,5 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
         </button>
       </div>
     </section>
-  )
+  );
 }
-

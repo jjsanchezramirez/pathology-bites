@@ -2,11 +2,17 @@
 // This file contains mockups of different chart types for the performance page
 // Choose which ones you'd like to implement!
 
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/shared/components/ui/card'
-import { Badge } from '@/shared/components/ui/badge'
-import { TrendingUp, Calendar, Target, Zap, Award } from 'lucide-react'
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+} from "@/shared/components/ui/card";
+import { Badge } from "@/shared/components/ui/badge";
+import { TrendingUp, Calendar, Target, Zap, Award } from "lucide-react";
 
 /**
  * MOCKUP 1: Performance Over Time Line Chart
@@ -40,7 +46,7 @@ export function PerformanceTimelineChartMockup() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 /**
@@ -75,7 +81,7 @@ export function CategoryRadarChartMockup() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 /**
@@ -119,7 +125,7 @@ export function ActivityHeatmapMockup() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 /**
@@ -154,7 +160,7 @@ export function SpeedAccuracyScatterMockup() {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 /**
@@ -181,15 +187,21 @@ export function WeeklyBarChartMockup() {
               Stacked bars showing quizzes completed, accuracy, and time spent per week
             </p>
             <div className="flex gap-2 justify-center mt-4">
-              <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-950">Quizzes</Badge>
-              <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-950">Accuracy</Badge>
-              <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-950">Time</Badge>
+              <Badge variant="outline" className="bg-blue-100 text-blue-800 dark:bg-blue-950">
+                Quizzes
+              </Badge>
+              <Badge variant="outline" className="bg-green-100 text-green-800 dark:bg-green-950">
+                Accuracy
+              </Badge>
+              <Badge variant="outline" className="bg-purple-100 text-purple-800 dark:bg-purple-950">
+                Time
+              </Badge>
             </div>
           </div>
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
 
 /**
@@ -201,7 +213,8 @@ export function ChartMockupsShowcase() {
       <div>
         <h2 className="text-2xl font-bold mb-2">Chart Mockups</h2>
         <p className="text-muted-foreground">
-          Preview different chart options for the performance page. These are mockups - choose which ones to implement!
+          Preview different chart options for the performance page. These are mockups - choose which
+          ones to implement!
         </p>
       </div>
 
@@ -221,22 +234,32 @@ export function ChartMockupsShowcase() {
           <div>
             <h4 className="font-semibold mb-2">Recommended: Recharts</h4>
             <p className="text-sm text-muted-foreground">
-              Simple, React-friendly, composable charts with good TypeScript support.
-              Install with: <code className="bg-muted px-1 rounded">npm install recharts</code>
+              Simple, React-friendly, composable charts with good TypeScript support. Install with:{" "}
+              <code className="bg-muted px-1 rounded">npm install recharts</code>
             </p>
           </div>
           <div>
             <h4 className="font-semibold mb-2">Chart Priority Suggestions:</h4>
             <ol className="text-sm text-muted-foreground list-decimal list-inside space-y-1">
-              <li><strong>Performance Timeline</strong> - Most valuable for tracking improvement</li>
-              <li><strong>Category Radar</strong> - Great visual for comparing strengths/weaknesses</li>
-              <li><strong>Activity Heatmap</strong> - Motivating visual for consistency</li>
-              <li><strong>Weekly Bar Chart</strong> - Good for weekly review habits</li>
-              <li><strong>Speed vs Accuracy</strong> - Advanced insight, lower priority</li>
+              <li>
+                <strong>Performance Timeline</strong> - Most valuable for tracking improvement
+              </li>
+              <li>
+                <strong>Category Radar</strong> - Great visual for comparing strengths/weaknesses
+              </li>
+              <li>
+                <strong>Activity Heatmap</strong> - Motivating visual for consistency
+              </li>
+              <li>
+                <strong>Weekly Bar Chart</strong> - Good for weekly review habits
+              </li>
+              <li>
+                <strong>Speed vs Accuracy</strong> - Advanced insight, lower priority
+              </li>
             </ol>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

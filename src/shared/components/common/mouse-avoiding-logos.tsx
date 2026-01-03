@@ -1,84 +1,100 @@
-'use client'
+"use client";
 
-import { useRef } from 'react'
-import Image from 'next/image'
-import { getR2PublicUrl } from '@/shared/services/r2-storage'
+import { useRef } from "react";
+import Image from "next/image";
+import { getR2PublicUrl } from "@/shared/services/r2-storage";
 
 const logos = [
-  { id: 'leeds', src: getR2PublicUrl('logos/university-of-leeds-logo.png'), alt: 'University of Leeds' },
-  { id: 'pathpresenter', src: getR2PublicUrl('logos/path-presenter-logo.png'), alt: 'PathPresenter' },
-  { id: 'mgh', src: getR2PublicUrl('logos/mgh-logo.png'), alt: 'MGH' },
-  { id: 'toronto', src: getR2PublicUrl('logos/university-of-toronto-logo.png'), alt: 'University of Toronto' },
-  { id: 'rosai', src: getR2PublicUrl('logos/rosai-collection-logo.png'), alt: 'Rosai Collection' },
-  { id: 'hematopathology', src: getR2PublicUrl('logos/hematopathology-etutorial-logo.png'), alt: 'Hematopathology eTutorial' },
-  { id: 'recut', src: getR2PublicUrl('logos/recut-club-logo.png'), alt: 'Recut Club' }
-]
+  {
+    id: "leeds",
+    src: getR2PublicUrl("logos/university-of-leeds-logo.png"),
+    alt: "University of Leeds",
+  },
+  {
+    id: "pathpresenter",
+    src: getR2PublicUrl("logos/path-presenter-logo.png"),
+    alt: "PathPresenter",
+  },
+  { id: "mgh", src: getR2PublicUrl("logos/mgh-logo.png"), alt: "MGH" },
+  {
+    id: "toronto",
+    src: getR2PublicUrl("logos/university-of-toronto-logo.png"),
+    alt: "University of Toronto",
+  },
+  { id: "rosai", src: getR2PublicUrl("logos/rosai-collection-logo.png"), alt: "Rosai Collection" },
+  {
+    id: "hematopathology",
+    src: getR2PublicUrl("logos/hematopathology-etutorial-logo.png"),
+    alt: "Hematopathology eTutorial",
+  },
+  { id: "recut", src: getR2PublicUrl("logos/recut-club-logo.png"), alt: "Recut Club" },
+];
 
 export function MouseAvoidingLogos() {
-  const containerRef = useRef<HTMLDivElement>(null)
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const container = containerRef.current
-    if (!container) return
+    const container = containerRef.current;
+    if (!container) return;
 
-    const mouseX = e.clientX
-    const mouseY = e.clientY
+    const mouseX = e.clientX;
+    const mouseY = e.clientY;
 
     // Get all logo elements and update them
-    const logoElements = container.querySelectorAll('.logo-item')
+    const logoElements = container.querySelectorAll(".logo-item");
     logoElements.forEach((logoEl) => {
-      const element = logoEl as HTMLElement
-      const logoRect = element.getBoundingClientRect()
-      const logoCenterX = logoRect.left + logoRect.width / 2
-      const logoCenterY = logoRect.top + logoRect.height / 2
+      const element = logoEl as HTMLElement;
+      const logoRect = element.getBoundingClientRect();
+      const logoCenterX = logoRect.left + logoRect.width / 2;
+      const logoCenterY = logoRect.top + logoRect.height / 2;
 
-      const deltaX = logoCenterX - mouseX
-      const deltaY = logoCenterY - mouseY
-      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY)
+      const deltaX = logoCenterX - mouseX;
+      const deltaY = logoCenterY - mouseY;
+      const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
 
-      const INFLUENCE_DISTANCE = 180
-      const MAX_MOVE = 10
+      const INFLUENCE_DISTANCE = 180;
+      const MAX_MOVE = 10;
 
       if (distance < INFLUENCE_DISTANCE && distance > 0) {
-        const influence = (INFLUENCE_DISTANCE - distance) / INFLUENCE_DISTANCE
-        const moveDistance = influence * MAX_MOVE
+        const influence = (INFLUENCE_DISTANCE - distance) / INFLUENCE_DISTANCE;
+        const moveDistance = influence * MAX_MOVE;
 
-        const directionX = deltaX / distance
-        const directionY = deltaY / distance
+        const directionX = deltaX / distance;
+        const directionY = deltaY / distance;
 
-        const moveX = directionX * moveDistance
-        const moveY = directionY * moveDistance
+        const moveX = directionX * moveDistance;
+        const moveY = directionY * moveDistance;
 
-        element.style.transform = `translate(-50%, -50%) translate(${moveX}px, ${moveY}px)`
-        element.style.transition = 'transform 0.1s ease-out'
+        element.style.transform = `translate(-50%, -50%) translate(${moveX}px, ${moveY}px)`;
+        element.style.transition = "transform 0.1s ease-out";
       } else {
-        element.style.transform = 'translate(-50%, -50%)'
-        element.style.transition = 'transform 0.3s ease-out'
+        element.style.transform = "translate(-50%, -50%)";
+        element.style.transition = "transform 0.3s ease-out";
       }
-    })
-  }
+    });
+  };
 
   const handleMouseLeave = () => {
-    const container = containerRef.current
-    if (!container) return
+    const container = containerRef.current;
+    if (!container) return;
 
-    const logoElements = container.querySelectorAll('.logo-item')
+    const logoElements = container.querySelectorAll(".logo-item");
     logoElements.forEach((logoEl) => {
-      const element = logoEl as HTMLElement
-      element.style.transform = 'translate(-50%, -50%)'
-      element.style.transition = 'transform 0.3s ease-out'
-    })
-  }
+      const element = logoEl as HTMLElement;
+      element.style.transform = "translate(-50%, -50%)";
+      element.style.transition = "transform 0.3s ease-out";
+    });
+  };
 
   const positions = [
-    { left: '35%', top: '25%' }, // top-left
-    { left: '65%', top: '25%' }, // top-right
-    { left: '20%', top: '50%' }, // middle-left
-    { left: '50%', top: '50%' }, // middle-center
-    { left: '80%', top: '50%' }, // middle-right
-    { left: '35%', top: '75%' }, // bottom-left
-    { left: '65%', top: '75%' }  // bottom-right
-  ]
+    { left: "35%", top: "25%" }, // top-left
+    { left: "65%", top: "25%" }, // top-right
+    { left: "20%", top: "50%" }, // middle-left
+    { left: "50%", top: "50%" }, // middle-center
+    { left: "80%", top: "50%" }, // middle-right
+    { left: "35%", top: "75%" }, // bottom-left
+    { left: "65%", top: "75%" }, // bottom-right
+  ];
 
   return (
     <div
@@ -94,7 +110,7 @@ export function MouseAvoidingLogos() {
           style={{
             left: positions[index].left,
             top: positions[index].top,
-            transform: 'translate(-50%, -50%)'
+            transform: "translate(-50%, -50%)",
           }}
         >
           <Image
@@ -108,5 +124,5 @@ export function MouseAvoidingLogos() {
         </div>
       ))}
     </div>
-  )
+  );
 }

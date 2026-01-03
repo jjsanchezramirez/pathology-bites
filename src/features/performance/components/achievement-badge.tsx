@@ -1,8 +1,8 @@
 // src/features/performance/components/achievement-badge.tsx
-'use client'
+"use client";
 
-import { cn } from '@/shared/utils/utils'
-import { Achievement, getTierColor, getTierBgColor } from '@/shared/types/achievements'
+import { cn } from "@/shared/utils/utils";
+import { Achievement, getTierColor, getTierBgColor } from "@/shared/types/achievements";
 import {
   Play,
   BookOpen,
@@ -17,9 +17,9 @@ import {
   Flame,
   Zap,
   Rocket,
-  Lock
-} from 'lucide-react'
-import { Progress } from '@/shared/components/ui/progress'
+  Lock,
+} from "lucide-react";
+import { Progress } from "@/shared/components/ui/progress";
 
 const iconMap: Record<string, unknown> = {
   Play,
@@ -35,34 +35,39 @@ const iconMap: Record<string, unknown> = {
   Flame,
   Zap,
   Rocket,
-  Lock
-}
+  Lock,
+};
 
 interface AchievementBadgeProps {
-  achievement: Achievement
-  size?: 'sm' | 'md' | 'lg'
-  showProgress?: boolean
+  achievement: Achievement;
+  size?: "sm" | "md" | "lg";
+  showProgress?: boolean;
 }
 
-export function AchievementBadge({ achievement, size = 'md', showProgress = false }: AchievementBadgeProps) {
-  const Icon = iconMap[achievement.icon] || Award
-  const isLocked = !achievement.unlocked
+export function AchievementBadge({
+  achievement,
+  size = "md",
+  showProgress = false,
+}: AchievementBadgeProps) {
+  const Icon = iconMap[achievement.icon] || Award;
+  const isLocked = !achievement.unlocked;
 
   const sizeClasses = {
-    sm: 'w-16 h-16',
-    md: 'w-20 h-20',
-    lg: 'w-28 h-28'
-  }
+    sm: "w-16 h-16",
+    md: "w-20 h-20",
+    lg: "w-28 h-28",
+  };
 
   const iconSizeClasses = {
-    sm: 'w-7 h-7',
-    md: 'w-9 h-9',
-    lg: 'w-12 h-12'
-  }
+    sm: "w-7 h-7",
+    md: "w-9 h-9",
+    lg: "w-12 h-12",
+  };
 
-  const progressPercent = achievement.progress && achievement.total
-    ? Math.min((achievement.progress / achievement.total) * 100, 100)
-    : 0
+  const progressPercent =
+    achievement.progress && achievement.total
+      ? Math.min((achievement.progress / achievement.total) * 100, 100)
+      : 0;
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -71,17 +76,15 @@ export function AchievementBadge({ achievement, size = 'md', showProgress = fals
         <div
           className={cn(
             sizeClasses[size],
-            'rounded-full flex items-center justify-center transition-all duration-300',
-            isLocked
-              ? 'bg-gray-200 dark:bg-gray-800 opacity-50'
-              : getTierBgColor(achievement.tier),
-            !isLocked && 'shadow-lg group-hover:scale-110 group-hover:shadow-xl'
+            "rounded-full flex items-center justify-center transition-all duration-300",
+            isLocked ? "bg-gray-200 dark:bg-gray-800 opacity-50" : getTierBgColor(achievement.tier),
+            !isLocked && "shadow-lg group-hover:scale-110 group-hover:shadow-xl"
           )}
         >
           <Icon
             className={cn(
               iconSizeClasses[size],
-              isLocked ? 'text-gray-400 dark:text-gray-600' : getTierColor(achievement.tier)
+              isLocked ? "text-gray-400 dark:text-gray-600" : getTierColor(achievement.tier)
             )}
           />
 
@@ -97,12 +100,12 @@ export function AchievementBadge({ achievement, size = 'md', showProgress = fals
         {!isLocked && (
           <div
             className={cn(
-              'absolute inset-0 rounded-full blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-300',
-              achievement.tier === 'bronze' && 'bg-orange-400',
-              achievement.tier === 'silver' && 'bg-gray-400',
-              achievement.tier === 'gold' && 'bg-yellow-400',
-              achievement.tier === 'platinum' && 'bg-cyan-400',
-              achievement.tier === 'diamond' && 'bg-purple-400'
+              "absolute inset-0 rounded-full blur-xl opacity-0 group-hover:opacity-30 transition-opacity duration-300",
+              achievement.tier === "bronze" && "bg-orange-400",
+              achievement.tier === "silver" && "bg-gray-400",
+              achievement.tier === "gold" && "bg-yellow-400",
+              achievement.tier === "platinum" && "bg-cyan-400",
+              achievement.tier === "diamond" && "bg-purple-400"
             )}
           />
         )}
@@ -112,33 +115,34 @@ export function AchievementBadge({ achievement, size = 'md', showProgress = fals
       <div className="text-center">
         <p
           className={cn(
-            'text-sm font-semibold',
-            isLocked ? 'text-gray-500 dark:text-gray-400' : 'text-foreground'
+            "text-sm font-semibold",
+            isLocked ? "text-gray-500 dark:text-gray-400" : "text-foreground"
           )}
         >
           {achievement.name}
         </p>
-        <p className="text-xs text-muted-foreground line-clamp-2">
-          {achievement.description}
-        </p>
+        <p className="text-xs text-muted-foreground line-clamp-2">{achievement.description}</p>
 
         {/* Points */}
         {!isLocked && (
-          <p className="text-xs font-medium text-primary mt-1">
-            +{achievement.points} pts
-          </p>
+          <p className="text-xs font-medium text-primary mt-1">+{achievement.points} pts</p>
         )}
 
         {/* Progress for locked badges */}
-        {isLocked && showProgress && achievement.progress !== undefined && achievement.total !== undefined && (
-          <div className="mt-2 w-full">
-            <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-              <span>{achievement.progress}/{achievement.total}</span>
-              <span>{Math.round(progressPercent)}%</span>
+        {isLocked &&
+          showProgress &&
+          achievement.progress !== undefined &&
+          achievement.total !== undefined && (
+            <div className="mt-2 w-full">
+              <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
+                <span>
+                  {achievement.progress}/{achievement.total}
+                </span>
+                <span>{Math.round(progressPercent)}%</span>
+              </div>
+              <Progress value={progressPercent} className="h-1.5" />
             </div>
-            <Progress value={progressPercent} className="h-1.5" />
-          </div>
-        )}
+          )}
 
         {/* Unlock date for earned badges */}
         {achievement.unlockedAt && (
@@ -148,5 +152,5 @@ export function AchievementBadge({ achievement, size = 'md', showProgress = fals
         )}
       </div>
     </div>
-  )
+  );
 }

@@ -16,32 +16,32 @@
 
 export const MEDICAL_ACRONYMS: Record<string, string | string[]> = {
   // Carcinomas
-  'rcc': 'renal cell carcinoma',
-  'scc': 'squamous cell carcinoma',
-  'bcc': 'basal cell carcinoma',
-  'hcc': 'hepatocellular carcinoma',
-  'nsclc': 'non small cell lung carcinoma',
-  'sclc': 'small cell lung carcinoma',
+  rcc: "renal cell carcinoma",
+  scc: "squamous cell carcinoma",
+  bcc: "basal cell carcinoma",
+  hcc: "hepatocellular carcinoma",
+  nsclc: "non small cell lung carcinoma",
+  sclc: "small cell lung carcinoma",
 
   // Thyroid
-  'ptc': 'papillary thyroid carcinoma',
-  'ftc': 'follicular thyroid carcinoma',
-  'mtc': 'medullary thyroid carcinoma',
+  ptc: "papillary thyroid carcinoma",
+  ftc: "follicular thyroid carcinoma",
+  mtc: "medullary thyroid carcinoma",
 
   // Hematologic
-  'dlbcl': 'diffuse large b cell lymphoma',
-  'aml': ['angiomyolipoma', 'acute myeloid leukemia'], // Multiple meanings
-  'all': 'acute lymphoblastic leukemia',
-  'cml': 'chronic myeloid leukemia',
-  'cll': 'chronic lymphocytic leukemia',
+  dlbcl: "diffuse large b cell lymphoma",
+  aml: ["angiomyolipoma", "acute myeloid leukemia"], // Multiple meanings
+  all: "acute lymphoblastic leukemia",
+  cml: "chronic myeloid leukemia",
+  cll: "chronic lymphocytic leukemia",
 
   // Sarcomas
-  'gist': 'gastrointestinal stromal tumor',
-  'mpnst': 'malignant peripheral nerve sheath tumor',
-  'pnet': 'primitive neuroectodermal tumor',
-  'rms': 'rhabdomyosarcoma',
-  'arms': 'alveolar rhabdomyosarcoma',
-}
+  gist: "gastrointestinal stromal tumor",
+  mpnst: "malignant peripheral nerve sheath tumor",
+  pnet: "primitive neuroectodermal tumor",
+  rms: "rhabdomyosarcoma",
+  arms: "alveolar rhabdomyosarcoma",
+};
 
 /**
  * Common medical terms that are too generic to match alone in multi-word queries.
@@ -53,16 +53,58 @@ export const MEDICAL_ACRONYMS: Record<string, string | string[]> = {
  */
 export const COMMON_MEDICAL_TERMS = new Set([
   // Generic tumor types
-  'tumor', 'tumour', 'neoplasm', 'lesion', 'mass', 'growth',
-  'carcinoma', 'adenocarcinoma', 'sarcoma', 'melanoma', 'lymphoma', 'leukemia',
-  'adenoma', 'lipoma', 'fibroma', 'papilloma', 'neuroma',
-  'cell', 'cells', 'tissue', 'cancer', 'malignancy', 'benign',
-  'disease', 'syndrome', 'disorder', 'condition',
-  'inflammation', 'infection', 'hyperplasia', 'dysplasia', 'metaplasia',
-  'cyst', 'polyp', 'nodule', 'plaque',
+  "tumor",
+  "tumour",
+  "neoplasm",
+  "lesion",
+  "mass",
+  "growth",
+  "carcinoma",
+  "adenocarcinoma",
+  "sarcoma",
+  "melanoma",
+  "lymphoma",
+  "leukemia",
+  "adenoma",
+  "lipoma",
+  "fibroma",
+  "papilloma",
+  "neuroma",
+  "cell",
+  "cells",
+  "tissue",
+  "cancer",
+  "malignancy",
+  "benign",
+  "disease",
+  "syndrome",
+  "disorder",
+  "condition",
+  "inflammation",
+  "infection",
+  "hyperplasia",
+  "dysplasia",
+  "metaplasia",
+  "cyst",
+  "polyp",
+  "nodule",
+  "plaque",
 
   // Common organ/anatomical terms (too generic alone)
-  'renal', 'hepatic', 'gastric', 'colonic', 'pulmonary', 'cardiac',
-  'ovarian', 'uterine', 'prostatic', 'thyroid', 'adrenal',
-  'cutaneous', 'dermal', 'osseous', 'lymphatic', 'splenic'
-])
+  "renal",
+  "hepatic",
+  "gastric",
+  "colonic",
+  "pulmonary",
+  "cardiac",
+  "ovarian",
+  "uterine",
+  "prostatic",
+  "thyroid",
+  "adrenal",
+  "cutaneous",
+  "dermal",
+  "osseous",
+  "lymphatic",
+  "splenic",
+]);

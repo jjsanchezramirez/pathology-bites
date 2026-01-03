@@ -1,5 +1,5 @@
 // User statistics service
-import { createClient } from '@/shared/services/client';
+import { createClient } from "@/shared/services/client";
 
 export interface UserStats {
   // Overall user counts
@@ -84,11 +84,10 @@ export async function getUserStats(): Promise<UserStats> {
 
   try {
     // Use optimized database function for minimal data transfer
-    const { data, error } = await supabase
-      .rpc('get_user_statistics');
+    const { data, error } = await supabase.rpc("get_user_statistics");
 
     if (error) throw error;
-    if (!data || data.length === 0) throw new Error('No user statistics found');
+    if (!data || data.length === 0) throw new Error("No user statistics found");
 
     const stats = data[0];
 
@@ -113,10 +112,10 @@ export async function getUserStats(): Promise<UserStats> {
       suspended_percentage: stats.suspended_percentage,
       internal_percentage: stats.internal_percentage,
       end_users_percentage: stats.end_users_percentage,
-      last_updated: stats.last_updated
+      last_updated: stats.last_updated,
     };
   } catch (error) {
-    console.error('Get user stats error:', error);
+    console.error("Get user stats error:", error);
     throw error;
   }
 }
@@ -127,87 +126,89 @@ export async function getFormattedUserStats(): Promise<UserStatsFormatted> {
   return {
     totalUsers: {
       count: stats.total_users,
-      label: 'Total Users',
-      description: '',
+      label: "Total Users",
+      description: "",
       breakdown: {
         internal: stats.internal_users,
-        endUsers: stats.end_users
-      }
+        endUsers: stats.end_users,
+      },
     },
     internalUsers: {
       count: stats.internal_users,
-      label: 'Internal Users',
-      description: '',
+      label: "Internal Users",
+      description: "",
       breakdown: {
         admins: stats.total_admins,
         creators: stats.total_creators,
-        reviewers: stats.total_reviewers
-      }
+        reviewers: stats.total_reviewers,
+      },
     },
     activeUsers: {
       count: stats.active_users,
-      label: 'Active End Users',
+      label: "Active End Users",
       description: `${stats.recent_users} joined in last 30 days`,
-      percentage: `${stats.active_percentage}%`
+      percentage: `${stats.active_percentage}%`,
     },
     inactiveUsers: {
       count: stats.inactive_users,
-      label: 'Inactive End Users',
-      description: 'Inactive accounts',
-      percentage: `${stats.inactive_percentage}%`
+      label: "Inactive End Users",
+      description: "Inactive accounts",
+      percentage: `${stats.inactive_percentage}%`,
     },
     suspendedUsers: {
       count: stats.suspended_users,
-      label: 'Suspended Users',
-      description: 'Suspended accounts',
-      percentage: `${stats.suspended_percentage}%`
+      label: "Suspended Users",
+      description: "Suspended accounts",
+      percentage: `${stats.suspended_percentage}%`,
     },
     recentUsers: stats.recent_users,
-    lastUpdated: stats.last_updated
+    lastUpdated: stats.last_updated,
   };
 }
 
 // Helper function to get role distribution
-export async function getRoleDistribution(): Promise<{
-  role: string;
-  count: number;
-  percentage: string;
-}[]> {
+export async function getRoleDistribution(): Promise<
+  {
+    role: string;
+    count: number;
+    percentage: string;
+  }[]
+> {
   const stats = await getUserStats();
 
   const roles = [
-    { role: 'admin', count: stats.total_admins },
-    { role: 'creator', count: stats.total_creators },
-    { role: 'reviewer', count: stats.total_reviewers },
-    { role: 'user', count: stats.end_users }
+    { role: "admin", count: stats.total_admins },
+    { role: "creator", count: stats.total_creators },
+    { role: "reviewer", count: stats.total_reviewers },
+    { role: "user", count: stats.end_users },
   ];
 
-  return roles.map(role => ({
+  return roles.map((role) => ({
     ...role,
-    percentage: stats.total_users > 0
-      ? `${Math.round((role.count / stats.total_users) * 100)}%`
-      : '0%'
+    percentage:
+      stats.total_users > 0 ? `${Math.round((role.count / stats.total_users) * 100)}%` : "0%",
   }));
 }
 
 // Helper function to get status distribution
-export async function getStatusDistribution(): Promise<{
-  status: string;
-  count: number;
-  percentage: string;
-}[]> {
+export async function getStatusDistribution(): Promise<
+  {
+    status: string;
+    count: number;
+    percentage: string;
+  }[]
+> {
   const stats = await getUserStats();
-  
+
   const statuses = [
-    { status: 'active', count: stats.active_users },
-    { status: 'inactive', count: stats.inactive_users },
-    { status: 'suspended', count: stats.suspended_users }
+    { status: "active", count: stats.active_users },
+    { status: "inactive", count: stats.inactive_users },
+    { status: "suspended", count: stats.suspended_users },
   ];
 
-  return statuses.map(status => ({
+  return statuses.map((status) => ({
     ...status,
-    percentage: stats.total_users > 0 
-      ? `${Math.round((status.count / stats.total_users) * 100)}%`
-      : '0%'
+    percentage:
+      stats.total_users > 0 ? `${Math.round((status.count / stats.total_users) * 100)}%` : "0%",
   }));
 }

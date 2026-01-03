@@ -1,13 +1,13 @@
 // src/shared/components/auth/client-auth-guard.tsx
-'use client'
+"use client";
 
-import { useEffect, useState, useRef } from 'react'
-import { useRouter } from 'next/navigation'
-import { useAuth } from '@/shared/hooks/use-auth'
+import { useEffect, useState, useRef } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/shared/hooks/use-auth";
 
 interface ClientAuthGuardProps {
-  children: React.ReactNode
-  redirectTo?: string
+  children: React.ReactNode;
+  redirectTo?: string;
 }
 
 /**
@@ -18,36 +18,36 @@ interface ClientAuthGuardProps {
  * Server-side API routes still verify authentication.
  * Use middleware for sensitive routes like /admin.
  */
-export function ClientAuthGuard({ children, redirectTo = '/login' }: ClientAuthGuardProps) {
-  const { isAuthenticated, isLoading, isHydrated } = useAuth({ minimal: true })
-  const router = useRouter()
-  const [shouldRender, setShouldRender] = useState(false)
-  const hasCheckedRef = useRef(false)
+export function ClientAuthGuard({ children, redirectTo = "/login" }: ClientAuthGuardProps) {
+  const { isAuthenticated, isLoading, isHydrated } = useAuth({ minimal: true });
+  const router = useRouter();
+  const [shouldRender, setShouldRender] = useState(false);
+  const hasCheckedRef = useRef(false);
 
   useEffect(() => {
     // Wait until fully hydrated and auth check complete
     if (!isHydrated || isLoading) {
-      return
+      return;
     }
 
     // Wait one render cycle after isLoading becomes false
     // NOTE: This may be unnecessary since sessionStorage is read synchronously,
     // but keeping it as defensive programming to ensure auth state has fully settled
     if (!hasCheckedRef.current) {
-      hasCheckedRef.current = true
-      return
+      hasCheckedRef.current = true;
+      return;
     }
 
     if (!isAuthenticated) {
       // User not authenticated - redirect to login
-      const currentPath = window.location.pathname
-      const redirectUrl = `${redirectTo}?redirect=${encodeURIComponent(currentPath)}`
-      router.replace(redirectUrl)
+      const currentPath = window.location.pathname;
+      const redirectUrl = `${redirectTo}?redirect=${encodeURIComponent(currentPath)}`;
+      router.replace(redirectUrl);
     } else {
       // User authenticated - safe to render
-      setShouldRender(true)
+      setShouldRender(true);
     }
-  }, [isAuthenticated, isLoading, isHydrated, redirectTo, router])
+  }, [isAuthenticated, isLoading, isHydrated, redirectTo, router]);
 
   // Show loading state while checking auth
   if (!isHydrated || isLoading || !shouldRender) {
@@ -55,9 +55,9 @@ export function ClientAuthGuard({ children, redirectTo = '/login' }: ClientAuthG
       <div className="flex items-center justify-center min-h-screen">
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
       </div>
-    )
+    );
   }
 
   // Render children if authenticated
-  return <>{children}</>
+  return <>{children}</>;
 }

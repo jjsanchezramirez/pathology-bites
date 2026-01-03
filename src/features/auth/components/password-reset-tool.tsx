@@ -1,95 +1,100 @@
 // src/features/auth/components/password-reset-tool.tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useForm } from 'react-hook-form'
-import { zodResolver } from '@hookform/resolvers/zod'
-import { z } from 'zod'
-import { toast } from '@/shared/utils/toast'
-import { Button } from '@/shared/components/ui/button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
-import { Separator } from '@/shared/components/ui/separator'
-import { Badge } from '@/shared/components/ui/badge'
-import { RefreshCw, Mail, Key, Shield, Clock, CheckCircle } from 'lucide-react'
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { toast } from "@/shared/utils/toast";
+import { Button } from "@/shared/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { Separator } from "@/shared/components/ui/separator";
+import { Badge } from "@/shared/components/ui/badge";
+import { RefreshCw, Mail, Key, Shield, Clock, CheckCircle } from "lucide-react";
 
 const passwordResetSchema = z.object({
-  email: z.string().email('Please enter a valid email address')
-})
+  email: z.string().email("Please enter a valid email address"),
+});
 
-type PasswordResetFormData = z.infer<typeof passwordResetSchema>
+type PasswordResetFormData = z.infer<typeof passwordResetSchema>;
 
 interface PasswordResetToolProps {
-  className?: string
+  className?: string;
 }
 
 export function PasswordResetTool({ className }: PasswordResetToolProps) {
-  const [isLoading, setIsLoading] = useState(false)
-  const [resetType, setResetType] = useState<'reset' | 'magic_link'>('reset')
-  const [lastResetTime, setLastResetTime] = useState<Date | null>(null)
-  const [resetCount, setResetCount] = useState(0)
+  const [isLoading, setIsLoading] = useState(false);
+  const [resetType, setResetType] = useState<"reset" | "magic_link">("reset");
+  const [lastResetTime, setLastResetTime] = useState<Date | null>(null);
+  const [resetCount, setResetCount] = useState(0);
 
   const {
     register,
     handleSubmit,
     formState: { errors, isSubmitted },
-    reset
+    reset,
   } = useForm<PasswordResetFormData>({
-    resolver: zodResolver(passwordResetSchema)
-  })
+    resolver: zodResolver(passwordResetSchema),
+  });
 
   const canRequestReset = () => {
-    if (!lastResetTime) return true
-    const timeSinceLastReset = Date.now() - lastResetTime.getTime()
-    const cooldownPeriod = 60000 // 1 minute
-    return timeSinceLastReset > cooldownPeriod
-  }
+    if (!lastResetTime) return true;
+    const timeSinceLastReset = Date.now() - lastResetTime.getTime();
+    const cooldownPeriod = 60000; // 1 minute
+    return timeSinceLastReset > cooldownPeriod;
+  };
 
   const getRemainingCooldown = () => {
-    if (!lastResetTime) return 0
-    const timeSinceLastReset = Date.now() - lastResetTime.getTime()
-    const cooldownPeriod = 60000 // 1 minute
-    return Math.max(0, cooldownPeriod - timeSinceLastReset)
-  }
+    if (!lastResetTime) return 0;
+    const timeSinceLastReset = Date.now() - lastResetTime.getTime();
+    const cooldownPeriod = 60000; // 1 minute
+    return Math.max(0, cooldownPeriod - timeSinceLastReset);
+  };
 
   const onSubmit = async (data: PasswordResetFormData) => {
     if (!canRequestReset()) {
-      const remainingSeconds = Math.ceil(getRemainingCooldown() / 1000)
-      toast.error(`Please wait ${remainingSeconds} seconds before requesting another reset`)
-      return
+      const remainingSeconds = Math.ceil(getRemainingCooldown() / 1000);
+      toast.error(`Please wait ${remainingSeconds} seconds before requesting another reset`);
+      return;
     }
 
     try {
-      setIsLoading(true)
+      setIsLoading(true);
 
-      const response = await fetch('/api/user/password-reset', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/user/password-reset", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: data.email,
-          type: resetType
-        })
-      })
+          type: resetType,
+        }),
+      });
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.error || 'Failed to send reset email')
+        throw new Error(result.error || "Failed to send reset email");
       }
 
-      toast.success(result.message)
-      setLastResetTime(new Date())
-      setResetCount(prev => prev + 1)
-      reset()
-
+      toast.success(result.message);
+      setLastResetTime(new Date());
+      setResetCount((prev) => prev + 1);
+      reset();
     } catch (error) {
-      console.error('Password reset error:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to send reset email')
+      console.error("Password reset error:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to send reset email");
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <div className={className}>
@@ -110,9 +115,9 @@ export function PasswordResetTool({ className }: PasswordResetToolProps) {
             <div className="flex gap-2">
               <Button
                 type="button"
-                variant={resetType === 'reset' ? 'default' : 'outline'}
+                variant={resetType === "reset" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setResetType('reset')}
+                onClick={() => setResetType("reset")}
                 className="flex-1"
               >
                 <Key className="h-4 w-4 mr-2" />
@@ -120,9 +125,9 @@ export function PasswordResetTool({ className }: PasswordResetToolProps) {
               </Button>
               <Button
                 type="button"
-                variant={resetType === 'magic_link' ? 'default' : 'outline'}
+                variant={resetType === "magic_link" ? "default" : "outline"}
                 size="sm"
-                onClick={() => setResetType('magic_link')}
+                onClick={() => setResetType("magic_link")}
                 className="flex-1"
               >
                 <Mail className="h-4 w-4 mr-2" />
@@ -130,10 +135,9 @@ export function PasswordResetTool({ className }: PasswordResetToolProps) {
               </Button>
             </div>
             <p className="text-sm text-muted-foreground">
-              {resetType === 'reset' 
-                ? 'Send a link to create a new password'
-                : 'Send a link to log in instantly without a password'
-              }
+              {resetType === "reset"
+                ? "Send a link to create a new password"
+                : "Send a link to log in instantly without a password"}
             </p>
           </div>
 
@@ -148,18 +152,14 @@ export function PasswordResetTool({ className }: PasswordResetToolProps) {
                 type="email"
                 placeholder="Enter your email address"
                 disabled={isLoading}
-                {...register('email')}
+                {...register("email")}
               />
               {isSubmitted && errors.email && (
                 <p className="text-sm text-destructive">{errors.email.message}</p>
               )}
             </div>
 
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isLoading || !canRequestReset()}
-            >
+            <Button type="submit" className="w-full" disabled={isLoading || !canRequestReset()}>
               {isLoading ? (
                 <>
                   <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -168,7 +168,7 @@ export function PasswordResetTool({ className }: PasswordResetToolProps) {
               ) : (
                 <>
                   <Mail className="h-4 w-4 mr-2" />
-                  {resetType === 'reset' ? 'Send Reset Link' : 'Send Magic Link'}
+                  {resetType === "reset" ? "Send Reset Link" : "Send Magic Link"}
                 </>
               )}
             </Button>
@@ -192,7 +192,7 @@ export function PasswordResetTool({ className }: PasswordResetToolProps) {
                 </div>
                 <div className="flex items-center gap-2">
                   <Badge variant="secondary">
-                    {resetCount} request{resetCount !== 1 ? 's' : ''} sent
+                    {resetCount} request{resetCount !== 1 ? "s" : ""} sent
                   </Badge>
                   {lastResetTime && (
                     <span className="text-sm text-muted-foreground">
@@ -220,5 +220,5 @@ export function PasswordResetTool({ className }: PasswordResetToolProps) {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

@@ -1,76 +1,76 @@
 // src/components/question-management/create-tag-dialog.tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { createClient } from '@/shared/services/client'
-import { toast } from '@/shared/utils/toast'
-import { BlurredDialog } from '@/shared/components/ui/blurred-dialog'
-import { Button } from '@/shared/components/ui/button'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
-import { Loader2 } from 'lucide-react'
+import { useState } from "react";
+import { createClient } from "@/shared/services/client";
+import { toast } from "@/shared/utils/toast";
+import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { Loader2 } from "lucide-react";
 
 interface CreateTagDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSuccess: () => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
 }
 
 export function CreateTagDialog({ open, onOpenChange, onSuccess }: CreateTagDialogProps) {
-  const [name, setName] = useState('')
-  const [isCreating, setIsCreating] = useState(false)
+  const [name, setName] = useState("");
+  const [isCreating, setIsCreating] = useState(false);
 
-  const _supabase = createClient()
+  const _supabase = createClient();
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
+    e.preventDefault();
 
     if (!name.trim()) {
-      toast.error('Tag name is required')
-      return
+      toast.error("Tag name is required");
+      return;
     }
 
-    setIsCreating(true)
+    setIsCreating(true);
     try {
-      const response = await fetch('/api/admin/tags', {
-        method: 'POST',
+      const response = await fetch("/api/admin/tags", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          name: name.trim()
-        })
-      })
+          name: name.trim(),
+        }),
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to create tag')
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create tag");
       }
 
-      toast.success('Tag created successfully')
+      toast.success("Tag created successfully");
 
-      setName('')
+      setName("");
       // Close dialog first, then refresh data
-      onOpenChange(false)
+      onOpenChange(false);
       setTimeout(() => {
-        onSuccess()
-      }, 100)
+        onSuccess();
+      }, 100);
     } catch (error) {
-      console.error('Error creating tag:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to create tag')
+      console.error("Error creating tag:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to create tag");
     } finally {
-      setIsCreating(false)
+      setIsCreating(false);
     }
-  }
+  };
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!isCreating) {
-      onOpenChange(newOpen)
+      onOpenChange(newOpen);
       if (!newOpen) {
-        setName('')
+        setName("");
       }
     }
-  }
+  };
 
   return (
     <BlurredDialog
@@ -89,18 +89,14 @@ export function CreateTagDialog({ open, onOpenChange, onSuccess }: CreateTagDial
           >
             Cancel
           </Button>
-          <Button
-            type="submit"
-            disabled={isCreating || !name.trim()}
-            onClick={handleSubmit}
-          >
+          <Button type="submit" disabled={isCreating || !name.trim()} onClick={handleSubmit}>
             {isCreating ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Creating...
               </>
             ) : (
-              'Create Tag'
+              "Create Tag"
             )}
           </Button>
         </>
@@ -120,5 +116,5 @@ export function CreateTagDialog({ open, onOpenChange, onSuccess }: CreateTagDial
         </div>
       </form>
     </BlurredDialog>
-  )
+  );
 }

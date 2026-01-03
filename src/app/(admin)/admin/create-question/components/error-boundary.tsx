@@ -1,51 +1,51 @@
-'use client'
+"use client";
 
-import React from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { AlertTriangle, RefreshCw } from 'lucide-react'
+import React from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { AlertTriangle, RefreshCw } from "lucide-react";
 
 interface ErrorBoundaryState {
-  hasError: boolean
-  error?: Error
-  errorInfo?: React.ErrorInfo
+  hasError: boolean;
+  error?: Error;
+  errorInfo?: React.ErrorInfo;
 }
 
 interface ErrorBoundaryProps {
-  children: React.ReactNode
-  fallback?: React.ComponentType<{ error: Error; retry: () => void }>
+  children: React.ReactNode;
+  fallback?: React.ComponentType<{ error: Error; retry: () => void }>;
 }
 
 export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: ErrorBoundaryProps) {
-    super(props)
-    this.state = { hasError: false }
+    super(props);
+    this.state = { hasError: false };
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return {
       hasError: true,
-      error
-    }
+      error,
+    };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error('ErrorBoundary caught an error:', error, errorInfo)
+    console.error("ErrorBoundary caught an error:", error, errorInfo);
     this.setState({
       error,
-      errorInfo
-    })
+      errorInfo,
+    });
   }
 
   retry = () => {
-    this.setState({ hasError: false, error: undefined, errorInfo: undefined })
-  }
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+  };
 
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
-        const FallbackComponent = this.props.fallback
-        return <FallbackComponent error={this.state.error!} retry={this.retry} />
+        const FallbackComponent = this.props.fallback;
+        return <FallbackComponent error={this.state.error!} retry={this.retry} />;
       }
 
       return (
@@ -60,9 +60,9 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             <div className="text-sm text-red-700 dark:text-red-300">
               <p className="font-medium mb-2">Error Details:</p>
               <pre className="bg-red-100 dark:bg-red-900 p-3 rounded text-xs overflow-auto">
-                {this.state.error?.message || 'Unknown error occurred'}
+                {this.state.error?.message || "Unknown error occurred"}
               </pre>
-              {process.env.NODE_ENV === 'development' && this.state.error?.stack && (
+              {process.env.NODE_ENV === "development" && this.state.error?.stack && (
                 <details className="mt-2">
                   <summary className="cursor-pointer font-medium">Stack Trace</summary>
                   <pre className="bg-red-100 dark:bg-red-900 p-3 rounded text-xs overflow-auto mt-2">
@@ -81,30 +81,30 @@ export class ErrorBoundary extends React.Component<ErrorBoundaryProps, ErrorBoun
             </Button>
           </CardContent>
         </Card>
-      )
+      );
     }
 
-    return this.props.children
+    return this.props.children;
   }
 }
 
 // Hook version for functional components
 export function useErrorBoundary() {
-  const [error, setError] = React.useState<Error | null>(null)
+  const [error, setError] = React.useState<Error | null>(null);
 
   const resetError = React.useCallback(() => {
-    setError(null)
-  }, [])
+    setError(null);
+  }, []);
 
   const captureError = React.useCallback((error: Error) => {
-    setError(error)
-  }, [])
+    setError(error);
+  }, []);
 
   React.useEffect(() => {
     if (error) {
-      throw error
+      throw error;
     }
-  }, [error])
+  }, [error]);
 
-  return { captureError, resetError }
+  return { captureError, resetError };
 }

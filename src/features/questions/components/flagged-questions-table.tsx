@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { useRouter } from 'next/navigation'
-import { createClient } from '@/shared/services/client'
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { createClient } from "@/shared/services/client";
 import {
   Table,
   TableBody,
@@ -10,17 +10,17 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/components/ui/table"
-import { Button } from "@/shared/components/ui/button"
-import { Badge } from "@/shared/components/ui/badge"
-import { Input } from "@/shared/components/ui/input"
+} from "@/shared/components/ui/table";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import { Input } from "@/shared/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select"
+} from "@/shared/components/ui/select";
 import {
   Eye,
   Search,
@@ -32,87 +32,96 @@ import {
   FileQuestion,
   Edit,
   X,
-  CheckCircle
-} from 'lucide-react'
-import { QuestionPreviewDialog } from './question-preview-dialog'
-import { FlagResolutionDialog } from './flag-resolution-dialog'
-import { toast } from '@/shared/utils/toast'
-import { FLAG_TYPE_CONFIG, QuestionWithDetails, QuestionFlagData } from '@/features/questions/types/questions'
-import { useAuth } from '@/shared/hooks/use-auth'
+  CheckCircle,
+} from "lucide-react";
+import { QuestionPreviewDialog } from "./question-preview-dialog";
+import { FlagResolutionDialog } from "./flag-resolution-dialog";
+import { toast } from "@/shared/utils/toast";
+import {
+  FLAG_TYPE_CONFIG,
+  QuestionWithDetails,
+  QuestionFlagData,
+} from "@/features/questions/types/questions";
+import { useAuth } from "@/shared/hooks/use-auth";
 
 interface FlaggedQuestion extends QuestionWithDetails {
-  flag_count: number
-  latest_flag_date: string
+  flag_count: number;
+  latest_flag_date: string;
   // Joined data
   creator?: {
-    first_name: string
-    last_name: string
-    email: string
-  }
+    first_name: string;
+    last_name: string;
+    email: string;
+  };
   flags?: Array<{
-    id: string
-    flag_type: string
-    description: string
-    created_at: string
-    status: string
+    id: string;
+    flag_type: string;
+    description: string;
+    created_at: string;
+    status: string;
     flagged_by_user?: {
-      first_name: string
-      last_name: string
-    }
-  }>
+      first_name: string;
+      last_name: string;
+    };
+  }>;
 }
 
 export function FlaggedQuestionsTable() {
-  const router = useRouter()
-  const [questions, setQuestions] = useState<FlaggedQuestion[]>([])
-  const [filteredQuestions, setFilteredQuestions] = useState<FlaggedQuestion[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [flagTypeFilter, setFlagTypeFilter] = useState('all')
-  const [selectedQuestion, setSelectedQuestion] = useState<FlaggedQuestion | null>(null)
-  const [previewOpen, setPreviewOpen] = useState(false)
-  const [resolutionOpen, setResolutionOpen] = useState(false)
-  const [selectedFlags, setSelectedFlags] = useState<QuestionFlagData[]>([])
-  const [selectedQuestionTitle, setSelectedQuestionTitle] = useState('')
+  const router = useRouter();
+  const [questions, setQuestions] = useState<FlaggedQuestion[]>([]);
+  const [filteredQuestions, setFilteredQuestions] = useState<FlaggedQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [flagTypeFilter, setFlagTypeFilter] = useState("all");
+  const [selectedQuestion, setSelectedQuestion] = useState<FlaggedQuestion | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [resolutionOpen, setResolutionOpen] = useState(false);
+  const [selectedFlags, setSelectedFlags] = useState<QuestionFlagData[]>([]);
+  const [selectedQuestionTitle, setSelectedQuestionTitle] = useState("");
 
-  const { user } = useAuth({ minimal: true })
-  const supabase = createClient()
+  const { user } = useAuth({ minimal: true });
+  const supabase = createClient();
 
   useEffect(() => {
-    fetchFlaggedQuestions()
-  }, [fetchFlaggedQuestions])
+    fetchFlaggedQuestions();
+  }, [fetchFlaggedQuestions]);
 
   const fetchFlaggedQuestions = async () => {
     try {
-      setLoading(true)
-      
+      setLoading(true);
+
       // Use the v_flagged_questions view to get questions with pending flags
       const { data: questionsData, error: questionsError } = await supabase
-        .from('v_flagged_questions')
-        .select(`
+        .from("v_flagged_questions")
+        .select(
+          `
           *,
           creator:users!questions_created_by_fkey(first_name, last_name, email),
           question_set:question_sets(name, short_form)
-        `)
-        .order('latest_flag_date', { ascending: false })
+        `
+        )
+        .order("latest_flag_date", { ascending: false });
 
       if (questionsError) {
-        console.error('Error fetching flagged questions:', questionsError)
-        toast.error(`Failed to load flagged questions: ${questionsError.message || 'Unknown error'}`)
-        return
+        console.error("Error fetching flagged questions:", questionsError);
+        toast.error(
+          `Failed to load flagged questions: ${questionsError.message || "Unknown error"}`
+        );
+        return;
       }
 
       if (!questionsData || questionsData.length === 0) {
-        setQuestions([])
-        console.log('No flagged questions found')
-        return
+        setQuestions([]);
+        console.log("No flagged questions found");
+        return;
       }
 
       // Get detailed flag information for each question
-      const questionIds = questionsData.map(q => q.id)
+      const questionIds = questionsData.map((q) => q.id);
       const { data: flagsData } = await supabase
-        .from('question_flags')
-        .select(`
+        .from("question_flags")
+        .select(
+          `
           id,
           question_id,
           flag_type,
@@ -120,65 +129,64 @@ export function FlaggedQuestionsTable() {
           created_at,
           status,
           flagged_by_user:users!question_flags_flagged_by_fkey(first_name, last_name)
-        `)
-        .in('question_id', questionIds)
-        .eq('status', 'open')
-        .order('created_at', { ascending: false })
+        `
+        )
+        .in("question_id", questionIds)
+        .eq("status", "open")
+        .order("created_at", { ascending: false });
 
       // Combine questions with their flags
       const transformedQuestions: FlaggedQuestion[] = questionsData.map((question) => ({
         ...question,
-        flags: flagsData?.filter(flag => flag.question_id === question.id) || []
-      }))
+        flags: flagsData?.filter((flag) => flag.question_id === question.id) || [],
+      }));
 
-      setQuestions(transformedQuestions)
-
+      setQuestions(transformedQuestions);
     } catch (error) {
-      console.error('Unexpected error fetching flagged questions:', error)
-      toast.error('An unexpected error occurred while loading flagged questions')
+      console.error("Unexpected error fetching flagged questions:", error);
+      toast.error("An unexpected error occurred while loading flagged questions");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   useEffect(() => {
-    let filtered = questions
+    let filtered = questions;
 
     // Apply search filter
     if (searchTerm) {
-      filtered = filtered.filter(q => 
-        q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.stem.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.creator?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.creator?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
+      filtered = filtered.filter(
+        (q) =>
+          q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          q.stem.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          q.creator?.first_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          q.creator?.last_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
     }
 
     // Apply flag type filter
-    if (flagTypeFilter !== 'all') {
-      filtered = filtered.filter(q => 
-        q.flags?.some(flag => flag.flag_type === flagTypeFilter)
-      )
+    if (flagTypeFilter !== "all") {
+      filtered = filtered.filter((q) => q.flags?.some((flag) => flag.flag_type === flagTypeFilter));
     }
 
-    setFilteredQuestions(filtered)
-  }, [questions, searchTerm, flagTypeFilter])
+    setFilteredQuestions(filtered);
+  }, [questions, searchTerm, flagTypeFilter]);
 
   const handlePreviewQuestion = (question: FlaggedQuestion) => {
-    setSelectedQuestion(question)
-    setPreviewOpen(true)
-  }
+    setSelectedQuestion(question);
+    setPreviewOpen(true);
+  };
 
   const handleEditQuestion = (question: FlaggedQuestion) => {
-    router.push(`/admin/questions/${question.id}/edit?returnUrl=/admin/flagged-questions`)
-  }
+    router.push(`/admin/questions/${question.id}/edit?returnUrl=/admin/flagged-questions`);
+  };
 
   const handleResolveFlags = (question: FlaggedQuestion) => {
     // Convert the flags to the expected format
-    const flags: QuestionFlagData[] = (question.flags || []).map(flag => ({
+    const flags: QuestionFlagData[] = (question.flags || []).map((flag) => ({
       id: flag.id,
       question_id: question.id,
-      flagged_by: '', // We don't need this for resolution
+      flagged_by: "", // We don't need this for resolution
       flag_type: flag.flag_type,
       description: flag.description,
       status: flag.status,
@@ -186,64 +194,76 @@ export function FlaggedQuestionsTable() {
       resolved_at: null,
       resolution_notes: null,
       created_at: flag.created_at,
-      updated_at: flag.created_at
-    }))
+      updated_at: flag.created_at,
+    }));
 
-    setSelectedFlags(flags)
-    setSelectedQuestionTitle(question.title)
-    setResolutionOpen(true)
-  }
+    setSelectedFlags(flags);
+    setSelectedQuestionTitle(question.title);
+    setResolutionOpen(true);
+  };
 
   const handleDismissFlags = async (questionId: string) => {
     try {
       const { error } = await supabase
-        .from('question_flags')
+        .from("question_flags")
         .update({
-          status: 'closed',
-          resolution_type: 'dismissed',
+          status: "closed",
+          resolution_type: "dismissed",
           resolved_by: user?.id,
-          resolved_at: new Date().toISOString()
+          resolved_at: new Date().toISOString(),
         })
-        .eq('question_id', questionId)
-        .eq('status', 'open')
+        .eq("question_id", questionId)
+        .eq("status", "open");
 
       if (error) {
-        console.error('Error dismissing flags:', error)
-        toast.error('Failed to dismiss flags')
-        return
+        console.error("Error dismissing flags:", error);
+        toast.error("Failed to dismiss flags");
+        return;
       }
 
-      toast.success('Flags dismissed successfully')
-      fetchFlaggedQuestions()
+      toast.success("Flags dismissed successfully");
+      fetchFlaggedQuestions();
     } catch (error) {
-      console.error('Unexpected error dismissing flags:', error)
-      toast.error('An unexpected error occurred')
+      console.error("Unexpected error dismissing flags:", error);
+      toast.error("An unexpected error occurred");
     }
-  }
+  };
 
   const getDifficultyBadge = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {
-      case 'easy':
-        return <Badge variant="outline" className="text-green-600 border-green-600">Easy</Badge>
-      case 'medium':
-        return <Badge variant="outline" className="text-yellow-600 border-yellow-600">Medium</Badge>
-      case 'hard':
-        return <Badge variant="outline" className="text-red-600 border-red-600">Hard</Badge>
+      case "easy":
+        return (
+          <Badge variant="outline" className="text-green-600 border-green-600">
+            Easy
+          </Badge>
+        );
+      case "medium":
+        return (
+          <Badge variant="outline" className="text-yellow-600 border-yellow-600">
+            Medium
+          </Badge>
+        );
+      case "hard":
+        return (
+          <Badge variant="outline" className="text-red-600 border-red-600">
+            Hard
+          </Badge>
+        );
       default:
-        return <Badge variant="outline">{difficulty}</Badge>
+        return <Badge variant="outline">{difficulty}</Badge>;
     }
-  }
+  };
 
-  const getFlagTypeBadges = (flags: FlaggedQuestion['flags']) => {
-    if (!flags || flags.length === 0) return null
-    
-    const uniqueTypes = [...new Set(flags.map(f => f.flag_type))]
-    return uniqueTypes.map(type => (
+  const getFlagTypeBadges = (flags: FlaggedQuestion["flags"]) => {
+    if (!flags || flags.length === 0) return null;
+
+    const uniqueTypes = [...new Set(flags.map((f) => f.flag_type))];
+    return uniqueTypes.map((type) => (
       <Badge key={type} variant="destructive" className="text-xs">
         {FLAG_TYPE_CONFIG[type as keyof typeof FLAG_TYPE_CONFIG]?.label || type}
       </Badge>
-    ))
-  }
+    ));
+  };
 
   if (loading) {
     return (
@@ -259,7 +279,7 @@ export function FlaggedQuestionsTable() {
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -313,13 +333,14 @@ export function FlaggedQuestionsTable() {
                     <Flag className="h-12 w-12 text-muted-foreground/50" />
                     <div className="space-y-1">
                       <p className="text-sm font-medium text-muted-foreground">
-                        {questions.length === 0 ? 'No flagged questions' : 'No questions match your search'}
+                        {questions.length === 0
+                          ? "No flagged questions"
+                          : "No questions match your search"}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {questions.length === 0
-                          ? 'Flagged questions will appear here when users report issues.'
-                          : 'Try adjusting your search terms or filters.'
-                        }
+                          ? "Flagged questions will appear here when users report issues."
+                          : "Try adjusting your search terms or filters."}
                       </p>
                     </div>
                   </div>
@@ -332,25 +353,20 @@ export function FlaggedQuestionsTable() {
                     {question.title}
                   </TableCell>
                   <TableCell>
-                    {question.creator ? 
-                      `${question.creator.first_name} ${question.creator.last_name}` : 
-                      'Unknown'
-                    }
+                    {question.creator
+                      ? `${question.creator.first_name} ${question.creator.last_name}`
+                      : "Unknown"}
                   </TableCell>
                   <TableCell>{getDifficultyBadge(question.difficulty)}</TableCell>
                   <TableCell>
-                    <div className="flex flex-wrap gap-1">
-                      {getFlagTypeBadges(question.flags)}
-                    </div>
+                    <div className="flex flex-wrap gap-1">{getFlagTypeBadges(question.flags)}</div>
                   </TableCell>
                   <TableCell>
                     <Badge variant="outline" className="text-red-600 border-red-600">
                       {question.flag_count}
                     </Badge>
                   </TableCell>
-                  <TableCell>
-                    {new Date(question.latest_flag_date).toLocaleDateString()}
-                  </TableCell>
+                  <TableCell>{new Date(question.latest_flag_date).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <div className="flex items-center gap-2">
                       <Button
@@ -410,5 +426,5 @@ export function FlaggedQuestionsTable() {
         onResolutionComplete={fetchFlaggedQuestions}
       />
     </div>
-  )
+  );
 }

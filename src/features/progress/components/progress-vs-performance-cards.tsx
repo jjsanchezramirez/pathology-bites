@@ -1,7 +1,7 @@
 // src/features/progress/components/progress-vs-performance-cards.tsx
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { TrendingUp, BarChart3 } from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { TrendingUp, BarChart3 } from "lucide-react";
 
 export function ProgressVsPerformanceCards() {
   return (
@@ -15,8 +15,8 @@ export function ProgressVsPerformanceCards() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-purple-700 mb-4">
-            <strong>Progress</strong> focuses on your learning journey over time - tracking milestones, 
-            study streaks, module completion, and personal growth metrics.
+            <strong>Progress</strong> focuses on your learning journey over time - tracking
+            milestones, study streaks, module completion, and personal growth metrics.
           </p>
           <ul className="text-sm text-purple-600 space-y-1">
             <li>• Learning milestones and achievements</li>
@@ -37,8 +37,8 @@ export function ProgressVsPerformanceCards() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-blue-700 mb-4">
-            <strong>Performance</strong> focuses on your competency and accuracy - analyzing quiz results, 
-            identifying knowledge gaps, and measuring mastery of pathology topics.
+            <strong>Performance</strong> focuses on your competency and accuracy - analyzing quiz
+            results, identifying knowledge gaps, and measuring mastery of pathology topics.
           </p>
           <ul className="text-sm text-blue-600 space-y-1">
             <li>• Quiz scores and accuracy trends</li>
@@ -50,6 +50,5 @@ export function ProgressVsPerformanceCards() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-

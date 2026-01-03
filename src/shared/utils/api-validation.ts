@@ -1,11 +1,11 @@
 // Input Validation Utilities
-import { NextRequest, NextResponse } from 'next/server'
+import { NextRequest, NextResponse } from "next/server";
 
 // Validation schemas using Zod (recommended) or custom validation
 export interface ValidationResult {
-  isValid: boolean
-  errors?: string[]
-  data?: unknown
+  isValid: boolean;
+  errors?: string[];
+  data?: unknown;
 }
 
 // Generic request body validator
@@ -14,35 +14,35 @@ export async function validateRequestBody(
   validator: (data: unknown) => ValidationResult
 ): Promise<{ isValid: boolean; data?: unknown; response?: NextResponse }> {
   try {
-    const body = await request.json()
-    const validation = validator(body)
-    
+    const body = await request.json();
+    const validation = validator(body);
+
     if (!validation.isValid) {
       return {
         isValid: false,
         response: NextResponse.json(
           {
             success: false,
-            error: 'Validation failed',
-            details: validation.errors
+            error: "Validation failed",
+            details: validation.errors,
           },
           { status: 400 }
-        )
-      }
+        ),
+      };
     }
-    
-    return { isValid: true, data: validation.data }
+
+    return { isValid: true, data: validation.data };
   } catch {
     return {
       isValid: false,
       response: NextResponse.json(
         {
           success: false,
-          error: 'Invalid JSON in request body'
+          error: "Invalid JSON in request body",
         },
         { status: 400 }
-      )
-    }
+      ),
+    };
   }
 }
 
@@ -51,37 +51,38 @@ export function validateQueryParams(
   searchParams: URLSearchParams,
   validator: (params: Record<string, string>) => ValidationResult
 ): { isValid: boolean; data?: unknown; response?: NextResponse } {
-  const params: Record<string, string> = {}
+  const params: Record<string, string> = {};
   searchParams.forEach((value, key) => {
-    params[key] = value
-  })
-  
-  const validation = validator(params)
-  
+    params[key] = value;
+  });
+
+  const validation = validator(params);
+
   if (!validation.isValid) {
     return {
       isValid: false,
       response: NextResponse.json(
         {
           success: false,
-          error: 'Invalid query parameters',
-          details: validation.errors
+          error: "Invalid query parameters",
+          details: validation.errors,
         },
         { status: 400 }
-      )
-    }
+      ),
+    };
   }
-  
-  return { isValid: true, data: validation.data }
+
+  return { isValid: true, data: validation.data };
 }
 
 // Common validation functions
 export const validators = {
   email: (email: string): boolean => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email),
-  uuid: (id: string): boolean => /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id),
+  uuid: (id: string): boolean =>
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id),
   positiveInteger: (num: unknown): boolean => Number.isInteger(num) && num > 0,
-  nonEmptyString: (str: unknown): boolean => typeof str === 'string' && str.trim().length > 0
-}
+  nonEmptyString: (str: unknown): boolean => typeof str === "string" && str.trim().length > 0,
+};
 
 // Example usage in an endpoint:
 /*

@@ -1,15 +1,8 @@
 // src/features/progress/components/preview-features-grid.tsx
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Badge } from '@/shared/components/ui/badge'
-import {
-  Calendar,
-  Trophy,
-  Clock,
-  Star,
-  Zap,
-  CheckCircle
-} from 'lucide-react'
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Badge } from "@/shared/components/ui/badge";
+import { Calendar, Trophy, Clock, Star, Zap, CheckCircle } from "lucide-react";
 
 export function PreviewFeaturesGrid() {
   return (
@@ -23,8 +16,8 @@ export function PreviewFeaturesGrid() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Track your daily study streaks and maintain consistency in 
-            your pathology learning journey.
+            Track your daily study streaks and maintain consistency in your pathology learning
+            journey.
           </p>
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Current streak:</span>
@@ -42,8 +35,8 @@ export function PreviewFeaturesGrid() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Celebrate major learning milestones and track your progress 
-            through different pathology topics.
+            Celebrate major learning milestones and track your progress through different pathology
+            topics.
           </p>
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Next milestone:</span>
@@ -61,8 +54,8 @@ export function PreviewFeaturesGrid() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Monitor total time spent learning and track your dedication 
-            to mastering pathology concepts.
+            Monitor total time spent learning and track your dedication to mastering pathology
+            concepts.
           </p>
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Total time:</span>
@@ -80,8 +73,8 @@ export function PreviewFeaturesGrid() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Unlock achievement badges as you reach study goals and 
-            demonstrate mastery in various areas.
+            Unlock achievement badges as you reach study goals and demonstrate mastery in various
+            areas.
           </p>
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Badges earned:</span>
@@ -99,8 +92,7 @@ export function PreviewFeaturesGrid() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Track your learning pace and see how your study speed 
-            improves over time.
+            Track your learning pace and see how your study speed improves over time.
           </p>
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">This week:</span>
@@ -118,8 +110,8 @@ export function PreviewFeaturesGrid() {
         </CardHeader>
         <CardContent>
           <p className="text-sm text-muted-foreground mb-4">
-            Monitor completion rates across different learning modules 
-            and track your overall progress.
+            Monitor completion rates across different learning modules and track your overall
+            progress.
           </p>
           <div className="flex items-center justify-between text-sm">
             <span className="text-muted-foreground">Overall progress:</span>
@@ -128,6 +120,5 @@ export function PreviewFeaturesGrid() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-

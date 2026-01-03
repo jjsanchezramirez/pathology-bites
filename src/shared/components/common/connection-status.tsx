@@ -1,40 +1,40 @@
 // src/components/network/connection-status.tsx
-"use client"
+"use client";
 
-import { useEffect, useState } from 'react'
-import { useZeroApiNetworkStatus } from '@/shared/hooks/use-zero-api-network-status'
-import { cn } from '@/shared/utils'
-import { Wifi, WifiOff } from 'lucide-react'
+import { useEffect, useState } from "react";
+import { useZeroApiNetworkStatus } from "@/shared/hooks/use-zero-api-network-status";
+import { cn } from "@/shared/utils";
+import { Wifi, WifiOff } from "lucide-react";
 
 export function ConnectionStatus() {
-  const { isOnline } = useZeroApiNetworkStatus()
-  const [show, setShow] = useState(false)
-  const [wasOffline, setWasOffline] = useState(false)
+  const { isOnline } = useZeroApiNetworkStatus();
+  const [show, setShow] = useState(false);
+  const [wasOffline, setWasOffline] = useState(false);
 
   // Show offline indicator immediately, but delay hiding it
   useEffect(() => {
     if (!isOnline) {
-      setShow(true)
-      setWasOffline(true)
+      setShow(true);
+      setWasOffline(true);
     } else if (wasOffline) {
       // If we were offline and came back online, wait a bit before hiding
       const timer = setTimeout(() => {
-        setShow(false)
+        setShow(false);
         // Reset after animation completes
         const resetTimer = setTimeout(() => {
-          setWasOffline(false)
-        }, 500) // animation duration
+          setWasOffline(false);
+        }, 500); // animation duration
 
-        return () => clearTimeout(resetTimer)
-      }, 3000)
+        return () => clearTimeout(resetTimer);
+      }, 3000);
 
-      return () => clearTimeout(timer)
+      return () => clearTimeout(timer);
     }
-  }, [isOnline, wasOffline])
+  }, [isOnline, wasOffline]);
 
   // If we've never been offline and we're online, don't render anything
   if (!wasOffline && isOnline) {
-    return null
+    return null;
   }
 
   return (
@@ -59,5 +59,5 @@ export function ConnectionStatus() {
         </>
       )}
     </div>
-  )
+  );
 }

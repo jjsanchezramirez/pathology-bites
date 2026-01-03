@@ -1,89 +1,87 @@
 // src/components/question-management/edit-tag-dialog.tsx
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { toast } from '@/shared/utils/toast'
-import { BlurredDialog } from '@/shared/components/ui/blurred-dialog'
-import { Button } from '@/shared/components/ui/button'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
-import { Loader2 } from 'lucide-react'
-import { apiClient } from '@/shared/utils/api-client'
+import { useState, useEffect } from "react";
+import { toast } from "@/shared/utils/toast";
+import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
+import { Loader2 } from "lucide-react";
+import { apiClient } from "@/shared/utils/api-client";
 
 interface Tag {
-  id: string
-  name: string
-  created_at: string
-  question_count?: number
+  id: string;
+  name: string;
+  created_at: string;
+  question_count?: number;
 }
 
 interface EditTagDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onSuccess: () => void
-  tag: Tag | null
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onSuccess: () => void;
+  tag: Tag | null;
 }
 
 export function EditTagDialog({ open, onOpenChange, onSuccess, tag }: EditTagDialogProps) {
-  const [name, setName] = useState('')
-  const [isUpdating, setIsUpdating] = useState(false)
-
-
+  const [name, setName] = useState("");
+  const [isUpdating, setIsUpdating] = useState(false);
 
   // Update form when tag changes
   useEffect(() => {
     if (tag && open) {
-      setName(tag.name)
+      setName(tag.name);
     }
-  }, [tag, open])
+  }, [tag, open]);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    
+    e.preventDefault();
+
     if (!name.trim()) {
-      toast.error('Tag name is required')
-      return
+      toast.error("Tag name is required");
+      return;
     }
 
     if (!tag) {
-      toast.error('No tag selected for editing')
-      return
+      toast.error("No tag selected for editing");
+      return;
     }
 
-    setIsUpdating(true)
+    setIsUpdating(true);
     try {
-      const response = await apiClient.patch('/api/admin/tags', {
+      const response = await apiClient.patch("/api/admin/tags", {
         tagId: tag.id,
-        name: name.trim()
-      })
+        name: name.trim(),
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to update tag')
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update tag");
       }
 
-      toast.success('Tag updated successfully')
+      toast.success("Tag updated successfully");
 
       // Close dialog first, then refresh data
-      onOpenChange(false)
+      onOpenChange(false);
       setTimeout(() => {
-        onSuccess()
-      }, 100)
+        onSuccess();
+      }, 100);
     } catch (error) {
-      console.error('Error updating tag:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to update tag')
+      console.error("Error updating tag:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update tag");
     } finally {
-      setIsUpdating(false)
+      setIsUpdating(false);
     }
-  }
+  };
 
   const handleOpenChange = (newOpen: boolean) => {
     if (!isUpdating) {
-      onOpenChange(newOpen)
+      onOpenChange(newOpen);
       // Note: State cleanup removed to prevent conflicts with Select dropdown portals
       // State will be reset when dialog opens again via useEffect
     }
-  }
+  };
 
   return (
     <BlurredDialog
@@ -102,18 +100,14 @@ export function EditTagDialog({ open, onOpenChange, onSuccess, tag }: EditTagDia
           >
             Cancel
           </Button>
-          <Button
-            type="submit"
-            disabled={isUpdating || !name.trim()}
-            onClick={handleSubmit}
-          >
+          <Button type="submit" disabled={isUpdating || !name.trim()} onClick={handleSubmit}>
             {isUpdating ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 Updating...
               </>
             ) : (
-              'Update Tag'
+              "Update Tag"
             )}
           </Button>
         </>
@@ -133,5 +127,5 @@ export function EditTagDialog({ open, onOpenChange, onSuccess, tag }: EditTagDia
         </div>
       </form>
     </BlurredDialog>
-  )
+  );
 }

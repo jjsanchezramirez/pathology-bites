@@ -1,55 +1,60 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Input } from '@/shared/components/ui/input'
-import { Textarea } from '@/shared/components/ui/textarea'
-import { Label } from '@/shared/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
-import { Badge } from '@/shared/components/ui/badge'
-import { Separator } from '@/shared/components/ui/separator'
-import { RadioGroup, RadioGroupItem } from '@/shared/components/ui/radio-group'
-import { Edit, Save, MessageSquare, Brain } from 'lucide-react'
-import { toast } from '@/shared/utils/toast'
-
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Textarea } from "@/shared/components/ui/textarea";
+import { Label } from "@/shared/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { Badge } from "@/shared/components/ui/badge";
+import { Separator } from "@/shared/components/ui/separator";
+import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
+import { Edit, Save, MessageSquare, Brain } from "lucide-react";
+import { toast } from "@/shared/utils/toast";
 
 interface GeneratedQuestion {
-  title: string
-  stem: string
-  difficulty: 'easy' | 'medium' | 'hard'
-  teaching_point: string
-  question_references: string
-  status: string
-  question_set_id: string
-  category_id: string
+  title: string;
+  stem: string;
+  difficulty: "easy" | "medium" | "hard";
+  teaching_point: string;
+  question_references: string;
+  status: string;
+  question_set_id: string;
+  category_id: string;
   question_options: Array<{
-    text: string
-    is_correct: boolean
-    explanation: string
-    order_index: number
-  }>
+    text: string;
+    is_correct: boolean;
+    explanation: string;
+    order_index: number;
+  }>;
   question_images: Array<{
-    question_section: 'stem' | 'explanation'
-    order_index: number
-    image_url: string
-    alt_text: string
-    caption: string
-  }>
-  tag_ids: string[]
-  metadata: unknown
+    question_section: "stem" | "explanation";
+    order_index: number;
+    image_url: string;
+    alt_text: string;
+    caption: string;
+  }>;
+  tag_ids: string[];
+  metadata: unknown;
 }
 
 interface QuestionPreviewProps {
-  question: GeneratedQuestion | null
-  onQuestionUpdated: (question: GeneratedQuestion) => void
+  question: GeneratedQuestion | null;
+  onQuestionUpdated: (question: GeneratedQuestion) => void;
 }
 
 export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreviewProps) {
-  const [isEditing, setIsEditing] = useState(false)
-  const [editedQuestion, setEditedQuestion] = useState<GeneratedQuestion | null>(null)
-  const [chatMessage, setChatMessage] = useState('')
-  const [isRefining, setIsRefining] = useState(false)
+  const [isEditing, setIsEditing] = useState(false);
+  const [editedQuestion, setEditedQuestion] = useState<GeneratedQuestion | null>(null);
+  const [chatMessage, setChatMessage] = useState("");
+  const [isRefining, setIsRefining] = useState(false);
 
   if (!question) {
     return (
@@ -58,123 +63,125 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
           <p className="text-muted-foreground text-center">No question generated yet.</p>
         </CardContent>
       </Card>
-    )
+    );
   }
 
   const startEditing = () => {
     setEditedQuestion({
       ...question,
       // Ensure question_options is always an array
-      question_options: question.question_options || []
-    })
-    setIsEditing(true)
-  }
+      question_options: question.question_options || [],
+    });
+    setIsEditing(true);
+  };
 
   const saveChanges = () => {
     if (editedQuestion) {
-      onQuestionUpdated(editedQuestion)
-      setIsEditing(false)
-      toast.success('Changes saved successfully!')
+      onQuestionUpdated(editedQuestion);
+      setIsEditing(false);
+      toast.success("Changes saved successfully!");
     }
-  }
+  };
 
   const cancelEditing = () => {
-    setEditedQuestion(null)
-    setIsEditing(false)
-  }
-
-
+    setEditedQuestion(null);
+    setIsEditing(false);
+  };
 
   // Network retry utility with exponential backoff
-  const fetchWithRetry = async (url: string, options: RequestInit, maxRetries = 3): Promise<Response> => {
-    let lastError: Error | null = null
+  const fetchWithRetry = async (
+    url: string,
+    options: RequestInit,
+    maxRetries = 3
+  ): Promise<Response> => {
+    let lastError: Error | null = null;
 
     for (let attempt = 0; attempt < maxRetries; attempt++) {
       try {
-        const controller = new AbortController()
-        const timeoutId = setTimeout(() => controller.abort(), 30000) // 30 second timeout
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 30000); // 30 second timeout
 
         const response = await fetch(url, {
           ...options,
-          signal: controller.signal
-        })
+          signal: controller.signal,
+        });
 
-        clearTimeout(timeoutId)
+        clearTimeout(timeoutId);
 
         // If successful or client error (4xx), don't retry
         if (response.ok || (response.status >= 400 && response.status < 500)) {
-          return response
+          return response;
         }
 
         // Server error (5xx), retry with exponential backoff
-        throw new Error(`Server error: ${response.status} ${response.statusText}`)
-
+        throw new Error(`Server error: ${response.status} ${response.statusText}`);
       } catch (error) {
-        lastError = error as Error
+        lastError = error as Error;
 
         // Don't retry on abort (timeout) or network errors on final attempt
         if (attempt === maxRetries - 1) {
-          break
+          break;
         }
 
         // Exponential backoff: 1s, 2s, 4s
-        const delay = Math.pow(2, attempt) * 1000
-        await new Promise(resolve => setTimeout(resolve, delay))
+        const delay = Math.pow(2, attempt) * 1000;
+        await new Promise((resolve) => setTimeout(resolve, delay));
       }
     }
 
-    throw lastError || new Error('Max retries exceeded')
-  }
+    throw lastError || new Error("Max retries exceeded");
+  };
 
   const handleRefineQuestion = async () => {
     if (!chatMessage.trim()) {
-      toast.error('Please enter a refinement request')
-      return
+      toast.error("Please enter a refinement request");
+      return;
     }
 
     // Prevent multiple simultaneous requests
     if (isRefining) {
-      toast.warning('Refinement already in progress')
-      return
+      toast.warning("Refinement already in progress");
+      return;
     }
 
-    setIsRefining(true)
+    setIsRefining(true);
 
     try {
       // Use the same model that generated the original question, or default to a supported model
-      const originalModel = question?.metadata?.generated_by?.model || 'Llama-3.3-70B-Instruct'
+      const originalModel = question?.metadata?.generated_by?.model || "Llama-3.3-70B-Instruct";
 
-      const response = await fetchWithRetry('/api/admin/ai-generate-question', {
-        method: 'POST',
+      const response = await fetchWithRetry("/api/admin/ai-generate-question", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           content: {
-            category: question.category || 'Pathology',
-            subject: question.subject || 'Medical Education',
-            lesson: question.lesson || 'Question Refinement',
-            topic: question.topic || 'Clinical Pathology',
-            text: JSON.stringify(question, null, 2)
+            category: question.category || "Pathology",
+            subject: question.subject || "Medical Education",
+            lesson: question.lesson || "Question Refinement",
+            topic: question.topic || "Clinical Pathology",
+            text: JSON.stringify(question, null, 2),
           },
           instructions: `Please refine the following question based on this request: "${chatMessage}"\n\nCurrent Question:\n${JSON.stringify(question, null, 2)}\n\nReturn the modified question in the same JSON format.`,
-          additionalContext: 'This is a question refinement request. Please maintain the overall structure while implementing the requested changes.',
-          model: originalModel
-        })
-      })
+          additionalContext:
+            "This is a question refinement request. Please maintain the overall structure while implementing the requested changes.",
+          model: originalModel,
+        }),
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (response.ok) {
         // Admin AI Generate Question API returns structured response
         if (!data.success) {
-          throw new Error(data.error || 'Question refinement failed')
+          throw new Error(data.error || "Question refinement failed");
         }
 
         // Extract the refined question data
-        const refinedQuestion = data.question
+        const refinedQuestion = data.question;
         if (!refinedQuestion) {
-          throw new Error('No question data received from API')
+          throw new Error("No question data received from API");
         }
 
         try {
@@ -182,80 +189,89 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
           const convertedQuestion = {
             ...refinedQuestion,
             // Convert to question_options format if needed
-            question_options: refinedQuestion.question_options || (refinedQuestion.options || []).map((option: unknown, index: number) => ({
-              text: option.text,
-              is_correct: option.is_correct,
-              explanation: option.explanation,
-              order_index: index
-            })),
+            question_options:
+              refinedQuestion.question_options ||
+              (refinedQuestion.options || []).map((option: unknown, index: number) => ({
+                text: option.text,
+                is_correct: option.is_correct,
+                explanation: option.explanation,
+                order_index: index,
+              })),
             metadata: {
               ...question.metadata,
               refined_at: new Date().toISOString(),
               refinement_request: chatMessage,
               refined_by: {
-                provider: 'admin-ai',
-                model: originalModel
-              }
-            }
-          }
+                provider: "admin-ai",
+                model: originalModel,
+              },
+            },
+          };
 
           // Remove the original options field if it exists to avoid confusion
           if (convertedQuestion.options) {
-            delete convertedQuestion.options
+            delete convertedQuestion.options;
           }
 
-          onQuestionUpdated(convertedQuestion)
+          onQuestionUpdated(convertedQuestion);
 
-          setChatMessage('')
-          toast.success(`Question refined successfully using ${originalModel}!`)
+          setChatMessage("");
+          toast.success(`Question refined successfully using ${originalModel}!`);
         } catch (parseError) {
-          console.error('JSON parsing error:', parseError)
-          toast.error('Failed to parse refined question')
+          console.error("JSON parsing error:", parseError);
+          toast.error("Failed to parse refined question");
         }
       } else {
         // Handle different types of API errors
-        const errorMessage = data.error?.message || data.error || 'Failed to refine question'
-        throw new Error(errorMessage)
+        const errorMessage = data.error?.message || data.error || "Failed to refine question";
+        throw new Error(errorMessage);
       }
     } catch (error) {
-      console.error('Error refining question:', error)
+      console.error("Error refining question:", error);
 
       // Provide user-friendly error messages based on error type
       if (error instanceof Error) {
-        if (error.name === 'AbortError') {
-          toast.error('Request timed out. Please check your connection and try again.')
-        } else if (error.message.includes('Failed to fetch')) {
-          toast.error('Network error. Please check your internet connection and try again.')
-        } else if (error.message.includes('rate limit')) {
-          toast.error('API rate limit exceeded. Please wait a moment and try again.')
-        } else if (error.message.includes('Server error: 5')) {
-          toast.error('AI service temporarily unavailable. Please try again in a few moments.')
+        if (error.name === "AbortError") {
+          toast.error("Request timed out. Please check your connection and try again.");
+        } else if (error.message.includes("Failed to fetch")) {
+          toast.error("Network error. Please check your internet connection and try again.");
+        } else if (error.message.includes("rate limit")) {
+          toast.error("API rate limit exceeded. Please wait a moment and try again.");
+        } else if (error.message.includes("Server error: 5")) {
+          toast.error("AI service temporarily unavailable. Please try again in a few moments.");
         } else {
-          toast.error(`Refinement failed: ${error.message}`)
+          toast.error(`Refinement failed: ${error.message}`);
         }
       } else {
-        toast.error('An unexpected error occurred. Please try again.')
+        toast.error("An unexpected error occurred. Please try again.");
       }
     } finally {
-      setIsRefining(false)
+      setIsRefining(false);
     }
-  }
+  };
 
-  const currentQuestion = isEditing ? editedQuestion! : question
-  const correctAnswer = currentQuestion?.question_options?.find(opt => opt.is_correct)
+  const currentQuestion = isEditing ? editedQuestion! : question;
+  const correctAnswer = currentQuestion?.question_options?.find((opt) => opt.is_correct);
 
   return (
     <div className="space-y-6">
       {/* Action Buttons */}
       <div className="flex justify-between items-center">
         <div className="flex gap-2">
-          <Badge variant={currentQuestion.difficulty === 'easy' ? 'secondary' :
-                         currentQuestion.difficulty === 'medium' ? 'default' : 'destructive'}>
-            {currentQuestion.difficulty?.toUpperCase() || 'MEDIUM'}
+          <Badge
+            variant={
+              currentQuestion.difficulty === "easy"
+                ? "secondary"
+                : currentQuestion.difficulty === "medium"
+                  ? "default"
+                  : "destructive"
+            }
+          >
+            {currentQuestion.difficulty?.toUpperCase() || "MEDIUM"}
           </Badge>
           <Badge variant="outline">DRAFT</Badge>
         </div>
-        
+
         <div className="flex gap-2">
           {isEditing ? (
             <>
@@ -287,11 +303,13 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
             <Label>Title</Label>
             {isEditing ? (
               <Input
-                value={editedQuestion?.title || ''}
-                onChange={(e) => setEditedQuestion(prev => prev ? {...prev, title: e.target.value} : null)}
+                value={editedQuestion?.title || ""}
+                onChange={(e) =>
+                  setEditedQuestion((prev) => (prev ? { ...prev, title: e.target.value } : null))
+                }
               />
             ) : (
-              <p className="font-medium">{currentQuestion.title || 'Untitled Question'}</p>
+              <p className="font-medium">{currentQuestion.title || "Untitled Question"}</p>
             )}
           </div>
 
@@ -300,13 +318,17 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
             <Label>Question</Label>
             {isEditing ? (
               <Textarea
-                value={editedQuestion?.stem || ''}
-                onChange={(e) => setEditedQuestion(prev => prev ? {...prev, stem: e.target.value} : null)}
+                value={editedQuestion?.stem || ""}
+                onChange={(e) =>
+                  setEditedQuestion((prev) => (prev ? { ...prev, stem: e.target.value } : null))
+                }
                 className="min-h-[100px]"
               />
             ) : (
               <div className="p-4 border rounded-lg bg-muted/50">
-                <p className="whitespace-pre-wrap">{currentQuestion.stem || 'No question stem provided'}</p>
+                <p className="whitespace-pre-wrap">
+                  {currentQuestion.stem || "No question stem provided"}
+                </p>
               </div>
             )}
           </div>
@@ -318,58 +340,66 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
               {isEditing ? (
                 editedQuestion?.question_options?.length ? (
                   editedQuestion.question_options.map((option, index) => (
-                  <div key={index} className="space-y-2 p-4 border rounded-lg">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        checked={option.is_correct}
-                        onChange={() => {
+                    <div key={index} className="space-y-2 p-4 border rounded-lg">
+                      <div className="flex items-center gap-2">
+                        <input
+                          type="radio"
+                          checked={option.is_correct}
+                          onChange={() => {
+                            if (editedQuestion?.question_options) {
+                              const newOptions = editedQuestion.question_options.map((opt, i) => ({
+                                ...opt,
+                                is_correct: i === index,
+                              }));
+                              setEditedQuestion({
+                                ...editedQuestion,
+                                question_options: newOptions,
+                              });
+                            }
+                          }}
+                        />
+                        <Label>Option {index + 1}</Label>
+                      </div>
+                      <Textarea
+                        value={option.text}
+                        onChange={(e) => {
                           if (editedQuestion?.question_options) {
-                            const newOptions = editedQuestion.question_options.map((opt, i) => ({
-                              ...opt,
-                              is_correct: i === index
-                            }))
-                            setEditedQuestion({...editedQuestion, question_options: newOptions})
+                            const newOptions = [...editedQuestion.question_options];
+                            newOptions[index] = { ...option, text: e.target.value };
+                            setEditedQuestion({ ...editedQuestion, question_options: newOptions });
                           }
                         }}
+                        className="min-h-[60px]"
                       />
-                      <Label>Option {index + 1}</Label>
+                      <Textarea
+                        value={option.explanation}
+                        onChange={(e) => {
+                          if (editedQuestion?.question_options) {
+                            const newOptions = [...editedQuestion.question_options];
+                            newOptions[index] = { ...option, explanation: e.target.value };
+                            setEditedQuestion({ ...editedQuestion, question_options: newOptions });
+                          }
+                        }}
+                        placeholder="Explanation for this option..."
+                        className="min-h-[60px]"
+                      />
                     </div>
-                    <Textarea
-                      value={option.text}
-                      onChange={(e) => {
-                        if (editedQuestion?.question_options) {
-                          const newOptions = [...editedQuestion.question_options]
-                          newOptions[index] = {...option, text: e.target.value}
-                          setEditedQuestion({...editedQuestion, question_options: newOptions})
-                        }
-                      }}
-                      className="min-h-[60px]"
-                    />
-                    <Textarea
-                      value={option.explanation}
-                      onChange={(e) => {
-                        if (editedQuestion?.question_options) {
-                          const newOptions = [...editedQuestion.question_options]
-                          newOptions[index] = {...option, explanation: e.target.value}
-                          setEditedQuestion({...editedQuestion, question_options: newOptions})
-                        }
-                      }}
-                      placeholder="Explanation for this option..."
-                      className="min-h-[60px]"
-                    />
-                  </div>
                   ))
                 ) : (
                   <div className="p-4 border rounded-lg border-dashed">
-                    <p className="text-muted-foreground text-center">No question options available for editing</p>
+                    <p className="text-muted-foreground text-center">
+                      No question options available for editing
+                    </p>
                   </div>
                 )
               ) : (
                 <RadioGroup value={correctAnswer?.text} className="space-y-3">
                   {currentQuestion?.question_options?.length ? (
                     currentQuestion.question_options.map((option, index) => (
-                      <div key={index} className={`p-4 border rounded-lg ${option.is_correct ? 'border-green-500 bg-green-50 dark:bg-green-950' : ''}`}>
+                      <div
+                        key={index}
+                        className={`p-4 border rounded-lg ${option.is_correct ? "border-green-500 bg-green-50 dark:bg-green-950" : ""}`}
+                      >
                         <div className="flex items-center space-x-2">
                           <RadioGroupItem value={option.text} id={`option-${index}`} />
                           <Label htmlFor={`option-${index}`} className="font-medium">
@@ -385,7 +415,9 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
                     ))
                   ) : (
                     <div className="p-4 border rounded-lg border-dashed">
-                      <p className="text-muted-foreground text-center">No question options available</p>
+                      <p className="text-muted-foreground text-center">
+                        No question options available
+                      </p>
                     </div>
                   )}
                 </RadioGroup>
@@ -400,13 +432,19 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
             <Label>Teaching Point</Label>
             {isEditing ? (
               <Textarea
-                value={editedQuestion?.teaching_point || ''}
-                onChange={(e) => setEditedQuestion(prev => prev ? {...prev, teaching_point: e.target.value} : null)}
+                value={editedQuestion?.teaching_point || ""}
+                onChange={(e) =>
+                  setEditedQuestion((prev) =>
+                    prev ? { ...prev, teaching_point: e.target.value } : null
+                  )
+                }
                 className="min-h-[80px]"
               />
             ) : (
               <div className="p-4 border rounded-lg bg-blue-50 dark:bg-blue-950">
-                <p className="whitespace-pre-wrap">{currentQuestion.teaching_point || 'No teaching point provided'}</p>
+                <p className="whitespace-pre-wrap">
+                  {currentQuestion.teaching_point || "No teaching point provided"}
+                </p>
               </div>
             )}
           </div>
@@ -416,12 +454,18 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
             <Label>References</Label>
             {isEditing ? (
               <Textarea
-                value={editedQuestion?.question_references || ''}
-                onChange={(e) => setEditedQuestion(prev => prev ? {...prev, question_references: e.target.value} : null)}
+                value={editedQuestion?.question_references || ""}
+                onChange={(e) =>
+                  setEditedQuestion((prev) =>
+                    prev ? { ...prev, question_references: e.target.value } : null
+                  )
+                }
                 className="min-h-[60px]"
               />
             ) : (
-              <p className="text-sm text-muted-foreground">{currentQuestion.question_references || 'No references provided'}</p>
+              <p className="text-sm text-muted-foreground">
+                {currentQuestion.question_references || "No references provided"}
+              </p>
             )}
           </div>
 
@@ -429,10 +473,10 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
           {isEditing && (
             <div className="space-y-2">
               <Label>Difficulty</Label>
-              <Select 
-                value={editedQuestion?.difficulty} 
-                onValueChange={(value: 'easy' | 'medium' | 'hard') => 
-                  setEditedQuestion(prev => prev ? {...prev, difficulty: value} : null)
+              <Select
+                value={editedQuestion?.difficulty}
+                onValueChange={(value: "easy" | "medium" | "hard") =>
+                  setEditedQuestion((prev) => (prev ? { ...prev, difficulty: value } : null))
                 }
               >
                 <SelectTrigger>
@@ -467,10 +511,7 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
               className="min-h-[80px]"
             />
           </div>
-          <Button 
-            onClick={handleRefineQuestion}
-            disabled={!chatMessage.trim() || isRefining}
-          >
+          <Button onClick={handleRefineQuestion} disabled={!chatMessage.trim() || isRefining}>
             {isRefining ? (
               <>
                 <Brain className="mr-2 h-4 w-4 animate-pulse" />
@@ -486,5 +527,5 @@ export function QuestionPreview({ question, onQuestionUpdated }: QuestionPreview
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

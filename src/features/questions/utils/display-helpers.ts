@@ -1,20 +1,23 @@
 // src/features/questions/utils/display-helpers.ts
 
 interface CategoryNode {
-  name: string
-  parent_id?: number | null
+  name: string;
+  parent_id?: number | null;
 }
 
-export function getCategoryPathString(category: unknown, categoryPaths: Map<number, CategoryNode>): string {
+export function getCategoryPathString(
+  category: unknown,
+  categoryPaths: Map<number, CategoryNode>
+): string {
   const path = [];
   let current = category;
-  
+
   while (current) {
     path.unshift(current.name);
     current = current.parent_id ? categoryPaths.get(current.parent_id) : null;
   }
-  
-  return path.join(' > ');
+
+  return path.join(" > ");
 }
 
 /**
@@ -39,6 +42,9 @@ export function getCategoryDisplayName(category: { name: string; short_form?: st
  * Gets the display name for question sets in table badges (short form)
  * Uses the short_form field if available, otherwise falls back to extracting from name
  */
-export function getQuestionSetDisplayName(questionSet: { name: string; short_form?: string }): string {
+export function getQuestionSetDisplayName(questionSet: {
+  name: string;
+  short_form?: string;
+}): string {
   return questionSet.short_form || extractShortForm(questionSet.name);
 }

@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { Button } from '@/shared/components/ui/button'
+import { useState, useEffect } from "react";
+import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -9,97 +9,97 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog'
+} from "@/shared/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select'
-import { Label } from '@/shared/components/ui/label'
-import { Badge } from '@/shared/components/ui/badge'
-import { toast } from '@/shared/utils/toast'
-import { createClient } from '@/shared/services/client'
-import { Send, Users, Clock, Loader2 } from 'lucide-react'
+} from "@/shared/components/ui/select";
+import { Label } from "@/shared/components/ui/label";
+import { Badge } from "@/shared/components/ui/badge";
+import { toast } from "@/shared/utils/toast";
+import { createClient } from "@/shared/services/client";
+import { Send, Users, Clock, Loader2 } from "lucide-react";
 
 interface Reviewer {
-  id: string
-  first_name: string
-  last_name: string
-  email: string
-  role: string
-  pending_count: number
+  id: string;
+  first_name: string;
+  last_name: string;
+  email: string;
+  role: string;
+  pending_count: number;
 }
 
 interface BulkSubmitDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  questionCount: number
-  onConfirm: (reviewerId: string) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  questionCount: number;
+  onConfirm: (reviewerId: string) => void;
 }
 
 export function BulkSubmitDialog({
   open,
   onOpenChange,
   questionCount,
-  onConfirm
+  onConfirm,
 }: BulkSubmitDialogProps) {
-  const [reviewers, setReviewers] = useState<Reviewer[]>([])
-  const [selectedReviewerId, setSelectedReviewerId] = useState<string>('')
-  const [loading, setLoading] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
+  const [reviewers, setReviewers] = useState<Reviewer[]>([]);
+  const [selectedReviewerId, setSelectedReviewerId] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
 
-  const _supabase = createClient()
+  const _supabase = createClient();
 
   // Fetch reviewers when dialog opens
   useEffect(() => {
     const fetchReviewers = async () => {
-      if (!open) return
+      if (!open) return;
 
-      setLoading(true)
+      setLoading(true);
       try {
-        const response = await fetch('/api/admin/reviewers')
+        const response = await fetch("/api/admin/reviewers");
         if (!response.ok) {
-          throw new Error('Failed to fetch reviewers')
+          throw new Error("Failed to fetch reviewers");
         }
 
-        const data = await response.json()
-        setReviewers(data.reviewers || [])
+        const data = await response.json();
+        setReviewers(data.reviewers || []);
       } catch (error) {
-        console.error('Error fetching reviewers:', error)
-        toast.error('Failed to load reviewers')
+        console.error("Error fetching reviewers:", error);
+        toast.error("Failed to load reviewers");
       } finally {
-        setLoading(false)
+        setLoading(false);
       }
-    }
+    };
 
-    fetchReviewers()
-  }, [open])
+    fetchReviewers();
+  }, [open]);
 
   const handleSubmit = async () => {
     if (!selectedReviewerId) {
-      toast.error('Please select a reviewer')
-      return
+      toast.error("Please select a reviewer");
+      return;
     }
 
-    setSubmitting(true)
+    setSubmitting(true);
     try {
-      onConfirm(selectedReviewerId)
-      onOpenChange(false)
-      setSelectedReviewerId('')
+      onConfirm(selectedReviewerId);
+      onOpenChange(false);
+      setSelectedReviewerId("");
     } catch (error) {
-      console.error('Error in bulk submit:', error)
-      toast.error('Failed to submit questions')
+      console.error("Error in bulk submit:", error);
+      toast.error("Failed to submit questions");
     } finally {
-      setSubmitting(false)
+      setSubmitting(false);
     }
-  }
+  };
 
   const handleCancel = () => {
-    onOpenChange(false)
-    setSelectedReviewerId('')
-  }
+    onOpenChange(false);
+    setSelectedReviewerId("");
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -110,8 +110,8 @@ export function BulkSubmitDialog({
             Bulk Submit for Review
           </DialogTitle>
           <DialogDescription>
-            Submit {questionCount} question{questionCount !== 1 ? 's' : ''} for review. 
-            All selected questions will be assigned to the same reviewer.
+            Submit {questionCount} question{questionCount !== 1 ? "s" : ""} for review. All selected
+            questions will be assigned to the same reviewer.
           </DialogDescription>
         </DialogHeader>
 
@@ -119,11 +119,9 @@ export function BulkSubmitDialog({
           {/* Question Count Summary */}
           <div className="flex items-center gap-2 p-3 bg-muted rounded-md">
             <Badge variant="secondary" className="text-sm">
-              {questionCount} Question{questionCount !== 1 ? 's' : ''}
+              {questionCount} Question{questionCount !== 1 ? "s" : ""}
             </Badge>
-            <span className="text-sm text-muted-foreground">
-              will be submitted for review
-            </span>
+            <span className="text-sm text-muted-foreground">will be submitted for review</span>
           </div>
 
           {/* Reviewer Selection */}
@@ -146,9 +144,7 @@ export function BulkSubmitDialog({
                           <span className="font-medium">
                             {reviewer.first_name} {reviewer.last_name}
                           </span>
-                          <span className="text-xs text-muted-foreground">
-                            {reviewer.email}
-                          </span>
+                          <span className="text-xs text-muted-foreground">{reviewer.email}</span>
                         </div>
                         <div className="flex items-center gap-2 ml-4">
                           <Badge variant="outline" className="text-xs">
@@ -181,8 +177,8 @@ export function BulkSubmitDialog({
                   Bulk Assignment
                 </p>
                 <p className="text-sm text-blue-800 dark:text-blue-300">
-                  All {questionCount} questions will be assigned to the selected reviewer. 
-                  They will receive notifications for each question.
+                  All {questionCount} questions will be assigned to the selected reviewer. They will
+                  receive notifications for each question.
                 </p>
               </div>
             </div>
@@ -190,23 +186,16 @@ export function BulkSubmitDialog({
         </div>
 
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={handleCancel}
-            disabled={submitting}
-          >
+          <Button variant="outline" onClick={handleCancel} disabled={submitting}>
             Cancel
           </Button>
-          <Button
-            onClick={handleSubmit}
-            disabled={submitting || !selectedReviewerId || loading}
-          >
+          <Button onClick={handleSubmit} disabled={submitting || !selectedReviewerId || loading}>
             {submitting && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
             <Send className="mr-2 h-4 w-4" />
-            Submit {questionCount} Question{questionCount !== 1 ? 's' : ''}
+            Submit {questionCount} Question{questionCount !== 1 ? "s" : ""}
           </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

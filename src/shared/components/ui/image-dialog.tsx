@@ -1,20 +1,20 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import Image from 'next/image'
-import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache'
-import { X } from 'lucide-react'
+import { useState } from "react";
+import Image from "next/image";
+import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
+import { X } from "lucide-react";
 
 interface ImageDialogProps {
-  src: string
-  alt: string
-  caption?: string
-  className?: string
+  src: string;
+  alt: string;
+  caption?: string;
+  className?: string;
 }
 
-export function ImageDialog({ src, alt, caption, className = '' }: ImageDialogProps) {
-  const [isOpen, setIsOpen] = useState(false)
-  const handleImageLoad = useImageCacheHandler(src)
+export function ImageDialog({ src, alt, caption, className = "" }: ImageDialogProps) {
+  const [isOpen, setIsOpen] = useState(false);
+  const handleImageLoad = useImageCacheHandler(src);
 
   return (
     <>
@@ -52,7 +52,7 @@ export function ImageDialog({ src, alt, caption, className = '' }: ImageDialogPr
               unoptimized
               onLoad={handleImageLoad}
             />
-            
+
             {/* Close button */}
             <button
               onClick={() => setIsOpen(false)}
@@ -72,5 +72,5 @@ export function ImageDialog({ src, alt, caption, className = '' }: ImageDialogPr
         </div>
       )}
     </>
-  )
+  );
 }

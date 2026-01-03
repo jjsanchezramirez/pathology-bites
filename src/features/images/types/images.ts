@@ -1,17 +1,17 @@
 // src/types/images.ts
-import { Database } from '@/shared/types/supabase';
+import { Database } from "@/shared/types/supabase";
 
-export type ImageData = Database['public']['Tables']['images']['Row'];
-export type ImageInsert = Database['public']['Tables']['images']['Insert'];
-export type ImageUpdate = Database['public']['Tables']['images']['Update'];
+export type ImageData = Database["public"]["Tables"]["images"]["Row"];
+export type ImageInsert = Database["public"]["Tables"]["images"]["Insert"];
+export type ImageUpdate = Database["public"]["Tables"]["images"]["Update"];
 
 // Updated to match actual database categories
 export const IMAGE_CATEGORIES = {
-  microscopic: 'Microscopic',
-  figure: 'Figure',
-  table: 'Table',
-  gross: 'Gross',
-  external: 'External'
+  microscopic: "Microscopic",
+  figure: "Figure",
+  table: "Table",
+  gross: "Gross",
+  external: "External",
 } as const;
 
 export type ImageCategory = keyof typeof IMAGE_CATEGORIES;
@@ -20,7 +20,7 @@ export const PAGE_SIZE = 10;
 
 export interface ImageFilters {
   searchTerm?: string;
-  category?: ImageCategory | 'all';
+  category?: ImageCategory | "all";
   page?: number;
   pageSize?: number;
 }
@@ -37,7 +37,7 @@ export interface FileProgress {
   fileName: string;
   originalSize: number;
   compressedSize?: number;
-  status: 'compressing' | 'uploading' | 'completed' | 'error';
+  status: "compressing" | "uploading" | "completed" | "error";
   progress: number;
 }
 

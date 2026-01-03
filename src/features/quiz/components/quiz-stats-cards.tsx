@@ -1,16 +1,16 @@
-'use client'
+"use client";
 
-import { Card, CardContent } from '@/shared/components/ui/card'
+import { Card, CardContent } from "@/shared/components/ui/card";
 
 interface QuizStatsCardsProps {
   stats: {
-    total: number
-    completed: number
-    inProgress: number
-    averageScore: number
-    totalTimeSpent: number
-  }
-  formatTimeSpent: (seconds: number) => string
+    total: number;
+    completed: number;
+    inProgress: number;
+    averageScore: number;
+    totalTimeSpent: number;
+  };
+  formatTimeSpent: (seconds: number) => string;
 }
 
 export function QuizStatsCards({ stats, formatTimeSpent }: QuizStatsCardsProps) {
@@ -47,6 +47,5 @@ export function QuizStatsCards({ stats, formatTimeSpent }: QuizStatsCardsProps) 
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
-

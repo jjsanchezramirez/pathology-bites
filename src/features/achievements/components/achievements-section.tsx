@@ -1,15 +1,15 @@
 // src/features/achievements/components/achievements-section.tsx
 
-import { AchievementCard } from './achievement-card'
-import { AchievementCategory } from '../types/achievement'
+import { AchievementCard } from "./achievement-card";
+import { AchievementCategory } from "../types/achievement";
 
 interface AchievementsSectionProps {
-  category: AchievementCategory
+  category: AchievementCategory;
 }
 
 export function AchievementsSection({ category }: AchievementsSectionProps) {
-  const unlockedCount = category.achievements.filter(a => a.isUnlocked).length
-  const totalCount = category.achievements.length
+  const unlockedCount = category.achievements.filter((a) => a.isUnlocked).length;
+  const totalCount = category.achievements.length;
 
   return (
     <div className="space-y-4">
@@ -37,6 +37,5 @@ export function AchievementsSection({ category }: AchievementsSectionProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }
-

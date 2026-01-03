@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -9,96 +9,83 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-} from "@/shared/components/ui/dialog"
-import { Button } from "@/shared/components/ui/button"
-import {
-  History,
-  User,
-  Calendar,
-  FileText,
-  Eye,
-  ChevronDown,
-  ChevronRight,
-} from 'lucide-react'
-import { toast } from '@/shared/utils/toast'
-import { VersionSnapshotView } from './version-history/version-snapshot-view'
-import { VersionComparisonView } from './version-history/version-comparison-view'
-import { Badge } from "@/shared/components/ui/badge"
-import { useProtectedDialog } from '@/shared/hooks/use-protected-dialog'
+} from "@/shared/components/ui/dialog";
+import { Button } from "@/shared/components/ui/button";
+import { History, User, Calendar, FileText, Eye, ChevronDown, ChevronRight } from "lucide-react";
+import { toast } from "@/shared/utils/toast";
+import { VersionSnapshotView } from "./version-history/version-snapshot-view";
+import { VersionComparisonView } from "./version-history/version-comparison-view";
+import { Badge } from "@/shared/components/ui/badge";
+import { useProtectedDialog } from "@/shared/hooks/use-protected-dialog";
 
 // Types
 interface QuestionVersion {
-  id: string
-  question_id: string
-  version_major: number
-  version_minor: number
-  version_patch: number
-  version_string: string
-  update_type: string
-  change_summary?: string
-  question_snapshot: unknown
-  created_by: string
-  created_at: string
+  id: string;
+  question_id: string;
+  version_major: number;
+  version_minor: number;
+  version_patch: number;
+  version_string: string;
+  update_type: string;
+  change_summary?: string;
+  question_snapshot: unknown;
+  created_by: string;
+  created_at: string;
   creator?: {
-    first_name: string
-    last_name: string
-  }
+    first_name: string;
+    last_name: string;
+  };
 }
 
-
-
-
-
-
-
-
-
 interface VersionHistoryDialogProps {
-  questionId: string | null
-  questionTitle?: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  questionId: string | null;
+  questionTitle?: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function VersionHistoryDialog({
   questionId,
   questionTitle,
   open,
-  onOpenChange
+  onOpenChange,
 }: VersionHistoryDialogProps) {
-  const [versions, setVersions] = useState<QuestionVersion[]>([])
-  const [loading, setLoading] = useState(false)
-  const [expandedVersions, setExpandedVersions] = useState<Set<string>>(new Set())
-  const [snapshotDialogOpen, setSnapshotDialogOpen] = useState(false)
-  const [compareDialogOpen, setCompareDialogOpen] = useState(false)
-  const [selectedVersion, setSelectedVersion] = useState<QuestionVersion | null>(null)
-  const [compareVersions, setCompareVersions] = useState<{ current: QuestionVersion | null, previous: QuestionVersion | null }>({ current: null, previous: null })
+  const [versions, setVersions] = useState<QuestionVersion[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [expandedVersions, setExpandedVersions] = useState<Set<string>>(new Set());
+  const [snapshotDialogOpen, setSnapshotDialogOpen] = useState(false);
+  const [compareDialogOpen, setCompareDialogOpen] = useState(false);
+  const [selectedVersion, setSelectedVersion] = useState<QuestionVersion | null>(null);
+  const [compareVersions, setCompareVersions] = useState<{
+    current: QuestionVersion | null;
+    previous: QuestionVersion | null;
+  }>({ current: null, previous: null });
 
   // Use protected dialog hook to prevent immediate closing
-  const handleOpenChange = useProtectedDialog(open, onOpenChange)
+  const handleOpenChange = useProtectedDialog(open, onOpenChange);
 
   useEffect(() => {
     if (open && questionId) {
-      fetchVersionHistory()
+      fetchVersionHistory();
     }
-  }, [open, questionId, fetchVersionHistory])
+  }, [open, questionId, fetchVersionHistory]);
 
   const fetchVersionHistory = async () => {
-    if (!questionId) return
+    if (!questionId) return;
 
     try {
-      setLoading(true)
+      setLoading(true);
 
-      const response = await fetch(`/api/admin/questions/${questionId}/version`)
+      const response = await fetch(`/api/admin/questions/${questionId}/version`);
 
       if (!response.ok) {
-        const errorText = await response.text()
-        console.error('API Error:', response.status, errorText)
-        toast.error(`Failed to load version history: ${response.status} ${response.statusText}`)
-        return
+        const errorText = await response.text();
+        console.error("API Error:", response.status, errorText);
+        toast.error(`Failed to load version history: ${response.status} ${response.statusText}`);
+        return;
       }
 
-      const result = await response.json()
+      const result = await response.json();
 
       if (result.success && result.versions) {
         // Transform the API response to match our interface
@@ -114,64 +101,62 @@ export function VersionHistoryDialog({
           question_snapshot: version.question_data,
           created_by: version.changed_by,
           created_at: version.created_at,
-          creator: version.changer
-        }))
+          creator: version.changer,
+        }));
 
-        setVersions(transformedVersions)
+        setVersions(transformedVersions);
       } else {
-        setVersions([])
+        setVersions([]);
       }
     } catch (error) {
-      console.error('Error fetching version history:', error)
-      toast.error(`Failed to load version history: ${error}`)
+      console.error("Error fetching version history:", error);
+      toast.error(`Failed to load version history: ${error}`);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const toggleVersionExpansion = (versionId: string) => {
-    const newExpanded = new Set(expandedVersions)
+    const newExpanded = new Set(expandedVersions);
     if (newExpanded.has(versionId)) {
-      newExpanded.delete(versionId)
+      newExpanded.delete(versionId);
     } else {
-      newExpanded.add(versionId)
+      newExpanded.add(versionId);
     }
-    setExpandedVersions(newExpanded)
-  }
+    setExpandedVersions(newExpanded);
+  };
 
   const getUpdateTypeBadge = (updateType: string) => {
     switch (updateType) {
-      case 'major':
-        return <Badge variant="destructive">Major</Badge>
-      case 'minor':
-        return <Badge variant="default">Minor</Badge>
-      case 'patch':
-        return <Badge variant="secondary">Patch</Badge>
+      case "major":
+        return <Badge variant="destructive">Major</Badge>;
+      case "minor":
+        return <Badge variant="default">Minor</Badge>;
+      case "patch":
+        return <Badge variant="secondary">Patch</Badge>;
       default:
-        return <Badge variant="outline">{updateType}</Badge>
+        return <Badge variant="outline">{updateType}</Badge>;
     }
-  }
+  };
 
   const formatVersionNumber = (version: QuestionVersion) => {
-    return `v${version.version_major}.${version.version_minor}.${version.version_patch}`
-  }
+    return `v${version.version_major}.${version.version_minor}.${version.version_patch}`;
+  };
 
   const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleString()
-  }
+    return new Date(dateString).toLocaleString();
+  };
 
   const handleViewSnapshot = (version: QuestionVersion) => {
-    setSelectedVersion(version)
-    setSnapshotDialogOpen(true)
-  }
+    setSelectedVersion(version);
+    setSnapshotDialogOpen(true);
+  };
 
   const handleCompareWithPrevious = (currentVersion: QuestionVersion, index: number) => {
-    const previousVersion = versions[index + 1]
-    setCompareVersions({ current: currentVersion, previous: previousVersion })
-    setCompareDialogOpen(true)
-  }
-
-
+    const previousVersion = versions[index + 1];
+    setCompareVersions({ current: currentVersion, previous: previousVersion });
+    setCompareDialogOpen(true);
+  };
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange} modal={false}>
@@ -184,7 +169,9 @@ export function VersionHistoryDialog({
               Version History
             </DialogTitle>
             <DialogDescription>
-              {questionTitle ? `Version history for "${questionTitle}"` : 'Question version history'}
+              {questionTitle
+                ? `Version history for "${questionTitle}"`
+                : "Question version history"}
             </DialogDescription>
           </DialogHeader>
 
@@ -224,7 +211,7 @@ export function VersionHistoryDialog({
                               <ChevronRight className="h-4 w-4" />
                             )}
                           </Button>
-                          
+
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-sm font-medium">
                               {formatVersionNumber(version)}
@@ -241,10 +228,9 @@ export function VersionHistoryDialog({
                         <div className="flex items-center gap-4 text-sm text-muted-foreground">
                           <div className="flex items-center gap-1">
                             <User className="h-3 w-3" />
-                            {version.creator ? 
-                              `${version.creator.first_name} ${version.creator.last_name}` : 
-                              'Unknown'
-                            }
+                            {version.creator
+                              ? `${version.creator.first_name} ${version.creator.last_name}`
+                              : "Unknown"}
                           </div>
                           <div className="flex items-center gap-1">
                             <Calendar className="h-3 w-3" />
@@ -255,9 +241,7 @@ export function VersionHistoryDialog({
 
                       {version.change_summary && (
                         <div className="mt-2">
-                          <p className="text-sm text-muted-foreground">
-                            {version.change_summary}
-                          </p>
+                          <p className="text-sm text-muted-foreground">{version.change_summary}</p>
                         </div>
                       )}
 
@@ -272,20 +256,22 @@ export function VersionHistoryDialog({
                             <div className="bg-muted/50 p-3 rounded text-xs">
                               <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                  <span className="font-medium">Version:</span> {formatVersionNumber(version)}
+                                  <span className="font-medium">Version:</span>{" "}
+                                  {formatVersionNumber(version)}
                                 </div>
                                 <div>
-                                  <span className="font-medium">Update Type:</span> {version.update_type}
+                                  <span className="font-medium">Update Type:</span>{" "}
+                                  {version.update_type}
                                 </div>
                                 <div>
-                                  <span className="font-medium">Created:</span> {formatDate(version.created_at)}
+                                  <span className="font-medium">Created:</span>{" "}
+                                  {formatDate(version.created_at)}
                                 </div>
                                 <div>
-                                  <span className="font-medium">Creator:</span> {
-                                    version.creator ?
-                                      `${version.creator.first_name} ${version.creator.last_name}` :
-                                      'Unknown'
-                                  }
+                                  <span className="font-medium">Creator:</span>{" "}
+                                  {version.creator
+                                    ? `${version.creator.first_name} ${version.creator.last_name}`
+                                    : "Unknown"}
                                 </div>
                               </div>
 
@@ -296,8 +282,6 @@ export function VersionHistoryDialog({
                                 </div>
                               )}
                             </div>
-
-
 
                             <div className="flex gap-2">
                               <Button
@@ -338,16 +322,14 @@ export function VersionHistoryDialog({
             <DialogHeader>
               <DialogTitle className="flex items-center gap-2">
                 <Eye className="h-5 w-5" />
-                Version Snapshot - {selectedVersion ? formatVersionNumber(selectedVersion) : ''}
+                Version Snapshot - {selectedVersion ? formatVersionNumber(selectedVersion) : ""}
               </DialogTitle>
               <DialogDescription>
                 View the complete question as it appeared in this version
               </DialogDescription>
             </DialogHeader>
 
-            {selectedVersion && (
-              <VersionSnapshotView version={selectedVersion} />
-            )}
+            {selectedVersion && <VersionSnapshotView version={selectedVersion} />}
           </DialogContent>
         </DialogPortal>
       </Dialog>
@@ -363,7 +345,9 @@ export function VersionHistoryDialog({
                 Version Comparison
               </DialogTitle>
               <DialogDescription>
-                Compare changes between {compareVersions.previous ? formatVersionNumber(compareVersions.previous) : ''} and {compareVersions.current ? formatVersionNumber(compareVersions.current) : ''}
+                Compare changes between{" "}
+                {compareVersions.previous ? formatVersionNumber(compareVersions.previous) : ""} and{" "}
+                {compareVersions.current ? formatVersionNumber(compareVersions.current) : ""}
               </DialogDescription>
             </DialogHeader>
 
@@ -377,5 +361,5 @@ export function VersionHistoryDialog({
         </DialogPortal>
       </Dialog>
     </Dialog>
-  )
+  );
 }

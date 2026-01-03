@@ -12,10 +12,10 @@ The Anki integration fields have been successfully added to the `questions` tabl
 
 ### Fields Added
 
-| Field Name | Type | Nullable | Description |
-|------------|------|----------|-------------|
-| `anki_card_id` | BIGINT | YES | Stores the Anki Note ID (stable across exports) |
-| `anki_deck_name` | VARCHAR(100) | YES | Stores the name of the Anki deck for context |
+| Field Name       | Type         | Nullable | Description                                     |
+| ---------------- | ------------ | -------- | ----------------------------------------------- |
+| `anki_card_id`   | BIGINT       | YES      | Stores the Anki Note ID (stable across exports) |
+| `anki_deck_name` | VARCHAR(100) | YES      | Stores the name of the Anki deck for context    |
 
 ### Indexes Created
 
@@ -32,26 +32,30 @@ The Anki integration fields have been successfully added to the `questions` tabl
 ## Verification Results
 
 ### Column Verification ✅
+
 ```sql
-SELECT column_name, data_type, is_nullable, column_default 
-FROM information_schema.columns 
-WHERE table_name = 'questions' 
+SELECT column_name, data_type, is_nullable, column_default
+FROM information_schema.columns
+WHERE table_name = 'questions'
 AND column_name IN ('anki_card_id', 'anki_deck_name');
 ```
 
 **Results:**
+
 - ✅ `anki_card_id` - bigint, nullable
 - ✅ `anki_deck_name` - character varying(100), nullable
 
 ### Index Verification ✅
+
 ```sql
-SELECT indexname, indexdef 
-FROM pg_indexes 
-WHERE tablename = 'questions' 
+SELECT indexname, indexdef
+FROM pg_indexes
+WHERE tablename = 'questions'
 AND indexname LIKE '%anki%';
 ```
 
 **Results:**
+
 - ✅ `idx_questions_anki_card_id` created
 - ✅ `idx_questions_anki_deck_name` created
 
@@ -62,18 +66,21 @@ AND indexname LIKE '%anki%';
 The following TypeScript type definitions have been updated in `src/shared/types/supabase.ts`:
 
 ### Row Type
+
 ```typescript
-anki_card_id: number | null
-anki_deck_name: string | null
+anki_card_id: number | null;
+anki_deck_name: string | null;
 ```
 
 ### Insert Type
+
 ```typescript
 anki_card_id?: number | null
 anki_deck_name?: string | null
 ```
 
 ### Update Type
+
 ```typescript
 anki_card_id?: number | null
 anki_deck_name?: string | null
@@ -84,54 +91,57 @@ anki_deck_name?: string | null
 ## Usage Examples
 
 ### 1. Query Questions with Anki Links
+
 ```typescript
 const { data: ankiLinkedQuestions } = await supabase
-  .from('questions')
-  .select('*')
-  .not('anki_card_id', 'is', null);
+  .from("questions")
+  .select("*")
+  .not("anki_card_id", "is", null);
 ```
 
 ### 2. Filter by Anki Deck
+
 ```typescript
 const { data: deckQuestions } = await supabase
-  .from('questions')
-  .select('*')
-  .eq('anki_deck_name', 'Pathology::Cardiovascular');
+  .from("questions")
+  .select("*")
+  .eq("anki_deck_name", "Pathology::Cardiovascular");
 ```
 
 ### 3. Create Question with Anki Link
+
 ```typescript
-const { data, error } = await supabase
-  .from('questions')
-  .insert({
-    title: 'Question Title',
-    stem: 'Question text...',
-    difficulty: 'medium',
-    teaching_point: 'Teaching point...',
-    created_by: userId,
-    updated_by: userId,
-    anki_card_id: 1234567890,
-    anki_deck_name: 'Pathology::Cardiovascular'
-  });
+const { data, error } = await supabase.from("questions").insert({
+  title: "Question Title",
+  stem: "Question text...",
+  difficulty: "medium",
+  teaching_point: "Teaching point...",
+  created_by: userId,
+  updated_by: userId,
+  anki_card_id: 1234567890,
+  anki_deck_name: "Pathology::Cardiovascular",
+});
 ```
 
 ### 4. Update Existing Question with Anki Link
+
 ```typescript
 const { data, error } = await supabase
-  .from('questions')
+  .from("questions")
   .update({
     anki_card_id: 1234567890,
-    anki_deck_name: 'Pathology::Cardiovascular'
+    anki_deck_name: "Pathology::Cardiovascular",
   })
-  .eq('id', questionId);
+  .eq("id", questionId);
 ```
 
 ### 5. Find Question by Anki Card ID
+
 ```typescript
 const { data: question } = await supabase
-  .from('questions')
-  .select('*')
-  .eq('anki_card_id', ankiNoteId)
+  .from("questions")
+  .select("*")
+  .eq("anki_card_id", ankiNoteId)
   .single();
 ```
 
@@ -197,4 +207,3 @@ Then revert the TypeScript type changes in `src/shared/types/supabase.ts`.
 ---
 
 **Migration completed successfully! 🎉**
-

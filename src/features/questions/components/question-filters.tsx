@@ -1,26 +1,26 @@
 // src/components/questions/question-filters.tsx
-'use client'
+"use client";
 
-import { Search } from 'lucide-react'
-import { Input } from '@/shared/components/ui/input'
+import { Search } from "lucide-react";
+import { Input } from "@/shared/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select"
-import { DIFFICULTY_LABELS, YIELD_LABELS } from '@/features/questions/types/questions'
+} from "@/shared/components/ui/select";
+import { DIFFICULTY_LABELS, YIELD_LABELS } from "@/features/questions/types/questions";
 
 interface QuestionFilter {
-  search: string
-  difficulty: string
-  yield: string
+  search: string;
+  difficulty: string;
+  yield: string;
 }
 
 interface QuestionFiltersProps {
-  filters: QuestionFilter
-  onFilterChange: (key: keyof QuestionFilter, value: string) => void
+  filters: QuestionFilter;
+  onFilterChange: (key: keyof QuestionFilter, value: string) => void;
 }
 
 export function QuestionFilters({ filters, onFilterChange }: QuestionFiltersProps) {
@@ -32,13 +32,13 @@ export function QuestionFilters({ filters, onFilterChange }: QuestionFiltersProp
           placeholder="Search questions..."
           className="pl-9"
           value={filters.search}
-          onChange={(e) => onFilterChange('search', e.target.value)}
+          onChange={(e) => onFilterChange("search", e.target.value)}
         />
       </div>
       <div className="flex gap-2">
         <Select
           value={filters.difficulty}
-          onValueChange={(value) => onFilterChange('difficulty', value)}
+          onValueChange={(value) => onFilterChange("difficulty", value)}
         >
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Difficulty" />
@@ -53,10 +53,7 @@ export function QuestionFilters({ filters, onFilterChange }: QuestionFiltersProp
           </SelectContent>
         </Select>
 
-        <Select
-          value={filters.yield}
-          onValueChange={(value) => onFilterChange('yield', value)}
-        >
+        <Select value={filters.yield} onValueChange={(value) => onFilterChange("yield", value)}>
           <SelectTrigger className="w-[150px]">
             <SelectValue placeholder="Yield" />
           </SelectTrigger>
@@ -71,5 +68,5 @@ export function QuestionFilters({ filters, onFilterChange }: QuestionFiltersProp
         </Select>
       </div>
     </div>
-  )
+  );
 }

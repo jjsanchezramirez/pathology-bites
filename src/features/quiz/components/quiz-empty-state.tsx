@@ -1,12 +1,12 @@
-'use client'
+"use client";
 
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Plus } from 'lucide-react'
-import Link from 'next/link'
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Plus } from "lucide-react";
+import Link from "next/link";
 
 interface QuizEmptyStateProps {
-  hasFilters: boolean
+  hasFilters: boolean;
 }
 
 export function QuizEmptyState({ hasFilters }: QuizEmptyStateProps) {
@@ -17,8 +17,7 @@ export function QuizEmptyState({ hasFilters }: QuizEmptyStateProps) {
           <div className="text-muted-foreground">
             {hasFilters
               ? "No quizzes match your current filters"
-              : "You haven't taken any quizzes yet"
-            }
+              : "You haven't taken any quizzes yet"}
           </div>
           <Link href="/dashboard/quiz/new">
             <Button>
@@ -29,6 +28,5 @@ export function QuizEmptyState({ hasFilters }: QuizEmptyStateProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

@@ -1,5 +1,5 @@
 // src/features/inquiries/components/inquiry-details-dialog.tsx
-'use client'
+"use client";
 
 import {
   Dialog,
@@ -7,101 +7,103 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from "@/shared/components/ui/dialog"
-import { Badge } from "@/shared/components/ui/badge"
-import { Button } from "@/shared/components/ui/button"
-import { Textarea } from "@/shared/components/ui/textarea"
-import { Label } from "@/shared/components/ui/label"
+} from "@/shared/components/ui/dialog";
+import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
+import { Textarea } from "@/shared/components/ui/textarea";
+import { Label } from "@/shared/components/ui/label";
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { Mail, Calendar, User, Send, MessageSquare } from 'lucide-react'
-import { useState } from 'react'
-import { toast } from '@/shared/utils/toast'
-import { InquiryStatusBadge } from './inquiry-status-badge'
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Mail, Calendar, User, Send, MessageSquare } from "lucide-react";
+import { useState } from "react";
+import { toast } from "@/shared/utils/toast";
+import { InquiryStatusBadge } from "./inquiry-status-badge";
 
 interface Inquiry {
-  id: string
-  request_type: string
-  first_name: string
-  last_name: string
-  organization: string | null
-  email: string
-  inquiry: string
-  status: string
-  created_at: string
-  updated_at: string
+  id: string;
+  request_type: string;
+  first_name: string;
+  last_name: string;
+  organization: string | null;
+  email: string;
+  inquiry: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface InquiryDetailsDialogProps {
-  inquiry: Inquiry | null
-  open: boolean
-  onOpenChange: (open: boolean) => void
+  inquiry: Inquiry | null;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
 }
 
 export function InquiryDetailsDialog({ inquiry, open, onOpenChange }: InquiryDetailsDialogProps) {
-  const [response, setResponse] = useState('')
-  const [sending, setSending] = useState(false)
+  const [response, setResponse] = useState("");
+  const [sending, setSending] = useState(false);
 
-  if (!inquiry) return null
+  if (!inquiry) return null;
 
   const handleSendResponse = async () => {
-    if (!response.trim()) return
+    if (!response.trim()) return;
 
-    setSending(true)
+    setSending(true);
     try {
-      console.log('Sending response for inquiry:', inquiry.id)
+      console.log("Sending response for inquiry:", inquiry.id);
 
       const res = await fetch(`/api/admin/inquiries/${inquiry.id}/respond`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ response: response.trim() }),
-      })
+      });
 
-      console.log('Response status:', res.status)
+      console.log("Response status:", res.status);
 
       if (!res.ok) {
-        let errorMessage = 'Failed to send response'
+        let errorMessage = "Failed to send response";
         try {
-          const errorData = await res.json()
-          errorMessage = errorData.error || errorMessage
+          const errorData = await res.json();
+          errorMessage = errorData.error || errorMessage;
         } catch (parseError) {
-          console.error('Failed to parse error response:', parseError)
-          errorMessage = `HTTP ${res.status}: ${res.statusText}`
+          console.error("Failed to parse error response:", parseError);
+          errorMessage = `HTTP ${res.status}: ${res.statusText}`;
         }
-        throw new Error(errorMessage)
+        throw new Error(errorMessage);
       }
 
-      const result = await res.json()
-      console.log('Response sent successfully:', result)
+      const result = await res.json();
+      console.log("Response sent successfully:", result);
 
-      toast.success('Response sent successfully!')
-      setResponse('')
-      onOpenChange(false)
+      toast.success("Response sent successfully!");
+      setResponse("");
+      onOpenChange(false);
     } catch (error) {
-      console.error('Error sending response:', error)
+      console.error("Error sending response:", error);
 
-      if (error instanceof TypeError && error.message === 'Failed to fetch') {
-        toast.error('Network error: Unable to connect to server. Please check your connection and try again.')
+      if (error instanceof TypeError && error.message === "Failed to fetch") {
+        toast.error(
+          "Network error: Unable to connect to server. Please check your connection and try again."
+        );
       } else {
-        toast.error(error instanceof Error ? error.message : 'Failed to send response')
+        toast.error(error instanceof Error ? error.message : "Failed to send response");
       }
     } finally {
-      setSending(false)
+      setSending(false);
     }
-  }
+  };
 
   const getTypeColor = (type: string) => {
     switch (type) {
-      case 'general':
-        return 'bg-blue-100 text-blue-800'
-      case 'tech':
-        return 'bg-orange-100 text-orange-800'
+      case "general":
+        return "bg-blue-100 text-blue-800";
+      case "tech":
+        return "bg-orange-100 text-orange-800";
       default:
-        return 'bg-gray-100 text-gray-800'
+        return "bg-gray-100 text-gray-800";
     }
-  }
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -121,7 +123,7 @@ export function InquiryDetailsDialog({ inquiry, open, onOpenChange }: InquiryDet
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <Badge className={getTypeColor(inquiry.request_type)} variant="secondary">
-                {inquiry.request_type === 'general' ? 'General Inquiry' : 'Technical Support'}
+                {inquiry.request_type === "general" ? "General Inquiry" : "Technical Support"}
               </Badge>
               <InquiryStatusBadge status={inquiry.status} />
             </div>
@@ -155,7 +157,9 @@ export function InquiryDetailsDialog({ inquiry, open, onOpenChange }: InquiryDet
 
                 {inquiry.organization && (
                   <div className="space-y-1 md:col-span-2">
-                    <Label className="text-sm font-medium text-muted-foreground">Organization</Label>
+                    <Label className="text-sm font-medium text-muted-foreground">
+                      Organization
+                    </Label>
                     <p className="text-base font-medium">{inquiry.organization}</p>
                   </div>
                 )}
@@ -216,11 +220,7 @@ export function InquiryDetailsDialog({ inquiry, open, onOpenChange }: InquiryDet
 
           {/* Actions */}
           <div className="flex justify-end gap-3 pt-2">
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              className="px-6"
-            >
+            <Button variant="outline" onClick={() => onOpenChange(false)} className="px-6">
               Close
             </Button>
             <Button
@@ -244,5 +244,5 @@ export function InquiryDetailsDialog({ inquiry, open, onOpenChange }: InquiryDet
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }

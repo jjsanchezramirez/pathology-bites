@@ -1,24 +1,24 @@
 // src/features/performance/components/recent-achievements-card.tsx
-'use client'
+"use client";
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { AchievementBadge } from './achievement-badge'
-import { Achievement } from '@/shared/types/achievements'
-import { getRecentlyUnlocked, getNextAchievements } from '../services/achievement-service'
-import { Trophy, TrendingUp } from 'lucide-react'
-import Link from 'next/link'
-import { Button } from '@/shared/components/ui/button'
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { AchievementBadge } from "./achievement-badge";
+import { Achievement } from "@/shared/types/achievements";
+import { getRecentlyUnlocked, getNextAchievements } from "../services/achievement-service";
+import { Trophy, TrendingUp } from "lucide-react";
+import Link from "next/link";
+import { Button } from "@/shared/components/ui/button";
 
 interface RecentAchievementsCardProps {
-  achievements: Achievement[]
+  achievements: Achievement[];
 }
 
 export function RecentAchievementsCard({ achievements }: RecentAchievementsCardProps) {
-  const recentlyUnlocked = getRecentlyUnlocked(achievements, 30) // Last 30 days
-  const nextAchievements = getNextAchievements(achievements, 3)
+  const recentlyUnlocked = getRecentlyUnlocked(achievements, 30); // Last 30 days
+  const nextAchievements = getNextAchievements(achievements, 3);
 
   if (recentlyUnlocked.length === 0 && nextAchievements.length === 0) {
-    return null
+    return null;
   }
 
   return (
@@ -30,7 +30,9 @@ export function RecentAchievementsCard({ achievements }: RecentAchievementsCardP
             Achievements
           </CardTitle>
           <Link href="/dashboard/performance">
-            <Button variant="ghost" size="sm">View All</Button>
+            <Button variant="ghost" size="sm">
+              View All
+            </Button>
           </Link>
         </div>
       </CardHeader>
@@ -43,12 +45,8 @@ export function RecentAchievementsCard({ achievements }: RecentAchievementsCardP
               Recently Earned
             </h3>
             <div className="grid grid-cols-3 gap-4">
-              {recentlyUnlocked.slice(0, 3).map(achievement => (
-                <AchievementBadge
-                  key={achievement.id}
-                  achievement={achievement}
-                  size="sm"
-                />
+              {recentlyUnlocked.slice(0, 3).map((achievement) => (
+                <AchievementBadge key={achievement.id} achievement={achievement} size="sm" />
               ))}
             </div>
           </div>
@@ -62,7 +60,7 @@ export function RecentAchievementsCard({ achievements }: RecentAchievementsCardP
               Almost There
             </h3>
             <div className="grid grid-cols-3 gap-4">
-              {nextAchievements.map(achievement => (
+              {nextAchievements.map((achievement) => (
                 <AchievementBadge
                   key={achievement.id}
                   achievement={achievement}
@@ -75,5 +73,5 @@ export function RecentAchievementsCard({ achievements }: RecentAchievementsCardP
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

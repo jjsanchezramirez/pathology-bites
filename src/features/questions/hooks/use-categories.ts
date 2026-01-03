@@ -1,9 +1,9 @@
 // src/hooks/use-categories.ts
-import { useState, useEffect, useCallback } from 'react';
-import { createClient } from '@/shared/services/client';
-import { CategoryData } from '@/features/questions/types/questions';
-import { toast } from '@/shared/utils/toast';
-import { TABLE_NAMES } from '@/shared/constants/database-types';
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@/shared/services/client";
+import { CategoryData } from "@/features/questions/types/questions";
+import { toast } from "@/shared/utils/toast";
+import { TABLE_NAMES } from "@/shared/constants/database-types";
 
 export interface UseCategoriesReturn {
   categories: CategoryData[];
@@ -27,8 +27,8 @@ export function useCategories(): UseCategoriesReturn {
     try {
       const { data, error: fetchError } = await supabase
         .from(TABLE_NAMES.CATEGORIES)
-        .select('*')
-        .order('level, name');
+        .select("*")
+        .order("level, name");
 
       if (fetchError) {
         throw new Error(fetchError.message);
@@ -36,60 +36,59 @@ export function useCategories(): UseCategoriesReturn {
 
       setCategories(data || []);
     } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to fetch categories';
+      const message = err instanceof Error ? err.message : "Failed to fetch categories";
       setError(message);
     } finally {
       setLoading(false);
     }
   }, [supabase]);
 
-  const createCategory = useCallback(async (
-    name: string, 
-    description?: string, 
-    parentId?: string
-  ): Promise<CategoryData> => {
-    try {
-      // Calculate level based on parent
-      let level = 1;
-      if (parentId) {
-        const { data: parentData } = await supabase
-          .from(TABLE_NAMES.CATEGORIES)
-          .select('level')
-          .eq('id', parentId)
-          .single();
-        
-        if (parentData) {
-          level = parentData.level + 1;
+  const createCategory = useCallback(
+    async (name: string, description?: string, parentId?: string): Promise<CategoryData> => {
+      try {
+        // Calculate level based on parent
+        let level = 1;
+        if (parentId) {
+          const { data: parentData } = await supabase
+            .from(TABLE_NAMES.CATEGORIES)
+            .select("level")
+            .eq("id", parentId)
+            .single();
+
+          if (parentData) {
+            level = parentData.level + 1;
+          }
         }
+
+        const { data, error } = await supabase
+          .from(TABLE_NAMES.CATEGORIES)
+          .insert({
+            name,
+            description: description || null,
+            parent_id: parentId || null,
+            level,
+          })
+          .select()
+          .single();
+
+        if (error) {
+          throw new Error(error.message);
+        }
+
+        toast.success("Category created successfully");
+
+        // Refetch categories
+        await fetchCategories();
+
+        return data;
+      } catch (err) {
+        const message = err instanceof Error ? err.message : "Failed to create category";
+        toast.error(message);
+        throw err;
       }
-
-      const { data, error } = await supabase
-        .from(TABLE_NAMES.CATEGORIES)
-        .insert({
-          name, 
-          description: description || null,
-          parent_id: parentId || null,
-          level 
-        })
-        .select()
-        .single();
-
-      if (error) {
-        throw new Error(error.message);
-      }
-
-      toast.success('Category created successfully');
-
-      // Refetch categories
-      await fetchCategories();
-
-      return data;
-    } catch (err) {
-      const message = err instanceof Error ? err.message : 'Failed to create category';
-      toast.error(message);
-      throw err;
-    }
-  }, [supabase, fetchCategories]);
+    },
+    [supabase, fetchCategories]
+  );
 
   useEffect(() => {
     fetchCategories();

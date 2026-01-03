@@ -1,15 +1,15 @@
 // src/app/(public)/tools/virtual-slides/components/loading-skeleton.tsx
 
 interface LoadingSkeletonProps {
-  variant?: 'table' | 'cards'
+  variant?: "table" | "cards";
 }
 
-export function LoadingSkeleton({ variant = 'cards' }: LoadingSkeletonProps) {
-  if (variant === 'table') {
+export function LoadingSkeleton({ variant = "cards" }: LoadingSkeletonProps) {
+  if (variant === "table") {
     return (
       <tbody>
         {Array.from({ length: 10 }, (_, i) => (
-          <tr key={i} className={i % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+          <tr key={i} className={i % 2 === 0 ? "bg-background" : "bg-muted/20"}>
             <td className="p-4">
               <div className="w-16 h-16 bg-muted rounded-lg animate-pulse" />
             </td>
@@ -50,7 +50,7 @@ export function LoadingSkeleton({ variant = 'cards' }: LoadingSkeletonProps) {
           </tr>
         ))}
       </tbody>
-    )
+    );
   }
 
   // Cards variant for loading states outside of tables
@@ -86,5 +86,5 @@ export function LoadingSkeleton({ variant = 'cards' }: LoadingSkeletonProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }

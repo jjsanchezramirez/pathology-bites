@@ -1,45 +1,54 @@
-'use client'
+"use client";
 
-import React from 'react'
+import React from "react";
 
-import { Button } from '@/shared/components/ui/button'
-import { AlertTriangle, RefreshCw, Home } from 'lucide-react'
+import { Button } from "@/shared/components/ui/button";
+import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 
 interface ErrorBoundaryState {
-  hasError: boolean
-  error?: Error
-  errorInfo?: React.ErrorInfo
+  hasError: boolean;
+  error?: Error;
+  errorInfo?: React.ErrorInfo;
 }
 
 interface BaseErrorBoundaryProps {
-  children: React.ReactNode
-  fallback?: React.ComponentType<{ error: Error; retry: () => void; goHome?: () => void; goBack?: () => void }>
-  level?: 'page' | 'feature' | 'component'
-  context?: string
-  showHomeButton?: boolean
-  showBackButton?: boolean
-  onError?: (error: Error, errorInfo: React.ErrorInfo) => void
+  children: React.ReactNode;
+  fallback?: React.ComponentType<{
+    error: Error;
+    retry: () => void;
+    goHome?: () => void;
+    goBack?: () => void;
+  }>;
+  level?: "page" | "feature" | "component";
+  context?: string;
+  showHomeButton?: boolean;
+  showBackButton?: boolean;
+  onError?: (error: Error, errorInfo: React.ErrorInfo) => void;
 }
 
 export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, ErrorBoundaryState> {
   constructor(props: BaseErrorBoundaryProps) {
-    super(props)
-    this.state = { hasError: false }
+    super(props);
+    this.state = { hasError: false };
   }
 
   static getDerivedStateFromError(error: Error): ErrorBoundaryState {
     return {
       hasError: true,
-      error
-    }
+      error,
+    };
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error(`ErrorBoundary (${this.props.level || 'unknown'}) caught an error:`, error, errorInfo)
+    console.error(
+      `ErrorBoundary (${this.props.level || "unknown"}) caught an error:`,
+      error,
+      errorInfo
+    );
 
     // Call custom error handler if provided
     if (this.props.onError) {
-      this.props.onError(error, errorInfo)
+      this.props.onError(error, errorInfo);
     }
 
     // Don't call setState here to avoid infinite loops
@@ -47,38 +56,38 @@ export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, E
   }
 
   retry = () => {
-    this.setState({ hasError: false, error: undefined, errorInfo: undefined })
-  }
+    this.setState({ hasError: false, error: undefined, errorInfo: undefined });
+  };
 
   goHome = () => {
-    if (typeof window !== 'undefined') {
-      window.location.href = '/dashboard'
+    if (typeof window !== "undefined") {
+      window.location.href = "/dashboard";
     }
-  }
+  };
 
   goBack = () => {
-    if (typeof window !== 'undefined') {
-      window.history.back()
+    if (typeof window !== "undefined") {
+      window.history.back();
     }
-  }
+  };
 
   render() {
     if (this.state.hasError) {
       if (this.props.fallback) {
-        const FallbackComponent = this.props.fallback
+        const FallbackComponent = this.props.fallback;
         return (
-          <FallbackComponent 
-            error={this.state.error!} 
+          <FallbackComponent
+            error={this.state.error!}
             retry={this.retry}
             goHome={this.props.showHomeButton ? this.goHome : undefined}
             goBack={this.props.showBackButton ? this.goBack : undefined}
           />
-        )
+        );
       }
 
-      const { level = 'component', _context, showHomeButton, _showBackButton } = this.props
-      const isPageLevel = level === 'page'
-      const isFeatureLevel = level === 'feature'
+      const { level = "component", _context, showHomeButton, _showBackButton } = this.props;
+      const isPageLevel = level === "page";
+      const isFeatureLevel = level === "feature";
 
       return (
         <div className="flex items-center justify-center min-h-[200px] p-6">
@@ -90,23 +99,15 @@ export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, E
               Something went wrong
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {isPageLevel ? 'Please try refreshing the page' : 'This component failed to load'}
+              {isPageLevel ? "Please try refreshing the page" : "This component failed to load"}
             </p>
             <div className="flex gap-2 justify-center">
-              <Button
-                onClick={this.retry}
-                variant="outline"
-                size="sm"
-              >
+              <Button onClick={this.retry} variant="outline" size="sm">
                 <RefreshCw className="mr-2 h-4 w-4" />
                 Try Again
               </Button>
               {showHomeButton && (
-                <Button
-                  onClick={this.goHome}
-                  variant="outline"
-                  size="sm"
-                >
+                <Button onClick={this.goHome} variant="outline" size="sm">
                   <Home className="mr-2 h-4 w-4" />
                   Dashboard
                 </Button>
@@ -114,30 +115,30 @@ export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, E
             </div>
           </div>
         </div>
-      )
+      );
     }
 
-    return this.props.children
+    return this.props.children;
   }
 }
 
 // Hook version for functional components
 export function useErrorBoundary() {
-  const [error, setError] = React.useState<Error | null>(null)
+  const [error, setError] = React.useState<Error | null>(null);
 
   const resetError = React.useCallback(() => {
-    setError(null)
-  }, [])
+    setError(null);
+  }, []);
 
   const captureError = React.useCallback((error: Error) => {
-    setError(error)
-  }, [])
+    setError(error);
+  }, []);
 
   React.useEffect(() => {
     if (error) {
-      throw error
+      throw error;
     }
-  }, [error])
+  }, [error]);
 
-  return { captureError, resetError }
+  return { captureError, resetError };
 }

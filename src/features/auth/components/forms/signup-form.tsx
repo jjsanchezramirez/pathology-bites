@@ -1,48 +1,57 @@
 // src/features/auth/components/forms/signup-form.tsx
-"use client"
+"use client";
 
-import { useState } from 'react'
-import { useForm } from "react-hook-form"
-import { zodResolver } from "@hookform/resolvers/zod"
-import * as z from "zod"
-import Link from "next/link"
-import { useRouter } from "next/navigation"
-import { toast } from '@/shared/utils/toast'
-import { Turnstile } from '@marsidev/react-turnstile'
-import { AuthCard } from "@/features/auth/components/ui/auth-card"
-import { FormField } from "@/features/auth/components/ui/form-field"
-import { FormButton } from "@/features/auth/components/ui/form-button"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/shared/components/ui/select"
-import { createClient } from '@/shared/services/client'
-import { useTurnstile } from '@/features/auth/hooks/use-turnstile'
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { toast } from "@/shared/utils/toast";
+import { Turnstile } from "@marsidev/react-turnstile";
+import { AuthCard } from "@/features/auth/components/ui/auth-card";
+import { FormField } from "@/features/auth/components/ui/form-field";
+import { FormButton } from "@/features/auth/components/ui/form-button";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { createClient } from "@/shared/services/client";
+import { useTurnstile } from "@/features/auth/hooks/use-turnstile";
 
 // Enhanced form schema with proper password validation
-const formSchema = z.object({
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  email: z.string().email("Please enter a valid email address"),
-  userType: z.enum(["student", "resident", "fellow", "attending", "other"], {
-    invalid_type_error: "Please select your role",
-  }),
-  password: z.string()
-    .min(8, "Password must be at least 8 characters")
-    .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
-    .regex(/[a-z]/, "Password must contain at least one lowercase letter")
-    .regex(/[0-9]/, "Password must contain at least one number"),
-  confirmPassword: z.string().min(1, "Please confirm your password"),
-}).refine((data) => data.password === data.confirmPassword, {
-  message: "Passwords don't match",
-  path: ["confirmPassword"],
-});
+const formSchema = z
+  .object({
+    firstName: z.string().min(1, "First name is required"),
+    lastName: z.string().min(1, "Last name is required"),
+    email: z.string().email("Please enter a valid email address"),
+    userType: z.enum(["student", "resident", "fellow", "attending", "other"], {
+      invalid_type_error: "Please select your role",
+    }),
+    password: z
+      .string()
+      .min(8, "Password must be at least 8 characters")
+      .regex(/[A-Z]/, "Password must contain at least one uppercase letter")
+      .regex(/[a-z]/, "Password must contain at least one lowercase letter")
+      .regex(/[0-9]/, "Password must contain at least one number"),
+    confirmPassword: z.string().min(1, "Please confirm your password"),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ["confirmPassword"],
+  });
 
-type FormData = z.infer<typeof formSchema>
+type FormData = z.infer<typeof formSchema>;
 
 export function SignupForm() {
-  const [loading, setLoading] = useState(false)
-  const router = useRouter()
-  const supabase = createClient()
-  const { captchaToken, setCaptchaToken } = useTurnstile()
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY
+  const [loading, setLoading] = useState(false);
+  const router = useRouter();
+  const supabase = createClient();
+  const { captchaToken, setCaptchaToken } = useTurnstile();
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY;
 
   const {
     register,
@@ -60,63 +69,63 @@ export function SignupForm() {
       password: "",
       confirmPassword: "",
     },
-  })
+  });
 
-  const userType = watch("userType")
+  const userType = watch("userType");
 
   // Function to check if email already exists
   async function checkEmailExists(email: string): Promise<boolean> {
     try {
-      const response = await fetch('/api/public/auth/check-email', {
-        method: 'POST',
+      const response = await fetch("/api/public/auth/check-email", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ email }),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        console.error('Error checking email existence:', {
+        const errorData = await response.json().catch(() => ({}));
+        console.error("Error checking email existence:", {
           status: response.status,
-          error: errorData.error
-        })
+          error: errorData.error,
+        });
         // If the API fails, we should fail safely by not allowing signup
         // This prevents users from bypassing the check
-        throw new Error(`Email check failed: ${errorData.error || 'Unknown error'}`)
+        throw new Error(`Email check failed: ${errorData.error || "Unknown error"}`);
       }
 
-      const data = await response.json()
-      return data.exists
+      const data = await response.json();
+      return data.exists;
     } catch (error) {
-      console.error("Error checking email existence:", error)
+      console.error("Error checking email existence:", error);
       // Re-throw to let the caller handle it
-      throw error
+      throw error;
     }
   }
 
   async function onSubmit(values: FormData) {
     try {
-      setLoading(true)
+      setLoading(true);
 
       // Check if email already exists (single source of truth via public.users)
       try {
-        const emailExists = await checkEmailExists(values.email)
+        const emailExists = await checkEmailExists(values.email);
         if (emailExists) {
-          toast.error("An account with this email already exists")
-          return
+          toast.error("An account with this email already exists");
+          return;
         }
       } catch (emailCheckError) {
-        console.error('Email check failed:', emailCheckError)
-        toast.error("Unable to verify email availability. Please try again.")
-        return
+        console.error("Email check failed:", emailCheckError);
+        toast.error("Unable to verify email availability. Please try again.");
+        return;
       }
 
       // Use environment variable for redirect URL with fallback
-      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin
-      const redirectTo = `${siteUrl}/api/public/auth/confirm`
+      const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
+      const redirectTo = `${siteUrl}/api/public/auth/confirm`;
 
-      console.log('Signup attempt:', {
+      console.log("Signup attempt:", {
         email: values.email,
         redirectTo,
         siteUrl,
@@ -124,8 +133,8 @@ export function SignupForm() {
           first_name: values.firstName,
           last_name: values.lastName,
           user_type: values.userType,
-        }
-      })
+        },
+      });
 
       const { data, error } = await supabase.auth.signUp({
         email: values.email,
@@ -139,9 +148,9 @@ export function SignupForm() {
           emailRedirectTo: redirectTo,
           captchaToken: captchaToken || undefined,
         },
-      })
+      });
 
-      console.log('Supabase signup response:', { data, error })
+      console.log("Supabase signup response:", { data, error });
 
       if (error) {
         console.error("Supabase signup error details:", {
@@ -149,31 +158,37 @@ export function SignupForm() {
           status: error.status,
           name: error.name,
           cause: error.cause,
-          stack: error.stack
-        })
+          stack: error.stack,
+        });
 
-        if (error.message.includes('User already registered')) {
-          toast.error("An account with this email already exists")
+        if (error.message.includes("User already registered")) {
+          toast.error("An account with this email already exists");
         } else {
-          toast.error(`Signup failed: ${error.message}`)
+          toast.error(`Signup failed: ${error.message}`);
         }
-        return
+        return;
       }
 
-      console.log('Signup successful, redirecting to verification page')
+      console.log("Signup successful, redirecting to verification page");
       // Success - redirect to verification page
-      router.push(`/verify-email?email=${encodeURIComponent(values.email)}`)
+      router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
     } catch (error) {
-      console.error("Signup error:", error)
-      toast.error("An unexpected error occurred. Please try again.")
+      console.error("Signup error:", error);
+      toast.error("An unexpected error occurred. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   }
 
   function handleUserTypeChange(value: string) {
-    if (value === "student" || value === "resident" || value === "fellow" || value === "attending" || value === "other") {
-      setValue("userType", value, { shouldValidate: true })
+    if (
+      value === "student" ||
+      value === "resident" ||
+      value === "fellow" ||
+      value === "attending" ||
+      value === "other"
+    ) {
+      setValue("userType", value, { shouldValidate: true });
     }
   }
 
@@ -222,11 +237,7 @@ export function SignupForm() {
           label="What best describes you?"
           error={isSubmitted ? errors.userType?.message : undefined}
         >
-          <Select
-            value={userType}
-            onValueChange={handleUserTypeChange}
-            disabled={loading}
-          >
+          <Select value={userType} onValueChange={handleUserTypeChange} disabled={loading}>
             <SelectTrigger>
               <SelectValue placeholder="Select your role" />
             </SelectTrigger>
@@ -279,23 +290,23 @@ export function SignupForm() {
             <Turnstile
               siteKey={siteKey}
               options={{
-                theme: 'auto',
-                size: 'normal',
-                retry: 'auto',
-                'retry-interval': 8000,
+                theme: "auto",
+                size: "normal",
+                retry: "auto",
+                "retry-interval": 8000,
               }}
               onSuccess={(token) => {
-                setCaptchaToken(token)
-                console.log('[SignupForm] CAPTCHA verification successful')
+                setCaptchaToken(token);
+                console.log("[SignupForm] CAPTCHA verification successful");
               }}
               onError={(error) => {
-                setCaptchaToken(null)
-                console.log('[SignupForm] CAPTCHA verification error:', error)
+                setCaptchaToken(null);
+                console.log("[SignupForm] CAPTCHA verification error:", error);
                 // Don't show toast on error - Turnstile will auto-retry
               }}
               onExpire={() => {
-                setCaptchaToken(null)
-                console.log('[SignupForm] CAPTCHA verification expired')
+                setCaptchaToken(null);
+                console.log("[SignupForm] CAPTCHA verification expired");
                 // Don't show toast on expire - it will auto-reload
               }}
             />
@@ -317,5 +328,5 @@ export function SignupForm() {
         </div>
       </form>
     </AuthCard>
-  )
+  );
 }

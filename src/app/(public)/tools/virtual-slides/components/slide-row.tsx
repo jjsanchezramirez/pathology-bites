@@ -1,24 +1,28 @@
 // src/app/(public)/tools/virtual-slides/components/slide-row.tsx
 
-import { Button } from '@/shared/components/ui/button'
-import { Badge } from '@/shared/components/ui/badge'
-import { ExternalLink, Microscope, Eye } from 'lucide-react'
-import Image from 'next/image'
-import { VirtualSlide } from '../types'
-
-
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import { ExternalLink, Microscope, Eye } from "lucide-react";
+import Image from "next/image";
+import { VirtualSlide } from "../types";
 
 interface SlideRowProps {
-  slide: VirtualSlide
-  index: number
-  showDiagnoses?: boolean
-  isRevealed?: boolean
-  onToggleReveal?: (slideId: string) => void
+  slide: VirtualSlide;
+  index: number;
+  showDiagnoses?: boolean;
+  isRevealed?: boolean;
+  onToggleReveal?: (slideId: string) => void;
 }
 
-export function SlideRow({ slide, index, showDiagnoses = true, isRevealed = false, onToggleReveal }: SlideRowProps) {
+export function SlideRow({
+  slide,
+  index,
+  showDiagnoses = true,
+  isRevealed = false,
+  onToggleReveal,
+}: SlideRowProps) {
   return (
-    <tr key={`${slide.id}-${index}`} className={index % 2 === 0 ? 'bg-background' : 'bg-muted/20'}>
+    <tr key={`${slide.id}-${index}`} className={index % 2 === 0 ? "bg-background" : "bg-muted/20"}>
       {/* Preview Image */}
       <td className="p-4">
         <div className="w-16 h-16 bg-muted rounded-lg flex items-center justify-center overflow-hidden">
@@ -31,13 +35,15 @@ export function SlideRow({ slide, index, showDiagnoses = true, isRevealed = fals
               unoptimized
               className="object-cover w-full h-full"
               onError={(e) => {
-                const target = e.target as HTMLImageElement
-                target.style.display = 'none'
-                target.nextElementSibling?.classList.remove('hidden')
+                const target = e.target as HTMLImageElement;
+                target.style.display = "none";
+                target.nextElementSibling?.classList.remove("hidden");
               }}
             />
           ) : null}
-          <div className={`flex items-center justify-center w-full h-full ${slide.preview_image_url ? 'hidden' : ''}`}>
+          <div
+            className={`flex items-center justify-center w-full h-full ${slide.preview_image_url ? "hidden" : ""}`}
+          >
             <Microscope className="h-6 w-6 text-muted-foreground" />
           </div>
         </div>
@@ -48,25 +54,19 @@ export function SlideRow({ slide, index, showDiagnoses = true, isRevealed = fals
         <div className="space-y-1">
           {showDiagnoses && (
             <div className="space-y-1">
-              <h3 className="font-medium text-sm leading-tight line-clamp-3">
-                {slide.diagnosis}
-              </h3>
+              <h3 className="font-medium text-sm leading-tight line-clamp-3">{slide.diagnosis}</h3>
               {/* Clinical information - always show when diagnoses are visible */}
               <div className="space-y-1">
                 {(slide.age || slide.gender) && (
                   <p className="text-xs text-muted-foreground">
-                    {[slide.age, slide.gender].filter(Boolean).join(', ')}
+                    {[slide.age, slide.gender].filter(Boolean).join(", ")}
                   </p>
                 )}
                 {slide.patient_info && (
-                  <p className="text-xs text-muted-foreground">
-                    {slide.patient_info}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{slide.patient_info}</p>
                 )}
                 {slide.clinical_history && (
-                  <p className="text-xs text-muted-foreground italic">
-                    {slide.clinical_history}
-                  </p>
+                  <p className="text-xs text-muted-foreground italic">{slide.clinical_history}</p>
                 )}
               </div>
             </div>
@@ -80,13 +80,11 @@ export function SlideRow({ slide, index, showDiagnoses = true, isRevealed = fals
                   <div className="space-y-1 mt-1">
                     {(slide.age || slide.gender) && (
                       <p className="text-xs text-muted-foreground">
-                        {[slide.age, slide.gender].filter(Boolean).join(', ')}
+                        {[slide.age, slide.gender].filter(Boolean).join(", ")}
                       </p>
                     )}
                     {slide.patient_info && (
-                      <p className="text-xs text-muted-foreground">
-                        {slide.patient_info}
-                      </p>
+                      <p className="text-xs text-muted-foreground">{slide.patient_info}</p>
                     )}
                     {slide.clinical_history && (
                       <p className="text-xs text-muted-foreground italic">
@@ -126,19 +124,13 @@ export function SlideRow({ slide, index, showDiagnoses = true, isRevealed = fals
                 <span> • {slide.subcategory}</span>
               )}
             </div>
-            <div className="text-xs text-muted-foreground">
-              {slide.repository}
-            </div>
+            <div className="text-xs text-muted-foreground">{slide.repository}</div>
           </div>
 
           {/* Mid form (md-lg): Show repository as simple text */}
           <div className="hidden md:block lg:hidden">
-            <div className="text-xs text-muted-foreground">
-              {slide.repository}
-            </div>
+            <div className="text-xs text-muted-foreground">{slide.repository}</div>
           </div>
-
-
         </div>
       </td>
 
@@ -183,11 +175,7 @@ export function SlideRow({ slide, index, showDiagnoses = true, isRevealed = fals
               className="p-2 md:hidden"
               title="View Virtual Slide"
             >
-              <a
-                href={slide.slide_url}
-                target="_blank"
-                rel="noopener noreferrer"
-              >
+              <a href={slide.slide_url} target="_blank" rel="noopener noreferrer">
                 <ExternalLink className="h-4 w-4" />
               </a>
             </Button>
@@ -196,17 +184,8 @@ export function SlideRow({ slide, index, showDiagnoses = true, isRevealed = fals
           {/* Mid form (md-lg): Abbreviated buttons */}
           <div className="hidden md:flex lg:hidden gap-2">
             {slide.slide_url && (
-              <Button
-                size="sm"
-                variant="outline"
-                asChild
-                className="text-xs"
-              >
-                <a
-                  href={slide.slide_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+              <Button size="sm" variant="outline" asChild className="text-xs">
+                <a href={slide.slide_url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-3 w-3 mr-1" />
                   WSI
                 </a>
@@ -214,72 +193,39 @@ export function SlideRow({ slide, index, showDiagnoses = true, isRevealed = fals
             )}
 
             {/* Repository-specific second button - abbreviated */}
-            {slide.repository === 'Leeds University' && slide.case_url && (
-              <Button
-                size="sm"
-                variant="outline"
-                asChild
-                className="text-xs"
-              >
-                <a
-                  href={slide.case_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+            {slide.repository === "Leeds University" && slide.case_url && (
+              <Button size="sm" variant="outline" asChild className="text-xs">
+                <a href={slide.case_url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-3 w-3 mr-1" />
                   Case
                 </a>
               </Button>
             )}
 
-            {slide.repository === 'University of Toronto LMP' && slide.case_url && (
-              <Button
-                size="sm"
-                variant="outline"
-                asChild
-                className="text-xs"
-              >
-                <a
-                  href={slide.case_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+            {slide.repository === "University of Toronto LMP" && slide.case_url && (
+              <Button size="sm" variant="outline" asChild className="text-xs">
+                <a href={slide.case_url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-3 w-3 mr-1" />
                   Case
                 </a>
               </Button>
             )}
 
-            {slide.repository === 'Hematopathology eTutorial' && slide.other_urls && slide.other_urls.length > 0 && slide.other_urls[0] && (
-              <Button
-                size="sm"
-                variant="outline"
-                asChild
-                className="text-xs"
-              >
-                <a
-                  href={slide.other_urls[0]}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="h-3 w-3 mr-1" />
-                  Notes
-                </a>
-              </Button>
-            )}
+            {slide.repository === "Hematopathology eTutorial" &&
+              slide.other_urls &&
+              slide.other_urls.length > 0 &&
+              slide.other_urls[0] && (
+                <Button size="sm" variant="outline" asChild className="text-xs">
+                  <a href={slide.other_urls[0]} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    Notes
+                  </a>
+                </Button>
+              )}
 
-            {slide.repository === 'Rosai Collection' && slide.case_url && (
-              <Button
-                size="sm"
-                variant="outline"
-                asChild
-                className="text-xs"
-              >
-                <a
-                  href={slide.case_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+            {slide.repository === "Rosai Collection" && slide.case_url && (
+              <Button size="sm" variant="outline" asChild className="text-xs">
+                <a href={slide.case_url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-3 w-3 mr-1" />
                   Info
                 </a>
@@ -290,17 +236,8 @@ export function SlideRow({ slide, index, showDiagnoses = true, isRevealed = fals
           {/* Desktop (lg+): Full buttons */}
           <div className="hidden lg:flex gap-2">
             {slide.slide_url && (
-              <Button
-                size="sm"
-                variant="default"
-                asChild
-                className="text-xs"
-              >
-                <a
-                  href={slide.slide_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+              <Button size="sm" variant="default" asChild className="text-xs">
+                <a href={slide.slide_url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-3 w-3 mr-1" />
                   View Slide
                 </a>
@@ -308,72 +245,39 @@ export function SlideRow({ slide, index, showDiagnoses = true, isRevealed = fals
             )}
 
             {/* Repository-specific second button */}
-            {slide.repository === 'Leeds University' && slide.case_url && (
-              <Button
-                size="sm"
-                variant="outline"
-                asChild
-                className="text-xs"
-              >
-                <a
-                  href={slide.case_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+            {slide.repository === "Leeds University" && slide.case_url && (
+              <Button size="sm" variant="outline" asChild className="text-xs">
+                <a href={slide.case_url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-3 w-3 mr-1" />
                   Case
                 </a>
               </Button>
             )}
 
-            {slide.repository === 'University of Toronto LMP' && slide.case_url && (
-              <Button
-                size="sm"
-                variant="outline"
-                asChild
-                className="text-xs"
-              >
-                <a
-                  href={slide.case_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+            {slide.repository === "University of Toronto LMP" && slide.case_url && (
+              <Button size="sm" variant="outline" asChild className="text-xs">
+                <a href={slide.case_url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-3 w-3 mr-1" />
                   Case
                 </a>
               </Button>
             )}
 
-            {slide.repository === 'Hematopathology eTutorial' && slide.other_urls && slide.other_urls.length > 0 && slide.other_urls[0] && (
-              <Button
-                size="sm"
-                variant="outline"
-                asChild
-                className="text-xs"
-              >
-                <a
-                  href={slide.other_urls[0]}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <ExternalLink className="h-3 w-3 mr-1" />
-                  Study Notes
-                </a>
-              </Button>
-            )}
+            {slide.repository === "Hematopathology eTutorial" &&
+              slide.other_urls &&
+              slide.other_urls.length > 0 &&
+              slide.other_urls[0] && (
+                <Button size="sm" variant="outline" asChild className="text-xs">
+                  <a href={slide.other_urls[0]} target="_blank" rel="noopener noreferrer">
+                    <ExternalLink className="h-3 w-3 mr-1" />
+                    Study Notes
+                  </a>
+                </Button>
+              )}
 
-            {slide.repository === 'Rosai Collection' && slide.case_url && (
-              <Button
-                size="sm"
-                variant="outline"
-                asChild
-                className="text-xs"
-              >
-                <a
-                  href={slide.case_url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
+            {slide.repository === "Rosai Collection" && slide.case_url && (
+              <Button size="sm" variant="outline" asChild className="text-xs">
+                <a href={slide.case_url} target="_blank" rel="noopener noreferrer">
                   <ExternalLink className="h-3 w-3 mr-1" />
                   Seminar Info
                 </a>
@@ -383,5 +287,5 @@ export function SlideRow({ slide, index, showDiagnoses = true, isRevealed = fals
         </div>
       </td>
     </tr>
-  )
+  );
 }

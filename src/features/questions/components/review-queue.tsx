@@ -1,8 +1,8 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useCallback } from 'react'
-import { createClient } from '@/shared/services/client'
-import { useAuth } from '@/shared/hooks/use-auth'
+import { useState, useEffect, useCallback } from "react";
+import { createClient } from "@/shared/services/client";
+import { useAuth } from "@/shared/hooks/use-auth";
 import {
   Table,
   TableBody,
@@ -10,11 +10,11 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/components/ui/table"
-import { Button } from "@/shared/components/ui/button"
-import { Badge } from "@/shared/components/ui/badge"
-import { Input } from "@/shared/components/ui/input"
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card"
+} from "@/shared/components/ui/table";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import { Input } from "@/shared/components/ui/input";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import {
   Eye,
   Search,
@@ -23,40 +23,41 @@ import {
   XCircle,
   Loader2,
   RefreshCw,
-  AlertCircle
-} from 'lucide-react'
-import { QuestionPreviewDialog } from './question-preview-dialog'
-import { ReviewActionDialog } from './review-action-dialog'
-import { toast } from '@/shared/utils/toast'
-import { formatDistanceToNow } from 'date-fns'
-import { QuestionWithDetails } from '@/features/questions/types/questions'
+  AlertCircle,
+} from "lucide-react";
+import { QuestionPreviewDialog } from "./question-preview-dialog";
+import { ReviewActionDialog } from "./review-action-dialog";
+import { toast } from "@/shared/utils/toast";
+import { formatDistanceToNow } from "date-fns";
+import { QuestionWithDetails } from "@/features/questions/types/questions";
 
 interface ReviewQuestion extends QuestionWithDetails {
-  creator_name?: string
+  creator_name?: string;
 }
 
 export function ReviewQueue() {
-  const [questions, setQuestions] = useState<ReviewQuestion[]>([])
-  const [filteredQuestions, setFilteredQuestions] = useState<ReviewQuestion[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedQuestion, setSelectedQuestion] = useState<ReviewQuestion | null>(null)
-  const [previewOpen, setPreviewOpen] = useState(false)
-  const [reviewAction, setReviewAction] = useState<'approve' | 'reject' | null>(null)
+  const [questions, setQuestions] = useState<ReviewQuestion[]>([]);
+  const [filteredQuestions, setFilteredQuestions] = useState<ReviewQuestion[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedQuestion, setSelectedQuestion] = useState<ReviewQuestion | null>(null);
+  const [previewOpen, setPreviewOpen] = useState(false);
+  const [reviewAction, setReviewAction] = useState<"approve" | "reject" | null>(null);
 
-  const { user } = useAuth({ minimal: true })
-  const supabase = createClient()
+  const { user } = useAuth({ minimal: true });
+  const supabase = createClient();
 
   const fetchReviewQueue = useCallback(async () => {
-    if (!user) return
+    if (!user) return;
 
     try {
-      setLoading(true)
+      setLoading(true);
 
       // Fetch questions assigned to current user with pending_review status - SELECT only needed fields
       const { data, error } = await supabase
-        .from('questions')
-        .select(`
+        .from("questions")
+        .select(
+          `
           id,
           title,
           stem,
@@ -79,77 +80,90 @@ export function ReviewQueue() {
             images(id, url, alt_text, description)
           ),
           users!questions_created_by_fkey(first_name, last_name, email)
-        `)
-        .eq('reviewer_id', user.id)
-        .eq('status', 'pending_review')
-        .order('created_at', { ascending: true }) // Oldest first
+        `
+        )
+        .eq("reviewer_id", user.id)
+        .eq("status", "pending_review")
+        .order("created_at", { ascending: true }); // Oldest first
 
       if (error) {
-        console.error('Error fetching review queue:', error)
-        toast.error(`Failed to load review queue: ${error.message}`)
-        return
+        console.error("Error fetching review queue:", error);
+        toast.error(`Failed to load review queue: ${error.message}`);
+        return;
       }
 
       // Format creator name
-      const formattedData = (data || []).map(q => ({
+      const formattedData = (data || []).map((q) => ({
         ...q,
-        creator_name: q.users?.first_name && q.users?.last_name
-          ? `${q.users.first_name} ${q.users.last_name}`
-          : q.users?.email || 'Unknown'
-      }))
+        creator_name:
+          q.users?.first_name && q.users?.last_name
+            ? `${q.users.first_name} ${q.users.last_name}`
+            : q.users?.email || "Unknown",
+      }));
 
-      setQuestions(formattedData)
-      setFilteredQuestions(formattedData)
+      setQuestions(formattedData);
+      setFilteredQuestions(formattedData);
     } catch (error) {
-      console.error('Unexpected error fetching review queue:', error)
-      toast.error('Failed to load review queue')
+      console.error("Unexpected error fetching review queue:", error);
+      toast.error("Failed to load review queue");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [user, supabase])
+  }, [user, supabase]);
 
   useEffect(() => {
-    fetchReviewQueue()
-  }, [fetchReviewQueue])
+    fetchReviewQueue();
+  }, [fetchReviewQueue]);
 
   useEffect(() => {
     if (searchTerm) {
-      const filtered = questions.filter(q =>
-        q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.stem.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        q.creator_name?.toLowerCase().includes(searchTerm.toLowerCase())
-      )
-      setFilteredQuestions(filtered)
+      const filtered = questions.filter(
+        (q) =>
+          q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          q.stem.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          q.creator_name?.toLowerCase().includes(searchTerm.toLowerCase())
+      );
+      setFilteredQuestions(filtered);
     } else {
-      setFilteredQuestions(questions)
+      setFilteredQuestions(questions);
     }
-  }, [searchTerm, questions])
+  }, [searchTerm, questions]);
 
   const handlePreview = (question: ReviewQuestion) => {
-    setSelectedQuestion(question)
-    setPreviewOpen(true)
-  }
+    setSelectedQuestion(question);
+    setPreviewOpen(true);
+  };
 
-  const handleReviewAction = (question: ReviewQuestion, action: 'approve' | 'reject') => {
-    setSelectedQuestion(question)
-    setReviewAction(action)
-  }
+  const handleReviewAction = (question: ReviewQuestion, action: "approve" | "reject") => {
+    setSelectedQuestion(question);
+    setReviewAction(action);
+  };
 
   const handleReviewComplete = () => {
-    setReviewAction(null)
-    setSelectedQuestion(null)
-    fetchReviewQueue() // Refresh the queue
-  }
+    setReviewAction(null);
+    setSelectedQuestion(null);
+    fetchReviewQueue(); // Refresh the queue
+  };
 
   const getAgeIndicator = (createdAt: string) => {
-    const daysOld = Math.floor((Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24))
+    const daysOld = Math.floor(
+      (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24)
+    );
     if (daysOld > 7) {
-      return <Badge variant="destructive" className="ml-2">Urgent</Badge>
+      return (
+        <Badge variant="destructive" className="ml-2">
+          Urgent
+        </Badge>
+      );
     } else if (daysOld > 3) {
-      return <Badge variant="secondary" className="ml-2">Aging</Badge>
+      return (
+        <Badge variant="secondary" className="ml-2">
+          Aging
+        </Badge>
+      );
     }
-    return null
-  }
+    return null;
+  };
 
   if (loading) {
     return (
@@ -159,7 +173,7 @@ export function ReviewQueue() {
           <p className="text-sm text-muted-foreground mt-2">Loading review queue...</p>
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -167,9 +181,7 @@ export function ReviewQueue() {
       {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">My Review Queue</h1>
-        <p className="text-muted-foreground mt-2">
-          Questions assigned to you for review
-        </p>
+        <p className="text-muted-foreground mt-2">Questions assigned to you for review</p>
       </div>
 
       {/* Stats Cards */}
@@ -181,9 +193,7 @@ export function ReviewQueue() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">{questions.length}</div>
-            <p className="text-xs text-muted-foreground">
-              Questions awaiting review
-            </p>
+            <p className="text-xs text-muted-foreground">Questions awaiting review</p>
           </CardContent>
         </Card>
 
@@ -194,14 +204,16 @@ export function ReviewQueue() {
           </CardHeader>
           <CardContent>
             <div className="text-2xl font-bold">
-              {questions.filter(q => {
-                const daysOld = Math.floor((Date.now() - new Date(q.created_at).getTime()) / (1000 * 60 * 60 * 24))
-                return daysOld > 7
-              }).length}
+              {
+                questions.filter((q) => {
+                  const daysOld = Math.floor(
+                    (Date.now() - new Date(q.created_at).getTime()) / (1000 * 60 * 60 * 24)
+                  );
+                  return daysOld > 7;
+                }).length
+              }
             </div>
-            <p className="text-xs text-muted-foreground">
-              Over 7 days old
-            </p>
+            <p className="text-xs text-muted-foreground">Over 7 days old</p>
           </CardContent>
         </Card>
 
@@ -215,14 +227,16 @@ export function ReviewQueue() {
               {questions.length > 0
                 ? Math.floor(
                     questions.reduce((sum, q) => {
-                      return sum + (Date.now() - new Date(q.created_at).getTime()) / (1000 * 60 * 60 * 24)
+                      return (
+                        sum +
+                        (Date.now() - new Date(q.created_at).getTime()) / (1000 * 60 * 60 * 24)
+                      );
                     }, 0) / questions.length
                   )
-                : 0}d
+                : 0}
+              d
             </div>
-            <p className="text-xs text-muted-foreground">
-              Average wait time
-            </p>
+            <p className="text-xs text-muted-foreground">Average wait time</p>
           </CardContent>
         </Card>
       </div>
@@ -238,13 +252,8 @@ export function ReviewQueue() {
             className="pl-8"
           />
         </div>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={fetchReviewQueue}
-          disabled={loading}
-        >
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? 'animate-spin' : ''}`} />
+        <Button variant="outline" size="sm" onClick={fetchReviewQueue} disabled={loading}>
+          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           Refresh
         </Button>
       </div>
@@ -265,7 +274,9 @@ export function ReviewQueue() {
             {filteredQuestions.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                  {searchTerm ? 'No questions found matching your search' : 'No questions in your review queue'}
+                  {searchTerm
+                    ? "No questions found matching your search"
+                    : "No questions in your review queue"}
                 </TableCell>
               </TableRow>
             ) : (
@@ -305,18 +316,14 @@ export function ReviewQueue() {
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => handlePreview(question)}
-                      >
+                      <Button variant="ghost" size="sm" onClick={() => handlePreview(question)}>
                         <Eye className="h-4 w-4 mr-1" />
                         Preview
                       </Button>
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleReviewAction(question, 'approve')}
+                        onClick={() => handleReviewAction(question, "approve")}
                       >
                         <CheckCircle className="h-4 w-4 mr-1 text-green-600" />
                         Approve
@@ -324,7 +331,7 @@ export function ReviewQueue() {
                       <Button
                         variant="outline"
                         size="sm"
-                        onClick={() => handleReviewAction(question, 'reject')}
+                        onClick={() => handleReviewAction(question, "reject")}
                       >
                         <XCircle className="h-4 w-4 mr-1 text-red-600" />
                         Reject
@@ -358,6 +365,5 @@ export function ReviewQueue() {
         </>
       )}
     </div>
-  )
+  );
 }
-

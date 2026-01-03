@@ -1,105 +1,103 @@
-'use client'
+"use client";
 
-import { QuestionSnapshotPreview } from './question-snapshot-preview'
+import { QuestionSnapshotPreview } from "./question-snapshot-preview";
 
 interface QuestionVersion {
-  id: string
-  question_id: string
-  version_major: number
-  version_minor: number
-  version_patch: number
-  version_string: string
-  update_type: string
-  change_summary?: string
-  question_snapshot: unknown
-  created_by: string
-  created_at: string
+  id: string;
+  question_id: string;
+  version_major: number;
+  version_minor: number;
+  version_patch: number;
+  version_string: string;
+  update_type: string;
+  change_summary?: string;
+  question_snapshot: unknown;
+  created_by: string;
+  created_at: string;
   creator?: {
-    first_name: string
-    last_name: string
-  }
+    first_name: string;
+    last_name: string;
+  };
 }
 
 interface VersionComparisonViewProps {
-  currentVersion: QuestionVersion
-  previousVersion: QuestionVersion
+  currentVersion: QuestionVersion;
+  previousVersion: QuestionVersion;
 }
 
 // Helper function to transform question data for display
 function transformQuestionData(version: QuestionVersion) {
-  const questionData = version.question_snapshot
-  
-  if (!questionData) return null
+  const questionData = version.question_snapshot;
+
+  if (!questionData) return null;
 
   // Transform the data structure to match what the preview component expects
   return {
     ...questionData,
     // Ensure question_options is properly structured
-    question_options: Array.isArray(questionData.answer_options) 
-      ? questionData.answer_options 
+    question_options: Array.isArray(questionData.answer_options)
+      ? questionData.answer_options
       : Array.isArray(questionData.question_options)
-      ? questionData.question_options
-      : [],
+        ? questionData.question_options
+        : [],
     // Ensure question_images is properly structured
-    question_images: Array.isArray(questionData.question_images) 
-      ? questionData.question_images 
+    question_images: Array.isArray(questionData.question_images)
+      ? questionData.question_images
       : [],
     // Ensure categories is properly structured
-    categories: Array.isArray(questionData.categories) 
-      ? questionData.categories 
-      : []
-  }
+    categories: Array.isArray(questionData.categories) ? questionData.categories : [],
+  };
 }
 
 // Utility function to compare two objects and find differences
 function getChanges(oldData: unknown, newData: unknown): string[] {
-  const changes: string[] = []
+  const changes: string[] = [];
 
-  if (!oldData || !newData) return changes
+  if (!oldData || !newData) return changes;
 
   // Compare basic fields
-  const fieldsToCompare = ['title', 'stem', 'difficulty', 'teaching_point', 'question_references']
+  const fieldsToCompare = ["title", "stem", "difficulty", "teaching_point", "question_references"];
 
-  fieldsToCompare.forEach(field => {
+  fieldsToCompare.forEach((field) => {
     if (oldData[field] !== newData[field]) {
-      changes.push(`${field.replace('_', ' ')} changed`)
+      changes.push(`${field.replace("_", " ")} changed`);
     }
-  })
+  });
 
   // Compare answer options
-  const oldOptions = oldData.answer_options || []
-  const newOptions = newData.answer_options || []
+  const oldOptions = oldData.answer_options || [];
+  const newOptions = newData.answer_options || [];
 
   if (oldOptions.length !== newOptions.length) {
-    changes.push(`Number of answer options changed (${oldOptions.length} → ${newOptions.length})`)
+    changes.push(`Number of answer options changed (${oldOptions.length} → ${newOptions.length})`);
   } else {
     oldOptions.forEach((oldOption: unknown, index: number) => {
-      const newOption = newOptions[index]
+      const newOption = newOptions[index];
       if (oldOption?.text !== newOption?.text) {
-        changes.push(`Answer option ${index + 1} text changed`)
+        changes.push(`Answer option ${index + 1} text changed`);
       }
       if (oldOption?.is_correct !== newOption?.is_correct) {
-        changes.push(`Answer option ${index + 1} correctness changed`)
+        changes.push(`Answer option ${index + 1} correctness changed`);
       }
-    })
+    });
   }
 
   // Compare images
-  const oldImages = oldData.question_images || []
-  const newImages = newData.question_images || []
+  const oldImages = oldData.question_images || [];
+  const newImages = newData.question_images || [];
 
   if (oldImages.length !== newImages.length) {
-    changes.push(`Number of images changed (${oldImages.length} → ${newImages.length})`)
+    changes.push(`Number of images changed (${oldImages.length} → ${newImages.length})`);
   }
 
-  return changes
+  return changes;
 }
 
 export function VersionComparisonView({
   currentVersion,
-  previousVersion
+  previousVersion,
 }: VersionComparisonViewProps) {
-  const changes = getChanges(previousVersion.question_snapshot, currentVersion.question_snapshot)
+  const changes = getChanges(previousVersion.question_snapshot, currentVersion.question_snapshot);
 
   return (
     <div className="space-y-6">
@@ -146,5 +144,5 @@ export function VersionComparisonView({
         </div>
       </div>
     </div>
-  )
+  );
 }

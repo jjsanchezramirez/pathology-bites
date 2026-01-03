@@ -2,12 +2,12 @@
 // Based on the professional template used for auth emails
 
 interface EmailTemplateProps {
-  title: string
-  preheaderText: string
-  content: string
-  buttonText?: string
-  buttonUrl?: string
-  footerText?: string
+  title: string;
+  preheaderText: string;
+  content: string;
+  buttonText?: string;
+  buttonUrl?: string;
+  footerText?: string;
 }
 
 export function createEmailTemplate({
@@ -16,9 +16,8 @@ export function createEmailTemplate({
   content,
   buttonText,
   buttonUrl,
-  footerText
+  footerText,
 }: EmailTemplateProps): { html: string; text: string } {
-  
   const html = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
@@ -118,7 +117,9 @@ export function createEmailTemplate({
                   ${content}
                 </div>
                 
-                ${buttonText && buttonUrl ? `
+                ${
+                  buttonText && buttonUrl
+                    ? `
                 <!-- Button : BEGIN -->
                 <table role="presentation" cellspacing="0" cellpadding="0" border="0" align="center" style="margin: auto;">
                   <tr>
@@ -132,11 +133,15 @@ export function createEmailTemplate({
                   </tr>
                 </table>
                 <!-- Button : END -->
-                ` : ''}
+                `
+                    : ""
+                }
                 
               </td>
             </tr>
-            ${footerText ? `
+            ${
+              footerText
+                ? `
             <tr>
               <td style="padding: 25px 40px 40px; text-align: center; font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif; font-size: 14px; line-height: 20px; color: #5BA4A4;">
                 <p style="margin: 0;">
@@ -144,7 +149,9 @@ export function createEmailTemplate({
                 </p>
               </td>
             </tr>
-            ` : ''}
+            `
+                : ""
+            }
           </table>
         </td>
       </tr>
@@ -158,45 +165,45 @@ export function createEmailTemplate({
     <!-- Email Body : END -->
   </center>
 </body>
-</html>`
+</html>`;
 
   // Create plain text version
   const text = `
 ${title}
 
-${content.replace(/<[^>]*>/g, '').replace(/\n\s*\n/g, '\n\n')}
+${content.replace(/<[^>]*>/g, "").replace(/\n\s*\n/g, "\n\n")}
 
-${buttonText && buttonUrl ? `${buttonText}: ${buttonUrl}\n\n` : ''}
+${buttonText && buttonUrl ? `${buttonText}: ${buttonUrl}\n\n` : ""}
 
-${footerText || ''}
+${footerText || ""}
 
 ---
 Pathology Bites
 https://pathologybites.com
-  `.trim()
+  `.trim();
 
-  return { html, text }
+  return { html, text };
 }
 
 // Contact form notification email (sent to admin)
 export function createContactNotificationEmail(data: {
-  firstName: string
-  lastName: string
-  email: string
-  organization?: string
-  requestType: string
-  inquiry: string
+  firstName: string;
+  lastName: string;
+  email: string;
+  organization?: string;
+  requestType: string;
+  inquiry: string;
 }) {
   const content = `
     <p style="margin: 0 0 20px; font-size: 16px; line-height: 26px; color: #6b7280;">
-      You have received a new ${data.requestType === 'general' ? 'general inquiry' : 'technical support request'} through the Pathology Bites contact form.
+      You have received a new ${data.requestType === "general" ? "general inquiry" : "technical support request"} through the Pathology Bites contact form.
     </p>
 
     <div style="background-color: #f5f5f5; padding: 20px; border-radius: 12px; margin: 20px 0;">
       <p style="margin: 0 0 8px; font-size: 13px; color: #6b7280;"><strong>Name:</strong> ${data.firstName} ${data.lastName}</p>
       <p style="margin: 0 0 8px; font-size: 13px; color: #6b7280;"><strong>Email:</strong> ${data.email}</p>
-      ${data.organization ? `<p style="margin: 0 0 8px; font-size: 13px; color: #6b7280;"><strong>Organization:</strong> ${data.organization}</p>` : ''}
-      <p style="margin: 0 0 16px; font-size: 13px; color: #6b7280;"><strong>Request Type:</strong> ${data.requestType === 'general' ? 'General Inquiry' : 'Technical Support'}</p>
+      ${data.organization ? `<p style="margin: 0 0 8px; font-size: 13px; color: #6b7280;"><strong>Organization:</strong> ${data.organization}</p>` : ""}
+      <p style="margin: 0 0 16px; font-size: 13px; color: #6b7280;"><strong>Request Type:</strong> ${data.requestType === "general" ? "General Inquiry" : "Technical Support"}</p>
 
       <div style="border-top: 1px solid #e5e7eb; padding-top: 16px;">
         <p style="margin: 0; font-size: 13px; line-height: 20px; color: #374151; white-space: pre-wrap;">${data.inquiry}</p>
@@ -206,25 +213,25 @@ export function createContactNotificationEmail(data: {
     <p style="margin: 20px 0 0; font-size: 14px; line-height: 20px; color: #6b7280;">
       You can respond to this inquiry directly from the admin panel or by replying to this email.
     </p>
-  `
+  `;
 
   return createEmailTemplate({
-    title: 'New Contact Form Submission',
+    title: "New Contact Form Submission",
     preheaderText: `New ${data.requestType} inquiry from ${data.firstName} ${data.lastName}`,
     content,
-    buttonText: 'View in Admin Panel',
-    buttonUrl: 'https://pathologybites.com/admin/inquiries',
-    footerText: 'This notification was sent because you are an administrator of Pathology Bites.'
-  })
+    buttonText: "View in Admin Panel",
+    buttonUrl: "https://pathologybites.com/admin/inquiries",
+    footerText: "This notification was sent because you are an administrator of Pathology Bites.",
+  });
 }
 
 // Admin response email (sent to user)
 export function createAdminResponseEmail(data: {
-  firstName: string
-  lastName: string
-  requestType: string
-  originalInquiry: string
-  response: string
+  firstName: string;
+  lastName: string;
+  requestType: string;
+  originalInquiry: string;
+  response: string;
 }) {
   const content = `
     <p style="margin: 0 0 20px; font-size: 16px; line-height: 26px; color: #6b7280;">
@@ -232,7 +239,7 @@ export function createAdminResponseEmail(data: {
     </p>
 
     <p style="margin: 0 0 25px; font-size: 16px; line-height: 26px; color: #6b7280;">
-      Thank you for contacting Pathology Bites. We've reviewed your ${data.requestType === 'general' ? 'inquiry' : 'technical support request'} and have a response for you.
+      Thank you for contacting Pathology Bites. We've reviewed your ${data.requestType === "general" ? "inquiry" : "technical support request"} and have a response for you.
     </p>
 
     <div style="margin: 25px 0; padding: 20px 0; border-top: 2px solid #5BA4A4; border-bottom: 1px solid #e5e7eb;">
@@ -251,27 +258,31 @@ export function createAdminResponseEmail(data: {
       Best regards,<br>
       <strong>The Pathology Bites Team</strong>
     </p>
-  `
+  `;
 
   return createEmailTemplate({
-    title: `Re: Your ${data.requestType === 'general' ? 'General' : 'Technical Support'} Inquiry`,
+    title: `Re: Your ${data.requestType === "general" ? "General" : "Technical Support"} Inquiry`,
     preheaderText: `Response to your inquiry from the Pathology Bites team`,
     content,
-    buttonText: 'Visit Pathology Bites',
-    buttonUrl: 'https://pathologybites.com',
-    footerText: 'Thank you for using Pathology Bites. We\'re here to support your pathology learning journey.'
-  })
+    buttonText: "Visit Pathology Bites",
+    buttonUrl: "https://pathologybites.com",
+    footerText:
+      "Thank you for using Pathology Bites. We're here to support your pathology learning journey.",
+  });
 }
 
 // Waitlist announcement email template
 interface WaitlistAnnouncementData {
-  subject: string
-  message: string
-  buttonText?: string
-  buttonUrl?: string
+  subject: string;
+  message: string;
+  buttonText?: string;
+  buttonUrl?: string;
 }
 
-export function createWaitlistAnnouncementEmail(data: WaitlistAnnouncementData): { html: string; text: string } {
+export function createWaitlistAnnouncementEmail(data: WaitlistAnnouncementData): {
+  html: string;
+  text: string;
+} {
   const content = `
     <p style="margin: 0 0 20px; font-size: 16px; line-height: 26px; color: #374151;">
       Hello from the Pathology Bites team!
@@ -285,14 +296,15 @@ export function createWaitlistAnnouncementEmail(data: WaitlistAnnouncementData):
       Thank you for your patience and interest in Pathology Bites!<br>
       <strong>The Pathology Bites Team</strong>
     </p>
-  `
+  `;
 
   return createEmailTemplate({
     title: data.subject,
-    preheaderText: 'Update from the Pathology Bites team',
+    preheaderText: "Update from the Pathology Bites team",
     content,
     buttonText: data.buttonText,
     buttonUrl: data.buttonUrl,
-    footerText: 'You received this email because you signed up for our waitlist. If you no longer wish to receive updates, please contact us.'
-  })
+    footerText:
+      "You received this email because you signed up for our waitlist. If you no longer wish to receive updates, please contact us.",
+  });
 }

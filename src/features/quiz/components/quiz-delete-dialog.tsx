@@ -1,4 +1,4 @@
-'use client'
+"use client";
 
 import {
   Dialog,
@@ -7,17 +7,17 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog'
-import { Button } from '@/shared/components/ui/button'
-import { Trash2, RefreshCw } from 'lucide-react'
-import { type QuizSessionListItem } from './quiz-card'
+} from "@/shared/components/ui/dialog";
+import { Button } from "@/shared/components/ui/button";
+import { Trash2, RefreshCw } from "lucide-react";
+import { type QuizSessionListItem } from "./quiz-card";
 
 interface QuizDeleteDialogProps {
-  open: boolean
-  quiz: QuizSessionListItem | null
-  isDeleting: boolean
-  onOpenChange: (open: boolean) => void
-  onConfirm: () => void
+  open: boolean;
+  quiz: QuizSessionListItem | null;
+  isDeleting: boolean;
+  onOpenChange: (open: boolean) => void;
+  onConfirm: () => void;
 }
 
 export function QuizDeleteDialog({
@@ -25,7 +25,7 @@ export function QuizDeleteDialog({
   quiz,
   isDeleting,
   onOpenChange,
-  onConfirm
+  onConfirm,
 }: QuizDeleteDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -40,18 +40,10 @@ export function QuizDeleteDialog({
           </DialogDescription>
         </DialogHeader>
         <DialogFooter>
-          <Button
-            variant="outline"
-            onClick={() => onOpenChange(false)}
-            disabled={isDeleting}
-          >
+          <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isDeleting}>
             Cancel
           </Button>
-          <Button
-            variant="destructive"
-            onClick={onConfirm}
-            disabled={isDeleting}
-          >
+          <Button variant="destructive" onClick={onConfirm} disabled={isDeleting}>
             {isDeleting ? (
               <>
                 <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
@@ -67,6 +59,5 @@ export function QuizDeleteDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

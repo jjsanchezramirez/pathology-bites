@@ -1,9 +1,9 @@
 // src/app/privacy/page.tsx
-'use client'
+"use client";
 
-import { PublicHero } from "@/shared/components/common/public-hero"
-import { PolicyCard } from "@/shared/components/common/policy-card"
-import { PublicPageCTA } from "@/shared/components/common/public-page-cta"
+import { PublicHero } from "@/shared/components/common/public-hero";
+import { PolicyCard } from "@/shared/components/common/policy-card";
+import { PublicPageCTA } from "@/shared/components/common/public-page-cta";
 
 export default function PrivacyPage() {
   return (
@@ -40,13 +40,13 @@ export default function PrivacyPage() {
 
             <PolicyCard title="Data Protection">
               <p>
-                All personal information is stored in a secure computing environment protected by firewalls
-                and encryption. Access is strictly controlled and limited to essential personnel who are
-                bound by confidentiality agreements.
+                All personal information is stored in a secure computing environment protected by
+                firewalls and encryption. Access is strictly controlled and limited to essential
+                personnel who are bound by confidentiality agreements.
               </p>
               <p>
-                We implement industry-standard security measures to protect your data from unauthorized
-                access, disclosure, alteration, and destruction.
+                We implement industry-standard security measures to protect your data from
+                unauthorized access, disclosure, alteration, and destruction.
               </p>
             </PolicyCard>
 
@@ -71,25 +71,26 @@ export default function PrivacyPage() {
             <PolicyCard title="Updates to This Policy">
               <p>
                 We may update this privacy policy to reflect changes in our practices or legal
-                requirements. We'll notify you of any significant changes via email or through
-                the platform.
+                requirements. We'll notify you of any significant changes via email or through the
+                platform.
               </p>
             </PolicyCard>
 
             <PolicyCard title="Third-Party Websites">
               <p>
-                PathologyBites may provide links to third-party websites, including educational repositories,
-                virtual slide collections, and other external resources. We are not responsible for the
-                privacy practices, content, or security of these external websites.
+                PathologyBites may provide links to third-party websites, including educational
+                repositories, virtual slide collections, and other external resources. We are not
+                responsible for the privacy practices, content, or security of these external
+                websites.
               </p>
               <p>
-                When you access third-party websites through our platform, you are subject to their respective
-                privacy policies and terms of service. We encourage you to review the privacy policies of any
-                external websites you visit through our links.
+                When you access third-party websites through our platform, you are subject to their
+                respective privacy policies and terms of service. We encourage you to review the
+                privacy policies of any external websites you visit through our links.
               </p>
               <p>
-                We do not control, endorse, or assume responsibility for the content, privacy policies, or
-                practices of any third-party websites or services.
+                We do not control, endorse, or assume responsibility for the content, privacy
+                policies, or practices of any third-party websites or services.
               </p>
             </PolicyCard>
           </div>
@@ -107,5 +108,5 @@ export default function PrivacyPage() {
         buttonHref="/contact"
       />
     </div>
-  )
+  );
 }

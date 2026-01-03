@@ -1,19 +1,22 @@
 // src/components/questions/searchable-tags-selector.tsx
-'use client';
+"use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badge";
 import { Checkbox } from "@/shared/components/ui/checkbox";
+import { Popover, PopoverContent, PopoverTrigger } from "@/shared/components/ui/popover";
 import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/shared/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/shared/components/ui/command";
-import { Plus, X, Tag, Search } from 'lucide-react';
-import { useTags } from '@/features/questions/hooks/use-tags';
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from "@/shared/components/ui/command";
+import { Plus, X, Tag, Search } from "lucide-react";
+import { useTags } from "@/features/questions/hooks/use-tags";
 
 interface SearchableTagsSelectorProps {
   selectedTagIds: string[];
@@ -22,11 +25,11 @@ interface SearchableTagsSelectorProps {
 
 export function SearchableTagsSelector({
   selectedTagIds,
-  onTagsChange
+  onTagsChange,
 }: SearchableTagsSelectorProps) {
-  const [newTagName, setNewTagName] = useState('');
+  const [newTagName, setNewTagName] = useState("");
   const [showTagInput, setShowTagInput] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [isOpen, setIsOpen] = useState(false);
 
   const { tags, createTag } = useTags();
@@ -34,14 +37,12 @@ export function SearchableTagsSelector({
   // Filter tags based on search term
   const filteredTags = useMemo(() => {
     if (!searchTerm) return tags;
-    return tags.filter(tag =>
-      tag.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+    return tags.filter((tag) => tag.name.toLowerCase().includes(searchTerm.toLowerCase()));
   }, [tags, searchTerm]);
 
   const handleTagToggle = (tagId: string) => {
     if (selectedTagIds.includes(tagId)) {
-      onTagsChange(selectedTagIds.filter(id => id !== tagId));
+      onTagsChange(selectedTagIds.filter((id) => id !== tagId));
     } else {
       onTagsChange([...selectedTagIds, tagId]);
     }
@@ -53,14 +54,14 @@ export function SearchableTagsSelector({
     try {
       const newTag = await createTag(newTagName.trim());
       onTagsChange([...selectedTagIds, newTag.id]);
-      setNewTagName('');
+      setNewTagName("");
       setShowTagInput(false);
     } catch {
       // Error handled in hook
     }
   };
 
-  const selectedTags = tags.filter(tag => selectedTagIds.includes(tag.id));
+  const selectedTags = tags.filter((tag) => selectedTagIds.includes(tag.id));
 
   return (
     <div className="space-y-3">
@@ -75,7 +76,7 @@ export function SearchableTagsSelector({
               variant="outline"
               size="sm"
               onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
+                if (e.key === "Enter" || e.key === " ") {
                   e.preventDefault();
                   setIsOpen(!isOpen);
                 }
@@ -107,7 +108,7 @@ export function SearchableTagsSelector({
                         onClick={() => {
                           setNewTagName(searchTerm);
                           setShowTagInput(true);
-                          setSearchTerm('');
+                          setSearchTerm("");
                         }}
                       >
                         <Plus className="h-4 w-4 mr-1" />
@@ -127,13 +128,13 @@ export function SearchableTagsSelector({
                           value={newTagName}
                           onChange={(e) => setNewTagName(e.target.value)}
                           onKeyDown={(e) => {
-                            if (e.key === 'Enter') {
+                            if (e.key === "Enter") {
                               e.preventDefault();
                               handleCreateTag();
                             }
-                            if (e.key === 'Escape') {
+                            if (e.key === "Escape") {
                               setShowTagInput(false);
-                              setNewTagName('');
+                              setNewTagName("");
                             }
                           }}
                           autoFocus
@@ -149,7 +150,7 @@ export function SearchableTagsSelector({
                         variant="outline"
                         onClick={() => {
                           setShowTagInput(false);
-                          setNewTagName('');
+                          setNewTagName("");
                         }}
                         className="w-full"
                       >

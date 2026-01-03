@@ -1,24 +1,24 @@
 // src/app/(admin)/admin/inquiries/page.tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { InquiriesTable } from '@/features/inquiries/components/inquiries-table'
-import { InquiryStatistics } from '@/features/inquiries/components/inquiry-statistics'
+import { useState } from "react";
+import { InquiriesTable } from "@/features/inquiries/components/inquiries-table";
+import { InquiryStatistics } from "@/features/inquiries/components/inquiry-statistics";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
-  CardTitle
-} from "@/shared/components/ui/card"
+  CardTitle,
+} from "@/shared/components/ui/card";
 
 export default function InquiriesPage() {
-  const [refreshTrigger, setRefreshTrigger] = useState(0)
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
   const handleInquiriesChange = (newTrigger: number) => {
     // Update refresh trigger from table to update statistics
-    setRefreshTrigger(newTrigger)
-  }
+    setRefreshTrigger(newTrigger);
+  };
 
   return (
     <div className="space-y-6">
@@ -45,5 +45,5 @@ export default function InquiriesPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

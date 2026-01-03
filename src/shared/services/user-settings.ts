@@ -8,61 +8,61 @@ import {
   type QuizSettings,
   type NotificationSettings,
   type UISettings,
-} from '@/shared/constants/user-settings-defaults'
+} from "@/shared/constants/user-settings-defaults";
 
-export type { QuizSettings, NotificationSettings, UISettings }
+export type { QuizSettings, NotificationSettings, UISettings };
 
 export interface UserSettings {
-  quiz_settings: QuizSettings
-  notification_settings: NotificationSettings
-  ui_settings: UISettings
-  created_at: string
-  updated_at: string
+  quiz_settings: QuizSettings;
+  notification_settings: NotificationSettings;
+  ui_settings: UISettings;
+  created_at: string;
+  updated_at: string;
 }
 
-export type SettingsSection = 'quiz_settings' | 'notification_settings' | 'ui_settings'
+export type SettingsSection = "quiz_settings" | "notification_settings" | "ui_settings";
 
 // Mapping between old and new question types for backward compatibility
 const _QUESTION_TYPE_MAPPING = {
   // Old -> New
-  'incorrect': 'needsReview' as const,
-  'correct': 'mastered' as const,
+  incorrect: "needsReview" as const,
+  correct: "mastered" as const,
   // New -> Old (for saving to database)
-  'needsReview': 'incorrect' as const,
-  'mastered': 'correct' as const,
+  needsReview: "incorrect" as const,
+  mastered: "correct" as const,
   // Unchanged
-  'all': 'all' as const,
-  'unused': 'unused' as const,
-  'marked': 'marked' as const
-}
+  all: "all" as const,
+  unused: "unused" as const,
+  marked: "marked" as const,
+};
 
-function mapQuestionTypeFromDatabase(dbType: string): QuizSettings['default_question_type'] {
+function mapQuestionTypeFromDatabase(dbType: string): QuizSettings["default_question_type"] {
   // Map old database types to new frontend types
   switch (dbType) {
-    case 'incorrect':
-      return 'needsReview'
-    case 'correct':
-      return 'mastered'
+    case "incorrect":
+      return "needsReview";
+    case "correct":
+      return "mastered";
     default:
-      return dbType as QuizSettings['default_question_type']
+      return dbType as QuizSettings["default_question_type"];
   }
 }
 
-function mapQuestionTypeToDatabase(frontendType: QuizSettings['default_question_type']): string {
+function mapQuestionTypeToDatabase(frontendType: QuizSettings["default_question_type"]): string {
   // Map new frontend types to old database types
   switch (frontendType) {
-    case 'needsReview':
-      return 'incorrect'
-    case 'mastered':
-      return 'correct'
+    case "needsReview":
+      return "incorrect";
+    case "mastered":
+      return "correct";
     default:
-      return frontendType
+      return frontendType;
   }
 }
 
 class UserSettingsService {
-  private baseUrl = '/api/user/settings'
-  private csrfToken: string | null = null
+  private baseUrl = "/api/user/settings";
+  private csrfToken: string | null = null;
 
   /**
    * Get CSRF token for authenticated requests
@@ -70,33 +70,33 @@ class UserSettingsService {
   private async getCSRFToken(): Promise<string> {
     // Return cached token if available
     if (this.csrfToken) {
-      return this.csrfToken
+      return this.csrfToken;
     }
 
     try {
-      const response = await fetch('/api/public/csrf-token', {
-        method: 'GET',
-        credentials: 'same-origin',
+      const response = await fetch("/api/public/csrf-token", {
+        method: "GET",
+        credentials: "same-origin",
         headers: {
-          'Accept': 'application/json',
-        }
-      })
+          Accept: "application/json",
+        },
+      });
 
       if (!response.ok) {
-        throw new Error(`Failed to fetch CSRF token: ${response.status}`)
+        throw new Error(`Failed to fetch CSRF token: ${response.status}`);
       }
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!data.success || !data.token) {
-        throw new Error('Invalid CSRF token response')
+        throw new Error("Invalid CSRF token response");
       }
 
-      this.csrfToken = data.token
-      return data.token
+      this.csrfToken = data.token;
+      return data.token;
     } catch (error) {
-      console.error('CSRF token fetch error:', error)
-      throw new Error('Failed to get CSRF token')
+      console.error("CSRF token fetch error:", error);
+      throw new Error("Failed to get CSRF token");
     }
   }
 
@@ -106,57 +106,63 @@ class UserSettingsService {
   async getUserSettings(): Promise<UserSettings> {
     try {
       const response = await fetch(this.baseUrl, {
-        method: 'GET',
+        method: "GET",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
-        credentials: 'include',
-      })
+        credentials: "include",
+      });
 
       if (!response.ok) {
         // Check if response is JSON before trying to parse it
-        const contentType = response.headers.get('content-type')
-        if (contentType && contentType.includes('application/json')) {
-          const error = await response.json()
+        const contentType = response.headers.get("content-type");
+        if (contentType && contentType.includes("application/json")) {
+          const error = await response.json();
           // If user not found (404), they may have been deleted - redirect to login
           if (response.status === 404) {
-            if (typeof window !== 'undefined') {
-              window.location.href = '/login'
+            if (typeof window !== "undefined") {
+              window.location.href = "/login";
             }
-            throw new Error('User not found')
+            throw new Error("User not found");
           }
-          throw new Error(error.error || 'Failed to fetch user settings')
+          throw new Error(error.error || "Failed to fetch user settings");
         } else {
           // Response is not JSON (likely HTML error page)
-          console.error('User settings API returned non-JSON response:', response.status, response.statusText)
+          console.error(
+            "User settings API returned non-JSON response:",
+            response.status,
+            response.statusText
+          );
           if (response.status === 401 || response.status === 403) {
-            if (typeof window !== 'undefined') {
-              window.location.href = '/login'
+            if (typeof window !== "undefined") {
+              window.location.href = "/login";
             }
-            throw new Error('Authentication required')
+            throw new Error("Authentication required");
           }
-          throw new Error(`Server error: ${response.status} ${response.statusText}`)
+          throw new Error(`Server error: ${response.status} ${response.statusText}`);
         }
       }
 
       // Verify response is JSON before parsing
-      const contentType = response.headers.get('content-type')
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error('Invalid response format from user settings API')
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error("Invalid response format from user settings API");
       }
 
-      const result = await response.json()
-      const data = result.data
+      const result = await response.json();
+      const data = result.data;
 
       // Map question type from database format to frontend format
       if (data?.quiz_settings?.default_question_type) {
-        data.quiz_settings.default_question_type = mapQuestionTypeFromDatabase(data.quiz_settings.default_question_type)
+        data.quiz_settings.default_question_type = mapQuestionTypeFromDatabase(
+          data.quiz_settings.default_question_type
+        );
       }
 
-      return data
+      return data;
     } catch (fetchError) {
-      console.error('Error in getUserSettings:', fetchError)
-      throw fetchError
+      console.error("Error in getUserSettings:", fetchError);
+      throw fetchError;
     }
   }
 
@@ -165,82 +171,88 @@ class UserSettingsService {
    */
   async updateSettingsSection<T extends SettingsSection>(
     section: T,
-    settings: T extends 'quiz_settings' ? Partial<QuizSettings> :
-              T extends 'notification_settings' ? Partial<NotificationSettings> :
-              T extends 'ui_settings' ? Partial<UISettings> : never
+    settings: T extends "quiz_settings"
+      ? Partial<QuizSettings>
+      : T extends "notification_settings"
+        ? Partial<NotificationSettings>
+        : T extends "ui_settings"
+          ? Partial<UISettings>
+          : never
   ): Promise<unknown> {
     // Map question type to database format if updating quiz settings
-    let mappedSettings = settings
-    if (section === 'quiz_settings' && settings && typeof settings === 'object') {
-      const quizSettings = settings as Partial<QuizSettings>
+    let mappedSettings = settings;
+    if (section === "quiz_settings" && settings && typeof settings === "object") {
+      const quizSettings = settings as Partial<QuizSettings>;
       if (quizSettings.default_question_type) {
         mappedSettings = {
           ...settings,
-          default_question_type: mapQuestionTypeToDatabase(quizSettings.default_question_type)
-        } as typeof settings
+          default_question_type: mapQuestionTypeToDatabase(quizSettings.default_question_type),
+        } as typeof settings;
       }
     }
 
     // Get CSRF token for the request
-    const csrfToken = await this.getCSRFToken()
+    const csrfToken = await this.getCSRFToken();
 
     const response = await fetch(this.baseUrl, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: {
-        'Content-Type': 'application/json',
-        'x-csrf-token': csrfToken,
+        "Content-Type": "application/json",
+        "x-csrf-token": csrfToken,
       },
-      credentials: 'include',
+      credentials: "include",
       body: JSON.stringify({
         section,
-        settings: mappedSettings
-      })
-    })
+        settings: mappedSettings,
+      }),
+    });
 
     if (!response.ok) {
-      let error
-      let responseText = ''
+      let error;
+      let responseText = "";
       try {
-        responseText = await response.text()
-        error = responseText ? JSON.parse(responseText) : {}
+        responseText = await response.text();
+        error = responseText ? JSON.parse(responseText) : {};
       } catch {
-        error = { error: 'Failed to parse error response', rawResponse: responseText }
+        error = { error: "Failed to parse error response", rawResponse: responseText };
       }
-      console.error('[UserSettings] Update failed:', {
+      console.error("[UserSettings] Update failed:", {
         status: response.status,
         statusText: response.statusText,
         error: error,
         section,
-        settings: mappedSettings
-      })
-      console.error('[UserSettings] Full error object:', JSON.stringify(error, null, 2))
-      console.error('[UserSettings] Raw response:', responseText)
-      throw new Error(error.error || error.details || 'Failed to update user settings')
+        settings: mappedSettings,
+      });
+      console.error("[UserSettings] Full error object:", JSON.stringify(error, null, 2));
+      console.error("[UserSettings] Raw response:", responseText);
+      throw new Error(error.error || error.details || "Failed to update user settings");
     }
 
-    const result = await response.json()
-    return result.data
+    const result = await response.json();
+    return result.data;
   }
 
   /**
    * Update quiz settings specifically
    */
   async updateQuizSettings(settings: Partial<QuizSettings>): Promise<QuizSettings> {
-    return this.updateSettingsSection('quiz_settings', settings)
+    return this.updateSettingsSection("quiz_settings", settings);
   }
 
   /**
    * Update notification settings specifically
    */
-  async updateNotificationSettings(settings: Partial<NotificationSettings>): Promise<NotificationSettings> {
-    return this.updateSettingsSection('notification_settings', settings)
+  async updateNotificationSettings(
+    settings: Partial<NotificationSettings>
+  ): Promise<NotificationSettings> {
+    return this.updateSettingsSection("notification_settings", settings);
   }
 
   /**
    * Update UI settings specifically
    */
   async updateUISettings(settings: Partial<UISettings>): Promise<UISettings> {
-    return this.updateSettingsSection('ui_settings', settings)
+    return this.updateSettingsSection("ui_settings", settings);
   }
 
   /**
@@ -248,11 +260,11 @@ class UserSettingsService {
    */
   async getQuizSettings(): Promise<QuizSettings> {
     try {
-      const userSettings = await this.getUserSettings()
-      return userSettings.quiz_settings
+      const userSettings = await this.getUserSettings();
+      return userSettings.quiz_settings;
     } catch (error) {
-      console.error('Error fetching quiz settings, using defaults:', error)
-      return DEFAULT_QUIZ_SETTINGS
+      console.error("Error fetching quiz settings, using defaults:", error);
+      return DEFAULT_QUIZ_SETTINGS;
     }
   }
 
@@ -261,11 +273,11 @@ class UserSettingsService {
    */
   async getNotificationSettings(): Promise<NotificationSettings> {
     try {
-      const userSettings = await this.getUserSettings()
-      return userSettings.notification_settings
+      const userSettings = await this.getUserSettings();
+      return userSettings.notification_settings;
     } catch (error) {
-      console.error('Error fetching notification settings, using defaults:', error)
-      return DEFAULT_NOTIFICATION_SETTINGS
+      console.error("Error fetching notification settings, using defaults:", error);
+      return DEFAULT_NOTIFICATION_SETTINGS;
     }
   }
 
@@ -274,10 +286,10 @@ class UserSettingsService {
    */
   async markWelcomeMessageSeen(): Promise<void> {
     try {
-      await this.updateUISettings({ welcome_message_seen: true })
+      await this.updateUISettings({ welcome_message_seen: true });
     } catch (error) {
-      console.error('Error marking welcome message as seen:', error)
-      throw error
+      console.error("Error marking welcome message as seen:", error);
+      throw error;
     }
   }
 
@@ -286,12 +298,12 @@ class UserSettingsService {
    */
   async hasSeenWelcomeMessage(): Promise<boolean> {
     try {
-      const userSettings = await this.getUserSettings()
-      return userSettings.ui_settings.welcome_message_seen ?? false
+      const userSettings = await this.getUserSettings();
+      return userSettings.ui_settings.welcome_message_seen ?? false;
     } catch (error) {
-      console.error('Error checking welcome message status:', error)
+      console.error("Error checking welcome message status:", error);
       // Default to true to avoid showing welcome message on error
-      return true
+      return true;
     }
   }
 
@@ -300,10 +312,10 @@ class UserSettingsService {
    */
   async markSecurityNoticeDismissed(): Promise<void> {
     try {
-      await this.updateUISettings({ security_notice_dismissed: true })
+      await this.updateUISettings({ security_notice_dismissed: true });
     } catch (error) {
-      console.error('Error marking security notice as dismissed:', error)
-      throw error
+      console.error("Error marking security notice as dismissed:", error);
+      throw error;
     }
   }
 
@@ -312,12 +324,12 @@ class UserSettingsService {
    */
   async hasSeenSecurityNotice(): Promise<boolean> {
     try {
-      const userSettings = await this.getUserSettings()
-      return userSettings.ui_settings.security_notice_dismissed ?? false
+      const userSettings = await this.getUserSettings();
+      return userSettings.ui_settings.security_notice_dismissed ?? false;
     } catch (error) {
-      console.error('Error checking security notice status:', error)
+      console.error("Error checking security notice status:", error);
       // Default to true to avoid showing security notice on error
-      return true
+      return true;
     }
   }
 
@@ -326,15 +338,15 @@ class UserSettingsService {
    */
   async getUISettings(): Promise<UISettings> {
     try {
-      const userSettings = await this.getUserSettings()
-      return userSettings.ui_settings
+      const userSettings = await this.getUserSettings();
+      return userSettings.ui_settings;
     } catch (error) {
-      console.error('Error fetching UI settings, using defaults:', error)
-      return DEFAULT_UI_SETTINGS
+      console.error("Error fetching UI settings, using defaults:", error);
+      return DEFAULT_UI_SETTINGS;
     }
   }
 }
 
 // Export singleton instance
-export const userSettingsService = new UserSettingsService()
-export default userSettingsService
+export const userSettingsService = new UserSettingsService();
+export default userSettingsService;

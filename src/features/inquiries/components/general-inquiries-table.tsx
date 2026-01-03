@@ -1,8 +1,8 @@
 // src/features/inquiries/components/general-inquiries-table.tsx
-'use client'
+"use client";
 
-import { useState, useEffect } from 'react'
-import { createClient } from '@/shared/services/client'
+import { useState, useEffect } from "react";
+import { createClient } from "@/shared/services/client";
 import {
   Table,
   TableBody,
@@ -10,236 +10,243 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/shared/components/ui/table"
-import { Button } from "@/shared/components/ui/button"
+} from "@/shared/components/ui/table";
+import { Button } from "@/shared/components/ui/button";
 
-import { Input } from "@/shared/components/ui/input"
+import { Input } from "@/shared/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/shared/components/ui/select"
-import { Search, MessageSquare, Trash2 } from 'lucide-react'
-import { Checkbox } from '@/shared/components/ui/checkbox'
-import { InquiryDetailsDialog } from './inquiry-details-dialog'
-import { InquiryActionsDropdown } from './inquiry-actions-dropdown'
-import { InquiryStatusBadge, getStatusSortOrder } from './inquiry-status-badge'
-import { toast } from '@/shared/utils/toast'
-import { useNotificationRefresh } from '@/shared/contexts/notification-refresh-context'
+} from "@/shared/components/ui/select";
+import { Search, MessageSquare, Trash2 } from "lucide-react";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import { InquiryDetailsDialog } from "./inquiry-details-dialog";
+import { InquiryActionsDropdown } from "./inquiry-actions-dropdown";
+import { InquiryStatusBadge, getStatusSortOrder } from "./inquiry-status-badge";
+import { toast } from "@/shared/utils/toast";
+import { useNotificationRefresh } from "@/shared/contexts/notification-refresh-context";
 
 interface Inquiry {
-  id: string
-  request_type: string
-  first_name: string
-  last_name: string
-  organization: string | null
-  email: string
-  inquiry: string
-  status: string
-  created_at: string
-  updated_at: string
+  id: string;
+  request_type: string;
+  first_name: string;
+  last_name: string;
+  organization: string | null;
+  email: string;
+  inquiry: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
 }
 
 interface GeneralInquiriesTableProps {
-  type: 'general' | 'technical' | 'all'
-  statusFilter?: 'pending' | 'solved' | 'all'
-  onInquiriesChange?: () => void
-  refreshTrigger?: number
+  type: "general" | "technical" | "all";
+  statusFilter?: "pending" | "solved" | "all";
+  onInquiriesChange?: () => void;
+  refreshTrigger?: number;
 }
 
-export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesChange, refreshTrigger }: GeneralInquiriesTableProps) {
-  const [inquiries, setInquiries] = useState<Inquiry[]>([])
-  const [loading, setLoading] = useState(true)
-  const [searchTerm, setSearchTerm] = useState('')
-  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null)
-  const [detailsOpen, setDetailsOpen] = useState(false)
-  const [selectedInquiries, setSelectedInquiries] = useState<string[]>([])
-  const [bulkDeleting, setBulkDeleting] = useState(false)
+export function GeneralInquiriesTable({
+  type,
+  statusFilter = "all",
+  onInquiriesChange,
+  refreshTrigger,
+}: GeneralInquiriesTableProps) {
+  const [inquiries, setInquiries] = useState<Inquiry[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null);
+  const [detailsOpen, setDetailsOpen] = useState(false);
+  const [selectedInquiries, setSelectedInquiries] = useState<string[]>([]);
+  const [bulkDeleting, setBulkDeleting] = useState(false);
 
-  const supabase = createClient()
-  const { refreshNotifications } = useNotificationRefresh()
+  const supabase = createClient();
+  const { refreshNotifications } = useNotificationRefresh();
 
   useEffect(() => {
-    fetchInquiries()
-  }, [type, statusFilter, refreshTrigger, fetchInquiries])
+    fetchInquiries();
+  }, [type, statusFilter, refreshTrigger, fetchInquiries]);
 
   const fetchInquiries = async () => {
     try {
-      setLoading(true)
-      let query = supabase
-        .from('inquiries')
-        .select('*')
+      setLoading(true);
+      let query = supabase.from("inquiries").select("*");
 
       // Apply type filter
-      if (type !== 'all') {
-        query = query.eq('request_type', type)
+      if (type !== "all") {
+        query = query.eq("request_type", type);
       }
 
       // Apply status filter
-      if (statusFilter === 'pending') {
-        query = query.eq('status', 'pending')
-      } else if (statusFilter === 'solved') {
-        query = query.in('status', ['resolved', 'closed'])
-      } else if (statusFilter === 'all') {
+      if (statusFilter === "pending") {
+        query = query.eq("status", "pending");
+      } else if (statusFilter === "solved") {
+        query = query.in("status", ["resolved", "closed"]);
+      } else if (statusFilter === "all") {
         // No additional filter needed - get all statuses
       }
 
-      const { data, error } = await query.order('created_at', { ascending: false })
+      const { data, error } = await query.order("created_at", { ascending: false });
 
       if (error) {
-        console.error('Error fetching inquiries:', error)
-        toast.error(`Failed to load inquiries: ${error.message || 'Unknown error'}`)
-        return
+        console.error("Error fetching inquiries:", error);
+        toast.error(`Failed to load inquiries: ${error.message || "Unknown error"}`);
+        return;
       }
 
-      let inquiries = data || []
+      let inquiries = data || [];
 
       // For "all" tab, sort by status priority: red (delayed) → yellow (pending) → green (resolved)
-      if (type === 'all' && statusFilter === 'all') {
+      if (type === "all" && statusFilter === "all") {
         inquiries = inquiries.sort((a, b) => {
-          const orderA = getStatusSortOrder(a.status, a.created_at)
-          const orderB = getStatusSortOrder(b.status, b.created_at)
+          const orderA = getStatusSortOrder(a.status, a.created_at);
+          const orderB = getStatusSortOrder(b.status, b.created_at);
           if (orderA !== orderB) {
-            return orderA - orderB
+            return orderA - orderB;
           }
           // If same status priority, sort by created_at (newest first)
-          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-        })
+          return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+        });
       }
 
-      setInquiries(inquiries)
+      setInquiries(inquiries);
 
       if (inquiries.length === 0) {
-        console.log(`No inquiries found for type: ${type}, status: ${statusFilter}`)
+        console.log(`No inquiries found for type: ${type}, status: ${statusFilter}`);
       }
     } catch (error) {
-      console.error('Unexpected error fetching inquiries:', error)
-      toast.error(`An unexpected error occurred while loading inquiries`)
+      console.error("Unexpected error fetching inquiries:", error);
+      toast.error(`An unexpected error occurred while loading inquiries`);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const filteredInquiries = inquiries.filter(inquiry => {
-    const matchesSearch = 
+  const filteredInquiries = inquiries.filter((inquiry) => {
+    const matchesSearch =
       inquiry.first_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       inquiry.last_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       inquiry.email.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      inquiry.inquiry.toLowerCase().includes(searchTerm.toLowerCase())
+      inquiry.inquiry.toLowerCase().includes(searchTerm.toLowerCase());
 
-    return matchesSearch
-  })
+    return matchesSearch;
+  });
 
   const _handleViewDetails = (inquiry: Inquiry) => {
-    setSelectedInquiry(inquiry)
-    setDetailsOpen(true)
-  }
+    setSelectedInquiry(inquiry);
+    setDetailsOpen(true);
+  };
 
   const handleReply = (inquiry: Inquiry) => {
-    setSelectedInquiry(inquiry)
-    setDetailsOpen(true)
-  }
+    setSelectedInquiry(inquiry);
+    setDetailsOpen(true);
+  };
 
   const handleStatusUpdate = (inquiryId: string, newStatus: string) => {
-    setInquiries(prev =>
-      prev.map(inquiry =>
+    setInquiries((prev) =>
+      prev.map((inquiry) =>
         inquiry.id === inquiryId
           ? { ...inquiry, status: newStatus, updated_at: new Date().toISOString() }
           : inquiry
       )
-    )
-  }
+    );
+  };
 
   const handleDelete = (inquiryId: string) => {
-    setInquiries(prev => prev.filter(inquiry => inquiry.id !== inquiryId))
-    setSelectedInquiries(prev => prev.filter(id => id !== inquiryId))
-    onInquiriesChange?.()
-  }
+    setInquiries((prev) => prev.filter((inquiry) => inquiry.id !== inquiryId));
+    setSelectedInquiries((prev) => prev.filter((id) => id !== inquiryId));
+    onInquiriesChange?.();
+  };
 
   const handleSelectInquiry = (inquiryId: string, checked: boolean) => {
     if (checked) {
-      setSelectedInquiries(prev => [...prev, inquiryId])
+      setSelectedInquiries((prev) => [...prev, inquiryId]);
     } else {
-      setSelectedInquiries(prev => prev.filter(id => id !== inquiryId))
+      setSelectedInquiries((prev) => prev.filter((id) => id !== inquiryId));
     }
-  }
+  };
 
   const handleSelectAll = (checked: boolean) => {
     if (checked) {
-      setSelectedInquiries(filteredInquiries.map(inquiry => inquiry.id))
+      setSelectedInquiries(filteredInquiries.map((inquiry) => inquiry.id));
     } else {
-      setSelectedInquiries([])
+      setSelectedInquiries([]);
     }
-  }
+  };
 
   const handleBulkDelete = async () => {
-    if (selectedInquiries.length === 0) return
+    if (selectedInquiries.length === 0) return;
 
-    setBulkDeleting(true)
+    setBulkDeleting(true);
     try {
-      const response = await fetch('/api/admin/inquiries/bulk-delete', {
-        method: 'DELETE',
+      const response = await fetch("/api/admin/inquiries/bulk-delete", {
+        method: "DELETE",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ inquiryIds: selectedInquiries }),
-      })
+      });
 
       if (!response.ok) {
-        const errorData = await response.json()
-        throw new Error(errorData.error || 'Failed to delete inquiries')
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete inquiries");
       }
 
-      toast.success(`${selectedInquiries.length} inquiries deleted successfully`)
+      toast.success(`${selectedInquiries.length} inquiries deleted successfully`);
 
       // Remove deleted inquiries from local state
-      setInquiries(prev => prev.filter(inquiry => !selectedInquiries.includes(inquiry.id)))
-      setSelectedInquiries([])
-      onInquiriesChange?.()
-      refreshNotifications()
+      setInquiries((prev) => prev.filter((inquiry) => !selectedInquiries.includes(inquiry.id)));
+      setSelectedInquiries([]);
+      onInquiriesChange?.();
+      refreshNotifications();
     } catch (error) {
-      console.error('Error deleting inquiries:', error)
-      toast.error(error instanceof Error ? error.message : 'Failed to delete inquiries')
+      console.error("Error deleting inquiries:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete inquiries");
     } finally {
-      setBulkDeleting(false)
+      setBulkDeleting(false);
     }
-  }
+  };
 
   const getStatusBadge = (inquiry: Inquiry) => {
-    return <InquiryStatusBadge status={inquiry.status || 'pending'} createdAt={inquiry.created_at} />
-  }
+    return (
+      <InquiryStatusBadge status={inquiry.status || "pending"} createdAt={inquiry.created_at} />
+    );
+  };
 
   const _isOldInquiry = (createdAt: string) => {
-    const inquiryDate = new Date(createdAt)
-    const sevenDaysAgo = new Date()
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)
-    return inquiryDate < sevenDaysAgo
-  }
+    const inquiryDate = new Date(createdAt);
+    const sevenDaysAgo = new Date();
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+    return inquiryDate < sevenDaysAgo;
+  };
 
   const truncateText = (text: string, maxLength: number = 100) => {
-    if (text.length <= maxLength) return text
-    return text.substring(0, maxLength) + '...'
-  }
+    if (text.length <= maxLength) return text;
+    return text.substring(0, maxLength) + "...";
+  };
 
   const getEmptyStateMessage = () => {
-    if (statusFilter === 'pending') {
-      return type === 'all' ? 'No pending inquiries' : `No pending ${type} inquiries`
-    } else if (statusFilter === 'solved') {
-      return 'No solved inquiries'
+    if (statusFilter === "pending") {
+      return type === "all" ? "No pending inquiries" : `No pending ${type} inquiries`;
+    } else if (statusFilter === "solved") {
+      return "No solved inquiries";
     }
-    return `No ${type} inquiries available`
-  }
+    return `No ${type} inquiries available`;
+  };
 
   const getEmptyStateSubMessage = () => {
-    if (statusFilter === 'pending') {
-      return type === 'all' ? 'Pending inquiries will appear here.' : `Pending ${type} inquiries will appear here.`
-    } else if (statusFilter === 'solved') {
-      return 'Solved inquiries will appear here.'
+    if (statusFilter === "pending") {
+      return type === "all"
+        ? "Pending inquiries will appear here."
+        : `Pending ${type} inquiries will appear here.`;
+    } else if (statusFilter === "solved") {
+      return "Solved inquiries will appear here.";
     }
-    return `${type === 'general' ? 'General' : type === 'technical' ? 'Technical support' : ''} inquiries will appear here when submitted.`
-  }
+    return `${type === "general" ? "General" : type === "technical" ? "Technical support" : ""} inquiries will appear here when submitted.`;
+  };
 
   if (loading) {
     return (
@@ -255,7 +262,7 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
           ))}
         </div>
       </div>
-    )
+    );
   }
 
   return (
@@ -278,7 +285,8 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
         {selectedInquiries.length > 0 && (
           <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
             <span className="text-sm text-blue-800">
-              {selectedInquiries.length} inquiry{selectedInquiries.length !== 1 ? 'ies' : ''} selected
+              {selectedInquiries.length} inquiry{selectedInquiries.length !== 1 ? "ies" : ""}{" "}
+              selected
             </span>
             <div className="flex gap-2 ml-auto">
               <Button
@@ -288,7 +296,7 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
                 disabled={bulkDeleting}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
-                {bulkDeleting ? 'Deleting...' : 'Delete Selected'}
+                {bulkDeleting ? "Deleting..." : "Delete Selected"}
               </Button>
             </div>
           </div>
@@ -302,7 +310,10 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
             <TableRow>
               <TableHead className="w-[50px]">
                 <Checkbox
-                  checked={filteredInquiries.length > 0 && selectedInquiries.length === filteredInquiries.length}
+                  checked={
+                    filteredInquiries.length > 0 &&
+                    selectedInquiries.length === filteredInquiries.length
+                  }
                   onCheckedChange={handleSelectAll}
                   aria-label="Select all inquiries"
                 />
@@ -323,14 +334,12 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
                       <p className="text-sm font-medium text-muted-foreground">
                         {inquiries.length === 0
                           ? getEmptyStateMessage()
-                          : 'No inquiries match your search'
-                        }
+                          : "No inquiries match your search"}
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {inquiries.length === 0
                           ? getEmptyStateSubMessage()
-                          : 'Try adjusting your search terms.'
-                        }
+                          : "Try adjusting your search terms."}
                       </p>
                     </div>
                   </div>
@@ -342,7 +351,9 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
                   <TableCell>
                     <Checkbox
                       checked={selectedInquiries.includes(inquiry.id)}
-                      onCheckedChange={(checked) => handleSelectInquiry(inquiry.id, checked as boolean)}
+                      onCheckedChange={(checked) =>
+                        handleSelectInquiry(inquiry.id, checked as boolean)
+                      }
                       aria-label={`Select inquiry from ${inquiry.first_name} ${inquiry.last_name}`}
                     />
                   </TableCell>
@@ -350,7 +361,9 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
                     <div className="space-y-1">
                       {/* Line 1: Name • Email */}
                       <div className="text-sm">
-                        <span className="font-medium">{inquiry.first_name} {inquiry.last_name}</span>
+                        <span className="font-medium">
+                          {inquiry.first_name} {inquiry.last_name}
+                        </span>
                         <span className="text-muted-foreground"> • {inquiry.email}</span>
                         {inquiry.organization && (
                           <span className="text-muted-foreground"> • {inquiry.organization}</span>
@@ -363,9 +376,7 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
                     </div>
                   </TableCell>
                   <TableCell>{getStatusBadge(inquiry)}</TableCell>
-                  <TableCell>
-                    {new Date(inquiry.created_at).toLocaleDateString()}
-                  </TableCell>
+                  <TableCell>{new Date(inquiry.created_at).toLocaleDateString()}</TableCell>
                   <TableCell>
                     <InquiryActionsDropdown
                       inquiry={inquiry}
@@ -388,5 +399,5 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
         onOpenChange={setDetailsOpen}
       />
     </div>
-  )
+  );
 }

@@ -1,62 +1,59 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import { createClient } from '@/shared/services/server'
+import { NextRequest, NextResponse } from "next/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createClient } from "@/shared/services/server";
 
 // Create Supabase client with service role for admin operations
 async function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  return createSupabaseClient(supabaseUrl, supabaseServiceKey)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id: questionId } = await params
+    const { id: questionId } = await params;
 
     // Auth is now handled by middleware
-    const userClient = await createClient()
-    const { data: { user } } = await userClient.auth.getUser() // Still need user ID for permission checks
+    const userClient = await createClient();
+    const {
+      data: { user },
+    } = await userClient.auth.getUser(); // Still need user ID for permission checks
 
-    // Still need to get user profile for business logic permission checks  
+    // Still need to get user profile for business logic permission checks
     const { data: profile, error: profileError } = await userClient
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
     if (profileError) {
-      return NextResponse.json(
-        { error: 'Failed to verify user permissions' },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: "Failed to verify user permissions" }, { status: 500 });
     }
 
     // Use admin client for the actual operations
-    const adminClient = await createAdminClient()
+    const adminClient = await createAdminClient();
 
     // First, try a simple query to see if the question exists
     const { data: simpleQuestion, error: simpleError } = await adminClient
-      .from('questions')
-      .select('*')
-      .eq('id', questionId)
-      .single()
+      .from("questions")
+      .select("*")
+      .eq("id", questionId)
+      .single();
 
     if (simpleError || !simpleQuestion) {
-      console.error('Simple question fetch error:', simpleError)
-      console.error('Question ID:', questionId)
+      console.error("Simple question fetch error:", simpleError);
+      console.error("Question ID:", questionId);
       return NextResponse.json(
-        { error: 'Question not found in simple query', details: simpleError?.message },
+        { error: "Question not found in simple query", details: simpleError?.message },
         { status: 404 }
-      )
+      );
     }
 
     // Now try the complex query
     const { data: question, error: questionError } = await adminClient
-      .from('questions')
-      .select(`
+      .from("questions")
+      .select(
+        `
         *,
         question_set:question_sets(
           id,
@@ -98,31 +95,32 @@ export async function GET(
             name
           )
         )
-      `)
-      .eq('id', questionId)
-      .single()
+      `
+      )
+      .eq("id", questionId)
+      .single();
 
     if (questionError || !question) {
-      console.error('Question fetch error:', questionError)
-      console.error('Question ID:', questionId)
-      console.error('Question data:', question)
+      console.error("Question fetch error:", questionError);
+      console.error("Question ID:", questionId);
+      console.error("Question data:", question);
       return NextResponse.json(
-        { error: 'Question not found', details: questionError?.message },
+        { error: "Question not found", details: questionError?.message },
         { status: 404 }
-      )
+      );
     }
 
     // Check permissions based on question status and user role
     const canAccess =
-      profile?.role === 'admin' ||
-      (question.created_by === user.id && ['admin', 'creator'].includes(profile?.role)) ||
-      (['reviewer', 'admin'].includes(profile?.role) && question.status === 'pending')
+      profile?.role === "admin" ||
+      (question.created_by === user.id && ["admin", "creator"].includes(profile?.role)) ||
+      (["reviewer", "admin"].includes(profile?.role) && question.status === "pending");
 
     if (!canAccess) {
       return NextResponse.json(
-        { error: 'Insufficient permissions to access this question' },
+        { error: "Insufficient permissions to access this question" },
         { status: 403 }
-      )
+      );
     }
 
     // Flatten the tags structure and add user names for easier consumption
@@ -130,24 +128,22 @@ export async function GET(
       ...question,
       tags: question.question_tags?.map((qt: { tag: unknown }) => qt.tag).filter(Boolean) || [],
       created_by_name: question.created_by_user
-        ? `${question.created_by_user.first_name || ''} ${question.created_by_user.last_name || ''}`.trim() || 'Unknown'
-        : 'Unknown',
+        ? `${question.created_by_user.first_name || ""} ${question.created_by_user.last_name || ""}`.trim() ||
+          "Unknown"
+        : "Unknown",
       updated_by_name: question.updated_by_user
-        ? `${question.updated_by_user.first_name || ''} ${question.updated_by_user.last_name || ''}`.trim() || 'Unknown'
-        : 'Unknown'
-    }
+        ? `${question.updated_by_user.first_name || ""} ${question.updated_by_user.last_name || ""}`.trim() ||
+          "Unknown"
+        : "Unknown",
+    };
 
     return NextResponse.json({
       success: true,
-      question: questionWithFlattenedTags
-    })
-
+      question: questionWithFlattenedTags,
+    });
   } catch (error) {
-    console.error('Error fetching question:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error("Error fetching question:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
 
@@ -171,17 +167,14 @@ export async function GET(
  * - Reviewer patch edits do NOT create versions (minor changes only)
  * - Tracked via updated_by and updated_at for audit trail
  */
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
-    const { id: questionId } = await params
-    console.log('PATCH /api/admin/questions/[id] - Question ID:', questionId)
-    console.log('PATCH /api/admin/questions/[id] - Params type:', typeof params)
-    console.log('PATCH /api/admin/questions/[id] - Params:', params)
+    const { id: questionId } = await params;
+    console.log("PATCH /api/admin/questions/[id] - Question ID:", questionId);
+    console.log("PATCH /api/admin/questions/[id] - Params type:", typeof params);
+    console.log("PATCH /api/admin/questions/[id] - Params:", params);
 
-    const body = await request.json()
+    const body = await request.json();
     const {
       questionData,
       changeSummary,
@@ -191,85 +184,80 @@ export async function PATCH(
       categoryId,
       isPatchEdit,
       patchEditReason,
-      updateType
-    } = body
+      updateType,
+    } = body;
 
-    console.log('PATCH /api/admin/questions/[id] - Body received:', {
+    console.log("PATCH /api/admin/questions/[id] - Body received:", {
       hasQuestionData: !!questionData,
       hasAnswerOptions: !!answerOptions,
       hasQuestionImages: !!questionImages,
       hasTagIds: !!tagIds,
-      hasCategoryId: !!categoryId
-    })
-
-
+      hasCategoryId: !!categoryId,
+    });
 
     // Auth is now handled by middleware
-    const userClient = await createClient()
-    const { data: { user }, error: authError } = await userClient.auth.getUser() // Still need user ID for permission checks
+    const userClient = await createClient();
+    const {
+      data: { user },
+      error: authError,
+    } = await userClient.auth.getUser(); // Still need user ID for permission checks
 
     if (authError || !user) {
-      console.error('PATCH - Auth error:', authError)
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      console.error("PATCH - Auth error:", authError);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log('PATCH - User authenticated:', user.id)
+    console.log("PATCH - User authenticated:", user.id);
 
     // Still need to get user profile for business logic permission checks
     const { data: profile, error: profileError } = await userClient
-      .from('users')
-      .select('role')
-      .eq('id', user.id)
-      .single()
+      .from("users")
+      .select("role")
+      .eq("id", user.id)
+      .single();
 
     if (profileError) {
-      console.error('PATCH - Profile error:', profileError)
-      return NextResponse.json(
-        { error: 'Failed to verify user permissions' },
-        { status: 500 }
-      )
+      console.error("PATCH - Profile error:", profileError);
+      return NextResponse.json({ error: "Failed to verify user permissions" }, { status: 500 });
     }
 
-    console.log('PATCH - User role:', profile.role)
+    console.log("PATCH - User role:", profile.role);
 
     // Use admin client for the actual operations
-    const adminClient = await createAdminClient()
-    console.log('PATCH - Admin client created')
+    const adminClient = await createAdminClient();
+    console.log("PATCH - Admin client created");
 
     // Get current question to check status and permissions
-    console.log('PATCH - Fetching question with ID:', questionId)
+    console.log("PATCH - Fetching question with ID:", questionId);
     const { data: currentQuestion, error: questionError } = await adminClient
-      .from('questions')
-      .select('id, status, created_by, reviewer_id, version')
-      .eq('id', questionId)
-      .single()
+      .from("questions")
+      .select("id, status, created_by, reviewer_id, version")
+      .eq("id", questionId)
+      .single();
 
-    console.log('PATCH - Question fetch result:', {
+    console.log("PATCH - Question fetch result:", {
       found: !!currentQuestion,
       error: questionError?.message,
-      status: currentQuestion?.status
-    })
+      status: currentQuestion?.status,
+    });
 
     if (questionError || !currentQuestion) {
-      console.error('PATCH - Question fetch error:', {
+      console.error("PATCH - Question fetch error:", {
         questionId,
         error: questionError,
         message: questionError?.message,
         details: questionError?.details,
         hint: questionError?.hint,
-        code: questionError?.code
-      })
+        code: questionError?.code,
+      });
       return NextResponse.json(
         {
-          error: 'Question not found',
+          error: "Question not found",
           details: questionError?.message,
-          questionId
+          questionId,
         },
         { status: 404 }
-      )
+      );
     }
 
     // NEW PERMISSION SYSTEM
@@ -278,99 +266,100 @@ export async function PATCH(
     // 3. Reviewers can only make patch edits to assigned pending_review questions
     // 4. Nobody (except admins) can edit approved/published questions
 
-    const isAdmin = profile?.role === 'admin'
-    const isCreator = profile?.role === 'creator'
-    const isReviewer = profile?.role === 'reviewer'
-    const isQuestionCreator = currentQuestion.created_by === user.id
-    const isAssignedReviewer = currentQuestion.reviewer_id === user.id
+    const isAdmin = profile?.role === "admin";
+    const isCreator = profile?.role === "creator";
+    const isReviewer = profile?.role === "reviewer";
+    const isQuestionCreator = currentQuestion.created_by === user.id;
+    const isAssignedReviewer = currentQuestion.reviewer_id === user.id;
 
     // Check if question is published
-    if (currentQuestion.status === 'published') {
+    if (currentQuestion.status === "published") {
       // Allow patch edits for creators and reviewers
       if (isPatchEdit) {
         // Creators can make patch edits to their own published questions
         if (isCreator && isQuestionCreator) {
-          console.log('PATCH - Creator making patch edit to own published question')
+          console.log("PATCH - Creator making patch edit to own published question");
         }
         // Reviewers can make patch edits to any published question
         else if (isReviewer) {
-          console.log('PATCH - Reviewer making patch edit to published question')
+          console.log("PATCH - Reviewer making patch edit to published question");
         }
         // Admins can always edit
         else if (isAdmin) {
-          console.log('PATCH - Admin making patch edit to published question')
-        }
-        else {
+          console.log("PATCH - Admin making patch edit to published question");
+        } else {
           return NextResponse.json(
             {
-              error: 'Insufficient permissions for patch edit',
-              message: 'Only creators (of their own questions) and reviewers can make patch edits to published questions.'
+              error: "Insufficient permissions for patch edit",
+              message:
+                "Only creators (of their own questions) and reviewers can make patch edits to published questions.",
             },
             { status: 403 }
-          )
+          );
         }
       } else {
         // Non-patch edits (minor/major) require admin or creator with review
         if (!isAdmin && !isCreator) {
           return NextResponse.json(
             {
-              error: 'Cannot edit published questions',
-              message: 'Only admins and creators can make non-patch edits to published questions. Non-patch edits require review.'
+              error: "Cannot edit published questions",
+              message:
+                "Only admins and creators can make non-patch edits to published questions. Non-patch edits require review.",
             },
             { status: 403 }
-          )
+          );
         }
         // For creators making non-patch edits, they need to go through review
         if (isCreator && isQuestionCreator && !isAdmin) {
           // This will be handled by changing status to pending_review
-          console.log('PATCH - Creator making minor/major edit to published question (will require review)')
+          console.log(
+            "PATCH - Creator making minor/major edit to published question (will require review)"
+          );
         }
       }
     }
     // Check if question is pending review
-    else if (currentQuestion.status === 'pending_review') {
+    else if (currentQuestion.status === "pending_review") {
       // Reviewers can make patch edits to assigned questions
       if (isReviewer && isAssignedReviewer) {
         // Reviewer can make patch-level edits (typos, rewording, etc.)
         // This is allowed and will be tracked via updated_by
-        console.log('PATCH - Reviewer making patch edit to assigned question')
+        console.log("PATCH - Reviewer making patch edit to assigned question");
       }
       // Creators can edit their own pending questions (before review starts)
       else if (isCreator && isQuestionCreator) {
-        console.log('PATCH - Creator editing own pending question')
+        console.log("PATCH - Creator editing own pending question");
       }
       // Admins can always edit
       else if (isAdmin) {
-        console.log('PATCH - Admin editing pending question')
-      }
-      else {
+        console.log("PATCH - Admin editing pending question");
+      } else {
         return NextResponse.json(
           {
-            error: 'Insufficient permissions',
-            message: 'You can only edit questions you created or are assigned to review.'
+            error: "Insufficient permissions",
+            message: "You can only edit questions you created or are assigned to review.",
           },
           { status: 403 }
-        )
+        );
       }
     }
     // For draft/rejected questions
     else {
       // Creators can edit their own draft/rejected questions
       if (isCreator && isQuestionCreator) {
-        console.log('PATCH - Creator editing own draft/rejected question')
+        console.log("PATCH - Creator editing own draft/rejected question");
       }
       // Admins can edit any draft/rejected question
       else if (isAdmin) {
-        console.log('PATCH - Admin editing draft/rejected question')
-      }
-      else {
+        console.log("PATCH - Admin editing draft/rejected question");
+      } else {
         return NextResponse.json(
           {
-            error: 'Insufficient permissions',
-            message: 'You can only edit questions you created.'
+            error: "Insufficient permissions",
+            message: "You can only edit questions you created.",
           },
           { status: 403 }
-        )
+        );
       }
     }
 
@@ -378,13 +367,20 @@ export async function PATCH(
     try {
       // Update the main question data - only include valid question table fields
       // For published questions with minor/major edits, change status to pending_review
-      let statusToSet = questionData.status
-      const reviewerToSet = currentQuestion.reviewer_id
-      if (currentQuestion.status === 'published' && !isPatchEdit && updateType && ['minor', 'major'].includes(updateType)) {
-        statusToSet = 'pending_review'
+      let statusToSet = questionData.status;
+      const reviewerToSet = currentQuestion.reviewer_id;
+      if (
+        currentQuestion.status === "published" &&
+        !isPatchEdit &&
+        updateType &&
+        ["minor", "major"].includes(updateType)
+      ) {
+        statusToSet = "pending_review";
         // Keep the existing reviewer if there is one, otherwise this will need to be assigned by an admin
         // The constraint requires a reviewer, so we keep the current one to avoid constraint violation
-        console.log(`PATCH - Changing status from published to pending_review for ${updateType} edit, keeping reviewer: ${reviewerToSet}`)
+        console.log(
+          `PATCH - Changing status from published to pending_review for ${updateType} edit, keeping reviewer: ${reviewerToSet}`
+        );
       }
 
       const validQuestionFields = {
@@ -392,216 +388,225 @@ export async function PATCH(
         ...(questionData.stem && { stem: questionData.stem }),
         ...(questionData.difficulty && { difficulty: questionData.difficulty }),
         ...(questionData.teaching_point && { teaching_point: questionData.teaching_point }),
-        ...(questionData.question_references !== undefined && { question_references: questionData.question_references }),
+        ...(questionData.question_references !== undefined && {
+          question_references: questionData.question_references,
+        }),
         ...(questionData.anki_card_id !== undefined && { anki_card_id: questionData.anki_card_id }),
-        ...(questionData.anki_deck_name !== undefined && { anki_deck_name: questionData.anki_deck_name }),
+        ...(questionData.anki_deck_name !== undefined && {
+          anki_deck_name: questionData.anki_deck_name,
+        }),
         ...(statusToSet && { status: statusToSet }),
-        ...(questionData.question_set_id !== undefined && { question_set_id: questionData.question_set_id }),
+        ...(questionData.question_set_id !== undefined && {
+          question_set_id: questionData.question_set_id,
+        }),
         // Ensure reviewer_id is preserved when moving to pending_review (required by constraint)
-        ...(statusToSet === 'pending_review' && reviewerToSet && { reviewer_id: reviewerToSet }),
+        ...(statusToSet === "pending_review" && reviewerToSet && { reviewer_id: reviewerToSet }),
         updated_by: user.id,
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      };
 
       const { error: updateError } = await adminClient
-        .from('questions')
+        .from("questions")
         .update(validQuestionFields)
-        .eq('id', questionId)
+        .eq("id", questionId);
 
       if (updateError) {
-        throw new Error(`Failed to update question: ${updateError.message}`)
+        throw new Error(`Failed to update question: ${updateError.message}`);
       }
 
       // Update answer options if provided
       if (answerOptions) {
-        console.log('Updating answer options...')
+        console.log("Updating answer options...");
 
         // Get existing options for this question
         const { data: existingOptions, error: fetchError } = await adminClient
-          .from('question_options')
-          .select('id, text, is_correct, explanation, order_index')
-          .eq('question_id', questionId)
+          .from("question_options")
+          .select("id, text, is_correct, explanation, order_index")
+          .eq("question_id", questionId);
 
         if (fetchError) {
-          console.error('Error fetching existing options:', fetchError)
-          throw new Error(`Failed to fetch existing options: ${fetchError.message}`)
+          console.error("Error fetching existing options:", fetchError);
+          throw new Error(`Failed to fetch existing options: ${fetchError.message}`);
         }
 
         // Get option IDs that are referenced by quiz attempts
         const { data: referencedOptions, error: referencedError } = await adminClient
-          .from('quiz_attempts')
-          .select('selected_answer_id')
-          .not('selected_answer_id', 'is', null)
-          .in('selected_answer_id', existingOptions?.map(opt => opt.id) || [])
+          .from("quiz_attempts")
+          .select("selected_answer_id")
+          .not("selected_answer_id", "is", null)
+          .in("selected_answer_id", existingOptions?.map((opt) => opt.id) || []);
 
         if (referencedError) {
-          console.error('Error checking referenced options:', referencedError)
-          throw new Error(`Failed to check referenced options: ${referencedError.message}`)
+          console.error("Error checking referenced options:", referencedError);
+          throw new Error(`Failed to check referenced options: ${referencedError.message}`);
         }
 
-        const referencedOptionIds = new Set(referencedOptions?.map(ref => ref.selected_answer_id) || [])
-        console.log('Referenced option IDs:', Array.from(referencedOptionIds))
+        const referencedOptionIds = new Set(
+          referencedOptions?.map((ref) => ref.selected_answer_id) || []
+        );
+        console.log("Referenced option IDs:", Array.from(referencedOptionIds));
 
         // Process incoming options
-        const incomingOptionIds = new Set()
-        const optionsToUpdate = []
-        const optionsToInsert = []
+        const incomingOptionIds = new Set();
+        const optionsToUpdate = [];
+        const optionsToInsert = [];
 
         for (let index = 0; index < answerOptions.length; index++) {
-          const option = answerOptions[index]
+          const option = answerOptions[index];
           const optionData = {
             text: option.text,
             is_correct: option.is_correct,
             explanation: option.explanation || null,
-            order_index: index
-          }
+            order_index: index,
+          };
 
           if (option.id) {
             // This is an existing option - update it
-            incomingOptionIds.add(option.id)
+            incomingOptionIds.add(option.id);
             optionsToUpdate.push({
               id: option.id,
-              ...optionData
-            })
+              ...optionData,
+            });
           } else {
             // This is a new option - insert it
             optionsToInsert.push({
               question_id: questionId,
-              ...optionData
-            })
+              ...optionData,
+            });
           }
         }
 
         // Update existing options
         for (const option of optionsToUpdate) {
           const { error: updateError } = await adminClient
-            .from('question_options')
+            .from("question_options")
             .update({
               text: option.text,
               is_correct: option.is_correct,
               explanation: option.explanation,
-              order_index: option.order_index
+              order_index: option.order_index,
             })
-            .eq('id', option.id)
+            .eq("id", option.id);
 
           if (updateError) {
-            console.error('Error updating option:', updateError)
-            throw new Error(`Failed to update option: ${updateError.message}`)
+            console.error("Error updating option:", updateError);
+            throw new Error(`Failed to update option: ${updateError.message}`);
           }
         }
 
         // Insert new options
         if (optionsToInsert.length > 0) {
           const { error: insertError } = await adminClient
-            .from('question_options')
-            .insert(optionsToInsert)
+            .from("question_options")
+            .insert(optionsToInsert);
 
           if (insertError) {
-            console.error('Error inserting new options:', insertError)
-            throw new Error(`Failed to insert new options: ${insertError.message}`)
+            console.error("Error inserting new options:", insertError);
+            throw new Error(`Failed to insert new options: ${insertError.message}`);
           }
         }
 
         // Delete options that are no longer needed (but only if not referenced)
-        const existingOptionIds = new Set(existingOptions?.map(opt => opt.id) || [])
-        const optionsToDelete = Array.from(existingOptionIds).filter(id =>
-          !incomingOptionIds.has(id) && !referencedOptionIds.has(id)
-        )
+        const existingOptionIds = new Set(existingOptions?.map((opt) => opt.id) || []);
+        const optionsToDelete = Array.from(existingOptionIds).filter(
+          (id) => !incomingOptionIds.has(id) && !referencedOptionIds.has(id)
+        );
 
         if (optionsToDelete.length > 0) {
           const { error: deleteError } = await adminClient
-            .from('question_options')
+            .from("question_options")
             .delete()
-            .in('id', optionsToDelete)
+            .in("id", optionsToDelete);
 
           if (deleteError) {
-            console.error('Error deleting unreferenced options:', deleteError)
-            throw new Error(`Failed to delete unreferenced options: ${deleteError.message}`)
+            console.error("Error deleting unreferenced options:", deleteError);
+            throw new Error(`Failed to delete unreferenced options: ${deleteError.message}`);
           }
-          console.log(`Deleted ${optionsToDelete.length} unreferenced options`)
+          console.log(`Deleted ${optionsToDelete.length} unreferenced options`);
         }
 
         // Log warning for options that couldn't be deleted due to references
-        const referencedButNotIncoming = Array.from(existingOptionIds).filter(id =>
-          !incomingOptionIds.has(id) && referencedOptionIds.has(id)
-        )
+        const referencedButNotIncoming = Array.from(existingOptionIds).filter(
+          (id) => !incomingOptionIds.has(id) && referencedOptionIds.has(id)
+        );
         if (referencedButNotIncoming.length > 0) {
-          console.warn(`Warning: ${referencedButNotIncoming.length} options could not be deleted because they are referenced by quiz attempts:`, referencedButNotIncoming)
+          console.warn(
+            `Warning: ${referencedButNotIncoming.length} options could not be deleted because they are referenced by quiz attempts:`,
+            referencedButNotIncoming
+          );
         }
 
-        console.log('Answer options updated successfully')
+        console.log("Answer options updated successfully");
       } else {
-        console.log('No answer options to update')
+        console.log("No answer options to update");
       }
 
       // Update question images if provided
       if (questionImages) {
         // Delete existing question images
-        await adminClient
-          .from('question_images')
-          .delete()
-          .eq('question_id', questionId)
+        await adminClient.from("question_images").delete().eq("question_id", questionId);
 
         // Insert new question images
         if (questionImages.length > 0) {
-          const { error: imagesError } = await adminClient
-            .from('question_images')
-            .insert(
-              questionImages.map((img: { image_id: string; question_section: string }, index: number) => ({
+          const { error: imagesError } = await adminClient.from("question_images").insert(
+            questionImages.map(
+              (img: { image_id: string; question_section: string }, index: number) => ({
                 question_id: questionId,
                 image_id: img.image_id,
                 question_section: img.question_section,
-                order_index: index
-              }))
+                order_index: index,
+              })
             )
+          );
 
           if (imagesError) {
-            throw new Error(`Failed to update question images: ${imagesError.message}`)
+            throw new Error(`Failed to update question images: ${imagesError.message}`);
           }
         }
       }
 
       // Update question tags if provided
       if (tagIds !== undefined) {
-        console.log('Updating tags...')
+        console.log("Updating tags...");
 
         // Delete existing tags
         const { error: deleteTagsError } = await adminClient
-          .from('question_tags')
+          .from("question_tags")
           .delete()
-          .eq('question_id', questionId)
+          .eq("question_id", questionId);
 
         if (deleteTagsError) {
-          console.error('Error deleting existing tags:', deleteTagsError)
-          throw new Error(`Failed to delete existing tags: ${deleteTagsError.message}`)
+          console.error("Error deleting existing tags:", deleteTagsError);
+          throw new Error(`Failed to delete existing tags: ${deleteTagsError.message}`);
         }
 
         // Insert new tags
         if (tagIds && tagIds.length > 0) {
           // Filter out any null/undefined tag IDs
-          const validTagIds = tagIds.filter((tagId: string | null | undefined) =>
-            tagId !== null &&
-            tagId !== undefined &&
-            typeof tagId === 'string' &&
-            tagId.trim() !== ''
-          )
+          const validTagIds = tagIds.filter(
+            (tagId: string | null | undefined) =>
+              tagId !== null &&
+              tagId !== undefined &&
+              typeof tagId === "string" &&
+              tagId.trim() !== ""
+          );
 
-          console.log('Original tagIds:', tagIds)
-          console.log('Filtered validTagIds:', validTagIds)
+          console.log("Original tagIds:", tagIds);
+          console.log("Filtered validTagIds:", validTagIds);
 
           if (validTagIds.length > 0) {
-            const { error: tagsError } = await adminClient
-              .from('question_tags')
-              .insert(
-                validTagIds.map((tagId: string) => ({
-                  question_id: questionId,
-                  tag_id: tagId
-                }))
-              )
+            const { error: tagsError } = await adminClient.from("question_tags").insert(
+              validTagIds.map((tagId: string) => ({
+                question_id: questionId,
+                tag_id: tagId,
+              }))
+            );
 
             if (tagsError) {
-              console.error('Tags update error:', tagsError)
-              throw new Error(`Failed to update question tags: ${tagsError.message || JSON.stringify(tagsError)}`)
+              console.error("Tags update error:", tagsError);
+              throw new Error(
+                `Failed to update question tags: ${tagsError.message || JSON.stringify(tagsError)}`
+              );
             }
           }
         }
@@ -610,137 +615,137 @@ export async function PATCH(
       // Update category if provided
       if (categoryId !== undefined) {
         const { error: categoryError } = await adminClient
-          .from('questions')
+          .from("questions")
           .update({ category_id: categoryId || null })
-          .eq('id', questionId)
+          .eq("id", questionId);
 
         if (categoryError) {
-          throw new Error(`Failed to update question category: ${categoryError.message}`)
+          throw new Error(`Failed to update question category: ${categoryError.message}`);
         }
       }
 
       // Handle versioning for published questions
-      let versionId = null
-      if (currentQuestion.status === 'published') {
+      let versionId = null;
+      if (currentQuestion.status === "published") {
         if (isPatchEdit) {
           // For patch edits, increment patch version only
-          const newVersionPatch = (currentQuestion.version_patch || 0) + 1
+          const newVersionPatch = (currentQuestion.version_patch || 0) + 1;
 
           const { error: versionUpdateError } = await adminClient
-            .from('questions')
+            .from("questions")
             .update({
               version_patch: newVersionPatch,
               updated_by: user.id,
-              updated_at: new Date().toISOString()
+              updated_at: new Date().toISOString(),
             })
-            .eq('id', questionId)
+            .eq("id", questionId);
 
           if (versionUpdateError) {
-            console.error('Error updating patch version:', versionUpdateError)
-            throw new Error(`Failed to update patch version: ${versionUpdateError.message}`)
+            console.error("Error updating patch version:", versionUpdateError);
+            throw new Error(`Failed to update patch version: ${versionUpdateError.message}`);
           }
 
           // Create version history entry for patch edit
           const { data: newVersionId, error: versionError } = await adminClient
-            .from('question_versions')
+            .from("question_versions")
             .insert({
               question_id: questionId,
               version_major: currentQuestion.version_major || 1,
               version_minor: currentQuestion.version_minor || 0,
               version_patch: newVersionPatch,
               version_string: `${currentQuestion.version_major || 1}.${currentQuestion.version_minor || 0}.${newVersionPatch}`,
-              update_type: 'patch',
-              change_summary: patchEditReason || changeSummary || 'Patch edit',
+              update_type: "patch",
+              change_summary: patchEditReason || changeSummary || "Patch edit",
               question_data: {
                 title: questionData?.title,
                 stem: questionData?.stem,
                 teaching_point: questionData?.teaching_point,
-                question_references: questionData?.question_references
+                question_references: questionData?.question_references,
               },
-              changed_by: user.id
+              changed_by: user.id,
             })
-            .select('id')
-            .single()
+            .select("id")
+            .single();
 
           if (versionError) {
-            console.error('Error creating patch version history:', versionError)
+            console.error("Error creating patch version history:", versionError);
             // Continue without version history rather than failing the entire update
           } else {
-            versionId = newVersionId?.id
+            versionId = newVersionId?.id;
           }
-        } else if (updateType && ['minor', 'major'].includes(updateType)) {
+        } else if (updateType && ["minor", "major"].includes(updateType)) {
           // For minor/major edits, increment appropriate version numbers
-          let newVersionMajor = currentQuestion.version_major || 1
-          let newVersionMinor = currentQuestion.version_minor || 0
-          const newVersionPatch = 0
+          let newVersionMajor = currentQuestion.version_major || 1;
+          let newVersionMinor = currentQuestion.version_minor || 0;
+          const newVersionPatch = 0;
 
-          if (updateType === 'minor') {
-            newVersionMinor += 1
-          } else if (updateType === 'major') {
-            newVersionMajor += 1
-            newVersionMinor = 0
+          if (updateType === "minor") {
+            newVersionMinor += 1;
+          } else if (updateType === "major") {
+            newVersionMajor += 1;
+            newVersionMinor = 0;
           }
 
           const { error: versionUpdateError } = await adminClient
-            .from('questions')
+            .from("questions")
             .update({
               version_major: newVersionMajor,
               version_minor: newVersionMinor,
               version_patch: newVersionPatch,
               updated_by: user.id,
-              updated_at: new Date().toISOString()
+              updated_at: new Date().toISOString(),
             })
-            .eq('id', questionId)
+            .eq("id", questionId);
 
           if (versionUpdateError) {
-            console.error('Error updating version:', versionUpdateError)
-            throw new Error(`Failed to update version: ${versionUpdateError.message}`)
+            console.error("Error updating version:", versionUpdateError);
+            throw new Error(`Failed to update version: ${versionUpdateError.message}`);
           }
 
           // Create version history entry for minor/major edit
           const { data: newVersionId, error: versionError } = await adminClient
-            .from('question_versions')
+            .from("question_versions")
             .insert({
               question_id: questionId,
               version_major: newVersionMajor,
               version_minor: newVersionMinor,
               version_patch: newVersionPatch,
               version_string: `${newVersionMajor}.${newVersionMinor}.${newVersionPatch}`,
-              update_type: updateType as 'minor' | 'major',
+              update_type: updateType as "minor" | "major",
               change_summary: changeSummary || `${updateType} update`,
               question_data: {
                 title: questionData?.title,
                 stem: questionData?.stem,
                 teaching_point: questionData?.teaching_point,
-                question_references: questionData?.question_references
+                question_references: questionData?.question_references,
               },
-              changed_by: user.id
+              changed_by: user.id,
             })
-            .select('id')
-            .single()
+            .select("id")
+            .single();
 
           if (versionError) {
-            console.error('Error creating version history:', versionError)
+            console.error("Error creating version history:", versionError);
             // Continue without version history rather than failing the entire update
           } else {
-            versionId = newVersionId?.id
+            versionId = newVersionId?.id;
           }
         }
       }
 
       // Get updated question data
       const { data: updatedQuestion, error: fetchError } = await adminClient
-        .from('questions')
-        .select('id, version, updated_at, status')
-        .eq('id', questionId)
-        .single()
+        .from("questions")
+        .select("id, version, updated_at, status")
+        .eq("id", questionId)
+        .single();
 
       if (fetchError) {
-        console.error('Error fetching updated question:', fetchError)
+        console.error("Error fetching updated question:", fetchError);
         return NextResponse.json(
-          { error: 'Question updated but failed to fetch updated data' },
+          { error: "Question updated but failed to fetch updated data" },
           { status: 500 }
-        )
+        );
       }
 
       return NextResponse.json({
@@ -749,22 +754,17 @@ export async function PATCH(
         versionId,
         message: versionId
           ? `Question updated to version ${updatedQuestion.version}`
-          : 'Question updated successfully'
-      })
-
+          : "Question updated successfully",
+      });
     } catch (error) {
-      console.error('Error during question update:', error)
+      console.error("Error during question update:", error);
       return NextResponse.json(
-        { error: error instanceof Error ? error.message : 'Failed to update question' },
+        { error: error instanceof Error ? error.message : "Failed to update question" },
         { status: 500 }
-      )
+      );
     }
-
   } catch (error) {
-    console.error('Error in question update API:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error("Error in question update API:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

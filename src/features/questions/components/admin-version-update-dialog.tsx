@@ -1,6 +1,6 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -10,27 +10,23 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-} from "@/shared/components/ui/dialog"
+} from "@/shared/components/ui/dialog";
 
-import { Button } from "@/shared/components/ui/button"
-import { Label } from "@/shared/components/ui/label"
-import { Textarea } from "@/shared/components/ui/textarea"
+import { Button } from "@/shared/components/ui/button";
+import { Label } from "@/shared/components/ui/label";
+import { Textarea } from "@/shared/components/ui/textarea";
 
-import { Separator } from "@/shared/components/ui/separator"
-import { 
-  GitBranch, 
-  AlertCircle,
-  Info
-} from 'lucide-react'
-import { toast } from '@/shared/utils/toast'
+import { Separator } from "@/shared/components/ui/separator";
+import { GitBranch, AlertCircle, Info } from "lucide-react";
+import { toast } from "@/shared/utils/toast";
 
 interface AdminVersionUpdateDialogProps {
-  questionId: string | null
-  questionTitle?: string
-  currentVersion?: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onVersionCreated?: () => void
+  questionId: string | null;
+  questionTitle?: string;
+  currentVersion?: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onVersionCreated?: () => void;
 }
 
 // Simplified versioning - no complex update type selection needed
@@ -41,65 +37,64 @@ export function AdminVersionUpdateDialog({
   currentVersion,
   open,
   onOpenChange,
-  onVersionCreated
+  onVersionCreated,
 }: AdminVersionUpdateDialogProps) {
-  const [changeSummary, setChangeSummary] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [changeSummary, setChangeSummary] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async () => {
     if (!questionId) {
-      toast.error('No question selected')
-      return
+      toast.error("No question selected");
+      return;
     }
 
     if (!changeSummary.trim()) {
-      toast.error('Change summary is required')
-      return
+      toast.error("Change summary is required");
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
       const response = await fetch(`/api/admin/questions/${questionId}/version`, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          changeSummary: changeSummary.trim()
+          changeSummary: changeSummary.trim(),
         }),
-      })
+      });
 
-      const data = await response.json()
+      const data = await response.json();
 
       if (!response.ok) {
-        toast.error(data.error || 'Failed to create version')
-        return
+        toast.error(data.error || "Failed to create version");
+        return;
       }
 
-      toast.success('Version created successfully', {
-        description: `Created new version ${data.newVersion}`
-      })
+      toast.success("Version created successfully", {
+        description: `Created new version ${data.newVersion}`,
+      });
 
       // Reset form
-      setChangeSummary('')
-      onOpenChange(false)
-      onVersionCreated?.()
-
+      setChangeSummary("");
+      onOpenChange(false);
+      onVersionCreated?.();
     } catch (error) {
-      console.error('Error creating version:', error)
-      toast.error('An unexpected error occurred')
+      console.error("Error creating version:", error);
+      toast.error("An unexpected error occurred");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   const handleCancel = () => {
-    setChangeSummary('')
-    onOpenChange(false)
-  }
+    setChangeSummary("");
+    onOpenChange(false);
+  };
 
-  if (!open) return null
+  if (!open) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -112,7 +107,9 @@ export function AdminVersionUpdateDialog({
               Create New Version
             </DialogTitle>
             <DialogDescription>
-              {questionTitle ? `Create a new version for "${questionTitle}"` : 'Create a new version for this question'}
+              {questionTitle
+                ? `Create a new version for "${questionTitle}"`
+                : "Create a new version for this question"}
             </DialogDescription>
           </DialogHeader>
 
@@ -134,7 +131,8 @@ export function AdminVersionUpdateDialog({
                 <span className="text-sm font-medium">Version Update</span>
               </div>
               <p className="text-sm text-muted-foreground mt-2">
-                Creating a new version will increment the minor version number and save a snapshot of the current question state.
+                Creating a new version will increment the minor version number and save a snapshot
+                of the current question state.
               </p>
             </div>
 
@@ -160,33 +158,25 @@ export function AdminVersionUpdateDialog({
             <div className="flex items-start gap-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
               <AlertCircle className="h-4 w-4 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
               <div className="text-sm">
-                <p className="font-medium text-blue-900 dark:text-blue-100">
-                  Version Update
-                </p>
+                <p className="font-medium text-blue-900 dark:text-blue-100">Version Update</p>
                 <p className="text-blue-800 dark:text-blue-200 mt-1">
-                  This will create a new version snapshot and increment the minor version number automatically.
+                  This will create a new version snapshot and increment the minor version number
+                  automatically.
                 </p>
               </div>
             </div>
           </div>
 
           <DialogFooter>
-            <Button 
-              variant="outline" 
-              onClick={handleCancel}
-              disabled={isSubmitting}
-            >
+            <Button variant="outline" onClick={handleCancel} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button 
-              onClick={handleSubmit}
-              disabled={!changeSummary.trim() || isSubmitting}
-            >
-              {isSubmitting ? 'Creating...' : 'Create Version'}
+            <Button onClick={handleSubmit} disabled={!changeSummary.trim() || isSubmitting}>
+              {isSubmitting ? "Creating..." : "Create Version"}
             </Button>
           </DialogFooter>
         </DialogContent>
       </DialogPortal>
     </Dialog>
-  )
+  );
 }

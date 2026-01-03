@@ -1,109 +1,117 @@
 // src/features/questions/components/question-row.tsx
-'use client'
+"use client";
 
-import React, { useState, memo, useCallback } from 'react'
-import { useRouter } from 'next/navigation'
-import Image from 'next/image'
-import { ImageIcon, PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon } from 'lucide-react'
-import { Badge } from '@/shared/components/ui/badge'
-import { Button } from '@/shared/components/ui/button'
+import React, { useState, memo, useCallback } from "react";
+import { useRouter } from "next/navigation";
+import Image from "next/image";
+import { ImageIcon, PencilIcon, TrashIcon, ChevronDownIcon, ChevronRightIcon } from "lucide-react";
+import { Badge } from "@/shared/components/ui/badge";
+import { Button } from "@/shared/components/ui/button";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
-} from "@/shared/components/ui/tooltip"
+} from "@/shared/components/ui/tooltip";
 import {
   Question,
   QuestionWithDetails,
   Category,
   DIFFICULTY_CONFIG,
-  YIELD_CONFIG
-} from '@/features/questions/types/questions'
-import { getCategoryDisplayName } from '@/features/questions/utils/display-helpers'
-import { createClient } from '@/shared/services/client'
-import { useUserRole } from '@/shared/hooks/use-user-role'
-import { useAuth } from '@/shared/hooks/use-auth'
-import { shouldShowDeleteButton } from '@/features/questions/utils/deletion-helpers'
+  YIELD_CONFIG,
+} from "@/features/questions/types/questions";
+import { getCategoryDisplayName } from "@/features/questions/utils/display-helpers";
+import { createClient } from "@/shared/services/client";
+import { useUserRole } from "@/shared/hooks/use-user-role";
+import { useAuth } from "@/shared/hooks/use-auth";
+import { shouldShowDeleteButton } from "@/features/questions/utils/deletion-helpers";
 
 interface QuestionRowProps {
-  question: Question
-  categoryPaths: Map<number, Category>
-  onDelete: (questionId: string) => void
+  question: Question;
+  categoryPaths: Map<number, Category>;
+  onDelete: (questionId: string) => void;
 }
 
 function getCategoryPathString(category: Category, categoryPaths: Map<number, Category>): string {
-  const parts: string[] = [category.name]
-  let currentId = category.parent_id
-  
+  const parts: string[] = [category.name];
+  let currentId = category.parent_id;
+
   while (currentId) {
-    const parent = categoryPaths.get(currentId)
+    const parent = categoryPaths.get(currentId);
     if (parent) {
-      parts.unshift(parent.name)
-      currentId = parent.parent_id
+      parts.unshift(parent.name);
+      currentId = parent.parent_id;
     } else {
-      break
+      break;
     }
   }
-  
-  return parts.join(' → ')
+
+  return parts.join(" → ");
 }
 
-const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelete }: QuestionRowProps) {
-  const router = useRouter()
-  const [isDeleting, setIsDeleting] = useState(false)
-  const [isExpanded, setIsExpanded] = useState(false)
-  const [showImages, setShowImages] = useState(false)
+const QuestionRow = memo(function QuestionRow({
+  question,
+  categoryPaths,
+  onDelete,
+}: QuestionRowProps) {
+  const router = useRouter();
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showImages, setShowImages] = useState(false);
 
-  const _supabase = createClient()
-  const { role } = useUserRole()
-  const { user } = useAuth({ minimal: true })
+  const _supabase = createClient();
+  const { role } = useUserRole();
+  const { user } = useAuth({ minimal: true });
 
   // Check if user can delete this question
-  const canDelete = shouldShowDeleteButton(question, role, user?.id || null)
+  const canDelete = shouldShowDeleteButton(question, role, user?.id || null);
 
   const handleEdit = useCallback(() => {
     // Navigate to edit page - returnUrl will be /admin/my-questions by default
-    router.push(`/admin/questions/${question.id}/edit?returnUrl=/admin/my-questions`)
-  }, [router, question.id])
+    router.push(`/admin/questions/${question.id}/edit?returnUrl=/admin/my-questions`);
+  }, [router, question.id]);
 
   const handleDelete = useCallback(async () => {
-    if (!window.confirm('Are you sure you want to delete this question? This action cannot be undone.')) {
-      return
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this question? This action cannot be undone."
+      )
+    ) {
+      return;
     }
 
-    setIsDeleting(true)
+    setIsDeleting(true);
     try {
-      await onDelete(question.id)
+      await onDelete(question.id);
     } finally {
-      setIsDeleting(false)
+      setIsDeleting(false);
     }
-  }, [onDelete, question.id])
+  }, [onDelete, question.id]);
 
   return (
     <>
       {/* Main Row */}
-      <tr className={`group hover:bg-muted/50 dark:hover:bg-muted/20 ${
-        isDeleting ? 'opacity-50 pointer-events-none' : ''
-      }`}>
+      <tr
+        className={`group hover:bg-muted/50 dark:hover:bg-muted/20 ${
+          isDeleting ? "opacity-50 pointer-events-none" : ""
+        }`}
+      >
         {/* Question Column */}
         <td className="py-2 pl-4 pr-3 text-sm sm:pl-6">
           <div className="flex items-start gap-2">
-            <button 
+            <button
               onClick={() => setIsExpanded(!isExpanded)}
               className="mt-1 p-0.5 hover:bg-muted/50 dark:hover:bg-muted/20 rounded"
             >
-              {isExpanded ? 
-                <ChevronDownIcon className="h-4 w-4 text-muted-foreground" /> : 
+              {isExpanded ? (
+                <ChevronDownIcon className="h-4 w-4 text-muted-foreground" />
+              ) : (
                 <ChevronRightIcon className="h-4 w-4 text-muted-foreground" />
-              }
+              )}
             </button>
             <div className="flex-1">
               <div className="font-medium text-foreground dark:text-gray-100">
-                {question.body.length > 60
-                  ? `${question.body.substring(0, 60)}...`
-                  : question.body
-                }
+                {question.body.length > 60 ? `${question.body.substring(0, 60)}...` : question.body}
               </div>
             </div>
           </div>
@@ -116,10 +124,7 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
               <TooltipProvider key={category.id}>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] px-1.5 py-0"
-                    >
+                    <Badge variant="outline" className="text-[10px] px-1.5 py-0">
                       {getCategoryDisplayName(category)}
                     </Badge>
                   </TooltipTrigger>
@@ -139,7 +144,7 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
                   </TooltipTrigger>
                   <TooltipContent>
                     <div className="space-y-1">
-                      {question.categories.slice(2).map(category => (
+                      {question.categories.slice(2).map((category) => (
                         <p key={category.id}>{getCategoryPathString(category, categoryPaths)}</p>
                       ))}
                     </div>
@@ -161,14 +166,17 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
                 <ImageIcon className="h-4 w-4" />
                 <span>{question.images.length}</span>
               </button>
-              
+
               {showImages && (
                 <>
                   <div className="fixed inset-0 z-40" onClick={() => setShowImages(false)} />
                   <div className="absolute z-50 mt-2 w-96 bg-background border border-input shadow-lg rounded-md overflow-hidden">
                     <div className="grid grid-cols-2 gap-2 p-2">
                       {question.images.map((image) => (
-                        <div key={image.id} className="relative aspect-square rounded-md overflow-hidden">
+                        <div
+                          key={image.id}
+                          className="relative aspect-square rounded-md overflow-hidden"
+                        >
                           <Image
                             src={image.url}
                             alt={image.alt_text}
@@ -178,9 +186,7 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
                             sizes="(max-width: 768px) 50vw, 33vw"
                           />
                           <div className="absolute bottom-0 left-0 right-0 p-2 bg-linear-to-t from-black/60 to-transparent">
-                            <p className="text-white text-sm truncate">
-                              {image.description}
-                            </p>
+                            <p className="text-white text-sm truncate">{image.description}</p>
                           </div>
                         </div>
                       ))}
@@ -197,13 +203,13 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className={`inline-flex items-center rounded px-1.5 py-0 text-[10px] font-medium ${DIFFICULTY_CONFIG[question.difficulty].color}`}>
+                <span
+                  className={`inline-flex items-center rounded px-1.5 py-0 text-[10px] font-medium ${DIFFICULTY_CONFIG[question.difficulty].color}`}
+                >
                   {DIFFICULTY_CONFIG[question.difficulty].short}
                 </span>
               </TooltipTrigger>
-              <TooltipContent>
-                {question.difficulty}
-              </TooltipContent>
+              <TooltipContent>{question.difficulty}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </td>
@@ -213,13 +219,13 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <span className={`inline-flex items-center rounded px-1.5 py-0 text-[10px] font-medium ${YIELD_CONFIG[question.rank].color}`}>
+                <span
+                  className={`inline-flex items-center rounded px-1.5 py-0 text-[10px] font-medium ${YIELD_CONFIG[question.rank].color}`}
+                >
                   {YIELD_CONFIG[question.rank].short}
                 </span>
               </TooltipTrigger>
-              <TooltipContent>
-                {question.rank.replace('_', ' ')}
-              </TooltipContent>
+              <TooltipContent>{question.rank.replace("_", " ")}</TooltipContent>
             </Tooltip>
           </TooltipProvider>
         </td>
@@ -263,20 +269,23 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
               <div className="font-medium mb-2">Full Question:</div>
               <p className="mb-4 text-muted-foreground dark:text-gray-300">{question.body}</p>
               <div className="font-medium mb-2">Explanation:</div>
-              <p className="mb-2 text-muted-foreground dark:text-gray-300">{question.explanation}</p>
+              <p className="mb-2 text-muted-foreground dark:text-gray-300">
+                {question.explanation}
+              </p>
               {question.reference_text && (
                 <>
                   <div className="font-medium mb-2">Reference:</div>
-                  <p className="text-muted-foreground dark:text-gray-300">{question.reference_text}</p>
+                  <p className="text-muted-foreground dark:text-gray-300">
+                    {question.reference_text}
+                  </p>
                 </>
               )}
             </div>
           </td>
         </tr>
       )}
-
     </>
-  )
-})
+  );
+});
 
-export default QuestionRow
+export default QuestionRow;

@@ -1,98 +1,92 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/shared/services/server'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import { z } from 'zod'
-import { Resend } from 'resend'
-import { createAdminResponseEmail } from '@/shared/utils/email-templates'
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/shared/services/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { z } from "zod";
+import { Resend } from "resend";
+import { createAdminResponseEmail } from "@/shared/utils/email-templates";
 
 // Initialize Resend only if API key is available
-const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const responseSchema = z.object({
-  response: z.string().min(1, 'Response is required'),
-})
+  response: z.string().min(1, "Response is required"),
+});
 
 // Create Supabase client with service role for admin operations (bypasses RLS)
 function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  return createSupabaseClient(supabaseUrl, supabaseServiceKey)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
-export async function POST(
-  request: NextRequest,
-  context: { params: Promise<{ id: string }> }
-) {
+export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
-    const params = await context.params
-    console.log('Inquiry response API called for ID:', params.id)
+    const params = await context.params;
+    console.log("Inquiry response API called for ID:", params.id);
 
     // Use regular client for auth verification
-    const authClient = await createClient()
+    const authClient = await createClient();
     // Use admin client for database operations (bypasses RLS)
-    const supabase = createAdminClient()
-    const inquiryId = params.id
+    const supabase = createAdminClient();
+    const inquiryId = params.id;
 
     // Auth is handled by middleware - user should be admin
-    const { data: { user }, error: authError } = await authClient.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await authClient.auth.getUser();
     if (authError || !user) {
-      console.error('Authentication failed:', authError)
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      console.error("Authentication failed:", authError);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Parse request body
-    const body = await request.json()
-    const validation = responseSchema.safeParse(body)
+    const body = await request.json();
+    const validation = responseSchema.safeParse(body);
 
     if (!validation.success) {
       return NextResponse.json(
-        { error: 'Invalid request data', details: validation.error.errors },
+        { error: "Invalid request data", details: validation.error.errors },
         { status: 400 }
-      )
+      );
     }
 
-    const { response } = validation.data
+    const { response } = validation.data;
 
     // Get the inquiry details
-    console.log('Fetching inquiry with ID:', inquiryId)
+    console.log("Fetching inquiry with ID:", inquiryId);
     const { data: inquiry, error: inquiryError } = await supabase
-      .from('inquiries')
-      .select('*')
-      .eq('id', inquiryId)
-      .single()
+      .from("inquiries")
+      .select("*")
+      .eq("id", inquiryId)
+      .single();
 
     if (inquiryError || !inquiry) {
-      console.error('Inquiry not found:', inquiryError)
-      return NextResponse.json(
-        { error: 'Inquiry not found' },
-        { status: 404 }
-      )
+      console.error("Inquiry not found:", inquiryError);
+      return NextResponse.json({ error: "Inquiry not found" }, { status: 404 });
     }
 
-    console.log('Found inquiry:', inquiry.id, 'from', inquiry.email)
+    console.log("Found inquiry:", inquiry.id, "from", inquiry.email);
 
     // Check if Resend is configured
     if (!resend) {
-      console.warn('Resend API key not configured - running in test mode')
+      console.warn("Resend API key not configured - running in test mode");
       // In test mode, just log the response instead of sending email
-      console.log('TEST MODE - Would send email response:', {
+      console.log("TEST MODE - Would send email response:", {
         to: inquiry.email,
         response: response,
-        inquiryId
-      })
+        inquiryId,
+      });
 
       return NextResponse.json({
         success: true,
-        message: 'Response logged successfully (test mode - no email sent)'
-      })
+        message: "Response logged successfully (test mode - no email sent)",
+      });
     }
 
     // Send email response
     try {
-      console.log('Attempting to send email to:', inquiry.email)
+      console.log("Attempting to send email to:", inquiry.email);
 
       // Create professional email using the template
       const emailContent = createAdminResponseEmail({
@@ -100,62 +94,54 @@ export async function POST(
         lastName: inquiry.last_name,
         requestType: inquiry.request_type,
         originalInquiry: inquiry.inquiry,
-        response: response
-      })
+        response: response,
+      });
 
       // Use verified pathologybites.com domain
       const emailResult = await resend!.emails.send({
-        from: 'Pathology Bites <contact@pathologybites.com>',
+        from: "Pathology Bites <contact@pathologybites.com>",
         to: [inquiry.email],
-        subject: `Re: Your ${inquiry.request_type === 'general' ? 'General' : 'Technical Support'} Inquiry`,
+        subject: `Re: Your ${inquiry.request_type === "general" ? "General" : "Technical Support"} Inquiry`,
         html: emailContent.html,
-        text: emailContent.text
-      })
+        text: emailContent.text,
+      });
 
       if (emailResult.error) {
-        console.error('Email sending failed:', emailResult.error)
+        console.error("Email sending failed:", emailResult.error);
         return NextResponse.json(
-          { error: 'Failed to send email response', details: emailResult.error },
+          { error: "Failed to send email response", details: emailResult.error },
           { status: 500 }
-        )
+        );
       }
 
-      console.log('Email sent successfully to:', inquiry.email)
+      console.log("Email sent successfully to:", inquiry.email);
 
       // Auto-resolve the inquiry after successful response
       const { error: updateError } = await supabase
-        .from('inquiries')
+        .from("inquiries")
         .update({
-          status: 'resolved',
-          updated_at: new Date().toISOString()
+          status: "resolved",
+          updated_at: new Date().toISOString(),
         })
-        .eq('id', inquiryId)
+        .eq("id", inquiryId);
 
       if (updateError) {
-        console.error('Failed to update inquiry status to resolved:', updateError)
+        console.error("Failed to update inquiry status to resolved:", updateError);
         // Don't fail the request since email was sent successfully
       } else {
-        console.log('Inquiry status updated to resolved:', inquiryId)
+        console.log("Inquiry status updated to resolved:", inquiryId);
       }
 
       return NextResponse.json({
         success: true,
-        message: 'Response sent successfully and inquiry marked as resolved'
-      })
-
+        message: "Response sent successfully and inquiry marked as resolved",
+      });
     } catch (emailError) {
-      console.error('Error sending email:', emailError)
-      return NextResponse.json(
-        { error: 'Failed to send email response' },
-        { status: 500 }
-      )
+      console.error("Error sending email:", emailError);
+      return NextResponse.json({ error: "Failed to send email response" }, { status: 500 });
     }
-
   } catch (error) {
-    console.error('Error responding to inquiry:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error("Error responding to inquiry:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

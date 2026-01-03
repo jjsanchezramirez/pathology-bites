@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
 import { Input } from "@/shared/components/ui/input";
@@ -19,8 +19,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { IMAGE_CATEGORIES} from '@/features/images/types/images';
-import { Loader2 } from 'lucide-react';
+import { IMAGE_CATEGORIES } from "@/features/images/types/images";
+import { Loader2 } from "lucide-react";
 
 interface BulkEditDialogProps {
   open: boolean;
@@ -29,23 +29,18 @@ interface BulkEditDialogProps {
   onSave: (data: { category?: string; source_ref?: string }) => Promise<void>;
 }
 
-export function BulkEditDialog({
-  open,
-  onOpenChange,
-  selectedCount,
-  onSave
-}: BulkEditDialogProps) {
-  const [category, setCategory] = useState<string>('');
-  const [sourceRef, setSourceRef] = useState('');
+export function BulkEditDialog({ open, onOpenChange, selectedCount, onSave }: BulkEditDialogProps) {
+  const [category, setCategory] = useState<string>("");
+  const [sourceRef, setSourceRef] = useState("");
   const [isSaving, setIsSaving] = useState(false);
 
   const handleSave = async () => {
     setIsSaving(true);
     try {
       const updates: { category?: string; source_ref?: string } = {};
-      
+
       // Only include fields that have been set
-      if (category && category !== 'no-change') {
+      if (category && category !== "no-change") {
         updates.category = category;
       }
       if (sourceRef.trim()) {
@@ -56,21 +51,21 @@ export function BulkEditDialog({
       if (Object.keys(updates).length > 0) {
         await onSave(updates);
       }
-      
+
       // Reset form
-      setCategory('');
-      setSourceRef('');
+      setCategory("");
+      setSourceRef("");
       onOpenChange(false);
     } catch (error) {
-      console.error('Failed to save bulk edits:', error);
+      console.error("Failed to save bulk edits:", error);
     } finally {
       setIsSaving(false);
     }
   };
 
   const handleCancel = () => {
-    setCategory('');
-    setSourceRef('');
+    setCategory("");
+    setSourceRef("");
     onOpenChange(false);
   };
 
@@ -82,8 +77,8 @@ export function BulkEditDialog({
           <DialogHeader>
             <DialogTitle>Bulk Edit Images</DialogTitle>
             <DialogDescription>
-              Edit metadata for {selectedCount} selected image{selectedCount !== 1 ? 's' : ''}. 
-              Only fields you modify will be updated.
+              Edit metadata for {selectedCount} selected image{selectedCount !== 1 ? "s" : ""}. Only
+              fields you modify will be updated.
             </DialogDescription>
           </DialogHeader>
 
@@ -91,10 +86,7 @@ export function BulkEditDialog({
             {/* Category Selection */}
             <div className="space-y-2">
               <Label htmlFor="bulk-category">Category</Label>
-              <Select
-                value={category}
-                onValueChange={setCategory}
-              >
+              <Select value={category} onValueChange={setCategory}>
                 <SelectTrigger id="bulk-category">
                   <SelectValue placeholder="No change" />
                 </SelectTrigger>
@@ -128,18 +120,13 @@ export function BulkEditDialog({
           </div>
 
           <DialogFooter>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={handleCancel}
-              disabled={isSaving}
-            >
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSaving}>
               Cancel
             </Button>
             <Button
               type="button"
               onClick={handleSave}
-              disabled={isSaving || (category === '' && sourceRef.trim() === '')}
+              disabled={isSaving || (category === "" && sourceRef.trim() === "")}
             >
               {isSaving ? (
                 <>
@@ -147,7 +134,7 @@ export function BulkEditDialog({
                   Updating...
                 </>
               ) : (
-                `Update ${selectedCount} Image${selectedCount !== 1 ? 's' : ''}`
+                `Update ${selectedCount} Image${selectedCount !== 1 ? "s" : ""}`
               )}
             </Button>
           </DialogFooter>
@@ -156,4 +143,3 @@ export function BulkEditDialog({
     </Dialog>
   );
 }
-

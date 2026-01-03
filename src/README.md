@@ -41,16 +41,19 @@ src/
 ## 🏗️ Architecture Patterns
 
 ### App Router Structure
+
 - **Route Groups**: `(admin)`, `(auth)`, `(dashboard)`, `(public)` for logical organization
 - **Role-based Access**: Different route groups for different user roles
 - **API Routes**: RESTful API endpoints in `app/api/`
 
 ### Feature-based Organization
+
 - **Self-contained Features**: Each feature contains its own components, hooks, and logic
 - **Shared Resources**: Common utilities in `shared/` directory
 - **Clear Boundaries**: Features communicate through well-defined interfaces
 
 ### Component Architecture
+
 - **Reusable Components**: Shared UI components in `shared/components/`
 - **Feature Components**: Feature-specific components within feature directories
 - **Composition**: Components built using composition patterns
@@ -58,17 +61,20 @@ src/
 ## 🔧 Technology Stack
 
 ### Frontend
+
 - **Next.js 15** - React framework with App Router
 - **React 19** - UI library with latest features
 - **TypeScript** - Type-safe development
 - **Tailwind CSS v4** - Utility-first styling
 
 ### Backend Integration
+
 - **Supabase** - Database, authentication, and storage
 - **API Routes** - Server-side logic and data processing
 - **Middleware** - Request processing and authentication
 
 ### Testing
+
 - **Jest** - Unit testing framework
 - **Testing Library** - Component testing utilities
 - **Playwright** - End-to-end testing
@@ -76,21 +82,25 @@ src/
 ## 🎯 Key Features
 
 ### Authentication & Authorization
+
 - 4-role system (Admin, Creator, Reviewer, User)
 - Row Level Security (RLS) integration
 - Protected routes and components
 
 ### Question Management
+
 - Question creation and editing
 - Review workflow system
 - Version control and approval process
 
 ### Educational Tools
+
 - Interactive quizzes
 - Cell identification tools
 - Image galleries and references
 
 ### Admin Features
+
 - User management
 - Content moderation
 - System monitoring
@@ -98,6 +108,7 @@ src/
 ## 🔄 Development Workflow
 
 ### Adding New Features
+
 1. Create feature directory in `features/`
 2. Implement components, hooks, and services
 3. Add routes in appropriate `app/` subdirectory
@@ -105,6 +116,7 @@ src/
 5. Add tests in `__tests__/`
 
 ### Code Organization
+
 - **Single Responsibility**: Each module has a clear purpose
 - **Dependency Direction**: Features depend on shared, not vice versa
 - **Type Safety**: Comprehensive TypeScript coverage
@@ -113,12 +125,14 @@ src/
 ## 📋 Maintenance
 
 ### Code Quality
+
 - ESLint configuration for consistent code style
 - TypeScript strict mode for type safety
 - Prettier for code formatting
 - Husky for pre-commit hooks
 
 ### Performance
+
 - Next.js optimizations (SSR, SSG, ISR)
 - Image optimization and lazy loading
 - Code splitting and dynamic imports

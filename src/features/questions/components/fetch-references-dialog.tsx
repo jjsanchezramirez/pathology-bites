@@ -1,44 +1,44 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
+import { useState } from "react";
 import {
   Dialog,
   DialogContent,
   DialogDescription,
   DialogHeader,
   DialogTitle,
-} from '@/shared/components/ui/dialog'
-import { Button } from '@/shared/components/ui/button'
-import { Input } from '@/shared/components/ui/input'
-import { Label } from '@/shared/components/ui/label'
+} from "@/shared/components/ui/dialog";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Label } from "@/shared/components/ui/label";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select'
-import { Checkbox } from '@/shared/components/ui/checkbox'
-import { Loader2, Search, ExternalLink } from 'lucide-react'
-import { Badge } from '@/shared/components/ui/badge'
+} from "@/shared/components/ui/select";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+import { Loader2, Search, ExternalLink } from "lucide-react";
+import { Badge } from "@/shared/components/ui/badge";
 
 interface Paper {
-  paperId: string
-  title: string
-  authors: string[]
-  year: number
-  venue: string
-  journal: string
-  citationCount: number
-  isOpenAccess: boolean
-  url: string
+  paperId: string;
+  title: string;
+  authors: string[];
+  year: number;
+  venue: string;
+  journal: string;
+  citationCount: number;
+  isOpenAccess: boolean;
+  url: string;
 }
 
 interface FetchReferencesDialogProps {
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  searchQuery: string
-  onReferencesSelected: (references: string[]) => void
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  searchQuery: string;
+  onReferencesSelected: (references: string[]) => void;
 }
 
 export function FetchReferencesDialog({
@@ -47,78 +47,78 @@ export function FetchReferencesDialog({
   searchQuery,
   onReferencesSelected,
 }: FetchReferencesDialogProps) {
-  const [query, setQuery] = useState(searchQuery)
-  const [sortBy, setSortBy] = useState('relevance')
-  const [yearRange, setYearRange] = useState('all')
-  const [venue, setVenue] = useState('all')
-  const [publicationType, setPublicationType] = useState('all')
-  const [onlyOpenAccess, setOnlyOpenAccess] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [results, setResults] = useState<Paper[]>([])
-  const [selectedPapers, setSelectedPapers] = useState<Set<string>>(new Set())
-  const [error, setError] = useState<string | null>(null)
+  const [query, setQuery] = useState(searchQuery);
+  const [sortBy, setSortBy] = useState("relevance");
+  const [yearRange, setYearRange] = useState("all");
+  const [venue, setVenue] = useState("all");
+  const [publicationType, setPublicationType] = useState("all");
+  const [onlyOpenAccess, setOnlyOpenAccess] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [results, setResults] = useState<Paper[]>([]);
+  const [selectedPapers, setSelectedPapers] = useState<Set<string>>(new Set());
+  const [error, setError] = useState<string | null>(null);
 
   const handleSearch = async () => {
-    if (!query.trim()) return
+    if (!query.trim()) return;
 
-    setLoading(true)
-    setError(null)
-    setResults([])
-    setSelectedPapers(new Set())
+    setLoading(true);
+    setError(null);
+    setResults([]);
+    setSelectedPapers(new Set());
 
     try {
       const params = new URLSearchParams({
         query,
-        limit: '5',
+        limit: "5",
         sortBy,
         yearRange,
-        venue: venue === 'all' ? '' : venue,
-        publicationType: publicationType === 'all' ? '' : publicationType,
+        venue: venue === "all" ? "" : venue,
+        publicationType: publicationType === "all" ? "" : publicationType,
         onlyOpenAccess: onlyOpenAccess.toString(),
-      })
+      });
 
-      const response = await fetch(`/api/admin/fetch-references?${params.toString()}`)
+      const response = await fetch(`/api/admin/fetch-references?${params.toString()}`);
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`)
+        throw new Error(`API error: ${response.status}`);
       }
 
-      const data = await response.json()
-      setResults(data.papers || [])
+      const data = await response.json();
+      setResults(data.papers || []);
     } catch (err) {
-      console.error('Error fetching references:', err)
-      setError(err instanceof Error ? err.message : 'Failed to fetch references')
+      console.error("Error fetching references:", err);
+      setError(err instanceof Error ? err.message : "Failed to fetch references");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const togglePaperSelection = (paperId: string) => {
-    const newSelected = new Set(selectedPapers)
+    const newSelected = new Set(selectedPapers);
     if (newSelected.has(paperId)) {
-      newSelected.delete(paperId)
+      newSelected.delete(paperId);
     } else {
-      newSelected.add(paperId)
+      newSelected.add(paperId);
     }
-    setSelectedPapers(newSelected)
-  }
+    setSelectedPapers(newSelected);
+  };
 
   const handleInsertReferences = () => {
     const selectedRefs = results
       .filter((paper) => selectedPapers.has(paper.paperId))
       .map((paper) => {
-        const authors = paper.authors.slice(0, 3).join(', ')
-        const moreAuthors = paper.authors.length > 3 ? ' et al.' : ''
-        const year = paper.year || 'n.d.'
-        const title = paper.title
-        const venue = paper.venue || paper.journal || ''
-        const venueText = venue ? ` ${venue}.` : ''
-        return `${authors}${moreAuthors}. (${year}). ${title}.${venueText} ${paper.url}`
-      })
+        const authors = paper.authors.slice(0, 3).join(", ");
+        const moreAuthors = paper.authors.length > 3 ? " et al." : "";
+        const year = paper.year || "n.d.";
+        const title = paper.title;
+        const venue = paper.venue || paper.journal || "";
+        const venueText = venue ? ` ${venue}.` : "";
+        return `${authors}${moreAuthors}. (${year}). ${title}.${venueText} ${paper.url}`;
+      });
 
-    onReferencesSelected(selectedRefs)
-    onOpenChange(false)
-  }
+    onReferencesSelected(selectedRefs);
+    onOpenChange(false);
+  };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -134,7 +134,9 @@ export function FetchReferencesDialog({
           <div className="space-y-6">
             {/* Search Query */}
             <div className="space-y-2">
-              <Label htmlFor="search-query" className="text-sm font-medium">Search Query</Label>
+              <Label htmlFor="search-query" className="text-sm font-medium">
+                Search Query
+              </Label>
               <Input
                 id="search-query"
                 value={query}
@@ -142,8 +144,8 @@ export function FetchReferencesDialog({
                 placeholder="Enter search terms..."
                 className="bg-background"
                 onKeyDown={(e) => {
-                  if (e.key === 'Enter') {
-                    handleSearch()
+                  if (e.key === "Enter") {
+                    handleSearch();
                   }
                 }}
               />
@@ -153,7 +155,9 @@ export function FetchReferencesDialog({
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
               {/* Sort By */}
               <div className="space-y-2">
-                <Label htmlFor="sort-by" className="text-sm font-medium">Sort By</Label>
+                <Label htmlFor="sort-by" className="text-sm font-medium">
+                  Sort By
+                </Label>
                 <Select value={sortBy} onValueChange={setSortBy}>
                   <SelectTrigger id="sort-by" className="bg-background">
                     <SelectValue />
@@ -168,7 +172,9 @@ export function FetchReferencesDialog({
 
               {/* Year Range */}
               <div className="space-y-2">
-                <Label htmlFor="year-range" className="text-sm font-medium">Year Range</Label>
+                <Label htmlFor="year-range" className="text-sm font-medium">
+                  Year Range
+                </Label>
                 <Select value={yearRange} onValueChange={setYearRange}>
                   <SelectTrigger id="year-range" className="bg-background">
                     <SelectValue />
@@ -185,7 +191,9 @@ export function FetchReferencesDialog({
 
               {/* Venue */}
               <div className="space-y-2">
-                <Label htmlFor="venue" className="text-sm font-medium">Venue</Label>
+                <Label htmlFor="venue" className="text-sm font-medium">
+                  Venue
+                </Label>
                 <Select value={venue} onValueChange={setVenue}>
                   <SelectTrigger id="venue" className="bg-background">
                     <SelectValue />
@@ -199,7 +207,9 @@ export function FetchReferencesDialog({
 
               {/* Publication Type */}
               <div className="space-y-2">
-                <Label htmlFor="publication-type" className="text-sm font-medium">Publication Type</Label>
+                <Label htmlFor="publication-type" className="text-sm font-medium">
+                  Publication Type
+                </Label>
                 <Select value={publicationType} onValueChange={setPublicationType}>
                   <SelectTrigger id="publication-type" className="bg-background">
                     <SelectValue />
@@ -222,10 +232,7 @@ export function FetchReferencesDialog({
                   checked={onlyOpenAccess}
                   onCheckedChange={(checked) => setOnlyOpenAccess(checked as boolean)}
                 />
-                <Label
-                  htmlFor="open-access"
-                  className="text-sm font-normal cursor-pointer"
-                >
+                <Label htmlFor="open-access" className="text-sm font-normal cursor-pointer">
                   Open Access only
                 </Label>
               </div>
@@ -261,9 +268,7 @@ export function FetchReferencesDialog({
               <div className="space-y-4">
                 <div className="flex items-center justify-between py-2 border-b">
                   <h3 className="font-semibold text-foreground">Results ({results.length})</h3>
-                  <p className="text-sm text-muted-foreground">
-                    {selectedPapers.size} selected
-                  </p>
+                  <p className="text-sm text-muted-foreground">{selectedPapers.size} selected</p>
                 </div>
 
                 <div className="space-y-3">
@@ -272,8 +277,8 @@ export function FetchReferencesDialog({
                       key={paper.paperId}
                       className={`border rounded-lg p-4 cursor-pointer transition-all ${
                         selectedPapers.has(paper.paperId)
-                          ? 'bg-primary/5 border-primary ring-1 ring-primary/20'
-                          : 'bg-card hover:bg-accent/50 border-border'
+                          ? "bg-primary/5 border-primary ring-1 ring-primary/20"
+                          : "bg-card hover:bg-accent/50 border-border"
                       }`}
                       onClick={() => togglePaperSelection(paper.paperId)}
                     >
@@ -286,12 +291,14 @@ export function FetchReferencesDialog({
                         />
                         <div className="flex-1 min-w-0 space-y-2">
                           {/* Title */}
-                          <h4 className="font-semibold leading-tight text-foreground">{paper.title}</h4>
+                          <h4 className="font-semibold leading-tight text-foreground">
+                            {paper.title}
+                          </h4>
 
                           {/* Authors and Year */}
                           <p className="text-sm text-muted-foreground">
-                            {paper.authors.slice(0, 3).join(', ')}
-                            {paper.authors.length > 3 && ' et al.'} ({paper.year})
+                            {paper.authors.slice(0, 3).join(", ")}
+                            {paper.authors.length > 3 && " et al."} ({paper.year})
                           </p>
 
                           {/* Venue and Badges */}
@@ -347,16 +354,12 @@ export function FetchReferencesDialog({
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>
-          <Button
-            onClick={handleInsertReferences}
-            disabled={selectedPapers.size === 0}
-          >
-            Insert {selectedPapers.size > 0 ? `(${selectedPapers.size})` : ''} Reference
-            {selectedPapers.size !== 1 ? 's' : ''}
+          <Button onClick={handleInsertReferences} disabled={selectedPapers.size === 0}>
+            Insert {selectedPapers.size > 0 ? `(${selectedPapers.size})` : ""} Reference
+            {selectedPapers.size !== 1 ? "s" : ""}
           </Button>
         </div>
       </DialogContent>
     </Dialog>
-  )
+  );
 }
-

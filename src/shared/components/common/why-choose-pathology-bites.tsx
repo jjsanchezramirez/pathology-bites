@@ -1,20 +1,17 @@
 // src/shared/components/common/why-choose-pathology-bites.tsx
-import { BookOpen, Users, Target, Heart, Zap, GitBranch } from "lucide-react"
+import { BookOpen, Users, Target, Heart, Zap, GitBranch } from "lucide-react";
 
 interface WhyChoosePathologyBitesProps {
   /** Optional ID for the section (useful for navigation) */
-  id?: string
+  id?: string;
   /** Additional CSS classes for the section */
-  className?: string
+  className?: string;
 }
 
-export function WhyChoosePathologyBites({ 
-  id,
-  className = ""
-}: WhyChoosePathologyBitesProps) {
+export function WhyChoosePathologyBites({ id, className = "" }: WhyChoosePathologyBitesProps) {
   return (
-    <section 
-      id={id} 
+    <section
+      id={id}
       className={`relative py-24 bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800 ${className}`}
     >
       <div className="container mx-auto px-4 relative">
@@ -24,11 +21,14 @@ export function WhyChoosePathologyBites({
             <div className="space-y-6">
               <h2 className="text-4xl font-bold">
                 Why choose{" "}
-                <span className="text-primary underline decoration-primary/30">Pathology Bites?</span>
+                <span className="text-primary underline decoration-primary/30">
+                  Pathology Bites?
+                </span>
               </h2>
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Built by pathology residents who understand the real challenges of board preparation.
-                Every feature is designed to help you learn more efficiently and retain information better.
+                Built by pathology residents who understand the real challenges of board
+                preparation. Every feature is designed to help you learn more efficiently and retain
+                information better.
               </p>
             </div>
 
@@ -40,7 +40,8 @@ export function WhyChoosePathologyBites({
                   <h3 className="font-semibold">ABPath Aligned</h3>
                 </div>
                 <p className="text-sm text-muted-foreground ml-8">
-                  Every question maps to official pathology board content specifications, ensuring focused study.
+                  Every question maps to official pathology board content specifications, ensuring
+                  focused study.
                 </p>
               </div>
 
@@ -50,7 +51,8 @@ export function WhyChoosePathologyBites({
                   <h3 className="font-semibold">Resident Created</h3>
                 </div>
                 <p className="text-sm text-muted-foreground ml-8">
-                  Made by residents who recently took boards, with input from those who know what actually matters.
+                  Made by residents who recently took boards, with input from those who know what
+                  actually matters.
                 </p>
               </div>
 
@@ -60,7 +62,8 @@ export function WhyChoosePathologyBites({
                   <h3 className="font-semibold">High-Yield Focus</h3>
                 </div>
                 <p className="text-sm text-muted-foreground ml-8">
-                  Essential concepts and board-relevant topics, not obscure facts that won't help you succeed.
+                  Essential concepts and board-relevant topics, not obscure facts that won't help
+                  you succeed.
                 </p>
               </div>
 
@@ -80,7 +83,8 @@ export function WhyChoosePathologyBites({
                   <h3 className="font-semibold">Interactive Learning</h3>
                 </div>
                 <p className="text-sm text-muted-foreground ml-8">
-                  Bite-sized questions with instant feedback and detailed explanations for better retention.
+                  Bite-sized questions with instant feedback and detailed explanations for better
+                  retention.
                 </p>
               </div>
 
@@ -90,7 +94,8 @@ export function WhyChoosePathologyBites({
                   <h3 className="font-semibold">Community Driven</h3>
                 </div>
                 <p className="text-sm text-muted-foreground ml-8">
-                  Open source project where residents and faculty contribute questions, images, and improvements.
+                  Open source project where residents and faculty contribute questions, images, and
+                  improvements.
                 </p>
               </div>
             </div>
@@ -98,5 +103,5 @@ export function WhyChoosePathologyBites({
         </div>
       </div>
     </section>
-  )
+  );
 }

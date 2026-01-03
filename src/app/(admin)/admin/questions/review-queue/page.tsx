@@ -1,16 +1,16 @@
 // src/app/(admin)/admin/questions/review-queue/page.tsx
-'use client'
+"use client";
 
-import { useEffect } from 'react'
-import { useRouter } from 'next/navigation'
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 
 export default function ReviewQueuePage() {
-  const router = useRouter()
+  const router = useRouter();
 
   useEffect(() => {
     // Redirect to unified review queue
-    router.replace('/admin/review-queue')
-  }, [router])
+    router.replace("/admin/review-queue");
+  }, [router]);
   return (
     <div className="flex items-center justify-center py-12">
       <div className="text-center">
@@ -18,5 +18,5 @@ export default function ReviewQueuePage() {
         <p className="text-sm text-muted-foreground mt-2">Redirecting to Review Queue...</p>
       </div>
     </div>
-  )
+  );
 }

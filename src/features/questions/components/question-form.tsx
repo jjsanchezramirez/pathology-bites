@@ -1,10 +1,10 @@
-import React from 'react';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import * as z from 'zod';
-import { Button } from '@/shared/components/ui/button';
-import { Input } from '@/shared/components/ui/input';
-import { Textarea } from '@/shared/components/ui/textarea';
+import React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Button } from "@/shared/components/ui/button";
+import { Input } from "@/shared/components/ui/input";
+import { Textarea } from "@/shared/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -12,24 +12,24 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-} from '@/shared/components/ui/form';
+} from "@/shared/components/ui/form";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card';
-import { Icons } from '@/shared/components/common/icons';
+} from "@/shared/components/ui/select";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Icons } from "@/shared/components/common/icons";
 
 // Define the question schema
 const questionSchema = z.object({
-  body: z.string().min(10, 'Question must be at least 10 characters'),
-  explanation: z.string().min(10, 'Explanation must be at least 10 characters'),
-  difficulty: z.enum(['easy', 'medium', 'hard']),
-  yield: z.enum(['low', 'medium', 'high']),
-  categories: z.array(z.string()).min(1, 'Select at least one category'),
+  body: z.string().min(10, "Question must be at least 10 characters"),
+  explanation: z.string().min(10, "Explanation must be at least 10 characters"),
+  difficulty: z.enum(["easy", "medium", "hard"]),
+  yield: z.enum(["low", "medium", "high"]),
+  categories: z.array(z.string()).min(1, "Select at least one category"),
   reference_text: z.string().optional(),
 });
 
@@ -47,12 +47,12 @@ export function QuestionForm({ initialData, onSubmit, isEdit = false }: Question
   const form = useForm<QuestionFormData>({
     resolver: zodResolver(questionSchema),
     defaultValues: {
-      body: initialData?.body || '',
-      explanation: initialData?.explanation || '',
-      difficulty: initialData?.difficulty || 'medium',
-      yield: initialData?.yield || 'medium',
+      body: initialData?.body || "",
+      explanation: initialData?.explanation || "",
+      difficulty: initialData?.difficulty || "medium",
+      yield: initialData?.yield || "medium",
       categories: initialData?.categories || [],
-      reference_text: initialData?.reference_text || '',
+      reference_text: initialData?.reference_text || "",
     },
   });
 
@@ -68,7 +68,7 @@ export function QuestionForm({ initialData, onSubmit, isEdit = false }: Question
   return (
     <Card>
       <CardHeader>
-        <CardTitle>{isEdit ? 'Edit Question' : 'Create New Question'}</CardTitle>
+        <CardTitle>{isEdit ? "Edit Question" : "Create New Question"}</CardTitle>
       </CardHeader>
       <CardContent>
         <Form {...form}>
@@ -99,10 +99,7 @@ export function QuestionForm({ initialData, onSubmit, isEdit = false }: Question
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Difficulty</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select difficulty" />
@@ -126,10 +123,7 @@ export function QuestionForm({ initialData, onSubmit, isEdit = false }: Question
               render={({ field }) => (
                 <FormItem>
                   <FormLabel>Yield</FormLabel>
-                  <Select
-                    onValueChange={field.onChange}
-                    defaultValue={field.value}
-                  >
+                  <Select onValueChange={field.onChange} defaultValue={field.value}>
                     <FormControl>
                       <SelectTrigger>
                         <SelectValue placeholder="Select yield" />
@@ -173,10 +167,7 @@ export function QuestionForm({ initialData, onSubmit, isEdit = false }: Question
                 <FormItem>
                   <FormLabel>Reference (Optional)</FormLabel>
                   <FormControl>
-                    <Input
-                      placeholder="Enter reference text..."
-                      {...field}
-                    />
+                    <Input placeholder="Enter reference text..." {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -184,18 +175,15 @@ export function QuestionForm({ initialData, onSubmit, isEdit = false }: Question
             />
 
             {/* Submit Button */}
-            <Button
-              type="submit"
-              className="w-full"
-              disabled={isSubmitting}
-            >
-              {isSubmitting && (
-                <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />
-              )}
+            <Button type="submit" className="w-full" disabled={isSubmitting}>
+              {isSubmitting && <Icons.spinner className="mr-2 h-4 w-4 animate-spin" />}
               {isSubmitting
-                ? isEdit ? 'Saving...' : 'Creating...'
-                : isEdit ? 'Save Changes' : 'Create Question'
-              }
+                ? isEdit
+                  ? "Saving..."
+                  : "Creating..."
+                : isEdit
+                  ? "Save Changes"
+                  : "Create Question"}
             </Button>
           </form>
         </Form>

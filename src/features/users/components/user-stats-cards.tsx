@@ -1,25 +1,17 @@
-'use client'
+"use client";
 
 // User statistics cards for user management dashboard
-import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
+import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import {
-  Loader2,
-  Users,
-  UserCheck,
-  UserX,
-  UserMinus,
-  UserCog,
-
-} from 'lucide-react';
-import { toast } from '@/shared/utils/toast';
-import { getFormattedUserStats, UserStatsFormatted } from '@/features/users/services/user-stats';
+import { Loader2, Users, UserCheck, UserX, UserMinus, UserCog } from "lucide-react";
+import { toast } from "@/shared/utils/toast";
+import { getFormattedUserStats, UserStatsFormatted } from "@/features/users/services/user-stats";
 
 export interface UserStatsRef {
   refresh: () => void;
 }
 
-const CACHE_KEY = 'user-stats-cache';
+const CACHE_KEY = "user-stats-cache";
 const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
 
 export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
@@ -50,14 +42,16 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
       setStats(data);
 
       // Cache the result in localStorage
-      localStorage.setItem(CACHE_KEY, JSON.stringify({
-        data,
-        timestamp: Date.now()
-      }));
-
+      localStorage.setItem(
+        CACHE_KEY,
+        JSON.stringify({
+          data,
+          timestamp: Date.now(),
+        })
+      );
     } catch (error) {
-      console.error('Failed to load user stats:', error);
-      toast.error('Failed to load user statistics');
+      console.error("Failed to load user stats:", error);
+      toast.error("Failed to load user statistics");
     } finally {
       setLoading(false);
     }
@@ -69,7 +63,7 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
 
   // Expose refresh function via ref
   useImperativeHandle(ref, () => ({
-    refresh: () => loadStats(true)
+    refresh: () => loadStats(true),
   }));
 
   if (loading) {
@@ -114,7 +108,8 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
         <CardContent>
           <div className="text-2xl font-bold">{stats.totalUsers.count}</div>
           <div className="text-xs text-muted-foreground">
-            Internal Users: {stats.totalUsers.breakdown.internal}, End Users: {stats.totalUsers.breakdown.endUsers}
+            Internal Users: {stats.totalUsers.breakdown.internal}, End Users:{" "}
+            {stats.totalUsers.breakdown.endUsers}
           </div>
         </CardContent>
       </Card>
@@ -128,7 +123,9 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
         <CardContent>
           <div className="text-2xl font-bold">{stats.internalUsers.count}</div>
           <div className="text-xs text-muted-foreground">
-            Admin: {stats.internalUsers.breakdown.admins}, Creator: {stats.internalUsers.breakdown.creators}, Reviewer: {stats.internalUsers.breakdown.reviewers}
+            Admin: {stats.internalUsers.breakdown.admins}, Creator:{" "}
+            {stats.internalUsers.breakdown.creators}, Reviewer:{" "}
+            {stats.internalUsers.breakdown.reviewers}
           </div>
         </CardContent>
       </Card>
@@ -141,9 +138,7 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-green-600">{stats.activeUsers.count}</div>
-          <p className="text-xs text-muted-foreground">
-            {stats.activeUsers.description}
-          </p>
+          <p className="text-xs text-muted-foreground">{stats.activeUsers.description}</p>
         </CardContent>
       </Card>
 
@@ -178,4 +173,4 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
   );
 });
 
-UserStatsCards.displayName = 'UserStatsCards';
+UserStatsCards.displayName = "UserStatsCards";

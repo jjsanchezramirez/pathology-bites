@@ -1,13 +1,12 @@
 // src/shared/components/common/three-core-features.tsx
-'use client'
+"use client";
 
-import { Target, Microscope, Wrench } from "lucide-react"
-import { Button } from "@/shared/components/ui/button"
-import Link from "next/link"
-
+import { Target, Microscope, Wrench } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import Link from "next/link";
 
 interface ThreeCoreFeaturesProps {
-  className?: string
+  className?: string;
 }
 
 export function ThreeCoreFeatures({ className = "" }: ThreeCoreFeaturesProps) {
@@ -15,42 +14,45 @@ export function ThreeCoreFeatures({ className = "" }: ThreeCoreFeaturesProps) {
     {
       icon: Target,
       title: "Comprehensive Question Bank",
-      description: "Unlimited AI-generated questions plus expert-curated content covering all 22 pathology subspecialties with detailed explanations",
+      description:
+        "Unlimited AI-generated questions plus expert-curated content covering all 22 pathology subspecialties with detailed explanations",
       screenshot: "/images/screenshots/qbank-preview.png",
-      screenshotAlt: "Pathology Bites question bank interface showing interactive quiz with detailed explanations",
+      screenshotAlt:
+        "Pathology Bites question bank interface showing interactive quiz with detailed explanations",
       ctaText: "Start Practicing",
       ctaHref: "/signup",
-      badge: "∞ Questions"
+      badge: "∞ Questions",
     },
     {
       icon: Microscope,
       title: "Whole Slide Image Library",
-      description: "Search thousands of high-resolution digital pathology slides from top institutions including Leeds, MGH, PathPresenter, and University of Toronto",
+      description:
+        "Search thousands of high-resolution digital pathology slides from top institutions including Leeds, MGH, PathPresenter, and University of Toronto",
       screenshot: "/images/screenshots/wsi-search-preview.png",
-      screenshotAlt: "Virtual slide search engine showing whole slide images from multiple institutions",
+      screenshotAlt:
+        "Virtual slide search engine showing whole slide images from multiple institutions",
       ctaText: "Browse Slides",
       ctaHref: "/tools/virtual-slides",
-      badge: "1000+ Slides"
+      badge: "1000+ Slides",
     },
     {
       icon: Wrench,
       title: "Interactive Learning Tools",
-      description: "Anki deck visualizer, differential cell counter, gene finder, LAC calculator, and specialized study tools built for pathology residents",
+      description:
+        "Anki deck visualizer, differential cell counter, gene finder, LAC calculator, and specialized study tools built for pathology residents",
       screenshot: "/images/screenshots/tools-preview.png",
       screenshotAlt: "Interactive learning tools including Anki deck visualizer and cell counter",
       ctaText: "Explore Tools",
       ctaHref: "/tools",
-      badge: "8+ Tools"
-    }
-  ]
+      badge: "8+ Tools",
+    },
+  ];
 
   return (
     <section className={`relative py-24 bg-gradient-to-b from-background to-muted/30 ${className}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center max-w-3xl mx-auto mb-16">
-          <h2 className="text-4xl font-bold mb-4">
-            Three Platforms in One
-          </h2>
+          <h2 className="text-4xl font-bold mb-4">Three Platforms in One</h2>
           <p className="text-xl text-muted-foreground">
             Everything you need to master pathology, integrated into a single powerful platform
           </p>
@@ -58,7 +60,7 @@ export function ThreeCoreFeatures({ className = "" }: ThreeCoreFeaturesProps) {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 max-w-7xl mx-auto">
           {features.map((feature, index) => {
-            const Icon = feature.icon
+            const Icon = feature.icon;
             return (
               <div
                 key={index}
@@ -95,9 +97,7 @@ export function ThreeCoreFeatures({ className = "" }: ThreeCoreFeaturesProps) {
                     <h3 className="text-xl font-bold">{feature.title}</h3>
                   </div>
 
-                  <p className="text-muted-foreground leading-relaxed">
-                    {feature.description}
-                  </p>
+                  <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
 
                   <Link href={feature.ctaHref}>
                     <Button
@@ -109,10 +109,10 @@ export function ThreeCoreFeatures({ className = "" }: ThreeCoreFeaturesProps) {
                   </Link>
                 </div>
               </div>
-            )
+            );
           })}
         </div>
       </div>
     </section>
-  )
+  );
 }

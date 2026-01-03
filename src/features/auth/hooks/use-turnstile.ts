@@ -1,13 +1,13 @@
 // src/features/auth/hooks/use-turnstile.ts
-'use client'
+"use client";
 
-import { useState, useCallback } from 'react'
+import { useState, useCallback } from "react";
 
 interface UseTurnstileReturn {
-  captchaToken: string | null
-  setCaptchaToken: (token: string | null) => void
-  resetCaptcha: () => void
-  isCaptchaValid: () => boolean
+  captchaToken: string | null;
+  setCaptchaToken: (token: string | null) => void;
+  resetCaptcha: () => void;
+  isCaptchaValid: () => boolean;
 }
 
 /**
@@ -17,21 +17,20 @@ interface UseTurnstileReturn {
  * @returns Object containing captcha token state and utility functions
  */
 export function useTurnstile(): UseTurnstileReturn {
-  const [captchaToken, setCaptchaToken] = useState<string | null>(null)
+  const [captchaToken, setCaptchaToken] = useState<string | null>(null);
 
   const resetCaptcha = useCallback(() => {
-    setCaptchaToken(null)
-  }, [])
+    setCaptchaToken(null);
+  }, []);
 
   const isCaptchaValid = useCallback(() => {
-    return captchaToken !== null && captchaToken.length > 0
-  }, [captchaToken])
+    return captchaToken !== null && captchaToken.length > 0;
+  }, [captchaToken]);
 
   return {
     captchaToken,
     setCaptchaToken,
     resetCaptcha,
     isCaptchaValid,
-  }
+  };
 }
-

@@ -1,119 +1,119 @@
 // src/shared/components/common/contact-form.tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from "@/shared/components/ui/button"
-import { Card } from "@/shared/components/ui/card"
-import { Label } from "@/shared/components/ui/label"
-import { Input } from "@/shared/components/ui/input"
-import { Textarea } from "@/shared/components/ui/textarea"
-import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group"
-import { toast } from '@/shared/utils/toast'
-import { Icons } from "@/shared/components/common/icons"
-import { submitContactForm } from '@/app/api/public/contact/contact'
+import { useState } from "react";
+import { Button } from "@/shared/components/ui/button";
+import { Card } from "@/shared/components/ui/card";
+import { Label } from "@/shared/components/ui/label";
+import { Input } from "@/shared/components/ui/input";
+import { Textarea } from "@/shared/components/ui/textarea";
+import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
+import { toast } from "@/shared/utils/toast";
+import { Icons } from "@/shared/components/common/icons";
+import { submitContactForm } from "@/app/api/public/contact/contact";
 
 type FormData = {
-  requestType: 'technical' | 'general'
-  firstName: string
-  lastName: string
-  organization: string
-  email: string
-  inquiry: string
-}
+  requestType: "technical" | "general";
+  firstName: string;
+  lastName: string;
+  organization: string;
+  email: string;
+  inquiry: string;
+};
 
 type FormErrors = {
-  [K in keyof FormData]?: string
-}
+  [K in keyof FormData]?: string;
+};
 
 // Update the interface to match Zod's error structure
 interface ZodIssue {
-  path: (string | number)[]  // This is the correct type for Zod path
-  message: string
+  path: (string | number)[]; // This is the correct type for Zod path
+  message: string;
   // Other Zod issue properties can be included if needed
 }
 
 export function ContactForm() {
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [errors, setErrors] = useState<FormErrors>({})
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<FormErrors>({});
   const [formData, setFormData] = useState<FormData>({
-    requestType: 'general',
-    firstName: '',
-    lastName: '',
-    organization: '',
-    email: '',
-    inquiry: ''
-  })
+    requestType: "general",
+    firstName: "",
+    lastName: "",
+    organization: "",
+    email: "",
+    inquiry: "",
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setIsSubmitting(true)
-    setErrors({})
-    console.log('Form submitted:', formData)
+    e.preventDefault();
+    setIsSubmitting(true);
+    setErrors({});
+    console.log("Form submitted:", formData);
 
     try {
-      const result = await submitContactForm(formData)
-      console.log('Submission result:', result)
+      const result = await submitContactForm(formData);
+      console.log("Submission result:", result);
 
       if (result.success) {
-        toast.success("Thanks for reaching out! We'll get back to you soon.")
+        toast.success("Thanks for reaching out! We'll get back to you soon.");
 
         // Reset form
         setFormData({
-          requestType: 'general',
-          firstName: '',
-          lastName: '',
-          organization: '',
-          email: '',
-          inquiry: ''
-        })
+          requestType: "general",
+          firstName: "",
+          lastName: "",
+          organization: "",
+          email: "",
+          inquiry: "",
+        });
       } else {
         if (result.details && Array.isArray(result.details)) {
           // Handle Zod validation errors - fix the type here
-          const newErrors: FormErrors = {}
+          const newErrors: FormErrors = {};
           result.details.forEach((error: ZodIssue) => {
             // Safely handle the path - it could be a string or number
-            const pathSegment = error.path[0]
-            const path = String(pathSegment) // Convert to string regardless of type
-            newErrors[path as keyof FormData] = error.message
-          })
-          setErrors(newErrors)
+            const pathSegment = error.path[0];
+            const path = String(pathSegment); // Convert to string regardless of type
+            newErrors[path as keyof FormData] = error.message;
+          });
+          setErrors(newErrors);
         } else {
-          toast.error(result.error || 'Something went wrong. Please try again.')
+          toast.error(result.error || "Something went wrong. Please try again.");
         }
-        console.error('Submission error:', result)
+        console.error("Submission error:", result);
       }
     } catch (error) {
-      console.error('Form submission error:', error)
-      toast.error("Something went wrong. Please try again.")
+      console.error("Form submission error:", error);
+      toast.error("Something went wrong. Please try again.");
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
-  }
+  };
 
   // Type for Radio Group Value Change Event
   type RadioChangeEvent = {
     target: {
       name: string;
-      value: 'technical' | 'general';
-    }
-  }
+      value: "technical" | "general";
+    };
+  };
 
   const handleChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement> | RadioChangeEvent
   ) => {
-    const { name, value } = e.target
-    setFormData(prev => ({
+    const { name, value } = e.target;
+    setFormData((prev) => ({
       ...prev,
-      [name]: value
-    }))
+      [name]: value,
+    }));
     // Clear error for this field when user starts typing
     if (errors[name as keyof FormData]) {
-      setErrors(prev => ({
+      setErrors((prev) => ({
         ...prev,
-        [name]: undefined
-      }))
+        [name]: undefined,
+      }));
     }
-  }
+  };
 
   return (
     <section className="py-16 relative">
@@ -126,7 +126,9 @@ export function ContactForm() {
               <RadioGroup
                 name="requestType"
                 value={formData.requestType}
-                onValueChange={(value) => handleChange({ target: { name: 'requestType', value } } as RadioChangeEvent)}
+                onValueChange={(value) =>
+                  handleChange({ target: { name: "requestType", value } } as RadioChangeEvent)
+                }
                 className="grid grid-cols-1 md:grid-cols-2 gap-4"
               >
                 <div className="flex items-center space-x-2">
@@ -154,9 +156,7 @@ export function ContactForm() {
                   onChange={handleChange}
                   className={errors.firstName ? "border-destructive" : ""}
                 />
-                {errors.firstName && (
-                  <p className="text-sm text-destructive">{errors.firstName}</p>
-                )}
+                {errors.firstName && <p className="text-sm text-destructive">{errors.firstName}</p>}
               </div>
               <div className="space-y-2">
                 <Label htmlFor="lastName">Last Name</Label>
@@ -167,9 +167,7 @@ export function ContactForm() {
                   onChange={handleChange}
                   className={errors.lastName ? "border-destructive" : ""}
                 />
-                {errors.lastName && (
-                  <p className="text-sm text-destructive">{errors.lastName}</p>
-                )}
+                {errors.lastName && <p className="text-sm text-destructive">{errors.lastName}</p>}
               </div>
             </div>
 
@@ -201,9 +199,7 @@ export function ContactForm() {
                 onChange={handleChange}
                 className={errors.email ? "border-destructive" : ""}
               />
-              {errors.email && (
-                <p className="text-sm text-destructive">{errors.email}</p>
-              )}
+              {errors.email && <p className="text-sm text-destructive">{errors.email}</p>}
             </div>
 
             {/* Inquiry */}
@@ -219,9 +215,7 @@ export function ContactForm() {
                 onChange={handleChange}
                 className={`min-h-[150px] ${errors.inquiry ? "border-destructive" : ""}`}
               />
-              {errors.inquiry && (
-                <p className="text-sm text-destructive">{errors.inquiry}</p>
-              )}
+              {errors.inquiry && <p className="text-sm text-destructive">{errors.inquiry}</p>}
             </div>
 
             {/* Submit Button */}
@@ -237,13 +231,12 @@ export function ContactForm() {
                   Submitting...
                 </>
               ) : (
-                'Submit'
+                "Submit"
               )}
             </Button>
           </form>
         </Card>
       </div>
     </section>
-  )
+  );
 }
-

@@ -5,6 +5,7 @@ This directory contains interactive test and demonstration pages for Pathology B
 ## Purpose
 
 The `/test` route serves as a centralized hub for:
+
 - **Component testing** - Test UI components in isolation
 - **Feature demonstrations** - Showcase feature capabilities
 - **Integration testing** - Test external API integrations
@@ -25,15 +26,19 @@ src/app/(public)/test/
 ## Current Test Pages
 
 ### `/test` - Test Hub
+
 **Purpose:** Central index of all test/demo pages
 **Features:**
+
 - Browse all test pages by category
 - Quick stats and navigation
 - Links to documentation
 
 ### `/test/toast-demo` - Toast Notifications Demo
+
 **Purpose:** Test and demonstrate the toast notification system
 **Features:**
+
 - All toast types (success, error, warning, info)
 - Categorized toasts (auth, question, quiz, upload)
 - Promise-based loading states
@@ -42,18 +47,22 @@ src/app/(public)/test/
 - Interactive playground
 
 **Documentation:**
+
 - `docs/toast-system-architecture.md`
 - `docs/toast-usage-guide.md`
 
 ### `/test/diagnostic-search` - Diagnostic Search & NCI EVS
+
 **Purpose:** Test diagnostic search and NCI EVS API integration
 **Features:**
+
 - AI content parsing
 - UMLS expansion
 - NCI EVS terminology lookup
 - Search term expansion
 
 **Documentation:**
+
 - `docs/nci-evs-tester-guide.md`
 - `docs/UMLS_QUICK_REFERENCE.md`
 
@@ -98,6 +107,7 @@ Edit `src/app/(public)/test/page.tsx` and add to `testPages` array:
 ### 3. Document It
 
 Add documentation to `docs/`:
+
 - Architecture docs for complex features
 - Usage guides for APIs
 - Testing guides as needed
@@ -128,11 +138,13 @@ Add documentation to `docs/`:
 ## Conventions
 
 ### Naming
+
 - Use kebab-case for directories: `my-feature`
 - Keep names short and descriptive
 - Match feature/component name when possible
 
 ### Structure
+
 ```typescript
 // Standard test page structure
 export default function MyTestPage() {
@@ -172,16 +184,17 @@ export default function MyTestPage() {
 
 **What's the difference between `/test` and `/tools`?**
 
-| Aspect | `/test` | `/tools` |
-|--------|---------|----------|
-| **Purpose** | Testing & demonstration | Production features |
-| **Audience** | Developers, QA | End users |
-| **Stability** | Can be experimental | Must be stable |
-| **UI Polish** | Functional, not polished | Polished, branded |
-| **Documentation** | Technical, detailed | User-friendly |
-| **Data** | Test/mock data ok | Real data only |
+| Aspect            | `/test`                  | `/tools`            |
+| ----------------- | ------------------------ | ------------------- |
+| **Purpose**       | Testing & demonstration  | Production features |
+| **Audience**      | Developers, QA           | End users           |
+| **Stability**     | Can be experimental      | Must be stable      |
+| **UI Polish**     | Functional, not polished | Polished, branded   |
+| **Documentation** | Technical, detailed      | User-friendly       |
+| **Data**          | Test/mock data ok        | Real data only      |
 
 **Examples:**
+
 - `/test/toast-demo` - Test toast system → Developer tool
 - `/tools/cell-counter` - Cell counting → User-facing tool
 - `/test/diagnostic-search` - Test search API → Developer tool
@@ -192,6 +205,7 @@ export default function MyTestPage() {
 Currently, all `/test` pages are public (accessible without authentication).
 
 **Future considerations:**
+
 - Restrict to authenticated users?
 - Admin-only for sensitive tests?
 - Toggle between test and production modes?

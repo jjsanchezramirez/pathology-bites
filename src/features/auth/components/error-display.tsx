@@ -1,80 +1,80 @@
 // src/features/auth/components/error-display.tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Alert, AlertDescription } from '@/shared/components/ui/alert'
-import { Button } from '@/shared/components/ui/button'
-import { 
-  AlertTriangle, 
-  RefreshCw, 
-  ChevronDown, 
+import { useState } from "react";
+import { Alert, AlertDescription } from "@/shared/components/ui/alert";
+import { Button } from "@/shared/components/ui/button";
+import {
+  AlertTriangle,
+  RefreshCw,
+  ChevronDown,
   ChevronUp,
   Shield,
   Wifi,
   Server,
-  Clock
-} from 'lucide-react'
-import { AuthError } from '@/features/auth/utils/error-handling'
+  Clock,
+} from "lucide-react";
+import { AuthError } from "@/features/auth/utils/error-handling";
 
 interface ErrorDisplayProps {
-  error: AuthError | null
-  onRetry?: () => void
-  onDismiss?: () => void
-  showDetails?: boolean
-  className?: string
+  error: AuthError | null;
+  onRetry?: () => void;
+  onDismiss?: () => void;
+  showDetails?: boolean;
+  className?: string;
 }
 
-export function ErrorDisplay({ 
-  error, 
-  onRetry, 
-  onDismiss, 
+export function ErrorDisplay({
+  error,
+  onRetry,
+  onDismiss,
   showDetails = false,
-  className 
+  className,
 }: ErrorDisplayProps) {
-  const [showTechnicalDetails, setShowTechnicalDetails] = useState(false)
+  const [showTechnicalDetails, setShowTechnicalDetails] = useState(false);
 
-  if (!error) return null
+  if (!error) return null;
 
   const getIcon = () => {
     switch (error.type) {
-      case 'NETWORK_ERROR':
-        return <Wifi className="h-4 w-4" />
-      case 'SERVER_ERROR':
-        return <Server className="h-4 w-4" />
-      case 'SESSION_EXPIRED':
-        return <Clock className="h-4 w-4" />
-      case 'CSRF_ERROR':
-        return <Shield className="h-4 w-4" />
+      case "NETWORK_ERROR":
+        return <Wifi className="h-4 w-4" />;
+      case "SERVER_ERROR":
+        return <Server className="h-4 w-4" />;
+      case "SESSION_EXPIRED":
+        return <Clock className="h-4 w-4" />;
+      case "CSRF_ERROR":
+        return <Shield className="h-4 w-4" />;
       default:
-        return <AlertTriangle className="h-4 w-4" />
+        return <AlertTriangle className="h-4 w-4" />;
     }
-  }
+  };
 
   const getVariant = () => {
     switch (error.severity) {
-      case 'high':
-        return 'destructive' as const
-      case 'medium':
-        return 'default' as const
-      case 'low':
-        return 'default' as const
+      case "high":
+        return "destructive" as const;
+      case "medium":
+        return "default" as const;
+      case "low":
+        return "default" as const;
       default:
-        return 'default' as const
+        return "default" as const;
     }
-  }
+  };
 
   const getRetryDelay = () => {
     switch (error.type) {
-      case 'RATE_LIMITED':
-        return 'Please wait 30 seconds before retrying'
-      case 'NETWORK_ERROR':
-        return 'Retrying in a moment...'
-      case 'SERVER_ERROR':
-        return 'Server may be temporarily unavailable'
+      case "RATE_LIMITED":
+        return "Please wait 30 seconds before retrying";
+      case "NETWORK_ERROR":
+        return "Retrying in a moment...";
+      case "SERVER_ERROR":
+        return "Server may be temporarily unavailable";
       default:
-        return null
+        return null;
     }
-  }
+  };
 
   return (
     <Alert variant={getVariant()} className={className}>
@@ -85,23 +85,13 @@ export function ErrorDisplay({
             <span className="font-medium">{error.userMessage}</span>
             <div className="flex items-center gap-2">
               {error.retryable && onRetry && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onRetry}
-                  className="h-7"
-                >
+                <Button variant="outline" size="sm" onClick={onRetry} className="h-7">
                   <RefreshCw className="h-3 w-3 mr-1" />
                   Retry
                 </Button>
               )}
               {onDismiss && (
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  onClick={onDismiss}
-                  className="h-7"
-                >
+                <Button variant="ghost" size="sm" onClick={onDismiss} className="h-7">
                   Dismiss
                 </Button>
               )}
@@ -109,9 +99,7 @@ export function ErrorDisplay({
           </div>
 
           {getRetryDelay() && (
-            <div className="text-sm text-muted-foreground">
-              {getRetryDelay()}
-            </div>
+            <div className="text-sm text-muted-foreground">{getRetryDelay()}</div>
           )}
 
           {showDetails && (
@@ -137,10 +125,18 @@ export function ErrorDisplay({
 
               {showTechnicalDetails && (
                 <div className="mt-2 p-2 bg-muted rounded text-xs font-mono">
-                  <div><strong>Type:</strong> {error.type}</div>
-                  <div><strong>Severity:</strong> {error.severity || 'medium'}</div>
-                  <div><strong>Retryable:</strong> {error.retryable ? 'Yes' : 'No'}</div>
-                  <div><strong>Message:</strong> {error.message}</div>
+                  <div>
+                    <strong>Type:</strong> {error.type}
+                  </div>
+                  <div>
+                    <strong>Severity:</strong> {error.severity || "medium"}
+                  </div>
+                  <div>
+                    <strong>Retryable:</strong> {error.retryable ? "Yes" : "No"}
+                  </div>
+                  <div>
+                    <strong>Message:</strong> {error.message}
+                  </div>
                 </div>
               )}
             </div>
@@ -148,7 +144,7 @@ export function ErrorDisplay({
         </div>
       </AlertDescription>
     </Alert>
-  )
+  );
 }
 
 // Specialized error displays for common scenarios
@@ -156,80 +152,80 @@ export function NetworkErrorDisplay({ onRetry }: { onRetry?: () => void }) {
   return (
     <ErrorDisplay
       error={{
-        type: 'NETWORK_ERROR',
-        message: 'Network connection failed',
+        type: "NETWORK_ERROR",
+        message: "Network connection failed",
         retryable: true,
-        severity: 'medium',
-        userMessage: 'Please check your internet connection and try again.'
+        severity: "medium",
+        userMessage: "Please check your internet connection and try again.",
       }}
       onRetry={onRetry}
     />
-  )
+  );
 }
 
 export function SessionExpiredDisplay({ onRetry }: { onRetry?: () => void }) {
   return (
     <ErrorDisplay
       error={{
-        type: 'SESSION_EXPIRED',
-        message: 'Session expired',
+        type: "SESSION_EXPIRED",
+        message: "Session expired",
         retryable: true,
-        severity: 'medium',
-        userMessage: 'Your session has expired. Please log in again.'
+        severity: "medium",
+        userMessage: "Your session has expired. Please log in again.",
       }}
       onRetry={onRetry}
     />
-  )
+  );
 }
 
 export function RateLimitedDisplay({ onRetry }: { onRetry?: () => void }) {
   return (
     <ErrorDisplay
       error={{
-        type: 'RATE_LIMITED',
-        message: 'Rate limited',
+        type: "RATE_LIMITED",
+        message: "Rate limited",
         retryable: true,
-        severity: 'low',
-        userMessage: 'Too many attempts. Please wait a moment and try again.'
+        severity: "low",
+        userMessage: "Too many attempts. Please wait a moment and try again.",
       }}
       onRetry={onRetry}
     />
-  )
+  );
 }
 
 // Hook for managing error display state
 export function useErrorDisplay() {
-  const [currentError, setCurrentError] = useState<AuthError | null>(null)
-  const [isRetrying, setIsRetrying] = useState(false)
+  const [currentError, setCurrentError] = useState<AuthError | null>(null);
+  const [isRetrying, setIsRetrying] = useState(false);
 
   const showError = (error: AuthError) => {
-    setCurrentError(error)
-  }
+    setCurrentError(error);
+  };
 
   const dismissError = () => {
-    setCurrentError(null)
-    setIsRetrying(false)
-  }
+    setCurrentError(null);
+    setIsRetrying(false);
+  };
 
   const retryOperation = async (operation: () => Promise<void>) => {
-    if (!currentError?.retryable) return
+    if (!currentError?.retryable) return;
 
-    setIsRetrying(true)
+    setIsRetrying(true);
     try {
-      await operation()
-      dismissError()
+      await operation();
+      dismissError();
     } catch {
       // Error will be handled by the operation itself
     } finally {
-      setIsRetrying(false)
+      setIsRetrying(false);
     }
-  }
+  };
 
   return {
     currentError,
     isRetrying,
     showError,
     dismissError,
-    retryOperation
-  }
+    retryOperation,
+  };
 }

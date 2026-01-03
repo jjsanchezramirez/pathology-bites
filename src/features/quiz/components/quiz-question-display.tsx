@@ -1,37 +1,36 @@
 // src/features/quiz/components/quiz-question-display.tsx
 
-"use client"
+"use client";
 
-import { Card, CardContent } from "@/shared/components/ui/card"
-import { ImageCarousel } from "@/features/images/components/image-carousel"
-import { ReferencesList } from "@/shared/components/common/references-list"
-import { Check, X } from "lucide-react"
-import { UIQuizQuestion } from "@/features/quiz/types/quiz-question"
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { ImageCarousel } from "@/features/images/components/image-carousel";
+import { ReferencesList } from "@/shared/components/common/references-list";
+import { Check, X } from "lucide-react";
+import { UIQuizQuestion } from "@/features/quiz/types/quiz-question";
 
 interface QuizQuestionDisplayProps {
-  question: UIQuizQuestion
-  selectedAnswerId: string | null
-  showExplanation: boolean
-  onAnswerSelect: (answerId: string) => void
+  question: UIQuizQuestion;
+  selectedAnswerId: string | null;
+  showExplanation: boolean;
+  onAnswerSelect: (answerId: string) => void;
 }
 
 export function QuizQuestionDisplay({
   question,
   selectedAnswerId,
   showExplanation,
-  onAnswerSelect
+  onAnswerSelect,
 }: QuizQuestionDisplayProps) {
-
   // Use question_options (the correct field for quiz display)
-  const answerOptions = question.question_options || []
+  const answerOptions = question.question_options || [];
 
   // Helper to get a letter label for an option ID
   const getOptionLabel = (optionId: string, index: number): string => {
     if (optionId.length > 10) {
-      return String.fromCharCode(65 + index) // A, B, C, D, etc.
+      return String.fromCharCode(65 + index); // A, B, C, D, etc.
     }
-    return optionId.toString().charAt(0).toUpperCase()
-  }
+    return optionId.toString().charAt(0).toUpperCase();
+  };
 
   return (
     <Card>
@@ -46,12 +45,12 @@ export function QuizQuestionDisplay({
           <div>
             <ImageCarousel
               images={question.question_images
-                .filter(qi => qi.question_section === 'stem')
-                .map(qi => ({
-                  id: qi.image?.id || '',
-                  url: qi.image?.url || '',
-                  alt: qi.image?.alt_text || qi.image?.description || 'Question image',
-                  caption: qi.image?.description || undefined
+                .filter((qi) => qi.question_section === "stem")
+                .map((qi) => ({
+                  id: qi.image?.id || "",
+                  url: qi.image?.url || "",
+                  alt: qi.image?.alt_text || qi.image?.description || "Question image",
+                  caption: qi.image?.description || undefined,
                 }))}
               className="border rounded-lg"
             />
@@ -61,10 +60,10 @@ export function QuizQuestionDisplay({
         {/* Answer Options */}
         <div className="grid gap-2" role="listbox" aria-label="Answer options">
           {answerOptions?.map((option, index) => {
-            const isSelected = selectedAnswerId === option.id
-            const showCorrect = showExplanation && option.is_correct
-            const showIncorrect = showExplanation && isSelected && !option.is_correct
-            const optionLabel = getOptionLabel(option.id, index)
+            const isSelected = selectedAnswerId === option.id;
+            const showCorrect = showExplanation && option.is_correct;
+            const showIncorrect = showExplanation && isSelected && !option.is_correct;
+            const optionLabel = getOptionLabel(option.id, index);
 
             return (
               <button
@@ -73,21 +72,23 @@ export function QuizQuestionDisplay({
                 disabled={showExplanation}
                 className={`
                   w-full p-3 text-left border rounded-lg transition-colors
-                  ${isSelected && !showExplanation ? 'border-blue-500 bg-blue-50' : 'border-gray-200'}
-                  ${showCorrect ? 'border-green-500 bg-green-50 text-green-900 dark:text-green-950' : ''}
-                  ${showIncorrect ? 'border-red-500 bg-red-50 text-red-900 dark:text-red-950' : ''}
-                  ${!showExplanation ? 'hover:border-gray-300 cursor-pointer' : 'cursor-default'}
+                  ${isSelected && !showExplanation ? "border-blue-500 bg-blue-50" : "border-gray-200"}
+                  ${showCorrect ? "border-green-500 bg-green-50 text-green-900 dark:text-green-950" : ""}
+                  ${showIncorrect ? "border-red-500 bg-red-50 text-red-900 dark:text-red-950" : ""}
+                  ${!showExplanation ? "hover:border-gray-300 cursor-pointer" : "cursor-default"}
                 `}
                 role="option"
                 aria-selected={isSelected}
               >
                 <div className="flex items-center gap-3">
-                  <span className={`
+                  <span
+                    className={`
                     flex-shrink-0 w-6 h-6 rounded-full border flex items-center justify-center text-xs font-medium
-                    ${isSelected && !showExplanation ? 'border-blue-500 bg-blue-500 text-white' : 'border-gray-300'}
-                    ${showCorrect ? 'border-green-500 bg-green-500 text-white' : ''}
-                    ${showIncorrect ? 'border-red-500 bg-red-100 text-red-700' : ''}
-                  `}>
+                    ${isSelected && !showExplanation ? "border-blue-500 bg-blue-500 text-white" : "border-gray-300"}
+                    ${showCorrect ? "border-green-500 bg-green-500 text-white" : ""}
+                    ${showIncorrect ? "border-red-500 bg-red-100 text-red-700" : ""}
+                  `}
+                  >
                     {optionLabel}
                   </span>
                   <span className="flex-1">{option.text}</span>
@@ -95,7 +96,7 @@ export function QuizQuestionDisplay({
                   {showIncorrect && <X className="w-4 h-4 text-red-700 dark:text-red-800" />}
                 </div>
               </button>
-            )
+            );
           })}
         </div>
 
@@ -106,23 +107,25 @@ export function QuizQuestionDisplay({
             {question.teaching_point && (
               <div>
                 <h4 className="font-medium text-xs uppercase mb-2">Teaching Point</h4>
-                <div className="text-muted-foreground">
-                  {question.teaching_point}
-                </div>
+                <div className="text-muted-foreground">{question.teaching_point}</div>
               </div>
             )}
 
             {/* Individual Option Explanations */}
-            {answerOptions?.some(opt => opt.explanation) && (
+            {answerOptions?.some((opt) => opt.explanation) && (
               <div>
                 <h4 className="font-medium text-xs uppercase mb-2">Answer Explanations</h4>
                 <div className="space-y-2 text-muted-foreground">
                   {answerOptions
-                    ?.filter(opt => opt.explanation)
+                    ?.filter((opt) => opt.explanation)
                     .map((option, index) => (
                       <div key={option.id} className="flex gap-2">
                         <span className="font-medium">
-                          {getOptionLabel(option.id, answerOptions?.findIndex(opt => opt.id === option.id) || index)}.
+                          {getOptionLabel(
+                            option.id,
+                            answerOptions?.findIndex((opt) => opt.id === option.id) || index
+                          )}
+                          .
                         </span>
                         <span>{option.explanation}</span>
                       </div>
@@ -132,22 +135,23 @@ export function QuizQuestionDisplay({
             )}
 
             {/* Explanation Images */}
-            {question.question_images && question.question_images.some(qi => qi.question_section === 'explanation') && (
-              <div>
-                <h4 className="font-medium text-xs uppercase mb-2">Reference Images</h4>
-                <ImageCarousel
-                  images={question.question_images
-                    .filter(qi => qi.question_section === 'explanation')
-                    .map(qi => ({
-                      id: qi.image?.id || '',
-                      url: qi.image?.url || '',
-                      alt: qi.image?.alt_text || qi.image?.description || 'Reference image',
-                      caption: qi.image?.description || undefined
-                    }))}
-                  className="bg-white border rounded-lg"
-                />
-              </div>
-            )}
+            {question.question_images &&
+              question.question_images.some((qi) => qi.question_section === "explanation") && (
+                <div>
+                  <h4 className="font-medium text-xs uppercase mb-2">Reference Images</h4>
+                  <ImageCarousel
+                    images={question.question_images
+                      .filter((qi) => qi.question_section === "explanation")
+                      .map((qi) => ({
+                        id: qi.image?.id || "",
+                        url: qi.image?.url || "",
+                        alt: qi.image?.alt_text || qi.image?.description || "Reference image",
+                        caption: qi.image?.description || undefined,
+                      }))}
+                    className="bg-white border rounded-lg"
+                  />
+                </div>
+              )}
 
             {/* References */}
             {question.question_references && (
@@ -157,5 +161,5 @@ export function QuizQuestionDisplay({
         )}
       </CardContent>
     </Card>
-  )
+  );
 }

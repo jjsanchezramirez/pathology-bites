@@ -1,12 +1,12 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/shared/services/server'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/shared/services/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 // Create Supabase client with service role for admin operations (bypasses RLS)
 function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  return createSupabaseClient(supabaseUrl, supabaseServiceKey)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
 export async function DELETE(
@@ -14,67 +14,57 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const resolvedParams = await params
-    console.log('Deleting inquiry with ID:', resolvedParams.id)
+    const resolvedParams = await params;
+    console.log("Deleting inquiry with ID:", resolvedParams.id);
 
     // Use regular client for auth verification
-    const authClient = await createClient()
+    const authClient = await createClient();
     // Use admin client for database operations (bypasses RLS)
-    const supabase = createAdminClient()
-    const inquiryId = resolvedParams.id
+    const supabase = createAdminClient();
+    const inquiryId = resolvedParams.id;
 
     // Auth is handled by middleware - user should be admin
-    const { data: { user }, error: authError } = await authClient.auth.getUser()
+    const {
+      data: { user },
+      error: authError,
+    } = await authClient.auth.getUser();
     if (authError || !user) {
-      console.error('Authentication failed:', authError)
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      console.error("Authentication failed:", authError);
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // First, get the inquiry to return its details
     const { data: inquiry, error: fetchError } = await supabase
-      .from('inquiries')
-      .select('*')
-      .eq('id', inquiryId)
-      .single()
+      .from("inquiries")
+      .select("*")
+      .eq("id", inquiryId)
+      .single();
 
     if (fetchError || !inquiry) {
-      console.error('Inquiry not found:', fetchError)
-      return NextResponse.json(
-        { error: 'Inquiry not found' },
-        { status: 404 }
-      )
+      console.error("Inquiry not found:", fetchError);
+      return NextResponse.json({ error: "Inquiry not found" }, { status: 404 });
     }
 
     // Delete the inquiry
-    const { error: deleteError } = await supabase
-      .from('inquiries')
-      .delete()
-      .eq('id', inquiryId)
+    const { error: deleteError } = await supabase.from("inquiries").delete().eq("id", inquiryId);
 
     if (deleteError) {
-      console.error('Failed to delete inquiry:', deleteError)
-      return NextResponse.json(
-        { error: 'Failed to delete inquiry' },
-        { status: 500 }
-      )
+      console.error("Failed to delete inquiry:", deleteError);
+      return NextResponse.json({ error: "Failed to delete inquiry" }, { status: 500 });
     }
 
-    console.log('Inquiry deleted successfully:', inquiryId)
+    console.log("Inquiry deleted successfully:", inquiryId);
 
     return NextResponse.json({
       success: true,
-      message: 'Inquiry deleted successfully',
-      deletedInquiry: inquiry
-    })
-
+      message: "Inquiry deleted successfully",
+      deletedInquiry: inquiry,
+    });
   } catch (error) {
-    console.error('Error deleting inquiry:', error)
+    console.error("Error deleting inquiry:", error);
     return NextResponse.json(
-      { error: 'Internal server error', details: error.message },
+      { error: "Internal server error", details: error.message },
       { status: 500 }
-    )
+    );
   }
 }

@@ -1,8 +1,15 @@
 // src/components/auth/auth-card.tsx
-import { ReactNode } from "react"
-import Link from "next/link"
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/shared/components/ui/card"
-import { cn } from "@/shared/utils"
+import { ReactNode } from "react";
+import Link from "next/link";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
+import { cn } from "@/shared/utils";
 
 interface AuthCardProps {
   title: string;
@@ -30,24 +37,25 @@ export function AuthCard({
           <CardTitle className="text-xl">{title}</CardTitle>
           {description && <CardDescription>{description}</CardDescription>}
         </CardHeader>
-        <CardContent>
-          {children}
-        </CardContent>
+        <CardContent>{children}</CardContent>
         {footer && (
-          <CardFooter className={cn("justify-center", footerClassName)}>
-            {footer}
-          </CardFooter>
+          <CardFooter className={cn("justify-center", footerClassName)}>{footer}</CardFooter>
         )}
       </Card>
-      
+
       {showPrivacyFooter && (
         <div className="text-balance text-center text-xs text-muted-foreground [&_a]:underline [&_a]:underline-offset-4 hover:[&_a]:text-primary">
           By clicking continue, you agree to our{" "}
-          <Link href="/terms" tabIndex={0}>Terms of Service</Link>{" "}
+          <Link href="/terms" tabIndex={0}>
+            Terms of Service
+          </Link>{" "}
           and{" "}
-          <Link href="/privacy" tabIndex={0}>Privacy Policy</Link>.
+          <Link href="/privacy" tabIndex={0}>
+            Privacy Policy
+          </Link>
+          .
         </div>
       )}
     </div>
-  )
+  );
 }

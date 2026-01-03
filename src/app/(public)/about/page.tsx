@@ -1,19 +1,18 @@
 // src/app/about/page.tsx
-import { Metadata } from 'next'
-import { generateAboutPageMetadata } from '@/shared/components/seo/page-seo'
-import { Button } from "@/shared/components/ui/button"
+import { Metadata } from "next";
+import { generateAboutPageMetadata } from "@/shared/components/seo/page-seo";
+import { Button } from "@/shared/components/ui/button";
 
-export const metadata: Metadata = generateAboutPageMetadata()
-import Link from "next/link"
-import { JoinCommunitySection } from "@/shared/components/common/join-community-section"
-import { PublicHero } from '@/shared/components/common/public-hero'
-import { PublicStatsSection } from '@/shared/components/common/public-stats-section'
-import { WhyChoosePathologyBites } from '@/shared/components/common/why-choose-pathology-bites'
+export const metadata: Metadata = generateAboutPageMetadata();
+import Link from "next/link";
+import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
+import { PublicHero } from "@/shared/components/common/public-hero";
+import { PublicStatsSection } from "@/shared/components/common/public-stats-section";
+import { WhyChoosePathologyBites } from "@/shared/components/common/why-choose-pathology-bites";
 
 export default function AboutPage() {
   return (
     <div className="flex min-h-screen flex-col">
-
       {/* Hero Section */}
       <PublicHero
         title={
@@ -28,10 +27,7 @@ export default function AboutPage() {
         actions={
           <div className="flex gap-4 pt-2">
             <Link href="/signup">
-              <Button
-                size="lg"
-                className="bg-primary hover:bg-primary/90 text-primary-foreground"
-              >
+              <Button size="lg" className="bg-primary hover:bg-primary/90 text-primary-foreground">
                 Start Learning Today
               </Button>
             </Link>
@@ -44,9 +40,9 @@ export default function AboutPage() {
           <h2 className="text-3xl md:text-4xl font-bold mb-6 text-white">Our Mission</h2>
           <p className="text-xl mb-8 leading-relaxed text-white">
             To democratize pathology education by providing high-quality, accessible learning
-            resources to medical students, residents, and pathologists worldwide. We believe
-            that breaking down barriers to education creates better pathologists and ultimately
-            improves patient care.
+            resources to medical students, residents, and pathologists worldwide. We believe that
+            breaking down barriers to education creates better pathologists and ultimately improves
+            patient care.
           </p>
         </div>
       </section>
@@ -66,7 +62,13 @@ export default function AboutPage() {
           </div>
           <div className="bg-background/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border space-y-6">
             <p className="text-lg text-muted-foreground leading-relaxed">
-              Pathology Bites grew out of residents sharing study materials with each other. We saw how much better resources became when the community collaborated - questions written by people who just took boards, explanations that actually made sense, real insight into what matters. We formalized that collaboration into a platform where the pathology community can contribute and access high-quality practice questions. The goal: make effective board preparation available to every resident, regardless of their program's resources.
+              Pathology Bites grew out of residents sharing study materials with each other. We saw
+              how much better resources became when the community collaborated - questions written
+              by people who just took boards, explanations that actually made sense, real insight
+              into what matters. We formalized that collaboration into a platform where the
+              pathology community can contribute and access high-quality practice questions. The
+              goal: make effective board preparation available to every resident, regardless of
+              their program's resources.
             </p>
           </div>
         </div>
@@ -79,9 +81,7 @@ export default function AboutPage() {
       <div className="flex-1" />
 
       {/* Join Section */}
-      <JoinCommunitySection
-        description="Ready to advance your pathology knowledge? Join our community of learners and start your journey today - completely free, forever."
-      />
+      <JoinCommunitySection description="Ready to advance your pathology knowledge? Join our community of learners and start your journey today - completely free, forever." />
     </div>
-  )
+  );
 }

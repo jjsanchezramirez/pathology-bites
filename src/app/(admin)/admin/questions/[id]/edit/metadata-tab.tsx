@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import React, { useState, useEffect } from 'react';
-import { UseFormReturn } from 'react-hook-form';
+import React, { useState, useEffect } from "react";
+import { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
   FormField,
@@ -19,12 +19,12 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
-import { X } from 'lucide-react';
+import { X } from "lucide-react";
 
-import { QuestionWithDetails } from '@/features/questions/types/questions';
-import { useQuestionSets } from '@/features/questions/hooks/use-question-sets';
-import { createClient } from '@/shared/services/client';
-import { EditQuestionFormData } from '@/features/questions/hooks/use-edit-question-form';
+import { QuestionWithDetails } from "@/features/questions/types/questions";
+import { useQuestionSets } from "@/features/questions/hooks/use-question-sets";
+import { createClient } from "@/shared/services/client";
+import { EditQuestionFormData } from "@/features/questions/hooks/use-edit-question-form";
 
 interface Tag {
   id: string;
@@ -49,11 +49,11 @@ export function MetadataTab({
   question,
   onUnsavedChanges,
   selectedTagIds,
-  onTagsChange
+  onTagsChange,
 }: MetadataTabProps) {
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
   const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
-  const [tagSearch, setTagSearch] = useState('');
+  const [tagSearch, setTagSearch] = useState("");
 
   const { questionSets } = useQuestionSets();
 
@@ -64,8 +64,8 @@ export function MetadataTab({
         const supabase = createClient();
 
         const [tagsResult, categoriesResult] = await Promise.all([
-          supabase.from('tags').select('*').order('created_at', { ascending: false }).limit(50),
-          supabase.from('categories').select('*').order('name')
+          supabase.from("tags").select("*").order("created_at", { ascending: false }).limit(50),
+          supabase.from("categories").select("*").order("name"),
         ]);
 
         if (tagsResult.data) {
@@ -73,7 +73,7 @@ export function MetadataTab({
         }
         if (categoriesResult.data) setAvailableCategories(categoriesResult.data);
       } catch (error) {
-        console.error('Error loading tags/categories:', error);
+        console.error("Error loading tags/categories:", error);
       }
     };
 
@@ -83,12 +83,12 @@ export function MetadataTab({
   // Merge question tags with available tags
   useEffect(() => {
     if (question?.tags && question.tags.length > 0) {
-      setAvailableTags(prevTags => {
+      setAvailableTags((prevTags) => {
         const existingTags = question.tags || [];
         const allTags = [...prevTags];
 
-        existingTags.forEach(existingTag => {
-          if (!allTags.find(tag => tag.id === existingTag.id)) {
+        existingTags.forEach((existingTag) => {
+          if (!allTags.find((tag) => tag.id === existingTag.id)) {
             allTags.push(existingTag);
           }
         });
@@ -103,20 +103,20 @@ export function MetadataTab({
       onTagsChange([...selectedTagIds, tagId]);
       onUnsavedChanges();
     }
-    setTagSearch('');
+    setTagSearch("");
   };
 
   const handleRemoveTag = (tagId: string) => {
-    onTagsChange(selectedTagIds.filter(id => id !== tagId));
+    onTagsChange(selectedTagIds.filter((id) => id !== tagId));
     onUnsavedChanges();
   };
 
-  const filteredTags = availableTags.filter(tag =>
-    tag.name.toLowerCase().includes(tagSearch.toLowerCase()) &&
-    !selectedTagIds.includes(tag.id)
+  const filteredTags = availableTags.filter(
+    (tag) =>
+      tag.name.toLowerCase().includes(tagSearch.toLowerCase()) && !selectedTagIds.includes(tag.id)
   );
 
-  const selectedTags = availableTags.filter(tag => selectedTagIds.includes(tag.id));
+  const selectedTags = availableTags.filter((tag) => selectedTagIds.includes(tag.id));
 
   return (
     <div className="space-y-6">
@@ -159,10 +159,10 @@ export function MetadataTab({
             <FormLabel className="text-base font-semibold">Category</FormLabel>
             <Select
               onValueChange={(value) => {
-                field.onChange(value === 'none' ? null : value);
+                field.onChange(value === "none" ? null : value);
                 onUnsavedChanges();
               }}
-              defaultValue={field.value || 'none'}
+              defaultValue={field.value || "none"}
             >
               <FormControl>
                 <SelectTrigger>

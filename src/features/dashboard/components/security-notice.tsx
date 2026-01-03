@@ -1,32 +1,32 @@
 // src/features/dashboard/components/security-notice.tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { X } from 'lucide-react'
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { userSettingsService } from '@/shared/services/user-settings'
+import { useState } from "react";
+import { X } from "lucide-react";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { userSettingsService } from "@/shared/services/user-settings";
 
 interface SecurityNoticeProps {
-  onDismiss: () => void
+  onDismiss: () => void;
 }
 
 export function SecurityNotice({ onDismiss }: SecurityNoticeProps) {
-  const [isLoading, setIsLoading] = useState(false)
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleDismiss = async () => {
-    setIsLoading(true)
+    setIsLoading(true);
     try {
-      await userSettingsService.markSecurityNoticeDismissed()
-      onDismiss()
+      await userSettingsService.markSecurityNoticeDismissed();
+      onDismiss();
     } catch (error) {
-      console.error('Error dismissing security notice:', error)
+      console.error("Error dismissing security notice:", error);
       // Still dismiss the notice locally even if the API call fails
-      onDismiss()
+      onDismiss();
     } finally {
-      setIsLoading(false)
+      setIsLoading(false);
     }
-  }
+  };
 
   return (
     <Card className="relative bg-card border border-gray-200">
@@ -39,7 +39,8 @@ export function SecurityNotice({ onDismiss }: SecurityNoticeProps) {
 
             <div className="text-sm text-muted-foreground space-y-2">
               <p>
-                We experienced brief downtime today (December 9, 2025) while addressing a critical security vulnerability. All systems are now secure and fully operational.
+                We experienced brief downtime today (December 9, 2025) while addressing a critical
+                security vulnerability. All systems are now secure and fully operational.
               </p>
 
               <p>
@@ -47,20 +48,12 @@ export function SecurityNotice({ onDismiss }: SecurityNoticeProps) {
               </p>
 
               <ul className="list-disc list-inside space-y-1 ml-2">
-                <li>
-                  Upgraded to the latest secure version of Next.js (15.4.8)
-                </li>
-                <li>
-                  Deployed security fixes to production within minutes
-                </li>
-                <li>
-                  Verified all systems are functioning normally
-                </li>
+                <li>Upgraded to the latest secure version of Next.js (15.4.8)</li>
+                <li>Deployed security fixes to production within minutes</li>
+                <li>Verified all systems are functioning normally</li>
               </ul>
 
-              <p>
-                Your data is safe. Thank you for your patience and understanding.
-              </p>
+              <p>Your data is safe. Thank you for your patience and understanding.</p>
             </div>
           </div>
 
@@ -77,6 +70,5 @@ export function SecurityNotice({ onDismiss }: SecurityNoticeProps) {
         </div>
       </CardContent>
     </Card>
-  )
+  );
 }
-

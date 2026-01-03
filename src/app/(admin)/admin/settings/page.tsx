@@ -1,11 +1,11 @@
 // src/app/(admin)/admin/settings/page.tsx
-import { Metadata } from "next"
-import { SettingsForm } from "@/features/admin/components/settings-form"
+import { Metadata } from "next";
+import { SettingsForm } from "@/features/admin/components/settings-form";
 
 export const metadata: Metadata = {
   title: "Settings - Admin Dashboard",
   description: "Configure system settings and preferences",
-}
+};
 
 export default function SettingsPage() {
   return (
@@ -19,5 +19,5 @@ export default function SettingsPage() {
 
       <SettingsForm />
     </div>
-  )
+  );
 }

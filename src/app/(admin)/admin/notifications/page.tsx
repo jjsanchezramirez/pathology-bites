@@ -1,12 +1,12 @@
 // src/app/(admin)/admin/notifications/page.tsx
-import { Metadata } from 'next'
-import { SystemUpdateBroadcaster } from '@/features/admin/components/system-update-broadcaster'
-import { RequirePermission } from '@/shared/components/auth/role-guard'
+import { Metadata } from "next";
+import { SystemUpdateBroadcaster } from "@/features/admin/components/system-update-broadcaster";
+import { RequirePermission } from "@/shared/components/auth/role-guard";
 
 export const metadata: Metadata = {
-  title: 'System Notifications - Admin Dashboard',
-  description: 'Broadcast system updates and notifications to users',
-}
+  title: "System Notifications - Admin Dashboard",
+  description: "Broadcast system updates and notifications to users",
+};
 
 export default function NotificationsPage() {
   return (
@@ -18,9 +18,9 @@ export default function NotificationsPage() {
             Broadcast system updates, maintenance notices, and announcements to users.
           </p>
         </div>
-        
+
         <SystemUpdateBroadcaster />
       </div>
     </RequirePermission>
-  )
+  );
 }

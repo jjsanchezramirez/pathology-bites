@@ -1,15 +1,15 @@
 // src/components/question-management/question-management-table.tsx
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/shared/components/ui/tabs'
-import { TagsManagementGrid } from './tags-management-grid'
-import { CategoriesManagement } from './categories-management'
-import { SetsManagement } from './sets-management'
-import { Tag, FolderTree, Database } from 'lucide-react'
+import { useState } from "react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import { TagsManagementGrid } from "./tags-management-grid";
+import { CategoriesManagement } from "./categories-management";
+import { SetsManagement } from "./sets-management";
+import { Tag, FolderTree, Database } from "lucide-react";
 
 export function QuestionManagementTable() {
-  const [activeTab, setActiveTab] = useState('tags')
+  const [activeTab, setActiveTab] = useState("tags");
 
   return (
     <div className="space-y-6">
@@ -42,5 +42,5 @@ export function QuestionManagementTable() {
         </TabsContent>
       </Tabs>
     </div>
-  )
+  );
 }

@@ -1,7 +1,7 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { Button } from '@/shared/components/ui/button'
+import { useState } from "react";
+import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -11,33 +11,33 @@ import {
   DialogOverlay,
   DialogPortal,
   DialogTitle,
-} from '@/shared/components/ui/dialog'
+} from "@/shared/components/ui/dialog";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from '@/shared/components/ui/select'
-import { Textarea } from '@/shared/components/ui/textarea'
-import { Label } from '@/shared/components/ui/label'
-import { Badge } from '@/shared/components/ui/badge'
-import { toast } from '@/shared/utils/toast'
-import { 
+} from "@/shared/components/ui/select";
+import { Textarea } from "@/shared/components/ui/textarea";
+import { Label } from "@/shared/components/ui/label";
+import { Badge } from "@/shared/components/ui/badge";
+import { toast } from "@/shared/utils/toast";
+import {
   QuestionFlagData,
   FlagResolutionType,
   FLAG_TYPE_CONFIG,
-  FLAG_RESOLUTION_CONFIG
-} from '@/features/questions/types/questions'
-import { createClient } from '@/shared/services/client'
-import { CheckCircle, X, Flag, Calendar } from 'lucide-react'
+  FLAG_RESOLUTION_CONFIG,
+} from "@/features/questions/types/questions";
+import { createClient } from "@/shared/services/client";
+import { CheckCircle, X, Flag, Calendar } from "lucide-react";
 
 interface FlagResolutionDialogProps {
-  flags: QuestionFlagData[]
-  questionTitle: string
-  open: boolean
-  onOpenChange: (open: boolean) => void
-  onResolutionComplete: () => void
+  flags: QuestionFlagData[];
+  questionTitle: string;
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  onResolutionComplete: () => void;
 }
 
 export function FlagResolutionDialog({
@@ -45,109 +45,112 @@ export function FlagResolutionDialog({
   questionTitle,
   open,
   onOpenChange,
-  onResolutionComplete
+  onResolutionComplete,
 }: FlagResolutionDialogProps) {
-  const [selectedResolution, setSelectedResolution] = useState<FlagResolutionType | ''>('')
-  const [resolutionNotes, setResolutionNotes] = useState('')
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const supabase = createClient()
+  const [selectedResolution, setSelectedResolution] = useState<FlagResolutionType | "">("");
+  const [resolutionNotes, setResolutionNotes] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const supabase = createClient();
 
   const handleSubmit = async () => {
     if (!selectedResolution) {
-      toast.error('Please select a resolution type')
-      return
+      toast.error("Please select a resolution type");
+      return;
     }
 
-    if (selectedResolution === 'fixed' && !resolutionNotes.trim()) {
-      toast.error('Please provide resolution notes when marking as fixed')
-      return
+    if (selectedResolution === "fixed" && !resolutionNotes.trim()) {
+      toast.error("Please provide resolution notes when marking as fixed");
+      return;
     }
 
-    setIsSubmitting(true)
+    setIsSubmitting(true);
 
     try {
       // Get current user
-      const { data: { user }, error: authError } = await supabase.auth.getUser()
+      const {
+        data: { user },
+        error: authError,
+      } = await supabase.auth.getUser();
       if (authError || !user) {
-        console.error('Authentication error:', authError)
-        toast.error('Authentication error')
-        return
+        console.error("Authentication error:", authError);
+        toast.error("Authentication error");
+        return;
       }
 
       // Check user permissions
       const { data: userData, error: userError } = await supabase
-        .from('users')
-        .select('role')
-        .eq('id', user.id)
-        .single()
+        .from("users")
+        .select("role")
+        .eq("id", user.id)
+        .single();
 
       if (userError || !userData) {
-        console.error('Error fetching user data:', userError)
-        toast.error('Failed to verify user permissions')
-        return
+        console.error("Error fetching user data:", userError);
+        toast.error("Failed to verify user permissions");
+        return;
       }
 
-      if (!['admin', 'reviewer'].includes(userData.role)) {
-        toast.error('You do not have permission to resolve flags')
-        return
+      if (!["admin", "reviewer"].includes(userData.role)) {
+        toast.error("You do not have permission to resolve flags");
+        return;
       }
 
       // Update all flags for this question
-      const flagIds = flags.map(flag => flag.id).filter(id => id) // Filter out any undefined IDs
+      const flagIds = flags.map((flag) => flag.id).filter((id) => id); // Filter out any undefined IDs
 
       if (flagIds.length === 0) {
-        toast.error('No valid flags to resolve')
-        return
+        toast.error("No valid flags to resolve");
+        return;
       }
 
       const updateData = {
-        status: 'closed',
+        status: "closed",
         resolution_type: selectedResolution,
         resolved_by: user.id,
         resolved_at: new Date().toISOString(),
         resolution_notes: resolutionNotes.trim() || null,
-        updated_at: new Date().toISOString()
-      }
+        updated_at: new Date().toISOString(),
+      };
 
       const { error: updateError } = await supabase
-        .from('question_flags')
+        .from("question_flags")
         .update(updateData)
-        .in('id', flagIds)
+        .in("id", flagIds);
 
       if (updateError) {
-        console.error('Error resolving flags:', updateError)
-        console.error('Update data was:', updateData)
-        console.error('Flag IDs were:', flagIds)
+        console.error("Error resolving flags:", updateError);
+        console.error("Update data was:", updateData);
+        console.error("Flag IDs were:", flagIds);
 
-        let errorMessage = 'Failed to resolve flags'
+        let errorMessage = "Failed to resolve flags";
         if (updateError.message) {
-          errorMessage += `: ${updateError.message}`
+          errorMessage += `: ${updateError.message}`;
         }
         if (updateError.code) {
-          errorMessage += ` (Code: ${updateError.code})`
+          errorMessage += ` (Code: ${updateError.code})`;
         }
 
-        toast.error(errorMessage)
-        return
+        toast.error(errorMessage);
+        return;
       }
 
-      const resolutionLabel = FLAG_RESOLUTION_CONFIG[selectedResolution].label
-      toast.success(`${flags.length} flag(s) marked as ${resolutionLabel.toLowerCase()}`)
-      onResolutionComplete()
-      onOpenChange(false)
-      
-      // Reset form
-      setSelectedResolution('')
-      setResolutionNotes('')
-    } catch (error) {
-      console.error('Error resolving flags:', error)
-      toast.error('An unexpected error occurred')
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
+      const resolutionLabel = FLAG_RESOLUTION_CONFIG[selectedResolution].label;
+      toast.success(`${flags.length} flag(s) marked as ${resolutionLabel.toLowerCase()}`);
+      onResolutionComplete();
+      onOpenChange(false);
 
-  if (!flags || flags.length === 0) return null
+      // Reset form
+      setSelectedResolution("");
+      setResolutionNotes("");
+    } catch (error) {
+      console.error("Error resolving flags:", error);
+      toast.error("An unexpected error occurred");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  if (!flags || flags.length === 0) return null;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -160,7 +163,8 @@ export function FlagResolutionDialog({
               Resolve Question Flags
             </DialogTitle>
             <DialogDescription>
-              Review and resolve the flags for this question. All flags will be updated with the same resolution.
+              Review and resolve the flags for this question. All flags will be updated with the
+              same resolution.
             </DialogDescription>
           </DialogHeader>
 
@@ -180,7 +184,8 @@ export function FlagResolutionDialog({
                     <div className="flex items-center justify-between">
                       <Badge variant="outline" className="flex items-center gap-1">
                         <Flag className="h-3 w-3" />
-                        {FLAG_TYPE_CONFIG[flag.flag_type as keyof typeof FLAG_TYPE_CONFIG]?.label || flag.flag_type}
+                        {FLAG_TYPE_CONFIG[flag.flag_type as keyof typeof FLAG_TYPE_CONFIG]?.label ||
+                          flag.flag_type}
                       </Badge>
                       <div className="flex items-center gap-2 text-xs text-muted-foreground">
                         <Calendar className="h-3 w-3" />
@@ -198,7 +203,10 @@ export function FlagResolutionDialog({
             {/* Resolution Type */}
             <div className="space-y-2">
               <Label htmlFor="resolution-type">Resolution Type</Label>
-              <Select value={selectedResolution} onValueChange={(value) => setSelectedResolution(value as FlagResolutionType | '')}>
+              <Select
+                value={selectedResolution}
+                onValueChange={(value) => setSelectedResolution(value as FlagResolutionType | "")}
+              >
                 <SelectTrigger>
                   <SelectValue placeholder="Select how to resolve these flags" />
                 </SelectTrigger>
@@ -233,14 +241,12 @@ export function FlagResolutionDialog({
             <div className="space-y-2">
               <Label htmlFor="resolution-notes">
                 Resolution Notes
-                {selectedResolution === 'fixed' && (
-                  <span className="text-red-500 ml-1">*</span>
-                )}
+                {selectedResolution === "fixed" && <span className="text-red-500 ml-1">*</span>}
               </Label>
               <Textarea
                 id="resolution-notes"
                 placeholder={
-                  selectedResolution === 'fixed'
+                  selectedResolution === "fixed"
                     ? "Describe what changes were made to fix the issue..."
                     : "Optional: Explain why the flag was dismissed..."
                 }
@@ -248,7 +254,7 @@ export function FlagResolutionDialog({
                 onChange={(e) => setResolutionNotes(e.target.value)}
                 rows={4}
               />
-              {selectedResolution === 'fixed' && (
+              {selectedResolution === "fixed" && (
                 <p className="text-xs text-muted-foreground">
                   Required when marking as fixed. Describe the changes made to resolve the issue.
                 </p>
@@ -257,22 +263,15 @@ export function FlagResolutionDialog({
           </div>
 
           <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => onOpenChange(false)}
-              disabled={isSubmitting}
-            >
+            <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isSubmitting}>
               Cancel
             </Button>
-            <Button
-              onClick={handleSubmit}
-              disabled={isSubmitting || !selectedResolution}
-            >
-              {isSubmitting ? 'Resolving...' : `Resolve ${flags.length} Flag(s)`}
+            <Button onClick={handleSubmit} disabled={isSubmitting || !selectedResolution}>
+              {isSubmitting ? "Resolving..." : `Resolve ${flags.length} Flag(s)`}
             </Button>
           </DialogFooter>
         </DialogContent>
       </DialogPortal>
     </Dialog>
-  )
+  );
 }

@@ -1,31 +1,28 @@
 // src/components/questions/image-attachment.tsx
-'use client';
+"use client";
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from "react";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { Search, X, Plus, Image as ImageIcon } from 'lucide-react';
-import { fetchImages } from '@/features/images/services/images';
-import { ImageData } from '@/features/images/types/images';
-import { ImagePreview } from '@/features/images/components/image-preview';
-import { QuestionImageFormData } from '@/features/questions/types/questions';
+import { Search, X, Plus, Image as ImageIcon } from "lucide-react";
+import { fetchImages } from "@/features/images/services/images";
+import { ImageData } from "@/features/images/types/images";
+import { ImagePreview } from "@/features/images/components/image-preview";
+import { QuestionImageFormData } from "@/features/questions/types/questions";
 
 interface ImageAttachmentProps {
   selectedImages: QuestionImageFormData[];
   onSelectionChange: (images: QuestionImageFormData[]) => void;
 }
 
-export function ImageAttachment({
-  selectedImages,
-  onSelectionChange
-}: ImageAttachmentProps) {
+export function ImageAttachment({ selectedImages, onSelectionChange }: ImageAttachmentProps) {
   const [availableImages, setAvailableImages] = useState<ImageData[]>([]);
   const [loading, setLoading] = useState(false);
-  const [searchTerm, setSearchTerm] = useState('');
+  const [searchTerm, setSearchTerm] = useState("");
   const [showImagePicker, setShowImagePicker] = useState(false);
 
   // Get all selected image IDs for easy lookup
-  const selectedImageIds = selectedImages.map(img => img.image_id);
+  const selectedImageIds = selectedImages.map((img) => img.image_id);
 
   const loadImages = useCallback(async () => {
     setLoading(true);
@@ -34,7 +31,7 @@ export function ImageAttachment({
         page: 0,
         pageSize: 50,
         searchTerm: searchTerm || undefined,
-        showUnusedOnly: false
+        showUnusedOnly: false,
       });
 
       if (result.error) {
@@ -43,7 +40,7 @@ export function ImageAttachment({
 
       setAvailableImages(result.data);
     } catch (error) {
-      console.error('Failed to load images:', error);
+      console.error("Failed to load images:", error);
     } finally {
       setLoading(false);
     }
@@ -60,19 +57,19 @@ export function ImageAttachment({
 
     const newImage: QuestionImageFormData = {
       image_id: imageId,
-      question_section: 'stem',
-      order_index: selectedImages.length
+      question_section: "stem",
+      order_index: selectedImages.length,
     };
     onSelectionChange([...selectedImages, newImage]);
     setShowImagePicker(false);
   };
 
   const handleRemoveImage = (imageId: string, _section?: string) => {
-    const updatedImages = selectedImages.filter(img => img.image_id !== imageId);
+    const updatedImages = selectedImages.filter((img) => img.image_id !== imageId);
     // Reorder remaining images
     const reorderedImages = updatedImages.map((img, index) => ({
       ...img,
-      order_index: index
+      order_index: index,
     }));
     onSelectionChange(reorderedImages);
   };
@@ -108,14 +105,12 @@ export function ImageAttachment({
     // Update order indices
     const reorderedImages = updatedImages.map((img, index) => ({
       ...img,
-      order_index: index
+      order_index: index,
     }));
 
     onSelectionChange(reorderedImages);
     setDraggedIndex(null);
   };
-
-
 
   // Load all images for selected images display
   const [allImages, setAllImages] = useState<ImageData[]>([]);
@@ -125,7 +120,7 @@ export function ImageAttachment({
       const result = await fetchImages({
         page: 0,
         pageSize: 1000,
-        showUnusedOnly: false
+        showUnusedOnly: false,
       });
 
       if (result.error) {
@@ -134,7 +129,7 @@ export function ImageAttachment({
 
       setAllImages(result.data);
     } catch (error) {
-      console.error('Failed to load all images:', error);
+      console.error("Failed to load all images:", error);
     }
   }, []);
 
@@ -142,18 +137,11 @@ export function ImageAttachment({
     loadAllImages();
   }, [loadAllImages]);
 
-
-
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h4 className="font-medium">Images ({selectedImages.length})</h4>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          onClick={() => setShowImagePicker(true)}
-        >
+        <Button type="button" variant="outline" size="sm" onClick={() => setShowImagePicker(true)}>
           <Plus className="h-4 w-4 mr-1" />
           Add Images
         </Button>
@@ -163,14 +151,14 @@ export function ImageAttachment({
       {selectedImages.length > 0 && (
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
           {selectedImages.map((imageData) => {
-            const image = allImages.find(img => img.id === imageData.image_id);
+            const image = allImages.find((img) => img.id === imageData.image_id);
             if (!image) return null;
 
             return (
               <div key={imageData.image_id} className="relative group">
                 <ImagePreview
                   src={image.url}
-                  alt={image.alt_text || ''}
+                  alt={image.alt_text || ""}
                   size="sm"
                   className="aspect-square w-full rounded-lg border"
                 />
@@ -184,8 +172,11 @@ export function ImageAttachment({
                   <X className="h-3 w-3" />
                 </Button>
                 <div className="mt-1">
-                  <p className="text-xs text-muted-foreground truncate" title={image.alt_text || ''}>
-                    {image.alt_text || 'No description'}
+                  <p
+                    className="text-xs text-muted-foreground truncate"
+                    title={image.alt_text || ""}
+                  >
+                    {image.alt_text || "No description"}
                   </p>
                 </div>
               </div>
@@ -200,11 +191,7 @@ export function ImageAttachment({
           <div className="bg-background rounded-lg p-6 max-w-4xl max-h-[80vh] overflow-y-auto w-full mx-4">
             <div className="flex items-center justify-between mb-4">
               <h3 className="text-lg font-medium">Select Images</h3>
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setShowImagePicker(false)}
-              >
+              <Button variant="ghost" size="sm" onClick={() => setShowImagePicker(false)}>
                 <X className="h-4 w-4" />
               </Button>
             </div>
@@ -221,54 +208,56 @@ export function ImageAttachment({
               </div>
             </div>
 
-        {/* Images Grid */}
-        <div className="border rounded-lg p-4">
-          {loading ? (
-            <div className="flex justify-center items-center h-40">
-              <div className="text-sm text-muted-foreground">Loading images...</div>
-            </div>
-          ) : availableImages.length === 0 ? (
-            <div className="text-center text-sm text-muted-foreground py-12">
-              <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
-              <p>No images found</p>
-              <p className="text-xs">Try adjusting your search or category filter</p>
-            </div>
-          ) : (
-            <div className="grid grid-cols-6 gap-2 max-h-96 overflow-y-auto pr-2">
-              {availableImages.map((image) => {
-                const isSelected = selectedImageIds.includes(image.id);
-                const selectedIndex = selectedImages.findIndex(img => img.image_id === image.id);
-                const orderNumber = selectedIndex >= 0 ? selectedIndex + 1 : null;
+            {/* Images Grid */}
+            <div className="border rounded-lg p-4">
+              {loading ? (
+                <div className="flex justify-center items-center h-40">
+                  <div className="text-sm text-muted-foreground">Loading images...</div>
+                </div>
+              ) : availableImages.length === 0 ? (
+                <div className="text-center text-sm text-muted-foreground py-12">
+                  <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
+                  <p>No images found</p>
+                  <p className="text-xs">Try adjusting your search or category filter</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-6 gap-2 max-h-96 overflow-y-auto pr-2">
+                  {availableImages.map((image) => {
+                    const isSelected = selectedImageIds.includes(image.id);
+                    const selectedIndex = selectedImages.findIndex(
+                      (img) => img.image_id === image.id
+                    );
+                    const orderNumber = selectedIndex >= 0 ? selectedIndex + 1 : null;
 
-                return (
-                  <div key={image.id} className="relative group">
-                    <div
-                      className={`aspect-square overflow-hidden rounded border-2 transition-all relative ${
-                        isSelected
-                          ? 'border-primary ring-2 ring-primary/20'
-                          : 'border-border hover:border-primary/50'
-                      } ${!isSelected ? 'cursor-pointer' : ''}`}
-                      onClick={() => !isSelected && handleAddImage(image.id)}
-                    >
-                      <ImagePreview
-                        src={image.url}
-                        alt={image.alt_text || ''}
-                        size="sm"
-                        className="w-full h-full !rounded-none"
-                        disableFullscreen={true}
-                      />
-                      {isSelected && orderNumber !== null && (
-                        <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-white z-20 pointer-events-none">
-                          {orderNumber}
+                    return (
+                      <div key={image.id} className="relative group">
+                        <div
+                          className={`aspect-square overflow-hidden rounded border-2 transition-all relative ${
+                            isSelected
+                              ? "border-primary ring-2 ring-primary/20"
+                              : "border-border hover:border-primary/50"
+                          } ${!isSelected ? "cursor-pointer" : ""}`}
+                          onClick={() => !isSelected && handleAddImage(image.id)}
+                        >
+                          <ImagePreview
+                            src={image.url}
+                            alt={image.alt_text || ""}
+                            size="sm"
+                            className="w-full h-full !rounded-none"
+                            disableFullscreen={true}
+                          />
+                          {isSelected && orderNumber !== null && (
+                            <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-7 h-7 flex items-center justify-center text-sm font-bold shadow-lg ring-2 ring-white z-20 pointer-events-none">
+                              {orderNumber}
+                            </div>
+                          )}
                         </div>
-                      )}
-                    </div>
-                  </div>
-                );
-              })}
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
             </div>
-          )}
-        </div>
           </div>
         </div>
       )}

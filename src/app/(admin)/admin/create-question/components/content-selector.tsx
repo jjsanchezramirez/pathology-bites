@@ -1,209 +1,308 @@
-'use client'
+"use client";
 
-import { useState, useEffect, useCallback } from 'react'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
+import { useState, useEffect, useCallback } from "react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 
-import { Loader2, BookOpen, GraduationCap, Target } from 'lucide-react'
-import { toast } from '@/shared/utils/toast'
+import { Loader2, BookOpen, GraduationCap, Target } from "lucide-react";
+import { toast } from "@/shared/utils/toast";
 
 interface EducationalContent {
-  category: string
-  subject: string
-  lesson: string
-  topic: string
-  content: unknown
+  category: string;
+  subject: string;
+  lesson: string;
+  topic: string;
+  content: unknown;
 }
 
 interface ContentSelectorProps {
-  onContentSelect: (content: EducationalContent) => void
-  selectedContent: EducationalContent | null
+  onContentSelect: (content: EducationalContent) => void;
+  selectedContent: EducationalContent | null;
 }
 
 interface ContentFile {
-  filename: string
-  category: string
-  subject: string
+  filename: string;
+  category: string;
+  subject: string;
 }
 
 interface ContentData {
-  category: string
+  category: string;
   subject: {
-    name: string
-    url: string
-    lessons: Record<string, {
-      name: string
-      url: string
-      topics: Record<string, {
-        name: string
-        url: string
-        content: unknown
-      }>
-    }>
-  }
+    name: string;
+    url: string;
+    lessons: Record<
+      string,
+      {
+        name: string;
+        url: string;
+        topics: Record<
+          string,
+          {
+            name: string;
+            url: string;
+            content: unknown;
+          }
+        >;
+      }
+    >;
+  };
 }
 
 export function ContentSelector({ onContentSelect, selectedContent }: ContentSelectorProps) {
-  const [availableFiles, setAvailableFiles] = useState<ContentFile[]>([])
-  const [selectedFile, setSelectedFile] = useState<string>('')
-  const [contentData, setContentData] = useState<ContentData | null>(null)
-  const [selectedLesson, setSelectedLesson] = useState<string>('')
-  const [selectedTopic, setSelectedTopic] = useState<string>('')
-  const [loading, setLoading] = useState(false)
+  const [availableFiles, setAvailableFiles] = useState<ContentFile[]>([]);
+  const [selectedFile, setSelectedFile] = useState<string>("");
+  const [contentData, setContentData] = useState<ContentData | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<string>("");
+  const [selectedTopic, setSelectedTopic] = useState<string>("");
+  const [loading, setLoading] = useState(false);
 
   // Parse available educational content files
   useEffect(() => {
     const files: ContentFile[] = [
       // Anatomic Pathology files
-      { filename: 'ap-bone.json', category: 'Anatomic Pathology', subject: 'Bone' },
-      { filename: 'ap-breast.json', category: 'Anatomic Pathology', subject: 'Breast' },
-      { filename: 'ap-cardiovascular-and-thoracic.json', category: 'Anatomic Pathology', subject: 'Cardiovascular and Thoracic' },
-      { filename: 'ap-cytopathology.json', category: 'Anatomic Pathology', subject: 'Cytopathology' },
-      { filename: 'ap-dermatopathology.json', category: 'Anatomic Pathology', subject: 'Dermatopathology' },
-      { filename: 'ap-forensics-and-autopsy.json', category: 'Anatomic Pathology', subject: 'Forensics and Autopsy' },
-      { filename: 'ap-gastrointestinal.json', category: 'Anatomic Pathology', subject: 'Gastrointestinal' },
-      { filename: 'ap-general-topics.json', category: 'Anatomic Pathology', subject: 'General Topics' },
-      { filename: 'ap-genitourinary.json', category: 'Anatomic Pathology', subject: 'Genitourinary' },
-      { filename: 'ap-gynecological.json', category: 'Anatomic Pathology', subject: 'Gynecological' },
-      { filename: 'ap-head-and-neck---endocrine.json', category: 'Anatomic Pathology', subject: 'Head and Neck / Endocrine' },
-      { filename: 'ap-hematopathology.json', category: 'Anatomic Pathology', subject: 'Hematopathology' },
-      { filename: 'ap-molecular.json', category: 'Anatomic Pathology', subject: 'Molecular' },
-      { filename: 'ap-neuropathology.json', category: 'Anatomic Pathology', subject: 'Neuropathology' },
-      { filename: 'ap-pancreas-biliary-liver.json', category: 'Anatomic Pathology', subject: 'Pancreas Biliary Liver' },
-      { filename: 'ap-pediatrics.json', category: 'Anatomic Pathology', subject: 'Pediatrics' },
-      { filename: 'ap-soft-tissue.json', category: 'Anatomic Pathology', subject: 'Soft Tissue' },
-      
+      { filename: "ap-bone.json", category: "Anatomic Pathology", subject: "Bone" },
+      { filename: "ap-breast.json", category: "Anatomic Pathology", subject: "Breast" },
+      {
+        filename: "ap-cardiovascular-and-thoracic.json",
+        category: "Anatomic Pathology",
+        subject: "Cardiovascular and Thoracic",
+      },
+      {
+        filename: "ap-cytopathology.json",
+        category: "Anatomic Pathology",
+        subject: "Cytopathology",
+      },
+      {
+        filename: "ap-dermatopathology.json",
+        category: "Anatomic Pathology",
+        subject: "Dermatopathology",
+      },
+      {
+        filename: "ap-forensics-and-autopsy.json",
+        category: "Anatomic Pathology",
+        subject: "Forensics and Autopsy",
+      },
+      {
+        filename: "ap-gastrointestinal.json",
+        category: "Anatomic Pathology",
+        subject: "Gastrointestinal",
+      },
+      {
+        filename: "ap-general-topics.json",
+        category: "Anatomic Pathology",
+        subject: "General Topics",
+      },
+      {
+        filename: "ap-genitourinary.json",
+        category: "Anatomic Pathology",
+        subject: "Genitourinary",
+      },
+      {
+        filename: "ap-gynecological.json",
+        category: "Anatomic Pathology",
+        subject: "Gynecological",
+      },
+      {
+        filename: "ap-head-and-neck---endocrine.json",
+        category: "Anatomic Pathology",
+        subject: "Head and Neck / Endocrine",
+      },
+      {
+        filename: "ap-hematopathology.json",
+        category: "Anatomic Pathology",
+        subject: "Hematopathology",
+      },
+      { filename: "ap-molecular.json", category: "Anatomic Pathology", subject: "Molecular" },
+      {
+        filename: "ap-neuropathology.json",
+        category: "Anatomic Pathology",
+        subject: "Neuropathology",
+      },
+      {
+        filename: "ap-pancreas-biliary-liver.json",
+        category: "Anatomic Pathology",
+        subject: "Pancreas Biliary Liver",
+      },
+      { filename: "ap-pediatrics.json", category: "Anatomic Pathology", subject: "Pediatrics" },
+      { filename: "ap-soft-tissue.json", category: "Anatomic Pathology", subject: "Soft Tissue" },
+
       // Clinical Pathology files
-      { filename: 'cp-clinical-chemistry.json', category: 'Clinical Pathology', subject: 'Clinical Chemistry' },
-      { filename: 'cp-hematology-hemostasis-and-thrombosis.json', category: 'Clinical Pathology', subject: 'Hematology Hemostasis and Thrombosis' },
-      { filename: 'cp-hematopathology.json', category: 'Clinical Pathology', subject: 'Hematopathology' },
-      { filename: 'cp-immunology.json', category: 'Clinical Pathology', subject: 'Immunology' },
-      { filename: 'cp-laboratory-management-and-clinical-laboratory-informatics.json', category: 'Clinical Pathology', subject: 'Laboratory Management and Clinical Laboratory Informatics' },
-      { filename: 'cp-medical-microbiology.json', category: 'Clinical Pathology', subject: 'Medical Microbiology' },
-      { filename: 'cp-molecular-pathology-and-cytogenetics.json', category: 'Clinical Pathology', subject: 'Molecular Pathology and Cytogenetics' },
-      { filename: 'cp-toxicology-body-fluids-and-special-techniques.json', category: 'Clinical Pathology', subject: 'Toxicology Body Fluids and Special Techniques' },
-      { filename: 'cp-transfusion-medicine.json', category: 'Clinical Pathology', subject: 'Transfusion Medicine' },
-    ]
-    setAvailableFiles(files)
-  }, [])
+      {
+        filename: "cp-clinical-chemistry.json",
+        category: "Clinical Pathology",
+        subject: "Clinical Chemistry",
+      },
+      {
+        filename: "cp-hematology-hemostasis-and-thrombosis.json",
+        category: "Clinical Pathology",
+        subject: "Hematology Hemostasis and Thrombosis",
+      },
+      {
+        filename: "cp-hematopathology.json",
+        category: "Clinical Pathology",
+        subject: "Hematopathology",
+      },
+      { filename: "cp-immunology.json", category: "Clinical Pathology", subject: "Immunology" },
+      {
+        filename: "cp-laboratory-management-and-clinical-laboratory-informatics.json",
+        category: "Clinical Pathology",
+        subject: "Laboratory Management and Clinical Laboratory Informatics",
+      },
+      {
+        filename: "cp-medical-microbiology.json",
+        category: "Clinical Pathology",
+        subject: "Medical Microbiology",
+      },
+      {
+        filename: "cp-molecular-pathology-and-cytogenetics.json",
+        category: "Clinical Pathology",
+        subject: "Molecular Pathology and Cytogenetics",
+      },
+      {
+        filename: "cp-toxicology-body-fluids-and-special-techniques.json",
+        category: "Clinical Pathology",
+        subject: "Toxicology Body Fluids and Special Techniques",
+      },
+      {
+        filename: "cp-transfusion-medicine.json",
+        category: "Clinical Pathology",
+        subject: "Transfusion Medicine",
+      },
+    ];
+    setAvailableFiles(files);
+  }, []);
 
   // Load educational content data when file is selected
   useEffect(() => {
     if (selectedFile) {
-      let aborted = false
+      let aborted = false;
       const loadContentData = async () => {
         try {
-          setLoading(true)
+          setLoading(true);
 
           // Use direct R2 access for better performance and to avoid Vercel API costs
           // This matches the pattern used in client-data-manager.ts and other components
-          const response = await fetch(`https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/context/${selectedFile}`, {
-            method: 'GET',
-            headers: {
-              'Accept': 'application/json',
-            },
-            cache: 'force-cache', // Aggressive browser caching for static educational content
-          })
+          const response = await fetch(
+            `https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/context/${selectedFile}`,
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json",
+              },
+              cache: "force-cache", // Aggressive browser caching for static educational content
+            }
+          );
 
           // Check if aborted before processing response
-          if (aborted) return
+          if (aborted) return;
 
           if (!response.ok) {
-            throw new Error(`Failed to load educational content (HTTP ${response.status})`)
+            throw new Error(`Failed to load educational content (HTTP ${response.status})`);
           }
 
-          const data = await response.json()
+          const data = await response.json();
 
           // Check if aborted before setting state
-          if (aborted) return
+          if (aborted) return;
 
-          setContentData(data)
-          setSelectedLesson('')
-          setSelectedTopic('')
-
+          setContentData(data);
+          setSelectedLesson("");
+          setSelectedTopic("");
         } catch (error) {
           // Don't show error if request was aborted
-          if (aborted) return
+          if (aborted) return;
 
-          console.error('Error loading educational content data:', error)
+          console.error("Error loading educational content data:", error);
 
           // More specific error messages based on error type
-          if (error instanceof TypeError && error.message === 'Failed to fetch') {
-            toast.error('Network error: Please check your internet connection and try again.')
+          if (error instanceof TypeError && error.message === "Failed to fetch") {
+            toast.error("Network error: Please check your internet connection and try again.");
           } else if (error instanceof Error) {
-            toast.error(`Failed to load educational content: ${error.message}`)
+            toast.error(`Failed to load educational content: ${error.message}`);
           } else {
-            toast.error('Failed to load educational content. Please try again.')
+            toast.error("Failed to load educational content. Please try again.");
           }
 
-          setContentData(null)
-          setSelectedLesson('')
-          setSelectedTopic('')
+          setContentData(null);
+          setSelectedLesson("");
+          setSelectedTopic("");
         } finally {
           if (!aborted) {
-            setLoading(false)
+            setLoading(false);
           }
         }
-      }
+      };
 
-      loadContentData()
+      loadContentData();
 
       // Cleanup function to abort request if component unmounts or selectedFile changes
       return () => {
-        aborted = true
-      }
+        aborted = true;
+      };
     } else {
       // Reset state when no file is selected
-      setContentData(null)
-      setSelectedLesson('')
-      setSelectedTopic('')
+      setContentData(null);
+      setSelectedLesson("");
+      setSelectedTopic("");
     }
-  }, [selectedFile])
+  }, [selectedFile]);
 
   // Auto-select content when all dropdowns have valid selections
   const handleAutoSelect = useCallback(() => {
     if (contentData && selectedLesson && selectedTopic) {
-      const lesson = contentData.subject.lessons[selectedLesson]
-      const topic = lesson?.topics[selectedTopic]
+      const lesson = contentData.subject.lessons[selectedLesson];
+      const topic = lesson?.topics[selectedTopic];
       if (topic) {
         const newContent = {
           category: contentData.category,
           subject: contentData.subject.name,
           lesson: selectedLesson,
           topic: selectedTopic,
-          content: topic.content
-        }
+          content: topic.content,
+        };
 
         // Only call if content has actually changed
-        if (!selectedContent ||
-            selectedContent.category !== newContent.category ||
-            selectedContent.subject !== newContent.subject ||
-            selectedContent.lesson !== newContent.lesson ||
-            selectedContent.topic !== newContent.topic) {
-          onContentSelect(newContent)
+        if (
+          !selectedContent ||
+          selectedContent.category !== newContent.category ||
+          selectedContent.subject !== newContent.subject ||
+          selectedContent.lesson !== newContent.lesson ||
+          selectedContent.topic !== newContent.topic
+        ) {
+          onContentSelect(newContent);
         }
       }
     }
-  }, [contentData, selectedLesson, selectedTopic, selectedContent, onContentSelect])
+  }, [contentData, selectedLesson, selectedTopic, selectedContent, onContentSelect]);
 
   // Auto-select content when topic is selected
   useEffect(() => {
     if (contentData && selectedLesson && selectedTopic) {
-      const lesson = contentData.subject.lessons[selectedLesson]
-      const topic = lesson?.topics[selectedTopic]
+      const lesson = contentData.subject.lessons[selectedLesson];
+      const topic = lesson?.topics[selectedTopic];
       if (topic?.content) {
         // Auto-select content when all dropdowns are filled
-        handleAutoSelect()
+        handleAutoSelect();
       }
     }
-  }, [contentData, selectedLesson, selectedTopic, handleAutoSelect])
+  }, [contentData, selectedLesson, selectedTopic, handleAutoSelect]);
 
-  const groupedFiles = availableFiles.reduce((acc, file) => {
-    if (!acc[file.category]) {
-      acc[file.category] = []
-    }
-    acc[file.category].push(file)
-    return acc
-  }, {} as Record<string, ContentFile[]>)
+  const groupedFiles = availableFiles.reduce(
+    (acc, file) => {
+      if (!acc[file.category]) {
+        acc[file.category] = [];
+      }
+      acc[file.category].push(file);
+      return acc;
+    },
+    {} as Record<string, ContentFile[]>
+  );
 
   return (
     <div className="space-y-6">
@@ -274,19 +373,20 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
               <SelectValue placeholder="Select a topic..." />
             </SelectTrigger>
             <SelectContent>
-              {Object.entries(contentData.subject.lessons[selectedLesson].topics).map(([topicKey, topic]) => (
-                <SelectItem key={topicKey} value={topicKey}>
-                  <div className="flex items-center gap-2">
-                    <Target className="h-4 w-4" />
-                    {topic.name}
-                  </div>
-                </SelectItem>
-              ))}
+              {Object.entries(contentData.subject.lessons[selectedLesson].topics).map(
+                ([topicKey, topic]) => (
+                  <SelectItem key={topicKey} value={topicKey}>
+                    <div className="flex items-center gap-2">
+                      <Target className="h-4 w-4" />
+                      {topic.name}
+                    </div>
+                  </SelectItem>
+                )
+              )}
             </SelectContent>
           </Select>
         </div>
       )}
-
     </div>
-  )
+  );
 }

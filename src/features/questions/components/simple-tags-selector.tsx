@@ -1,51 +1,51 @@
 // src/components/questions/simple-tags-selector.tsx
-'use client';
+"use client";
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect } from "react";
 
 import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
-import { X } from 'lucide-react';
-import { useTags } from '@/features/questions/hooks/use-tags';
+import { X } from "lucide-react";
+import { useTags } from "@/features/questions/hooks/use-tags";
 
 interface SimpleTagsSelectorProps {
   selectedTagIds: string[];
   onTagsChange: (tagIds: string[]) => void;
 }
 
-export function SimpleTagsSelector({
-  selectedTagIds,
-  onTagsChange
-}: SimpleTagsSelectorProps) {
-  const [inputValue, setInputValue] = useState('');
+export function SimpleTagsSelector({ selectedTagIds, onTagsChange }: SimpleTagsSelectorProps) {
+  const [inputValue, setInputValue] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const { tags, createTag } = useTags();
 
   // Get selected tags
   const selectedTags = selectedTagIds
-    .filter(id => id) // Filter out any undefined/null IDs
+    .filter((id) => id) // Filter out any undefined/null IDs
     .map((id) => {
-      const existingTag = tags.find(tag => tag.id === id);
+      const existingTag = tags.find((tag) => tag.id === id);
       if (existingTag) return existingTag;
-      return { id, name: `Loading...`, created_at: '', updated_at: '' };
+      return { id, name: `Loading...`, created_at: "", updated_at: "" };
     });
 
   // Filter available tags (not already selected)
-  const availableTags = tags.filter(tag =>
-    !selectedTagIds.includes(tag.id) &&
-    tag.name.toLowerCase().includes(inputValue.toLowerCase())
-  ).slice(0, 5);
+  const availableTags = tags
+    .filter(
+      (tag) =>
+        !selectedTagIds.includes(tag.id) &&
+        tag.name.toLowerCase().includes(inputValue.toLowerCase())
+    )
+    .slice(0, 5);
 
   const handleRemoveTag = (tagId: string) => {
-    onTagsChange(selectedTagIds.filter(id => id !== tagId));
+    onTagsChange(selectedTagIds.filter((id) => id !== tagId));
   };
 
   const handleAddTag = async (tagName: string) => {
     if (selectedTagIds.length >= 5) return;
 
     // Check if tag already exists
-    const existingTag = tags.find(tag => tag.name.toLowerCase() === tagName.toLowerCase());
+    const existingTag = tags.find((tag) => tag.name.toLowerCase() === tagName.toLowerCase());
     if (existingTag) {
       if (!selectedTagIds.includes(existingTag.id)) {
         onTagsChange([...selectedTagIds, existingTag.id]);
@@ -59,7 +59,7 @@ export function SimpleTagsSelector({
         // Error handled in hook
       }
     }
-    setInputValue('');
+    setInputValue("");
     setShowSuggestions(false);
 
     // Focus back on the input field
@@ -69,12 +69,12 @@ export function SimpleTagsSelector({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
-    if (e.key === 'Enter' && inputValue.trim()) {
+    if (e.key === "Enter" && inputValue.trim()) {
       e.preventDefault();
       handleAddTag(inputValue.trim());
-    } else if (e.key === 'Escape') {
+    } else if (e.key === "Escape") {
       setShowSuggestions(false);
-      setInputValue('');
+      setInputValue("");
     }
   };
 
@@ -91,8 +91,8 @@ export function SimpleTagsSelector({
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   return (
@@ -129,21 +129,20 @@ export function SimpleTagsSelector({
                 </>
               )}
 
-              {inputValue.trim() && !tags.find(tag => tag.name.toLowerCase() === inputValue.toLowerCase()) && (
-                <button
-                  key={`create-${inputValue.trim()}`}
-                  type="button"
-                  className="w-full text-left px-3 py-2 hover:bg-muted text-sm border-t"
-                  onClick={() => handleAddTag(inputValue.trim())}
-                >
-                  Create "{inputValue.trim()}"
-                </button>
-              )}
+              {inputValue.trim() &&
+                !tags.find((tag) => tag.name.toLowerCase() === inputValue.toLowerCase()) && (
+                  <button
+                    key={`create-${inputValue.trim()}`}
+                    type="button"
+                    className="w-full text-left px-3 py-2 hover:bg-muted text-sm border-t"
+                    onClick={() => handleAddTag(inputValue.trim())}
+                  >
+                    Create "{inputValue.trim()}"
+                  </button>
+                )}
 
               {availableTags.length === 0 && !inputValue.trim() && (
-                <div className="px-3 py-2 text-sm text-muted-foreground">
-                  No tags found
-                </div>
+                <div className="px-3 py-2 text-sm text-muted-foreground">No tags found</div>
               )}
             </div>
           )}
@@ -154,7 +153,11 @@ export function SimpleTagsSelector({
       {selectedTags.length > 0 && (
         <div className="flex flex-wrap gap-2">
           {selectedTags.map((tag, index) => (
-            <Badge key={tag.id || `tag-${index}`} variant="secondary" className="flex items-center gap-1">
+            <Badge
+              key={tag.id || `tag-${index}`}
+              variant="secondary"
+              className="flex items-center gap-1"
+            >
               {tag.name}
               <button
                 type="button"

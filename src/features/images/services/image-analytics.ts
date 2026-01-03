@@ -1,6 +1,6 @@
 // Image usage analytics service
-import { createClient } from '@/shared/services/client';
-import { formatSize } from './image-upload';
+import { createClient } from "@/shared/services/client";
+import { formatSize } from "./image-upload";
 
 export interface ImageUsageStats {
   id: string;
@@ -40,17 +40,17 @@ export async function getImageUsageStats(): Promise<ImageUsageStats[]> {
   try {
     // Use the standardized view with v_ prefix
     const { data, error } = await supabase
-      .from('v_image_usage_stats')
-      .select('*')
-      .order('created_at', { ascending: false });
+      .from("v_image_usage_stats")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) {
-      console.error('Supabase error fetching v_image_usage_stats:', error);
+      console.error("Supabase error fetching v_image_usage_stats:", error);
       throw error;
     }
 
     // Process the data to add formatted fields
-    const usageStats: ImageUsageStats[] = (data || []).map(image => ({
+    const usageStats: ImageUsageStats[] = (data || []).map((image) => ({
       id: image.id,
       url: image.url,
       alt_text: image.alt_text,
@@ -63,13 +63,13 @@ export async function getImageUsageStats(): Promise<ImageUsageStats[]> {
       usage_count: image.usage_count,
       used_in_questions: image.question_ids || [],
       is_orphaned: image.is_orphaned,
-      formatted_size: image.file_size_bytes ? formatSize(image.file_size_bytes) : 'Unknown',
-      dimensions_text: image.width && image.height ? `${image.width} × ${image.height}` : 'Unknown'
+      formatted_size: image.file_size_bytes ? formatSize(image.file_size_bytes) : "Unknown",
+      dimensions_text: image.width && image.height ? `${image.width} × ${image.height}` : "Unknown",
     }));
 
     return usageStats;
   } catch (error) {
-    console.error('Get image usage stats error:', error);
+    console.error("Get image usage stats error:", error);
     // Return empty array instead of throwing to prevent UI crashes
     return [];
   }
@@ -78,9 +78,9 @@ export async function getImageUsageStats(): Promise<ImageUsageStats[]> {
 export async function getOrphanedImages(): Promise<ImageUsageStats[]> {
   try {
     const stats = await getImageUsageStats();
-    return stats.filter(stat => stat.is_orphaned);
+    return stats.filter((stat) => stat.is_orphaned);
   } catch (error) {
-    console.error('Get orphaned images error:', error);
+    console.error("Get orphaned images error:", error);
     // Return empty array instead of throwing to prevent UI crashes
     return [];
   }
@@ -91,43 +91,40 @@ export async function getStorageStats(): Promise<StorageStats> {
 
   try {
     // Use the standardized view with v_ prefix
-    const { data, error } = await supabase
-      .from('v_storage_stats')
-      .select('*')
-      .single();
+    const { data, error } = await supabase.from("v_storage_stats").select("*").single();
 
     if (error) {
-      console.error('Supabase error fetching v_storage_stats:', error);
+      console.error("Supabase error fetching v_storage_stats:", error);
       throw error;
     }
 
     // Format the category stats
     const categoryStats = [
       {
-        category: 'microscopic',
+        category: "microscopic",
         count: data.microscopic_count,
         size_bytes: data.microscopic_size_bytes,
-        formatted_size: formatSize(data.microscopic_size_bytes)
+        formatted_size: formatSize(data.microscopic_size_bytes),
       },
       {
-        category: 'gross',
+        category: "gross",
         count: data.gross_count,
         size_bytes: data.gross_size_bytes,
-        formatted_size: formatSize(data.gross_size_bytes)
+        formatted_size: formatSize(data.gross_size_bytes),
       },
       {
-        category: 'figure',
+        category: "figure",
         count: data.figure_count,
         size_bytes: data.figure_size_bytes,
-        formatted_size: formatSize(data.figure_size_bytes)
+        formatted_size: formatSize(data.figure_size_bytes),
       },
       {
-        category: 'table',
+        category: "table",
         count: data.table_count,
         size_bytes: data.table_size_bytes,
-        formatted_size: formatSize(data.table_size_bytes)
-      }
-    ].filter(stat => stat.count > 0); // Only include categories with images
+        formatted_size: formatSize(data.table_size_bytes),
+      },
+    ].filter((stat) => stat.count > 0); // Only include categories with images
 
     return {
       total_images: data.total_images,
@@ -136,19 +133,19 @@ export async function getStorageStats(): Promise<StorageStats> {
       by_category: categoryStats,
       orphaned_count: data.orphaned_count,
       orphaned_size_bytes: data.orphaned_size_bytes,
-      formatted_orphaned_size: formatSize(data.orphaned_size_bytes)
+      formatted_orphaned_size: formatSize(data.orphaned_size_bytes),
     };
   } catch (error) {
-    console.error('Get storage stats error:', error);
+    console.error("Get storage stats error:", error);
     // Return default stats instead of throwing to prevent UI crashes
     return {
       total_images: 0,
       total_size_bytes: 0,
-      formatted_total_size: '0 Bytes',
+      formatted_total_size: "0 Bytes",
       by_category: [],
       orphaned_count: 0,
       orphaned_size_bytes: 0,
-      formatted_orphaned_size: '0 Bytes'
+      formatted_orphaned_size: "0 Bytes",
     };
   }
 }

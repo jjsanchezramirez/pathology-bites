@@ -1,29 +1,29 @@
 // src/shared/config/navigation.ts
 
-import { FEATURE_FLAGS } from './feature-flags'
+import { FEATURE_FLAGS } from "./feature-flags";
 
 export interface NavigationItem {
-  name: string
-  href: string
-  icon: string // Use string identifier instead of component
-  requiredPermission?: string
-  adminOnly?: boolean
-  showToRoles?: string[] // Array of roles that can see this item
-  comingSoon?: boolean // Badge to indicate feature is coming soon
-  isNew?: boolean // Badge to indicate feature is new
-  showBadge?: boolean // Whether to show a badge count
-  badgeKey?: 'revisionQueue' | 'reviewQueue' | 'drafts' // Key for fetching badge count
+  name: string;
+  href: string;
+  icon: string; // Use string identifier instead of component
+  requiredPermission?: string;
+  adminOnly?: boolean;
+  showToRoles?: string[]; // Array of roles that can see this item
+  comingSoon?: boolean; // Badge to indicate feature is coming soon
+  isNew?: boolean; // Badge to indicate feature is new
+  showBadge?: boolean; // Whether to show a badge count
+  badgeKey?: "revisionQueue" | "reviewQueue" | "drafts"; // Key for fetching badge count
 }
 
 export interface NavigationSection {
-  title: string
-  items: NavigationItem[]
+  title: string;
+  items: NavigationItem[];
 }
 
 export interface NavigationConfig {
-  items?: NavigationItem[]
-  sections?: NavigationSection[]
-  userRole?: 'admin' | 'creator' | 'reviewer' | 'user'
+  items?: NavigationItem[];
+  sections?: NavigationSection[];
+  userRole?: "admin" | "creator" | "reviewer" | "user";
 }
 
 // Admin/Creator/Reviewer Navigation Configuration
@@ -32,7 +32,7 @@ export const adminNavigationItems: NavigationItem[] = [
     name: "Dashboard",
     href: "/admin/dashboard",
     icon: "LayoutDashboard",
-    requiredPermission: "dashboard.view"
+    requiredPermission: "dashboard.view",
   },
   // Question Management Section
   {
@@ -40,44 +40,44 @@ export const adminNavigationItems: NavigationItem[] = [
     href: "/admin/questions",
     icon: "FileQuestion",
     requiredPermission: "questions.view",
-    showToRoles: ["admin", "creator", "reviewer"] // Visible to all, but bulk operations only for admin
+    showToRoles: ["admin", "creator", "reviewer"], // Visible to all, but bulk operations only for admin
   },
   {
     name: "My Workflow",
     href: "/admin/my-questions",
     icon: "ListTodo",
     requiredPermission: "questions.create",
-    showToRoles: ["admin", "creator"]
+    showToRoles: ["admin", "creator"],
   },
   {
     name: "My Review Queue",
     href: "/admin/review-queue",
     icon: "ClipboardList",
     requiredPermission: "questions.review",
-    showToRoles: ["admin", "reviewer"]
+    showToRoles: ["admin", "reviewer"],
   },
   {
     name: "Create Question",
     href: "/admin/create-question",
     icon: "Brain",
     requiredPermission: "questions.create",
-    showToRoles: ["admin", "creator"]
+    showToRoles: ["admin", "creator"],
   },
-  
+
   // Content Management Section
   {
     name: "Question Labels",
     href: "/admin/labels",
     icon: "Tags",
     requiredPermission: "categories.manage",
-    adminOnly: true
+    adminOnly: true,
   },
   {
     name: "Images",
     href: "/admin/images",
     icon: "Image",
     requiredPermission: "images.manage",
-    showToRoles: ["admin", "creator", "reviewer"]
+    showToRoles: ["admin", "creator", "reviewer"],
   },
   // User Management Section
   {
@@ -85,14 +85,14 @@ export const adminNavigationItems: NavigationItem[] = [
     href: "/admin/users",
     icon: "Users",
     requiredPermission: "users.manage",
-    adminOnly: true
+    adminOnly: true,
   },
   {
     name: "Waitlist",
     href: "/admin/waitlist",
     icon: "Clock",
     requiredPermission: "users.manage",
-    adminOnly: true
+    adminOnly: true,
   },
 
   {
@@ -100,7 +100,7 @@ export const adminNavigationItems: NavigationItem[] = [
     href: "/admin/inquiries",
     icon: "MessageSquare",
     requiredPermission: "inquiries.manage",
-    adminOnly: true
+    adminOnly: true,
   },
   // System Section
   {
@@ -108,23 +108,23 @@ export const adminNavigationItems: NavigationItem[] = [
     href: "/admin/analytics",
     icon: "BarChart",
     requiredPermission: "analytics.view",
-    adminOnly: true
+    adminOnly: true,
   },
   {
     name: "Notifications",
     href: "/admin/notifications",
     icon: "Megaphone",
     requiredPermission: "notifications.manage",
-    adminOnly: true
+    adminOnly: true,
   },
   {
     name: "Settings",
     href: "/admin/settings",
     icon: "Settings",
     requiredPermission: "settings.manage",
-    showToRoles: ["admin", "creator", "reviewer"]
-  }
-]
+    showToRoles: ["admin", "creator", "reviewer"],
+  },
+];
 
 // Admin/Creator/Reviewer Navigation Sections Configuration
 export const adminNavigationSections: NavigationSection[] = [
@@ -135,9 +135,9 @@ export const adminNavigationSections: NavigationSection[] = [
         name: "Dashboard",
         href: "/admin/dashboard",
         icon: "LayoutDashboard",
-        requiredPermission: "dashboard.view"
-      }
-    ]
+        requiredPermission: "dashboard.view",
+      },
+    ],
   },
   {
     title: "Questions",
@@ -147,14 +147,14 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/questions",
         icon: "FileQuestion",
         requiredPermission: "questions.view",
-        showToRoles: ["admin", "creator", "reviewer"] // Visible to all, but bulk operations only for admin
+        showToRoles: ["admin", "creator", "reviewer"], // Visible to all, but bulk operations only for admin
       },
       {
         name: "My Questions",
         href: "/admin/my-questions",
         icon: "FolderOpen",
         requiredPermission: "questions.view",
-        showToRoles: ["admin", "creator", "reviewer"]
+        showToRoles: ["admin", "creator", "reviewer"],
       },
       {
         name: "My Revision Queue",
@@ -163,7 +163,7 @@ export const adminNavigationSections: NavigationSection[] = [
         requiredPermission: "questions.create",
         showToRoles: ["admin", "creator"],
         showBadge: true,
-        badgeKey: "revisionQueue"
+        badgeKey: "revisionQueue",
       },
       {
         name: "My Drafts",
@@ -172,7 +172,7 @@ export const adminNavigationSections: NavigationSection[] = [
         requiredPermission: "questions.create",
         showToRoles: ["admin", "creator"],
         showBadge: true,
-        badgeKey: "drafts"
+        badgeKey: "drafts",
       },
       {
         name: "My Review Queue",
@@ -181,23 +181,23 @@ export const adminNavigationSections: NavigationSection[] = [
         requiredPermission: "questions.review",
         showToRoles: ["admin", "reviewer"],
         showBadge: true,
-        badgeKey: "reviewQueue"
+        badgeKey: "reviewQueue",
       },
       {
         name: "Create Question",
         href: "/admin/create-question",
         icon: "Brain",
         requiredPermission: "questions.create",
-        showToRoles: ["admin", "creator"]
+        showToRoles: ["admin", "creator"],
       },
       {
         name: "Question Metadata",
         href: "/admin/labels",
         icon: "Tags",
         requiredPermission: "categories.manage",
-        adminOnly: true
-      }
-    ]
+        adminOnly: true,
+      },
+    ],
   },
   {
     title: "Media",
@@ -207,9 +207,9 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/images",
         icon: "Image",
         requiredPermission: "images.manage",
-        showToRoles: ["admin", "creator", "reviewer"]
-      }
-    ]
+        showToRoles: ["admin", "creator", "reviewer"],
+      },
+    ],
   },
   {
     title: "Users",
@@ -219,14 +219,14 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/users",
         icon: "Users",
         requiredPermission: "users.manage",
-        adminOnly: true
+        adminOnly: true,
       },
       {
         name: "Waitlist",
         href: "/admin/waitlist",
         icon: "Clock",
         requiredPermission: "users.manage",
-        adminOnly: true
+        adminOnly: true,
       },
 
       {
@@ -234,9 +234,9 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/inquiries",
         icon: "MessageSquare",
         requiredPermission: "inquiries.manage",
-        adminOnly: true
-      }
-    ]
+        adminOnly: true,
+      },
+    ],
   },
   {
     title: "System",
@@ -246,32 +246,32 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/analytics",
         icon: "BarChart",
         requiredPermission: "analytics.view",
-        adminOnly: true
+        adminOnly: true,
       },
       {
         name: "Notifications",
         href: "/admin/notifications",
         icon: "MessageSquare",
         requiredPermission: "notifications.manage",
-        adminOnly: true
+        adminOnly: true,
       },
       {
         name: "Test Semantic Scholar",
         href: "/admin/test-semantic-scholar",
         icon: "FlaskConical",
         requiredPermission: "settings.manage",
-        adminOnly: true
+        adminOnly: true,
       },
       {
         name: "Settings",
         href: "/admin/settings",
         icon: "Settings",
         requiredPermission: "settings.manage",
-        showToRoles: ["admin", "creator", "reviewer"]
-      }
-    ]
-  }
-]
+        showToRoles: ["admin", "creator", "reviewer"],
+      },
+    ],
+  },
+];
 
 // User Navigation Configuration
 export const userNavigationItems: NavigationItem[] = [
@@ -294,13 +294,13 @@ export const userNavigationItems: NavigationItem[] = [
     name: "Slide-Based Questions",
     href: "/dashboard/wsi-questions",
     icon: "Microscope",
-    isNew: true
+    isNew: true,
   },
   {
     name: "Ankoma Deck Viewer",
     href: "/dashboard/anki",
     icon: "Library",
-    isNew: true
+    isNew: true,
   },
   {
     name: "Performance",
@@ -316,13 +316,13 @@ export const userNavigationItems: NavigationItem[] = [
     name: "Learning Modules",
     href: "/dashboard/learning",
     icon: "BookOpen",
-    comingSoon: true
+    comingSoon: true,
   },
   {
     name: "My Progress",
     href: "/dashboard/progress",
     icon: "TrendingUp",
-    comingSoon: true
+    comingSoon: true,
   },
   {
     name: "Profile",
@@ -334,11 +334,11 @@ export const userNavigationItems: NavigationItem[] = [
     href: "/dashboard/settings",
     icon: "Settings",
   },
-]
+];
 
 // Helper function to get user navigation sections with feature flags applied
 export function getUserNavigationSections(): NavigationSection[] {
-  const { _ENABLE_QUIZ_FEATURES } = FEATURE_FLAGS
+  const { _ENABLE_QUIZ_FEATURES } = FEATURE_FLAGS;
 
   return [
     {
@@ -348,8 +348,8 @@ export function getUserNavigationSections(): NavigationSection[] {
           name: "Dashboard",
           href: "/dashboard",
           icon: "LayoutDashboard",
-        }
-      ]
+        },
+      ],
     },
     {
       title: "Education",
@@ -368,21 +368,21 @@ export function getUserNavigationSections(): NavigationSection[] {
           name: "Slide-Based Questions",
           href: "/dashboard/wsi-questions",
           icon: "Microscope",
-          isNew: true
+          isNew: true,
         },
         {
           name: "Ankoma Deck Viewer",
           href: "/dashboard/anki",
           icon: "Library",
-          isNew: true
+          isNew: true,
         },
         {
           name: "Learning Modules",
           href: "/dashboard/learning",
           icon: "BookOpen",
-          comingSoon: true
-        }
-      ]
+          comingSoon: true,
+        },
+      ],
     },
     {
       title: "Analytics",
@@ -401,9 +401,9 @@ export function getUserNavigationSections(): NavigationSection[] {
           name: "My Progress",
           href: "/dashboard/progress",
           icon: "TrendingUp",
-          comingSoon: true
-        }
-      ]
+          comingSoon: true,
+        },
+      ],
     },
     {
       title: "Account",
@@ -417,10 +417,10 @@ export function getUserNavigationSections(): NavigationSection[] {
           name: "Settings",
           href: "/dashboard/settings",
           icon: "Settings",
-        }
-      ]
-    }
-  ]
+        },
+      ],
+    },
+  ];
 }
 
 // User Navigation Sections Configuration (deprecated - use getUserNavigationSections() instead)
@@ -432,8 +432,8 @@ export const userNavigationSections: NavigationSection[] = [
         name: "Dashboard",
         href: "/dashboard",
         icon: "LayoutDashboard",
-      }
-    ]
+      },
+    ],
   },
   {
     title: "Education",
@@ -462,9 +462,9 @@ export const userNavigationSections: NavigationSection[] = [
         name: "Learning Modules",
         href: "/dashboard/learning",
         icon: "BookOpen",
-        comingSoon: true
-      }
-    ]
+        comingSoon: true,
+      },
+    ],
   },
   {
     title: "Analytics",
@@ -483,8 +483,8 @@ export const userNavigationSections: NavigationSection[] = [
         name: "Progress",
         href: "/dashboard/progress",
         icon: "TrendingUp",
-      }
-    ]
+      },
+    ],
   },
   {
     title: "Account",
@@ -498,29 +498,31 @@ export const userNavigationSections: NavigationSection[] = [
         name: "Settings",
         href: "/dashboard/settings",
         icon: "Settings",
-      }
-    ]
-  }
-]
+      },
+    ],
+  },
+];
 
 // Navigation configuration factory
-export function getNavigationConfig(userRole: 'admin' | 'creator' | 'reviewer' | 'user'): NavigationConfig {
+export function getNavigationConfig(
+  userRole: "admin" | "creator" | "reviewer" | "user"
+): NavigationConfig {
   switch (userRole) {
-    case 'admin':
-    case 'creator':
-    case 'reviewer':
+    case "admin":
+    case "creator":
+    case "reviewer":
       return {
         sections: adminNavigationSections,
         items: adminNavigationItems, // Keep for backward compatibility
-        userRole
-      }
-    case 'user':
+        userRole,
+      };
+    case "user":
     default:
       return {
         sections: getUserNavigationSections(),
         items: userNavigationItems, // Keep for backward compatibility
-        userRole: 'user'
-      }
+        userRole: "user",
+      };
   }
 }
 
@@ -532,26 +534,26 @@ export function filterNavigationItems(
   isLoading: boolean,
   adminMode?: string
 ): NavigationItem[] {
-  return items.filter(item => {
+  return items.filter((item) => {
     // During loading, show all items to prevent layout shift
-    if (isLoading) return true
+    if (isLoading) return true;
 
     // Once loaded, apply proper filtering
     // Check actual admin permissions for security
-    if (item.adminOnly && !isAdmin) return false
-    if (item.requiredPermission && !canAccess(item.requiredPermission)) return false
+    if (item.adminOnly && !isAdmin) return false;
+    if (item.requiredPermission && !canAccess(item.requiredPermission)) return false;
 
     // Filter adminOnly items based on selected adminMode for role simulation
-    if (item.adminOnly && adminMode && adminMode !== 'admin') return false
+    if (item.adminOnly && adminMode && adminMode !== "admin") return false;
 
     // Filter based on adminMode if showToRoles is specified
     if (item.showToRoles && adminMode) {
-      const currentViewRole = adminMode === 'user' ? 'user' : adminMode
-      if (!item.showToRoles.includes(currentViewRole)) return false
+      const currentViewRole = adminMode === "user" ? "user" : adminMode;
+      if (!item.showToRoles.includes(currentViewRole)) return false;
     }
 
-    return true
-  })
+    return true;
+  });
 }
 
 // Helper function to filter navigation sections based on permissions and admin mode
@@ -563,9 +565,9 @@ export function filterNavigationSections(
   adminMode?: string
 ): NavigationSection[] {
   return sections
-    .map(section => ({
+    .map((section) => ({
       ...section,
-      items: filterNavigationItems(section.items, canAccess, isAdmin, isLoading, adminMode)
+      items: filterNavigationItems(section.items, canAccess, isAdmin, isLoading, adminMode),
     }))
-    .filter(section => section.items.length > 0) // Only show sections that have visible items
+    .filter((section) => section.items.length > 0); // Only show sections that have visible items
 }

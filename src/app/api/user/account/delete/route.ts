@@ -1,83 +1,87 @@
 // src/app/api/user/account/delete/route.ts
-import { UserRole } from '@/shared/utils/auth-helpers'
-import { NextRequest, NextResponse } from 'next/server'
-import { createClient } from '@/shared/services/server'
-import { createClient as createSupabaseClient } from '@supabase/supabase-js'
-import { deleteUser, deleteUserFromAuth } from '@/shared/services/user-deletion'
-import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
+import { UserRole } from "@/shared/utils/auth-helpers";
+import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/shared/services/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { deleteUser, deleteUserFromAuth } from "@/shared/services/user-deletion";
+import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!
-  return createSupabaseClient(supabaseUrl, supabaseServiceKey)
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
 export async function DELETE(request: NextRequest) {
   try {
-    const supabase = await createClient()
+    const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request)
+    const userId = getUserIdFromHeaders(request);
     if (!userId) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get user email for password verification
-    const { data: { user }, error: userFetchError } = await supabase.auth.getUser()
+    const {
+      data: { user },
+      error: userFetchError,
+    } = await supabase.auth.getUser();
     if (userFetchError || !user) {
-      return NextResponse.json({ error: 'Failed to fetch user data' }, { status: 500 })
+      return NextResponse.json({ error: "Failed to fetch user data" }, { status: 500 });
     }
 
-    const body = await request.json()
-    const { password } = body
+    const body = await request.json();
+    const { password } = body;
 
     if (!password) {
-      return NextResponse.json({ error: 'Password is required for account deletion' }, { status: 400 })
+      return NextResponse.json(
+        { error: "Password is required for account deletion" },
+        { status: 400 }
+      );
     }
 
     // Verify password before deletion
     const { error: signInError } = await supabase.auth.signInWithPassword({
       email: user.email!,
-      password: password
-    })
+      password: password,
+    });
 
     if (signInError) {
-      return NextResponse.json({ error: 'Invalid password' }, { status: 400 })
+      return NextResponse.json({ error: "Invalid password" }, { status: 400 });
     }
 
     // Get user data before deletion for audit purposes
     const { data: userData, error: userError } = await supabase
-      .from('users')
-      .select('id, email, first_name, last_name, role, user_type')
-      .eq('id', userId)
-      .single()
+      .from("users")
+      .select("id, email, first_name, last_name, role, user_type")
+      .eq("id", userId)
+      .single();
 
     if (userError) {
-      console.error('Error fetching user data:', userError)
-      return NextResponse.json({ error: 'Failed to fetch user data' }, { status: 500 })
+      console.error("Error fetching user data:", userError);
+      return NextResponse.json({ error: "Failed to fetch user data" }, { status: 500 });
     }
 
     // Determine deletion type based on role
-    const isContentCreator = ['admin', 'creator', 'reviewer'].includes(userData.role)
-    const deletionType = isContentCreator ? 'soft_delete' : 'hard_delete'
+    const isContentCreator = ["admin", "creator", "reviewer"].includes(userData.role);
+    const deletionType = isContentCreator ? "soft_delete" : "hard_delete";
 
     // Create audit log before deletion
-    await supabase
-      .from('audit_logs')
-      .insert({
-        user_id: userId,
-        action: 'account_deletion',
-        table_name: 'users',
-        record_id: userId,
-        old_values: userData,
-        new_values: null,
-        metadata: {
-          self_deletion: true,
-          deletion_type: deletionType,
-          timestamp: new Date().toISOString()
-        }
-      })
+    await supabase.from("audit_logs").insert({
+      user_id: userId,
+      action: "account_deletion",
+      table_name: "users",
+      record_id: userId,
+      old_values: userData,
+      new_values: null,
+      metadata: {
+        self_deletion: true,
+        deletion_type: deletionType,
+        timestamp: new Date().toISOString(),
+      },
+    });
 
     /**
      * USER DELETION NOTE:
@@ -92,40 +96,40 @@ export async function DELETE(request: NextRequest) {
      */
 
     try {
-      const adminClient = createAdminClient()
+      const adminClient = createAdminClient();
 
-      const result = await deleteUser(adminClient, supabase, userId, userData.role as UserRole)
+      const result = await deleteUser(adminClient, supabase, userId, userData.role as UserRole);
 
       // Delete user from auth system ONLY for hard deletes
       // For soft deletes, preserve auth record so user can log back in and be restored
-      if (result.deletionType === 'hard_delete') {
-        await deleteUserFromAuth(adminClient, userId)
+      if (result.deletionType === "hard_delete") {
+        await deleteUserFromAuth(adminClient, userId);
       }
 
-      console.log('User account deleted successfully:', { userId: userId, email: user.email, deletionType })
+      console.log("User account deleted successfully:", {
+        userId: userId,
+        email: user.email,
+        deletionType,
+      });
     } catch (deletionError) {
-      console.error('Error deleting user account:', deletionError)
-      return NextResponse.json({ error: 'Failed to delete account' }, { status: 500 })
+      console.error("Error deleting user account:", deletionError);
+      return NextResponse.json({ error: "Failed to delete account" }, { status: 500 });
     }
 
     // Sign out the user to clear their session
     try {
-      await supabase.auth.signOut()
+      await supabase.auth.signOut();
     } catch (signOutError) {
-      console.error('Error signing out user after deletion:', signOutError)
+      console.error("Error signing out user after deletion:", signOutError);
       // Don't fail the request if sign out fails
     }
 
     return NextResponse.json({
       success: true,
-      message: 'Account deleted successfully'
-    })
-
+      message: "Account deleted successfully",
+    });
   } catch (error) {
-    console.error('Error in account deletion:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error("Error in account deletion:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

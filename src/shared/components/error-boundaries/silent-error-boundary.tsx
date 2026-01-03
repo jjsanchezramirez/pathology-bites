@@ -1,98 +1,101 @@
-'use client'
+"use client";
 
-import React from 'react'
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { RefreshCw, AlertCircle } from 'lucide-react'
+import React from "react";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { RefreshCw, AlertCircle } from "lucide-react";
 
 interface SilentErrorBoundaryState {
-  hasError: boolean
-  error?: Error
-  retryCount: number
-  lastErrorTime: number
+  hasError: boolean;
+  error?: Error;
+  retryCount: number;
+  lastErrorTime: number;
 }
 
 interface SilentErrorBoundaryProps {
-  children: React.ReactNode
-  maxRetries?: number
-  retryDelay?: number
-  fallbackMessage?: string
-  showErrorDetails?: boolean
-  onError?: (error: Error, retryCount: number) => void
-  onMaxRetriesReached?: (error: Error) => void
+  children: React.ReactNode;
+  maxRetries?: number;
+  retryDelay?: number;
+  fallbackMessage?: string;
+  showErrorDetails?: boolean;
+  onError?: (error: Error, retryCount: number) => void;
+  onMaxRetriesReached?: (error: Error) => void;
 }
 
-export class SilentErrorBoundary extends React.Component<SilentErrorBoundaryProps, SilentErrorBoundaryState> {
-  private retryTimeout?: NodeJS.Timeout
+export class SilentErrorBoundary extends React.Component<
+  SilentErrorBoundaryProps,
+  SilentErrorBoundaryState
+> {
+  private retryTimeout?: NodeJS.Timeout;
 
   constructor(props: SilentErrorBoundaryProps) {
-    super(props)
-    this.state = { 
-      hasError: false, 
+    super(props);
+    this.state = {
+      hasError: false,
       retryCount: 0,
-      lastErrorTime: 0
-    }
+      lastErrorTime: 0,
+    };
   }
 
   static getDerivedStateFromError(error: Error): Partial<SilentErrorBoundaryState> {
     return {
       hasError: true,
       error,
-      lastErrorTime: Date.now()
-    }
+      lastErrorTime: Date.now(),
+    };
   }
 
   componentDidCatch(error: Error, _errorInfo: React.ErrorInfo) {
-    const { maxRetries = 2, retryDelay = 1000, onError, onMaxRetriesReached } = this.props
-    const { retryCount } = this.state
+    const { maxRetries = 2, retryDelay = 1000, onError, onMaxRetriesReached } = this.props;
+    const { retryCount } = this.state;
 
-    console.warn(`SilentErrorBoundary caught error (attempt ${retryCount + 1}):`, error.message)
-    
+    console.warn(`SilentErrorBoundary caught error (attempt ${retryCount + 1}):`, error.message);
+
     // Call custom error handler
-    onError?.(error, retryCount)
+    onError?.(error, retryCount);
 
     // Auto-retry if under the limit
     if (retryCount < maxRetries) {
       this.retryTimeout = setTimeout(() => {
-        this.setState(prevState => ({
+        this.setState((prevState) => ({
           hasError: false,
           error: undefined,
-          retryCount: prevState.retryCount + 1
-        }))
-      }, retryDelay)
+          retryCount: prevState.retryCount + 1,
+        }));
+      }, retryDelay);
     } else {
       // Max retries reached
-      onMaxRetriesReached?.(error)
+      onMaxRetriesReached?.(error);
     }
 
     this.setState({
       error,
-      retryCount: retryCount + 1
-    })
+      retryCount: retryCount + 1,
+    });
   }
 
   componentWillUnmount() {
     if (this.retryTimeout) {
-      clearTimeout(this.retryTimeout)
+      clearTimeout(this.retryTimeout);
     }
   }
 
   manualRetry = () => {
-    this.setState({ 
-      hasError: false, 
+    this.setState({
+      hasError: false,
       error: undefined,
-      retryCount: 0
-    })
-  }
+      retryCount: 0,
+    });
+  };
 
   render() {
     if (this.state.hasError) {
-      const { 
-        maxRetries = 2, 
-        fallbackMessage = "Something went wrong", 
-        showErrorDetails = false 
-      } = this.props
-      const { retryCount, error } = this.state
+      const {
+        maxRetries = 2,
+        fallbackMessage = "Something went wrong",
+        showErrorDetails = false,
+      } = this.props;
+      const { retryCount, error } = this.state;
 
       // If we're still under max retries, show a minimal loading state
       if (retryCount <= maxRetries) {
@@ -101,7 +104,7 @@ export class SilentErrorBoundary extends React.Component<SilentErrorBoundaryProp
             <RefreshCw className="h-4 w-4 animate-spin mr-2" />
             <span className="text-sm">Retrying...</span>
           </div>
-        )
+        );
       }
 
       // Max retries reached - show user-friendly error
@@ -116,10 +119,11 @@ export class SilentErrorBoundary extends React.Component<SilentErrorBoundaryProp
                     {fallbackMessage}
                   </p>
                   <p className="text-xs text-amber-700 dark:text-amber-300 mt-1">
-                    This component couldn't load properly. You can try refreshing or continue using the rest of the page.
+                    This component couldn't load properly. You can try refreshing or continue using
+                    the rest of the page.
                   </p>
                 </div>
-                
+
                 {showErrorDetails && error && (
                   <details className="text-xs">
                     <summary className="cursor-pointer text-amber-700 dark:text-amber-300 hover:text-amber-900 dark:hover:text-amber-100">
@@ -146,40 +150,43 @@ export class SilentErrorBoundary extends React.Component<SilentErrorBoundaryProp
             </div>
           </CardContent>
         </Card>
-      )
+      );
     }
 
-    return this.props.children
+    return this.props.children;
   }
 }
 
 // Hook version for functional components with silent retry
 export function useSilentErrorBoundary(maxRetries: number = 2) {
-  const [error, setError] = React.useState<Error | null>(null)
-  const [retryCount, setRetryCount] = React.useState(0)
+  const [error, setError] = React.useState<Error | null>(null);
+  const [retryCount, setRetryCount] = React.useState(0);
 
   const resetError = React.useCallback(() => {
-    setError(null)
-    setRetryCount(0)
-  }, [])
+    setError(null);
+    setRetryCount(0);
+  }, []);
 
-  const captureError = React.useCallback((error: Error) => {
-    if (retryCount < maxRetries) {
-      // Auto-retry
-      setTimeout(() => {
-        setRetryCount(prev => prev + 1)
-        setError(null)
-      }, 1000)
-    } else {
-      setError(error)
-    }
-  }, [retryCount, maxRetries])
+  const captureError = React.useCallback(
+    (error: Error) => {
+      if (retryCount < maxRetries) {
+        // Auto-retry
+        setTimeout(() => {
+          setRetryCount((prev) => prev + 1);
+          setError(null);
+        }, 1000);
+      } else {
+        setError(error);
+      }
+    },
+    [retryCount, maxRetries]
+  );
 
   React.useEffect(() => {
     if (error && retryCount >= maxRetries) {
-      throw error
+      throw error;
     }
-  }, [error, retryCount, maxRetries])
+  }, [error, retryCount, maxRetries]);
 
-  return { captureError, resetError, isRetrying: retryCount > 0 && retryCount < maxRetries }
+  return { captureError, resetError, isRetrying: retryCount > 0 && retryCount < maxRetries };
 }

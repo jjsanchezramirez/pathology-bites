@@ -1,54 +1,54 @@
-import type { Config } from 'tailwindcss'
-import tailwindcssAnimate from 'tailwindcss-animate'
+import type { Config } from "tailwindcss";
+import tailwindcssAnimate from "tailwindcss-animate";
 
 const config: Config = {
   darkMode: ["class"],
   content: [
-    './src/app/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/features/**/*.{js,ts,jsx,tsx,mdx}',
-    './src/shared/**/*.{js,ts,jsx,tsx,mdx}',
+    "./src/app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/features/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/shared/**/*.{js,ts,jsx,tsx,mdx}",
   ],
   theme: {
     extend: {
       colors: {
-        background: 'hsl(var(--background))',
-        foreground: 'hsl(var(--foreground))',
+        background: "hsl(var(--background))",
+        foreground: "hsl(var(--foreground))",
         card: {
-          DEFAULT: 'hsl(var(--card))',
-          foreground: 'hsl(var(--card-foreground))'
+          DEFAULT: "hsl(var(--card))",
+          foreground: "hsl(var(--card-foreground))",
         },
         popover: {
-          DEFAULT: 'hsl(var(--popover))',
-          foreground: 'hsl(var(--popover-foreground))'
+          DEFAULT: "hsl(var(--popover))",
+          foreground: "hsl(var(--popover-foreground))",
         },
         primary: {
-          DEFAULT: 'hsl(var(--primary))',
-          foreground: 'hsl(var(--primary-foreground))'
+          DEFAULT: "hsl(var(--primary))",
+          foreground: "hsl(var(--primary-foreground))",
         },
         secondary: {
-          DEFAULT: 'hsl(var(--secondary))',
-          foreground: 'hsl(var(--secondary-foreground))'
+          DEFAULT: "hsl(var(--secondary))",
+          foreground: "hsl(var(--secondary-foreground))",
         },
         muted: {
-          DEFAULT: 'hsl(var(--muted))',
-          foreground: 'hsl(var(--muted-foreground))'
+          DEFAULT: "hsl(var(--muted))",
+          foreground: "hsl(var(--muted-foreground))",
         },
         accent: {
-          DEFAULT: 'hsl(var(--accent))',
-          foreground: 'hsl(var(--accent-foreground))'
+          DEFAULT: "hsl(var(--accent))",
+          foreground: "hsl(var(--accent-foreground))",
         },
         destructive: {
-          DEFAULT: 'hsl(var(--destructive))',
-          foreground: 'hsl(var(--destructive-foreground))'
+          DEFAULT: "hsl(var(--destructive))",
+          foreground: "hsl(var(--destructive-foreground))",
         },
-        border: 'hsl(var(--border))',
-        input: 'hsl(var(--input))',
-        ring: 'hsl(var(--ring))',
+        border: "hsl(var(--border))",
+        input: "hsl(var(--input))",
+        ring: "hsl(var(--ring))",
       },
       borderRadius: {
-        lg: 'var(--radius)',
-        md: 'calc(var(--radius) - 2px)',
-        sm: 'calc(var(--radius) - 4px)',
+        lg: "var(--radius)",
+        md: "calc(var(--radius) - 2px)",
+        sm: "calc(var(--radius) - 4px)",
       },
       keyframes: {
         "accordion-down": {
@@ -59,7 +59,7 @@ const config: Config = {
           from: { height: "var(--radix-accordion-content-height)" },
           to: { height: 0 },
         },
-        "float": {
+        float: {
           "0%": { transform: "translateY(0px)" },
           "50%": { transform: "translateY(-10px)" },
           "100%": { transform: "translateY(0px)" },
@@ -68,7 +68,7 @@ const config: Config = {
           from: { opacity: 0, transform: "translateY(10px)" },
           to: { opacity: 1, transform: "translateY(0)" },
         },
-        "gradient": {
+        gradient: {
           "0%": { backgroundPosition: "0% 50%" },
           "50%": { backgroundPosition: "100% 50%" },
           "100%": { backgroundPosition: "0% 50%" },
@@ -77,25 +77,25 @@ const config: Config = {
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
-        "float": "float 6s ease-in-out infinite",
+        float: "float 6s ease-in-out infinite",
         "float-slow": "float 8s ease-in-out infinite",
         "float-fast": "float 4s ease-in-out infinite",
         "float-delayed": "float 6s ease-in-out infinite 1s",
         "fade-in": "fade-in 0.6s ease-in-out forwards",
-        "gradient": "gradient 8s ease infinite",
+        gradient: "gradient 8s ease infinite",
       },
       gridTemplateColumns: {
-        '15': 'repeat(15, minmax(0, 1fr))',
+        "15": "repeat(15, minmax(0, 1fr))",
       },
       // Container queries feature is built into Tailwind 3.4+ now
       // No need for the plugin anymore
     },
   },
   plugins: [
-    tailwindcssAnimate
+    tailwindcssAnimate,
     // Container queries plugin removed - now built into Tailwind core
     // Line-clamp is built into Tailwind CSS v3.3+ - no plugin needed
   ],
-}
+};
 
-export default config
+export default config;

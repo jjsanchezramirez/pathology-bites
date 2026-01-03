@@ -1,68 +1,62 @@
-import { createClient } from '@/shared/services/server'
-import { NextResponse } from 'next/server'
-import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
+import { createClient } from "@/shared/services/server";
+import { NextResponse } from "next/server";
+import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 
 /**
  * GET /api/admin/reviewers
- * 
+ *
  * Get list of available reviewers (users with admin or reviewer role)
  * Optionally includes workload (number of pending questions assigned)
  */
 export async function GET(request: Request) {
   try {
-    const supabase = await createClient()
+    const supabase = await createClient();
 
     // Get current user
-    const userId = getUserIdFromHeaders(request)
+    const userId = getUserIdFromHeaders(request);
     if (!userId) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      )
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
     // Get all users with admin or reviewer role
     const { data: reviewers, error: reviewersError } = await supabase
-      .from('users')
-      .select('id, email, first_name, last_name, role')
-      .in('role', ['admin', 'reviewer'])
-      .eq('status', 'active')
-      .order('first_name', { ascending: true })
+      .from("users")
+      .select("id, email, first_name, last_name, role")
+      .in("role", ["admin", "reviewer"])
+      .eq("status", "active")
+      .order("first_name", { ascending: true });
 
     if (reviewersError) {
-      console.error('Error fetching reviewers:', reviewersError)
-      return NextResponse.json(
-        { error: 'Failed to fetch reviewers' },
-        { status: 500 }
-      )
+      console.error("Error fetching reviewers:", reviewersError);
+      return NextResponse.json({ error: "Failed to fetch reviewers" }, { status: 500 });
     }
 
     // Get workload for each reviewer (count of pending_review questions)
-    const reviewerIds = reviewers.map(r => r.id)
-    
+    const reviewerIds = reviewers.map((r) => r.id);
+
     const { data: workloadData, error: workloadError } = await supabase
-      .from('questions')
-      .select('reviewer_id')
-      .in('reviewer_id', reviewerIds)
-      .eq('status', 'pending_review')
+      .from("questions")
+      .select("reviewer_id")
+      .in("reviewer_id", reviewerIds)
+      .eq("status", "pending_review");
 
     if (workloadError) {
-      console.error('Error fetching workload:', workloadError)
+      console.error("Error fetching workload:", workloadError);
       // Continue without workload data
     }
 
     // Calculate workload per reviewer
-    const workloadMap = new Map<string, number>()
+    const workloadMap = new Map<string, number>();
     if (workloadData) {
-      workloadData.forEach(q => {
+      workloadData.forEach((q) => {
         if (q.reviewer_id) {
-          workloadMap.set(q.reviewer_id, (workloadMap.get(q.reviewer_id) || 0) + 1)
+          workloadMap.set(q.reviewer_id, (workloadMap.get(q.reviewer_id) || 0) + 1);
         }
-      })
+      });
     }
 
     // Format response with workload
-    const reviewersWithWorkload = reviewers.map(reviewer => ({
+    const reviewersWithWorkload = reviewers.map((reviewer) => ({
       id: reviewer.id,
       email: reviewer.email,
       first_name: reviewer.first_name,
@@ -74,18 +68,13 @@ export async function GET(request: Request) {
         : reviewer.email,
       role: reviewer.role,
       pending_count: workloadMap.get(reviewer.id) || 0,
-    }))
+    }));
 
     return NextResponse.json({
       reviewers: reviewersWithWorkload,
-    })
-
+    });
   } catch (error) {
-    console.error('Unexpected error fetching reviewers:', error)
-    return NextResponse.json(
-      { error: 'Internal server error' },
-      { status: 500 }
-    )
+    console.error("Unexpected error fetching reviewers:", error);
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-

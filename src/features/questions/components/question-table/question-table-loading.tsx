@@ -1,6 +1,6 @@
 // src/components/questions/question-table/question-table-loading.tsx
-import { Skeleton } from '@/shared/components/ui/skeleton'
-import { TableBody, TableCell, TableRow } from '@/shared/components/ui/table'
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { TableBody, TableCell, TableRow } from "@/shared/components/ui/table";
 
 export function QuestionTableLoading() {
   return (
@@ -36,5 +36,5 @@ export function QuestionTableLoading() {
         </TableRow>
       ))}
     </TableBody>
-  )
+  );
 }
