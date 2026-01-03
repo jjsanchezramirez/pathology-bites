@@ -1,7 +1,7 @@
 // src/shared/hooks/use-pending-inquiries-count.ts
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/shared/services/client";
 
 export function usePendingInquiriesCount() {
@@ -9,6 +9,27 @@ export function usePendingInquiriesCount() {
   const [loading, setLoading] = useState(true);
 
   const supabase = createClient();
+
+  const fetchPendingCount = useCallback(async () => {
+    try {
+      setLoading(true);
+      const { count: pendingCount, error } = await supabase
+        .from("inquiries")
+        .select("*", { count: "exact", head: true })
+        .eq("status", "pending");
+
+      if (error) {
+        console.error("Error fetching pending inquiries count:", error);
+        return;
+      }
+
+      setCount(pendingCount || 0);
+    } catch (error) {
+      console.error("Unexpected error fetching pending inquiries count:", error);
+    } finally {
+      setLoading(false);
+    }
+  }, [supabase]);
 
   useEffect(() => {
     fetchPendingCount();
@@ -35,27 +56,6 @@ export function usePendingInquiriesCount() {
       supabase.removeChannel(channel);
     };
   }, [fetchPendingCount, supabase]);
-
-  const fetchPendingCount = async () => {
-    try {
-      setLoading(true);
-      const { count: pendingCount, error } = await supabase
-        .from("inquiries")
-        .select("*", { count: "exact", head: true })
-        .eq("status", "pending");
-
-      if (error) {
-        console.error("Error fetching pending inquiries count:", error);
-        return;
-      }
-
-      setCount(pendingCount || 0);
-    } catch (error) {
-      console.error("Unexpected error fetching pending inquiries count:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   return { count, loading };
 }
