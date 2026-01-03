@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getBucketSize } from '@/shared/services/r2-storage'
 import { formatSize } from '@/features/images/services/image-upload'
 

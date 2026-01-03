@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
 import { deleteUser, deleteUserFromAuth } from '@/shared/services/user-deletion'

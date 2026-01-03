@@ -1,5 +1,5 @@
 // src/app/api/admin/tags/route.ts
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { requireContentRole } from '@/shared/middleware/api-auth'
 

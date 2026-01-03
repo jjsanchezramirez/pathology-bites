@@ -1,6 +1,6 @@
 import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 // src/app/api/admin/test-notifications/route.ts
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { notificationsService } from '@/shared/services/service'
 

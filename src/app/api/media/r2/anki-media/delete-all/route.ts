@@ -4,7 +4,7 @@
  * Provides progress feedback and comprehensive error handling
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { listR2Files, bulkDeleteFromR2 } from '@/shared/services/r2-storage'
 
 interface DeleteAllResponse {

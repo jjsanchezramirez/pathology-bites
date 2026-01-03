@@ -7,7 +7,7 @@
  * This endpoint is helpful for monitoring and managing the NCI EVS expansion cache.
  */
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { getCacheStats, clearExpansionCache } from '../../public/tools/diagnostic-search/umls-expansion'
 
 /**

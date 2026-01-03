@@ -1,5 +1,5 @@
 import { createClient } from '@/shared/services/server'
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { NotificationTriggers } from '@/shared/services/notification-triggers'
 import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 

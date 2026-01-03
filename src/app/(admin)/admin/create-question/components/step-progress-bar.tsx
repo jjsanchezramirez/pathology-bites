@@ -50,7 +50,7 @@ export function StepProgressBar({ steps, currentStep, onStepClick, mode = 'creat
         />
 
         {/* Steps */}
-        {steps.map((step, index) => {
+        {steps.map((step) => {
           const isCompleted = step.id < currentStep
           const isCurrent = step.id === currentStep
 

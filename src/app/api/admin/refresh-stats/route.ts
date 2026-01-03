@@ -1,7 +1,7 @@
 // Background job to refresh user category statistics
 // This endpoint can be called periodically to keep the materialized view updated
 
-import { NextRequest, NextResponse } from 'next/server'
+import { NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 
 export async function POST() {
