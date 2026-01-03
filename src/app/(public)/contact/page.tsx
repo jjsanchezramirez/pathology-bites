@@ -4,6 +4,7 @@
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { ContactForm } from "@/shared/components/common/contact-form";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
+import { ScrollReveal } from "@/shared/components/common/scroll-reveal";
 
 export default function ContactPage() {
   return (
@@ -15,13 +16,17 @@ export default function ContactPage() {
       />
 
       {/* Contact Form Section */}
-      <ContactForm />
+      <ScrollReveal animation="scale-in">
+        <ContactForm />
+      </ScrollReveal>
 
       {/* Spacer to push community section to bottom */}
       <div className="flex-1" />
 
       {/* Join Our Learning Community */}
-      <JoinCommunitySection description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone." />
+      <ScrollReveal animation="fade-up">
+        <JoinCommunitySection description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone." />
+      </ScrollReveal>
     </div>
   );
 }

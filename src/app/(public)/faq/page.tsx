@@ -7,6 +7,7 @@ import { PublicHero } from "@/shared/components/common/public-hero";
 import { FAQCategory } from "@/shared/components/common/faq-category";
 import { PublicPageCTA } from "@/shared/components/common/public-page-cta";
 import { faqData } from "@/shared/data/faq-data";
+import { ScrollReveal } from "@/shared/components/common/scroll-reveal";
 
 export default function FAQPage() {
   return (
@@ -30,7 +31,9 @@ export default function FAQPage() {
       <section className="relative py-16">
         <div className="container px-4 mx-auto max-w-4xl">
           {faqData.map((category, index) => (
-            <FAQCategory key={index} category={category} />
+            <ScrollReveal key={index} animation="fade-up" delay={index * 100}>
+              <FAQCategory category={category} />
+            </ScrollReveal>
           ))}
         </div>
       </section>
@@ -39,12 +42,14 @@ export default function FAQPage() {
       <div className="flex-1" />
 
       {/* Contact Section */}
-      <PublicPageCTA
-        title="Still Have Questions?"
-        description="Can't find the answer you're looking for? We're here to help! Reach out to us through our contact form."
-        buttonText="Contact Us"
-        buttonHref="/contact"
-      />
+      <ScrollReveal animation="fade-up">
+        <PublicPageCTA
+          title="Still Have Questions?"
+          description="Can't find the answer you're looking for? We're here to help! Reach out to us through our contact form."
+          buttonText="Contact Us"
+          buttonHref="/contact"
+        />
+      </ScrollReveal>
     </div>
   );
 }
