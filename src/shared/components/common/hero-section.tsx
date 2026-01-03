@@ -37,43 +37,64 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
             {/* Left Column - Text Content (3/5 width) */}
             <div className="lg:col-span-3 space-y-8 lg:space-y-10 text-center lg:text-left">
               {/* Main Headline & Value Proposition */}
-              <div
-                className="space-y-5 opacity-0"
-                style={{
-                  animation: mounted ? "fadeIn 0.6s ease-out forwards" : "none",
-                }}
-              >
-                <h1 className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight">
+              <div className="space-y-5">
+                <h1
+                  className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight opacity-0"
+                  style={{
+                    animation: mounted
+                      ? "slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+                      : "none",
+                  }}
+                >
                   Pathology learning{" "}
                   <span className="bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent">
                     by residents, for residents
                   </span>
                 </h1>
-                <p className="text-lg sm:text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0">
+                <p
+                  className="text-lg sm:text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0 opacity-0"
+                  style={{
+                    animation: mounted
+                      ? "slideUpFade 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+                      : "none",
+                    animationDelay: mounted ? "0.15s" : "0s",
+                  }}
+                >
                   Explore our virtual slide library or sharpen your skills with our question bank
                 </p>
               </div>
 
               {/* Dual CTAs Section */}
-              <div
-                className="space-y-5 opacity-0"
-                style={{
-                  animation: mounted ? "fadeIn 0.6s ease-out forwards" : "none",
-                  animationDelay: mounted ? "0.2s" : "0s",
-                }}
-              >
+              <div className="space-y-5">
                 {/* Search Bar */}
-                <div>
+                <div
+                  className="opacity-0"
+                  style={{
+                    animation: mounted
+                      ? "scaleInFade 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+                      : "none",
+                    animationDelay: mounted ? "0.3s" : "0s",
+                  }}
+                >
                   <VirtualSlideSearchTeaser />
                 </div>
 
                 {/* Account CTA */}
-                <div className="text-center lg:text-left">
+                <div
+                  className="text-center lg:text-left opacity-0"
+                  style={{
+                    animation: mounted
+                      ? "slideInFromLeft 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+                      : "none",
+                    animationDelay: mounted ? "0.5s" : "0s",
+                  }}
+                >
                   <Link
                     href="/signup"
-                    className="text-base text-primary hover:underline font-semibold"
+                    className="text-base text-primary hover:underline font-semibold inline-flex items-center gap-1 group"
                   >
-                    Or try our question bank →
+                    <span>Or try our question bank</span>
+                    <span className="transition-transform group-hover:translate-x-1">→</span>
                   </Link>
                 </div>
               </div>
@@ -88,7 +109,15 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
       </div>
 
       {/* Learn More Button - Positioned at bottom center */}
-      <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10">
+      <div
+        className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 opacity-0"
+        style={{
+          animation: mounted
+            ? "fadeIn 0.8s cubic-bezier(0.16, 1, 0.3, 1) forwards"
+            : "none",
+          animationDelay: mounted ? "0.7s" : "0s",
+        }}
+      >
         <button
           onClick={scrollToNext}
           className="group flex flex-col items-center gap-2 text-muted-foreground hover:text-primary transition-all duration-300"
