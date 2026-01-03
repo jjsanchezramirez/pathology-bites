@@ -6,12 +6,10 @@ import { Button } from '@/shared/components/ui/button'
 import { Badge } from '@/shared/components/ui/badge'
 import {
   TestTube2,
-  Palette,
   Bell,
   Search,
   FileText,
   Zap,
-  Database,
   Image as ImageIcon,
   ExternalLink
 } from 'lucide-react'

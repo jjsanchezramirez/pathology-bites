@@ -73,8 +73,8 @@ export interface FormState {
 export function MultiStepQuestionForm({
   mode = 'create',
   initialData,
-  onSubmit,
-  onCancel
+  onSubmit
+  // onCancel - TODO: Wire up cancel button
 }: MultiStepQuestionFormProps) {
   // Extract AI model from question set if available
   const questionSetAIModel = initialData?.question_set?.source_details?.model || null
@@ -97,12 +97,7 @@ export function MultiStepQuestionForm({
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [isTransitioning, setIsTransitioning] = useState(false)
 
-  // Data for AI Assistant
-  const [_categories, setCategories] = useState<Array<{ id: string; name: string }>>([])
-  const [_questionSets, setQuestionSets] = useState<Array<{ id: string; name: string }>>([])
-  const [_tags, setTags] = useState<Array<{ id: string; name: string }>>([])
-
-  // Fetch data for AI Assistant
+  // Fetch data for AI Assistant (currently unused but kept for future features)
   useEffect(() => {
     const fetchData = async () => {
       try {
@@ -126,9 +121,12 @@ export function MultiStepQuestionForm({
           .select('id, name')
           .order('name')
 
-        if (categoriesData) setCategories(categoriesData)
-        if (questionSetsData) setQuestionSets(questionSetsData)
-        if (tagsData) setTags(tagsData)
+        // Data fetched but not currently used - reserved for future AI Assistant features
+        console.log('Fetched data for AI Assistant:', {
+          categories: categoriesData?.length,
+          questionSets: questionSetsData?.length,
+          tags: tagsData?.length
+        })
       } catch (error) {
         console.error('Error fetching data for AI Assistant:', error)
       }
