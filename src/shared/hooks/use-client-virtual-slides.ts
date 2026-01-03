@@ -337,7 +337,7 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
   // API-like controls
   const searchWithFilters = useCallback(async (opts: ClientSearchOptions) => {
     setOptions(prev => {
-      const next = { ...prev } as any
+      const next = { ...prev } as unknown
       // page and limit: apply if provided, else keep existing (default at init)
       if (Object.prototype.hasOwnProperty.call(opts, 'page')) next.page = opts.page
       else if (!prev.page) next.page = 1

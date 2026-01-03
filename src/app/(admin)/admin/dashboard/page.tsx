@@ -1,6 +1,7 @@
 // src/app/(admin)/admin/dashboard/page.tsx
 'use client'
 
+import { UserRole } from '@/shared/utils/auth-helpers'
 import { useEffect, useState } from "react"
 import { clientDashboardService } from "@/features/dashboard/services/client-service"
 import { DashboardStats, RecentActivity } from "@/features/dashboard/services/service"
@@ -43,7 +44,7 @@ export default function AdminDashboardPage() {
         // Fetch dashboard stats and activities in parallel
         const [dashboardStats, recentActivities] = await Promise.all([
           clientDashboardService.getDashboardStats(),
-          clientDashboardService.getRecentActivity(effectiveRole as any, user?.id)
+          clientDashboardService.getRecentActivity(effectiveRole as UserRole, user?.id)
         ])
 
         setStats(dashboardStats)
@@ -59,8 +60,8 @@ export default function AdminDashboardPage() {
   }, [adminMode, user?.id, roleLoading, role, user]) // Use adminMode instead of role
 
   // Use adminMode for determining quick actions
-  const effectiveRole = adminMode === 'user' ? 'user' : adminMode
-  const quickActions = stats ? clientDashboardService.getQuickActions(stats, effectiveRole as any) : []
+  const quickActions = stats ? clientDashboardService.getQuickActions(stats, effectiveRole as UserRole) : []
+  const quickActions = stats ? clientDashboardService.getQuickActions(stats, effectiveRole as UserRole) : []
 
   // Single loading state - show skeleton until ALL data is ready
   // Only show loading if we don't have user yet, or if role is still loading, or if we don't have data yet, or if transitioning

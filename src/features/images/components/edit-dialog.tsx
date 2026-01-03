@@ -211,7 +211,7 @@ export function EditImageDialog({
 
                 <div className="space-y-2">
                   <Label htmlFor="category">Category</Label>
-                  <Select value={category} onValueChange={(value) => setCategory(value as any)}>
+                  <Select value={category} onValueChange={(value) => setCategory(value as unknown)}>
                     <SelectTrigger>
                       <SelectValue placeholder="Select category" />
                     </SelectTrigger>

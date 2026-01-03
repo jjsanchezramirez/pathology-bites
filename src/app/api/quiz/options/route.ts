@@ -201,7 +201,7 @@ async function getFallbackUserStats(
 
     // Process favorites (marked questions)
     for (const favorite of favorites) {
-      const favoriteData = favorite as any // Type assertion for database join result
+      const favoriteData = favorite as unknown // Type assertion for database join result
       const categoryId = favoriteData.questions?.category_id
       const stats = categoryStats.get(categoryId)
       if (stats) {

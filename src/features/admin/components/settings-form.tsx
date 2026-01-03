@@ -228,7 +228,7 @@ export function SettingsForm() {
               <Label htmlFor="defaultDifficultyFilter">Default Difficulty Level</Label>
               <Select
                 value={settings.defaultDifficultyFilter}
-                onValueChange={(value) => setSettings(prev => ({ ...prev, defaultDifficultyFilter: value as any }))}
+                onValueChange={(value) => setSettings(prev => ({ ...prev, defaultDifficultyFilter: value as unknown }))}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -246,7 +246,7 @@ export function SettingsForm() {
               <Label htmlFor="defaultQuestionTypeFilter">Default Question Type</Label>
               <Select
                 value={settings.defaultQuestionTypeFilter}
-                onValueChange={(value) => setSettings(prev => ({ ...prev, defaultQuestionTypeFilter: value as any }))}
+                onValueChange={(value) => setSettings(prev => ({ ...prev, defaultQuestionTypeFilter: value as unknown }))}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -391,7 +391,7 @@ export function SettingsForm() {
             <Label htmlFor="dashboardLayout">Dashboard Layout</Label>
             <Select
               value={settings.dashboardLayout}
-              onValueChange={(value) => setSettings(prev => ({ ...prev, dashboardLayout: value as any }))}
+              onValueChange={(value) => setSettings(prev => ({ ...prev, dashboardLayout: value as unknown }))}
             >
               <SelectTrigger>
                 <SelectValue />

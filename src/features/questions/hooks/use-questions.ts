@@ -34,7 +34,7 @@ export interface UseQuestionsReturn {
       tagIds?: string[];
       categoryId?: string;
     }
-  ) => Promise<any>;
+  ) => Promise<unknown>;
   createQuestion: (data: QuestionInsert) => Promise<QuestionData>;
 }
 

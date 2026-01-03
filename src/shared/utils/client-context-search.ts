@@ -47,7 +47,7 @@ const CONTENT_FILES = [
 /**
  * Load educational content file with caching
  */
-async function loadContentFile(filename: string): Promise<any> {
+async function loadContentFile(filename: string): Promise<unknown> {
   const now = Date.now()
   const cacheKey = filename
   
@@ -489,12 +489,12 @@ export async function findContextClientSide(
         // Search through all content in this file
         for (const [lessonName, lessonData] of Object.entries(data.subject.lessons)) {
           if (lessonData && typeof lessonData === 'object' && 'topics' in lessonData) {
-            const topics = (lessonData as any).topics
+            const topics = (lessonData as unknown).topics
             
             for (const [topicName, topicData] of Object.entries(topics)) {
               if (topicData && typeof topicData === 'object' && 'content' in topicData) {
                 // Get the full content text for searching
-                const fullContentText = JSON.stringify((topicData as any).content).toLowerCase()
+                const fullContentText = JSON.stringify((topicData as unknown).content).toLowerCase()
                 const topicNameLower = topicName.toLowerCase()
                 const lessonNameLower = lessonName.toLowerCase()
                 
@@ -556,7 +556,7 @@ export async function findContextClientSide(
                     subject: data.subject.name,
                     lesson: lessonName,
                     topic: topicName,
-                    content: (topicData as any).content
+                    content: (topicData as unknown).content
                   }
 
                   if (!bestMatch || score > bestMatch.score) {

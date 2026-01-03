@@ -40,9 +40,9 @@ interface RelatedImage {
 export default function DiagnosticSearchPage() {
   const [entity, setEntity] = useState('')
   const [isLoading, setIsLoading] = useState(false)
-  const [content, setContent] = useState<any>(null)
-  const [matchInfo, setMatchInfo] = useState<any>(null)
-  const [metadata, setMetadata] = useState<any>(null)
+  const [content, setContent] = useState<unknown>(null)
+  const [matchInfo, setMatchInfo] = useState<unknown>(null)
+  const [metadata, setMetadata] = useState<unknown>(null)
   const [error, setError] = useState<string | null>(null)
   const [disambiguationOptions, setDisambiguationOptions] = useState<DisambiguationOption[] | null>(null)
   const [relatedImages, setRelatedImages] = useState<RelatedImage[]>([])

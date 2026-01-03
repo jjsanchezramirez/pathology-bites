@@ -228,7 +228,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
 
   // Main generation function with model fallback
-  const generateQuestionWithFallback = useCallback(async (wsi: unknown, modelIndex: number): Promise<any> => {
+  const generateQuestionWithFallback = useCallback(async (wsi: unknown, modelIndex: number): Promise<unknown> => {
     console.log(`[WSI Generator] Attempting generation with model index: ${modelIndex}`)
 
     const baseUrl = typeof window !== 'undefined'

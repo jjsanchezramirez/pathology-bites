@@ -86,8 +86,8 @@ export function transformCellQuizData(cellData: unknown): unknown {
 
   // Transform each cell type's images
   for (const cellInfo of Object.values(transformed)) {
-    if (cellInfo && typeof cellInfo === 'object' && Array.isArray((cellInfo as any).images)) {
-      (cellInfo as any).images = (cellInfo as any).images.map((imagePath: string) =>
+    if (cellInfo && typeof cellInfo === 'object' && Array.isArray((cellInfo as unknown).images)) {
+      (cellInfo as unknown).images = (cellInfo as unknown).images.map((imagePath: string) =>
         transformCellQuizImageUrl(imagePath)
       )
     }

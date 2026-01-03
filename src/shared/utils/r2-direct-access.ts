@@ -33,7 +33,7 @@ interface CachedResponse<T> {
  * Client-side cache for R2 data to minimize requests
  */
 class R2Cache {
-  private cache = new Map<string, CachedResponse<any>>()
+  private cache = new Map<string, CachedResponse<unknown>>()
   private readonly DEFAULT_TTL = 5 * 60 * 1000 // 5 minutes
   private readonly DEFAULT_SWR = 2 * 60 * 1000 // 2 minutes
 

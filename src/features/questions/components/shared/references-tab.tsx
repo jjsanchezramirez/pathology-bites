@@ -15,7 +15,7 @@ import { BookOpen } from 'lucide-react';
 import { FetchReferencesDialog } from '../fetch-references-dialog';
 
 interface ReferencesTabProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<unknown>;
   onUnsavedChanges: () => void;
   mode?: 'create' | 'edit';
 }

@@ -1,3 +1,4 @@
+import { UserRole } from '@/shared/utils/auth-helpers'
 import { NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { createClient as createSupabaseClient } from '@supabase/supabase-js'
@@ -216,8 +217,8 @@ export const DELETE = requireAdmin(async (request) => {
      */
 
     try {
-      // Delete user data from public.users and related tables
-      const result = await deleteUser(adminClient, supabase, userId, targetUser.role as any)
+      const result = await deleteUser(adminClient, supabase, userId, targetUser.role as UserRole)
+      const result = await deleteUser(adminClient, supabase, userId, targetUser.role as UserRole)
 
       // Delete user from auth system ONLY for hard deletes
       // For soft deletes, preserve auth record so user can log back in and be restored

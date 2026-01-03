@@ -29,7 +29,7 @@ export default function QuizSessionPage() {
 
   // Review mode state
   const [reviewResult, setReviewResult] = useState<QuizResult | null>(null)
-  const [reviewSession, setReviewSession] = useState<any>(null)
+  const [reviewSession, setReviewSession] = useState<unknown>(null)
   const [reviewLoading, setReviewLoading] = useState(isReviewMode)
   const [reviewError, setReviewError] = useState<string | null>(null)
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0)
@@ -459,7 +459,7 @@ export default function QuizSessionPage() {
           >
             <FeatureErrorBoundary featureName="Quiz Review Sidebar">
               <QuizSidebar
-                session={reviewModeSession as any}
+                session={reviewModeSession as unknown}
                 currentQuestionIndex={currentReviewIndex}
                 attempts={reviewAttempts}
                 onQuestionSelect={(index) => {
@@ -519,7 +519,7 @@ export default function QuizSessionPage() {
                   {/* Question Display */}
                   <FeatureErrorBoundary featureName="Quiz Review Question Display">
                     <QuizQuestionDisplay
-                      question={currentReviewQuestion as any}
+                      question={currentReviewQuestion as unknown}
                       selectedAnswerId={currentReviewResult.selectedAnswerId}
                       showExplanation={true}
                       onAnswerSelect={() => {}} // No-op in review mode
@@ -808,7 +808,7 @@ export default function QuizSessionPage() {
           {!isPaused && hybridState.status !== 'not_started' && (
             <FeatureErrorBoundary featureName="Quiz Question Display">
               <QuizQuestionDisplay
-              question={currentQuestion as any}
+              question={currentQuestion as unknown}
               selectedAnswerId={hybridActions.getAnswerForQuestion(currentQuestion.id)?.selectedOptionId || null}
               showExplanation={hybridActions.getAnswerForQuestion(currentQuestion.id) ? true : false} // Only show explanations after answer is submitted
               onAnswerSelect={(answerId: string) => {
@@ -868,7 +868,7 @@ export default function QuizSessionPage() {
 
       {/* Question Flag Dialog */}
       <QuestionFlagDialog
-        question={currentQuestion as any}
+        question={currentQuestion as unknown}
         open={legacyFlagDialogOpen}
         onOpenChange={setLegacyFlagDialogOpen}
         onFlagComplete={() => {

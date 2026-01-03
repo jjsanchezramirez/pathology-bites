@@ -448,7 +448,7 @@ export default function CellQuizPage() {
                         // Find the cell data for the correct answer
                         const correctCellEntry = Object.entries(cellData).find(([cellKey, cell]) => {
                           const referenceInfo = findReferenceCellInfo(cellKey, bloodCellsReference)
-                          return (referenceInfo ? referenceInfo.name : (cell as any).name) === currentQuestion.correctAnswer
+                          return (referenceInfo ? referenceInfo.name : (cell as unknown).name) === currentQuestion.correctAnswer
                         })
 
                         const correctCellKey = correctCellEntry?.[0]
@@ -569,12 +569,12 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
   // Find matching cell data using the same logic as below
   const matchingCellDataEntry = currentReferenceCell ? Object.entries(cellData || {}).find(([cellKey, cellValue]) => {
     const normalizedRefName = currentReferenceCell.name.toLowerCase().replace(/\s+/g, '_')
-    const cellValueName = (cellValue as any)?.name?.toLowerCase()
+    const cellValueName = (cellValue as unknown)?.name?.toLowerCase()
     const refCellName = currentReferenceCell.name.toLowerCase()
     return cellKey === normalizedRefName || cellValueName === refCellName
   }) : null
 
-  const currentImageSrc = matchingCellDataEntry ? (matchingCellDataEntry[1] as any)?.images?.[0] || '' : ''
+  const currentImageSrc = matchingCellDataEntry ? (matchingCellDataEntry[1] as unknown)?.images?.[0] || '' : ''
 
   // ✅ Fix: Call useImageCacheHandler at top level to avoid hook rule violations
   const handleTutorialImageLoad = useImageCacheHandler(currentImageSrc, true)
@@ -663,7 +663,7 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
     // Convert reference cell name to match cellData key format (lowercase, underscores)
     const normalizedRefName = currentReferenceCell.name.toLowerCase().replace(/\s+/g, '_')
     // Also check if the cellValue name matches (case insensitive)
-    const cellValueName = (cellValue as any)?.name?.toLowerCase()
+    const cellValueName = (cellValue as unknown)?.name?.toLowerCase()
     const refCellName = currentReferenceCell.name.toLowerCase()
 
     const keyMatch = cellKey === normalizedRefName
@@ -732,10 +732,10 @@ function CellTutorial({ onBack, bloodCellsReference, cellData }: {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
                 {/* Image - Smaller area */}
                 <div className="flex justify-center">
-                  {matchingCellData && (matchingCellData as any).images && (matchingCellData as any).images.length > 0 ? (
+                  {matchingCellData && (matchingCellData as unknown).images && (matchingCellData as unknown).images.length > 0 ? (
                     <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-lg overflow-hidden border bg-gray-50 dark:bg-gray-900">
                       <Image
-                        src={(matchingCellData as any).images[0]}
+                        src={(matchingCellData as unknown).images[0]}
                         alt={currentReferenceCell.name}
                         fill
                         className="object-contain"

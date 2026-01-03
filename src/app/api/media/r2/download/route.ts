@@ -15,7 +15,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Get the file content from R2
-    const fileContent = await r2StorageService.getFileContent(bucket as any, key)
+    const fileContent = await r2StorageService.getFileContent(bucket as unknown, key)
     
     if (!fileContent) {
       return NextResponse.json(

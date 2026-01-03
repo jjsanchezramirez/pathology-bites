@@ -47,7 +47,7 @@ export function NCIEVSTester() {
   const [isLoading, setIsLoading] = useState(false)
   const [results, setResults] = useState<NCIEVSResult[]>([])
   const [error, setError] = useState<string | null>(null)
-  const [metadata, setMetadata] = useState<any>(null)
+  const [metadata, setMetadata] = useState<unknown>(null)
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -271,7 +271,7 @@ export function NCIEVSTester() {
                           {result.semanticTypes.map((type, i) => (
                             <Badge
                               key={i}
-                              variant={SEMANTIC_TYPE_COLORS[type] as any || 'outline'}
+                              variant={SEMANTIC_TYPE_COLORS[type] as unknown || 'outline'}
                               className="text-xs"
                             >
                               {type}

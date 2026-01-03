@@ -54,7 +54,7 @@ const CONTENT_FILES = [
 class ClientDataManager {
   private wsiMetadata: VirtualSlide[] | null = null
   private educationalContent: Map<string, any> = new Map()
-  private loadingPromises: Map<string, Promise<any>> = new Map()
+  private loadingPromises: Map<string, Promise<unknown>> = new Map()
   private loadingProgress = {
     wsiMetadata: { loaded: false, size: 0, error: null as Error | null },
     contentFiles: { loaded: 0, total: CONTENT_FILES.length, errors: [] as string[] }
@@ -213,7 +213,7 @@ class ClientDataManager {
   /**
    * Load educational content file on-demand
    */
-  async loadContentFile(filename: string): Promise<any> {
+  async loadContentFile(filename: string): Promise<unknown> {
     if (this.educationalContent.has(filename)) {
       console.log(`[DataManager] Content file ${filename} already cached`)
       return this.educationalContent.get(filename)
@@ -237,7 +237,7 @@ class ClientDataManager {
     }
   }
 
-  private async _loadContentFile(filename: string): Promise<any> {
+  private async _loadContentFile(filename: string): Promise<unknown> {
     console.log(`[DataManager] 📥 Loading content file ${filename} from R2...`)
     const startTime = Date.now()
 

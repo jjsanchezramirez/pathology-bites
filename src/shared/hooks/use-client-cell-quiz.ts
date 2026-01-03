@@ -6,8 +6,8 @@ import { transformCellQuizData } from '@/shared/utils/r2-url-transformer'
 import { toast } from '@/shared/utils/toast'
 
 // Module-scope cache so we only fetch once per session
-let cachedImagesPromise: Promise<any> | null = null
-let cachedReferencesPromise: Promise<any> | null = null
+let cachedImagesPromise: Promise<unknown> | null = null
+let cachedReferencesPromise: Promise<unknown> | null = null
 
 interface UseCellQuizResult {
   cellData: unknown | null
@@ -16,7 +16,7 @@ interface UseCellQuizResult {
   error: string | null
 }
 
-async function loadCellQuizImages(): Promise<any> {
+async function loadCellQuizImages(): Promise<unknown> {
   if (cachedImagesPromise) return cachedImagesPromise
 
   async function fetchWithFallback() {
@@ -77,7 +77,7 @@ async function loadCellQuizImages(): Promise<any> {
   return cachedImagesPromise
 }
 
-async function loadCellQuizReferences(): Promise<any> {
+async function loadCellQuizReferences(): Promise<unknown> {
   if (cachedReferencesPromise) return cachedReferencesPromise
 
   async function fetchWithFallback() {

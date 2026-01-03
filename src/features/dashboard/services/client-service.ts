@@ -282,7 +282,7 @@ class ClientDashboardService {
     // Process questions
     if (questionsData.status === 'fulfilled' && questionsData.value.data) {
       for (const question of questionsData.value.data) {
-        const creator = question.users as any
+        const creator = question.users as unknown
         const creatorName = creator ? `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || 'Unknown User' : 'Unknown User'
 
         activities.push({
@@ -401,7 +401,7 @@ class ClientDashboardService {
     // Process pending reviews
     if (pendingData.status === 'fulfilled' && pendingData.value.data) {
       for (const question of pendingData.value.data) {
-        const creator = question.users as any
+        const creator = question.users as unknown
         const creatorName = creator ? `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || 'Unknown User' : 'Unknown User'
 
         activities.push({
@@ -419,7 +419,7 @@ class ClientDashboardService {
     // Process reviewed questions
     if (reviewedData.status === 'fulfilled' && reviewedData.value.data) {
       for (const question of reviewedData.value.data) {
-        const creator = question.users as any
+        const creator = question.users as unknown
         const creatorName = creator ? `${creator.first_name || ''} ${creator.last_name || ''}`.trim() || 'Unknown User' : 'Unknown User'
 
         activities.push({
@@ -449,7 +449,7 @@ class ClientDashboardService {
 
     if (recentQuestions) {
       for (const question of recentQuestions) {
-        const user = question.users as any
+        const user = question.users as unknown
         const userName = user ? `${user.first_name || ''} ${user.last_name || ''}`.trim() || 'Unknown User' : 'Unknown User'
         activities.push({
           id: question.id,

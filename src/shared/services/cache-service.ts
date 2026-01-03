@@ -16,8 +16,8 @@ interface CacheOptions {
 
 class CacheService {
   private static instance: CacheService
-  private memoryCache: Map<string, CacheEntry<any>> = new Map()
-  private pendingRequests: Map<string, Promise<any>> = new Map()
+  private memoryCache: Map<string, CacheEntry<unknown>> = new Map()
+  private pendingRequests: Map<string, Promise<unknown>> = new Map()
   private defaultTTL = 5 * 60 * 1000 // 5 minutes
   private defaultPrefix = 'pathology-bites-cache'
 

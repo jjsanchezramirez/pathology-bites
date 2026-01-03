@@ -431,7 +431,7 @@ export class AIService {
    * Create standardized error
    */
   private createError(message: string, type: AIError['type'], statusCode: number, retryable: boolean): AIError {
-    const error = new Error(message) as any
+    const error = new Error(message) as unknown
     error.type = type
     error.statusCode = statusCode
     error.retryable = retryable

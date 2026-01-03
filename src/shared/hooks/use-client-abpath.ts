@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react'
 const ABPATH_API_URL = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/ab-path/content-specs.json'
 
 // Module-scope cache so we only fetch once per session
-let cachedABPathPromise: Promise<any> | null = null
+let cachedABPathPromise: Promise<unknown> | null = null
 
 interface UseClientABPathResult {
   data: unknown | null
@@ -26,7 +26,7 @@ function _fetchWithTimeout(url: string, options: RequestInit & { timeoutMs?: num
   }).finally(() => clearTimeout(timeoutId))
 }
 
-async function loadABPathContentSpecs(): Promise<any> {
+async function loadABPathContentSpecs(): Promise<unknown> {
   if (cachedABPathPromise) return cachedABPathPromise
 
   async function fetchWithFallback() {

@@ -23,7 +23,7 @@ interface UseLottieAnimationResult {
  * const { animationData } = useLottieAnimation('under_construction')
  */
 export function useLottieAnimation(animationName: string): UseLottieAnimationResult {
-  const [animationData, setAnimationData] = useState<any>(null)
+  const [animationData, setAnimationData] = useState<unknown>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<Error | null>(null)
 

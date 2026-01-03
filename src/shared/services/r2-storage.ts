@@ -251,7 +251,7 @@ export async function getFileContent(bucket: string, key: string): Promise<Uint8
 
     // Convert stream to bytes
     const chunks: unknown[] = []
-    const stream = response.Body as any
+    const stream = response.Body as unknown
     
     // Handle different stream types
     if (stream.transformToByteArray) {

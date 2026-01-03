@@ -168,7 +168,7 @@ class UserSettingsService {
     settings: T extends 'quiz_settings' ? Partial<QuizSettings> :
               T extends 'notification_settings' ? Partial<NotificationSettings> :
               T extends 'ui_settings' ? Partial<UISettings> : never
-  ): Promise<any> {
+  ): Promise<unknown> {
     // Map question type to database format if updating quiz settings
     let mappedSettings = settings
     if (section === 'quiz_settings' && settings && typeof settings === 'object') {

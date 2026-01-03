@@ -31,7 +31,7 @@ export function useZeroApiNetworkStatus(options: NetworkStatusOptions = {}) {
   // Update connection info if Network Information API is available
   const updateConnectionInfo = useCallback(() => {
     if (typeof navigator !== 'undefined' && 'connection' in navigator) {
-      const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
+      const connection = (navigator as unknown).connection || (navigator as unknown).mozConnection || (navigator as unknown).webkitConnection
       
       if (connection) {
         setConnectionType(connection.type || 'unknown')
@@ -75,7 +75,7 @@ export function useZeroApiNetworkStatus(options: NetworkStatusOptions = {}) {
     if (!navigator.onLine) return false
 
     // Secondary checks when available
-    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
+    const connection = (navigator as unknown).connection || (navigator as unknown).mozConnection || (navigator as unknown).webkitConnection
     
     if (connection) {
       // If connection type is 'none', we're definitely offline
@@ -126,7 +126,7 @@ export function useZeroApiNetworkStatus(options: NetworkStatusOptions = {}) {
     document.addEventListener('visibilitychange', handleVisibilityChange)
 
     // Network Information API events (when supported)
-    const connection = (navigator as any).connection || (navigator as any).mozConnection || (navigator as any).webkitConnection
+    const connection = (navigator as unknown).connection || (navigator as unknown).mozConnection || (navigator as unknown).webkitConnection
     if (connection) {
       connection.addEventListener('change', handleConnectionChange)
     }

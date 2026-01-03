@@ -36,7 +36,7 @@ interface Category {
 }
 
 interface GeneralTabProps {
-  form: UseFormReturn<any>;
+  form: UseFormReturn<unknown>;
   question?: QuestionWithDetails;
   selectedTagIds: string[];
   setSelectedTagIds: (tagIds: string[]) => void;

@@ -152,15 +152,15 @@ export async function GET(request: NextRequest) {
         metadata: {
           original_id: question.id,
           question_set: question.question_set && !Array.isArray(question.question_set) ? {
-            id: (question.question_set as any).id,
-            name: (question.question_set as any).name,
-            source_type: (question.question_set as any).source_type,
-            short_form: (question.question_set as any).short_form
+            id: (question.question_set as unknown).id,
+            name: (question.question_set as unknown).name,
+            source_type: (question.question_set as unknown).source_type,
+            short_form: (question.question_set as unknown).short_form
           } : null,
           category: question.category && !Array.isArray(question.category) ? {
-            id: (question.category as any).id,
-            name: (question.category as any).name,
-            parent_id: (question.category as any).parent_id
+            id: (question.category as unknown).id,
+            name: (question.category as unknown).name,
+            parent_id: (question.category as unknown).parent_id
           } : null,
           tags: question.question_tags?.map((qt: unknown) => ({
             id: qt.tag.id,
