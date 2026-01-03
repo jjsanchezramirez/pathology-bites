@@ -2,6 +2,7 @@
 
 import { useEffect } from 'react'
 import { X } from 'lucide-react'
+import Image from 'next/image'
 
 interface ImageViewerModalProps {
   src: string
@@ -42,9 +43,11 @@ export function ImageViewerModal({ src, alt, description, onClose }: ImageViewer
         className="relative bg-white/5 rounded-2xl border border-white/10 shadow-2xl overflow-hidden max-w-[90vw] max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
-        <img
+        <Image
           src={src}
           alt={alt}
+          width={1920}
+          height={1080}
           className="max-w-[90vw] max-h-[90vh] object-contain"
         />
 

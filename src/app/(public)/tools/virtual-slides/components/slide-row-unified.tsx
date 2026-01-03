@@ -5,6 +5,7 @@
 
 import { VirtualSlide } from '@/shared/types/virtual-slides'
 import { ExternalLink, Eye, Microscope } from 'lucide-react'
+import Image from 'next/image'
 
 interface SlideRowUnifiedProps {
   slide: VirtualSlide
@@ -27,10 +28,11 @@ export function SlideRowUnified({
       <td className="p-2 md:p-4">
         <div className="relative w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded overflow-hidden">
           {slide.preview_image_url ? (
-            <img
+            <Image
               src={slide.preview_image_url}
               alt={slide.diagnosis}
-              className="w-full h-full object-cover"
+              fill
+              className="object-cover"
               loading="lazy"
             />
           ) : (
