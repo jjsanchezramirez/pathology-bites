@@ -117,7 +117,7 @@ export default function NewQuizPage() {
         questionCount: Math.min(prev.questionCount, availableQuestions)
       }))
     }
-  }, [formData.questionType, formData.categorySelection, formData.selectedCategories, quizOptions])
+  }, [formData.questionType, formData.categorySelection, formData.selectedCategories, quizOptions, formData.questionCount, getAvailableQuestions])
 
   // Show placeholder if features are disabled
   if (!featuresEnabled) {

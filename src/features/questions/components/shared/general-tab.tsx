@@ -102,7 +102,7 @@ export function GeneralTab({ form, question, selectedTagIds, setSelectedTagIds, 
     } else {
       setSelectedTagIds([]);
     }
-  }, [question]);
+  }, [question, setSelectedTagIds]);
 
   useEffect(() => {
     if (question) {

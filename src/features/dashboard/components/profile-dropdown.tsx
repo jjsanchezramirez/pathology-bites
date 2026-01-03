@@ -84,7 +84,7 @@ export function ProfileDropdown() {
     return () => {
       mounted = false
     }
-  }, [user?.id, isAuthenticated, supabase])
+  }, [user?.id, isAuthenticated, supabase, user])
 
   const handleSignOut = async () => {
     try {

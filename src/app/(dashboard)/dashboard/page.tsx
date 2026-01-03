@@ -151,7 +151,7 @@ export default function DashboardPage() {
     }
 
     fetchData()
-  }, [user?.id, unifiedData])
+  }, [user?.id, unifiedData, user])
 
   return (
     <PageErrorBoundary pageName="Dashboard" showHomeButton={false} showBackButton={false}>

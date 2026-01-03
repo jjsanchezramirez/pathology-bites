@@ -106,7 +106,7 @@ export default function AnkiPage() {
         }
       }
     }
-  }, [ankomaData])
+  }, [ankomaData, formatTagName])
 
   // Cards to ignore by ID (excluded from all views)
   const IGNORED_CARD_IDS = new Set([
@@ -323,7 +323,7 @@ export default function AnkiPage() {
     }
 
     return Array.from(deckMap.values())
-  }, [ankomaData])
+  }, [ankomaData, IGNORED_CARD_IDS, formatTagName])
 
   const selectedDeck = organizedDecks.find(d => d.id === selectedDeckId)
   const selectedCategory = selectedDeck?.categories.find(c => c.id === selectedCategoryId)
@@ -344,7 +344,7 @@ export default function AnkiPage() {
     }
 
     return isShuffled ? [...selectedCategory.cards].sort(() => Math.random() - 0.5) : selectedCategory.cards
-  }, [selectedCategory, selectedSubcategory, isShuffled])
+  }, [selectedCategory, selectedSubcategory, isShuffled, formatTagName])
 
   const currentCard = currentCards[currentCardIndex]
 

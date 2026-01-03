@@ -190,7 +190,7 @@ export default function CellQuizPage() {
 
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
-  }, [mode, currentQuestion, selectedAnswer, showExplanation])
+  }, [mode, currentQuestion, selectedAnswer, showExplanation, handleAnswerSelect, nextQuestion])
 
 
 

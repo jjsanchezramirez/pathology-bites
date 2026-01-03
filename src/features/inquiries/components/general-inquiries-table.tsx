@@ -63,7 +63,7 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
 
   useEffect(() => {
     fetchInquiries()
-  }, [type, statusFilter, refreshTrigger])
+  }, [type, statusFilter, refreshTrigger, fetchInquiries])
 
   const fetchInquiries = async () => {
     try {

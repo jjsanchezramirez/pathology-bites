@@ -139,7 +139,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
     return () => {
       mounted = false
     }
-  }, [user?.id, isAuthenticated])
+  }, [user?.id, isAuthenticated, supabase, user])
 
   const handleSignOut = async () => {
     try {

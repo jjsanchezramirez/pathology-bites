@@ -56,7 +56,7 @@ export default function AdminDashboardPage() {
     }
 
     fetchDashboardData()
-  }, [adminMode, user?.id, roleLoading]) // Use adminMode instead of role
+  }, [adminMode, user?.id, roleLoading, role, user]) // Use adminMode instead of role
 
   // Use adminMode for determining quick actions
   const effectiveRole = adminMode === 'user' ? 'user' : adminMode

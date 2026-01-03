@@ -224,7 +224,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
     } finally {
       setIsGenerating(false)
     }
-  }, [])
+  }, [generateQuestionWithFallback, wsiData, wsiError])
 
 
   // Main generation function with model fallback

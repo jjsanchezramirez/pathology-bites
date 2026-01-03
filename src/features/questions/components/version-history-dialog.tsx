@@ -81,7 +81,7 @@ export function VersionHistoryDialog({
     if (open && questionId) {
       fetchVersionHistory()
     }
-  }, [open, questionId])
+  }, [open, questionId, fetchVersionHistory])
 
   const fetchVersionHistory = async () => {
     if (!questionId) return

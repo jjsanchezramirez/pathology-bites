@@ -82,7 +82,7 @@ export function EditCategoryDialog({ open, onOpenChange, onSuccess, category }: 
       setColor(category.color || '')
       loadCategories()
     }
-  }, [category, open])
+  }, [category, open, loadCategories])
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

@@ -57,7 +57,7 @@ export function ReassignReviewerDialog({
       fetchReviewers()
       setSelectedReviewerId('') // Reset selection
     }
-  }, [open])
+  }, [open, fetchReviewers])
 
   const fetchReviewers = async () => {
     setLoading(true)

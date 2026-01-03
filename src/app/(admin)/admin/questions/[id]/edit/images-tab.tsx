@@ -83,7 +83,7 @@ function ImageSection({ images, section, maxImages, onImagesChange, question }: 
     if (showImagePicker) {
       loadImages();
     }
-  }, [showImagePicker, searchTerm, categoryFilter]);
+  }, [showImagePicker, searchTerm, categoryFilter, loadImages]);
 
   const handleImageToggle = (imageId: string) => {
     // Check if image is already added to this section

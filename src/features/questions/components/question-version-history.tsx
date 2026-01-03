@@ -55,7 +55,7 @@ export function QuestionVersionHistory({ questionId, open, onOpenChange }: Quest
     if (open && questionId) {
       fetchVersionHistory()
     }
-  }, [open, questionId])
+  }, [open, questionId, fetchVersionHistory])
 
   const fetchVersionHistory = async () => {
     try {

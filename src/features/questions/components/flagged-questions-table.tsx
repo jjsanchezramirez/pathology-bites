@@ -80,7 +80,7 @@ export function FlaggedQuestionsTable() {
 
   useEffect(() => {
     fetchFlaggedQuestions()
-  }, [])
+  }, [fetchFlaggedQuestions])
 
   const fetchFlaggedQuestions = async () => {
     try {

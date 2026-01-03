@@ -179,7 +179,7 @@ export function EnhancedImportDialog({ open, onOpenChange, onSave }: EnhancedImp
     if (file) {
       handleFileSelection(file);
     }
-  }, []);
+  }, [handleFileSelection]);
 
   const handleFileSelection = useCallback((file: File) => {
     if (!file.name.endsWith('.json')) {

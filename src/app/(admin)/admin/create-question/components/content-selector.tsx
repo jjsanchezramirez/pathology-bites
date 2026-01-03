@@ -195,7 +195,7 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
         handleAutoSelect()
       }
     }
-  }, [contentData, selectedLesson, selectedTopic])
+  }, [contentData, selectedLesson, selectedTopic, handleAutoSelect])
 
   const groupedFiles = availableFiles.reduce((acc, file) => {
     if (!acc[file.category]) {

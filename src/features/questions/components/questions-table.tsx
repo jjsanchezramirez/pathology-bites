@@ -709,7 +709,7 @@ export function QuestionsTable({ adminMode = 'admin' }: QuestionsTableProps) {
       console.error('Error fetching question for preview:', error)
       toast.error('Failed to load question preview')
     }
-  }, []);
+  }, [supabase]);
 
   const handleExportQuestion = useCallback(async (question: QuestionWithDetails) => {
     try {

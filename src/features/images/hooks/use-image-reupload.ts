@@ -161,7 +161,7 @@ export function useImageReupload({
     } finally {
       setIsUploading(false)
     }
-  }, [onSuccess, onError])
+  }, [onSuccess, onError, maxSizeBytes])
 
   return {
     reuploadImage,

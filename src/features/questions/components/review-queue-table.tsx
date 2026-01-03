@@ -111,7 +111,7 @@ export function ReviewQueueTable() {
 
   useEffect(() => {
     fetchQuestions()
-  }, [])
+  }, [fetchQuestions])
 
   useEffect(() => {
     let filtered = questions

@@ -287,7 +287,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     } finally {
       isInitializingRef.current = false;
     }
-  }, [sessionId, stateActions, onError]);
+  }, [sessionId, stateActions, onError, quizState.currentQuestionIndex, recoverLocalState]);
 
   // Recover quiz state from localStorage
   const recoverLocalState = useCallback(() => {
@@ -393,7 +393,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     if (isCompleted && syncOnComplete && quizState.syncStatus.pendingChanges && !hasCompletedRef.current) {
       handleCompleteQuiz();
     }
-  }, [isCompleted, syncOnComplete, quizState.syncStatus.pendingChanges]);
+  }, [isCompleted, syncOnComplete, quizState.syncStatus.pendingChanges, handleCompleteQuiz]);
 
   // Auto-save quiz state to localStorage
   useEffect(() => {
@@ -427,7 +427,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     if (answersCount > 0 && autoSaveManager.current.shouldPeriodicSave(answersCount)) {
       autoSaveManager.current.autoSave(sessionId, quizState, 'periodic', timeRemaining);
     }
-  }, [quizState.answers.size, sessionId, timeRemaining]);
+  }, [quizState.answers.size, sessionId, timeRemaining, quizState]);
 
   // Timer countdown for timed quizzes
   useEffect(() => {
@@ -467,7 +467,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         clearInterval(timerIntervalRef.current);
       }
     };
-  }, [quizState.config.timing, quizState.status, timeRemaining, isTimerPaused]);
+  }, [quizState.config.timing, quizState.status, timeRemaining, isTimerPaused, handleCompleteQuiz]);
 
   // Auto-save on navigation away from quiz
   useEffect(() => {
@@ -490,7 +490,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => window.removeEventListener('beforeunload', handleBeforeUnload);
-  }, [quizState.status, quizState.answers.size, sessionId, timeRemaining]);
+  }, [quizState.status, quizState.answers.size, sessionId, timeRemaining, quizState]);
 
   // Create hybrid state
   const hybridState: HybridQuizState = {

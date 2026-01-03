@@ -69,7 +69,7 @@ export function DraftQuestionsTable() {
 
   useEffect(() => {
     fetchDraftQuestions()
-  }, [])
+  }, [fetchDraftQuestions])
 
   const fetchDraftQuestions = async () => {
     try {

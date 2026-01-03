@@ -33,7 +33,7 @@ export function InquiriesTable({ onInquiriesChange }: InquiriesTableProps) {
 
   useEffect(() => {
     fetchTabCounts()
-  }, [refreshTrigger])
+  }, [refreshTrigger, fetchTabCounts])
 
   const fetchTabCounts = async () => {
     try {

@@ -34,7 +34,7 @@ export function usePendingInquiriesCount() {
     return () => {
       supabase.removeChannel(channel)
     }
-  }, [])
+  }, [fetchPendingCount, supabase])
 
   const fetchPendingCount = async () => {
     try {

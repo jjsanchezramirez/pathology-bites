@@ -33,7 +33,7 @@ export function RoleSwitchProvider({ children }: RoleSwitchProviderProps) {
     if (isSwitching) {
       setIsSwitching(false)
     }
-  }, [pathname])
+  }, [pathname, isSwitching])
 
   const switchRole = useCallback(async (newMode: 'admin' | 'creator' | 'reviewer' | 'user', setAdminMode: (mode: 'admin' | 'creator' | 'reviewer' | 'user') => void) => {
     // 1. Show loading state immediately

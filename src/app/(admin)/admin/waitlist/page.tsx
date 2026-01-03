@@ -65,7 +65,7 @@ export default function WaitlistPage() {
 
   useEffect(() => {
     fetchWaitlist(currentPage, searchTerm)
-  }, [currentPage])
+  }, [currentPage, searchTerm])
 
   const handleSearch = () => {
     setCurrentPage(1)

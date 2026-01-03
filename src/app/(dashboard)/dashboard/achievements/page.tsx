@@ -18,7 +18,7 @@ export default function AchievementsPage() {
     if (unifiedData?.achievements) {
       processAchievementsData()
     }
-  }, [unifiedData])
+  }, [unifiedData, processAchievementsData])
 
   const checkAchievements = async () => {
     try {

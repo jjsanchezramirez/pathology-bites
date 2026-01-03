@@ -89,7 +89,7 @@ function ProfilePageContent() {
     } finally {
       setProfileLoading(false)
     }
-  }, [user?.id])
+  }, [user?.id, supabase])
 
   useEffect(() => {
     if (isAuthenticated && user) {

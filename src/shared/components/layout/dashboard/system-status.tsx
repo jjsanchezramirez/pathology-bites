@@ -121,7 +121,7 @@ export function SystemStatus() {
           lastUpdated: new Date()
         })
       }
-  }, [])
+  }, [supabase])
 
   useEffect(() => {
     checkSystemHealth()

@@ -78,7 +78,7 @@ export function InquiryStatistics({ onStatsChange, refreshTrigger }: InquiryStat
 
   useEffect(() => {
     fetchStats()
-  }, [refreshTrigger])
+  }, [refreshTrigger, fetchStats])
 
   const StatCard = ({
     title,

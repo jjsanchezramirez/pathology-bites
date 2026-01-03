@@ -75,7 +75,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
       // Pre-populate selectedImageIds with already attached images
       setSelectedImageIds(images.map(img => img.image_id))
     }
-  }, [showImagePicker, searchTerm, categoryFilter])
+  }, [showImagePicker, searchTerm, categoryFilter, images, loadImages])
 
   // Load metadata for already attached images on mount and when images change
   useEffect(() => {
@@ -113,7 +113,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
     }
 
     loadAttachedImagesMetadata()
-  }, [images])
+  }, [images, imageCache])
 
   const getImageInfo = (imageId: string): ImageData | null => {
     // First check cache, then check availableImages

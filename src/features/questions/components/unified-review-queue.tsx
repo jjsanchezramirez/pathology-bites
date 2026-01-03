@@ -105,7 +105,7 @@ export function UnifiedReviewQueue() {
 
   useEffect(() => {
     fetchReviewQueue()
-  }, [])
+  }, [fetchReviewQueue])
 
   useEffect(() => {
     let filtered = items

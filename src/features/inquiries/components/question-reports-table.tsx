@@ -59,7 +59,7 @@ export function QuestionReportsTable() {
 
   useEffect(() => {
     fetchReports()
-  }, [])
+  }, [fetchReports])
 
   const fetchReports = async () => {
     try {

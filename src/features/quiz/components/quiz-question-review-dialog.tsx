@@ -52,7 +52,7 @@ export function QuizQuestionReviewDialog({
     if (open && questionDetail) {
       fetchQuestionData()
     }
-  }, [open, questionDetail])
+  }, [open, questionDetail, fetchQuestionData])
 
   const fetchQuestionData = async () => {
     if (!questionDetail) return

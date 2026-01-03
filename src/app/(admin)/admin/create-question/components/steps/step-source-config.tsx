@@ -145,7 +145,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
         updateFormState({ selectedAIModel: firstAvailableModel.id })
       }
     }
-  }, [])
+  }, [formState.selectedAIModel, updateFormState])
 
   // Save AI model selection to localStorage whenever it changes
   useEffect(() => {

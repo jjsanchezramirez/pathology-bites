@@ -153,7 +153,7 @@ export function useImagePreloader(
       queueImagesForPreload(imageUrls)
       processPreloadQueue()
     }
-  }, [cards, currentIndex, enabled, preloadCount])
+  }, [cards, currentIndex, enabled, preloadCount, getCardImageUrls, processPreloadQueue])
 
   // Preload current card images with high priority
   useEffect(() => {
@@ -170,7 +170,7 @@ export function useImagePreloader(
         })
       }
     })
-  }, [cards, currentIndex, enabled])
+  }, [cards, currentIndex, enabled, getCardImageUrls, preloadImage])
 
   // Cleanup function
   const clearPreloadCache = () => {

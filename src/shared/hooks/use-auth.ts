@@ -293,7 +293,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
       mounted.current = false
       unsubscribe()
     }
-  }, [skipAuth, loadUserData])
+  }, [skipAuth, loadUserData, supabase.auth])
 
   // Load user data from API
   const loadUserDataFromAPI = async () => {

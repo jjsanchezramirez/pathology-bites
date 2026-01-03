@@ -239,7 +239,7 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
     if (currentPage !== 1) {
       setCurrentPage(1)
     }
-  }, [options.search, options.category, typeFilter])
+  }, [options.search, options.category, typeFilter, currentPage])
 
   // Build pagination object
   const pagination = useMemo(() => ({

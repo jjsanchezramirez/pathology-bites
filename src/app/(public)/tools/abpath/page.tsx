@@ -365,7 +365,7 @@ export default function ABPathContentPage() {
       arPercentage: totalVisible > 0 ? Math.round((arCount / totalVisible) * 100) : 0,
       fPercentage: totalVisible > 0 ? Math.round((fCount / totalVisible) * 100) : 0
     };
-  }, [allSections, filteredSections, showC, showAR, showF]);
+  }, [allSections, filteredSections, showC, showAR, showF, filterItems]);
 
   // PDF generation function
   const generatePDF = async () => {
