@@ -558,10 +558,8 @@ async function generateQuestionSingle(wsi: VirtualSlide, modelId: string, prompt
 
   console.log(`[Question Gen] Using model: ${modelId} (${provider})`)
 
-  let apiResponse: { content: string; tokenUsage?: any }
-
   // Fast AI service dispatch - use computed provider directly
-  apiResponse = await callAIService(provider, prompt, modelId, apiKey)
+  const apiResponse = await callAIService(provider, prompt, modelId, apiKey)
 
   console.log(`[Question Gen] AI service response received`)
   console.log(`[Question Gen] Token usage from AI service:`, apiResponse.tokenUsage)

@@ -22,7 +22,7 @@ interface R2StorageStats {
   formattedAvailable: string;
 }
 
-export const StorageStatsCards = forwardRef<StorageStatsRef>((props, ref) => {
+export const StorageStatsCards = forwardRef<StorageStatsRef>(function StorageStatsCards(props, ref) {
   const [stats, setStats] = useState<StorageStats | null>(null);
   const [r2Stats, setR2Stats] = useState<R2StorageStats | null>(null);
   const [loading, setLoading] = useState(true);

@@ -35,7 +35,7 @@ interface AnswerOptionData {
 }
 
 // Legacy alias for backward compatibility
-interface QuestionOptionData extends AnswerOptionData {}
+type QuestionOptionData = AnswerOptionData
 
 interface QuestionData {
   id: string;

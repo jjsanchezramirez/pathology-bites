@@ -16,7 +16,7 @@ interface RecentActivityProps {
 }
 
 export const RecentActivityCard = memo(function RecentActivityCard({ activities }: RecentActivityProps) {
-  const getActivityIcon = useMemo(() => (type: string) => {
+  const getActivityIcon = useMemo(() => function getActivityIcon(type: string) {
     switch (type) {
       case 'question':
         return <FileQuestion className="h-4 w-4 text-blue-500" />
@@ -31,7 +31,7 @@ export const RecentActivityCard = memo(function RecentActivityCard({ activities 
     }
   }, [])
 
-  const getActivityBadge = useMemo(() => (type: string) => {
+  const getActivityBadge = useMemo(() => function getActivityBadge(type: string) {
     switch (type) {
       case 'question':
         return <Badge variant="secondary" className="text-xs">Question</Badge>
