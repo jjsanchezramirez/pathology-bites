@@ -118,7 +118,7 @@ export function useImageUpload({
             throw new Error(errorData.error || 'Upload failed');
           }
 
-          const result = await response.json();
+          const _result = await response.json();
 
           updateFileProgress(file.name, { status: 'completed', progress: 100 });
 

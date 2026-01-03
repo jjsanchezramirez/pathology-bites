@@ -14,7 +14,7 @@ interface UseClientABPathResult {
 }
 
 // Timeout utility for fetch requests
-function fetchWithTimeout(url: string, options: RequestInit & { timeoutMs?: number } = {}) {
+function _fetchWithTimeout(url: string, options: RequestInit & { timeoutMs?: number } = {}) {
   const { timeoutMs = 10000, ...fetchOptions } = options
   
   const controller = new AbortController()

@@ -20,7 +20,7 @@ interface ReferencesTabProps {
   mode?: 'create' | 'edit';
 }
 
-export function ReferencesTab({ form, mode = 'edit' }: ReferencesTabProps) {
+export function ReferencesTab({ form, _mode = 'edit' }: ReferencesTabProps) {
   const [fetchDialogOpen, setFetchDialogOpen] = useState(false);
 
   const handleReferencesSelected = (references: string[]) => {

@@ -254,7 +254,7 @@ export function getCategoryStyle(color: string) {
   const hslMatch = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/)
   if (hslMatch) {
     const [, h, s, l] = hslMatch
-    const lightness = parseInt(l)
+    const _lightness = parseInt(l)
 
     // Adjust for light/dark theme compatibility
     return {

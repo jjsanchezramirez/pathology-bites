@@ -529,7 +529,7 @@ export class QuizService {
       const weekAgo = new Date()
       weekAgo.setDate(weekAgo.getDate() - 7)
 
-      const weeklyQuizzes = completedSessions.filter(s =>
+      const _weeklyQuizzes = completedSessions.filter(s =>
         new Date(s.completed_at || '') >= weekAgo
       ).length
 
@@ -549,7 +549,7 @@ export class QuizService {
 
       // Get category performance (simplified - would need to join with questions and categories)
       // For now, return empty array - this would require more complex queries
-      const categoryPerformance: Array<{ categoryName: string, correct: number, total: number }> = []
+      const _categoryPerformance: Array<{ categoryName: string, correct: number, total: number }> = []
 
       return {
         totalQuizzes,

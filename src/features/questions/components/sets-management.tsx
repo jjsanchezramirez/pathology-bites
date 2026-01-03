@@ -84,7 +84,7 @@ export function SetsManagement() {
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
   const [isMerging, setIsMerging] = useState(false)
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   // Selection helper functions
   const handleSelectSet = (setId: string) => {

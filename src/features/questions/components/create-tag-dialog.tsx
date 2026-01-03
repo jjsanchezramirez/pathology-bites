@@ -20,7 +20,7 @@ export function CreateTagDialog({ open, onOpenChange, onSuccess }: CreateTagDial
   const [name, setName] = useState('')
   const [isCreating, setIsCreating] = useState(false)
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()

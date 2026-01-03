@@ -30,7 +30,7 @@ interface DeckData {
 }
 
 export default function AnkiPage() {
-  const { ankomaData, isLoading, error } = useClientAnkoma()
+  const { ankomaData, isLoading, _error } = useClientAnkoma()
   const [leftSidebarExpanded, setLeftSidebarExpanded] = useState(true) // Start expanded
   const [rightSidebarExpanded, setRightSidebarExpanded] = useState(false) // Start collapsed
   const [hoverEnabled, setHoverEnabled] = useState(true) // Track if hover is enabled

@@ -19,7 +19,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { IMAGE_CATEGORIES, type ImageCategory } from '@/features/images/types/images';
+import { IMAGE_CATEGORIES, type } from '@/features/images/types/images';
 import { Loader2 } from 'lucide-react';
 
 interface BulkEditDialogProps {

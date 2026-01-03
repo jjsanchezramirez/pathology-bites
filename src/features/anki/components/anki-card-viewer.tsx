@@ -30,7 +30,7 @@ import {
 import { cn } from '@/shared/utils'
 
 // Separate component for cached images to avoid hook violations
-function CachedAnkiImage({ src, alt, index }: { src: string; alt: string; _index: number }) {
+function CachedAnkiImage({ src, alt, _index }: { src: string; alt: string; _index: number }) {
   const handleImageLoad = useImageCacheHandler(src, true)
 
   return (
@@ -165,7 +165,7 @@ export function AnkiCardViewer({
   const answerImages = extractImages(displayContent.answer)
 
   // Clean HTML content for display
-  const cleanHtml = (html: string) => {
+  const _cleanHtml = (html: string) => {
     return html
       .replace(/<img[^>]*>/g, '') // Remove img tags (we'll display them separately)
       .replace(/<[^>]*>/g, '') // Remove other HTML tags

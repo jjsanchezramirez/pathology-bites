@@ -78,7 +78,7 @@ function setCachedQuestion(index: number, question: Question, totalQuestions: nu
 }
 
 export function useDemoQuestions() {
-  const [questions, setQuestions] = useState<Question[]>([]);
+  const [questions, _setQuestions] = useState<Question[]>([]);
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);

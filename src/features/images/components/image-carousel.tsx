@@ -78,7 +78,7 @@ function ImageCarouselInternal({ images, className = '' }: ImageCarouselProps) {
       setShowModal(true)
     }
   }
-  const closeModal = () => setShowModal(false)
+  const _closeModal = () => setShowModal(false)
 
 
 

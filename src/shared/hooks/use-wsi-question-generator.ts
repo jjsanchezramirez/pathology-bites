@@ -59,7 +59,7 @@ interface UseWSIQuestionGeneratorReturn {
 export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
   const [isGenerating, setIsGenerating] = useState(false)
   const [error, setError] = useState<string | null>(null)
-  const { wsiData, isLoading: isLoadingWSI, error: wsiError, _selectRandomWSI, getWSIByCategory } = useClientWSIData()
+  const { wsiData, isLoading: isLoadingWSI, error: wsiError, _selectRandomWSI, _getWSIByCategory } = useClientWSIData()
   
   console.log('[WSI Hook] Loaded - SINGLE ENDPOINT VERSION - no prepare/parse routes')
 

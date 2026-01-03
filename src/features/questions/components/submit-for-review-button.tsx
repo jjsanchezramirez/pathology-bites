@@ -36,7 +36,7 @@ export function SubmitForReviewButton({
 }: SubmitForReviewButtonProps) {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [showConfirmDialog, setShowConfirmDialog] = useState(false)
-  const supabase = createClient()
+  const _supabase = createClient()
 
   const handleSubmitForReview = async () => {
     setIsSubmitting(true)

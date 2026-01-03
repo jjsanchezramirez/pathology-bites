@@ -67,7 +67,7 @@ export function ImageAttachment({
     setShowImagePicker(false);
   };
 
-  const handleRemoveImage = (imageId: string, section?: string) => {
+  const handleRemoveImage = (imageId: string, _section?: string) => {
     const updatedImages = selectedImages.filter(img => img.image_id !== imageId);
     // Reorder remaining images
     const reorderedImages = updatedImages.map((img, index) => ({
@@ -80,15 +80,15 @@ export function ImageAttachment({
   // Drag and drop functionality
   const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
 
-  const handleDragStart = (index: number, _section: string) => {
+  const _handleDragStart = (index: number, _section: string) => {
     setDraggedIndex(index);
   };
 
-  const handleDragOver = (e: React.DragEvent) => {
+  const _handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
 
-  const handleDrop = (e: React.DragEvent, dropIndex: number, _section: string) => {
+  const _handleDrop = (e: React.DragEvent, dropIndex: number, _section: string) => {
     e.preventDefault();
 
     if (draggedIndex === null || draggedIndex === dropIndex) {

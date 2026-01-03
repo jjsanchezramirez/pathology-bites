@@ -46,15 +46,15 @@ interface PathologySection {
   note?: string;
 }
 
-interface ContentSpecifications {
-  metadata: {
-    total_sections: number;
-    ap_sections: number;
-    cp_sections: number;
-    source_files: number;
-    description: string;
-  };
-}
+
+
+
+
+
+
+
+
+
 
 export default function ABPathContentPage() {
   const [searchTerm, setSearchTerm] = useState('');

@@ -110,8 +110,8 @@ export function quizStateReducer(state: QuizState, action: QuizAction): QuizStat
       };
       
       const newAnswers = new Map(state.answers);
-      const wasAlreadyAnswered = newAnswers.has(questionId);
-      const previousAnswer = newAnswers.get(questionId);
+      const _wasAlreadyAnswered = newAnswers.has(questionId);
+      const _previousAnswer = newAnswers.get(questionId);
       
       newAnswers.set(questionId, newAnswer);
       

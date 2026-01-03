@@ -81,7 +81,7 @@ export function QuestionFormDialog({
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
 
   // Hooks
-  const { user } = useAuth({ minimal: true });
+  const { _user } = useAuth({ minimal: true });
   const { isAdmin } = useUserRole();
 
   // Form

@@ -336,7 +336,7 @@ export const userNavigationItems: NavigationItem[] = [
 
 // Helper function to get user navigation sections with feature flags applied
 export function getUserNavigationSections(): NavigationSection[] {
-  const { ENABLE_QUIZ_FEATURES } = require('./feature-flags').FEATURE_FLAGS
+  const { _ENABLE_QUIZ_FEATURES } = require('./feature-flags').FEATURE_FLAGS
 
   return [
     {

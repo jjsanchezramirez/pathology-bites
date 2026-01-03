@@ -33,7 +33,7 @@ export function CircularProgress({
     return null
   }
 
-  const normalizedValue = Math.max(0, Math.min(100, value))
+  const _normalizedValue = Math.max(0, Math.min(100, value))
   const radius = (size - strokeWidth) / 2
   const circumference = radius * 2 * Math.PI
   const strokeDashoffset = circumference - (animatedValue / 100) * circumference

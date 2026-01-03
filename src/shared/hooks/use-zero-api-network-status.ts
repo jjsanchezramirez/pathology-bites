@@ -19,7 +19,7 @@ interface NetworkStatusOptions {
  * 4. WebSocket connectivity tests to external services (optional)
  */
 export function useZeroApiNetworkStatus(options: NetworkStatusOptions = {}) {
-  const { onOnline, onOffline, showToasts = false } = options
+  const { onOnline, onOffline, _showToasts = false } = options
   const [isOnline, setIsOnline] = useState(() => {
     return typeof navigator !== 'undefined' ? navigator.onLine : true
   })

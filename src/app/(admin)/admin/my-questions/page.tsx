@@ -48,7 +48,7 @@ interface MyQuestion extends QuestionWithDetails {
 }
 
 export default function MyQuestionsPage() {
-  const router = useRouter()
+  const _router = useRouter()
   const [questions, setQuestions] = useState<MyQuestion[]>([])
   const [filteredQuestions, setFilteredQuestions] = useState<MyQuestion[]>([])
   const [loading, setLoading] = useState(true)

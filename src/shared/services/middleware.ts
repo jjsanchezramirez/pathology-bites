@@ -8,7 +8,7 @@ import {
   quizAPIRateLimiter,
   getClientIP
 } from '@/shared/utils/api-rate-limiter'
-import { devLog, generateRequestId, getClientIP as devGetClientIP } from '@/shared/utils/dev-logger'
+import { devLog, generateRequestId } from '@/shared/utils/dev-logger'
 
 // Cache for user role lookups to prevent race conditions
 const roleCache = new Map<string, { role: string; timestamp: number }>()
@@ -32,7 +32,7 @@ const ADMIN_ONLY_ENDPOINTS = [
 // DEPRECATED: API routes now validate auth internally to reduce edge requests
 // This function is kept for reference but is no longer called by middleware
 // Handle authentication for admin API routes
-async function handleAdminApiAuth(request: NextRequest) {
+async function _handleAdminApiAuth(request: NextRequest) {
   const startTime = Date.now()
   const requestId = generateRequestId()
   const clientIp = getClientIP(request)
@@ -231,7 +231,7 @@ async function handleAdminApiAuth(request: NextRequest) {
 // DEPRECATED: API routes now validate auth internally to reduce edge requests
 // This function is kept for reference but is no longer called by middleware
 // Handle authentication for user and quiz API routes
-async function handleUserApiAuth(request: NextRequest) {
+async function _handleUserApiAuth(request: NextRequest) {
   const startTime = Date.now()
   const requestId = generateRequestId()
   const clientIp = getClientIP(request)

@@ -43,20 +43,20 @@ interface CacheEntry {
   version: string
 }
 
-interface FavoriteWithQuestion {
-  question_id: string
-  questions: {
-    category_id: string
-  }
-}
 
-interface AttemptWithQuestion {
-  question_id: string
-  is_correct: boolean
-  questions: {
-    category_id: string
-  }
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 // Enhanced caching with user-specific invalidation
 const cache = new Map<string, CacheEntry>()

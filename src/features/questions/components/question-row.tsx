@@ -55,7 +55,7 @@ const QuestionRow = memo(function QuestionRow({ question, categoryPaths, onDelet
   const [isExpanded, setIsExpanded] = useState(false)
   const [showImages, setShowImages] = useState(false)
 
-  const supabase = createClient()
+  const _supabase = createClient()
   const { role } = useUserRole()
   const { user } = useAuth({ minimal: true })
 

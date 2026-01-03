@@ -34,7 +34,7 @@ export function EnhancedPagination({
   const startItem = totalItems > 0 ? currentPage * pageSize + 1 : 0;
   const endItem = Math.min((currentPage + 1) * pageSize, totalItems);
 
-  const handlePageInputSubmit = (e: React.FormEvent) => {
+  const _handlePageInputSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const pageNum = parseInt(pageInput, 10);
     if (pageNum >= 1 && pageNum <= totalPages) {

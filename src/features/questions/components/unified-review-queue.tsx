@@ -137,7 +137,7 @@ export function UnifiedReviewQueue() {
     setReviewOpen(true)
   }
 
-  const handleEdit = (item: ReviewQueueItem) => {
+  const _handleEdit = (item: ReviewQueueItem) => {
     router.push(`/admin/questions/${item.id}/edit?returnUrl=/admin/review-queue`)
   }
 

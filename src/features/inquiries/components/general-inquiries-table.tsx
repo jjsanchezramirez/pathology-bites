@@ -132,7 +132,7 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
     return matchesSearch
   })
 
-  const handleViewDetails = (inquiry: Inquiry) => {
+  const _handleViewDetails = (inquiry: Inquiry) => {
     setSelectedInquiry(inquiry)
     setDetailsOpen(true)
   }
@@ -211,7 +211,7 @@ export function GeneralInquiriesTable({ type, statusFilter = 'all', onInquiriesC
     return <InquiryStatusBadge status={inquiry.status || 'pending'} createdAt={inquiry.created_at} />
   }
 
-  const isOldInquiry = (createdAt: string) => {
+  const _isOldInquiry = (createdAt: string) => {
     const inquiryDate = new Date(createdAt)
     const sevenDaysAgo = new Date()
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7)

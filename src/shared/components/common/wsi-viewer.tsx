@@ -53,7 +53,7 @@ interface WSIConfig {
 }
 
 // Helper function to try alternative URLs for blocked repositories
-function tryAlternativeURL(originalUrl: string, slide?: VirtualSlide): string | null {
+function _tryAlternativeURL(originalUrl: string, slide?: VirtualSlide): string | null {
   try {
     const urlObj = new URL(originalUrl)
     const hostname = urlObj.hostname.toLowerCase()
@@ -87,7 +87,7 @@ function tryAlternativeURL(originalUrl: string, slide?: VirtualSlide): string | 
 }
 
 // Step 1: Dragon (OpenSeadragon) initialization and configuration
-function getWSIConfig(url: string, repository?: string, slide?: VirtualSlide): WSIConfig {
+function getWSIConfig(url: string, _repository?: string, _slide?: VirtualSlide): WSIConfig {
   try {
     const urlObj = new URL(url)
     const hostname = urlObj.hostname.toLowerCase()
@@ -421,12 +421,12 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
       }
     }
 
-    const handleMouseEnter = () => {
+    const _handleMouseEnter = () => {
       // Don't prevent scroll on desktop - only needed for mobile
       // Desktop users can use regular page scrolling
     }
 
-    const handleMouseLeave = () => {
+    const _handleMouseLeave = () => {
       // Don't prevent scroll on desktop - only needed for mobile
       // Desktop users can use regular page scrolling
     }

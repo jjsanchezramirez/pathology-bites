@@ -17,17 +17,17 @@ export interface CitationData {
 }
 
 // CrossRef API response types
-interface CrossRefWork {
-  title: string[]
-  author: Array<{ given: string; family: string }>
-  published: { 'date-parts': number[][] }
-  'container-title': string[]
-  volume?: string
-  issue?: string
-  pages?: string
-  doi?: string
-  url?: string
-}
+
+
+
+
+
+
+
+
+
+
+
 
 /**
  * Extract metadata from a website URL by parsing HTML meta tags

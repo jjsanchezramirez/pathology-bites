@@ -4,7 +4,7 @@
 import { Check } from "lucide-react"
 import { Button } from "@/shared/components/ui/button"
 import Link from "next/link"
-import Image from "next/image"
+
 
 interface FeatureShowcaseProps {
   title: string

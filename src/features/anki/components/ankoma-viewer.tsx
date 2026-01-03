@@ -170,7 +170,7 @@ export function AnkomaViewer({
   }, [currentSection, isShuffled])
 
   // Preload images for better performance
-  const { preloadedCount } = useImagePreloader(currentCards, currentCardIndex, {
+  const { _preloadedCount } = useImagePreloader(currentCards, currentCardIndex, {
     enabled: currentCards.length > 0,
     preloadCount: 5,
     priority: 'low'

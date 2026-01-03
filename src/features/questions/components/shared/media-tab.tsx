@@ -275,7 +275,7 @@ function MediaSection({ images, section, maxImages, onImagesChange, question }: 
   );
 }
 
-export function MediaTab({ question, questionImages, setQuestionImages, onUnsavedChanges, mode = 'edit' }: MediaTabProps) {
+export function MediaTab({ question, questionImages, setQuestionImages, onUnsavedChanges, _mode = 'edit' }: MediaTabProps) {
   const handleImagesChange = (newImages: QuestionImageFormData[]) => {
     setQuestionImages(newImages);
     onUnsavedChanges();

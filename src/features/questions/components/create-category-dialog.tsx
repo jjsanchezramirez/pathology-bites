@@ -41,7 +41,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
   const [categories, setCategories] = useState<Category[]>([])
   const [loadingCategories, setLoadingCategories] = useState(false)
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   // Use the shared color arrays (no need to generate them again)
 

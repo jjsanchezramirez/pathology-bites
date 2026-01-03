@@ -66,7 +66,7 @@ interface WorkflowStats {
 
 export function CreatorWorkflowDashboard() {
   const router = useRouter()
-  const supabase = createClient()
+  const _supabase = createClient()
   const { user } = useAuth({ minimal: true })
   const { role } = useUserRole()
 
@@ -272,7 +272,7 @@ export function CreatorWorkflowDashboard() {
     router.push(`/admin/questions/${questionId}/edit?returnUrl=/admin/creator-workflow`)
   }
 
-  const handleSubmitSuccess = async (reviewerId?: string) => {
+  const handleSubmitSuccess = async (_reviewerId?: string) => {
     // Refresh the questions list and close dialog
     fetchWorkflowQuestions(true)
     setSelectedQuestionForSubmit(null)

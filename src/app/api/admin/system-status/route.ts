@@ -61,7 +61,7 @@ export async function GET() {
     })
 
     // Test other services and get metrics in parallel
-    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
+    const _twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString()
 
     devLog.debug('Fetching system metrics in parallel')
     const parallelStart = performance.now()

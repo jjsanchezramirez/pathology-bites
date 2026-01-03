@@ -37,18 +37,18 @@ interface AnswerOptionData {
 // Legacy alias for backward compatibility
 type QuestionOptionData = AnswerOptionData
 
-interface QuestionData {
-  id: string;
-  title: string;
-  stem: string;
-  teaching_point: string;
-  question_references: string | null;
-  status: string;
-  difficulty: string;
-  question_options?: QuestionOptionData[];
-  answer_options?: AnswerOptionData[]; // Legacy field for backward compatibility
-  question_images: QuestionImageData[];
-}
+
+
+
+
+
+
+
+
+
+
+
+
 
 interface QuestionImage {
   url: string;

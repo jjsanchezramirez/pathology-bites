@@ -125,7 +125,7 @@ export function SWRCacheProvider({ children }: { children: React.ReactNode }) {
           window.addEventListener('beforeunload', saveCache)
 
           // Also save periodically (every 30 seconds) to prevent data loss
-          const intervalId = setInterval(saveCache, 30 * 1000)
+          const _intervalId = setInterval(saveCache, 30 * 1000)
 
           // Note: We can't return a cleanup function here as the provider
           // is only called once. The interval and event listener will clean

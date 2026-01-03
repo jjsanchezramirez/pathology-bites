@@ -66,7 +66,7 @@ export function CompactAnswerOptions({ options, onChange, errors }: CompactAnswe
     onChange(updatedOptions);
   }, [options, onChange]);
 
-  const moveOption = useCallback((index: number, direction: 'up' | 'down') => {
+  const _moveOption = useCallback((index: number, direction: 'up' | 'down') => {
     const newIndex = direction === 'up' ? index - 1 : index + 1;
     if (newIndex < 0 || newIndex >= options.length) return;
 
@@ -84,7 +84,7 @@ export function CompactAnswerOptions({ options, onChange, errors }: CompactAnswe
     onChange(reorderedOptions);
   }, [options, onChange]);
 
-  const correctAnswerIndex = options.findIndex(opt => opt.is_correct);
+  const _correctAnswerIndex = options.findIndex(opt => opt.is_correct);
 
   return (
     <div className="space-y-2">

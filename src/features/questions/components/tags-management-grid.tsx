@@ -136,7 +136,7 @@ export function TagsManagementGrid() {
   
   // New state for enhanced features
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set())
-  const [showOnlyUnused, setShowOnlyUnused] = useState(false)
+  const [showOnlyUnused, _setShowOnlyUnused] = useState(false)
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false)
   const [showMergeDialog, setShowMergeDialog] = useState(false)
   const [isBulkDeleting, setIsBulkDeleting] = useState(false)
@@ -147,7 +147,7 @@ export function TagsManagementGrid() {
   const [tagQuestions, setTagQuestions] = useState<any[]>([])
   const [loadingQuestions, setLoadingQuestions] = useState(false)
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   const loadTags = useCallback(async () => {
     setLoading(true)

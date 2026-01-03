@@ -49,7 +49,7 @@ export function AnkiDeckViewer({
     }
   }
 
-  const handleAnswerToggle = () => {
+  const _handleAnswerToggle = () => {
     setInternalShowAnswers(!internalShowAnswers)
   }
 

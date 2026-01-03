@@ -114,7 +114,7 @@ export function TagsManagement() {
   const [showEditDialog, setShowEditDialog] = useState(false)
   const [isDeleting, setIsDeleting] = useState(false)
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   const loadTags = useCallback(async () => {
     setLoading(true)

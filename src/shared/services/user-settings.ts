@@ -23,7 +23,7 @@ export interface UserSettings {
 export type SettingsSection = 'quiz_settings' | 'notification_settings' | 'ui_settings'
 
 // Mapping between old and new question types for backward compatibility
-const QUESTION_TYPE_MAPPING = {
+const _QUESTION_TYPE_MAPPING = {
   // Old -> New
   'incorrect': 'needsReview' as const,
   'correct': 'mastered' as const,

@@ -5,7 +5,7 @@ import { awardAchievements } from '@/features/achievements/services/achievement-
 import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
 
 async function checkAndAwardAchievements(request: NextRequest) {
-  const supabase = await createClient()
+  const _supabase = await createClient()
 
   // Get authenticated user
   const userId = getUserIdFromHeaders(request)

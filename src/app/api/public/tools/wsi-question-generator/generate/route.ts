@@ -732,7 +732,7 @@ function validateAndNormalizeQuestionFast(questionObj: Record<string, unknown>):
 }
 
 // Parse and validate the AI response (unified parsing logic) - LEGACY VERSION
-function parseAndValidateQuestion(response: string): QuestionData {
+function _parseAndValidateQuestion(response: string): QuestionData {
   try {
     console.log(`[Question Gen] Raw AI response (first 500 chars): ${response.substring(0, 500)}`)
 

@@ -47,7 +47,7 @@ class RateLimiter {
   }
 
   private cleanupExpiredEntries(): void {
-    const now = Date.now()
+    const _now = Date.now()
     for (const [key, entry] of this.attempts.entries()) {
       if (!this.isWithinWindow(entry) && !this.isBlocked(entry)) {
         this.attempts.delete(key)

@@ -222,7 +222,7 @@ export async function GET(request: NextRequest) {
       questions?.map((q: any) => [q.id, q.category_id]) || []
     )
 
-    const categoryIds = [...new Set(
+    const _categoryIds = [...new Set(
       Array.from(questionCategoryMap.values()).filter(Boolean) as string[]
     )]
 

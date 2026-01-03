@@ -47,7 +47,7 @@ interface EnhancedRecentActivityProps {
   userId: string
 }
 
-export function EnhancedRecentActivity({ userId }: EnhancedRecentActivityProps) {
+export function EnhancedRecentActivity({ _userId }: EnhancedRecentActivityProps) {
   const router = useRouter()
   const [groups, setGroups] = useState<ActivityGroup[]>([])
   const [loading, setLoading] = useState(true)

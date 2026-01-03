@@ -50,7 +50,7 @@ export function BulkSubmitDialog({
   const [loading, setLoading] = useState(false)
   const [submitting, setSubmitting] = useState(false)
 
-  const supabase = createClient()
+  const _supabase = createClient()
 
   // Fetch reviewers when dialog opens
   useEffect(() => {

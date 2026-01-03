@@ -59,10 +59,10 @@ export function useUserRole(): UserRoleData {
   const { _user, role: authRole, isLoading: authLoading } = useAuth({ minimal: true })
   const [role, setRole] = useState<UserRole>(null)
   const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState<string | null>(null)
+  const [error, _setError] = useState<string | null>(null)
 
   // Track the previous user ID to prevent unnecessary re-fetches
-  const previousUserIdRef = useRef<string | null>(null)
+  const _previousUserIdRef = useRef<string | null>(null)
 
   useEffect(() => {
     // Use role from useAuth hook directly (it's already fetched from JWT/database)

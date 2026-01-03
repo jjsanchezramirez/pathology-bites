@@ -67,7 +67,7 @@ export function CategoriesDropdown({
     onCategoryChange(categoryId);
   };
 
-  const selectedCategory = categories.find(cat => cat.id === selectedCategoryId);
+  const _selectedCategory = categories.find(cat => cat.id === selectedCategoryId);
 
   const renderCategoryName = (category: CategoryData) => {
     const indentLevel = category.level - 1;

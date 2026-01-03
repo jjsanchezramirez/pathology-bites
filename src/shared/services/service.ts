@@ -10,42 +10,42 @@ import {
   ReminderPayload
 } from '@/shared/types/notifications'
 
-type NotificationState = Database['public']['Tables']['notification_states']['Row']
-type Inquiry = Database['public']['Tables']['inquiries']['Row']
-type QuestionReport = Database['public']['Tables']['question_reports']['Row']
 
-// Extended types for new notification sources
-interface SystemUpdate {
-  id: string
-  title: string
-  message: string
-  update_type: string
-  severity: string
-  target_audience: string
-  published_at: string
-  expires_at?: string
-  metadata: Record<string, any>
-}
 
-interface UserMilestone {
-  id: string
-  user_id: string
-  milestone_type: string
-  title: string
-  description: string
-  milestone_data: Record<string, any>
-  achieved_at: string
-}
 
-interface UserReminder {
-  id: string
-  user_id: string
-  reminder_type: string
-  title: string
-  message: string
-  frequency: string
-  metadata: Record<string, any>
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 export class NotificationsService {
   private getSupabase() {

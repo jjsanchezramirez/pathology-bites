@@ -50,7 +50,7 @@ interface ClientVirtualSlide {
 }
 
 // Function to convert client WSI to canonical format
-function normalizeClientWSI(clientWSI: ClientVirtualSlide): VirtualSlide {
+function _normalizeClientWSI(clientWSI: ClientVirtualSlide): VirtualSlide {
   // Ensure we have a valid image URL (prefer slide_url, then case_url, then image_url)
   const imageUrl = clientWSI.slide_url || clientWSI.case_url || clientWSI.image_url || ''
   

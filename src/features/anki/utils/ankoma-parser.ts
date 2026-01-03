@@ -664,7 +664,7 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
 /**
  * Extract answer from cloze deletion text
  */
-function extractAnswerFromCloze(text: string): string {
+function _extractAnswerFromCloze(text: string): string {
   if (!text) return ''
   
   // Replace cloze deletions with their content
