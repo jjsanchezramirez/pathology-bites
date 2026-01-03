@@ -5,7 +5,6 @@ import { useState, useEffect } from "react";
 import { toast } from "@/shared/utils/toast";
 import {
   WelcomeMessage,
-  SecurityNotice,
   PerformanceAnalytics,
   StudentStatsCards,
   StudentStatsCardsLoading,
@@ -68,7 +67,6 @@ export default function DashboardPage() {
   // Combine unified loading state with local loading
   const isLoading = unifiedLoading || loading;
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
-  const [showSecurityNotice, setShowSecurityNotice] = useState(false);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
   const [isReturningUser, setIsReturningUser] = useState(false);
 
@@ -112,10 +110,6 @@ export default function DashboardPage() {
         // Check if user has seen welcome message
         const hasSeenWelcome = await userSettingsService.hasSeenWelcomeMessage();
         setShowWelcomeMessage(!hasSeenWelcome);
-
-        // Check if security notice has been dismissed
-        const securityNoticeDismissed = await userSettingsService.hasSeenSecurityNotice();
-        setShowSecurityNotice(!securityNoticeDismissed);
 
         // Determine user status based on activity
         const isFirstTime =
@@ -168,9 +162,6 @@ export default function DashboardPage() {
                 : "Welcome back! Ready to continue your learning journey?"}
           </p>
         </div>
-
-        {/* Security Notice */}
-        {showSecurityNotice && <SecurityNotice onDismiss={() => setShowSecurityNotice(false)} />}
 
         {/* Welcome Message for First-Time Users */}
         {showWelcomeMessage && <WelcomeMessage onDismiss={() => setShowWelcomeMessage(false)} />}
