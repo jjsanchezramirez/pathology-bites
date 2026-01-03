@@ -33,22 +33,6 @@ interface DashboardStats {
   }
 }
 
-interface CategoryDetail {
-  category_id: string
-  category_name: string
-  total_attempts: number
-  correct_attempts: number
-  accuracy: number
-  average_time: number
-  last_attempt_at: string
-  recent_performance: Array<{
-    date: string
-    accuracy: number
-    questions_answered: number
-  }>
-  trend?: 'up' | 'down' | 'stable'
-}
-
 export default function PerformancePage() {
   const featuresEnabled = isQuizFeaturesEnabled()
   const { data: unifiedData, isLoading } = useUnifiedData()

@@ -11,8 +11,6 @@ import { useUnifiedData } from '@/shared/hooks/use-unified-data'
 import { useCSRFToken } from '@/features/auth/hooks/use-csrf-token'
 
 import {
-  QuizMode,
-  QuizTiming,
   QuestionType,
   CategorySelection,
   QuizCreationForm,

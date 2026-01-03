@@ -5,7 +5,6 @@ import { useParams } from "next/navigation"
 import { Button } from "@/shared/components/ui/button"
 import { QuizResultsSummary } from "@/features/quiz/components/quiz-results-summary"
 import { QuizResultsSkeleton } from "@/features/quiz/components/quiz-results-skeleton"
-import { PageErrorBoundary } from "@/shared/components/common"
 import { QuizResult } from "@/features/quiz/types/quiz"
 import { toast } from '@/shared/utils/toast'
 import Link from "next/link"
