@@ -20,12 +20,12 @@ interface ImageData {
   description: string;
 }
 
-interface QuestionImageData {
-  image_id: string;
-  question_section: string;
-  order_index: number;
-  image?: ImageData[];
-}
+
+
+
+
+
+
 
 interface AnswerOptionData {
   id: string;
@@ -35,7 +35,6 @@ interface AnswerOptionData {
 }
 
 // Legacy alias for backward compatibility
-type QuestionOptionData = AnswerOptionData
 
 
 
@@ -50,11 +49,12 @@ type QuestionOptionData = AnswerOptionData
 
 
 
-interface QuestionImage {
-  url: string;
-  alt: string;
-  caption: string;
-}
+
+
+
+
+
+
 
 interface QuestionOption {
   id: string;

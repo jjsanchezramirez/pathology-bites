@@ -1,6 +1,6 @@
 // src/lib/notifications/service.ts
 import { createClient } from '@/shared/services/client'
-import { Database } from '@/shared/types/supabase'
+
 import {
   NotificationWithSource,
   PaginatedNotifications,
