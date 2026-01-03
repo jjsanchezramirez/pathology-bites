@@ -12,16 +12,9 @@ interface HeroSectionProps {
 
 export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
   const [mounted, setMounted] = useState(false);
-  const [showShimmer, setShowShimmer] = useState(false);
 
   useEffect(() => {
     setMounted(true);
-    // Trigger shimmer after all other animations complete
-    const shimmerTimer = setTimeout(() => {
-      setShowShimmer(true);
-    }, 1800); // Start shimmer after 1.8s (when other animations finish)
-
-    return () => clearTimeout(shimmerTimer);
   }, []);
 
   const scrollToNext = () => {
@@ -54,14 +47,7 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
                   }}
                 >
                   Pathology learning{" "}
-                  <span
-                    className="bg-gradient-to-r from-primary via-sky-400/60 to-primary/70 bg-clip-text text-transparent"
-                    style={{
-                      backgroundSize: showShimmer ? "200% auto" : "100% auto",
-                      animation: showShimmer ? "shimmer 3.5s ease-in-out forwards" : "none",
-                      animationIterationCount: showShimmer ? "1" : "0",
-                    }}
-                  >
+                  <span className="bg-gradient-to-r from-primary via-primary to-primary/70 bg-clip-text text-transparent">
                     by residents, for residents
                   </span>
                 </h1>
