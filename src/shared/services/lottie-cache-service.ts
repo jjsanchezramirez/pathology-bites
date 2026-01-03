@@ -17,7 +17,7 @@ interface LottieCacheEntry {
  * Caches Lottie JSON animations in localStorage to avoid repeated network requests
  */
 class LottieCacheService {
-  private memoryCache: Map<string, any> = new Map()
+  private memoryCache: Map<string, unknown> = new Map()
 
   /**
    * Get the full cache key for a Lottie animation

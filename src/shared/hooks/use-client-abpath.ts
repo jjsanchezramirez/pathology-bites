@@ -98,7 +98,7 @@ async function loadABPathContentSpecs(): Promise<unknown> {
 }
 
 export function useClientABPath(): UseClientABPathResult {
-  const [data, setData] = useState<any | null>(null)
+  const [data, setData] = useState<unknown | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 

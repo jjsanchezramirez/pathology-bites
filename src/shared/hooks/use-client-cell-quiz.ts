@@ -137,8 +137,8 @@ async function loadCellQuizReferences(): Promise<unknown> {
 }
 
 export function useClientCellQuiz(): UseCellQuizResult {
-  const [cellData, setCellData] = useState<any | null>(null)
-  const [bloodCellsReference, setBloodCellsReference] = useState<any | null>(null)
+  const [cellData, setCellData] = useState<unknown | null>(null)
+  const [bloodCellsReference, setBloodCellsReference] = useState<unknown | null>(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 

@@ -218,7 +218,6 @@ export const DELETE = requireAdmin(async (request) => {
 
     try {
       const result = await deleteUser(adminClient, supabase, userId, targetUser.role as UserRole)
-      const result = await deleteUser(adminClient, supabase, userId, targetUser.role as UserRole)
 
       // Delete user from auth system ONLY for hard deletes
       // For soft deletes, preserve auth record so user can log back in and be restored

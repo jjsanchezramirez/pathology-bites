@@ -61,7 +61,6 @@ export default function AdminDashboardPage() {
 
   // Use adminMode for determining quick actions
   const quickActions = stats ? clientDashboardService.getQuickActions(stats, effectiveRole as UserRole) : []
-  const quickActions = stats ? clientDashboardService.getQuickActions(stats, effectiveRole as UserRole) : []
 
   // Single loading state - show skeleton until ALL data is ready
   // Only show loading if we don't have user yet, or if role is still loading, or if we don't have data yet, or if transitioning

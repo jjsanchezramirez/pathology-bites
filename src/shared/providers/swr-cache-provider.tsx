@@ -12,7 +12,7 @@ const CACHE_VERSION = 'v1' // Increment to invalidate all caches
 
 interface CacheData {
   version: string
-  cache: [string, any][]
+  cache: [string, unknown][]
   timestamp: number
 }
 
@@ -58,7 +58,7 @@ export function SWRCacheProvider({ children }: { children: React.ReactNode }) {
         // Custom cache provider with localStorage persistence
         provider: () => {
           // Initialize cache Map (works in both SSR and client)
-          const map = new Map<string, any>()
+          const map = new Map<string, unknown>()
 
           // Only do localStorage operations on client-side
           if (typeof window === 'undefined') {

@@ -95,7 +95,6 @@ export async function DELETE(request: NextRequest) {
       const adminClient = createAdminClient()
 
       const result = await deleteUser(adminClient, supabase, userId, userData.role as UserRole)
-      const result = await deleteUser(adminClient, supabase, userId, userData.role as UserRole)
 
       // Delete user from auth system ONLY for hard deletes
       // For soft deletes, preserve auth record so user can log back in and be restored
