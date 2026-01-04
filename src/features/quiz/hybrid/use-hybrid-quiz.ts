@@ -546,36 +546,8 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     };
   }, [quizState.config.timing, quizState.status, timeRemaining, isTimerPaused, handleCompleteQuiz]);
 
-  // Track if we're intentionally exiting (Save & Exit button)
-  const isIntentionalExitRef = useRef(false);
-
-  // Auto-save on navigation away from quiz
-  useEffect(() => {
-    if (!AUTO_SAVE_CONFIG.enableAutoSaveOnNavigation || !autoSaveManager.current) return;
-
-    const handleRouteChange = async () => {
-      if (quizState.status === "in_progress" && quizState.answers.size > 0) {
-        await autoSaveManager.current?.autoSave(sessionId, quizState, "navigation", timeRemaining);
-      }
-    };
-
-    // Use beforeunload for now (Next.js 15 App Router doesn't have route change events)
-    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
-      // Skip dialog if user clicked Save & Exit button
-      if (isIntentionalExitRef.current) {
-        return;
-      }
-
-      if (quizState.status === "in_progress" && quizState.answers.size > 0) {
-        handleRouteChange();
-        e.preventDefault();
-        return "Quiz progress is being saved...";
-      }
-    };
-
-    window.addEventListener("beforeunload", handleBeforeUnload);
-    return () => window.removeEventListener("beforeunload", handleBeforeUnload);
-  }, [quizState.status, quizState.answers.size, sessionId, timeRemaining, quizState]);
+  // Note: beforeunload event handling is managed by the page component
+  // to allow for custom exit dialogs and better UX control
 
   // Create hybrid state
   const hybridState: HybridQuizState = {
@@ -640,24 +612,20 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       if (!autoSaveManager.current) return;
 
       try {
-        // Mark as intentional exit to prevent browser dialog
-        isIntentionalExitRef.current = true;
-
         // Save current state to database
         await autoSaveManager.current.autoSave(sessionId, quizState, "manual", timeRemaining);
 
         // Show success toast
         toast.success("Quiz saved successfully");
 
-        // Navigate to My Quizzes page
-        router.push("/dashboard/quizzes");
+        // Note: Navigation is handled by the page component
+        // to properly manage beforeunload event cleanup
       } catch (error) {
         console.error("Failed to save and exit:", error);
         toast.error("Failed to save quiz. Please try again.");
-        // Reset flag on error so user can try again
-        isIntentionalExitRef.current = false;
+        throw error; // Re-throw so page component knows save failed
       }
-    }, [sessionId, quizState, router, timeRemaining]),
+    }, [sessionId, quizState, timeRemaining]),
 
     completeQuiz: useCallback(async () => {
       return await handleCompleteQuiz();

@@ -42,6 +42,9 @@ export default function QuizSessionPage() {
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [_pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
+  // Track if we're intentionally exiting to prevent browser dialog
+  const [isExiting, setIsExiting] = useState(false);
+
   // Mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
 
@@ -230,7 +233,10 @@ export default function QuizSessionPage() {
     if (isReviewMode) return;
 
     try {
-      // Trigger auto-save with manual trigger
+      // Mark as intentional exit to prevent browser dialog
+      setIsExiting(true);
+
+      // Trigger auto-save
       await hybridActions.saveAndExit();
 
       // Navigate to quizzes page
@@ -238,6 +244,8 @@ export default function QuizSessionPage() {
     } catch (error) {
       console.error("Error saving and exiting:", error);
       toast.error("Failed to save quiz progress");
+      // Reset flag on error so user can try again
+      setIsExiting(false);
     }
   }, [isReviewMode, hybridActions]);
 
@@ -256,8 +264,22 @@ export default function QuizSessionPage() {
     if (isReviewMode || hybridState.status !== "in_progress") return;
 
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Skip dialog if user clicked Save & Exit button
+      if (isExiting) {
+        return;
+      }
+
+      // Show browser's default confirmation dialog
+      // Note: Custom dialogs are not allowed by browsers for security reasons
+      // This will show "Leave site? Changes you made may not be saved."
       e.preventDefault();
       e.returnValue = ""; // Chrome requires returnValue to be set
+
+      // Auto-save quiz progress before potential navigation
+      // This is best-effort - may not complete if user confirms navigation immediately
+      hybridActions.saveAndExit().catch((error) => {
+        console.error("Failed to auto-save on beforeunload:", error);
+      });
     };
 
     window.addEventListener("beforeunload", handleBeforeUnload);
@@ -265,7 +287,7 @@ export default function QuizSessionPage() {
     return () => {
       window.removeEventListener("beforeunload", handleBeforeUnload);
     };
-  }, [isReviewMode, hybridState.status]);
+  }, [isReviewMode, hybridState.status, isExiting, hybridActions]);
 
   // Early returns for loading and error states
   if (reviewLoading || (!isReviewMode && hybridState.isLoading)) {
