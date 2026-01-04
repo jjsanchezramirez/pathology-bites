@@ -139,27 +139,45 @@ export function QuizResultsSummary({
       />
 
       {/* DEBUG: Test Achievement Display Button */}
-      <div className="flex justify-center gap-2 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border-2 border-blue-300">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            console.log("[DEBUG] Current result data:", result);
-            console.log("[DEBUG] newAchievements:", result.newAchievements);
-            console.log("[DEBUG] hasNewAchievements:", hasNewAchievements);
-          }}
-        >
-          Log Achievement Data
-        </Button>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => {
-            setShowCelebrationModal(true);
-          }}
-        >
-          Test Modal (Mock Achievements)
-        </Button>
+      <div className="flex flex-col gap-2 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border-2 border-blue-300">
+        <div className="text-sm font-semibold text-center text-blue-700 dark:text-blue-300">
+          Debug Panel (Remove after testing)
+        </div>
+        <div className="flex justify-center gap-2 flex-wrap">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              console.log("[DEBUG] Current result data:", result);
+              console.log("[DEBUG] newAchievements:", result.newAchievements);
+              console.log("[DEBUG] hasNewAchievements:", hasNewAchievements);
+            }}
+          >
+            Log Achievement Data
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              setShowCelebrationModal(true);
+            }}
+          >
+            Test Modal (Mock Achievements)
+          </Button>
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => {
+              // Clear cache and reload
+              const cacheKey = `pathology-bites-quiz:quiz-results-${sessionId}`;
+              localStorage.removeItem(cacheKey);
+              console.log("[DEBUG] Cache cleared for:", cacheKey);
+              window.location.reload();
+            }}
+          >
+            Clear Cache & Reload
+          </Button>
+        </div>
       </div>
 
       {/* Header with Text Animations */}
