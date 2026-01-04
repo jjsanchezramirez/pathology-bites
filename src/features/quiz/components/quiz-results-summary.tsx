@@ -138,6 +138,30 @@ export function QuizResultsSummary({
         onClose={() => setShowCelebrationModal(false)}
       />
 
+      {/* DEBUG: Test Achievement Display Button */}
+      <div className="flex justify-center gap-2 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border-2 border-blue-300">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            console.log("[DEBUG] Current result data:", result);
+            console.log("[DEBUG] newAchievements:", result.newAchievements);
+            console.log("[DEBUG] hasNewAchievements:", hasNewAchievements);
+          }}
+        >
+          Log Achievement Data
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            setShowCelebrationModal(true);
+          }}
+        >
+          Test Modal (Mock Achievements)
+        </Button>
+      </div>
+
       {/* Header with Text Animations */}
       <div className="text-center space-y-2">
         <h1 className="text-3xl font-bold text-primary">
