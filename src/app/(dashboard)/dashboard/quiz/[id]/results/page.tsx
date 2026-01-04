@@ -24,20 +24,40 @@ export default function QuizResultsPage() {
   } = useCachedData<QuizResult>(
     `quiz-results-${sessionId}`,
     async () => {
-      const resultsResponse = await fetch(`/api/quiz/sessions/${sessionId}/results`);
+      // Retry logic for race conditions where quiz completion hasn't fully propagated
+      const maxRetries = 3;
+      const retryDelays = [500, 1000, 2000]; // Exponential backoff: 0.5s, 1s, 2s
 
-      if (!resultsResponse.ok) {
-        const resultsError = await resultsResponse.text();
-        throw new Error(`Failed to fetch results: ${resultsError}`);
+      for (let attempt = 0; attempt <= maxRetries; attempt++) {
+        const resultsResponse = await fetch(`/api/quiz/sessions/${sessionId}/results`);
+
+        if (resultsResponse.ok) {
+          const resultsData = await resultsResponse.json();
+
+          if (resultsData?.success && resultsData?.data) {
+            if (attempt > 0) {
+              console.log(`[Results Page] ✅ Successfully fetched results after ${attempt} retry(ies)`);
+            }
+            return resultsData.data;
+          }
+        }
+
+        // If this is not the last attempt, wait and retry
+        if (attempt < maxRetries) {
+          const delay = retryDelays[attempt];
+          console.log(
+            `[Results Page] Quiz not ready yet, retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`
+          );
+          await new Promise((resolve) => setTimeout(resolve, delay));
+        } else {
+          // Last attempt failed, throw error
+          const resultsError = await resultsResponse.text();
+          throw new Error(`Failed to fetch results after ${maxRetries} retries: ${resultsError}`);
+        }
       }
 
-      const resultsData = await resultsResponse.json();
-
-      if (!resultsData?.success || !resultsData?.data) {
-        throw new Error("Quiz results not found - quiz may not be completed");
-      }
-
-      return resultsData.data;
+      // Fallback error (should never reach here)
+      throw new Error("Quiz results not found - quiz may not be completed");
     },
     {
       enabled: !!sessionId,
