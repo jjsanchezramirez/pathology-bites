@@ -17,6 +17,7 @@ export * from "./public-hero";
 export * from "./public-stats-section";
 // PublicThemeEnforcer removed - redundant with ConditionalThemeProvider
 export * from "./references-list";
+export * from "./scroll-reveal";
 export * from "./scroll-to-top";
 
 export * from "./simple-image-viewer";

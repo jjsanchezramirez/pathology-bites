@@ -1,7 +1,7 @@
 // src/app/(dashboard)/dashboard/anki/page.tsx
 'use client'
 
-import React, { useState, useEffect, useMemo } from 'react'
+import React, { useState, useEffect, useMemo, useCallback } from 'react'
 import { cn } from '@/shared/utils'
 import { useClientAnkoma } from '@/shared/hooks/use-client-ankoma'
 import { BookOpen, Layers, ChevronRight, Shuffle, RotateCcw, ChevronLeft, FileText, Info, ExternalLink } from 'lucide-react'
@@ -33,22 +33,128 @@ export default function AnkiPage() {
   const { ankomaData, isLoading, _error } = useClientAnkoma()
   const [leftSidebarExpanded, setLeftSidebarExpanded] = useState(true) // Start expanded
   const [rightSidebarExpanded, setRightSidebarExpanded] = useState(false) // Start collapsed
-  const [hoverEnabled, setHoverEnabled] = useState(true) // Track if hover is enabled
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null)
   const [selectedCategoryId, setSelectedCategoryId] = useState<string | null>(null)
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null)
   const [currentCardIndex, setCurrentCardIndex] = useState(0)
   const [isShuffled, setIsShuffled] = useState(false)
   const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null)
-  const [isMobile, setIsMobile] = useState(false)
+  const [isAnimating, setIsAnimating] = useState(false)
 
-  // Detect mobile device
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(/iPhone|iPad|iPod|Android/i.test(navigator.userAgent))
-    }
-    checkMobile()
+  // Detect mobile device once (useMemo ensures stable value)
+  const isMobile = useMemo(() => {
+    if (typeof window === 'undefined') return false
+    return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent)
   }, [])
+
+  // Cards to ignore by ID (excluded from all views)
+  const IGNORED_CARD_IDS = useMemo(() => new Set(['e;+G?PkVD5']), [])
+
+  // Normalization constants (memoized to prevent recreation)
+  const NAME_NORMALIZATIONS = useMemo(() => ({
+    'Smooth Muscle': 'Muscle',
+    'Skeletal Muscle': 'Muscle',
+    'Myfibroblastic': 'Myofibroblastic',
+    'Parathyroid Adenoma': 'Parathyroid',
+    'Natural Deaths AP': 'Natural Deaths',
+    'Ewing': 'Ewing Sarcoma',
+    'Gaucher': 'Gaucher Disease',
+    '7.1 7.2': 'Molecular Biology & Techniques',
+    '7.3': 'Non-Neoplastic Molecular Pathology',
+    '7.4': 'Neoplastic Molecular Pathology',
+    'CLIA88': 'CLIA 88',
+    'Professional Component Billing': 'Billing',
+    'Laboratory Test Panels': 'Billing',
+    'Billing Regulations': 'Billing',
+    'Quality Assurance': 'Quality Control',
+    'Quality Management': 'Quality Control',
+    'Quality Improvement': 'Quality Control',
+    'Statistical Quality Control': 'Quality Control',
+    'Medicare & Medicaid': 'Medicare & Medicaid',
+    'B Cells': 'B Cells',
+    'T Cells': 'T Cells',
+    'NK cells': 'NK Cells',
+    'HLA Testing': 'HLA Testing',
+    'A PCs': 'Antigen Processing Cells',
+    'Quick Compendium': 'General Principles',
+    'Pre analytical': 'General Principles',
+    'Miscellaneous': 'General Principles',
+    'proteins': 'Protein Analysis',
+    'Special Circumstances': 'General Principles',
+    'Extras': 'General Principles',
+    'Passenger Lymphocyte Syndrome': 'General Principles',
+    'misc': 'General Principles',
+    'Methods': 'General Principles',
+    'Peripheral blood smears': 'Peripheral Blood Smears',
+  }), [])
+
+  const PARENT_SPECIFIC_NORMALIZATIONS = useMemo(() => ({
+    'Chemistry::proteins': 'Protein Analysis',
+    'Chemistry::Quick Compendium': 'General Principles',
+    'Chemistry::Pre analytical': 'General Principles',
+    'Chemistry::Miscellaneous': 'General Principles',
+    'TransfusionMedicine::Quick Compendium': 'General Principles',
+    'TransfusionMedicine::Special Circumstances': 'General Principles',
+    'TransfusionMedicine::Extras': 'General Principles',
+    'TransfusionMedicine::Passenger Lymphocyte Syndrome': 'General Principles',
+    'Hemepath-Benign::misc': 'General Principles',
+    'Hemepath-Benign::Methods': 'General Principles',
+  }), [])
+
+  const MICROBIOLOGY_VALID_SUBCATEGORIES = useMemo(() => [
+    'Bacteriology', 'Mycology', 'Parasitology', 'Virology', 'General Principles'
+  ], [])
+
+  const CATEGORY_MERGES = useMemo(() => ({
+    'Benign Heme': 'Hemepath Benign',
+    'Hemepath': 'Hemepath Neoplastic',
+    'Pulmonary': 'Thoracic',
+  }), [])
+
+  // Format tag names with normalization
+  const formatTagName = useCallback((tagName: string, parentCategory?: string): string => {
+    if (!tagName) return tagName
+
+    let formatted = tagName
+      .replace(/([a-z])(and)([A-Z])/g, '$1 $2 $3')
+      .replace(/([a-z])([A-Z])/g, '$1 $2')
+      .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
+      .replace(/&/g, ' & ')
+      .replace(/[_-]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+
+    if (formatted.startsWith('#')) {
+      formatted = formatted.substring(1).trim()
+    }
+
+    if (parentCategory) {
+      const parentKey = `${parentCategory}::${formatted}`
+      if (PARENT_SPECIFIC_NORMALIZATIONS[parentKey]) {
+        return PARENT_SPECIFIC_NORMALIZATIONS[parentKey]
+      }
+    }
+
+    if (NAME_NORMALIZATIONS[formatted]) {
+      formatted = NAME_NORMALIZATIONS[formatted]
+    }
+
+    if (CATEGORY_MERGES[formatted]) {
+      formatted = CATEGORY_MERGES[formatted]
+    }
+
+    if (parentCategory === 'Microbiology' && !MICROBIOLOGY_VALID_SUBCATEGORIES.includes(formatted)) {
+      formatted = 'General Principles'
+    }
+
+    formatted = formatted.replace(/\band\b/gi, '&')
+
+    if (formatted.length > 0) {
+      formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1)
+    }
+
+    return formatted
+  }, [NAME_NORMALIZATIONS, PARENT_SPECIFIC_NORMALIZATIONS, CATEGORY_MERGES, MICROBIOLOGY_VALID_SUBCATEGORIES])
 
   // Handle direct cardId navigation from URL
   useEffect(() => {
@@ -107,148 +213,6 @@ export default function AnkiPage() {
       }
     }
   }, [ankomaData, formatTagName])
-
-  // Cards to ignore by ID (excluded from all views)
-  const IGNORED_CARD_IDS = new Set([
-    'e;+G?PkVD5',
-  ])
-
-  // Normalization rules for category/subcategory names
-  // These are applied AFTER basic formatting (camelCase split, hyphen to space, etc.) but BEFORE sentence case
-  const NAME_NORMALIZATIONS: Record<string, string> = {
-    // AP -> Immunohistochemistry: Combine muscle variants (SmoothMuscle -> Smooth Muscle, SkeletalMuscle -> Skeletal Muscle)
-    'Smooth Muscle': 'Muscle',
-    'Skeletal Muscle': 'Muscle',
-    // AP -> Immunohistochemistry: Fix typo (Myfibroblastic stays as Myfibroblastic)
-    'Myfibroblastic': 'Myofibroblastic',
-    // AP -> Endocrine: Combine parathyroid variants (ParathyroidAdenoma -> Parathyroid Adenoma)
-    'Parathyroid Adenoma': 'Parathyroid',
-    // AP -> ForensicPathology: Combine natural deaths (NaturalDeathsAP -> Natural Deaths AP)
-    'Natural Deaths AP': 'Natural Deaths',
-    // AP -> Pediatrics
-    'Ewing': 'Ewing Sarcoma',
-    'Gaucher': 'Gaucher Disease',
-    // CP -> MolecularPathology (7.1-7.2 -> 7.1 7.2 after hyphen to space)
-    '7.1 7.2': 'Molecular Biology & Techniques',
-    '7.3': 'Non-Neoplastic Molecular Pathology',
-    '7.4': 'Neoplastic Molecular Pathology',
-    // CP -> MedicalDirectorship
-    'CLIA88': 'CLIA 88',
-    'Professional Component Billing': 'Billing',
-    'Laboratory Test Panels': 'Billing',
-    'Billing Regulations': 'Billing',
-    'Quality Assurance': 'Quality Control',
-    'Quality Management': 'Quality Control',
-    'Quality Improvement': 'Quality Control',
-    'Statistical Quality Control': 'Quality Control',
-    'Medicare & Medicaid': 'Medicare & Medicaid',  // After 'and' -> '&' replacement
-    // CP -> Immunology (handle various PascalCase split results)
-    'B Cells': 'B Cells',  // BCells -> B Cells
-    'T Cells': 'T Cells',  // TCells -> T Cells
-    'NK cells': 'NK Cells',  // NKcells -> NK cells (with new regex)
-    'HLA Testing': 'HLA Testing',  // HLATesting -> HLA Testing
-    'A PCs': 'Antigen Processing Cells',  // APCs -> A PCs (with new regex)
-    // CP -> Chemistry (QuickCompendium -> Quick Compendium, Pre-analytical -> Pre analytical)
-    'Quick Compendium': 'General Principles',
-    'Pre analytical': 'General Principles',
-    'Miscellaneous': 'General Principles',
-    'proteins': 'Protein Analysis',  // lowercase in tag
-    // CP -> TransfusionMedicine (PassengerLymphocyteSyndrome -> Passenger Lymphocyte Syndrome)
-    'Special Circumstances': 'General Principles',
-    'Extras': 'General Principles',
-    'Passenger Lymphocyte Syndrome': 'General Principles',
-    // CP -> Hemepath-Benign (misc, Methods, #Peripheral-blood-smears -> Peripheral blood smears)
-    'misc': 'General Principles',  // lowercase in tag
-    'Methods': 'General Principles',
-    'Peripheral blood smears': 'Peripheral Blood Smears',
-  }
-
-  // Parent-specific normalization rules (raw parent category name::formatted child name BEFORE sentence case)
-  const PARENT_SPECIFIC_NORMALIZATIONS: Record<string, string> = {
-    // Chemistry subcategories - proteins is lowercase in tag, stays lowercase after basic formatting
-    'Chemistry::proteins': 'Protein Analysis',
-    'Chemistry::Quick Compendium': 'General Principles',
-    'Chemistry::Pre analytical': 'General Principles',
-    'Chemistry::Miscellaneous': 'General Principles',
-    // TransfusionMedicine subcategories
-    'TransfusionMedicine::Quick Compendium': 'General Principles',
-    'TransfusionMedicine::Special Circumstances': 'General Principles',
-    'TransfusionMedicine::Extras': 'General Principles',
-    'TransfusionMedicine::Passenger Lymphocyte Syndrome': 'General Principles',
-    // Hemepath-Benign subcategories
-    'Hemepath-Benign::misc': 'General Principles',
-    'Hemepath-Benign::Methods': 'General Principles',
-  }
-
-  // Microbiology subcategories that are valid - everything else goes to General Principles
-  const MICROBIOLOGY_VALID_SUBCATEGORIES = ['Bacteriology', 'Mycology', 'Parasitology', 'Virology', 'General Principles']
-
-  // Category merges (source -> target) - applied AFTER formatting
-  const CATEGORY_MERGES: Record<string, string> = {
-    // BenignHeme -> "Benign Heme" after formatting, merge into Hemepath Benign
-    'Benign Heme': 'Hemepath Benign',
-    // Hemepath-Benign -> "Hemepath Benign" after formatting (stays as is)
-    // Hemepath -> "Hemepath" - user wants it renamed to "Hemepath Neoplastic"
-    'Hemepath': 'Hemepath Neoplastic',
-    // AP::Pulmonary should be under AP::Thoracic (Pulmonary is a subcategory of Thoracic)
-    'Pulmonary': 'Thoracic',
-  }
-
-  // Format tag names with normalization
-  const formatTagName = (tagName: string, parentCategory?: string): string => {
-    if (!tagName) return tagName
-
-    // Basic formatting: add spaces, fix ampersands
-    let formatted = tagName
-      // First, add spaces around 'and' when it's embedded (e.g., PenisandScrotum -> Penis and Scrotum)
-      .replace(/([a-z])(and)([A-Z])/g, '$1 $2 $3')
-      // Handle camelCase: lowercase followed by uppercase (e.g., SmoothMuscle -> Smooth Muscle)
-      .replace(/([a-z])([A-Z])/g, '$1 $2')
-      // Handle PascalCase at word boundaries: single uppercase followed by lowercase (e.g., BCells -> B Cells)
-      .replace(/([A-Z])([A-Z][a-z])/g, '$1 $2')
-      .replace(/&/g, ' & ')
-      .replace(/[_-]/g, ' ')
-      .replace(/\s+/g, ' ')
-      .trim()
-
-    // Remove leading # if present
-    if (formatted.startsWith('#')) {
-      formatted = formatted.substring(1).trim()
-    }
-
-    // Check parent-specific normalizations first
-    if (parentCategory) {
-      const parentKey = `${parentCategory}::${formatted}`
-      if (PARENT_SPECIFIC_NORMALIZATIONS[parentKey]) {
-        return PARENT_SPECIFIC_NORMALIZATIONS[parentKey]
-      }
-    }
-
-    // Apply direct name normalizations
-    if (NAME_NORMALIZATIONS[formatted]) {
-      formatted = NAME_NORMALIZATIONS[formatted]
-    }
-
-    // Apply category merges
-    if (CATEGORY_MERGES[formatted]) {
-      formatted = CATEGORY_MERGES[formatted]
-    }
-
-    // Special handling for Microbiology subcategories
-    if (parentCategory === 'Microbiology' && !MICROBIOLOGY_VALID_SUBCATEGORIES.includes(formatted)) {
-      formatted = 'General Principles'
-    }
-
-    // Replace 'and' with '&' (case insensitive, whole word)
-    formatted = formatted.replace(/\band\b/gi, '&')
-
-    // Ensure sentence case (first letter uppercase)
-    if (formatted.length > 0) {
-      formatted = formatted.charAt(0).toUpperCase() + formatted.slice(1)
-    }
-
-    return formatted
-  }
 
   // Organize data by decks and categories
   const organizedDecks = useMemo(() => {
@@ -376,12 +340,11 @@ export default function AnkiPage() {
     setCurrentCardIndex(0)
     setIsShuffled(false)
     // When deck is selected, collapse DECKS and expand CATEGORIES
-    // Temporarily disable hover to prevent interference
-    setHoverEnabled(false)
+    setIsAnimating(true)
     setLeftSidebarExpanded(false)
     setRightSidebarExpanded(true)
-    // Re-enable hover after a short delay
-    setTimeout(() => setHoverEnabled(true), 300)
+    // Clear animation flag after transition
+    setTimeout(() => setIsAnimating(false), 300)
   }
 
   const handleCategoryClick = (categoryId: string, hasSubcategories: boolean) => {
@@ -441,12 +404,13 @@ export default function AnkiPage() {
     <div className="h-full flex overflow-hidden">
       {/* Left Sidebar - DECKS */}
       <aside
-        className={cn(
-          "h-full shrink-0 bg-secondary border-r border-border transition-all duration-300 ease-in-out overflow-hidden",
-          leftSidebarExpanded ? "w-[240px]" : "w-16"
-        )}
-        onMouseEnter={() => hoverEnabled && setLeftSidebarExpanded(true)}
-        onMouseLeave={() => hoverEnabled && setLeftSidebarExpanded(false)}
+        className="h-full shrink-0 bg-secondary border-r border-border overflow-hidden"
+        style={{
+          width: leftSidebarExpanded ? '240px' : '64px',
+          transition: 'width 300ms ease-in-out'
+        }}
+        onMouseEnter={() => !isAnimating && setLeftSidebarExpanded(true)}
+        onMouseLeave={() => !isAnimating && setLeftSidebarExpanded(false)}
       >
         {leftSidebarExpanded ? (
           <div className="h-full w-full flex flex-col min-w-[240px]">
@@ -522,12 +486,13 @@ export default function AnkiPage() {
 
       {/* Right Sidebar - CATEGORIES */}
       <aside
-        className={cn(
-          "h-full shrink-0 bg-card border-r border-border transition-all duration-300 ease-in-out overflow-hidden",
-          rightSidebarExpanded ? "w-[300px]" : "w-16"
-        )}
-        onMouseEnter={() => hoverEnabled && setRightSidebarExpanded(true)}
-        onMouseLeave={() => hoverEnabled && setRightSidebarExpanded(false)}
+        className="h-full shrink-0 bg-card border-r border-border overflow-hidden"
+        style={{
+          width: rightSidebarExpanded ? '300px' : '64px',
+          transition: 'width 300ms ease-in-out'
+        }}
+        onMouseEnter={() => !isAnimating && setRightSidebarExpanded(true)}
+        onMouseLeave={() => !isAnimating && setRightSidebarExpanded(false)}
       >
         {rightSidebarExpanded ? (
           <div className="h-full w-full flex flex-col min-w-[300px]">
@@ -712,7 +677,7 @@ export default function AnkiPage() {
                     card={currentCard}
                     onNext={currentCardIndex < currentCards.length - 1 ? handleNextCard : undefined}
                     onPrevious={currentCardIndex > 0 ? handlePreviousCard : undefined}
-                    currentIndex={currentCardIndex}
+                    currentCardIndex={currentCardIndex}
                     totalCards={currentCards.length}
                     categoryName={selectedCategory?.name}
                     subcategoryName={selectedSubcategory}
