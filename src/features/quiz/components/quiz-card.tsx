@@ -160,7 +160,7 @@ export function QuizCard({ quiz, _onDelete, formatDate, formatTimeSpent }: QuizC
               {/* Total Questions */}
               <div className="flex items-center gap-1">
                 <Hash className="h-4 w-4" />
-                <span>{quiz.totalQuestions} questions</span>
+                <span>{quiz.totalQuestions} Qs</span>
               </div>
 
               {/* Questions Remaining (for in-progress quizzes) */}
