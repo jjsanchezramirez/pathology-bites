@@ -743,8 +743,8 @@ export default function QuizSessionPage() {
 
               <div className="flex items-center gap-2 md:gap-3 shrink-0">
                 {hybridState.timeRemaining !== null && (
-                  <div className="hidden md:flex items-center gap-2 text-xs md:text-sm">
-                    <Clock className="h-4 w-4" />
+                  <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
+                    <Clock className="h-3 w-3 md:h-4 md:w-4" />
                     <span className="font-mono font-medium">
                       {formatTime(hybridState.timeRemaining)}
                     </span>

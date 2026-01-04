@@ -286,20 +286,32 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       console.log("[Hybrid] Initializing quiz with status:", status);
       stateActions.initializeQuiz(questions, config, status);
 
+      // Try to recover from localStorage first (need this before timer init)
+      const localData = recoverLocalState();
+
       // Initialize timer for timed quizzes
       if (config.timing === "timed") {
         const limit = savedTotalTimeLimit || config.totalTimeLimit || questions.length * 60; // 60 seconds per question
         setTotalTimeLimit(limit);
-        // Use saved time remaining if available (resuming quiz), otherwise use full limit (new quiz)
-        setTimeRemaining(
-          savedTimeRemaining !== null && savedTimeRemaining !== undefined
-            ? savedTimeRemaining
-            : limit
-        );
-      }
 
-      // Try to recover from localStorage first
-      const localData = recoverLocalState();
+        // Priority order for time remaining:
+        // 1. localStorage (most recent)
+        // 2. Server data (from last sync)
+        // 3. Full time limit (new quiz)
+        const restoredTime =
+          localData?.timeRemaining ??
+          (savedTimeRemaining !== null && savedTimeRemaining !== undefined
+            ? savedTimeRemaining
+            : limit);
+
+        console.log("[Hybrid] Restoring timer:", {
+          fromLocalStorage: localData?.timeRemaining,
+          fromServer: savedTimeRemaining,
+          using: restoredTime,
+        });
+
+        setTimeRemaining(restoredTime);
+      }
 
       // Restore existing answers (prioritize localStorage over server data)
       const answersToRestore = localData?.answers || existingAnswers;
@@ -443,6 +455,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
             currentIndex: quizState.currentQuestionIndex,
             status: quizState.status,
             totalTimeSpent: quizState.totalTimeSpent,
+            timeRemaining: timeRemaining,
             lastSaved: Date.now(),
           };
           localStorage.setItem(`quiz_${sessionId}`, JSON.stringify(quizData));
@@ -461,6 +474,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     quizState.currentQuestionIndex,
     quizState.status,
     quizState.totalTimeSpent,
+    timeRemaining,
   ]);
 
   // Periodic auto-save (every 5 answers)
