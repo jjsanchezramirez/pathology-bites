@@ -73,6 +73,60 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
     setError(null);
   }, []);
 
+  // Main generation function with model fallback
+  const generateQuestionWithFallback = useCallback(
+    async (wsi: unknown, modelIndex: number): Promise<unknown> => {
+      console.log(`[WSI Generator] Attempting generation with model index: ${modelIndex}`);
+
+      const baseUrl =
+        typeof window !== "undefined"
+          ? window.location.origin
+          : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+      console.log("[WSI Generator] Using SINGLE /generate endpoint (no multi-step)");
+      const response = await fetch(
+        `${baseUrl}/api/public/tools/wsi-question-generator/generate?cb=${Date.now()}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            wsi: wsi,
+            modelIndex: modelIndex,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        // Try to get detailed error information for further fallback
+        try {
+          const errorData = await response.json();
+          if (errorData.nextModelIndex !== null) {
+            // Recursive fallback to next model
+            console.log(`[WSI Generator] Continuing fallback to model: ${errorData.nextModel}`);
+            return generateQuestionWithFallback(wsi, errorData.nextModelIndex);
+          } else {
+            // No more models available
+            const errorMsg =
+              errorData.error || `All models exhausted: ${response.status} ${response.statusText}`;
+            throw new Error(errorMsg);
+          }
+        } catch (_parseError) {
+          throw new Error(`Fallback failed: ${response.status} ${response.statusText}`);
+        }
+      }
+
+      const questionData = await response.json();
+      if (!questionData.success || !questionData.question) {
+        throw new Error("Fallback question generation failed");
+      }
+
+      return questionData;
+    },
+    []
+  );
+
   const generateQuestion = useCallback(
     async (category?: string): Promise<GeneratedQuestion> => {
       const startTime = Date.now();
@@ -260,60 +314,6 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
       }
     },
     [generateQuestionWithFallback, wsiData, wsiError]
-  );
-
-  // Main generation function with model fallback
-  const generateQuestionWithFallback = useCallback(
-    async (wsi: unknown, modelIndex: number): Promise<unknown> => {
-      console.log(`[WSI Generator] Attempting generation with model index: ${modelIndex}`);
-
-      const baseUrl =
-        typeof window !== "undefined"
-          ? window.location.origin
-          : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-
-      console.log("[WSI Generator] Using SINGLE /generate endpoint (no multi-step)");
-      const response = await fetch(
-        `${baseUrl}/api/public/tools/wsi-question-generator/generate?cb=${Date.now()}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({
-            wsi: wsi,
-            modelIndex: modelIndex,
-          }),
-        }
-      );
-
-      if (!response.ok) {
-        // Try to get detailed error information for further fallback
-        try {
-          const errorData = await response.json();
-          if (errorData.nextModelIndex !== null) {
-            // Recursive fallback to next model
-            console.log(`[WSI Generator] Continuing fallback to model: ${errorData.nextModel}`);
-            return generateQuestionWithFallback(wsi, errorData.nextModelIndex);
-          } else {
-            // No more models available
-            const errorMsg =
-              errorData.error || `All models exhausted: ${response.status} ${response.statusText}`;
-            throw new Error(errorMsg);
-          }
-        } catch (_parseError) {
-          throw new Error(`Fallback failed: ${response.status} ${response.statusText}`);
-        }
-      }
-
-      const questionData = await response.json();
-      if (!questionData.success || !questionData.question) {
-        throw new Error("Fallback question generation failed");
-      }
-
-      return questionData;
-    },
-    []
   );
 
   return {
