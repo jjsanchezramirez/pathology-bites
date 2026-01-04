@@ -276,3 +276,46 @@ export async function awardAchievements(userId: string): Promise<AchievementDefi
 
   return newAchievements;
 }
+
+/**
+ * Get recently unlocked achievements that haven't been shown yet
+ * Used for displaying achievements on quiz results page
+ */
+export async function getRecentUnshownAchievements(
+  userId: string,
+  sinceTimestamp?: string
+): Promise<AchievementDefinition[]> {
+  const supabase = await createClient();
+
+  // Get achievements unlocked in the last 5 minutes that haven't been marked as read
+  const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
+  const since = sinceTimestamp || fiveMinutesAgo;
+
+  const { data: recentAchievements, error } = await supabase
+    .from("user_achievements")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("type", "achievement")
+    .eq("is_read", false) // Only get achievements that haven't been shown
+    .gte("created_at", since)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Error fetching recent achievements:", error);
+    return [];
+  }
+
+  console.log(`[Achievements] Found ${recentAchievements?.length || 0} recent unshown achievements`);
+
+  // Transform database records to AchievementDefinition format
+  return (
+    recentAchievements?.map((ach) => ({
+      id: ach.group_key,
+      title: ach.title,
+      description: ach.description,
+      category: ach.data?.category || "general",
+      requirement: ach.data?.requirement || { type: "quiz_count", value: 1 },
+      animationType: ach.data?.animationType || "star_medal",
+    })) || []
+  );
+}

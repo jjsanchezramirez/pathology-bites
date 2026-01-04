@@ -3,7 +3,7 @@ import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { quizService } from "@/features/quiz/services/quiz-service";
-import { awardAchievements } from "@/features/achievements/services/achievement-service.server";
+import { getRecentUnshownAchievements } from "@/features/achievements/services/achievement-service.server";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -53,20 +53,24 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     console.log(`[Quiz Results] Results fetched successfully for session: ${id}`);
 
-    // Check for newly unlocked achievements (non-blocking)
+    // Get recently unlocked achievements that haven't been shown yet (non-blocking)
     let newAchievements = [];
     try {
-      console.log("[Quiz Results] Checking for achievements for user:", userId);
-      newAchievements = await awardAchievements(userId);
+      console.log("[Quiz Results] Fetching recent unshown achievements for user:", userId);
+      // Get achievements from when the quiz was completed (use quiz completion time)
+      const quizCompletedAt = results.completedAt;
+      newAchievements = await getRecentUnshownAchievements(userId, quizCompletedAt);
       if (newAchievements.length > 0) {
         console.log(
-          `[Quiz Results] Found ${newAchievements.length} new achievement(s):`,
+          `[Quiz Results] Found ${newAchievements.length} recent achievement(s):`,
           newAchievements.map((a) => a.title)
         );
+      } else {
+        console.log("[Quiz Results] No recent unshown achievements found");
       }
     } catch (achievementError) {
       // Don't fail results fetch if achievement check fails
-      console.error("[Quiz Results] Failed to check achievements:", achievementError);
+      console.error("[Quiz Results] Failed to fetch achievements:", achievementError);
     }
 
     return NextResponse.json({
