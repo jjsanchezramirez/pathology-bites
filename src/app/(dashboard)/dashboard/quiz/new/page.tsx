@@ -1,7 +1,7 @@
 // src/app/(dashboard)/dashboard/quiz/new/page.tsx
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import { useZeroApiNetworkStatus } from "@/shared/hooks/use-zero-api-network-status";
 import { useRouter } from "next/navigation";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -104,6 +104,25 @@ export default function NewQuizPage() {
     }
   }, [unifiedLoading, unifiedData]);
 
+  // Get available questions for current configuration
+  const getAvailableQuestions = useCallback((): number => {
+    if (!quizOptions) return 0;
+
+    if (formData.categorySelection === "all") {
+      return quizOptions.questionTypeStats.all[formData.questionType];
+    } else if (formData.categorySelection === "ap_only") {
+      return quizOptions.questionTypeStats.ap_only[formData.questionType];
+    } else if (formData.categorySelection === "cp_only") {
+      return quizOptions.questionTypeStats.cp_only[formData.questionType];
+    } else {
+      // Custom selection
+      return formData.selectedCategories.reduce((total, categoryId) => {
+        const category = quizOptions.categories.find((c) => c.id === categoryId);
+        return total + (category?.questionStats[formData.questionType] || 0);
+      }, 0);
+    }
+  }, [quizOptions, formData.categorySelection, formData.questionType, formData.selectedCategories]);
+
   // Auto-adjust question count when available questions change
   useEffect(() => {
     if (!quizOptions) return;
@@ -118,11 +137,8 @@ export default function NewQuizPage() {
       }));
     }
   }, [
-    formData.questionType,
-    formData.categorySelection,
-    formData.selectedCategories,
-    quizOptions,
     formData.questionCount,
+    quizOptions,
     getAvailableQuestions,
   ]);
 
@@ -204,25 +220,6 @@ export default function NewQuizPage() {
       ...prev,
       questionType,
     }));
-  };
-
-  // Get available questions for current configuration
-  const getAvailableQuestions = (): number => {
-    if (!quizOptions) return 0;
-
-    if (formData.categorySelection === "all") {
-      return quizOptions.questionTypeStats.all[formData.questionType];
-    } else if (formData.categorySelection === "ap_only") {
-      return quizOptions.questionTypeStats.ap_only[formData.questionType];
-    } else if (formData.categorySelection === "cp_only") {
-      return quizOptions.questionTypeStats.cp_only[formData.questionType];
-    } else {
-      // Custom selection
-      return formData.selectedCategories.reduce((total, categoryId) => {
-        const category = quizOptions.categories.find((c) => c.id === categoryId);
-        return total + (category?.questionStats[formData.questionType] || 0);
-      }, 0);
-    }
   };
 
   // Simple validation function
@@ -360,7 +357,7 @@ export default function NewQuizPage() {
   };
 
   return (
-    <div className="container mx-auto py-8 px-4">
+    <div className="container mx-auto py-8">
       <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div>
