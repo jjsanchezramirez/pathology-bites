@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useSearchParams, useRouter, usePathname } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Button } from "@/shared/components/ui/button";
@@ -24,6 +24,8 @@ import { cn } from "@/shared/utils/utils";
 export default function QuizSessionPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
   const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const isReviewMode = searchParams.get("review") === "true";
 
@@ -40,7 +42,7 @@ export default function QuizSessionPage() {
 
   // Exit confirmation dialog state
   const [showExitDialog, setShowExitDialog] = useState(false);
-  const [_pendingNavigation, setPendingNavigation] = useState<string | null>(null);
+  const [pendingNavigation, setPendingNavigation] = useState<string | null>(null);
 
   // Track if we're intentionally exiting to prevent browser dialog
   const [isExiting, setIsExiting] = useState(false);
@@ -250,14 +252,71 @@ export default function QuizSessionPage() {
   }, [isReviewMode, hybridActions]);
 
   const handleExitConfirm = useCallback(async () => {
-    await handleSaveAndExit();
-    setShowExitDialog(false);
-  }, [handleSaveAndExit]);
+    try {
+      // Mark as intentional exit
+      setIsExiting(true);
+
+      // Save the quiz
+      await hybridActions.saveAndExit();
+
+      // Navigate to pending URL or default to quizzes page
+      const destination = pendingNavigation || "/dashboard/quizzes";
+      window.location.href = destination;
+
+      setShowExitDialog(false);
+    } catch (error) {
+      console.error("Error saving and exiting:", error);
+      toast.error("Failed to save quiz progress");
+      setIsExiting(false);
+    }
+  }, [hybridActions, pendingNavigation]);
 
   const handleExitCancel = useCallback(() => {
     setShowExitDialog(false);
     setPendingNavigation(null);
   }, []);
+
+  // Intercept in-app navigation (clicking links in sidebar, etc.)
+  useEffect(() => {
+    if (isReviewMode || hybridState.status !== "in_progress" || isExiting) return;
+
+    const handleClick = (e: MouseEvent) => {
+      // Find if click was on a link or inside a link
+      const target = e.target as HTMLElement;
+      const link = target.closest("a");
+
+      if (!link) return;
+
+      // Get the href
+      const href = link.getAttribute("href");
+      if (!href) return;
+
+      // Check if it's an external link (starts with http/https)
+      if (href.startsWith("http://") || href.startsWith("https://")) {
+        return; // Let external links work normally (beforeunload will handle)
+      }
+
+      // Check if it's the same page (just hash navigation or query params)
+      if (href.startsWith("#") || href === pathname) {
+        return; // Allow same-page navigation
+      }
+
+      // This is an in-app navigation - intercept it
+      e.preventDefault();
+      e.stopPropagation();
+
+      // Store the pending navigation
+      setPendingNavigation(href);
+      setShowExitDialog(true);
+    };
+
+    // Add event listener with capture phase to intercept before Link components
+    document.addEventListener("click", handleClick, true);
+
+    return () => {
+      document.removeEventListener("click", handleClick, true);
+    };
+  }, [isReviewMode, hybridState.status, isExiting, pathname]);
 
   // Intercept browser navigation (back button, close tab, etc.)
   useEffect(() => {
