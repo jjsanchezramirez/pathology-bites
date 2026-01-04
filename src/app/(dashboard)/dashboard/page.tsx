@@ -16,7 +16,11 @@ import {
 import { useAuth } from "@/shared/hooks/use-auth";
 import { userSettingsService } from "@/shared/services/user-settings";
 import { RecentActivity } from "@/features/dashboard/services/service";
-import { PageErrorBoundary, FeatureErrorBoundary } from "@/shared/components/common";
+import {
+  PageErrorBoundary,
+  FeatureErrorBoundary,
+  ScrollReveal,
+} from "@/shared/components/common";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 
 interface DashboardStats {
@@ -178,19 +182,25 @@ export default function DashboardPage() {
         ) : (
           <>
             {/* Stats Cards */}
-            <StudentStatsCards stats={stats} />
+            <ScrollReveal animation="fade-up">
+              <StudentStatsCards stats={stats} />
+            </ScrollReveal>
 
             {/* Recent Activity Section */}
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-              <StudentRecentActivity activities={stats.recentActivity} />
-              <StudentQuickActions />
-            </div>
+            <ScrollReveal animation="fade-up">
+              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+                <StudentRecentActivity activities={stats.recentActivity} />
+                <StudentQuickActions />
+              </div>
+            </ScrollReveal>
 
             {/* Performance Analytics */}
             {stats?.performance && (
-              <FeatureErrorBoundary featureName="Performance Analytics">
-                <PerformanceAnalytics data={stats.performance} />
-              </FeatureErrorBoundary>
+              <ScrollReveal animation="fade-up">
+                <FeatureErrorBoundary featureName="Performance Analytics">
+                  <PerformanceAnalytics data={stats.performance} />
+                </FeatureErrorBoundary>
+              </ScrollReveal>
             )}
           </>
         )}

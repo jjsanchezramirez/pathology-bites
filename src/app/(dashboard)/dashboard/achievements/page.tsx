@@ -6,6 +6,7 @@ import { AchievementsSection } from "@/features/achievements/components";
 import { Achievement, AchievementCategory } from "@/features/achievements/types/achievement";
 import { Loader2 } from "lucide-react";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
+import { ScrollReveal } from "@/shared/components/common";
 
 export default function AchievementsPage() {
   const { data: unifiedData, isLoading } = useUnifiedData();
@@ -112,8 +113,10 @@ export default function AchievementsPage() {
 
       {/* Achievement Categories */}
       <div className="space-y-8">
-        {achievementCategories.map((category) => (
-          <AchievementsSection key={category.id} category={category} />
+        {achievementCategories.map((category, index) => (
+          <ScrollReveal key={category.id} animation="fade-up" delay={index * 100}>
+            <AchievementsSection category={category} />
+          </ScrollReveal>
         ))}
       </div>
     </div>

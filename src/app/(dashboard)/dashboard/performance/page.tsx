@@ -12,6 +12,7 @@ import {
 } from "@/features/performance/components/interactive-chart-demos";
 import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
+import { ScrollReveal } from "@/shared/components/common";
 
 interface DashboardStats {
   performance?: {
@@ -93,30 +94,38 @@ export default function PerformancePage() {
       </div>
 
       {/* Performance Overview Cards */}
-      <PerformanceAnalytics data={stats.performance} />
+      <ScrollReveal animation="fade-up">
+        <PerformanceAnalytics data={stats.performance} />
+      </ScrollReveal>
 
       {/* Interactive Charts - All data from single API call */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <PerformanceTimelineChart data={unifiedData?.timeline || []} loading={isLoading} />
-        <CategoryRadarChart
-          data={
-            unifiedData?.categories.map((cat) => ({
-              category_name: cat.category_name,
-              accuracy: cat.accuracy,
-            })) || []
-          }
+      <ScrollReveal animation="fade-up">
+        <div className="grid gap-6 lg:grid-cols-2">
+          <PerformanceTimelineChart data={unifiedData?.timeline || []} loading={isLoading} />
+          <CategoryRadarChart
+            data={
+              unifiedData?.categories.map((cat) => ({
+                category_name: cat.category_name,
+                accuracy: cat.accuracy,
+              })) || []
+            }
+            loading={isLoading}
+          />
+        </div>
+      </ScrollReveal>
+
+      <ScrollReveal animation="fade-up">
+        <ActivityHeatmap
+          data={unifiedData?.heatmap.data || []}
+          stats={unifiedData?.heatmap.stats || null}
           loading={isLoading}
         />
-      </div>
-
-      <ActivityHeatmap
-        data={unifiedData?.heatmap.data || []}
-        stats={unifiedData?.heatmap.stats || null}
-        loading={isLoading}
-      />
+      </ScrollReveal>
 
       {/* Detailed Category Breakdown */}
-      <CategoryPerformanceCard categoryDetails={unifiedData?.categories || []} />
+      <ScrollReveal animation="fade-up">
+        <CategoryPerformanceCard categoryDetails={unifiedData?.categories || []} />
+      </ScrollReveal>
     </div>
   );
 }
