@@ -24,7 +24,6 @@ export default function QuizResultsPage() {
   } = useCachedData<QuizResult>(
     `quiz-results-${sessionId}`,
     async () => {
-      console.log("[Results Page] Fetching fresh results from API...");
       const resultsResponse = await fetch(`/api/quiz/sessions/${sessionId}/results`);
 
       if (!resultsResponse.ok) {
@@ -33,8 +32,6 @@ export default function QuizResultsPage() {
       }
 
       const resultsData = await resultsResponse.json();
-      console.log("[Results Page] API Response:", resultsData);
-      console.log("[Results Page] newAchievements in API response:", resultsData?.data?.newAchievements);
 
       if (!resultsData?.success || !resultsData?.data) {
         throw new Error("Quiz results not found - quiz may not be completed");

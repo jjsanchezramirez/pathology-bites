@@ -71,24 +71,6 @@ export function QuizResultsSummary({
   const tier = getPerformanceTier(percentage);
   const hasNewAchievements = (result.newAchievements?.length ?? 0) > 0;
 
-  // Mock achievements for testing
-  const mockAchievements = [
-    {
-      id: "mock-1",
-      title: "Speed Demon",
-      description: "Complete a quiz with 10+ questions, 100% score, in under 5 minutes",
-      category: "Speed",
-      animationType: "trophy_large" as const,
-    },
-    {
-      id: "mock-2",
-      title: "Perfect Score",
-      description: "Achieve 100% on any quiz",
-      category: "Accuracy",
-      animationType: "star_medal" as const,
-    },
-  ];
-
   // Show celebration modal for new achievements
   useEffect(() => {
     if (hasNewAchievements && !celebrationShown) {
@@ -128,57 +110,10 @@ export function QuizResultsSummary({
     <div className="w-full space-y-6">
       {/* Achievement Celebration Modal */}
       <AchievementCelebrationModal
-        achievements={
-          // Use mock achievements in development if no real achievements
-          process.env.NODE_ENV === "development" && showCelebrationModal && !hasNewAchievements
-            ? mockAchievements
-            : result.newAchievements || []
-        }
+        achievements={result.newAchievements || []}
         open={showCelebrationModal}
         onClose={() => setShowCelebrationModal(false)}
       />
-
-      {/* DEBUG: Test Achievement Display Button */}
-      <div className="flex flex-col gap-2 p-4 bg-blue-50 dark:bg-blue-950 rounded-lg border-2 border-blue-300">
-        <div className="text-sm font-semibold text-center text-blue-700 dark:text-blue-300">
-          Debug Panel (Remove after testing)
-        </div>
-        <div className="flex justify-center gap-2 flex-wrap">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              console.log("[DEBUG] Current result data:", result);
-              console.log("[DEBUG] newAchievements:", result.newAchievements);
-              console.log("[DEBUG] hasNewAchievements:", hasNewAchievements);
-            }}
-          >
-            Log Achievement Data
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setShowCelebrationModal(true);
-            }}
-          >
-            Test Modal (Mock Achievements)
-          </Button>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              // Clear cache and reload
-              const cacheKey = `pathology-bites-quiz:quiz-results-${sessionId}`;
-              localStorage.removeItem(cacheKey);
-              console.log("[DEBUG] Cache cleared for:", cacheKey);
-              window.location.reload();
-            }}
-          >
-            Clear Cache & Reload
-          </Button>
-        </div>
-      </div>
 
       {/* Header with Text Animations */}
       <div className="text-center space-y-2">
