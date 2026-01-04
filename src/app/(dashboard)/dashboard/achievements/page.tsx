@@ -4,49 +4,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { AchievementsSection } from "@/features/achievements/components";
 import { Achievement, AchievementCategory } from "@/features/achievements/types/achievement";
-import { toast } from "@/shared/utils/toast";
-import { Loader2, RefreshCw } from "lucide-react";
-import { Button } from "@/shared/components/ui/button";
+import { Loader2 } from "lucide-react";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 
 export default function AchievementsPage() {
-  const { data: unifiedData, isLoading, mutate } = useUnifiedData();
-  const [checking, setChecking] = useState(false);
+  const { data: unifiedData, isLoading } = useUnifiedData();
   const [achievementCategories, setAchievementCategories] = useState<AchievementCategory[]>([]);
-
-  const checkAchievements = async () => {
-    try {
-      setChecking(true);
-      // Use GET to avoid CSRF issues with the temporary test button
-      const response = await fetch("/api/user/achievements/check", {
-        method: "GET",
-        credentials: "include",
-      });
-      const result = await response.json();
-
-      console.log("Achievement check response:", result);
-
-      if (!result.success) {
-        const errorMsg = result.details || result.error || "Failed to check achievements";
-        throw new Error(errorMsg);
-      }
-
-      if (result.newAchievements && result.newAchievements.length > 0) {
-        toast.success(`Unlocked ${result.newAchievements.length} new achievement(s)!`);
-        console.log("New achievements:", result.newAchievements);
-        // Refresh the unified data cache
-        await mutate();
-      } else {
-        toast.info("No new achievements unlocked");
-      }
-    } catch (error) {
-      console.error("Error checking achievements:", error);
-      const errorMsg = error instanceof Error ? error.message : "Failed to check achievements";
-      toast.error(`Error: ${errorMsg}`);
-    } finally {
-      setChecking(false);
-    }
-  };
 
   const processAchievementsData = useCallback(() => {
     if (!unifiedData?.achievements) return;
@@ -140,28 +103,11 @@ export default function AchievementsPage() {
   return (
     <div className="space-y-6">
       {/* Page Header */}
-      <div className="flex items-start justify-between">
-        <div>
-          <h1 className="text-3xl font-bold mb-2">Achievements</h1>
-          <p className="text-muted-foreground">
-            {unlockedAchievements} of {totalAchievements} unlocked ({completionPercentage}%)
-          </p>
-        </div>
-
-        {/* Temporary: Check Achievements Button */}
-        <Button onClick={checkAchievements} disabled={checking} variant="outline" className="gap-2">
-          {checking ? (
-            <>
-              <Loader2 className="h-4 w-4 animate-spin" />
-              Checking...
-            </>
-          ) : (
-            <>
-              <RefreshCw className="h-4 w-4" />
-              Check for New Achievements
-            </>
-          )}
-        </Button>
+      <div>
+        <h1 className="text-3xl font-bold mb-2">Achievements</h1>
+        <p className="text-muted-foreground">
+          {unlockedAchievements} of {totalAchievements} unlocked ({completionPercentage}%)
+        </p>
       </div>
 
       {/* Achievement Categories */}
