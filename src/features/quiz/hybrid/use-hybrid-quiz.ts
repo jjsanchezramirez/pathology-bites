@@ -226,6 +226,24 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   // Track if we're currently initializing to prevent duplicate fetches
   const isInitializingRef = useRef(false);
 
+  // Recover quiz state from localStorage
+  const recoverLocalState = useCallback(() => {
+    try {
+      const saved = localStorage.getItem(`quiz_${sessionId}`);
+      if (saved) {
+        const data = JSON.parse(saved);
+        // Check if data is recent (within 24 hours) and for the same session
+        const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
+        if (data.sessionId === sessionId && data.lastSaved > twentyFourHoursAgo) {
+          return data;
+        }
+      }
+    } catch (error) {
+      console.warn("Failed to recover local quiz state:", error);
+    }
+    return null;
+  }, [sessionId]);
+
   // Initialize quiz with server data
   const initializeQuiz = useCallback(async () => {
     // Prevent duplicate initialization
@@ -312,24 +330,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       isInitializingRef.current = false;
     }
   }, [sessionId, stateActions, onError, quizState.currentQuestionIndex, recoverLocalState]);
-
-  // Recover quiz state from localStorage
-  const recoverLocalState = useCallback(() => {
-    try {
-      const saved = localStorage.getItem(`quiz_${sessionId}`);
-      if (saved) {
-        const data = JSON.parse(saved);
-        // Check if data is recent (within 24 hours) and for the same session
-        const twentyFourHoursAgo = Date.now() - 24 * 60 * 60 * 1000;
-        if (data.sessionId === sessionId && data.lastSaved > twentyFourHoursAgo) {
-          return data;
-        }
-      }
-    } catch (error) {
-      console.warn("Failed to recover local quiz state:", error);
-    }
-    return null;
-  }, [sessionId]);
 
   // Handle quiz completion with sync
   const handleCompleteQuiz = useCallback(async (): Promise<SyncResult> => {
