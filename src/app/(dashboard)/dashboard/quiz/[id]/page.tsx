@@ -596,7 +596,7 @@ export default function QuizSessionPage() {
     <>
       {/* Pause Overlay */}
       {isPaused && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center">
           <Card className="w-96 p-6 text-center">
             <CardHeader>
               <CardTitle className="flex items-center justify-center gap-2">
@@ -628,7 +628,7 @@ export default function QuizSessionPage() {
 
       {/* Exit Confirmation Dialog */}
       {showExitDialog && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center">
           <Card className="w-96 p-6">
             <CardHeader>
               <CardTitle>Save and Exit?</CardTitle>

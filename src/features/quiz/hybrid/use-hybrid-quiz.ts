@@ -313,13 +313,20 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         });
       }
 
-      // Restore other state if available from localStorage
-      if (localData) {
-        if (
-          localData.currentIndex !== undefined &&
-          localData.currentIndex !== quizState.currentQuestionIndex
-        ) {
-          stateActions.navigateToQuestion(localData.currentIndex);
+      // Navigate to appropriate question after restoring answers
+      if (localData?.currentIndex !== undefined) {
+        // Use saved position if available from localStorage
+        stateActions.navigateToQuestion(localData.currentIndex);
+      } else if (answersToRestore && answersToRestore.length > 0) {
+        // Find first unanswered question when resuming
+        const answeredQuestionIds = new Set(
+          answersToRestore.map((a) => (Array.isArray(a) ? a[0] : a.questionId))
+        );
+        const firstUnansweredIndex = questions.findIndex((q) => !answeredQuestionIds.has(q.id));
+
+        if (firstUnansweredIndex !== -1) {
+          console.log(`[Hybrid] Navigating to first unanswered question: ${firstUnansweredIndex}`);
+          stateActions.navigateToQuestion(firstUnansweredIndex);
         }
       }
     } catch (error) {
