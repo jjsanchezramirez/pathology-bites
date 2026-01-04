@@ -3,6 +3,7 @@ import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { quizService } from "@/features/quiz/services/quiz-service";
+import { awardAchievements } from "@/features/achievements/services/achievement-service.server";
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
@@ -52,9 +53,28 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     console.log(`[Quiz Results] Results fetched successfully for session: ${id}`);
 
+    // Check for newly unlocked achievements (non-blocking)
+    let newAchievements = [];
+    try {
+      console.log("[Quiz Results] Checking for achievements for user:", userId);
+      newAchievements = await awardAchievements(userId);
+      if (newAchievements.length > 0) {
+        console.log(
+          `[Quiz Results] Found ${newAchievements.length} new achievement(s):`,
+          newAchievements.map((a) => a.title)
+        );
+      }
+    } catch (achievementError) {
+      // Don't fail results fetch if achievement check fails
+      console.error("[Quiz Results] Failed to check achievements:", achievementError);
+    }
+
     return NextResponse.json({
       success: true,
-      data: results,
+      data: {
+        ...results,
+        newAchievements,
+      },
     });
   } catch (error) {
     console.error("Error fetching quiz results:", error);
