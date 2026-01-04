@@ -1,7 +1,7 @@
 // src/app/(dashboard)/dashboard/achievements/page.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import { AchievementsSection } from "@/features/achievements/components";
 import { Achievement, AchievementCategory } from "@/features/achievements/types/achievement";
 import { toast } from "@/shared/utils/toast";
@@ -13,12 +13,6 @@ export default function AchievementsPage() {
   const { data: unifiedData, isLoading, mutate } = useUnifiedData();
   const [checking, setChecking] = useState(false);
   const [achievementCategories, setAchievementCategories] = useState<AchievementCategory[]>([]);
-
-  useEffect(() => {
-    if (unifiedData?.achievements) {
-      processAchievementsData();
-    }
-  }, [unifiedData, processAchievementsData]);
 
   const checkAchievements = async () => {
     try {
@@ -54,7 +48,7 @@ export default function AchievementsPage() {
     }
   };
 
-  const processAchievementsData = () => {
+  const processAchievementsData = useCallback(() => {
     if (!unifiedData?.achievements) return;
 
     const { achievements: achievementsData } = unifiedData;
@@ -117,7 +111,11 @@ export default function AchievementsPage() {
     );
 
     setAchievementCategories(categoryArray);
-  };
+  }, [unifiedData]);
+
+  useEffect(() => {
+    processAchievementsData();
+  }, [processAchievementsData]);
 
   if (isLoading) {
     return (

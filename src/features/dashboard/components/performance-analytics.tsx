@@ -134,14 +134,13 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
               Your Percentile
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-muted-foreground mb-2">Coming Soon</div>
-              <p className="text-xs text-muted-foreground">
-                Percentile ranking available after completing 3 quizzes
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Completed: {data.completedQuizzes}/3 quizzes
+          <CardContent className="flex flex-col items-center justify-center py-6 sm:py-8 px-4">
+            <div className="text-center space-y-2">
+              <div className="text-xl sm:text-2xl font-bold text-muted-foreground">
+                {data.completedQuizzes}/3
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Complete 3 quizzes to unlock percentile ranking
               </p>
             </div>
           </CardContent>
@@ -178,14 +177,13 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
               Peer Ranking
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-muted-foreground mb-2">Coming Soon</div>
-              <p className="text-xs text-muted-foreground">
-                Peer ranking available after completing 3 quizzes
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                Completed: {data.completedQuizzes}/3 quizzes
+          <CardContent className="flex flex-col items-center justify-center py-6 sm:py-8 px-4">
+            <div className="text-center space-y-2">
+              <div className="text-xl sm:text-2xl font-bold text-muted-foreground">
+                {data.completedQuizzes}/3
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Complete 3 quizzes to unlock peer ranking
               </p>
             </div>
           </CardContent>
@@ -220,11 +218,11 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
               Overall Score
             </CardTitle>
           </CardHeader>
-          <CardContent className="flex flex-col items-center justify-center space-y-2 py-8">
-            <div className="text-center">
-              <div className="text-2xl font-bold text-muted-foreground mb-2">Coming Soon</div>
-              <p className="text-xs text-muted-foreground">
-                Complete your first quiz to see your overall score
+          <CardContent className="flex flex-col items-center justify-center py-6 sm:py-8 px-4">
+            <div className="text-center space-y-2">
+              <div className="text-xl sm:text-2xl font-bold text-muted-foreground">0/1</div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Complete your first quiz to see your score
               </p>
             </div>
           </CardContent>

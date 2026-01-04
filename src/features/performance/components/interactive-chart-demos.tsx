@@ -1,7 +1,7 @@
 // src/features/performance/components/interactive-chart-demos.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -11,7 +11,8 @@ import {
 } from "@/shared/components/ui/card";
 
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { TrendingUp, Calendar, Target } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import { TrendingUp, Calendar, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import {
   RadarChart,
   Radar,
@@ -114,10 +115,10 @@ export function PerformanceTimelineChart({
           </CardTitle>
           <CardDescription>Your accuracy over the last 30 days</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="h-[300px] flex items-center justify-center text-muted-foreground">
+        <CardContent className="flex items-center justify-center h-[300px]">
+          <p className="text-muted-foreground text-center px-4">
             No quiz data available yet. Start taking quizzes to see your progress!
-          </div>
+          </p>
         </CardContent>
       </Card>
     );
@@ -253,10 +254,10 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
           </CardTitle>
           <CardDescription>Your performance across all categories</CardDescription>
         </CardHeader>
-        <CardContent>
-          <div className="h-[400px] flex items-center justify-center text-muted-foreground">
+        <CardContent className="flex items-center justify-center h-[300px]">
+          <p className="text-muted-foreground text-center px-4">
             No category data available yet. Start taking quizzes to see your performance!
-          </div>
+          </p>
         </CardContent>
       </Card>
     );
@@ -329,6 +330,54 @@ export function ActivityHeatmap({
   loading = false,
 }: ActivityHeatmapProps) {
   const [error] = useState<string | null>(null);
+  const [monthsToShow, setMonthsToShow] = useState(12);
+  const [currentPeriodStart, setCurrentPeriodStart] = useState(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return now;
+  });
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Determine how many months to show based on container width
+  useEffect(() => {
+    const updateMonthsToShow = () => {
+      if (!containerRef.current) return;
+
+      const containerWidth = containerRef.current.offsetWidth;
+
+      // Each week needs minimum ~15px to be readable (10px cell + gaps + padding)
+      // Account for day labels (~24px) and card padding (~32px)
+      const availableWidth = containerWidth - 56;
+
+      // Calculate how many weeks we can comfortably fit
+      const weeksPerMonth = 4.33; // Average weeks per month
+      const minWidthPerWeek = 15;
+      const maxWeeks = Math.floor(availableWidth / minWidthPerWeek);
+
+      // Determine months: 12, 6, 4, or 3
+      let months;
+      if (maxWeeks >= weeksPerMonth * 12) months = 12; // ~52 weeks
+      else if (maxWeeks >= weeksPerMonth * 6) months = 6; // ~26 weeks
+      else if (maxWeeks >= weeksPerMonth * 4) months = 4; // ~17 weeks
+      else months = 3; // ~13 weeks minimum
+
+      setMonthsToShow(months);
+    };
+
+    // Use ResizeObserver for better performance
+    const resizeObserver = new ResizeObserver(() => {
+      updateMonthsToShow();
+    });
+
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+      updateMonthsToShow();
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
 
   const getColor = (questions: number) => {
     if (questions === 0) return "bg-muted/50 dark:bg-muted/30";
@@ -347,7 +396,7 @@ export function ActivityHeatmap({
             <Calendar className="h-5 w-5" />
             Activity Calendar
           </CardTitle>
-          <CardDescription>Your quiz activity over the past year</CardDescription>
+          <CardDescription>Your quiz activity for {new Date().getFullYear()}</CardDescription>
         </CardHeader>
         <CardContent>
           <Skeleton className="h-[200px] w-full" />
@@ -364,7 +413,7 @@ export function ActivityHeatmap({
             <Calendar className="h-5 w-5" />
             Activity Calendar
           </CardTitle>
-          <CardDescription>Your quiz activity over the past year</CardDescription>
+          <CardDescription>Your quiz activity for {new Date().getFullYear()}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[200px] flex items-center justify-center text-destructive">
@@ -383,7 +432,7 @@ export function ActivityHeatmap({
             <Calendar className="h-5 w-5" />
             Activity Calendar
           </CardTitle>
-          <CardDescription>Your quiz activity over the past year</CardDescription>
+          <CardDescription>Your quiz activity for {new Date().getFullYear()}</CardDescription>
         </CardHeader>
         <CardContent>
           <div className="h-[200px] flex items-center justify-center text-muted-foreground">
@@ -397,23 +446,27 @@ export function ActivityHeatmap({
   // Create a map for quick lookup
   const dataMap = new Map(data.map((d) => [d.date, d]));
 
-  // Start from one year ago
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
+  // Calculate start and end dates based on current period and months to show
+  const periodEnd = new Date(currentPeriodStart);
+  periodEnd.setHours(0, 0, 0, 0);
 
-  const oneYearAgo = new Date(today);
-  oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+  const periodStart = new Date(periodEnd);
+  periodStart.setMonth(periodStart.getMonth() - monthsToShow + 1);
+  periodStart.setDate(1); // First day of start month
 
-  // Find the first Sunday on or before one year ago
-  const startDate = new Date(oneYearAgo);
-  const dayOfWeek = startDate.getDay(); // 0 = Sunday, 1 = Monday, etc.
-  startDate.setDate(startDate.getDate() - dayOfWeek); // Go back to Sunday
+  // Find the first Sunday on or before the period start
+  const startDate = new Date(periodStart);
+  const dayOfWeek = startDate.getDay();
+  startDate.setDate(startDate.getDate() - dayOfWeek);
 
-  // Build all days from start to today
+  // End on the last day of the end month
+  const endDate = new Date(periodEnd.getFullYear(), periodEnd.getMonth() + 1, 0);
+
+  // Build all days from start to end
   const allDays: HeatmapData[] = [];
   const currentDate = new Date(startDate);
 
-  while (currentDate <= today) {
+  while (currentDate <= endDate) {
     const dateStr = currentDate.toISOString().split("T")[0];
     const dayData = dataMap.get(dateStr) || { date: dateStr, quizzes: 0, questions: 0 };
     allDays.push(dayData);
@@ -444,71 +497,157 @@ export function ActivityHeatmap({
     }
   });
 
+  // Navigation handlers
+  const goToPreviousPeriod = () => {
+    const newStart = new Date(currentPeriodStart);
+    newStart.setMonth(newStart.getMonth() - monthsToShow);
+    setCurrentPeriodStart(newStart);
+  };
+
+  const goToNextPeriod = () => {
+    const newStart = new Date(currentPeriodStart);
+    newStart.setMonth(newStart.getMonth() + monthsToShow);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    // Don't go beyond current month
+    if (newStart <= now) {
+      setCurrentPeriodStart(newStart);
+    }
+  };
+
+  const goToToday = () => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    setCurrentPeriodStart(now);
+  };
+
+  // Check if we can navigate forward
+  const canGoForward = () => {
+    const newStart = new Date(currentPeriodStart);
+    newStart.setMonth(newStart.getMonth() + monthsToShow);
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return newStart <= now;
+  };
+
+  // Format period description
+  const getPeriodDescription = () => {
+    const startMonth = periodStart.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    const endMonth = periodEnd.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    return startMonth === endMonth ? startMonth : `${startMonth} - ${endMonth}`;
+  };
+
   console.log("[ActivityHeatmap] Rendering:", {
     totalWeeks: weeks.length,
     totalDays: allDays.length,
+    monthsToShow,
+    periodStart: periodStart.toISOString(),
+    periodEnd: periodEnd.toISOString(),
     daysWithActivity: allDays.filter((d) => d.questions > 0).length,
     monthLabels: monthLabels.map((m) => `${m.month} (week ${m.weekIndex})`),
-    activeDates: allDays
-      .filter((d) => d.questions > 0)
-      .map((d) => ({ date: d.date, questions: d.questions, color: getColor(d.questions) })),
   });
 
   return (
-    <Card>
+    <Card ref={containerRef}>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Calendar className="h-5 w-5" />
-          Activity Calendar
-        </CardTitle>
-        <CardDescription>Your quiz activity over the past year</CardDescription>
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Activity Calendar
+            </CardTitle>
+            <CardDescription>{getPeriodDescription()}</CardDescription>
+          </div>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPreviousPeriod}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToToday}
+              disabled={
+                currentPeriodStart.getMonth() === new Date().getMonth() &&
+                currentPeriodStart.getFullYear() === new Date().getFullYear()
+              }
+              className="h-8 px-2 text-xs"
+            >
+              Today
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNextPeriod}
+              disabled={!canGoForward()}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
       </CardHeader>
       <CardContent>
         <div className="space-y-4">
-          {/* Statistics */}
-          {stats && (
-            <div className="flex items-center justify-center gap-6 text-sm border-b pb-4">
-              <div className="text-center">
-                <div className="font-semibold text-green-600 dark:text-green-400">
-                  {stats.avgQuestionsPerDay} questions
+          {/* Statistics - Only show if there's activity */}
+          {stats &&
+            (stats.avgQuestionsPerDay > 0 ||
+              stats.longestStreak > 0 ||
+              stats.currentStreak > 0) && (
+              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm border-b pb-4">
+                <div className="text-center">
+                  <div className="font-semibold text-green-600 dark:text-green-400">
+                    {stats.avgQuestionsPerDay}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Avg/day</div>
                 </div>
-                <div className="text-xs text-muted-foreground">Daily average</div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-blue-600 dark:text-blue-400">
-                  {stats.avgQuizzesPerDay} quizzes
+                <div className="text-center">
+                  <div className="font-semibold text-blue-600 dark:text-blue-400">
+                    {stats.avgQuizzesPerDay}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Quizzes/day</div>
                 </div>
-                <div className="text-xs text-muted-foreground">Daily average</div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-orange-600 dark:text-orange-400">
-                  {stats.longestStreak} days
+                <div className="text-center">
+                  <div className="font-semibold text-orange-600 dark:text-orange-400">
+                    {stats.longestStreak}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Longest</div>
                 </div>
-                <div className="text-xs text-muted-foreground">Longest streak</div>
-              </div>
-              <div className="text-center">
-                <div className="font-semibold text-purple-600 dark:text-purple-400">
-                  {stats.currentStreak} days
+                <div className="text-center">
+                  <div className="font-semibold text-purple-600 dark:text-purple-400">
+                    {stats.currentStreak}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Current</div>
                 </div>
-                <div className="text-xs text-muted-foreground">Current streak</div>
               </div>
-            </div>
-          )}
+            )}
 
-          <div className="overflow-x-auto pb-2">
-            <div className="inline-block">
-              {/* Month labels */}
-              <div className="flex mb-2 pl-8">
+          {/* CSS Grid based calendar */}
+          <div className="w-full overflow-x-auto">
+            <div className="min-w-0">
+              {/* Month labels with CSS Grid */}
+              <div
+                className="grid mb-2 text-[10px] sm:text-xs text-muted-foreground font-medium pl-6"
+                style={{
+                  gridTemplateColumns: `repeat(${weeks.length}, minmax(10px, 1fr))`,
+                  gap: "2px",
+                }}
+              >
                 {monthLabels.map((label, index) => {
                   const nextLabelIndex = monthLabels[index + 1]?.weekIndex || weeks.length;
-                  const widthInWeeks = nextLabelIndex - label.weekIndex;
-                  const widthPx = widthInWeeks * 12; // 10px width + 2px gap
+                  const span = nextLabelIndex - label.weekIndex;
+
+                  // Only show month label if it spans 3 or more weeks
+                  if (span < 3) return null;
 
                   return (
                     <div
                       key={index}
-                      className="text-xs text-muted-foreground font-medium"
-                      style={{ width: `${widthPx}px`, minWidth: `${widthPx}px` }}
+                      style={{ gridColumn: `${label.weekIndex + 1} / span ${span}` }}
                     >
                       {label.month}
                     </div>
@@ -516,51 +655,39 @@ export function ActivityHeatmap({
                 })}
               </div>
 
-              {/* Heatmap grid */}
-              <div className="flex">
+              {/* Calendar Grid */}
+              <div className="flex gap-2">
                 {/* Day labels */}
-                <div className="flex flex-col gap-[2px] mr-2">
-                  {["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"].map((day, index) => (
+                <div className="flex flex-col justify-between py-0.5">
+                  {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
                     <div key={index} className="h-[10px] flex items-center">
-                      <span className="text-[10px] text-muted-foreground w-6 text-right">
-                        {index % 2 === 1 ? day : ""}
+                      <span className="text-[9px] sm:text-[10px] text-muted-foreground w-3 text-right">
+                        {day}
                       </span>
                     </div>
                   ))}
                 </div>
 
-                {/* Weeks */}
-                <div className="flex gap-[2px]">
-                  {weeks.map((week, weekIndex) => (
-                    <div key={weekIndex} className="flex flex-col gap-[2px]">
-                      {week.map((day, dayIndex) => {
-                        const hasActivity = day.questions > 0;
-                        return (
-                          <div
-                            key={dayIndex}
-                            className={`w-[10px] h-[10px] rounded-sm ${getColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-2 hover:ring-primary" : "cursor-default"} transition-all`}
-                            title={`${new Date(day.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}\n${day.questions} question${day.questions !== 1 ? "s" : ""}\n${day.quizzes} quiz${day.quizzes !== 1 ? "zes" : ""}`}
-                          />
-                        );
-                      })}
-                    </div>
-                  ))}
+                {/* Activity grid - CSS Grid for automatic responsiveness */}
+                <div
+                  className="grid flex-1 gap-[2px]"
+                  style={{
+                    gridTemplateColumns: `repeat(${weeks.length}, minmax(10px, 1fr))`,
+                    gridTemplateRows: "repeat(7, 10px)",
+                    gridAutoFlow: "column",
+                  }}
+                >
+                  {allDays.map((day, index) => {
+                    const hasActivity = day.questions > 0;
+                    return (
+                      <div
+                        key={index}
+                        className={`rounded-sm ${getColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-2 hover:ring-primary" : "cursor-default"} transition-all min-w-[10px] min-h-[10px]`}
+                        title={`${new Date(day.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}\n${day.questions} question${day.questions !== 1 ? "s" : ""}\n${day.quizzes} quiz${day.quizzes !== 1 ? "zes" : ""}`}
+                      />
+                    );
+                  })}
                 </div>
-              </div>
-
-              {/* Legend */}
-              <div className="flex items-center justify-end gap-2 text-xs mt-4">
-                <span className="text-muted-foreground">Less</span>
-                <div className="flex gap-1">
-                  {[0, 5, 10, 20, 30, 40].map((level) => (
-                    <div
-                      key={level}
-                      className={`w-[10px] h-[10px] rounded-sm ${getColor(level)}`}
-                      title={`${level}+ questions`}
-                    />
-                  ))}
-                </div>
-                <span className="text-muted-foreground">More</span>
               </div>
             </div>
           </div>
