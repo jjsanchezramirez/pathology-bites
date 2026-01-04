@@ -157,15 +157,32 @@ export function QuizCard({ quiz, _onDelete, formatDate, formatTimeSpent }: QuizC
 
             {/* Bottom left: All metadata in one row */}
             <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+              {/* Total Questions */}
               <div className="flex items-center gap-1">
                 <Hash className="h-4 w-4" />
-                <span>
-                  {quiz.status === "in_progress"
-                    ? `${(quiz.currentQuestionIndex || 0) + 1} of ${quiz.totalQuestions} (${Math.round((((quiz.currentQuestionIndex || 0) + 1) / quiz.totalQuestions) * 100)}%)`
-                    : `${quiz.totalQuestions} questions`}
-                </span>
+                <span>{quiz.totalQuestions} questions</span>
               </div>
 
+              {/* Questions Remaining (for in-progress quizzes) */}
+              {quiz.status === "in_progress" && (
+                <div className="flex items-center gap-1">
+                  <Target className="h-4 w-4" />
+                  <span>{quiz.totalQuestions - (quiz.currentQuestionIndex || 0)} remaining</span>
+                </div>
+              )}
+
+              {/* Time Remaining (for in-progress timed quizzes) */}
+              {quiz.status === "in_progress" &&
+                quiz.isTimedMode &&
+                quiz.timeRemaining !== undefined &&
+                quiz.timeRemaining !== null && (
+                  <div className="flex items-center gap-1">
+                    <Clock className="h-4 w-4" />
+                    <span>{timeFormatter(quiz.timeRemaining)} left</span>
+                  </div>
+                )}
+
+              {/* Score (for completed quizzes) */}
               {quiz.score !== undefined && quiz.score !== null && (
                 <div className="flex items-center gap-1">
                   <Trophy className="h-4 w-4" />
@@ -193,7 +210,9 @@ export function QuizCard({ quiz, _onDelete, formatDate, formatTimeSpent }: QuizC
                 <span>{getQuestionTypeDisplay(quiz)}</span>
               </div>
 
-              {quiz.totalTimeSpent !== undefined &&
+              {/* Total Time Spent (for completed quizzes only, not in-progress) */}
+              {quiz.status === "completed" &&
+                quiz.totalTimeSpent !== undefined &&
                 quiz.totalTimeSpent !== null &&
                 quiz.totalTimeSpent > 0 && (
                   <div className="flex items-center gap-1">
@@ -238,16 +257,39 @@ export function QuizCard({ quiz, _onDelete, formatDate, formatTimeSpent }: QuizC
           </div>
 
           <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+            {/* Total Questions */}
             <div className="flex items-center gap-1">
               <Hash className="h-3.5 w-3.5" />
               <span>{quiz.totalQuestions} Qs</span>
             </div>
+
+            {/* Questions Remaining (for in-progress) */}
+            {quiz.status === "in_progress" && (
+              <div className="flex items-center gap-1">
+                <Target className="h-3.5 w-3.5" />
+                <span>{quiz.totalQuestions - (quiz.currentQuestionIndex || 0)} left</span>
+              </div>
+            )}
+
+            {/* Time Remaining (for in-progress timed) */}
+            {quiz.status === "in_progress" &&
+              quiz.isTimedMode &&
+              quiz.timeRemaining !== undefined &&
+              quiz.timeRemaining !== null && (
+                <div className="flex items-center gap-1">
+                  <Clock className="h-3.5 w-3.5" />
+                  <span>{timeFormatter(quiz.timeRemaining)} left</span>
+                </div>
+              )}
+
+            {/* Score (for completed) */}
             {quiz.score !== undefined && quiz.score !== null && (
               <div className="flex items-center gap-1">
                 <Trophy className="h-3.5 w-3.5" />
                 <span>{Math.round(quiz.score)}%</span>
               </div>
             )}
+
             <div className="flex items-center gap-1">
               {getModeIcon(quiz)}
               <span>{getModeDisplayText(quiz.mode)}</span>
@@ -256,7 +298,10 @@ export function QuizCard({ quiz, _onDelete, formatDate, formatTimeSpent }: QuizC
               {getTimingIcon(quiz)}
               <span>{quiz.isTimedMode ? "Timed" : "Untimed"}</span>
             </div>
-            {quiz.totalTimeSpent !== undefined &&
+
+            {/* Total Time Spent (for completed only) */}
+            {quiz.status === "completed" &&
+              quiz.totalTimeSpent !== undefined &&
               quiz.totalTimeSpent !== null &&
               quiz.totalTimeSpent > 0 && (
                 <div className="flex items-center gap-1">
@@ -264,6 +309,7 @@ export function QuizCard({ quiz, _onDelete, formatDate, formatTimeSpent }: QuizC
                   <span>{timeFormatter(quiz.totalTimeSpent)}</span>
                 </div>
               )}
+
             <div className="flex items-center gap-1">
               <Calendar className="h-3.5 w-3.5" />
               <span>{formatShortDate(quiz.createdAt)}</span>
