@@ -282,12 +282,55 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       metricsRef.current.responseTimeSum += responseTime;
       metricsRef.current.responseCount += 1;
 
-      // Initialize state machine with fetched data
-      console.log("[Hybrid] Initializing quiz with status:", status);
-      stateActions.initializeQuiz(questions, config, status);
-
-      // Try to recover from localStorage first (need this before timer init)
+      // Try to recover from localStorage first (needed before initialization)
       const localData = recoverLocalState();
+
+      // Prepare existing state to pass to INITIALIZE (prioritize localStorage over server data)
+      const answersToRestore = localData?.answers || existingAnswers;
+      let existingAnswersMap: Map<string, QuizAnswer> | undefined;
+      let currentIndex: number | undefined;
+      let totalTimeSpentToRestore: number | undefined;
+
+      // Convert answers array to Map
+      if (answersToRestore && answersToRestore.length > 0) {
+        existingAnswersMap = new Map();
+        answersToRestore.forEach((answer) => {
+          const questionId = Array.isArray(answer) ? answer[0] : answer.questionId;
+          const answerData = Array.isArray(answer) ? answer[1] : answer;
+          existingAnswersMap!.set(questionId, answerData);
+        });
+
+        // Find current question index
+        if (localData?.currentIndex !== undefined) {
+          // Use saved position from localStorage
+          currentIndex = localData.currentIndex;
+        } else {
+          // Find first unanswered question when resuming
+          const answeredQuestionIds = new Set(existingAnswersMap.keys());
+          const firstUnansweredIndex = questions.findIndex((q) => !answeredQuestionIds.has(q.id));
+          currentIndex = firstUnansweredIndex !== -1 ? firstUnansweredIndex : 0;
+        }
+
+        // Get total time spent
+        totalTimeSpentToRestore = localData?.totalTimeSpent || 0;
+      }
+
+      console.log("[Hybrid] Initializing quiz with:", {
+        status,
+        answersCount: existingAnswersMap?.size || 0,
+        currentIndex: currentIndex ?? 0,
+        totalTimeSpent: totalTimeSpentToRestore ?? 0,
+      });
+
+      // Initialize state machine with fetched data AND existing state
+      stateActions.initializeQuiz(
+        questions,
+        config,
+        status,
+        existingAnswersMap,
+        currentIndex,
+        totalTimeSpentToRestore
+      );
 
       // Initialize timer for timed quizzes
       if (config.timing === "timed") {
@@ -311,35 +354,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         });
 
         setTimeRemaining(restoredTime);
-      }
-
-      // Restore existing answers (prioritize localStorage over server data)
-      const answersToRestore = localData?.answers || existingAnswers;
-      if (answersToRestore && answersToRestore.length > 0) {
-        answersToRestore.forEach((answer) => {
-          const questionId = Array.isArray(answer) ? answer[0] : answer.questionId;
-          const selectedOptionId = Array.isArray(answer)
-            ? answer[1].selectedOptionId
-            : answer.selectedOptionId;
-          stateActions.submitAnswer(questionId, selectedOptionId);
-        });
-      }
-
-      // Navigate to appropriate question after restoring answers
-      if (localData?.currentIndex !== undefined) {
-        // Use saved position if available from localStorage
-        stateActions.navigateToQuestion(localData.currentIndex);
-      } else if (answersToRestore && answersToRestore.length > 0) {
-        // Find first unanswered question when resuming
-        const answeredQuestionIds = new Set(
-          answersToRestore.map((a) => (Array.isArray(a) ? a[0] : a.questionId))
-        );
-        const firstUnansweredIndex = questions.findIndex((q) => !answeredQuestionIds.has(q.id));
-
-        if (firstUnansweredIndex !== -1) {
-          console.log(`[Hybrid] Navigating to first unanswered question: ${firstUnansweredIndex}`);
-          stateActions.navigateToQuestion(firstUnansweredIndex);
-        }
       }
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
@@ -532,6 +546,9 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     };
   }, [quizState.config.timing, quizState.status, timeRemaining, isTimerPaused, handleCompleteQuiz]);
 
+  // Track if we're intentionally exiting (Save & Exit button)
+  const isIntentionalExitRef = useRef(false);
+
   // Auto-save on navigation away from quiz
   useEffect(() => {
     if (!AUTO_SAVE_CONFIG.enableAutoSaveOnNavigation || !autoSaveManager.current) return;
@@ -544,6 +561,11 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
     // Use beforeunload for now (Next.js 15 App Router doesn't have route change events)
     const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      // Skip dialog if user clicked Save & Exit button
+      if (isIntentionalExitRef.current) {
+        return;
+      }
+
       if (quizState.status === "in_progress" && quizState.answers.size > 0) {
         handleRouteChange();
         e.preventDefault();
@@ -618,6 +640,9 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       if (!autoSaveManager.current) return;
 
       try {
+        // Mark as intentional exit to prevent browser dialog
+        isIntentionalExitRef.current = true;
+
         // Save current state to database
         await autoSaveManager.current.autoSave(sessionId, quizState, "manual", timeRemaining);
 
@@ -629,6 +654,8 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       } catch (error) {
         console.error("Failed to save and exit:", error);
         toast.error("Failed to save quiz. Please try again.");
+        // Reset flag on error so user can try again
+        isIntentionalExitRef.current = false;
       }
     }, [sessionId, quizState, router, timeRemaining]),
 

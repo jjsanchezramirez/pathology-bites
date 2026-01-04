@@ -23,6 +23,9 @@ export type QuizAction =
         questions: QuizQuestion[];
         config: QuizState["config"];
         status?: string;
+        existingAnswers?: Map<string, QuizAnswer>;
+        currentQuestionIndex?: number;
+        totalTimeSpent?: number;
       };
     }
   | { type: "START_QUIZ" }
@@ -55,22 +58,42 @@ export function quizStateReducer(state: QuizState, action: QuizAction): QuizStat
         initialStatus
       );
 
+      // Use existing answers and currentIndex if provided (for resuming quizzes)
+      const initialAnswers = action.payload.existingAnswers ?? new Map();
+      const initialQuestionIndex = action.payload.currentQuestionIndex ?? 0;
+      const initialTimeSpent = action.payload.totalTimeSpent ?? 0;
+
+      // Calculate progress from existing answers
+      const answeredCount = initialAnswers.size;
+      const correctCount = Array.from(initialAnswers.values()).filter((a) => a.isCorrect).length;
+      const incorrectCount = answeredCount - correctCount;
+      const totalQuestions = action.payload.questions.length;
+
+      console.log(
+        "[State Machine] INITIALIZE - using existing state:",
+        {
+          answersCount: answeredCount,
+          currentIndex: initialQuestionIndex,
+          timeSpent: initialTimeSpent
+        }
+      );
+
       return {
         ...state,
         sessionId: action.payload.sessionId,
         questions: action.payload.questions,
-        totalQuestions: action.payload.questions.length,
+        totalQuestions,
         config: action.payload.config,
         status: initialStatus,
-        currentQuestionIndex: 0,
-        answers: new Map(),
+        currentQuestionIndex: initialQuestionIndex,
+        answers: initialAnswers,
         progress: {
-          answered: 0,
-          correct: 0,
-          incorrect: 0,
-          percentage: 0,
+          answered: answeredCount,
+          correct: correctCount,
+          incorrect: incorrectCount,
+          percentage: totalQuestions > 0 ? Math.round((answeredCount / totalQuestions) * 100) : 0,
         },
-        totalTimeSpent: 0,
+        totalTimeSpent: initialTimeSpent,
         syncStatus: {
           pendingChanges: true,
           isOnline: navigator?.onLine ?? true,

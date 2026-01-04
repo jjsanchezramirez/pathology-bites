@@ -28,7 +28,10 @@ export interface QuizStateMachineActions {
   initializeQuiz: (
     questions: QuizQuestion[],
     config?: Partial<QuizState["config"]>,
-    status?: string
+    status?: string,
+    existingAnswers?: Map<string, QuizAnswer>,
+    currentQuestionIndex?: number,
+    totalTimeSpent?: number
   ) => void;
   startQuiz: () => void;
   pauseQuiz: () => void;
@@ -146,7 +149,14 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
   // Actions object
   const actions: QuizStateMachineActions = {
     initializeQuiz: useCallback(
-      (questions: QuizQuestion[], config?: Partial<QuizState["config"]>, status?: string) => {
+      (
+        questions: QuizQuestion[],
+        config?: Partial<QuizState["config"]>,
+        status?: string,
+        existingAnswers?: Map<string, QuizAnswer>,
+        currentQuestionIndex?: number,
+        totalTimeSpent?: number
+      ) => {
         const fullConfig = {
           mode: "tutor" as const,
           timing: "untimed" as const,
@@ -162,6 +172,9 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
             questions,
             config: fullConfig,
             status,
+            existingAnswers,
+            currentQuestionIndex,
+            totalTimeSpent,
           },
         });
       },
