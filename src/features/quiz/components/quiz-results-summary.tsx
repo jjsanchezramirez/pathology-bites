@@ -4,9 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { CircularProgress } from "@/shared/components/ui/circular-progress";
-import { Clock, Target, TrendingUp, RotateCcw, Trophy } from "lucide-react";
+import { Clock, Target, TrendingUp, RotateCcw } from "lucide-react";
 import { QuizResult } from "@/features/quiz/types/quiz";
-import { AchievementLottie } from "@/features/achievements/components/achievement-lottie";
 import { AchievementCelebrationModal } from "@/features/achievements/components/achievement-celebration-modal";
 import Link from "next/link";
 import { useEffect, useState } from "react";
@@ -167,44 +166,6 @@ export function QuizResultsSummary({
           </div>
         </CardContent>
       </Card>
-
-      {/* New Achievements Section */}
-      {result.newAchievements && result.newAchievements.length > 0 && (
-        <Card className="border-2 border-yellow-400 bg-gradient-to-br from-yellow-50 to-orange-50 dark:from-yellow-950/20 dark:to-orange-950/20">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-yellow-700 dark:text-yellow-400">
-              <Trophy className="h-6 w-6" />
-              New Achievements Unlocked!
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {result.newAchievements.map((achievement) => (
-                <Card key={achievement.id} className="bg-white dark:bg-gray-800">
-                  <CardContent className="pt-6 pb-4 px-4 text-center">
-                    {/* Lottie Animation */}
-                    <div className="mb-4 flex justify-center">
-                      <AchievementLottie
-                        animationType={achievement.animationType}
-                        isUnlocked={true}
-                        className="w-24 h-24"
-                      />
-                    </div>
-
-                    {/* Title */}
-                    <h3 className="font-semibold mb-2 text-yellow-700 dark:text-yellow-400">
-                      {achievement.title}
-                    </h3>
-
-                    {/* Description */}
-                    <p className="text-sm text-muted-foreground">{achievement.description}</p>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )}
 
       {/* Metrics Grid */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
