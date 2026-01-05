@@ -72,10 +72,10 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
 
               const activityContent = (
                 <div
-                  className={`flex items-center gap-3 rounded-lg p-3 transition-all duration-200 ${
+                  className={`flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 ${
                     activity.type === "quiz_started"
                       ? "bg-[hsl(var(--chart-2))]/5"
-                      : "border"
+                      : ""
                   } ${
                     navigationUrl
                       ? "hover:bg-muted/50 hover:border-[hsl(var(--chart-1))]/30 cursor-pointer"
