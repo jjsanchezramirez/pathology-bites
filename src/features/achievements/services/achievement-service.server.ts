@@ -25,39 +25,70 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     .eq("status", "completed")
     .gte("score", 100);
 
-  // Get recent accuracy (last 10 quizzes)
-  const { data: recentQuizzes } = await supabase
-    .from("quiz_sessions")
-    .select("score")
-    .eq("user_id", userId)
-    .eq("status", "completed")
-    .order("created_at", { ascending: false })
-    .limit(10);
+  // Get accuracy over different numbers of recent quizzes
+  const getAccuracyOverLastN = async (n: number): Promise<number> => {
+    const { data: quizzes } = await supabase
+      .from("quiz_sessions")
+      .select("score")
+      .eq("user_id", userId)
+      .eq("status", "completed")
+      .order("created_at", { ascending: false })
+      .limit(n);
 
-  const recentAccuracy =
-    recentQuizzes && recentQuizzes.length > 0
-      ? recentQuizzes.reduce((sum, q) => sum + (q.score || 0), 0) / recentQuizzes.length
-      : 0;
+    if (!quizzes || quizzes.length < n) return -1; // Not enough quizzes
 
-  console.log("Recent quizzes:", recentQuizzes);
-  console.log("Recent accuracy calculated:", recentAccuracy);
+    return quizzes.reduce((sum, q) => sum + (q.score || 0), 0) / quizzes.length;
+  };
 
-  // Get unique subjects answered (for differential diagnosis achievements)
-  const { data: uniqueSubjectsData } = await supabase
+  const accuracyOver3 = await getAccuracyOverLastN(3);
+  const accuracyOver5 = await getAccuracyOverLastN(5);
+  const accuracyOver8 = await getAccuracyOverLastN(8);
+  const accuracyOver10 = await getAccuracyOverLastN(10);
+  const accuracyOver12 = await getAccuracyOverLastN(12);
+  const accuracyOver15 = await getAccuracyOverLastN(15);
+
+  console.log("Accuracy calculations:", {
+    accuracyOver3,
+    accuracyOver5,
+    accuracyOver8,
+    accuracyOver10,
+    accuracyOver12,
+    accuracyOver15,
+  });
+
+  // Get correct answers grouped by subject (for differential diagnosis achievements)
+  const { data: correctAttempts } = await supabase
     .from("quiz_attempts")
     .select("question_id")
     .eq("user_id", userId)
     .eq("is_correct", true);
 
-  // Get unique category_ids from the questions
-  const questionIds = uniqueSubjectsData?.map((a) => a.question_id) || [];
+  const questionIds = correctAttempts?.map((a) => a.question_id) || [];
   const { data: questionsData } = await supabase
     .from("questions")
     .select("category_id")
     .in("id", questionIds.length > 0 ? questionIds : ["00000000-0000-0000-0000-000000000000"]); // Dummy ID if no questions
 
-  const uniqueSubjects = new Set(questionsData?.map((q) => q.category_id).filter(Boolean) || [])
-    .size;
+  // Count correct answers per subject
+  const subjectCounts = new Map<string, number>();
+  questionsData?.forEach((q) => {
+    if (q.category_id) {
+      subjectCounts.set(q.category_id, (subjectCounts.get(q.category_id) || 0) + 1);
+    }
+  });
+
+  const subjectsWith10Questions = Array.from(subjectCounts.values()).filter(
+    (count) => count >= 10
+  ).length;
+  const subjectsWith25Questions = Array.from(subjectCounts.values()).filter(
+    (count) => count >= 25
+  ).length;
+  const subjectsWith50Questions = Array.from(subjectCounts.values()).filter(
+    (count) => count >= 50
+  ).length;
+  const subjectsWith100Questions = Array.from(subjectCounts.values()).filter(
+    (count) => count >= 100
+  ).length;
 
   // Get total number of categories that have questions
   const { data: categoriesWithQuestions } = await supabase
@@ -119,8 +150,8 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     longestStreak = 1;
 
     for (let i = 1; i < sortedDates.length; i++) {
-      const prevDate = new Date(sortedDates[i - 1]);
-      const currDate = new Date(sortedDates[i]);
+      const prevDate = new Date(sortedDates[i - 1] as string);
+      const currDate = new Date(sortedDates[i] as string);
 
       // Calculate difference in days
       const diffTime = currDate.getTime() - prevDate.getTime();
@@ -147,64 +178,98 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     .eq("status", "completed")
     .eq("score", 100); // Perfect score only
 
-  let speedRecords5min = 0; // 10 questions in 5 min
-  let speedRecords2min = 0; // 10 questions in 2 min
-  let speedRecords25in5min = 0; // 25 questions in 5 min
-  let speedRecords25in2min = 0; // 25 questions in 2 min
+  let speedRecords10in6min = 0; // 10 questions in 6 min
+  let speedRecords10in3min = 0; // 10 questions in 3 min
+  let speedRecords25in12min = 0; // 25 questions in 12 min
+  let speedRecords25in8min = 0; // 25 questions in 8 min
+  let speedRecords25in4min = 0; // 25 questions in 4 min
+  let speedRecords50in14min = 0; // 50 questions in 14 min
+  let speedRecords50in11min = 0; // 50 questions in 11 min
+  let speedRecords50in8min = 0; // 50 questions in 8 min
 
   if (perfectQuizzes && perfectQuizzes.length > 0) {
     perfectQuizzes.forEach((quiz) => {
       const totalQuestions = quiz.total_questions;
       const totalTime = quiz.total_time_spent || 0;
 
-      // Count each qualifying quiz (not just set to 1)
+      // Count each qualifying quiz
       if (totalQuestions >= 10) {
-        if (totalTime <= 300) {
-          // 5 minutes = 300 seconds
-          speedRecords5min++;
+        if (totalTime <= 360) {
+          // 6 minutes = 360 seconds
+          speedRecords10in6min++;
         }
-        if (totalTime <= 120) {
-          // 2 minutes = 120 seconds
-          speedRecords2min++;
+        if (totalTime <= 180) {
+          // 3 minutes = 180 seconds
+          speedRecords10in3min++;
         }
       }
 
-      // Check for 25 questions in 5 min or 2 min
       if (totalQuestions >= 25) {
-        if (totalTime <= 300) {
-          // 5 minutes = 300 seconds
-          speedRecords25in5min++;
+        if (totalTime <= 720) {
+          // 12 minutes = 720 seconds
+          speedRecords25in12min++;
         }
-        if (totalTime <= 120) {
-          // 2 minutes = 120 seconds
-          speedRecords25in2min++;
+        if (totalTime <= 480) {
+          // 8 minutes = 480 seconds
+          speedRecords25in8min++;
+        }
+        if (totalTime <= 240) {
+          // 4 minutes = 240 seconds
+          speedRecords25in4min++;
+        }
+      }
+
+      if (totalQuestions >= 50) {
+        if (totalTime <= 840) {
+          // 14 minutes = 840 seconds
+          speedRecords50in14min++;
+        }
+        if (totalTime <= 660) {
+          // 11 minutes = 660 seconds
+          speedRecords50in11min++;
+        }
+        if (totalTime <= 480) {
+          // 8 minutes = 480 seconds
+          speedRecords50in8min++;
         }
       }
     });
   }
 
-  console.log(
-    "Speed records - 10in5:",
-    speedRecords5min,
-    "10in2:",
-    speedRecords2min,
-    "25in5:",
-    speedRecords25in5min,
-    "25in2:",
-    speedRecords25in2min
-  );
+  console.log("Speed records:", {
+    speedRecords10in6min,
+    speedRecords10in3min,
+    speedRecords25in12min,
+    speedRecords25in8min,
+    speedRecords25in4min,
+    speedRecords50in14min,
+    speedRecords50in11min,
+    speedRecords50in8min,
+  });
 
   const stats = {
     totalQuizzes: totalQuizzes || 0,
     perfectScores: perfectScores || 0,
     currentStreak,
     longestStreak,
-    speedRecords5min,
-    speedRecords2min,
-    speedRecords25in5min,
-    speedRecords25in2min,
-    recentAccuracy,
-    uniqueSubjects,
+    speedRecords10in6min,
+    speedRecords10in3min,
+    speedRecords25in12min,
+    speedRecords25in8min,
+    speedRecords25in4min,
+    speedRecords50in14min,
+    speedRecords50in11min,
+    speedRecords50in8min,
+    accuracyOver3,
+    accuracyOver5,
+    accuracyOver8,
+    accuracyOver10,
+    accuracyOver12,
+    accuracyOver15,
+    subjectsWith10Questions,
+    subjectsWith25Questions,
+    subjectsWith50Questions,
+    subjectsWith100Questions,
     totalCategories,
   };
 
@@ -305,7 +370,9 @@ export async function getRecentUnshownAchievements(
     return [];
   }
 
-  console.log(`[Achievements] Found ${recentAchievements?.length || 0} recent unshown achievements`);
+  console.log(
+    `[Achievements] Found ${recentAchievements?.length || 0} recent unshown achievements`
+  );
 
   // Transform database records to AchievementDefinition format
   return (
