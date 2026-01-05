@@ -16,11 +16,7 @@ import {
 import { useAuth } from "@/shared/hooks/use-auth";
 import { userSettingsService } from "@/shared/services/user-settings";
 import { RecentActivity } from "@/features/dashboard/services/service";
-import {
-  PageErrorBoundary,
-  FeatureErrorBoundary,
-  ScrollReveal,
-} from "@/shared/components/common";
+import { PageErrorBoundary, FeatureErrorBoundary, ScrollReveal } from "@/shared/components/common";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 
 interface DashboardStats {

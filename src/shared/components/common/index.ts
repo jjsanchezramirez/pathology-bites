@@ -23,5 +23,7 @@ export * from "./scroll-to-top";
 export * from "./simple-image-viewer";
 export * from "./theme-mode-toggle";
 export * from "./virtual-slide-search-engine";
+export * from "./access-denied";
+export * from "./page-error";
 export * from "./why-choose-pathology-bites";
 export * from "../error-boundaries";

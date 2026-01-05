@@ -5,6 +5,7 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Button } from "@/shared/components/ui/button";
 import { BookOpen, Target, TrendingUp, Play, Award, Trophy } from "lucide-react";
 import Link from "next/link";
+import { format } from "date-fns";
 import { RecentActivity } from "@/features/dashboard/services/service";
 
 interface StudentRecentActivityProps {
@@ -77,7 +78,7 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
                       </div>
                     )}
                     <div className="text-xs text-muted-foreground whitespace-nowrap">
-                      {activity.timestamp}
+                      {format(new Date(activity.timestamp), "MMM d, yyyy")}
                     </div>
                   </div>
                 </div>
