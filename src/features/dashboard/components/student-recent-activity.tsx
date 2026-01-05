@@ -72,13 +72,13 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
 
               const activityContent = (
                 <div
-                  className={`flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 ${
+                  className={`flex items-center gap-3 rounded-lg p-3 transition-all duration-200 ${
+                    activity.type === "quiz_started"
+                      ? "bg-[hsl(var(--chart-2))]/5"
+                      : "border"
+                  } ${
                     navigationUrl
                       ? "hover:bg-muted/50 hover:border-[hsl(var(--chart-1))]/30 cursor-pointer"
-                      : ""
-                  } ${
-                    activity.type === "quiz_started"
-                      ? "bg-[hsl(var(--chart-2))]/5 border-[hsl(var(--chart-2))]/20"
                       : ""
                   }`}
                 >
@@ -111,30 +111,31 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium leading-tight truncate mb-0.5">
-                      {activity.title}
-                    </p>
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <p className="text-sm font-medium leading-tight truncate">
+                        {activity.title}
+                      </p>
+                      {/* Score display - inline with title */}
+                      {activity.score !== undefined && (
+                        <span
+                          className={`text-xs font-semibold px-1.5 py-0.5 rounded whitespace-nowrap ${
+                            activity.score >= 80
+                              ? "text-[hsl(var(--chart-1))] bg-[hsl(var(--chart-1))]/10"
+                              : activity.score >= 60
+                                ? "text-[hsl(var(--chart-4))] bg-[hsl(var(--chart-4))]/10"
+                                : "text-[hsl(var(--chart-5))] bg-[hsl(var(--chart-5))]/10"
+                          }`}
+                        >
+                          Score {activity.score}%
+                        </span>
+                      )}
+                    </div>
                     <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">
                       {activity.description}
                     </p>
                   </div>
 
                   <div className="flex items-center gap-2">
-                    {/* Score display */}
-                    {activity.score !== undefined && (
-                      <div
-                        className={`text-xs font-semibold px-2 py-1 rounded ${
-                          activity.score >= 80
-                            ? "text-[hsl(var(--chart-1))] bg-[hsl(var(--chart-1))]/10"
-                            : activity.score >= 60
-                              ? "text-[hsl(var(--chart-4))] bg-[hsl(var(--chart-4))]/10"
-                              : "text-[hsl(var(--chart-5))] bg-[hsl(var(--chart-5))]/10"
-                        }`}
-                      >
-                        {activity.score}%
-                      </div>
-                    )}
-
                     {/* Quiz action button */}
                     {quizAction && navigationUrl && (
                       <Link href={navigationUrl}>
