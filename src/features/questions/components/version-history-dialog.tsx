@@ -64,12 +64,6 @@ export function VersionHistoryDialog({
   // Use protected dialog hook to prevent immediate closing
   const handleOpenChange = useProtectedDialog(open, onOpenChange);
 
-  useEffect(() => {
-    if (open && questionId) {
-      fetchVersionHistory();
-    }
-  }, [open, questionId, fetchVersionHistory]);
-
   const fetchVersionHistory = async () => {
     if (!questionId) return;
 
@@ -115,6 +109,13 @@ export function VersionHistoryDialog({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (open && questionId) {
+      fetchVersionHistory();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, questionId]);
 
   const toggleVersionExpansion = (versionId: string) => {
     const newExpanded = new Set(expandedVersions);
