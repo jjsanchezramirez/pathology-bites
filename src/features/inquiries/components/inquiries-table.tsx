@@ -31,10 +31,6 @@ export function InquiriesTable({ onInquiriesChange }: InquiriesTableProps) {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const supabase = createClient();
 
-  useEffect(() => {
-    fetchTabCounts();
-  }, [refreshTrigger, fetchTabCounts]);
-
   const fetchTabCounts = async () => {
     try {
       const { data: inquiries, error } = await supabase
@@ -61,6 +57,11 @@ export function InquiriesTable({ onInquiriesChange }: InquiriesTableProps) {
       console.error("Error calculating tab counts:", error);
     }
   };
+
+  useEffect(() => {
+    fetchTabCounts();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshTrigger]);
 
   const handleInquiriesChange = () => {
     // Trigger a refresh of all tabs by incrementing the refresh trigger
