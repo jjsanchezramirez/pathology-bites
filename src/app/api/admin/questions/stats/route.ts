@@ -72,8 +72,8 @@ export async function GET() {
       ) || {};
 
     // Get total categories with questions
-    const { data: categoriesWithQuestions, error: categoriesError } = await supabase
-      .from("question_categories")
+    const { data: questionsWithCategories, error: categoriesError } = await supabase
+      .from("questions")
       .select("category_id")
       .not("category_id", "is", null);
 
@@ -82,7 +82,7 @@ export async function GET() {
       throw categoriesError;
     }
 
-    const uniqueCategories = new Set(categoriesWithQuestions?.map((qc) => qc.category_id) || []);
+    const uniqueCategories = new Set(questionsWithCategories?.map((q) => q.category_id) || []);
     const totalCategoriesWithQuestions = uniqueCategories.size;
 
     // Get total question sets with questions
