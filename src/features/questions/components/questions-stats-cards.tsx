@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { FileQuestion, BookOpen, FolderTree } from "lucide-react";
+import { createClient } from "@/shared/services/client";
 
 interface QuestionStats {
   totalPublishedQuestions: number;
@@ -12,55 +13,63 @@ interface QuestionStats {
 }
 
 export function QuestionsStatsCards() {
-  const [stats, setStats] = useState<QuestionStats | null>(null);
+  const [stats, setStats] = useState<QuestionStats>({
+    totalPublishedQuestions: 0,
+    totalQuestionSetsWithQuestions: 0,
+    totalCategoriesWithQuestions: 0,
+  });
   const [loading, setLoading] = useState(true);
+
+  const supabase = createClient();
 
   useEffect(() => {
     const fetchStats = async () => {
       try {
-        const response = await fetch("/api/admin/questions/stats", {
-          credentials: "include",
-        });
-        if (response.ok) {
-          const data = await response.json();
-          console.log("Stats API response:", data);
-          if (data.success) {
-            setStats(data.data);
-          } else {
-            console.error("Stats API returned success: false", data);
-          }
-        } else {
-          console.error("Stats API response not ok:", response.status, await response.text());
+        setLoading(true);
+
+        // Get all questions
+        const { data: questions, error } = await supabase
+          .from("questions")
+          .select("status, question_set_id, category_id");
+
+        if (error) {
+          console.error("Error fetching questions for stats:", error);
+          return;
         }
+
+        const questionsData = questions || [];
+
+        // Calculate statistics
+        const totalPublishedQuestions = questionsData.filter(
+          (q) => q.status === "published"
+        ).length;
+
+        const uniqueQuestionSets = new Set(
+          questionsData.filter((q) => q.question_set_id).map((q) => q.question_set_id)
+        );
+        const totalQuestionSetsWithQuestions = uniqueQuestionSets.size;
+
+        const uniqueCategories = new Set(
+          questionsData.filter((q) => q.category_id).map((q) => q.category_id)
+        );
+        const totalCategoriesWithQuestions = uniqueCategories.size;
+
+        setStats({
+          totalPublishedQuestions,
+          totalQuestionSetsWithQuestions,
+          totalCategoriesWithQuestions,
+        });
       } catch (error) {
-        console.error("Error fetching question statistics:", error);
+        console.error("Unexpected error fetching question statistics:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchStats();
-  }, []);
+  }, [supabase]);
 
   if (loading) {
-    return (
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {[1, 2, 3].map((i) => (
-          <Card key={i}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Loading...</CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">—</div>
-              <p className="text-xs text-muted-foreground">Fetching data...</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
-    );
-  }
-
-  if (!stats) {
     return null;
   }
 
