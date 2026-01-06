@@ -4,6 +4,7 @@
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 import { QuestionsTable } from "@/features/questions/components/questions-table";
+import { QuestionsStatsCards } from "@/features/questions/components/questions-stats-cards";
 import {
   Card,
   CardContent,
@@ -75,6 +76,9 @@ export default function QuestionsPage() {
         <h1 className="text-3xl font-bold tracking-tight">{content.title}</h1>
         <p className="text-muted-foreground">{content.description}</p>
       </div>
+
+      {/* Statistics Cards */}
+      <QuestionsStatsCards />
 
       <Card>
         <CardHeader>
