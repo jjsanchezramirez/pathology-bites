@@ -68,7 +68,11 @@ export function GeneralInquiriesTable({
 
   const fetchInquiries = async () => {
     try {
-      setLoading(true);
+      // Only show loading on initial load, not when switching tabs
+      if (inquiries.length === 0) {
+        setLoading(true);
+      }
+
       let query = supabase.from("inquiries").select("*");
 
       // Apply type filter
@@ -251,16 +255,10 @@ export function GeneralInquiriesTable({
 
   if (loading) {
     return (
-      <div className="space-y-4">
-        <div className="flex gap-4">
-          <div className="h-10 w-64 bg-muted rounded animate-pulse" />
-          <div className="h-10 w-32 bg-muted rounded animate-pulse" />
-        </div>
-        <div className="border rounded-lg">
-          <div className="h-12 bg-muted rounded-t-lg animate-pulse" />
-          {[1, 2, 3, 4, 5].map((i) => (
-            <div key={i} className="h-16 border-t bg-muted/50 animate-pulse" />
-          ))}
+      <div className="flex items-center justify-center py-12">
+        <div className="text-center space-y-3">
+          <div className="h-8 w-8 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading inquiries...</p>
         </div>
       </div>
     );
