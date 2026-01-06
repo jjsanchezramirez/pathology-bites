@@ -1,44 +1,72 @@
 // src/features/questions/components/questions-stats-cards.tsx
 "use client";
 
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { FileQuestion, BookOpen, Users, CheckCircle } from "lucide-react";
+import { FileQuestion, BookOpen, FolderTree } from "lucide-react";
+
+interface QuestionStats {
+  totalPublishedQuestions: number;
+  totalQuestionSetsWithQuestions: number;
+  totalCategoriesWithQuestions: number;
+}
 
 export function QuestionsStatsCards() {
-  // Simple placeholder cards - no data fetching
+  const [stats, setStats] = useState<QuestionStats | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await fetch("/api/admin/questions/stats", {
+          credentials: "include",
+        });
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success) {
+            setStats(data.data);
+          }
+        }
+      } catch (error) {
+        console.error("Error fetching question statistics:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStats();
+  }, []);
+
+  if (loading || !stats) {
+    return null;
+  }
+
   const cards = [
     {
-      title: "Questions",
-      value: "—",
+      title: "Published Questions",
+      value: stats.totalPublishedQuestions.toLocaleString(),
       icon: FileQuestion,
-      description: "See table below",
+      description: "Total published",
       color: "text-blue-600 dark:text-blue-400",
     },
     {
       title: "Question Sets",
-      value: "—",
+      value: stats.totalQuestionSetsWithQuestions.toLocaleString(),
       icon: BookOpen,
-      description: "Filter to view",
+      description: "Sets with questions",
       color: "text-emerald-600 dark:text-emerald-400",
     },
     {
       title: "Categories",
-      value: "—",
-      icon: Users,
-      description: "Multiple available",
+      value: stats.totalCategoriesWithQuestions.toLocaleString(),
+      icon: FolderTree,
+      description: "Categories with questions",
       color: "text-purple-600 dark:text-purple-400",
-    },
-    {
-      title: "Status",
-      value: "—",
-      icon: CheckCircle,
-      description: "Filter to view",
-      color: "text-orange-600 dark:text-orange-400",
     },
   ];
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
       {cards.map((card) => {
         const Icon = card.icon;
         return (
