@@ -78,7 +78,8 @@ export function InquiryStatistics({ onStatsChange, refreshTrigger }: InquiryStat
 
   useEffect(() => {
     fetchStats();
-  }, [refreshTrigger, fetchStats]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [refreshTrigger]);
 
   const StatCard = ({
     title,
