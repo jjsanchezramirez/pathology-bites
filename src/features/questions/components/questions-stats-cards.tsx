@@ -23,9 +23,14 @@ export function QuestionsStatsCards() {
         });
         if (response.ok) {
           const data = await response.json();
+          console.log("Stats API response:", data);
           if (data.success) {
             setStats(data.data);
+          } else {
+            console.error("Stats API returned success: false", data);
           }
+        } else {
+          console.error("Stats API response not ok:", response.status, await response.text());
         }
       } catch (error) {
         console.error("Error fetching question statistics:", error);
@@ -37,7 +42,25 @@ export function QuestionsStatsCards() {
     fetchStats();
   }, []);
 
-  if (loading || !stats) {
+  if (loading) {
+    return (
+      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {[1, 2, 3].map((i) => (
+          <Card key={i}>
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-sm font-medium">Loading...</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold">—</div>
+              <p className="text-xs text-muted-foreground">Fetching data...</p>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (!stats) {
     return null;
   }
 
