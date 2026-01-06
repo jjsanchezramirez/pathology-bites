@@ -97,11 +97,11 @@ export function GeneralInquiriesTable({
         return;
       }
 
-      let inquiries = data || [];
+      let fetchedInquiries = data || [];
 
       // For "all" tab, sort by status priority: red (delayed) → yellow (pending) → green (resolved)
       if (type === "all" && statusFilter === "all") {
-        inquiries = inquiries.sort((a, b) => {
+        fetchedInquiries = fetchedInquiries.sort((a, b) => {
           const orderA = getStatusSortOrder(a.status, a.created_at);
           const orderB = getStatusSortOrder(b.status, b.created_at);
           if (orderA !== orderB) {
@@ -112,9 +112,9 @@ export function GeneralInquiriesTable({
         });
       }
 
-      setInquiries(inquiries);
+      setInquiries(fetchedInquiries);
 
-      if (inquiries.length === 0) {
+      if (fetchedInquiries.length === 0) {
         console.log(`No inquiries found for type: ${type}, status: ${statusFilter}`);
       }
     } catch (error) {
