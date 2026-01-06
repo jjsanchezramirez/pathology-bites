@@ -66,10 +66,6 @@ export function GeneralInquiriesTable({
   const supabase = createClient();
   const { refreshNotifications } = useNotificationRefresh();
 
-  useEffect(() => {
-    fetchInquiries();
-  }, [type, statusFilter, refreshTrigger, fetchInquiries]);
-
   const fetchInquiries = async () => {
     try {
       setLoading(true);
@@ -124,6 +120,11 @@ export function GeneralInquiriesTable({
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    fetchInquiries();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [type, statusFilter, refreshTrigger]);
 
   const filteredInquiries = inquiries.filter((inquiry) => {
     const matchesSearch =
