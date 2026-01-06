@@ -107,7 +107,7 @@ export function InquiryDetailsDialog({ inquiry, open, onOpenChange }: InquiryDet
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto">
         <DialogHeader className="space-y-3">
           <DialogTitle className="flex items-center gap-3 text-xl">
             <MessageSquare className="h-6 w-6 text-primary" />
