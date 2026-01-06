@@ -24,6 +24,9 @@ export default function AdminDashboardPage() {
   const [activities, setActivities] = useState<RecentActivity[] | null>(null);
   const [error, setError] = useState<string | null>(null);
 
+  // Use adminMode for determining what data to fetch and show
+  const effectiveRole = adminMode === "user" ? "user" : adminMode;
+
   useEffect(() => {
     console.log(
       "[AdminDashboard] Effect triggered - role:",
@@ -49,9 +52,6 @@ export default function AdminDashboardPage() {
           "user:",
           user?.id
         );
-
-        // Use adminMode for determining what data to fetch and show
-        const effectiveRole = adminMode === "user" ? "user" : adminMode;
 
         // Fetch dashboard stats and activities in parallel
         const [dashboardStats, recentActivities] = await Promise.all([
