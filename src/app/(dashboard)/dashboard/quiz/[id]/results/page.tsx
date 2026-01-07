@@ -125,7 +125,6 @@ export default function QuizResultsPage() {
       <div className="max-w-4xl mx-auto">
         <QuizResultsSummary
           result={result}
-          sessionId={sessionId || ""}
           onReviewQuestions={() => {
             window.location.href = `/dashboard/quiz/${sessionId}?review=true`;
           }}

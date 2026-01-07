@@ -11,16 +11,15 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import { getCategoryByName, getCategoryStyle } from "@/shared/constants/categories";
+import { getCategoryColor } from "@/features/questions/utils/category-colors";
 
 interface QuizResultsSummaryProps {
   result: QuizResult;
-  sessionId: string;
   onReviewQuestions?: () => void;
 }
 
 export function QuizResultsSummary({
   result,
-  sessionId,
   onReviewQuestions,
 }: QuizResultsSummaryProps) {
   const percentage = Math.round((result.correctAnswers / result.totalQuestions) * 100);
@@ -251,84 +250,23 @@ export function QuizResultsSummary({
                         ? Math.round((category.correct / category.total) * 100)
                         : 0;
 
-                    // Use exact admin category badge styling
-                    const getCategoryBadgeClass = (cat: typeof category) => {
-                      if (cat.categoryColor) {
-                        return "";
-                      }
-
-                      const shortForm = cat.categoryShortForm || cat.parentShortForm;
-
-                      // Main categories
-                      if (shortForm === "AP")
-                        return "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800";
-                      if (shortForm === "CP")
-                        return "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800";
-
-                      // AP subspecialties
-                      if (cat.parentShortForm === "AP") {
-                        const colors = [
-                          "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800",
-                          "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800",
-                          "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800",
-                          "bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800",
-                          "bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800",
-                          "bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800",
-                          "bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-900/20 dark:text-teal-300 dark:border-teal-800",
-                          "bg-lime-100 text-lime-800 border-lime-200 dark:bg-lime-900/20 dark:text-lime-300 dark:border-lime-800",
-                        ];
-                        const hash = shortForm
-                          ? shortForm.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
-                          : 0;
-                        return colors[hash % colors.length];
-                      }
-
-                      // CP subspecialties
-                      if (cat.parentShortForm === "CP") {
-                        const colors = [
-                          "bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/20 dark:text-sky-300 dark:border-sky-800",
-                          "bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/20 dark:text-violet-300 dark:border-violet-800",
-                          "bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800",
-                          "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800",
-                          "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800",
-                        ];
-                        const hash = shortForm
-                          ? shortForm.split("").reduce((a, b) => a + b.charCodeAt(0), 0)
-                          : 0;
-                        return colors[hash % colors.length];
-                      }
-
-                      return "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800";
-                    };
-
-                    const getCustomColorStyle = (color: string) => {
-                      const hslMatch = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
-                      if (hslMatch) {
-                        const [, h, s] = hslMatch;
-                        return {
-                          backgroundColor: `hsl(${h} ${Math.min(parseInt(s), 50)}% 90%)`,
-                          color: `hsl(${h} ${s}% 20%)`,
-                          borderColor: `hsl(${h} ${Math.min(parseInt(s), 60)}% 70%)`,
-                        };
-                      }
-                      return {
-                        backgroundColor: color + "20",
-                        color: color,
-                        borderColor: color + "40",
-                      };
-                    };
+                    // Get category color using utility
+                    const categoryColor = getCategoryColor({
+                      id: category.categoryId,
+                      color: category.categoryColor,
+                      short_form: category.categoryShortForm,
+                      parent_short_form: category.parentShortForm,
+                      name: category.categoryName,
+                    });
+                    const categoryStyle = getCategoryStyle(categoryColor);
 
                     return (
                       <tr key={category.categoryId}>
                         <td className="py-2 px-2">
                           <Badge
                             variant="outline"
-                            className={`text-xs ${getCategoryBadgeClass(category)}`}
-                            style={
-                              category.categoryColor
-                                ? getCustomColorStyle(category.categoryColor)
-                                : undefined
-                            }
+                            className="text-xs border [&]:dark:brightness-90"
+                            style={categoryStyle?.light}
                           >
                             {category.categoryName}
                           </Badge>
