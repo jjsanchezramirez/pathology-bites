@@ -407,7 +407,7 @@ export function QuizResultsSummary({
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-xs">
                         <Badge
                           variant="outline"
-                          className="border [&]:dark:brightness-50"
+                          className="border [&]:dark:brightness-75"
                           style={categoryStyle?.light}
                         >
                           {categoryShort}
