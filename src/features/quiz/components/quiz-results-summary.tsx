@@ -24,6 +24,7 @@ export function QuizResultsSummary({
   onReviewQuestions,
 }: QuizResultsSummaryProps) {
   const percentage = Math.round((result.correctAnswers / result.totalQuestions) * 100);
+  const incorrectCount = result.totalQuestions - result.correctAnswers;
   const [showCelebrationModal, setShowCelebrationModal] = useState(false);
   const [celebrationShown, setCelebrationShown] = useState(false);
 
