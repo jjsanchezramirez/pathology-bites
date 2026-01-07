@@ -122,16 +122,12 @@ export default function QuizResultsPage() {
   // Results display
   return (
     <div className="container mx-auto py-8 px-4">
-      <div className="max-w-5xl mx-auto">
+      <div className="max-w-4xl mx-auto">
         <QuizResultsSummary
           result={result}
           sessionId={sessionId || ""}
           onReviewQuestions={() => {
             window.location.href = `/dashboard/quiz/${sessionId}?review=true`;
-          }}
-          onRetakeMissed={() => {
-            // TODO: Implement retake missed questions functionality
-            toast.info("Retake missed questions feature coming soon!");
           }}
         />
       </div>

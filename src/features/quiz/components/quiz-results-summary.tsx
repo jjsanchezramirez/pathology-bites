@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { CircularProgress } from "@/shared/components/ui/circular-progress";
-import { Clock, Target, TrendingUp, RotateCcw } from "lucide-react";
+import { Clock, Target, TrendingUp } from "lucide-react";
 import { QuizResult } from "@/features/quiz/types/quiz";
 import { AchievementCelebrationModal } from "@/features/achievements/components/achievement-celebration-modal";
 import Link from "next/link";
@@ -15,18 +15,15 @@ import { getCategoryByName, getCategoryStyle } from "@/shared/constants/categori
 interface QuizResultsSummaryProps {
   result: QuizResult;
   sessionId: string;
-  onRetakeMissed?: () => void;
   onReviewQuestions?: () => void;
 }
 
 export function QuizResultsSummary({
   result,
   sessionId,
-  onRetakeMissed,
   onReviewQuestions,
 }: QuizResultsSummaryProps) {
   const percentage = Math.round((result.correctAnswers / result.totalQuestions) * 100);
-  const incorrectCount = result.totalQuestions - result.correctAnswers;
   const [showCelebrationModal, setShowCelebrationModal] = useState(false);
   const [celebrationShown, setCelebrationShown] = useState(false);
 
@@ -230,8 +227,14 @@ export function QuizResultsSummary({
                 <thead>
                   <tr className="border-b text-xs text-muted-foreground">
                     <th className="text-left py-2 px-2 font-medium">Category</th>
-                    <th className="text-center py-2 px-2 font-medium">✓</th>
-                    <th className="text-center py-2 px-2 font-medium">✗</th>
+                    <th className="text-center py-2 px-2 font-medium">
+                      <span className="hidden sm:inline">Correct</span>
+                      <span className="sm:hidden">✓</span>
+                    </th>
+                    <th className="text-center py-2 px-2 font-medium">
+                      <span className="hidden sm:inline">Incorrect</span>
+                      <span className="sm:hidden">✗</span>
+                    </th>
                     <th className="text-center py-2 px-2 font-medium hidden sm:table-cell">
                       Total
                     </th>
@@ -326,7 +329,7 @@ export function QuizResultsSummary({
                                 : undefined
                             }
                           >
-                            {category.categoryShortForm || category.categoryName}
+                            {category.categoryName}
                           </Badge>
                         </td>
                         <td className="py-2 px-2 text-center">
@@ -422,8 +425,8 @@ export function QuizResultsSummary({
 
                     {/* Result badge - desktop only */}
                     <Badge
-                      variant={question.isCorrect ? "default" : "destructive"}
-                      className="hidden sm:flex flex-shrink-0"
+                      variant={question.isCorrect ? "outline" : "destructive"}
+                      className={`hidden sm:flex flex-shrink-0 ${question.isCorrect ? "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800" : ""}`}
                     >
                       {question.isCorrect ? (
                         <>
@@ -447,16 +450,6 @@ export function QuizResultsSummary({
 
       {/* Action Buttons */}
       <div className="flex flex-col sm:flex-row gap-3 max-w-2xl mx-auto w-full sm:justify-center">
-        {incorrectCount > 0 && onRetakeMissed && (
-          <Button
-            onClick={onRetakeMissed}
-            className="flex items-center gap-2 w-full sm:w-auto sm:min-w-[200px]"
-          >
-            <RotateCcw className="h-4 w-4" />
-            Retake Missed Questions
-          </Button>
-        )}
-
         <Button onClick={onReviewQuestions} className="w-full sm:w-auto sm:min-w-[200px]">
           Review Questions
         </Button>
