@@ -170,9 +170,9 @@ export function QuizResultsSummary({
         <Card>
           <CardContent className="p-4 text-center">
             <div className="flex justify-center mb-2">
-              <Target className="h-6 w-6 text-green-600 dark:text-green-400" />
+              <Target className="h-6 w-6 text-green-600 dark:text-green-500" />
             </div>
-            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
+            <div className="text-2xl font-bold text-green-600 dark:text-green-500">
               {result.correctAnswers}
             </div>
             <div className="text-sm text-muted-foreground">Correct</div>
@@ -182,9 +182,9 @@ export function QuizResultsSummary({
         <Card>
           <CardContent className="p-4 text-center">
             <div className="flex justify-center mb-2">
-              <Target className="h-6 w-6 text-red-600 dark:text-red-400" />
+              <Target className="h-6 w-6 text-red-600 dark:text-red-500" />
             </div>
-            <div className="text-2xl font-bold text-red-600 dark:text-red-400">
+            <div className="text-2xl font-bold text-red-600 dark:text-red-500">
               {incorrectCount}
             </div>
             <div className="text-sm text-muted-foreground">Incorrect</div>
@@ -335,14 +335,14 @@ export function QuizResultsSummary({
                         </td>
                         <td className="py-2 px-2 text-center">
                           <span
-                            className={`font-semibold text-sm ${category.correct > 0 ? "text-green-600 dark:text-green-400" : "text-muted-foreground"}`}
+                            className={`font-semibold text-sm ${category.correct > 0 ? "text-green-600 dark:text-green-500" : "text-muted-foreground"}`}
                           >
                             {category.correct}
                           </span>
                         </td>
                         <td className="py-2 px-2 text-center">
                           <span
-                            className={`font-semibold text-sm ${incorrect > 0 ? "text-red-600 dark:text-red-400" : "text-muted-foreground"}`}
+                            className={`font-semibold text-sm ${incorrect > 0 ? "text-red-600 dark:text-red-500" : "text-muted-foreground"}`}
                           >
                             {incorrect}
                           </span>
