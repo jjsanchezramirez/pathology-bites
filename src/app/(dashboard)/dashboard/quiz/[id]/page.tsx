@@ -6,6 +6,14 @@ import { useParams, useSearchParams, useRouter, usePathname } from "next/navigat
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Button } from "@/shared/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
 import { Play, Pause, PanelLeftOpen, Clock } from "lucide-react";
 import { QuizSidebar } from "@/features/quiz/components/quiz-sidebar";
 import { QuestionFlagDialog } from "@/features/questions/components/question-flag-dialog";
@@ -14,7 +22,7 @@ import { QuizNavigation } from "@/features/quiz/components/quiz-navigation";
 import { FeatureErrorBoundary } from "@/shared/components/common";
 import { QuizResult } from "@/features/quiz/types/quiz";
 import { toast } from "@/shared/utils/toast";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useHybridQuiz, HybridPresets } from "@/features/quiz/hybrid";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
@@ -49,6 +57,12 @@ export default function QuizSessionPage() {
 
   // Mobile sidebar state
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+
+  // Unanswered questions warning dialog state
+  const [showUnansweredWarning, setShowUnansweredWarning] = useState(false);
+
+  // Ref for scrollable content area
+  const contentAreaRef = useRef<HTMLDivElement>(null);
 
   // CSRF token for POST requests
   const { getToken } = useCSRFToken();
@@ -216,6 +230,20 @@ export default function QuizSessionPage() {
     const secs = seconds % 60;
     return `${mins}:${secs.toString().padStart(2, "0")}`;
   };
+
+  // Scroll to top when review index changes
+  useEffect(() => {
+    if (isReviewMode && contentAreaRef.current) {
+      contentAreaRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [currentReviewIndex, isReviewMode]);
+
+  // Scroll to top when current question changes in regular mode
+  useEffect(() => {
+    if (!isReviewMode && contentAreaRef.current && hybridState.currentQuestion) {
+      contentAreaRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [hybridState.currentQuestion, isReviewMode]);
 
   // Helper functions for review mode
   const handlePreviousReview = () => {
@@ -616,7 +644,7 @@ export default function QuizSessionPage() {
           </header>
 
           {/* Card Content Area - Scrollable */}
-          <div className="flex-1 overflow-auto">
+          <div ref={contentAreaRef} className="flex-1 overflow-auto">
             <div className="flex justify-center p-2 md:p-3">
               <div className="w-full max-w-2xl space-y-3">
                 {/* Question Display */}
@@ -684,61 +712,92 @@ export default function QuizSessionPage() {
 
   return (
     <>
-      {/* Pause Overlay */}
-      {isPaused && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center">
-          <Card className="w-96 p-6 text-center">
-            <CardHeader>
-              <CardTitle className="flex items-center justify-center gap-2">
-                <Pause className="h-5 w-5" />
-                Quiz Paused
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Your quiz is paused.{" "}
-                {hybridState.timeRemaining !== null
-                  ? `Time remaining: ${formatTime(hybridState.timeRemaining)}`
-                  : ""}
-              </p>
-              <Button
-                onClick={() => {
-                  setIsPaused(false);
-                  hybridActions.resumeQuiz();
-                }}
-                className="w-full"
-              >
-                <Play className="h-4 w-4 mr-2" />
-                Resume Quiz
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      {/* Pause Dialog */}
+      <Dialog open={isPaused} onOpenChange={setIsPaused}>
+        <DialogContent className="sm:max-w-md" showCloseButton={false}>
+          <DialogHeader>
+            <DialogTitle className="flex items-center justify-center gap-2">
+              <Pause className="h-5 w-5" />
+              Quiz Paused
+            </DialogTitle>
+            <DialogDescription className="text-center">
+              Your quiz is paused.{" "}
+              {hybridState.timeRemaining !== null
+                ? `Time remaining: ${formatTime(hybridState.timeRemaining)}`
+                : ""}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              onClick={() => {
+                setIsPaused(false);
+                hybridActions.resumeQuiz();
+              }}
+              className="w-full"
+            >
+              <Play className="h-4 w-4 mr-2" />
+              Resume Quiz
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Exit Confirmation Dialog */}
-      {showExitDialog && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-[60] flex items-center justify-center">
-          <Card className="w-96 p-6">
-            <CardHeader>
-              <CardTitle>Save and Exit?</CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-muted-foreground">
-                Your progress will be saved and you can resume this quiz later.
-              </p>
-              <div className="flex gap-2">
-                <Button onClick={handleExitCancel} variant="outline" className="flex-1">
-                  Cancel
-                </Button>
-                <Button onClick={handleExitConfirm} className="flex-1">
-                  Save & Exit
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+      <Dialog open={showExitDialog} onOpenChange={setShowExitDialog}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Save and Exit?</DialogTitle>
+            <DialogDescription>
+              Your progress will be saved and you can resume this quiz later.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={handleExitCancel} variant="outline">
+              Cancel
+            </Button>
+            <Button onClick={handleExitConfirm}>Save & Exit</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Unanswered Questions Warning Dialog */}
+      <Dialog open={showUnansweredWarning} onOpenChange={setShowUnansweredWarning}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Unanswered Questions</DialogTitle>
+            <DialogDescription>
+              You have{" "}
+              {
+                hybridActions
+                  .getQuestions()
+                  .filter((q) => !hybridActions.getAnswerForQuestion(q.id)).length
+              }{" "}
+              unanswered question(s). Are you sure you want to complete the quiz?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button onClick={() => setShowUnansweredWarning(false)} variant="outline">
+              Review Questions
+            </Button>
+            <Button
+              onClick={async () => {
+                setShowUnansweredWarning(false);
+                // Complete the quiz
+                const result = await hybridActions.completeQuiz();
+                if (result.success) {
+                  toast.success("Quiz completed successfully!");
+                  window.location.href = `/dashboard/quiz/${sessionId}/results`;
+                } else {
+                  toast.error("Failed to complete quiz. Please try again.");
+                }
+              }}
+              variant="destructive"
+            >
+              Complete Anyway
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <div className="h-full flex overflow-hidden">
         {/* Mobile Backdrop */}
@@ -884,7 +943,7 @@ export default function QuizSessionPage() {
           </header>
 
           {/* Card Content Area - Scrollable */}
-          <div className="flex-1 overflow-auto">
+          <div ref={contentAreaRef} className="flex-1 overflow-auto">
             <div className="flex justify-center p-2 md:p-3">
               <div className="w-full max-w-2xl space-y-3">
                 {/* Start Quiz Overlay */}
@@ -957,6 +1016,18 @@ export default function QuizSessionPage() {
                           if (hybridState.status === "completed") {
                             toast.info("Quiz is already completed");
                             window.location.href = `/dashboard/quiz/${sessionId}/results`;
+                            return;
+                          }
+
+                          // Check for unanswered questions
+                          const allQuestions = hybridActions.getQuestions();
+                          const unansweredCount = allQuestions.filter(
+                            (q) => !hybridActions.getAnswerForQuestion(q.id)
+                          ).length;
+
+                          if (unansweredCount > 0) {
+                            // Show warning dialog
+                            setShowUnansweredWarning(true);
                             return;
                           }
 
