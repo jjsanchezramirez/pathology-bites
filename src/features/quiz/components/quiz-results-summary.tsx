@@ -239,7 +239,7 @@ export function QuizResultsSummary({
                     <th className="text-center py-2 px-2 font-medium hidden sm:table-cell">
                       Total
                     </th>
-                    <th className="text-center py-2 px-2 font-medium hidden md:table-cell">Time</th>
+                    <th className="text-center py-2 px-2 font-medium">Time</th>
                     <th className="text-right py-2 px-2 font-medium">Score</th>
                   </tr>
                 </thead>
@@ -350,7 +350,7 @@ export function QuizResultsSummary({
                         <td className="py-2 px-2 text-center font-semibold text-sm hidden sm:table-cell">
                           {category.total}
                         </td>
-                        <td className="py-2 px-2 text-center text-xs text-muted-foreground hidden md:table-cell">
+                        <td className="py-2 px-2 text-center text-xs text-muted-foreground">
                           {formatTime(category.averageTime)}
                         </td>
                         <td className="py-2 px-2 text-right">
@@ -398,8 +398,8 @@ export function QuizResultsSummary({
                         </div>
                         {/* Result badge - moved to top right on mobile */}
                         <Badge
-                          variant={question.isCorrect ? "default" : "destructive"}
-                          className="flex-shrink-0 text-xs sm:hidden"
+                          variant={question.isCorrect ? "outline" : "destructive"}
+                          className={`flex-shrink-0 text-xs sm:hidden ${question.isCorrect ? "bg-green-100 text-green-800 border-0 dark:bg-green-900/20 dark:text-green-300" : ""}`}
                         >
                           {question.isCorrect ? "✓" : "✗"}
                         </Badge>
@@ -427,7 +427,7 @@ export function QuizResultsSummary({
                     {/* Result badge - desktop only */}
                     <Badge
                       variant={question.isCorrect ? "outline" : "destructive"}
-                      className={`hidden sm:flex flex-shrink-0 ${question.isCorrect ? "bg-green-100 text-green-800 border-green-300 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800" : ""}`}
+                      className={`hidden sm:flex flex-shrink-0 ${question.isCorrect ? "bg-green-100 text-green-800 border-0 dark:bg-green-900/20 dark:text-green-300" : ""}`}
                     >
                       {question.isCorrect ? (
                         <>
