@@ -1,127 +1,123 @@
 // src/features/anki/components/anki-deck-viewer.tsx
 
-'use client'
+"use client";
 
-import React, { useState } from 'react'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Badge } from '@/shared/components/ui/badge'
-import { Progress } from '@/shared/components/ui/progress'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/shared/components/ui/select'
-import { 
-  Shuffle, 
-  RotateCcw, 
-  Play, 
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import { Progress } from "@/shared/components/ui/progress";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import {
+  Shuffle,
+  RotateCcw,
+  Play,
   Pause,
   SkipForward,
   SkipBack,
   BookOpen,
-  Clock,
-  Target
-} from 'lucide-react'
-import { AnkiDeckViewerProps, AnkiCard } from '../types/anki-card'
+  Target,
+} from "lucide-react";
+import { AnkiDeckViewerProps, AnkiCard } from "../types/anki-card";
 
-import { cn } from '@/shared/utils'
+import { cn } from "@/shared/utils";
 
 export function AnkiDeckViewer({
   deck,
   currentCardIndex = 0,
   onCardChange,
   showAnswers = false,
-  className
+  className,
 }: AnkiDeckViewerProps) {
-  const [internalCardIndex, setInternalCardIndex] = useState(currentCardIndex)
-  const [internalShowAnswers, setInternalShowAnswers] = useState(showAnswers)
-  const [isStudyMode, setIsStudyMode] = useState(false)
-  const [studyCards, setStudyCards] = useState<AnkiCard[]>(deck.cards)
-  const [completedCards, setCompletedCards] = useState<Set<number>>(new Set())
+  const [internalCardIndex, setInternalCardIndex] = useState(currentCardIndex);
+  const [isStudyMode, setIsStudyMode] = useState(false);
+  const [studyCards, setStudyCards] = useState<AnkiCard[]>(deck.cards);
+  const [completedCards, setCompletedCards] = useState<Set<number>>(new Set());
 
   // Use internal state if no external control is provided
-  const activeCardIndex = onCardChange ? currentCardIndex : internalCardIndex
-  const currentCard = studyCards[activeCardIndex]
+  const activeCardIndex = onCardChange ? currentCardIndex : internalCardIndex;
+  const currentCard = studyCards[activeCardIndex];
 
   const handleCardChange = (newIndex: number) => {
-    const clampedIndex = Math.max(0, Math.min(newIndex, studyCards.length - 1))
+    const clampedIndex = Math.max(0, Math.min(newIndex, studyCards.length - 1));
     if (onCardChange) {
-      onCardChange(clampedIndex)
+      onCardChange(clampedIndex);
     } else {
-      setInternalCardIndex(clampedIndex)
+      setInternalCardIndex(clampedIndex);
     }
-  }
-
-  const _handleAnswerToggle = () => {
-    setInternalShowAnswers(!internalShowAnswers)
-  }
+  };
 
   const handleNextCard = () => {
-    const nextIndex = (activeCardIndex + 1) % studyCards.length
-    handleCardChange(nextIndex)
-    setInternalShowAnswers(false)
-  }
+    const nextIndex = (activeCardIndex + 1) % studyCards.length;
+    handleCardChange(nextIndex);
+  };
 
   const handlePreviousCard = () => {
-    const prevIndex = (activeCardIndex - 1 + studyCards.length) % studyCards.length
-    handleCardChange(prevIndex)
-    setInternalShowAnswers(false)
-  }
+    const prevIndex = (activeCardIndex - 1 + studyCards.length) % studyCards.length;
+    handleCardChange(prevIndex);
+  };
 
   const handleShuffleDeck = () => {
-    const shuffled = [...studyCards].sort(() => Math.random() - 0.5)
-    setStudyCards(shuffled)
-    handleCardChange(0)
-    setCompletedCards(new Set())
-  }
+    const shuffled = [...studyCards].sort(() => Math.random() - 0.5);
+    setStudyCards(shuffled);
+    handleCardChange(0);
+    setCompletedCards(new Set());
+  };
 
   const handleResetDeck = () => {
-    setStudyCards(deck.cards)
-    handleCardChange(0)
-    setCompletedCards(new Set())
-    setInternalShowAnswers(false)
-  }
+    setStudyCards(deck.cards);
+    handleCardChange(0);
+    setCompletedCards(new Set());
+  };
 
   const handleStartStudy = () => {
-    setIsStudyMode(true)
-    setCompletedCards(new Set())
-    setInternalShowAnswers(false)
-  }
+    setIsStudyMode(true);
+    setCompletedCards(new Set());
+  };
 
   const handleStopStudy = () => {
-    setIsStudyMode(false)
-    setCompletedCards(new Set())
-  }
+    setIsStudyMode(false);
+    setCompletedCards(new Set());
+  };
 
   const handleMarkCompleted = () => {
     if (currentCard) {
-      const newCompleted = new Set(completedCards)
-      newCompleted.add(currentCard.cardId)
-      setCompletedCards(newCompleted)
-      
+      const newCompleted = new Set(completedCards);
+      newCompleted.add(currentCard.cardId);
+      setCompletedCards(newCompleted);
+
       // Auto-advance to next card
       setTimeout(() => {
-        handleNextCard()
-      }, 500)
+        handleNextCard();
+      }, 500);
     }
-  }
+  };
 
   const handleJumpToCard = (cardIndex: string) => {
-    const index = parseInt(cardIndex, 10)
-    handleCardChange(index)
-    setInternalShowAnswers(false)
-  }
+    const index = parseInt(cardIndex, 10);
+    handleCardChange(index);
+  };
 
   // Calculate progress
-  const progress = studyCards.length > 0 ? ((activeCardIndex + 1) / studyCards.length) * 100 : 0
-  const completionRate = studyCards.length > 0 ? (completedCards.size / studyCards.length) * 100 : 0
+  const progress = studyCards.length > 0 ? ((activeCardIndex + 1) / studyCards.length) * 100 : 0;
+  const completionRate =
+    studyCards.length > 0 ? (completedCards.size / studyCards.length) * 100 : 0;
 
   // Get card statistics
   const cardStats = {
     total: studyCards.length,
     completed: completedCards.size,
     remaining: studyCards.length - completedCards.size,
-    newCards: studyCards.filter(card => card.type === 0).length,
-    learningCards: studyCards.filter(card => card.type === 1).length,
-    reviewCards: studyCards.filter(card => card.type === 2).length
-  }
+    newCards: studyCards.filter((card) => card.type === 0).length,
+    learningCards: studyCards.filter((card) => card.type === 1).length,
+    reviewCards: studyCards.filter((card) => card.type === 2).length,
+  };
 
   if (!currentCard) {
     return (
@@ -136,7 +132,7 @@ export function AnkiDeckViewer({
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
@@ -155,30 +151,28 @@ export function AnkiDeckViewer({
               )}
             </div>
             <div className="flex items-center gap-2">
-              <Badge variant="outline">
-                {cardStats.total} cards
-              </Badge>
-              {isStudyMode && (
-                <Badge variant="secondary">
-                  Study Mode
-                </Badge>
-              )}
+              <Badge variant="outline">{cardStats.total} cards</Badge>
+              {isStudyMode && <Badge variant="secondary">Study Mode</Badge>}
             </div>
           </div>
         </CardHeader>
-        
+
         <CardContent className="space-y-4">
           {/* Progress */}
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
-              <span>Progress: {activeCardIndex + 1} of {studyCards.length}</span>
+              <span>
+                Progress: {activeCardIndex + 1} of {studyCards.length}
+              </span>
               <span>{Math.round(progress)}%</span>
             </div>
             <Progress value={progress} className="h-2" />
-            
+
             {isStudyMode && (
               <div className="flex justify-between text-sm">
-                <span>Completed: {completedCards.size} of {studyCards.length}</span>
+                <span>
+                  Completed: {completedCards.size} of {studyCards.length}
+                </span>
                 <span>{Math.round(completionRate)}%</span>
               </div>
             )}
@@ -199,11 +193,11 @@ export function AnkiDeckViewer({
                   ))}
                 </SelectContent>
               </Select>
-              
+
               <Button variant="outline" size="sm" onClick={handleShuffleDeck}>
                 <Shuffle className="h-4 w-4" />
               </Button>
-              
+
               <Button variant="outline" size="sm" onClick={handleResetDeck}>
                 <RotateCcw className="h-4 w-4" />
               </Button>
@@ -257,29 +251,41 @@ export function AnkiDeckViewer({
         <CardContent className="p-6">
           <div className="space-y-4">
             <div className="flex justify-between items-center">
-              <h3 className="text-lg font-semibold">Card {currentCardIndex + 1} of {deck.cards.length}</h3>
+              <h3 className="text-lg font-semibold">
+                Card {currentCardIndex + 1} of {deck.cards.length}
+              </h3>
               <div className="flex gap-2">
                 <Button onClick={handlePreviousCard} disabled={currentCardIndex === 0} size="sm">
                   <SkipBack className="h-4 w-4" />
                 </Button>
-                <Button onClick={handleNextCard} disabled={currentCardIndex === deck.cards.length - 1} size="sm">
+                <Button
+                  onClick={handleNextCard}
+                  disabled={currentCardIndex === deck.cards.length - 1}
+                  size="sm"
+                >
                   <SkipForward className="h-4 w-4" />
                 </Button>
               </div>
             </div>
 
             <div className="border rounded-lg p-4">
-              <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentCard.question }} />
+              <div
+                className="prose max-w-none"
+                dangerouslySetInnerHTML={{ __html: currentCard.question }}
+              />
             </div>
 
             {showAnswers && (
               <div className="border rounded-lg p-4 bg-muted/50">
-                <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentCard.answer }} />
+                <div
+                  className="prose max-w-none"
+                  dangerouslySetInnerHTML={{ __html: currentCard.answer }}
+                />
               </div>
             )}
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

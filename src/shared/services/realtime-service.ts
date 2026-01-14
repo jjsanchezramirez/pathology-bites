@@ -24,7 +24,7 @@ class RealtimeService {
   private authListeners: Set<AuthListener> = new Set();
 
   // Database subscription management
-  private databaseSubscriptions: Map<string, any> = new Map();
+  private databaseSubscriptions: Map<string, unknown> = new Map();
   private databaseListeners: Map<string, Set<DatabaseListener>> = new Map();
 
   private constructor() {
@@ -94,7 +94,7 @@ class RealtimeService {
 
   private cleanupAuthSubscription(): void {
     if (this.authSubscription) {
-      this.authSubscription.unsubscribe();
+      (this.authSubscription as { unsubscribe?: () => void }).unsubscribe?.();
       this.authSubscription = null;
     }
   }
@@ -131,7 +131,12 @@ class RealtimeService {
   private createDatabaseSubscription(key: string, subscription: DatabaseSubscription): void {
     const channel = this.supabase.channel(`shared-${key}`);
 
-    const config: unknown = {
+    const config: {
+      event: string;
+      schema: string;
+      table: string;
+      filter?: string;
+    } = {
       event: subscription.event,
       schema: "public",
       table: subscription.table,
@@ -159,7 +164,7 @@ class RealtimeService {
   private cleanupDatabaseSubscription(key: string): void {
     const subscription = this.databaseSubscriptions.get(key);
     if (subscription) {
-      subscription.unsubscribe();
+      (subscription as { unsubscribe?: () => void }).unsubscribe?.();
       this.databaseSubscriptions.delete(key);
       this.databaseListeners.delete(key);
     }
@@ -182,8 +187,8 @@ class RealtimeService {
     this.authListeners.clear();
 
     // Cleanup database subscriptions
-    this.databaseSubscriptions.forEach((subscription, _key) => {
-      subscription.unsubscribe();
+    this.databaseSubscriptions.forEach((subscription) => {
+      (subscription as { unsubscribe?: () => void }).unsubscribe?.();
     });
     this.databaseSubscriptions.clear();
     this.databaseListeners.clear();

@@ -63,6 +63,8 @@ export interface FormState {
 
   // Step 4: Metadata
   category_id: string;
+  lesson: string;
+  topic: string;
   question_set_id: string;
   tag_ids: string[];
   difficulty: "easy" | "medium" | "hard";
@@ -84,13 +86,13 @@ export function MultiStepQuestionForm({
     mode === "edit"
       ? [
           { id: 1, name: "Content", description: "Edit question details" },
-          { id: 2, name: "Images", description: "Manage visual content" },
+          { id: 2, name: "Images", description: "Manage visual content (optional)" },
           { id: 3, name: "Metadata", description: "Update categorization" },
         ]
       : [
           { id: 1, name: "Source", description: "Import JSON or select AI content" },
           { id: 2, name: "Content", description: "Edit question details" },
-          { id: 3, name: "Images", description: "Add visual content" },
+          { id: 3, name: "Images", description: "Add visual content (optional)" },
           { id: 4, name: "Metadata", description: "Categorize & finalize" },
         ];
 
@@ -158,6 +160,8 @@ export function MultiStepQuestionForm({
             order_index: idx,
           })) || [],
         category_id: initialData.category_id || "",
+        lesson: initialData.lesson || "",
+        topic: initialData.topic || "",
         question_set_id: initialData.question_set_id || "",
         tag_ids: initialData.question_tags?.map((qt) => qt.tag.id) || [],
         difficulty: initialData.difficulty || "medium",
@@ -183,6 +187,8 @@ export function MultiStepQuestionForm({
       question_references: "",
       questionImages: [],
       category_id: "",
+      lesson: "",
+      topic: "",
       question_set_id: "",
       tag_ids: [],
       difficulty: "medium",

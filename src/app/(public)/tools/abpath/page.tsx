@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { Search, BookOpen, X, ChevronDown, ChevronRight, Download } from "lucide-react";
+import { Search, BookOpen, X, ChevronDown, ChevronRight, Download, Info } from "lucide-react";
 import { ABPathPDFGenerator } from "./pdf-generator";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
@@ -661,6 +661,47 @@ export default function ABPathContentPage() {
       <section className="flex-1 py-12">
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="space-y-6">
+            {/* Description Card */}
+            <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm">
+              <div className="flex items-start gap-4">
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
+                  <Info className="w-5 h-5 text-blue-600" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="text-lg font-semibold text-slate-900 mb-2">
+                    ABPath Content Specifications Viewer
+                  </h3>
+                  <p className="text-sm text-slate-600 leading-relaxed mb-3">
+                    This dynamic tool lets you browse and search the official ABPath content
+                    specifications for pathology board examinations. Filter by topic, designation
+                    level (Core, Advanced Resident, Fellow), and export customized PDFs for your
+                    study needs.
+                  </p>
+                  <a
+                    href="https://abpath.org/content-specifications-for-examinations/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                  >
+                    View official ABPath content specifications
+                    <svg
+                      className="w-3.5 h-3.5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"
+                      />
+                    </svg>
+                  </a>
+                </div>
+              </div>
+            </Card>
+
             {/* Controls */}
             <Card className="p-6">
               <div className="flex flex-wrap items-center gap-4">

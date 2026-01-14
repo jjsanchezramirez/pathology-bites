@@ -1,14 +1,24 @@
 // Category color utilities for consistent color management
 // This replaces the duplicated color logic across components
 
+import {
+  getCategoryColorById,
+  getCategoryColorByShortForm,
+  getCategoryColorByName,
+  CATEGORY_BY_ID as _CATEGORY_BY_ID,
+  CATEGORY_BY_SHORT_FORM as _CATEGORY_BY_SHORT_FORM,
+} from "@/shared/constants/category-color-map";
+
 export interface ColorOption {
   value: string;
 }
 
 export interface CategoryColorData {
+  id?: string;
   color?: string;
   short_form?: string;
   parent_short_form?: string;
+  name?: string;
 }
 
 // Curated color palette with top and bottom rows (darker and lighter versions)
@@ -65,9 +75,27 @@ const { strongColors, lightColors } = generateCategoryColors();
 // Export the color arrays for use in components
 export { strongColors, lightColors };
 
-// Enhanced color assignment function that prioritizes manually set colors
+// Enhanced color assignment function with hardcoded mapping as priority
 export const getCategoryColor = (category: CategoryColorData): string => {
-  // First priority: use the manually set color from database
+  // First priority: Check hardcoded color map by ID
+  if (category.id) {
+    const hardcodedColor = getCategoryColorById(category.id);
+    if (hardcodedColor) return hardcodedColor;
+  }
+
+  // Second priority: Check hardcoded color map by short form
+  if (category.short_form) {
+    const hardcodedColor = getCategoryColorByShortForm(category.short_form);
+    if (hardcodedColor) return hardcodedColor;
+  }
+
+  // Third priority: Check hardcoded color map by name
+  if (category.name) {
+    const hardcodedColor = getCategoryColorByName(category.name);
+    if (hardcodedColor) return hardcodedColor;
+  }
+
+  // Fourth priority: use the manually set color from database
   if (category.color) {
     return category.color;
   }

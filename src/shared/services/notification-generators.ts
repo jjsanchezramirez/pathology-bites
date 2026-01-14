@@ -184,7 +184,7 @@ export class NotificationGenerators {
     achievementType: string,
     title: string,
     description: string,
-    achievementData: Record<string, unknown> = {}
+    _achievementData: Record<string, unknown> = {}
   ): Promise<void> {
     try {
       // Use the existing admin notification system for achievement notifications

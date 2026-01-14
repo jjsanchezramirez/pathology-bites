@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import {
   Dialog,
   DialogContent,
@@ -51,15 +51,7 @@ export function ReassignReviewerDialog({
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch reviewers when dialog opens
-  useEffect(() => {
-    if (open) {
-      fetchReviewers();
-      setSelectedReviewerId(""); // Reset selection
-    }
-  }, [open, fetchReviewers]);
-
-  const fetchReviewers = async () => {
+  const fetchReviewers = useCallback(async () => {
     setLoading(true);
     try {
       const response = await fetch("/api/admin/reviewers");
@@ -78,7 +70,15 @@ export function ReassignReviewerDialog({
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentReviewerId]);
+
+  // Fetch reviewers when dialog opens
+  useEffect(() => {
+    if (open) {
+      fetchReviewers();
+      setSelectedReviewerId(""); // Reset selection
+    }
+  }, [open, fetchReviewers]);
 
   const handleReassign = async () => {
     if (!selectedReviewerId) {

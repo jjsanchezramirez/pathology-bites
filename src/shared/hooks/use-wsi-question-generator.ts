@@ -241,7 +241,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         // Step 2: Generate question using main generate route
         console.log("[WSI Generator] Step 2 - Using main generate route...");
 
-        const baseUrl =
+        const _baseUrl =
           typeof window !== "undefined"
             ? window.location.origin
             : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";

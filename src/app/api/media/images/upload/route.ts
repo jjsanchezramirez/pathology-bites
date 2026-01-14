@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { uploadToR2, generateImageStoragePath, deleteFromR2 } from "@/shared/services/r2-storage";
-import { formatImageName } from "@/features/images/services/image-upload";
 import { getImageDimensionsFromFile } from "@/shared/utils/server-image-utils";
 import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
+import { parseImageFilename } from "@/features/images/services/filename-parser";
 
 export async function POST(request: NextRequest) {
   let uploadedStoragePath: string | null = null;
@@ -122,6 +122,16 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid image dimensions." }, { status: 400 });
     }
 
+    // Parse filename to extract pathology category and magnification
+    const parsedFilename = parseImageFilename(file.name);
+    console.log("Parsed filename:", parsedFilename);
+
+    // The parser now returns the category ID directly from static data
+    const pathologyCategoryId = parsedFilename.categoryId;
+    if (pathologyCategoryId) {
+      console.log(`Mapped category "${parsedFilename.categoryName}" to ID: ${pathologyCategoryId}`);
+    }
+
     // Generate R2 storage path
     const storagePath = generateImageStoragePath(file.name, category);
     uploadedStoragePath = storagePath; // Track for cleanup
@@ -149,13 +159,15 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 2: Insert database record with metadata
+    // Use parsed title instead of formatImageName
+    const imageTitle = parsedFilename.title;
     const { data: imageData, error: dbError } = await supabase
       .from("images")
       .insert({
         url: uploadResult.url,
         storage_path: storagePath,
-        description: description?.trim() || formatImageName(file.name),
-        alt_text: formatImageName(file.name),
+        description: description?.trim() || imageTitle,
+        alt_text: imageTitle,
         category,
         file_type: file.type,
         file_size_bytes: fileBuffer.length, // Use actual buffer size
@@ -163,6 +175,8 @@ export async function POST(request: NextRequest) {
         height: dimensions.height,
         source_ref: sourceRef?.trim() || null,
         created_by: userId,
+        pathology_category_id: pathologyCategoryId,
+        magnification: parsedFilename.magnification,
       })
       .select()
       .single();

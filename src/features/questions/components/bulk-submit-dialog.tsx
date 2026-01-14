@@ -20,7 +20,7 @@ import {
 import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
 import { toast } from "@/shared/utils/toast";
-import { createClient } from "@/shared/services/client";
+import { createClient as _createClient } from "@/shared/services/client";
 import { Send, Users, Clock, Loader2 } from "lucide-react";
 
 interface Reviewer {
@@ -49,8 +49,6 @@ export function BulkSubmitDialog({
   const [selectedReviewerId, setSelectedReviewerId] = useState<string>("");
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-
-  const _supabase = createClient();
 
   // Fetch reviewers when dialog opens
   useEffect(() => {

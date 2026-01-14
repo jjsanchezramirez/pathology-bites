@@ -9,15 +9,14 @@ import Image from "next/image";
 
 interface SlideRowUnifiedProps {
   slide: VirtualSlide;
-  index: number;
   showDiagnoses: boolean;
   isRevealed?: boolean;
   onToggleReveal?: () => void;
+  index?: number;
 }
 
 export function SlideRowUnified({
   slide,
-  index,
   showDiagnoses,
   isRevealed = false,
   onToggleReveal,

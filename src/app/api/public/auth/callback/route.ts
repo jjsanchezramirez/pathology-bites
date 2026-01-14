@@ -14,10 +14,7 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get('code')
 
-  // Check if we're in coming soon or maintenance mode
-  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === 'true'
-  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === 'true'
-  const isAdminOnlyMode = isComingSoonMode || isMaintenanceMode
+  // Feature flags removed - always allow new account creation
 
   if (code) {
     const supabase = await createClient()
@@ -47,14 +44,7 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
 
       if (profileError && profileError.code === 'PGRST116') {
         // If user doesn't exist, create them
-        // In admin-only modes, prevent new account creation
-        if (isAdminOnlyMode) {
-          // Sign out the user since we don't want to create a new account
-          await supabase.auth.signOut()
-
-          const modeText = isMaintenanceMode ? 'maintenance' : 'coming soon'
-          return NextResponse.redirect(`${origin}/auth-error?error=account_creation_disabled&description=New account creation is disabled during ${modeText} mode. Please contact an administrator if you need access.`)
-        }
+        // New account creation is always allowed now
 
         // Create user in public.users
         const { data: newUser, error: createError } = await supabase

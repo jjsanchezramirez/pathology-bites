@@ -43,7 +43,7 @@ async function loadABPathContentSpecs(): Promise<unknown> {
       if (!res.ok) throw new Error(`Failed: ${res.status}`);
       return res;
     } catch (e) {
-      const msg =
+      const _msg =
         e?.name === "AbortError"
           ? "Timed out fetching ABPath content specifications. Please check your network and try again."
           : e?.message || "Failed to fetch ABPath content specifications.";

@@ -125,7 +125,7 @@ export function useSmartGeneLookup(): UseSmartGeneLookupResult {
         if (!response.ok) {
           const errorMessage = result.error || "Failed to fetch gene information";
           setError(errorMessage);
-          throw new Error(errorMessage);
+          return Promise.reject(errorMessage); // Return rejected promise without throwing to console
         }
 
         const geneInfo = result.data;

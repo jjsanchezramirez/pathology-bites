@@ -1,7 +1,7 @@
 // src/features/inquiries/components/question-reports-table.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/shared/services/client";
 import {
   Table,
@@ -57,11 +57,7 @@ export function QuestionReportsTable() {
 
   const supabase = createClient();
 
-  useEffect(() => {
-    fetchReports();
-  }, [fetchReports]);
-
-  const fetchReports = async () => {
+  const fetchReports = useCallback(async () => {
     try {
       setLoading(true);
       const { data, error } = await supabase
@@ -93,7 +89,12 @@ export function QuestionReportsTable() {
     } finally {
       setLoading(false);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase is created fresh each render
+  }, []);
+
+  useEffect(() => {
+    fetchReports();
+  }, [fetchReports]);
 
   const filteredReports = reports.filter((report) => {
     const matchesSearch =

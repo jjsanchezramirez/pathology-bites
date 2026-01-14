@@ -1,7 +1,5 @@
 // src/shared/config/navigation.ts
 
-import { FEATURE_FLAGS } from "./feature-flags";
-
 export interface NavigationItem {
   name: string;
   href: string;
@@ -87,13 +85,6 @@ export const adminNavigationItems: NavigationItem[] = [
     requiredPermission: "users.manage",
     adminOnly: true,
   },
-  {
-    name: "Waitlist",
-    href: "/admin/waitlist",
-    icon: "Clock",
-    requiredPermission: "users.manage",
-    adminOnly: true,
-  },
 
   {
     name: "Manage Inquiries",
@@ -155,24 +146,8 @@ export const adminNavigationSections: NavigationSection[] = [
         icon: "FolderOpen",
         requiredPermission: "questions.view",
         showToRoles: ["admin", "creator", "reviewer"],
-      },
-      {
-        name: "My Revision Queue",
-        href: "/admin/my-revision-queue",
-        icon: "AlertTriangle",
-        requiredPermission: "questions.create",
-        showToRoles: ["admin", "creator"],
         showBadge: true,
-        badgeKey: "revisionQueue",
-      },
-      {
-        name: "My Drafts",
-        href: "/admin/my-drafts",
-        icon: "FileText",
-        requiredPermission: "questions.create",
-        showToRoles: ["admin", "creator"],
-        showBadge: true,
-        badgeKey: "drafts",
+        badgeKey: "myQuestions", // Combined badge for revision + drafts
       },
       {
         name: "My Review Queue",
@@ -221,13 +196,6 @@ export const adminNavigationSections: NavigationSection[] = [
         requiredPermission: "users.manage",
         adminOnly: true,
       },
-      {
-        name: "Waitlist",
-        href: "/admin/waitlist",
-        icon: "Clock",
-        requiredPermission: "users.manage",
-        adminOnly: true,
-      },
 
       {
         name: "Manage Inquiries",
@@ -247,19 +215,13 @@ export const adminNavigationSections: NavigationSection[] = [
         icon: "BarChart",
         requiredPermission: "analytics.view",
         adminOnly: true,
+        comingSoon: true,
       },
       {
         name: "Notifications",
         href: "/admin/notifications",
         icon: "MessageSquare",
         requiredPermission: "notifications.manage",
-        adminOnly: true,
-      },
-      {
-        name: "Test Semantic Scholar",
-        href: "/admin/test-semantic-scholar",
-        icon: "FlaskConical",
-        requiredPermission: "settings.manage",
         adminOnly: true,
       },
       {
@@ -336,10 +298,9 @@ export const userNavigationItems: NavigationItem[] = [
   },
 ];
 
-// Helper function to get user navigation sections with feature flags applied
+// Helper function to get user navigation sections
+// Note: Quiz features are always enabled now
 export function getUserNavigationSections(): NavigationSection[] {
-  const { _ENABLE_QUIZ_FEATURES } = FEATURE_FLAGS;
-
   return [
     {
       title: "Overview",

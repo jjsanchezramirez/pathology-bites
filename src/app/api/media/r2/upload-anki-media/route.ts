@@ -8,7 +8,7 @@
  * - Uploads all files to pathology-bites-images/anki/ directory
  */
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { promises as fs } from "fs";
 import path from "path";
 import sharp from "sharp";
@@ -170,10 +170,10 @@ async function compressImage(
     }
 
     const compressionRatio = compressed.length / originalSize;
-    const savings = ((1 - compressionRatio) * 100).toFixed(1);
 
     if (compressionRatio < 0.9) {
       // Only log if we achieved >10% compression
+      const savings = ((1 - compressionRatio) * 100).toFixed(1);
       console.log(
         `  Compressed ${filename}: ${(originalSize / 1024).toFixed(1)} KB → ${(compressed.length / 1024).toFixed(1)} KB (${savings}% reduction)`
       );
@@ -196,7 +196,7 @@ async function compressImage(
 }
 
 // GET endpoint - Preview files that would be uploaded
-export async function GET(_request: NextRequest) {
+export async function GET() {
   try {
     const mediaDir = path.join(process.cwd(), "anki", "media");
 
@@ -263,7 +263,7 @@ export async function GET(_request: NextRequest) {
 }
 
 // POST endpoint - Perform bulk upload with compression
-export async function POST(_request: NextRequest) {
+export async function POST() {
   try {
     const mediaDir = path.join(process.cwd(), "anki", "media");
     const targetBucket = "pathology-bites-images";

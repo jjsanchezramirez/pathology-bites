@@ -21,8 +21,6 @@ import {
   DEFAULT_QUIZ_CONFIG,
 } from "@/features/quiz/types/quiz";
 import { toast } from "@/shared/utils/toast";
-import { FeaturePlaceholder } from "@/features/dashboard/components";
-import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags";
 import {
   NewQuizLoading,
   QuizNameInput,
@@ -45,7 +43,6 @@ interface QuizOptionsData {
 // Remove local interface since we're using the one from the service
 
 export default function NewQuizPage() {
-  const featuresEnabled = isQuizFeaturesEnabled();
   const router = useRouter();
   const { isOnline } = useZeroApiNetworkStatus();
   const [formData, setFormData] = useState<QuizCreationForm>(DEFAULT_QUIZ_CONFIG);
@@ -136,22 +133,7 @@ export default function NewQuizPage() {
         questionCount: Math.min(prev.questionCount, availableQuestions),
       }));
     }
-  }, [
-    formData.questionCount,
-    quizOptions,
-    getAvailableQuestions,
-  ]);
-
-  // Show placeholder if features are disabled
-  if (!featuresEnabled) {
-    return (
-      <FeaturePlaceholder
-        title="New Quiz"
-        description="Enhanced quiz creation with more customization options is nearly ready. Soon you'll be able to create custom quizzes with advanced filtering, difficulty selection, and personalized question sets tailored to your learning goals."
-        status="in-final-stages"
-      />
-    );
-  }
+  }, [formData.questionCount, quizOptions, getAvailableQuestions]);
 
   // Generate sequential quiz title based on previous quizzes
   const generateQuizTitle = (): string => {

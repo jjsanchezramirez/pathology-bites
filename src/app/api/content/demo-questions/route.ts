@@ -13,20 +13,6 @@ let cachedQuestionsList: { id: string; question_id: string; display_order: numbe
 let questionsListTimestamp: number = 0;
 
 // Define interfaces for Supabase response data
-interface ImageData {
-  id: string;
-  url: string;
-  alt_text: string;
-  description: string;
-}
-
-interface AnswerOptionData {
-  id: string;
-  text: string;
-  is_correct: boolean;
-  explanation: string | null;
-}
-
 // Legacy alias for backward compatibility
 
 interface QuestionOption {
@@ -83,7 +69,7 @@ export async function GET(request: Request) {
       const [
         { data: questionData, error: questionError },
         { data: answerOptions, error: optionsError },
-        { data: questionImagesWithDetails, error: _imagesError },
+        { data: questionImagesWithDetails },
       ] = await Promise.all([
         // Get question data
         supabase

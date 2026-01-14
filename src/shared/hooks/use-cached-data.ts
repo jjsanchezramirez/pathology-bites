@@ -122,7 +122,7 @@ export function useCachedData<T>(
         fetchingRef.current = false;
       }
     },
-    [key, enabled, storage, prefix, ttl, staleTime, fetcher, onSuccess, onError]
+    [key, enabled, storage, prefix, ttl, fetcher, onSuccess, onError]
   );
 
   // Create refs for stable function references

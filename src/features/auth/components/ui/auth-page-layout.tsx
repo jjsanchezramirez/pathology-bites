@@ -9,9 +9,6 @@ interface AuthPageLayoutProps {
 }
 
 export function AuthPageLayout({ children, maxWidth = "md" }: AuthPageLayoutProps) {
-  // Check if we're in maintenance mode
-  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
-
   // Map maxWidth prop to actual width classes
   const widthClasses = {
     xs: "max-w-xs",

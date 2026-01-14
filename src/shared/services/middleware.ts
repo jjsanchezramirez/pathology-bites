@@ -409,11 +409,7 @@ export async function updateSession(request: NextRequest) {
   // This reduces edge requests by ~50-70% by eliminating redundant auth checks
 
   // At this point, we only get dashboard, admin, and login paths due to matcher
-  // Maintenance mode blocks dashboard, but allows admin
-  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
-  if (isMaintenanceMode && request.nextUrl.pathname.startsWith("/dashboard")) {
-    return NextResponse.redirect(new URL("/maintenance", request.url));
-  }
+  // Feature flags removed - maintenance mode no longer blocks access
 
   try {
     // Simple redirect helper
@@ -451,8 +447,8 @@ export async function updateSession(request: NextRequest) {
     } = await supabase.auth.getUser();
 
     // Ultra-simple maintenance mode (since matcher is now minimal)
-    if (isMaintenanceMode && !request.nextUrl.pathname.startsWith("/admin")) {
-      return redirect("/maintenance");
+    if (!request.nextUrl.pathname.startsWith("/admin")) {
+      // Allow access to all routes
     }
 
     // Redirect authenticated users away from login page

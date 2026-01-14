@@ -69,7 +69,7 @@ export default function AdminDashboardPage() {
     }
 
     fetchDashboardData();
-  }, [adminMode, user?.id, roleLoading, role, user]); // Use adminMode instead of role
+  }, [adminMode, user?.id, roleLoading, role, user, effectiveRole]); // Use adminMode instead of role
 
   // Use adminMode for determining quick actions
   const quickActions = stats

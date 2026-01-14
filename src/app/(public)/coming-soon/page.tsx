@@ -1,8 +1,6 @@
 // src/app/(public)/coming-soon/page.tsx
 "use client";
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
 import { ChevronDown } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -18,17 +16,11 @@ import { WhyChoosePathologyBites } from "@/shared/components/common/why-choose-p
 import { InteractiveLearningTools } from "@/shared/components/common/interactive-learning-tools";
 import { VirtualSlideSearchEngine } from "@/shared/components/common/virtual-slide-search-engine";
 
-export default function ComingSoonPage() {
-  const router = useRouter();
-  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === "true";
-  const isProduction = process.env.NODE_ENV === "production";
+// Launch date is fixed - feature flag removed
+const LAUNCH_DATE = "2025-08-01";
 
-  // In production, redirect to 404 if coming soon mode is not enabled
-  useEffect(() => {
-    if (isProduction && !isComingSoonMode) {
-      router.replace("/not-found");
-    }
-  }, [isProduction, isComingSoonMode, router]);
+export default function ComingSoonPage() {
+  // Feature flags removed - page renders normally
 
   const { email, setEmail, isSubmitting, handleSubmit } = useEmailSubscription({
     onSuccess: () => {
@@ -41,11 +33,6 @@ export default function ComingSoonPage() {
       );
     },
   });
-
-  // Don't render anything while redirecting
-  if (isProduction && !isComingSoonMode) {
-    return null;
-  }
 
   const scrollToNext = () => {
     const nextSection = document.getElementById("why-choose-section");
@@ -130,7 +117,7 @@ export default function ComingSoonPage() {
 
             {/* Right Column - Countdown */}
             <div className="w-full lg:w-2/5">
-              <CountdownTimer launchDateStr={process.env.NEXT_PUBLIC_LAUNCH_DATE || "2025-08-01"} />
+              <CountdownTimer launchDateStr={LAUNCH_DATE} />
             </div>
           </div>
 

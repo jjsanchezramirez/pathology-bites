@@ -1,7 +1,7 @@
 // Standardized API Response Templates
 import { NextResponse } from "next/server";
 
-export interface APIResponse<T = any> {
+export interface APIResponse<T = unknown> {
   success: boolean;
   data?: T;
   error?: string;

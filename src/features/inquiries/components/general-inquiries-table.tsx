@@ -14,13 +14,6 @@ import {
 import { Button } from "@/shared/components/ui/button";
 
 import { Input } from "@/shared/components/ui/input";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
 import { Search, MessageSquare, Trash2 } from "lucide-react";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { InquiryDetailsDialog } from "./inquiry-details-dialog";

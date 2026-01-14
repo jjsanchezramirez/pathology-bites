@@ -375,13 +375,40 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         updateType &&
         ["minor", "major"].includes(updateType)
       ) {
+        // Check if there's an existing reviewer
+        if (!reviewerToSet) {
+          // No reviewer assigned - cannot move to pending_review due to constraint
+          // The question will remain published, and admin must manually assign a reviewer
+          // and change status to pending_review if they want it reviewed
+          console.log(
+            `PATCH - Cannot change status to pending_review for ${updateType} edit: no reviewer assigned. Question will remain published.`
+          );
+          throw new Error(
+            `This ${updateType} edit requires review, but no reviewer is assigned. Please either: (1) Make only patch-level edits (typos, minor fixes), or (2) Have an admin assign a reviewer first using the 'Submit for Review' option.`
+          );
+        }
         statusToSet = "pending_review";
-        // Keep the existing reviewer if there is one, otherwise this will need to be assigned by an admin
-        // The constraint requires a reviewer, so we keep the current one to avoid constraint violation
+        // Keep the existing reviewer since the constraint requires a reviewer for pending_review status
         console.log(
           `PATCH - Changing status from published to pending_review for ${updateType} edit, keeping reviewer: ${reviewerToSet}`
         );
       }
+
+      // Validate status change to pending_review requires a reviewer
+      // Allow updating questions that are ALREADY pending_review (they already have a reviewer)
+      // But prevent NEW transitions to pending_review without a reviewer
+      const finalStatus = statusToSet || questionData.status;
+      const isChangingToPendingReview =
+        finalStatus === "pending_review" && currentQuestion.status !== "pending_review";
+
+      if (isChangingToPendingReview && !reviewerToSet && !questionData.reviewer_id) {
+        throw new Error(
+          "Cannot set status to pending_review without a reviewer. Please use the 'Submit for Review' button to assign a reviewer and change the status."
+        );
+      }
+
+      // Determine if the final status will be pending_review
+      const willBePendingReview = finalStatus === "pending_review";
 
       const validQuestionFields = {
         ...(questionData.title && { title: questionData.title }),
@@ -399,8 +426,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         ...(questionData.question_set_id !== undefined && {
           question_set_id: questionData.question_set_id,
         }),
-        // Ensure reviewer_id is preserved when moving to pending_review (required by constraint)
-        ...(statusToSet === "pending_review" && reviewerToSet && { reviewer_id: reviewerToSet }),
+        // Ensure reviewer_id is always set when status is or will be pending_review (required by constraint)
+        ...(willBePendingReview &&
+          (reviewerToSet || questionData.reviewer_id) && {
+            reviewer_id: reviewerToSet || questionData.reviewer_id,
+          }),
         updated_by: user.id,
         updated_at: new Date().toISOString(),
       };

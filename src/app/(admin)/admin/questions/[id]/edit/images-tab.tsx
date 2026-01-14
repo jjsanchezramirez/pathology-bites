@@ -22,7 +22,6 @@ interface ImagesTabProps {
   onUnsavedChanges: () => void;
   questionImages: QuestionImageFormData[];
   onQuestionImagesChange: (images: QuestionImageFormData[]) => void;
-  mode?: "create" | "edit";
 }
 
 interface ImageSectionProps {
@@ -69,7 +68,7 @@ function ImageSection({
   const sectionImages = images.filter((img) => img.question_section === section);
 
   // Load images function
-  const loadImages = async () => {
+  const loadImages = useCallback(async () => {
     setLoading(true);
     try {
       const result = await fetchImages({
@@ -91,7 +90,7 @@ function ImageSection({
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, categoryFilter]);
 
   // Load images when picker opens
   useEffect(() => {
@@ -365,7 +364,6 @@ export function ImagesTab({
   onUnsavedChanges,
   questionImages,
   onQuestionImagesChange,
-  mode = "edit",
 }: ImagesTabProps) {
   const handleImagesChange = (images: QuestionImageFormData[]) => {
     onQuestionImagesChange(images);

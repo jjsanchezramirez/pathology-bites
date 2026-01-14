@@ -26,12 +26,12 @@ interface ContextSearchResult {
 }
 
 // Cache for educational content files
-const contentCache = new Map<string, any>();
+const contentCache = new Map<string, EducationalContent>();
 const cacheTimestamps = new Map<string, number>();
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 
 // Available educational content files (matching server-side logic)
-const CONTENT_FILES = [
+const _CONTENT_FILES = [
   "ap-bone.json",
   "ap-breast.json",
   "ap-cardiovascular-and-thoracic.json",
@@ -102,7 +102,7 @@ async function loadContentFile(filename: string): Promise<unknown> {
     );
 
     // Cache the data
-    contentCache.set(cacheKey, data);
+    contentCache.set(cacheKey, data as EducationalContent);
     cacheTimestamps.set(cacheKey, now);
 
     return data;
@@ -602,9 +602,9 @@ function calculateFullTextScore(
 ): number {
   const diagnosis = diagnosticTerms.primaryTerms[0]?.toLowerCase() || "";
 
-  let totalScore = 0;
+  let _total;
 
-  // 1. PHRASE MATCHING (highest priority)
+  // Score = 01. PHRASE MATCHING (highest priority)
   const phraseScore = calculatePhraseMatching(
     diagnosis,
     fullContentText,
@@ -693,13 +693,13 @@ export async function findContextClientSide(
         // Search through all content in this file
         for (const [lessonName, lessonData] of Object.entries(data.subject.lessons)) {
           if (lessonData && typeof lessonData === "object" && "topics" in lessonData) {
-            const topics = (lessonData as unknown).topics;
+            const topics = (lessonData as { topics: Record<string, EducationalContent> }).topics;
 
             for (const [topicName, topicData] of Object.entries(topics)) {
               if (topicData && typeof topicData === "object" && "content" in topicData) {
                 // Get the full content text for searching
                 const fullContentText = JSON.stringify(
-                  (topicData as unknown).content
+                  (topicData as EducationalContent).content
                 ).toLowerCase();
                 const topicNameLower = topicName.toLowerCase();
                 const lessonNameLower = lessonName.toLowerCase();
@@ -787,7 +787,7 @@ export async function findContextClientSide(
                     subject: data.subject.name,
                     lesson: lessonName,
                     topic: topicName,
-                    content: (topicData as unknown).content,
+                    content: (topicData as EducationalContent).content,
                   };
 
                   if (!bestMatch || score > bestMatch.score) {
@@ -904,7 +904,7 @@ function validateDiagnosticSpecificity(
   let penalty = 0;
 
   // Check for highly specific diagnoses that should not match generic content
-  const specificTerms = {
+  const specificTerms: Record<string, string[]> = {
     "medullary thyroid carcinoma": ["medullary", "thyroid", "carcinoma"],
     "secretory carcinoma": ["secretory", "carcinoma"],
     "follicular adenoma": ["follicular", "adenoma"],
@@ -998,7 +998,7 @@ function validateDiagnosticSpecificity(
   }
 
   // Organ-specific mismatch penalty
-  const organMismatches = {
+  const organMismatches: Record<string, string[]> = {
     thyroid: ["breast", "colon", "lung", "prostate", "kidney"],
     salivary: ["thyroid", "breast", "colon", "lung"],
     ovarian: ["breast", "colon", "thyroid", "lung"],

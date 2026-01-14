@@ -137,7 +137,9 @@ export function AchievementCelebrationModal({
           {/* Achievement details */}
           <div className="text-center space-y-2">
             <h3 className="text-xl font-bold text-foreground">{currentAchievement.title}</h3>
-            <p className="text-sm text-primary font-medium">{currentAchievement.category}</p>
+            <p className="text-sm text-primary font-semibold uppercase">
+              {currentAchievement.category}
+            </p>
             <p className="text-sm text-muted-foreground max-w-sm">
               {currentAchievement.description}
             </p>

@@ -15,6 +15,7 @@ import { GoogleSignInButton } from "@/features/auth/components/google-sign-in-bu
 import { AuthDivider } from "@/features/auth/components/ui/auth-divider";
 import { useCSRFToken } from "@/features/auth/hooks/use-csrf-token";
 import { useTurnstile } from "@/features/auth/hooks/use-turnstile";
+import { getCaptchaSiteKey } from "@/features/auth/utils/captcha-config";
 
 // Form schema definition
 const formSchema = z.object({
@@ -45,7 +46,7 @@ export function LoginForm({
   const { getToken, addTokenToFormData } = useCSRFToken();
   const { captchaToken, setCaptchaToken } = useTurnstile();
   const turnstileRef = useRef<TurnstileInstance | null>(null);
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY;
+  const siteKey = getCaptchaSiteKey();
   const router = useRouter();
 
   // Note: Removed automatic redirect for authenticated users to prevent race condition.

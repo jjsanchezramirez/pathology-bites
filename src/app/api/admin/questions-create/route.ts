@@ -44,6 +44,8 @@ export async function POST(request: NextRequest) {
         status: "draft",
         question_set_id: questionData.question_set_id,
         category_id: questionData.category_id,
+        lesson: questionData.lesson,
+        topic: questionData.topic,
         created_by: user.id,
         updated_by: user.id,
         version: "1.0.0",

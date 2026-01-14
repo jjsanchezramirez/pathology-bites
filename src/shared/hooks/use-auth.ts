@@ -72,7 +72,7 @@ interface UseAuthReturn extends AuthState {
  * const { isLoading } = useAuth({ minimal: true })
  */
 export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
-  const { enableSecurity = false, loadUserData = false, minimal = false } = options;
+  const { enableSecurity: _enableSecurity = false, loadUserData = false, minimal = false } = options;
 
   // Check if we're on a public page
   const isPublicPage = typeof window !== "undefined" && isPublicRoute(window.location.pathname);
@@ -86,6 +86,13 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
     if (typeof window !== "undefined" && !skipAuth) {
       try {
         const cached = sessionStorage.getItem("auth-state");
+        console.log("[useAuth] [DIAGNOSTIC] Checking sessionStorage:", {
+          hasCached: !!cached,
+          cachedLength: cached?.length || 0,
+          pathname: window.location.pathname,
+          timestamp: new Date().toISOString(),
+        });
+
         if (cached) {
           const parsed = JSON.parse(cached);
           // Only use cache if it has a user (valid session)
@@ -95,20 +102,29 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
               isLoading: false, // Cache is ready, no need to show loading
               error: null,
             };
-            console.log("[useAuth] Restored from cache:", {
+            console.log("[useAuth] ✅ Restored from cache:", {
               isAuthenticated: cachedState.isAuthenticated,
               role: cachedState.role,
+              userId: parsed.user?.id,
             });
             return cachedState;
+          } else {
+            console.log("[useAuth] ⚠️ Cache exists but invalid (no user/session):", {
+              hasUser: !!parsed.user,
+              hasSession: !!parsed.session,
+            });
           }
         }
       } catch (e) {
         // Ignore parse errors
-        console.error("[useAuth] Failed to parse cached auth:", e);
+        console.error("[useAuth] ❌ Failed to parse cached auth:", e);
       }
     }
 
-    console.log("[useAuth] No cache found, starting with unauthenticated state");
+    console.log("[useAuth] No cache found, starting with unauthenticated state", {
+      skipAuth,
+      pathname: typeof window !== "undefined" ? window.location.pathname : "SSR",
+    });
     return {
       user: null,
       session: null,
@@ -130,19 +146,24 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
   const saveAuthState = (state: AuthState) => {
     if (typeof window !== "undefined" && state.user && state.session) {
       try {
+        const dataToSave = {
+          user: state.user,
+          session: state.session,
+          role: state.role,
+          isAuthenticated: state.isAuthenticated,
+          error: null,
+        };
         // Only save minimal data needed for fast restore
-        sessionStorage.setItem(
-          "auth-state",
-          JSON.stringify({
-            user: state.user,
-            session: state.session,
-            role: state.role,
-            isAuthenticated: state.isAuthenticated,
-            error: null,
-          })
-        );
-      } catch {
+        sessionStorage.setItem("auth-state", JSON.stringify(dataToSave));
+        console.log("[useAuth] [DIAGNOSTIC] 💾 Saved auth state to sessionStorage:", {
+          userId: state.user?.id,
+          role: state.role,
+          pathname: window.location.pathname,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (e) {
         // Ignore storage errors (quota exceeded, etc.)
+        console.error("[useAuth] [DIAGNOSTIC] ❌ Failed to save to sessionStorage:", e);
       }
     }
   };
@@ -152,8 +173,12 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
     if (typeof window !== "undefined") {
       try {
         sessionStorage.removeItem("auth-state");
-      } catch {
-        // Ignore errors
+        console.log("[useAuth] [DIAGNOSTIC] 🗑️ Cleared auth state from sessionStorage:", {
+          pathname: window.location.pathname,
+          timestamp: new Date().toISOString(),
+        });
+      } catch (e) {
+        console.error("[useAuth] [DIAGNOSTIC] ❌ Failed to clear sessionStorage:", e);
       }
     }
   };
@@ -183,13 +208,25 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
 
     const initAuth = async () => {
       try {
+        console.log("[useAuth] [DIAGNOSTIC] 🔄 Starting auth initialization:", {
+          pathname: typeof window !== "undefined" ? window.location.pathname : "SSR",
+          timestamp: new Date().toISOString(),
+        });
+
         const {
           data: { session },
           error,
         } = await supabase.auth.getSession();
 
+        console.log("[useAuth] [DIAGNOSTIC] 📡 getSession() completed:", {
+          hasSession: !!session,
+          hasUser: !!session?.user,
+          userId: session?.user?.id,
+          error: error?.message,
+        });
+
         if (error) {
-          console.error("Error getting session:", error);
+          console.error("[useAuth] [DIAGNOSTIC] ❌ Error getting session:", error);
           if (mounted.current) {
             setAuthState((prev) => ({
               ...prev,

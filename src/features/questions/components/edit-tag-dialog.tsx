@@ -24,22 +24,58 @@ interface EditTagDialogProps {
   tag: Tag | null;
 }
 
+const MAX_TAG_LENGTH = 50;
+const MIN_TAG_LENGTH = 2;
+
 export function EditTagDialog({ open, onOpenChange, onSuccess, tag }: EditTagDialogProps) {
   const [name, setName] = useState("");
   const [isUpdating, setIsUpdating] = useState(false);
+  const [error, setError] = useState("");
 
   // Update form when tag changes
   useEffect(() => {
     if (tag && open) {
       setName(tag.name);
+      setError("");
     }
   }, [tag, open]);
+
+  const validateTagName = (value: string): string | null => {
+    const trimmed = value.trim();
+
+    if (!trimmed) {
+      return "Tag name is required";
+    }
+
+    if (trimmed.length < MIN_TAG_LENGTH) {
+      return `Tag name must be at least ${MIN_TAG_LENGTH} characters`;
+    }
+
+    if (trimmed.length > MAX_TAG_LENGTH) {
+      return `Tag name cannot exceed ${MAX_TAG_LENGTH} characters`;
+    }
+
+    // Check for invalid characters (allow letters, numbers, spaces, hyphens, underscores)
+    if (!/^[a-zA-Z0-9\s\-_]+$/.test(trimmed)) {
+      return "Tag name can only contain letters, numbers, spaces, hyphens, and underscores";
+    }
+
+    return null;
+  };
+
+  const handleNameChange = (value: string) => {
+    setName(value);
+    const validationError = validateTagName(value);
+    setError(validationError || "");
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!name.trim()) {
-      toast.error("Tag name is required");
+    const validationError = validateTagName(name);
+    if (validationError) {
+      setError(validationError);
+      toast.error(validationError);
       return;
     }
 
@@ -100,7 +136,7 @@ export function EditTagDialog({ open, onOpenChange, onSuccess, tag }: EditTagDia
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isUpdating || !name.trim()} onClick={handleSubmit}>
+          <Button type="submit" disabled={isUpdating || !name.trim() || !!error} onClick={handleSubmit}>
             {isUpdating ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
@@ -120,10 +156,15 @@ export function EditTagDialog({ open, onOpenChange, onSuccess, tag }: EditTagDia
             id="name"
             placeholder="Enter tag name..."
             value={name}
-            onChange={(e) => setName(e.target.value)}
+            onChange={(e) => handleNameChange(e.target.value)}
             disabled={isUpdating}
             autoFocus
+            className={error ? "border-red-500" : ""}
           />
+          {error && <p className="text-xs text-red-500">{error}</p>}
+          <p className="text-xs text-muted-foreground">
+            {name.length}/{MAX_TAG_LENGTH} characters
+          </p>
         </div>
       </form>
     </BlurredDialog>

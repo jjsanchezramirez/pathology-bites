@@ -7,15 +7,7 @@
 # DEPENDENCIES & PACKAGE MANAGERS
 # ==============================================================================
 node_modules/
-.pnp
-.pnp.*
-.yarn/
-!.yarn/patches
-!.yarn/plugins
-!.yarn/releases
-!.yarn/versions
 .npm/
-.pnpm-debug.log*
 
 # ==============================================================================
 # BUILD OUTPUTS & CACHE
@@ -35,20 +27,11 @@ coverage/
 .nyc_output/
 
 # ==============================================================================
-# ENVIRONMENT & SECRETS
+# ENVIRONMENT
 # ==============================================================================
-# Environment files (keep .env.example) 
 .env
 .env.*
 *.env
-
-# API keys and secrets
-*.pem
-secrets/
-.secrets
-
-# All hidden directories (starting with dot)
-.*/
 
 # ==============================================================================
 # DEVELOPMENT & DEBUGGING
@@ -56,9 +39,6 @@ secrets/
 # Logs
 *.log
 npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-lerna-debug.log*
 
 # Runtime data
 pids/
@@ -69,57 +49,25 @@ pids/
 # ==============================================================================
 # OPERATING SYSTEM FILES
 # ==============================================================================
-# macOS
 .DS_Store
 .AppleDouble
 .LSOverride
 Icon
 ._*
 
-# Windows
-Thumbs.db
-ehthumbs.db
-Desktop.ini
-$RECYCLE.BIN/
-
-# Linux
-*~
-.fuse_hidden*
-.directory
-.Trash-*
-
 # ==============================================================================
 # DEPLOYMENT & HOSTING
 # ==============================================================================
 .vercel
-.netlify/
 
 # ==============================================================================
 # IDE & EDITOR FILES
 # ==============================================================================
-# VSCode
 .vscode/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-
-# JetBrains IDEs
-.idea/
-*.swp
-*.swo
-
-# Vim
-*.swp
-*.swo
-*~
-
-# Emacs
-*~
-\#*\#
-/.emacs.desktop
-/.emacs.desktop.lock
-*.elc
 
 # ==============================================================================
 # TEMPORARY & MISC FILES
@@ -130,42 +78,10 @@ $RECYCLE.BIN/
 .parcel-cache/
 
 # ==============================================================================
-# DATA FILES (PRIVATE)
-# ==============================================================================
-# Private data folder - keep out of public repository
-# data/
-
-# ==============================================================================
-# TEST & DEBUG FILES
-# ==============================================================================
-# Test data files (keep sample files in docs/api/)
-test-*.json
-*-test.json
-*-debug.json
-*-fixed.json
-*-final.json
-*-v*.json
-
-# Scraped data (keep organized scraped-questions/ folder)
-expertpath/complete_expertpath_data.json
-*.scraped.json
-
-# ==============================================================================
-# ANKI DECK EXPORTS (PRIVATE)
-# ==============================================================================
-# Anki deck exports - keep originals local, only upload compressed to R2
-# These contain the source data exported from Anki desktop via CrowdAnki
-anki/
-json/anki/
-
-# ==============================================================================
 # PROJECT DIRECTORIES (PRIVATE)
 # ==============================================================================
 # Development-only files (docs, scripts, etc.) - keep local
 dev/
-
-# Console output logs
-console.log
 
 # ==============================================================================
 # EXPERIMENTAL & WIP CODE

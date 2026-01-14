@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import {
@@ -28,13 +28,13 @@ import { QuestionPreviewDialog } from "./question-preview-dialog";
 import {
   Eye,
   Search,
-  Filter,
+  Filter as _Filter,
   Clock,
   User,
   Flag,
   AlertTriangle,
   CheckCircle,
-  XCircle,
+  XCircle as _XCircle,
 } from "lucide-react";
 
 export function ReviewQueueTable() {
@@ -53,7 +53,7 @@ export function ReviewQueueTable() {
 
   const supabase = createClient();
 
-  const fetchQuestions = async () => {
+  const fetchQuestions = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -108,7 +108,8 @@ export function ReviewQueueTable() {
     } finally {
       setLoading(false);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase is created fresh each render
+  }, []);
 
   useEffect(() => {
     fetchQuestions();

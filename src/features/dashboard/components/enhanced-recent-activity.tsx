@@ -10,7 +10,6 @@ import { Badge } from "@/shared/components/ui/badge";
 import {
   Clock,
   ChevronRight,
-  Filter,
   Award,
   Play,
   Target,
@@ -43,11 +42,7 @@ interface ActivityGroup {
   count: number;
 }
 
-interface EnhancedRecentActivityProps {
-  userId: string;
-}
-
-export function EnhancedRecentActivity({ _userId }: EnhancedRecentActivityProps) {
+export function EnhancedRecentActivity() {
   const router = useRouter();
   const [groups, setGroups] = useState<ActivityGroup[]>([]);
   const [loading, setLoading] = useState(true);

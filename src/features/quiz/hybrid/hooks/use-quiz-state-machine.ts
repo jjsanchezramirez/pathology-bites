@@ -10,7 +10,7 @@ import {
   quizStateReducer,
   createInitialQuizState,
   QuizStateUtils,
-  QuizAction,
+  QuizAction as _QuizAction,
 } from "../core/quiz-state-machine";
 import { QuizState, QuizQuestion, QuizAnswer } from "../../types/quiz-question";
 

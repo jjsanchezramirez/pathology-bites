@@ -78,7 +78,6 @@ function ImageCarouselInternal({ images, className = "" }: ImageCarouselProps) {
       setShowModal(true);
     }
   };
-  const _closeModal = () => setShowModal(false);
 
   return (
     <>

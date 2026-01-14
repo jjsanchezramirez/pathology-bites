@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/shared/services/client";
 import {
@@ -26,10 +26,10 @@ import {
   Search,
   Filter,
   Flag,
-  AlertTriangle,
-  Clock,
-  User,
-  FileQuestion,
+  AlertTriangle as _AlertTriangle,
+  Clock as _Clock,
+  User as _User,
+  FileQuestion as _FileQuestion,
   Edit,
   X,
   CheckCircle,
@@ -82,11 +82,7 @@ export function FlaggedQuestionsTable() {
   const { user } = useAuth({ minimal: true });
   const supabase = createClient();
 
-  useEffect(() => {
-    fetchFlaggedQuestions();
-  }, [fetchFlaggedQuestions]);
-
-  const fetchFlaggedQuestions = async () => {
+  const fetchFlaggedQuestions = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -148,7 +144,12 @@ export function FlaggedQuestionsTable() {
     } finally {
       setLoading(false);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase is created fresh each render
+  }, []);
+
+  useEffect(() => {
+    fetchFlaggedQuestions();
+  }, [fetchFlaggedQuestions]);
 
   useEffect(() => {
     let filtered = questions;

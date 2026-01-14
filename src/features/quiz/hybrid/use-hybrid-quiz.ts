@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import { useQuizStateMachine } from "./hooks/use-quiz-state-machine";
 import { DatabaseSyncManager, SyncResult } from "./core/database-sync-manager";
 import { AutoSaveManager } from "../services/auto-save-manager";
-import { AUTO_SAVE_CONFIG, SyncStatus, type } from "../config/auto-save-config";
+import { AUTO_SAVE_CONFIG, SyncStatus, type as _type } from "../config/auto-save-config";
 import {
   QuizAnswer,
   QuizState,
@@ -129,7 +129,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     sessionId,
     enableRealtime = false,
     enableOfflineSupport = true,
-    autoSync = true,
+    autoSync: _autoSync = true,
     syncOnComplete = true,
     csrfTokenGetter,
     onAnswerSubmitted,
@@ -139,7 +139,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   } = options;
 
   // Router for navigation detection
-  const router = useRouter();
+  const _router = useRouter();
 
   // Sync status state
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({ state: "idle", message: "" });
@@ -182,9 +182,9 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   const {
     state: quizState,
     actions: stateActions,
-    currentQuestion,
+    currentQuestion: _currentQuestion,
     isInitialized,
-    isActive,
+    isActive: _isActive,
     isCompleted,
   } = useQuizStateMachine({
     sessionId,
@@ -362,7 +362,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     } finally {
       isInitializingRef.current = false;
     }
-  }, [sessionId, stateActions, onError, quizState.currentQuestionIndex, recoverLocalState]);
+  }, [sessionId, stateActions, onError, recoverLocalState]);
 
   // Handle quiz completion with sync
   const handleCompleteQuiz = useCallback(async (): Promise<SyncResult> => {

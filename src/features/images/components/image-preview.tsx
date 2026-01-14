@@ -177,7 +177,7 @@ export function ImagePreview({
       {isPreviewVisible && (
         <div
           ref={previewRef}
-          className="fixed z-100 rounded-lg shadow-lg bg-white/5 backdrop-blur-xs overflow-hidden"
+          className="fixed z-100 rounded-lg shadow-lg bg-white/5 backdrop-blur-xs overflow-hidden pointer-events-none"
           style={{
             top: position.top,
             left: position.left,

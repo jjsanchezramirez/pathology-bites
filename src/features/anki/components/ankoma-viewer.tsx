@@ -1,40 +1,29 @@
 // src/features/anki/components/ankoma-viewer.tsx
 
-'use client'
+"use client";
 
-import React, { useState, useEffect, useMemo, useRef } from 'react'
-import { Card, CardContent } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Badge } from '@/shared/components/ui/badge'
-
-
+import React, { useState, useEffect, useMemo, useRef } from "react";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
 
 import {
   BookOpen,
   Loader2,
   AlertCircle,
-  Search,
   ChevronRight,
-  ChevronDown,
   RotateCcw,
-  Play,
   Shuffle,
-  Folder,
-  FolderOpen,
-  FileText
-} from 'lucide-react'
+  FileText,
+} from "lucide-react";
 
-import { SimplifiedSubdeckSidebar } from './simplified-subdeck-sidebar'
-import { AnkomaSection, AnkomaViewerProps } from '../types/anki-card'
-import {
-  findSectionById,
-  getAllCardsFromSection,
-  getSectionStats
-} from '../utils/ankoma-parser'
-import { useClientAnkoma } from '@/shared/hooks/use-client-ankoma'
-import { useImagePreloader } from '../hooks/use-image-preloader'
-import { cn } from '@/shared/utils'
-import { toast } from '@/shared/utils/toast'
+import { SimplifiedSubdeckSidebar } from "./simplified-subdeck-sidebar";
+import { AnkomaSection, AnkomaViewerProps } from "../types/anki-card";
+import { findSectionById, getAllCardsFromSection, getSectionStats } from "../utils/ankoma-parser";
+import { useClientAnkoma } from "@/shared/hooks/use-client-ankoma";
+import { useImagePreloader } from "../hooks/use-image-preloader";
+import { cn } from "@/shared/utils";
+import { toast } from "@/shared/utils/toast";
 
 // Funny loading messages for Anki deck loading
 const ANKI_LOADING_MESSAGES = [
@@ -57,168 +46,161 @@ const ANKI_LOADING_MESSAGES = [
   "Gathering cards from the depths of ankoma.json...",
   "Converting study anxiety into learning opportunities...",
   "Assembling your personalized knowledge database...",
-  "Preparing cards that make medical school look easy..."
-]
+  "Preparing cards that make medical school look easy...",
+];
 
 export function AnkomaViewer({
-  autoLoad = true,
   defaultSection,
   onSectionChange,
   onError,
-  className
+  className,
 }: AnkomaViewerProps) {
   // Use the new client-side hook instead of manual loading
-  const { ankomaData, sections, isLoading, error, totalCards } = useClientAnkoma()
-  
-  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null)
-  const [currentCardIndex, setCurrentCardIndex] = useState(0)
+  const { ankomaData, sections, isLoading, error, totalCards } = useClientAnkoma();
+
+  const [selectedSectionId, setSelectedSectionId] = useState<string | null>(null);
+  const [currentCardIndex, setCurrentCardIndex] = useState(0);
 
   // Loading message cycling state
-  const [currentLoadingMessage, setCurrentLoadingMessage] = useState('')
-  const [_loadingMessageIndex, setLoadingMessageIndex] = useState(0)
-  const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null)
-  const [_showAnswer, setShowAnswer] = useState(false)
-  const [isShuffled, setIsShuffled] = useState(false)
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+  const [currentLoadingMessage, setCurrentLoadingMessage] = useState("");
+  const [, setLoadingMessageIndex] = useState(0);
+  const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
+  const [isShuffled, setIsShuffled] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Set default section when data loads
   useEffect(() => {
     if (ankomaData && defaultSection && !selectedSectionId) {
-      const section = findSectionById(ankomaData.sections, defaultSection)
+      const section = findSectionById(ankomaData.sections, defaultSection);
       if (section) {
-        setSelectedSectionId(section.id)
+        setSelectedSectionId(section.id);
       }
     }
-  }, [ankomaData, defaultSection, selectedSectionId])
+  }, [ankomaData, defaultSection, selectedSectionId]);
 
   // Auto-select first section with cards when data loads
   useEffect(() => {
     if (ankomaData && !defaultSection && !selectedSectionId && sections.length > 0) {
       const findFirstSectionWithCards = (sections: AnkomaSection[]): AnkomaSection | null => {
         for (const section of sections) {
-          if (section.cardCount > 0) return section
-          const found = findFirstSectionWithCards(section.subsections)
-          if (found) return found
+          if (section.cardCount > 0) return section;
+          const found = findFirstSectionWithCards(section.subsections);
+          if (found) return found;
         }
-        return null
-      }
+        return null;
+      };
 
-      const firstSectionWithCards = findFirstSectionWithCards(sections)
+      const firstSectionWithCards = findFirstSectionWithCards(sections);
       if (firstSectionWithCards) {
-        setSelectedSectionId(firstSectionWithCards.id)
+        setSelectedSectionId(firstSectionWithCards.id);
       }
     }
-  }, [ankomaData, sections, defaultSection, selectedSectionId])
+  }, [ankomaData, sections, defaultSection, selectedSectionId]);
 
   // Show success toast when data loads
   useEffect(() => {
     if (ankomaData && totalCards > 0) {
-      toast.success(`Loaded ${totalCards.toLocaleString()} cards from Ankoma deck`)
+      toast.success(`Loaded ${totalCards.toLocaleString()} cards from Ankoma deck`);
     }
-  }, [ankomaData, totalCards])
+  }, [ankomaData, totalCards]);
 
   // Pass error to parent component
   useEffect(() => {
     if (error) {
-      onError?.(error)
+      onError?.(error);
     }
-  }, [error, onError])
+  }, [error, onError]);
 
   // Cycle through loading messages while loading
   useEffect(() => {
     if (isLoading) {
       // Set initial message
-      const initialIndex = Math.floor(Math.random() * ANKI_LOADING_MESSAGES.length)
-      setLoadingMessageIndex(initialIndex)
-      setCurrentLoadingMessage(ANKI_LOADING_MESSAGES[initialIndex])
+      const initialIndex = Math.floor(Math.random() * ANKI_LOADING_MESSAGES.length);
+      setLoadingMessageIndex(initialIndex);
+      setCurrentLoadingMessage(ANKI_LOADING_MESSAGES[initialIndex]);
 
       // Cycle through messages every 3 seconds
       loadingIntervalRef.current = setInterval(() => {
-        setLoadingMessageIndex(prev => {
-          const nextIndex = (prev + 1) % ANKI_LOADING_MESSAGES.length
-          setCurrentLoadingMessage(ANKI_LOADING_MESSAGES[nextIndex])
-          return nextIndex
-        })
-      }, 3000)
+        setLoadingMessageIndex((prev) => {
+          const nextIndex = (prev + 1) % ANKI_LOADING_MESSAGES.length;
+          setCurrentLoadingMessage(ANKI_LOADING_MESSAGES[nextIndex]);
+          return nextIndex;
+        });
+      }, 3000);
     } else {
       // Clear interval when not loading
       if (loadingIntervalRef.current) {
-        clearInterval(loadingIntervalRef.current)
-        loadingIntervalRef.current = null
+        clearInterval(loadingIntervalRef.current);
+        loadingIntervalRef.current = null;
       }
     }
 
     // Cleanup on unmount
     return () => {
       if (loadingIntervalRef.current) {
-        clearInterval(loadingIntervalRef.current)
-        loadingIntervalRef.current = null
+        clearInterval(loadingIntervalRef.current);
+        loadingIntervalRef.current = null;
       }
-    }
-  }, [isLoading])
+    };
+  }, [isLoading]);
 
   // Get current section and its cards
   const currentSection = useMemo(() => {
-    if (!ankomaData || !selectedSectionId) return null
-    return findSectionById(ankomaData.sections, selectedSectionId)
-  }, [ankomaData, selectedSectionId])
+    if (!ankomaData || !selectedSectionId) return null;
+    return findSectionById(ankomaData.sections, selectedSectionId);
+  }, [ankomaData, selectedSectionId]);
 
   const currentCards = useMemo(() => {
-    if (!currentSection) return []
-    const allCards = getAllCardsFromSection(currentSection)
-    return isShuffled ? [...allCards].sort(() => Math.random() - 0.5) : allCards
-  }, [currentSection, isShuffled])
+    if (!currentSection) return [];
+    const allCards = getAllCardsFromSection(currentSection);
+    return isShuffled ? [...allCards].sort(() => Math.random() - 0.5) : allCards;
+  }, [currentSection, isShuffled]);
 
   // Preload images for better performance
-  const { _preloadedCount } = useImagePreloader(currentCards, currentCardIndex, {
+  useImagePreloader(currentCards, currentCardIndex, {
     enabled: currentCards.length > 0,
     preloadCount: 5,
-    priority: 'low'
-  })
+    priority: "low",
+  });
 
   // Current card from selected section
-  const currentCard = currentCards[currentCardIndex]
+  const currentCard = currentCards[currentCardIndex];
 
   const handleSectionSelect = (sectionId: string) => {
-    const section = findSectionById(ankomaData?.sections || [], sectionId)
+    const section = findSectionById(ankomaData?.sections || [], sectionId);
     if (section) {
-      setSelectedSectionId(sectionId)
-      setCurrentCardIndex(0)
-      setShowAnswer(false)
-      setIsShuffled(false)
-      onSectionChange?.(section)
+      setSelectedSectionId(sectionId);
+      setCurrentCardIndex(0);
+      setIsShuffled(false);
+      onSectionChange?.(section);
 
       // Show success message with section info
-      const stats = getSectionStats(section)
-      toast.success(`Selected: ${section.name} (${stats.totalCards} cards)`)
+      const stats = getSectionStats(section);
+      toast.success(`Selected: ${section.name} (${stats.totalCards} cards)`);
     }
-  }
+  };
 
   const handleNextCard = () => {
     if (currentCardIndex < currentCards.length - 1) {
-      setCurrentCardIndex(currentCardIndex + 1)
-      setShowAnswer(false)
+      setCurrentCardIndex(currentCardIndex + 1);
     }
-  }
+  };
 
   const handlePreviousCard = () => {
     if (currentCardIndex > 0) {
-      setCurrentCardIndex(currentCardIndex - 1)
-      setShowAnswer(false)
+      setCurrentCardIndex(currentCardIndex - 1);
     }
-  }
+  };
 
   const handleShuffle = () => {
-    setIsShuffled(!isShuffled)
-    setCurrentCardIndex(0)
-    setShowAnswer(false)
-  }
+    setIsShuffled(!isShuffled);
+    setCurrentCardIndex(0);
+  };
 
   const handleReset = () => {
-    setCurrentCardIndex(0)
-    setShowAnswer(false)
-    setIsShuffled(false)
-  }
+    setCurrentCardIndex(0);
+    setIsShuffled(false);
+  };
 
   if (isLoading) {
     return (
@@ -230,7 +212,7 @@ export function AnkomaViewer({
               <div className="space-y-2">
                 <h3 className="text-xl font-semibold text-foreground">Loading Ankoma Deck</h3>
                 <p className="text-sm text-muted-foreground">
-                  Parsing {totalCards?.toLocaleString() || 'thousands of'} cards from ankoma.json...
+                  Parsing {totalCards?.toLocaleString() || "thousands of"} cards from ankoma.json...
                 </p>
               </div>
 
@@ -244,9 +226,18 @@ export function AnkomaViewer({
               {/* Loading progress hint */}
               <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
                 <div className="flex gap-1">
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '0ms' }}></div>
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '150ms' }}></div>
-                  <div className="w-2 h-2 bg-primary rounded-full animate-bounce" style={{ animationDelay: '300ms' }}></div>
+                  <div
+                    className="w-2 h-2 bg-primary rounded-full animate-bounce"
+                    style={{ animationDelay: "0ms" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-primary rounded-full animate-bounce"
+                    style={{ animationDelay: "150ms" }}
+                  ></div>
+                  <div
+                    className="w-2 h-2 bg-primary rounded-full animate-bounce"
+                    style={{ animationDelay: "300ms" }}
+                  ></div>
                 </div>
                 <span>Loading from R2 storage</span>
               </div>
@@ -254,7 +245,7 @@ export function AnkomaViewer({
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   if (error) {
@@ -274,7 +265,7 @@ export function AnkomaViewer({
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   if (!ankomaData) {
@@ -292,16 +283,18 @@ export function AnkomaViewer({
           </CardContent>
         </Card>
       </div>
-    )
+    );
   }
 
   return (
     <div className={cn("w-full h-full min-h-0 flex", className)}>
       {/* Sidebar */}
-      <div className={cn(
-        "transition-all duration-300 border-r bg-background",
-        sidebarCollapsed ? "w-0" : "w-80"
-      )}>
+      <div
+        className={cn(
+          "transition-all duration-300 border-r bg-background",
+          sidebarCollapsed ? "w-0" : "w-80"
+        )}
+      >
         {!sidebarCollapsed && (
           <SimplifiedSubdeckSidebar
             sections={ankomaData.sections}
@@ -323,10 +316,9 @@ export function AnkomaViewer({
                 size="sm"
                 onClick={() => setSidebarCollapsed(!sidebarCollapsed)}
               >
-                <ChevronRight className={cn(
-                  "h-4 w-4 transition-transform",
-                  !sidebarCollapsed && "rotate-180"
-                )} />
+                <ChevronRight
+                  className={cn("h-4 w-4 transition-transform", !sidebarCollapsed && "rotate-180")}
+                />
               </Button>
 
               <div>
@@ -336,7 +328,7 @@ export function AnkomaViewer({
                 </h1>
                 {currentSection && (
                   <p className="text-sm text-muted-foreground">
-                    {currentSection.path.slice(1).join(' → ')}
+                    {currentSection.path.slice(1).join(" → ")}
                   </p>
                 )}
               </div>
@@ -388,7 +380,9 @@ export function AnkomaViewer({
                 <CardContent className="p-6">
                   <div className="space-y-4">
                     <div className="flex justify-between items-center">
-                      <h3 className="text-lg font-semibold">Card {currentCardIndex + 1} of {currentCards.length}</h3>
+                      <h3 className="text-lg font-semibold">
+                        Card {currentCardIndex + 1} of {currentCards.length}
+                      </h3>
                       <div className="flex gap-2">
                         {currentCardIndex > 0 && (
                           <Button onClick={handlePreviousCard} size="sm">
@@ -404,11 +398,17 @@ export function AnkomaViewer({
                     </div>
 
                     <div className="border rounded-lg p-4">
-                      <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentCard.question }} />
+                      <div
+                        className="prose max-w-none"
+                        dangerouslySetInnerHTML={{ __html: currentCard.question }}
+                      />
                     </div>
 
                     <div className="border rounded-lg p-4 bg-muted/50">
-                      <div className="prose max-w-none" dangerouslySetInnerHTML={{ __html: currentCard.answer }} />
+                      <div
+                        className="prose max-w-none"
+                        dangerouslySetInnerHTML={{ __html: currentCard.answer }}
+                      />
                     </div>
                   </div>
                 </CardContent>
@@ -439,10 +439,7 @@ export function AnkomaViewer({
                       Choose a subdeck from the sidebar to start studying.
                     </p>
                     {sidebarCollapsed && (
-                      <Button
-                        className="mt-4"
-                        onClick={() => setSidebarCollapsed(false)}
-                      >
+                      <Button className="mt-4" onClick={() => setSidebarCollapsed(false)}>
                         <ChevronRight className="h-4 w-4 mr-2" />
                         Show Subdecks
                       </Button>
@@ -455,5 +452,5 @@ export function AnkomaViewer({
         </div>
       </div>
     </div>
-  )
+  );
 }

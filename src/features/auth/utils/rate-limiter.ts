@@ -47,7 +47,6 @@ class RateLimiter {
   }
 
   private cleanupExpiredEntries(): void {
-    const _now = Date.now();
     for (const [key, entry] of this.attempts.entries()) {
       if (!this.isWithinWindow(entry) && !this.isBlocked(entry)) {
         this.attempts.delete(key);
@@ -60,13 +59,12 @@ class RateLimiter {
 
     const key = this.getKey(identifier, action);
     const entry = this.attempts.get(key);
-    const now = Date.now();
 
     if (!entry) {
       // First attempt
       this.attempts.set(key, {
         attempts: 1,
-        windowStart: now,
+        windowStart: Date.now(),
       });
       return { allowed: true };
     }
@@ -75,14 +73,14 @@ class RateLimiter {
     if (this.isBlocked(entry)) {
       return {
         allowed: false,
-        retryAfter: entry.blockedUntil! - now,
+        retryAfter: entry.blockedUntil! - Date.now(),
       };
     }
 
     // Check if we need to reset the window
     if (!this.isWithinWindow(entry)) {
       entry.attempts = 1;
-      entry.windowStart = now;
+      entry.windowStart = Date.now();
       entry.blockedUntil = undefined;
       return { allowed: true };
     }
@@ -92,7 +90,7 @@ class RateLimiter {
 
     // Check if limit exceeded
     if (entry.attempts > this.config.maxAttempts) {
-      entry.blockedUntil = now + this.config.blockDurationMs;
+      entry.blockedUntil = Date.now() + this.config.blockDurationMs;
       return {
         allowed: false,
         retryAfter: this.config.blockDurationMs,

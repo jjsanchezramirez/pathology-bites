@@ -9,7 +9,6 @@ dist
 
 # Logs
 *.log
-npm-debug.log*
 
 # Environment files
 .env
@@ -17,23 +16,19 @@ npm-debug.log*
 
 # Type definitions
 next-env.d.ts
-*.d.ts
 
 # Cache
 .cache
 tsconfig.tsbuildinfo
 
 # Development directories
-dev/scripts
-scripts
+dev
 
 # Git
 .git
 
 # Lock files
 package-lock.json
-yarn.lock
-pnpm-lock.yaml
 
 # Public assets (may have specific formatting)
 public

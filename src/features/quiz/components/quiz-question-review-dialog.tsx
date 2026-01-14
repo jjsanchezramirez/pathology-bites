@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/shared/components/ui/dialog";
 import { Badge } from "@/shared/components/ui/badge";
@@ -43,13 +43,7 @@ export function QuizQuestionReviewDialog({
   const [loading, setLoading] = useState(false);
   const supabase = createClient();
 
-  useEffect(() => {
-    if (open && questionDetail) {
-      fetchQuestionData();
-    }
-  }, [open, questionDetail, fetchQuestionData]);
-
-  const fetchQuestionData = async () => {
+  const fetchQuestionData = useCallback(async () => {
     if (!questionDetail) return;
 
     setLoading(true);
@@ -82,7 +76,14 @@ export function QuizQuestionReviewDialog({
     } finally {
       setLoading(false);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase is created fresh each render
+  }, [questionDetail]);
+
+  useEffect(() => {
+    if (open && questionDetail) {
+      fetchQuestionData();
+    }
+  }, [open, questionDetail, fetchQuestionData]);
 
   const getDifficultyColor = (difficulty: string) => {
     switch (difficulty.toLowerCase()) {

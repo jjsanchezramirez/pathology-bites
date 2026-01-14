@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 
-import { ExternalLink, Loader2, AlertCircle, Info, Download, RefreshCw } from "lucide-react";
+import { ExternalLink, Loader2, AlertCircle, Info, Download, RefreshCw as _RefreshCw } from "lucide-react";
 import Image from "next/image";
 import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
 

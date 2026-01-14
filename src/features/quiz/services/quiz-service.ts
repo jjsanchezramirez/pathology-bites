@@ -7,7 +7,7 @@ import {
   QuizResult,
   QuizStats,
   QuizCreationForm,
-  QuizSessionData,
+  QuizSessionData as _QuizSessionData,
   QUIZ_TIMING_CONFIG,
 } from "@/features/quiz/types/quiz";
 import { QuestionWithDetails } from "@/features/questions/types/questions";
@@ -30,10 +30,20 @@ export class QuizService {
       const supabaseClient = authenticatedSupabase || this.getSupabase();
 
       // First, get questions based on the criteria
-      const questions = await this.getQuestionsForQuiz(formData);
+      const questions = await this.getQuestionsForQuiz(userId, formData, supabaseClient);
 
       if (questions.length === 0) {
-        throw new Error("No questions found matching the specified criteria");
+        throw new Error(
+          `No ${formData.questionType} questions found for the selected categories. ` +
+            `Try selecting "All Questions" or different categories.`
+        );
+      }
+
+      // Validate that we have enough questions
+      if (questions.length < formData.questionCount) {
+        console.warn(
+          `Only ${questions.length} questions available, but ${formData.questionCount} requested`
+        );
       }
 
       // Shuffle questions if requested
@@ -108,10 +118,23 @@ export class QuizService {
 
   /**
    * Get questions for quiz based on criteria
+   * Now includes question type filtering (unused, needsReview, marked, mastered)
    */
-  private async getQuestionsForQuiz(formData: QuizCreationForm): Promise<QuestionWithDetails[]> {
+  private async getQuestionsForQuiz(
+    userId: string,
+    formData: QuizCreationForm,
+    supabaseClient?: unknown
+  ): Promise<QuestionWithDetails[]> {
+    const supabase = supabaseClient || this.getSupabase();
+
+    console.log(`[Quiz Creation] Starting question selection for user ${userId}`, {
+      questionType: formData.questionType,
+      categorySelection: formData.categorySelection,
+      requestedCount: formData.questionCount,
+    });
+
     // Query with proper joins to load images and options - SELECT only needed fields
-    const query = this.getSupabase()
+    const query = supabase
       .from("questions")
       .select(
         `
@@ -147,18 +170,29 @@ export class QuizService {
       throw error;
     }
 
-    let filteredQuestions = questions || [];
+    // Deduplicate questions by ID (in case joins produce duplicates)
+    const uniqueQuestionsMap = new Map();
+    for (const question of questions || []) {
+      if (!uniqueQuestionsMap.has(question.id)) {
+        uniqueQuestionsMap.set(question.id, question);
+      } else {
+        console.warn(`[Quiz Creation] Duplicate question detected and removed: ${question.id}`);
+      }
+    }
+    let filteredQuestions = Array.from(uniqueQuestionsMap.values());
+
+    console.log(`[Quiz Creation] Total published questions: ${filteredQuestions.length}`);
 
     // Filter by category selection
     if (formData.categorySelection === "ap_only") {
       // Get AP subcategory IDs
-      const { data: apCategories } = await this.getSupabase()
+      const { data: apCategories } = await supabase
         .from("categories")
         .select("id")
         .eq(
           "parent_id",
           (
-            await this.getSupabase()
+            await supabase
               .from("categories")
               .select("id")
               .eq("name", "Anatomic Pathology")
@@ -175,13 +209,13 @@ export class QuizService {
       }
     } else if (formData.categorySelection === "cp_only") {
       // Get CP subcategory IDs
-      const { data: cpCategories } = await this.getSupabase()
+      const { data: cpCategories } = await supabase
         .from("categories")
         .select("id")
         .eq(
           "parent_id",
           (
-            await this.getSupabase()
+            await supabase
               .from("categories")
               .select("id")
               .eq("name", "Clinical Pathology")
@@ -202,9 +236,20 @@ export class QuizService {
       );
     }
 
-    // TODO: Filter by question type (unused, incorrect, marked, correct)
-    // This would require user-specific data about question attempts and flags
-    // For now, we'll return all questions matching the category criteria
+    console.log(`[Quiz Creation] After category filter: ${filteredQuestions.length} questions`);
+
+    // Filter by question type (unused, needsReview, marked, mastered)
+    if (formData.questionType !== "all") {
+      filteredQuestions = await this.filterByQuestionType(
+        userId,
+        filteredQuestions,
+        formData.questionType,
+        supabase
+      );
+      console.log(
+        `[Quiz Creation] After ${formData.questionType} filter: ${filteredQuestions.length} questions`
+      );
+    }
 
     // Convert to QuestionWithDetails format with loaded data
     const questionsWithDetails: QuestionWithDetails[] = filteredQuestions.map((q) => ({
@@ -221,9 +266,94 @@ export class QuizService {
       updated_by_name: undefined,
       image_count: q.question_images?.length || 0,
       latest_flag_date: undefined,
+      reviewer_id: undefined,
+      reviewer_feedback: undefined,
+      published_at: undefined,
+      anki_card_id: undefined,
+      anki_deck_name: undefined,
     }));
 
     return questionsWithDetails;
+  }
+
+  /**
+   * Filter questions by type (unused, needsReview, marked, mastered)
+   */
+  private async filterByQuestionType(
+    userId: string,
+    questions: unknown[],
+    questionType: "unused" | "needsReview" | "marked" | "mastered",
+    supabase: unknown
+  ): Promise<unknown[]> {
+    // Get user's quiz attempts
+    const { data: userAttempts } = await supabase
+      .from("quiz_attempts")
+      .select("question_id, is_correct")
+      .eq("user_id", userId);
+
+    // Get user's favorites (marked questions)
+    const { data: userFavorites } = await supabase
+      .from("user_favorites")
+      .select("question_id")
+      .eq("user_id", userId);
+
+    // Build sets for efficient lookup
+    const attemptedQuestionIds = new Set(userAttempts?.map((a) => a.question_id) || []);
+    const favoriteQuestionIds = new Set(userFavorites?.map((f) => f.question_id) || []);
+
+    // Track questions by status
+    const incorrectQuestionIds = new Set<string>();
+    const masteredQuestionIds = new Set<string>();
+
+    // Group attempts by question to determine status
+    const questionAttemptMap = new Map<string, { correct: number; incorrect: number }>();
+    for (const attempt of userAttempts || []) {
+      if (!questionAttemptMap.has(attempt.question_id)) {
+        questionAttemptMap.set(attempt.question_id, { correct: 0, incorrect: 0 });
+      }
+      const counts = questionAttemptMap.get(attempt.question_id)!;
+      if (attempt.is_correct) {
+        counts.correct++;
+      } else {
+        counts.incorrect++;
+      }
+    }
+
+    // Classify questions
+    for (const [questionId, counts] of questionAttemptMap.entries()) {
+      if (counts.incorrect > 0) {
+        // Has at least one incorrect attempt
+        incorrectQuestionIds.add(questionId);
+      } else if (counts.correct > 0) {
+        // Has only correct attempts (no incorrect)
+        masteredQuestionIds.add(questionId);
+      }
+    }
+
+    console.log(`[Quiz Creation] Question type stats:`, {
+      attempted: attemptedQuestionIds.size,
+      favorites: favoriteQuestionIds.size,
+      needsReview: incorrectQuestionIds.size,
+      mastered: masteredQuestionIds.size,
+    });
+
+    // Apply filter based on question type
+    switch (questionType) {
+      case "unused":
+        return questions.filter((q) => !attemptedQuestionIds.has(q.id));
+
+      case "needsReview":
+        return questions.filter((q) => incorrectQuestionIds.has(q.id));
+
+      case "marked":
+        return questions.filter((q) => favoriteQuestionIds.has(q.id));
+
+      case "mastered":
+        return questions.filter((q) => masteredQuestionIds.has(q.id));
+
+      default:
+        return questions;
+    }
   }
 
   /**
@@ -578,12 +708,12 @@ export class QuizService {
         (s) => new Date(s.completed_at || "") >= weekAgo
       ).length;
 
-      const weeklyStudyTime = completedSessions
+      const _weeklyStudyTime = completedSessions
         .filter((s) => new Date(s.completed_at || "") >= weekAgo)
         .reduce((sum, s) => sum + (s.total_time_spent || 0), 0);
 
       // Get recent quizzes (last 5)
-      const recentQuizzes = completedSessions
+      const _recentQuizzes = completedSessions
         .sort(
           (a, b) =>
             new Date(b.completed_at || "").getTime() - new Date(a.completed_at || "").getTime()

@@ -15,7 +15,7 @@ import {
 } from "@/shared/components/ui/tooltip";
 import {
   Question,
-  QuestionWithDetails,
+  QuestionWithDetails as _QuestionWithDetails,
   Category,
   DIFFICULTY_CONFIG,
   YIELD_CONFIG,

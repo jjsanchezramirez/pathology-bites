@@ -56,9 +56,8 @@ export default function GeneLookupPage() {
         const newHistory = [geneInfo, ...prev.filter((g) => g.geneName !== geneInfo.geneName)];
         return newHistory.slice(0, 5);
       });
-    } catch (error) {
-      console.error("Error fetching gene information:", error);
-      // Clear gene info only on error to show error state
+    } catch {
+      // Error already handled by hook, just clear gene info
       setGeneInfo(null);
     }
   };

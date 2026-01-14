@@ -27,7 +27,6 @@ import { toast } from "@/shared/utils/toast";
 import {
   QuestionWithReviewDetails,
   ReviewAction,
-  ReviewFormData,
   REVIEW_ACTION_CONFIG,
   STATUS_CONFIG,
 } from "@/features/questions/types/questions";

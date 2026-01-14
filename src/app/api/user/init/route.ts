@@ -2,7 +2,7 @@
 // Combined endpoint for initial user data + settings
 // Reduces 2 API calls to 1
 
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import {
   DEFAULT_QUIZ_SETTINGS,
@@ -17,7 +17,7 @@ interface UserInitData {
   settings: unknown;
 }
 
-export async function GET(_request: NextRequest) {
+export async function GET(): Promise<NextResponse> {
   try {
     const supabase = await createClient();
 

@@ -1,5 +1,5 @@
 import { createClient } from "@/shared/services/server";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
 import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 
@@ -30,7 +30,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     let body;
     try {
       body = await request.json();
-    } catch (_parseError) {
+    } catch (parseError) {
+      console.error("Error parsing request body:", parseError);
       return NextResponse.json(
         { error: "Invalid request body. Expected JSON format." },
         { status: 400 }

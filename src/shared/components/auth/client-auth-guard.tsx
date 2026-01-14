@@ -25,6 +25,15 @@ export function ClientAuthGuard({ children, redirectTo = "/login" }: ClientAuthG
   const hasCheckedRef = useRef(false);
 
   useEffect(() => {
+    console.log("[ClientAuthGuard] [DIAGNOSTIC] Auth check:", {
+      isHydrated,
+      isLoading,
+      isAuthenticated,
+      hasChecked: hasCheckedRef.current,
+      pathname: typeof window !== "undefined" ? window.location.pathname : "SSR",
+      timestamp: new Date().toISOString(),
+    });
+
     // Wait until fully hydrated and auth check complete
     if (!isHydrated || isLoading) {
       return;
@@ -35,6 +44,7 @@ export function ClientAuthGuard({ children, redirectTo = "/login" }: ClientAuthG
     // but keeping it as defensive programming to ensure auth state has fully settled
     if (!hasCheckedRef.current) {
       hasCheckedRef.current = true;
+      console.log("[ClientAuthGuard] [DIAGNOSTIC] ⏳ Waiting one render cycle...");
       return;
     }
 
@@ -42,9 +52,15 @@ export function ClientAuthGuard({ children, redirectTo = "/login" }: ClientAuthG
       // User not authenticated - redirect to login
       const currentPath = window.location.pathname;
       const redirectUrl = `${redirectTo}?redirect=${encodeURIComponent(currentPath)}`;
+      console.log("[ClientAuthGuard] [DIAGNOSTIC] 🚨 REDIRECTING to login:", {
+        from: currentPath,
+        to: redirectUrl,
+        reason: "Not authenticated",
+      });
       router.replace(redirectUrl);
     } else {
       // User authenticated - safe to render
+      console.log("[ClientAuthGuard] [DIAGNOSTIC] ✅ Authenticated, rendering page");
       setShouldRender(true);
     }
   }, [isAuthenticated, isLoading, isHydrated, redirectTo, router]);

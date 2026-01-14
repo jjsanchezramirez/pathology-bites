@@ -1,7 +1,7 @@
 // src/features/questions/components/draft-questions-table.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/shared/services/client";
 import {
   Table,
@@ -67,11 +67,7 @@ export function DraftQuestionsTable() {
 
   const supabase = createClient();
 
-  useEffect(() => {
-    fetchDraftQuestions();
-  }, [fetchDraftQuestions]);
-
-  const fetchDraftQuestions = async () => {
+  const fetchDraftQuestions = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -175,7 +171,12 @@ export function DraftQuestionsTable() {
     } finally {
       setLoading(false);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase is created fresh each render
+  }, []);
+
+  useEffect(() => {
+    fetchDraftQuestions();
+  }, [fetchDraftQuestions]);
 
   const filteredQuestions = questions.filter((question) => {
     const matchesSearch =

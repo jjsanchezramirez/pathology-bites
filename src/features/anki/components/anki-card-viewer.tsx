@@ -1,14 +1,14 @@
 // src/features/anki/components/anki-card-viewer.tsx
 
-'use client'
+"use client";
 
-import React, { useState, useEffect, useMemo } from 'react'
-import Image from 'next/image'
-import { useImageCacheHandler } from '@/shared/hooks/use-smart-image-cache'
-import { Card, CardContent, CardHeader, CardTitle } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Badge } from '@/shared/components/ui/badge'
-import { Separator } from '@/shared/components/ui/separator'
+import React, { useState, useEffect, useMemo } from "react";
+import Image from "next/image";
+import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import { Separator } from "@/shared/components/ui/separator";
 import {
   Eye,
   EyeOff,
@@ -17,21 +17,20 @@ import {
   RotateCcw,
   Clock,
   Hash,
-  BookOpen
-} from 'lucide-react'
-import { AnkiCardViewerProps } from '../types/anki-card'
+  BookOpen,
+} from "lucide-react";
+import { AnkiCardViewerProps } from "../types/anki-card";
 import {
-  processClozeText,
   hasClozes,
   getClozeIndices,
   generateClozeQuestion,
-  generateClozeAnswer
-} from '../utils/cloze-processor'
-import { cn } from '@/shared/utils'
+  generateClozeAnswer,
+} from "../utils/cloze-processor";
+import { cn } from "@/shared/utils";
 
 // Separate component for cached images to avoid hook violations
-function CachedAnkiImage({ src, alt, _index }: { src: string; alt: string; _index: number }) {
-  const handleImageLoad = useImageCacheHandler(src, true)
+function CachedAnkiImage({ src, alt }: { src: string; alt: string }) {
+  const handleImageLoad = useImageCacheHandler(src, true);
 
   return (
     <div className="flex justify-center">
@@ -42,13 +41,13 @@ function CachedAnkiImage({ src, alt, _index }: { src: string; alt: string; _inde
           width={800}
           height={600}
           className="w-full h-auto rounded-xl border object-contain"
-          style={{ maxHeight: '70vh' }}
+          style={{ maxHeight: "70vh" }}
           unoptimized={true}
           onLoad={handleImageLoad}
         />
       </div>
     </div>
-  )
+  );
 }
 
 export function AnkiCardViewer({
@@ -57,120 +56,112 @@ export function AnkiCardViewer({
   onAnswerToggle,
   onNext,
   onPrevious,
-  className
+  className,
 }: AnkiCardViewerProps) {
-  const [currentClozeIndex, setCurrentClozeIndex] = useState<number>(0)
-  const [internalShowAnswer, setInternalShowAnswer] = useState(showAnswer)
+  const [currentClozeIndex, setCurrentClozeIndex] = useState<number>(0);
+  const [internalShowAnswer, setInternalShowAnswer] = useState(showAnswer);
 
   // Use internal state if no external control is provided
-  const isShowingAnswer = onAnswerToggle ? showAnswer : internalShowAnswer
-  
+  const isShowingAnswer = onAnswerToggle ? showAnswer : internalShowAnswer;
+
   const handleAnswerToggle = () => {
     if (onAnswerToggle) {
-      onAnswerToggle()
+      onAnswerToggle();
     } else {
-      setInternalShowAnswer(!internalShowAnswer)
+      setInternalShowAnswer(!internalShowAnswer);
     }
-  }
+  };
 
   // Process card content for clozes
   const questionClozes = useMemo(() => {
     if (hasClozes(card.question)) {
-      return getClozeIndices(card.question)
+      return getClozeIndices(card.question);
     }
-    return []
-  }, [card.question])
+    return [];
+  }, [card.question]);
 
   const answerClozes = useMemo(() => {
     if (hasClozes(card.answer)) {
-      return getClozeIndices(card.answer)
+      return getClozeIndices(card.answer);
     }
-    return []
-  }, [card.answer])
+    return [];
+  }, [card.answer]);
 
-  const isClozeCard = questionClozes.length > 0 || answerClozes.length > 0
+  const isClozeCard = questionClozes.length > 0 || answerClozes.length > 0;
 
   // Reset cloze index when card changes
   useEffect(() => {
-    setCurrentClozeIndex(0)
-    setInternalShowAnswer(false)
-  }, [card.id])
+    setCurrentClozeIndex(0);
+    setInternalShowAnswer(false);
+  }, [card.id]);
 
   // Generate display content
   const displayContent = useMemo(() => {
     if (!isClozeCard) {
       return {
         question: card.question,
-        answer: card.answer
-      }
+        answer: card.answer,
+      };
     }
 
     if (questionClozes.length > 0) {
-      const clozeIndex = questionClozes[currentClozeIndex] || questionClozes[0]
+      const clozeIndex = questionClozes[currentClozeIndex] || questionClozes[0];
       return {
         question: generateClozeQuestion(card.question, clozeIndex),
-        answer: generateClozeAnswer(card.question)
-      }
+        answer: generateClozeAnswer(card.question),
+      };
     }
 
     if (answerClozes.length > 0) {
-      const clozeIndex = answerClozes[currentClozeIndex] || answerClozes[0]
+      const clozeIndex = answerClozes[currentClozeIndex] || answerClozes[0];
       return {
         question: card.question,
-        answer: generateClozeQuestion(card.answer, clozeIndex)
-      }
+        answer: generateClozeQuestion(card.answer, clozeIndex),
+      };
     }
 
     return {
       question: card.question,
-      answer: card.answer
-    }
-  }, [card, isClozeCard, questionClozes, answerClozes, currentClozeIndex])
+      answer: card.answer,
+    };
+  }, [card, isClozeCard, questionClozes, answerClozes, currentClozeIndex]);
 
   // Handle cloze navigation
   const handlePreviousCloze = () => {
-    const totalClozes = Math.max(questionClozes.length, answerClozes.length)
-    setCurrentClozeIndex((prev) => (prev - 1 + totalClozes) % totalClozes)
-  }
+    const totalClozes = Math.max(questionClozes.length, answerClozes.length);
+    setCurrentClozeIndex((prev) => (prev - 1 + totalClozes) % totalClozes);
+  };
 
   const handleNextCloze = () => {
-    const totalClozes = Math.max(questionClozes.length, answerClozes.length)
-    setCurrentClozeIndex((prev) => (prev + 1) % totalClozes)
-  }
+    const totalClozes = Math.max(questionClozes.length, answerClozes.length);
+    setCurrentClozeIndex((prev) => (prev + 1) % totalClozes);
+  };
 
   // Extract images from content and convert to R2 URLs
   const extractImages = (content: string) => {
-    const imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/g
-    const images: string[] = []
-    let match
+    const imgRegex = /<img[^>]+src="([^"]+)"[^>]*>/g;
+    const images: string[] = [];
+    let match;
 
     while ((match = imgRegex.exec(content)) !== null) {
-      let src = match[1]
+      let src = match[1];
 
       // Convert relative paths to direct R2 CDN URLs for better performance
       // Files are now organized in anki/ subfolder
-      if (!src.startsWith('http')) {
-        const sanitizedSrc = src.replace(/\s+/g, '_')
-        const publicUrl = 'https://pub-a4bec7073d99465f99043c842be6318c.r2.dev'
-        src = `${publicUrl}/anki/${sanitizedSrc}`
+      if (!src.startsWith("http")) {
+        const sanitizedSrc = src.replace(/\s+/g, "_");
+        const publicUrl = "https://pub-a4bec7073d99465f99043c842be6318c.r2.dev";
+        src = `${publicUrl}/anki/${sanitizedSrc}`;
       }
 
-      images.push(src)
+      images.push(src);
     }
 
-    return images
-  }
+    return images;
+  };
 
-  const questionImages = extractImages(displayContent.question)
-  const answerImages = extractImages(displayContent.answer)
-
-  // Clean HTML content for display
-  const _cleanHtml = (html: string) => {
-    return html
-      .replace(/<img[^>]*>/g, '') // Remove img tags (we'll display them separately)
-      .replace(/<[^>]*>/g, '') // Remove other HTML tags
-      .trim()
-  }
+  const questionImages = extractImages(displayContent.question);
+  const answerImages = extractImages(displayContent.answer);
 
   return (
     <div className={cn("w-full max-w-4xl mx-auto", className)}>
@@ -189,7 +180,7 @@ export function AnkiCardViewer({
               ))}
             </div>
           </div>
-          
+
           {/* Card metadata */}
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <div className="flex items-center gap-1">
@@ -220,7 +211,8 @@ export function AnkiCardViewer({
                 <ChevronLeft className="h-4 w-4" />
               </Button>
               <span className="text-sm font-medium">
-                Cloze {currentClozeIndex + 1} of {Math.max(questionClozes.length, answerClozes.length)}
+                Cloze {currentClozeIndex + 1} of{" "}
+                {Math.max(questionClozes.length, answerClozes.length)}
               </span>
               <Button
                 variant="outline"
@@ -236,7 +228,7 @@ export function AnkiCardViewer({
           {/* Question */}
           <div className="space-y-4">
             <div className="prose prose-sm max-w-none">
-              <div 
+              <div
                 className="text-foreground leading-relaxed"
                 dangerouslySetInnerHTML={{ __html: displayContent.question }}
               />
@@ -246,12 +238,7 @@ export function AnkiCardViewer({
             {questionImages.length > 0 && (
               <div className="flex flex-col items-center gap-4">
                 {questionImages.map((src, index) => (
-                  <CachedAnkiImage
-                    key={index}
-                    src={src}
-                    alt={`Question image ${index + 1}`}
-                    index={index}
-                  />
+                  <CachedAnkiImage key={index} src={src} alt={`Question image ${index + 1}`} />
                 ))}
               </div>
             )}
@@ -263,7 +250,7 @@ export function AnkiCardViewer({
               <Separator />
               <div className="space-y-4">
                 <div className="prose prose-sm max-w-none">
-                  <div 
+                  <div
                     className="text-foreground leading-relaxed"
                     dangerouslySetInnerHTML={{ __html: displayContent.answer }}
                   />
@@ -273,12 +260,7 @@ export function AnkiCardViewer({
                 {answerImages.length > 0 && (
                   <div className="flex flex-col items-center gap-4">
                     {answerImages.map((src, index) => (
-                      <CachedAnkiImage
-                        key={index}
-                        src={src}
-                        alt={`Answer image ${index + 1}`}
-                        index={index}
-                      />
+                      <CachedAnkiImage key={index} src={src} alt={`Answer image ${index + 1}`} />
                     ))}
                   </div>
                 )}
@@ -288,11 +270,7 @@ export function AnkiCardViewer({
 
           {/* Controls */}
           <div className="flex items-center justify-between pt-4">
-            <Button
-              variant="outline"
-              onClick={onPrevious}
-              disabled={!onPrevious}
-            >
+            <Button variant="outline" onClick={onPrevious} disabled={!onPrevious}>
               <ChevronLeft className="h-4 w-4 mr-2" />
               Previous
             </Button>
@@ -314,11 +292,7 @@ export function AnkiCardViewer({
               )}
             </Button>
 
-            <Button
-              variant="outline"
-              onClick={onNext}
-              disabled={!onNext}
-            >
+            <Button variant="outline" onClick={onNext} disabled={!onNext}>
               Next
               <ChevronRight className="h-4 w-4 ml-2" />
             </Button>
@@ -326,5 +300,5 @@ export function AnkiCardViewer({
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

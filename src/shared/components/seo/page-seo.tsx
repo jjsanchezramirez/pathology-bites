@@ -40,7 +40,7 @@ interface PageSEOProps {
 }
 
 export function PageSEO({
-  config,
+  config: _config,
   breadcrumbs,
   question,
   course,

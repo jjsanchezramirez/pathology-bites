@@ -4,10 +4,10 @@ import { createClient } from "@/shared/services/client";
 import {
   NotificationWithSource,
   PaginatedNotifications,
-  NotificationSourceType,
-  SystemUpdatePayload,
-  MilestonePayload,
-  ReminderPayload,
+  NotificationSourceType as _NotificationSourceType,
+  SystemUpdatePayload as _SystemUpdatePayload,
+  MilestonePayload as _MilestonePayload,
+  ReminderPayload as _ReminderPayload,
 } from "@/shared/types/notifications";
 
 export class NotificationsService {

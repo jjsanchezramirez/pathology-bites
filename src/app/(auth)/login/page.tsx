@@ -19,20 +19,11 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
   // Note: Authentication check moved to client-side to avoid cookies() during build
   // The LoginForm component will handle redirecting authenticated users
 
-  // Check if coming soon or maintenance mode is enabled
-  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === "true";
-  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
-  const isAdminOnlyMode = isComingSoonMode || isMaintenanceMode;
-
   return (
     <AuthPageLayout maxWidth="sm">
       <AuthCard
-        title={isAdminOnlyMode ? "Admin Login" : "Welcome back"}
-        description={
-          isAdminOnlyMode
-            ? "Admin access to Pathology Bites"
-            : "Login with Google or your email account"
-        }
+        title="Welcome back"
+        description="Login with Google or your email account"
         showPrivacyFooter
       >
         <LoginForm
@@ -40,7 +31,6 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           redirect={params.redirect}
           initialError={params.error}
           initialMessage={params.message}
-          isAdminOnlyMode={isAdminOnlyMode}
         />
       </AuthCard>
     </AuthPageLayout>

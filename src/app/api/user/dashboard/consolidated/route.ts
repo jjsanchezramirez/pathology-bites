@@ -73,7 +73,6 @@ export async function GET(request: NextRequest) {
 
     // Process results
     const stats = statsResult || getDefaultStats();
-    const goals = goalsResult.data || [];
     const activities = formatActivities(activitiesResult.data || []);
     const settings = settingsResult.data || getDefaultSettings();
     const recentQuizzes = formatRecentQuizzes(recentQuizzesResult.data || []);

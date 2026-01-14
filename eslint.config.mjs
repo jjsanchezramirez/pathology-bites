@@ -17,7 +17,14 @@ const eslintConfig = [
     rules: {
       // Disable overly strict rules for development
       "react/no-unescaped-entities": "off",
-      "@typescript-eslint/no-unused-vars": "warn", // Warn instead of error
+      "@typescript-eslint/no-unused-vars": [
+        "warn",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+        },
+      ], // Warn instead of error, ignore vars starting with _
       "@typescript-eslint/no-explicit-any": "warn", // Warn instead of error for gradual typing
       "@typescript-eslint/no-empty-object-type": "warn",
       "@typescript-eslint/no-require-imports": "warn", // Allow require in tests
@@ -63,7 +70,6 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
       "dev/scripts/**",
-      "scripts/**",
       // Allow direct sonner imports only in utility wrapper, UI component, and root layout
       "src/shared/utils/toast.ts",
       "src/shared/components/ui/sonner.tsx",

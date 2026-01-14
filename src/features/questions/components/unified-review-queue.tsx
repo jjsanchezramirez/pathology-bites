@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense } from "react";
+import { useState, useEffect, Suspense, useCallback } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
 import { createClient } from "@/shared/services/client";
 import {
@@ -15,14 +15,14 @@ import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
+  Select as _Select,
+  SelectContent as _SelectContent,
+  SelectItem as _SelectItem,
+  SelectTrigger as _SelectTrigger,
+  SelectValue as _SelectValue,
 } from "@/shared/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
-import { Eye, Search, Clock, User, FileQuestion, Flag, AlertTriangle } from "lucide-react";
+import { Eye, Search, Clock, User, FileQuestion, Flag, AlertTriangle as _AlertTriangle } from "lucide-react";
 import { QuestionPreviewDialog } from "./question-preview-dialog";
 import { QuestionReviewDialog } from "./question-review-dialog";
 import { FlagResolutionDialog } from "./flag-resolution-dialog";
@@ -73,7 +73,7 @@ export function UnifiedReviewQueue() {
 
   const supabase = createClient();
 
-  const fetchReviewQueue = async () => {
+  const fetchReviewQueue = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -97,7 +97,8 @@ export function UnifiedReviewQueue() {
     } finally {
       setLoading(false);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase is created fresh each render
+  }, []);
 
   useEffect(() => {
     fetchReviewQueue();

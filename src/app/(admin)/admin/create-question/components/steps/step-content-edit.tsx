@@ -10,6 +10,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Sparkles, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "@/shared/utils/toast";
 import { FormState } from "../multi-step-question-form";
+import { FetchReferencesDialog } from "@/features/questions/components/fetch-references-dialog";
 
 interface StepContentEditProps {
   formState: FormState;
@@ -24,7 +25,7 @@ export function StepContentEdit({
 }: StepContentEditProps) {
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [enhancementRequest, setEnhancementRequest] = useState("");
-  const [isFetchingReferences, setIsFetchingReferences] = useState(false);
+  const [fetchDialogOpen, setFetchDialogOpen] = useState(false);
 
   // Determine which AI model to use for refinement
   // Priority: 1. Question set's AI model, 2. Selected AI model from Step 1, 3. Default fast model
@@ -91,10 +92,8 @@ export function StepContentEdit({
     }
   };
 
-  // Handle fetching references from Semantic Scholar
-  const handleFetchReferences = async () => {
-    // Build search query: category (without "Pathology") + lesson/topic + title
-    // Example: "Dermatopathology" + "Tricoepithelioma" + "Fibrofolliculoma"
+  // Build search query for references
+  const getSearchQuery = () => {
     const searchParts: string[] = [];
 
     // Add category if available (remove redundant "Pathology" words)
@@ -124,64 +123,31 @@ export function StepContentEdit({
       searchParts.push(formState.stem.substring(0, 100));
     }
 
-    if (searchParts.length === 0) {
+    return searchParts.join(" ");
+  };
+
+  // Handle opening the fetch references dialog
+  const handleOpenFetchDialog = () => {
+    const query = getSearchQuery();
+    if (!query.trim()) {
       toast.error("Please add a question title, teaching point, or stem first");
       return;
     }
+    setFetchDialogOpen(true);
+  };
 
-    const searchTerms = searchParts.join(" ");
+  // Handle references selected from dialog
+  const handleReferencesSelected = (references: string[]) => {
+    const existingRefs = formState.question_references?.trim() || "";
+    const newRefsText = references.join("\n");
 
-    setIsFetchingReferences(true);
-    try {
-      const response = await fetch("/api/admin/fetch-references", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          searchTerms: searchTerms.trim(),
-        }),
-      });
+    // Append new references to existing ones with a newline separator
+    const updatedRefs = existingRefs
+      ? `${existingRefs}\n${newRefsText}`
+      : newRefsText;
 
-      const data = await response.json();
-
-      // Handle different response scenarios
-      if (!response.ok) {
-        // Rate limiting (429)
-        if (response.status === 429) {
-          toast.warning("Rate limited by Semantic Scholar. Please wait a moment and try again.", {
-            duration: 4000,
-          });
-          return;
-        }
-
-        // Other errors
-        toast.error(data.error || "Failed to fetch references. Please try again.");
-        return;
-      }
-
-      // Success with references
-      if (data.success && data.references && data.references.length > 0) {
-        const referencesText = data.references.join("\n");
-        updateFormState({ question_references: referencesText });
-
-        if (data.cached) {
-          toast.success(`Added ${data.references.length} cached references`);
-        } else {
-          toast.success(`Added ${data.references.length} references from Semantic Scholar`);
-        }
-      } else {
-        // No references found
-        toast.info(
-          "No references found for this topic. Try again in a moment or add references manually."
-        );
-      }
-    } catch (error) {
-      console.error("Fetch references error:", error);
-      toast.error("Network error. Please check your connection and try again.");
-    } finally {
-      setIsFetchingReferences(false);
-    }
+    updateFormState({ question_references: updatedRefs });
+    toast.success(`Added ${references.length} reference${references.length !== 1 ? "s" : ""}`);
   };
 
   // Handle answer option changes
@@ -316,24 +282,12 @@ export function StepContentEdit({
             type="button"
             variant="outline"
             size="sm"
-            onClick={handleFetchReferences}
-            disabled={
-              isFetchingReferences ||
-              (!formState.title && !formState.teaching_point && !formState.stem)
-            }
+            onClick={handleOpenFetchDialog}
+            disabled={!formState.title && !formState.teaching_point && !formState.stem}
             className="h-8"
           >
-            {isFetchingReferences ? (
-              <>
-                <Loader2 className="h-3 w-3 mr-1.5 animate-spin" />
-                Fetching...
-              </>
-            ) : (
-              <>
-                <RefreshCw className="h-3 w-3 mr-1.5" />
-                Fetch References
-              </>
-            )}
+            <RefreshCw className="h-3 w-3 mr-1.5" />
+            Fetch References
           </Button>
         </div>
         <Textarea
@@ -397,6 +351,14 @@ export function StepContentEdit({
           </CardContent>
         </Card>
       </div>
+
+      {/* Fetch References Dialog */}
+      <FetchReferencesDialog
+        open={fetchDialogOpen}
+        onOpenChange={setFetchDialogOpen}
+        searchQuery={getSearchQuery()}
+        onReferencesSelected={handleReferencesSelected}
+      />
     </div>
   );
 }

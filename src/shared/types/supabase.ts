@@ -534,6 +534,8 @@ export interface Database {
           file_size_bytes: number | null;
           width: number | null;
           height: number | null;
+          pathology_category_id: string | null;
+          magnification: string | null;
         };
         Insert: {
           id?: string;
@@ -550,6 +552,8 @@ export interface Database {
           file_size_bytes?: number | null;
           width?: number | null;
           height?: number | null;
+          pathology_category_id?: string | null;
+          magnification?: string | null;
         };
         Update: {
           id?: string;
@@ -566,8 +570,17 @@ export interface Database {
           file_size_bytes?: number | null;
           width?: number | null;
           height?: number | null;
+          pathology_category_id?: string | null;
+          magnification?: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "images_pathology_category_id_fkey";
+            columns: ["pathology_category_id"];
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+        ];
       };
 
       inquiries: {
@@ -626,6 +639,8 @@ export interface Database {
           version_patch: number;
           question_set_id: string | null;
           category_id: string | null;
+          lesson: string | null;
+          topic: string | null;
           reviewer_id: string | null;
           reviewer_feedback: string | null;
           published_at: string | null;
@@ -650,6 +665,8 @@ export interface Database {
           version_patch?: number;
           question_set_id?: string | null;
           category_id?: string | null;
+          lesson?: string | null;
+          topic?: string | null;
           reviewer_id?: string | null;
           reviewer_feedback?: string | null;
           published_at?: string | null;
@@ -674,6 +691,8 @@ export interface Database {
           version_patch?: number;
           question_set_id?: string | null;
           category_id?: string | null;
+          lesson?: string | null;
+          topic?: string | null;
           reviewer_id?: string | null;
           reviewer_feedback?: string | null;
           published_at?: string | null;

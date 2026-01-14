@@ -229,10 +229,9 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
 
   // Debug: Track component lifecycle
   useEffect(() => {
-    const instanceId = Math.random().toString(36).substring(7);
-    console.log(`[UsersTable] 🟢 Mounted (${instanceId})`);
+    console.log(`[UsersTable] 🟢 Mounted`);
     return () => {
-      console.log(`[UsersTable] 🔴 Unmounted (${instanceId})`);
+      console.log(`[UsersTable] 🔴 Unmounted`);
     };
   }, []);
 
@@ -251,7 +250,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
   }, [page, searchTerm, roleFilter, statusFilter]);
 
   // Use SWR for data fetching with caching and deduplication
-  const { data, _error, isLoading, mutate } = useSWR(
+  const { data, isLoading, mutate } = useSWR(
     apiUrl,
     async (url) => {
       console.log("[UsersTable] 🌐 Fetching:", url);

@@ -22,7 +22,7 @@ export function FeatureShowcase({
   description,
   features,
   screenshot,
-  screenshotAlt,
+  screenshotAlt: _screenshotAlt,
   ctaText,
   ctaHref,
   imageOnLeft = false,

@@ -218,7 +218,9 @@ export async function expandSearchTerm(term: string): Promise<string[]> {
       const entries = Array.from(expansionCache.entries())
       entries.sort((a, b) => a[1].timestamp - b[1].timestamp)
       const toRemove = Math.floor(MAX_CACHE_SIZE * 0.2)
-      entries.slice(0, toRemove).forEach(([key]) => expansionCache.delete(key))
+      entries.slice(0, toRemove).forEach((entry) => {
+        expansionCache.delete(entry[0])
+      })
       console.log(`[Expansion] Cache cleanup: removed ${toRemove} old entries`)
     }
 
@@ -255,8 +257,8 @@ export function getCacheStats() {
     hybrid: 0
   }
 
-  entries.forEach(([_, value]) => {
-    sources[value.source]++
+  entries.forEach(([, cachedValue]: [string, CachedExpansion]) => {
+    sources[cachedValue.source]++
   })
 
   return {

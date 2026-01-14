@@ -2,12 +2,20 @@
 "use client";
 
 import { useState, useCallback, useEffect, memo } from "react";
-import { createClient } from "@/shared/services/client";
+import { createClient as _createClient } from "@/shared/services/client";
 import { toast } from "@/shared/utils/toast";
 import { apiClient } from "@/shared/utils/api-client";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
+import { Label } from "@/shared/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -17,16 +25,16 @@ import {
 import {
   Search,
   Loader2,
-  MoreVertical,
+  MoreVertical as _MoreVertical,
   Plus,
   Trash2,
   RefreshCw,
   Edit,
   Filter,
-  Check,
+  Check as _Check,
   X,
   Merge,
-  FilterX,
+  FilterX as _FilterX,
   Eye,
 } from "lucide-react";
 import { Checkbox } from "@/shared/components/ui/checkbox";
@@ -34,6 +42,7 @@ import { Checkbox } from "@/shared/components/ui/checkbox";
 import { CreateTagDialog } from "./create-tag-dialog";
 import { EditTagDialog } from "./edit-tag-dialog";
 import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
+import { TagStatsCards } from "./tag-stats-cards";
 
 interface Tag {
   id: string;
@@ -42,7 +51,163 @@ interface Tag {
   question_count?: number;
 }
 
-const PAGE_SIZE = 100; // Increased for grid layout
+const DEFAULT_PAGE_SIZE = 100; // Increased for grid layout
+const PAGE_SIZE_OPTIONS = [50, 100, 200, 500] as const;
+
+function TagsPagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+  totalItems,
+  pageSize,
+  onPageSizeChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  totalItems: number;
+  pageSize: number;
+  onPageSizeChange: (size: number) => void;
+}) {
+  // Calculate which page numbers to show
+  const getPageNumbers = () => {
+    const pages: (number | string)[] = [];
+    const maxPagesToShow = 5;
+
+    if (totalPages <= maxPagesToShow) {
+      // Show all pages if total is small
+      for (let i = 0; i < totalPages; i++) {
+        pages.push(i);
+      }
+    } else {
+      // Always show first page
+      pages.push(0);
+
+      // Calculate range around current page
+      let start = Math.max(1, currentPage - 1);
+      let end = Math.min(totalPages - 2, currentPage + 1);
+
+      // Adjust if near the beginning
+      if (currentPage < 3) {
+        end = 3;
+      }
+
+      // Adjust if near the end
+      if (currentPage > totalPages - 4) {
+        start = totalPages - 4;
+      }
+
+      // Add ellipsis if needed
+      if (start > 1) {
+        pages.push("...");
+      }
+
+      // Add middle pages
+      for (let i = start; i <= end; i++) {
+        pages.push(i);
+      }
+
+      // Add ellipsis if needed
+      if (end < totalPages - 2) {
+        pages.push("...");
+      }
+
+      // Always show last page
+      pages.push(totalPages - 1);
+    }
+
+    return pages;
+  };
+
+  const pageNumbers = getPageNumbers();
+
+  return (
+    <div className="flex justify-between items-center">
+      <div className="flex items-center gap-4">
+        <p className="text-sm text-muted-foreground">
+          Showing {totalItems > 0 ? currentPage * pageSize + 1 : 0} to{" "}
+          {Math.min((currentPage + 1) * pageSize, totalItems)} of {totalItems} tags
+        </p>
+        <div className="flex items-center gap-2">
+          <Label htmlFor="pageSize" className="text-sm text-muted-foreground whitespace-nowrap">
+            Items per page:
+          </Label>
+          <Select
+            value={pageSize.toString()}
+            onValueChange={(value) => onPageSizeChange(parseInt(value))}
+          >
+            <SelectTrigger id="pageSize" className="w-[80px] h-8">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {PAGE_SIZE_OPTIONS.map((size) => (
+                <SelectItem key={size} value={size.toString()}>
+                  {size}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+      <div className="flex gap-1 items-center">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 0}
+        >
+          Previous
+        </Button>
+
+        {pageNumbers.map((pageNum, idx) =>
+          pageNum === "..." ? (
+            <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
+              ...
+            </span>
+          ) : (
+            <Button
+              key={pageNum}
+              variant={currentPage === pageNum ? "default" : "outline"}
+              size="sm"
+              onClick={() => onPageChange(pageNum as number)}
+              className="w-9"
+            >
+              {(pageNum as number) + 1}
+            </Button>
+          )
+        )}
+
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages - 1}
+        >
+          Next
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+const TagCardSkeleton = memo(function TagCardSkeleton() {
+  return (
+    <div className="bg-card border rounded-lg p-3 animate-pulse">
+      <div className="flex items-center gap-2 mb-2">
+        <div className="h-4 w-4 bg-muted rounded" />
+        <div className="h-4 bg-muted rounded flex-1" />
+      </div>
+      <div className="flex items-center justify-between">
+        <div className="h-5 w-20 bg-muted rounded" />
+        <div className="flex items-center gap-1">
+          <div className="h-6 w-6 bg-muted rounded" />
+          <div className="h-6 w-6 bg-muted rounded" />
+          <div className="h-6 w-6 bg-muted rounded" />
+        </div>
+      </div>
+    </div>
+  );
+});
 
 const TagCard = memo(function TagCard({
   tag,
@@ -121,13 +286,22 @@ const TagCard = memo(function TagCard({
   );
 });
 
+interface TagQuestion {
+  id: string;
+  title: string;
+  stem: string;
+  category?: string;
+}
+
 export function TagsManagementGrid() {
   const [tags, setTags] = useState<Tag[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const [totalPages, setTotalPages] = useState(0);
-  const [_totalTags, setTotalTags] = useState(0);
+  const [totalTags, setTotalTags] = useState(0);
   const [selectedTag, setSelectedTag] = useState<Tag | null>(null);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -145,18 +319,27 @@ export function TagsManagementGrid() {
   const [mergeTargetTag, setMergeTargetTag] = useState<Tag | null>(null);
   const [showViewQuestionsDialog, setShowViewQuestionsDialog] = useState(false);
   const [viewQuestionsTag, setViewQuestionsTag] = useState<Tag | null>(null);
-  const [tagQuestions, setTagQuestions] = useState<unknown[]>([]);
+  const [tagQuestions, setTagQuestions] = useState<TagQuestion[]>([]);
   const [loadingQuestions, setLoadingQuestions] = useState(false);
+  const [questionsPage, setQuestionsPage] = useState(0);
+  const [questionsPageSize] = useState(10); // Fixed page size for questions modal
 
-  const _supabase = createClient();
+  // Debounce search term (300ms delay)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearchTerm(searchTerm);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, [searchTerm]);
 
   const loadTags = useCallback(async () => {
     setLoading(true);
     try {
       const params = new URLSearchParams({
         page: page.toString(),
-        pageSize: PAGE_SIZE.toString(),
-        ...(searchTerm && { search: searchTerm }),
+        pageSize: pageSize.toString(),
+        ...(debouncedSearchTerm && { search: debouncedSearchTerm }),
       });
 
       const response = await fetch(`/api/admin/tags?${params}`);
@@ -209,7 +392,7 @@ export function TagsManagementGrid() {
     } finally {
       setLoading(false);
     }
-  }, [searchTerm, page, sortBy, showOnlyUnused]);
+  }, [debouncedSearchTerm, page, pageSize, sortBy, showOnlyUnused]);
 
   const handleDelete = async () => {
     if (!selectedTag) return;
@@ -383,6 +566,9 @@ export function TagsManagementGrid() {
 
   return (
     <div className="space-y-4">
+      {/* Statistics Cards */}
+      <TagStatsCards tags={tags} totalTags={totalTags} loading={loading} />
+
       {/* Header with search, controls and create button */}
       <div className="flex flex-col gap-4">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -488,7 +674,7 @@ export function TagsManagementGrid() {
                 : `${tags.length} tags`}
             </span>
           </div>
-          {searchTerm && <span>Showing results for "{searchTerm}"</span>}
+          {debouncedSearchTerm && <span>Showing results for "{debouncedSearchTerm}"</span>}
           {showOnlyUnused && <span>Showing unused tags only</span>}
         </div>
         <div className="text-xs">
@@ -509,19 +695,21 @@ export function TagsManagementGrid() {
 
       {/* Flowing Layout */}
       {loading ? (
-        <div className="flex items-center justify-center h-64">
-          <Loader2 className="h-8 w-8 animate-spin" />
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 2xl:grid-cols-6 gap-3">
+          {Array.from({ length: 12 }).map((_, idx) => (
+            <TagCardSkeleton key={idx} />
+          ))}
         </div>
       ) : tags.length === 0 ? (
         <div className="flex flex-col items-center justify-center h-64 text-center">
           <div className="text-muted-foreground">
-            {searchTerm
+            {debouncedSearchTerm
               ? "No tags found matching your search"
               : sortBy === "unused"
                 ? "No unused tags found"
                 : "No tags found"}
           </div>
-          {!searchTerm && sortBy !== "unused" && (
+          {!debouncedSearchTerm && sortBy !== "unused" && (
             <Button onClick={() => setShowCreateDialog(true)} className="mt-4" variant="outline">
               <Plus className="h-4 w-4 mr-2" />
               Create your first tag
@@ -545,30 +733,18 @@ export function TagsManagementGrid() {
       )}
 
       {/* Pagination */}
-      {totalPages > 1 && (
-        <div className="flex items-center justify-between">
-          <div className="text-sm text-muted-foreground">
-            Page {page + 1} of {totalPages}
-          </div>
-          <div className="flex items-center gap-2">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(page - 1)}
-              disabled={page === 0}
-            >
-              Previous
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage(page + 1)}
-              disabled={page >= totalPages - 1}
-            >
-              Next
-            </Button>
-          </div>
-        </div>
+      {totalPages > 0 && (
+        <TagsPagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          totalItems={totalTags}
+          pageSize={pageSize}
+          onPageSizeChange={(size) => {
+            setPageSize(size);
+            setPage(0); // Reset to first page when changing page size
+          }}
+        />
       )}
 
       {/* Delete Dialog */}
@@ -671,8 +847,8 @@ export function TagsManagementGrid() {
           }
         }}
         title="Merge Tags"
-        description={`Select a target tag to merge ${selectedTagIds.size} selected tags into. All questions will be reassigned to the target tag.`}
-        maxWidth="md"
+        description="Select a target tag to merge the selected tags into. All questions will be reassigned to the target tag."
+        maxWidth="lg"
         footer={
           <>
             <Button
@@ -700,6 +876,7 @@ export function TagsManagementGrid() {
         }
       >
         <div className="space-y-4">
+          {/* Target Tag Selection */}
           <div className="space-y-2">
             <label className="text-sm font-medium">Target Tag:</label>
             <DropdownMenu>
@@ -719,6 +896,44 @@ export function TagsManagementGrid() {
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
+
+          {/* Preview Section */}
+          {mergeTargetTag && (
+            <div className="space-y-3 border-t pt-3">
+              <h4 className="text-sm font-medium">Merge Preview:</h4>
+
+              {/* Tags to be merged */}
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">Tags to be merged (will be deleted):</p>
+                <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-md border">
+                  {tags
+                    .filter((tag) => selectedTagIds.has(tag.id) && tag.id !== mergeTargetTag.id)
+                    .map((tag) => (
+                      <Badge key={tag.id} variant="outline" className="text-xs">
+                        {tag.name} ({tag.question_count || 0})
+                      </Badge>
+                    ))}
+                </div>
+              </div>
+
+              {/* Target tag */}
+              <div className="space-y-2">
+                <p className="text-xs text-muted-foreground">Into target tag:</p>
+                <div className="p-3 bg-primary/10 rounded-md border border-primary/20">
+                  <Badge variant="default" className="text-xs">
+                    {mergeTargetTag.name} ({mergeTargetTag.question_count || 0} questions)
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Summary */}
+              <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-md border border-blue-200 dark:border-blue-900">
+                <p className="text-xs text-blue-900 dark:text-blue-300">
+                  <strong>Result:</strong> {selectedTagIds.size - 1} tag{selectedTagIds.size - 1 === 1 ? "" : "s"} will be deleted, and their questions will be reassigned to "{mergeTargetTag.name}".
+                </p>
+              </div>
+            </div>
+          )}
         </div>
       </BlurredDialog>
 
@@ -730,18 +945,47 @@ export function TagsManagementGrid() {
           if (!open) {
             setViewQuestionsTag(null);
             setTagQuestions([]);
+            setQuestionsPage(0);
           }
         }}
         title={`Questions with tag: ${viewQuestionsTag?.name || ""}`}
         description={`Showing ${tagQuestions.length} question${tagQuestions.length === 1 ? "" : "s"} that use this tag.`}
         maxWidth="2xl"
         footer={
-          <Button type="button" variant="outline" onClick={() => setShowViewQuestionsDialog(false)}>
-            Close
-          </Button>
+          <div className="flex items-center justify-between w-full">
+            {/* Pagination */}
+            {tagQuestions.length > questionsPageSize && (
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <span>
+                  Page {questionsPage + 1} of {Math.ceil(tagQuestions.length / questionsPageSize)}
+                </span>
+                <div className="flex gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setQuestionsPage((p) => Math.max(0, p - 1))}
+                    disabled={questionsPage === 0}
+                  >
+                    Previous
+                  </Button>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setQuestionsPage((p) => Math.min(Math.ceil(tagQuestions.length / questionsPageSize) - 1, p + 1))}
+                    disabled={questionsPage >= Math.ceil(tagQuestions.length / questionsPageSize) - 1}
+                  >
+                    Next
+                  </Button>
+                </div>
+              </div>
+            )}
+            <Button type="button" variant="outline" onClick={() => setShowViewQuestionsDialog(false)} className="ml-auto">
+              Close
+            </Button>
+          </div>
         }
       >
-        <div className="space-y-4 max-h-96 overflow-y-auto">
+        <div className="space-y-4">
           {loadingQuestions ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin" />
@@ -753,27 +997,29 @@ export function TagsManagementGrid() {
             </div>
           ) : (
             <div className="space-y-3">
-              {tagQuestions.map((question, index) => (
-                <div key={question.id} className="border rounded-lg p-3 hover:bg-muted/50">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="font-medium text-sm mb-1">
-                        {question.title || `Question ${index + 1}`}
-                      </div>
-                      <div className="text-sm text-muted-foreground line-clamp-2">
-                        {question.stem || "No question content available"}
-                      </div>
-                      {question.category && (
-                        <div className="mt-2">
-                          <Badge variant="outline" className="text-xs">
-                            {question.category}
-                          </Badge>
+              {tagQuestions
+                .slice(questionsPage * questionsPageSize, (questionsPage + 1) * questionsPageSize)
+                .map((question, index) => (
+                  <div key={question.id} className="border rounded-lg p-3 hover:bg-muted/50">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="font-medium text-sm mb-1">
+                          {question.title || `Question ${questionsPage * questionsPageSize + index + 1}`}
                         </div>
-                      )}
+                        <div className="text-sm text-muted-foreground line-clamp-2">
+                          {question.stem || "No question content available"}
+                        </div>
+                        {question.category && (
+                          <div className="mt-2">
+                            <Badge variant="outline" className="text-xs">
+                              {question.category}
+                            </Badge>
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
+                ))}
             </div>
           )}
         </div>

@@ -108,9 +108,9 @@ export function StatsCards({ stats }: StatsCardsProps) {
   const cards = allCards.filter((card) => {
     // Use adminMode to determine what to show, but still check actual permissions
     const viewingAsAdmin = adminMode === "admin";
-    const viewingAsCreator = adminMode === "creator";
-    const viewingAsReviewer = adminMode === "reviewer";
-    const viewingAsUser = adminMode === "user";
+    const _viewingAsCreator = adminMode === "creator";
+    const _viewingAsReviewer = adminMode === "reviewer";
+    const _viewingAsUser = adminMode === "user";
 
     // Admin-only cards should only show when viewing as admin AND user has admin permissions
     if (card.adminOnly && (!viewingAsAdmin || !isAdmin)) return false;

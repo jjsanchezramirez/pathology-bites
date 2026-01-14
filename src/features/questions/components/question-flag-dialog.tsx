@@ -25,7 +25,6 @@ import { toast } from "@/shared/utils/toast";
 import {
   QuestionWithDetails,
   FlagType,
-  FlagFormData,
   FLAG_TYPE_CONFIG,
 } from "@/features/questions/types/questions";
 import { createClient } from "@/shared/services/client";

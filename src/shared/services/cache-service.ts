@@ -181,12 +181,12 @@ class CacheService {
   // Clean up expired entries from memory cache
   private cleanupExpiredEntries(): void {
     const now = Date.now();
-    let cleanedCount = 0;
+    let _cleanedCount = 0;
 
     for (const [key, entry] of this.memoryCache) {
       if (now - entry.timestamp > entry.ttl) {
         this.memoryCache.delete(key);
-        cleanedCount++;
+        _cleanedCount++;
       }
     }
   }

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useRef, useCallback } from "react";
+import { useState, useEffect, Suspense, useRef, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useClientVirtualSlidesEnhanced } from "@/shared/hooks/use-client-virtual-slides-enhanced";
 import { VIRTUAL_SLIDES_JSON_URL } from "@/shared/config/virtual-slides";
@@ -25,9 +25,9 @@ import {
   EyeOff,
   Shuffle,
   RefreshCw,
-  ArrowLeft,
   AlertCircle,
   Info,
+  GraduationCap,
 } from "lucide-react";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
@@ -51,7 +51,6 @@ function VirtualSlidesContent() {
     currentPage,
     totalPages,
     totalResults,
-    search,
     searchWithFilters,
     goToPage,
     totalSlides,
@@ -63,7 +62,6 @@ function VirtualSlidesContent() {
     currentPage: client.currentPage,
     totalPages: client.totalPages,
     totalResults: client.totalResults,
-    search: client.search,
     searchWithFilters: client.searchWithFilters,
     goToPage: client.goToPage,
     totalSlides: client.totalSlides,
@@ -86,16 +84,20 @@ function VirtualSlidesContent() {
   const [categories, setCategories] = useState<string[]>([]);
   const [organSystems, setOrganSystems] = useState<string[]>([]);
 
+  // Mode management - Search or Study
+  const [mode, setMode] = useState<"search" | "study">("search");
+
   // Enhanced features
   const [showDiagnoses, setShowDiagnoses] = useState(true);
-  const [isRandomMode, setIsRandomMode] = useState(false);
   const [revealedDiagnoses, setRevealedDiagnoses] = useState<Set<string>>(new Set());
+
+  // Study mode specific state
+  const [studyQuestionCount, setStudyQuestionCount] = useState(20);
 
   // Process URL parameters on mount
   useEffect(() => {
     if (!urlParamsProcessed && !client.isLoading) {
       const searchQuery = searchParams.get("search");
-      const randomParam = searchParams.get("random");
 
       if (searchQuery) {
         if (searchInputRef.current) {
@@ -104,20 +106,9 @@ function VirtualSlidesContent() {
         setDebouncedSearchTerm(searchQuery);
       }
 
-      if (randomParam === "true") {
-        setIsRandomMode(true);
-        setShowDiagnoses(false);
-        const seed = Math.floor(Math.random() * 1e9);
-        searchWithFilters({
-          randomMode: true,
-          randomSeed: seed,
-          page: 1,
-        });
-      }
-
       setUrlParamsProcessed(true);
     }
-  }, [searchParams, urlParamsProcessed, client.isLoading, searchWithFilters]);
+  }, [searchParams, urlParamsProcessed, client.isLoading]);
 
   // Load metadata for filters (client-only when available)
   useEffect(() => {
@@ -168,27 +159,47 @@ function VirtualSlidesContent() {
     }
   }, [isInitialLoading]);
 
-  // Automatic search when debounced term or filters change
+  // Automatic search when debounced term or filters change (only in Search mode)
   useEffect(() => {
-    searchWithFilters({
-      query: debouncedSearchTerm || undefined,
-      repository: selectedRepository !== "all" ? selectedRepository : undefined,
-      category: selectedCategory !== "all" ? selectedCategory : undefined,
-      subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-      randomMode: isRandomMode,
-      page: 1, // Reset to first page when filters change
-    });
+    if (mode === "search") {
+      searchWithFilters({
+        query: debouncedSearchTerm || undefined,
+        repository: selectedRepository !== "all" ? selectedRepository : undefined,
+        category: selectedCategory !== "all" ? selectedCategory : undefined,
+        subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
+        page: 1, // Reset to first page when filters change
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    debouncedSearchTerm,
-    selectedRepository,
-    selectedCategory,
-    selectedOrganSystem,
-    isRandomMode,
-  ]);
+  }, [debouncedSearchTerm, selectedRepository, selectedCategory, selectedOrganSystem, mode]);
 
   // Use slides directly from API (server-side filtering, no client-side filtering needed)
-  const displaySlides = slides;
+  // In Study mode, limit to question count
+  const displaySlides = useMemo(() => {
+    if (mode === "study") {
+      // In study mode, just limit to the question count (slides are already randomized)
+      return slides.slice(0, studyQuestionCount);
+    }
+    return slides;
+  }, [slides, mode, studyQuestionCount]);
+
+  // Auto-trigger random mode when entering Study mode or filters change in Study mode
+  useEffect(() => {
+    if (mode === "study") {
+      const seed = Math.floor(Math.random() * 1e9);
+      searchWithFilters({
+        query: "",
+        repository: selectedRepository !== "all" ? selectedRepository : undefined,
+        category: selectedCategory !== "all" ? selectedCategory : undefined,
+        subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
+        randomMode: true,
+        randomSeed: seed,
+        limit: studyQuestionCount,
+        page: 1,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode, selectedRepository, selectedCategory, selectedOrganSystem, studyQuestionCount]);
 
   // Simplified handlers for unified search
   const clearFilters = async () => {
@@ -202,7 +213,6 @@ function VirtualSlidesContent() {
     setSelectedRepository("all");
     setSelectedCategory("all");
     setSelectedOrganSystem("all");
-    setIsRandomMode(false);
     setRevealedDiagnoses(new Set());
 
     // Immediately reset search options (avoid waiting for debounce/effects)
@@ -212,7 +222,6 @@ function VirtualSlidesContent() {
       repository: undefined,
       category: undefined,
       subcategory: undefined,
-      randomMode: false,
       page: 1,
     });
   };
@@ -234,44 +243,6 @@ function VirtualSlidesContent() {
     });
   };
 
-  const handleRandomClick = async () => {
-    setRevealedDiagnoses(new Set());
-
-    if (!isRandomMode) {
-      // Entering random mode: clear query and reset filters to broaden results
-      setIsRandomMode(true);
-      if (searchInputRef.current) {
-        searchInputRef.current.value = "";
-      }
-      if (debounceTimerRef.current) {
-        clearTimeout(debounceTimerRef.current);
-      }
-      setDebouncedSearchTerm("");
-      setSelectedRepository("all");
-      setSelectedCategory("all");
-      setSelectedOrganSystem("all");
-      setShowDiagnoses(false);
-
-      const seed = Math.floor(Math.random() * 1e9);
-      await searchWithFilters({
-        query: "",
-        repository: undefined,
-        category: undefined,
-        subcategory: undefined,
-        randomMode: true,
-        randomSeed: seed,
-        page: 1,
-      });
-    } else {
-      // Already in random mode: keep filters as-is, just reshuffle with a new seed
-      const seed = Math.floor(Math.random() * 1e9);
-      await searchWithFilters({
-        randomMode: true,
-        randomSeed: seed,
-        page: 1,
-      });
-    }
-  };
 
   if (isInitialLoading) {
     return (
@@ -345,33 +316,138 @@ function VirtualSlidesContent() {
         <div className="container px-4 mx-auto max-w-6xl">
           <Card className="p-4 md:p-8 shadow-lg">
             <CardContent className="space-y-4 md:space-y-6">
-              {/* Search Bar */}
-              <div className="space-y-2 md:space-y-4">
-                <Label htmlFor="search-input" className="text-lg font-semibold">
-                  {isRandomMode ? "Random Discovery Mode" : "Search Virtual Slides"}
-                </Label>
-                <div className="flex flex-col sm:flex-row gap-2">
-                  <Input
-                    ref={searchInputRef}
-                    id="search-input"
-                    placeholder={
-                      isRandomMode
-                        ? "Start typing to exit random mode and search..."
-                        : "Search by diagnosis, patient info, repository, category, or organ system..."
-                    }
-                    defaultValue=""
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      handleSearchInput(val);
-                      // Any editing exits random mode so clearing search restores full list
-                      if (isRandomMode) {
-                        setIsRandomMode(false);
-                      }
-                    }}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        // On Enter: immediately search with current value
-                        e.preventDefault();
+              {/* Mode Toggle */}
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 p-2 bg-muted/30 rounded-lg">
+                <button
+                  onClick={() => {
+                    setMode("search");
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md font-medium transition-all ${
+                    mode === "search"
+                      ? "bg-background shadow-sm border border-border"
+                      : "hover:bg-muted/50"
+                  }`}
+                >
+                  <Search className="h-4 w-4" />
+                  Search Mode
+                </button>
+                <button
+                  onClick={() => {
+                    setMode("study");
+                    setShowDiagnoses(false);
+                  }}
+                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md font-medium transition-all ${
+                    mode === "study"
+                      ? "bg-background shadow-sm border border-border"
+                      : "hover:bg-muted/50"
+                  }`}
+                >
+                  <GraduationCap className="h-4 w-4" />
+                  Study Mode
+                </button>
+              </div>
+
+              {/* Study Mode Configuration */}
+              {mode === "study" && (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="question-count">Number of Questions</Label>
+                    <Select
+                      value={studyQuestionCount.toString()}
+                      onValueChange={(val) => {
+                        const newCount = parseInt(val);
+                        setStudyQuestionCount(newCount);
+                        // The useEffect will automatically regenerate with the new count
+                      }}
+                    >
+                      <SelectTrigger id="question-count">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="10">10 Questions</SelectItem>
+                        <SelectItem value="20">20 Questions</SelectItem>
+                        <SelectItem value="30">30 Questions</SelectItem>
+                        <SelectItem value="50">50 Questions</SelectItem>
+                        <SelectItem value="100">100 Questions</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="generate-questions" className="opacity-0 pointer-events-none">
+                      Actions
+                    </Label>
+                    <Button
+                      id="generate-questions"
+                      onClick={async () => {
+                        setRevealedDiagnoses(new Set());
+                        const seed = Math.floor(Math.random() * 1e9);
+                        await searchWithFilters({
+                          query: "",
+                          repository: selectedRepository !== "all" ? selectedRepository : undefined,
+                          category: selectedCategory !== "all" ? selectedCategory : undefined,
+                          subcategory:
+                            selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
+                          randomMode: true,
+                          randomSeed: seed,
+                          limit: studyQuestionCount,
+                          page: 1,
+                        });
+                      }}
+                      disabled={isLoading}
+                      className="w-full"
+                    >
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                      ) : (
+                        <Shuffle className="h-4 w-4 mr-2" />
+                      )}
+                      Generate New Questions
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* Search Bar - Only in Search Mode */}
+              {mode === "search" && (
+                <div className="space-y-2 md:space-y-4">
+                  <Label htmlFor="search-input" className="text-lg font-semibold">
+                    Search Virtual Slides
+                  </Label>
+                  <div className="flex flex-col sm:flex-row gap-2">
+                    <Input
+                      ref={searchInputRef}
+                      id="search-input"
+                      placeholder="Search by diagnosis, patient info, repository, category, or organ system..."
+                      defaultValue=""
+                      onChange={(e) => {
+                        const val = e.target.value;
+                        handleSearchInput(val);
+                      }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") {
+                          // On Enter: immediately search with current value
+                          e.preventDefault();
+                          const currentValue = searchInputRef.current?.value || "";
+                          if (debounceTimerRef.current) {
+                            clearTimeout(debounceTimerRef.current);
+                          }
+                          setDebouncedSearchTerm(currentValue);
+                          searchWithFilters({
+                            query: currentValue || undefined,
+                            repository: selectedRepository !== "all" ? selectedRepository : undefined,
+                            category: selectedCategory !== "all" ? selectedCategory : undefined,
+                            subcategory:
+                              selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
+                            page: 1,
+                          });
+                        }
+                      }}
+                      className="flex-1"
+                    />
+
+                    <Button
+                      onClick={() => {
+                        // On Search button click: immediately search with current input value
                         const currentValue = searchInputRef.current?.value || "";
                         if (debounceTimerRef.current) {
                           clearTimeout(debounceTimerRef.current);
@@ -383,80 +459,35 @@ function VirtualSlidesContent() {
                           category: selectedCategory !== "all" ? selectedCategory : undefined,
                           subcategory:
                             selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-                          randomMode: isRandomMode,
                           page: 1,
                         });
-                      }
-                    }}
-                    className="flex-1"
-                  />
-
-                  {/* Show appropriate button based on mode */}
-                  {isRandomMode ? (
-                    <Button
-                      variant="outline"
-                      onClick={handleRandomClick}
+                      }}
                       disabled={isLoading}
                       className="px-6 w-full sm:w-auto"
                     >
-                      <Shuffle className="h-4 w-4 mr-2" />
-                      New Surprise
+                      {isLoading ? (
+                        <Loader2 className="h-4 w-4 animate-spin" />
+                      ) : (
+                        <>
+                          <Search className="h-4 w-4 mr-2" />
+                          Search
+                        </>
+                      )}
                     </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      onClick={handleRandomClick}
-                      disabled={isLoading}
-                      className="px-6 w-full sm:w-auto"
-                    >
-                      <Shuffle className="h-4 w-4 mr-2" />
-                      Surprise Me!
-                    </Button>
-                  )}
-
-                  <Button
-                    onClick={() => {
-                      // On Search button click: immediately search with current input value
-                      const currentValue = searchInputRef.current?.value || "";
-                      if (debounceTimerRef.current) {
-                        clearTimeout(debounceTimerRef.current);
-                      }
-                      setDebouncedSearchTerm(currentValue);
-                      searchWithFilters({
-                        query: currentValue || undefined,
-                        repository: selectedRepository !== "all" ? selectedRepository : undefined,
-                        category: selectedCategory !== "all" ? selectedCategory : undefined,
-                        subcategory:
-                          selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-                        randomMode: isRandomMode,
-                        page: 1,
-                      });
-                    }}
-                    disabled={isLoading}
-                    className="px-6 w-full sm:w-auto"
-                  >
-                    {isLoading ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <>
-                        <Search className="h-4 w-4 mr-2" />
-                        Search
-                      </>
-                    )}
-                  </Button>
-                </div>
-
-                {/* Expanded Search Terms Display */}
-                {expandedSearchTerms && expandedSearchTerms.length > 0 && (
-                  <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-md border border-muted">
-                    <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-                    <div className="flex-1 text-sm">
-                      <span className="text-muted-foreground">Also searching for: </span>
-                      <span className="font-medium">{expandedSearchTerms.join(", ")}</span>
-                    </div>
                   </div>
-                )}
-              </div>
+
+                  {/* Expanded Search Terms Display */}
+                  {expandedSearchTerms && expandedSearchTerms.length > 0 && (
+                    <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-md border border-muted">
+                      <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
+                      <div className="flex-1 text-sm">
+                        <span className="text-muted-foreground">Also searching for: </span>
+                        <span className="font-medium">{expandedSearchTerms.join(", ")}</span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
 
               {/* Filters */}
               <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
@@ -517,10 +548,10 @@ function VirtualSlidesContent() {
                 {/* Desktop: Horizontal layout */}
                 <div className="hidden md:flex items-center justify-between">
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    {isRandomMode ? (
+                    {mode === "study" ? (
                       <>
-                        <Shuffle className="h-4 w-4" />
-                        <span>Showing {displaySlides.length.toLocaleString()} random slides</span>
+                        <GraduationCap className="h-4 w-4" />
+                        <span>Showing {displaySlides.length.toLocaleString()} questions</span>
                       </>
                     ) : (
                       <>
@@ -533,17 +564,9 @@ function VirtualSlidesContent() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
-                    {isRandomMode && (
-                      <Button variant="outline" onClick={() => setIsRandomMode(false)} size="sm">
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Back to Search
-                      </Button>
-                    )}
-                    {!isRandomMode && (
-                      <Button variant="outline" onClick={clearFilters} size="sm">
-                        Clear Filters
-                      </Button>
-                    )}
+                    <Button variant="outline" onClick={clearFilters} size="sm">
+                      Clear Filters
+                    </Button>
                     <Button
                       variant={showDiagnoses ? "outline" : "default"}
                       size="sm"
@@ -567,22 +590,9 @@ function VirtualSlidesContent() {
                 {/* Mobile: Vertical layout */}
                 <div className="md:hidden space-y-3">
                   <div className="flex flex-col gap-2">
-                    {isRandomMode && (
-                      <Button
-                        variant="outline"
-                        onClick={() => setIsRandomMode(false)}
-                        size="sm"
-                        className="w-full"
-                      >
-                        <ArrowLeft className="h-4 w-4 mr-2" />
-                        Back to Search
-                      </Button>
-                    )}
-                    {!isRandomMode && (
-                      <Button variant="outline" onClick={clearFilters} size="sm" className="w-full">
-                        Clear Filters
-                      </Button>
-                    )}
+                    <Button variant="outline" onClick={clearFilters} size="sm" className="w-full">
+                      Clear Filters
+                    </Button>
                     <Button
                       variant={showDiagnoses ? "outline" : "default"}
                       size="sm"
@@ -603,10 +613,10 @@ function VirtualSlidesContent() {
                     </Button>
                   </div>
                   <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    {isRandomMode ? (
+                    {mode === "study" ? (
                       <>
-                        <Shuffle className="h-4 w-4" />
-                        <span>Showing {displaySlides.length.toLocaleString()} random slides</span>
+                        <GraduationCap className="h-4 w-4" />
+                        <span>Showing {displaySlides.length} questions</span>
                       </>
                     ) : (
                       <>
@@ -718,7 +728,7 @@ function VirtualSlidesContent() {
                     </table>
                   </div>
 
-                  {!isRandomMode && (
+                  {mode === "search" && (
                     <Pagination
                       currentPage={currentPage}
                       totalPages={totalPages}

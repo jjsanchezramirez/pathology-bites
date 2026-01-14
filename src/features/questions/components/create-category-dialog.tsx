@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { createClient } from "@/shared/services/client";
+import { createClient as _createClient } from "@/shared/services/client";
 import { toast } from "@/shared/utils/toast";
 import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
 import { Button } from "@/shared/components/ui/button";
@@ -40,8 +40,6 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
   const [isCreating, setIsCreating] = useState(false);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(false);
-
-  const _supabase = createClient();
 
   // Use the shared color arrays (no need to generate them again)
 

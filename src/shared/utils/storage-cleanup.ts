@@ -29,6 +29,12 @@ interface StorageStats {
   }>;
 }
 
+interface QuizSessionData {
+  timestamp?: number | string;
+  created_at?: number | string;
+  [key: string]: unknown;
+}
+
 /**
  * Get localStorage usage statistics
  */
@@ -97,7 +103,7 @@ export function cleanupOldQuizSessions(maxAge = QUIZ_SESSION_MAX_AGE): number {
         const value = localStorage.getItem(key);
         if (!value) continue;
 
-        const data = JSON.parse(value);
+        const data = JSON.parse(value) as QuizSessionData;
 
         // Check age
         const timestamp = data.timestamp || data.created_at;
@@ -152,7 +158,7 @@ export function cleanupOldQuizResults(maxAge = QUIZ_RESULTS_MAX_AGE): number {
         const value = localStorage.getItem(key);
         if (!value) continue;
 
-        const data = JSON.parse(value);
+        const data = JSON.parse(value) as { timestamp?: number };
         const timestamp = data.timestamp;
 
         if (timestamp && now - timestamp > maxAge) {
@@ -231,8 +237,8 @@ export function consolidateQuizStorage(): number {
   if (typeof window === "undefined") return 0;
 
   let consolidatedCount = 0;
-  const sessionMap = new Map<string, any>();
-  const stateMap = new Map<string, any>();
+  const sessionMap = new Map<string, QuizSessionData>();
+  const stateMap = new Map<string, QuizSessionData>();
 
   // Collect all quiz sessions and states
   for (let i = 0; i < localStorage.length; i++) {
@@ -245,10 +251,10 @@ export function consolidateQuizStorage(): number {
 
       if (key.startsWith(QUIZ_SESSION_PREFIX)) {
         const id = key.replace(QUIZ_SESSION_PREFIX, "");
-        sessionMap.set(id, JSON.parse(value));
+        sessionMap.set(id, JSON.parse(value) as QuizSessionData);
       } else if (key.startsWith(QUIZ_STATE_PREFIX)) {
         const id = key.replace(QUIZ_STATE_PREFIX, "");
-        stateMap.set(id, JSON.parse(value));
+        stateMap.set(id, JSON.parse(value) as QuizSessionData);
       }
     } catch (error) {
       console.error(`[Storage Cleanup] ❌ Failed to parse ${key}:`, error);

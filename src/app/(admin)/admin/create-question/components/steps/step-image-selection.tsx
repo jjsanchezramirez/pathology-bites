@@ -9,6 +9,7 @@ interface StepImageSelectionProps {
 }
 
 export function StepImageSelection({ formState, updateFormState }: StepImageSelectionProps) {
+
   // Handle image attachments change
   const handleImagesChange = (
     images: Array<{
@@ -25,6 +26,7 @@ export function StepImageSelection({ formState, updateFormState }: StepImageSele
       <ImageAttachmentsTab
         attachedImages={formState.questionImages}
         onAttachedImagesChange={handleImagesChange}
+        isClinicalPathology={false}
       />
     </div>
   );

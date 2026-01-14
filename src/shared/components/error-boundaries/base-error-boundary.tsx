@@ -87,7 +87,7 @@ export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, E
 
       const { level = "component", _context, showHomeButton, _showBackButton } = this.props;
       const isPageLevel = level === "page";
-      const isFeatureLevel = level === "feature";
+      const _isFeatureLevel = level === "feature";
 
       return (
         <div className="flex items-center justify-center min-h-[200px] p-6">

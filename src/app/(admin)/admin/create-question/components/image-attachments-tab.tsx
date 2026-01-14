@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 
@@ -29,6 +29,7 @@ interface ImageAttachment {
 interface ImageAttachmentsTabProps {
   attachedImages: ImageAttachment[];
   onAttachedImagesChange: (images: ImageAttachment[]) => void;
+  isClinicalPathology?: boolean;
 }
 
 interface MediaSectionProps {
@@ -47,7 +48,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
   const [imageCache, setImageCache] = useState<Map<string, ImageData>>(new Map());
 
-  const loadImages = async () => {
+  const loadImages = useCallback(async () => {
     setLoading(true);
     try {
       const result = await fetchImages({
@@ -65,15 +66,17 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
 
       setAvailableImages(result.data);
       // Cache images by ID for quick lookup
-      const newCache = new Map(imageCache);
-      result.data.forEach((img) => newCache.set(img.id, img));
-      setImageCache(newCache);
+      setImageCache((prevCache) => {
+        const newCache = new Map(prevCache);
+        result.data.forEach((img) => newCache.set(img.id, img));
+        return newCache;
+      });
     } catch (error) {
       console.error("Failed to load images:", error);
     } finally {
       setLoading(false);
     }
-  };
+  }, [searchTerm, categoryFilter]);
 
   useEffect(() => {
     if (showImagePicker) {
@@ -88,38 +91,43 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
     const loadAttachedImagesMetadata = async () => {
       if (images.length === 0) return;
 
-      // Get image IDs that aren't already in cache
-      const uncachedImageIds = images
-        .map((img) => img.image_id)
-        .filter((id) => !imageCache.has(id));
+      setImageCache((currentCache) => {
+        // Get image IDs that aren't already in cache
+        const uncachedImageIds = images
+          .map((img) => img.image_id)
+          .filter((id) => !currentCache.has(id));
 
-      if (uncachedImageIds.length === 0) return;
+        if (uncachedImageIds.length === 0) return currentCache;
 
-      try {
-        // Fetch a larger set to catch our attached images
-        const result = await fetchImages({
+        // Fetch images asynchronously and update cache
+        fetchImages({
           page: 0,
           pageSize: 100,
           showUnusedOnly: false,
-        });
-
-        if (!result.error && result.data) {
-          // Update cache with fetched images
-          const newCache = new Map(imageCache);
-          result.data.forEach((img) => {
-            if (uncachedImageIds.includes(img.id)) {
-              newCache.set(img.id, img);
+        })
+          .then((result) => {
+            if (!result.error && result.data) {
+              setImageCache((prevCache) => {
+                const newCache = new Map(prevCache);
+                result.data.forEach((img) => {
+                  if (uncachedImageIds.includes(img.id)) {
+                    newCache.set(img.id, img);
+                  }
+                });
+                return newCache;
+              });
             }
+          })
+          .catch((error) => {
+            console.error("Failed to load attached images metadata:", error);
           });
-          setImageCache(newCache);
-        }
-      } catch (error) {
-        console.error("Failed to load attached images metadata:", error);
-      }
+
+        return currentCache;
+      });
     };
 
     loadAttachedImagesMetadata();
-  }, [images, imageCache]);
+  }, [images]);
 
   const getImageInfo = (imageId: string): ImageData | null => {
     // First check cache, then check availableImages
@@ -343,6 +351,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
 export function ImageAttachmentsTab({
   attachedImages,
   onAttachedImagesChange,
+  isClinicalPathology = false,
 }: ImageAttachmentsTabProps) {
   const handleImagesChange = (newImages: ImageAttachment[]) => {
     onAttachedImagesChange(newImages);
@@ -358,10 +367,20 @@ export function ImageAttachmentsTab({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ImageIcon className="h-5 w-5" />
-            Question Body Images
+            Question Body Images {isClinicalPathology && <span className="text-sm font-normal text-muted-foreground">(Optional)</span>}
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {!isClinicalPathology && (
+            <p className="text-sm text-muted-foreground mb-4">
+              Add histological images, gross pathology images, or other visual content to the question stem.
+            </p>
+          )}
+          {isClinicalPathology && (
+            <p className="text-sm text-muted-foreground mb-4">
+              Add laboratory data, graphs, flow cytometry plots, or other relevant visual aids (optional for Clinical Pathology).
+            </p>
+          )}
           <MediaSection
             images={stemImages}
             section="stem"
@@ -381,10 +400,20 @@ export function ImageAttachmentsTab({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ImageIcon className="h-5 w-5" />
-            Explanation Images
+            Explanation Images {isClinicalPathology && <span className="text-sm font-normal text-muted-foreground">(Optional)</span>}
           </CardTitle>
         </CardHeader>
         <CardContent>
+          {!isClinicalPathology && (
+            <p className="text-sm text-muted-foreground mb-4">
+              Add images to support the teaching point or explanation of correct/incorrect answers.
+            </p>
+          )}
+          {isClinicalPathology && (
+            <p className="text-sm text-muted-foreground mb-4">
+              Add visual aids to support the teaching point (optional for Clinical Pathology).
+            </p>
+          )}
           <MediaSection
             images={explanationImages}
             section="explanation"

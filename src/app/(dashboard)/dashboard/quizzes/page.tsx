@@ -7,8 +7,6 @@ import { Button } from "@/shared/components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "@/shared/utils/toast";
 import Link from "next/link";
-import { FeaturePlaceholder } from "@/features/dashboard/components";
-import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags";
 import { apiClient } from "@/shared/utils/api-client";
 import {
   QuizStatsCards,
@@ -21,8 +19,6 @@ import {
 } from "@/features/quiz/components";
 
 export default function QuizzesPage() {
-  const featuresEnabled = isQuizFeaturesEnabled();
-
   // All hooks must be called before any conditional returns
   const [quizzes, setQuizzes] = useState<QuizSessionListItem[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -77,17 +73,6 @@ export default function QuizzesPage() {
   useEffect(() => {
     setCurrentPage(1);
   }, [searchTerm, selectedFilter, sortBy]);
-
-  // Show placeholder if features are disabled - check AFTER all hooks
-  if (!featuresEnabled) {
-    return (
-      <FeaturePlaceholder
-        title="My Quizzes"
-        description="Your complete quiz history and detailed review tools are being finalized. Soon you'll be able to review all your past quizzes, track your performance over time, and revisit questions to reinforce your learning."
-        status="almost-ready"
-      />
-    );
-  }
 
   const handleDeleteClick = (quiz: QuizSessionListItem) => {
     setSelectedQuiz(quiz);

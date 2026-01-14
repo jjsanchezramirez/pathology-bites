@@ -21,6 +21,7 @@ import {
   generateLookAlikeOptions,
   generateBiologicalOptions,
 } from "@/features/cell-quiz/data/cell-pathways";
+import { useCallback } from "react";
 
 interface Question {
   cellType: string;
@@ -146,21 +147,69 @@ function generateRandomQuestion(cellData: unknown, bloodCellsReference: unknown)
   };
 }
 
+const QUESTIONS_PER_ROUND = 10;
+
 export default function CellQuizPage() {
   // ✅ Use optimized client-side R2 direct fetch - zero Vercel usage in production
   const { cellData, bloodCellsReference, isLoading, error } = useClientCellQuiz();
 
-  const [mode, setMode] = useState<"menu" | "quiz" | "tutorial">("menu");
+  const [mode, setMode] = useState<"menu" | "quiz" | "tutorial" | "results">("menu");
   const [currentQuestion, setCurrentQuestion] = useState<Question | null>(null);
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null);
   const [showExplanation, setShowExplanation] = useState(false);
   const [score, setScore] = useState(0);
   const [totalQuestions, setTotalQuestions] = useState(0);
-  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+  const [questionNumber, setQuestionNumber] = useState(0); // Current question in round (1-10)
+  const [_isCorrect, setIsCorrect] = useState<boolean | null>(null);
   const containerRef = useRef<HTMLDivElement>(null);
 
   // ✅ Fix: Call useImageCacheHandler at top level to avoid hook rule violations
   const handleImageLoad = useImageCacheHandler(currentQuestion?.imagePath || "", true);
+
+  // Define functions with useCallback to prevent unnecessary re-renders
+  const handleAnswerSelect = useCallback(
+    (answer: string) => {
+      if (selectedAnswer) return; // Already answered
+
+      const correct = answer === currentQuestion?.correctAnswer;
+      setSelectedAnswer(answer);
+      setShowExplanation(true);
+      setIsCorrect(correct);
+      setTotalQuestions((prev) => prev + 1);
+
+      if (correct) {
+        setScore((prev) => prev + 1);
+      }
+    },
+    [currentQuestion?.correctAnswer, selectedAnswer]
+  );
+
+  const nextQuestion = useCallback(() => {
+    if (!cellData || !bloodCellsReference) return;
+
+    // Check if we've completed the round
+    if (questionNumber >= QUESTIONS_PER_ROUND) {
+      setMode("results");
+      return;
+    }
+
+    setCurrentQuestion(generateRandomQuestion(cellData, bloodCellsReference));
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setIsCorrect(null);
+    setQuestionNumber((prev) => prev + 1);
+
+    // Scroll to top of the quiz component with padding above
+    if (containerRef.current) {
+      const elementTop = containerRef.current.getBoundingClientRect().top + window.scrollY;
+      const offsetPosition = elementTop - 100; // 100px above the element
+
+      window.scrollTo({
+        top: Math.max(0, offsetPosition), // Don't scroll past top of page
+        behavior: "smooth",
+      });
+    }
+  }, [cellData, bloodCellsReference, questionNumber]);
 
   // Show loading state while data is being fetched
   const hasError = error;
@@ -221,6 +270,18 @@ export default function CellQuizPage() {
     setShowExplanation(false);
     setScore(0);
     setTotalQuestions(0);
+    setQuestionNumber(1);
+  };
+
+  const continueQuiz = () => {
+    if (!cellData || !bloodCellsReference) return;
+    setMode("quiz");
+    setCurrentQuestion(generateRandomQuestion(cellData, bloodCellsReference));
+    setSelectedAnswer(null);
+    setShowExplanation(false);
+    setScore(0);
+    setTotalQuestions(0);
+    setQuestionNumber(1);
   };
 
   const startTutorial = () => {
@@ -231,39 +292,6 @@ export default function CellQuizPage() {
     setMode("menu");
   };
 
-  const handleAnswerSelect = (answer: string) => {
-    if (selectedAnswer) return; // Already answered
-
-    const correct = answer === currentQuestion?.correctAnswer;
-    setSelectedAnswer(answer);
-    setShowExplanation(true);
-    setIsCorrect(correct);
-    setTotalQuestions((prev) => prev + 1);
-
-    if (correct) {
-      setScore((prev) => prev + 1);
-    }
-  };
-
-  const nextQuestion = () => {
-    if (!cellData || !bloodCellsReference) return;
-    setCurrentQuestion(generateRandomQuestion(cellData, bloodCellsReference));
-    setSelectedAnswer(null);
-    setShowExplanation(false);
-    setIsCorrect(null);
-
-    // Scroll to top of the quiz component with padding above
-    if (containerRef.current) {
-      const elementTop = containerRef.current.getBoundingClientRect().top + window.scrollY;
-      const offsetPosition = elementTop - 100; // 100px above the element
-
-      window.scrollTo({
-        top: Math.max(0, offsetPosition), // Don't scroll past top of page
-        behavior: "smooth",
-      });
-    }
-  };
-
   const resetGame = () => {
     setMode("menu");
     setCurrentQuestion(null);
@@ -272,6 +300,7 @@ export default function CellQuizPage() {
     setIsCorrect(null);
     setScore(0);
     setTotalQuestions(0);
+    setQuestionNumber(0);
   };
 
   // Show loading state
@@ -357,6 +386,54 @@ export default function CellQuizPage() {
     );
   }
 
+  // Results mode - End of round screen
+  if (mode === "results") {
+    const percentage = Math.round((score / QUESTIONS_PER_ROUND) * 100);
+    let message = "";
+
+    if (percentage >= 90) {
+      message = "Excellent work!";
+    } else if (percentage >= 70) {
+      message = "Great job!";
+    } else if (percentage >= 50) {
+      message = "Good effort!";
+    } else {
+      message = "Keep practicing!";
+    }
+
+    return (
+      <div className="flex min-h-screen flex-col">
+        <PublicHero
+          title="Cell Identification Quiz"
+          description="Test your hematology skills with our interactive cell identification quiz."
+        />
+        <section className="relative py-8">
+          <div className="flex items-center justify-center p-4">
+            <Card className="w-full max-w-sm p-6 md:p-8 text-center shadow-lg">
+              <CardContent className="space-y-6">
+                <h2 className="text-xl font-semibold text-muted-foreground">Round Complete</h2>
+                <div className="text-5xl font-bold text-primary">
+                  {score}/{QUESTIONS_PER_ROUND}
+                </div>
+                <p className="text-lg font-medium">{message}</p>
+                <div className="space-y-3 pt-4">
+                  <Button onClick={continueQuiz} size="lg" className="w-full">
+                    Keep Going
+                  </Button>
+                  <Button onClick={resetGame} size="lg" variant="outline" className="w-full">
+                    Back to Menu
+                  </Button>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        </section>
+        <div className="flex-1" />
+        <JoinCommunitySection description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone." />
+      </div>
+    );
+  }
+
   return (
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
@@ -366,8 +443,8 @@ export default function CellQuizPage() {
       />
 
       {/* Quiz Content Section */}
-      <section className="relative py-8">
-        <div className="flex items-center justify-center p-4">
+      <section className={`relative ${mode === "quiz" ? "py-2 md:py-8" : "py-8"}`}>
+        <div className="flex items-center justify-center p-2 md:p-4">
           {mode === "menu" ? (
             <Card className="w-full max-w-sm p-6 md:p-8 text-center shadow-lg">
               <CardContent className="space-y-4 md:space-y-6">
@@ -388,233 +465,211 @@ export default function CellQuizPage() {
               </CardContent>
             </Card>
           ) : mode === "quiz" && currentQuestion ? (
-            <Card ref={containerRef} className="w-full max-w-4xl p-4 md:p-8 shadow-lg">
-              <CardContent className="space-y-4 md:space-y-6">
-                {/* Header */}
-                <div className="flex items-center justify-between">
-                  <div className="text-sm text-muted-foreground">
-                    Score: {score}/{totalQuestions}
+            <Card ref={containerRef} className="w-full max-w-4xl shadow-lg border-0 md:border">
+              <CardContent className="p-3 md:p-6">
+                {/* Mobile Header - Question number and score at top */}
+                <div className="flex items-center justify-between mb-3 md:hidden">
+                  <div className="flex items-center gap-2">
+                    <div className="bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 px-2.5 py-1 rounded-full text-xs font-medium">
+                      Q {questionNumber}/{QUESTIONS_PER_ROUND}
+                    </div>
+                    <div className="bg-primary/10 text-primary px-2.5 py-1 rounded-full text-xs font-medium">
+                      {score} correct
+                    </div>
                   </div>
-                  <Button onClick={resetGame} variant="outline" size="sm">
-                    <RotateCcw className="h-4 w-4 mr-2" />
-                    <span className="hidden sm:inline">Reset</span>
+                  <Button
+                    onClick={resetGame}
+                    variant="ghost"
+                    size="sm"
+                    className="h-8 px-2 text-muted-foreground"
+                  >
+                    <RotateCcw className="h-4 w-4" />
                   </Button>
                 </div>
 
-                {/* Question */}
-                <div>
-                  <h2 className="text-lg md:text-xl font-semibold mb-4 md:mb-6 text-center">
-                    What cell type is this?
-                  </h2>
+                {/* Desktop header with score */}
+                <div className="hidden md:flex items-center justify-between mb-6">
+                  <div className="text-sm text-muted-foreground">
+                    Question {questionNumber} of {QUESTIONS_PER_ROUND} • Score: {score}/
+                    {totalQuestions}
+                  </div>
+                  <Button onClick={resetGame} variant="outline" size="sm">
+                    <RotateCcw className="h-4 w-4 mr-2" />
+                    Reset
+                  </Button>
+                </div>
 
-                  {/* Responsive Layout: Vertical on mobile, Horizontal on desktop */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-8">
-                    {/* Image */}
-                    <div className="flex justify-center">
-                      <div className="relative w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 rounded-lg overflow-hidden border bg-gray-50 dark:bg-gray-900">
-                        <Image
-                          src={currentQuestion.imagePath}
-                          alt="Cell to identify"
-                          fill
-                          className="object-contain"
-                          unoptimized={true}
-                          onLoad={handleImageLoad}
-                        />
-                      </div>
-                    </div>
+                {/* Desktop question title */}
+                <h2 className="hidden md:block text-xl font-semibold mb-6 text-center">
+                  What cell type is this?
+                </h2>
 
-                    {/* Options */}
-                    <div className="space-y-3 md:space-y-4">
-                      <div className="grid grid-cols-1 gap-2 md:gap-3">
-                        {currentQuestion.options.map((option, index) => {
-                          const isSelected = selectedAnswer === option;
-                          const isCorrect = option === currentQuestion.correctAnswer;
-                          const showResult = showExplanation;
-
-                          let buttonClass = "";
-                          if (showResult) {
-                            if (isCorrect) {
-                              buttonClass =
-                                "bg-green-100 hover:bg-green-200 text-green-800 border-green-500 dark:bg-green-900/20 dark:text-green-300 dark:border-green-600";
-                            } else if (isSelected) {
-                              buttonClass =
-                                "bg-red-100 hover:bg-red-200 text-red-800 border-red-500 dark:bg-red-900/20 dark:text-red-300 dark:border-red-600";
-                            }
-                          }
-
-                          return (
-                            <Button
-                              key={index}
-                              variant="outline"
-                              className={`w-full justify-start text-left h-auto p-3 md:p-4 text-sm md:text-base ${buttonClass}`}
-                              onClick={() => handleAnswerSelect(option)}
-                              disabled={!!selectedAnswer}
-                            >
-                              <div className="flex items-center gap-2 md:gap-3">
-                                <span className="text-muted-foreground font-medium flex-shrink-0">
-                                  {index + 1}.
-                                </span>
-                                {showResult && isCorrect && (
-                                  <Check className="h-4 w-4 flex-shrink-0" />
-                                )}
-                                {showResult && isSelected && !isCorrect && (
-                                  <X className="h-4 w-4 flex-shrink-0" />
-                                )}
-                                <span className="break-words">{option}</span>
-                              </div>
-                            </Button>
-                          );
-                        })}
-                      </div>
+                {/* Responsive Layout: Vertical on mobile, Horizontal on desktop */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 md:gap-8">
+                  {/* Image - Full width on mobile, larger display */}
+                  <div className="flex justify-center -mx-2 md:mx-0">
+                    <div className="relative w-full aspect-[4/3] md:max-w-sm md:aspect-square md:h-80 rounded-xl overflow-hidden bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 shadow-inner">
+                      <Image
+                        src={currentQuestion.imagePath}
+                        alt="Cell to identify"
+                        fill
+                        className="object-contain p-1"
+                        unoptimized={true}
+                        onLoad={handleImageLoad}
+                      />
                     </div>
                   </div>
 
-                  {/* Explanation */}
-                  {showExplanation && (
-                    <div className="mt-4 md:mt-6 p-3 md:p-4 bg-slate-50 dark:bg-slate-900/50 rounded-lg text-left">
-                      <h3 className="font-semibold mb-2 text-sm md:text-base">
-                        {isCorrect
-                          ? "Correct!"
-                          : `Correct Answer: ${currentQuestion.correctAnswer}`}
-                      </h3>
+                  {/* Options - Clean, modern buttons */}
+                  <div className="space-y-2 md:space-y-3">
+                    {currentQuestion.options.map((option, index) => {
+                      const isSelected = selectedAnswer === option;
+                      const isCorrect = option === currentQuestion.correctAnswer;
+                      const showResult = showExplanation;
 
-                      {/* Get detailed information for the correct answer */}
-                      {(() => {
-                        // Find the cell data for the correct answer
-                        const correctCellEntry = Object.entries(cellData).find(
-                          ([cellKey, cell]) => {
-                            const referenceInfo = findReferenceCellInfo(
-                              cellKey,
-                              bloodCellsReference
-                            );
-                            return (
-                              (referenceInfo ? referenceInfo.name : (cell as unknown).name) ===
-                              currentQuestion.correctAnswer
-                            );
-                          }
-                        );
-
-                        const correctCellKey = correctCellEntry?.[0];
-                        const referenceInfo = correctCellKey
-                          ? findReferenceCellInfo(correctCellKey, bloodCellsReference)
-                          : null;
-
-                        if (!referenceInfo) {
-                          return (
-                            <p className="text-xs md:text-sm text-muted-foreground">
-                              {currentQuestion.explanation}
-                            </p>
-                          );
+                      let buttonClass =
+                        "border-slate-200 dark:border-slate-700 hover:border-primary/50 hover:bg-primary/5";
+                      if (showResult) {
+                        if (isCorrect) {
+                          buttonClass =
+                            "bg-emerald-50 border-emerald-400 text-emerald-700 dark:bg-emerald-900/30 dark:text-emerald-300 dark:border-emerald-600";
+                        } else if (isSelected) {
+                          buttonClass =
+                            "bg-red-50 border-red-400 text-red-700 dark:bg-red-900/30 dark:text-red-300 dark:border-red-600";
                         }
+                      }
 
+                      return (
+                        <Button
+                          key={index}
+                          variant="outline"
+                          className={`w-full justify-start text-left h-auto py-2.5 px-3 md:py-3 md:px-4 rounded-xl transition-all ${buttonClass}`}
+                          onClick={() => handleAnswerSelect(option)}
+                          disabled={!!selectedAnswer}
+                        >
+                          <div className="flex items-center gap-2 md:gap-3">
+                            <span className="w-6 h-6 md:w-7 md:h-7 rounded-full bg-slate-100 dark:bg-slate-800 flex items-center justify-center text-xs md:text-sm font-medium text-slate-600 dark:text-slate-400 flex-shrink-0">
+                              {index + 1}
+                            </span>
+                            {showResult && isCorrect && (
+                              <Check className="h-4 w-4 text-emerald-600 flex-shrink-0" />
+                            )}
+                            {showResult && isSelected && !isCorrect && (
+                              <X className="h-4 w-4 text-red-600 flex-shrink-0" />
+                            )}
+                            <span className="text-sm md:text-base font-medium">{option}</span>
+                          </div>
+                        </Button>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Explanation - Clean card style */}
+                {showExplanation && (
+                  <div className="mt-3 md:mt-6 p-3 md:p-4 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-900 dark:to-slate-800 rounded-xl">
+                    {/* Get detailed information for the correct answer */}
+                    {(() => {
+                      // Find the cell data for the correct answer
+                      const correctCellEntry = Object.entries(cellData).find(([cellKey, cell]) => {
+                        const referenceInfo = findReferenceCellInfo(cellKey, bloodCellsReference);
                         return (
-                          <div className="space-y-2 md:space-y-3 text-xs md:text-sm">
-                            {/* Lineage, Size, and N:C Ratio - responsive layout */}
-                            <div className="flex flex-col sm:flex-row sm:flex-wrap gap-2 sm:gap-4">
-                              <div>
-                                <span className="font-semibold text-muted-foreground">
-                                  Lineage:
-                                </span>{" "}
-                                {referenceInfo.lineage}
-                              </div>
-                              {referenceInfo.size && (
-                                <div>
-                                  <span className="font-semibold text-muted-foreground">Size:</span>{" "}
-                                  {referenceInfo.size}
-                                </div>
-                              )}
-                              {referenceInfo.nc_ratio && (
-                                <div>
-                                  <span className="font-semibold text-muted-foreground">
-                                    N:C Ratio:
-                                  </span>{" "}
-                                  {referenceInfo.nc_ratio}
-                                </div>
-                              )}
-                            </div>
+                          (referenceInfo ? referenceInfo.name : (cell as unknown).name) ===
+                          currentQuestion.correctAnswer
+                        );
+                      });
 
-                            {/* Percentage */}
-                            {referenceInfo.normal_percentage && (
-                              <div>
-                                <span className="font-semibold text-muted-foreground">
-                                  Normal Percentage:
+                      const correctCellKey = correctCellEntry?.[0];
+                      const referenceInfo = correctCellKey
+                        ? findReferenceCellInfo(correctCellKey, bloodCellsReference)
+                        : null;
+
+                      if (!referenceInfo) {
+                        return (
+                          <p className="text-xs md:text-sm text-muted-foreground">
+                            {currentQuestion.explanation}
+                          </p>
+                        );
+                      }
+
+                      return (
+                        <div className="space-y-1 text-xs md:text-sm text-slate-600 dark:text-slate-400">
+                          {/* Size and N:C Ratio - inline */}
+                          <div className="flex flex-wrap gap-x-3 gap-y-0.5">
+                            {referenceInfo.size && (
+                              <span>
+                                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                  Size:
                                 </span>{" "}
-                                {referenceInfo.normal_percentage}
-                              </div>
+                                {referenceInfo.size}
+                              </span>
                             )}
-
-                            {/* Key Features */}
-                            {referenceInfo.key_features && (
-                              <div>
-                                <span className="font-semibold text-muted-foreground">
-                                  Key Features:
+                            {referenceInfo.nc_ratio && (
+                              <span>
+                                <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                  N:C:
                                 </span>{" "}
-                                {referenceInfo.key_features}
-                              </div>
-                            )}
-
-                            {/* Nucleus */}
-                            {referenceInfo.nucleus && (
-                              <div>
-                                <span className="font-semibold text-muted-foreground">
-                                  Nucleus:
-                                </span>{" "}
-                                {referenceInfo.nucleus}
-                              </div>
-                            )}
-
-                            {/* Clinical Significance */}
-                            {referenceInfo.clinical_significance && (
-                              <div>
-                                <span className="font-semibold text-muted-foreground">
-                                  Clinical Significance:
-                                </span>{" "}
-                                {referenceInfo.clinical_significance}
-                              </div>
-                            )}
-
-                            {/* Notes */}
-                            {referenceInfo.notes && (
-                              <div>
-                                <span className="font-semibold text-muted-foreground">Notes:</span>{" "}
-                                {referenceInfo.notes}
-                              </div>
+                                {referenceInfo.nc_ratio}
+                              </span>
                             )}
                           </div>
-                        );
-                      })()}
-                    </div>
-                  )}
 
-                  {/* Next Button - Mobile only */}
-                  {showExplanation && (
-                    <div className="mt-4 flex justify-center md:hidden">
-                      <Button onClick={nextQuestion} size="lg" className="gap-2 w-full sm:w-auto">
-                        Next Question
-                        <ChevronRight className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  )}
+                          {/* Key Features */}
+                          {referenceInfo.key_features && (
+                            <div>
+                              <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                Features:
+                              </span>{" "}
+                              {referenceInfo.key_features}
+                            </div>
+                          )}
 
-                  {/* Keyboard Instructions - Desktop only */}
-                  <div className="border-t pt-6 mt-4 hidden md:block">
-                    <div className="text-center">
-                      <p className="text-xs text-muted-foreground">
-                        <strong>Keyboard shortcuts:</strong> Press{" "}
-                        <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
-                          1-4
-                        </kbd>{" "}
-                        to select options and{" "}
-                        <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
-                          Space
-                        </kbd>{" "}
-                        or{" "}
-                        <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
-                          Enter
-                        </kbd>{" "}
-                        to advance
-                      </p>
-                    </div>
+                          {/* Nucleus */}
+                          {referenceInfo.nucleus && (
+                            <div>
+                              <span className="font-semibold text-slate-700 dark:text-slate-300">
+                                Nucleus:
+                              </span>{" "}
+                              {referenceInfo.nucleus}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })()}
+                  </div>
+                )}
+
+                {/* Next Button - Full width, prominent on mobile */}
+                {showExplanation && (
+                  <div className="mt-3 md:hidden">
+                    <Button
+                      onClick={nextQuestion}
+                      className="w-full h-11 text-base font-medium rounded-xl bg-primary hover:bg-primary/90"
+                    >
+                      Next Question
+                      <ChevronRight className="h-5 w-5 ml-1" />
+                    </Button>
+                  </div>
+                )}
+
+                {/* Keyboard Instructions - Desktop only */}
+                <div className="border-t pt-6 mt-4 hidden md:block">
+                  <div className="text-center">
+                    <p className="text-xs text-muted-foreground">
+                      <strong>Keyboard shortcuts:</strong> Press{" "}
+                      <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                        1-4
+                      </kbd>{" "}
+                      to select options and{" "}
+                      <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                        Space
+                      </kbd>{" "}
+                      or{" "}
+                      <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                        Enter
+                      </kbd>{" "}
+                      to advance
+                    </p>
                   </div>
                 </div>
               </CardContent>
@@ -628,8 +683,10 @@ export default function CellQuizPage() {
       {/* Spacer to push community section to bottom */}
       <div className="flex-1" />
 
-      {/* Join Our Learning Community */}
-      <JoinCommunitySection description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone." />
+      {/* Join Our Learning Community - Hidden on mobile during quiz */}
+      <div className={mode === "quiz" ? "hidden md:block" : ""}>
+        <JoinCommunitySection description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone." />
+      </div>
     </div>
   );
 }

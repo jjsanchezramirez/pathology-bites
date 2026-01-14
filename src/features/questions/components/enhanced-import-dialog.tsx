@@ -33,16 +33,7 @@ import {
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Badge } from "@/shared/components/ui/badge";
 import { Progress } from "@/shared/components/ui/progress";
-import {
-  Loader2,
-  FileText,
-  AlertCircle,
-  Upload,
-  FolderTree,
-  CheckCircle2,
-  X,
-  Download,
-} from "lucide-react";
+import { Loader2, FileText, AlertCircle, Upload, FolderTree, X } from "lucide-react";
 import { useQuestions } from "@/features/questions/hooks/use-questions";
 import { useAuth } from "@/shared/hooks/use-auth";
 

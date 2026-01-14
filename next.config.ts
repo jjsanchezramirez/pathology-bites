@@ -19,13 +19,10 @@ const nextConfig = {
         hostname: "pub-a4bec7073d99465f99043c842be6318c.r2.dev",
         pathname: "/**",
       },
+      // Pathology Outlines image hostnames
       {
         protocol: "https",
         hostname: "www.pathologyoutlines.com",
-      },
-      {
-        protocol: "https",
-        hostname: "www.captodayonline.com",
       },
       // Virtual slide image hostnames
       {

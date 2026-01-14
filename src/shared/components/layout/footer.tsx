@@ -17,8 +17,7 @@ export function Footer() {
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [isDesktopToolsOpen, setIsDesktopToolsOpen] = useState(false);
 
-  // Check if we're in maintenance mode (hide tools and virtual slides)
-  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
+  // Tools section is always visible now
 
   const toggleTools = () => {
     setIsToolsOpen(!isToolsOpen);
@@ -50,14 +49,13 @@ export function Footer() {
             {/* Mobile navigation - grid layout */}
             <div className="lg:hidden">
               <div className="grid grid-cols-2 gap-3 mb-4">
-                {!isMaintenanceMode && (
-                  <Link
-                    href="/tools/virtual-slides"
-                    className="flex items-center justify-center py-3 px-4 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                  >
-                    Virtual Slides
-                  </Link>
-                )}
+                {/* Virtual Slides link - always visible */}
+                <Link
+                  href="/tools/virtual-slides"
+                  className="flex items-center justify-center py-3 px-4 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                >
+                  Virtual Slides
+                </Link>
                 <Link
                   href="/faq"
                   className="flex items-center justify-center py-3 px-4 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
@@ -90,156 +88,151 @@ export function Footer() {
                 </Link>
               </div>
 
-              {/* Mobile Tools section - Hidden in maintenance mode */}
-              {!isMaintenanceMode && (
-                <div className="border-t pt-4">
-                  <button
-                    onClick={toggleTools}
-                    className="flex items-center justify-center w-full py-3 px-4 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px] gap-2"
-                    aria-expanded={isToolsOpen}
-                    aria-controls="mobile-tools-menu"
-                  >
-                    Tools
-                    <ChevronUp
-                      className={`h-4 w-4 transition-transform duration-200 ${isToolsOpen ? "rotate-180" : ""}`}
-                    />
-                  </button>
+              {/* Mobile Tools section - always visible */}
+              <div className="border-t pt-4">
+                <button
+                  onClick={toggleTools}
+                  className="flex items-center justify-center w-full py-3 px-4 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px] gap-2"
+                  aria-expanded={isToolsOpen}
+                  aria-controls="mobile-tools-menu"
+                >
+                  Tools
+                  <ChevronUp
+                    className={`h-4 w-4 transition-transform duration-200 ${isToolsOpen ? "rotate-180" : ""}`}
+                  />
+                </button>
 
-                  {isToolsOpen && (
-                    <div id="mobile-tools-menu" className="mt-2 grid grid-cols-2 gap-2">
-                      <Link
-                        href="/tools/images"
-                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                      >
-                        Image Database
-                      </Link>
-                      <Link
-                        href="/tools/abpath"
-                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                      >
-                        ABPath Content Specs
-                      </Link>
-                      <Link
-                        href="/tools/cell-quiz"
-                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                      >
-                        Hemepath Quiz
-                      </Link>
-                      <Link
-                        href="/tools/wsi-question-generator"
-                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                      >
-                        Digital Slides Questions
-                      </Link>
-                      <Link
-                        href="/tools/cell-counter"
-                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                      >
-                        Cell Counter
-                      </Link>
-                      <Link
-                        href="/tools/lupus-anticoagulant"
-                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                      >
-                        LAC Calculator
-                      </Link>
-                      <Link
-                        href="/tools/gene-lookup"
-                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                      >
-                        Gene Finder
-                      </Link>
-                      <Link
-                        href="/tools/citations"
-                        className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                      >
-                        Citations Generator
-                      </Link>
-                    </div>
-                  )}
-                </div>
-              )}
+                {isToolsOpen && (
+                  <div id="mobile-tools-menu" className="mt-2 grid grid-cols-2 gap-2">
+                    <Link
+                      href="/tools/images"
+                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                    >
+                      Image Database
+                    </Link>
+                    <Link
+                      href="/tools/abpath"
+                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                    >
+                      ABPath Content Specs
+                    </Link>
+                    <Link
+                      href="/tools/cell-quiz"
+                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                    >
+                      Hemepath Quiz
+                    </Link>
+                    <Link
+                      href="/tools/wsi-question-generator"
+                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                    >
+                      Digital Slides Questions
+                    </Link>
+                    <Link
+                      href="/tools/cell-counter"
+                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                    >
+                      Cell Counter
+                    </Link>
+                    <Link
+                      href="/tools/lupus-anticoagulant"
+                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                    >
+                      LAC Calculator
+                    </Link>
+                    <Link
+                      href="/tools/gene-lookup"
+                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                    >
+                      Gene Finder
+                    </Link>
+                    <Link
+                      href="/tools/citations"
+                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
+                    >
+                      Citations Generator
+                    </Link>
+                  </div>
+                )}
+              </div>
             </div>
 
             {/* Desktop navigation - horizontal layout */}
             <div className="hidden lg:flex gap-6 text-sm text-muted-foreground items-center">
-              {!isMaintenanceMode && (
-                <>
-                  <div
-                    className="relative"
-                    onMouseEnter={handleDesktopToolsEnter}
-                    onMouseLeave={handleDesktopToolsLeave}
-                  >
-                    <span className="hover:text-primary transition-colors cursor-pointer py-2 px-2 block">
-                      Tools
-                    </span>
-                    <div
-                      className={`absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-background border rounded-md shadow-lg p-2 min-w-96 z-50 transition-all duration-200 ${isDesktopToolsOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+              {/* Tools dropdown - always visible */}
+              <div
+                className="relative"
+                onMouseEnter={handleDesktopToolsEnter}
+                onMouseLeave={handleDesktopToolsLeave}
+              >
+                <span className="hover:text-primary transition-colors cursor-pointer py-2 px-2 block">
+                  Tools
+                </span>
+                <div
+                  className={`absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-background border rounded-md shadow-lg p-2 min-w-96 z-50 transition-all duration-200 ${isDesktopToolsOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+                >
+                  <div className="grid grid-cols-2 gap-1">
+                    {/* Core Learning Resources */}
+                    <Link
+                      href="/tools/images"
+                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
                     >
-                      <div className="grid grid-cols-2 gap-1">
-                        {/* Core Learning Resources */}
-                        <Link
-                          href="/tools/images"
-                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                        >
-                          Image Database
-                        </Link>
-                        <Link
-                          href="/tools/abpath"
-                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                        >
-                          ABPath Content Specs
-                        </Link>
-                        {/* Quiz & Practice Tools */}
-                        <Link
-                          href="/tools/cell-quiz"
-                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                        >
-                          Hemepath Quiz
-                        </Link>
-                        <Link
-                          href="/tools/wsi-question-generator"
-                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                        >
-                          Digital Slides Questions
-                        </Link>
-                        {/* Laboratory Tools */}
-                        <Link
-                          href="/tools/cell-counter"
-                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                        >
-                          Cell Counter
-                        </Link>
-                        <Link
-                          href="/tools/lupus-anticoagulant"
-                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                        >
-                          LAC Calculator
-                        </Link>
-                        {/* Reference & Search Tools */}
-                        <Link
-                          href="/tools/gene-lookup"
-                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                        >
-                          Gene Finder
-                        </Link>
-                        <Link
-                          href="/tools/citations"
-                          className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                        >
-                          Citation Generator
-                        </Link>
-                      </div>
-                    </div>
+                      Image Database
+                    </Link>
+                    <Link
+                      href="/tools/abpath"
+                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                    >
+                      ABPath Content Specs
+                    </Link>
+                    {/* Quiz & Practice Tools */}
+                    <Link
+                      href="/tools/cell-quiz"
+                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                    >
+                      Hemepath Quiz
+                    </Link>
+                    <Link
+                      href="/tools/wsi-question-generator"
+                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                    >
+                      Digital Slides Questions
+                    </Link>
+                    {/* Laboratory Tools */}
+                    <Link
+                      href="/tools/cell-counter"
+                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                    >
+                      Cell Counter
+                    </Link>
+                    <Link
+                      href="/tools/lupus-anticoagulant"
+                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                    >
+                      LAC Calculator
+                    </Link>
+                    {/* Reference & Search Tools */}
+                    <Link
+                      href="/tools/gene-lookup"
+                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                    >
+                      Gene Finder
+                    </Link>
+                    <Link
+                      href="/tools/citations"
+                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
+                    >
+                      Citation Generator
+                    </Link>
                   </div>
-                  <Link
-                    href="/tools/virtual-slides"
-                    className="hover:text-primary transition-colors py-2"
-                  >
-                    Virtual Slides
-                  </Link>
-                </>
-              )}
+                </div>
+              </div>
+              <Link
+                href="/tools/virtual-slides"
+                className="hover:text-primary transition-colors py-2"
+              >
+                Virtual Slides
+              </Link>
               <Link href="/faq" className="hover:text-primary transition-colors py-2">
                 FAQ
               </Link>

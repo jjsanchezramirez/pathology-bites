@@ -276,8 +276,8 @@ export class NotificationTriggers {
   async onSystemMaintenance(
     title: string,
     message: string,
-    scheduledTime: string,
-    duration: string
+    _scheduledTime: string,
+    _duration: string
   ): Promise<void> {
     try {
       await notificationGenerators.broadcastSystemUpdate(

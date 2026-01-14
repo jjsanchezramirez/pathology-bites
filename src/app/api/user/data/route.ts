@@ -239,9 +239,7 @@ export async function GET(request: NextRequest) {
       questions?.map((q: unknown) => [q.id, q.category_id]) || []
     );
 
-    const _categoryIds = [
-      ...new Set(Array.from(questionCategoryMap.values()).filter(Boolean) as string[]),
-    ];
+    // categoryIds removed - not used in this implementation
 
     // Fetch ALL categories (for quiz init data), not just ones user has attempted
     const { data: allCategories } = await supabase

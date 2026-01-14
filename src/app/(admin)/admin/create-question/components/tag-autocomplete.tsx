@@ -38,8 +38,9 @@ export function TagAutocomplete({
   // Filter tags based on search term
   useEffect(() => {
     if (!searchTerm.trim()) {
-      setFilteredTags([]);
-      setShowDropdown(false);
+      // Show all unselected tags when no search term
+      const unselected = allTags.filter((tag) => !selectedTags.includes(tag.id));
+      setFilteredTags(unselected);
       return;
     }
 
@@ -49,7 +50,6 @@ export function TagAutocomplete({
     );
 
     setFilteredTags(filtered);
-    setShowDropdown(filtered.length > 0 || searchTerm.trim().length > 0);
   }, [searchTerm, allTags, selectedTags]);
 
   // Close dropdown when clicking outside
@@ -189,9 +189,7 @@ export function TagAutocomplete({
             onChange={(e) => setSearchTerm(e.target.value)}
             onKeyDown={handleKeyDown}
             onFocus={() => {
-              if (searchTerm.trim() && (filteredTags.length > 0 || searchTerm.trim().length > 0)) {
-                setShowDropdown(true);
-              }
+              setShowDropdown(true);
             }}
             className="flex-1"
           />
@@ -210,7 +208,7 @@ export function TagAutocomplete({
         </div>
 
         {/* Dropdown */}
-        {showDropdown && (
+        {showDropdown && (filteredTags.length > 0 || searchTerm.trim()) && (
           <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-auto">
             {filteredTags.length > 0 ? (
               <div className="py-1">

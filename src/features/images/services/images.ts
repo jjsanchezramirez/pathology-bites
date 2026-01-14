@@ -19,6 +19,7 @@ function getCacheKey(params: {
   searchTerm?: string;
   category?: string;
   showUnusedOnly?: boolean;
+  showUncategorizedOnly?: boolean;
   includeOnlyMicroscopicAndGross?: boolean;
 }): string {
   return JSON.stringify({
@@ -27,6 +28,7 @@ function getCacheKey(params: {
     search: params.searchTerm || "",
     category: params.category || "",
     unused: params.showUnusedOnly || false,
+    uncategorized: params.showUncategorizedOnly || false,
     microGross: params.includeOnlyMicroscopicAndGross || false,
   });
 }
@@ -51,6 +53,12 @@ function cleanExpiredCache() {
     imageQueryCache.clear();
     toKeep.forEach(([key, value]) => imageQueryCache.set(key, value));
   }
+}
+
+// Function to invalidate all image cache (call after updates/deletes/uploads)
+export function invalidateImageCache() {
+  imageQueryCache.clear();
+  console.log("[Images] Cache invalidated");
 }
 
 export async function deleteImage(imagePath: string | null, imageId: string) {
@@ -116,7 +124,14 @@ export async function deleteImage(imagePath: string | null, imageId: string) {
 
 export async function updateImage(
   imageId: string,
-  data: { description: string; alt_text: string; category: string; source_ref?: string }
+  data: {
+    description: string;
+    alt_text: string;
+    category: string;
+    source_ref?: string;
+    pathology_category_id?: string | null;
+    magnification?: string | null;
+  }
 ) {
   const supabase = createClient(); // Remove <Database>
 
@@ -127,6 +142,9 @@ export async function updateImage(
       console.error("Update image error:", error);
       throw new Error(`Failed to update image: ${error.message}`);
     }
+
+    // Invalidate cache after successful update
+    invalidateImageCache();
 
     return { success: true };
   } catch (error) {
@@ -141,6 +159,7 @@ export async function fetchImages(params: {
   searchTerm?: string;
   category?: string;
   showUnusedOnly?: boolean;
+  showUncategorizedOnly?: boolean;
   includeOnlyMicroscopicAndGross?: boolean;
   skipCount?: boolean; // New param to skip count query on pagination
 }) {
@@ -150,6 +169,7 @@ export async function fetchImages(params: {
     searchTerm,
     category,
     showUnusedOnly,
+    showUncategorizedOnly,
     includeOnlyMicroscopicAndGross,
     skipCount,
   } = params;
@@ -179,7 +199,10 @@ export async function fetchImages(params: {
     const tableName = showUnusedOnly ? "v_orphaned_images" : "images";
 
     // Build the base query for data first
-    let dataQuery = supabase.from(tableName).select("*");
+    // Include pathology category information via join
+    let dataQuery = supabase
+      .from(tableName)
+      .select("*, pathology_category:categories(id, name, short_form)");
 
     // Exclude external images from management table (only for regular images table)
     if (!showUnusedOnly) {
@@ -205,6 +228,11 @@ export async function fetchImages(params: {
     // Apply category filter (only for regular images, not unused filter)
     if (category && category !== "all" && !showUnusedOnly) {
       dataQuery = dataQuery.eq("category", category);
+    }
+
+    // Filter for uncategorized images (images without a pathology_category_id)
+    if (showUncategorizedOnly && !showUnusedOnly) {
+      dataQuery = dataQuery.is("pathology_category_id", null);
     }
 
     // Calculate pagination
@@ -269,6 +297,11 @@ export async function fetchImages(params: {
 
     if (category && category !== "all" && !showUnusedOnly) {
       countQuery = countQuery.eq("category", category);
+    }
+
+    // Filter for uncategorized images in count query
+    if (showUncategorizedOnly && !showUnusedOnly) {
+      countQuery = countQuery.is("pathology_category_id", null);
     }
 
     // Execute count query

@@ -12,11 +12,6 @@ export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps
   const params = await searchParams;
   const description = params.description;
 
-  // Check if coming soon or maintenance mode is enabled
-  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === "true";
-  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
-  const isAdminOnlyMode = isComingSoonMode || isMaintenanceMode;
-
   return (
     <AuthPageLayout>
       <StatusCard
@@ -35,11 +30,9 @@ export default async function AuthErrorPage({ searchParams }: AuthErrorPageProps
               <Link href="/login">Back to Login</Link>
             </Button>
 
-            {!isAdminOnlyMode && (
-              <Button variant="outline" asChild className="w-full">
-                <Link href="/signup">Create New Account</Link>
-              </Button>
-            )}
+            <Button variant="outline" asChild className="w-full">
+              <Link href="/signup">Create New Account</Link>
+            </Button>
           </div>
         }
         variant="error"

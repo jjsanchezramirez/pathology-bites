@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import { createClient } from "@/shared/services/client";
+import { createClient as _createClient } from "@/shared/services/client";
 import { toast } from "@/shared/utils/toast";
 import {
   Table,
@@ -43,7 +43,6 @@ import {
   XCircle,
   Edit,
   Merge,
-  AlertTriangle,
 } from "lucide-react";
 import { CreateSetDialog } from "./create-set-dialog";
 import { EditSetDialog } from "./edit-set-dialog";
@@ -83,8 +82,6 @@ export function SetsManagement() {
   const [mergeTargetSet, setMergeTargetSet] = useState<QuestionSet | null>(null);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
   const [isMerging, setIsMerging] = useState(false);
-
-  const _supabase = createClient();
 
   // Selection helper functions
   const handleSelectSet = (setId: string) => {

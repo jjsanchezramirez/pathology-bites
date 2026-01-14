@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import {
@@ -13,12 +13,12 @@ import {
   DialogOverlay,
 } from "@/shared/components/ui/dialog";
 import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
+  Table as _Table,
+  TableBody as _TableBody,
+  TableCell as _TableCell,
+  TableHead as _TableHead,
+  TableHeader as _TableHeader,
+  TableRow as _TableRow,
 } from "@/shared/components/ui/table";
 import { Loader2, History, User, Calendar, FileText } from "lucide-react";
 import { toast } from "@/shared/utils/toast";
@@ -58,13 +58,7 @@ export function QuestionVersionHistory({
   const [loading, setLoading] = useState(false);
   const [selectedVersion, setSelectedVersion] = useState<QuestionVersionHistoryType | null>(null);
 
-  useEffect(() => {
-    if (open && questionId) {
-      fetchVersionHistory();
-    }
-  }, [open, questionId, fetchVersionHistory]);
-
-  const fetchVersionHistory = async () => {
+  const fetchVersionHistory = useCallback(async () => {
     try {
       setLoading(true);
       console.log("Fetching version history for questionId:", questionId);
@@ -94,7 +88,13 @@ export function QuestionVersionHistory({
     } finally {
       setLoading(false);
     }
-  };
+  }, [questionId]);
+
+  useEffect(() => {
+    if (open && questionId) {
+      fetchVersionHistory();
+    }
+  }, [open, questionId, fetchVersionHistory]);
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleString();

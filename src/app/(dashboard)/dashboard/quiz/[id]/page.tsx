@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useParams, useSearchParams, useRouter, usePathname } from "next/navigation";
+import { useParams, useSearchParams, usePathname } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Button } from "@/shared/components/ui/button";
@@ -32,7 +32,6 @@ import { cn } from "@/shared/utils/utils";
 export default function QuizSessionPage() {
   const params = useParams();
   const searchParams = useSearchParams();
-  const router = useRouter();
   const pathname = usePathname();
   const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const isReviewMode = searchParams.get("review") === "true";
@@ -43,7 +42,6 @@ export default function QuizSessionPage() {
   const [reviewLoading, setReviewLoading] = useState(isReviewMode);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
-  const [_showExplanations, setShowExplanations] = useState<{ [key: string]: boolean }>({});
 
   // Local pause state (not stored in database)
   const [isPaused, setIsPaused] = useState(false);
@@ -168,9 +166,8 @@ export default function QuizSessionPage() {
       // Initialize all explanations to be visible
       const initialExplanations: { [key: string]: boolean } = {};
       resultsData.data.questionDetails?.forEach((q: unknown) => {
-        initialExplanations[q.id] = true;
+        initialExplanations[(q as { id: string }).id] = true;
       });
-      setShowExplanations(initialExplanations);
     } catch (error) {
       console.error("Error fetching review data:", error);
 
@@ -257,27 +254,6 @@ export default function QuizSessionPage() {
       setCurrentReviewIndex(currentReviewIndex + 1);
     }
   };
-
-  // Exit confirmation handlers
-  const handleSaveAndExit = useCallback(async () => {
-    if (isReviewMode) return;
-
-    try {
-      // Mark as intentional exit to prevent browser dialog
-      setIsExiting(true);
-
-      // Trigger auto-save
-      await hybridActions.saveAndExit();
-
-      // Navigate to quizzes page
-      window.location.href = "/dashboard/quizzes";
-    } catch (error) {
-      console.error("Error saving and exiting:", error);
-      toast.error("Failed to save quiz progress");
-      // Reset flag on error so user can try again
-      setIsExiting(false);
-    }
-  }, [isReviewMode, hybridActions]);
 
   const handleExitConfirm = useCallback(async () => {
     try {

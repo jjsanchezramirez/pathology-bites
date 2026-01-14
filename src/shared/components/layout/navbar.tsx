@@ -6,10 +6,7 @@ import Link from "next/link";
 import { MicroscopeIcon } from "lucide-react";
 
 export function Navbar() {
-  // Check if coming soon or maintenance mode is enabled
-  const isComingSoonMode = process.env.NEXT_PUBLIC_COMING_SOON_MODE === "true";
-  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
-  const isAdminOnlyMode = isComingSoonMode || isMaintenanceMode;
+  // Feature flags removed - all users can access signup and login
 
   return (
     <div className="fixed top-0 w-full border-b bg-background/95 backdrop-blur-sm supports-backdrop-filter:bg-background/60 z-50">
@@ -23,19 +20,17 @@ export function Navbar() {
         <div className="flex items-center gap-3">
           <Link href="/login">
             <Button variant="ghost" size="sm" className="hover:bg-primary/10 transition-colors">
-              {isAdminOnlyMode ? "Admin Login" : "Login"}
+              Login
             </Button>
           </Link>
-          {!isAdminOnlyMode && (
-            <Link href="/signup">
-              <Button
-                size="sm"
-                className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-primary/25 transition-all duration-300"
-              >
-                Sign up
-              </Button>
-            </Link>
-          )}
+          <Link href="/signup">
+            <Button
+              size="sm"
+              className="bg-primary hover:bg-primary/90 shadow-lg hover:shadow-primary/25 transition-all duration-300"
+            >
+              Sign up
+            </Button>
+          </Link>
         </div>
       </div>
     </div>

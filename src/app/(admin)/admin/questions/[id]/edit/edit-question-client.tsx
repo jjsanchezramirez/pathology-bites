@@ -199,16 +199,64 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       ? question.reviewer_feedback
       : null;
 
+  // Get context for banner
+  const getContextBanner = () => {
+    if (question.status === "rejected" && reviewerFeedback) {
+      return {
+        variant: "destructive" as const,
+        title: "Revising Rejected Question",
+        description: "This question was rejected by a reviewer. Address the feedback below before resubmitting.",
+      };
+    }
+    if (question.status === "draft") {
+      return {
+        variant: "default" as const,
+        title: "Editing Draft",
+        description: "This question has not been submitted for review yet.",
+      };
+    }
+    if (question.status === "published") {
+      return {
+        variant: "default" as const,
+        title: "Patch Editing Published Question",
+        description: "Making changes to a published question. Select the appropriate edit type below.",
+      };
+    }
+    if (question.status === "pending_review") {
+      return {
+        variant: "default" as const,
+        title: "Editing Question Under Review",
+        description: "This question is currently being reviewed. Changes will require resubmission.",
+      };
+    }
+    return null;
+  };
+
+  const contextBanner = getContextBanner();
+
   return (
     <div className="space-y-6">
+      {/* Context Banner */}
+      {contextBanner && (
+        <Alert variant={contextBanner.variant}>
+          <AlertCircle className="h-4 w-4" />
+          <AlertDescription>
+            <div className="space-y-1">
+              <p className="font-semibold">{contextBanner.title}</p>
+              <p className="text-sm">{contextBanner.description}</p>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
       {/* Reviewer Feedback Alert */}
       {reviewerFeedback && (
-        <Alert>
+        <Alert variant="destructive">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             <div className="space-y-1">
               <p className="font-semibold">Reviewer Feedback:</p>
-              <p className="text-sm">{reviewerFeedback}</p>
+              <p className="text-sm whitespace-pre-wrap">{reviewerFeedback}</p>
             </div>
           </AlertDescription>
         </Alert>

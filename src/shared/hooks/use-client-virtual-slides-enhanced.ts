@@ -474,7 +474,9 @@ export function useClientVirtualSlidesEnhanced(defaultLimit: number = 20) {
           const j = Math.floor(rng(i) * (i + 1));
           [arr[i], arr[j]] = [arr[j], arr[i]];
         }
-        if (arr.length > 10) arr = arr.slice(0, 10);
+        // Use the limit from options, or default to showing all
+        const randomLimit = options.limit ?? arr.length;
+        if (arr.length > randomLimit) arr = arr.slice(0, randomLimit);
         if (mounted) {
           setFilteredAndRanked(arr);
           setExpandedSearchTerms([]);

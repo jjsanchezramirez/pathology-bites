@@ -15,7 +15,6 @@ import {
 } from "@/features/dashboard/components";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { userSettingsService } from "@/shared/services/user-settings";
-import { RecentActivity } from "@/features/dashboard/services/service";
 import { PageErrorBoundary, FeatureErrorBoundary, ScrollReveal } from "@/shared/components/common";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 
@@ -36,7 +35,16 @@ interface DashboardStats {
   recentQuizzes: number;
   weeklyGoal: number;
   currentWeekProgress: number;
-  recentActivity: RecentActivity[];
+  recentActivity: Array<{
+    id: string;
+    type: string;
+    title: string;
+    description: string;
+    timestamp: string;
+    timeGroup?: string;
+    score?: number;
+    navigationUrl?: string;
+  }>;
 
   // Performance analytics
   performance?: {
@@ -60,12 +68,10 @@ interface DashboardStats {
 
 export default function DashboardPage() {
   const { user } = useAuth({ loadUserData: true });
-  const { data: unifiedData, isLoading: unifiedLoading } = useUnifiedData();
+  const { data: unifiedData } = useUnifiedData();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
-  // Combine unified loading state with local loading
-  const isLoading = unifiedLoading || loading;
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
   const [isReturningUser, setIsReturningUser] = useState(false);
@@ -147,7 +153,7 @@ export default function DashboardPage() {
     };
 
     fetchData();
-  }, [user?.id, unifiedData, user]);
+  }, [user, unifiedData]);
 
   return (
     <PageErrorBoundary pageName="Dashboard" showHomeButton={false} showBackButton={false}>

@@ -44,7 +44,7 @@ export function useNotifications(page: number = 1, limit: number = 20) {
     } finally {
       setLoading(false);
     }
-  }, [user?.id, isAuthenticated, page, limit, user]);
+  }, [isAuthenticated, page, limit, user]);
 
   useEffect(() => {
     loadNotifications();
@@ -68,7 +68,7 @@ export function useNotifications(page: number = 1, limit: number = 20) {
         throw err;
       }
     },
-    [user?.id, user]
+    [user]
   );
 
   const markAllAsRead = useCallback(async () => {
@@ -84,7 +84,7 @@ export function useNotifications(page: number = 1, limit: number = 20) {
     } catch (err) {
       throw err;
     }
-  }, [user?.id, user]);
+  }, [user]);
 
   const refresh = useCallback(() => {
     loadNotifications();

@@ -3,26 +3,28 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Button } from "@/shared/components/ui/button";
-import {
-  BookOpen,
-  Target,
-  TrendingUp,
-  Play,
-  Award,
-  Trophy,
-  Clock,
-} from "lucide-react";
+import { BookOpen, Target, TrendingUp, Play, Award, Trophy, Clock } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
-import { RecentActivity } from "@/features/dashboard/services/service";
 
 interface StudentRecentActivityProps {
-  activities: RecentActivity[];
+  activities: Array<{
+    id: string;
+    type: string;
+    title: string;
+    description: string;
+    timestamp: string;
+    timeGroup?: string;
+    score?: number;
+    navigationUrl?: string;
+  }>;
 }
 
 export function StudentRecentActivity({ activities }: StudentRecentActivityProps) {
   // Helper function to get navigation URL for different activity types
-  const getNavigationUrl = (activity: RecentActivity): string | undefined => {
+  const getNavigationUrl = (
+    activity: StudentRecentActivityProps["activities"][number]
+  ): string | undefined => {
     if (activity.navigationUrl) {
       // Fix achievements link to go to dashboard achievements
       if (activity.type === "achievement_unlocked") {
@@ -45,7 +47,7 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
   };
 
   // Helper function to get button text and action for quiz activities
-  const getQuizAction = (activity: RecentActivity) => {
+  const getQuizAction = (activity: StudentRecentActivityProps["activities"][number]) => {
     if (activity.type === "quiz_completed") {
       return { text: "Review", variant: "outline" as const };
     }
@@ -73,9 +75,7 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
               const activityContent = (
                 <div
                   className={`flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 ${
-                    activity.type === "quiz_started"
-                      ? "bg-[hsl(var(--chart-2))]/5"
-                      : ""
+                    activity.type === "quiz_started" ? "bg-[hsl(var(--chart-2))]/5" : ""
                   } ${
                     navigationUrl
                       ? "hover:bg-muted/50 hover:border-[hsl(var(--chart-1))]/30 cursor-pointer"
@@ -112,9 +112,7 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
 
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 mb-0.5">
-                      <p className="text-sm font-medium leading-tight truncate">
-                        {activity.title}
-                      </p>
+                      <p className="text-sm font-medium leading-tight truncate">{activity.title}</p>
                       {/* Score display - inline with title */}
                       {activity.score !== undefined && (
                         <span

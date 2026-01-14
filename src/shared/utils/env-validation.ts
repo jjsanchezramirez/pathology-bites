@@ -16,10 +16,6 @@ const envSchema = z.object({
   RESEND_API_KEY: z.string().optional(),
   NEXT_PUBLIC_VERCEL_ANALYTICS_ID: z.string().optional(),
 
-  // Feature Flags
-  NEXT_PUBLIC_MAINTENANCE_MODE: z.string().optional(),
-  NEXT_PUBLIC_COMING_SOON_MODE: z.string().optional(),
-
   // Environment
   NODE_ENV: z.enum(["development", "test", "production"]).default("development"),
 });
@@ -62,15 +58,6 @@ export const getSiteConfig = () => ({
   url: env.NEXT_PUBLIC_SITE_URL || env.NEXT_PUBLIC_SUPABASE_URL,
   googleClientId: env.NEXT_PUBLIC_GOOGLE_CLIENT_ID,
 });
-
-// Feature flag helpers
-export const getFeatureFlags = () => ({
-  maintenanceMode: process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true",
-  comingSoonMode: process.env.NEXT_PUBLIC_COMING_SOON_MODE === "true",
-});
-
-export const isMaintenanceMode = () => process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
-export const isComingSoonMode = () => process.env.NEXT_PUBLIC_COMING_SOON_MODE === "true";
 
 // Validate specific service configurations
 export const validateSupabaseConfig = () => {

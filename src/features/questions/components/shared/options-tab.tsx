@@ -15,13 +15,13 @@ interface OptionsTabProps {
 }
 
 export function OptionsTab({
-  question,
+  question: _question,
   answerOptions,
   setAnswerOptions,
   hasAttemptedSubmit,
   validateAnswerOptions,
   onUnsavedChanges,
-  mode = "edit",
+  mode: _mode = "edit",
 }: OptionsTabProps) {
   const handleOptionsChange = (newOptions: QuestionOptionFormData[]) => {
     setAnswerOptions(newOptions);

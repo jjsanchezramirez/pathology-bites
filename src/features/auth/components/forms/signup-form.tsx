@@ -21,6 +21,7 @@ import {
 } from "@/shared/components/ui/select";
 import { createClient } from "@/shared/services/client";
 import { useTurnstile } from "@/features/auth/hooks/use-turnstile";
+import { getCaptchaSiteKey } from "@/features/auth/utils/captcha-config";
 
 // Enhanced form schema with proper password validation
 const formSchema = z
@@ -51,7 +52,7 @@ export function SignupForm() {
   const router = useRouter();
   const supabase = createClient();
   const { captchaToken, setCaptchaToken } = useTurnstile();
-  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY;
+  const siteKey = getCaptchaSiteKey();
 
   const {
     register,

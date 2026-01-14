@@ -8,8 +8,8 @@ import { Label } from "@/shared/components/ui/label";
 
 import {
   Plus,
+  Minus,
   RotateCcw,
-  Copy,
   Settings,
   Keyboard,
   Target,
@@ -17,6 +17,8 @@ import {
   Trash2,
   Download,
   Hash,
+  FileText,
+  Table,
 } from "lucide-react";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
@@ -44,24 +46,38 @@ interface CounterState {
   undoHistory: CellType[][];
   isComplete: boolean;
   totalCount: number;
+  presetType: "peripheral-blood" | "bone-marrow" | "custom";
 }
 
-const DEFAULT_CELL_TYPES: CellType[] = [
-  { id: "1", name: "Blast", key: "t", count: 0, color: "bg-primary" },
-  { id: "2", name: "Promyelocyte", key: "y", count: 0, color: "bg-blue-600" },
-  { id: "3", name: "Myelocyte", key: "u", count: 0, color: "bg-emerald-600" },
-  { id: "4", name: "Metamyelocyte", key: "h", count: 0, color: "bg-violet-600" },
-  { id: "5", name: "Band neutrophil", key: "j", count: 0, color: "bg-rose-600" },
-  { id: "6", name: "Segmented neutrophil", key: "k", count: 0, color: "bg-amber-600" },
-  { id: "7", name: "Monocyte", key: "l", count: 0, color: "bg-indigo-600" },
-  { id: "8", name: "Lymphocyte", key: ";", count: 0, color: "bg-pink-600" },
-  { id: "9", name: "Plasma cell", key: "'", count: 0, color: "bg-teal-600" },
-  { id: "10", name: "Macrophage", key: "o", count: 0, color: "bg-orange-600" },
-  { id: "11", name: "Nucleated erythroid", key: "p", count: 0, color: "bg-cyan-600" },
-  { id: "12", name: "Eosinophil", key: "n", count: 0, color: "bg-lime-600" },
-  { id: "13", name: "Basophil", key: "b", count: 0, color: "bg-purple-600" },
-  { id: "14", name: "Mast cell", key: "m", count: 0, color: "bg-slate-600" },
+// Peripheral Blood preset - no M:E ratio calculation
+const PERIPHERAL_BLOOD_CELL_TYPES: CellType[] = [
+  { id: "pb1", name: "Segmented neutrophil", key: "k", count: 0, color: "bg-amber-600" },
+  { id: "pb2", name: "Band neutrophil", key: "j", count: 0, color: "bg-rose-600" },
+  { id: "pb3", name: "Lymphocyte", key: "l", count: 0, color: "bg-pink-600" },
+  { id: "pb4", name: "Monocyte", key: ";", count: 0, color: "bg-indigo-600" },
+  { id: "pb5", name: "Eosinophil", key: "n", count: 0, color: "bg-lime-600" },
+  { id: "pb6", name: "Basophil", key: "m", count: 0, color: "bg-purple-600" },
 ];
+
+// Bone Marrow preset - includes M:E ratio calculation
+const BONE_MARROW_CELL_TYPES: CellType[] = [
+  { id: "bm1", name: "Blast", key: "t", count: 0, color: "bg-primary" },
+  { id: "bm2", name: "Promyelocyte", key: "y", count: 0, color: "bg-blue-600" },
+  { id: "bm3", name: "Myelocyte", key: "u", count: 0, color: "bg-emerald-600" },
+  { id: "bm4", name: "Metamyelocyte", key: "h", count: 0, color: "bg-violet-600" },
+  { id: "bm5", name: "Band neutrophil", key: "j", count: 0, color: "bg-rose-600" },
+  { id: "bm6", name: "Segmented neutrophil", key: "k", count: 0, color: "bg-amber-600" },
+  { id: "bm7", name: "Lymphocyte", key: "l", count: 0, color: "bg-pink-600" },
+  { id: "bm8", name: "Monocyte", key: ";", count: 0, color: "bg-indigo-600" },
+  { id: "bm9", name: "Plasma cell", key: "'", count: 0, color: "bg-teal-600" },
+  { id: "bm10", name: "Macrophage", key: "/", count: 0, color: "bg-orange-600" },
+  { id: "bm11", name: "Nucleated erythroid", key: "p", count: 0, color: "bg-cyan-600" },
+  { id: "bm12", name: "Eosinophil", key: "n", count: 0, color: "bg-lime-600" },
+  { id: "bm13", name: "Basophil", key: "m", count: 0, color: "bg-purple-600" },
+  { id: "bm14", name: "Mast cell", key: "b", count: 0, color: "bg-slate-600" },
+];
+
+const DEFAULT_CELL_TYPES = PERIPHERAL_BLOOD_CELL_TYPES;
 
 const DEFAULT_SETTINGS: CounterSettings = {
   countLimit: 100,
@@ -79,6 +95,7 @@ export default function CellCounterPage() {
     undoHistory: [],
     isComplete: false,
     totalCount: 0,
+    presetType: "peripheral-blood",
   });
 
   const [newCellName, setNewCellName] = useState("");
@@ -92,15 +109,9 @@ export default function CellCounterPage() {
   // Check if counting is complete
   const isComplete = state.settings.enableLimit && totalCount >= state.settings.countLimit;
 
-  // Check if current setup is PB/BM preset (based on cell names)
-  const isPBBMPreset =
-    state.cellTypes.some((cell) => cell.name === "Blast") &&
-    state.cellTypes.some((cell) => cell.name === "Nucleated erythroid") &&
-    state.cellTypes.length >= 13;
-
-  // Calculate M:E ratio for PB/BM preset
-  const calculateMEratio = () => {
-    if (!isPBBMPreset) return null;
+  // Calculate M:E ratio only for Bone Marrow preset - wrapped in useCallback to avoid dependency issues
+  const calculateMEratio = useCallback(() => {
+    if (state.presetType !== "bone-marrow") return null;
 
     const myeloidCells = [
       "Blast",
@@ -131,7 +142,7 @@ export default function CellCounterPage() {
       erythroidCount,
       ratio: (myeloidCount / erythroidCount).toFixed(2),
     };
-  };
+  }, [state.presetType, state.cellTypes]);
 
   const meRatio = calculateMEratio();
 
@@ -237,6 +248,7 @@ export default function CellCounterPage() {
     updateState((prev) => ({
       ...prev,
       cellTypes: [...prev.cellTypes, newCell],
+      presetType: "custom",
     }));
 
     setNewCellName("");
@@ -377,79 +389,364 @@ export default function CellCounterPage() {
     // toast.success('All counts reset')
   }, [updateState]);
 
-  // Export results with RTF table format
+  // Copy results (Epic-friendly RTF table + plain text fallback)
   const exportResults = useCallback(
-    (format: "text" | "rtf" = "text") => {
+    async (format: "text" | "excel" = "excel") => {
       if (totalCount === 0) {
         toast.error("No data to export");
         return;
       }
 
-      const timestamp = new Date().toLocaleString();
+      const escapeRtf = (value: string) =>
+        value
+          .replace(/\\/g, "\\\\")
+          .replace(/{/g, "\\{")
+          .replace(/}/g, "\\}")
+          // RTF uses \par for line breaks.
+          .replace(/\r\n|\r|\n/g, "\\par ");
+
       const filteredCells = state.cellTypes.filter((cell) => cell.count > 0);
 
-      if (format === "rtf") {
-        // RTF Table Format - Compatible with Word processors
-        const rtfHeader = `{\\rtf1\\ansi\\deff0 {\\fonttbl {\\f0 Times New Roman;}}
-\\f0\\fs24 Cell Counter Results - ${timestamp}\\par
-\\par
-{\\colortbl;\\red0\\green0\\blue0;\\red255\\green255\\blue255;}
-\\trowd\\trgaph108\\trleft-108
-\\cellx2000\\cellx4000\\cellx6000
-\\intbl \\b Cell Type \\cell \\b Count \\cell \\b Percentage \\cell \\row
-`;
+      if (format === "excel") {
+        // Epic: ensure the clipboard contains a real RTF table (text/rtf) + a plain-text fallback.
+        try {
+          // Build data rows with Excel HTML format
+          let dataRows = "";
 
-        const rtfRows = filteredCells
-          .map((cell) => {
-            const percentage = ((cell.count / totalCount) * 100).toFixed(1);
-            return `\\intbl ${cell.name} \\cell ${cell.count} \\cell ${percentage}% \\cell \\row`;
-          })
-          .join("\n");
+          // Add header row
+          dataRows += ` <tr height=21 style='height:16.0pt'>
+  <td height=21 class=xl65 width=175 style='height:16.0pt;width:131pt' data-t=s data-v="Cell Type">Cell Type</td>
+  <td class=xl65 width=53 style='width:40pt' data-t=s data-v=Count>Count</td>
+  <td class=xl65 width=93 style='width:70pt' data-t=s data-v=Percentage>Percentage</td>
+ </tr>\n`;
 
-        const rtfFooter = `\\trowd\\trgaph108\\trleft-108
-\\cellx6000
-\\intbl \\b Total Count: ${totalCount} \\cell \\row
-}`;
-
-        const exportText = rtfHeader + rtfRows + "\n" + rtfFooter;
-
-        navigator.clipboard
-          .writeText(exportText)
-          .then(() => {
-            toast.success("RTF table copied! Paste into Word/RTF editor.");
-          })
-          .catch(() => {
-            toast.error("Failed to copy to clipboard");
+          // Add data rows
+          filteredCells.forEach((cell) => {
+            const percentage = ((cell.count / totalCount) * 100).toFixed(2) + "%";
+            dataRows += ` <tr height=21 style='height:16.0pt'>
+  <td height=21 class=xl65 style='height:16.0pt' data-t=s data-v="${cell.name}">${cell.name}</td>
+  <td class=xl66 align=right data-t=n data-v=${cell.count}>${cell.count}</td>
+  <td class=xl67 align=right data-t=s data-v="${percentage}">${percentage}</td>
+ </tr>\n`;
           });
+
+          // Add total row
+          dataRows += ` <tr height=21 style='height:16.0pt'>
+  <td height=21 class=xl65 style='height:16.0pt' data-t=s data-v="Total Count">Total Count</td>
+  <td class=xl66 align=right data-t=n data-v=${totalCount}>${totalCount}</td>
+  <td class=xl68 align=right data-t=s data-v="">100%</td>
+ </tr>\n`;
+
+          // Add M:E ratio if bone marrow preset
+          if (state.presetType === "bone-marrow") {
+            const ratio = calculateMEratio();
+            if (ratio) {
+              dataRows += ` <tr height=21 style='height:16.0pt'>
+  <td height=21 class=xl65 style='height:16.0pt' data-t=s data-v="M:E Ratio">M:E Ratio</td>
+  <td class=xl66 align=right data-t=s data-v="${ratio.ratio}:1">${ratio.ratio}:1</td>
+  <td class=xl67 align=right data-t=s data-v="(${ratio.myeloidCount}:${ratio.erythroidCount})">(${ratio.myeloidCount}:${ratio.erythroidCount})</td>
+ </tr>\n`;
+            }
+          }
+
+          // Create complete Excel HTML format matching Microsoft Office structure
+          const _excelHtml = `<html xmlns:v="urn:schemas-microsoft-com:vml"
+xmlns:o="urn:schemas-microsoft-com:office:office"
+xmlns:x="urn:schemas-microsoft-com:office:excel"
+xmlns="http://www.w3.org/TR/REC-html40">
+
+<head>
+<meta http-equiv=Content-Type content="text/html; charset=utf-8">
+<meta name=ProgId content=Excel.Sheet>
+<meta name=Generator content="Microsoft Excel 15">
+<style>
+<!--table
+	{mso-displayed-decimal-separator:"\.";
+	mso-displayed-thousand-separator:"\,";}
+@page
+	{margin:.75in .7in .75in .7in;
+	mso-header-margin:.3in;
+	mso-footer-margin:.3in;}
+tr
+	{mso-height-source:auto;}
+col
+	{mso-width-source:auto;}
+br
+	{mso-data-placement:same-cell;}
+td
+	{padding-top:1px;
+	padding-right:1px;
+	padding-left:1px;
+	mso-ignore:padding;
+	color:black;
+	font-size:12.0pt;
+	font-weight:400;
+	font-style:normal;
+	text-decoration:none;
+	font-family:Calibri, sans-serif;
+	mso-font-charset:0;
+	mso-number-format:General;
+	text-align:general;
+	vertical-align:bottom;
+	border:none;
+	mso-background-source:auto;
+	mso-pattern:auto;
+	mso-protection:locked visible;
+	white-space:nowrap;
+	mso-rotate:0;}
+.xl65
+	{font-weight:700;
+	font-family:Aptos;
+	mso-generic-font-family:auto;
+	mso-font-charset:0;}
+.xl66
+	{font-family:Aptos;
+	mso-generic-font-family:auto;
+	mso-font-charset:0;}
+.xl67
+	{font-family:Aptos;
+	mso-generic-font-family:auto;
+	mso-font-charset:0;
+	mso-number-format:Percent;}
+.xl68
+	{font-family:Aptos;
+	mso-generic-font-family:auto;
+	mso-font-charset:0;
+	mso-number-format:0%;}
+-->
+</style>
+</head>
+
+<body link="#0563C1" vlink="#954F72">
+
+<table border=0 cellpadding=0 cellspacing=0 width=321 style='border-collapse:
+ collapse;width:241pt'>
+<!--StartFragment-->
+ <col width=175 style='mso-width-source:userset;mso-width-alt:5589;width:131pt'>
+ <col width=53 style='mso-width-source:userset;mso-width-alt:1706;width:40pt'>
+ <col width=93 style='mso-width-source:userset;mso-width-alt:2986;width:70pt'>
+${dataRows}<!--EndFragment-->
+</table>
+
+</body>
+
+</html>`;
+
+          // Create plain text tab-delimited format
+          const plainTextRows = [
+            "Cell Type\tCount\tPercentage",
+            ...filteredCells.map((cell) => {
+              const percentage = ((cell.count / totalCount) * 100).toFixed(2) + "%";
+              return `${cell.name}\t${cell.count}\t${percentage}`;
+            }),
+            `Total Count\t${totalCount}\t100%`,
+          ];
+
+          if (state.presetType === "bone-marrow") {
+            const ratio = calculateMEratio();
+            if (ratio) {
+              plainTextRows.push(
+                `M:E Ratio\t${ratio.ratio}:1\t(${ratio.myeloidCount}:${ratio.erythroidCount})`
+              );
+            }
+          }
+
+          const plainText = plainTextRows.join("\n");
+
+          // Prefer the browser's *native* rich-copy pipeline: render an actual HTML table,
+          // select it, and let the browser generate the clipboard payload (often includes RTF).
+          // This tends to match what works when users manually copy a table.
+          const ratio = state.presetType === "bone-marrow" ? calculateMEratio() : null;
+          const htmlTable = `<table border="1" cellspacing="0" cellpadding="5">
+<tr><th>Cell Type</th><th>Count</th><th>Percentage</th></tr>
+${filteredCells
+  .map((cell) => {
+    const percentage = ((cell.count / totalCount) * 100).toFixed(2) + "%";
+    return `<tr><td>${cell.name}</td><td>${cell.count}</td><td>${percentage}</td></tr>`;
+  })
+  .join("\n")}
+<tr><td><strong>Total Count</strong></td><td><strong>${totalCount}</strong></td><td><strong>100%</strong></td></tr>
+${
+  ratio
+    ? `<tr><td><strong>M:E Ratio</strong></td><td><strong>${ratio.ratio}:1</strong></td><td>(${ratio.myeloidCount}:${ratio.erythroidCount})</td></tr>`
+    : ""
+}
+</table>`;
+
+          const copyViaNativeSelection = () => {
+            const container = document.createElement("div");
+            container.setAttribute("contenteditable", "true");
+            container.style.position = "fixed";
+            container.style.left = "-9999px";
+            container.style.top = "0";
+            container.style.opacity = "0";
+            container.innerHTML = htmlTable;
+            document.body.appendChild(container);
+
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(container);
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+            container.focus();
+
+            const ok = document.execCommand("copy");
+
+            selection?.removeAllRanges();
+            document.body.removeChild(container);
+            return ok;
+          };
+
+          if (copyViaNativeSelection()) {
+            toast.success("Copied table for Epic. Paste into Epic.");
+            return;
+          }
+
+          // Generate a standards-friendly RTF table.
+          // Epic is often picky about malformed RTF; keep the header minimal and use \ansi.
+          const rtfCellWidths = [3500, 4500, 6200];
+          const rtfCellBorders =
+            "\\clbrdrt\\brdrs\\brdrw10\\clbrdrl\\brdrs\\brdrw10\\clbrdrb\\brdrs\\brdrw10\\clbrdrr\\brdrs\\brdrw10";
+          const rtfRowHeader =
+            `\\trowd\\trgaph108\\trleft0${rtfCellBorders}\\cellx${rtfCellWidths[0]}` +
+            `${rtfCellBorders}\\cellx${rtfCellWidths[1]}` +
+            `${rtfCellBorders}\\cellx${rtfCellWidths[2]}`;
+
+          const rtfRow = (cells: Array<{ text: string; align?: "ql" | "qr"; bold?: boolean }>) => {
+            const renderedCells = cells
+              .map(({ text, align = "ql", bold = false }) => {
+                const bStart = bold ? "\\b " : "";
+                const bEnd = bold ? "\\b0 " : "";
+                return `\\pard\\intbl\\${align} ${bStart}${escapeRtf(text)} ${bEnd}\\cell`;
+              })
+              .join(" ");
+
+            return `${rtfRowHeader} ${renderedCells} \\row`;
+          };
+
+          const rtfRows = [
+            rtfRow([
+              { text: "Cell Type", bold: true },
+              { text: "Count", bold: true, align: "qr" },
+              { text: "Percentage", bold: true, align: "qr" },
+            ]),
+            ...filteredCells.map((cell) => {
+              const percentage = ((cell.count / totalCount) * 100).toFixed(2) + "%";
+              return rtfRow([
+                { text: cell.name },
+                { text: String(cell.count), align: "qr" },
+                { text: percentage, align: "qr" },
+              ]);
+            }),
+            rtfRow([
+              { text: "Total Count", bold: true },
+              { text: String(totalCount), bold: true, align: "qr" },
+              { text: "100%", bold: true, align: "qr" },
+            ]),
+          ];
+
+          if (state.presetType === "bone-marrow") {
+            const ratio = calculateMEratio();
+            if (ratio) {
+              rtfRows.push(
+                rtfRow([
+                  { text: "M:E Ratio", bold: true },
+                  { text: `${ratio.ratio}:1`, bold: true, align: "qr" },
+                  { text: `(${ratio.myeloidCount}:${ratio.erythroidCount})`, align: "qr" },
+                ])
+              );
+            }
+          }
+
+          // Use an explicit Windows codepage to improve interoperability with Windows apps.
+          const rtfDocument =
+            `{\\rtf1\\ansi\\ansicpg1252\\deff0{\\fonttbl{\\f0 Calibri;}}` +
+            `\\viewkind4\\uc1\\pard\\f0\\fs22 ` +
+            rtfRows.join(" ") +
+            "}";
+
+          const copyWithClipboardApi = async () => {
+            // IMPORTANT: Epic/Windows clipboard pipelines tend to key off RTF specifically.
+            // Providing *only* text/rtf (and not application/rtf) improves compatibility in VDI/remote clipboard bridges.
+            const clipboardItem = new ClipboardItem({
+              "text/rtf": new Blob([rtfDocument], { type: "text/rtf" }),
+              "text/plain": new Blob([plainText], { type: "text/plain" }),
+            });
+            await navigator.clipboard.write([clipboardItem]);
+          };
+
+          const copyWithExecCommand = async () => {
+            const copyHandler = (e: ClipboardEvent) => {
+              e.preventDefault();
+              e.clipboardData?.setData("text/plain", plainText);
+              e.clipboardData?.setData("text/rtf", rtfDocument);
+
+              document.removeEventListener("copy", copyHandler);
+            };
+
+            document.addEventListener("copy", copyHandler);
+            try {
+              const successful = document.execCommand("copy");
+              if (!successful) throw new Error("execCommand copy failed");
+            } finally {
+              document.removeEventListener("copy", copyHandler);
+            }
+          };
+
+          // Prefer Clipboard API (more reliable for cross-app paste), then fallback.
+          try {
+            await copyWithClipboardApi();
+            toast.success("Copied table for Epic. Paste into Epic.");
+          } catch (error) {
+            console.warn("ClipboardItem write failed; falling back to execCommand:", error);
+            try {
+              await copyWithExecCommand();
+              toast.success("Copied for Epic. Paste into Epic.");
+            } catch (fallbackError) {
+              console.error("Copy failed:", fallbackError);
+              await navigator.clipboard.writeText(plainText);
+              toast.success("Copied as plain text (tab-delimited).", {
+                duration: 5000,
+              });
+            }
+          }
+        } catch (error) {
+          toast.error("Failed to copy table");
+          console.error(error);
+        }
       } else {
-        // Plain text format (improved)
-        const header = `Cell Counter Results - ${timestamp}\n${"=".repeat(50)}\n\n`;
-
-        // Tab-delimited format for better table compatibility
-        const tableHeader = "Cell Type\tCount\tPercentage\n" + "-".repeat(40) + "\n";
-
+        // Plain text format (human-readable)
         const rows = filteredCells
           .map((cell) => {
             const percentage = ((cell.count / totalCount) * 100).toFixed(1);
-            return `${cell.name}\t${cell.count}\t${percentage}%`;
+            const paddedName = cell.name.padEnd(30, " ");
+            const paddedCount = cell.count.toString().padEnd(8, " ");
+            return `${paddedName} ${paddedCount} ${percentage}%`;
           })
           .join("\n");
 
-        const footer = `\n${"-".repeat(40)}\nTotal Count:\t${totalCount}\n`;
+        const footer = `\n${"=".repeat(60)}\n${"Total Count:".padEnd(30, " ")} ${totalCount}`;
 
-        const exportText = header + tableHeader + rows + footer;
+        // Add M:E ratio if bone marrow preset
+        let meRatioText = "";
+        if (state.presetType === "bone-marrow") {
+          const ratio = calculateMEratio();
+          if (ratio) {
+            meRatioText = `\n${"M:E Ratio:".padEnd(30, " ")} ${ratio.ratio}:1 (${ratio.myeloidCount}:${ratio.erythroidCount})`;
+          }
+        }
 
-        navigator.clipboard
-          .writeText(exportText)
-          .then(() => {
-            toast.success("Table copied! Paste into Excel or text editor.");
-          })
-          .catch(() => {
-            toast.error("Failed to copy to clipboard");
-          });
+        const exportText = rows + footer + meRatioText;
+
+        try {
+          await navigator.clipboard.writeText(exportText);
+          toast.success("Copied as plain text!");
+        } catch (_error) {
+          toast.error("Failed to copy to clipboard");
+        }
       }
     },
-    [state.cellTypes, totalCount]
+    [state.cellTypes, state.presetType, totalCount, calculateMEratio]
   );
 
   // Keyboard event handler
@@ -457,29 +754,45 @@ export default function CellCounterPage() {
     if (!isCountingActive) return;
 
     const handleKeyDown = (event: KeyboardEvent) => {
-      // Prevent default for our handled keys
-      const key = event.key.toLowerCase();
+      // Map of shifted keys to their unshifted equivalents for special characters
+      const shiftKeyMap: Record<string, string> = {
+        ":": ";", // Shift + ;
+        '"': "'", // Shift + '
+        "?": "/", // Shift + /
+        L: "l", // Shift + l
+        N: "n", // Shift + n
+        M: "m", // Shift + m
+        B: "b", // Shift + b
+      };
+
+      // Get the effective key - if shift is pressed, try to map back to unshifted key
+      let effectiveKey = event.key;
+      if (event.shiftKey && shiftKeyMap[event.key]) {
+        effectiveKey = shiftKeyMap[event.key];
+      } else {
+        effectiveKey = event.key.toLowerCase();
+      }
 
       // Handle Shift + cell key for decrementing first
       if (event.shiftKey) {
-        const cellExists = state.cellTypes.some((cell) => cell.key === key);
+        const cellExists = state.cellTypes.some((cell) => cell.key === effectiveKey);
         if (cellExists) {
           event.preventDefault();
-          decrementCell(key);
+          decrementCell(effectiveKey);
           return;
         }
       }
 
       // Check if it's a cell type key (without shift)
-      const cellExists = state.cellTypes.some((cell) => cell.key === key);
+      const cellExists = state.cellTypes.some((cell) => cell.key === effectiveKey);
       if (cellExists && !event.shiftKey) {
         event.preventDefault();
-        incrementCell(key);
+        incrementCell(effectiveKey);
         return;
       }
 
       // Handle special keys
-      switch (key) {
+      switch (effectiveKey) {
         case "escape":
           event.preventDefault();
           setIsCountingActive(false);
@@ -499,12 +812,6 @@ export default function CellCounterPage() {
           if (event.ctrlKey || event.metaKey) {
             event.preventDefault();
             resetCounts();
-          }
-          break;
-        case "c":
-          if (event.ctrlKey || event.metaKey) {
-            event.preventDefault();
-            exportResults("text");
           }
           break;
       }
@@ -574,22 +881,105 @@ export default function CellCounterPage() {
                   <div className="space-y-2">
                     <Label>Common Presets</Label>
                     <div className="grid gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => {
-                          updateState((prev) => ({
-                            ...prev,
-                            cellTypes: DEFAULT_CELL_TYPES,
-                            settings: { ...DEFAULT_SETTINGS, countLimit: 100, enableLimit: true },
-                          }));
-                          // toast.success('Peripheral Blood / Bone Marrow preset loaded')
-                        }}
-                        disabled={isCountingActive}
-                        className="justify-start"
-                      >
-                        🩸 PB/BM Differential (100 cells)
-                      </Button>
+                      <div className="space-y-1">
+                        <div className="text-xs font-medium text-muted-foreground pl-1">
+                          Peripheral Blood
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              updateState((prev) => ({
+                                ...prev,
+                                cellTypes: PERIPHERAL_BLOOD_CELL_TYPES.map((cell) => ({
+                                  ...cell,
+                                  count: 0,
+                                })),
+                                settings: { ...prev.settings, countLimit: 100, enableLimit: true },
+                                presetType: "peripheral-blood",
+                                undoHistory: [],
+                              }));
+                              toast.success("Peripheral Blood (100 cells) preset loaded");
+                            }}
+                            disabled={isCountingActive}
+                            className="justify-center"
+                          >
+                            100 cells
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              updateState((prev) => ({
+                                ...prev,
+                                cellTypes: PERIPHERAL_BLOOD_CELL_TYPES.map((cell) => ({
+                                  ...cell,
+                                  count: 0,
+                                })),
+                                settings: { ...prev.settings, countLimit: 200, enableLimit: true },
+                                presetType: "peripheral-blood",
+                                undoHistory: [],
+                              }));
+                              toast.success("Peripheral Blood (200 cells) preset loaded");
+                            }}
+                            disabled={isCountingActive}
+                            className="justify-center"
+                          >
+                            200 cells
+                          </Button>
+                        </div>
+                      </div>
+
+                      <div className="space-y-1">
+                        <div className="text-xs font-medium text-muted-foreground pl-1">
+                          Bone Marrow
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              updateState((prev) => ({
+                                ...prev,
+                                cellTypes: BONE_MARROW_CELL_TYPES.map((cell) => ({
+                                  ...cell,
+                                  count: 0,
+                                })),
+                                settings: { ...prev.settings, countLimit: 300, enableLimit: true },
+                                presetType: "bone-marrow",
+                                undoHistory: [],
+                              }));
+                              toast.success("Bone Marrow (300 cells) preset loaded");
+                            }}
+                            disabled={isCountingActive}
+                            className="justify-center"
+                          >
+                            300 cells
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => {
+                              updateState((prev) => ({
+                                ...prev,
+                                cellTypes: BONE_MARROW_CELL_TYPES.map((cell) => ({
+                                  ...cell,
+                                  count: 0,
+                                })),
+                                settings: { ...prev.settings, countLimit: 500, enableLimit: true },
+                                presetType: "bone-marrow",
+                                undoHistory: [],
+                              }));
+                              toast.success("Bone Marrow (500 cells) preset loaded");
+                            }}
+                            disabled={isCountingActive}
+                            className="justify-center"
+                          >
+                            500 cells
+                          </Button>
+                        </div>
+                      </div>
                     </div>
                   </div>
 
@@ -696,6 +1086,7 @@ export default function CellCounterPage() {
                           ...prev,
                           cellTypes: [],
                           undoHistory: [],
+                          presetType: "custom",
                         }));
                         // toast.success('Cleared all cell types')
                       }}
@@ -763,13 +1154,11 @@ export default function CellCounterPage() {
                       {/* Active Counting Display - Mobile Optimized */}
                       <div className="grid gap-2 md:gap-3 grid-cols-2 lg:grid-cols-3">
                         {state.cellTypes.map((cell) => (
-                          <button
+                          <div
                             key={cell.id}
-                            className="w-full p-1.5 md:p-3 border rounded-lg hover:bg-muted/50 transition-colors bg-card text-left"
-                            onClick={() => incrementCell(cell.key)}
-                            disabled={isComplete}
+                            className="w-full p-1.5 md:p-3 border rounded-lg bg-card"
                           >
-                            <div className="flex items-center justify-between">
+                            <div className="flex items-center justify-between gap-1 md:gap-2">
                               <div className="min-w-0 flex-1 pr-1">
                                 <div className="font-medium text-xs leading-none sm:leading-tight break-words">
                                   {cell.name}
@@ -788,11 +1177,32 @@ export default function CellCounterPage() {
                                 </div>
                               </div>
                             </div>
-                          </button>
+                            {/* Manual increment/decrement buttons */}
+                            <div className="flex gap-1 mt-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => decrementCell(cell.key)}
+                                disabled={cell.count === 0}
+                                className="flex-1 h-7 px-2"
+                              >
+                                <Minus className="h-3 w-3" />
+                              </Button>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => incrementCell(cell.key)}
+                                disabled={isComplete}
+                                className="flex-1 h-7 px-2"
+                              >
+                                <Plus className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          </div>
                         ))}
 
                         {/* M:E Ratio Card - Non-interactable */}
-                        {isPBBMPreset && meRatio && (
+                        {state.presetType === "bone-marrow" && meRatio && (
                           <div className="w-full p-1.5 md:p-3 border rounded-lg bg-accent/50 text-left cursor-default">
                             <div className="flex items-center justify-between">
                               <div className="min-w-0 flex-1 pr-1">
@@ -858,15 +1268,36 @@ export default function CellCounterPage() {
                           <Trash2 className="h-4 w-4 mr-1" />
                           Reset
                         </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => exportResults("text")}
-                          disabled={totalCount === 0}
-                          size="sm"
-                        >
-                          <Copy className="h-4 w-4 mr-1" />
-                          Copy
-                        </Button>
+                      </div>
+
+                      {/* Export Buttons */}
+                      <div className="pt-2 border-t">
+                        <div className="flex flex-col gap-2">
+                          <div className="flex flex-wrap gap-2 justify-center">
+                            <Button
+                              onClick={() => exportResults("excel")}
+                              disabled={totalCount === 0}
+                              size="sm"
+                              className="font-semibold"
+                            >
+                              <Table className="h-4 w-4 mr-2" />
+                              Copy Table (Epic)
+                            </Button>
+                            <Button
+                              variant="outline"
+                              onClick={() => exportResults("text")}
+                              disabled={totalCount === 0}
+                              size="sm"
+                            >
+                              <FileText className="h-4 w-4 mr-2" />
+                              Copy Plain Text
+                            </Button>
+                          </div>
+                          <p className="text-center text-xs text-muted-foreground">
+                            For best results, paste into Word/Excel first, then copy from there into
+                            Epic.
+                          </p>
+                        </div>
                       </div>
 
                       {/* Keyboard Instructions - Desktop only */}

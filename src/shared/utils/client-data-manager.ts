@@ -70,7 +70,7 @@ const CONTENT_FILES = [
 
 class ClientDataManager {
   private wsiMetadata: VirtualSlide[] | null = null;
-  private educationalContent: Map<string, any> = new Map();
+  private educationalContent: Map<string, EducationalContent> = new Map();
   private loadingPromises: Map<string, Promise<unknown>> = new Map();
   private loadingProgress = {
     wsiMetadata: { loaded: false, size: 0, error: null as Error | null },
@@ -155,8 +155,23 @@ class ClientDataManager {
       // Handle the PathPresenter cases JSON format (same as use-client-wsi-data.ts)
       const pathPresenterCases = json.cases || [];
 
+      interface PathPresenterCase {
+        authors?: string | string[];
+        clinical_history?: string;
+        chapter?: string;
+        organ_system?: string;
+        diagnosis?: string;
+        url?: string;
+        pages?: string;
+        microscopic_features?: string;
+        other_prognostic_factors?: string;
+        immuno_profile?: string;
+        molecular_profile?: string;
+        differential_diagnosis?: string;
+      }
+
       // Convert PathPresenter cases to VirtualSlide format
-      const entries: VirtualSlide[] = pathPresenterCases.map((pathCase: unknown, index: number) => {
+      const entries: VirtualSlide[] = pathPresenterCases.map((pathCase: PathPresenterCase, index: number) => {
         // Generate consistent ID
         const caseId = `pathpresenter_${index + 1}`;
 
@@ -187,8 +202,8 @@ class ClientDataManager {
           clinical_history: clinicalHistory,
           stain_type: "H&E", // Assume H&E for PathPresenter cases
           preview_image_url: "",
-          slide_url: pathCase.url,
-          case_url: pathCase.url,
+          slide_url: pathCase.url || "",
+          case_url: pathCase.url || "",
           other_urls: [],
           source_metadata: {
             pages: pathCase.pages,
@@ -280,7 +295,7 @@ class ClientDataManager {
       const sizeKB = Math.round(JSON.stringify(data).length / 1024);
 
       // Cache the data
-      this.educationalContent.set(filename, data);
+      this.educationalContent.set(filename, data as EducationalContent);
 
       // Update progress
       this.loadingProgress.contentFiles.loaded++;

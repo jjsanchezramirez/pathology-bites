@@ -20,7 +20,7 @@ export function PageError({
   description = "Please try refreshing the page",
   onRetry,
 }: PageErrorProps) {
-  const { animationData, isLoading } = useLottieAnimation("access_denied");
+  const { animationData, isLoading: _isLoading } = useLottieAnimation("access_denied");
 
   const handleRetry = () => {
     if (onRetry) {

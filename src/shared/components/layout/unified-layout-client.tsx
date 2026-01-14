@@ -18,7 +18,7 @@ interface UnifiedLayoutClientProps {
 }
 
 // Simplified sidebar state enum
-type SidebarState = "hidden" | "collapsed" | "expanded";
+type _SidebarState = "hidden" | "collapsed" | "expanded";
 
 export function UnifiedLayoutClient({
   children,
@@ -30,17 +30,15 @@ export function UnifiedLayoutClient({
 
   // Check if we're on pages that have their own full-height layouts
   const isAnkiPage = pathname === "/dashboard/anki";
-  const isAnki2Page = pathname === "/dashboard/anki2";
-  const isQuizTestPage = pathname === "/dashboard/quiz-test";
   // Only quiz active session and review pages need full-height layout (they have their own scrolling areas)
   // Results page needs standard scrollable layout
   // Exclude /quiz/new and /quiz/tutor - they need scrollable layout
-  const isQuizActivePage = pathname?.match(/^\/dashboard\/quiz\/[^/]+$/) &&
-                          pathname !== "/dashboard/quiz/new" &&
-                          pathname !== "/dashboard/quiz/tutor"; // Active quiz: /quiz/[id]
+  const isQuizActivePage =
+    pathname?.match(/^\/dashboard\/quiz\/[^/]+$/) &&
+    pathname !== "/dashboard/quiz/new" &&
+    pathname !== "/dashboard/quiz/tutor"; // Active quiz: /quiz/[id]
   const isQuizReviewPage = pathname?.includes("/review"); // Review page: /quiz/[id]/review
-  const isFullHeightPage =
-    isAnkiPage || isAnki2Page || isQuizTestPage || isQuizActivePage || isQuizReviewPage;
+  const isFullHeightPage = isAnkiPage || isQuizActivePage || isQuizReviewPage;
 
   // Get navigation items based on user type
   // Middleware already validated role server-side, so we can trust userType prop
@@ -78,7 +76,7 @@ export function UnifiedLayoutClient({
         setDesktopCollapsed(preQuizDesktopState);
       }
     }
-  }, [isInQuizMode, isInAnkiMode, isMobile, isHydrated]);
+  }, [isInQuizMode, isInAnkiMode, isMobile, isHydrated, desktopCollapsed, preQuizDesktopState]);
 
   // Handle click outside to close mobile sidebar
   useEffect(() => {

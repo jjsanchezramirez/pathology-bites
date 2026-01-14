@@ -16,7 +16,8 @@ export const IMAGE_CATEGORIES = {
 
 export type ImageCategory = keyof typeof IMAGE_CATEGORIES;
 
-export const PAGE_SIZE = 10;
+export const PAGE_SIZE = 20;
+export const PAGE_SIZE_OPTIONS = [10, 20, 50, 100] as const;
 
 export interface ImageFilters {
   searchTerm?: string;

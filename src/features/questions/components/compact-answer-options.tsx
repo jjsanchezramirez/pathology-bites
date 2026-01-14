@@ -72,29 +72,6 @@ export function CompactAnswerOptions({ options, onChange, errors }: CompactAnswe
     [options, onChange]
   );
 
-  const _moveOption = useCallback(
-    (index: number, direction: "up" | "down") => {
-      const newIndex = direction === "up" ? index - 1 : index + 1;
-      if (newIndex < 0 || newIndex >= options.length) return;
-
-      const updatedOptions = [...options];
-      const temp = updatedOptions[index];
-      updatedOptions[index] = updatedOptions[newIndex];
-      updatedOptions[newIndex] = temp;
-
-      // Update order indices
-      const reorderedOptions = updatedOptions.map((option, i) => ({
-        ...option,
-        order_index: i,
-      }));
-
-      onChange(reorderedOptions);
-    },
-    [options, onChange]
-  );
-
-  const _correctAnswerIndex = options.findIndex((opt) => opt.is_correct);
-
   return (
     <div className="space-y-2">
       <div className="flex items-center justify-between">

@@ -91,6 +91,7 @@ export function UnifiedSidebar({
   const { adminMode, isTransitioning } = useDashboardTheme();
   const { count: pendingInquiriesCount } = usePendingInquiriesCount();
   const { revisionQueueCount, reviewQueueCount, draftsCount } = usePendingQuestionsCount();
+  const myQuestionsCount = revisionQueueCount + draftsCount; // Combined badge for My Questions
 
   // Always show navigation immediately, but filter based on loading state and admin mode
   const filteredNavigation = navigationItems
@@ -208,6 +209,14 @@ export function UnifiedSidebar({
                                 )}
                               {isOpen &&
                                 item.showBadge &&
+                                item.badgeKey === "myQuestions" &&
+                                myQuestionsCount > 0 && (
+                                  <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                                    {myQuestionsCount}
+                                  </span>
+                                )}
+                              {isOpen &&
+                                item.showBadge &&
                                 item.badgeKey === "revisionQueue" &&
                                 revisionQueueCount > 0 && (
                                   <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
@@ -279,6 +288,14 @@ export function UnifiedSidebar({
                           pendingInquiriesCount > 0 && (
                             <span className="ml-auto text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">
                               {pendingInquiriesCount}
+                            </span>
+                          )}
+                        {isOpen &&
+                          item.showBadge &&
+                          item.badgeKey === "myQuestions" &&
+                          myQuestionsCount > 0 && (
+                            <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                              {myQuestionsCount}
                             </span>
                           )}
                         {isOpen &&

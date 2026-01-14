@@ -1,7 +1,7 @@
 // src/components/question-management/edit-category-dialog.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { toast } from "@/shared/utils/toast";
 import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
 import { Button } from "@/shared/components/ui/button";
@@ -53,7 +53,7 @@ export function EditCategoryDialog({
 
   // Use the shared color arrays (no need to generate them again)
 
-  const loadCategories = async () => {
+  const loadCategories = useCallback(async () => {
     setLoadingCategories(true);
     try {
       // Use a large page size to get all categories for the dropdown
@@ -76,7 +76,7 @@ export function EditCategoryDialog({
     } finally {
       setLoadingCategories(false);
     }
-  };
+  }, [category]);
 
   // Update form when category changes
   useEffect(() => {

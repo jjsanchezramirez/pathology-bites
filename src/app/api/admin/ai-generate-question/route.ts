@@ -351,19 +351,30 @@ Return your response in this EXACT JSON format:
 IMPORTANT: Only use IDs that exist in the available options above. If no appropriate option exists, use null for that field.`;
   }
 
-  // For refinement mode
+  // For refinement mode - handle both answerOptions (from frontend) and answer_options (normalized)
+  const contentData = content as {
+    title?: string;
+    stem?: string;
+    teaching_point?: string;
+    question_references?: string;
+    answerOptions?: Array<{ text: string; is_correct: boolean; explanation: string }>;
+    answer_options?: Array<{ text: string; is_correct: boolean; explanation: string }>;
+  };
+
+  const answerOptions = contentData.answerOptions || contentData.answer_options || [];
+
   return `Refine the following medical/pathology question based on the provided instructions:
 
 CURRENT QUESTION:
-Title: ${content.title}
-Stem: ${content.stem}
-Teaching Point: ${content.teaching_point}
-References: ${content.question_references}
+Title: ${contentData.title || ""}
+Stem: ${contentData.stem || ""}
+Teaching Point: ${contentData.teaching_point || ""}
+References: ${contentData.question_references || ""}
 
 CURRENT ANSWER OPTIONS:
-${content.answer_options
+${answerOptions
   .map(
-    (opt: unknown, i: number) =>
+    (opt, i) =>
       `${String.fromCharCode(65 + i)}. ${opt.text} ${opt.is_correct ? "(CORRECT)" : "(INCORRECT)"}\n   Explanation: ${opt.explanation}`
   )
   .join("\n")}
@@ -528,7 +539,7 @@ function extractJSON(text: string): unknown {
 
         try {
           return JSON.parse(sanitizeJSONString(fixedJson));
-        } catch (_sanitizeError) {
+        } catch {
           try {
             return JSON.parse(fixedJson);
           } catch (finalError) {
@@ -570,7 +581,6 @@ export async function POST(request: NextRequest) {
     const {
       mode = "educational_content",
       content,
-      _currentQuestion,
       instructions,
       additionalContext = "",
       model,
@@ -664,9 +674,9 @@ export async function POST(request: NextRequest) {
     );
 
     // Parse the AI response
-    let questionData;
+    let questionData: Record<string, unknown>;
     try {
-      questionData = extractJSON(aiResponse.content);
+      questionData = extractJSON(aiResponse.content) as Record<string, unknown>;
       console.log(
         `[Admin AI] Extracted JSON (${mode} mode):`,
         JSON.stringify(questionData, null, 2)
@@ -739,12 +749,12 @@ export async function POST(request: NextRequest) {
         throw new Error("AI response missing title field (required for educational_content mode)");
       }
 
-      if (questionData.question_options.length !== 5) {
+      if ((questionData.question_options as unknown[]).length !== 5) {
         throw new Error("AI response must contain exactly 5 options");
       }
 
-      const correctCount = questionData.question_options.filter(
-        (opt: unknown) => opt.is_correct
+      const correctCount = (questionData.question_options as Array<{ is_correct?: boolean }>).filter(
+        (opt) => opt.is_correct
       ).length;
       if (correctCount !== 1) {
         throw new Error(`AI response must have exactly 1 correct answer, found ${correctCount}`);
@@ -752,7 +762,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Return the data in the format expected by the frontend
-    let responseData: unknown;
+    let responseData: Record<string, unknown>;
 
     if (normalizedMode === "metadata_suggestion") {
       responseData = {

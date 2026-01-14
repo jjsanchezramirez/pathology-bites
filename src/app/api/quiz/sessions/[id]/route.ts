@@ -4,6 +4,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { quizService } from "@/features/quiz/services/quiz-service";
 
+interface QuizSessionUpdate {
+  timeRemaining?: number;
+  currentQuestionIndex?: number;
+  totalTimeSpent?: number;
+  status?: string;
+}
+
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -149,7 +156,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     }
 
     // Remove answers from updates object before passing to service
-    const { _answers, ...sessionUpdates } = updates;
+    const sessionUpdates = updates as QuizSessionUpdate;
 
     // Skip session updates if quiz is already completed
     if (existingSession.status === "completed") {

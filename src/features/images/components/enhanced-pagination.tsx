@@ -1,4 +1,3 @@
-import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 
 import {
@@ -29,19 +28,8 @@ export function EnhancedPagination({
   onPageChange,
   onPageSizeChange,
 }: EnhancedPaginationProps) {
-  const [pageInput, setPageInput] = useState("");
-
   const startItem = totalItems > 0 ? currentPage * pageSize + 1 : 0;
   const endItem = Math.min((currentPage + 1) * pageSize, totalItems);
-
-  const _handlePageInputSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const pageNum = parseInt(pageInput, 10);
-    if (pageNum >= 1 && pageNum <= totalPages) {
-      onPageChange(pageNum - 1); // Convert to 0-based index
-      setPageInput("");
-    }
-  };
 
   return (
     <div className="flex flex-col sm:flex-row gap-4 items-center justify-between py-3 px-1">

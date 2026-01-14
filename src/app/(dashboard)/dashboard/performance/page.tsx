@@ -3,14 +3,13 @@
 
 import { useState, useEffect } from "react";
 
-import { PerformanceAnalytics, FeaturePlaceholder } from "@/features/dashboard/components";
+import { PerformanceAnalytics } from "@/features/dashboard/components";
 import { PerformanceLoading, CategoryPerformanceCard } from "@/features/performance/components";
 import {
   PerformanceTimelineChart,
   CategoryRadarChart,
   ActivityHeatmap,
-} from "@/features/performance/components/interactive-chart-demos";
-import { isQuizFeaturesEnabled } from "@/shared/config/feature-flags";
+} from "@/features/performance/components/interactive-charts";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 import { ScrollReveal } from "@/shared/components/common";
 
@@ -35,12 +34,11 @@ interface DashboardStats {
 }
 
 export default function PerformancePage() {
-  const featuresEnabled = isQuizFeaturesEnabled();
   const { data: unifiedData, isLoading } = useUnifiedData();
   const [stats, setStats] = useState<DashboardStats | null>(null);
 
   useEffect(() => {
-    if (!featuresEnabled || !unifiedData) return;
+    if (!unifiedData) return;
 
     // Transform unified API response to match component expectations
     setStats({
@@ -54,18 +52,7 @@ export default function PerformancePage() {
         overallScore: unifiedData.summary.overallScore,
       },
     });
-  }, [featuresEnabled, unifiedData]);
-
-  // Show placeholder if features are disabled
-  if (!featuresEnabled) {
-    return (
-      <FeaturePlaceholder
-        title="Performance Analytics"
-        description="We're preparing comprehensive performance analytics to help you track your mastery of pathology topics. Soon you'll be able to see detailed insights into your quiz performance, identify knowledge gaps, and measure your progress across different subjects."
-        status="launching-soon"
-      />
-    );
-  }
+  }, [unifiedData]);
 
   if (isLoading) {
     return <PerformanceLoading />;

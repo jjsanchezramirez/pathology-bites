@@ -4,9 +4,10 @@
 import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { updateImage } from "@/features/images/services/images";
-import { ImageData, IMAGE_CATEGORIES } from "@/features/images/types/images";
+import { ImageData, IMAGE_CATEGORIES, ImageCategory } from "@/features/images/types/images";
 import { useImageReupload } from "@/features/images/hooks/use-image-reupload";
 import { toast } from "@/shared/utils/toast";
+import { CATEGORIES } from "@/shared/constants/categories";
 import {
   Dialog,
   DialogContent,
@@ -27,7 +28,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 
-import { Loader2, Upload } from "lucide-react";
+import { Loader2, Upload, X, ExternalLink } from "lucide-react";
 
 interface EditImageDialogProps {
   image: ImageData | null;
@@ -36,15 +37,17 @@ interface EditImageDialogProps {
   onSave: () => void;
 }
 
+const MAGNIFICATIONS = ["2x", "5x", "10x", "20x", "40x", "50x", "60x"] as const;
+
 export function EditImageDialog({ image, open, onOpenChange, onSave }: EditImageDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [description, setDescription] = useState("");
   const [altText, setAltText] = useState("");
-  const [category, setCategory] = useState<"gross" | "microscopic" | "figure" | "table">(
-    "microscopic"
-  );
+  const [imageType, setImageType] = useState<ImageCategory>("microscopic");
+  const [pathologyCategory, setPathologyCategory] = useState<string>("");
+  const [magnification, setMagnification] = useState<string>("");
   const [sourceRef, setSourceRef] = useState("");
-  const [_selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [, setSelectedFile] = useState<File | null>(null);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -63,17 +66,27 @@ export function EditImageDialog({ image, open, onOpenChange, onSave }: EditImage
     if (image && open) {
       setDescription(image.description || "");
       setAltText(image.alt_text || "");
-      setCategory(image.category as "gross" | "microscopic" | "figure" | "table");
+      const imgType = image.category as ImageCategory;
+      setImageType(imgType);
+      setPathologyCategory(image.pathology_category_id || "");
+      // Clear magnification if image type is figure or table
+      if (imgType === "figure" || imgType === "table") {
+        setMagnification("");
+      } else {
+        setMagnification(image.magnification || "");
+      }
       setSourceRef(image.source_ref || "");
     }
   }, [image, open]);
 
-  // Reset state when dialog closes (like upload dialog)
+  // Reset state when dialog closes
   useEffect(() => {
     if (!open) {
       setDescription("");
       setAltText("");
-      setCategory("microscopic");
+      setImageType("microscopic");
+      setPathologyCategory("");
+      setMagnification("");
       setSourceRef("");
       setSelectedFile(null);
     }
@@ -88,7 +101,11 @@ export function EditImageDialog({ image, open, onOpenChange, onSave }: EditImage
       const data = {
         description: description.trim(),
         alt_text: altText.trim(),
-        category,
+        category: imageType,
+        pathology_category_id: pathologyCategory || null,
+        // Don't save magnification for figures or tables
+        magnification:
+          imageType === "figure" || imageType === "table" ? null : magnification || null,
         source_ref: sourceRef.trim() || undefined,
       };
 
@@ -129,13 +146,16 @@ export function EditImageDialog({ image, open, onOpenChange, onSave }: EditImage
 
   if (!image) return null;
 
+  // Sort categories by name for better UX
+  const sortedCategories = [...CATEGORIES].sort((a, b) => a.name.localeCompare(b.name));
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <DialogOverlay className="backdrop-blur-md bg-black/20" />
         <DialogContent
-          className="!max-w-[1000px] !w-[85vw] max-h-[85vh] data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 bg-background"
-          style={{ maxWidth: "1000px", width: "85vw" }}
+          className="!max-w-[1100px] !w-[90vw] max-h-[90vh] overflow-y-auto"
+          style={{ maxWidth: "1100px", width: "90vw" }}
           showCloseButton={true}
         >
           <DialogHeader>
@@ -143,20 +163,21 @@ export function EditImageDialog({ image, open, onOpenChange, onSave }: EditImage
           </DialogHeader>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Image Preview - Takes 1/3 of space */}
-            <div className="space-y-3">
-              <div className="rounded-lg overflow-hidden relative h-64">
+            {/* Left Column: Image Preview & Details */}
+            <div className="space-y-4">
+              {/* Image Preview */}
+              <div className="rounded-lg overflow-hidden relative h-64 border bg-muted/10">
                 <Image
                   src={image.url}
                   alt={image.alt_text || ""}
-                  className="object-contain bg-muted/20"
+                  className="object-contain"
                   fill
                   unoptimized
                   sizes="(max-width: 768px) 100vw, 33vw"
                 />
               </div>
 
-              {/* Replace Image Button - Simple and immediate */}
+              {/* Replace Image Button */}
               <input
                 type="file"
                 ref={fileInputRef}
@@ -164,59 +185,106 @@ export function EditImageDialog({ image, open, onOpenChange, onSave }: EditImage
                 accept="image/*"
                 className="hidden"
               />
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => fileInputRef.current?.click()}
-                className="w-full"
-                disabled={isUploading}
-              >
-                {isUploading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                <Upload className="h-4 w-4 mr-2" />
-                Replace Image
-              </Button>
-              <div className="text-xs text-muted-foreground space-y-1 bg-muted/20 rounded-lg p-3">
-                <h4 className="font-medium text-foreground mb-1 text-sm">Image Details</h4>
-                <p>
-                  <strong>File Type:</strong> {image.file_type}
-                </p>
-                <p>
-                  <strong>Size:</strong> {formatFileSize(image.file_size_bytes || 0)}
-                </p>
-                <p>
-                  <strong>Dimensions:</strong> {image.width}×{image.height}
-                </p>
-                <p>
-                  <strong>Uploaded:</strong> {new Date(image.created_at).toLocaleDateString()}
-                </p>
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => fileInputRef.current?.click()}
+                  className="flex-1"
+                  disabled={isUploading}
+                >
+                  {isUploading ? (
+                    <>
+                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                      Uploading...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="h-4 w-4 mr-2" />
+                      Replace Image
+                    </>
+                  )}
+                </Button>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => window.open(image.url, "_blank")}
+                  className="px-3"
+                  title="Open full size in new tab"
+                >
+                  <ExternalLink className="h-4 w-4" />
+                </Button>
+              </div>
+
+              {/* Image Details Card */}
+              <div className="text-xs text-muted-foreground space-y-2 bg-muted/20 rounded-lg p-4 border">
+                <h4 className="font-medium text-foreground text-sm mb-2">Image Details</h4>
+                <div className="space-y-1">
+                  <p>
+                    <span className="font-medium text-foreground">File Type:</span>{" "}
+                    {image.file_type || "Unknown"}
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">Size:</span>{" "}
+                    {formatFileSize(image.file_size_bytes || 0)}
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">Dimensions:</span> {image.width}×
+                    {image.height}
+                  </p>
+                  <p>
+                    <span className="font-medium text-foreground">Uploaded:</span>{" "}
+                    {new Date(image.created_at).toLocaleDateString()}
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* Edit Form - Takes 2/3 of space */}
-            <div className="lg:col-span-2 space-y-4">
-              <h4 className="font-medium text-foreground">Edit Image Information</h4>
-              <form onSubmit={handleSubmit} className="space-y-4">
-                {/* First row - Name and Category */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="alt_text">Name</Label>
-                    <Input
-                      id="alt_text"
-                      value={altText}
-                      onChange={(e) => setAltText(e.target.value)}
-                      placeholder="Image name or title"
-                      required
-                    />
-                  </div>
+            {/* Right Column: Edit Form */}
+            <div className="lg:col-span-2">
+              <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Name Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="alt_text" className="text-sm font-medium">
+                    Image Name <span className="text-destructive">*</span>
+                  </Label>
+                  <Input
+                    id="alt_text"
+                    value={altText}
+                    onChange={(e) => setAltText(e.target.value)}
+                    placeholder="e.g., Osteoid osteoma"
+                    required
+                    className="h-10"
+                  />
+                </div>
 
+                {/* Description Field */}
+                <div className="space-y-2">
+                  <Label htmlFor="description" className="text-sm font-medium">
+                    Description
+                  </Label>
+                  <Textarea
+                    id="description"
+                    value={description}
+                    onChange={(e) => setDescription(e.target.value)}
+                    placeholder="Detailed description of the image"
+                    className="min-h-24 resize-none"
+                  />
+                </div>
+
+                {/* Two Column Layout for Categories */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Image Type */}
                   <div className="space-y-2">
-                    <Label htmlFor="category">Category</Label>
+                    <Label htmlFor="imageType" className="text-sm font-medium">
+                      Image Type <span className="text-destructive">*</span>
+                    </Label>
                     <Select
-                      value={category}
-                      onValueChange={(value) => setCategory(value as unknown)}
+                      value={imageType}
+                      onValueChange={(value) => setImageType(value as ImageCategory)}
                     >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select category" />
+                      <SelectTrigger id="imageType" className="h-10">
+                        <SelectValue placeholder="Select type" />
                       </SelectTrigger>
                       <SelectContent>
                         {Object.entries(IMAGE_CATEGORIES).map(([value, label]) => (
@@ -226,33 +294,107 @@ export function EditImageDialog({ image, open, onOpenChange, onSave }: EditImage
                         ))}
                       </SelectContent>
                     </Select>
+                    <p className="text-xs text-muted-foreground">
+                      Microscopic, Gross, Figure, or Table
+                    </p>
+                  </div>
+
+                  {/* Pathology Category */}
+                  <div className="space-y-2">
+                    <Label htmlFor="pathologyCategory" className="text-sm font-medium">
+                      Pathology Category
+                    </Label>
+                    <div className="flex gap-2">
+                      <Select value={pathologyCategory} onValueChange={setPathologyCategory}>
+                        <SelectTrigger id="pathologyCategory" className="h-10">
+                          <SelectValue placeholder="Select category" />
+                        </SelectTrigger>
+                        <SelectContent className="max-h-[300px]">
+                          {sortedCategories.map((cat) => (
+                            <SelectItem key={cat.id} value={cat.id}>
+                              {cat.shortForm} - {cat.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {pathologyCategory && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setPathologyCategory("")}
+                          className="h-10 w-10 shrink-0"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">BST, GI, Heme, etc.</p>
                   </div>
                 </div>
 
-                {/* Second row - Description (full width) */}
-                <div className="space-y-2">
-                  <Label htmlFor="description">Description</Label>
-                  <Textarea
-                    id="description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                    placeholder="Detailed description of the image"
-                    className="min-h-20"
-                  />
+                {/* Two Column Layout for Magnification and Source */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {/* Magnification */}
+                  <div className="space-y-2">
+                    <Label htmlFor="magnification" className="text-sm font-medium">
+                      Magnification
+                    </Label>
+                    <div className="flex gap-2">
+                      <Select
+                        value={magnification}
+                        onValueChange={setMagnification}
+                        disabled={imageType === "figure" || imageType === "table"}
+                      >
+                        <SelectTrigger id="magnification" className="h-10">
+                          <SelectValue placeholder="Select magnification" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {MAGNIFICATIONS.map((mag) => (
+                            <SelectItem key={mag} value={mag}>
+                              {mag}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      {magnification && (
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => setMagnification("")}
+                          className="h-10 w-10 shrink-0"
+                          title="Remove magnification"
+                        >
+                          <X className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground">
+                      {imageType === "figure" || imageType === "table"
+                        ? "Not applicable to figures or tables"
+                        : "Microscope magnification level"}
+                    </p>
+                  </div>
+
+                  {/* Source Reference */}
+                  <div className="space-y-2">
+                    <Label htmlFor="source_ref" className="text-sm font-medium">
+                      Source Reference
+                    </Label>
+                    <Input
+                      id="source_ref"
+                      value={sourceRef}
+                      onChange={(e) => setSourceRef(e.target.value)}
+                      placeholder="e.g., Case #12345"
+                      className="h-10"
+                    />
+                    <p className="text-xs text-muted-foreground">Optional source or attribution</p>
+                  </div>
                 </div>
 
-                {/* Third row - Source (full width) */}
-                <div className="space-y-2">
-                  <Label htmlFor="source_ref">Source (Optional)</Label>
-                  <Input
-                    id="source_ref"
-                    value={sourceRef}
-                    onChange={(e) => setSourceRef(e.target.value)}
-                    placeholder="Source reference or attribution"
-                  />
-                </div>
-
-                <div className="flex justify-end gap-2 pt-4">
+                {/* Action Buttons */}
+                <div className="flex justify-end gap-3 pt-4 border-t">
                   <Button
                     type="button"
                     variant="outline"

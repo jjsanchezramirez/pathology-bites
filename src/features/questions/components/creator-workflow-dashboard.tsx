@@ -95,7 +95,7 @@ export function CreatorWorkflowDashboard() {
   const [hasInitiallyLoaded, setHasInitiallyLoaded] = useState(false);
 
   const isReviewer = role === "reviewer";
-  const isCreator = role === "creator" || role === "admin";
+  const _isCreator = role === "creator" || role === "admin";
 
   const fetchWorkflowQuestions = useCallback(
     async (isRefresh = false) => {
@@ -805,8 +805,8 @@ export function CreatorWorkflowDashboard() {
     );
   }
 
-  const hasActionableItems = stats.drafts > 0 || stats.needsRevision > 0;
-  const totalActionable = stats.drafts + stats.needsRevision;
+  const _hasActionableItems = stats.drafts > 0 || stats.needsRevision > 0;
+  const _totalActionable = stats.drafts + stats.needsRevision;
 
   return (
     <div className="space-y-6">

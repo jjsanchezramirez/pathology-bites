@@ -10,16 +10,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import {
-  AlertDialog,
-  AlertDialogAction,
-  AlertDialogCancel,
-  AlertDialogContent,
-  AlertDialogDescription,
-  AlertDialogFooter,
-  AlertDialogHeader,
-  AlertDialogTitle,
-} from "@/shared/components/ui/alert-dialog";
+import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
 import { toast } from "@/shared/utils/toast";
 import { useNotificationRefresh } from "@/shared/contexts/notification-refresh-context";
 
@@ -139,26 +130,30 @@ export function InquiryActionsDropdown({
         </DropdownMenuContent>
       </DropdownMenu>
 
-      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
-        <AlertDialogContent>
-          <AlertDialogHeader>
-            <AlertDialogTitle>Delete Inquiry</AlertDialogTitle>
-            <AlertDialogDescription>
-              Are you sure you want to delete this inquiry from {inquiry.first_name}{" "}
-              {inquiry.last_name}? This action cannot be undone.
-            </AlertDialogDescription>
-          </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDelete}
-              className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-            >
-              Delete
-            </AlertDialogAction>
-          </AlertDialogFooter>
-        </AlertDialogContent>
-      </AlertDialog>
+      <BlurredDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Inquiry"
+        description={`Are you sure you want to delete this inquiry from ${inquiry.first_name} ${inquiry.last_name}? This action cannot be undone.`}
+        maxWidth="md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            This will permanently remove the inquiry and cannot be recovered.
+          </p>
+        </div>
+        <div className="flex justify-end gap-3 pt-4">
+          <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDelete}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Delete
+          </Button>
+        </div>
+      </BlurredDialog>
     </>
   );
 }
