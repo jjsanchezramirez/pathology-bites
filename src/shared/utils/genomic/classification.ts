@@ -137,7 +137,7 @@ function countComputationalEvidence(data: VariantData): {
  */
 export function classifyVariant(
   parsed: ParsedVariant,
-  variantType: VariantType,
+  _variantType: VariantType,
   data: VariantData | null,
   oncokb: OncoKBData | null,
   artifactCheck: { isArtifact: boolean; reason: string | null }
@@ -151,8 +151,6 @@ export function classifyVariant(
   const clinvarConflicting = clinvarSigLower.includes("conflicting");
   const clinvarPathogenic = clinvarSigLower.includes("pathogenic") && !clinvarSigLower.includes("likely") && !clinvarConflicting;
   const clinvarLikelyPathogenic = clinvarSigLower.includes("likely pathogenic") && !clinvarConflicting;
-  const _clinvarBenign = clinvarSig.includes("benign") && !clinvarSig.includes("likely") && !clinvarConflicting;
-  const _clinvarLikelyBenign = clinvarSig.includes("likely benign") && !clinvarConflicting;
 
   const oncoKBOncogenic = oncokb?.oncogenic?.toLowerCase() || "";
   const isOncoKBOncogenic = oncoKBOncogenic.includes("oncogenic") &&
