@@ -1,4 +1,4 @@
-# Genomic Analysis Quick Start Guide
+# Genova Quick Start Guide
 
 ## What It Does
 

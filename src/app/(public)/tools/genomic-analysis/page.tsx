@@ -129,8 +129,8 @@ export default function GenomicAnalysisPage() {
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
       <PublicHero
-        title="Genomic Variant Analysis"
-        description="Automated variant classification tool built using MyVariant.info and integrating clinical databases with computational predictors (REVEL, GERP, CADD, SIFT, PolyPhen-2, MutationTaster) to provide a comprehensive analysis."
+        title="Genova"
+        description="GENOmic Variant Analysis - Automated variant classification tool integrating clinical databases (ClinVar, OncoKB, COSMIC) with computational predictors (REVEL, GERP, CADD, SIFT, PolyPhen-2) following AMP/ASCO/CAP 2017 guidelines."
         actions={
           <div className="flex flex-wrap gap-4 pt-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -167,7 +167,7 @@ export default function GenomicAnalysisPage() {
                     href="/tools/gene-lookup"
                     className="text-primary hover:underline inline-flex items-center gap-1"
                   >
-                    Use the Gene Finder Tool
+                    Use MILAN
                     <Dna className="h-3 w-3" />
                   </Link>
                 </p>

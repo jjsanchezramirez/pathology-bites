@@ -1,8 +1,8 @@
-# Genomic Variant Analysis Algorithm
+# Genova Algorithm
 
 ## Overview
 
-The Genomic Variant Analysis tool is a comprehensive variant classification system that implements the **AMP/ASCO/CAP 2017 guidelines** for somatic variant interpretation in cancer. The system integrates multiple clinical databases (ClinVar, OncoKB, COSMIC) with computational predictors (REVEL, CADD, GERP, SIFT, PolyPhen2) to provide evidence-based variant classifications.
+The Genova tool is a comprehensive variant classification system that implements the **AMP/ASCO/CAP 2017 guidelines** for somatic variant interpretation in cancer. The system integrates multiple clinical databases (ClinVar, OncoKB, COSMIC) with computational predictors (REVEL, CADD, GERP, SIFT, PolyPhen2) to provide evidence-based variant classifications.
 
 **Key Features:**
 
@@ -41,7 +41,7 @@ src/app/api/public/genomic/classify/
 
 ### 1. Types (`types.ts`)
 
-**Purpose:** Defines all TypeScript interfaces used across the genomic analysis system.
+**Purpose:** Defines all TypeScript interfaces used across the Genova system.
 
 **Key Interfaces:**
 

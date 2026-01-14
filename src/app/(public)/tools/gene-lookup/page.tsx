@@ -80,8 +80,8 @@ export default function GeneLookupPage() {
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
       <PublicHero
-        title="Gene Finder Tool"
-        description="Search for comprehensive gene information from HGNC and Harmonizome databases. Get detailed gene data, chromosome locations, aliases, and descriptions."
+        title="MILAN"
+        description="Molecular Information Lookup And Navigation - Search for comprehensive gene information from HGNC and Harmonizome databases. Get detailed gene data, chromosome locations, aliases, and descriptions."
         actions={
           <div className="flex gap-4 pt-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">

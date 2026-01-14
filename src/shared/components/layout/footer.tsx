@@ -144,7 +144,7 @@ export function Footer() {
                       href="/tools/gene-lookup"
                       className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
                     >
-                      Gene Finder
+                      MILAN
                     </Link>
                     <Link
                       href="/tools/citations"
@@ -216,7 +216,7 @@ export function Footer() {
                       href="/tools/gene-lookup"
                       className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
                     >
-                      Gene Finder
+                      MILAN
                     </Link>
                     <Link
                       href="/tools/citations"
