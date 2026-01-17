@@ -92,7 +92,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         question_tags(
           tag:tags(
             id,
-            name
+            name,
+            created_at
           )
         )
       `
@@ -124,9 +125,20 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Flatten the tags structure and add user names for easier consumption
+    interface QuestionTag {
+      tag: {
+        id: string;
+        name: string;
+        created_at: string;
+      } | null;
+    }
+
     const questionWithFlattenedTags = {
       ...question,
-      tags: question.question_tags?.map((qt: { tag: unknown }) => qt.tag).filter(Boolean) || [],
+      tags:
+        question.question_tags
+          ?.map((qt: QuestionTag) => qt.tag)
+          .filter((tag): tag is NonNullable<QuestionTag["tag"]> => tag !== null) || [],
       created_by_name: question.created_by_user
         ? `${question.created_by_user.first_name || ""} ${question.created_by_user.last_name || ""}`.trim() ||
           "Unknown"

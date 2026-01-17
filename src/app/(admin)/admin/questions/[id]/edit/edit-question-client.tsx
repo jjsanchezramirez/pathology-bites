@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "@/shared/utils/toast";
 import { AlertCircle, Send, ArrowLeft, Loader2 } from "lucide-react";
@@ -15,10 +15,10 @@ import { useEditQuestionForm } from "@/features/questions/hooks/use-edit-questio
 
 // Import tab components
 import { TabNavigation } from "./tab-navigation";
+import { SourceTab } from "./source-tab";
 import { ContentTab } from "./content-tab";
 import { ImagesTab } from "./images-tab";
 import { MetadataTab } from "./metadata-tab";
-import { AnkiLinkTab } from "./anki-link-tab";
 
 interface EditQuestionClientProps {
   questionId: string;
@@ -29,7 +29,8 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   const [question, setQuestion] = useState<QuestionWithDetails | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("content");
+  const [activeTab, setActiveTab] = useState("source");
+  const hasAutoAdvanced = useRef(false);
 
   // Get return URL from query params, default to /admin/my-questions
   const searchParams = new URLSearchParams(
@@ -47,15 +48,20 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
         });
 
         if (!response.ok) {
-          throw new Error("Failed to fetch question");
+          // Try to get error details from response
+          const errorData = await response.json().catch(() => ({}));
+          const errorMessage = errorData.error || `Failed to fetch question (${response.status})`;
+          console.error("API Error:", errorData);
+          throw new Error(errorMessage);
         }
 
         const data = await response.json();
         setQuestion(data.question);
       } catch (err) {
         console.error("Error fetching question:", err);
-        setError(err instanceof Error ? err.message : "Failed to load question");
-        toast.error("Failed to load question");
+        const errorMessage = err instanceof Error ? err.message : "Failed to load question";
+        setError(errorMessage);
+        toast.error(errorMessage);
       } finally {
         setLoading(false);
       }
@@ -63,6 +69,26 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
     fetchQuestion();
   }, [questionId]);
+
+  // Auto-advance from Source tab to Content tab on initial load if all source fields are complete
+  useEffect(() => {
+    if (question && activeTab === "source" && !hasAutoAdvanced.current) {
+      // Check if all source fields are complete
+      const hasQuestionSet = !!question.question_set_id;
+      const hasCategory = !!question.category_id;
+      const hasLesson = !!question.lesson;
+      const hasTopic = !!question.topic;
+
+      // If all source information is present, auto-advance to Content tab
+      if (hasQuestionSet && hasCategory && hasLesson && hasTopic) {
+        hasAutoAdvanced.current = true;
+        // Small delay to show the Source tab briefly before advancing
+        setTimeout(() => {
+          setActiveTab("content");
+        }, 500);
+      }
+    }
+  }, [question, activeTab]);
 
   // Use the edit question form hook
   const {
@@ -276,6 +302,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
           {/* Tab Content */}
           <div>
+            {activeTab === "source" && <SourceTab question={question} />}
             {activeTab === "content" && (
               <ContentTab
                 form={form}
@@ -301,9 +328,6 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                 selectedTagIds={selectedTagIds}
                 onTagsChange={setSelectedTagIds}
               />
-            )}
-            {activeTab === "anki" && (
-              <AnkiLinkTab form={form} onUnsavedChanges={handleUnsavedChanges} />
             )}
           </div>
 
