@@ -13,11 +13,8 @@ import { Brain, FileJson, Loader2 } from "lucide-react";
 import { QuestionWithDetails } from "@/features/questions/types/questions";
 import { createClient } from "@/shared/services/client";
 import { ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
-import {
-  EducationalContent,
-  CONTENT_FILES,
-  loadContentFromR2,
-} from "@/app/(admin)/admin/create-question/components/content-selector";
+import { EducationalContent } from "@/app/(admin)/admin/create-question/components/content-selector";
+import { getContentFileInfo } from "@/shared/data/content-index";
 
 interface SourceDetails {
   primary_model?: string;
@@ -33,34 +30,23 @@ export function SourceTab({ question }: SourceTabProps) {
   const [selectedContent, setSelectedContent] = useState<EducationalContent | null>(null);
   const [loadingContent, setLoadingContent] = useState(false);
 
-  // Function to load educational content from R2
+  // Function to load educational content using local index
   const loadEducationalContent = useCallback(
-    async (_category: string, lessonKey: string, topicKey: string) => {
+    (_category: string, lessonKey: string, topicKey: string) => {
       setLoadingContent(true);
 
       try {
-        // Search through all files to find the one containing this lesson/topic
-        for (const file of CONTENT_FILES) {
-          const contentData = await loadContentFromR2(file.filename);
+        // Use local index for instant lookup - no R2 fetches needed!
+        const fileInfo = getContentFileInfo(lessonKey, topicKey);
 
-          if (!contentData) continue;
-
-          // Check if this file contains the lesson and topic
-          if (contentData.subject?.lessons?.[lessonKey]?.topics?.[topicKey]) {
-            const lesson = contentData.subject.lessons[lessonKey];
-            const topic = lesson.topics[topicKey];
-
-            // Found the content! Set it as selected
-            setSelectedContent({
-              category: contentData.category,
-              subject: contentData.subject.name,
-              lesson: lessonKey,
-              topic: topicKey,
-              content: topic.content,
-            });
-
-            break; // Stop searching once found
-          }
+        if (fileInfo) {
+          setSelectedContent({
+            category: fileInfo.category,
+            subject: fileInfo.subject,
+            lesson: lessonKey,
+            topic: topicKey,
+            content: null, // Content itself is not needed for display
+          });
         }
       } catch (error) {
         console.error("Error loading educational content:", error);
@@ -111,7 +97,7 @@ export function SourceTab({ question }: SourceTabProps) {
 
         // Load educational content if lesson and topic are present
         if (question.lesson && question.topic) {
-          await loadEducationalContent("", question.lesson, question.topic);
+          loadEducationalContent("", question.lesson, question.topic);
         }
       } catch (error) {
         console.error("Error loading source data:", error);
