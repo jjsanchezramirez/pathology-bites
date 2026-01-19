@@ -20,18 +20,13 @@ export interface EducationalContent {
   content: unknown;
 }
 
-interface ContentSelectorProps {
-  onContentSelect: (content: EducationalContent) => void;
-  selectedContent: EducationalContent | null;
-}
-
-interface ContentFile {
+export interface ContentFile {
   filename: string;
   category: string;
   subject: string;
 }
 
-interface ContentData {
+export interface ContentData {
   category: string;
   subject: {
     name: string;
@@ -54,17 +49,8 @@ interface ContentData {
   };
 }
 
-export function ContentSelector({ onContentSelect, selectedContent }: ContentSelectorProps) {
-  const [availableFiles, setAvailableFiles] = useState<ContentFile[]>([]);
-  const [selectedFile, setSelectedFile] = useState<string>("");
-  const [contentData, setContentData] = useState<ContentData | null>(null);
-  const [selectedLesson, setSelectedLesson] = useState<string>("");
-  const [selectedTopic, setSelectedTopic] = useState<string>("");
-  const [loading, setLoading] = useState(false);
-
-  // Parse available educational content files
-  useEffect(() => {
-    const files: ContentFile[] = [
+// Shared list of available educational content files
+export const CONTENT_FILES: ContentFile[] = [
       // Anatomic Pathology files
       { filename: "ap-bone.json", category: "Anatomic Pathology", subject: "Bone" },
       { filename: "ap-breast.json", category: "Anatomic Pathology", subject: "Breast" },
@@ -169,13 +155,61 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
         category: "Clinical Pathology",
         subject: "Toxicology Body Fluids and Special Techniques",
       },
+  {
+    filename: "cp-transfusion-medicine.json",
+    category: "Clinical Pathology",
+    subject: "Transfusion Medicine",
+  },
+];
+
+// Cache for loaded content to avoid redundant fetches
+export const contentCache = new Map<string, ContentData>();
+
+// Shared utility to load educational content from R2
+export async function loadContentFromR2(filename: string): Promise<ContentData | null> {
+  // Check cache first
+  if (contentCache.has(filename)) {
+    return contentCache.get(filename)!;
+  }
+
+  try {
+    const response = await fetch(
+      `https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/context/${filename}`,
       {
-        filename: "cp-transfusion-medicine.json",
-        category: "Clinical Pathology",
-        subject: "Transfusion Medicine",
-      },
-    ];
-    setAvailableFiles(files);
+        method: "GET",
+        headers: { Accept: "application/json" },
+        cache: "force-cache",
+      }
+    );
+
+    if (response.ok) {
+      const data = await response.json();
+      contentCache.set(filename, data);
+      return data;
+    }
+  } catch (error) {
+    console.error(`Error loading ${filename}:`, error);
+  }
+
+  return null;
+}
+
+interface ContentSelectorProps {
+  onContentSelect: (content: EducationalContent) => void;
+  selectedContent: EducationalContent | null;
+}
+
+export function ContentSelector({ onContentSelect, selectedContent }: ContentSelectorProps) {
+  const [availableFiles, setAvailableFiles] = useState<ContentFile[]>([]);
+  const [selectedFile, setSelectedFile] = useState<string>("");
+  const [contentData, setContentData] = useState<ContentData | null>(null);
+  const [selectedLesson, setSelectedLesson] = useState<string>("");
+  const [selectedTopic, setSelectedTopic] = useState<string>("");
+  const [loading, setLoading] = useState(false);
+
+  // Load available files on mount
+  useEffect(() => {
+    setAvailableFiles(CONTENT_FILES);
   }, []);
 
   // Load educational content data when file is selected
@@ -186,30 +220,14 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
         try {
           setLoading(true);
 
-          // Use direct R2 access for better performance and to avoid Vercel API costs
-          // This matches the pattern used in client-data-manager.ts and other components
-          const response = await fetch(
-            `https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/context/${selectedFile}`,
-            {
-              method: "GET",
-              headers: {
-                Accept: "application/json",
-              },
-              cache: "force-cache", // Aggressive browser caching for static educational content
-            }
-          );
-
-          // Check if aborted before processing response
-          if (aborted) return;
-
-          if (!response.ok) {
-            throw new Error(`Failed to load educational content (HTTP ${response.status})`);
-          }
-
-          const data = await response.json();
+          const data = await loadContentFromR2(selectedFile);
 
           // Check if aborted before setting state
           if (aborted) return;
+
+          if (!data) {
+            throw new Error("Failed to load educational content");
+          }
 
           setContentData(data);
           setSelectedLesson("");

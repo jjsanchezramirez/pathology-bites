@@ -13,141 +13,20 @@ import { Brain, FileJson, Loader2 } from "lucide-react";
 import { QuestionWithDetails } from "@/features/questions/types/questions";
 import { createClient } from "@/shared/services/client";
 import { ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
+import {
+  EducationalContent,
+  CONTENT_FILES,
+  loadContentFromR2,
+} from "@/app/(admin)/admin/create-question/components/content-selector";
 
 interface SourceDetails {
   primary_model?: string;
   model?: string;
 }
 
-interface EducationalContent {
-  category: string;
-  subject: string;
-  lesson: string;
-  topic: string;
-  content: unknown;
-}
-
-interface ContentData {
-  category: string;
-  subject: {
-    name: string;
-    url: string;
-    lessons: Record<
-      string,
-      {
-        name: string;
-        url: string;
-        topics: Record<
-          string,
-          {
-            name: string;
-            url: string;
-            content: unknown;
-          }
-        >;
-      }
-    >;
-  };
-}
-
 interface SourceTabProps {
   question: QuestionWithDetails;
 }
-
-// Cache for loaded content to avoid redundant fetches
-const contentCache = new Map<string, ContentData>();
-
-// List of available content files (matches ContentSelector)
-const CONTENT_FILES = [
-  // Anatomic Pathology files
-  { filename: "ap-bone.json", category: "Anatomic Pathology", subject: "Bone" },
-  { filename: "ap-breast.json", category: "Anatomic Pathology", subject: "Breast" },
-  {
-    filename: "ap-cardiovascular-and-thoracic.json",
-    category: "Anatomic Pathology",
-    subject: "Cardiovascular and Thoracic",
-  },
-  { filename: "ap-cytopathology.json", category: "Anatomic Pathology", subject: "Cytopathology" },
-  {
-    filename: "ap-dermatopathology.json",
-    category: "Anatomic Pathology",
-    subject: "Dermatopathology",
-  },
-  {
-    filename: "ap-forensics-and-autopsy.json",
-    category: "Anatomic Pathology",
-    subject: "Forensics and Autopsy",
-  },
-  {
-    filename: "ap-gastrointestinal.json",
-    category: "Anatomic Pathology",
-    subject: "Gastrointestinal",
-  },
-  { filename: "ap-general-topics.json", category: "Anatomic Pathology", subject: "General Topics" },
-  { filename: "ap-genitourinary.json", category: "Anatomic Pathology", subject: "Genitourinary" },
-  { filename: "ap-gynecological.json", category: "Anatomic Pathology", subject: "Gynecological" },
-  {
-    filename: "ap-head-and-neck---endocrine.json",
-    category: "Anatomic Pathology",
-    subject: "Head and Neck / Endocrine",
-  },
-  {
-    filename: "ap-hematopathology.json",
-    category: "Anatomic Pathology",
-    subject: "Hematopathology",
-  },
-  { filename: "ap-molecular.json", category: "Anatomic Pathology", subject: "Molecular" },
-  { filename: "ap-neuropathology.json", category: "Anatomic Pathology", subject: "Neuropathology" },
-  {
-    filename: "ap-pancreas-biliary-liver.json",
-    category: "Anatomic Pathology",
-    subject: "Pancreas Biliary Liver",
-  },
-  { filename: "ap-pediatrics.json", category: "Anatomic Pathology", subject: "Pediatrics" },
-  { filename: "ap-soft-tissue.json", category: "Anatomic Pathology", subject: "Soft Tissue" },
-  // Clinical Pathology files
-  {
-    filename: "cp-clinical-chemistry.json",
-    category: "Clinical Pathology",
-    subject: "Clinical Chemistry",
-  },
-  {
-    filename: "cp-hematology-hemostasis-and-thrombosis.json",
-    category: "Clinical Pathology",
-    subject: "Hematology Hemostasis and Thrombosis",
-  },
-  {
-    filename: "cp-hematopathology.json",
-    category: "Clinical Pathology",
-    subject: "Hematopathology",
-  },
-  { filename: "cp-immunology.json", category: "Clinical Pathology", subject: "Immunology" },
-  {
-    filename: "cp-laboratory-management-and-clinical-laboratory-informatics.json",
-    category: "Clinical Pathology",
-    subject: "Laboratory Management and Clinical Laboratory Informatics",
-  },
-  {
-    filename: "cp-medical-microbiology.json",
-    category: "Clinical Pathology",
-    subject: "Medical Microbiology",
-  },
-  {
-    filename: "cp-molecular-pathology-and-cytogenetics.json",
-    category: "Clinical Pathology",
-    subject: "Molecular Pathology and Cytogenetics",
-  },
-  {
-    filename: "cp-toxicology-body-fluids-and-special-techniques.json",
-    category: "Clinical Pathology",
-    subject: "Toxicology Body Fluids and Special Techniques",
-  },
-  {
-    filename: "cp-transfusion-medicine.json",
-    category: "Clinical Pathology",
-    subject: "Transfusion Medicine",
-  },
-];
 
 export function SourceTab({ question }: SourceTabProps) {
   const [aiModelName, setAiModelName] = useState<string>("Unknown");
@@ -160,38 +39,14 @@ export function SourceTab({ question }: SourceTabProps) {
       setLoadingContent(true);
 
       try {
-        // Search through all files to find the one containing this lesson
+        // Search through all files to find the one containing this lesson/topic
         for (const file of CONTENT_FILES) {
-          // Check if file is already in cache
-          let contentData = contentCache.get(file.filename);
+          const contentData = await loadContentFromR2(file.filename);
 
-          if (!contentData) {
-            // Fetch from R2
-            try {
-              const response = await fetch(
-                `https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/context/${file.filename}`,
-                {
-                  method: "GET",
-                  headers: { Accept: "application/json" },
-                  cache: "force-cache",
-                }
-              );
-
-              if (response.ok) {
-                contentData = await response.json();
-                // Cache the loaded content
-                if (contentData) {
-                  contentCache.set(file.filename, contentData);
-                }
-              }
-            } catch (error) {
-              console.error(`Error loading ${file.filename}:`, error);
-              continue;
-            }
-          }
+          if (!contentData) continue;
 
           // Check if this file contains the lesson and topic
-          if (contentData?.subject?.lessons?.[lessonKey]?.topics?.[topicKey]) {
+          if (contentData.subject?.lessons?.[lessonKey]?.topics?.[topicKey]) {
             const lesson = contentData.subject.lessons[lessonKey];
             const topic = lesson.topics[topicKey];
 
