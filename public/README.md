@@ -64,7 +64,7 @@ Comprehensive PWA configuration with optimized shortcuts:
   "shortcuts": [
     {"name": "Virtual Slides", "url": "/tools/virtual-slides"},
     {"name": "Citations Manager", "url": "/tools/citations"},
-    {"name": "Gene Finder", "url": "/tools/gene-lookup"},
+    {"name": "MILAN", "url": "/tools/milan"},
     {"name": "Cell Quiz", "url": "/tools/cell-quiz"}
   ]
 }
@@ -145,7 +145,7 @@ The `manifest.json` file enables:
 Pre-configured shortcuts for major educational tools:
 1. **Virtual Slides** - Direct access to slide viewer
 2. **Citations Manager** - Quick citation generation
-3. **Gene Finder** - Rapid gene information retrieval
+3. **MILAN** - Molecular Information Lookup And Nomenclature
 4. **Cell Quiz** - Immediate quiz access
 
 ## 🔄 Maintenance Guidelines

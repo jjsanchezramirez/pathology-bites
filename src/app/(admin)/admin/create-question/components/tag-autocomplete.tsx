@@ -38,8 +38,10 @@ export function TagAutocomplete({
   // Filter tags based on search term
   useEffect(() => {
     if (!searchTerm.trim()) {
-      // Show all unselected tags when no search term
-      const unselected = allTags.filter((tag) => !selectedTags.includes(tag.id));
+      // Show 10 most recent unselected tags when no search term
+      const unselected = allTags
+        .filter((tag) => !selectedTags.includes(tag.id))
+        .slice(0, 10);
       setFilteredTags(unselected);
       return;
     }
@@ -65,6 +67,15 @@ export function TagAutocomplete({
   }, []);
 
   const handleSelectTag = (tag: Tag) => {
+    // Check if tag is already selected
+    if (selectedTags.includes(tag.id)) {
+      toast.error(`"${tag.name}" is already added`);
+      setSearchTerm("");
+      setShowDropdown(false);
+      inputRef.current?.focus();
+      return;
+    }
+
     onTagsChange([...selectedTags, tag.id]);
     setSearchTerm("");
     setShowDropdown(false);
@@ -209,7 +220,7 @@ export function TagAutocomplete({
 
         {/* Dropdown */}
         {showDropdown && (filteredTags.length > 0 || searchTerm.trim()) && (
-          <div className="absolute z-50 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-auto">
+          <div className="absolute z-[9999] w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-auto">
             {filteredTags.length > 0 ? (
               <div className="py-1">
                 {filteredTags.map((tag) => (
@@ -217,7 +228,7 @@ export function TagAutocomplete({
                     key={tag.id}
                     type="button"
                     onClick={() => handleSelectTag(tag)}
-                    className="w-full px-3 py-2 text-left hover:bg-accent hover:text-accent-foreground text-sm"
+                    className="w-full px-3 py-2 text-left hover:bg-accent hover:text-accent-foreground text-sm transition-colors"
                   >
                     {tag.name}
                   </button>
@@ -249,7 +260,9 @@ export function TagAutocomplete({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Start typing to search existing tags, or press Enter to create a new tag
+        {searchTerm.trim()
+          ? "Start typing to search existing tags, or press Enter to create a new tag"
+          : "Showing 10 most recent tags. Start typing to search for more."}
       </p>
     </div>
   );

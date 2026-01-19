@@ -249,6 +249,8 @@ export function MultiStepQuestionForm({
         question_references: formState.question_references,
         question_images: formState.questionImages,
         category_id: formState.category_id,
+        lesson: formState.lesson,
+        topic: formState.topic,
         question_set_id: formState.question_set_id,
         tag_ids: formState.tag_ids,
         difficulty: formState.difficulty,

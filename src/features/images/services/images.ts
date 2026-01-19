@@ -21,6 +21,7 @@ function getCacheKey(params: {
   showUnusedOnly?: boolean;
   showUncategorizedOnly?: boolean;
   includeOnlyMicroscopicAndGross?: boolean;
+  pathologyCategoryId?: string;
 }): string {
   return JSON.stringify({
     page: params.page,
@@ -30,6 +31,7 @@ function getCacheKey(params: {
     unused: params.showUnusedOnly || false,
     uncategorized: params.showUncategorizedOnly || false,
     microGross: params.includeOnlyMicroscopicAndGross || false,
+    pathologyCategoryId: params.pathologyCategoryId || "",
   });
 }
 
@@ -161,6 +163,7 @@ export async function fetchImages(params: {
   showUnusedOnly?: boolean;
   showUncategorizedOnly?: boolean;
   includeOnlyMicroscopicAndGross?: boolean;
+  pathologyCategoryId?: string; // Filter by pathology category (Gyn, BST, etc.)
   skipCount?: boolean; // New param to skip count query on pagination
 }) {
   const {
@@ -171,6 +174,7 @@ export async function fetchImages(params: {
     showUnusedOnly,
     showUncategorizedOnly,
     includeOnlyMicroscopicAndGross,
+    pathologyCategoryId,
     skipCount,
   } = params;
 
@@ -199,10 +203,13 @@ export async function fetchImages(params: {
     const tableName = showUnusedOnly ? "v_orphaned_images" : "images";
 
     // Build the base query for data first
-    // Include pathology category information via join
-    let dataQuery = supabase
-      .from(tableName)
-      .select("*, pathology_category:categories(id, name, short_form)");
+    // Include pathology category information via join (only for regular images table)
+    // The v_orphaned_images view doesn't include pathology_category_id
+    const selectQuery = showUnusedOnly
+      ? "*"
+      : "*, pathology_category:categories(id, name, short_form)";
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    let dataQuery = supabase.from(tableName).select(selectQuery) as any;
 
     // Exclude external images from management table (only for regular images table)
     if (!showUnusedOnly) {
@@ -218,11 +225,12 @@ export async function fetchImages(params: {
     if (searchTerm && searchTerm.trim()) {
       const cleanSearchTerm = searchTerm.trim();
 
-      // Use the correct Supabase .or() syntax based on working examples in the codebase
-      // This matches the pattern used in other parts of the application
-      dataQuery = dataQuery.or(
-        `alt_text.ilike.%${cleanSearchTerm}%,description.ilike.%${cleanSearchTerm}%,source_ref.ilike.%${cleanSearchTerm}%`
-      );
+      // v_orphaned_images doesn't have source_ref field, so use different search query
+      const searchQuery = showUnusedOnly
+        ? `alt_text.ilike.%${cleanSearchTerm}%,description.ilike.%${cleanSearchTerm}%`
+        : `alt_text.ilike.%${cleanSearchTerm}%,description.ilike.%${cleanSearchTerm}%,source_ref.ilike.%${cleanSearchTerm}%`;
+
+      dataQuery = dataQuery.or(searchQuery);
     }
 
     // Apply category filter (only for regular images, not unused filter)
@@ -235,6 +243,11 @@ export async function fetchImages(params: {
       dataQuery = dataQuery.is("pathology_category_id", null);
     }
 
+    // Filter by pathology category (Gyn, BST, etc.)
+    if (pathologyCategoryId && !showUnusedOnly) {
+      dataQuery = dataQuery.eq("pathology_category_id", pathologyCategoryId);
+    }
+
     // Calculate pagination
     const from = page * pageSize;
     const to = from + pageSize - 1;
@@ -244,11 +257,12 @@ export async function fetchImages(params: {
 
     if (dataResult.error) {
       console.error("Data query error:", {
-        error: dataResult.error,
-        message: dataResult.error?.message,
-        details: dataResult.error?.details,
-        hint: dataResult.error?.hint,
-        code: dataResult.error?.code,
+        message: dataResult.error.message,
+        details: dataResult.error.details,
+        hint: dataResult.error.hint,
+        code: dataResult.error.code,
+        table: tableName,
+        selectQuery,
         params: {
           page,
           pageSize,
@@ -258,10 +272,12 @@ export async function fetchImages(params: {
           includeOnlyMicroscopicAndGross,
         },
       });
+      // Log the full error object stringified to catch any non-enumerable properties
+      console.error("Full error object:", JSON.stringify(dataResult.error, null, 2));
       return {
         data: [],
         total: 0,
-        error: `Failed to fetch images: ${dataResult.error?.message || "Unknown error"}`,
+        error: `Failed to fetch images: ${dataResult.error.message || "Unknown error"}`,
       };
     }
 
@@ -290,9 +306,13 @@ export async function fetchImages(params: {
 
     if (searchTerm && searchTerm.trim()) {
       const cleanSearchTerm = searchTerm.trim();
-      countQuery = countQuery.or(
-        `alt_text.ilike.%${cleanSearchTerm}%,description.ilike.%${cleanSearchTerm}%,source_ref.ilike.%${cleanSearchTerm}%`
-      );
+
+      // v_orphaned_images doesn't have source_ref field, so use different search query
+      const countSearchQuery = showUnusedOnly
+        ? `alt_text.ilike.%${cleanSearchTerm}%,description.ilike.%${cleanSearchTerm}%`
+        : `alt_text.ilike.%${cleanSearchTerm}%,description.ilike.%${cleanSearchTerm}%,source_ref.ilike.%${cleanSearchTerm}%`;
+
+      countQuery = countQuery.or(countSearchQuery);
     }
 
     if (category && category !== "all" && !showUnusedOnly) {
@@ -302,6 +322,11 @@ export async function fetchImages(params: {
     // Filter for uncategorized images in count query
     if (showUncategorizedOnly && !showUnusedOnly) {
       countQuery = countQuery.is("pathology_category_id", null);
+    }
+
+    // Filter by pathology category in count query
+    if (pathologyCategoryId && !showUnusedOnly) {
+      countQuery = countQuery.eq("pathology_category_id", pathologyCategoryId);
     }
 
     // Execute count query

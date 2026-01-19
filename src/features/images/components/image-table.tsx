@@ -44,6 +44,7 @@ import { DeleteImageDialog } from "./delete-image-dialog";
 import { fetchImages } from "@/features/images/services/images";
 import { getImageUsageStats, ImageUsageStats } from "@/features/images/services/image-analytics";
 import { getCategoryById } from "@/shared/constants/category-color-map";
+import { CATEGORIES } from "@/shared/constants/categories";
 
 import {
   ImageData,
@@ -76,14 +77,23 @@ const getCategoryColor = (category: ImageCategory): string => {
 function TableControls({
   onSearch,
   onCategoryChange,
+  onPathologyCategoryChange,
   onUpload,
   categoryFilter,
+  pathologyCategoryFilter,
 }: {
   onSearch: (term: string) => void;
   onCategoryChange: (category: CategoryFilterType) => void;
+  onPathologyCategoryChange: (categoryId: string) => void;
   onUpload: () => void;
   categoryFilter: CategoryFilterType;
+  pathologyCategoryFilter: string;
 }) {
+  // Get level 2 categories (subspecialties) for the pathology category dropdown
+  const pathologyCategories = CATEGORIES.filter((cat) => cat.level === 2).sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+
   return (
     <div className="flex gap-4 items-center justify-between">
       <div className="flex gap-4 items-center flex-1">
@@ -100,16 +110,33 @@ function TableControls({
           onValueChange={(value: CategoryFilterType) => onCategoryChange(value)}
         >
           <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="All Categories" />
+            <SelectValue placeholder="Image Type" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="all">All Types</SelectItem>
             <SelectItem value="unused">Unused Images</SelectItem>
-            <SelectItem value="uncategorized">Uncategorized</SelectItem>
             <SelectItem value="microscopic">Microscopic</SelectItem>
             <SelectItem value="figure">Figure</SelectItem>
             <SelectItem value="table">Table</SelectItem>
             <SelectItem value="gross">Gross</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={pathologyCategoryFilter}
+          onValueChange={(value: string) => onPathologyCategoryChange(value)}
+          disabled={categoryFilter === "unused"}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent className="max-h-[300px]">
+            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="uncategorized">Uncategorized</SelectItem>
+            {pathologyCategories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.shortForm}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </div>
@@ -301,6 +328,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>("all");
+  const [pathologyCategoryFilter, setPathologyCategoryFilter] = useState<string>("all");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(PAGE_SIZE);
   const [totalPages, setTotalPages] = useState(0);
@@ -332,13 +360,19 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
           pageSize: pageSize,
           searchTerm: debouncedSearchTerm || undefined,
           category:
-            categoryFilter === "all" ||
-            categoryFilter === "unused" ||
-            categoryFilter === "uncategorized"
-              ? undefined
-              : categoryFilter,
+            categoryFilter === "all" || categoryFilter === "unused" ? undefined : categoryFilter,
           showUnusedOnly: categoryFilter === "unused",
-          showUncategorizedOnly: categoryFilter === "uncategorized",
+          // Only apply pathology category filters when NOT showing unused images
+          // (v_orphaned_images view doesn't have pathology_category_id field)
+          showUncategorizedOnly:
+            categoryFilter !== "unused" && pathologyCategoryFilter === "uncategorized",
+          pathologyCategoryId:
+            categoryFilter !== "unused" &&
+            pathologyCategoryFilter &&
+            pathologyCategoryFilter !== "all" &&
+            pathologyCategoryFilter !== "uncategorized"
+              ? pathologyCategoryFilter
+              : undefined,
         }),
         getImageUsageStats(),
       ]);
@@ -358,7 +392,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, categoryFilter, page, pageSize]);
+  }, [debouncedSearchTerm, categoryFilter, pathologyCategoryFilter, page, pageSize]);
 
   useEffect(() => {
     loadImages();
@@ -404,11 +438,24 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
   const handleCategoryChange = useCallback((category: CategoryFilterType) => {
     setCategoryFilter(category);
     setPage(0);
+
+    // Reset pathology category filter when switching to "Unused Images"
+    // because v_orphaned_images view doesn't have pathology_category_id field
+    if (category === "unused") {
+      setPathologyCategoryFilter("all");
+    }
+  }, []);
+
+  const handlePathologyCategoryChange = useCallback((categoryId: string) => {
+    setPathologyCategoryFilter(categoryId);
+    setPage(0);
   }, []);
 
   const handleEditSave = useCallback(() => {
     console.log("handleEditSave called - refreshing table");
-    // Just refresh the table, dialog closing is handled separately
+    // Force reload by temporarily resetting state then reloading
+    // This ensures we get fresh data after an edit that might affect filters
+    setImages([]);
     loadImages();
 
     // Refresh storage stats (editing might change usage status)
@@ -440,8 +487,10 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
       <TableControls
         onSearch={handleSearch}
         onCategoryChange={handleCategoryChange}
+        onPathologyCategoryChange={handlePathologyCategoryChange}
         onUpload={() => setShowUploadDialog(true)}
         categoryFilter={categoryFilter}
+        pathologyCategoryFilter={pathologyCategoryFilter}
       />
 
       <div className="rounded-md border bg-card">
@@ -470,9 +519,11 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
                 <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
                   {categoryFilter === "unused"
                     ? "No unused images found"
-                    : categoryFilter === "uncategorized"
+                    : pathologyCategoryFilter === "uncategorized"
                       ? "No uncategorized images found"
-                      : searchTerm || categoryFilter !== "all"
+                      : searchTerm ||
+                          categoryFilter !== "all" ||
+                          pathologyCategoryFilter !== "all"
                         ? "No images found matching your filters"
                         : "No images uploaded yet"}
                 </TableCell>

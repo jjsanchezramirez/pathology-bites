@@ -73,10 +73,10 @@
       ]
     },
     {
-      "name": "Gene Finder",
-      "short_name": "Genes",
-      "description": "Medical gene information with pre-loading",
-      "url": "/tools/gene-lookup",
+      "name": "MILAN",
+      "short_name": "MILAN",
+      "description": "Molecular Information Lookup And Nomenclature",
+      "url": "/tools/milan",
       "icons": [
         {
           "src": "/icons/android-chrome-192x192.png",

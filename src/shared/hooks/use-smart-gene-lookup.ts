@@ -118,7 +118,7 @@ export function useSmartGeneLookup(): UseSmartGeneLookupResult {
         console.log(`🔄 Gene cache miss: ${normalizedSymbol}`);
 
         const response = await fetch(
-          `/api/public/tools/gene-lookup?symbol=${encodeURIComponent(symbol.trim())}`
+          `/api/public/tools/milan?symbol=${encodeURIComponent(symbol.trim())}`
         );
         const result = await response.json();
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -93,6 +93,19 @@ export function FetchReferencesDialog({
     }
   };
 
+  // Auto-fetch when dialog opens with a query
+  useEffect(() => {
+    if (open && searchQuery.trim()) {
+      setQuery(searchQuery);
+      // Small delay to ensure query state is set before fetching
+      const timer = setTimeout(() => {
+        handleSearch();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open, searchQuery]);
+
   const togglePaperSelection = (paperId: string) => {
     const newSelected = new Set(selectedPapers);
     if (newSelected.has(paperId)) {
@@ -122,7 +135,7 @@ export function FetchReferencesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-5xl w-[95vw] h-[85vh] flex flex-col p-0 gap-0">
+      <DialogContent className="!max-w-[1100px] w-[95vw] h-[85vh] flex flex-col p-0 gap-0">
         <DialogHeader className="px-6 pt-6 pb-4 border-b bg-muted/30">
           <DialogTitle className="text-xl">Fetch References from Semantic Scholar</DialogTitle>
           <DialogDescription>
@@ -314,7 +327,7 @@ export function FetchReferencesDialog({
                               </Badge>
                             )}
                             {paper.isOpenAccess && (
-                              <Badge className="text-xs bg-green-600 hover:bg-green-700 text-white">
+                              <Badge className="text-xs bg-emerald-600 dark:bg-emerald-700 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white">
                                 Open Access
                               </Badge>
                             )}

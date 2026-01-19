@@ -116,12 +116,12 @@ export function InteractiveLearningTools({ id, className = "" }: InteractiveLear
           <div className="group relative overflow-hidden rounded-xl border bg-card p-6 hover:shadow-lg transition-all duration-300 flex flex-col">
             <div className="mb-4">
               <h3 className="text-xl font-bold mb-2">MILAN</h3>
-              <p className="text-sm text-muted-foreground font-medium">Molecular Information Lookup And Navigation</p>
+              <p className="text-sm text-muted-foreground font-medium">Molecular Information Lookup And Nomenclature</p>
             </div>
             <p className="text-sm text-muted-foreground mb-6 leading-relaxed flex-1">
               Comprehensive gene information database with HGNC, Harmonizome, and COSMIC references.
             </p>
-            <Link href="/tools/gene-lookup" className="mt-auto">
+            <Link href="/tools/milan" className="mt-auto">
               <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground">
                 Search Genes
               </Button>

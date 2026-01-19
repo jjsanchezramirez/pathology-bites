@@ -30,7 +30,7 @@ export function VariantInput({
       />
 
       <div className="flex gap-2">
-        <Button onClick={onAnalyze} disabled={loading} className="flex-1">
+        <Button onClick={onAnalyze} disabled={loading || !rawText.trim()} className="flex-1">
           {loading ? "Analyzing..." : "Analyze Variant"}
         </Button>
         <Button onClick={() => setRawText(exampleData)} disabled={loading} variant="outline">

@@ -27,7 +27,7 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 ✅ **Advanced Tool Suite**
 
 - **Citations Generator**: Smart caching, 24h TTL, supports URL/DOI/ISBN with external API integration
-- **Gene Finder**: 7-day caching, pre-loading of common pathology genes, HGNC/Harmonizome integration
+- **MILAN (Molecular Information Lookup And Nomenclature)**: 7-day caching, pre-loading of common pathology genes, HGNC/Harmonizome integration
 - **Lupus Anticoagulant Calculator**: Pure client-side calculations, zero API calls (gold standard)
 - **Virtual Slides Search Engine**: R2-optimized data serving with progressive loading
 - **ABPath Content Specifications**: R2 private bucket access with full dataset filtering
@@ -1277,7 +1277,7 @@ The application provides a comprehensive REST API organized by feature area. All
 - `POST /api/public/tools/citation-generator/extract-url-metadata` - Extract citation from URL
 - `POST /api/public/tools/citation-generator/extract-journal-metadata` - Extract DOI metadata
 - `POST /api/public/tools/citation-generator/extract-book-metadata` - Extract ISBN metadata
-- `POST /api/public/tools/gene-lookup` - Look up gene information (HGNC/Harmonizome)
+- `POST /api/public/tools/milan` - MILAN: Molecular Information Lookup And Nomenclature (HGNC/Harmonizome)
 - `POST /api/public/tools/diagnostic-search` - Search diagnostic criteria
 - `POST /api/public/tools/wsi-question-generator/generate` - Generate WSI questions with AI
 
@@ -1423,7 +1423,8 @@ pathology-bites/
 │   │   ├── (public)/            # Public pages and tools
 │   │   │   └── tools/           # Educational tool suite
 │   │   │       ├── citations/   # Citation generator
-│   │   │       ├── gene-lookup/ # Gene information tool
+│   │   │       ├── milan/       # MILAN: Molecular Information Lookup
+│   │   │       ├── genova/      # Genova: Genomic Variant Analysis
 │   │   │       ├── lupus-anticoagulant/ # LAC interpreter
 │   │   │       ├── virtual-slides/      # Slide viewer
 │   │   │       ├── abpath/      # Content specifications

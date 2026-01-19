@@ -5,6 +5,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
+import Link from "next/link";
 
 import {
   Search,
@@ -80,8 +81,8 @@ export default function GeneLookupPage() {
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
       <PublicHero
-        title="MILAN"
-        description="Molecular Information Lookup And Navigation - Search for comprehensive gene information from HGNC and Harmonizome databases. Get detailed gene data, chromosome locations, aliases, and descriptions."
+        title="Molecular Information Lookup And Nomenclature"
+        description="MILAN integrates HGNC and Harmonizome data into a single interface, providing instant access to chromosome mapping, aliases, and comprehensive functional insights."
         actions={
           <div className="flex gap-4 pt-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -103,9 +104,21 @@ export default function GeneLookupPage() {
             <CardContent className="space-y-6">
               {/* Search Section */}
               <div className="space-y-4">
-                <Label htmlFor="gene-input" className="text-lg font-semibold">
-                  Enter Gene Symbol
-                </Label>
+                <div className="space-y-2">
+                  <Label htmlFor="gene-input" className="text-lg font-semibold">
+                    Enter Gene Symbol
+                  </Label>
+                  <p className="text-sm text-muted-foreground">
+                    Need variant classification?{" "}
+                    <Link
+                      href="/tools/genova"
+                      className="text-primary hover:underline inline-flex items-center gap-1"
+                    >
+                      Use GENOVA
+                      <Dna className="h-3 w-3" />
+                    </Link>
+                  </p>
+                </div>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <Input
                     id="gene-input"

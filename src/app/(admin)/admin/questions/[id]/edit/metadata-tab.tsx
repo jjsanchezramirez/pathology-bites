@@ -16,24 +16,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
-import { Badge } from "@/shared/components/ui/badge";
-import { X } from "lucide-react";
+import { Card, CardContent } from "@/shared/components/ui/card";
 
 import { QuestionWithDetails } from "@/features/questions/types/questions";
-import { useQuestionSets } from "@/features/questions/hooks/use-question-sets";
 import { createClient } from "@/shared/services/client";
 import { EditQuestionFormData } from "@/features/questions/hooks/use-edit-question-form";
+import { TagAutocomplete } from "@/app/(admin)/admin/create-question/components/tag-autocomplete";
 
 interface Tag {
   id: string;
   name: string;
-}
-
-interface Category {
-  id: string;
-  name: string;
+  description: string | null;
+  color: string | null;
+  created_at: string;
 }
 
 interface MetadataTabProps {
@@ -52,71 +48,74 @@ export function MetadataTab({
   onTagsChange,
 }: MetadataTabProps) {
   const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-  const [availableCategories, setAvailableCategories] = useState<Category[]>([]);
-  const [tagSearch, setTagSearch] = useState("");
+  const [categoryName, setCategoryName] = useState<string>("Loading...");
+  const [questionSetName, setQuestionSetName] = useState<string>("Loading...");
 
-  const { questionSets } = useQuestionSets();
-
-  // Load initial tags and categories
+  // Load tags, category name, and question set name
   useEffect(() => {
     const loadData = async () => {
       try {
         const supabase = createClient();
 
-        const [tagsResult, categoriesResult] = await Promise.all([
-          supabase.from("tags").select("*").order("created_at", { ascending: false }).limit(50),
-          supabase.from("categories").select("*").order("name"),
-        ]);
+        // Load all tags
+        const { data: tagsData } = await supabase
+          .from("tags")
+          .select("*")
+          .order("created_at", { ascending: false });
 
-        if (tagsResult.data) {
-          setAvailableTags(tagsResult.data);
+        if (tagsData) {
+          setAvailableTags(tagsData);
         }
-        if (categoriesResult.data) setAvailableCategories(categoriesResult.data);
+
+        // Load category name
+        if (question.category_id) {
+          const { data: categoryData } = await supabase
+            .from("categories")
+            .select("name")
+            .eq("id", question.category_id)
+            .single();
+
+          if (categoryData) {
+            setCategoryName(categoryData.name);
+          } else {
+            setCategoryName("No Category");
+          }
+        } else {
+          setCategoryName("No Category");
+        }
+
+        // Load question set name
+        if (question.question_set_id) {
+          const { data: questionSetData } = await supabase
+            .from("question_sets")
+            .select("name")
+            .eq("id", question.question_set_id)
+            .single();
+
+          if (questionSetData) {
+            setQuestionSetName(questionSetData.name);
+          } else {
+            setQuestionSetName("No Question Set");
+          }
+        } else {
+          setQuestionSetName("No Question Set");
+        }
       } catch (error) {
-        console.error("Error loading tags/categories:", error);
+        console.error("Error loading metadata:", error);
       }
     };
 
     loadData();
-  }, []);
+  }, [question.category_id, question.question_set_id]);
 
-  // Merge question tags with available tags
-  useEffect(() => {
-    if (question?.tags && question.tags.length > 0) {
-      setAvailableTags((prevTags) => {
-        const existingTags = question.tags || [];
-        const allTags = [...prevTags];
-
-        existingTags.forEach((existingTag) => {
-          if (!allTags.find((tag) => tag.id === existingTag.id)) {
-            allTags.push(existingTag);
-          }
-        });
-
-        return allTags;
-      });
-    }
-  }, [question?.tags]);
-
-  const handleAddTag = (tagId: string) => {
-    if (!selectedTagIds.includes(tagId)) {
-      onTagsChange([...selectedTagIds, tagId]);
-      onUnsavedChanges();
-    }
-    setTagSearch("");
-  };
-
-  const handleRemoveTag = (tagId: string) => {
-    onTagsChange(selectedTagIds.filter((id) => id !== tagId));
+  const handleTagsChange = (tagIds: string[]) => {
+    onTagsChange(tagIds);
     onUnsavedChanges();
   };
 
-  const filteredTags = availableTags.filter(
-    (tag) =>
-      tag.name.toLowerCase().includes(tagSearch.toLowerCase()) && !selectedTagIds.includes(tag.id)
-  );
-
-  const selectedTags = availableTags.filter((tag) => selectedTagIds.includes(tag.id));
+  const handleTagCreated = (newTag: Tag) => {
+    setAvailableTags((prev) => [...prev, newTag]);
+  };
 
   return (
     <div className="space-y-6">
@@ -150,119 +149,43 @@ export function MetadataTab({
         )}
       />
 
-      {/* Category */}
-      <FormField
-        control={form.control}
-        name="category_id"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-base font-semibold">Category</FormLabel>
-            <Select
-              onValueChange={(value) => {
-                field.onChange(value === "none" ? null : value);
-                onUnsavedChanges();
-              }}
-              defaultValue={field.value || "none"}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="none">No Category</SelectItem>
-                {availableCategories.map((category) => (
-                  <SelectItem key={category.id} value={category.id}>
-                    {category.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {/* Category (Read-Only) */}
+      <div className="space-y-3">
+        <Label className="text-base font-semibold">Category</Label>
+        <Card className="bg-muted/50">
+          <CardContent className="p-3">
+            <p className="text-sm font-medium">{categoryName}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Category cannot be changed after creation
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
-      {/* Question Set */}
-      <FormField
-        control={form.control}
-        name="question_set_id"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-base font-semibold">Question Set</FormLabel>
-            <Select
-              onValueChange={(value) => {
-                field.onChange(value);
-                onUnsavedChanges();
-              }}
-              defaultValue={field.value}
-            >
-              <FormControl>
-                <SelectTrigger>
-                  <SelectValue placeholder="Select question set" />
-                </SelectTrigger>
-              </FormControl>
-              <SelectContent>
-                <SelectItem value="none">No Set</SelectItem>
-                {questionSets.map((set) => (
-                  <SelectItem key={set.id} value={set.id}>
-                    {set.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
+      {/* Question Set (Read-Only) */}
+      <div className="space-y-3">
+        <Label className="text-base font-semibold">Question Set</Label>
+        <Card className="bg-muted/50">
+          <CardContent className="p-3">
+            <p className="text-sm font-medium">{questionSetName}</p>
+            <p className="text-xs text-muted-foreground mt-1">
+              Question set cannot be changed after creation
+            </p>
+          </CardContent>
+        </Card>
+      </div>
 
       {/* Tags */}
       <div className="space-y-3">
-        <Label className="text-base font-semibold">Tags</Label>
-
-        {/* Selected Tags */}
-        {selectedTags.length > 0 && (
-          <div className="flex flex-wrap gap-2">
-            {selectedTags.map((tag) => (
-              <Badge key={tag.id} variant="secondary" className="flex items-center gap-1">
-                {tag.name}
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="h-auto p-0 hover:bg-transparent"
-                  onClick={() => handleRemoveTag(tag.id)}
-                >
-                  <X className="h-3 w-3" />
-                </Button>
-              </Badge>
-            ))}
-          </div>
-        )}
-
-        {/* Tag Search */}
-        <div className="space-y-2">
-          <input
-            type="text"
-            placeholder="Search tags..."
-            value={tagSearch}
-            onChange={(e) => setTagSearch(e.target.value)}
-            className="w-full px-3 py-2 border border-input rounded-md text-sm"
-          />
-
-          {tagSearch && filteredTags.length > 0 && (
-            <div className="border rounded-md p-2 max-h-32 overflow-y-auto">
-              {filteredTags.slice(0, 10).map((tag) => (
-                <button
-                  key={tag.id}
-                  onClick={() => handleAddTag(tag.id)}
-                  className="block w-full text-left px-2 py-1 text-sm hover:bg-muted rounded"
-                >
-                  {tag.name}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
+        <Label className="text-base font-semibold">
+          Tags <span className="text-muted-foreground font-normal">(Optional)</span>
+        </Label>
+        <TagAutocomplete
+          selectedTags={selectedTagIds}
+          onTagsChange={handleTagsChange}
+          allTags={availableTags}
+          onTagCreated={handleTagCreated}
+        />
       </div>
     </div>
   );

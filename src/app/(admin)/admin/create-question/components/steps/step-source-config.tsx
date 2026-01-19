@@ -11,7 +11,7 @@ import {
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
-import { Upload, FileJson, Brain, AlertCircle, Loader2, Edit3 } from "lucide-react";
+import { Upload, FileJson, Brain, AlertCircle, Loader2, Edit3, Sparkles } from "lucide-react";
 import { toast } from "@/shared/utils/toast";
 import { FormState } from "../multi-step-question-form";
 import { ContentSelector } from "../content-selector";
@@ -104,6 +104,12 @@ async function findCategoryIdByName(name: string): Promise<string | null> {
 
   console.warn(`⚠️ Category not found: "${name}"`);
   return null;
+}
+
+interface AnswerOptionInput {
+  text?: string;
+  is_correct?: boolean;
+  explanation?: string;
 }
 
 // Helper function to find question set ID by name
@@ -219,7 +225,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
       }
 
       // Extract question data from JSON with comprehensive field mapping
-      const questionData = {
+      const questionData: Partial<FormState> = {
         title: parsed.title || "",
         stem: parsed.stem || parsed.question || parsed.body || "",
         answerOptions: answerOptions,
@@ -238,6 +244,8 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
         questionImages: parsed.question_images || parsed.questionImages || [],
         difficulty: parsed.difficulty || "medium",
         status: parsed.status || "draft",
+        lesson: parsed.lesson || "",
+        topic: parsed.topic || "",
       };
 
       // Handle category
@@ -290,7 +298,16 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
 
   // Handle AI content selection
   const handleContentSelected = (content: unknown) => {
+    // Store the selected content for AI generation
     updateFormState({ selectedContent: content });
+
+    // Extract and save lesson and topic to formState
+    if (content && typeof content === "object" && "lesson" in content && "topic" in content) {
+      updateFormState({
+        lesson: (content as { lesson: string }).lesson,
+        topic: (content as { topic: string }).topic,
+      });
+    }
   };
 
   // Handle AI question generation from educational content
@@ -342,7 +359,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
       console.log("🎯 AI generation response:", data);
 
       // Extract and normalize the generated question data
-      const generatedData: unknown = {
+      const generatedData: Partial<FormState> = {
         title: data.title || "",
         stem: data.stem || data.question || "",
         answerOptions: data.answer_options || data.question_options || [],
@@ -350,16 +367,21 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
         question_references: data.question_references || data.references || "",
         difficulty: data.difficulty || "medium",
         status: data.status || "draft",
+        // Preserve lesson and topic from selectedContent
+        lesson: formState.lesson || data.lesson || "",
+        topic: formState.topic || data.topic || "",
       };
 
       // Ensure answer options are properly formatted
-      if (generatedData.answerOptions.length > 0) {
-        generatedData.answerOptions = generatedData.answerOptions.map((option, index) => ({
-          text: option.text || "",
-          is_correct: option.is_correct || false,
-          explanation: option.explanation || "",
-          order_index: index,
-        }));
+      if (generatedData.answerOptions && generatedData.answerOptions.length > 0) {
+        generatedData.answerOptions = generatedData.answerOptions.map(
+          (option: AnswerOptionInput, index: number) => ({
+            text: option.text || "",
+            is_correct: option.is_correct || false,
+            explanation: option.explanation || "",
+            order_index: index,
+          })
+        );
       }
 
       // Auto-assign category based on educational content mapping
@@ -420,7 +442,9 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
       <Card className="shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Brain className="h-5 w-5 text-blue-600" />
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Sparkles className="h-5 w-5 text-primary" />
+            </div>
             Select AI Model
           </CardTitle>
         </CardHeader>
@@ -516,7 +540,9 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
       <Card className="shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <FileJson className="h-5 w-5 text-blue-600" />
+            <div className="p-2 rounded-lg bg-primary/10">
+              <FileJson className="h-5 w-5 text-primary" />
+            </div>
             Import from JSON
           </CardTitle>
           <CardDescription>
@@ -579,7 +605,9 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
       <Card className="shadow-sm">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
-            <Edit3 className="h-5 w-5 text-green-600" />
+            <div className="p-2 rounded-lg bg-primary/10">
+              <Edit3 className="h-5 w-5 text-primary" />
+            </div>
             Create Manually
           </CardTitle>
           <CardDescription>

@@ -14,6 +14,7 @@ import {
 } from "@/shared/components/genomic";
 import { Dna, Database, Rocket } from "lucide-react";
 import Link from "next/link";
+import { toast } from "@/shared/utils/toast";
 
 export default function GenomicAnalysisPage() {
   const [rawText, setRawText] = useState("");
@@ -22,11 +23,6 @@ export default function GenomicAnalysisPage() {
   const [error, setError] = useState<string | null>(null);
 
   const handleAnalyze = async () => {
-    if (!rawText.trim()) {
-      setError("Please enter variant data to analyze");
-      return;
-    }
-
     setLoading(true);
     setError(null);
     setResult(null);
@@ -46,6 +42,16 @@ export default function GenomicAnalysisPage() {
 
       if (!response.ok) {
         throw new Error(data.error || "Analysis failed");
+      }
+
+      // Check if parsing failed
+      if (data.success === false) {
+        const errorMessage = data.error || "Could not extract variant information from the provided text";
+        setError(errorMessage);
+        toast.error("Parsing Failed", {
+          description: errorMessage,
+        });
+        return;
       }
 
       // Adapt the new /classify response to match the old structure
@@ -129,8 +135,8 @@ export default function GenomicAnalysisPage() {
     <div className="flex min-h-screen flex-col">
       {/* Hero Section */}
       <PublicHero
-        title="Genova"
-        description="GENOmic Variant Analysis - Automated variant classification tool integrating clinical databases (ClinVar, OncoKB, COSMIC) with computational predictors (REVEL, GERP, CADD, SIFT, PolyPhen-2) following AMP/ASCO/CAP 2017 guidelines."
+        title="GENOmic Variant Analysis"
+        description="GENOVA is an automated variant classification tool integrating clinical databases (ClinVar, OncoKB, COSMIC) with computational predictors (REVEL, GERP, CADD, SIFT, PolyPhen-2) following AMP/ASCO/CAP 2017 guidelines."
         actions={
           <div className="flex flex-wrap gap-4 pt-2">
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -164,7 +170,7 @@ export default function GenomicAnalysisPage() {
                 <p className="text-sm text-muted-foreground">
                   Need gene information?{" "}
                   <Link
-                    href="/tools/gene-lookup"
+                    href="/tools/milan"
                     className="text-primary hover:underline inline-flex items-center gap-1"
                   >
                     Use MILAN

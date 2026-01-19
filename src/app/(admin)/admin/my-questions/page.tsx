@@ -32,6 +32,7 @@ import {
   CheckCircle2,
   ChevronDown,
   ChevronRight,
+  Loader2,
 } from "lucide-react";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { QuestionPreviewDialog } from "@/features/questions/components/question-preview-dialog";
@@ -39,7 +40,7 @@ import { SubmitForReviewDialog } from "@/features/questions/components/submit-fo
 import { BulkSubmitDialog } from "@/features/questions/components/bulk-submit-dialog";
 import { toast } from "@/shared/utils/toast";
 import { formatDistanceToNow } from "date-fns";
-import { QuestionWithDetails } from "@/features/questions/types/questions";
+import { QuestionWithDetails, DIFFICULTY_CONFIG } from "@/features/questions/types/questions";
 import { AccessDenied, AccessDeniedPresets } from "@/shared/components/common/access-denied";
 import {
   Select,
@@ -59,7 +60,8 @@ export default function MyQuestionsPage() {
   const router = useRouter();
   const [questions, setQuestions] = useState<MyQuestion[]>([]);
   const [filteredQuestions, setFilteredQuestions] = useState<MyQuestion[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
   const [activeTab, setActiveTab] = useState<string>("revision");
@@ -74,16 +76,21 @@ export default function MyQuestionsPage() {
   const { canAccess } = useUserRole();
   const supabase = createClient();
 
-  const fetchMyQuestions = useCallback(async () => {
-    if (!user) return;
+  const fetchMyQuestions = useCallback(
+    async (isInitial = false) => {
+      if (!user) return;
 
-    try {
-      setLoading(true);
+      try {
+        if (isInitial) {
+          setInitialLoading(true);
+        } else {
+          setLoading(true);
+        }
 
-      const { data, error } = await supabase
-        .from("questions")
-        .select(
-          `
+        const { data, error } = await supabase
+          .from("questions")
+          .select(
+            `
           id,
           title,
           stem,
@@ -120,63 +127,67 @@ export default function MyQuestionsPage() {
             last_name
           )
         `
-        )
-        .eq("created_by", user.id)
-        .in("status", ["draft", "rejected", "pending_review", "published"])
-        .order("updated_at", { ascending: false });
+          )
+          .eq("created_by", user.id)
+          .in("status", ["draft", "rejected", "pending_review", "published"])
+          .order("updated_at", { ascending: false });
 
-      if (error) {
-        console.error("Error fetching questions:", error);
-        toast.error(`Failed to load questions: ${error.message}`);
-        return;
+        if (error) {
+          console.error("Error fetching questions:", error);
+          toast.error(`Failed to load questions: ${error.message}`);
+          return;
+        }
+
+        // Fetch resubmission notes for rejected questions
+        const rejectedQuestions = data?.filter((q) => q.status === "rejected") || [];
+        const questionsWithNotes = await Promise.all(
+          rejectedQuestions.map(async (question) => {
+            const { data: reviewData } = await supabase
+              .from("question_reviews")
+              .select("changes_made, created_at")
+              .eq("question_id", question.id)
+              .eq("action", "resubmitted")
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .single();
+
+            return {
+              ...question,
+              resubmission_notes: reviewData?.changes_made?.resubmission_notes,
+              resubmission_date: reviewData?.created_at,
+            };
+          })
+        );
+
+        // Merge resubmission notes back into data
+        const questionsMap = new Map(data?.map((q) => [q.id, q]));
+        questionsWithNotes.forEach((q) => {
+          questionsMap.set(q.id, q);
+        });
+
+        const finalData = Array.from(questionsMap.values()) as unknown as MyQuestion[];
+        setQuestions(finalData);
+        setFilteredQuestions(finalData);
+
+        // Auto-select priority tab if there are rejected questions
+        if (rejectedQuestions.length > 0 && activeTab === "revision") {
+          setActiveTab("revision");
+        }
+      } catch (error) {
+        console.error("Unexpected error fetching questions:", error);
+        toast.error("Failed to load questions");
+      } finally {
+        setInitialLoading(false);
+        setLoading(false);
       }
-
-      // Fetch resubmission notes for rejected questions
-      const rejectedQuestions = data?.filter((q) => q.status === "rejected") || [];
-      const questionsWithNotes = await Promise.all(
-        rejectedQuestions.map(async (question) => {
-          const { data: reviewData } = await supabase
-            .from("question_reviews")
-            .select("changes_made, created_at")
-            .eq("question_id", question.id)
-            .eq("action", "resubmitted")
-            .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
-
-          return {
-            ...question,
-            resubmission_notes: reviewData?.changes_made?.resubmission_notes,
-            resubmission_date: reviewData?.created_at,
-          };
-        })
-      );
-
-      // Merge resubmission notes back into data
-      const questionsMap = new Map(data?.map((q) => [q.id, q]));
-      questionsWithNotes.forEach((q) => {
-        questionsMap.set(q.id, q);
-      });
-
-      const finalData = Array.from(questionsMap.values()) as unknown as MyQuestion[];
-      setQuestions(finalData);
-      setFilteredQuestions(finalData);
-
-      // Auto-select priority tab if there are rejected questions
-      if (rejectedQuestions.length > 0 && activeTab === "revision") {
-        setActiveTab("revision");
-      }
-    } catch (error) {
-      console.error("Unexpected error fetching questions:", error);
-      toast.error("Failed to load questions");
-    } finally {
-      setLoading(false);
-    }
-  }, [user, supabase, activeTab]);
+    },
+    [user, supabase, activeTab]
+  );
 
   useEffect(() => {
-    fetchMyQuestions();
-  }, [fetchMyQuestions]);
+    fetchMyQuestions(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     let filtered = questions;
@@ -213,7 +224,7 @@ export default function MyQuestionsPage() {
   useEffect(() => {
     const handleVisibilityChange = () => {
       if (document.visibilityState === "visible") {
-        fetchMyQuestions();
+        fetchMyQuestions(false);
       }
     };
 
@@ -385,12 +396,19 @@ export default function MyQuestionsPage() {
     activeTab === "drafts" &&
     selectedQuestions.size === filteredQuestions.length;
 
+  // Calculate column span based on active tab
+  const getColSpan = () => {
+    if (activeTab === "drafts") return 5;
+    if (activeTab === "published") return 5;
+    return 4;
+  };
+
   // Access control
   if (!canAccess("questions.create")) {
     return <AccessDenied {...AccessDeniedPresets.creatorOnly} />;
   }
 
-  if (loading) {
+  if (initialLoading) {
     return (
       <div className="space-y-6">
         <div>
@@ -508,261 +526,310 @@ export default function MyQuestionsPage() {
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-4">
-          <Card>
-            <div className="rounded-md border bg-card">
-              <Table>
-                <TableHeader className="bg-muted/50">
-                  <TableRow>
-                    {activeTab === "drafts" && (
-                      <TableHead className="w-12">
-                        <Checkbox checked={allSelected} onCheckedChange={handleSelectAll} />
-                      </TableHead>
-                    )}
-                    <TableHead>Question</TableHead>
-                    <TableHead>
-                      {activeTab === "revision" ? "Rejected" : "Updated"}
-                    </TableHead>
-                    <TableHead>Difficulty</TableHead>
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredQuestions.length === 0 ? (
+          {loading ? (
+            <div className="flex justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          ) : (
+            <Card>
+              <div className="rounded-md border bg-card">
+                <Table>
+                  <TableHeader className="bg-muted/50">
                     <TableRow>
-                      <TableCell
-                        colSpan={activeTab === "drafts" ? 5 : 4}
-                        className="h-24 text-center"
-                      >
-                        <div className="text-center py-6">
-                          {activeTab === "revision" && (
-                            <>
-                              <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                              <h3 className="text-lg font-medium mb-2">No questions need revision</h3>
-                              <p className="text-muted-foreground">
-                                {searchTerm || difficultyFilter !== "all"
-                                  ? "No questions match your filters"
-                                  : "Great work! You have no rejected questions to revise."}
-                              </p>
-                            </>
-                          )}
-                          {activeTab === "drafts" && (
-                            <>
-                              <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                              <h3 className="text-lg font-medium mb-2">No drafts yet</h3>
-                              <p className="text-muted-foreground">
-                                {searchTerm || difficultyFilter !== "all"
-                                  ? "No questions match your filters"
-                                  : "Create a new question to get started"}
-                              </p>
-                            </>
-                          )}
-                          {activeTab === "under-review" && (
-                            <>
-                              <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                              <h3 className="text-lg font-medium mb-2">Nothing under review</h3>
-                              <p className="text-muted-foreground">
-                                {searchTerm || difficultyFilter !== "all"
-                                  ? "No questions match your filters"
-                                  : "Submit draft questions to see them here"}
-                              </p>
-                            </>
-                          )}
-                          {activeTab === "published" && (
-                            <>
-                              <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                              <h3 className="text-lg font-medium mb-2">No published questions</h3>
-                              <p className="text-muted-foreground">
-                                {searchTerm || difficultyFilter !== "all"
-                                  ? "No questions match your filters"
-                                  : "Questions appear here once approved by reviewers"}
-                              </p>
-                            </>
-                          )}
-                        </div>
-                      </TableCell>
+                      {activeTab === "drafts" && (
+                        <TableHead className="w-12">
+                          <Checkbox checked={allSelected} onCheckedChange={handleSelectAll} />
+                        </TableHead>
+                      )}
+                      {activeTab === "published" ? (
+                        <>
+                          <TableHead>Question</TableHead>
+                          <TableHead className="w-24">Version</TableHead>
+                        </>
+                      ) : (
+                        <>
+                          <TableHead>Question</TableHead>
+                          <TableHead>{activeTab === "revision" ? "Rejected" : "Updated"}</TableHead>
+                        </>
+                      )}
+                      <TableHead>Difficulty</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
-                  ) : (
-                    filteredQuestions.map((question) => {
-                      const isCollapsed = collapsedFeedback.has(question.id);
-                      const showFeedback = activeTab === "revision" && question.reviewer_feedback;
-
-                      return (
-                        <React.Fragment key={question.id}>
-                          <TableRow>
-                            {activeTab === "drafts" && (
-                              <TableCell>
-                                <Checkbox
-                                  checked={selectedQuestions.has(question.id)}
-                                  onCheckedChange={(checked) =>
-                                    handleSelectQuestion(question.id, !!checked)
-                                  }
-                                />
-                              </TableCell>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredQuestions.length === 0 ? (
+                      <TableRow>
+                        <TableCell colSpan={getColSpan()} className="h-24 text-center">
+                          <div className="text-center py-6">
+                            {activeTab === "revision" && (
+                              <>
+                                <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                                <h3 className="text-lg font-medium mb-2">
+                                  No questions need revision
+                                </h3>
+                                <p className="text-muted-foreground">
+                                  {searchTerm || difficultyFilter !== "all"
+                                    ? "No questions match your filters"
+                                    : "Great work! You have no rejected questions to revise."}
+                                </p>
+                              </>
                             )}
-                            <TableCell>
-                              <div className="space-y-3">
-                                {/* Question Title */}
-                                <div className="flex items-start gap-2">
-                                  {showFeedback && (
-                                    <button
-                                      onClick={() => toggleFeedback(question.id)}
-                                      className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 mt-0.5"
-                                      aria-label={
-                                        isCollapsed ? "Expand feedback" : "Collapse feedback"
-                                      }
-                                    >
-                                      {isCollapsed ? (
-                                        <ChevronRight className="h-4 w-4" />
-                                      ) : (
-                                        <ChevronDown className="h-4 w-4" />
-                                      )}
-                                    </button>
-                                  )}
-                                  {!showFeedback && activeTab === "revision" && (
-                                    <div className="w-6 flex-shrink-0" />
-                                  )}
-                                  <div className="flex-1">
-                                    <div className="font-medium flex items-center">
-                                      {question.title}
-                                      {activeTab === "revision" && getAgeIndicator(question.updated_at)}
-                                    </div>
-                                  </div>
-                                </div>
+                            {activeTab === "drafts" && (
+                              <>
+                                <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                                <h3 className="text-lg font-medium mb-2">No drafts yet</h3>
+                                <p className="text-muted-foreground">
+                                  {searchTerm || difficultyFilter !== "all"
+                                    ? "No questions match your filters"
+                                    : "Create a new question to get started"}
+                                </p>
+                              </>
+                            )}
+                            {activeTab === "under-review" && (
+                              <>
+                                <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                                <h3 className="text-lg font-medium mb-2">Nothing under review</h3>
+                                <p className="text-muted-foreground">
+                                  {searchTerm || difficultyFilter !== "all"
+                                    ? "No questions match your filters"
+                                    : "Submit draft questions to see them here"}
+                                </p>
+                              </>
+                            )}
+                            {activeTab === "published" && (
+                              <>
+                                <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
+                                <h3 className="text-lg font-medium mb-2">No published questions</h3>
+                                <p className="text-muted-foreground">
+                                  {searchTerm || difficultyFilter !== "all"
+                                    ? "No questions match your filters"
+                                    : "Questions appear here once approved by reviewers"}
+                                </p>
+                              </>
+                            )}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ) : (
+                      filteredQuestions.map((question) => {
+                        const isCollapsed = collapsedFeedback.has(question.id);
+                        const showFeedback = activeTab === "revision" && question.reviewer_feedback;
 
-                                {/* Question Stem */}
-                                <div className="flex gap-2">
-                                  {activeTab === "revision" && <div className="w-6 flex-shrink-0" />}
-                                  <div className="text-sm text-muted-foreground line-clamp-2 flex-1">
-                                    {question.stem}
-                                  </div>
-                                </div>
-
-                                {/* Question Set Badge */}
-                                {question.question_set && (
-                                  <div className="flex gap-2">
-                                    {activeTab === "revision" && <div className="w-6 flex-shrink-0" />}
-                                    <Badge variant="outline" className="text-xs">
-                                      {question.question_set.name}
-                                    </Badge>
-                                  </div>
-                                )}
-
-                                {/* Resubmission Notes */}
-                                {activeTab === "revision" && question.resubmission_notes && (
-                                  <div className="flex gap-2">
-                                    <div className="w-6 flex-shrink-0" />
-                                    <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 dark:border-blue-600 rounded-md flex-1">
-                                      <div className="flex items-start gap-2">
-                                        <div className="flex-1 min-w-0">
-                                          <span className="text-xs font-medium text-blue-900 dark:text-blue-100 block mb-1">
-                                            Previous Changes Made
-                                          </span>
-                                          <p className="text-xs text-blue-800 dark:text-blue-300">
-                                            {question.resubmission_notes}
-                                          </p>
-                                          {question.resubmission_date && (
-                                            <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                              {formatDistanceToNow(new Date(question.resubmission_date))}{" "}
-                                              ago
-                                            </p>
-                                          )}
-                                        </div>
+                        return (
+                          <React.Fragment key={question.id}>
+                            <TableRow>
+                              {activeTab === "drafts" && (
+                                <TableCell>
+                                  <Checkbox
+                                    checked={selectedQuestions.has(question.id)}
+                                    onCheckedChange={(checked) =>
+                                      handleSelectQuestion(question.id, !!checked)
+                                    }
+                                  />
+                                </TableCell>
+                              )}
+                              <TableCell>
+                                <div className="space-y-3">
+                                  {/* Question Title */}
+                                  <div className="flex items-start gap-2">
+                                    {showFeedback && (
+                                      <button
+                                        onClick={() => toggleFeedback(question.id)}
+                                        className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 mt-0.5"
+                                        aria-label={
+                                          isCollapsed ? "Expand feedback" : "Collapse feedback"
+                                        }
+                                      >
+                                        {isCollapsed ? (
+                                          <ChevronRight className="h-4 w-4" />
+                                        ) : (
+                                          <ChevronDown className="h-4 w-4" />
+                                        )}
+                                      </button>
+                                    )}
+                                    {!showFeedback && activeTab === "revision" && (
+                                      <div className="w-6 flex-shrink-0" />
+                                    )}
+                                    <div className="flex-1">
+                                      <div className="font-medium flex items-center">
+                                        {question.title}
+                                        {activeTab === "revision" &&
+                                          getAgeIndicator(question.updated_at)}
                                       </div>
                                     </div>
                                   </div>
-                                )}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <div className="text-sm text-muted-foreground">
-                                {formatDistanceToNow(new Date(question.updated_at), {
-                                  addSuffix: true,
-                                })}
-                              </div>
-                            </TableCell>
-                            <TableCell>
-                              <Badge variant="outline">{question.difficulty}</Badge>
-                            </TableCell>
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handlePreview(question.id)}
+
+                                  {/* Question Stem */}
+                                  <div className="flex gap-2">
+                                    {activeTab === "revision" && (
+                                      <div className="w-6 flex-shrink-0" />
+                                    )}
+                                    <div className="text-sm text-muted-foreground line-clamp-2 flex-1">
+                                      {question.stem}
+                                    </div>
+                                  </div>
+
+                                  {/* Updated timestamp for Published tab */}
+                                  {activeTab === "published" && (
+                                    <div className="text-xs text-muted-foreground">
+                                      Updated{" "}
+                                      {formatDistanceToNow(new Date(question.updated_at), {
+                                        addSuffix: true,
+                                      })}
+                                    </div>
+                                  )}
+
+                                  {/* Question Set Badge */}
+                                  {question.question_set && (
+                                    <div className="flex gap-2">
+                                      {activeTab === "revision" && (
+                                        <div className="w-6 flex-shrink-0" />
+                                      )}
+                                      <Badge variant="outline" className="text-xs">
+                                        {question.question_set.name}
+                                      </Badge>
+                                    </div>
+                                  )}
+
+                                  {/* Resubmission Notes */}
+                                  {activeTab === "revision" && question.resubmission_notes && (
+                                    <div className="flex gap-2">
+                                      <div className="w-6 flex-shrink-0" />
+                                      <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 dark:border-blue-600 rounded-md flex-1">
+                                        <div className="flex items-start gap-2">
+                                          <div className="flex-1 min-w-0">
+                                            <span className="text-xs font-medium text-blue-900 dark:text-blue-100 block mb-1">
+                                              Previous Changes Made
+                                            </span>
+                                            <p className="text-xs text-blue-800 dark:text-blue-300">
+                                              {question.resubmission_notes}
+                                            </p>
+                                            {question.resubmission_date && (
+                                              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                                {formatDistanceToNow(
+                                                  new Date(question.resubmission_date)
+                                                )}{" "}
+                                                ago
+                                              </p>
+                                            )}
+                                          </div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  )}
+                                </div>
+                              </TableCell>
+                              {/* Version column only for Published tab */}
+                              {activeTab === "published" ? (
+                                <TableCell>
+                                  <div className="text-sm font-mono">
+                                    {question.version_string ||
+                                      `v${question.version_major || 1}.${question.version_minor || 0}.${question.version_patch || 0}`}
+                                  </div>
+                                </TableCell>
+                              ) : (
+                                <TableCell>
+                                  <div className="text-sm text-muted-foreground">
+                                    {formatDistanceToNow(new Date(question.updated_at), {
+                                      addSuffix: true,
+                                    })}
+                                  </div>
+                                </TableCell>
+                              )}
+                              <TableCell>
+                                <Badge
+                                  variant="outline"
+                                  className={`border ${DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.color || "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800"}`}
                                 >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  Preview
-                                </Button>
-                                {activeTab === "revision" && (
-                                  <Button size="sm" onClick={() => handleEditAndResubmit(question.id)}>
-                                    <Edit3 className="h-4 w-4 mr-1" />
-                                    Edit & Resubmit
+                                  {question.difficulty}
+                                </Badge>
+                              </TableCell>
+                              <TableCell className="text-right">
+                                <div className="flex items-center justify-end gap-2">
+                                  <Button
+                                    variant="ghost"
+                                    size="sm"
+                                    onClick={() => handlePreview(question.id)}
+                                  >
+                                    <Eye className="h-4 w-4 mr-1" />
+                                    Preview
                                   </Button>
-                                )}
-                                {activeTab === "drafts" && (
-                                  <>
+                                  {activeTab === "revision" && (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleEditAndResubmit(question.id)}
+                                    >
+                                      <Edit3 className="h-4 w-4 mr-1" />
+                                      Edit & Resubmit
+                                    </Button>
+                                  )}
+                                  {activeTab === "drafts" && (
+                                    <>
+                                      <Button
+                                        variant="outline"
+                                        size="sm"
+                                        onClick={() => handleEdit(question.id)}
+                                      >
+                                        <Edit3 className="h-4 w-4 mr-1" />
+                                        Edit
+                                      </Button>
+                                      <Button
+                                        size="sm"
+                                        onClick={() => handleSubmitForReview(question.id)}
+                                      >
+                                        <Send className="h-4 w-4 mr-1" />
+                                        Submit
+                                      </Button>
+                                    </>
+                                  )}
+                                  {activeTab === "under-review" && (
+                                    <Badge variant="outline" className="ml-2">
+                                      Awaiting Review
+                                    </Badge>
+                                  )}
+                                  {activeTab === "published" && (
                                     <Button
                                       variant="outline"
                                       size="sm"
                                       onClick={() => handleEdit(question.id)}
                                     >
                                       <Edit3 className="h-4 w-4 mr-1" />
-                                      Edit
+                                      Patch Edit
                                     </Button>
-                                    <Button size="sm" onClick={() => handleSubmitForReview(question.id)}>
-                                      <Send className="h-4 w-4 mr-1" />
-                                      Submit
-                                    </Button>
-                                  </>
-                                )}
-                                {activeTab === "under-review" && (
-                                  <Badge variant="outline" className="ml-2">
-                                    Awaiting Review
-                                  </Badge>
-                                )}
-                                {activeTab === "published" && (
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => handleEdit(question.id)}
-                                  >
-                                    <Edit3 className="h-4 w-4 mr-1" />
-                                    Patch Edit
-                                  </Button>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-
-                          {/* Reviewer Feedback Row */}
-                          {showFeedback && !isCollapsed && (
-                            <TableRow className="bg-muted/50 border-t">
-                              <TableCell
-                                colSpan={activeTab === "drafts" ? 5 : 4}
-                                className="py-6 pl-6 pr-6"
-                              >
-                                <div className="flex items-start gap-2">
-                                  <div className="w-6 flex-shrink-0 flex justify-center">
-                                    <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
-                                  </div>
-                                  <div className="flex-1">
-                                    <h4 className="text-sm font-semibold mb-2">Reviewer Feedback</h4>
-                                    <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                                      {question.reviewer_feedback}
-                                    </p>
-                                  </div>
+                                  )}
                                 </div>
                               </TableCell>
                             </TableRow>
-                          )}
-                        </React.Fragment>
-                      );
-                    })
-                  )}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
+
+                            {/* Reviewer Feedback Row */}
+                            {showFeedback && !isCollapsed && (
+                              <TableRow className="bg-muted/50 border-t">
+                                <TableCell colSpan={getColSpan()} className="py-6 pl-6 pr-6">
+                                  <div className="flex items-start gap-2">
+                                    <div className="w-6 flex-shrink-0 flex justify-center">
+                                      <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
+                                    </div>
+                                    <div className="flex-1">
+                                      <h4 className="text-sm font-semibold mb-2">
+                                        Reviewer Feedback
+                                      </h4>
+                                      <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
+                                        {question.reviewer_feedback}
+                                      </p>
+                                    </div>
+                                  </div>
+                                </TableCell>
+                              </TableRow>
+                            )}
+                          </React.Fragment>
+                        );
+                      })
+                    )}
+                  </TableBody>
+                </Table>
+              </div>
+            </Card>
+          )}
         </TabsContent>
       </Tabs>
 

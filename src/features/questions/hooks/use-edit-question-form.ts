@@ -29,6 +29,8 @@ const editQuestionSchema = z.object({
   status: z.enum(["draft", "pending_review", "flagged", "rejected", "published", "archived"]),
   question_set_id: z.string(),
   category_id: z.string().nullable().optional(),
+  lesson: z.string().max(200, "Lesson too long").nullable().optional(),
+  topic: z.string().max(200, "Topic too long").nullable().optional(),
   anki_card_id: z
     .union([z.number().positive(), z.string().min(1)])
     .nullable()
@@ -74,6 +76,8 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
       status: "draft",
       question_set_id: "none",
       category_id: null,
+      lesson: null,
+      topic: null,
       anki_card_id: null,
       anki_deck_name: null,
       updateType: "patch",
@@ -110,6 +114,8 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
         status: (question.status as "draft" | "pending_review" | "approved" | "flagged") || "draft",
         question_set_id: question.question_set_id || "none",
         category_id: question.category_id || null,
+        lesson: question.lesson || null,
+        topic: question.topic || null,
         anki_card_id: question.anki_card_id || null,
         anki_deck_name: question.anki_deck_name || null,
         updateType: isPublished ? "patch" : "minor",

@@ -13,11 +13,83 @@ import Link from "next/link";
 import { MicroscopeIcon, ChevronUp } from "lucide-react";
 import { useState } from "react";
 
+// Tool data with descriptive names and categories
+const tools = [
+  {
+    category: "Images & Virtual Slides",
+    items: [
+      {
+        href: "/tools/images",
+        label: "Histologic Image Library",
+        desc: "Browse our curated collection of pathology images",
+      },
+      {
+        href: "/tools/virtual-slides",
+        label: "Virtual Slide Search Engine",
+        desc: "Access thousands of virtual pathology slides from leading institutions worldwide",
+      },
+    ],
+  },
+  {
+    category: "Study & Practice",
+    items: [
+      {
+        href: "/tools/cell-quiz",
+        label: "Bone Marrow Morphology Quiz",
+        desc: "Practice identifying cells and patterns in bone marrow samples",
+      },
+    ],
+  },
+  {
+    category: "Laboratory Tools",
+    items: [
+      {
+        href: "/tools/cell-counter",
+        label: "Differential Cell Counter",
+        desc: "Customizable differential calculator",
+      },
+      {
+        href: "/tools/lupus-anticoagulant",
+        label: "Lupus Anticoagulant Calculator",
+        desc: "Interpret LAC assay results",
+      },
+    ],
+  },
+  {
+    category: "Molecular & Genetics",
+    items: [
+      {
+        href: "/tools/milan",
+        label: "MILAN - Molecular Information",
+        desc: "Look up gene information and biomarker associations",
+      },
+      {
+        href: "/tools/genova",
+        label: "GENOVA - GENomic Variant Analysis",
+        desc: "Automated variant classification tool",
+      },
+    ],
+  },
+  {
+    category: "Research & Misc Tools",
+    items: [
+      {
+        href: "/tools/abpath",
+        label: "ABPath Content Specifications",
+        desc: "Interactive content specifications for ABPath AP/CP board exams",
+      },
+      {
+        href: "/tools/citations",
+        label: "Citation Manager",
+        desc: "Generate and organize reference citations",
+      },
+    ],
+  },
+];
+
 export function Footer() {
   const [isToolsOpen, setIsToolsOpen] = useState(false);
   const [isDesktopToolsOpen, setIsDesktopToolsOpen] = useState(false);
-
-  // Tools section is always visible now
 
   const toggleTools = () => {
     setIsToolsOpen(!isToolsOpen);
@@ -48,8 +120,8 @@ export function Footer() {
           <nav className="order-1 lg:order-2">
             {/* Mobile navigation - grid layout */}
             <div className="lg:hidden">
+              {/* Primary mobile links */}
               <div className="grid grid-cols-2 gap-3 mb-4">
-                {/* Virtual Slides link - always visible */}
                 <Link
                   href="/tools/virtual-slides"
                   className="flex items-center justify-center py-3 px-4 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
@@ -88,7 +160,7 @@ export function Footer() {
                 </Link>
               </div>
 
-              {/* Mobile Tools section - always visible */}
+              {/* Mobile Tools section - collapsible */}
               <div className="border-t pt-4">
                 <button
                   onClick={toggleTools}
@@ -103,127 +175,70 @@ export function Footer() {
                 </button>
 
                 {isToolsOpen && (
-                  <div id="mobile-tools-menu" className="mt-2 grid grid-cols-2 gap-2">
-                    <Link
-                      href="/tools/images"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Image Database
-                    </Link>
-                    <Link
-                      href="/tools/abpath"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      ABPath Content Specs
-                    </Link>
-                    <Link
-                      href="/tools/cell-quiz"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Hemepath Quiz
-                    </Link>
-                    <Link
-                      href="/tools/wsi-question-generator"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Digital Slides Questions
-                    </Link>
-                    <Link
-                      href="/tools/cell-counter"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Cell Counter
-                    </Link>
-                    <Link
-                      href="/tools/lupus-anticoagulant"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      LAC Calculator
-                    </Link>
-                    <Link
-                      href="/tools/gene-lookup"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      MILAN
-                    </Link>
-                    <Link
-                      href="/tools/citations"
-                      className="flex items-center justify-center py-3 px-4 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors min-h-[44px]"
-                    >
-                      Citations Generator
-                    </Link>
+                  <div id="mobile-tools-menu" className="mt-2 space-y-4">
+                    {tools.map((category) => (
+                      <div key={category.category}>
+                        <h4 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2 px-1">
+                          {category.category}
+                        </h4>
+                        <div className="grid grid-cols-1 gap-1">
+                          {category.items.map((tool) => (
+                            <Link
+                              key={tool.href}
+                              href={tool.href}
+                              className="flex flex-col py-2 px-3 text-sm text-muted-foreground hover:text-primary hover:bg-muted/50 rounded-md transition-colors"
+                            >
+                              <span className="font-medium">{tool.label}</span>
+                              <span className="text-xs opacity-70">{tool.desc}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 )}
               </div>
             </div>
 
             {/* Desktop navigation - horizontal layout */}
-            <div className="hidden lg:flex gap-6 text-sm text-muted-foreground items-center">
+            <div className="hidden lg:flex gap-8 text-sm text-muted-foreground items-center">
               {/* Tools dropdown - always visible */}
               <div
                 className="relative"
                 onMouseEnter={handleDesktopToolsEnter}
                 onMouseLeave={handleDesktopToolsLeave}
               >
-                <span className="hover:text-primary transition-colors cursor-pointer py-2 px-2 block">
+                <span className="hover:text-primary transition-colors cursor-pointer py-2 px-2 block font-medium">
                   Tools
                 </span>
                 <div
-                  className={`absolute bottom-full mb-1 left-1/2 transform -translate-x-1/2 bg-background border rounded-md shadow-lg p-2 min-w-96 z-50 transition-all duration-200 ${isDesktopToolsOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
+                  className={`absolute bottom-full mb-2 left-1/2 transform -translate-x-1/2 bg-background border rounded-lg shadow-xl p-4 min-w-[720px] z-50 transition-all duration-200 ${isDesktopToolsOpen ? "opacity-100 visible" : "opacity-0 invisible"}`}
                 >
-                  <div className="grid grid-cols-2 gap-1">
-                    {/* Core Learning Resources */}
-                    <Link
-                      href="/tools/images"
-                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                    >
-                      Image Database
-                    </Link>
-                    <Link
-                      href="/tools/abpath"
-                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                    >
-                      ABPath Content Specs
-                    </Link>
-                    {/* Quiz & Practice Tools */}
-                    <Link
-                      href="/tools/cell-quiz"
-                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                    >
-                      Hemepath Quiz
-                    </Link>
-                    <Link
-                      href="/tools/wsi-question-generator"
-                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                    >
-                      Digital Slides Questions
-                    </Link>
-                    {/* Laboratory Tools */}
-                    <Link
-                      href="/tools/cell-counter"
-                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                    >
-                      Cell Counter
-                    </Link>
-                    <Link
-                      href="/tools/lupus-anticoagulant"
-                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                    >
-                      LAC Calculator
-                    </Link>
-                    {/* Reference & Search Tools */}
-                    <Link
-                      href="/tools/gene-lookup"
-                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                    >
-                      MILAN
-                    </Link>
-                    <Link
-                      href="/tools/citations"
-                      className="block px-3 py-2 text-sm hover:bg-muted rounded-sm whitespace-nowrap"
-                    >
-                      Citation Generator
-                    </Link>
+                  {/* 3-column grid layout */}
+                  <div className="grid grid-cols-3 gap-6">
+                    {tools.map((category) => (
+                      <div key={category.category}>
+                        <h4 className="text-xs font-semibold text-primary uppercase tracking-wider mb-3 pb-1 border-b">
+                          {category.category}
+                        </h4>
+                        <div className="space-y-1">
+                          {category.items.map((tool) => (
+                            <Link
+                              key={tool.href}
+                              href={tool.href}
+                              className="block px-2 py-1.5 text-sm hover:bg-muted rounded transition-colors group"
+                            >
+                              <span className="font-medium text-foreground group-hover:text-primary block">
+                                {tool.label}
+                              </span>
+                              <span className="text-xs text-muted-foreground group-hover:text-muted-foreground/80">
+                                {tool.desc}
+                              </span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               </div>

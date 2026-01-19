@@ -29,18 +29,115 @@ import { QuestionPreviewDialog } from "./question-preview-dialog";
 import { ReviewActionDialog } from "./review-action-dialog";
 import { toast } from "@/shared/utils/toast";
 import { formatDistanceToNow } from "date-fns";
-import { QuestionWithDetails } from "@/features/questions/types/questions";
+import { DIFFICULTY_CONFIG, QuestionWithDetails } from "@/features/questions/types/questions";
 
-interface ReviewQuestion extends QuestionWithDetails {
+// Category color mapping for better badge appearance - copied from questions-table.tsx
+const getCategoryBadgeClass = (category: {
+  short_form?: string | null;
+  color?: string | null;
+  parent_short_form?: string | null;
+}) => {
+  // If custom color is set, return empty string to use inline styles
+  if (category.color) {
+    return "";
+  }
+
+  // Fallback to predefined colors based on short form
+  const shortForm = category.short_form || category.parent_short_form;
+
+  // Main categories
+  if (shortForm === "AP")
+    return "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800";
+  if (shortForm === "CP")
+    return "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800";
+
+  // AP subspecialties - stronger colors
+  if (category.parent_short_form === "AP") {
+    const colors = [
+      "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800",
+      "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800",
+      "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800",
+      "bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800",
+      "bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800",
+      "bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800",
+      "bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-900/20 dark:text-teal-300 dark:border-teal-800",
+      "bg-lime-100 text-lime-800 border-lime-200 dark:bg-lime-900/20 dark:text-lime-300 dark:border-lime-800",
+    ];
+    const hash = shortForm ? shortForm.split("").reduce((a, b) => a + b.charCodeAt(0), 0) : 0;
+    return colors[hash % colors.length];
+  }
+
+  // CP subspecialties - stronger colors
+  if (category.parent_short_form === "CP") {
+    const colors = [
+      "bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/20 dark:text-sky-300 dark:border-sky-800",
+      "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800",
+      "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800",
+      "bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800",
+      "bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/20 dark:text-violet-300 dark:border-violet-800",
+    ];
+    const hash = shortForm ? shortForm.split("").reduce((a, b) => a + b.charCodeAt(0), 0) : 0;
+    return colors[hash % colors.length];
+  }
+
+  // Default fallback
+  return "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800";
+};
+
+// Helper function to create standardized custom color styles
+const getCustomColorStyle = (color: string | null | undefined) => {
+  if (!color) return undefined;
+  // Convert HSL to a lighter background version for consistency
+  // Extract HSL values and create a light background with darker text
+  const hslMatch = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
+  if (hslMatch) {
+    const [, h, s] = hslMatch;
+    return {
+      backgroundColor: `hsl(${h} ${Math.min(parseInt(s), 50)}% 90%)`, // Light background
+      color: `hsl(${h} ${s}% 20%)`, // Dark text
+      borderColor: `hsl(${h} ${Math.min(parseInt(s), 60)}% 70%)`, // Medium border
+    };
+  }
+  return undefined;
+};
+
+// Extended type for review queue with joined data
+interface ReviewQuestionData {
+  id: string;
+  title: string;
+  stem: string;
+  difficulty: string;
+  teaching_point: string;
+  question_references: string | null;
+  status: string;
+  question_set_id: string | null;
+  category_id: string | null;
+  created_by: string;
+  reviewer_id: string | null;
+  reviewer_feedback: string | null;
+  created_at: string;
+  updated_at: string;
+  resubmission_notes: string | null;
+  question_sets?: { id: string; name: string } | null;
+  users?: { first_name: string | null; last_name: string | null; email: string | null } | null;
+  categories?: {
+    id: string;
+    name: string;
+    short_form: string | null;
+    color: string | null;
+    parent_short_form?: string | null;
+  } | null;
   creator_name?: string;
+  category_name?: string | null;
+  category_short_form?: string | null;
 }
 
 export function ReviewQueue() {
-  const [questions, setQuestions] = useState<ReviewQuestion[]>([]);
-  const [filteredQuestions, setFilteredQuestions] = useState<ReviewQuestion[]>([]);
+  const [questions, setQuestions] = useState<ReviewQuestionData[]>([]);
+  const [filteredQuestions, setFilteredQuestions] = useState<ReviewQuestionData[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedQuestion, setSelectedQuestion] = useState<ReviewQuestion | null>(null);
+  const [selectedQuestion, setSelectedQuestion] = useState<ReviewQuestionData | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [reviewAction, setReviewAction] = useState<"approve" | "reject" | null>(null);
 
@@ -73,13 +170,8 @@ export function ReviewQueue() {
           created_at,
           updated_at,
           question_sets(id, name),
-          question_options(id, text, is_correct, explanation, order_index),
-          question_images(
-            question_section,
-            order_index,
-            images(id, url, alt_text, description)
-          ),
-          users!questions_created_by_fkey(first_name, last_name, email)
+          users!questions_created_by_fkey(first_name, last_name, email),
+          categories(id, name, short_form, color)
         `
         )
         .eq("reviewer_id", user.id)
@@ -92,14 +184,45 @@ export function ReviewQueue() {
         return;
       }
 
-      // Format creator name
-      const formattedData = (data || []).map((q) => ({
-        ...q,
-        creator_name:
-          q.users?.first_name && q.users?.last_name
-            ? `${q.users.first_name} ${q.users.last_name}`
-            : q.users?.email || "Unknown",
-      }));
+      // Fetch resubmission notes from question_reviews for each question
+      const questionsWithNotes = await Promise.all(
+        (data || []).map(async (question) => {
+          const { data: reviewData } = await supabase
+            .from("question_reviews")
+            .select("changes_made, created_at")
+            .eq("question_id", question.id)
+            .eq("action", "resubmitted")
+            .order("created_at", { ascending: false })
+            .limit(1)
+            .single();
+
+          return {
+            ...question,
+            resubmission_notes: reviewData?.changes_made?.resubmission_notes || null,
+          };
+        })
+      );
+
+      // Format creator name and category info
+      const formattedData = questionsWithNotes.map((q) => {
+        // Handle users (may be object or null)
+        const user = Array.isArray(q.users) ? q.users[0] : q.users;
+        const category = Array.isArray(q.categories) ? q.categories[0] : q.categories;
+        const questionSet = Array.isArray(q.question_sets) ? q.question_sets[0] : q.question_sets;
+
+        return {
+          ...q,
+          users: user,
+          categories: category,
+          question_sets: questionSet,
+          creator_name:
+            user?.first_name && user?.last_name
+              ? `${user.first_name} ${user.last_name}`
+              : user?.email || "Unknown",
+          category_name: category?.name || null,
+          category_short_form: category?.short_form || null,
+        };
+      });
 
       setQuestions(formattedData);
       setFilteredQuestions(formattedData);
@@ -129,12 +252,12 @@ export function ReviewQueue() {
     }
   }, [searchTerm, questions]);
 
-  const handlePreview = (question: ReviewQuestion) => {
+  const handlePreview = (question: ReviewQuestionData) => {
     setSelectedQuestion(question);
     setPreviewOpen(true);
   };
 
-  const handleReviewAction = (question: ReviewQuestion, action: "approve" | "reject") => {
+  const handleReviewAction = (question: ReviewQuestionData, action: "approve" | "reject") => {
     setSelectedQuestion(question);
     setReviewAction(action);
   };
@@ -264,8 +387,7 @@ export function ReviewQueue() {
           <TableHeader className="bg-muted/50">
             <TableRow>
               <TableHead>Question</TableHead>
-              <TableHead>Creator</TableHead>
-              <TableHead>Submitted</TableHead>
+              <TableHead>Category</TableHead>
               <TableHead>Difficulty</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
@@ -273,7 +395,7 @@ export function ReviewQueue() {
           <TableBody>
             {filteredQuestions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                   {searchTerm
                     ? "No questions found matching your search"
                     : "No questions in your review queue"}
@@ -291,6 +413,10 @@ export function ReviewQueue() {
                       <div className="text-sm text-muted-foreground line-clamp-2">
                         {question.stem}
                       </div>
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Submitted by <span className="font-medium">{question.creator_name}</span> •{" "}
+                        {formatDistanceToNow(new Date(question.created_at), { addSuffix: true })}
+                      </div>
                       {question.resubmission_notes && (
                         <div className="mt-2 p-2 rounded bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800">
                           <div className="text-xs font-medium text-blue-900 dark:text-blue-100 mb-1">
@@ -304,15 +430,25 @@ export function ReviewQueue() {
                     </div>
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm">{question.creator_name}</div>
+                    {question.categories?.id ? (
+                      <Badge
+                        variant="outline"
+                        className={`${getCategoryBadgeClass(question.categories)}`}
+                        style={getCustomColorStyle(question.categories.color)}
+                      >
+                        {question.category_short_form || question.category_name}
+                      </Badge>
+                    ) : (
+                      <span className="text-muted-foreground text-sm">-</span>
+                    )}
                   </TableCell>
                   <TableCell>
-                    <div className="text-sm text-muted-foreground">
-                      {formatDistanceToNow(new Date(question.created_at), { addSuffix: true })}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <Badge variant="outline">{question.difficulty}</Badge>
+                    <Badge
+                      variant="outline"
+                      className={`border ${DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.color || "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800"}`}
+                    >
+                      {question.difficulty}
+                    </Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">
@@ -351,7 +487,7 @@ export function ReviewQueue() {
           <QuestionPreviewDialog
             open={previewOpen}
             onOpenChange={setPreviewOpen}
-            question={selectedQuestion}
+            question={selectedQuestion as unknown as QuestionWithDetails}
           />
           {reviewAction && (
             <ReviewActionDialog

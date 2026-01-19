@@ -14,10 +14,10 @@ interface Step {
 
 export function TabNavigation({ activeTab, onTabChange }: TabNavigationProps) {
   const steps: Step[] = [
+    { id: "source", name: "Source", description: "AI model & context" },
     { id: "content", name: "Content", description: "Edit question details" },
     { id: "images", name: "Images", description: "Manage visual content" },
     { id: "metadata", name: "Metadata", description: "Update categorization" },
-    { id: "anki", name: "Anki Link", description: "Link to Anki card" },
   ];
 
   const currentStepIndex = steps.findIndex((step) => step.id === activeTab);
