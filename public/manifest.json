@@ -75,8 +75,21 @@
     {
       "name": "MILAN",
       "short_name": "MILAN",
-      "description": "Molecular Information Lookup And Nomenclature",
+      "description": "Molecular Information Lookup And Navigation",
       "url": "/tools/milan",
+      "icons": [
+        {
+          "src": "/icons/android-chrome-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Genova",
+      "short_name": "Genova",
+      "description": "Genomic Variant Analysis Tool",
+      "url": "/tools/genova",
       "icons": [
         {
           "src": "/icons/android-chrome-192x192.png",

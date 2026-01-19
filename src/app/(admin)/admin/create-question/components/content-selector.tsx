@@ -12,7 +12,7 @@ import {
 import { Loader2, BookOpen, GraduationCap, Target } from "lucide-react";
 import { toast } from "@/shared/utils/toast";
 
-interface EducationalContent {
+export interface EducationalContent {
   category: string;
   subject: string;
   lesson: string;

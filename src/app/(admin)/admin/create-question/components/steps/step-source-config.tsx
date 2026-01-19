@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Upload, FileJson, Brain, AlertCircle, Loader2, Edit3, Sparkles } from "lucide-react";
 import { toast } from "@/shared/utils/toast";
 import { FormState } from "../multi-step-question-form";
-import { ContentSelector } from "../content-selector";
+import { ContentSelector, EducationalContent } from "../content-selector";
 import { ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
 import { createClient } from "@/shared/services/client";
 import { Label } from "@/shared/components/ui/label";
@@ -297,7 +297,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
   );
 
   // Handle AI content selection
-  const handleContentSelected = (content: unknown) => {
+  const handleContentSelected = (content: EducationalContent) => {
     // Store the selected content for AI generation
     updateFormState({ selectedContent: content });
 

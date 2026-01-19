@@ -15,6 +15,7 @@ import { StepProgressBar } from "./step-progress-bar";
 
 // Import types
 import { QuestionFormData, QuestionWithDetails } from "@/features/questions/types/questions";
+import { EducationalContent } from "./content-selector";
 
 interface MultiStepQuestionFormProps {
   mode?: "create" | "edit";
@@ -40,7 +41,7 @@ export interface FormState {
   // Step 1: Source & AI Config
   jsonData: string;
   selectedAIModel: string | null;
-  selectedContent: unknown | null;
+  selectedContent: EducationalContent | null;
 
   // Step 2: Content
   title: string;
