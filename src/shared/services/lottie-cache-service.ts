@@ -5,7 +5,7 @@
 import { unifiedCache, CACHE_NAMESPACES } from "./unified-cache";
 
 // Single cache key for all lottie animations
-const LOTTIE_CACHE_KEY = "all-animations";
+const LOTTIE_CACHE_KEY = "animations";
 
 interface LottieAnimationsCache {
   [animationType: string]: unknown;
