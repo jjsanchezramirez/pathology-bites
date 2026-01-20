@@ -1,8 +1,9 @@
 // Cache invalidation and management helpers
-// Centralized utilities for cache management across the app
+// Centralized utilities for cache management across the app using unified cache
 
 import { mutate } from "swr";
 import { clearSWRCache } from "@/shared/providers/swr-cache-provider";
+import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
 /**
  * Invalidate unified data cache
@@ -138,6 +139,37 @@ export function isCacheStale(_cacheKey: string, _maxAge: number): boolean {
   return false;
 }
 
+/**
+ * Clear specific namespace from unified cache
+ */
+export function clearNamespaceCache(namespace: typeof CACHE_NAMESPACES[keyof typeof CACHE_NAMESPACES]["name"]): void {
+  console.log(`[Cache] 🗑️ Clearing ${namespace} namespace`);
+  unifiedCache.clearNamespace(namespace);
+}
+
+/**
+ * Clear all unified cache (both SWR and direct cache)
+ */
+export function clearUnifiedCache(): void {
+  console.log("[Cache] 🗑️ Clearing all unified cache");
+  unifiedCache.clearAll();
+}
+
+/**
+ * Get cache statistics for debugging
+ */
+export function getCacheStats(namespace?: typeof CACHE_NAMESPACES[keyof typeof CACHE_NAMESPACES]["name"]) {
+  return unifiedCache.getStats(namespace);
+}
+
+/**
+ * Manual cleanup of expired cache entries
+ */
+export function cleanupExpiredCache(namespace?: typeof CACHE_NAMESPACES[keyof typeof CACHE_NAMESPACES]["name"]): void {
+  console.log(`[Cache] 🧹 Cleaning up expired entries${namespace ? ` in ${namespace}` : ""}`);
+  unifiedCache.cleanup(namespace);
+}
+
 const cacheHelpers = {
   invalidateUnifiedData,
   invalidateUserSettings,
@@ -148,6 +180,10 @@ const cacheHelpers = {
   onLogout,
   prefetchUnifiedData,
   isCacheStale,
+  clearNamespaceCache,
+  clearUnifiedCache,
+  getCacheStats,
+  cleanupExpiredCache,
 };
 
 export default cacheHelpers;

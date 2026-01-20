@@ -1,36 +1,29 @@
-// SWR Cache Provider with localStorage persistence
-// Optimized for Vercel/Supabase free tier - dramatically reduces API calls
+// SWR Cache Provider with Unified Cache System
+// Uses the unified cache for consistent caching across the application
 
 "use client";
 
 import { SWRConfig, Cache } from "swr";
 import { useEffect, useState } from "react";
 import { autoCleanup } from "@/shared/utils/storage-cleanup";
-
-const CACHE_KEY = "pathology-bites-swr-cache";
-const CACHE_VERSION = "v1"; // Increment to invalidate all caches
-
-interface CacheData {
-  version: string;
-  cache: [string, unknown][];
-  timestamp: number;
-}
+import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
 /**
- * SWR Cache Provider with localStorage persistence
+ * SWR Cache Provider with Unified Cache System
  *
  * Features:
- * - Persists SWR cache to localStorage
+ * - Uses unified cache system for consistency
+ * - Persists SWR cache to localStorage via unified cache
  * - Survives page refreshes and browser restarts
  * - Automatic cache restoration on mount
  * - Version-based cache invalidation
- * - Automatic cleanup on unmount
+ * - Automatic cleanup
  *
  * Performance Impact:
  * - Reduces API calls by ~90% (from 20 calls/10 refreshes to 0 calls)
  * - Instant data loading on page refresh
  * - No network latency for cached data
- * - Minimal localStorage usage (~10-20KB)
+ * - Standardized caching across entire application
  */
 export function SWRCacheProvider({ children }: { children: React.ReactNode }) {
   const [isClient, setIsClient] = useState(false);
@@ -55,83 +48,64 @@ export function SWRCacheProvider({ children }: { children: React.ReactNode }) {
   return (
     <SWRConfig
       value={{
-        // Custom cache provider with localStorage persistence
+        // Custom cache provider using unified cache system
         provider: () => {
-          // Initialize cache Map (works in both SSR and client)
+          // Initialize cache Map
           const map = new Map<string, unknown>();
 
-          // Only do localStorage operations on client-side
+          // SSR: return empty map
           if (typeof window === "undefined") {
-            // SSR: return empty map
             return map as Cache;
           }
 
-          // Client-side: Try to restore cache from localStorage
+          // Client-side: Restore cache from unified cache system
           try {
-            const stored = localStorage.getItem(CACHE_KEY);
-            if (stored) {
-              const cacheData: CacheData = JSON.parse(stored);
+            const exported = unifiedCache.export(CACHE_NAMESPACES.SWR.name);
+            const entries = Object.entries(exported);
 
-              // Check cache version - if version mismatch, clear cache
-              if (cacheData.version === CACHE_VERSION) {
-                // Restore cache entries
-                for (const [key, value] of cacheData.cache) {
-                  map.set(key, value);
-                }
-
-                console.log("[SWR Cache] ✅ Restored cache from localStorage:", {
-                  entries: map.size,
-                  age: Math.round((Date.now() - cacheData.timestamp) / 1000 / 60),
-                  version: cacheData.version,
-                });
-              } else {
-                console.log("[SWR Cache] 🔄 Cache version mismatch, clearing cache");
-                localStorage.removeItem(CACHE_KEY);
+            if (entries.length > 0) {
+              // Extract the actual keys (remove the prefix)
+              const prefix = `pathology-bites-${CACHE_NAMESPACES.SWR.name}-`;
+              for (const [fullKey, value] of entries) {
+                const key = fullKey.replace(prefix, "");
+                map.set(key, value);
               }
+
+              console.log("[SWR Cache] ✅ Restored cache from unified cache:", {
+                entries: map.size,
+              });
             }
           } catch (error) {
             console.error("[SWR Cache] ❌ Failed to restore cache:", error);
-            // Clear corrupted cache
-            localStorage.removeItem(CACHE_KEY);
           }
 
-          // Save cache to localStorage
-          const saveCache = () => {
-            try {
-              const cacheData: CacheData = {
-                version: CACHE_VERSION,
-                cache: Array.from(map.entries()),
-                timestamp: Date.now(),
-              };
+          // Create custom Map that syncs with unified cache
+          const cachedMap = new Map<string, unknown>();
 
-              localStorage.setItem(CACHE_KEY, JSON.stringify(cacheData));
+          // Restore initial data
+          for (const [key, value] of map) {
+            cachedMap.set(key, value);
+          }
 
-              console.log("[SWR Cache] 💾 Saved cache to localStorage:", {
-                entries: map.size,
-                size: new Blob([JSON.stringify(cacheData)]).size,
-              });
-            } catch (error) {
-              console.error("[SWR Cache] ❌ Failed to save cache:", error);
-              // If quota exceeded, clear cache
-              if (error instanceof Error && error.name === "QuotaExceededError") {
-                console.warn("[SWR Cache] 🚨 localStorage quota exceeded, clearing cache");
-                localStorage.removeItem(CACHE_KEY);
-                map.clear();
-              }
-            }
+          // Override set to sync with unified cache
+          const originalSet = cachedMap.set.bind(cachedMap);
+          cachedMap.set = (key: string, value: unknown) => {
+            // Update unified cache
+            unifiedCache.set(CACHE_NAMESPACES.SWR.name, key, value);
+            // Update in-memory map
+            return originalSet(key, value);
           };
 
-          // Save on page unload
-          window.addEventListener("beforeunload", saveCache);
+          // Override delete to sync with unified cache
+          const originalDelete = cachedMap.delete.bind(cachedMap);
+          cachedMap.delete = (key: string) => {
+            // Delete from unified cache
+            unifiedCache.delete(CACHE_NAMESPACES.SWR.name, key);
+            // Delete from in-memory map
+            return originalDelete(key);
+          };
 
-          // Also save periodically (every 30 seconds) to prevent data loss
-          const _intervalId = setInterval(saveCache, 30 * 1000);
-
-          // Note: We can't return a cleanup function here as the provider
-          // is only called once. The interval and event listener will clean
-          // up naturally when the window unloads.
-
-          return map as Cache;
+          return cachedMap as Cache;
         },
 
         // Global SWR config
@@ -190,7 +164,7 @@ export function SWRCacheProvider({ children }: { children: React.ReactNode }) {
 export function clearSWRCache() {
   if (typeof window !== "undefined") {
     try {
-      localStorage.removeItem(CACHE_KEY);
+      unifiedCache.clearNamespace(CACHE_NAMESPACES.SWR.name);
       console.log("[SWR Cache] 🗑️ Cache cleared");
     } catch (error) {
       console.error("[SWR Cache] ❌ Failed to clear cache:", error);
@@ -205,33 +179,16 @@ export function getSWRCacheStats(): {
   exists: boolean;
   entries: number;
   size: number;
-  age: number;
-  version: string;
 } | null {
   if (typeof window === "undefined") return null;
 
   try {
-    const stored = localStorage.getItem(CACHE_KEY);
-    if (!stored) {
-      return {
-        exists: false,
-        entries: 0,
-        size: 0,
-        age: 0,
-        version: CACHE_VERSION,
-      };
-    }
-
-    const cacheData: CacheData = JSON.parse(stored);
-    const size = new Blob([stored]).size;
-    const age = Math.round((Date.now() - cacheData.timestamp) / 1000 / 60); // minutes
+    const stats = unifiedCache.getStats(CACHE_NAMESPACES.SWR.name);
 
     return {
-      exists: true,
-      entries: cacheData.cache.length,
-      size,
-      age,
-      version: cacheData.version,
+      exists: stats.localStorageEntries > 0 || stats.memoryEntries > 0,
+      entries: stats.localStorageEntries || stats.memoryEntries,
+      size: stats.totalSize,
     };
   } catch (error) {
     console.error("[SWR Cache] ❌ Failed to get cache stats:", error);

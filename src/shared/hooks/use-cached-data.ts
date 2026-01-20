@@ -1,11 +1,12 @@
 // src/shared/hooks/use-cached-data.ts
-// Hook for cached data fetching with intelligent cache management
+// Hook for cached data fetching with intelligent cache management using unified cache
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { cacheService, type CacheOptions } from "@/shared/services/cache-service";
+import { unifiedCache, type CacheOptions, type CacheNamespace } from "@/shared/services/unified-cache";
 import { toast } from "@/shared/utils/toast";
 
 interface UseCachedDataOptions<T> extends CacheOptions {
+  namespace: CacheNamespace; // Required: specify which namespace to use
   enabled?: boolean;
   refetchOnMount?: boolean;
   refetchOnWindowFocus?: boolean;
@@ -26,16 +27,16 @@ interface UseCachedDataResult<T> {
 export function useCachedData<T>(
   key: string,
   fetcher: () => Promise<T>,
-  options: UseCachedDataOptions<T> = {}
+  options: UseCachedDataOptions<T>
 ): UseCachedDataResult<T> {
   const {
+    namespace,
     enabled = true,
     refetchOnMount = false, // Changed default to false to minimize API calls
     refetchOnWindowFocus = false,
     staleTime = 2 * 60 * 1000, // 2 minutes
-    ttl = 5 * 60 * 1000, // 5 minutes
-    storage = "memory",
-    prefix = "pathology-bites-cache",
+    ttl, // Will use namespace default if not specified
+    version,
     onSuccess,
     onError,
   } = options;
@@ -56,11 +57,10 @@ export function useCachedData<T>(
 
       // Try to get from cache first
       if (!force) {
-        // NOTE: cacheService.get() returns the data directly, not wrapped in {data, timestamp}
-        const cached = cacheService.get<T>(key, { storage, prefix });
+        const cached = unifiedCache.get<T>(namespace, key, { ttl, version });
         if (cached) {
           setData(cached);
-          setLastFetch(Date.now()); // Use current time since we don't have the original timestamp
+          setLastFetch(Date.now());
           const isStaleData = false; // Consider cache hit as fresh data
           setIsStale(isStaleData);
           setError(null);
@@ -78,18 +78,11 @@ export function useCachedData<T>(
         setError(null);
 
         // Use deduplication to prevent concurrent requests for the same key
-        const result = await cacheService.dedupe(key, fetcher, { storage, prefix });
+        const result = await unifiedCache.dedupe(namespace, key, fetcher, { ttl, version });
 
         if (!mounted.current) return;
 
         const timestamp = Date.now();
-
-        // Cache the result - cacheService.set() will wrap it with {data, timestamp, ttl, key}
-        cacheService.set(
-          key,
-          result, // Pass data directly, not wrapped
-          { ttl, storage, prefix }
-        );
 
         setData(result);
         setLastFetch(timestamp);
@@ -122,7 +115,7 @@ export function useCachedData<T>(
         fetchingRef.current = false;
       }
     },
-    [key, enabled, storage, prefix, ttl, fetcher, onSuccess, onError]
+    [key, namespace, enabled, ttl, version, fetcher, onSuccess, onError]
   );
 
   // Create refs for stable function references
@@ -131,14 +124,14 @@ export function useCachedData<T>(
 
   // Invalidate cache and refetch
   const invalidate = useCallback(() => {
-    cacheService.delete(key, { storage, prefix });
+    unifiedCache.delete(namespace, key);
     setData(null);
     setIsStale(false);
     setLastFetch(0);
     if (enabled) {
       fetchDataRef.current(true);
     }
-  }, [key, storage, prefix, enabled]);
+  }, [key, namespace, enabled]);
 
   // Refetch data
   const refetch = useCallback(async () => {
@@ -151,13 +144,12 @@ export function useCachedData<T>(
 
     if (enabled) {
       // Always try to load from cache or fetch on mount
-      // NOTE: cacheService.get() returns the data directly, not wrapped in {data, timestamp}
-      const cached = cacheService.get<T>(key, { storage, prefix });
+      const cached = unifiedCache.get<T>(namespace, key, { ttl, version });
 
       console.log("=".repeat(80));
       console.log("🔍 [USE CACHED DATA] CHECKING FOR CACHE:");
       console.log("=".repeat(80));
-      console.log("[useCachedData] Mount:", { key, hasCached: !!cached, storage, prefix });
+      console.log("[useCachedData] Mount:", { key, hasCached: !!cached, namespace });
 
       if (cached) {
         // Use cached data immediately
@@ -170,7 +162,7 @@ export function useCachedData<T>(
         });
         console.log("=".repeat(80));
         setData(cached);
-        setLastFetch(Date.now()); // Use current time since we don't have the original timestamp
+        setLastFetch(Date.now());
         const isStaleData = false; // Consider cache hit as fresh data
         setIsStale(isStaleData);
         setError(null);
@@ -191,7 +183,7 @@ export function useCachedData<T>(
     return () => {
       mounted.current = false;
     };
-  }, [enabled, refetchOnMount, key, storage, prefix, staleTime]);
+  }, [enabled, refetchOnMount, key, namespace, ttl, version, staleTime]);
 
   // Window focus refetch
   useEffect(() => {
