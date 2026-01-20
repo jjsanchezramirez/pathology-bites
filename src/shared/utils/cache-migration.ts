@@ -17,6 +17,7 @@ const OLD_CACHE_KEYS = [
   "nlm-journal-abbreviations", // Migrated to unified cache (citations namespace)
   "user-stats-cache", // Migrated to unified cache (stats namespace)
   "pathology-bites-demo-questions", // Migrated to unified cache (demo-questions namespace)
+  "pathology-bites-virtual-slides-virtual-slides-dataset", // Old redundant key name
 ];
 
 /**

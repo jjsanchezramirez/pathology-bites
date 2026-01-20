@@ -55,7 +55,7 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
   // Check unified cache first (localStorage)
   const cached = unifiedCache.get<VirtualSlide[]>(
     CACHE_NAMESPACES.VIRTUAL_SLIDES.name,
-    "virtual-slides-dataset"
+    "dataset"
   );
 
   if (cached) {
@@ -122,7 +122,7 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
     // Cache in unified cache (localStorage) for persistence across sessions
     unifiedCache.set(
       CACHE_NAMESPACES.VIRTUAL_SLIDES.name,
-      "virtual-slides-dataset",
+      "dataset",
       slides
     );
     console.log(`[VirtualSlides Enhanced] 💾 Cached ${slides.length} slides in unified cache`);
