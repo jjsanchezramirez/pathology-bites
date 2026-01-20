@@ -6,8 +6,10 @@ import { getRepositoryFromId } from "@/shared/utils/repository";
 import { expandSearchTermClient } from "@/shared/utils/nci-evs-client";
 import { extractOrganTerms, getOrganBoostScore, type OrganTerm } from "@/shared/utils/organ-terms";
 import { MEDICAL_ACRONYMS, COMMON_MEDICAL_TERMS } from "@/shared/utils/medical-acronyms";
+import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
-// Module-scope cache so we only fetch once per session
+// Module-scope promise cache to prevent duplicate concurrent requests
+// The actual data is cached in unified cache (localStorage)
 let cachedSlidesPromise: Promise<VirtualSlide[]> | null = null;
 
 // Minimal client-entry type coming from CDN JSON
@@ -50,6 +52,18 @@ function normalizeToVirtualSlide(e: ClientEntry): VirtualSlide {
 }
 
 async function loadClientSlides(): Promise<VirtualSlide[]> {
+  // Check unified cache first (localStorage)
+  const cached = unifiedCache.get<VirtualSlide[]>(
+    CACHE_NAMESPACES.VIRTUAL_SLIDES.name,
+    "virtual-slides-dataset"
+  );
+
+  if (cached) {
+    console.log("[VirtualSlides Enhanced] ✅ Loaded from unified cache");
+    return Promise.resolve(cached);
+  }
+
+  // If already fetching, return the existing promise
   if (cachedSlidesPromise) return cachedSlidesPromise;
 
   const { VIRTUAL_SLIDES_JSON_URL } = await import("@/shared/config/virtual-slides");
@@ -103,7 +117,17 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
     if (!res.ok) throw new Error(`Failed to fetch client slides: ${res.status}`);
     const json = await res.json();
     const entries: ClientEntry[] = Array.isArray(json) ? json : (json.data ?? []);
-    return entries.map(normalizeToVirtualSlide);
+    const slides = entries.map(normalizeToVirtualSlide);
+
+    // Cache in unified cache (localStorage) for persistence across sessions
+    unifiedCache.set(
+      CACHE_NAMESPACES.VIRTUAL_SLIDES.name,
+      "virtual-slides-dataset",
+      slides
+    );
+    console.log(`[VirtualSlides Enhanced] 💾 Cached ${slides.length} slides in unified cache`);
+
+    return slides;
   });
 
   return cachedSlidesPromise;
