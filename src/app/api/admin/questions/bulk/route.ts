@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { revalidateQuestions } from "@/lib/revalidation";
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
@@ -270,6 +271,11 @@ export async function POST(request: NextRequest) {
     if (result?.error) {
       console.error(`Bulk ${action} error:`, result.error);
       return NextResponse.json({ error: `Failed to ${action} questions` }, { status: 500 });
+    }
+
+    // Revalidate caches to update all admin pages (for mutation operations)
+    if (action !== "export") {
+      revalidateQuestions({ includeDashboard: true });
     }
 
     return NextResponse.json({

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useMemo } from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
@@ -14,13 +14,15 @@ import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { BookOpen } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { BookOpen, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "@/shared/utils/toast";
 
 import { QuestionWithDetails } from "@/features/questions/types/questions";
 import { EditQuestionFormData } from "@/features/questions/hooks/use-edit-question-form";
 import { FetchReferencesDialog } from "@/features/questions/components/fetch-references-dialog";
+import { EducationalContent } from "@/app/(admin)/admin/create-question/components/content-selector";
+import { ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
 
 interface QuestionOptionFormData {
   id?: string;
@@ -36,6 +38,7 @@ interface ContentTabProps {
   onUnsavedChanges: () => void;
   answerOptions: QuestionOptionFormData[];
   onAnswerOptionsChange: (options: QuestionOptionFormData[]) => void;
+  educationalContext?: EducationalContent | null;
 }
 
 export function ContentTab({
@@ -44,8 +47,94 @@ export function ContentTab({
   onUnsavedChanges,
   answerOptions,
   onAnswerOptionsChange,
+  educationalContext,
 }: ContentTabProps) {
   const [fetchDialogOpen, setFetchDialogOpen] = useState(false);
+  const [isEnhancing, setIsEnhancing] = useState(false);
+  const [enhancementRequest, setEnhancementRequest] = useState("");
+
+  // Determine which AI model to use for refinement
+  const refinementModel = useMemo(() => {
+    const questionSet = question.question_set || question.set;
+    if (questionSet?.source_type === "ai_generated") {
+      const sourceDetails = questionSet.source_details as any;
+      const modelId = sourceDetails?.primary_model || sourceDetails?.model;
+      if (modelId) {
+        return String(modelId);
+      }
+    }
+    return "Llama-3.3-8B-Instruct"; // Default fast model
+  }, [question]);
+
+  // Handle AI enhancement
+  const handleAIEnhancement = async () => {
+    const formValues = form.getValues();
+
+    if (!formValues.title || !formValues.stem) {
+      toast.error("Please fill in the question title and stem first");
+      return;
+    }
+
+    setIsEnhancing(true);
+    try {
+      const response = await fetch("/api/admin/ai-generate-question", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          mode: "enhance_question",
+          content: {
+            title: formValues.title,
+            stem: formValues.stem,
+            answerOptions: answerOptions,
+            teaching_point: formValues.teaching_point,
+            question_references: formValues.question_references,
+          },
+          instructions:
+            enhancementRequest ||
+            "Improve the clarity, accuracy, and pedagogical value of this question while maintaining its core concept.",
+          model: refinementModel,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to enhance question");
+      }
+
+      const data = await response.json();
+
+      // Update form with enhanced content
+      if (data.title) {
+        form.setValue("title", data.title);
+      }
+      if (data.stem) {
+        form.setValue("stem", data.stem);
+      }
+      if (data.teaching_point) {
+        form.setValue("teaching_point", data.teaching_point);
+      }
+      if (data.answer_options) {
+        const enhancedOptions = data.answer_options.map((option: any, index: number) => ({
+          ...(answerOptions[index]?.id && { id: answerOptions[index].id }),
+          text: option.text || "",
+          is_correct: option.is_correct || false,
+          explanation: option.explanation || "",
+          order_index: index,
+        }));
+        onAnswerOptionsChange(enhancedOptions);
+      }
+
+      onUnsavedChanges();
+      setEnhancementRequest("");
+      toast.success("Question enhanced successfully!");
+    } catch (error) {
+      console.error("Enhancement error:", error);
+      toast.error("Failed to enhance question");
+    } finally {
+      setIsEnhancing(false);
+    }
+  };
 
   // Handle answer option changes
   const updateAnswerOption = (index: number, field: string, value: unknown) => {
@@ -279,6 +368,60 @@ export function ContentTab({
           </FormItem>
         )}
       />
+
+      {/* AI Enhancement Section */}
+      {educationalContext && (
+        <div className="border-t pt-8 mt-8">
+          <Card className="bg-primary/5 border-primary/20">
+            <CardHeader className="pb-4">
+              <CardTitle className="flex items-center gap-2 text-base">
+                <Sparkles className="h-5 w-5 text-primary" />
+                Enhance with AI
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Let AI improve your question's clarity, accuracy, and pedagogical value. The AI will
+                use the context from your educational content to enhance the question.
+              </p>
+
+              <div className="space-y-2.5">
+                <Label htmlFor="enhancement-request" className="text-sm font-medium">
+                  Enhancement Request{" "}
+                  <span className="text-muted-foreground font-normal">(Optional)</span>
+                </Label>
+                <Textarea
+                  id="enhancement-request"
+                  placeholder="e.g., 'Make the question more challenging', 'Focus on differential diagnosis', 'Simplify the language'"
+                  value={enhancementRequest}
+                  onChange={(e) => setEnhancementRequest(e.target.value)}
+                  rows={2}
+                  className="resize-none text-sm"
+                />
+              </div>
+
+              <Button
+                onClick={handleAIEnhancement}
+                disabled={isEnhancing}
+                className="w-full"
+                variant="default"
+              >
+                {isEnhancing ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Enhancing...
+                  </>
+                ) : (
+                  <>
+                    <Sparkles className="h-4 w-4 mr-2" />
+                    Enhance Question
+                  </>
+                )}
+              </Button>
+            </CardContent>
+          </Card>
+        </div>
+      )}
 
       <FetchReferencesDialog
         open={fetchDialogOpen}

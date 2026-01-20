@@ -60,6 +60,7 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
   const [questionImages, setQuestionImages] = useState<QuestionImageFormData[]>([]);
   const [isPatchEdit, setIsPatchEdit] = useState(false);
   const [patchEditReason, setPatchEditReason] = useState("");
+  const [reviewerId, setReviewerId] = useState<string | null>(null);
 
   // Hooks
   const { updateQuestion } = useQuestions();
@@ -168,7 +169,7 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
 
   // Handle form submission
   const handleSubmit = useCallback(
-    async (data: EditQuestionFormData) => {
+    async (data: EditQuestionFormData, overrideReviewerId?: string) => {
       if (!question) return;
 
       setIsSubmitting(true);
@@ -190,6 +191,7 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
           changeSummary: isPatchEdit ? patchEditReason : "Question updated",
           isPatchEdit: isPatchEdit,
           patchEditReason: patchEditReason,
+          reviewerId: overrideReviewerId || reviewerId || undefined,
         });
 
         setHasUnsavedChanges(false);
@@ -197,7 +199,8 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
         onClose();
       } catch (error) {
         console.error("Error in handleSubmit:", error);
-        toast.error("Failed to update question");
+        const errorMessage = error instanceof Error ? error.message : "Failed to update question";
+        toast.error(errorMessage);
         throw error;
       } finally {
         setIsSubmitting(false);
@@ -213,6 +216,7 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
       onClose,
       isPatchEdit,
       patchEditReason,
+      reviewerId,
     ]
   );
 
@@ -245,6 +249,7 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
     setQuestionImages,
     setIsPatchEdit,
     setPatchEditReason,
+    setReviewerId,
 
     // Handlers
     handleSubmit,

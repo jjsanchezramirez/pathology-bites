@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { deleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage";
 import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
+import { revalidateImages } from "@/lib/revalidation";
 
 export async function DELETE(request: NextRequest) {
   console.log("🗑️ DELETE /api/media/images/delete called");
@@ -94,6 +95,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     console.log("✅ Image deleted successfully");
+
+    // Revalidate caches to update all admin pages
+    revalidateImages({ imageId, includeDashboard: true });
+
     return NextResponse.json({
       success: true,
       message: "Image deleted successfully",

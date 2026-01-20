@@ -94,6 +94,8 @@ export interface Question {
 export interface QuestionWithDetails extends QuestionData {
   set?: SetData;
   question_set?: SetData; // Legacy field name for backward compatibility
+  category?: CategoryData; // Single category object (from API join)
+  categories?: CategoryData[]; // Legacy array format for backward compatibility
   question_options?: QuestionOptionData[];
   answer_options?: QuestionOptionData[]; // Legacy field name for backward compatibility
   question_images?: (QuestionImageData & {
@@ -101,7 +103,6 @@ export interface QuestionWithDetails extends QuestionData {
     images?: ImageData; // Actual Supabase response format
   })[];
   tags?: TagData[];
-  categories?: CategoryData[];
   analytics?: QuestionAnalyticsData;
   created_by_name?: string;
   updated_by_name?: string;

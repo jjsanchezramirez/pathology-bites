@@ -243,7 +243,6 @@ function VirtualSlidesContent() {
     });
   };
 
-
   if (isInitialLoading) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
@@ -321,6 +320,22 @@ function VirtualSlidesContent() {
                 <button
                   onClick={() => {
                     setMode("search");
+                    // Restore search input value after component remounts
+                    setTimeout(() => {
+                      if (searchInputRef.current) {
+                        searchInputRef.current.value = debouncedSearchTerm;
+                      }
+                    }, 0);
+                    // Reset search parameters when switching back to search mode
+                    searchWithFilters({
+                      query: debouncedSearchTerm || undefined,
+                      repository: selectedRepository !== "all" ? selectedRepository : undefined,
+                      category: selectedCategory !== "all" ? selectedCategory : undefined,
+                      subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
+                      randomMode: false,
+                      limit: 50, // Reset to default limit
+                      page: 1,
+                    });
                   }}
                   className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md font-medium transition-all ${
                     mode === "search"
@@ -351,7 +366,9 @@ function VirtualSlidesContent() {
               {mode === "study" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="question-count">Number of Questions</Label>
+                    <Label htmlFor="question-count" className="text-lg font-semibold">
+                      Number of Questions
+                    </Label>
                     <Select
                       value={studyQuestionCount.toString()}
                       onValueChange={(val) => {
@@ -434,7 +451,8 @@ function VirtualSlidesContent() {
                           setDebouncedSearchTerm(currentValue);
                           searchWithFilters({
                             query: currentValue || undefined,
-                            repository: selectedRepository !== "all" ? selectedRepository : undefined,
+                            repository:
+                              selectedRepository !== "all" ? selectedRepository : undefined,
                             category: selectedCategory !== "all" ? selectedCategory : undefined,
                             subcategory:
                               selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,

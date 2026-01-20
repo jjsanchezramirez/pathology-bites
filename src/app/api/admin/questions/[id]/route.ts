@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/shared/services/server";
+import { revalidateQuestions } from "@/lib/revalidation";
 
 // Create Supabase client with service role for admin operations
 async function createAdminClient() {
@@ -61,6 +62,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           source_type,
           source_details,
           short_form
+        ),
+        category:categories(
+          id,
+          name
         ),
         created_by_user:users!questions_created_by_fkey(
           first_name,
@@ -197,6 +202,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       isPatchEdit,
       patchEditReason,
       updateType,
+      reviewerId,
     } = body;
 
     console.log("PATCH /api/admin/questions/[id] - Body received:", {
@@ -380,14 +386,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       // Update the main question data - only include valid question table fields
       // For published questions with minor/major edits, change status to pending_review
       let statusToSet = questionData.status;
-      const reviewerToSet = currentQuestion.reviewer_id;
+      const reviewerToSet = reviewerId || currentQuestion.reviewer_id;
       if (
         currentQuestion.status === "published" &&
         !isPatchEdit &&
         updateType &&
         ["minor", "major"].includes(updateType)
       ) {
-        // Check if there's an existing reviewer
+        // Check if there's a reviewer (either newly assigned or existing)
         if (!reviewerToSet) {
           // No reviewer assigned - cannot move to pending_review due to constraint
           // The question will remain published, and admin must manually assign a reviewer
@@ -400,9 +406,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           );
         }
         statusToSet = "pending_review";
-        // Keep the existing reviewer since the constraint requires a reviewer for pending_review status
+        // Use the assigned reviewer (newly assigned or existing)
         console.log(
-          `PATCH - Changing status from published to pending_review for ${updateType} edit, keeping reviewer: ${reviewerToSet}`
+          `PATCH - Changing status from published to pending_review for ${updateType} edit, using reviewer: ${reviewerToSet}`
         );
       }
 
@@ -422,6 +428,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       // Determine if the final status will be pending_review
       const willBePendingReview = finalStatus === "pending_review";
 
+      // Check if this is the first time publishing (transition to published status)
+      const isFirstTimePublishing =
+        statusToSet === "published" && currentQuestion.status !== "published";
+
       const validQuestionFields = {
         ...(questionData.title && { title: questionData.title }),
         ...(questionData.stem && { stem: questionData.stem }),
@@ -430,6 +440,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         ...(questionData.question_references !== undefined && {
           question_references: questionData.question_references,
         }),
+        ...(questionData.lesson !== undefined && { lesson: questionData.lesson }),
+        ...(questionData.topic !== undefined && { topic: questionData.topic }),
         ...(questionData.anki_card_id !== undefined && { anki_card_id: questionData.anki_card_id }),
         ...(questionData.anki_deck_name !== undefined && {
           anki_deck_name: questionData.anki_deck_name,
@@ -437,6 +449,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         ...(statusToSet && { status: statusToSet }),
         ...(questionData.question_set_id !== undefined && {
           question_set_id: questionData.question_set_id,
+        }),
+        // Initialize version to 1.0.0 when publishing for the first time
+        ...(isFirstTimePublishing && {
+          version_major: 1,
+          version_minor: 0,
+          version_patch: 0,
         }),
         // Ensure reviewer_id is always set when status is or will be pending_review (required by constraint)
         ...(willBePendingReview &&
@@ -668,7 +686,39 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
       // Handle versioning for published questions
       let versionId = null;
-      if (currentQuestion.status === "published") {
+
+      // Create initial version entry when publishing for the first time
+      if (isFirstTimePublishing) {
+        const { data: newVersionId, error: versionError } = await adminClient
+          .from("question_versions")
+          .insert({
+            question_id: questionId,
+            version_major: 1,
+            version_minor: 0,
+            version_patch: 0,
+            version_string: "1.0.0",
+            update_type: "major",
+            change_summary: "Initial publication",
+            question_data: {
+              title: questionData?.title || currentQuestion.title,
+              stem: questionData?.stem || currentQuestion.stem,
+              teaching_point: questionData?.teaching_point || currentQuestion.teaching_point,
+              question_references: questionData?.question_references || currentQuestion.question_references,
+            },
+            changed_by: user.id,
+          })
+          .select("id")
+          .single();
+
+        if (versionError) {
+          console.error("Error creating initial version history:", versionError);
+          // Continue without version history rather than failing the entire update
+        } else {
+          versionId = newVersionId?.id;
+        }
+      }
+      // Handle versioning for already published questions
+      else if (currentQuestion.status === "published") {
         if (isPatchEdit) {
           // For patch edits, increment patch version only
           const newVersionPatch = (currentQuestion.version_patch || 0) + 1;
@@ -789,6 +839,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           { status: 500 }
         );
       }
+
+      // Revalidate caches to update all admin pages
+      revalidateQuestions({ questionId, includeDashboard: true });
 
       return NextResponse.json({
         success: true,

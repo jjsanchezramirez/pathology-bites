@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import { UseFormReturn } from "react-hook-form";
 import {
   FormControl,
@@ -47,66 +47,66 @@ export function MetadataTab({
   selectedTagIds,
   onTagsChange,
 }: MetadataTabProps) {
-  const [availableTags, setAvailableTags] = useState<Tag[]>([]);
-  const [categoryName, setCategoryName] = useState<string>("Loading...");
-  const [questionSetName, setQuestionSetName] = useState<string>("Loading...");
+  // Initialize with selected tags immediately for instant display
+  const [availableTags, setAvailableTags] = useState<Tag[]>(question.tags as Tag[] || []);
 
-  // Load tags, category name, and question set name
+  // Get category name from preloaded data
+  const categoryName = useMemo(() => {
+    // Check for category object first (new API format)
+    if (question.category && typeof question.category === 'object' && 'name' in question.category) {
+      return question.category.name;
+    }
+    // Fallback for categories array (legacy format)
+    if (question.categories && question.categories.length > 0) {
+      return question.categories[0].name;
+    }
+    return "No Category";
+  }, [question.category, question.categories]);
+
+  // Get question set name from preloaded data
+  const questionSetName = useMemo(() => {
+    const questionSet = question.question_set || question.set;
+    return questionSet ? questionSet.name : "No Question Set";
+  }, [question.question_set, question.set]);
+
+  // Load all available tags in the background for the autocomplete dropdown
   useEffect(() => {
-    const loadData = async () => {
+    const loadAllTags = async () => {
       try {
         const supabase = createClient();
 
-        // Load all tags
+        // Load all tags for the autocomplete search
         const { data: tagsData } = await supabase
           .from("tags")
           .select("*")
           .order("created_at", { ascending: false });
 
         if (tagsData) {
-          setAvailableTags(tagsData);
-        }
+          // Merge with already-selected tags to ensure they're not lost
+          const selectedTagObjects = question.tags || [];
+          const allTagsMap = new Map<string, Tag>();
 
-        // Load category name
-        if (question.category_id) {
-          const { data: categoryData } = await supabase
-            .from("categories")
-            .select("name")
-            .eq("id", question.category_id)
-            .single();
+          // Add selected tags first to preserve them
+          selectedTagObjects.forEach(tag => {
+            allTagsMap.set(tag.id, tag as Tag);
+          });
 
-          if (categoryData) {
-            setCategoryName(categoryData.name);
-          } else {
-            setCategoryName("No Category");
-          }
-        } else {
-          setCategoryName("No Category");
-        }
+          // Add all loaded tags
+          tagsData.forEach(tag => {
+            if (!allTagsMap.has(tag.id)) {
+              allTagsMap.set(tag.id, tag);
+            }
+          });
 
-        // Load question set name
-        if (question.question_set_id) {
-          const { data: questionSetData } = await supabase
-            .from("question_sets")
-            .select("name")
-            .eq("id", question.question_set_id)
-            .single();
-
-          if (questionSetData) {
-            setQuestionSetName(questionSetData.name);
-          } else {
-            setQuestionSetName("No Question Set");
-          }
-        } else {
-          setQuestionSetName("No Question Set");
+          setAvailableTags(Array.from(allTagsMap.values()));
         }
       } catch (error) {
-        console.error("Error loading metadata:", error);
+        console.error("Error loading tags:", error);
       }
     };
 
-    loadData();
-  }, [question.category_id, question.question_set_id]);
+    loadAllTags();
+  }, [question.tags]);
 
   const handleTagsChange = (tagIds: string[]) => {
     onTagsChange(tagIds);

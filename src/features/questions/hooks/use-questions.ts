@@ -38,6 +38,7 @@ export interface UseQuestionsReturn {
       questionImages?: unknown[];
       tagIds?: string[];
       categoryId?: string;
+      reviewerId?: string;
     }
   ) => Promise<unknown>;
   createQuestion: (data: QuestionInsert) => Promise<QuestionData>;
@@ -280,6 +281,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         categoryId?: string;
         isPatchEdit?: boolean;
         patchEditReason?: string;
+        reviewerId?: string;
       }
     ) => {
       try {
@@ -294,6 +296,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
           categoryId: options?.categoryId,
           isPatchEdit: options?.isPatchEdit,
           patchEditReason: options?.patchEditReason,
+          reviewerId: options?.reviewerId,
         });
 
         if (!response.ok) {

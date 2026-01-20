@@ -640,8 +640,9 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
 
   const handleEdit = useCallback(
     (question: QuestionWithDetails) => {
-      // Navigate to the edit page
-      router.push(`/admin/questions/${question.id}/edit`);
+      // Navigate to the edit page with returnUrl to current page
+      const currentPath = window.location.pathname + window.location.search;
+      router.push(`/admin/questions/${question.id}/edit?returnUrl=${encodeURIComponent(currentPath)}`);
     },
     [router]
   );
@@ -854,6 +855,8 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
               `Successfully ${action.replace("_", " ")}ed ${data.affectedCount} question(s)`
           );
           refetch();
+          // Refresh to update sidebar counts
+          router.refresh();
         }
 
         setSelectedQuestions([]);
@@ -889,6 +892,8 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
 
       toast.success(data.message || `Successfully deleted ${data.affectedCount} question(s)`);
       refetch();
+      // Refresh to update sidebar counts
+      router.refresh();
       setSelectedQuestions([]);
       setShowBulkDeleteConfirm(false);
     } catch (error) {
@@ -902,7 +907,9 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
   const handleCreateSave = useCallback(() => {
     setShowCreateDialog(false);
     refetch();
-  }, [refetch]);
+    // Refresh to update sidebar counts
+    router.refresh();
+  }, [refetch, router]);
 
   const handleFlagSave = useCallback(() => {
     setShowFlagDialog(false);
@@ -1079,6 +1086,8 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
           onSuccess={() => {
             // Refresh the questions list
             refetch();
+            // Refresh to update sidebar counts
+            router.refresh();
           }}
           onDelete={deleteQuestion}
         />

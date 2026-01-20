@@ -32,10 +32,12 @@ export function TagAutocomplete({
   const [showDropdown, setShowDropdown] = useState(false);
   const [filteredTags, setFilteredTags] = useState<Tag[]>([]);
   const [isCreating, setIsCreating] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const optionRefs = useRef<(HTMLButtonElement | null)[]>([]);
 
-  // Filter tags based on search term
+  // Filter tags based on search term and initialize on mount
   useEffect(() => {
     if (!searchTerm.trim()) {
       // Show 10 most recent unselected tags when no search term
@@ -43,6 +45,7 @@ export function TagAutocomplete({
         .filter((tag) => !selectedTags.includes(tag.id))
         .slice(0, 10);
       setFilteredTags(unselected);
+      setHighlightedIndex(0);
       return;
     }
 
@@ -52,7 +55,30 @@ export function TagAutocomplete({
     );
 
     setFilteredTags(filtered);
+    setHighlightedIndex(0);
   }, [searchTerm, allTags, selectedTags]);
+
+  // Show dropdown automatically when clicking in the input if there are tags to show
+  const handleInputFocus = () => {
+    setShowDropdown(true);
+    // Force update filtered tags to show recent ones if search is empty
+    if (!searchTerm.trim()) {
+      const unselected = allTags
+        .filter((tag) => !selectedTags.includes(tag.id))
+        .slice(0, 10);
+      setFilteredTags(unselected);
+    }
+  };
+
+  // Scroll highlighted option into view
+  useEffect(() => {
+    if (highlightedIndex >= 0 && optionRefs.current[highlightedIndex]) {
+      optionRefs.current[highlightedIndex]?.scrollIntoView({
+        block: "nearest",
+        behavior: "smooth",
+      });
+    }
+  }, [highlightedIndex]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -151,19 +177,33 @@ export function TagAutocomplete({
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
+    if (e.key === "ArrowDown") {
+      e.preventDefault();
+      setShowDropdown(true);
+      setHighlightedIndex((prev) =>
+        prev < filteredTags.length - 1 ? prev + 1 : prev
+      );
+    } else if (e.key === "ArrowUp") {
+      e.preventDefault();
+      setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));
+    } else if (e.key === "Enter") {
       e.preventDefault();
 
-      if (filteredTags.length === 1) {
-        // If there's exactly one match, select it
-        handleSelectTag(filteredTags[0]);
-      } else if (filteredTags.length === 0 && searchTerm.trim()) {
+      if (filteredTags.length > 0) {
+        // Select the highlighted tag
+        handleSelectTag(filteredTags[highlightedIndex]);
+      } else if (searchTerm.trim()) {
         // If no matches, create new tag
         handleCreateTag();
       }
     } else if (e.key === "Escape") {
       setShowDropdown(false);
       setSearchTerm("");
+      setHighlightedIndex(0);
+    } else if (e.key === "Tab" && filteredTags.length > 0) {
+      e.preventDefault();
+      // Tab selects the highlighted option
+      handleSelectTag(filteredTags[highlightedIndex]);
     }
   };
 
@@ -197,11 +237,12 @@ export function TagAutocomplete({
             type="text"
             placeholder="Search existing tags or create new..."
             value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            onKeyDown={handleKeyDown}
-            onFocus={() => {
+            onChange={(e) => {
+              setSearchTerm(e.target.value);
               setShowDropdown(true);
             }}
+            onKeyDown={handleKeyDown}
+            onFocus={handleInputFocus}
             className="flex-1"
           />
           <Button
@@ -223,12 +264,18 @@ export function TagAutocomplete({
           <div className="absolute z-[9999] w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-auto">
             {filteredTags.length > 0 ? (
               <div className="py-1">
-                {filteredTags.map((tag) => (
+                {filteredTags.map((tag, index) => (
                   <button
                     key={tag.id}
+                    ref={(el) => (optionRefs.current[index] = el)}
                     type="button"
                     onClick={() => handleSelectTag(tag)}
-                    className="w-full px-3 py-2 text-left hover:bg-accent hover:text-accent-foreground text-sm transition-colors"
+                    onMouseEnter={() => setHighlightedIndex(index)}
+                    className={`w-full px-3 py-2 text-left text-sm transition-colors ${
+                      index === highlightedIndex
+                        ? "bg-accent text-accent-foreground"
+                        : "hover:bg-accent/50"
+                    }`}
                   >
                     {tag.name}
                   </button>
@@ -260,9 +307,7 @@ export function TagAutocomplete({
       </div>
 
       <p className="text-xs text-muted-foreground">
-        {searchTerm.trim()
-          ? "Start typing to search existing tags, or press Enter to create a new tag"
-          : "Showing 10 most recent tags. Start typing to search for more."}
+        Use ↑↓ arrows to navigate, Enter/Tab to select, Escape to cancel
       </p>
     </div>
   );

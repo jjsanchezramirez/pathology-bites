@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { revalidateQuestions } from "@/lib/revalidation";
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
@@ -123,6 +124,9 @@ export async function POST(request: NextRequest) {
         // Don't fail the entire operation for images
       }
     }
+
+    // Revalidate caches to update all admin pages
+    revalidateQuestions({ questionId: question.id, includeDashboard: true });
 
     return NextResponse.json({
       success: true,

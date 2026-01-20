@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useMemo, useState } from "react";
+import { UseFormReturn } from "react-hook-form";
 import {
   Card,
   CardContent,
@@ -8,13 +9,16 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { Brain, FileJson, Loader2 } from "lucide-react";
+import { Brain, FileJson } from "lucide-react";
 
 import { QuestionWithDetails } from "@/features/questions/types/questions";
-import { createClient } from "@/shared/services/client";
+import { EditQuestionFormData } from "@/features/questions/hooks/use-edit-question-form";
 import { ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
-import { EducationalContent } from "@/app/(admin)/admin/create-question/components/content-selector";
 import { getContentFileInfo } from "@/shared/data/content-index";
+import {
+  ContentSelector,
+  EducationalContent,
+} from "@/app/(admin)/admin/create-question/components/content-selector";
 
 interface SourceDetails {
   primary_model?: string;
@@ -23,89 +27,82 @@ interface SourceDetails {
 
 interface SourceTabProps {
   question: QuestionWithDetails;
+  form?: UseFormReturn<EditQuestionFormData>;
+  onUnsavedChanges?: () => void;
+  onEducationalContextChange?: (context: EducationalContent | null) => void;
 }
 
-export function SourceTab({ question }: SourceTabProps) {
-  const [aiModelName, setAiModelName] = useState<string>("Unknown");
+export function SourceTab({ question, form, onUnsavedChanges, onEducationalContextChange }: SourceTabProps) {
+  // State for content selector
   const [selectedContent, setSelectedContent] = useState<EducationalContent | null>(null);
-  const [loadingContent, setLoadingContent] = useState(false);
 
-  // Function to load educational content using local index
-  const loadEducationalContent = useCallback(
-    (_category: string, lessonKey: string, topicKey: string) => {
-      setLoadingContent(true);
+  // Check if lesson/topic need to be selected
+  const needsLessonTopic = !question.lesson || !question.topic;
 
-      try {
-        // Use local index for instant lookup - no R2 fetches needed!
-        const fileInfo = getContentFileInfo(lessonKey, topicKey);
+  // Handle content selection
+  const handleContentSelect = (content: EducationalContent) => {
+    setSelectedContent(content);
+    if (form && onUnsavedChanges) {
+      form.setValue("lesson", content.lesson);
+      form.setValue("topic", content.topic);
+      onUnsavedChanges();
+    }
+    // Pass the educational context up to the parent
+    if (onEducationalContextChange) {
+      onEducationalContextChange(content);
+    }
+  };
 
-        if (fileInfo) {
-          setSelectedContent({
-            category: fileInfo.category,
-            subject: fileInfo.subject,
-            lesson: lessonKey,
-            topic: topicKey,
-            content: null, // Content itself is not needed for display
-          });
-        }
-      } catch (error) {
-        console.error("Error loading educational content:", error);
-      } finally {
-        setLoadingContent(false);
-      }
-    },
-    []
-  );
+  // Initialize AI model name synchronously using useMemo for instant display
+  const aiModelName = useMemo<string>(() => {
+    // Use question_set data if available (it should be preloaded from the API)
+    const questionSet = question.question_set || question.set;
 
-  // Load AI model name and educational content from question
-  useEffect(() => {
-    const loadData = async () => {
-      const supabase = createClient();
+    if (questionSet) {
+      // Check if this is an AI-generated question set
+      if (questionSet.source_type === "ai_generated") {
+        const sourceDetails = questionSet.source_details as SourceDetails;
+        const modelId = sourceDetails?.primary_model || sourceDetails?.model;
 
-      try {
-        // Load AI model from question set
-        if (question.question_set_id) {
-          const { data: questionSet } = await supabase
-            .from("question_sets")
-            .select("name, source_type, source_details")
-            .eq("id", question.question_set_id)
-            .single();
-
-          if (questionSet) {
-            // Check if this is an AI-generated question set
-            if (questionSet.source_type === "ai_generated") {
-              const sourceDetails = questionSet.source_details as SourceDetails;
-              const modelId = sourceDetails?.primary_model || sourceDetails?.model;
-
-              if (modelId) {
-                // Find the model name from ACTIVE_AI_MODELS
-                const model = ACTIVE_AI_MODELS.find((m) => m.id === modelId);
-                setAiModelName(model ? model.name : String(modelId));
-              } else {
-                // Fallback to question set name
-                setAiModelName(questionSet.name);
-              }
-            } else {
-              // Not an AI-generated question set
-              setAiModelName(`${questionSet.name} (${questionSet.source_type})`);
-            }
-          }
+        if (modelId) {
+          // Find the model name from ACTIVE_AI_MODELS
+          const model = ACTIVE_AI_MODELS.find((m) => m.id === modelId);
+          return model ? model.name : String(modelId);
         } else {
-          // No question set associated
-          setAiModelName("No AI Model (manually created)");
+          // Fallback to question set name
+          return questionSet.name;
         }
-
-        // Load educational content if lesson and topic are present
-        if (question.lesson && question.topic) {
-          loadEducationalContent("", question.lesson, question.topic);
-        }
-      } catch (error) {
-        console.error("Error loading source data:", error);
+      } else {
+        // Not an AI-generated question set
+        return `${questionSet.name} (${questionSet.source_type})`;
       }
-    };
+    } else {
+      // No question set associated
+      return "No AI Model (manually created)";
+    }
+  }, [question.question_set, question.set]);
 
-    loadData();
-  }, [question.question_set_id, question.lesson, question.topic, loadEducationalContent]);
+  // Get subject name from category (Category = Subject in the database)
+  const subjectName = useMemo<string | null>(() => {
+    // Check for category object first (new API format)
+    if (question.category && typeof question.category === 'object' && 'name' in question.category) {
+      return question.category.name;
+    }
+    // Fallback for categories array (legacy format)
+    if (question.categories && question.categories.length > 0) {
+      return question.categories[0].name;
+    }
+    // Try to get from content index as last resort
+    if (question.lesson && question.topic) {
+      try {
+        const fileInfo = getContentFileInfo(question.lesson, question.topic);
+        return fileInfo?.subject || null;
+      } catch (error) {
+        console.error("Error loading subject from content index:", error);
+      }
+    }
+    return null;
+  }, [question.category, question.categories, question.lesson, question.topic]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">
@@ -142,50 +139,34 @@ export function SourceTab({ question }: SourceTabProps) {
           </CardDescription>
         </CardHeader>
         <CardContent>
-          {loadingContent ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-              <span className="ml-2 text-sm text-muted-foreground">
-                Loading educational content...
-              </span>
+          {needsLessonTopic ? (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">
+                Please select a lesson and topic for this question
+              </p>
+              <ContentSelector
+                onContentSelect={handleContentSelect}
+                selectedContent={selectedContent}
+              />
             </div>
           ) : (
             <div className="space-y-3">
-              {selectedContent ? (
-                <>
-                  <div className="p-3 bg-muted/50 rounded-lg border border-muted">
-                    <p className="text-sm font-medium text-muted-foreground">Subject</p>
-                    <p className="text-base font-semibold mt-1">{selectedContent.subject}</p>
-                  </div>
-                  <div className="p-3 bg-muted/50 rounded-lg border border-muted">
-                    <p className="text-sm font-medium text-muted-foreground">Lesson</p>
-                    <p className="text-base font-semibold mt-1">{selectedContent.lesson}</p>
-                  </div>
-                  <div className="p-3 bg-muted/50 rounded-lg border border-muted">
-                    <p className="text-sm font-medium text-muted-foreground">Topic</p>
-                    <p className="text-base font-semibold mt-1">{selectedContent.topic}</p>
-                  </div>
-                </>
-              ) : question.lesson || question.topic ? (
-                <>
-                  {question.lesson && (
-                    <div className="p-3 bg-muted/50 rounded-lg border border-muted">
-                      <p className="text-sm font-medium text-muted-foreground">Lesson</p>
-                      <p className="text-base font-semibold mt-1">{question.lesson}</p>
-                    </div>
-                  )}
-                  {question.topic && (
-                    <div className="p-3 bg-muted/50 rounded-lg border border-muted">
-                      <p className="text-sm font-medium text-muted-foreground">Topic</p>
-                      <p className="text-base font-semibold mt-1">{question.topic}</p>
-                    </div>
-                  )}
-                </>
-              ) : (
-                <div className="p-3 bg-muted/50 rounded-lg border border-muted text-center">
-                  <p className="text-sm text-muted-foreground">
-                    No lesson or topic information available
-                  </p>
+              {subjectName && (
+                <div className="p-3 bg-muted/50 rounded-lg border border-muted">
+                  <p className="text-sm font-medium text-muted-foreground">Subject</p>
+                  <p className="text-base font-semibold mt-1">{subjectName}</p>
+                </div>
+              )}
+              {question.lesson && (
+                <div className="p-3 bg-muted/50 rounded-lg border border-muted">
+                  <p className="text-sm font-medium text-muted-foreground">Lesson</p>
+                  <p className="text-base font-semibold mt-1">{question.lesson}</p>
+                </div>
+              )}
+              {question.topic && (
+                <div className="p-3 bg-muted/50 rounded-lg border border-muted">
+                  <p className="text-sm font-medium text-muted-foreground">Topic</p>
+                  <p className="text-base font-semibold mt-1">{question.topic}</p>
                 </div>
               )}
             </div>

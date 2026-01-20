@@ -1,8 +1,9 @@
 // src/shared/hooks/use-pending-inquiries-count.ts
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/shared/services/client";
+import { debounce } from "@/lib/utils";
 
 export function usePendingInquiriesCount() {
   const [count, setCount] = useState(0);
@@ -31,7 +32,21 @@ export function usePendingInquiriesCount() {
     }
   }, [supabase]);
 
+  // Keep a ref to the latest fetchPendingCount
+  const fetchPendingCountRef = useRef(fetchPendingCount);
   useEffect(() => {
+    fetchPendingCountRef.current = fetchPendingCount;
+  }, [fetchPendingCount]);
+
+  // Create a stable debounced function that calls the latest fetchPendingCount via ref
+  const debouncedFetch = useRef(
+    debounce(() => {
+      fetchPendingCountRef.current();
+    }, 500)
+  ).current;
+
+  useEffect(() => {
+    // Fetch counts immediately on mount
     fetchPendingCount();
 
     // Subscribe to real-time updates on all inquiry changes
@@ -46,8 +61,8 @@ export function usePendingInquiriesCount() {
           table: "inquiries",
         },
         () => {
-          // Refetch count when any inquiry changes
-          fetchPendingCount();
+          // Use debounced version to prevent excessive refetches
+          debouncedFetch();
         }
       )
       .subscribe();
@@ -55,7 +70,7 @@ export function usePendingInquiriesCount() {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [fetchPendingCount, supabase]);
+  }, [fetchPendingCount, supabase, debouncedFetch]);
 
   return { count, loading };
 }

@@ -3,6 +3,7 @@ import { createClient } from "@/shared/services/client";
 import { toast } from "@/shared/utils/toast";
 import { FileProgress, ImageCategory } from "@/features/images/types/images";
 import { compressImage } from "@/features/images/services/image-upload";
+import { invalidateImageCache } from "@/features/images/services/images";
 
 interface UseImageUploadOptions {
   onUploadComplete?: () => void;
@@ -134,6 +135,9 @@ export function useImageUpload({
             continue; // Continue with next file
           }
         }
+
+        // Invalidate client-side cache to force refetch of images
+        invalidateImageCache();
 
         onUploadComplete?.();
       } catch (error) {

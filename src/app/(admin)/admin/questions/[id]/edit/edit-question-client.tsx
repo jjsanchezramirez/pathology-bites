@@ -9,6 +9,8 @@ import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Form } from "@/shared/components/ui/form";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { Label } from "@/shared/components/ui/label";
+import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 
 import { QuestionWithDetails } from "@/features/questions/types/questions";
 import { useEditQuestionForm } from "@/features/questions/hooks/use-edit-question-form";
@@ -19,6 +21,23 @@ import { SourceTab } from "./source-tab";
 import { ContentTab } from "./content-tab";
 import { ImagesTab } from "./images-tab";
 import { MetadataTab } from "./metadata-tab";
+import { SaveConfirmationDialog } from "./save-confirmation-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import { UserCheck } from "lucide-react";
 
 interface EditQuestionClientProps {
   questionId: string;
@@ -30,7 +49,18 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState("source");
+  const [showSaveConfirmDialog, setShowSaveConfirmDialog] = useState(false);
+  const [showReviewerDialog, setShowReviewerDialog] = useState(false);
+  const [pendingChangeSummary, setPendingChangeSummary] = useState("");
+  const [isPatchEditDisabled, setIsPatchEditDisabled] = useState(false);
+  const [educationalContext, setEducationalContext] = useState<any>(null);
+  const [assignedReviewerId, setAssignedReviewerId] = useState<string | null>(null);
+  const [selectedReviewerId, setSelectedReviewerId] = useState<string>("");
+  const [reviewers, setReviewers] = useState<any[]>([]);
+  const [loadingReviewers, setLoadingReviewers] = useState(false);
   const hasAutoAdvanced = useRef(false);
+  const originalCorrectAnswerRef = useRef<string | null>(null);
+  const originalImagesRef = useRef<any[]>([]);
 
   // Get return URL from query params, default to /admin/my-questions
   const searchParams = new URLSearchParams(
@@ -57,6 +87,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
         const data = await response.json();
         setQuestion(data.question);
+        setAssignedReviewerId(data.question.reviewer_id || null);
       } catch (err) {
         console.error("Error fetching question:", err);
         const errorMessage = err instanceof Error ? err.message : "Failed to load question";
@@ -90,7 +121,52 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
     }
   }, [question, activeTab]);
 
+  // Load educational context when question has lesson/topic
+  useEffect(() => {
+    const loadEducationalContext = async () => {
+      if (!question?.lesson || !question?.topic) {
+        return;
+      }
+
+      try {
+        // Import the loadContentFromR2 function
+        const { loadContentFromR2, CONTENT_FILES } = await import(
+          "@/app/(admin)/admin/create-question/components/content-selector"
+        );
+
+        // Find the appropriate content file based on the question's subject
+        const subjectName = question.category?.name || question.categories?.[0]?.name;
+        const contentFile = CONTENT_FILES.find(file => file.subject === subjectName);
+
+        if (contentFile) {
+          const contextData = await loadContentFromR2(contentFile.filename);
+          if (contextData) {
+            // Extract the specific topic content
+            const lesson = contextData.subject.lessons[question.lesson];
+            const topic = lesson?.topics[question.topic];
+
+            if (topic?.content) {
+              setEducationalContext({
+                category: contextData.category,
+                subject: contextData.subject.name,
+                lesson: question.lesson,
+                topic: question.topic,
+                content: topic.content,
+              });
+            }
+          }
+        }
+      } catch (error) {
+        console.error("Error loading educational context:", error);
+      }
+    };
+
+    loadEducationalContext();
+  }, [question]);
+
   // Use the edit question form hook
+  const skipNavigationRef = useRef(false);
+
   const {
     form,
     isSubmitting,
@@ -105,6 +181,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
     setQuestionImages,
     setIsPatchEdit,
     setPatchEditReason,
+    setReviewerId,
     handleSubmit,
     handleUnsavedChanges,
   } = useEditQuestionForm({
@@ -112,15 +189,81 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
     open: !!question,
     onSave: () => {
       toast.success("Question updated successfully!");
-      // Use replace instead of push to avoid adding to history
-      // Then refresh to force data reload
-      router.replace(returnUrl);
-      router.refresh();
+
+      // Dispatch event to update sidebar immediately
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('questionStatusChanged'));
+      }
+
+      // If we just assigned a reviewer, wait for sidebar to update before navigating
+      if (skipNavigationRef.current) {
+        skipNavigationRef.current = false;
+        // Refresh and wait before navigating
+        router.refresh();
+        setTimeout(() => {
+          router.replace(returnUrl);
+        }, 700);
+      } else {
+        // Normal flow - navigate immediately
+        router.replace(returnUrl);
+        router.refresh();
+      }
     },
     onClose: () => {
       router.push(returnUrl);
     },
   });
+
+  // Store original correct answer and images when question loads
+  useEffect(() => {
+    if (question && originalCorrectAnswerRef.current === null) {
+      // Find the correct answer ID (only set once on initial load)
+      const correctOption = question.question_options?.find((opt: any) => opt.is_correct);
+      originalCorrectAnswerRef.current = correctOption?.id || null;
+    }
+  }, [question]);
+
+  useEffect(() => {
+    if (questionImages.length > 0 && originalImagesRef.current.length === 0) {
+      // Store original images (only set once on initial load)
+      originalImagesRef.current = questionImages;
+    }
+  }, [questionImages]);
+
+  // Check if correct answer or images changed - disable patch edit if so
+  useEffect(() => {
+    if (!question || originalCorrectAnswerRef.current === null) return;
+
+    // Check if correct answer changed
+    const currentCorrectOption = answerOptions?.find((opt) => opt.is_correct);
+    const correctAnswerChanged =
+      currentCorrectOption?.id !== originalCorrectAnswerRef.current;
+
+    // Check if images changed (only if we have original images to compare)
+    let imagesChanged = false;
+    if (originalImagesRef.current.length > 0 || questionImages.length > 0) {
+      imagesChanged =
+        questionImages.length !== originalImagesRef.current.length ||
+        questionImages.some(
+          (img, idx) =>
+            !originalImagesRef.current[idx] ||
+            img.image_id !== originalImagesRef.current[idx].image_id
+        );
+    }
+
+    const shouldDisablePatch = correctAnswerChanged || imagesChanged;
+
+    // Only auto-switch if currently on patch AND it should be disabled
+    const currentUpdateType = form.getValues("updateType");
+    if (shouldDisablePatch && currentUpdateType === "patch") {
+      // Automatically switch to minor edit
+      setIsPatchEdit(false);
+      form.setValue("updateType", "minor", { shouldDirty: true });
+    }
+
+    setIsPatchEditDisabled(shouldDisablePatch);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [answerOptions, questionImages, question]);
 
   // Handle cancel
   const handleCancel = () => {
@@ -130,6 +273,101 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       }
     } else {
       router.push(returnUrl);
+    }
+  };
+
+  // Handle save button click - show confirmation dialog for published questions
+  const handleSaveClick = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // For published questions, show the confirmation dialog
+    if (question?.status === "published") {
+      setShowSaveConfirmDialog(true);
+    } else {
+      // For non-published questions, submit directly
+      form.handleSubmit(handleSubmit)();
+    }
+  };
+
+  // Handle save confirmation from dialog
+  const handleSaveConfirmation = async (changeSummary: string) => {
+    setPendingChangeSummary(changeSummary);
+
+    // Set the change summary in the form if provided
+    if (changeSummary.trim()) {
+      if (isPatchEdit) {
+        setPatchEditReason(changeSummary);
+      } else {
+        form.setValue("changeSummary", changeSummary);
+      }
+    }
+
+    setShowSaveConfirmDialog(false);
+
+    // For minor/major edits on published questions, check if reviewer is assigned
+    const updateType = form.getValues("updateType");
+    if (
+      question?.status === "published" &&
+      !isPatchEdit &&
+      ["minor", "major"].includes(updateType || "") &&
+      !assignedReviewerId
+    ) {
+      // Need to assign a reviewer first
+      setShowReviewerDialog(true);
+      return;
+    }
+
+    // Submit the form
+    try {
+      await form.handleSubmit(handleSubmit)();
+    } catch (error) {
+      // Error is already displayed in toast by useEditQuestionForm
+      console.error("Save confirmation error:", error);
+    }
+  };
+
+  // Fetch reviewers when dialog opens
+  useEffect(() => {
+    if (showReviewerDialog) {
+      const fetchReviewers = async () => {
+        setLoadingReviewers(true);
+        try {
+          const response = await fetch("/api/admin/reviewers");
+          if (!response.ok) throw new Error("Failed to fetch reviewers");
+          const data = await response.json();
+          setReviewers(data.reviewers || []);
+        } catch (error) {
+          console.error("Error fetching reviewers:", error);
+          toast.error("Failed to load reviewers");
+        } finally {
+          setLoadingReviewers(false);
+        }
+      };
+      fetchReviewers();
+    }
+  }, [showReviewerDialog]);
+
+  // Handle reviewer assignment - just store the ID, don't call API yet
+  const handleReviewerSelection = async () => {
+    if (!selectedReviewerId) {
+      toast.error("Please select a reviewer");
+      return;
+    }
+
+    setShowReviewerDialog(false);
+    setAssignedReviewerId(selectedReviewerId);
+    setReviewerId(selectedReviewerId);
+
+    // Set flag to delay navigation and allow sidebar to update
+    skipNavigationRef.current = true;
+
+    // Now proceed with saving the question with the assigned reviewer
+    // Pass reviewer ID directly to avoid async state update issues
+    try {
+      await form.handleSubmit((data) => handleSubmit(data, selectedReviewerId))();
+    } catch (error) {
+      console.error("Save after reviewer assignment error:", error);
+      skipNavigationRef.current = false; // Reset flag on error
     }
   };
 
@@ -227,13 +465,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
   // Get context for banner
   const getContextBanner = () => {
-    if (question.status === "rejected" && reviewerFeedback) {
-      return {
-        variant: "destructive" as const,
-        title: "Revising Rejected Question",
-        description: "This question was rejected by a reviewer. Address the feedback below before resubmitting.",
-      };
-    }
+    // Don't show context banner for rejected questions - feedback is shown separately
     if (question.status === "draft") {
       return {
         variant: "default" as const,
@@ -277,7 +509,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
       {/* Reviewer Feedback Alert */}
       {reviewerFeedback && (
-        <Alert variant="destructive">
+        <Alert variant="destructive" className="bg-red-50 dark:bg-red-950/20">
           <AlertCircle className="h-4 w-4" />
           <AlertDescription>
             <div className="space-y-1">
@@ -302,7 +534,14 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
           {/* Tab Content */}
           <div>
-            {activeTab === "source" && <SourceTab question={question} />}
+            {activeTab === "source" && (
+              <SourceTab
+                question={question}
+                form={form}
+                onUnsavedChanges={handleUnsavedChanges}
+                onEducationalContextChange={setEducationalContext}
+              />
+            )}
             {activeTab === "content" && (
               <ContentTab
                 form={form}
@@ -310,6 +549,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                 onUnsavedChanges={handleUnsavedChanges}
                 answerOptions={answerOptions}
                 onAnswerOptionsChange={setAnswerOptions}
+                educationalContext={educationalContext}
               />
             )}
             {activeTab === "images" && (
@@ -331,191 +571,183 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
             )}
           </div>
 
-          {/* Edit Type Selection for Published Questions */}
+
+          {/* Edit Type Card for Published Questions */}
           {question.status === "published" && (
-            <Card className="p-6 bg-blue-50 dark:bg-blue-950/20 border-blue-200 dark:border-blue-800">
-              <div className="space-y-4">
+            <Card className="p-4">
+              <div className="space-y-3">
                 <div>
-                  <h3 className="font-semibold text-blue-900 dark:text-blue-100">Edit Type</h3>
-                  <p className="text-sm text-blue-700 dark:text-blue-300 mt-1">
-                    Select the type of edit you're making to this published question.
+                  <h3 className="text-sm font-semibold">Edit Type</h3>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    Select the type of changes you're making to this published question
                   </p>
                 </div>
-
-                <div className="space-y-2">
-                  {/* Patch Edit Option */}
-                  <div
-                    className="flex items-start gap-3 p-3 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100/50 dark:hover:bg-blue-900/30 cursor-pointer transition-colors"
-                    onClick={() => {
-                      setIsPatchEdit(true);
-                      form.setValue("updateType", "patch");
-                      handleUnsavedChanges();
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      id="editType-patch"
-                      name="editType"
-                      checked={isPatchEdit}
-                      onChange={() => {
-                        setIsPatchEdit(true);
-                        form.setValue("updateType", "patch");
-                        handleUnsavedChanges();
-                      }}
-                      className="mt-1"
+                <RadioGroup
+                  value={form.watch("updateType") || "patch"}
+                  onValueChange={(value: "patch" | "minor" | "major") => {
+                    if (value === "patch" && isPatchEditDisabled) {
+                      return; // Don't allow patch if disabled
+                    }
+                    setIsPatchEdit(value === "patch");
+                    form.setValue("updateType", value, { shouldDirty: true });
+                    handleUnsavedChanges();
+                  }}
+                  className="flex gap-4"
+                >
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem
+                      value="patch"
+                      id="patch"
+                      disabled={isPatchEditDisabled}
                     />
-                    <div className="flex-1">
-                      <label
-                        htmlFor="editType-patch"
-                        className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer"
-                      >
-                        Patch Edit (No Review Needed)
-                      </label>
-                      <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                        Typos, formatting, metadata only. Version: 1.0.x
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Minor Edit Option */}
-                  <div
-                    className="flex items-start gap-3 p-3 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100/50 dark:hover:bg-blue-900/30 cursor-pointer transition-colors"
-                    onClick={() => {
-                      setIsPatchEdit(false);
-                      form.setValue("updateType", "minor");
-                      handleUnsavedChanges();
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      id="editType-minor"
-                      name="editType"
-                      checked={!isPatchEdit && form.getValues("updateType") === "minor"}
-                      onChange={() => {
-                        setIsPatchEdit(false);
-                        form.setValue("updateType", "minor");
-                        handleUnsavedChanges();
-                      }}
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <label
-                        htmlFor="editType-minor"
-                        className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer"
-                      >
-                        Minor Edit (Requires Review)
-                      </label>
-                      <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                        Content changes (stem, options, explanations, teaching point). Version:
-                        1.x.0
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* Major Edit Option */}
-                  <div
-                    className="flex items-start gap-3 p-3 border border-blue-200 dark:border-blue-800 rounded-lg hover:bg-blue-100/50 dark:hover:bg-blue-900/30 cursor-pointer transition-colors"
-                    onClick={() => {
-                      setIsPatchEdit(false);
-                      form.setValue("updateType", "major");
-                      handleUnsavedChanges();
-                    }}
-                  >
-                    <input
-                      type="radio"
-                      id="editType-major"
-                      name="editType"
-                      checked={!isPatchEdit && form.getValues("updateType") === "major"}
-                      onChange={() => {
-                        setIsPatchEdit(false);
-                        form.setValue("updateType", "major");
-                        handleUnsavedChanges();
-                      }}
-                      className="mt-1"
-                    />
-                    <div className="flex-1">
-                      <label
-                        htmlFor="editType-major"
-                        className="text-sm font-medium text-blue-900 dark:text-blue-100 cursor-pointer"
-                      >
-                        Major Edit (Requires Review)
-                      </label>
-                      <p className="text-xs text-blue-700 dark:text-blue-300 mt-1">
-                        Question overhaul or answer change. Version: x.0.0
-                      </p>
-                    </div>
-                  </div>
-                </div>
-
-                {isPatchEdit && (
-                  <div>
-                    <label
-                      htmlFor="patchEditReason"
-                      className="text-xs font-medium text-blue-900 dark:text-blue-100"
+                    <Label
+                      htmlFor="patch"
+                      className={`font-normal cursor-pointer ${isPatchEditDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
-                      Reason for patch edit (optional)
-                    </label>
-                    <textarea
-                      id="patchEditReason"
-                      value={patchEditReason}
-                      onChange={(e) => {
-                        setPatchEditReason(e.target.value);
-                        handleUnsavedChanges();
-                      }}
-                      placeholder="e.g., Fixed typo in question stem"
-                      className="mt-1 w-full text-xs p-2 border border-blue-200 dark:border-blue-800 rounded bg-white dark:bg-blue-950/50 text-foreground"
-                      rows={2}
-                    />
+                      Patch <span className="text-xs text-muted-foreground">(typos, formatting)</span>
+                    </Label>
                   </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="minor" id="minor" />
+                    <Label htmlFor="minor" className="font-normal cursor-pointer">
+                      Minor <span className="text-xs text-muted-foreground">(content changes)</span>
+                    </Label>
+                  </div>
+                  <div className="flex items-center space-x-2">
+                    <RadioGroupItem value="major" id="major" />
+                    <Label htmlFor="major" className="font-normal cursor-pointer">
+                      Major <span className="text-xs text-muted-foreground">(answer change, overhaul)</span>
+                    </Label>
+                  </div>
+                </RadioGroup>
+                {isPatchEditDisabled && (
+                  <p className="text-xs text-yellow-600 dark:text-yellow-500 bg-yellow-50 dark:bg-yellow-950/20 p-2 rounded">
+                    ⚠️ Patch edit is disabled because you've changed the correct answer or modified images. These changes require review.
+                  </p>
                 )}
               </div>
             </Card>
           )}
 
-          {/* Action Buttons */}
+          {/* Footer with Action Buttons */}
           <div className="flex justify-between items-center pt-4 border-t">
-            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Cancel
-            </Button>
-
-            <div className="flex gap-3">
-              <Button type="submit" variant="outline" disabled={isSubmitting || !hasUnsavedChanges}>
-                {isSubmitting ? (
-                  <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                    Saving...
-                  </>
-                ) : hasUnsavedChanges ? (
-                  "Save Changes"
-                ) : (
-                  "No Changes"
-                )}
+              <Button
+                type="button"
+                variant="outline"
+                onClick={handleCancel}
+                disabled={isSubmitting}
+              >
+                <ArrowLeft className="h-4 w-4 mr-2" />
+                Cancel
               </Button>
 
-              {question.status !== "published" && question.status !== "pending_review" && (
+              <div className="flex gap-3">
+                {question.status !== "published" && question.status !== "pending_review" && (
+                  <Button
+                    type="button"
+                    onClick={handleSaveAndSubmit}
+                    disabled={isSubmitting || !hasUnsavedChanges}
+                    variant="outline"
+                  >
+                    <Send className="h-4 w-4 mr-2" />
+                    Save & Submit for Review
+                  </Button>
+                )}
+
                 <Button
-                  type="button"
-                  onClick={handleSaveAndSubmit}
+                  type="submit"
+                  onClick={handleSaveClick}
                   disabled={isSubmitting || !hasUnsavedChanges}
+                  className="bg-primary hover:bg-primary/90"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving & Submitting...
+                      Saving...
                     </>
+                  ) : !hasUnsavedChanges ? (
+                    "No Changes"
+                  ) : question.status === "published" ? (
+                    "Publish Changes"
                   ) : (
-                    <>
-                      <Send className="mr-2 h-4 w-4" />
-                      Save & Submit for Review
-                    </>
+                    "Save Changes"
                   )}
                 </Button>
-              )}
-            </div>
+              </div>
           </div>
         </form>
       </Form>
+
+      {/* Save Confirmation Dialog */}
+      {question?.status === "published" && (
+        <SaveConfirmationDialog
+          open={showSaveConfirmDialog}
+          onOpenChange={setShowSaveConfirmDialog}
+          editType={
+            isPatchEdit
+              ? "patch"
+              : (form.getValues("updateType") as "minor" | "major") || "minor"
+          }
+          onConfirm={handleSaveConfirmation}
+          isSubmitting={isSubmitting}
+        />
+      )}
+
+      {/* Reviewer Assignment Dialog */}
+      <Dialog open={showReviewerDialog} onOpenChange={setShowReviewerDialog}>
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle>Assign Reviewer</DialogTitle>
+            <DialogDescription>
+              This {form.getValues("updateType")} edit requires review. Please select a reviewer to evaluate these changes.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="reviewer">Select Reviewer</Label>
+              {loadingReviewers ? (
+                <div className="flex items-center justify-center py-8">
+                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                </div>
+              ) : (
+                <Select value={selectedReviewerId} onValueChange={setSelectedReviewerId}>
+                  <SelectTrigger id="reviewer">
+                    <SelectValue placeholder="Select a reviewer..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {reviewers.map((reviewer) => (
+                      <SelectItem key={reviewer.id} value={reviewer.id}>
+                        <div className="flex items-center justify-between w-full">
+                          <div className="flex items-center gap-2">
+                            <UserCheck className="h-4 w-4" />
+                            <span>{reviewer.full_name}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground ml-4">
+                            {reviewer.pending_count} pending
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+              {reviewers.length === 0 && !loadingReviewers && (
+                <p className="text-sm text-muted-foreground">No reviewers available</p>
+              )}
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowReviewerDialog(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleReviewerSelection} disabled={!selectedReviewerId || loadingReviewers}>
+              Assign & Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { useRouter } from "next/navigation";
 import { createClient } from "@/shared/services/client";
 import { useAuth } from "@/shared/hooks/use-auth";
 import {
@@ -133,6 +134,7 @@ interface ReviewQuestionData {
 }
 
 export function ReviewQueue() {
+  const router = useRouter();
   const [questions, setQuestions] = useState<ReviewQuestionData[]>([]);
   const [filteredQuestions, setFilteredQuestions] = useState<ReviewQuestionData[]>([]);
   const [loading, setLoading] = useState(true);
@@ -252,9 +254,58 @@ export function ReviewQueue() {
     }
   }, [searchTerm, questions]);
 
-  const handlePreview = (question: ReviewQuestionData) => {
-    setSelectedQuestion(question);
-    setPreviewOpen(true);
+  const handlePreview = async (question: ReviewQuestionData) => {
+    try {
+      // Fetch complete question data with options and images for preview (always fresh)
+      const supabase = createClient();
+      const { data: fullQuestion, error } = await supabase
+        .from("questions")
+        .select(
+          `
+          *,
+          question_options (
+            id,
+            text,
+            is_correct,
+            explanation,
+            order_index
+          ),
+          question_images (
+            image_id,
+            question_section,
+            order_index,
+            image:images (
+              id,
+              url,
+              alt_text,
+              description
+            )
+          ),
+          categories (
+            id,
+            name
+          ),
+          question_set:question_sets (
+            id,
+            name
+          )
+        `
+        )
+        .eq("id", question.id)
+        .single();
+
+      if (error || !fullQuestion) {
+        console.error("Error fetching question for preview:", error);
+        toast.error("Failed to load question preview");
+        return;
+      }
+
+      setSelectedQuestion(fullQuestion as unknown as ReviewQuestionData);
+      setPreviewOpen(true);
+    } catch (error) {
+      console.error("Error fetching question for preview:", error);
+      toast.error("Failed to load question preview");
+    }
   };
 
   const handleReviewAction = (question: ReviewQuestionData, action: "approve" | "reject") => {
@@ -262,10 +313,19 @@ export function ReviewQueue() {
     setReviewAction(action);
   };
 
-  const handleReviewComplete = () => {
+  const handleReviewComplete = async () => {
     setReviewAction(null);
     setSelectedQuestion(null);
-    fetchReviewQueue(); // Refresh the queue
+    await fetchReviewQueue(); // Refresh the queue and wait for it to complete
+
+    // Force a hard refresh of the entire page to update sidebar and all data
+    // This is more reliable than relying on real-time subscriptions
+    router.refresh();
+
+    // Also dispatch a custom event that the sidebar can listen to
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('questionStatusChanged'));
+    }
   };
 
   const getAgeIndicator = (createdAt: string) => {
@@ -375,7 +435,15 @@ export function ReviewQueue() {
             className="pl-8"
           />
         </div>
-        <Button variant="outline" size="sm" onClick={fetchReviewQueue} disabled={loading}>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => {
+            fetchReviewQueue();
+            router.refresh();
+          }}
+          disabled={loading}
+        >
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           Refresh
         </Button>

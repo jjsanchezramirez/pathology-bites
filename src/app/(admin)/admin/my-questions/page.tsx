@@ -289,6 +289,14 @@ export default function MyQuestionsPage() {
     setSelectedQuestion(null);
     setSubmitDialogOpen(false);
     setSelectedQuestions(new Set());
+
+    // Dispatch event to update sidebar immediately
+    if (typeof window !== 'undefined') {
+      window.dispatchEvent(new CustomEvent('questionStatusChanged'));
+    }
+
+    // Force refresh to update sidebar counts
+    router.refresh();
   };
 
   const handleSelectQuestion = (questionId: string, checked: boolean) => {
@@ -349,6 +357,14 @@ export default function MyQuestionsPage() {
 
       setSelectedQuestions(new Set());
       await fetchMyQuestions();
+
+      // Dispatch event to update sidebar immediately
+      if (typeof window !== 'undefined') {
+        window.dispatchEvent(new CustomEvent('questionStatusChanged'));
+      }
+
+      // Force refresh to update sidebar counts
+      router.refresh();
     } catch (error) {
       console.error("Error in bulk submission:", error);
       toast.error("Failed to submit questions");

@@ -4,6 +4,7 @@ import { uploadToR2, generateImageStoragePath, deleteFromR2 } from "@/shared/ser
 import { getImageDimensionsFromFile } from "@/shared/utils/server-image-utils";
 import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 import { parseImageFilename } from "@/features/images/services/filename-parser";
+import { revalidateImages } from "@/lib/revalidation";
 
 export async function POST(request: NextRequest) {
   let uploadedStoragePath: string | null = null;
@@ -204,6 +205,9 @@ export async function POST(request: NextRequest) {
 
     // Success! Clear the tracking variable
     uploadedStoragePath = null;
+
+    // Revalidate caches to update all admin pages
+    revalidateImages({ imageId: imageData.id, includeDashboard: true });
 
     return NextResponse.json({
       success: true,

@@ -111,6 +111,10 @@ export async function deleteImage(imagePath: string | null, imageId: string) {
     try {
       const result = await response.json();
       console.log("✅ Delete successful:", result);
+
+      // Invalidate cache after successful delete
+      invalidateImageCache();
+
       return result;
     } catch (parseError) {
       console.error("❌ Failed to parse success response as JSON:", parseError);
@@ -514,6 +518,11 @@ export async function bulkDeleteImages(
     }
 
     const result = await response.json();
+
+    // Invalidate cache after successful bulk delete
+    if (result.success) {
+      invalidateImageCache();
+    }
 
     return {
       success: result.success,

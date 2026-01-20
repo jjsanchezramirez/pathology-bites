@@ -2,6 +2,7 @@ import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
 import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
+import { revalidateQuestions } from "@/lib/revalidation";
 
 /**
  * POST /api/questions/:id/reject
@@ -119,6 +120,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       console.error("Error sending rejection notification:", error);
       // Don't fail the request if notification fails
     }
+
+    // Revalidate caches to update all admin pages
+    revalidateQuestions({ questionId, includeDashboard: true });
 
     return NextResponse.json({
       success: true,

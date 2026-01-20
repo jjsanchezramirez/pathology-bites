@@ -1,6 +1,7 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
+import { revalidateQuestions } from "@/lib/revalidation";
 
 /**
  * POST /api/questions/:id/reassign
@@ -107,6 +108,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         { status: 500 }
       );
     }
+
+    // Revalidate caches to update all admin pages
+    revalidateQuestions({ questionId, includeDashboard: true });
 
     return NextResponse.json({
       success: true,
