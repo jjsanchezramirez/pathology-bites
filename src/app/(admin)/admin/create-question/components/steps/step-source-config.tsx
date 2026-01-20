@@ -136,45 +136,16 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
   const [isGenerating, setIsGenerating] = useState(false);
   const [additionalContent, setAdditionalContent] = useState("");
 
-  // Storage key for AI model preferences
-  const STORAGE_KEY = "pathology-bites-ai-model-preference";
-
-  // Auto-select AI model on mount (from storage or first available)
+  // Auto-select default AI model on mount if none selected
   useEffect(() => {
     if (!formState.selectedAIModel && ACTIVE_AI_MODELS.length > 0) {
-      // Try to load from localStorage first
-      try {
-        const storedModel = localStorage.getItem(STORAGE_KEY);
-        if (storedModel) {
-          // Verify the stored model is still available
-          const modelExists = ACTIVE_AI_MODELS.find((m) => m.id === storedModel && m.available);
-          if (modelExists) {
-            updateFormState({ selectedAIModel: storedModel });
-            return;
-          }
-        }
-      } catch (error) {
-        console.warn("Failed to load AI model preference from storage:", error);
-      }
-
-      // Fallback: select first available model
-      const firstAvailableModel = ACTIVE_AI_MODELS.find((m) => m.available);
-      if (firstAvailableModel) {
-        updateFormState({ selectedAIModel: firstAvailableModel.id });
+      // Use the configured default model from ai-models.ts
+      const defaultModel = ACTIVE_AI_MODELS.find((m) => m.available);
+      if (defaultModel) {
+        updateFormState({ selectedAIModel: defaultModel.id });
       }
     }
   }, [formState.selectedAIModel, updateFormState]);
-
-  // Save AI model selection to localStorage whenever it changes
-  useEffect(() => {
-    if (formState.selectedAIModel) {
-      try {
-        localStorage.setItem(STORAGE_KEY, formState.selectedAIModel);
-      } catch (error) {
-        console.warn("Failed to save AI model preference to storage:", error);
-      }
-    }
-  }, [formState.selectedAIModel]);
 
   // Parse and validate JSON
   const parseJSON = useCallback((jsonString: string) => {
