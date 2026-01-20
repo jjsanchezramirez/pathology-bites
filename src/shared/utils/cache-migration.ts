@@ -24,6 +24,7 @@ const OLD_CACHE_KEYS = [
  */
 const OLD_CACHE_PATTERNS = [
   /^pathology-bites-lottie:v\d+:/, // Old lottie format with colons (e.g., pathology-bites-lottie:v1:access_denied)
+  /^pathology-bites-lottie-(?!all-animations$)/, // Old individual lottie animations (e.g., pathology-bites-lottie-access_denied), but NOT pathology-bites-lottie-all-animations
   /pathology-bites-swer-/, // Typo: "swer" instead of "swr"
   /pathology-bites-swr-\/api\/iser\//, // Typo: "iser" instead of "user"
 ];
