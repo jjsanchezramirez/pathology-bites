@@ -19,9 +19,10 @@ const OLD_CACHE_KEYS = [
 ];
 
 /**
- * Patterns to match corrupted/invalid cache keys
+ * Patterns to match old cache formats that should be cleaned up
  */
-const CORRUPTED_KEY_PATTERNS = [
+const OLD_CACHE_PATTERNS = [
+  /^pathology-bites-lottie:v\d+:/, // Old lottie format with colons (e.g., pathology-bites-lottie:v1:access_denied)
   /pathology-bites-swer-/, // Typo: "swer" instead of "swr"
   /pathology-bites-swr-\/api\/iser\//, // Typo: "iser" instead of "user"
 ];
@@ -52,12 +53,12 @@ export function cleanupOldCaches(): void {
     }
 
     allKeys.forEach((key) => {
-      // Check if key matches any corrupted pattern
-      const isCorrupted = CORRUPTED_KEY_PATTERNS.some((pattern) => pattern.test(key));
-      if (isCorrupted) {
+      // Check if key matches any old cache pattern
+      const isOldFormat = OLD_CACHE_PATTERNS.some((pattern) => pattern.test(key));
+      if (isOldFormat) {
         localStorage.removeItem(key);
         cleanedCount++;
-        console.log(`[Cache Cleanup] Removed corrupted key: ${key}`);
+        console.log(`[Cache Cleanup] Removed old format key: ${key}`);
       }
     });
 
