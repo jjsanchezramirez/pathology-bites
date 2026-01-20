@@ -18,19 +18,12 @@ const CACHE_PREFIX = "pathology-bites";
 const CACHE_VERSION = "v1";
 
 // Namespace configurations with default TTLs
-// Note: Very long TTLs (essentially indefinite) - manual invalidation via version bumps or explicit cache clears
+// Simplified: Only store what can't be handled by HTTP browser cache
 export const CACHE_NAMESPACES = {
-  USER: { name: "user", ttl: Infinity }, // Indefinite - cleared on logout
-  LOTTIE: { name: "lottie", ttl: Infinity }, // Indefinite - animations rarely change
-  SWR: { name: "swr", ttl: 30 * 24 * 60 * 60 * 1000 }, // 30 days - SWR handles its own revalidation
-  QUESTIONS: { name: "questions", ttl: Infinity }, // Indefinite - cleared via version or manual invalidation
-  IMAGES: { name: "images", ttl: Infinity }, // Indefinite - images don't change
-  DASHBOARD: { name: "dashboard", ttl: 30 * 60 * 1000 }, // 30 minutes - real-time stats need fresher data
-  VIRTUAL_SLIDES: { name: "virtual-slides", ttl: Infinity }, // Indefinite - dataset rarely changes
-  SETTINGS: { name: "settings", ttl: Infinity }, // Indefinite - settings don't change often
-  CITATIONS: { name: "citations", ttl: Infinity }, // Indefinite - journal abbreviations rarely change
-  STATS: { name: "stats", ttl: 30 * 60 * 1000 }, // 30 minutes - real-time stats
-  DEMO_QUESTIONS: { name: "demo-questions", ttl: Infinity }, // Indefinite - demo questions rarely change
+  USER: { name: "user", ttl: Infinity }, // Auth state - cleared on logout
+  SWR: { name: "swr", ttl: 30 * 24 * 60 * 60 * 1000 }, // 30 days - SWR library persistence
+  STATS: { name: "stats", ttl: 30 * 60 * 1000 }, // 30 minutes - DB query results
+  COOKIE: { name: "cookie", ttl: 365 * 24 * 60 * 60 * 1000 }, // 1 year - consent preferences
 } as const;
 
 export type CacheNamespace = (typeof CACHE_NAMESPACES)[keyof typeof CACHE_NAMESPACES]["name"];

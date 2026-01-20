@@ -178,7 +178,12 @@ export async function GET(request: Request) {
             : null,
         };
 
-        return NextResponse.json(processedQuestion, { status: 200 });
+        return NextResponse.json(processedQuestion, {
+          status: 200,
+          headers: {
+            'Cache-Control': 'public, max-age=86400, stale-while-revalidate=300', // 24h cache
+          },
+        });
       } catch (processingError) {
         console.error("Error processing question data:", processingError);
         return NextResponse.json({ error: "Error processing question data" }, { status: 500 });
@@ -233,7 +238,12 @@ export async function GET(request: Request) {
               cached: true,
             },
           },
-          { status: 200 }
+          {
+            status: 200,
+            headers: {
+              'Cache-Control': 'public, max-age=86400, stale-while-revalidate=300', // 24h cache
+            },
+          }
         );
       }
 
@@ -355,7 +365,12 @@ export async function GET(request: Request) {
               totalQuestions: demoQuestions.length,
             },
           },
-          { status: 200 }
+          {
+            status: 200,
+            headers: {
+              'Cache-Control': 'public, max-age=86400, stale-while-revalidate=300', // 24h cache
+            },
+          }
         );
       } catch (processingError) {
         console.error("Error processing question data:", processingError);

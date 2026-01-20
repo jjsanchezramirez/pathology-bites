@@ -1,7 +1,6 @@
 // src/hooks/use-demo-questions.ts
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "@/shared/utils/toast";
-import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
 export interface Option {
   id: string;
@@ -28,43 +27,17 @@ export interface Question {
   comparativeImage?: QuestionImage;
 }
 
-// Cache key for unified cache
-const CACHE_KEY = "demo-questions-dataset";
-
+// Module-scope memory cache for in-session speed
+// HTTP browser cache (via API response headers) handles persistence
 interface CachedDemoQuestions {
   questions: Record<number, Question>;
   totalQuestions: number;
 }
 
-function getCachedQuestions(): CachedDemoQuestions | null {
-  if (typeof window === "undefined") return null;
-
-  return unifiedCache.get<CachedDemoQuestions>(
-    CACHE_NAMESPACES.DEMO_QUESTIONS.name,
-    CACHE_KEY
-  );
-}
-
-function setCachedQuestion(index: number, question: Question, totalQuestions: number): void {
-  if (typeof window === "undefined") return;
-
-  try {
-    const existing = getCachedQuestions();
-    const cacheEntry: CachedDemoQuestions = {
-      questions: existing?.questions || {},
-      totalQuestions,
-    };
-    cacheEntry.questions[index] = question;
-
-    unifiedCache.set(
-      CACHE_NAMESPACES.DEMO_QUESTIONS.name,
-      CACHE_KEY,
-      cacheEntry
-    );
-  } catch {
-    // Cache might be unavailable, ignore
-  }
-}
+const memoryCache: CachedDemoQuestions = {
+  questions: {},
+  totalQuestions: 0,
+};
 
 export function useDemoQuestions() {
   const [questions, _setQuestions] = useState<Question[]>([]);
@@ -73,19 +46,12 @@ export function useDemoQuestions() {
   const [error, setError] = useState<string | null>(null);
   const [currentIndex, setCurrentIndex] = useState(0);
   const hasInitialized = useRef(false);
-  const cachedDataRef = useRef<CachedDemoQuestions | null>(null);
-
-  // Load cached data on mount
-  useEffect(() => {
-    cachedDataRef.current = getCachedQuestions();
-  }, []);
 
   const fetchNewQuestion = useCallback(async (index: number) => {
-    // Check cache first
-    const cached = cachedDataRef.current;
-    if (cached && cached.questions[index]) {
-      setCurrentQuestion(cached.questions[index]);
-      setCurrentIndex((index + 1) % cached.totalQuestions);
+    // Check memory cache first (same session)
+    if (memoryCache.questions[index]) {
+      setCurrentQuestion(memoryCache.questions[index]);
+      setCurrentIndex((index + 1) % memoryCache.totalQuestions);
       setLoading(false);
       return;
     }
@@ -105,16 +71,10 @@ export function useDemoQuestions() {
 
           setCurrentQuestion(questionData);
 
-          // Cache the question
+          // Cache the question in memory for session
           const totalQuestions = _metadata?.totalQuestions || 3;
-          setCachedQuestion(index, questionData, totalQuestions);
-
-          // Update cached data ref
-          if (!cachedDataRef.current) {
-            cachedDataRef.current = { questions: {}, totalQuestions, timestamp: Date.now() };
-          }
-          cachedDataRef.current.questions[index] = questionData;
-          cachedDataRef.current.totalQuestions = totalQuestions;
+          memoryCache.questions[index] = questionData;
+          memoryCache.totalQuestions = totalQuestions;
 
           // Update current index for next question
           if (_metadata?.nextIndex !== undefined) {

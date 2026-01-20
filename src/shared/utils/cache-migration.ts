@@ -9,25 +9,43 @@ import { unifiedCache } from "@/shared/services/unified-cache";
 
 /**
  * List of old cache keys that should be removed
- * These are from previous cache implementations before unified-cache.ts
+ * These are from previous cache implementations or now rely on HTTP browser cache
  */
 const OLD_CACHE_KEYS = [
-  "pathology-bites-swr-cache", // Old SWR cache format (before unified-cache migration)
+  "pathology-bites-swr-cache", // Old SWR cache format
   "pathology-bites-ai-model-preference", // Removed - now uses default model
-  "nlm-journal-abbreviations", // Migrated to unified cache (citations namespace)
+  "nlm-journal-abbreviations", // Now uses HTTP browser cache
   "user-stats-cache", // Migrated to unified cache (stats namespace)
-  "pathology-bites-demo-questions", // Migrated to unified cache (demo-questions namespace)
+  "pathology-bites-demo-questions", // Now uses HTTP browser cache (API has cache headers)
   "pathology-bites-virtual-slides-virtual-slides-dataset", // Old redundant key name
+  "pathology-bites-virtual-slides-dataset", // Now uses HTTP browser cache
 ];
 
 /**
  * Patterns to match old cache formats that should be cleaned up
  */
 const OLD_CACHE_PATTERNS = [
-  /^pathology-bites-lottie:v\d+:/, // Old lottie format with colons (e.g., pathology-bites-lottie:v1:access_denied)
-  /^pathology-bites-lottie-(?!animations$)/, // Old individual lottie animations (e.g., pathology-bites-lottie-access_denied), but NOT pathology-bites-lottie-animations
-  /pathology-bites-swer-/, // Typo: "swer" instead of "swr"
-  /pathology-bites-swr-\/api\/iser\//, // Typo: "iser" instead of "user"
+  // Old lottie formats (now uses HTTP cache + memory)
+  /^pathology-bites-lottie/,
+
+  // Old virtual slides (now uses HTTP cache + memory)
+  /^pathology-bites-virtual-slides/,
+
+  // Old demo questions (now uses HTTP cache + memory)
+  /^pathology-bites-demo-questions/,
+
+  // Old citations (now uses HTTP cache + memory)
+  /^pathology-bites-citations/,
+
+  // Removed namespaces
+  /^pathology-bites-images/,
+  /^pathology-bites-questions(?!\/)/,  // Not SWR cache keys with /api/questions/
+  /^pathology-bites-dashboard/,
+  /^pathology-bites-settings/,
+
+  // Typos
+  /pathology-bites-swer-/,
+  /pathology-bites-swr-\/api\/iser\//,
 ];
 
 /**

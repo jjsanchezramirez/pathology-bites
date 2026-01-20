@@ -3,20 +3,18 @@
 
 import { CitationData } from "./citation-extractor";
 import { R2_PUBLIC_URLS } from "./r2-direct-access";
-import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
 /**
  * NLM journal abbreviations database
  * Loaded from the comprehensive NLM journal list
+ * Cached in memory for session (HTTP cache handles persistence)
  */
 let JOURNAL_ABBREVIATIONS: Record<string, string> = {};
 
 /**
  * Load journal abbreviations from JSON file
+ * HTTP browser cache handles persistence across sessions
  */
-const CACHE_KEY = "journal-abbreviations";
-const CACHE_VERSION = "2026.1";
-
 async function loadJournalAbbreviations(): Promise<void> {
   // Only load in browser environment to avoid SSR issues
   if (typeof window === "undefined") {
@@ -25,41 +23,19 @@ async function loadJournalAbbreviations(): Promise<void> {
   }
 
   try {
-    // Check if already loaded in memory
+    // Check if already loaded in memory (same session)
     if (Object.keys(JOURNAL_ABBREVIATIONS).length > 0) {
-      console.log("Journal abbreviations already loaded in memory, skipping...");
       return;
     }
 
-    // Try to load from unified cache first (fastest)
-    try {
-      const cached = unifiedCache.get<{ version: string; abbreviations: Record<string, string> }>(
-        CACHE_NAMESPACES.CITATIONS.name,
-        CACHE_KEY,
-        { version: CACHE_VERSION }
-      );
-
-      if (cached?.abbreviations) {
-        JOURNAL_ABBREVIATIONS = cached.abbreviations;
-        console.log(
-          `✅ Loaded ${Object.keys(JOURNAL_ABBREVIATIONS).length} abbreviations from cache`
-        );
-        return;
-      }
-    } catch {
-      console.log("Cache miss or invalid");
-    }
-
-    // Fetch from R2 if not cached
+    // Fetch from R2 - browser HTTP cache handles persistence
     const r2Url = R2_PUBLIC_URLS.NLM_JOURNAL_ABBREVIATIONS_JSON;
-
-    console.log("🔄 Loading NLM journal abbreviations from R2:", r2Url);
 
     const response = await fetch(r2Url, {
       headers: {
         Accept: "application/json",
       },
-      cache: "force-cache",
+      cache: "force-cache", // Use browser HTTP cache
     });
 
     if (!response.ok) {
@@ -69,22 +45,8 @@ async function loadJournalAbbreviations(): Promise<void> {
     const data = await response.json();
     JOURNAL_ABBREVIATIONS = data.abbreviations || {};
 
-    // Cache in unified cache for future sessions
-    try {
-      unifiedCache.set(
-        CACHE_NAMESPACES.CITATIONS.name,
-        CACHE_KEY,
-        {
-          version: CACHE_VERSION,
-          abbreviations: JOURNAL_ABBREVIATIONS,
-        }
-      );
-    } catch (storageError) {
-      console.log("Failed to cache journal abbreviations:", storageError);
-    }
-
     console.log(
-      `✅ Loaded ${Object.keys(JOURNAL_ABBREVIATIONS).length} journal abbreviations from R2 and cached`
+      `✅ Loaded ${Object.keys(JOURNAL_ABBREVIATIONS).length} journal abbreviations`
     );
   } catch (error) {
     console.error("⚠️ Failed to load NLM journal abbreviations:", error);

@@ -4,11 +4,11 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { getRepositoryFromId } from "@/shared/utils/repository";
 import { toast } from "@/shared/utils/toast";
-import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
-// Module-scope promise cache to prevent duplicate concurrent requests
-// The actual data is cached in unified cache (localStorage)
+// Module-scope cache for request deduplication and in-session speed
+// HTTP browser cache handles persistence across sessions
 let cachedSlidesPromise: Promise<VirtualSlide[]> | null = null;
+let cachedSlides: VirtualSlide[] | null = null;
 
 // Minimal client-entry type coming from CDN JSON
 // Note: repository omitted (derived), title omitted (same as diagnosis)
@@ -52,18 +52,12 @@ function normalizeToVirtualSlide(e: ClientEntry): VirtualSlide {
 }
 
 async function loadClientSlides(): Promise<VirtualSlide[]> {
-  // Check unified cache first (localStorage)
-  const cached = unifiedCache.get<VirtualSlide[]>(
-    CACHE_NAMESPACES.VIRTUAL_SLIDES.name,
-    "dataset"
-  );
-
-  if (cached) {
-    console.log("[VirtualSlides] ✅ Loaded from unified cache");
-    return Promise.resolve(cached);
+  // Check memory cache first (same session)
+  if (cachedSlides) {
+    return Promise.resolve(cachedSlides);
   }
 
-  // If already fetching, return the existing promise
+  // If already fetching, return the existing promise (deduplication)
   if (cachedSlidesPromise) return cachedSlidesPromise;
 
   const { VIRTUAL_SLIDES_JSON_URL } = await import("@/shared/config/virtual-slides");
@@ -122,13 +116,9 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
     const entries: ClientEntry[] = Array.isArray(json) ? json : (json.data ?? []);
     const slides = entries.map(normalizeToVirtualSlide);
 
-    // Cache in unified cache (localStorage) for persistence across sessions
-    unifiedCache.set(
-      CACHE_NAMESPACES.VIRTUAL_SLIDES.name,
-      "dataset",
-      slides
-    );
-    console.log(`[VirtualSlides] 💾 Cached ${slides.length} slides in unified cache`);
+    // Store in memory for session (HTTP cache handles persistence)
+    cachedSlides = slides;
+    console.log(`[VirtualSlides] 💾 Cached ${slides.length} slides in memory`);
 
     return slides;
   });
