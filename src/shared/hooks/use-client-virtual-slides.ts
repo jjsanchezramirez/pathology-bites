@@ -4,8 +4,10 @@ import { useEffect, useMemo, useState, useCallback } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { getRepositoryFromId } from "@/shared/utils/repository";
 import { toast } from "@/shared/utils/toast";
+import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
-// Module-scope cache so we only fetch once per session
+// Module-scope promise cache to prevent duplicate concurrent requests
+// The actual data is cached in unified cache (localStorage)
 let cachedSlidesPromise: Promise<VirtualSlide[]> | null = null;
 
 // Minimal client-entry type coming from CDN JSON
@@ -50,6 +52,18 @@ function normalizeToVirtualSlide(e: ClientEntry): VirtualSlide {
 }
 
 async function loadClientSlides(): Promise<VirtualSlide[]> {
+  // Check unified cache first (localStorage)
+  const cached = unifiedCache.get<VirtualSlide[]>(
+    CACHE_NAMESPACES.VIRTUAL_SLIDES.name,
+    "virtual-slides-dataset"
+  );
+
+  if (cached) {
+    console.log("[VirtualSlides] ✅ Loaded from unified cache");
+    return Promise.resolve(cached);
+  }
+
+  // If already fetching, return the existing promise
   if (cachedSlidesPromise) return cachedSlidesPromise;
 
   const { VIRTUAL_SLIDES_JSON_URL } = await import("@/shared/config/virtual-slides");
@@ -106,7 +120,17 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
     const json = await res.json();
     // Support both array and wrapped formats
     const entries: ClientEntry[] = Array.isArray(json) ? json : (json.data ?? []);
-    return entries.map(normalizeToVirtualSlide);
+    const slides = entries.map(normalizeToVirtualSlide);
+
+    // Cache in unified cache (localStorage) for persistence across sessions
+    unifiedCache.set(
+      CACHE_NAMESPACES.VIRTUAL_SLIDES.name,
+      "virtual-slides-dataset",
+      slides
+    );
+    console.log(`[VirtualSlides] 💾 Cached ${slides.length} slides in unified cache`);
+
+    return slides;
   });
 
   return cachedSlidesPromise;

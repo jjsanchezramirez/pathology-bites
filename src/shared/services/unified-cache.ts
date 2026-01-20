@@ -18,17 +18,19 @@ const CACHE_PREFIX = "pathology-bites";
 const CACHE_VERSION = "v1";
 
 // Namespace configurations with default TTLs
+// Note: Very long TTLs (essentially indefinite) - manual invalidation via version bumps or explicit cache clears
 export const CACHE_NAMESPACES = {
-  USER: { name: "user", ttl: 5 * 60 * 1000 }, // 5 minutes
-  LOTTIE: { name: "lottie", ttl: 30 * 24 * 60 * 60 * 1000 }, // 30 days
-  SWR: { name: "swr", ttl: 10 * 60 * 1000 }, // 10 minutes
-  QUESTIONS: { name: "questions", ttl: 5 * 60 * 1000 }, // 5 minutes
-  IMAGES: { name: "images", ttl: 30 * 60 * 1000 }, // 30 minutes
-  DASHBOARD: { name: "dashboard", ttl: 10 * 60 * 1000 }, // 10 minutes
-  VIRTUAL_SLIDES: { name: "virtual-slides", ttl: 24 * 60 * 60 * 1000 }, // 24 hours
-  SETTINGS: { name: "settings", ttl: 30 * 60 * 1000 }, // 30 minutes
-  CITATIONS: { name: "citations", ttl: 7 * 24 * 60 * 60 * 1000 }, // 7 days (for journal abbreviations)
-  STATS: { name: "stats", ttl: 5 * 60 * 1000 }, // 5 minutes (for user stats)
+  USER: { name: "user", ttl: Infinity }, // Indefinite - cleared on logout
+  LOTTIE: { name: "lottie", ttl: Infinity }, // Indefinite - animations rarely change
+  SWR: { name: "swr", ttl: 30 * 24 * 60 * 60 * 1000 }, // 30 days - SWR handles its own revalidation
+  QUESTIONS: { name: "questions", ttl: Infinity }, // Indefinite - cleared via version or manual invalidation
+  IMAGES: { name: "images", ttl: Infinity }, // Indefinite - images don't change
+  DASHBOARD: { name: "dashboard", ttl: 30 * 60 * 1000 }, // 30 minutes - real-time stats need fresher data
+  VIRTUAL_SLIDES: { name: "virtual-slides", ttl: Infinity }, // Indefinite - dataset rarely changes
+  SETTINGS: { name: "settings", ttl: Infinity }, // Indefinite - settings don't change often
+  CITATIONS: { name: "citations", ttl: Infinity }, // Indefinite - journal abbreviations rarely change
+  STATS: { name: "stats", ttl: 30 * 60 * 1000 }, // 30 minutes - real-time stats
+  DEMO_QUESTIONS: { name: "demo-questions", ttl: Infinity }, // Indefinite - demo questions rarely change
 } as const;
 
 export type CacheNamespace = (typeof CACHE_NAMESPACES)[keyof typeof CACHE_NAMESPACES]["name"];
@@ -60,11 +62,11 @@ class UnifiedCacheService {
     // Check localStorage availability
     this.isLocalStorageAvailable = this.checkLocalStorageAvailability();
 
-    // Start cleanup interval (every 5 minutes)
+    // Cleanup interval disabled - most caches are indefinite
+    // Run cleanup only on initialization to clean up old versions
     if (typeof window !== "undefined") {
-      this.cleanupInterval = setInterval(() => {
-        this.cleanup();
-      }, 5 * 60 * 1000);
+      // Run once on initialization
+      this.cleanup();
     }
 
     // Restore SWR cache from localStorage on initialization

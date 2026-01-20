@@ -16,6 +16,7 @@ const OLD_CACHE_KEYS = [
   "pathology-bites-ai-model-preference", // Removed - now uses default model
   "nlm-journal-abbreviations", // Migrated to unified cache (citations namespace)
   "user-stats-cache", // Migrated to unified cache (stats namespace)
+  "pathology-bites-demo-questions", // Migrated to unified cache (demo-questions namespace)
 ];
 
 /**

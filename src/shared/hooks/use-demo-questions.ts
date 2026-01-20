@@ -1,6 +1,7 @@
 // src/hooks/use-demo-questions.ts
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "@/shared/utils/toast";
+import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
 export interface Option {
   id: string;
@@ -27,37 +28,21 @@ export interface Question {
   comparativeImage?: QuestionImage;
 }
 
-// localStorage cache key and TTL (24 hours)
-const CACHE_KEY = "pathology-bites-demo-questions";
-const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
+// Cache key for unified cache
+const CACHE_KEY = "demo-questions-dataset";
 
 interface CachedDemoQuestions {
   questions: Record<number, Question>;
   totalQuestions: number;
-  timestamp: number;
 }
 
 function getCachedQuestions(): CachedDemoQuestions | null {
   if (typeof window === "undefined") return null;
 
-  try {
-    const cached = localStorage.getItem(CACHE_KEY);
-    if (!cached) return null;
-
-    const parsed: CachedDemoQuestions = JSON.parse(cached);
-    const now = Date.now();
-
-    // Check if cache is still valid
-    if (now - parsed.timestamp < CACHE_TTL) {
-      return parsed;
-    }
-
-    // Cache expired, remove it
-    localStorage.removeItem(CACHE_KEY);
-    return null;
-  } catch {
-    return null;
-  }
+  return unifiedCache.get<CachedDemoQuestions>(
+    CACHE_NAMESPACES.DEMO_QUESTIONS.name,
+    CACHE_KEY
+  );
 }
 
 function setCachedQuestion(index: number, question: Question, totalQuestions: number): void {
@@ -68,12 +53,16 @@ function setCachedQuestion(index: number, question: Question, totalQuestions: nu
     const cacheEntry: CachedDemoQuestions = {
       questions: existing?.questions || {},
       totalQuestions,
-      timestamp: Date.now(),
     };
     cacheEntry.questions[index] = question;
-    localStorage.setItem(CACHE_KEY, JSON.stringify(cacheEntry));
+
+    unifiedCache.set(
+      CACHE_NAMESPACES.DEMO_QUESTIONS.name,
+      CACHE_KEY,
+      cacheEntry
+    );
   } catch {
-    // localStorage might be full or disabled, ignore
+    // Cache might be unavailable, ignore
   }
 }
 
