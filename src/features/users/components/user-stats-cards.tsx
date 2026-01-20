@@ -6,13 +6,13 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Loader2, Users, UserCheck, UserX, UserMinus, UserCog } from "lucide-react";
 import { toast } from "@/shared/utils/toast";
 import { getFormattedUserStats, UserStatsFormatted } from "@/features/users/services/user-stats";
+import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
 export interface UserStatsRef {
   refresh: () => void;
 }
 
-const CACHE_KEY = "user-stats-cache";
-const CACHE_DURATION = 5 * 60 * 1000; // 5 minutes in milliseconds
+const CACHE_KEY = "user-stats";
 
 export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
   const [stats, setStats] = useState<UserStatsFormatted | null>(null);
@@ -22,18 +22,17 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
     try {
       setLoading(true);
 
-      // Check localStorage cache first (unless forcing refresh)
+      // Check unified cache first (unless forcing refresh)
       if (!forceRefresh) {
-        const cached = localStorage.getItem(CACHE_KEY);
-        if (cached) {
-          const { data, timestamp } = JSON.parse(cached);
-          const isStale = Date.now() - timestamp > CACHE_DURATION;
+        const cached = unifiedCache.get<UserStatsFormatted>(
+          CACHE_NAMESPACES.STATS.name,
+          CACHE_KEY
+        );
 
-          if (!isStale) {
-            setStats(data);
-            setLoading(false);
-            return;
-          }
+        if (cached) {
+          setStats(cached);
+          setLoading(false);
+          return;
         }
       }
 
@@ -41,14 +40,8 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
       const data = await getFormattedUserStats();
       setStats(data);
 
-      // Cache the result in localStorage
-      localStorage.setItem(
-        CACHE_KEY,
-        JSON.stringify({
-          data,
-          timestamp: Date.now(),
-        })
-      );
+      // Cache the result in unified cache
+      unifiedCache.set(CACHE_NAMESPACES.STATS.name, CACHE_KEY, data);
     } catch (error) {
       console.error("Failed to load user stats:", error);
       toast.error("Failed to load user statistics");

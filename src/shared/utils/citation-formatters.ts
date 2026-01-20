@@ -3,6 +3,7 @@
 
 import { CitationData } from "./citation-extractor";
 import { R2_PUBLIC_URLS } from "./r2-direct-access";
+import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
 /**
  * NLM journal abbreviations database
@@ -13,8 +14,8 @@ let JOURNAL_ABBREVIATIONS: Record<string, string> = {};
 /**
  * Load journal abbreviations from JSON file
  */
-const STORAGE_KEY = "nlm-journal-abbreviations";
-const STORAGE_VERSION = "2026.1";
+const CACHE_KEY = "journal-abbreviations";
+const CACHE_VERSION = "2026.1";
 
 async function loadJournalAbbreviations(): Promise<void> {
   // Only load in browser environment to avoid SSR issues
@@ -30,24 +31,23 @@ async function loadJournalAbbreviations(): Promise<void> {
       return;
     }
 
-    // Try to load from localStorage first (fastest)
+    // Try to load from unified cache first (fastest)
     try {
-      const cached = localStorage.getItem(STORAGE_KEY);
-      if (cached) {
-        const { version, data, timestamp } = JSON.parse(cached);
-        const age = Date.now() - timestamp;
-        const oneWeek = 7 * 24 * 60 * 60 * 1000;
+      const cached = unifiedCache.get<{ version: string; abbreviations: Record<string, string> }>(
+        CACHE_NAMESPACES.CITATIONS.name,
+        CACHE_KEY,
+        { version: CACHE_VERSION }
+      );
 
-        if (version === STORAGE_VERSION && age < oneWeek && data?.abbreviations) {
-          JOURNAL_ABBREVIATIONS = data.abbreviations;
-          console.log(
-            `✅ Loaded ${Object.keys(JOURNAL_ABBREVIATIONS).length} abbreviations from localStorage cache`
-          );
-          return;
-        }
+      if (cached?.abbreviations) {
+        JOURNAL_ABBREVIATIONS = cached.abbreviations;
+        console.log(
+          `✅ Loaded ${Object.keys(JOURNAL_ABBREVIATIONS).length} abbreviations from cache`
+        );
+        return;
       }
     } catch {
-      console.log("localStorage cache miss or invalid");
+      console.log("Cache miss or invalid");
     }
 
     // Fetch from R2 if not cached
@@ -69,18 +69,18 @@ async function loadJournalAbbreviations(): Promise<void> {
     const data = await response.json();
     JOURNAL_ABBREVIATIONS = data.abbreviations || {};
 
-    // Cache in localStorage for future sessions
+    // Cache in unified cache for future sessions
     try {
-      localStorage.setItem(
-        STORAGE_KEY,
-        JSON.stringify({
-          version: STORAGE_VERSION,
-          data,
-          timestamp: Date.now(),
-        })
+      unifiedCache.set(
+        CACHE_NAMESPACES.CITATIONS.name,
+        CACHE_KEY,
+        {
+          version: CACHE_VERSION,
+          abbreviations: JOURNAL_ABBREVIATIONS,
+        }
       );
     } catch (storageError) {
-      console.log("Failed to cache in localStorage:", storageError);
+      console.log("Failed to cache journal abbreviations:", storageError);
     }
 
     console.log(

@@ -27,6 +27,8 @@ export const CACHE_NAMESPACES = {
   DASHBOARD: { name: "dashboard", ttl: 10 * 60 * 1000 }, // 10 minutes
   VIRTUAL_SLIDES: { name: "virtual-slides", ttl: 24 * 60 * 60 * 1000 }, // 24 hours
   SETTINGS: { name: "settings", ttl: 30 * 60 * 1000 }, // 30 minutes
+  CITATIONS: { name: "citations", ttl: 7 * 24 * 60 * 60 * 1000 }, // 7 days (for journal abbreviations)
+  STATS: { name: "stats", ttl: 5 * 60 * 1000 }, // 5 minutes (for user stats)
 } as const;
 
 export type CacheNamespace = (typeof CACHE_NAMESPACES)[keyof typeof CACHE_NAMESPACES]["name"];
