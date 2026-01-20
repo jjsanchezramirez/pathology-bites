@@ -46,7 +46,7 @@ export function useUserSettings(options: UseUserSettingsOptions = {}) {
   // IMPORTANT: Always use the same SWR key to ensure proper deduplication
   // The enabled flag is handled by returning null data, not by changing the key
   const { data, error, isLoading, mutate } = useSWR<UserSettings>(
-    "/api/user/settings", // Always use same key for deduplication
+    "settings", // Always use same key for deduplication
     async () => {
       const result = await userSettingsService.getUserSettings();
       if (onSuccess) onSuccess(result);

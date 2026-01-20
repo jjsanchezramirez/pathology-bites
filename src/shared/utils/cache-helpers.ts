@@ -16,10 +16,10 @@ export async function invalidateUnifiedData(revalidate = true) {
 
   if (revalidate) {
     // Invalidate and immediately refetch
-    await mutate("/api/user/data");
+    await mutate("data");
   } else {
     // Invalidate only (next access will fetch fresh data)
-    await mutate("/api/user/data", undefined, { revalidate: false });
+    await mutate("data", undefined, { revalidate: false });
   }
 }
 
@@ -33,9 +33,9 @@ export async function invalidateUserSettings(revalidate = true) {
   console.log("[Cache] 🔄 Invalidating user settings cache");
 
   if (revalidate) {
-    await mutate("/api/user/settings");
+    await mutate("settings");
   } else {
-    await mutate("/api/user/settings", undefined, { revalidate: false });
+    await mutate("settings", undefined, { revalidate: false });
   }
 }
 

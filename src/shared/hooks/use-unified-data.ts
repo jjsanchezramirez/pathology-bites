@@ -112,8 +112,8 @@ interface UnifiedData {
   };
 }
 
-const fetcher = async (url: string) => {
-  const res = await fetch(url);
+const fetcher = async () => {
+  const res = await fetch("/api/user/data");
 
   if (!res.ok) {
     const error = new Error("Failed to fetch data");
@@ -154,7 +154,7 @@ const fetcher = async (url: string) => {
  * ```
  */
 export function useUnifiedData() {
-  const { data, error, isLoading, mutate } = useSWR<UnifiedData>("/api/user/data", fetcher, {
+  const { data, error, isLoading, mutate } = useSWR<UnifiedData>("data", fetcher, {
     // Cache is fresh for 30 minutes (good balance between freshness and API calls)
     // Combined with localStorage persistence, this means:
     // - First load: API call
