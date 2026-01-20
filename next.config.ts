@@ -88,169 +88,79 @@ const nextConfig = {
       enabled: true,
     },
   },
-  // Development optimizations
-  ...(process.env.NODE_ENV === "development" && {
-    onDemandEntries: {
-      // Extend keep alive time to avoid frequent recompilation
-      maxInactiveAge: 60 * 1000, // 1 minute
-      pagesBufferLength: 5,
-    },
-    // Disable caching in development
-    generateEtags: false,
-    // Disable compression to avoid cache confusion
-    compress: false,
-    // Force fresh builds
-    distDir: ".next",
-  }),
   async headers() {
-    // Development: Disable all caching for easier testing
-    // Production: Aggressive caching for performance
-    const isDevelopment = process.env.NODE_ENV === "development";
-
-    const cacheHeaders = isDevelopment
-      ? [
-          // Development: AGGRESSIVE no-cache for ALL routes
+    // Aggressive caching for performance
+    const cacheHeaders = [
+      // Aggressive caching for images and static assets
+      {
+        source: "/images/:path*",
+        headers: [
           {
-            source: "/(.*)",
-            headers: [
-              {
-                key: "Cache-Control",
-                value: "no-cache, no-store, must-revalidate, proxy-revalidate",
-              },
-              {
-                key: "Pragma",
-                value: "no-cache",
-              },
-              {
-                key: "Expires",
-                value: "0",
-              },
-              {
-                key: "Surrogate-Control",
-                value: "no-store",
-              },
-              {
-                key: "X-Development-Cache-Disabled",
-                value: "true",
-              },
-              {
-                key: "Vary",
-                value: "*",
-              },
-            ],
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable", // 1 year cache for images
           },
-          // Even more aggressive for API routes
           {
-            source: "/api/:path*",
-            headers: [
-              {
-                key: "Cache-Control",
-                value: "no-cache, no-store, must-revalidate, proxy-revalidate, private",
-              },
-              {
-                key: "Pragma",
-                value: "no-cache",
-              },
-              {
-                key: "Expires",
-                value: "0",
-              },
-              {
-                key: "Last-Modified",
-                value: new Date().toUTCString(),
-              },
-              {
-                key: "ETag",
-                value: `"dev-${Date.now()}"`,
-              },
-            ],
+            key: "CDN-Cache-Control",
+            value: "public, max-age=31536000",
           },
-          // Disable caching for pages
           {
-            source: "/((?!_next/static).*)",
-            headers: [
-              {
-                key: "Cache-Control",
-                value: "no-cache, no-store, must-revalidate, proxy-revalidate, private",
-              },
-              {
-                key: "X-Development-No-Cache",
-                value: Date.now().toString(),
-              },
-            ],
+            key: "Vercel-CDN-Cache-Control",
+            value: "public, max-age=31536000",
           },
-        ]
-      : [
-          // Production: Aggressive caching for images and static assets
+        ],
+      },
+      // Cache for R2 assets (like Dr. Albright character and Anki images)
+      {
+        source: "/assets/:path*",
+        headers: [
           {
-            source: "/images/:path*",
-            headers: [
-              {
-                key: "Cache-Control",
-                value: "public, max-age=31536000, immutable", // 1 year cache for images
-              },
-              {
-                key: "CDN-Cache-Control",
-                value: "public, max-age=31536000",
-              },
-              {
-                key: "Vercel-CDN-Cache-Control",
-                value: "public, max-age=31536000",
-              },
-            ],
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
-          // Cache for R2 assets (like Dr. Albright character and Anki images)
           {
-            source: "/assets/:path*",
-            headers: [
-              {
-                key: "Cache-Control",
-                value: "public, max-age=31536000, immutable",
-              },
-              {
-                key: "CDN-Cache-Control",
-                value: "public, max-age=31536000",
-              },
-            ],
+            key: "CDN-Cache-Control",
+            value: "public, max-age=31536000",
           },
-          // Cache for R2 storage images (external URLs get cached by browser)
+        ],
+      },
+      // Cache for R2 storage images (external URLs get cached by browser)
+      {
+        source: "/:path*",
+        has: [
           {
-            source: "/:path*",
-            has: [
-              {
-                type: "header",
-                key: "host",
-                value: ".*pathology-bites.*",
-              },
-            ],
-            headers: [
-              {
-                key: "Vary",
-                value: "Accept-Encoding",
-              },
-            ],
+            type: "header",
+            key: "host",
+            value: ".*pathology-bites.*",
           },
-          // Cache for static files
+        ],
+        headers: [
           {
-            source: "/_next/static/:path*",
-            headers: [
-              {
-                key: "Cache-Control",
-                value: "public, max-age=31536000, immutable",
-              },
-            ],
+            key: "Vary",
+            value: "Accept-Encoding",
           },
-          // Cache for icons and favicons
+        ],
+      },
+      // Cache for static files
+      {
+        source: "/_next/static/:path*",
+        headers: [
           {
-            source: "/icons/:path*",
-            headers: [
-              {
-                key: "Cache-Control",
-                value: "public, max-age=86400", // 24 hours for icons
-              },
-            ],
+            key: "Cache-Control",
+            value: "public, max-age=31536000, immutable",
           },
-        ];
+        ],
+      },
+      // Cache for icons and favicons
+      {
+        source: "/icons/:path*",
+        headers: [
+          {
+            key: "Cache-Control",
+            value: "public, max-age=86400", // 24 hours for icons
+          },
+        ],
+      },
+    ];
 
     const securityHeaders = [
       {
