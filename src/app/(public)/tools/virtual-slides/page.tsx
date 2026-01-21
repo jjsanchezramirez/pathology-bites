@@ -97,6 +97,19 @@ function VirtualSlidesContent() {
   // Study mode specific state
   const [studyQuestionCount, setStudyQuestionCount] = useState(20);
 
+  // Manage diagnosis visibility when mode changes
+  useEffect(() => {
+    if (mode === "study") {
+      // Save current state before hiding for Study mode
+      searchModeDiagnosesVisibility.current = showDiagnoses;
+      setShowDiagnoses(false);
+    } else if (mode === "search") {
+      // Restore saved state when returning to Search mode
+      setShowDiagnoses(searchModeDiagnosesVisibility.current);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
+
   // Process URL parameters on mount
   useEffect(() => {
     if (!urlParamsProcessed && !client.isLoading) {
@@ -328,24 +341,12 @@ function VirtualSlidesContent() {
                 <button
                   onClick={() => {
                     setMode("search");
-                    // Restore the diagnosis visibility state from before Study mode
-                    setShowDiagnoses(searchModeDiagnosesVisibility.current);
                     // Restore search input value after component remounts
                     setTimeout(() => {
                       if (searchInputRef.current) {
                         searchInputRef.current.value = debouncedSearchTerm;
                       }
                     }, 0);
-                    // Reset search parameters when switching back to search mode
-                    searchWithFilters({
-                      query: debouncedSearchTerm || undefined,
-                      repository: selectedRepository !== "all" ? selectedRepository : undefined,
-                      category: selectedCategory !== "all" ? selectedCategory : undefined,
-                      subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-                      randomMode: false,
-                      limit: 50, // Reset to default limit
-                      page: 1,
-                    });
                   }}
                   className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md font-medium transition-all ${
                     mode === "search"
@@ -358,10 +359,7 @@ function VirtualSlidesContent() {
                 </button>
                 <button
                   onClick={() => {
-                    // Save current Search mode diagnosis visibility before switching
-                    searchModeDiagnosesVisibility.current = showDiagnoses;
                     setMode("study");
-                    setShowDiagnoses(false); // Hide diagnoses for Study mode
                   }}
                   className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md font-medium transition-all ${
                     mode === "study"
