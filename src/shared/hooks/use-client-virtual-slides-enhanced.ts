@@ -12,6 +12,16 @@ import { MEDICAL_ACRONYMS, COMMON_MEDICAL_TERMS } from "@/shared/utils/medical-a
 let cachedSlidesPromise: Promise<VirtualSlide[]> | null = null;
 let cachedSlides: VirtualSlide[] | null = null;
 
+// Pre-computed search index for faster lookups
+interface SearchIndexEntry {
+  slide: VirtualSlide;
+  diagnosisLower: string;
+  diagnosisTokens: string[];
+  diagnosisAcronym: string;
+}
+
+let searchIndex: SearchIndexEntry[] | null = null;
+
 // Minimal client-entry type coming from CDN JSON
 interface ClientEntry {
   id: string;
@@ -115,7 +125,24 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
 
     // Store in memory for session (HTTP cache handles persistence)
     cachedSlides = slides;
-    console.log(`[VirtualSlides Enhanced] 💾 Cached ${slides.length} slides in memory`);
+
+    // Pre-compute search index for faster lookups
+    searchIndex = slides.map((slide) => {
+      const diagnosisLower = (slide.diagnosis || "").toLowerCase();
+      const diagnosisTokens = tokenize(diagnosisLower);
+      const diagnosisAcronym = makeAcr(diagnosisTokens);
+
+      return {
+        slide,
+        diagnosisLower,
+        diagnosisTokens,
+        diagnosisAcronym,
+      };
+    });
+
+    console.log(
+      `[VirtualSlides Enhanced] 💾 Cached ${slides.length} slides + search index in memory`
+    );
 
     return slides;
   });
@@ -127,9 +154,33 @@ function escapeRegex(str: string): string {
   return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
+// Cache compiled regex patterns to avoid recreating them in tight loops
+const regexCache = new Map<string, RegExp>();
+const MAX_REGEX_CACHE_SIZE = 500;
+
+function getWordBoundaryRegex(term: string): RegExp {
+  const cacheKey = `wb:${term}`;
+  let regex = regexCache.get(cacheKey);
+
+  if (!regex) {
+    regex = new RegExp(`\\b${escapeRegex(term)}\\b`, "i");
+
+    // Prevent unbounded cache growth
+    if (regexCache.size >= MAX_REGEX_CACHE_SIZE) {
+      // Clear oldest half when limit reached
+      const keysToDelete = Array.from(regexCache.keys()).slice(0, MAX_REGEX_CACHE_SIZE / 2);
+      keysToDelete.forEach(k => regexCache.delete(k));
+    }
+
+    regexCache.set(cacheKey, regex);
+  }
+
+  return regex;
+}
+
 function isCompleteWordMatch(text: string, term: string): boolean {
   if (!term) return false;
-  const regex = new RegExp(`\\b${escapeRegex(term)}\\b`, "i");
+  const regex = getWordBoundaryRegex(term);
   return regex.test(text);
 }
 
@@ -170,6 +221,7 @@ function expandMedicalAcronyms(query: string): string[] {
 }
 
 // Helper to rank slides by a single term with optional organ context
+// OPTIMIZED: Uses pre-computed search index to avoid repeated tokenization
 function rankSlidesByTerm(
   slides: VirtualSlide[],
   term: string,
@@ -179,7 +231,6 @@ function rankSlidesByTerm(
   const words = tokenize(termLower);
   const last = words[words.length - 1];
   const usePrefix = last && last.length >= 4;
-  const text = (s: VirtualSlide) => (s.diagnosis || "").toLowerCase();
   const acr = words.length >= 2 ? makeAcr(words) : "";
 
   // For multi-word queries, find the longest word that's NOT a common medical term
@@ -195,8 +246,18 @@ function rankSlidesByTerm(
     { slide: VirtualSlide; bucketIndex: number; organBoost: number }
   >();
 
-  for (const s of slides) {
-    const d = text(s);
+  // Use pre-computed search index if available, otherwise fall back to slides
+  const entries =
+    searchIndex ||
+    slides.map((s) => ({
+      slide: s,
+      diagnosisLower: (s.diagnosis || "").toLowerCase(),
+      diagnosisTokens: tokenize((s.diagnosis || "").toLowerCase()),
+      diagnosisAcronym: makeAcr(tokenize((s.diagnosis || "").toLowerCase())),
+    }));
+
+  for (const entry of entries) {
+    const { slide: s, diagnosisLower: d, diagnosisTokens, diagnosisAcronym } = entry;
     if (!d) continue;
 
     let bucketIndex = -1;
@@ -216,10 +277,10 @@ function rankSlidesByTerm(
     else if (specificWord && specificWord.length >= 5 && isCompleteWordMatch(d, specificWord)) {
       bucketIndex = 3;
     }
-    // Bucket 4: acronym match
+    // Bucket 4: acronym match (use pre-computed acronym)
     else if (
-      (acr && acr === makeAcr(tokenize(d))) ||
-      (termLower.length >= 2 && termLower.length <= 5 && termLower === makeAcr(tokenize(d)))
+      (acr && acr === diagnosisAcronym) ||
+      (termLower.length >= 2 && termLower.length <= 5 && termLower === diagnosisAcronym)
     ) {
       bucketIndex = 4;
     }
@@ -230,8 +291,8 @@ function rankSlidesByTerm(
       if (singleWord.length >= 4 && isCompleteWordMatch(d, singleWord)) {
         bucketIndex = 5;
       }
-      // Bucket 6: prefix match on single word
-      else if (usePrefix && tokenize(d).some((w) => w.startsWith(singleWord))) {
+      // Bucket 6: prefix match on single word (use pre-computed tokens)
+      else if (usePrefix && diagnosisTokens.some((w) => w.startsWith(singleWord))) {
         bucketIndex = 6;
       }
     }
@@ -401,6 +462,7 @@ export interface ClientSearchOptions {
 export function useClientVirtualSlidesEnhanced(defaultLimit: number = 20) {
   const [allSlides, setAllSlides] = useState<VirtualSlide[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [isSearching, setIsSearching] = useState(false); // Separate state for search operations
   const [error, setError] = useState<string | null>(null);
   const [expandedSearchTerms, setExpandedSearchTerms] = useState<string[]>([]);
   const [searchMethod, setSearchMethod] = useState<string | undefined>();
@@ -463,62 +525,74 @@ export function useClientVirtualSlidesEnhanced(defaultLimit: number = 20) {
     let mounted = true;
 
     async function processSlides() {
-      let list = allSlides;
-      // Filters first
-      if (options.repository && options.repository !== "all") {
-        list = list.filter((s) => s.repository === options.repository);
-      }
-      if (options.category && options.category !== "all") {
-        list = list.filter((s) => s.category === options.category);
-      }
-      if (options.subcategory && options.subcategory !== "all") {
-        list = list.filter((s) => s.subcategory === options.subcategory);
+      // Show searching indicator for operations that might take time
+      const hasQuery = options.query && options.query.trim();
+      if (hasQuery) {
+        setIsSearching(true);
       }
 
-      // Random mode
-      if (options.randomMode) {
-        const seedBase = options.randomSeed ?? Date.now();
-        const seed = (options.page || 1) * 1337 + seedBase;
-        const rng = (n: number) => {
-          const x = Math.sin(seed + n) * 10000;
-          return x - Math.floor(x);
-        };
-        let arr = list.slice();
-        for (let i = arr.length - 1; i > 0; i--) {
-          const j = Math.floor(rng(i) * (i + 1));
-          [arr[i], arr[j]] = [arr[j], arr[i]];
+      try {
+        let list = allSlides;
+        // Filters first
+        if (options.repository && options.repository !== "all") {
+          list = list.filter((s) => s.repository === options.repository);
         }
-        // Use the limit from options, or default to showing all
-        const randomLimit = options.limit ?? arr.length;
-        if (arr.length > randomLimit) arr = arr.slice(0, randomLimit);
-        if (mounted) {
-          setFilteredAndRanked(arr);
-          setExpandedSearchTerms([]);
+        if (options.category && options.category !== "all") {
+          list = list.filter((s) => s.category === options.category);
         }
-        return;
-      }
+        if (options.subcategory && options.subcategory !== "all") {
+          list = list.filter((s) => s.subcategory === options.subcategory);
+        }
 
-      // Search with configurable mode
-      if (options.query && options.query.trim()) {
-        const mode = options.searchMode || "standard";
-        const {
-          slides: rankedSlides,
-          expandedTerms,
-          method,
-          confidence,
-        } = await rankSlidesWithExpansion(list, options.query, mode);
-        if (mounted) {
-          setFilteredAndRanked(rankedSlides);
-          setExpandedSearchTerms(expandedTerms);
-          setSearchMethod(method);
-          setSearchConfidence(confidence);
+        // Random mode
+        if (options.randomMode) {
+          const seedBase = options.randomSeed ?? Date.now();
+          const seed = (options.page || 1) * 1337 + seedBase;
+          const rng = (n: number) => {
+            const x = Math.sin(seed + n) * 10000;
+            return x - Math.floor(x);
+          };
+          let arr = list.slice();
+          for (let i = arr.length - 1; i > 0; i--) {
+            const j = Math.floor(rng(i) * (i + 1));
+            [arr[i], arr[j]] = [arr[j], arr[i]];
+          }
+          // Use the limit from options, or default to showing all
+          const randomLimit = options.limit ?? arr.length;
+          if (arr.length > randomLimit) arr = arr.slice(0, randomLimit);
+          if (mounted) {
+            setFilteredAndRanked(arr);
+            setExpandedSearchTerms([]);
+          }
+          return;
         }
-      } else {
-        if (mounted) {
-          setFilteredAndRanked(list);
-          setExpandedSearchTerms([]);
-          setSearchMethod(undefined);
-          setSearchConfidence(undefined);
+
+        // Search with configurable mode
+        if (hasQuery) {
+          const mode = options.searchMode || "standard";
+          const {
+            slides: rankedSlides,
+            expandedTerms,
+            method,
+            confidence,
+          } = await rankSlidesWithExpansion(list, options.query, mode);
+          if (mounted) {
+            setFilteredAndRanked(rankedSlides);
+            setExpandedSearchTerms(expandedTerms);
+            setSearchMethod(method);
+            setSearchConfidence(confidence);
+          }
+        } else {
+          if (mounted) {
+            setFilteredAndRanked(list);
+            setExpandedSearchTerms([]);
+            setSearchMethod(undefined);
+            setSearchConfidence(undefined);
+          }
+        }
+      } finally {
+        if (mounted && hasQuery) {
+          setIsSearching(false);
         }
       }
     }
@@ -542,7 +616,7 @@ export function useClientVirtualSlidesEnhanced(defaultLimit: number = 20) {
   const searchWithFilters = useCallback(
     async (opts: ClientSearchOptions) => {
       setOptions((prev) => {
-        const next = { ...prev } as unknown;
+        const next: ClientSearchOptions = { ...prev };
         if (Object.prototype.hasOwnProperty.call(opts, "page")) next.page = opts.page;
         else if (!prev.page) next.page = 1;
         if (Object.prototype.hasOwnProperty.call(opts, "limit"))
@@ -599,7 +673,7 @@ export function useClientVirtualSlidesEnhanced(defaultLimit: number = 20) {
   return {
     // Data
     slides: pageSlides,
-    isLoading,
+    isLoading: isLoading || isSearching, // Combine loading states for UI
     error,
 
     // Pagination

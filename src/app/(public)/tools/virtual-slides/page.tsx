@@ -320,6 +320,7 @@ function VirtualSlidesContent() {
                 <button
                   onClick={() => {
                     setMode("search");
+                    setShowDiagnoses(true); // Restore diagnoses visibility
                     // Restore search input value after component remounts
                     setTimeout(() => {
                       if (searchInputRef.current) {
