@@ -51,16 +51,18 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   const [activeTab, setActiveTab] = useState("source");
   const [showSaveConfirmDialog, setShowSaveConfirmDialog] = useState(false);
   const [showReviewerDialog, setShowReviewerDialog] = useState(false);
-  const [pendingChangeSummary, setPendingChangeSummary] = useState("");
+  const [_pendingChangeSummary, setPendingChangeSummary] = useState("");
   const [isPatchEditDisabled, setIsPatchEditDisabled] = useState(false);
-  const [educationalContext, setEducationalContext] = useState<any>(null);
+  const [educationalContext, setEducationalContext] = useState<Record<string, unknown> | null>(
+    null
+  );
   const [assignedReviewerId, setAssignedReviewerId] = useState<string | null>(null);
   const [selectedReviewerId, setSelectedReviewerId] = useState<string>("");
-  const [reviewers, setReviewers] = useState<any[]>([]);
+  const [reviewers, setReviewers] = useState<Array<{ id: string; name: string }>>([]);
   const [loadingReviewers, setLoadingReviewers] = useState(false);
   const hasAutoAdvanced = useRef(false);
   const originalCorrectAnswerRef = useRef<string | null>(null);
-  const originalImagesRef = useRef<any[]>([]);
+  const originalImagesRef = useRef<Array<{ url: string; caption?: string }>>([]);
 
   // Get return URL from query params, default to /admin/my-questions
   const searchParams = new URLSearchParams(
@@ -175,7 +177,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
     answerOptions,
     questionImages,
     isPatchEdit,
-    patchEditReason,
+    patchEditReason: _patchEditReason,
     setSelectedTagIds,
     setAnswerOptions,
     setQuestionImages,
@@ -218,7 +220,9 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   useEffect(() => {
     if (question && originalCorrectAnswerRef.current === null) {
       // Find the correct answer ID (only set once on initial load)
-      const correctOption = question.question_options?.find((opt: any) => opt.is_correct);
+      const correctOption = question.question_options?.find(
+        (opt: { is_correct: boolean; id: string }) => opt.is_correct
+      );
       originalCorrectAnswerRef.current = correctOption?.id || null;
     }
   }, [question]);

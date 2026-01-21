@@ -49,7 +49,7 @@ import { Checkbox } from "@/shared/components/ui/checkbox";
 import { useQuestions } from "@/features/questions/hooks/use-questions";
 import { QuestionWithDetails } from "@/features/questions/types/questions";
 import { useQuestionSets } from "@/features/questions/hooks/use-question-sets";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { shouldShowDeleteButton } from "@/features/questions/utils/deletion-helpers";
 import { ComponentErrorBoundary } from "@/shared/components/common";
@@ -356,7 +356,7 @@ function RowActions({
   onCopyJson?: (question: QuestionWithDetails) => void;
 }) {
   const { isAdmin, role } = useUserRole();
-  const { user } = useAuth({ minimal: true });
+  const { user } = useAuthContext();
 
   // Check if user can edit this question
   const canEdit = question.status !== "approved" || isAdmin;
@@ -865,7 +865,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
         toast.error(error instanceof Error ? error.message : `Failed to ${action} questions`);
       }
     },
-    [selectedQuestions, refetch]
+    [selectedQuestions, refetch, router]
   );
 
   // Confirmed bulk delete handler
@@ -902,7 +902,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
     } finally {
       setIsBulkDeleting(false);
     }
-  }, [selectedQuestions, refetch]);
+  }, [selectedQuestions, refetch, router]);
 
   const handleCreateSave = useCallback(() => {
     setShowCreateDialog(false);

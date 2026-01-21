@@ -22,7 +22,6 @@ import { QuestionWithDetails } from "@/features/questions/types/questions";
 import { EditQuestionFormData } from "@/features/questions/hooks/use-edit-question-form";
 import { FetchReferencesDialog } from "@/features/questions/components/fetch-references-dialog";
 import { EducationalContent } from "@/app/(admin)/admin/create-question/components/content-selector";
-import { ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
 
 interface QuestionOptionFormData {
   id?: string;
@@ -57,7 +56,7 @@ export function ContentTab({
   const refinementModel = useMemo(() => {
     const questionSet = question.question_set || question.set;
     if (questionSet?.source_type === "ai_generated") {
-      const sourceDetails = questionSet.source_details as any;
+      const sourceDetails = questionSet.source_details as Record<string, unknown> | undefined;
       const modelId = sourceDetails?.primary_model || sourceDetails?.model;
       if (modelId) {
         return String(modelId);
@@ -115,13 +114,18 @@ export function ContentTab({
         form.setValue("teaching_point", data.teaching_point);
       }
       if (data.answer_options) {
-        const enhancedOptions = data.answer_options.map((option: any, index: number) => ({
-          ...(answerOptions[index]?.id && { id: answerOptions[index].id }),
-          text: option.text || "",
-          is_correct: option.is_correct || false,
-          explanation: option.explanation || "",
-          order_index: index,
-        }));
+        const enhancedOptions = data.answer_options.map(
+          (
+            option: { text?: string; is_correct?: boolean; explanation?: string },
+            index: number
+          ) => ({
+            ...(answerOptions[index]?.id && { id: answerOptions[index].id }),
+            text: option.text || "",
+            is_correct: option.is_correct || false,
+            explanation: option.explanation || "",
+            order_index: index,
+          })
+        );
         onAnswerOptionsChange(enhancedOptions);
       }
 
