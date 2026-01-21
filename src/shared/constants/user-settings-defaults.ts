@@ -37,11 +37,11 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
  * - text_zoom: Zoom level multiplier (0.8 to 1.5)
  * - dashboard_theme_admin: Dashboard theme for admin/creator/reviewer mode (always 'default')
  * - dashboard_theme_user: Dashboard theme for student mode (default 'tangerine', can be 'notebook' or 'tangerine')
+ * - theme: Color mode preference ('light', 'dark', or 'system') - synced with next-themes
  * - welcome_message_seen: Whether user has seen the welcome message
  * - security_notice_dismissed: Whether user has dismissed the security update notice
  *
  * REMOVED LEGACY FIELDS:
- * - theme: Color mode is managed by next-themes library (stored in localStorage as 'pathology-bites-theme')
  * - font_size: Replaced by text_zoom field
  * - sidebar_collapsed: Not used anywhere in the codebase
  */
@@ -49,6 +49,7 @@ export const DEFAULT_UI_SETTINGS = {
   text_zoom: 1.0,
   dashboard_theme_admin: "default",
   dashboard_theme_user: "tangerine",
+  theme: "system",
   welcome_message_seen: false,
   security_notice_dismissed: false,
 };

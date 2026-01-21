@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { useState, useEffect } from "react";
+import { userSettingsService } from "@/shared/services/user-settings";
 
 interface HeaderProps {
   isOpen: boolean;
@@ -26,6 +27,18 @@ export function Header({ isOpen, onMenuClick }: HeaderProps) {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleThemeChange = async (newTheme: "light" | "dark" | "system") => {
+    setTheme(newTheme);
+
+    // Sync theme to database
+    try {
+      await userSettingsService.updateUISettings({ theme: newTheme });
+    } catch (error) {
+      console.error("Failed to sync theme to database:", error);
+      // Theme is still applied locally via next-themes, so this is non-blocking
+    }
+  };
 
   const getThemeIcon = () => {
     if (!mounted) return <Sun size={20} />;
@@ -70,15 +83,15 @@ export function Header({ isOpen, onMenuClick }: HeaderProps) {
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
-              <DropdownMenuItem onClick={() => setTheme("light")}>
+              <DropdownMenuItem onClick={() => handleThemeChange("light")}>
                 <Sun className="mr-2 h-4 w-4" />
                 Light
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("dark")}>
+              <DropdownMenuItem onClick={() => handleThemeChange("dark")}>
                 <Moon className="mr-2 h-4 w-4" />
                 Dark
               </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => setTheme("system")}>
+              <DropdownMenuItem onClick={() => handleThemeChange("system")}>
                 <Monitor className="mr-2 h-4 w-4" />
                 System
               </DropdownMenuItem>
