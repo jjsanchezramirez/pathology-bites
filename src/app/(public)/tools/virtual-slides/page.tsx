@@ -97,19 +97,6 @@ function VirtualSlidesContent() {
   // Study mode specific state
   const [studyQuestionCount, setStudyQuestionCount] = useState(20);
 
-  // Manage diagnosis visibility when mode changes
-  useEffect(() => {
-    if (mode === "study") {
-      // Save current state before hiding for Study mode
-      searchModeDiagnosesVisibility.current = showDiagnoses;
-      setShowDiagnoses(false);
-    } else if (mode === "search") {
-      // Restore saved state when returning to Search mode
-      setShowDiagnoses(searchModeDiagnosesVisibility.current);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [mode]);
-
   // Process URL parameters on mount
   useEffect(() => {
     if (!urlParamsProcessed && !client.isLoading) {
@@ -244,10 +231,12 @@ function VirtualSlidesContent() {
 
   const toggleDiagnoses = () => {
     const newValue = !showDiagnoses;
+    console.log(`[Toggle] mode=${mode}, old=${showDiagnoses}, new=${newValue}`);
     setShowDiagnoses(newValue);
     setRevealedDiagnoses(new Set());
     // Update the saved state if in Search mode
     if (mode === "search") {
+      console.log(`[Toggle] Updating ref to: ${newValue}`);
       searchModeDiagnosesVisibility.current = newValue;
     }
   };
@@ -340,6 +329,10 @@ function VirtualSlidesContent() {
               <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 p-2 bg-muted/30 rounded-lg">
                 <button
                   onClick={() => {
+                    // If coming from Study mode, restore the saved diagnosis visibility
+                    if (mode === "study") {
+                      setShowDiagnoses(searchModeDiagnosesVisibility.current);
+                    }
                     setMode("search");
                     // Restore search input value after component remounts
                     setTimeout(() => {
@@ -359,6 +352,12 @@ function VirtualSlidesContent() {
                 </button>
                 <button
                   onClick={() => {
+                    // Save current diagnosis visibility before entering Study mode
+                    if (mode === "search") {
+                      searchModeDiagnosesVisibility.current = showDiagnoses;
+                    }
+                    // Always hide diagnoses in Study mode
+                    setShowDiagnoses(false);
                     setMode("study");
                   }}
                   className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md font-medium transition-all ${
