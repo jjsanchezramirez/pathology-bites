@@ -91,6 +91,9 @@ function VirtualSlidesContent() {
   const [showDiagnoses, setShowDiagnoses] = useState(true);
   const [revealedDiagnoses, setRevealedDiagnoses] = useState<Set<string>>(new Set());
 
+  // Preserve Search mode diagnosis visibility when switching to Study mode
+  const searchModeDiagnosesVisibility = useRef(true);
+
   // Study mode specific state
   const [studyQuestionCount, setStudyQuestionCount] = useState(20);
 
@@ -227,8 +230,13 @@ function VirtualSlidesContent() {
   };
 
   const toggleDiagnoses = () => {
-    setShowDiagnoses(!showDiagnoses);
+    const newValue = !showDiagnoses;
+    setShowDiagnoses(newValue);
     setRevealedDiagnoses(new Set());
+    // Update the saved state if in Search mode
+    if (mode === "search") {
+      searchModeDiagnosesVisibility.current = newValue;
+    }
   };
 
   const toggleDiagnosisReveal = (slideId: string) => {
@@ -320,7 +328,8 @@ function VirtualSlidesContent() {
                 <button
                   onClick={() => {
                     setMode("search");
-                    setShowDiagnoses(true); // Restore diagnoses visibility
+                    // Restore the diagnosis visibility state from before Study mode
+                    setShowDiagnoses(searchModeDiagnosesVisibility.current);
                     // Restore search input value after component remounts
                     setTimeout(() => {
                       if (searchInputRef.current) {
@@ -349,8 +358,10 @@ function VirtualSlidesContent() {
                 </button>
                 <button
                   onClick={() => {
+                    // Save current Search mode diagnosis visibility before switching
+                    searchModeDiagnosesVisibility.current = showDiagnoses;
                     setMode("study");
-                    setShowDiagnoses(false);
+                    setShowDiagnoses(false); // Hide diagnoses for Study mode
                   }}
                   className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md font-medium transition-all ${
                     mode === "study"
