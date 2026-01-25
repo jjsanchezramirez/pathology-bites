@@ -682,8 +682,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       // Handle versioning for published questions
       let versionId = null;
 
+      console.log("VERSIONING LOGIC - Status check:", {
+        currentStatus: currentQuestion.status,
+        isFirstTimePublishing,
+        isPatchEdit,
+        updateType,
+        changeSummary,
+        patchEditReason,
+      });
+
       // Create initial version entry when publishing for the first time
       if (isFirstTimePublishing) {
+        console.log("VERSIONING - Creating initial version 1.0.0");
         const { data: newVersionId, error: versionError} = await adminClient
           .from("question_versions")
           .insert({
@@ -722,7 +732,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       }
       // Handle versioning for already published questions
       else if (currentQuestion.status === "published") {
+        console.log("VERSIONING - Question is published, checking edit type");
         if (isPatchEdit) {
+          console.log("VERSIONING - Patch edit detected, creating version entry");
           // For patch edits, increment patch version only
           const newVersionPatch = (currentQuestion.version_patch || 0) + 1;
 
@@ -771,12 +783,20 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             .single();
 
           if (versionError) {
-            console.error("Error creating patch version history:", versionError);
+            console.error("❌ VERSIONING ERROR - Failed to create patch version:", versionError);
+            console.error("Version data attempted:", {
+              question_id: questionId,
+              version_major: currentQuestion.version_major || 1,
+              version_minor: currentQuestion.version_minor || 0,
+              version_patch: newVersionPatch,
+            });
             // Continue without version history rather than failing the entire update
           } else {
+            console.log("✅ VERSIONING SUCCESS - Created patch version:", newVersionId?.id);
             versionId = newVersionId?.id;
           }
         } else if (updateType && ["minor", "major"].includes(updateType)) {
+          console.log(`VERSIONING - ${updateType} edit detected, creating version entry`);
           // For minor/major edits, increment appropriate version numbers
           let newVersionMajor = currentQuestion.version_major || 1;
           let newVersionMinor = currentQuestion.version_minor || 0;
@@ -836,12 +856,26 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             .single();
 
           if (versionError) {
-            console.error("Error creating version history:", versionError);
+            console.error(`❌ VERSIONING ERROR - Failed to create ${updateType} version:`, versionError);
+            console.error("Version data attempted:", {
+              question_id: questionId,
+              version_major: newVersionMajor,
+              version_minor: newVersionMinor,
+              version_patch: newVersionPatch,
+            });
             // Continue without version history rather than failing the entire update
           } else {
+            console.log(`✅ VERSIONING SUCCESS - Created ${updateType} version:`, newVersionId?.id);
             versionId = newVersionId?.id;
           }
+        } else {
+          console.log("⚠️ VERSIONING SKIPPED - No isPatchEdit or updateType set:", {
+            isPatchEdit,
+            updateType,
+          });
         }
+      } else {
+        console.log("⚠️ VERSIONING SKIPPED - Question not published, status:", currentQuestion.status);
       }
 
       // Get updated question data
