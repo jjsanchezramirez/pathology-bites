@@ -30,7 +30,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // First, try a simple query to see if the question exists
     const { data: simpleQuestion, error: simpleError } = await adminClient
       .from("questions")
-      .select("*")
+      .select("id, title, stem, status, created_by, updated_by, version_major, version_minor, version_patch")
       .eq("id", questionId)
       .single();
 
