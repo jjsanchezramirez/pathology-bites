@@ -224,7 +224,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     console.log("PATCH - Fetching question with ID:", questionId);
     const { data: currentQuestion, error: questionError } = await adminClient
       .from("questions")
-      .select("id, status, created_by, reviewer_id, version")
+      .select("id, status, created_by, reviewer_id, version_major, version_minor, version_patch")
       .eq("id", questionId)
       .single();
 

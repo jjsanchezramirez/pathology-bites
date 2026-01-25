@@ -20,7 +20,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // Check if question exists and is published (only published questions can be versioned)
     const { data: question, error: questionError } = await adminClient
       .from("questions")
-      .select("id, status, version")
+      .select("id, status, version_major, version_minor, version_patch")
       .eq("id", questionId)
       .single();
 
