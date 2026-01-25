@@ -186,9 +186,9 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
           tagIds: selectedTagIds,
           categoryId: data.category_id || undefined,
           updateType: data.updateType,
-          changeSummary: data.changeSummary || (isPatchEdit ? patchEditReason : undefined),
+          changeSummary: data.changeSummary,
           isPatchEdit: isPatchEdit,
-          patchEditReason: patchEditReason,
+          patchEditReason: data.changeSummary || patchEditReason,
           reviewerId: overrideReviewerId || reviewerId || undefined,
         });
 

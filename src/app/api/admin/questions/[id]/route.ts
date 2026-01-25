@@ -760,7 +760,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
               version_minor: currentQuestion.version_minor || 0,
               version_patch: newVersionPatch,
               update_type: "patch",
-              change_summary: patchEditReason || changeSummary || "Patch edit",
+              change_summary: changeSummary || patchEditReason || "Patch edit",
               question_data: {
                 title: questionData?.title,
                 stem: questionData?.stem,

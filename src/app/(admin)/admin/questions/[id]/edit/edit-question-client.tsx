@@ -299,10 +299,11 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
     // Set the change summary in the form if provided
     if (changeSummary.trim()) {
+      // Always set in form to avoid race conditions
+      form.setValue("changeSummary", changeSummary);
+      // Also set patch edit reason state for backwards compatibility
       if (isPatchEdit) {
         setPatchEditReason(changeSummary);
-      } else {
-        form.setValue("changeSummary", changeSummary);
       }
     }
 
