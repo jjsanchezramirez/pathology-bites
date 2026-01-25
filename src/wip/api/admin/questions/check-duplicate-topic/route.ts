@@ -27,7 +27,7 @@ export async function POST(request: NextRequest) {
     // Query for existing questions with the same category/lesson/topic combination
     let query = supabase
       .from("questions")
-      .select("id, title, status, version, created_at")
+      .select("id, title, status, version_major, version_minor, version_patch, created_at")
       .eq("category_id", category_id)
       .eq("lesson", lesson)
       .eq("topic", topic);

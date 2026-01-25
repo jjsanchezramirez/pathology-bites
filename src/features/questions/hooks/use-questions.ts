@@ -84,7 +84,6 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
           created_at,
           updated_at,
           published_at,
-          version,
           version_major,
           version_minor,
           version_patch,
