@@ -701,8 +701,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             version_major: 1,
             version_minor: 0,
             version_patch: 0,
-            version_string: "1.0.0",
-            update_type: "major",
+            update_type: "initial",
             change_summary: "Initial publication",
             question_data: {
               title: questionData?.title || currentQuestion.title,
@@ -760,7 +759,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
               version_major: currentQuestion.version_major || 1,
               version_minor: currentQuestion.version_minor || 0,
               version_patch: newVersionPatch,
-              version_string: `${currentQuestion.version_major || 1}.${currentQuestion.version_minor || 0}.${newVersionPatch}`,
               update_type: "patch",
               change_summary: patchEditReason || changeSummary || "Patch edit",
               question_data: {
@@ -833,7 +831,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
               version_major: newVersionMajor,
               version_minor: newVersionMinor,
               version_patch: newVersionPatch,
-              version_string: `${newVersionMajor}.${newVersionMinor}.${newVersionPatch}`,
               update_type: updateType as "minor" | "major",
               change_summary: changeSummary || `${updateType} update`,
               question_data: {
