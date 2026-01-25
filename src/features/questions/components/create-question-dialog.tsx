@@ -43,7 +43,10 @@ import { Loader2, Plus, X } from "lucide-react";
 import { useQuestionSets } from "@/features/questions/hooks/use-question-sets";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { CompactAnswerOptions } from "./compact-answer-options";
-import { QuestionOptionFormData, QuestionImageFormData } from "@/features/questions/types/questions";
+import {
+  QuestionOptionFormData,
+  QuestionImageFormData,
+} from "@/features/questions/types/questions";
 import { apiClient } from "@/shared/utils/api-client";
 
 const createQuestionSchema = z.object({

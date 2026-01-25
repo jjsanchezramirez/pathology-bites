@@ -1,11 +1,11 @@
 // src/app/api/admin/anki/search/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { searchAnkiCards, formatCardForSearch } from '@/features/anki/services/anki-loader';
+import { NextRequest, NextResponse } from "next/server";
+import { searchAnkiCards, formatCardForSearch } from "@/features/anki/services/anki-loader";
 
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;
-    const query = searchParams.get('q') || '';
+    const query = searchParams.get("q") || "";
 
     // Search for cards
     const cards = await searchAnkiCards(query);
@@ -19,12 +19,12 @@ export async function GET(request: NextRequest) {
       results,
     });
   } catch (error) {
-    console.error('Error searching Anki cards:', error);
+    console.error("Error searching Anki cards:", error);
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to search Anki cards',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to search Anki cards",
+        message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

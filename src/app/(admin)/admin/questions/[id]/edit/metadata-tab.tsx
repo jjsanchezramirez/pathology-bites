@@ -48,11 +48,11 @@ export function MetadataTab({
   onTagsChange,
 }: MetadataTabProps) {
   // Initialize with selected tags immediately for instant display
-  const [availableTags, setAvailableTags] = useState<Tag[]>(question.tags as Tag[] || []);
+  const [availableTags, setAvailableTags] = useState<Tag[]>((question.tags as Tag[]) || []);
 
   // Get category name from preloaded data
   const categoryName = useMemo(() => {
-    if (question.category && typeof question.category === 'object' && 'name' in question.category) {
+    if (question.category && typeof question.category === "object" && "name" in question.category) {
       return question.category.name;
     }
     return "No Category";
@@ -82,12 +82,12 @@ export function MetadataTab({
           const allTagsMap = new Map<string, Tag>();
 
           // Add selected tags first to preserve them
-          selectedTagObjects.forEach(tag => {
+          selectedTagObjects.forEach((tag) => {
             allTagsMap.set(tag.id, tag as Tag);
           });
 
           // Add all loaded tags
-          tagsData.forEach(tag => {
+          tagsData.forEach((tag) => {
             if (!allTagsMap.has(tag.id)) {
               allTagsMap.set(tag.id, tag);
             }

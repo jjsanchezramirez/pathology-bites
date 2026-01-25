@@ -3,7 +3,7 @@
  * Extracts genomic identifiers from free-text variant descriptions
  */
 
-import { ParsedVariant } from './types';
+import { ParsedVariant } from "./types";
 
 export function parseVariantText(text: string): ParsedVariant {
   const result: ParsedVariant = {

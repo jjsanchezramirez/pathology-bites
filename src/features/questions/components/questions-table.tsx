@@ -52,6 +52,7 @@ import { useQuestionSets } from "@/features/questions/hooks/use-question-sets";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { shouldShowDeleteButton } from "@/features/questions/utils/deletion-helpers";
+import { formatVersion } from "@/shared/utils/version";
 import { ComponentErrorBoundary } from "@/shared/components/common";
 import { CreateQuestionDialog } from "./create-question-dialog";
 import { QuestionFlagDialog } from "./question-flag-dialog";
@@ -642,7 +643,9 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
     (question: QuestionWithDetails) => {
       // Navigate to the edit page with returnUrl to current page
       const currentPath = window.location.pathname + window.location.search;
-      router.push(`/admin/questions/${question.id}/edit?returnUrl=${encodeURIComponent(currentPath)}`);
+      router.push(
+        `/admin/questions/${question.id}/edit?returnUrl=${encodeURIComponent(currentPath)}`
+      );
     },
     [router]
   );
@@ -1094,7 +1097,15 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
         <AdminVersionUpdateDialog
           questionId={questionForVersionUpdate?.id || null}
           questionTitle={questionForVersionUpdate?.title}
-          currentVersion={questionForVersionUpdate?.version_string}
+          currentVersion={
+            questionForVersionUpdate
+              ? formatVersion(
+                  questionForVersionUpdate.version_major,
+                  questionForVersionUpdate.version_minor,
+                  questionForVersionUpdate.version_patch
+                )
+              : undefined
+          }
           open={showVersionUpdateDialog}
           onOpenChange={setShowVersionUpdateDialog}
           onVersionCreated={handleVersionUpdateSave}

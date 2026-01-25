@@ -13,6 +13,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     const { id: questionId } = await params;
     const userId = request.headers.get("x-user-id"); // Still need user ID for changed_by
+    const body = await request.json();
+    const changeSummary = body.changeSummary;
 
     // Use admin client for the actual operations
     const adminClient = await createAdminClient();
@@ -150,22 +152,14 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
           .single();
 
         // Mark the version that matches current question as current
-        const isCurrent = currentQuestion &&
+        const isCurrent =
+          currentQuestion &&
           version.version_major === currentQuestion.version_major &&
           version.version_minor === currentQuestion.version_minor &&
           version.version_patch === currentQuestion.version_patch;
 
-        // Construct version string from components
-        const versionString = formatVersion(
-          version.version_major,
-          version.version_minor,
-          version.version_patch,
-          false
-        );
-
         return {
           ...version,
-          version_string: versionString,
           changer: user || { first_name: "Unknown", last_name: "User", email: "" },
           is_current: isCurrent || index === 0, // Fallback to first if no match
         };

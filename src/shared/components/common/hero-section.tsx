@@ -112,9 +112,7 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
       <div
         className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-10 opacity-0"
         style={{
-          animation: mounted
-            ? "fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards"
-            : "none",
+          animation: mounted ? "fadeIn 1s cubic-bezier(0.16, 1, 0.3, 1) forwards" : "none",
           animationDelay: mounted ? "1.2s" : "0s",
         }}
       >

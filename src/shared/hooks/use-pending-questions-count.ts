@@ -103,14 +103,14 @@ export function usePendingQuestionsCount() {
       fetchCounts(); // Immediate, non-debounced
     };
 
-    if (typeof window !== 'undefined') {
-      window.addEventListener('questionStatusChanged', handleManualRefresh);
+    if (typeof window !== "undefined") {
+      window.addEventListener("questionStatusChanged", handleManualRefresh);
     }
 
     return () => {
       supabase.removeChannel(channel);
-      if (typeof window !== 'undefined') {
-        window.removeEventListener('questionStatusChanged', handleManualRefresh);
+      if (typeof window !== "undefined") {
+        window.removeEventListener("questionStatusChanged", handleManualRefresh);
       }
     };
   }, [fetchCounts, debouncedFetch]);

@@ -2,7 +2,11 @@
 // Hook for cached data fetching with intelligent cache management using unified cache
 
 import { useState, useEffect, useCallback, useRef } from "react";
-import { unifiedCache, type CacheOptions, type CacheNamespace } from "@/shared/services/unified-cache";
+import {
+  unifiedCache,
+  type CacheOptions,
+  type CacheNamespace,
+} from "@/shared/services/unified-cache";
 import { toast } from "@/shared/utils/toast";
 
 interface UseCachedDataOptions<T> extends CacheOptions {

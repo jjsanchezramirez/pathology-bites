@@ -24,10 +24,7 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
 
       // Check unified cache first (unless forcing refresh)
       if (!forceRefresh) {
-        const cached = unifiedCache.get<UserStatsFormatted>(
-          CACHE_NAMESPACES.STATS.name,
-          CACHE_KEY
-        );
+        const cached = unifiedCache.get<UserStatsFormatted>(CACHE_NAMESPACES.STATS.name, CACHE_KEY);
 
         if (cached) {
           setStats(cached);

@@ -234,7 +234,9 @@ class UnifiedCacheService {
           }
         }
         keysToRemove.forEach((key) => localStorage.removeItem(key));
-        console.log(`[UnifiedCache] Cleared ${keysToRemove.length} entries from ${namespace} namespace`);
+        console.log(
+          `[UnifiedCache] Cleared ${keysToRemove.length} entries from ${namespace} namespace`
+        );
       } catch (error) {
         console.warn(`[UnifiedCache] Failed to clear namespace ${namespace}:`, error);
       }
@@ -296,10 +298,7 @@ class UnifiedCacheService {
 
             const entry = JSON.parse(stored) as CacheEntry<unknown>;
             // Remove if expired or wrong version
-            if (
-              entry.version !== CACHE_VERSION ||
-              now - entry.timestamp > entry.ttl
-            ) {
+            if (entry.version !== CACHE_VERSION || now - entry.timestamp > entry.ttl) {
               keysToRemove.push(storageKey);
             }
           } catch {
@@ -376,10 +375,7 @@ class UnifiedCacheService {
           const entry = JSON.parse(stored) as CacheEntry<unknown>;
 
           // Only restore if valid and not expired
-          if (
-            entry.version === CACHE_VERSION &&
-            now - entry.timestamp <= entry.ttl
-          ) {
+          if (entry.version === CACHE_VERSION && now - entry.timestamp <= entry.ttl) {
             this.memoryCache.set(key, entry);
             restoredCount++;
           }

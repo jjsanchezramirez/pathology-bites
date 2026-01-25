@@ -58,7 +58,9 @@ export function useLottieAnimation(animationName: string): UseLottieAnimationRes
             cache: "force-cache", // Use browser HTTP cache
           }).then(async (response) => {
             if (!response.ok) {
-              throw new Error(`Failed to load animation: ${response.status} ${response.statusText}`);
+              throw new Error(
+                `Failed to load animation: ${response.status} ${response.statusText}`
+              );
             }
             const data = await response.json();
 

@@ -59,8 +59,11 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
       if (createUserError) {
         // Ignore duplicate key errors (trigger or concurrent request already created user)
-        if (createUserError.code === '23505') {
-          console.log("[UserInit API] User already exists (created by trigger or concurrent request):", userId);
+        if (createUserError.code === "23505") {
+          console.log(
+            "[UserInit API] User already exists (created by trigger or concurrent request):",
+            userId
+          );
         } else {
           console.error("[UserInit API] Failed to create fallback user:", createUserError);
         }

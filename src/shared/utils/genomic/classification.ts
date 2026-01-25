@@ -3,7 +3,7 @@
  * Implements AMP/ASCO/CAP tiered system with ACMG criteria
  */
 
-import { ParsedVariant, VariantData, OncoKBData, VariantType, ClassificationResult } from './types';
+import { ParsedVariant, VariantData, OncoKBData, VariantType, ClassificationResult } from "./types";
 
 /**
  * Determine variant type based on VAF
@@ -21,7 +21,10 @@ export function determineVariantType(vaf: number | null, _gnomadAF: number | nul
 /**
  * Detect technical artifacts that should be filtered out
  */
-export function detectTechnicalArtifact(parsed: ParsedVariant): { isArtifact: boolean; reason: string | null } {
+export function detectTechnicalArtifact(parsed: ParsedVariant): {
+  isArtifact: boolean;
+  reason: string | null;
+} {
   const vafValue = parsed.vaf || 0;
 
   // Low VAF threshold
@@ -49,9 +52,17 @@ export function detectTechnicalArtifact(parsed: ParsedVariant): { isArtifact: bo
 function countComputationalEvidence(data: VariantData): {
   pathogenicCount: number;
   benignCount: number;
-  predictors: { name: string; value: string | number; interpretation: "Pathogenic" | "Benign" | "Uncertain" }[];
+  predictors: {
+    name: string;
+    value: string | number;
+    interpretation: "Pathogenic" | "Benign" | "Uncertain";
+  }[];
 } {
-  const predictors: { name: string; value: string | number; interpretation: "Pathogenic" | "Benign" | "Uncertain" }[] = [];
+  const predictors: {
+    name: string;
+    value: string | number;
+    interpretation: "Pathogenic" | "Benign" | "Uncertain";
+  }[] = [];
   let pathogenicCount = 0;
   let benignCount = 0;
 
@@ -99,10 +110,10 @@ function countComputationalEvidence(data: VariantData): {
   if (data.sift) {
     const siftLower = data.sift.toLowerCase();
     let interpretation: "Pathogenic" | "Benign" | "Uncertain" = "Uncertain";
-    if (siftLower.includes('deleterious') || siftLower === 'd') {
+    if (siftLower.includes("deleterious") || siftLower === "d") {
       pathogenicCount++;
       interpretation = "Pathogenic";
-    } else if (siftLower.includes('tolerated') || siftLower === 't') {
+    } else if (siftLower.includes("tolerated") || siftLower === "t") {
       benignCount++;
       interpretation = "Benign";
     }
@@ -113,10 +124,10 @@ function countComputationalEvidence(data: VariantData): {
   if (data.polyphen2) {
     const ppLower = data.polyphen2.toLowerCase();
     let interpretation: "Pathogenic" | "Benign" | "Uncertain" = "Uncertain";
-    if (ppLower.includes('damaging') || ppLower === 'd') {
+    if (ppLower.includes("damaging") || ppLower === "d") {
       pathogenicCount++;
       interpretation = "Pathogenic";
-    } else if (ppLower.includes('benign') || ppLower === 'b') {
+    } else if (ppLower.includes("benign") || ppLower === "b") {
       benignCount++;
       interpretation = "Benign";
     }
@@ -149,17 +160,24 @@ export function classifyVariant(
 
   const clinvarSigLower = clinvarSig.toLowerCase();
   const clinvarConflicting = clinvarSigLower.includes("conflicting");
-  const clinvarPathogenic = clinvarSigLower.includes("pathogenic") && !clinvarSigLower.includes("likely") && !clinvarConflicting;
-  const clinvarLikelyPathogenic = clinvarSigLower.includes("likely pathogenic") && !clinvarConflicting;
+  const clinvarPathogenic =
+    clinvarSigLower.includes("pathogenic") &&
+    !clinvarSigLower.includes("likely") &&
+    !clinvarConflicting;
+  const clinvarLikelyPathogenic =
+    clinvarSigLower.includes("likely pathogenic") && !clinvarConflicting;
 
   const oncoKBOncogenic = oncokb?.oncogenic?.toLowerCase() || "";
-  const isOncoKBOncogenic = oncoKBOncogenic.includes("oncogenic") &&
-                            !oncoKBOncogenic.includes("likely") &&
-                            !oncoKBOncogenic.includes("predicted");
-  const isOncoKBLikelyOncogenic = oncoKBOncogenic.includes("likely oncogenic") ||
-                                  oncoKBOncogenic.includes("likely pathogenic");
+  const isOncoKBOncogenic =
+    oncoKBOncogenic.includes("oncogenic") &&
+    !oncoKBOncogenic.includes("likely") &&
+    !oncoKBOncogenic.includes("predicted");
+  const isOncoKBLikelyOncogenic =
+    oncoKBOncogenic.includes("likely oncogenic") || oncoKBOncogenic.includes("likely pathogenic");
 
-  const computational = data ? countComputationalEvidence(data) : { pathogenicCount: 0, benignCount: 0, predictors: [] };
+  const computational = data
+    ? countComputationalEvidence(data)
+    : { pathogenicCount: 0, benignCount: 0, predictors: [] };
 
   // Build evidence summary
   const clinicalDatabases: string[] = [];
@@ -167,9 +185,8 @@ export function classifyVariant(
   if (oncokb?.found && oncokb.oncogenic) clinicalDatabases.push(`OncoKB: ${oncokb.oncogenic}`);
   if (cosmicCount > 0) clinicalDatabases.push(`COSMIC: ${cosmicCount} occurrences`);
 
-  const populationFrequency = gnomadAF > 0
-    ? `gnomAD AF: ${(gnomadAF * 100).toFixed(4)}%`
-    : "Not found in gnomAD";
+  const populationFrequency =
+    gnomadAF > 0 ? `gnomAD AF: ${(gnomadAF * 100).toFixed(4)}%` : "Not found in gnomAD";
 
   // ═══════════════════════════════════════════════════════════════════════════
   // STEP 1: TECHNICAL ARTIFACT FILTER
@@ -181,7 +198,11 @@ export function classifyVariant(
       tier: "Excluded",
       shouldReport: false,
       reasoning: artifactCheck.reason || "Technical artifact detected",
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -196,7 +217,11 @@ export function classifyVariant(
       tier: "BA1",
       shouldReport: false,
       reasoning: `Common variant (gnomAD AF=${(gnomadAF * 100).toFixed(2)}%). Stand-alone benign evidence.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -207,7 +232,11 @@ export function classifyVariant(
       tier: "BS1",
       shouldReport: false,
       reasoning: `Polymorphic variant (gnomAD AF=${(gnomadAF * 100).toFixed(4)}%). Strong benign evidence.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -218,7 +247,8 @@ export function classifyVariant(
     clinvarLikelyPathogenic ||
     isOncoKBOncogenic ||
     isOncoKBLikelyOncogenic ||
-    (oncokb?.highestSensitiveLevel && ["LEVEL_1", "LEVEL_2", "LEVEL_3A", "LEVEL_3B"].includes(oncokb.highestSensitiveLevel));
+    (oncokb?.highestSensitiveLevel &&
+      ["LEVEL_1", "LEVEL_2", "LEVEL_3A", "LEVEL_3B"].includes(oncokb.highestSensitiveLevel));
 
   if (vaf >= 45 && vaf <= 55 && gnomadAF > 0.0001 && !hasStrongPathogenicEvidence) {
     return {
@@ -226,7 +256,11 @@ export function classifyVariant(
       tier: "BS1/BP6",
       shouldReport: false,
       reasoning: `VAF ~50% with population frequency (gnomAD AF=${(gnomadAF * 100).toFixed(4)}%). Likely germline polymorphism with no pathogenic evidence.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -242,13 +276,17 @@ export function classifyVariant(
 
   // Level A: FDA-approved therapy (OncoKB Level 1/2)
   if (oncokb?.highestSensitiveLevel === "LEVEL_1" || oncokb?.highestSensitiveLevel === "LEVEL_2") {
-    const drugs = oncokb.therapeuticImplications?.map(t => t.drug).join(", ") || "available";
+    const drugs = oncokb.therapeuticImplications?.map((t) => t.drug).join(", ") || "available";
     return {
       classification: "Pathogenic",
       tier: "Tier I (Level A)",
       shouldReport: true,
       reasoning: `FDA-approved therapy (OncoKB ${oncokb.highestSensitiveLevel}). Drugs: ${drugs}. Strong clinical significance.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -259,7 +297,11 @@ export function classifyVariant(
       tier: "Tier I (Level B)",
       shouldReport: true,
       reasoning: `Convergent evidence from multiple sources: OncoKB oncogenic, ClinVar pathogenic, COSMIC n=${cosmicCount}. Strong clinical significance.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -270,7 +312,11 @@ export function classifyVariant(
       tier: "Tier I (Level B)",
       shouldReport: true,
       reasoning: `ClinVar pathogenic, highly recurrent driver (COSMIC n=${cosmicCount}). Strong clinical significance.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -281,13 +327,20 @@ export function classifyVariant(
   // ─────────────────────────────────────────────────────────────────
 
   // Level C: Clinical trial evidence (OncoKB Level 3A/3B)
-  if (oncokb?.highestSensitiveLevel === "LEVEL_3A" || oncokb?.highestSensitiveLevel === "LEVEL_3B") {
+  if (
+    oncokb?.highestSensitiveLevel === "LEVEL_3A" ||
+    oncokb?.highestSensitiveLevel === "LEVEL_3B"
+  ) {
     return {
       classification: "Likely Pathogenic",
       tier: "Tier II (Level C)",
       shouldReport: true,
       reasoning: `Clinical evidence from trials (OncoKB ${oncokb.highestSensitiveLevel}). Potential clinical significance.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -300,7 +353,11 @@ export function classifyVariant(
       tier: "Tier II (Level D)",
       shouldReport: true,
       reasoning: "OncoKB oncogenic. Potential clinical significance (single expert source).",
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -311,7 +368,11 @@ export function classifyVariant(
       tier: "Tier II (Level D)",
       shouldReport: true,
       reasoning: "ClinVar pathogenic. Potential clinical significance (single database).",
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -322,7 +383,11 @@ export function classifyVariant(
       tier: "Tier II (Level D)",
       shouldReport: true,
       reasoning: "OncoKB likely oncogenic. Potential clinical significance.",
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -333,7 +398,11 @@ export function classifyVariant(
       tier: "Tier II (Level D)",
       shouldReport: true,
       reasoning: "ClinVar likely pathogenic. Potential clinical significance.",
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -344,7 +413,11 @@ export function classifyVariant(
       tier: "Tier II (Level D)",
       shouldReport: true,
       reasoning: `Highly recurrent in cancer (COSMIC n=${cosmicCount}). Potential clinical significance.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -355,7 +428,11 @@ export function classifyVariant(
       tier: "Tier II (Level D)",
       shouldReport: false,
       reasoning: `Biological evidence (OncoKB LEVEL_4). Potential significance, preclinical only.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -366,7 +443,11 @@ export function classifyVariant(
       tier: "Tier II (Level D)",
       shouldReport: false,
       reasoning: `Recurrent in cancer (COSMIC n=${cosmicCount}). Limited evidence, potential significance.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -384,33 +465,42 @@ export function classifyVariant(
   // This is still VUS in AMP guidelines but reportable due to strong predictions
   if (revel > 0.75 && cadd > 25 && gnomadAF < 0.001) {
     const pathogenicPredictors = computational.predictors
-      .filter(p => p.interpretation === "Pathogenic")
-      .map(p => p.name);
+      .filter((p) => p.interpretation === "Pathogenic")
+      .map((p) => p.name);
 
     return {
       classification: "VUS (Strong Computational Evidence)",
       tier: "Tier III",
       shouldReport: true,
       reasoning: `Strong computational predictions (REVEL=${revel.toFixed(3)}, CADD=${cadd}). ${computational.pathogenicCount}/${computational.pathogenicCount + computational.benignCount} predictors pathogenic${pathogenicPredictors.length > 0 ? ` (${pathogenicPredictors.join(", ")})` : ""}. Extremely rare (gnomAD AF=${(gnomadAF * 100).toFixed(4)}%). Unknown clinical significance.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
   // Borderline REVEL (0.5-0.75): VUS with context
   if (revel >= 0.5 && revel <= 0.75 && !clinvarSig && !oncokb?.found && cosmicCount === 0) {
     const summary = `${computational.pathogenicCount} pathogenic, ${computational.benignCount} benign`;
-    const tilt = computational.pathogenicCount > computational.benignCount
-      ? "favor pathogenicity"
-      : computational.benignCount > computational.pathogenicCount
-        ? "favor benign"
-        : "inconclusive";
+    const tilt =
+      computational.pathogenicCount > computational.benignCount
+        ? "favor pathogenicity"
+        : computational.benignCount > computational.pathogenicCount
+          ? "favor benign"
+          : "inconclusive";
 
     return {
       classification: "VUS (Variant of Uncertain Significance)",
       tier: "Tier III",
       shouldReport: false,
       reasoning: `Borderline REVEL (${revel.toFixed(3)}). Computational predictors (${summary}) ${tilt}. No ClinVar, OncoKB, or COSMIC data. Clinical correlation recommended.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -425,7 +515,11 @@ export function classifyVariant(
       tier: "Tier IV",
       shouldReport: false,
       reasoning: `ClinVar classified as ${clinvarSig}. Not clinically actionable.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -434,35 +528,48 @@ export function classifyVariant(
   // Requires: ClinVar conflicting AND (3+ benign predictors that outnumber pathogenic OR 4+ benign with REVEL < 0.3)
   if (clinvarConflicting) {
     // Strong evidence: 3+ benign predictors outnumbering pathogenic
-    const hasStrongBenignEvidence = computational.benignCount >= 3 && computational.benignCount > computational.pathogenicCount;
+    const hasStrongBenignEvidence =
+      computational.benignCount >= 3 && computational.benignCount > computational.pathogenicCount;
     // Very strong evidence: 4+ benign with low REVEL
-    const hasVeryStrongBenignEvidence = computational.benignCount >= 4 && revel < 0.3 && computational.benignCount >= computational.pathogenicCount * 2;
+    const hasVeryStrongBenignEvidence =
+      computational.benignCount >= 4 &&
+      revel < 0.3 &&
+      computational.benignCount >= computational.pathogenicCount * 2;
 
     if (hasStrongBenignEvidence || hasVeryStrongBenignEvidence) {
       const benignPredictors = computational.predictors
-        .filter(p => p.interpretation === "Benign")
-        .map(p => p.name)
+        .filter((p) => p.interpretation === "Benign")
+        .map((p) => p.name)
         .join(", ");
 
       return {
         classification: "Likely Benign",
         tier: "Tier IV",
         shouldReport: false,
-        reasoning: `ClinVar conflicting (excluded from analysis). Strong benign computational evidence: ${computational.benignCount}/${computational.predictors.length} predictors benign (${benignPredictors})${revel < 0.3 ? `, REVEL ${revel.toFixed(3)}` : ''}. Not clinically actionable.`,
-        evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+        reasoning: `ClinVar conflicting (excluded from analysis). Strong benign computational evidence: ${computational.benignCount}/${computational.predictors.length} predictors benign (${benignPredictors})${revel < 0.3 ? `, REVEL ${revel.toFixed(3)}` : ""}. Not clinically actionable.`,
+        evidence: {
+          clinicalDatabases,
+          computationalPredictors: computational.predictors,
+          populationFrequency,
+        },
       };
     }
   }
 
   // Benign: OncoKB Neutral + Multiple benign computational predictors
-  const isOncoKBNeutral = oncoKBOncogenic.includes("neutral") || oncoKBOncogenic.includes("inconclusive");
+  const isOncoKBNeutral =
+    oncoKBOncogenic.includes("neutral") || oncoKBOncogenic.includes("inconclusive");
   if (isOncoKBNeutral && computational.benignCount >= 2 && computational.pathogenicCount === 0) {
     return {
       classification: "Likely Benign",
       tier: "Tier IV",
       shouldReport: false,
       reasoning: `OncoKB ${oncokb?.oncogenic}, with ${computational.benignCount} benign computational predictions and no pathogenic signals. Not clinically significant.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -479,8 +586,8 @@ export function classifyVariant(
     computational.benignCount >= computational.pathogenicCount * 3
   ) {
     const benignPredictors = computational.predictors
-      .filter(p => p.interpretation === "Benign")
-      .map(p => p.name)
+      .filter((p) => p.interpretation === "Benign")
+      .map((p) => p.name)
       .join(", ");
 
     return {
@@ -488,7 +595,11 @@ export function classifyVariant(
       tier: "Tier IV",
       shouldReport: false,
       reasoning: `No clinical database evidence (ClinVar, OncoKB, COSMIC unavailable). Strong benign computational predictions: ${computational.benignCount}/${computational.predictors.length} predictors benign (${benignPredictors}). REVEL score ${revel.toFixed(3)} supports benign interpretation. Not clinically actionable.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -508,15 +619,21 @@ export function classifyVariant(
       compSummary = " No information found in external databases, which hinders classification.";
     } else if (computational.predictors.length > 0) {
       const totalPredictors = computational.predictors.length;
-      const uncertainCount = totalPredictors - computational.pathogenicCount - computational.benignCount;
+      const uncertainCount =
+        totalPredictors - computational.pathogenicCount - computational.benignCount;
 
       // Check REVEL status specifically
-      const revelPredictor = computational.predictors.find(p => p.name === "REVEL");
-      const revelNote = revelPredictor && revelPredictor.interpretation === "Uncertain"
-        ? ` REVEL ${revelPredictor.value} (borderline).`
-        : "";
+      const revelPredictor = computational.predictors.find((p) => p.name === "REVEL");
+      const revelNote =
+        revelPredictor && revelPredictor.interpretation === "Uncertain"
+          ? ` REVEL ${revelPredictor.value} (borderline).`
+          : "";
 
-      if (computational.pathogenicCount > 0 || computational.benignCount > 0 || uncertainCount > 0) {
+      if (
+        computational.pathogenicCount > 0 ||
+        computational.benignCount > 0 ||
+        uncertainCount > 0
+      ) {
         compSummary = ` ${computational.pathogenicCount}/${totalPredictors} predictors pathogenic, ${uncertainCount} uncertain, ${computational.benignCount} benign.${revelNote}`;
       }
     }
@@ -526,7 +643,11 @@ export function classifyVariant(
       tier: "Tier III",
       shouldReport: false,
       reasoning: `VUS with ${vaf}% VAF.${compSummary} Insufficient evidence for reporting.`,
-      evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+      evidence: {
+        clinicalDatabases,
+        computationalPredictors: computational.predictors,
+        populationFrequency,
+      },
     };
   }
 
@@ -566,17 +687,20 @@ export function classifyVariant(
     // Add detailed computational summary
     if (computational.predictors.length > 0) {
       const totalPredictors = computational.predictors.length;
-      const uncertainCount = totalPredictors - computational.pathogenicCount - computational.benignCount;
+      const uncertainCount =
+        totalPredictors - computational.pathogenicCount - computational.benignCount;
 
       // Check REVEL status
-      const revelPredictor = computational.predictors.find(p => p.name === "REVEL");
+      const revelPredictor = computational.predictors.find((p) => p.name === "REVEL");
       const revelInfo = revelPredictor
         ? revelPredictor.interpretation === "Uncertain"
           ? `REVEL ${revelPredictor.value} (borderline), `
           : ""
         : "";
 
-      vusReasons.push(`${revelInfo}${computational.pathogenicCount}/${totalPredictors} predictors pathogenic, ${uncertainCount} uncertain`);
+      vusReasons.push(
+        `${revelInfo}${computational.pathogenicCount}/${totalPredictors} predictors pathogenic, ${uncertainCount} uncertain`
+      );
     }
   }
 
@@ -584,9 +708,14 @@ export function classifyVariant(
     classification: "VUS (Variant of Uncertain Significance)",
     tier: "Tier III",
     shouldReport: false,
-    reasoning: vusReasons.length > 0
-      ? `Insufficient evidence: ${vusReasons.join("; ")}.`
-      : "Insufficient clinical or functional evidence for classification.",
-    evidence: { clinicalDatabases, computationalPredictors: computational.predictors, populationFrequency },
+    reasoning:
+      vusReasons.length > 0
+        ? `Insufficient evidence: ${vusReasons.join("; ")}.`
+        : "Insufficient clinical or functional evidence for classification.",
+    evidence: {
+      clinicalDatabases,
+      computationalPredictors: computational.predictors,
+      populationFrequency,
+    },
   };
 }

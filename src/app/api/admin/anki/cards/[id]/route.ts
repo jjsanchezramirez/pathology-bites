@@ -1,11 +1,8 @@
 // src/app/api/admin/anki/cards/[id]/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { getAnkiCardByNoteId, getAnkiCardByGuid } from '@/features/anki/services/anki-loader';
+import { NextRequest, NextResponse } from "next/server";
+import { getAnkiCardByNoteId, getAnkiCardByGuid } from "@/features/anki/services/anki-loader";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
 
@@ -25,7 +22,7 @@ export async function GET(
       return NextResponse.json(
         {
           success: false,
-          error: 'Card not found',
+          error: "Card not found",
         },
         { status: 404 }
       );
@@ -36,12 +33,12 @@ export async function GET(
       card,
     });
   } catch (error) {
-    console.error('Error fetching Anki card:', error);
+    console.error("Error fetching Anki card:", error);
     return NextResponse.json(
       {
         success: false,
-        error: 'Failed to fetch Anki card',
-        message: error instanceof Error ? error.message : 'Unknown error',
+        error: "Failed to fetch Anki card",
+        message: error instanceof Error ? error.message : "Unknown error",
       },
       { status: 500 }
     );

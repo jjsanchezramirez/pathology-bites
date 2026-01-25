@@ -46,7 +46,7 @@ const OLD_CACHE_PATTERNS = [
 
   // Removed namespaces
   /^pathology-bites-images/,
-  /^pathology-bites-questions(?!\/)/,  // Not SWR cache keys with /api/questions/
+  /^pathology-bites-questions(?!\/)/, // Not SWR cache keys with /api/questions/
   /^pathology-bites-dashboard/,
   /^pathology-bites-settings/,
 
@@ -59,7 +59,7 @@ const OLD_CACHE_PATTERNS = [
   // Typos and old API-based keys
   /pathology-bites-swer-/,
   /pathology-bites-swr-\/api\/iser\//,
-  /pathology-bites-swr-\/api\/user\/settings/,  // Match with or without trailing slash
+  /pathology-bites-swr-\/api\/user\/settings/, // Match with or without trailing slash
 ];
 
 /**

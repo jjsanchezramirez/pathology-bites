@@ -18,10 +18,7 @@ interface QuizResultsSummaryProps {
   onReviewQuestions?: () => void;
 }
 
-export function QuizResultsSummary({
-  result,
-  onReviewQuestions,
-}: QuizResultsSummaryProps) {
+export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSummaryProps) {
   const percentage = Math.round((result.correctAnswers / result.totalQuestions) * 100);
   const incorrectCount = result.totalQuestions - result.correctAnswers;
   const [showCelebrationModal, setShowCelebrationModal] = useState(false);

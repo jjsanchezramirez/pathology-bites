@@ -39,10 +39,7 @@ export const CACHE_TAGS = {
  * Revalidation functions for different data types
  */
 
-export function revalidateQuestions(options?: {
-  questionId?: string;
-  includeDashboard?: boolean;
-}) {
+export function revalidateQuestions(options?: { questionId?: string; includeDashboard?: boolean }) {
   revalidateTag(CACHE_TAGS.QUESTIONS);
   revalidateTag(CACHE_TAGS.QUESTIONS_LIST);
   revalidateTag(CACHE_TAGS.PENDING_QUESTIONS);
@@ -63,10 +60,7 @@ export function revalidateQuestions(options?: {
   revalidatePath("/admin/dashboard", "page");
 }
 
-export function revalidateImages(options?: {
-  imageId?: string;
-  includeDashboard?: boolean;
-}) {
+export function revalidateImages(options?: { imageId?: string; includeDashboard?: boolean }) {
   revalidateTag(CACHE_TAGS.IMAGES);
   revalidateTag(CACHE_TAGS.IMAGES_LIST);
 

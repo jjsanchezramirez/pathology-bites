@@ -179,7 +179,7 @@ export async function GET(request: Request) {
         return NextResponse.json(processedQuestion, {
           status: 200,
           headers: {
-            'Cache-Control': 'public, max-age=86400, stale-while-revalidate=300', // 24h cache
+            "Cache-Control": "public, max-age=86400, stale-while-revalidate=300", // 24h cache
           },
         });
       } catch (processingError) {
@@ -239,7 +239,7 @@ export async function GET(request: Request) {
           {
             status: 200,
             headers: {
-              'Cache-Control': 'public, max-age=86400, stale-while-revalidate=300', // 24h cache
+              "Cache-Control": "public, max-age=86400, stale-while-revalidate=300", // 24h cache
             },
           }
         );
@@ -366,7 +366,7 @@ export async function GET(request: Request) {
           {
             status: 200,
             headers: {
-              'Cache-Control': 'public, max-age=86400, stale-while-revalidate=300', // 24h cache
+              "Cache-Control": "public, max-age=86400, stale-while-revalidate=300", // 24h cache
             },
           }
         );

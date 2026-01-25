@@ -142,9 +142,7 @@ export function StepContentEdit({
     const newRefsText = references.join("\n");
 
     // Append new references to existing ones with a newline separator
-    const updatedRefs = existingRefs
-      ? `${existingRefs}\n${newRefsText}`
-      : newRefsText;
+    const updatedRefs = existingRefs ? `${existingRefs}\n${newRefsText}` : newRefsText;
 
     updateFormState({ question_references: updatedRefs });
     toast.success(`Added ${references.length} reference${references.length !== 1 ? "s" : ""}`);

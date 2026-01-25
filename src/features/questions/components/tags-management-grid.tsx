@@ -896,7 +896,9 @@ export function TagsManagementGrid() {
 
               {/* Tags to be merged */}
               <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">Tags to be merged (will be deleted):</p>
+                <p className="text-xs text-muted-foreground">
+                  Tags to be merged (will be deleted):
+                </p>
                 <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-md border">
                   {tags
                     .filter((tag) => selectedTagIds.has(tag.id) && tag.id !== mergeTargetTag.id)
@@ -921,7 +923,9 @@ export function TagsManagementGrid() {
               {/* Summary */}
               <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-md border border-blue-200 dark:border-blue-900">
                 <p className="text-xs text-blue-900 dark:text-blue-300">
-                  <strong>Result:</strong> {selectedTagIds.size - 1} tag{selectedTagIds.size - 1 === 1 ? "" : "s"} will be deleted, and their questions will be reassigned to "{mergeTargetTag.name}".
+                  <strong>Result:</strong> {selectedTagIds.size - 1} tag
+                  {selectedTagIds.size - 1 === 1 ? "" : "s"} will be deleted, and their questions
+                  will be reassigned to "{mergeTargetTag.name}".
                 </p>
               </div>
             </div>
@@ -963,15 +967,26 @@ export function TagsManagementGrid() {
                   <Button
                     variant="outline"
                     size="sm"
-                    onClick={() => setQuestionsPage((p) => Math.min(Math.ceil(tagQuestions.length / questionsPageSize) - 1, p + 1))}
-                    disabled={questionsPage >= Math.ceil(tagQuestions.length / questionsPageSize) - 1}
+                    onClick={() =>
+                      setQuestionsPage((p) =>
+                        Math.min(Math.ceil(tagQuestions.length / questionsPageSize) - 1, p + 1)
+                      )
+                    }
+                    disabled={
+                      questionsPage >= Math.ceil(tagQuestions.length / questionsPageSize) - 1
+                    }
                   >
                     Next
                   </Button>
                 </div>
               </div>
             )}
-            <Button type="button" variant="outline" onClick={() => setShowViewQuestionsDialog(false)} className="ml-auto">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => setShowViewQuestionsDialog(false)}
+              className="ml-auto"
+            >
               Close
             </Button>
           </div>
@@ -996,7 +1011,8 @@ export function TagsManagementGrid() {
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
                         <div className="font-medium text-sm mb-1">
-                          {question.title || `Question ${questionsPage * questionsPageSize + index + 1}`}
+                          {question.title ||
+                            `Question ${questionsPage * questionsPageSize + index + 1}`}
                         </div>
                         <div className="text-sm text-muted-foreground line-clamp-2">
                           {question.stem || "No question content available"}

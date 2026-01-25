@@ -132,13 +132,12 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
       try {
         // Import the loadContentFromR2 function
-        const { loadContentFromR2, CONTENT_FILES } = await import(
-          "@/app/(admin)/admin/create-question/components/content-selector"
-        );
+        const { loadContentFromR2, CONTENT_FILES } =
+          await import("@/app/(admin)/admin/create-question/components/content-selector");
 
         // Find the appropriate content file based on the question's subject
         const subjectName = question.category?.name || question.categories?.[0]?.name;
-        const contentFile = CONTENT_FILES.find(file => file.subject === subjectName);
+        const contentFile = CONTENT_FILES.find((file) => file.subject === subjectName);
 
         if (contentFile) {
           const contextData = await loadContentFromR2(contentFile.filename);
@@ -193,8 +192,8 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       toast.success("Question updated successfully!");
 
       // Dispatch event to update sidebar immediately
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('questionStatusChanged'));
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("questionStatusChanged"));
       }
 
       // If we just assigned a reviewer, wait for sidebar to update before navigating
@@ -240,8 +239,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
     // Check if correct answer changed
     const currentCorrectOption = answerOptions?.find((opt) => opt.is_correct);
-    const correctAnswerChanged =
-      currentCorrectOption?.id !== originalCorrectAnswerRef.current;
+    const correctAnswerChanged = currentCorrectOption?.id !== originalCorrectAnswerRef.current;
 
     // Check if images changed (only if we have original images to compare)
     let imagesChanged = false;
@@ -482,14 +480,16 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       return {
         variant: "default" as const,
         title: "Patch Editing Published Question",
-        description: "Making changes to a published question. Select the appropriate edit type below.",
+        description:
+          "Making changes to a published question. Select the appropriate edit type below.",
       };
     }
     if (question.status === "pending_review") {
       return {
         variant: "default" as const,
         title: "Editing Question Under Review",
-        description: "This question is currently being reviewed. Changes will require resubmission.",
+        description:
+          "This question is currently being reviewed. Changes will require resubmission.",
       };
     }
     return null;
@@ -576,7 +576,6 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
             )}
           </div>
 
-
           {/* Edit Type Card for Published Questions */}
           {question.status === "published" && (
             <Card className="p-4">
@@ -600,16 +599,13 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                   className="flex gap-4"
                 >
                   <div className="flex items-center space-x-2">
-                    <RadioGroupItem
-                      value="patch"
-                      id="patch"
-                      disabled={isPatchEditDisabled}
-                    />
+                    <RadioGroupItem value="patch" id="patch" disabled={isPatchEditDisabled} />
                     <Label
                       htmlFor="patch"
                       className={`font-normal cursor-pointer ${isPatchEditDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
                     >
-                      Patch <span className="text-xs text-muted-foreground">(typos, formatting)</span>
+                      Patch{" "}
+                      <span className="text-xs text-muted-foreground">(typos, formatting)</span>
                     </Label>
                   </div>
                   <div className="flex items-center space-x-2">
@@ -621,13 +617,17 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                   <div className="flex items-center space-x-2">
                     <RadioGroupItem value="major" id="major" />
                     <Label htmlFor="major" className="font-normal cursor-pointer">
-                      Major <span className="text-xs text-muted-foreground">(answer change, overhaul)</span>
+                      Major{" "}
+                      <span className="text-xs text-muted-foreground">
+                        (answer change, overhaul)
+                      </span>
                     </Label>
                   </div>
                 </RadioGroup>
                 {isPatchEditDisabled && (
                   <p className="text-xs text-yellow-600 dark:text-yellow-500 bg-yellow-50 dark:bg-yellow-950/20 p-2 rounded">
-                    ⚠️ Patch edit is disabled because you've changed the correct answer or modified images. These changes require review.
+                    ⚠️ Patch edit is disabled because you've changed the correct answer or modified
+                    images. These changes require review.
                   </p>
                 )}
               </div>
@@ -636,49 +636,44 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
           {/* Footer with Action Buttons */}
           <div className="flex justify-between items-center pt-4 border-t">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={handleCancel}
-                disabled={isSubmitting}
-              >
-                <ArrowLeft className="h-4 w-4 mr-2" />
-                Cancel
-              </Button>
+            <Button type="button" variant="outline" onClick={handleCancel} disabled={isSubmitting}>
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Cancel
+            </Button>
 
-              <div className="flex gap-3">
-                {question.status !== "published" && question.status !== "pending_review" && (
-                  <Button
-                    type="button"
-                    onClick={handleSaveAndSubmit}
-                    disabled={isSubmitting || !hasUnsavedChanges}
-                    variant="outline"
-                  >
-                    <Send className="h-4 w-4 mr-2" />
-                    Save & Submit for Review
-                  </Button>
-                )}
-
+            <div className="flex gap-3">
+              {question.status !== "published" && question.status !== "pending_review" && (
                 <Button
-                  type="submit"
-                  onClick={handleSaveClick}
+                  type="button"
+                  onClick={handleSaveAndSubmit}
                   disabled={isSubmitting || !hasUnsavedChanges}
-                  className="bg-primary hover:bg-primary/90"
+                  variant="outline"
                 >
-                  {isSubmitting ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : !hasUnsavedChanges ? (
-                    "No Changes"
-                  ) : question.status === "published" ? (
-                    "Publish Changes"
-                  ) : (
-                    "Save Changes"
-                  )}
+                  <Send className="h-4 w-4 mr-2" />
+                  Save & Submit for Review
                 </Button>
-              </div>
+              )}
+
+              <Button
+                type="submit"
+                onClick={handleSaveClick}
+                disabled={isSubmitting || !hasUnsavedChanges}
+                className="bg-primary hover:bg-primary/90"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Saving...
+                  </>
+                ) : !hasUnsavedChanges ? (
+                  "No Changes"
+                ) : question.status === "published" ? (
+                  "Publish Changes"
+                ) : (
+                  "Save Changes"
+                )}
+              </Button>
+            </div>
           </div>
         </form>
       </Form>
@@ -689,9 +684,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
           open={showSaveConfirmDialog}
           onOpenChange={setShowSaveConfirmDialog}
           editType={
-            isPatchEdit
-              ? "patch"
-              : (form.getValues("updateType") as "minor" | "major") || "minor"
+            isPatchEdit ? "patch" : (form.getValues("updateType") as "minor" | "major") || "minor"
           }
           onConfirm={handleSaveConfirmation}
           isSubmitting={isSubmitting}
@@ -704,7 +697,8 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
           <DialogHeader>
             <DialogTitle>Assign Reviewer</DialogTitle>
             <DialogDescription>
-              This {form.getValues("updateType")} edit requires review. Please select a reviewer to evaluate these changes.
+              This {form.getValues("updateType")} edit requires review. Please select a reviewer to
+              evaluate these changes.
             </DialogDescription>
           </DialogHeader>
 
@@ -747,7 +741,10 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
             <Button variant="outline" onClick={() => setShowReviewerDialog(false)}>
               Cancel
             </Button>
-            <Button onClick={handleReviewerSelection} disabled={!selectedReviewerId || loadingReviewers}>
+            <Button
+              onClick={handleReviewerSelection}
+              disabled={!selectedReviewerId || loadingReviewers}
+            >
               Assign & Save
             </Button>
           </DialogFooter>

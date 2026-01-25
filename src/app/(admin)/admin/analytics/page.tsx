@@ -23,7 +23,6 @@ export default function AnalyticsPage() {
               animationData={animationData}
               loop={true}
               style={{ width: "100%", height: "auto" }}
-              speed={0.1}
             />
           </div>
         )}

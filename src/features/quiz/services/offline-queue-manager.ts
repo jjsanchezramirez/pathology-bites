@@ -68,7 +68,7 @@ export class OfflineQueueManager {
 
       // Convert answers back to Map after JSON deserialization
       return queue.map((item: OfflineQueueItem) => {
-        if (item.data && typeof item.data === 'object' && 'answers' in item.data) {
+        if (item.data && typeof item.data === "object" && "answers" in item.data) {
           const quizState = item.data as { answers: unknown };
           if (Array.isArray(quizState.answers)) {
             quizState.answers = new Map(quizState.answers as [string, unknown][]);

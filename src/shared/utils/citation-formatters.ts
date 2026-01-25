@@ -45,9 +45,7 @@ async function loadJournalAbbreviations(): Promise<void> {
     const data = await response.json();
     JOURNAL_ABBREVIATIONS = data.abbreviations || {};
 
-    console.log(
-      `✅ Loaded ${Object.keys(JOURNAL_ABBREVIATIONS).length} journal abbreviations`
-    );
+    console.log(`✅ Loaded ${Object.keys(JOURNAL_ABBREVIATIONS).length} journal abbreviations`);
   } catch (error) {
     console.error("⚠️ Failed to load NLM journal abbreviations:", error);
 

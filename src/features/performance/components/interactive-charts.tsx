@@ -356,9 +356,12 @@ export function ActivityHeatmap({
 
       // Determine months: 12, 6, 4, or 3
       let months;
-      if (maxWeeks >= weeksPerMonth * 12) months = 12; // ~52 weeks
-      else if (maxWeeks >= weeksPerMonth * 6) months = 6; // ~26 weeks
-      else if (maxWeeks >= weeksPerMonth * 4) months = 4; // ~17 weeks
+      if (maxWeeks >= weeksPerMonth * 12)
+        months = 12; // ~52 weeks
+      else if (maxWeeks >= weeksPerMonth * 6)
+        months = 6; // ~26 weeks
+      else if (maxWeeks >= weeksPerMonth * 4)
+        months = 4; // ~17 weeks
       else months = 3; // ~13 weeks minimum
 
       setMonthsToShow(months);

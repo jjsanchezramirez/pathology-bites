@@ -32,10 +32,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/shared/utils";
 import { SidebarAuthStatus } from "@/shared/components/layout/sidebar-auth-status";
-import {
-  NavigationSection,
-  filterNavigationSections,
-} from "@/shared/config/navigation";
+import { NavigationSection, filterNavigationSections } from "@/shared/config/navigation";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 import { usePendingInquiriesCount } from "@/shared/hooks/use-pending-inquiries-count";
@@ -154,106 +151,106 @@ export function UnifiedSidebar({
           ) : (
             <>
               {/* Render navigation sections */}
-                <div className="space-y-6">
-                  {filteredSections.map((section, sectionIndex) => (
-                    <div
-                      key={section.title}
+              <div className="space-y-6">
+                {filteredSections.map((section, sectionIndex) => (
+                  <div
+                    key={section.title}
+                    className={cn(
+                      sectionIndex === 0 && isOpen ? "mt-[4px]" : "" // Move Dashboard down 4px in expanded state
+                    )}
+                  >
+                    {/* Section header - always takes space to keep alignment consistent */}
+                    <h3
                       className={cn(
-                        sectionIndex === 0 && isOpen ? "mt-[4px]" : "" // Move Dashboard down 4px in expanded state
+                        "text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-2",
+                        isOpen ? "px-3" : "text-center"
                       )}
                     >
-                      {/* Section header - always takes space to keep alignment consistent */}
-                      <h3
-                        className={cn(
-                          "text-xs font-semibold text-sidebar-foreground/60 uppercase tracking-wider mb-2",
-                          isOpen ? "px-3" : "text-center"
-                        )}
-                      >
-                        {isOpen ? section.title : "···"}
-                      </h3>
+                      {isOpen ? section.title : "···"}
+                    </h3>
 
-                      {/* Section items */}
-                      <div className="space-y-1">
-                        {section.items.map((item) => {
-                          const isActive = pathname === item.href;
-                          const IconComponent = iconMap[item.icon] || LayoutDashboard;
+                    {/* Section items */}
+                    <div className="space-y-1">
+                      {section.items.map((item) => {
+                        const isActive = pathname === item.href;
+                        const IconComponent = iconMap[item.icon] || LayoutDashboard;
 
-                          return (
-                            <Link
-                              key={item.href}
-                              href={item.href}
-                              className={cn(
-                                "flex items-center h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
-                                isOpen ? "pl-[8px] pr-3" : "justify-center px-0 w-10",
-                                isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
-                                isLoading && "pointer-events-none opacity-60",
-                                item.comingSoon && "opacity-60"
-                              )}
-                              title={!isOpen ? item.name : undefined}
-                            >
-                              <IconComponent className="h-5 w-5 shrink-0" />
-                              {isOpen && <span className="truncate ml-3">{item.name}</span>}
-                              {isOpen &&
-                                item.href === "/admin/inquiries" &&
-                                pendingInquiriesCount > 0 && (
-                                  <span className="ml-auto text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">
-                                    {pendingInquiriesCount}
-                                  </span>
-                                )}
-                              {isOpen &&
-                                item.showBadge &&
-                                item.badgeKey === "myQuestions" &&
-                                myQuestionsCount > 0 && (
-                                  <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
-                                    {myQuestionsCount}
-                                  </span>
-                                )}
-                              {isOpen &&
-                                item.showBadge &&
-                                item.badgeKey === "revisionQueue" &&
-                                revisionQueueCount > 0 && (
-                                  <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
-                                    {revisionQueueCount}
-                                  </span>
-                                )}
-                              {isOpen &&
-                                item.showBadge &&
-                                item.badgeKey === "drafts" &&
-                                draftsCount > 0 && (
-                                  <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
-                                    {draftsCount}
-                                  </span>
-                                )}
-                              {isOpen &&
-                                item.showBadge &&
-                                item.badgeKey === "reviewQueue" &&
-                                reviewQueueCount > 0 && (
-                                  <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
-                                    {reviewQueueCount}
-                                  </span>
-                                )}
-                              {isOpen && item.comingSoon && (
-                                <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-                                  Soon
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            className={cn(
+                              "flex items-center h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
+                              isOpen ? "pl-[8px] pr-3" : "justify-center px-0 w-10",
+                              isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
+                              isLoading && "pointer-events-none opacity-60",
+                              item.comingSoon && "opacity-60"
+                            )}
+                            title={!isOpen ? item.name : undefined}
+                          >
+                            <IconComponent className="h-5 w-5 shrink-0" />
+                            {isOpen && <span className="truncate ml-3">{item.name}</span>}
+                            {isOpen &&
+                              item.href === "/admin/inquiries" &&
+                              pendingInquiriesCount > 0 && (
+                                <span className="ml-auto text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                                  {pendingInquiriesCount}
                                 </span>
                               )}
-                              {isOpen && item.isNew && (
-                                <span className="ml-auto text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                                  New
+                            {isOpen &&
+                              item.showBadge &&
+                              item.badgeKey === "myQuestions" &&
+                              myQuestionsCount > 0 && (
+                                <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                                  {myQuestionsCount}
                                 </span>
                               )}
-                              {isOpen && item.adminOnly && !isAdmin && !isLoading && (
-                                <span className="ml-auto text-xs text-sidebar-foreground/50">
-                                  Admin
+                            {isOpen &&
+                              item.showBadge &&
+                              item.badgeKey === "revisionQueue" &&
+                              revisionQueueCount > 0 && (
+                                <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                                  {revisionQueueCount}
                                 </span>
                               )}
-                            </Link>
-                          );
-                        })}
-                      </div>
+                            {isOpen &&
+                              item.showBadge &&
+                              item.badgeKey === "drafts" &&
+                              draftsCount > 0 && (
+                                <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                                  {draftsCount}
+                                </span>
+                              )}
+                            {isOpen &&
+                              item.showBadge &&
+                              item.badgeKey === "reviewQueue" &&
+                              reviewQueueCount > 0 && (
+                                <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                                  {reviewQueueCount}
+                                </span>
+                              )}
+                            {isOpen && item.comingSoon && (
+                              <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
+                                Soon
+                              </span>
+                            )}
+                            {isOpen && item.isNew && (
+                              <span className="ml-auto text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
+                                New
+                              </span>
+                            )}
+                            {isOpen && item.adminOnly && !isAdmin && !isLoading && (
+                              <span className="ml-auto text-xs text-sidebar-foreground/50">
+                                Admin
+                              </span>
+                            )}
+                          </Link>
+                        );
+                      })}
                     </div>
-                  ))}
-                </div>
+                  </div>
+                ))}
+              </div>
             </>
           )}
         </div>

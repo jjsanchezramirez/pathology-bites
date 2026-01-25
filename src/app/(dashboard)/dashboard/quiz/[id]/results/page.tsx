@@ -36,7 +36,9 @@ export default function QuizResultsPage() {
 
           if (resultsData?.success && resultsData?.data) {
             if (attempt > 0) {
-              console.log(`[Results Page] ✅ Successfully fetched results after ${attempt} retry(ies)`);
+              console.log(
+                `[Results Page] ✅ Successfully fetched results after ${attempt} retry(ies)`
+              );
             }
             return resultsData.data;
           }

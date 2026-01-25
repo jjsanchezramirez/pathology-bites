@@ -3,13 +3,17 @@
  * Fetches variant data from MyVariant.info and OncoKB
  */
 
-import { ParsedVariant, VariantData, OncoKBData } from './types';
-import { normalizeClinvarSignificance } from './clinvar';
+import { ParsedVariant, VariantData, OncoKBData } from "./types";
+import { normalizeClinvarSignificance } from "./clinvar";
 
 /**
  * Fetch with timeout wrapper
  */
-async function fetchWithTimeout(url: string, options: RequestInit = {}, timeoutMs = 5000): Promise<Response> {
+async function fetchWithTimeout(
+  url: string,
+  options: RequestInit = {},
+  timeoutMs = 5000
+): Promise<Response> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   try {
@@ -42,14 +46,14 @@ export async function fetchVariantData(parsed: ParsedVariant): Promise<VariantDa
   // Strategy 1: Gene + Protein Change (most reliable)
   if (parsed.gene && parsed.hgvs_p) {
     try {
-      const proteinNotation = parsed.hgvs_p.replace('p.', '');
+      const proteinNotation = parsed.hgvs_p.replace("p.", "");
 
       // Handle stop codons: * notation needs to be converted to X or Ter for MyVariant.info
       // Example: Q2288* should search for Q2288X OR Q2288Ter OR Gln2288Ter
       let query: string;
-      if (proteinNotation.includes('*')) {
+      if (proteinNotation.includes("*")) {
         // Convert Q2288* to search for Q2288X OR Q2288Ter
-        const baseNotation = proteinNotation.replace('*', '');
+        const baseNotation = proteinNotation.replace("*", "");
         query = `dbnsfp.genename:${parsed.gene} AND (dbnsfp.hgvsp:*${baseNotation}X* OR dbnsfp.hgvsp:*${baseNotation}Ter*)`;
       } else {
         query = `dbnsfp.genename:${parsed.gene} AND dbnsfp.hgvsp:*${proteinNotation}*`;
@@ -117,7 +121,7 @@ export async function fetchVariantData(parsed: ParsedVariant): Promise<VariantDa
  * Extract variant data from MyVariant.info response
  */
 function extractVariantData(data: unknown): VariantData {
-  if (!data || typeof data !== 'object') {
+  if (!data || typeof data !== "object") {
     return {
       found: false,
       gnomadAF: null,
@@ -140,11 +144,11 @@ function extractVariantData(data: unknown): VariantData {
 
   // Extract gnomAD AF from multiple possible paths
   const gnomadAF =
-    (dbnsfp?.gnomad as Record<string, unknown>)?.af as number ||
-    (dbnsfp?.gnomad_genome as Record<string, unknown>)?.af as number ||
-    (dbnsfp?.gnomad_exome as Record<string, unknown>)?.af as number ||
-    ((d.gnomad_genome as Record<string, unknown>)?.af as Record<string, unknown>)?.af as number ||
-    ((d.gnomad_exome as Record<string, unknown>)?.af as Record<string, unknown>)?.af as number ||
+    ((dbnsfp?.gnomad as Record<string, unknown>)?.af as number) ||
+    ((dbnsfp?.gnomad_genome as Record<string, unknown>)?.af as number) ||
+    ((dbnsfp?.gnomad_exome as Record<string, unknown>)?.af as number) ||
+    (((d.gnomad_genome as Record<string, unknown>)?.af as Record<string, unknown>)?.af as number) ||
+    (((d.gnomad_exome as Record<string, unknown>)?.af as Record<string, unknown>)?.af as number) ||
     null;
 
   // Extract REVEL score
@@ -155,17 +159,20 @@ function extractVariantData(data: unknown): VariantData {
   const caddScore = (cadd?.phred as number) || null;
 
   // Extract GERP score
-  const gerpScore = (cadd?.gerp as Record<string, unknown>)?.rs as number ||
-                    (dbnsfp?.gerp as Record<string, unknown>)?.rs as number || null;
+  const gerpScore =
+    ((cadd?.gerp as Record<string, unknown>)?.rs as number) ||
+    ((dbnsfp?.gerp as Record<string, unknown>)?.rs as number) ||
+    null;
 
   // Extract SIFT prediction
-  const siftRaw = (dbnsfp?.sift as Record<string, unknown>)?.pred ||
-                  (cadd?.sift as Record<string, unknown>)?.cat;
+  const siftRaw =
+    (dbnsfp?.sift as Record<string, unknown>)?.pred || (cadd?.sift as Record<string, unknown>)?.cat;
   const sift = Array.isArray(siftRaw) ? siftRaw[0] : (siftRaw as string) || null;
 
   // Extract PolyPhen2 prediction
-  const polyphenRaw = ((dbnsfp?.polyphen2 as Record<string, unknown>)?.hdiv as Record<string, unknown>)?.pred ||
-                      (cadd?.polyphen as Record<string, unknown>)?.cat;
+  const polyphenRaw =
+    ((dbnsfp?.polyphen2 as Record<string, unknown>)?.hdiv as Record<string, unknown>)?.pred ||
+    (cadd?.polyphen as Record<string, unknown>)?.cat;
   const polyphen2 = Array.isArray(polyphenRaw) ? polyphenRaw[0] : (polyphenRaw as string) || null;
 
   // Extract ClinVar significance
@@ -198,7 +205,9 @@ function extractVariantData(data: unknown): VariantData {
     gnomadAF,
     cosmicCount,
     clinvarSignificance: normalizeClinvarSignificance(clinvarSig),
-    clinvarReviewStatus: (clinvar?.rcv as Record<string, unknown>)?.review_status as string || clinvar?.review_status as string,
+    clinvarReviewStatus:
+      ((clinvar?.rcv as Record<string, unknown>)?.review_status as string) ||
+      (clinvar?.review_status as string),
     revel,
     cadd: caddScore,
     gerp: gerpScore,
@@ -219,7 +228,7 @@ export async function fetchOncoKBData(parsed: ParsedVariant): Promise<OncoKBData
   }
 
   try {
-    const alteration = parsed.hgvs_p?.replace('p.', '') || parsed.mutation;
+    const alteration = parsed.hgvs_p?.replace("p.", "") || parsed.mutation;
     if (!alteration) return null;
 
     const params = new URLSearchParams({
@@ -230,17 +239,26 @@ export async function fetchOncoKBData(parsed: ParsedVariant): Promise<OncoKBData
     const url = `https://www.oncokb.org/api/v1/annotate/mutations/byProteinChange?${params.toString()}`;
     console.log(`Querying OncoKB: ${parsed.gene} ${alteration}`);
 
-    const response = await fetchWithTimeout(url, {
-      method: 'GET',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Accept': 'application/json',
+    const response = await fetchWithTimeout(
+      url,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          Accept: "application/json",
+        },
       },
-    }, 10000);
+      10000
+    );
 
     if (!response.ok) {
       if (response.status === 404) {
-        return { found: false, oncogenic: null, highestSensitiveLevel: null, highestResistanceLevel: null };
+        return {
+          found: false,
+          oncogenic: null,
+          highestSensitiveLevel: null,
+          highestResistanceLevel: null,
+        };
       }
       return null;
     }
@@ -248,7 +266,12 @@ export async function fetchOncoKBData(parsed: ParsedVariant): Promise<OncoKBData
     const data = await response.json();
 
     if (!data || !data.geneExist) {
-      return { found: false, oncogenic: null, highestSensitiveLevel: null, highestResistanceLevel: null };
+      return {
+        found: false,
+        oncogenic: null,
+        highestSensitiveLevel: null,
+        highestResistanceLevel: null,
+      };
     }
 
     console.log("✓ Found OncoKB data:", {
@@ -260,9 +283,10 @@ export async function fetchOncoKBData(parsed: ParsedVariant): Promise<OncoKBData
     if (data.treatments && Array.isArray(data.treatments)) {
       for (const treatment of data.treatments.slice(0, 5)) {
         therapeuticImplications.push({
-          level: treatment.level || 'Unknown',
-          drug: treatment.drugs?.map((d: { drugName: string }) => d.drugName).join(', ') || 'Unknown',
-          cancerType: treatment.cancerType || 'Unknown',
+          level: treatment.level || "Unknown",
+          drug:
+            treatment.drugs?.map((d: { drugName: string }) => d.drugName).join(", ") || "Unknown",
+          cancerType: treatment.cancerType || "Unknown",
         });
       }
     }
@@ -272,7 +296,8 @@ export async function fetchOncoKBData(parsed: ParsedVariant): Promise<OncoKBData
       oncogenic: data.oncogenic || null,
       highestSensitiveLevel: data.highestSensitiveLevel || null,
       highestResistanceLevel: data.highestResistanceLevel || null,
-      therapeuticImplications: therapeuticImplications.length > 0 ? therapeuticImplications : undefined,
+      therapeuticImplications:
+        therapeuticImplications.length > 0 ? therapeuticImplications : undefined,
     };
   } catch (error) {
     console.error("OncoKB API error:", error);

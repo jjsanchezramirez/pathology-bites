@@ -323,8 +323,8 @@ export function ReviewQueue() {
     router.refresh();
 
     // Also dispatch a custom event that the sidebar can listen to
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('questionStatusChanged'));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("questionStatusChanged"));
     }
   };
 

@@ -30,7 +30,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     // First, try a simple query to see if the question exists
     const { data: simpleQuestion, error: simpleError } = await adminClient
       .from("questions")
-      .select("id, title, stem, status, created_by, updated_by, version_major, version_minor, version_patch")
+      .select(
+        "id, title, stem, status, created_by, updated_by, version_major, version_minor, version_patch"
+      )
       .eq("id", questionId)
       .single();
 
@@ -684,7 +686,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
       // Create initial version entry when publishing for the first time
       if (isFirstTimePublishing) {
-        const { data: newVersionId, error: versionError} = await adminClient
+        const { data: newVersionId, error: versionError } = await adminClient
           .from("question_versions")
           .insert({
             question_id: questionId,
@@ -698,7 +700,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
               stem: questionData?.stem || currentQuestion.stem,
               difficulty: questionData?.difficulty || currentQuestion.difficulty,
               teaching_point: questionData?.teaching_point || currentQuestion.teaching_point,
-              question_references: questionData?.question_references || currentQuestion.question_references,
+              question_references:
+                questionData?.question_references || currentQuestion.question_references,
               question_set_id: questionData?.question_set_id || currentQuestion.question_set_id,
               category_id: categoryId || currentQuestion.category_id,
               tag_ids: tagIds || [],

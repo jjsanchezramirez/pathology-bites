@@ -238,9 +238,7 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
               )}
 
               {/* Version */}
-              <span className="text-muted-foreground">
-                {formatQuestionVersion(question)}
-              </span>
+              <span className="text-muted-foreground">{formatQuestionVersion(question)}</span>
             </div>
 
             {/* Attribution row */}

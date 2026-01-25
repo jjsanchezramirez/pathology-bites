@@ -72,7 +72,11 @@ interface UseAuthReturn extends AuthState {
  * const { isLoading } = useAuth({ minimal: true })
  */
 export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
-  const { enableSecurity: _enableSecurity = false, loadUserData = false, minimal = false } = options;
+  const {
+    enableSecurity: _enableSecurity = false,
+    loadUserData = false,
+    minimal = false,
+  } = options;
 
   // Check if we're on a public page
   const isPublicPage = typeof window !== "undefined" && isPublicRoute(window.location.pathname);

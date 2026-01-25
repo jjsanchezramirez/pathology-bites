@@ -51,7 +51,8 @@ const EDIT_TYPE_INFO = {
     iconColor: "text-red-600 dark:text-red-500",
     bgColor: "bg-red-50 dark:bg-red-950/20",
     borderColor: "border-red-200 dark:border-red-800",
-    description: "Significant changes (correct answer, complete rewrite, difficulty change). Requires review.",
+    description:
+      "Significant changes (correct answer, complete rewrite, difficulty change). Requires review.",
     impact: "⚠ Requires re-review before republishing",
     version: "1.0.0 → 2.0.0",
     requiresReview: true,
@@ -108,7 +109,8 @@ export function SaveConfirmationDialog({
               {info.requiresReview && (
                 <div className="pt-3 border-t border-current/20">
                   <p className="text-sm font-medium text-yellow-800 dark:text-yellow-200">
-                    ⚠️ This question will be moved to pending review and require approval before republishing.
+                    ⚠️ This question will be moved to pending review and require approval before
+                    republishing.
                   </p>
                 </div>
               )}

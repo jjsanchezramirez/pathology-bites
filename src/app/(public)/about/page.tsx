@@ -43,8 +43,8 @@ export default function AboutPage() {
             <p className="text-xl mb-8 leading-relaxed text-white">
               To democratize pathology education by providing high-quality, accessible learning
               resources to medical students, residents, and pathologists worldwide. We believe that
-              breaking down barriers to education creates better pathologists and ultimately improves
-              patient care.
+              breaking down barriers to education creates better pathologists and ultimately
+              improves patient care.
             </p>
           </div>
         </section>
@@ -68,13 +68,13 @@ export default function AboutPage() {
             </div>
             <div className="bg-background/80 backdrop-blur-sm rounded-2xl p-8 shadow-lg border space-y-6">
               <p className="text-lg text-muted-foreground leading-relaxed">
-                Pathology Bites grew out of residents sharing study materials with each other. We saw
-                how much better resources became when the community collaborated - questions written
-                by people who just took boards, explanations that actually made sense, real insight
-                into what matters. We formalized that collaboration into a platform where the
-                pathology community can contribute and access high-quality practice questions. The
-                goal: make effective board preparation available to every resident, regardless of
-                their program's resources.
+                Pathology Bites grew out of residents sharing study materials with each other. We
+                saw how much better resources became when the community collaborated - questions
+                written by people who just took boards, explanations that actually made sense, real
+                insight into what matters. We formalized that collaboration into a platform where
+                the pathology community can contribute and access high-quality practice questions.
+                The goal: make effective board preparation available to every resident, regardless
+                of their program's resources.
               </p>
             </div>
           </div>

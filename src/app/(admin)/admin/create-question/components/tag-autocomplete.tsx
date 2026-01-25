@@ -41,9 +41,7 @@ export function TagAutocomplete({
   useEffect(() => {
     if (!searchTerm.trim()) {
       // Show 10 most recent unselected tags when no search term
-      const unselected = allTags
-        .filter((tag) => !selectedTags.includes(tag.id))
-        .slice(0, 10);
+      const unselected = allTags.filter((tag) => !selectedTags.includes(tag.id)).slice(0, 10);
       setFilteredTags(unselected);
       setHighlightedIndex(0);
       return;
@@ -63,9 +61,7 @@ export function TagAutocomplete({
     setShowDropdown(true);
     // Force update filtered tags to show recent ones if search is empty
     if (!searchTerm.trim()) {
-      const unselected = allTags
-        .filter((tag) => !selectedTags.includes(tag.id))
-        .slice(0, 10);
+      const unselected = allTags.filter((tag) => !selectedTags.includes(tag.id)).slice(0, 10);
       setFilteredTags(unselected);
     }
   };
@@ -180,9 +176,7 @@ export function TagAutocomplete({
     if (e.key === "ArrowDown") {
       e.preventDefault();
       setShowDropdown(true);
-      setHighlightedIndex((prev) =>
-        prev < filteredTags.length - 1 ? prev + 1 : prev
-      );
+      setHighlightedIndex((prev) => (prev < filteredTags.length - 1 ? prev + 1 : prev));
     } else if (e.key === "ArrowUp") {
       e.preventDefault();
       setHighlightedIndex((prev) => (prev > 0 ? prev - 1 : 0));

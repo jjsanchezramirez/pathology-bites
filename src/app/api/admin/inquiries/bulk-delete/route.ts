@@ -47,7 +47,10 @@ export async function DELETE(request: NextRequest) {
 
     const { inquiryIds } = validation.data;
 
-    console.log(`Attempting to delete ${inquiryIds.length} inquiries by user ${userId}:`, inquiryIds);
+    console.log(
+      `Attempting to delete ${inquiryIds.length} inquiries by user ${userId}:`,
+      inquiryIds
+    );
 
     // First, verify all inquiries exist and get their details for logging
     const { data: existingInquiries, error: fetchError } = await supabase

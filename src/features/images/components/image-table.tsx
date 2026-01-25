@@ -521,9 +521,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
                     ? "No unused images found"
                     : pathologyCategoryFilter === "uncategorized"
                       ? "No uncategorized images found"
-                      : searchTerm ||
-                          categoryFilter !== "all" ||
-                          pathologyCategoryFilter !== "all"
+                      : searchTerm || categoryFilter !== "all" || pathologyCategoryFilter !== "all"
                         ? "No images found matching your filters"
                         : "No images uploaded yet"}
                 </TableCell>

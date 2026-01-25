@@ -51,110 +51,110 @@ export interface ContentData {
 
 // Shared list of available educational content files
 export const CONTENT_FILES: ContentFile[] = [
-      // Anatomic Pathology files
-      { filename: "ap-bone.json", category: "Anatomic Pathology", subject: "Bone" },
-      { filename: "ap-breast.json", category: "Anatomic Pathology", subject: "Breast" },
-      {
-        filename: "ap-cardiovascular-and-thoracic.json",
-        category: "Anatomic Pathology",
-        subject: "Cardiovascular and Thoracic",
-      },
-      {
-        filename: "ap-cytopathology.json",
-        category: "Anatomic Pathology",
-        subject: "Cytopathology",
-      },
-      {
-        filename: "ap-dermatopathology.json",
-        category: "Anatomic Pathology",
-        subject: "Dermatopathology",
-      },
-      {
-        filename: "ap-forensics-and-autopsy.json",
-        category: "Anatomic Pathology",
-        subject: "Forensics and Autopsy",
-      },
-      {
-        filename: "ap-gastrointestinal.json",
-        category: "Anatomic Pathology",
-        subject: "Gastrointestinal",
-      },
-      {
-        filename: "ap-general-topics.json",
-        category: "Anatomic Pathology",
-        subject: "General Topics",
-      },
-      {
-        filename: "ap-genitourinary.json",
-        category: "Anatomic Pathology",
-        subject: "Genitourinary",
-      },
-      {
-        filename: "ap-gynecological.json",
-        category: "Anatomic Pathology",
-        subject: "Gynecological",
-      },
-      {
-        filename: "ap-head-and-neck---endocrine.json",
-        category: "Anatomic Pathology",
-        subject: "Head and Neck / Endocrine",
-      },
-      {
-        filename: "ap-hematopathology.json",
-        category: "Anatomic Pathology",
-        subject: "Hematopathology",
-      },
-      { filename: "ap-molecular.json", category: "Anatomic Pathology", subject: "Molecular" },
-      {
-        filename: "ap-neuropathology.json",
-        category: "Anatomic Pathology",
-        subject: "Neuropathology",
-      },
-      {
-        filename: "ap-pancreas-biliary-liver.json",
-        category: "Anatomic Pathology",
-        subject: "Pancreas Biliary Liver",
-      },
-      { filename: "ap-pediatrics.json", category: "Anatomic Pathology", subject: "Pediatrics" },
-      { filename: "ap-soft-tissue.json", category: "Anatomic Pathology", subject: "Soft Tissue" },
+  // Anatomic Pathology files
+  { filename: "ap-bone.json", category: "Anatomic Pathology", subject: "Bone" },
+  { filename: "ap-breast.json", category: "Anatomic Pathology", subject: "Breast" },
+  {
+    filename: "ap-cardiovascular-and-thoracic.json",
+    category: "Anatomic Pathology",
+    subject: "Cardiovascular and Thoracic",
+  },
+  {
+    filename: "ap-cytopathology.json",
+    category: "Anatomic Pathology",
+    subject: "Cytopathology",
+  },
+  {
+    filename: "ap-dermatopathology.json",
+    category: "Anatomic Pathology",
+    subject: "Dermatopathology",
+  },
+  {
+    filename: "ap-forensics-and-autopsy.json",
+    category: "Anatomic Pathology",
+    subject: "Forensics and Autopsy",
+  },
+  {
+    filename: "ap-gastrointestinal.json",
+    category: "Anatomic Pathology",
+    subject: "Gastrointestinal",
+  },
+  {
+    filename: "ap-general-topics.json",
+    category: "Anatomic Pathology",
+    subject: "General Topics",
+  },
+  {
+    filename: "ap-genitourinary.json",
+    category: "Anatomic Pathology",
+    subject: "Genitourinary",
+  },
+  {
+    filename: "ap-gynecological.json",
+    category: "Anatomic Pathology",
+    subject: "Gynecological",
+  },
+  {
+    filename: "ap-head-and-neck---endocrine.json",
+    category: "Anatomic Pathology",
+    subject: "Head and Neck / Endocrine",
+  },
+  {
+    filename: "ap-hematopathology.json",
+    category: "Anatomic Pathology",
+    subject: "Hematopathology",
+  },
+  { filename: "ap-molecular.json", category: "Anatomic Pathology", subject: "Molecular" },
+  {
+    filename: "ap-neuropathology.json",
+    category: "Anatomic Pathology",
+    subject: "Neuropathology",
+  },
+  {
+    filename: "ap-pancreas-biliary-liver.json",
+    category: "Anatomic Pathology",
+    subject: "Pancreas Biliary Liver",
+  },
+  { filename: "ap-pediatrics.json", category: "Anatomic Pathology", subject: "Pediatrics" },
+  { filename: "ap-soft-tissue.json", category: "Anatomic Pathology", subject: "Soft Tissue" },
 
-      // Clinical Pathology files
-      {
-        filename: "cp-clinical-chemistry.json",
-        category: "Clinical Pathology",
-        subject: "Clinical Chemistry",
-      },
-      {
-        filename: "cp-hematology-hemostasis-and-thrombosis.json",
-        category: "Clinical Pathology",
-        subject: "Hematology Hemostasis and Thrombosis",
-      },
-      {
-        filename: "cp-hematopathology.json",
-        category: "Clinical Pathology",
-        subject: "Hematopathology",
-      },
-      { filename: "cp-immunology.json", category: "Clinical Pathology", subject: "Immunology" },
-      {
-        filename: "cp-laboratory-management-and-clinical-laboratory-informatics.json",
-        category: "Clinical Pathology",
-        subject: "Laboratory Management and Clinical Laboratory Informatics",
-      },
-      {
-        filename: "cp-medical-microbiology.json",
-        category: "Clinical Pathology",
-        subject: "Medical Microbiology",
-      },
-      {
-        filename: "cp-molecular-pathology-and-cytogenetics.json",
-        category: "Clinical Pathology",
-        subject: "Molecular Pathology and Cytogenetics",
-      },
-      {
-        filename: "cp-toxicology-body-fluids-and-special-techniques.json",
-        category: "Clinical Pathology",
-        subject: "Toxicology Body Fluids and Special Techniques",
-      },
+  // Clinical Pathology files
+  {
+    filename: "cp-clinical-chemistry.json",
+    category: "Clinical Pathology",
+    subject: "Clinical Chemistry",
+  },
+  {
+    filename: "cp-hematology-hemostasis-and-thrombosis.json",
+    category: "Clinical Pathology",
+    subject: "Hematology Hemostasis and Thrombosis",
+  },
+  {
+    filename: "cp-hematopathology.json",
+    category: "Clinical Pathology",
+    subject: "Hematopathology",
+  },
+  { filename: "cp-immunology.json", category: "Clinical Pathology", subject: "Immunology" },
+  {
+    filename: "cp-laboratory-management-and-clinical-laboratory-informatics.json",
+    category: "Clinical Pathology",
+    subject: "Laboratory Management and Clinical Laboratory Informatics",
+  },
+  {
+    filename: "cp-medical-microbiology.json",
+    category: "Clinical Pathology",
+    subject: "Medical Microbiology",
+  },
+  {
+    filename: "cp-molecular-pathology-and-cytogenetics.json",
+    category: "Clinical Pathology",
+    subject: "Molecular Pathology and Cytogenetics",
+  },
+  {
+    filename: "cp-toxicology-body-fluids-and-special-techniques.json",
+    category: "Clinical Pathology",
+    subject: "Toxicology Body Fluids and Special Techniques",
+  },
   {
     filename: "cp-transfusion-medicine.json",
     category: "Clinical Pathology",

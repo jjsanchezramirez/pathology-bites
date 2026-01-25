@@ -1,10 +1,6 @@
 // src/app/(dashboard)/dashboard/anki2/layout.tsx
-'use client'
+"use client";
 
-export default function Anki2Layout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
-  return <div className="h-full">{children}</div>
+export default function Anki2Layout({ children }: { children: React.ReactNode }) {
+  return <div className="h-full">{children}</div>;
 }

@@ -69,7 +69,7 @@ export interface FormState {
   question_set_id: string;
   tag_ids: string[];
   difficulty: "easy" | "medium" | "hard";
-  status: string;
+  status: "draft" | "pending_review" | "rejected" | "published" | "flagged" | "archived";
 }
 
 export function MultiStepQuestionForm({
@@ -156,14 +156,14 @@ export function MultiStepQuestionForm({
         questionImages:
           initialData.question_images?.map((img, idx) => ({
             image_id: img.image_id,
-            question_section: img.question_section,
+            question_section: img.question_section as "stem" | "explanation",
             order_index: idx,
           })) || [],
         category_id: initialData.category_id || "",
         lesson: initialData.lesson || "",
         topic: initialData.topic || "",
         question_set_id: initialData.question_set_id || "",
-        tag_ids: initialData.question_tags?.map((qt) => qt.tag.id) || [],
+        tag_ids: initialData.tags?.map((tag) => tag.id) || [],
         difficulty: initialData.difficulty || "medium",
         status: initialData.status || "draft",
       };

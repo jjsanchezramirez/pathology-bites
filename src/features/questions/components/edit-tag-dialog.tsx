@@ -136,7 +136,11 @@ export function EditTagDialog({ open, onOpenChange, onSuccess, tag }: EditTagDia
           >
             Cancel
           </Button>
-          <Button type="submit" disabled={isUpdating || !name.trim() || !!error} onClick={handleSubmit}>
+          <Button
+            type="submit"
+            disabled={isUpdating || !name.trim() || !!error}
+            onClick={handleSubmit}
+          >
             {isUpdating ? (
               <>
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />

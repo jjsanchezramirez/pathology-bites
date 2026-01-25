@@ -41,6 +41,7 @@ import { BulkSubmitDialog } from "@/features/questions/components/bulk-submit-di
 import { toast } from "@/shared/utils/toast";
 import { formatDistanceToNow } from "date-fns";
 import { QuestionWithDetails, DIFFICULTY_CONFIG } from "@/features/questions/types/questions";
+import { formatVersion } from "@/shared/utils/version";
 import { AccessDenied, AccessDeniedPresets } from "@/shared/components/common/access-denied";
 import {
   Select,
@@ -291,8 +292,8 @@ export default function MyQuestionsPage() {
     setSelectedQuestions(new Set());
 
     // Dispatch event to update sidebar immediately
-    if (typeof window !== 'undefined') {
-      window.dispatchEvent(new CustomEvent('questionStatusChanged'));
+    if (typeof window !== "undefined") {
+      window.dispatchEvent(new CustomEvent("questionStatusChanged"));
     }
 
     // Force refresh to update sidebar counts
@@ -359,8 +360,8 @@ export default function MyQuestionsPage() {
       await fetchMyQuestions();
 
       // Dispatch event to update sidebar immediately
-      if (typeof window !== 'undefined') {
-        window.dispatchEvent(new CustomEvent('questionStatusChanged'));
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("questionStatusChanged"));
       }
 
       // Force refresh to update sidebar counts
@@ -739,8 +740,11 @@ export default function MyQuestionsPage() {
                               {activeTab === "published" ? (
                                 <TableCell>
                                   <div className="text-sm font-mono">
-                                    {question.version_string ||
-                                      `v${question.version_major || 1}.${question.version_minor || 0}.${question.version_patch || 0}`}
+                                    {formatVersion(
+                                      question.version_major,
+                                      question.version_minor,
+                                      question.version_patch
+                                    )}
                                   </div>
                                 </TableCell>
                               ) : (

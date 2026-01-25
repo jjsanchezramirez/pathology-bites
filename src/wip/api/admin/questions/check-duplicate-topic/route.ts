@@ -41,10 +41,7 @@ export async function POST(request: NextRequest) {
 
     if (queryError) {
       console.error("Error checking for duplicate topics:", queryError);
-      return NextResponse.json(
-        { error: "Failed to check for duplicate topics" },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to check for duplicate topics" }, { status: 500 });
     }
 
     // Return results
@@ -55,9 +52,6 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Error in check-duplicate-topic endpoint:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

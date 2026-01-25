@@ -1,34 +1,36 @@
 // src/features/anki/components/interactive-anki-viewer.tsx
 
-'use client'
+"use client";
 
-import React, { useState, useEffect, useMemo, useCallback } from 'react'
-import { Card, CardContent, CardHeader } from '@/shared/components/ui/card'
-import { Button } from '@/shared/components/ui/button'
-import { Separator } from '@/shared/components/ui/separator'
-import {
-  ChevronLeft,
-  ChevronRight,
-  Eye
-} from 'lucide-react'
-import { AnkiCard, AnkiCardViewerProps } from '@/features/anki/types/anki-card'
+import React, { useState, useEffect, useMemo, useCallback } from "react";
+import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { Button } from "@/shared/components/ui/button";
+import { Separator } from "@/shared/components/ui/separator";
+import { ChevronLeft, ChevronRight, Eye } from "lucide-react";
+import { AnkiCard, AnkiCardViewerProps } from "@/features/anki/types/anki-card";
 import {
   processInteractiveClozes,
   extractClozes,
-  hasInteractiveClozes
-} from '@/features/anki/utils/interactive-cloze-processor'
-import { extractImagesFromHtml, replaceImagePlaceholders } from '@/shared/utils/html-image-extractor'
-import { cn } from '@/shared/utils'
+  hasInteractiveClozes,
+} from "@/features/anki/utils/interactive-cloze-processor";
+import {
+  extractImagesFromHtml,
+  replaceImagePlaceholders,
+} from "@/shared/utils/html-image-extractor";
+import { cn } from "@/shared/utils";
 
-interface InteractiveAnkiViewerProps extends Omit<AnkiCardViewerProps, 'showAnswer' | 'onAnswerToggle'> {
-  card: AnkiCard
-  onNext?: () => void
-  onPrevious?: () => void
-  className?: string
-  currentCardIndex?: number
-  totalCards?: number
-  categoryName?: string
-  subcategoryName?: string
+interface InteractiveAnkiViewerProps extends Omit<
+  AnkiCardViewerProps,
+  "showAnswer" | "onAnswerToggle"
+> {
+  card: AnkiCard;
+  onNext?: () => void;
+  onPrevious?: () => void;
+  className?: string;
+  currentCardIndex?: number;
+  totalCards?: number;
+  categoryName?: string;
+  subcategoryName?: string;
 }
 
 export function InteractiveAnkiViewer({
@@ -39,46 +41,48 @@ export function InteractiveAnkiViewer({
   currentCardIndex,
   totalCards,
   categoryName,
-  subcategoryName
+  subcategoryName,
 }: InteractiveAnkiViewerProps) {
-  const [revealedClozes, setRevealedClozes] = useState<Set<number>>(new Set())
-  const [showAnswer, setShowAnswer] = useState(false)
-  const [imageOcclusionRevealed, setImageOcclusionRevealed] = useState(false)
+  const [revealedClozes, setRevealedClozes] = useState<Set<number>>(new Set());
+  const [showAnswer, setShowAnswer] = useState(false);
+  const [imageOcclusionRevealed, setImageOcclusionRevealed] = useState(false);
 
   // Check if this is an image occlusion card (strict check; do NOT infer from presence of <img>)
-  const isImageOcclusion = card.modelName === 'Image Occlusion Enhanced+' ||
-                          card.modelName === 'Image Occlusion Enhanced+++' ||
-                          card.modelName.includes('Image Occlusion Enhanced') ||
-                          card.tags.some(tag => tag.toLowerCase().includes('image-occlusion'))
+  const isImageOcclusion =
+    card.modelName === "Image Occlusion Enhanced+" ||
+    card.modelName === "Image Occlusion Enhanced+++" ||
+    card.modelName.includes("Image Occlusion Enhanced") ||
+    card.tags.some((tag) => tag.toLowerCase().includes("image-occlusion"));
 
   // Check if this is a multiple images card (handled specially by the parser)
-  const isMultipleImagesCard = card.modelName === 'Cloze (Multiple Images)' ||
-                               card.tags.some(tag => tag === '#multiple-images')
+  const isMultipleImagesCard =
+    card.modelName === "Cloze (Multiple Images)" ||
+    card.tags.some((tag) => tag === "#multiple-images");
 
   // Check if the card has clozes (only for non-image occlusion cards)
-  const questionHasClozes = !isImageOcclusion && hasInteractiveClozes(card.question)
-  const answerHasClozes = !isImageOcclusion && hasInteractiveClozes(card.answer)
-  const hasClozes = questionHasClozes || answerHasClozes
+  const questionHasClozes = !isImageOcclusion && hasInteractiveClozes(card.question);
+  const answerHasClozes = !isImageOcclusion && hasInteractiveClozes(card.answer);
+  const hasClozes = questionHasClozes || answerHasClozes;
 
   // Check if this is a basic front/back card (no clozes, no image occlusion, no multiple images)
-  const isBasicCard = !hasClozes && !isImageOcclusion && !isMultipleImagesCard
+  const isBasicCard = !hasClozes && !isImageOcclusion && !isMultipleImagesCard;
 
   // Extract clozes for reference
-  const questionClozes = useMemo(() => 
-    questionHasClozes ? extractClozes(card.question) : [], 
+  const questionClozes = useMemo(
+    () => (questionHasClozes ? extractClozes(card.question) : []),
     [card.question, questionHasClozes]
-  )
-  const answerClozes = useMemo(() => 
-    answerHasClozes ? extractClozes(card.answer) : [], 
+  );
+  const answerClozes = useMemo(
+    () => (answerHasClozes ? extractClozes(card.answer) : []),
     [card.answer, answerHasClozes]
-  )
+  );
 
   // Reset revealed clozes and answer state when card changes
   useEffect(() => {
-    setRevealedClozes(new Set())
-    setShowAnswer(false)
-    setImageOcclusionRevealed(false)
-  }, [card.id])
+    setRevealedClozes(new Set());
+    setShowAnswer(false);
+    setImageOcclusionRevealed(false);
+  }, [card.id]);
 
   // Extract images from question and answer HTML
   // For multiple images cards (already processed by parser), skip complex extraction
@@ -87,223 +91,240 @@ export function InteractiveAnkiViewer({
     if (isMultipleImagesCard) {
       return {
         processedQuestionHtml: card.question,
-        hasMultipleImages: true
-      }
+        hasMultipleImages: true,
+      };
     }
 
-    const extracted = extractImagesFromHtml(card.question, true)
+    const extracted = extractImagesFromHtml(card.question, true);
 
     // Replace [IMAGE_#] placeholders with actual inline image tags
     const htmlWithImages = replaceImagePlaceholders(extracted.cleanHtml, (index) => {
-      const image = extracted.images[index]
+      const image = extracted.images[index];
       if (image && image.src) {
         // Check if it's an arrow or small icon (should stay small)
-        const hasSmallKeyword = image.alt?.toLowerCase().includes('arrow') ||
-                                image.src?.toLowerCase().includes('arrow') ||
-                                image.alt?.toLowerCase().includes('icon') ||
-                                image.src?.toLowerCase().includes('symbol') ||
-                                image.src?.toLowerCase().includes('emoji')
+        const hasSmallKeyword =
+          image.alt?.toLowerCase().includes("arrow") ||
+          image.src?.toLowerCase().includes("arrow") ||
+          image.alt?.toLowerCase().includes("icon") ||
+          image.src?.toLowerCase().includes("symbol") ||
+          image.src?.toLowerCase().includes("emoji");
 
-        const width = image.width ? parseInt(image.width) : null
-        const height = image.height ? parseInt(image.height) : null
-        const isSmallByDimensions = (width !== null && width < 50) || (height !== null && height < 50)
+        const width = image.width ? parseInt(image.width) : null;
+        const height = image.height ? parseInt(image.height) : null;
+        const isSmallByDimensions =
+          (width !== null && width < 50) || (height !== null && height < 50);
 
-        const filename = image.src.split('/').pop() || ''
-        const filenameWithoutExt = filename.replace(/\.[^.]+$/, '')
-        const isShortFilename = filenameWithoutExt.length <= 3 && /\.(png|svg|gif)$/i.test(filename)
+        const filename = image.src.split("/").pop() || "";
+        const filenameWithoutExt = filename.replace(/\.[^.]+$/, "");
+        const isShortFilename =
+          filenameWithoutExt.length <= 3 && /\.(png|svg|gif)$/i.test(filename);
 
-        const isSmallIcon = hasSmallKeyword || isSmallByDimensions || isShortFilename
-        const className = isSmallIcon ? 'inline-image-small' : 'inline-image'
-        return `<img src="${image.src}" alt="${image.alt || 'Image'}" class="${className}" loading="lazy" />`
+        const isSmallIcon = hasSmallKeyword || isSmallByDimensions || isShortFilename;
+        const className = isSmallIcon ? "inline-image-small" : "inline-image";
+        return `<img src="${image.src}" alt="${image.alt || "Image"}" class="${className}" loading="lazy" />`;
       }
-      return `<span class="text-muted-foreground text-sm italic">[Image ${index + 1} not available]</span>`
-    })
+      return `<span class="text-muted-foreground text-sm italic">[Image ${index + 1} not available]</span>`;
+    });
 
     return {
       processedQuestionHtml: htmlWithImages,
-      hasMultipleImages: false
-    }
-  }, [card.question, isMultipleImagesCard])
+      hasMultipleImages: false,
+    };
+  }, [card.question, isMultipleImagesCard]);
 
   const { processedAnswerHtml } = useMemo(() => {
-    const extracted = extractImagesFromHtml(card.answer, true)
+    const extracted = extractImagesFromHtml(card.answer, true);
 
     // Replace [IMAGE_#] placeholders with actual inline image tags
     const htmlWithImages = replaceImagePlaceholders(extracted.cleanHtml, (index) => {
-      const image = extracted.images[index]
+      const image = extracted.images[index];
       if (image && image.src) {
         // Check if it's an arrow or small icon (should stay small)
         // Check by keywords in alt/src
-        const hasSmallKeyword = image.alt?.toLowerCase().includes('arrow') ||
-                                image.src?.toLowerCase().includes('arrow') ||
-                                image.alt?.toLowerCase().includes('icon') ||
-                                image.src?.toLowerCase().includes('symbol') ||
-                                image.src?.toLowerCase().includes('emoji')
+        const hasSmallKeyword =
+          image.alt?.toLowerCase().includes("arrow") ||
+          image.src?.toLowerCase().includes("arrow") ||
+          image.alt?.toLowerCase().includes("icon") ||
+          image.src?.toLowerCase().includes("symbol") ||
+          image.src?.toLowerCase().includes("emoji");
 
         // Check by dimensions (if width or height is specified and < 50px)
-        const width = image.width ? parseInt(image.width) : null
-        const height = image.height ? parseInt(image.height) : null
-        const isSmallByDimensions = (width !== null && width < 50) || (height !== null && height < 50)
+        const width = image.width ? parseInt(image.width) : null;
+        const height = image.height ? parseInt(image.height) : null;
+        const isSmallByDimensions =
+          (width !== null && width < 50) || (height !== null && height < 50);
 
         // Check for very short filenames (likely icons/arrows like BO.png, BS.png)
         // Extract filename from src (after last slash)
-        const filename = image.src.split('/').pop() || ''
-        const filenameWithoutExt = filename.replace(/\.[^.]+$/, '') // Remove extension
-        const isShortFilename = filenameWithoutExt.length <= 3 && /\.(png|svg|gif)$/i.test(filename)
+        const filename = image.src.split("/").pop() || "";
+        const filenameWithoutExt = filename.replace(/\.[^.]+$/, ""); // Remove extension
+        const isShortFilename =
+          filenameWithoutExt.length <= 3 && /\.(png|svg|gif)$/i.test(filename);
 
-        const isSmallIcon = hasSmallKeyword || isSmallByDimensions || isShortFilename
-        const className = isSmallIcon ? 'inline-image-small' : 'inline-image'
-        return `<img src="${image.src}" alt="${image.alt || 'Image'}" class="${className}" loading="lazy" />`
+        const isSmallIcon = hasSmallKeyword || isSmallByDimensions || isShortFilename;
+        const className = isSmallIcon ? "inline-image-small" : "inline-image";
+        return `<img src="${image.src}" alt="${image.alt || "Image"}" class="${className}" loading="lazy" />`;
       }
       // Show placeholder text if image is missing
-      return `<span class="text-muted-foreground text-sm italic">[Image ${index + 1} not available]</span>`
-    })
+      return `<span class="text-muted-foreground text-sm italic">[Image ${index + 1} not available]</span>`;
+    });
 
     return {
-      processedAnswerHtml: htmlWithImages
-    }
-  }, [card.answer])
+      processedAnswerHtml: htmlWithImages,
+    };
+  }, [card.answer]);
 
   // Process content with interactive clozes or handle image occlusion
   const clozeProcessedQuestion = useMemo(() => {
     if (isImageOcclusion) {
-      return { html: processedQuestionHtml, clozes: [], allRevealed: true }
+      return { html: processedQuestionHtml, clozes: [], allRevealed: true };
     }
     if (questionHasClozes) {
-      return processInteractiveClozes(processedQuestionHtml, revealedClozes)
+      return processInteractiveClozes(processedQuestionHtml, revealedClozes);
     }
-    return { html: processedQuestionHtml, clozes: [], allRevealed: true }
-  }, [processedQuestionHtml, questionHasClozes, revealedClozes, isImageOcclusion])
+    return { html: processedQuestionHtml, clozes: [], allRevealed: true };
+  }, [processedQuestionHtml, questionHasClozes, revealedClozes, isImageOcclusion]);
 
   const clozeProcessedAnswer = useMemo(() => {
     if (isImageOcclusion) {
-      return { html: processedAnswerHtml, clozes: [], allRevealed: true }
+      return { html: processedAnswerHtml, clozes: [], allRevealed: true };
     }
     if (answerHasClozes) {
-      return processInteractiveClozes(processedAnswerHtml, revealedClozes)
+      return processInteractiveClozes(processedAnswerHtml, revealedClozes);
     }
-    return { html: processedAnswerHtml, clozes: [], allRevealed: true }
-  }, [processedAnswerHtml, answerHasClozes, revealedClozes, isImageOcclusion])
+    return { html: processedAnswerHtml, clozes: [], allRevealed: true };
+  }, [processedAnswerHtml, answerHasClozes, revealedClozes, isImageOcclusion]);
 
   // Combined cloze state across question and answer
-  const hasAnyClozes = hasClozes && ((clozeProcessedQuestion.clozes?.length || 0) + (clozeProcessedAnswer.clozes?.length || 0) > 0)
-  const allClozesRevealed = hasAnyClozes && [...new Set([...(clozeProcessedQuestion.clozes||[]), ...(clozeProcessedAnswer.clozes||[])].map(c => c.index))].every(idx => revealedClozes.has(idx))
+  const hasAnyClozes =
+    hasClozes &&
+    (clozeProcessedQuestion.clozes?.length || 0) + (clozeProcessedAnswer.clozes?.length || 0) > 0;
+  const allClozesRevealed =
+    hasAnyClozes &&
+    [
+      ...new Set(
+        [...(clozeProcessedQuestion.clozes || []), ...(clozeProcessedAnswer.clozes || [])].map(
+          (c) => c.index
+        )
+      ),
+    ].every((idx) => revealedClozes.has(idx));
 
   // Handle cloze click
   const handleClozeClick = useCallback((clozeIndex: number) => {
-    setRevealedClozes(prev => {
-      const newSet = new Set(prev)
+    setRevealedClozes((prev) => {
+      const newSet = new Set(prev);
       if (newSet.has(clozeIndex)) {
-        newSet.delete(clozeIndex)
+        newSet.delete(clozeIndex);
       } else {
-        newSet.add(clozeIndex)
+        newSet.add(clozeIndex);
       }
-      return newSet
-    })
-  }, [])
+      return newSet;
+    });
+  }, []);
 
   // Reset all clozes
   const resetClozes = useCallback(() => {
-    setRevealedClozes(new Set())
-  }, [])
+    setRevealedClozes(new Set());
+  }, []);
 
   // Toggle answer visibility
   const toggleAnswer = useCallback(() => {
     if (isImageOcclusion) {
       // For image occlusion, toggle the occlusion overlay
-      setImageOcclusionRevealed(prev => !prev)
+      setImageOcclusionRevealed((prev) => !prev);
     } else {
-      setShowAnswer(prev => !prev)
+      setShowAnswer((prev) => !prev);
     }
-  }, [isImageOcclusion])
+  }, [isImageOcclusion]);
 
   // For Basic cards, only show the back if there is more than a citation
   const basicHasNonCitationAnswer = useMemo(() => {
-    const ans = card.answer || ''
-    if (!ans.trim()) return false
+    const ans = card.answer || "";
+    if (!ans.trim()) return false;
 
     // Remove HTML tags and check if there's actual content
-    const textContent = ans.replace(/<[^>]*>/g, '').trim()
-    if (!textContent) return false
+    const textContent = ans.replace(/<[^>]*>/g, "").trim();
+    if (!textContent) return false;
 
     // Check for meaningful sections (Extra/Personal Notes/Textbook)
-    const hasMeaningfulSections = ans.includes('extra-section') ||
-                                  ans.includes('personal-notes-section') ||
-                                  ans.includes('textbook-section')
+    const hasMeaningfulSections =
+      ans.includes("extra-section") ||
+      ans.includes("personal-notes-section") ||
+      ans.includes("textbook-section");
 
     // Check if answer has substantial text content (more than just a citation)
-    const hasSubstantialContent = textContent.length > 50
+    const hasSubstantialContent = textContent.length > 50;
 
     // Check if answer has images
-    const hasImages = ans.includes('<img') || ans.includes('[IMAGE_')
+    const hasImages = ans.includes("<img") || ans.includes("[IMAGE_");
 
-    return hasMeaningfulSections || hasSubstantialContent || hasImages
-  }, [card.answer])
+    return hasMeaningfulSections || hasSubstantialContent || hasImages;
+  }, [card.answer]);
 
   // Keyboard controls
   useEffect(() => {
     const handleKeyDown = (event: KeyboardEvent) => {
       // Don't interfere with input fields
-      if (['INPUT', 'TEXTAREA'].includes((event.target as HTMLElement).tagName)) {
-        return
+      if (["INPUT", "TEXTAREA"].includes((event.target as HTMLElement).tagName)) {
+        return;
       }
 
       switch (event.code) {
-        case 'Space':
-        case 'Enter':
-        case 'NumpadEnter':
-          event.preventDefault()
+        case "Space":
+        case "Enter":
+        case "NumpadEnter":
+          event.preventDefault();
           if (hasAnyClozes && !allClozesRevealed) {
             // Reveal next cloze in numerical order (c1, c2, c3, etc.)
             const nextClozeIndex = [...questionClozes, ...answerClozes]
-              .map(c => c.index)
+              .map((c) => c.index)
               .sort((a, b) => a - b)
-              .find(index => !revealedClozes.has(index))
+              .find((index) => !revealedClozes.has(index));
             if (nextClozeIndex !== undefined) {
-              handleClozeClick(nextClozeIndex)
+              handleClozeClick(nextClozeIndex);
               // For multiple images cards, also reveal the answer when revealing cloze
               // This makes it a 2-step flow: reveal cloze+answer → next card
               if (hasMultipleImages) {
-                setShowAnswer(true)
+                setShowAnswer(true);
               }
             } else {
-              onNext?.()
+              onNext?.();
             }
           } else if (isImageOcclusion && !imageOcclusionRevealed) {
             // For image occlusion, toggle the overlay
-            toggleAnswer()
+            toggleAnswer();
           } else if (hasMultipleImages && !showAnswer) {
             // For multiple images without clozes, reveal all images and answer
-            setShowAnswer(true)
+            setShowAnswer(true);
           } else if (isBasicCard && !showAnswer && card.answer && card.answer.trim()) {
             if (!basicHasNonCitationAnswer) {
-              onNext?.()
+              onNext?.();
             } else {
-              toggleAnswer()
+              toggleAnswer();
             }
           } else {
-            onNext?.()
+            onNext?.();
           }
-          break
-        case 'ArrowLeft':
-          event.preventDefault()
-          onPrevious?.()
-          break
-        case 'ArrowRight':
-          event.preventDefault()
-          onNext?.()
-          break
-        case 'KeyR':
+          break;
+        case "ArrowLeft":
+          event.preventDefault();
+          onPrevious?.();
+          break;
+        case "ArrowRight":
+          event.preventDefault();
+          onNext?.();
+          break;
+        case "KeyR":
           if (event.ctrlKey || event.metaKey) {
-            event.preventDefault()
-            resetClozes()
+            event.preventDefault();
+            resetClozes();
           }
-          break
+          break;
       }
-    }
+    };
 
-    document.addEventListener('keydown', handleKeyDown)
-    return () => document.removeEventListener('keydown', handleKeyDown)
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
   }, [
     hasAnyClozes,
     allClozesRevealed,
@@ -321,23 +342,26 @@ export function InteractiveAnkiViewer({
     onNext,
     onPrevious,
     resetClozes,
-    card.answer
-  ])
+    card.answer,
+  ]);
 
   // Handle click events on processed content
-  const handleContentClick = useCallback((event: React.MouseEvent) => {
-    const target = event.target as HTMLElement
-    
-    // Check if clicked element or its parent has cloze classes
-    const clozeElement = target.closest('.cloze-hidden') as HTMLElement
-    if (clozeElement) {
-      event.preventDefault()
-      event.stopPropagation()
-      const clozeIndex = parseInt(clozeElement.dataset.clozeIndex || '0', 10)
-      handleClozeClick(clozeIndex)
-      return
-    }
-  }, [handleClozeClick])
+  const handleContentClick = useCallback(
+    (event: React.MouseEvent) => {
+      const target = event.target as HTMLElement;
+
+      // Check if clicked element or its parent has cloze classes
+      const clozeElement = target.closest(".cloze-hidden") as HTMLElement;
+      if (clozeElement) {
+        event.preventDefault();
+        event.stopPropagation();
+        const clozeIndex = parseInt(clozeElement.dataset.clozeIndex || "0", 10);
+        handleClozeClick(clozeIndex);
+        return;
+      }
+    },
+    [handleClozeClick]
+  );
 
   return (
     <div className={cn("max-w-[95%] md:max-w-3xl mx-auto mb-2 md:mb-4 pb-2 md:pb-4", className)}>
@@ -364,14 +388,10 @@ export function InteractiveAnkiViewer({
       {(categoryName || subcategoryName) && (
         <div className="mb-3 md:mb-4 px-2 md:px-0 text-center">
           {categoryName && (
-            <h2 className="text-lg md:text-xl font-semibold text-foreground">
-              {categoryName}
-            </h2>
+            <h2 className="text-lg md:text-xl font-semibold text-foreground">{categoryName}</h2>
           )}
           {subcategoryName && (
-            <p className="text-sm md:text-base text-muted-foreground mt-0.5">
-              {subcategoryName}
-            </p>
+            <p className="text-sm md:text-base text-muted-foreground mt-0.5">{subcategoryName}</p>
           )}
         </div>
       )}
@@ -391,7 +411,6 @@ export function InteractiveAnkiViewer({
         </CardHeader>
 
         <CardContent className="space-y-3 md:space-y-4 pb-4 md:pb-6 px-4 md:px-6 overflow-visible">
-
           {/* Question */}
           <div className="space-y-2">
             <div className="prose prose-sm max-w-none">
@@ -407,83 +426,91 @@ export function InteractiveAnkiViewer({
             </div>
           </div>
 
-
           {/* Answer section - show when conditions met */}
-          {(hasAnyClozes ? allClozesRevealed : (showAnswer || imageOcclusionRevealed)) && card.answer && card.answer.trim() && (
-            <>
-              {/* For image occlusion, only show extra info (remarks, sources, etc.) - not the image again */}
-              {isImageOcclusion ? (
-                (() => {
-                  // Extract only the extra wrapper content (remarks, sources, etc.)
-                  const extraMatch = card.answer.match(/<div id="io-extra-wrapper">([\s\S]*?)<\/div>\s*$/)
-                  const extraContent = extraMatch ? extraMatch[1] : ''
+          {(hasAnyClozes ? allClozesRevealed : showAnswer || imageOcclusionRevealed) &&
+            card.answer &&
+            card.answer.trim() && (
+              <>
+                {/* For image occlusion, only show extra info (remarks, sources, etc.) - not the image again */}
+                {isImageOcclusion ? (
+                  (() => {
+                    // Extract only the extra wrapper content (remarks, sources, etc.)
+                    const extraMatch = card.answer.match(
+                      /<div id="io-extra-wrapper">([\s\S]*?)<\/div>\s*$/
+                    );
+                    const extraContent = extraMatch ? extraMatch[1] : "";
 
-                  if (extraContent.trim()) {
-                    return (
-                      <>
-                        <Separator />
-                        <div className="space-y-3">
-                          <div className="prose prose-sm max-w-none">
-                            <div
-                              className="text-foreground leading-relaxed"
-                              dangerouslySetInnerHTML={{ __html: extraContent }}
-                            />
+                    if (extraContent.trim()) {
+                      return (
+                        <>
+                          <Separator />
+                          <div className="space-y-3">
+                            <div className="prose prose-sm max-w-none">
+                              <div
+                                className="text-foreground leading-relaxed"
+                                dangerouslySetInnerHTML={{ __html: extraContent }}
+                              />
+                            </div>
                           </div>
-                        </div>
-                      </>
-                    )
-                  }
-                  return null
-                })()
-              ) : (
-                <>
-                  <Separator />
-                  <div className="space-y-3">
-                    {/* Answer content - let ankoma parser CSS classes handle styling */}
-                    <div className="prose prose-sm max-w-none">
-                      <div
-                        className="text-foreground leading-relaxed cursor-pointer"
-                        dangerouslySetInnerHTML={{
-                          __html: clozeProcessedAnswer.html
-                            .replace(/\[IMAGE_\d+\]/gi, '') // Remove any remaining image placeholders
-                            .trim()
-                        }}
-                        onClick={handleContentClick}
-                      />
+                        </>
+                      );
+                    }
+                    return null;
+                  })()
+                ) : (
+                  <>
+                    <Separator />
+                    <div className="space-y-3">
+                      {/* Answer content - let ankoma parser CSS classes handle styling */}
+                      <div className="prose prose-sm max-w-none">
+                        <div
+                          className="text-foreground leading-relaxed cursor-pointer"
+                          dangerouslySetInnerHTML={{
+                            __html: clozeProcessedAnswer.html
+                              .replace(/\[IMAGE_\d+\]/gi, "") // Remove any remaining image placeholders
+                              .trim(),
+                          }}
+                          onClick={handleContentClick}
+                        />
+                      </div>
                     </div>
-                  </div>
-                </>
-              )}
-            </>
-          )}
+                  </>
+                )}
+              </>
+            )}
 
           {/* Navigation Controls - Mobile only */}
           <div className="md:hidden pt-3 space-y-2">
             {/* Reveal button when needed */}
             {((!isImageOcclusion && hasAnyClozes && !allClozesRevealed) ||
-             (isImageOcclusion && !imageOcclusionRevealed) ||
-             (hasMultipleImages && !showAnswer) ||
-             (isBasicCard && !showAnswer && card.answer && card.answer.trim() && basicHasNonCitationAnswer)) && (
+              (isImageOcclusion && !imageOcclusionRevealed) ||
+              (hasMultipleImages && !showAnswer) ||
+              (isBasicCard &&
+                !showAnswer &&
+                card.answer &&
+                card.answer.trim() &&
+                basicHasNonCitationAnswer)) && (
               <Button
                 variant="default"
                 onClick={() => {
                   if (!isImageOcclusion && hasAnyClozes && !allClozesRevealed) {
-                    const nextClozeIndex = questionClozes.concat(answerClozes)
-                      .map(c => c.index)
-                      .find(idx => !revealedClozes.has(idx))
+                    const nextClozeIndex = questionClozes
+                      .concat(answerClozes)
+                      .map((c) => c.index)
+                      .find((idx) => !revealedClozes.has(idx));
                     if (nextClozeIndex !== undefined) {
-                      handleClozeClick(nextClozeIndex)
+                      handleClozeClick(nextClozeIndex);
                       // For multiple images cards, also reveal the answer when revealing cloze
                       if (hasMultipleImages) {
-                        setShowAnswer(true)
+                        setShowAnswer(true);
                       }
                     }
                   } else if (isImageOcclusion && !imageOcclusionRevealed) {
-                    toggleAnswer()
+                    toggleAnswer();
                   } else if (hasMultipleImages && !showAnswer) {
-                    setShowAnswer(true)
+                    setShowAnswer(true);
                   } else if (isBasicCard && !showAnswer) {
-                    toggleAnswer()
+                    toggleAnswer();
                   }
                 }}
                 className="w-full"
@@ -503,12 +530,7 @@ export function InteractiveAnkiViewer({
                 <ChevronLeft className="h-4 w-4 mr-2" />
                 Previous
               </Button>
-              <Button
-                variant="default"
-                onClick={onNext}
-                disabled={!onNext}
-                className="flex-1"
-              >
+              <Button variant="default" onClick={onNext} disabled={!onNext} className="flex-1">
                 Next
                 <ChevronRight className="h-4 w-4 ml-2" />
               </Button>
@@ -521,11 +543,41 @@ export function InteractiveAnkiViewer({
               <div className="text-xs text-muted-foreground">
                 {!isImageOcclusion && hasAnyClozes && !allClozesRevealed ? (
                   <p>
-                    <strong>Instructions:</strong> Use <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">◀</kbd> <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">▶</kbd> to navigate • <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Space</kbd> or <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Enter</kbd> to reveal next
+                    <strong>Instructions:</strong> Use{" "}
+                    <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                      ◀
+                    </kbd>{" "}
+                    <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                      ▶
+                    </kbd>{" "}
+                    to navigate •{" "}
+                    <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                      Space
+                    </kbd>{" "}
+                    or{" "}
+                    <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                      Enter
+                    </kbd>{" "}
+                    to reveal next
                   </p>
                 ) : (
                   <p>
-                    <strong>Instructions:</strong> Use <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">◀</kbd> <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">▶</kbd> to navigate • <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Space</kbd> or <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">Enter</kbd> for next card
+                    <strong>Instructions:</strong> Use{" "}
+                    <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                      ◀
+                    </kbd>{" "}
+                    <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                      ▶
+                    </kbd>{" "}
+                    to navigate •{" "}
+                    <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                      Space
+                    </kbd>{" "}
+                    or{" "}
+                    <kbd className="px-3 py-2 bg-background border border-gray-300 rounded-lg text-xs font-medium shadow-[0_2px_0_0_rgb(0,0,0,0.1)] hover:shadow-[0_1px_0_0_rgb(0,0,0,0.1)] active:shadow-[0_0px_0_0_rgb(0,0,0,0.1)] transition-all">
+                      Enter
+                    </kbd>{" "}
+                    for next card
                   </p>
                 )}
               </div>
@@ -653,9 +705,24 @@ export function InteractiveAnkiViewer({
         }
 
         /* Support inline SVG overlays and IMG-wrapped SVG overlays */
-        #io-wrapper { position: relative; width: 100%; }
-        #io-overlay { position: absolute; top: 0; left: 0; width: 100%; z-index: 3; pointer-events: none; }
-        #io-original { position: relative; top: 0; width: 100%; z-index: 2; }
+        #io-wrapper {
+          position: relative;
+          width: 100%;
+        }
+        #io-overlay {
+          position: absolute;
+          top: 0;
+          left: 0;
+          width: 100%;
+          z-index: 3;
+          pointer-events: none;
+        }
+        #io-original {
+          position: relative;
+          top: 0;
+          width: 100%;
+          z-index: 2;
+        }
 
         .io-wrapper svg,
         #io-overlay svg {
@@ -680,7 +747,9 @@ export function InteractiveAnkiViewer({
         .io-wrapper svg ellipse {
           opacity: 1 !important;
           visibility: visible !important;
-          transition: opacity 0.25s ease-out, visibility 0.25s ease-out;
+          transition:
+            opacity 0.25s ease-out,
+            visibility 0.25s ease-out;
         }
 
         /* When io-revealed class is on the wrapper, hide all overlays smoothly */
@@ -746,6 +815,5 @@ export function InteractiveAnkiViewer({
         }
       `}</style>
     </div>
-  )
+  );
 }
-

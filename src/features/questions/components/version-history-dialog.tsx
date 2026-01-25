@@ -15,6 +15,7 @@ import { History, User, Calendar, Check, ImagePlus, ImageMinus } from "lucide-re
 import { toast } from "@/shared/utils/toast";
 import { useProtectedDialog } from "@/shared/hooks/use-protected-dialog";
 import { diffWords } from "diff";
+import { formatVersion } from "@/shared/utils/version";
 
 // Types
 interface QuestionOption {
@@ -52,7 +53,6 @@ interface QuestionVersion {
   version_major: number;
   version_minor: number;
   version_patch: number;
-  version_string: string;
   update_type: string;
   change_summary?: string;
   question_snapshot: QuestionSnapshot;
@@ -81,14 +81,20 @@ function DiffText({ oldText, newText }: { oldText: string; newText: string }) {
       {diff.map((part, index) => {
         if (part.removed) {
           return (
-            <span key={index} className="bg-red-100 dark:bg-red-950/50 text-red-900 dark:text-red-200 line-through">
+            <span
+              key={index}
+              className="bg-red-100 dark:bg-red-950/50 text-red-900 dark:text-red-200 line-through"
+            >
               {part.value}
             </span>
           );
         }
         if (part.added) {
           return (
-            <span key={index} className="bg-green-100 dark:bg-green-950/50 text-green-900 dark:text-green-200 font-medium">
+            <span
+              key={index}
+              className="bg-green-100 dark:bg-green-950/50 text-green-900 dark:text-green-200 font-medium"
+            >
               {part.value}
             </span>
           );
@@ -121,9 +127,9 @@ function formatReferences(references: string) {
   const parts = references.split(/(?<=\.\s)(?=[A-Z])|(?=https?:\/\/)/);
 
   return parts
-    .map(part => part.trim())
-    .filter(part => part.length > 0)
-    .join('\n\n');
+    .map((part) => part.trim())
+    .filter((part) => part.length > 0)
+    .join("\n\n");
 }
 
 export function VersionHistoryDialog({
@@ -163,7 +169,6 @@ export function VersionHistoryDialog({
           version_major: number;
           version_minor: number;
           version_patch: number;
-          version_string: string;
           update_type: string;
           change_summary?: string;
           question_data: QuestionSnapshot;
@@ -179,7 +184,6 @@ export function VersionHistoryDialog({
           version_major: version.version_major,
           version_minor: version.version_minor,
           version_patch: version.version_patch,
-          version_string: version.version_string,
           update_type: version.update_type,
           change_summary: version.change_summary,
           question_snapshot: version.question_data,
@@ -227,37 +231,66 @@ export function VersionHistoryDialog({
 
   // Get selected version and previous version
   const selectedVersion = selectedVersionIndex !== null ? versions[selectedVersionIndex] : null;
-  const previousVersion = selectedVersionIndex !== null && selectedVersionIndex < versions.length - 1
-    ? versions[selectedVersionIndex + 1]
-    : null;
+  const previousVersion =
+    selectedVersionIndex !== null && selectedVersionIndex < versions.length - 1
+      ? versions[selectedVersionIndex + 1]
+      : null;
 
   // Render version content
-  const renderVersionContent = (version: QuestionVersion, showDiff: boolean = false, compareWith?: QuestionVersion) => {
+  const renderVersionContent = (
+    version: QuestionVersion,
+    showDiff: boolean = false,
+    compareWith?: QuestionVersion
+  ) => {
     const versionData = version.question_snapshot || {};
     const compareData = compareWith?.question_snapshot || {};
 
     const options = versionData.question_options || [];
     const compareOptions = compareData.question_options || [];
 
-    const stemImages = (versionData.question_images || []).filter((qi) => qi.question_section === "stem");
-    const explanationImages = (versionData.question_images || []).filter((qi) => qi.question_section === "explanation");
+    const stemImages = (versionData.question_images || []).filter(
+      (qi) => qi.question_section === "stem"
+    );
+    const explanationImages = (versionData.question_images || []).filter(
+      (qi) => qi.question_section === "explanation"
+    );
 
-    const compareStemImages = (compareData.question_images || []).filter((qi) => qi.question_section === "stem");
-    const compareExplanationImages = (compareData.question_images || []).filter((qi) => qi.question_section === "explanation");
+    const compareStemImages = (compareData.question_images || []).filter(
+      (qi) => qi.question_section === "stem"
+    );
+    const compareExplanationImages = (compareData.question_images || []).filter(
+      (qi) => qi.question_section === "explanation"
+    );
 
     const stemImageChanges = compareWith ? getImageChanges(compareStemImages, stemImages) : null;
-    const explanationImageChanges = compareWith ? getImageChanges(compareExplanationImages, explanationImages) : null;
+    const explanationImageChanges = compareWith
+      ? getImageChanges(compareExplanationImages, explanationImages)
+      : null;
 
     // Check what changed
     const titleChanged = showDiff && compareWith && compareData.title !== versionData.title;
     const stemChanged = showDiff && compareWith && compareData.stem !== versionData.stem;
-    const difficultyChanged = showDiff && compareWith && compareData.difficulty !== versionData.difficulty;
-    const teachingPointChanged = showDiff && compareWith && compareData.teaching_point !== versionData.teaching_point;
-    const referencesChanged = showDiff && compareWith && compareData.question_references !== versionData.question_references;
-    const optionsChanged = showDiff && compareWith && JSON.stringify(compareOptions) !== JSON.stringify(options);
+    const difficultyChanged =
+      showDiff && compareWith && compareData.difficulty !== versionData.difficulty;
+    const teachingPointChanged =
+      showDiff && compareWith && compareData.teaching_point !== versionData.teaching_point;
+    const referencesChanged =
+      showDiff &&
+      compareWith &&
+      compareData.question_references !== versionData.question_references;
+    const optionsChanged =
+      showDiff && compareWith && JSON.stringify(compareOptions) !== JSON.stringify(options);
 
     // Count total changes
-    const hasChanges = titleChanged || stemChanged || difficultyChanged || teachingPointChanged || referencesChanged || optionsChanged || (stemImageChanges?.changed) || (explanationImageChanges?.changed);
+    const hasChanges =
+      titleChanged ||
+      stemChanged ||
+      difficultyChanged ||
+      teachingPointChanged ||
+      referencesChanged ||
+      optionsChanged ||
+      stemImageChanges?.changed ||
+      explanationImageChanges?.changed;
 
     return (
       <div className="space-y-4 text-sm">
@@ -293,10 +326,15 @@ export function VersionHistoryDialog({
         {/* Stem Images */}
         {(stemImages.length > 0 || stemImageChanges?.changed) && (
           <div>
-            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase">Stem Images</div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase">
+              Stem Images
+            </div>
             <div className="flex items-center gap-2 flex-wrap">
               {Array.from({ length: stemImages.length }).map((_, i) => (
-                <div key={i} className="w-12 h-12 bg-muted border-2 border-dashed rounded flex items-center justify-center">
+                <div
+                  key={i}
+                  className="w-12 h-12 bg-muted border-2 border-dashed rounded flex items-center justify-center"
+                >
                   <span className="text-[10px] text-muted-foreground">{i + 1}</span>
                 </div>
               ))}
@@ -325,16 +363,20 @@ export function VersionHistoryDialog({
 
         {/* Answer Options */}
         <div>
-          <div className="text-xs font-medium text-muted-foreground mb-2 uppercase">Answer Options</div>
+          <div className="text-xs font-medium text-muted-foreground mb-2 uppercase">
+            Answer Options
+          </div>
           <div className="space-y-2">
             {options.map((option, index: number) => {
               const optionLabels = ["A", "B", "C", "D", "E"];
               const optionLabel = optionLabels[index] || (index + 1).toString();
 
               const compareOption = compareOptions[index];
-              const changed = optionsChanged && compareOption && (
-                option.text !== compareOption.text || option.is_correct !== compareOption.is_correct
-              );
+              const changed =
+                optionsChanged &&
+                compareOption &&
+                (option.text !== compareOption.text ||
+                  option.is_correct !== compareOption.is_correct);
 
               return (
                 <div
@@ -363,9 +405,14 @@ export function VersionHistoryDialog({
         {/* Teaching Point */}
         {versionData.teaching_point && (
           <div>
-            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase">Teaching Point</div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase">
+              Teaching Point
+            </div>
             {teachingPointChanged && compareWith ? (
-              <DiffText oldText={compareData.teaching_point || ""} newText={versionData.teaching_point || ""} />
+              <DiffText
+                oldText={compareData.teaching_point || ""}
+                newText={versionData.teaching_point || ""}
+              />
             ) : (
               <div className="leading-relaxed">{versionData.teaching_point}</div>
             )}
@@ -375,10 +422,15 @@ export function VersionHistoryDialog({
         {/* Explanation Images */}
         {(explanationImages.length > 0 || explanationImageChanges?.changed) && (
           <div>
-            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase">Explanation Images</div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase">
+              Explanation Images
+            </div>
             <div className="flex items-center gap-2 flex-wrap">
               {Array.from({ length: explanationImages.length }).map((_, i) => (
-                <div key={i} className="w-12 h-12 bg-muted border-2 border-dashed rounded flex items-center justify-center">
+                <div
+                  key={i}
+                  className="w-12 h-12 bg-muted border-2 border-dashed rounded flex items-center justify-center"
+                >
                   <span className="text-[10px] text-muted-foreground">{i + 1}</span>
                 </div>
               ))}
@@ -408,31 +460,43 @@ export function VersionHistoryDialog({
         {/* References */}
         {versionData.question_references && (
           <div>
-            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase">References</div>
+            <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase">
+              References
+            </div>
             {referencesChanged && compareWith ? (
-              <DiffText oldText={formatReferences(compareData.question_references || "")} newText={formatReferences(versionData.question_references || "")} />
+              <DiffText
+                oldText={formatReferences(compareData.question_references || "")}
+                newText={formatReferences(versionData.question_references || "")}
+              />
             ) : (
-              <div className="leading-relaxed whitespace-pre-wrap">{formatReferences(versionData.question_references)}</div>
+              <div className="leading-relaxed whitespace-pre-wrap">
+                {formatReferences(versionData.question_references)}
+              </div>
             )}
           </div>
         )}
 
         {/* Difficulty */}
         <div className="pt-2 border-t">
-          <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase">Difficulty</div>
+          <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase">
+            Difficulty
+          </div>
           {difficultyChanged && compareWith ? (
             <div className="flex items-center gap-2">
               <Badge variant="outline" className="opacity-60 line-through">
-                {compareData.difficulty?.charAt(0).toUpperCase() + compareData.difficulty?.slice(1) || "Medium"}
+                {compareData.difficulty?.charAt(0).toUpperCase() +
+                  compareData.difficulty?.slice(1) || "Medium"}
               </Badge>
               <span className="text-muted-foreground">→</span>
               <Badge variant="default" className="bg-blue-500">
-                {versionData.difficulty?.charAt(0).toUpperCase() + versionData.difficulty?.slice(1) || "Medium"}
+                {versionData.difficulty?.charAt(0).toUpperCase() +
+                  versionData.difficulty?.slice(1) || "Medium"}
               </Badge>
             </div>
           ) : (
             <Badge variant="outline">
-              {versionData.difficulty?.charAt(0).toUpperCase() + versionData.difficulty?.slice(1) || "Medium"}
+              {versionData.difficulty?.charAt(0).toUpperCase() + versionData.difficulty?.slice(1) ||
+                "Medium"}
             </Badge>
           )}
         </div>
@@ -537,10 +601,17 @@ export function VersionHistoryDialog({
                           {/* Version number and badge */}
                           <div className="flex items-center gap-2">
                             <span className="font-mono text-sm font-semibold">
-                              {version.version_string}
+                              {formatVersion(
+                                version.version_major,
+                                version.version_minor,
+                                version.version_patch
+                              )}
                             </span>
                             {isCurrent && (
-                              <Badge variant="outline" className="text-[10px] text-green-600 border-green-600 dark:text-green-400 dark:border-green-400">
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] text-green-600 border-green-600 dark:text-green-400 dark:border-green-400"
+                              >
                                 Current
                               </Badge>
                             )}
@@ -584,10 +655,18 @@ export function VersionHistoryDialog({
                     <div className="flex items-center gap-2">
                       <div className="h-2 w-2 rounded-full bg-primary" />
                       <h4 className="font-medium text-sm">
-                        Version {selectedVersion.version_string}
+                        Version{" "}
+                        {formatVersion(
+                          selectedVersion.version_major,
+                          selectedVersion.version_minor,
+                          selectedVersion.version_patch
+                        )}
                       </h4>
                       {(selectedVersion.is_current || selectedVersionIndex === 0) && (
-                        <Badge variant="outline" className="text-xs text-green-600 border-green-600 dark:text-green-400 dark:border-green-400">
+                        <Badge
+                          variant="outline"
+                          className="text-xs text-green-600 border-green-600 dark:text-green-400 dark:border-green-400"
+                        >
                           Current
                         </Badge>
                       )}
@@ -599,7 +678,12 @@ export function VersionHistoryDialog({
                     )}
                     {previousVersion && (
                       <p className="text-xs text-muted-foreground mt-1">
-                        Comparing with v{previousVersion.version_string}
+                        Comparing with{" "}
+                        {formatVersion(
+                          previousVersion.version_major,
+                          previousVersion.version_minor,
+                          previousVersion.version_patch
+                        )}
                       </p>
                     )}
                   </div>
@@ -610,7 +694,13 @@ export function VersionHistoryDialog({
                       <>
                         <div className="mb-4 p-3 rounded-lg border bg-blue-50 dark:bg-blue-950/30 border-blue-300 dark:border-blue-800">
                           <p className="text-xs font-medium text-blue-900 dark:text-blue-200">
-                            Initial version ({selectedVersion.version_string}) - No previous version to compare
+                            Initial version (
+                            {formatVersion(
+                              selectedVersion.version_major,
+                              selectedVersion.version_minor,
+                              selectedVersion.version_patch
+                            )}
+                            ) - No previous version to compare
                           </p>
                         </div>
                         {renderVersionContent(selectedVersion, false)}

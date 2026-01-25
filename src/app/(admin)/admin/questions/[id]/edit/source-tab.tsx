@@ -32,7 +32,12 @@ interface SourceTabProps {
   onEducationalContextChange?: (context: EducationalContent | null) => void;
 }
 
-export function SourceTab({ question, form, onUnsavedChanges, onEducationalContextChange }: SourceTabProps) {
+export function SourceTab({
+  question,
+  form,
+  onUnsavedChanges,
+  onEducationalContextChange,
+}: SourceTabProps) {
   // State for content selector
   const [selectedContent, setSelectedContent] = useState<EducationalContent | null>(null);
 
@@ -84,7 +89,7 @@ export function SourceTab({ question, form, onUnsavedChanges, onEducationalConte
 
   // Get subject name from category (Category = Subject in the database)
   const subjectName = useMemo<string | null>(() => {
-    if (question.category && typeof question.category === 'object' && 'name' in question.category) {
+    if (question.category && typeof question.category === "object" && "name" in question.category) {
       return question.category.name;
     }
     // Try to get from content index as last resort

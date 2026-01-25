@@ -69,14 +69,11 @@ export function quizStateReducer(state: QuizState, action: QuizAction): QuizStat
       const incorrectCount = answeredCount - correctCount;
       const totalQuestions = action.payload.questions.length;
 
-      console.log(
-        "[State Machine] INITIALIZE - using existing state:",
-        {
-          answersCount: answeredCount,
-          currentIndex: initialQuestionIndex,
-          timeSpent: initialTimeSpent
-        }
-      );
+      console.log("[State Machine] INITIALIZE - using existing state:", {
+        answersCount: answeredCount,
+        currentIndex: initialQuestionIndex,
+        timeSpent: initialTimeSpent,
+      });
 
       return {
         ...state,

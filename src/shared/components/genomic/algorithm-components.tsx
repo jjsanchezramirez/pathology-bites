@@ -1,7 +1,11 @@
 "use client";
 
 import { MyVariantData, OncoKBData, ParsedVariant } from "@/shared/types/genomic";
-import { formatSift, formatPolyphen, formatMutationTaster } from "@/shared/utils/genomic/format-predictions";
+import {
+  formatSift,
+  formatPolyphen,
+  formatMutationTaster,
+} from "@/shared/utils/genomic/format-predictions";
 import { ExternalLink } from "lucide-react";
 
 interface AlgorithmComponentsProps {
@@ -11,7 +15,9 @@ interface AlgorithmComponentsProps {
 }
 
 // Helper component for standardized "Not Available" display
-const NotAvailable = () => <span className="text-sm text-muted-foreground italic">Not Available</span>;
+const NotAvailable = () => (
+  <span className="text-sm text-muted-foreground italic">Not Available</span>
+);
 const NoData = () => <span className="text-sm text-muted-foreground italic">No data</span>;
 
 // Helper component for external links
@@ -30,13 +36,19 @@ const ExternalLinkButton = ({ href, label }: { href: string; label: string }) =>
 // Helper to ensure sentence case formatting
 const toSentenceCase = (text: string): string => {
   return text
-    .split(' ')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
-    .join(' ');
+    .split(" ")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+    .join(" ");
 };
 
 // Helper to render prediction tags
-const PredictionTag = ({ value, color }: { value: string; color: "red" | "orange" | "green" | "gray" }) => {
+const PredictionTag = ({
+  value,
+  color,
+}: {
+  value: string;
+  color: "red" | "orange" | "green" | "gray";
+}) => {
   const colorClasses = {
     red: "bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400",
     orange: "bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-400",
@@ -58,7 +70,9 @@ export function AlgorithmComponents({ myvariant, oncokb, parsed }: AlgorithmComp
   const hgvsP = parsed?.hgvs_p;
 
   // MyVariant.info URL
-  const myvariantUrl = variantId ? `https://myvariant.info/v1/variant/${encodeURIComponent(variantId)}` : null;
+  const myvariantUrl = variantId
+    ? `https://myvariant.info/v1/variant/${encodeURIComponent(variantId)}`
+    : null;
 
   // ClinVar URL - search by gene and protein change
   const clinvarUrl =
@@ -71,16 +85,20 @@ export function AlgorithmComponents({ myvariant, oncokb, parsed }: AlgorithmComp
   // OncoKB URL - includes specific variant if available
   const oncokbUrl =
     gene && hgvsP
-      ? `https://www.oncokb.org/gene/${encodeURIComponent(gene)}/somatic/${encodeURIComponent(hgvsP.replace('p.', ''))}`
+      ? `https://www.oncokb.org/gene/${encodeURIComponent(gene)}/somatic/${encodeURIComponent(hgvsP.replace("p.", ""))}`
       : gene
         ? `https://www.oncokb.org/gene/${encodeURIComponent(gene)}`
         : null;
 
   // COSMIC URL
-  const cosmicUrl = gene ? `https://cancer.sanger.ac.uk/cosmic/gene/analysis?ln=${encodeURIComponent(gene)}` : null;
+  const cosmicUrl = gene
+    ? `https://cancer.sanger.ac.uk/cosmic/gene/analysis?ln=${encodeURIComponent(gene)}`
+    : null;
 
   // gnomAD URL
-  const gnomadUrl = variantId ? `https://gnomad.broadinstitute.org/variant/${encodeURIComponent(variantId)}` : null;
+  const gnomadUrl = variantId
+    ? `https://gnomad.broadinstitute.org/variant/${encodeURIComponent(variantId)}`
+    : null;
 
   return (
     <div className="overflow-x-auto">
@@ -102,15 +120,21 @@ export function AlgorithmComponents({ myvariant, oncokb, parsed }: AlgorithmComp
               </div>
             </td>
             <td className="p-3 font-mono text-sm">
-              {myvariant?.populationFrequency?.gnomadAF !== null && myvariant?.populationFrequency?.gnomadAF !== undefined
-                ? `${((myvariant.populationFrequency.gnomadAF || 0) * 100).toFixed(6)}%`
-                : <NotAvailable />}
+              {myvariant?.populationFrequency?.gnomadAF !== null &&
+              myvariant?.populationFrequency?.gnomadAF !== undefined ? (
+                `${((myvariant.populationFrequency.gnomadAF || 0) * 100).toFixed(6)}%`
+              ) : (
+                <NotAvailable />
+              )}
             </td>
             <td className="p-3 text-sm">
-              {myvariant?.populationFrequency?.gnomadAF !== null && myvariant?.populationFrequency?.gnomadAF !== undefined ? (
+              {myvariant?.populationFrequency?.gnomadAF !== null &&
+              myvariant?.populationFrequency?.gnomadAF !== undefined ? (
                 <span>
                   {myvariant.populationFrequency.interpretation}{" "}
-                  <span className="text-muted-foreground">(Ref: &gt;5% = BA1, &gt;1% = BS1, &lt;0.01% = PM2)</span>
+                  <span className="text-muted-foreground">
+                    (Ref: &gt;5% = BA1, &gt;1% = BS1, &lt;0.01% = PM2)
+                  </span>
                 </span>
               ) : (
                 <NoData />
@@ -127,15 +151,21 @@ export function AlgorithmComponents({ myvariant, oncokb, parsed }: AlgorithmComp
               </div>
             </td>
             <td className="p-3 font-mono text-sm">
-              {myvariant?.pathogenicity?.revelScore !== null && myvariant?.pathogenicity?.revelScore !== undefined
-                ? Number(myvariant.pathogenicity.revelScore).toFixed(3)
-                : <NotAvailable />}
+              {myvariant?.pathogenicity?.revelScore !== null &&
+              myvariant?.pathogenicity?.revelScore !== undefined ? (
+                Number(myvariant.pathogenicity.revelScore).toFixed(3)
+              ) : (
+                <NotAvailable />
+              )}
             </td>
             <td className="p-3 text-sm">
-              {myvariant?.pathogenicity?.revelScore !== null && myvariant?.pathogenicity?.revelScore !== undefined ? (
+              {myvariant?.pathogenicity?.revelScore !== null &&
+              myvariant?.pathogenicity?.revelScore !== undefined ? (
                 <span>
                   {myvariant.pathogenicity.interpretation}{" "}
-                  <span className="text-muted-foreground">(Ref: &gt;0.75 = pathogenic, &lt;0.4 = benign)</span>
+                  <span className="text-muted-foreground">
+                    (Ref: &gt;0.75 = pathogenic, &lt;0.4 = benign)
+                  </span>
                 </span>
               ) : (
                 <NoData />
@@ -159,7 +189,9 @@ export function AlgorithmComponents({ myvariant, oncokb, parsed }: AlgorithmComp
                     myvariant.clinvar.clinicalSignificance.toLowerCase().includes("pathogenic") &&
                     !myvariant.clinvar.clinicalSignificance.toLowerCase().includes("likely")
                       ? "red"
-                      : myvariant.clinvar.clinicalSignificance.toLowerCase().includes("likely pathogenic")
+                      : myvariant.clinvar.clinicalSignificance
+                            .toLowerCase()
+                            .includes("likely pathogenic")
                         ? "orange"
                         : myvariant.clinvar.clinicalSignificance.toLowerCase().includes("benign")
                           ? "green"
@@ -171,7 +203,11 @@ export function AlgorithmComponents({ myvariant, oncokb, parsed }: AlgorithmComp
               )}
             </td>
             <td className="p-3 text-sm">
-              {myvariant?.clinvar?.reviewStatus ? toSentenceCase(myvariant.clinvar.reviewStatus) : <NoData />}
+              {myvariant?.clinvar?.reviewStatus ? (
+                toSentenceCase(myvariant.clinvar.reviewStatus)
+              ) : (
+                <NoData />
+              )}
             </td>
           </tr>
 
@@ -215,7 +251,8 @@ export function AlgorithmComponents({ myvariant, oncokb, parsed }: AlgorithmComp
           <tr>
             <td className="p-3 font-medium">OncoKB Therapeutic Level</td>
             <td className="p-3">
-              {oncokb?.found && (oncokb?.highestSensitiveLevel || oncokb?.highestResistanceLevel) ? (
+              {oncokb?.found &&
+              (oncokb?.highestSensitiveLevel || oncokb?.highestResistanceLevel) ? (
                 <div className="space-y-1">
                   {oncokb.highestSensitiveLevel && (
                     <PredictionTag
@@ -260,18 +297,24 @@ export function AlgorithmComponents({ myvariant, oncokb, parsed }: AlgorithmComp
           </tr>
 
           {/* OncoKB Therapeutic Implications */}
-          {oncokb?.found && oncokb?.therapeuticImplications && oncokb.therapeuticImplications.length > 0 && (
-            <tr>
-              <td className="p-3 font-medium">OncoKB Tx Options</td>
-              <td className="p-3">
-                <span className="text-sm font-medium">Available</span>
-              </td>
-              <td className="p-3 text-sm">
-                {oncokb.therapeuticImplications.slice(0, 3).map((t) => t.drug).join(", ")}
-                {oncokb.therapeuticImplications.length > 3 && ` (+${oncokb.therapeuticImplications.length - 3} more)`}
-              </td>
-            </tr>
-          )}
+          {oncokb?.found &&
+            oncokb?.therapeuticImplications &&
+            oncokb.therapeuticImplications.length > 0 && (
+              <tr>
+                <td className="p-3 font-medium">OncoKB Tx Options</td>
+                <td className="p-3">
+                  <span className="text-sm font-medium">Available</span>
+                </td>
+                <td className="p-3 text-sm">
+                  {oncokb.therapeuticImplications
+                    .slice(0, 3)
+                    .map((t) => t.drug)
+                    .join(", ")}
+                  {oncokb.therapeuticImplications.length > 3 &&
+                    ` (+${oncokb.therapeuticImplications.length - 3} more)`}
+                </td>
+              </tr>
+            )}
 
           {/* COSMIC */}
           <tr>
@@ -285,7 +328,11 @@ export function AlgorithmComponents({ myvariant, oncokb, parsed }: AlgorithmComp
               {myvariant?.somatic?.cosmicId || <NotAvailable />}
             </td>
             <td className="p-3 text-sm">
-              {myvariant?.somatic?.interpretation ? toSentenceCase(myvariant.somatic.interpretation) : <NoData />}
+              {myvariant?.somatic?.interpretation ? (
+                toSentenceCase(myvariant.somatic.interpretation)
+              ) : (
+                <NoData />
+              )}
             </td>
           </tr>
 
@@ -293,9 +340,12 @@ export function AlgorithmComponents({ myvariant, oncokb, parsed }: AlgorithmComp
           <tr>
             <td className="p-3 font-medium">GERP Conservation Score</td>
             <td className="p-3 font-mono text-sm">
-              {myvariant?.conservation?.gerpScore !== null && myvariant?.conservation?.gerpScore !== undefined
-                ? Number(myvariant.conservation.gerpScore).toFixed(2)
-                : <NotAvailable />}
+              {myvariant?.conservation?.gerpScore !== null &&
+              myvariant?.conservation?.gerpScore !== undefined ? (
+                Number(myvariant.conservation.gerpScore).toFixed(2)
+              ) : (
+                <NotAvailable />
+              )}
             </td>
             <td className="p-3 text-sm">
               {myvariant?.conservation?.interpretation ? (
@@ -334,7 +384,11 @@ export function AlgorithmComponents({ myvariant, oncokb, parsed }: AlgorithmComp
               {myvariant?.pathogenicity?.sift ? (
                 <PredictionTag
                   value={formatSift(myvariant.pathogenicity.sift)}
-                  color={formatSift(myvariant.pathogenicity.sift).toLowerCase().includes("deleterious") ? "red" : "green"}
+                  color={
+                    formatSift(myvariant.pathogenicity.sift).toLowerCase().includes("deleterious")
+                      ? "red"
+                      : "green"
+                  }
                 />
               ) : (
                 <NotAvailable />
@@ -351,9 +405,13 @@ export function AlgorithmComponents({ myvariant, oncokb, parsed }: AlgorithmComp
                 <PredictionTag
                   value={formatPolyphen(myvariant.pathogenicity.polyphen2)}
                   color={
-                    formatPolyphen(myvariant.pathogenicity.polyphen2).toLowerCase().includes("damaging")
+                    formatPolyphen(myvariant.pathogenicity.polyphen2)
+                      .toLowerCase()
+                      .includes("damaging")
                       ? "red"
-                      : formatPolyphen(myvariant.pathogenicity.polyphen2).toLowerCase().includes("possibly")
+                      : formatPolyphen(myvariant.pathogenicity.polyphen2)
+                            .toLowerCase()
+                            .includes("possibly")
                         ? "orange"
                         : "green"
                   }
@@ -388,7 +446,9 @@ export function AlgorithmComponents({ myvariant, oncokb, parsed }: AlgorithmComp
                   <PredictionTag
                     value={formatMutationTaster(myvariant.pathogenicity.mutationTaster)}
                     color={
-                      formatMutationTaster(myvariant.pathogenicity.mutationTaster).toLowerCase().includes("disease")
+                      formatMutationTaster(myvariant.pathogenicity.mutationTaster)
+                        .toLowerCase()
+                        .includes("disease")
                         ? "red"
                         : "green"
                     }

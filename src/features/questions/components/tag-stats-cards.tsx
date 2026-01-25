@@ -82,9 +82,7 @@ export function TagStatsCards({ tags, totalTags, loading = false }: TagStatsCard
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-amber-600">{stats.unused}</div>
-          <p className="text-xs text-muted-foreground">
-            {stats.unusedPercentage}% of all tags
-          </p>
+          <p className="text-xs text-muted-foreground">{stats.unusedPercentage}% of all tags</p>
         </CardContent>
       </Card>
 
@@ -112,9 +110,7 @@ export function TagStatsCards({ tags, totalTags, loading = false }: TagStatsCard
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold text-blue-600">{stats.avgUsage}</div>
-          <p className="text-xs text-muted-foreground">
-            Questions per used tag
-          </p>
+          <p className="text-xs text-muted-foreground">Questions per used tag</p>
         </CardContent>
       </Card>
     </div>

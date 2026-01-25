@@ -11,7 +11,6 @@ import {
 
 import { TABLE_NAMES } from "@/shared/constants/database-types";
 import { apiClient } from "@/shared/utils/api-client";
-import { formatVersion } from "@/shared/utils/version";
 
 export interface UseQuestionsParams {
   page?: number;
@@ -148,10 +147,8 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
       }
 
       // Fetch categories for all questions that have category_id
-      const questionIds = (data || []).map((q) => q.id);
       const categoryIds = [...new Set((data || []).map((q) => q.category_id).filter(Boolean))];
       let categoriesData: unknown[] = [];
-      let latestVersionsData: unknown[] = [];
 
       if (categoryIds.length > 0) {
         const { data: categoriesResult } = await supabase
@@ -171,48 +168,12 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         categoriesData = categoriesResult || [];
       }
 
-      // Fetch latest versions for all questions
-      if (questionIds.length > 0) {
-        const { data: versionsResult } = await supabase
-          .from("question_versions")
-          .select(
-            `
-            question_id,
-            version_string,
-            created_at
-          `
-          )
-          .in("question_id", questionIds)
-          .order("created_at", { ascending: false });
-
-        // Group by question_id and get the latest version for each
-        const versionsByQuestion = (versionsResult || []).reduce(
-          (acc: unknown, version: unknown) => {
-            if (!acc[version.question_id]) {
-              acc[version.question_id] = version.version_string;
-            }
-            return acc;
-          },
-          {}
-        );
-
-        latestVersionsData = versionsByQuestion;
-      }
-
       // Transform the data
       const transformedQuestions: QuestionWithDetails[] = (data || []).map((question) => {
         // Find the category for this question
         const questionCategory = question.category_id
           ? categoriesData.find((cat) => cat.id === question.category_id)
           : null;
-
-        // Get the latest version for this question from components
-        const latestVersion = latestVersionsData[question.id] || formatVersion(
-          question.version_major,
-          question.version_minor,
-          question.version_patch,
-          false
-        );
 
         return {
           ...question,
@@ -222,7 +183,6 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
           image_count: question.question_images?.[0]?.count || 0,
           categories: questionCategory ? [questionCategory] : [],
           tags: question.question_tags?.map((qt: unknown) => qt.tag).filter(Boolean) || [],
-          version_string: latestVersion,
         };
       });
 

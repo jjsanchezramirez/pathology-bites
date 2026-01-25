@@ -662,12 +662,7 @@ export async function POST(request: NextRequest) {
 
     // Build the prompt based on mode
     const promptData = mode === "refinement" ? content : content;
-    const prompt = buildAdminQuestionPrompt(
-      promptData,
-      instructions,
-      additionalContext,
-      mode
-    );
+    const prompt = buildAdminQuestionPrompt(promptData, instructions, additionalContext, mode);
 
     // Call AI service
     const startTime = Date.now();
@@ -760,9 +755,9 @@ export async function POST(request: NextRequest) {
         throw new Error("AI response must contain exactly 5 options");
       }
 
-      const correctCount = (questionData.question_options as Array<{ is_correct?: boolean }>).filter(
-        (opt) => opt.is_correct
-      ).length;
+      const correctCount = (
+        questionData.question_options as Array<{ is_correct?: boolean }>
+      ).filter((opt) => opt.is_correct).length;
       if (correctCount !== 1) {
         throw new Error(`AI response must have exactly 1 correct answer, found ${correctCount}`);
       }
@@ -780,7 +775,8 @@ export async function POST(request: NextRequest) {
       };
     } else {
       responseData = {
-        title: questionData.title || (mode === "refinement" ? "Refined Question" : "Generated Question"),
+        title:
+          questionData.title || (mode === "refinement" ? "Refined Question" : "Generated Question"),
         stem: questionData.stem,
         answer_options: questionData.question_options || questionData.answer_options,
         teaching_point: questionData.teaching_point || "",

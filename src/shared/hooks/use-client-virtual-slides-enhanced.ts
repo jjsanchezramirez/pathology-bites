@@ -169,7 +169,7 @@ function getWordBoundaryRegex(term: string): RegExp {
     if (regexCache.size >= MAX_REGEX_CACHE_SIZE) {
       // Clear oldest half when limit reached
       const keysToDelete = Array.from(regexCache.keys()).slice(0, MAX_REGEX_CACHE_SIZE / 2);
-      keysToDelete.forEach(k => regexCache.delete(k));
+      keysToDelete.forEach((k) => regexCache.delete(k));
     }
 
     regexCache.set(cacheKey, regex);

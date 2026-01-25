@@ -76,7 +76,7 @@ export function QuizQuestionReviewDialog({
     } finally {
       setLoading(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase is created fresh each render
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- supabase is created fresh each render
   }, [questionDetail]);
 
   useEffect(() => {

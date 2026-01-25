@@ -12,7 +12,9 @@ interface ImageViewerModalProps {
 }
 
 export function ImageViewerModal({ src, alt, description, onClose }: ImageViewerModalProps) {
-  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(null);
+  const [imageDimensions, setImageDimensions] = useState<{ width: number; height: number } | null>(
+    null
+  );
 
   useEffect(() => {
     // Prevent body scrolling when modal is open
@@ -85,13 +87,7 @@ export function ImageViewerModal({ src, alt, description, onClose }: ImageViewer
             height: displayDimensions.height,
           }}
         >
-          <Image
-            src={src}
-            alt={alt}
-            fill
-            className="object-contain"
-            unoptimized
-          />
+          <Image src={src} alt={alt} fill className="object-contain" unoptimized />
 
           {/* Close button */}
           <button
@@ -106,7 +102,12 @@ export function ImageViewerModal({ src, alt, description, onClose }: ImageViewer
         {/* Description below the image */}
         {description && (
           <div className="w-full text-white px-4 py-3">
-            <p className="text-sm text-center" style={{ textShadow: "0 2px 4px rgba(0, 0, 0, 0.8), 0 1px 2px rgba(0, 0, 0, 0.6)" }}>{description}</p>
+            <p
+              className="text-sm text-center"
+              style={{ textShadow: "0 2px 4px rgba(0, 0, 0, 0.8), 0 1px 2px rgba(0, 0, 0, 0.6)" }}
+            >
+              {description}
+            </p>
           </div>
         )}
       </div>

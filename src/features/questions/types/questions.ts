@@ -93,7 +93,6 @@ export interface QuestionWithDetails extends QuestionData {
   image_count?: number;
   flag_count?: number;
   latest_flag_date?: string;
-  version_string?: string;
   version_major?: number;
   version_minor?: number;
   version_patch?: number;
@@ -196,7 +195,6 @@ export interface QuestionVersionInfo {
   version_major: number;
   version_minor: number;
   version_patch: number;
-  version_string: string;
 }
 
 export interface QuestionVersionHistory {
@@ -205,7 +203,6 @@ export interface QuestionVersionHistory {
   version_major: number;
   version_minor: number;
   version_patch: number;
-  version_string: string;
   question_data: unknown; // JSONB data
   update_type: UpdateType;
   change_summary?: string;

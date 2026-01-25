@@ -21,7 +21,10 @@ export function ClassificationResults({
   acmgResult,
 }: ClassificationResultsProps) {
   // Extract classification from ampResult or acmgResult
-  const rawClassification = (ampResult as { classification?: string })?.classification || acmgResult?.classification || "Unknown";
+  const rawClassification =
+    (ampResult as { classification?: string })?.classification ||
+    acmgResult?.classification ||
+    "Unknown";
 
   // Simplify classification text (remove parentheticals)
   const classification = rawClassification.split("(")[0].trim();
@@ -74,9 +77,7 @@ export function ClassificationResults({
               <p className="text-xs font-medium text-muted-foreground mb-1.5">Reporting</p>
               <p
                 className={`text-base font-semibold ${
-                  reporting.shouldReport
-                    ? "text-primary"
-                    : "text-muted-foreground"
+                  reporting.shouldReport ? "text-primary" : "text-muted-foreground"
                 }`}
               >
                 {reporting.shouldReport ? "Report" : "Don't Report"}
@@ -87,7 +88,9 @@ export function ClassificationResults({
           {/* Tier */}
           {ampResult?.tier && (
             <div className="border rounded-lg p-3 bg-muted/30">
-              <p className="text-xs font-medium text-muted-foreground mb-1.5">Tier (AMP/ASCO/CAP)</p>
+              <p className="text-xs font-medium text-muted-foreground mb-1.5">
+                Tier (AMP/ASCO/CAP)
+              </p>
               <p
                 className={`text-base font-semibold ${
                   ampResult.tier?.includes("Not Detected") || ampResult.tier?.includes("Excluded")
@@ -98,7 +101,8 @@ export function ClassificationResults({
                         ? "text-orange-600 dark:text-orange-400"
                         : ampResult.tier?.includes("Tier III")
                           ? "text-yellow-600 dark:text-yellow-400"
-                          : ampResult.tier?.includes("Tier IV") || ampResult.tier?.includes("Polymorphism")
+                          : ampResult.tier?.includes("Tier IV") ||
+                              ampResult.tier?.includes("Polymorphism")
                             ? "text-green-600 dark:text-green-400"
                             : "text-foreground"
                 }`}
@@ -160,7 +164,9 @@ export function ClassificationResults({
             {/* Reasoning: Full Width */}
             <div className="bg-muted/50 border rounded-lg p-4">
               <p className="text-sm font-semibold mb-2 text-foreground">Reasoning</p>
-              <p className="text-sm text-muted-foreground leading-relaxed">{acmgResult.reasoning}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed">
+                {acmgResult.reasoning}
+              </p>
             </div>
           </div>
         )}

@@ -21,135 +21,135 @@ export interface ContentFileInfo {
 // Unique file metadata array
 const FILES: ContentFileInfo[] = [
   {
-    "category": "Anatomic Pathology",
-    "subject": "Bone",
-    "filename": "ap-bone.json"
+    category: "Anatomic Pathology",
+    subject: "Bone",
+    filename: "ap-bone.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Breast",
-    "filename": "ap-breast.json"
+    category: "Anatomic Pathology",
+    subject: "Breast",
+    filename: "ap-breast.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Cardiovascular and Thoracic",
-    "filename": "ap-cardiovascular-and-thoracic.json"
+    category: "Anatomic Pathology",
+    subject: "Cardiovascular and Thoracic",
+    filename: "ap-cardiovascular-and-thoracic.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Cytopathology",
-    "filename": "ap-cytopathology.json"
+    category: "Anatomic Pathology",
+    subject: "Cytopathology",
+    filename: "ap-cytopathology.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Dermatopathology",
-    "filename": "ap-dermatopathology.json"
+    category: "Anatomic Pathology",
+    subject: "Dermatopathology",
+    filename: "ap-dermatopathology.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Forensics and Autopsy",
-    "filename": "ap-forensics-and-autopsy.json"
+    category: "Anatomic Pathology",
+    subject: "Forensics and Autopsy",
+    filename: "ap-forensics-and-autopsy.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Gastrointestinal",
-    "filename": "ap-gastrointestinal.json"
+    category: "Anatomic Pathology",
+    subject: "Gastrointestinal",
+    filename: "ap-gastrointestinal.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "General Topics",
-    "filename": "ap-general-topics.json"
+    category: "Anatomic Pathology",
+    subject: "General Topics",
+    filename: "ap-general-topics.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Genitourinary",
-    "filename": "ap-genitourinary.json"
+    category: "Anatomic Pathology",
+    subject: "Genitourinary",
+    filename: "ap-genitourinary.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Gynecological",
-    "filename": "ap-gynecological.json"
+    category: "Anatomic Pathology",
+    subject: "Gynecological",
+    filename: "ap-gynecological.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Head and Neck / Endocrine",
-    "filename": "ap-head-and-neck---endocrine.json"
+    category: "Anatomic Pathology",
+    subject: "Head and Neck / Endocrine",
+    filename: "ap-head-and-neck---endocrine.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Hematopathology",
-    "filename": "ap-hematopathology.json"
+    category: "Anatomic Pathology",
+    subject: "Hematopathology",
+    filename: "ap-hematopathology.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Molecular",
-    "filename": "ap-molecular.json"
+    category: "Anatomic Pathology",
+    subject: "Molecular",
+    filename: "ap-molecular.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Neuropathology",
-    "filename": "ap-neuropathology.json"
+    category: "Anatomic Pathology",
+    subject: "Neuropathology",
+    filename: "ap-neuropathology.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Pancreas Biliary Liver",
-    "filename": "ap-pancreas-biliary-liver.json"
+    category: "Anatomic Pathology",
+    subject: "Pancreas Biliary Liver",
+    filename: "ap-pancreas-biliary-liver.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Pediatrics",
-    "filename": "ap-pediatrics.json"
+    category: "Anatomic Pathology",
+    subject: "Pediatrics",
+    filename: "ap-pediatrics.json",
   },
   {
-    "category": "Anatomic Pathology",
-    "subject": "Soft Tissue",
-    "filename": "ap-soft-tissue.json"
+    category: "Anatomic Pathology",
+    subject: "Soft Tissue",
+    filename: "ap-soft-tissue.json",
   },
   {
-    "category": "Clinical Pathology",
-    "subject": "Clinical Chemistry",
-    "filename": "cp-clinical-chemistry.json"
+    category: "Clinical Pathology",
+    subject: "Clinical Chemistry",
+    filename: "cp-clinical-chemistry.json",
   },
   {
-    "category": "Clinical Pathology",
-    "subject": "Hematology Hemostasis and Thrombosis",
-    "filename": "cp-hematology-hemostasis-and-thrombosis.json"
+    category: "Clinical Pathology",
+    subject: "Hematology Hemostasis and Thrombosis",
+    filename: "cp-hematology-hemostasis-and-thrombosis.json",
   },
   {
-    "category": "Clinical Pathology",
-    "subject": "Hematopathology",
-    "filename": "cp-hematopathology.json"
+    category: "Clinical Pathology",
+    subject: "Hematopathology",
+    filename: "cp-hematopathology.json",
   },
   {
-    "category": "Clinical Pathology",
-    "subject": "Immunology",
-    "filename": "cp-immunology.json"
+    category: "Clinical Pathology",
+    subject: "Immunology",
+    filename: "cp-immunology.json",
   },
   {
-    "category": "Clinical Pathology",
-    "subject": "Laboratory Management and Clinical Laboratory Informatics",
-    "filename": "cp-laboratory-management-and-clinical-laboratory-informatics.json"
+    category: "Clinical Pathology",
+    subject: "Laboratory Management and Clinical Laboratory Informatics",
+    filename: "cp-laboratory-management-and-clinical-laboratory-informatics.json",
   },
   {
-    "category": "Clinical Pathology",
-    "subject": "Medical Microbiology",
-    "filename": "cp-medical-microbiology.json"
+    category: "Clinical Pathology",
+    subject: "Medical Microbiology",
+    filename: "cp-medical-microbiology.json",
   },
   {
-    "category": "Clinical Pathology",
-    "subject": "Molecular Pathology and Cytogenetics",
-    "filename": "cp-molecular-pathology-and-cytogenetics.json"
+    category: "Clinical Pathology",
+    subject: "Molecular Pathology and Cytogenetics",
+    filename: "cp-molecular-pathology-and-cytogenetics.json",
   },
   {
-    "category": "Clinical Pathology",
-    "subject": "Toxicology Body Fluids and Special Techniques",
-    "filename": "cp-toxicology-body-fluids-and-special-techniques.json"
+    category: "Clinical Pathology",
+    subject: "Toxicology Body Fluids and Special Techniques",
+    filename: "cp-toxicology-body-fluids-and-special-techniques.json",
   },
   {
-    "category": "Clinical Pathology",
-    "subject": "Transfusion Medicine",
-    "filename": "cp-transfusion-medicine.json"
-  }
+    category: "Clinical Pathology",
+    subject: "Transfusion Medicine",
+    filename: "cp-transfusion-medicine.json",
+  },
 ];
 
 // Compact mapping: "lesson::topic" -> file index
@@ -357,7 +357,7 @@ const MAP: Record<string, number> = {
   "Lung: Neoplasms::Spindle Cell Carcinoma": 2,
   "Lung: Neoplasms::Conventional Adenocarcinoma": 2,
   "Lung: Neoplasms::Conventional Squamous Cell Carcinoma": 2,
-  "Lung: Neoplasms::Mucinous (\"Colloid\") Carcinoma": 2,
+  'Lung: Neoplasms::Mucinous ("Colloid") Carcinoma': 2,
   "Lung: Neoplasms::Low-Grade Neuroendocrine Carcinoma (Typical Carcinoid Tumor)": 2,
   "Lung: Neoplasms::Protocol for Lung Cancer Specimen Examination": 2,
   "Lung: Neoplasms::EGFR Mutations in Solid Neoplasms": 2,
@@ -2644,16 +2644,13 @@ const MAP: Record<string, number> = {
   "Cellular Therapy and Tissue Banking::Peripheral Blood Derived Hematopoietic Progenitor Cell Products": 25,
   "Cellular Therapy and Tissue Banking::Cord Blood Banking": 25,
   "Cellular Therapy and Tissue Banking::Hematopoietic Progenitor Cell Infusion": 25,
-  "Cellular Therapy and Tissue Banking::Tissue Banking": 25
+  "Cellular Therapy and Tissue Banking::Tissue Banking": 25,
 };
 
 /**
  * Quick lookup function to find content file info by lesson and topic
  */
-export function getContentFileInfo(
-  lessonKey: string,
-  topicKey: string
-): ContentFileInfo | null {
+export function getContentFileInfo(lessonKey: string, topicKey: string): ContentFileInfo | null {
   const key = `${lessonKey}::${topicKey}`;
   const fileIndex = MAP[key];
   return fileIndex !== undefined ? FILES[fileIndex] : null;

@@ -142,7 +142,9 @@ export function isCacheStale(_cacheKey: string, _maxAge: number): boolean {
 /**
  * Clear specific namespace from unified cache
  */
-export function clearNamespaceCache(namespace: typeof CACHE_NAMESPACES[keyof typeof CACHE_NAMESPACES]["name"]): void {
+export function clearNamespaceCache(
+  namespace: (typeof CACHE_NAMESPACES)[keyof typeof CACHE_NAMESPACES]["name"]
+): void {
   console.log(`[Cache] 🗑️ Clearing ${namespace} namespace`);
   unifiedCache.clearNamespace(namespace);
 }
@@ -158,14 +160,18 @@ export function clearUnifiedCache(): void {
 /**
  * Get cache statistics for debugging
  */
-export function getCacheStats(namespace?: typeof CACHE_NAMESPACES[keyof typeof CACHE_NAMESPACES]["name"]) {
+export function getCacheStats(
+  namespace?: (typeof CACHE_NAMESPACES)[keyof typeof CACHE_NAMESPACES]["name"]
+) {
   return unifiedCache.getStats(namespace);
 }
 
 /**
  * Manual cleanup of expired cache entries
  */
-export function cleanupExpiredCache(namespace?: typeof CACHE_NAMESPACES[keyof typeof CACHE_NAMESPACES]["name"]): void {
+export function cleanupExpiredCache(
+  namespace?: (typeof CACHE_NAMESPACES)[keyof typeof CACHE_NAMESPACES]["name"]
+): void {
   console.log(`[Cache] 🧹 Cleaning up expired entries${namespace ? ` in ${namespace}` : ""}`);
   unifiedCache.cleanup(namespace);
 }

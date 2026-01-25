@@ -367,18 +367,23 @@ export function ImageAttachmentsTab({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ImageIcon className="h-5 w-5" />
-            Question Body Images {isClinicalPathology && <span className="text-sm font-normal text-muted-foreground">(Optional)</span>}
+            Question Body Images{" "}
+            {isClinicalPathology && (
+              <span className="text-sm font-normal text-muted-foreground">(Optional)</span>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
           {!isClinicalPathology && (
             <p className="text-sm text-muted-foreground mb-4">
-              Add histological images, gross pathology images, or other visual content to the question stem.
+              Add histological images, gross pathology images, or other visual content to the
+              question stem.
             </p>
           )}
           {isClinicalPathology && (
             <p className="text-sm text-muted-foreground mb-4">
-              Add laboratory data, graphs, flow cytometry plots, or other relevant visual aids (optional for Clinical Pathology).
+              Add laboratory data, graphs, flow cytometry plots, or other relevant visual aids
+              (optional for Clinical Pathology).
             </p>
           )}
           <MediaSection
@@ -400,7 +405,10 @@ export function ImageAttachmentsTab({
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <ImageIcon className="h-5 w-5" />
-            Explanation Images {isClinicalPathology && <span className="text-sm font-normal text-muted-foreground">(Optional)</span>}
+            Explanation Images{" "}
+            {isClinicalPathology && (
+              <span className="text-sm font-normal text-muted-foreground">(Optional)</span>
+            )}
           </CardTitle>
         </CardHeader>
         <CardContent>
