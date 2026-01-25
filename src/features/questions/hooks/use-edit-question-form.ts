@@ -36,6 +36,7 @@ const editQuestionSchema = z.object({
   updateType: z.enum(["patch", "minor", "major"]).optional(),
   isPatchEdit: z.boolean().optional(),
   patchEditReason: z.string().max(500, "Reason too long").optional(),
+  changeSummary: z.string().max(500, "Change summary too long").optional(),
 });
 
 export type EditQuestionFormData = z.infer<typeof editQuestionSchema>;
@@ -185,7 +186,7 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
           tagIds: selectedTagIds,
           categoryId: data.category_id || undefined,
           updateType: data.updateType,
-          changeSummary: isPatchEdit ? patchEditReason : "Question updated",
+          changeSummary: data.changeSummary || (isPatchEdit ? patchEditReason : undefined),
           isPatchEdit: isPatchEdit,
           patchEditReason: patchEditReason,
           reviewerId: overrideReviewerId || reviewerId || undefined,
