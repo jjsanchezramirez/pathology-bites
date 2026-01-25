@@ -48,7 +48,27 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .from("questions")
       .select(
         `
-        *,
+        id,
+        title,
+        stem,
+        difficulty,
+        teaching_point,
+        question_references,
+        status,
+        question_set_id,
+        category_id,
+        lesson,
+        topic,
+        anki_card_id,
+        anki_deck_name,
+        created_by,
+        updated_by,
+        reviewer_id,
+        created_at,
+        updated_at,
+        version_major,
+        version_minor,
+        version_patch,
         question_set:question_sets(
           id,
           name,
