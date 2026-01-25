@@ -52,7 +52,7 @@ import {
 } from "lucide-react";
 import { format } from "date-fns";
 import { useUserRole } from "@/shared/hooks/use-user-role";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { apiClient } from "@/shared/utils/api-client";
 
 interface User {
@@ -224,7 +224,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
   const [pendingStatus, setPendingStatus] = useState<string>("");
   const [pendingType, setPendingType] = useState<string>("");
 
-  const { user: currentUser } = useAuth({ minimal: true });
+  const { user: currentUser } = useAuthContext();
   const { isAdmin } = useUserRole();
 
   // Debug: Track component lifecycle

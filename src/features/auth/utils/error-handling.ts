@@ -17,7 +17,7 @@ export interface AuthError {
   message: string;
   userMessage: string;
   retryable: boolean;
-  severity?: "low" | "medium" | "high"; // Optional for backward compatibility
+  severity: "low" | "medium" | "high";
 }
 
 /**
@@ -31,6 +31,7 @@ export function categorizeAuthError(error: unknown): AuthError {
       message: "Unknown error",
       userMessage: "An unexpected error occurred. Please try again.",
       retryable: true,
+      severity: "medium",
     };
   }
 
@@ -47,6 +48,7 @@ export function categorizeAuthError(error: unknown): AuthError {
       message: error.message,
       userMessage: "Invalid email or password. Please try again.",
       retryable: false,
+      severity: "low",
     };
   }
 
@@ -57,6 +59,7 @@ export function categorizeAuthError(error: unknown): AuthError {
       message: error.message,
       userMessage: "Please check your email and click the verification link.",
       retryable: false,
+      severity: "low",
     };
   }
 
@@ -71,6 +74,7 @@ export function categorizeAuthError(error: unknown): AuthError {
       message: error.message,
       userMessage: "Too many attempts. Please wait a few minutes and try again.",
       retryable: true,
+      severity: "medium",
     };
   }
 
@@ -91,6 +95,7 @@ export function categorizeAuthError(error: unknown): AuthError {
       message: error.message,
       userMessage,
       retryable: true,
+      severity: "low",
     };
   }
 
@@ -105,6 +110,7 @@ export function categorizeAuthError(error: unknown): AuthError {
       message: error.message,
       userMessage: "Network error. Please check your connection and try again.",
       retryable: true,
+      severity: "medium",
     };
   }
 
@@ -188,7 +194,7 @@ export function isRetryableError(error: unknown): boolean {
  * Get error severity
  */
 export function getErrorSeverity(error: unknown): "low" | "medium" | "high" {
-  return categorizeAuthError(error).severity || "medium";
+  return categorizeAuthError(error).severity;
 }
 
 /**

@@ -82,7 +82,7 @@ export function ContentTab({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          mode: "enhance_question",
+          mode: "refinement",
           content: {
             title: formValues.title,
             stem: formValues.stem,

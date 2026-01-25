@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/shared/services/client";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import {
   Table,
   TableBody,
@@ -143,7 +143,7 @@ export function ReviewQueue() {
   const [previewOpen, setPreviewOpen] = useState(false);
   const [reviewAction, setReviewAction] = useState<"approve" | "reject" | null>(null);
 
-  const { user } = useAuth({ minimal: true });
+  const { user } = useAuthContext();
   const supabase = createClient();
 
   const fetchReviewQueue = useCallback(async () => {

@@ -5,7 +5,7 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/shared/services/client";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { PasswordChangeForm } from "@/features/auth/components/forms/password-change-form";
 import {
   ProfileLoading,
@@ -26,7 +26,7 @@ interface UserProfile {
 }
 
 function ProfilePageContent() {
-  const { user, isAuthenticated, isLoading } = useAuth({ minimal: true });
+  const { user, isAuthenticated, isLoading } = useAuthContext();
   const searchParams = useSearchParams();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(true);

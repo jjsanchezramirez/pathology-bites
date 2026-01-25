@@ -14,7 +14,7 @@ import {
 } from "@/shared/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback } from "@/shared/components/ui/avatar";
 import { User, Settings, LogOut, RefreshCw } from "lucide-react";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { apiClient } from "@/shared/utils/api-client";
 
 interface UserProfile {
@@ -26,9 +26,7 @@ interface UserProfile {
 }
 
 export function ProfileDropdown() {
-  const { user, isLoading, isAuthenticated, error, refreshAuth, isHydrated } = useAuth({
-    minimal: true,
-  });
+  const { user, isLoading, isAuthenticated, error, refreshAuth, isHydrated } = useAuthContext();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
 

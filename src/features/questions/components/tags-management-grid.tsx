@@ -34,7 +34,6 @@ import {
   Check as _Check,
   X,
   Merge,
-  FilterX as _FilterX,
   Eye,
 } from "lucide-react";
 import { Checkbox } from "@/shared/components/ui/checkbox";
@@ -311,7 +310,6 @@ export function TagsManagementGrid() {
 
   // New state for enhanced features
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
-  const [showOnlyUnused, _setShowOnlyUnused] = useState(false);
   const [showBulkDeleteDialog, setShowBulkDeleteDialog] = useState(false);
   const [showMergeDialog, setShowMergeDialog] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
@@ -378,11 +376,6 @@ export function TagsManagementGrid() {
           break;
       }
 
-      // Legacy unused filter (keeping for backwards compatibility)
-      if (showOnlyUnused && sortBy !== "unused") {
-        sortedTags = sortedTags.filter((tag: Tag) => (tag.question_count || 0) === 0);
-      }
-
       setTags(sortedTags);
       setTotalTags(data.totalTags || 0);
       setTotalPages(data.totalPages || 0);
@@ -392,7 +385,7 @@ export function TagsManagementGrid() {
     } finally {
       setLoading(false);
     }
-  }, [debouncedSearchTerm, page, pageSize, sortBy, showOnlyUnused]);
+  }, [debouncedSearchTerm, page, pageSize, sortBy]);
 
   const handleDelete = async () => {
     if (!selectedTag) return;
@@ -675,7 +668,6 @@ export function TagsManagementGrid() {
             </span>
           </div>
           {debouncedSearchTerm && <span>Showing results for "{debouncedSearchTerm}"</span>}
-          {showOnlyUnused && <span>Showing unused tags only</span>}
         </div>
         <div className="text-xs">
           Sorted by:{" "}

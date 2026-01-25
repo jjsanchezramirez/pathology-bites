@@ -123,7 +123,7 @@ export async function getUserStats(userId: string): Promise<UserStats> {
 
     const sortedDates = Array.from(uniqueDates).sort();
 
-    // Calculate current streak (working backwards from today)
+    // Calculate current streak (working from today)
     const today = new Date();
     const todayStr = new Date(
       Date.UTC(today.getUTCFullYear(), today.getUTCMonth(), today.getUTCDate())

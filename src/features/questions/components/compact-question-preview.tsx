@@ -7,6 +7,7 @@ import { Check, ExternalLink } from "lucide-react";
 import { QuestionWithDetails } from "@/features/questions/types/questions";
 import { SimpleImageCarousel } from "./simple-image-carousel";
 import { getCategoryColor } from "@/features/questions/utils/category-colors";
+import { formatQuestionVersion } from "@/shared/utils/version";
 
 interface CompactQuestionPreviewProps {
   question: QuestionWithDetails | null;
@@ -237,9 +238,9 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
               )}
 
               {/* Version */}
-              {question.version && (
-                <span className="text-muted-foreground">v{question.version}</span>
-              )}
+              <span className="text-muted-foreground">
+                {formatQuestionVersion(question)}
+              </span>
             </div>
 
             {/* Attribution row */}

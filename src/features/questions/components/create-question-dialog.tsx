@@ -41,9 +41,9 @@ import { toast } from "@/shared/utils/toast";
 import { Loader2, Plus, X } from "lucide-react";
 
 import { useQuestionSets } from "@/features/questions/hooks/use-question-sets";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { CompactAnswerOptions } from "./compact-answer-options";
-import { AnswerOptionFormData, QuestionImageFormData } from "@/features/questions/types/questions";
+import { QuestionOptionFormData, QuestionImageFormData } from "@/features/questions/types/questions";
 import { apiClient } from "@/shared/utils/api-client";
 
 const createQuestionSchema = z.object({
@@ -315,7 +315,7 @@ export function CreateQuestionDialog({ open, onOpenChange, onSave }: CreateQuest
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   // Enhanced form state - Default to 5 answer options
-  const [answerOptions, setAnswerOptions] = useState<AnswerOptionFormData[]>([
+  const [answerOptions, setAnswerOptions] = useState<QuestionOptionFormData[]>([
     { text: "", is_correct: true, explanation: "", order_index: 0 },
     { text: "", is_correct: false, explanation: "", order_index: 1 },
     { text: "", is_correct: false, explanation: "", order_index: 2 },
@@ -329,7 +329,7 @@ export function CreateQuestionDialog({ open, onOpenChange, onSave }: CreateQuest
   const [availableTags, setAvailableTags] = useState<unknown[]>([]);
   const [availableCategories, setAvailableCategories] = useState<unknown[]>([]);
   const { questionSets } = useQuestionSets();
-  const { user } = useAuth({ minimal: true });
+  const { user } = useAuthContext();
 
   // Filter tags based on search
   const filteredTags = availableTags.filter((tag) =>

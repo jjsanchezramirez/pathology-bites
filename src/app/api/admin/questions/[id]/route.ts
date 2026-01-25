@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { createClient } from "@/shared/services/server";
 import { revalidateQuestions } from "@/lib/revalidation";
+import { formatVersion } from "@/shared/utils/version";
 
 // Create Supabase client with service role for admin operations
 async function createAdminClient() {
@@ -14,22 +14,15 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   try {
     const { id: questionId } = await params;
 
-    // Auth is now handled by middleware
-    const userClient = await createClient();
-    const {
-      data: { user },
-    } = await userClient.auth.getUser(); // Still need user ID for permission checks
+    // Auth is handled by middleware - get user ID and role from headers
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
 
-    // Still need to get user profile for business logic permission checks
-    const { data: profile, error: profileError } = await userClient
-      .from("users")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profileError) {
-      return NextResponse.json({ error: "Failed to verify user permissions" }, { status: 500 });
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
+
+    console.log("GET - User authenticated:", userId, "Role:", userRole);
 
     // Use admin client for the actual operations
     const adminClient = await createAdminClient();
@@ -118,9 +111,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Check permissions based on question status and user role
     const canAccess =
-      profile?.role === "admin" ||
-      (question.created_by === user.id && ["admin", "creator"].includes(profile?.role)) ||
-      (["reviewer", "admin"].includes(profile?.role) && question.status === "pending");
+      userRole === "admin" ||
+      (question.created_by === userId && ["admin", "creator"].includes(userRole || "")) ||
+      (["reviewer", "admin"].includes(userRole || "") && question.status === "pending");
 
     if (!canAccess) {
       return NextResponse.json(
@@ -213,33 +206,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       hasCategoryId: !!categoryId,
     });
 
-    // Auth is now handled by middleware
-    const userClient = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await userClient.auth.getUser(); // Still need user ID for permission checks
+    // Auth is handled by middleware - get user ID and role from headers
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
 
-    if (authError || !user) {
-      console.error("PATCH - Auth error:", authError);
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("PATCH - User authenticated:", user.id);
-
-    // Still need to get user profile for business logic permission checks
-    const { data: profile, error: profileError } = await userClient
-      .from("users")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (profileError) {
-      console.error("PATCH - Profile error:", profileError);
-      return NextResponse.json({ error: "Failed to verify user permissions" }, { status: 500 });
-    }
-
-    console.log("PATCH - User role:", profile.role);
+    console.log("PATCH - User authenticated:", userId, "Role:", userRole);
 
     // Use admin client for the actual operations
     const adminClient = await createAdminClient();
@@ -284,11 +259,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     // 3. Reviewers can only make patch edits to assigned pending_review questions
     // 4. Nobody (except admins) can edit approved/published questions
 
-    const isAdmin = profile?.role === "admin";
-    const isCreator = profile?.role === "creator";
-    const isReviewer = profile?.role === "reviewer";
-    const isQuestionCreator = currentQuestion.created_by === user.id;
-    const isAssignedReviewer = currentQuestion.reviewer_id === user.id;
+    const isAdmin = userRole === "admin";
+    const isCreator = userRole === "creator";
+    const isReviewer = userRole === "reviewer";
+    const isQuestionCreator = currentQuestion.created_by === userId;
+    const isAssignedReviewer = currentQuestion.reviewer_id === userId;
 
     // Check if question is published
     if (currentQuestion.status === "published") {
@@ -461,7 +436,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           (reviewerToSet || questionData.reviewer_id) && {
             reviewer_id: reviewerToSet || questionData.reviewer_id,
           }),
-        updated_by: user.id,
+        updated_by: userId,
         updated_at: new Date().toISOString(),
       };
 
@@ -689,7 +664,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
       // Create initial version entry when publishing for the first time
       if (isFirstTimePublishing) {
-        const { data: newVersionId, error: versionError } = await adminClient
+        const { data: newVersionId, error: versionError} = await adminClient
           .from("question_versions")
           .insert({
             question_id: questionId,
@@ -702,10 +677,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             question_data: {
               title: questionData?.title || currentQuestion.title,
               stem: questionData?.stem || currentQuestion.stem,
+              difficulty: questionData?.difficulty || currentQuestion.difficulty,
               teaching_point: questionData?.teaching_point || currentQuestion.teaching_point,
               question_references: questionData?.question_references || currentQuestion.question_references,
+              question_set_id: questionData?.question_set_id || currentQuestion.question_set_id,
+              category_id: categoryId || currentQuestion.category_id,
+              tag_ids: tagIds || [],
+              question_options: answerOptions || [],
+              question_images: questionImages || [],
+              lesson: questionData?.lesson || currentQuestion.lesson,
+              topic: questionData?.topic || currentQuestion.topic,
             },
-            changed_by: user.id,
+            changed_by: userId,
           })
           .select("id")
           .single();
@@ -727,7 +710,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             .from("questions")
             .update({
               version_patch: newVersionPatch,
-              updated_by: user.id,
+              updated_by: userId,
               updated_at: new Date().toISOString(),
             })
             .eq("id", questionId);
@@ -751,10 +734,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
               question_data: {
                 title: questionData?.title,
                 stem: questionData?.stem,
+                difficulty: questionData?.difficulty,
                 teaching_point: questionData?.teaching_point,
                 question_references: questionData?.question_references,
+                question_set_id: questionData?.question_set_id,
+                category_id: categoryId,
+                tag_ids: tagIds || [],
+                question_options: answerOptions || [],
+                question_images: questionImages || [],
+                lesson: questionData?.lesson,
+                topic: questionData?.topic,
               },
-              changed_by: user.id,
+              changed_by: userId,
             })
             .select("id")
             .single();
@@ -784,7 +775,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
               version_major: newVersionMajor,
               version_minor: newVersionMinor,
               version_patch: newVersionPatch,
-              updated_by: user.id,
+              updated_by: userId,
               updated_at: new Date().toISOString(),
             })
             .eq("id", questionId);
@@ -808,10 +799,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
               question_data: {
                 title: questionData?.title,
                 stem: questionData?.stem,
+                difficulty: questionData?.difficulty,
                 teaching_point: questionData?.teaching_point,
                 question_references: questionData?.question_references,
+                question_set_id: questionData?.question_set_id,
+                category_id: categoryId,
+                tag_ids: tagIds || [],
+                question_options: answerOptions || [],
+                question_images: questionImages || [],
+                lesson: questionData?.lesson,
+                topic: questionData?.topic,
               },
-              changed_by: user.id,
+              changed_by: userId,
             })
             .select("id")
             .single();
@@ -828,7 +827,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       // Get updated question data
       const { data: updatedQuestion, error: fetchError } = await adminClient
         .from("questions")
-        .select("id, version, updated_at, status")
+        .select("id, version_major, version_minor, version_patch, updated_at, status")
         .eq("id", questionId)
         .single();
 
@@ -843,12 +842,19 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       // Revalidate caches to update all admin pages
       revalidateQuestions({ questionId, includeDashboard: true });
 
+      const versionString = formatVersion(
+        updatedQuestion.version_major,
+        updatedQuestion.version_minor,
+        updatedQuestion.version_patch,
+        false
+      );
+
       return NextResponse.json({
         success: true,
         question: updatedQuestion,
         versionId,
         message: versionId
-          ? `Question updated to version ${updatedQuestion.version}`
+          ? `Question updated to version ${versionString}`
           : "Question updated successfully",
       });
     } catch (error) {

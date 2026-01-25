@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { Search, BookOpen, X, ChevronDown, ChevronRight, Download, Info } from "lucide-react";
+import { Search, BookOpen, X, ChevronDown, ChevronRight, Download, BookText } from "lucide-react";
 import { ABPathPDFGenerator } from "./pdf-generator";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
@@ -84,7 +84,7 @@ export default function ABPathContentPage() {
     sectionsPerPage: 7,
   });
 
-  // Create compatibility data structure
+  // Create data structure
   const data = useMemo(() => {
     if (!metadata) return null;
     return {
@@ -100,7 +100,7 @@ export default function ABPathContentPage() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedSearchTerm(searchTerm);
-    }, 150); // Reduced delay for better responsiveness
+    }, 200);
 
     return () => clearTimeout(timer);
   }, [searchTerm]);
@@ -662,10 +662,10 @@ export default function ABPathContentPage() {
         <div className="container mx-auto px-4 max-w-7xl">
           <div className="space-y-6">
             {/* Description Card */}
-            <Card className="p-6 bg-gradient-to-r from-blue-50 to-indigo-50 border-blue-200 shadow-sm">
+            <Card className="p-6 bg-primary/5 border-primary/20 shadow-sm">
               <div className="flex items-start gap-4">
-                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                  <Info className="w-5 h-5 text-blue-600" />
+                <div className="flex-shrink-0 w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center">
+                  <BookText className="w-5 h-5 text-primary" />
                 </div>
                 <div className="flex-1">
                   <h3 className="text-lg font-semibold text-slate-900 mb-2">
@@ -681,7 +681,7 @@ export default function ABPathContentPage() {
                     href="https://abpath.org/content-specifications-for-examinations/"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors"
+                    className="inline-flex items-center gap-1.5 text-sm font-medium text-primary hover:text-primary/80 hover:underline transition-colors"
                   >
                     View official ABPath content specifications
                     <svg
@@ -862,13 +862,7 @@ export default function ABPathContentPage() {
                   >
                     <CardHeader className="pb-3">
                       <CardTitle className="flex items-center gap-2 text-lg">
-                        <span
-                          className={`px-2 py-1 rounded text-sm font-medium ${
-                            section.type === "ap"
-                              ? "bg-blue-100 text-blue-800"
-                              : "bg-purple-100 text-purple-800"
-                          }`}
-                        >
+                        <span className="px-2 py-1 rounded text-sm font-medium bg-primary/10 text-primary">
                           {section.type.toUpperCase()} {section.section}
                         </span>
                         <span className="text-base">{section.title}</span>

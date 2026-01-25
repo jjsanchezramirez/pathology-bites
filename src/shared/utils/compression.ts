@@ -65,12 +65,3 @@ export async function createOptimizedResponse(
 export function calculateCompressionRatio(original: string, compressed: Buffer): number {
   return Math.round((1 - compressed.length / original.length) * 100);
 }
-
-/**
- * Check if request accepts Brotli or gzip compression
- * Next.js automatically handles this, but kept for compatibility
- */
-export function acceptsCompression(request: Request): boolean {
-  const acceptEncoding = request.headers.get("accept-encoding") || "";
-  return acceptEncoding.includes("brotli") || acceptEncoding.includes("gzip");
-}

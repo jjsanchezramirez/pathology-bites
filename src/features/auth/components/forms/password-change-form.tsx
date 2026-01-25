@@ -12,7 +12,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { RefreshCw, Mail, Key } from "lucide-react";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 
 interface PasswordChangeFormProps {
   className?: string;
@@ -22,7 +22,7 @@ interface PasswordChangeFormProps {
 export function PasswordChangeForm({ className, onSuccess }: PasswordChangeFormProps) {
   const [loading, setLoading] = useState(false);
   const [lastResetTime, setLastResetTime] = useState<Date | null>(null);
-  const { user } = useAuth({ minimal: true });
+  const { user } = useAuthContext();
 
   const canRequestReset = () => {
     if (!lastResetTime) return true;

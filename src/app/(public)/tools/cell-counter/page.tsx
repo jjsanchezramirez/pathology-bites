@@ -667,7 +667,6 @@ ${
 
           const copyWithClipboardApi = async () => {
             // IMPORTANT: Epic/Windows clipboard pipelines tend to key off RTF specifically.
-            // Providing *only* text/rtf (and not application/rtf) improves compatibility in VDI/remote clipboard bridges.
             const clipboardItem = new ClipboardItem({
               "text/rtf": new Blob([rtfDocument], { type: "text/rtf" }),
               "text/plain": new Blob([plainText], { type: "text/plain" }),

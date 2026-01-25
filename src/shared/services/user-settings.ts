@@ -22,44 +22,6 @@ export interface UserSettings {
 
 export type SettingsSection = "quiz_settings" | "notification_settings" | "ui_settings";
 
-// Mapping between old and new question types for backward compatibility
-const _QUESTION_TYPE_MAPPING = {
-  // Old -> New
-  incorrect: "needsReview" as const,
-  correct: "mastered" as const,
-  // New -> Old (for saving to database)
-  needsReview: "incorrect" as const,
-  mastered: "correct" as const,
-  // Unchanged
-  all: "all" as const,
-  unused: "unused" as const,
-  marked: "marked" as const,
-};
-
-function mapQuestionTypeFromDatabase(dbType: string): QuizSettings["default_question_type"] {
-  // Map old database types to new frontend types
-  switch (dbType) {
-    case "incorrect":
-      return "needsReview";
-    case "correct":
-      return "mastered";
-    default:
-      return dbType as QuizSettings["default_question_type"];
-  }
-}
-
-function mapQuestionTypeToDatabase(frontendType: QuizSettings["default_question_type"]): string {
-  // Map new frontend types to old database types
-  switch (frontendType) {
-    case "needsReview":
-      return "incorrect";
-    case "mastered":
-      return "correct";
-    default:
-      return frontendType;
-  }
-}
-
 class UserSettingsService {
   private baseUrl = "/api/user/settings";
   private csrfToken: string | null = null;
@@ -150,16 +112,7 @@ class UserSettingsService {
       }
 
       const result = await response.json();
-      const data = result.data;
-
-      // Map question type from database format to frontend format
-      if (data?.quiz_settings?.default_question_type) {
-        data.quiz_settings.default_question_type = mapQuestionTypeFromDatabase(
-          data.quiz_settings.default_question_type
-        );
-      }
-
-      return data;
+      return result.data;
     } catch (fetchError) {
       console.error("Error in getUserSettings:", fetchError);
       throw fetchError;
@@ -179,18 +132,6 @@ class UserSettingsService {
           ? Partial<UISettings>
           : never
   ): Promise<unknown> {
-    // Map question type to database format if updating quiz settings
-    let mappedSettings = settings;
-    if (section === "quiz_settings" && settings && typeof settings === "object") {
-      const quizSettings = settings as Partial<QuizSettings>;
-      if (quizSettings.default_question_type) {
-        mappedSettings = {
-          ...settings,
-          default_question_type: mapQuestionTypeToDatabase(quizSettings.default_question_type),
-        } as typeof settings;
-      }
-    }
-
     // Get CSRF token for the request
     const csrfToken = await this.getCSRFToken();
 
@@ -203,7 +144,7 @@ class UserSettingsService {
       credentials: "include",
       body: JSON.stringify({
         section,
-        settings: mappedSettings,
+        settings,
       }),
     });
 
@@ -349,4 +290,3 @@ class UserSettingsService {
 
 // Export singleton instance
 export const userSettingsService = new UserSettingsService();
-export default userSettingsService;

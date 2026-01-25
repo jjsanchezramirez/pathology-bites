@@ -771,7 +771,6 @@ notification_states (user_id, type, data, read_at, created_at)
 - `published_at` (TIMESTAMPTZ)
 - `category_id` (UUID, FK → categories.id)
 - `question_set_id` (UUID, FK → question_sets.id)
-- `search_vector` (TSVECTOR) - Full-text search
 
 **`question_options` Table** - Answer choices
 
@@ -875,7 +874,6 @@ notification_states (user_id, type, data, read_at, created_at)
 - `width`, `height` (INTEGER)
 - `category` (ENUM: microscopic, gross, figure, table, external)
 - `created_by` (UUID, FK → users.id, SET NULL)
-- `search_vector` (TSVECTOR)
 
 #### Quiz System
 
@@ -1093,11 +1091,6 @@ When a user is deleted (via admin or self-deletion), the deletion is handled in 
 - `quiz_attempts_analytics_trigger` - Updates question analytics after quiz attempts
 - `question_flags_analytics_trigger` - Updates analytics when questions are flagged
 - `question_reviews_analytics_trigger` - Updates analytics after reviews
-
-**Search Vector Triggers**:
-
-- `images_search_vector_trigger` - Updates full-text search vector for images
-- `questions_search_vector_trigger` - Updates full-text search vector for questions
 
 **Timestamp Triggers**:
 

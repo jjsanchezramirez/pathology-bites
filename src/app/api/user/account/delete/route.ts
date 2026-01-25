@@ -4,7 +4,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { deleteUser, deleteUserFromAuth } from "@/shared/services/user-deletion";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
@@ -18,7 +17,7 @@ export async function DELETE(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
+    const userId = request.headers.get("x-user-id");
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

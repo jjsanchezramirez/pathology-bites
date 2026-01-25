@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { toast } from "@/shared/utils/toast";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { Shield, ShieldCheck, ShieldAlert } from "lucide-react";
 
 interface SessionStatusIndicatorProps {
@@ -18,7 +18,7 @@ export function SessionStatusIndicator({
   showNotifications = true,
   position = "top-right",
 }: SessionStatusIndicatorProps) {
-  const { session, isAuthenticated } = useAuth({ enableSecurity: true });
+  const { session, isAuthenticated } = useAuthContext();
   const securityRisk = "low"; // Placeholder for future security implementation
   const [lastSessionRefresh, setLastSessionRefresh] = useState<number>(0);
   const [_sessionRefreshCount, setSessionRefreshCount] = useState(0);
@@ -90,7 +90,7 @@ export function SessionStatusIndicator({
  * Hook for session status monitoring without UI
  */
 export function useSessionStatus() {
-  const { session, isAuthenticated } = useAuth({ enableSecurity: true });
+  const { session, isAuthenticated } = useAuthContext();
   const securityRisk = "low"; // Placeholder for future security implementation
   const [sessionHealth, setSessionHealth] = useState<"healthy" | "warning" | "critical">("healthy");
   const [lastRefresh, setLastRefresh] = useState<Date | null>(null);

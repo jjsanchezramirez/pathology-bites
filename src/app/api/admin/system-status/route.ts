@@ -22,10 +22,21 @@ interface SystemHealth {
   lastUpdated: string;
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   const startTime = performance.now();
 
   try {
+    // Auth check - require admin role only
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || userRole !== "admin") {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
+
     devLog.info("System status check started");
 
     const supabase = await createClient();

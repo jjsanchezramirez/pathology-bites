@@ -243,7 +243,7 @@ export function getCategoryByName(name: string): CategoryConfig | undefined {
   );
 }
 
-// Helper function to convert HSL color to Tailwind-compatible classes
+// Helper function to convert HSL color to Tailwind v4 classes
 export function getCategoryBadgeClasses(_color: string): string {
   // Parse HSL color and generate appropriate Tailwind classes
   // For now, return a default class since we're using inline styles
@@ -257,7 +257,7 @@ export function getCategoryStyle(color: string) {
     const [, h, s, l] = hslMatch;
     const _lightness = parseInt(l);
 
-    // Adjust for light/dark theme compatibility
+    // Adjust for light/dark theme
     return {
       light: {
         backgroundColor: `hsl(${h} ${Math.min(parseInt(s), 50)}% 90%)`,

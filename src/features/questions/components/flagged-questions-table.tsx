@@ -42,7 +42,7 @@ import {
   QuestionWithDetails,
   QuestionFlagData,
 } from "@/features/questions/types/questions";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 
 interface FlaggedQuestion extends QuestionWithDetails {
   flag_count: number;
@@ -79,7 +79,7 @@ export function FlaggedQuestionsTable() {
   const [selectedFlags, setSelectedFlags] = useState<QuestionFlagData[]>([]);
   const [selectedQuestionTitle, setSelectedQuestionTitle] = useState("");
 
-  const { user } = useAuth({ minimal: true });
+  const { user } = useAuthContext();
   const supabase = createClient();
 
   const fetchFlaggedQuestions = useCallback(async () => {

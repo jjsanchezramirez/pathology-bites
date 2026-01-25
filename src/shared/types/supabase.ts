@@ -5,7 +5,6 @@ import { QuestionSetSourceDetails } from "@/features/questions/types/question-se
 export interface QuizConfig {
   mode: "tutor" | "timed" | "untimed" | "practice" | "review";
   questionCount: number;
-  timePerQuestion?: number;
   totalTimeLimit?: number; // total time for entire quiz in seconds (global timer)
   difficulty?: "easy" | "medium" | "hard" | "mixed";
   categories?: string[];
@@ -530,7 +529,6 @@ export interface Database {
           source_ref: string | null;
           created_by: string | null;
           created_at: string;
-          search_vector: unknown | null;
           file_size_bytes: number | null;
           width: number | null;
           height: number | null;
@@ -548,7 +546,6 @@ export interface Database {
           source_ref?: string | null;
           created_by?: string | null;
           created_at?: string;
-          search_vector?: unknown | null;
           file_size_bytes?: number | null;
           width?: number | null;
           height?: number | null;
@@ -566,7 +563,6 @@ export interface Database {
           source_ref?: string | null;
           created_by?: string | null;
           created_at?: string;
-          search_vector?: unknown | null;
           file_size_bytes?: number | null;
           width?: number | null;
           height?: number | null;
@@ -633,7 +629,6 @@ export interface Database {
           status: Database["public"]["Enums"]["question_status"];
           created_by: string;
           updated_by: string;
-          version: string;
           version_major: number;
           version_minor: number;
           version_patch: number;
@@ -659,7 +654,6 @@ export interface Database {
           status?: Database["public"]["Enums"]["question_status"];
           created_by: string;
           updated_by: string;
-          version?: string;
           version_major?: number;
           version_minor?: number;
           version_patch?: number;
@@ -685,7 +679,6 @@ export interface Database {
           status?: Database["public"]["Enums"]["question_status"];
           created_by?: string;
           updated_by?: string;
-          version?: string;
           version_major?: number;
           version_minor?: number;
           version_patch?: number;
@@ -976,7 +969,6 @@ export interface Database {
           version_major: number;
           version_minor: number;
           version_patch: number;
-          version_string: string;
           question_data: Json;
           update_type: string;
           change_summary: string | null;
@@ -989,7 +981,6 @@ export interface Database {
           version_major: number;
           version_minor: number;
           version_patch: number;
-          version_string: string;
           question_data: Json;
           update_type: string;
           change_summary?: string | null;
@@ -1002,7 +993,6 @@ export interface Database {
           version_major?: number;
           version_minor?: number;
           version_patch?: number;
-          version_string?: string;
           question_data?: Json;
           update_type?: string;
           change_summary?: string | null;

@@ -1,4 +1,4 @@
-// src/app/api/demo-questions/route.ts
+// src/app/api/content/demo-questions/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
@@ -13,8 +13,6 @@ let cachedQuestionsList: { id: string; question_id: string; display_order: numbe
 let questionsListTimestamp: number = 0;
 
 // Define interfaces for Supabase response data
-// Legacy alias for backward compatibility
-
 interface QuestionOption {
   id: string;
   text: string;

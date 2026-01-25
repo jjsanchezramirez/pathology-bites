@@ -1,4 +1,3 @@
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 // src/app/api/quiz/sessions/[id]/complete/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
@@ -20,7 +19,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
+    const userId = request.headers.get("x-user-id");
+
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

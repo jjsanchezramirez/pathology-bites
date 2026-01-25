@@ -84,13 +84,8 @@ export function SourceTab({ question, form, onUnsavedChanges, onEducationalConte
 
   // Get subject name from category (Category = Subject in the database)
   const subjectName = useMemo<string | null>(() => {
-    // Check for category object first (new API format)
     if (question.category && typeof question.category === 'object' && 'name' in question.category) {
       return question.category.name;
-    }
-    // Fallback for categories array (legacy format)
-    if (question.categories && question.categories.length > 0) {
-      return question.categories[0].name;
     }
     // Try to get from content index as last resort
     if (question.lesson && question.topic) {
@@ -102,7 +97,7 @@ export function SourceTab({ question, form, onUnsavedChanges, onEducationalConte
       }
     }
     return null;
-  }, [question.category, question.categories, question.lesson, question.topic]);
+  }, [question.category, question.lesson, question.topic]);
 
   return (
     <div className="max-w-4xl mx-auto space-y-8">

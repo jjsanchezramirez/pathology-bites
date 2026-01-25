@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
-
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ tagId: string }> }
@@ -10,7 +8,8 @@ export async function GET(
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
+    const userId = request.headers.get("x-user-id");
+
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

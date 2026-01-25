@@ -16,7 +16,6 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Play, Pause, PanelLeftOpen, Clock } from "lucide-react";
 import { QuizSidebar } from "@/features/quiz/components/quiz-sidebar";
-import { QuestionFlagDialog } from "@/features/questions/components/question-flag-dialog";
 import { QuizQuestionDisplay } from "@/features/quiz/components/quiz-question-display";
 import { QuizNavigation } from "@/features/quiz/components/quiz-navigation";
 import { FeatureErrorBoundary } from "@/shared/components/common";
@@ -108,9 +107,6 @@ export default function QuizSessionPage() {
       }
     },
   });
-
-  // Legacy state for review mode compatibility
-  const [legacyFlagDialogOpen, setLegacyFlagDialogOpen] = useState(false);
 
   // Fetch review data if in review mode
   const fetchReviewData = useCallback(async () => {
@@ -649,14 +645,19 @@ export default function QuizSessionPage() {
                       {currentReviewIndex + 1} / {reviewResult.questionDetails.length}
                     </div>
 
-                    <Button
-                      variant="outline"
-                      onClick={handleNextReview}
-                      disabled={currentReviewIndex === reviewResult.questionDetails.length - 1}
-                    >
-                      Next
-                      <ArrowRight className="h-4 w-4 ml-2" />
-                    </Button>
+                    {currentReviewIndex === reviewResult.questionDetails.length - 1 ? (
+                      <Link href={`/dashboard/quiz/${sessionId}/results`}>
+                        <Button variant="outline">
+                          <ArrowLeft className="h-4 w-4 mr-2" />
+                          Back to Results
+                        </Button>
+                      </Link>
+                    ) : (
+                      <Button variant="outline" onClick={handleNextReview}>
+                        Next
+                        <ArrowRight className="h-4 w-4 ml-2" />
+                      </Button>
+                    )}
                   </div>
                 </FeatureErrorBoundary>
               </div>
@@ -1032,16 +1033,6 @@ export default function QuizSessionPage() {
           </div>
         </main>
       </div>
-
-      {/* Question Flag Dialog */}
-      <QuestionFlagDialog
-        question={currentQuestion as unknown}
-        open={legacyFlagDialogOpen}
-        onOpenChange={setLegacyFlagDialogOpen}
-        onFlagComplete={() => {
-          toast.success("Question flagged successfully");
-        }}
-      />
     </>
   );
 }

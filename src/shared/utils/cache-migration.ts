@@ -3,6 +3,8 @@
  *
  * This utility helps clean up old cache formats and migrate data to the unified cache system.
  * Run this on app initialization to ensure localStorage is clean.
+ *
+ * After first run, old keys won't exist anymore so subsequent runs are no-ops.
  */
 
 import { unifiedCache } from "@/shared/services/unified-cache";
@@ -19,6 +21,11 @@ const OLD_CACHE_KEYS = [
   "pathology-bites-demo-questions", // Now uses HTTP browser cache (API has cache headers)
   "pathology-bites-virtual-slides-virtual-slides-dataset", // Old redundant key name
   "pathology-bites-virtual-slides-dataset", // Now uses HTTP browser cache
+  "pathology-bites-swr-settings", // Renamed to pathology-bites-swr-user-settings
+  "pathology-bites-swr-data", // Renamed to pathology-bites-swr-user-data
+  "pathology-bites-swr-/api/user/settings/", // Old duplicate SWR key (with trailing slash)
+  "pathology-bites-swr-/api/user/settings", // Old duplicate SWR key (without trailing slash)
+  "quiz_offline_queue", // Old quiz offline queue (missing pathology-bites- prefix)
 ];
 
 /**
@@ -43,13 +50,21 @@ const OLD_CACHE_PATTERNS = [
   /^pathology-bites-dashboard/,
   /^pathology-bites-settings/,
 
-  // Typos
+  // Old quiz keys with incorrect prefixes
+  /^pathology-bites-quiz:quiz-results-/, // Old format with colon
+  /^quiz-session-/, // Old format without pathology-bites- prefix
+  /^quiz-state-/, // Old format without pathology-bites- prefix
+  /^quiz_/, // Old format with underscore instead of dash
+
+  // Typos and old API-based keys
   /pathology-bites-swer-/,
   /pathology-bites-swr-\/api\/iser\//,
+  /pathology-bites-swr-\/api\/user\/settings/,  // Match with or without trailing slash
 ];
 
 /**
  * Clean up old and corrupted cache entries from localStorage
+ * After first run, old keys won't exist so this becomes a fast no-op.
  */
 export function cleanupOldCaches(): void {
   if (typeof window === "undefined") return;
@@ -92,23 +107,7 @@ export function cleanupOldCaches(): void {
 }
 
 /**
- * Migrate old cache entries to unified cache system
- * This should be called once during app initialization
- */
-export function migrateLegacyCaches(): void {
-  if (typeof window === "undefined") return;
-
-  try {
-    // Currently no legacy caches need migration
-    // This function is kept for future migrations
-    console.log("[Cache Migration] No legacy caches to migrate");
-  } catch (error) {
-    console.warn("[Cache Migration] Failed to migrate legacy caches:", error);
-  }
-}
-
-/**
- * Run full cache cleanup and migration
+ * Run full cache cleanup
  * Call this on app initialization
  */
 export function initializeCacheSystem(): void {
@@ -119,10 +118,7 @@ export function initializeCacheSystem(): void {
   // Step 1: Clean up old/corrupted caches
   cleanupOldCaches();
 
-  // Step 2: Migrate legacy caches
-  migrateLegacyCaches();
-
-  // Step 3: Run unified cache cleanup
+  // Step 2: Run unified cache cleanup
   unifiedCache.cleanup();
 
   console.log("[Cache System] ✅ Cache system initialized");

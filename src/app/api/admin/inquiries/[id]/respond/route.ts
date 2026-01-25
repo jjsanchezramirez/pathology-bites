@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/shared/services/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { Resend } from "resend";
@@ -24,21 +23,20 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     const params = await context.params;
     console.log("Inquiry response API called for ID:", params.id);
 
-    // Use regular client for auth verification
-    const authClient = await createClient();
+    // Auth check - require admin role only
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || userRole !== "admin") {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
+
     // Use admin client for database operations (bypasses RLS)
     const supabase = createAdminClient();
     const inquiryId = params.id;
-
-    // Auth is handled by middleware - user should be admin
-    const {
-      data: { user },
-      error: authError,
-    } = await authClient.auth.getUser();
-    if (authError || !user) {
-      console.error("Authentication failed:", authError);
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
 
     // Parse request body
     const body = await request.json();

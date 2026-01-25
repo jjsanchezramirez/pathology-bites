@@ -3,7 +3,7 @@
 
 import useSWR from "swr";
 import { createClient } from "@/shared/services/client";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { toast } from "@/shared/utils/toast";
 import { QuestionWithDetails } from "@/features/questions/types/questions";
 
@@ -147,7 +147,7 @@ async function fetchRejectedQuestions(userId: string) {
  */
 export function useMyRevisionQueue(options: UseQuestionQueryOptions = {}) {
   const { enabled = true, onError } = options;
-  const { user } = useAuth({ minimal: true });
+  const { user } = useAuthContext();
 
   const { data, error, isLoading, mutate } = useSWR<RejectedQuestion[]>(
     user && enabled ? ["revision-queue", user.id] : null,
@@ -186,7 +186,7 @@ export function useMyRevisionQueue(options: UseQuestionQueryOptions = {}) {
     isLoading,
     error,
     refresh: mutate,
-    mutate, // Alias for compatibility
+    mutate, // Alias
   };
 }
 
@@ -248,7 +248,7 @@ async function fetchPendingReviewQuestions(_userId: string) {
  */
 export function useMyReviewQueue(options: UseQuestionQueryOptions = {}) {
   const { enabled = true, onError } = options;
-  const { user } = useAuth({ minimal: true });
+  const { user } = useAuthContext();
 
   const { data, error, isLoading, mutate } = useSWR(
     user && enabled ? ["review-queue", user.id] : null,
@@ -328,7 +328,7 @@ async function fetchMyDrafts(userId: string) {
  */
 export function useMyDrafts(options: UseQuestionQueryOptions = {}) {
   const { enabled = true, onError } = options;
-  const { user } = useAuth({ minimal: true });
+  const { user } = useAuthContext();
 
   const { data, error, isLoading, mutate } = useSWR(
     user && enabled ? ["my-drafts", user.id] : null,
@@ -415,7 +415,7 @@ async function fetchMyQuestions(userId: string) {
  */
 export function useMyQuestions(options: UseQuestionQueryOptions = {}) {
   const { enabled = true, onError } = options;
-  const { user } = useAuth({ minimal: true });
+  const { user } = useAuthContext();
 
   const { data, error, isLoading, mutate } = useSWR(
     user && enabled ? ["my-questions", user.id] : null,

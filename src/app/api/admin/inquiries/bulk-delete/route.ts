@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/shared/services/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 
@@ -21,54 +20,34 @@ export async function DELETE(request: NextRequest) {
   try {
     console.log("Bulk delete inquiries API called");
 
-    // Use regular client for auth verification
-    const authClient = await createClient();
+    // Auth check - require admin role only
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || userRole !== "admin") {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
+
     // Use admin client for database operations (bypasses RLS)
     const supabase = createAdminClient();
-
-    // Auth is handled by middleware - user should be admin
-    const {
-      data: { user },
-      error: authError,
-    } = await authClient.auth.getUser();
-    if (authError || !user) {
-      console.error("Authentication failed:", authError);
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Verify user has admin permissions
-    const { data: userData, error: userError } = await authClient
-      .from("users")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-
-    if (userError || !userData || !["admin", "creator", "reviewer"].includes(userData.role)) {
-      console.error("User does not have admin permissions:", {
-        userId: user.id,
-        role: userData?.role,
-      });
-      return NextResponse.json({ error: "Insufficient permissions" }, { status: 403 });
-    }
 
     // Parse and validate request body
     const body = await request.json();
     const validation = bulkDeleteSchema.safeParse(body);
 
     if (!validation.success) {
-      console.error("Invalid request body:", validation.error.errors);
       return NextResponse.json(
-        {
-          error: "Invalid request body",
-          details: validation.error.errors.map((err) => err.message),
-        },
+        { error: "Invalid request data", details: validation.error.errors },
         { status: 400 }
       );
     }
 
     const { inquiryIds } = validation.data;
 
-    console.log(`Attempting to delete ${inquiryIds.length} inquiries:`, inquiryIds);
+    console.log(`Attempting to delete ${inquiryIds.length} inquiries by user ${userId}:`, inquiryIds);
 
     // First, verify all inquiries exist and get their details for logging
     const { data: existingInquiries, error: fetchError } = await supabase

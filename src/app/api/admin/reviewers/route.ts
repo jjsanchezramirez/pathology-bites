@@ -1,6 +1,5 @@
 import { createClient } from "@/shared/services/server";
 import { NextResponse } from "next/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 
 /**
  * GET /api/admin/reviewers
@@ -12,10 +11,15 @@ export async function GET(request: Request) {
   try {
     const supabase = await createClient();
 
-    // Get current user
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // Auth check - require admin, creator, or reviewer role
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
     }
 
     // Get all users with admin or reviewer role

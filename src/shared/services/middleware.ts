@@ -22,8 +22,6 @@ const PUBLIC_ADMIN_ENDPOINTS = ["/api/admin/system-status", "/api/admin/ai-gener
 const ADMIN_ONLY_ENDPOINTS = [
   "/api/admin/users",
   "/api/admin/notifications",
-  "/api/admin/rate-limit-status",
-  "/api/admin/refresh-stats",
 ];
 
 // DEPRECATED: API routes now validate auth internally to reduce edge requests

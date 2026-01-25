@@ -13,11 +13,6 @@ export type QuestionOptionData = Database["public"]["Tables"]["question_options"
 export type QuestionOptionInsert = Database["public"]["Tables"]["question_options"]["Insert"];
 export type QuestionOptionUpdate = Database["public"]["Tables"]["question_options"]["Update"];
 
-// Legacy type aliases for backward compatibility (to be removed after full migration)
-export type AnswerOptionData = QuestionOptionData;
-export type AnswerOptionInsert = QuestionOptionInsert;
-export type AnswerOptionUpdate = QuestionOptionUpdate;
-
 // Question Images types
 export type QuestionImageData = Database["public"]["Tables"]["question_images"]["Row"];
 export type QuestionImageInsert = Database["public"]["Tables"]["question_images"]["Insert"];
@@ -49,13 +44,6 @@ export interface CategoryData {
 export interface QuestionTagData {
   question_id: string;
   tag_id: string;
-}
-
-// QuestionCategoryData is no longer needed since category_id is now directly in questions table
-// Keeping for backward compatibility during migration
-export interface QuestionCategoryData {
-  question_id: string;
-  category_id: string;
 }
 
 // Type definitions
@@ -93,13 +81,9 @@ export interface Question {
 // Enhanced question interfaces
 export interface QuestionWithDetails extends QuestionData {
   set?: SetData;
-  question_set?: SetData; // Legacy field name for backward compatibility
   category?: CategoryData; // Single category object (from API join)
-  categories?: CategoryData[]; // Legacy array format for backward compatibility
   question_options?: QuestionOptionData[];
-  answer_options?: QuestionOptionData[]; // Legacy field name for backward compatibility
   question_images?: (QuestionImageData & {
-    image?: ImageData; // Legacy singular form
     images?: ImageData; // Actual Supabase response format
   })[];
   tags?: TagData[];
@@ -117,7 +101,6 @@ export interface QuestionWithDetails extends QuestionData {
 
 export interface QuestionWithSet extends QuestionData {
   set?: SetData;
-  question_set?: SetData; // Legacy field name for backward compatibility
 }
 
 // Form data interfaces
@@ -128,9 +111,6 @@ export interface QuestionOptionFormData {
   explanation?: string;
   order_index: number;
 }
-
-// Legacy type alias for backward compatibility
-export type AnswerOptionFormData = QuestionOptionFormData;
 
 export interface QuestionImageFormData {
   id?: string;
@@ -153,10 +133,8 @@ export interface QuestionFormData {
   anki_card_id?: number | null;
   anki_deck_name?: string | null;
   question_options: QuestionOptionFormData[];
-  answer_options?: QuestionOptionFormData[]; // Legacy field for backward compatibility
   question_images: QuestionImageFormData[];
   tag_ids: string[];
-  category_ids?: string[]; // Legacy field for backward compatibility
 }
 
 // Interface for question filters including question set

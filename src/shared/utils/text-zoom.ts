@@ -97,27 +97,3 @@ export function getValidZoomLevel(zoom: number): number {
   // Round to 2 decimal places to avoid floating point precision issues
   return Math.round(result * 100) / 100;
 }
-
-/**
- * Convert legacy font size to zoom level
- */
-export function legacyFontSizeToZoom(fontSize: "small" | "medium" | "large"): number {
-  switch (fontSize) {
-    case "small":
-      return 0.875; // 14px
-    case "large":
-      return 1.125; // 18px
-    case "medium":
-    default:
-      return 1.0; // 16px
-  }
-}
-
-/**
- * Convert zoom level to legacy font size
- */
-export function zoomToLegacyFontSize(zoom: number): "small" | "medium" | "large" {
-  if (zoom <= 0.9) return "small";
-  if (zoom >= 1.1) return "large";
-  return "medium";
-}

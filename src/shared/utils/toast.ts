@@ -224,6 +224,3 @@ export const toast = {
       showToast("info", message, options, "upload"),
   },
 };
-
-// Default export for backward compatibility
-export default toast;

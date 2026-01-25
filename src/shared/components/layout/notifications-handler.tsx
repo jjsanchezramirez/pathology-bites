@@ -26,7 +26,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { useNotifications } from "@/shared/hooks/use-notifications";
 import { NotificationWithSource } from "@/shared/types/notifications";
 import { useNotificationRefresh } from "@/shared/contexts/notification-refresh-context";
@@ -35,7 +35,7 @@ export function NotificationsHandler() {
   const [page, setPage] = useState(1);
   const limit = 20;
 
-  const { isHydrated, isAuthenticated, user } = useAuth({ minimal: true });
+  const { isHydrated, isAuthenticated, user } = useAuthContext();
 
   const {
     notifications,

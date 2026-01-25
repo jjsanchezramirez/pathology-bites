@@ -38,7 +38,7 @@ export function DeleteImageDialog({
     try {
       setIsDeleting(true);
 
-      await deleteImage(image.storage_path, image.id);
+      await deleteImage(image.id);
 
       toast.success("Image deleted successfully");
       onSuccess();

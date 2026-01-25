@@ -1,7 +1,6 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 import { revalidateQuestions } from "@/lib/revalidation";
 
 /**
@@ -18,7 +17,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { id: questionId } = await params;
 
     // Get current user
-    const userId = getUserIdFromHeaders(request);
+    const userId = request.headers.get("x-user-id");
+
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

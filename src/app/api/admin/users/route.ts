@@ -1,9 +1,8 @@
 import { UserRole } from "@/shared/utils/auth-helpers";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { deleteUser, deleteUserFromAuth } from "@/shared/services/user-deletion";
-import { requireAdmin } from "@/shared/middleware/api-auth";
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
@@ -21,9 +20,20 @@ function createAdminClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
-export const GET = requireAdmin(async (request) => {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
+
+    // Auth check - require admin role
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || userRole !== "admin") {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
@@ -94,11 +104,22 @@ export const GET = requireAdmin(async (request) => {
     console.error("Error in admin users API:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-});
+}
 
-export const PATCH = requireAdmin(async (request) => {
+export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
+
+    // Auth check - require admin role
+    const adminUserId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!adminUserId || userRole !== "admin") {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
 
     const body = await request.json();
     const { userId, updates } = body;
@@ -141,14 +162,22 @@ export const PATCH = requireAdmin(async (request) => {
     console.error("Error updating user:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-});
+}
 
-export const DELETE = requireAdmin(async (request) => {
+export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Get current admin user ID for self-deletion check
-    const currentUserId = request.auth.userId;
+    // Auth check - require admin role
+    const currentUserId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!currentUserId || userRole !== "admin") {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
 
     const body = await request.json();
     const { userId } = body;
@@ -260,4 +289,4 @@ export const DELETE = requireAdmin(async (request) => {
       { status: 500 }
     );
   }
-});
+}

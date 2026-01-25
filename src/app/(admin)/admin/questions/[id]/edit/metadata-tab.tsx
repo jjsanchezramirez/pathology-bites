@@ -52,16 +52,11 @@ export function MetadataTab({
 
   // Get category name from preloaded data
   const categoryName = useMemo(() => {
-    // Check for category object first (new API format)
     if (question.category && typeof question.category === 'object' && 'name' in question.category) {
       return question.category.name;
     }
-    // Fallback for categories array (legacy format)
-    if (question.categories && question.categories.length > 0) {
-      return question.categories[0].name;
-    }
     return "No Category";
-  }, [question.category, question.categories]);
+  }, [question.category]);
 
   // Get question set name from preloaded data
   const questionSetName = useMemo(() => {

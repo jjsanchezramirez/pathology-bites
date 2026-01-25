@@ -1,7 +1,7 @@
 // src/shared/components/common/cookie-consent-banner.tsx
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { X, Cookie } from "lucide-react";
@@ -19,10 +19,15 @@ interface CookieConsent {
 export function CookieConsentBanner() {
   const [showBanner, setShowBanner] = useState(false);
   const [mounted, setMounted] = useState(false);
+  const hasCheckedConsent = useRef(false); // Prevent double-checking in React Strict Mode
 
   useEffect(() => {
     // Only run on client side
     if (typeof window === "undefined") return;
+
+    // Prevent double-checking in React Strict Mode
+    if (hasCheckedConsent.current) return;
+    hasCheckedConsent.current = true;
 
     setMounted(true);
 
@@ -38,7 +43,10 @@ export function CookieConsentBanner() {
           // Apply consent preferences and don't show banner
           applyConsent(consent);
           setShowBanner(false);
+          console.log("[CookieConsent] Valid consent found, not showing banner");
           return;
+        } else {
+          console.log("[CookieConsent] Consent version mismatch, showing banner");
         }
       }
     } catch (e) {

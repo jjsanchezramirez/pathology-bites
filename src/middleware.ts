@@ -101,14 +101,19 @@ export async function middleware(request: NextRequest) {
     }
   }
 
-  // API ROUTES: Add user ID to headers if authenticated
+  // API ROUTES: Add user ID and role to headers if authenticated
   if (isApiRoute && !isPublicApi) {
     if (!user) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const role = user.app_metadata?.role || user.user_metadata?.role;
+
     const requestHeaders = new Headers(request.headers);
     requestHeaders.set("x-user-id", user.id);
+    if (role) {
+      requestHeaders.set("x-user-role", role);
+    }
 
     response = NextResponse.next({
       request: {

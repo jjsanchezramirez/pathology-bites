@@ -11,6 +11,7 @@ import {
 
 import { TABLE_NAMES } from "@/shared/constants/database-types";
 import { apiClient } from "@/shared/utils/api-client";
+import { formatVersion } from "@/shared/utils/version";
 
 export interface UseQuestionsParams {
   page?: number;
@@ -206,8 +207,13 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
           ? categoriesData.find((cat) => cat.id === question.category_id)
           : null;
 
-        // Get the latest version for this question
-        const latestVersion = latestVersionsData[question.id] || question.version || "1.0.0";
+        // Get the latest version for this question from components
+        const latestVersion = latestVersionsData[question.id] || formatVersion(
+          question.version_major,
+          question.version_minor,
+          question.version_patch,
+          false
+        );
 
         return {
           ...question,
@@ -218,7 +224,6 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
           categories: questionCategory ? [questionCategory] : [],
           tags: question.question_tags?.map((qt: unknown) => qt.tag).filter(Boolean) || [],
           version_string: latestVersion,
-          version: latestVersion, // Update the version field with the latest version
         };
       });
 

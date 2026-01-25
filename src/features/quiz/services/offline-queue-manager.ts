@@ -14,7 +14,7 @@ import {
  * Stores failed syncs in localStorage and retries with exponential backoff
  */
 export class OfflineQueueManager {
-  private static readonly QUEUE_KEY = "quiz_offline_queue";
+  private static readonly QUEUE_KEY = "pathology-bites-quiz-offline-queue";
   private retryTimer: NodeJS.Timeout | null = null;
 
   constructor() {
@@ -62,7 +62,20 @@ export class OfflineQueueManager {
     try {
       if (typeof window === "undefined") return []; // SSR guard
       const stored = localStorage.getItem(OfflineQueueManager.QUEUE_KEY);
-      return stored ? JSON.parse(stored) : [];
+      if (!stored) return [];
+
+      const queue = JSON.parse(stored);
+
+      // Convert answers back to Map after JSON deserialization
+      return queue.map((item: OfflineQueueItem) => {
+        if (item.data && typeof item.data === 'object' && 'answers' in item.data) {
+          const quizState = item.data as { answers: unknown };
+          if (Array.isArray(quizState.answers)) {
+            quizState.answers = new Map(quizState.answers as [string, unknown][]);
+          }
+        }
+        return item;
+      });
     } catch (error) {
       console.error("Failed to read offline queue:", error);
       return [];

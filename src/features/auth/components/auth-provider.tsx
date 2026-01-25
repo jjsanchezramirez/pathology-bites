@@ -16,7 +16,6 @@ interface AuthContextType {
   error: string | null;
   isHydrated: boolean;
   refreshAuth: () => Promise<void>;
-  retry: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
@@ -28,7 +27,6 @@ const AuthContext = createContext<AuthContextType>({
   error: null,
   isHydrated: false,
   refreshAuth: async () => {},
-  retry: async () => {},
 });
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
@@ -50,7 +48,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     error: authState.error,
     isHydrated: authState.isHydrated,
     refreshAuth: authState.refreshAuth,
-    retry: authState.refreshAuth, // Alias for compatibility
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

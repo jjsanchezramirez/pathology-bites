@@ -3,7 +3,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 
 interface ClientAuthGuardProps {
   children: React.ReactNode;
@@ -19,7 +19,7 @@ interface ClientAuthGuardProps {
  * Use middleware for sensitive routes like /admin.
  */
 export function ClientAuthGuard({ children, redirectTo = "/login" }: ClientAuthGuardProps) {
-  const { isAuthenticated, isLoading, isHydrated } = useAuth({ minimal: true });
+  const { isAuthenticated, isLoading, isHydrated } = useAuthContext();
   const router = useRouter();
   const [shouldRender, setShouldRender] = useState(false);
   const hasCheckedRef = useRef(false);

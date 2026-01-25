@@ -4,7 +4,7 @@
 
 /*
   The default border color has changed to `currentcolor` in Tailwind CSS v4,
-  so we've added these compatibility styles to make sure everything still
+  so we've added these styles to make sure everything still
   looks the same as it did with Tailwind CSS v3.
 
   If we ever want to remove these styles, we need to add an explicit border
@@ -92,7 +92,8 @@
   }
 
   @keyframes buttonPulse {
-    0%, 100% {
+    0%,
+    100% {
       box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4);
     }
     50% {
@@ -484,7 +485,9 @@
   .scroll-fade-up {
     opacity: 0;
     transform: translateY(30px);
-    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    transition:
+      opacity 0.8s ease-out,
+      transform 0.8s ease-out;
   }
 
   .scroll-fade-up.visible {
@@ -504,7 +507,9 @@
   .scroll-scale-in {
     opacity: 0;
     transform: scale(0.95);
-    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    transition:
+      opacity 0.8s ease-out,
+      transform 0.8s ease-out;
   }
 
   .scroll-scale-in.visible {
@@ -515,7 +520,9 @@
   .scroll-slide-left {
     opacity: 0;
     transform: translateX(-30px);
-    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    transition:
+      opacity 0.8s ease-out,
+      transform 0.8s ease-out;
   }
 
   .scroll-slide-left.visible {
@@ -526,7 +533,9 @@
   .scroll-slide-right {
     opacity: 0;
     transform: translateX(30px);
-    transition: opacity 0.8s ease-out, transform 0.8s ease-out;
+    transition:
+      opacity 0.8s ease-out,
+      transform 0.8s ease-out;
   }
 
   .scroll-slide-right.visible {

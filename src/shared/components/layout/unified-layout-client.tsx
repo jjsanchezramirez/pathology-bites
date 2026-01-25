@@ -44,8 +44,6 @@ export function UnifiedLayoutClient({
   // Middleware already validated role server-side, so we can trust userType prop
   // For admin routes, we use 'admin' role for navigation config
   const navigationConfig = getNavigationConfig(userType === "admin" ? "admin" : "user");
-
-  const navigationItems = navigationConfig.items;
   const navigationSections = navigationConfig.sections;
   const { isInQuizMode } = useQuizMode();
   const { isInAnkiMode } = useAnkiMode();
@@ -157,7 +155,6 @@ export function UnifiedLayoutClient({
         >
           <UnifiedSidebar
             isCollapsed={sidebarCollapsed}
-            navigationItems={navigationItems}
             navigationSections={navigationSections}
             isMobileMode={true}
           />
@@ -172,7 +169,6 @@ export function UnifiedLayoutClient({
           <UnifiedSidebar
             isCollapsed={sidebarCollapsed}
             isHovered={sidebarHovered}
-            navigationItems={navigationItems}
             navigationSections={navigationSections}
             isMobileMode={false}
           />

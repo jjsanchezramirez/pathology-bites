@@ -46,7 +46,8 @@ export default function GenomicAnalysisPage() {
 
       // Check if parsing failed
       if (data.success === false) {
-        const errorMessage = data.error || "Could not extract variant information from the provided text";
+        const errorMessage =
+          data.error || "Could not extract variant information from the provided text";
         setError(errorMessage);
         toast.error("Parsing Failed", {
           description: errorMessage,
@@ -57,7 +58,7 @@ export default function GenomicAnalysisPage() {
       // Adapt the new /classify response to match the old structure
       const adaptedResult = {
         ...data,
-        // Map classification to ampResult for compatibility
+        // Map classification to ampResult
         ampResult: {
           classification: data.classification?.classification,
           tier: data.classification?.tier,

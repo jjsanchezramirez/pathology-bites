@@ -33,9 +33,7 @@ import {
 import { cn } from "@/shared/utils";
 import { SidebarAuthStatus } from "@/shared/components/layout/sidebar-auth-status";
 import {
-  NavigationItem,
   NavigationSection,
-  filterNavigationItems,
   filterNavigationSections,
 } from "@/shared/config/navigation";
 import { useUserRole } from "@/shared/hooks/use-user-role";
@@ -74,15 +72,13 @@ const iconMap: Record<string, LucideIcon> = {
 interface UnifiedSidebarProps {
   isCollapsed: boolean;
   isHovered?: boolean;
-  navigationItems?: NavigationItem[];
-  navigationSections?: NavigationSection[];
+  navigationSections: NavigationSection[];
   isMobileMode?: boolean;
 }
 
 export function UnifiedSidebar({
   isCollapsed,
   isHovered = false,
-  navigationItems,
   navigationSections,
   isMobileMode = false,
 }: UnifiedSidebarProps) {
@@ -94,13 +90,13 @@ export function UnifiedSidebar({
   const myQuestionsCount = revisionQueueCount + draftsCount; // Combined badge for My Questions
 
   // Always show navigation immediately, but filter based on loading state and admin mode
-  const filteredNavigation = navigationItems
-    ? filterNavigationItems(navigationItems, canAccess, isAdmin, isLoading, adminMode)
-    : [];
-
-  const filteredSections = navigationSections
-    ? filterNavigationSections(navigationSections, canAccess, isAdmin, isLoading, adminMode)
-    : [];
+  const filteredSections = filterNavigationSections(
+    navigationSections,
+    canAccess,
+    isAdmin,
+    isLoading,
+    adminMode
+  );
 
   // Loading skeleton component for navigation items
   const LoadingSkeleton = () => (
@@ -152,15 +148,12 @@ export function UnifiedSidebar({
       {/* Navigation */}
       <nav className="flex-1 overflow-y-auto">
         <div className="p-3">
-          {/* Show loading skeleton when no navigation items are provided or transitioning */}
-          {(!navigationSections?.length && !navigationItems?.length) ||
-          isLoading ||
-          isTransitioning ? (
+          {/* Show loading skeleton when no navigation sections are provided or transitioning */}
+          {!navigationSections?.length || isLoading || isTransitioning ? (
             <LoadingSkeleton />
           ) : (
             <>
-              {/* Render sections if available */}
-              {filteredSections.length > 0 ? (
+              {/* Render navigation sections */}
                 <div className="space-y-6">
                   {filteredSections.map((section, sectionIndex) => (
                     <div
@@ -261,85 +254,6 @@ export function UnifiedSidebar({
                     </div>
                   ))}
                 </div>
-              ) : (
-                /* Fallback to flat item list */
-                <div className="space-y-1">
-                  {filteredNavigation.map((item) => {
-                    const isActive = pathname === item.href;
-                    const IconComponent = iconMap[item.icon] || LayoutDashboard;
-
-                    return (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        className={cn(
-                          "flex items-center h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
-                          isOpen ? "px-3" : "justify-center px-0 w-10",
-                          isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
-                          isLoading && "pointer-events-none opacity-60",
-                          item.comingSoon && "opacity-60"
-                        )}
-                        title={!isOpen ? item.name : undefined}
-                      >
-                        <IconComponent className="h-5 w-5 shrink-0" />
-                        {isOpen && <span className="truncate ml-3">{item.name}</span>}
-                        {isOpen &&
-                          item.href === "/admin/inquiries" &&
-                          pendingInquiriesCount > 0 && (
-                            <span className="ml-auto text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">
-                              {pendingInquiriesCount}
-                            </span>
-                          )}
-                        {isOpen &&
-                          item.showBadge &&
-                          item.badgeKey === "myQuestions" &&
-                          myQuestionsCount > 0 && (
-                            <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
-                              {myQuestionsCount}
-                            </span>
-                          )}
-                        {isOpen &&
-                          item.showBadge &&
-                          item.badgeKey === "revisionQueue" &&
-                          revisionQueueCount > 0 && (
-                            <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
-                              {revisionQueueCount}
-                            </span>
-                          )}
-                        {isOpen &&
-                          item.showBadge &&
-                          item.badgeKey === "drafts" &&
-                          draftsCount > 0 && (
-                            <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
-                              {draftsCount}
-                            </span>
-                          )}
-                        {isOpen &&
-                          item.showBadge &&
-                          item.badgeKey === "reviewQueue" &&
-                          reviewQueueCount > 0 && (
-                            <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
-                              {reviewQueueCount}
-                            </span>
-                          )}
-                        {isOpen && item.comingSoon && (
-                          <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-                            Soon
-                          </span>
-                        )}
-                        {isOpen && item.isNew && (
-                          <span className="ml-auto text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-                            New
-                          </span>
-                        )}
-                        {isOpen && item.adminOnly && !isAdmin && !isLoading && (
-                          <span className="ml-auto text-xs text-sidebar-foreground/50">Admin</span>
-                        )}
-                      </Link>
-                    );
-                  })}
-                </div>
-              )}
             </>
           )}
         </div>

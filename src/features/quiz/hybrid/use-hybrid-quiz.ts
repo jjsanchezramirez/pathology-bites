@@ -7,7 +7,7 @@
  *
  * Features:
  * - Instant UI responses (0ms latency)
- * - Only 2 API calls per quiz (vs 15-30 in legacy system)
+ * - Only 2 API calls per quiz
  * - Offline capability with local storage
  * - Automatic sync management
  * - Optimized for Vercel's free tier
@@ -109,8 +109,8 @@ export interface HybridQuizActions {
   navigateToQuestion: (index: number) => boolean;
 
   // Data Access
-  getCurrentQuestion: () => UIQuizQuestion | null; // UI-compatible question format
-  getQuestions: () => UIQuizQuestion[]; // UI-compatible question format
+  getCurrentQuestion: () => UIQuizQuestion | null; // Works with UI question format
+  getQuestions: () => UIQuizQuestion[]; // Works with UI question format
   getAnswerForQuestion: (questionId: string) => QuizAnswer | null;
   getQuizConfig: () => QuizState["config"] | null;
 
@@ -229,7 +229,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   // Recover quiz state from localStorage
   const recoverLocalState = useCallback(() => {
     try {
-      const saved = localStorage.getItem(`quiz_${sessionId}`);
+      const saved = localStorage.getItem(`pathology-bites-quiz-session-${sessionId}`);
       if (saved) {
         const data = JSON.parse(saved);
         // Check if data is recent (within 24 hours) and for the same session
@@ -381,7 +381,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       // Clear local storage and session cache on successful completion
       // This ensures that if user navigates back, fresh data with 'completed' status will be fetched
       try {
-        localStorage.removeItem(`quiz_${sessionId}`);
+        localStorage.removeItem(`pathology-bites-quiz-session-${sessionId}`);
         syncManager.current?.clearSessionCache(sessionId);
         console.log("[Hybrid] Cleared quiz cache after completion");
       } catch (error) {
@@ -472,7 +472,10 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
             timeRemaining: timeRemaining,
             lastSaved: Date.now(),
           };
-          localStorage.setItem(`quiz_${sessionId}`, JSON.stringify(quizData));
+          localStorage.setItem(
+            `pathology-bites-quiz-session-${sessionId}`,
+            JSON.stringify(quizData)
+          );
         } catch (error) {
           console.warn("Failed to save quiz state to localStorage:", error);
         }
@@ -706,7 +709,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       try {
         const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
         Object.keys(localStorage)
-          .filter((key) => key.startsWith("quiz_"))
+          .filter((key) => key.startsWith("pathology-bites-quiz-"))
           .forEach((key) => {
             try {
               const data = JSON.parse(localStorage.getItem(key) || "{}");
@@ -725,7 +728,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
     clearCurrentQuizData: useCallback(() => {
       try {
-        localStorage.removeItem(`quiz_${sessionId}`);
+        localStorage.removeItem(`pathology-bites-quiz-session-${sessionId}`);
       } catch (error) {
         console.warn("Failed to clear current quiz data:", error);
       }

@@ -129,7 +129,7 @@ export function ErrorDisplay({
                     <strong>Type:</strong> {error.type}
                   </div>
                   <div>
-                    <strong>Severity:</strong> {error.severity || "medium"}
+                    <strong>Severity:</strong> {error.severity}
                   </div>
                   <div>
                     <strong>Retryable:</strong> {error.retryable ? "Yes" : "No"}

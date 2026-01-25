@@ -101,6 +101,8 @@ export async function GET(request: NextRequest) {
               .single()
 
             // If user doesn't exist, create them
+            // NOTE: The handle_new_user database trigger should have already created this user
+            //       when the auth.users record was created during signup. This is a fallback.
             if (checkError && checkError.code === 'PGRST116') {
               // Create user in public.users
               const { error: createError } = await supabase
@@ -116,7 +118,12 @@ export async function GET(request: NextRequest) {
                 })
 
               if (createError) {
-                console.error('Error creating user:', createError)
+                // Ignore duplicate key errors (trigger already created user)
+                if (createError.code === '23505') {
+                  console.log('User already exists (created by trigger):', authUser.id)
+                } else {
+                  console.error('Error creating user:', createError)
+                }
                 // Don't fail - user can still proceed
               } else {
                 console.log('User created successfully via email confirmation:', authUser.id)
@@ -133,7 +140,12 @@ export async function GET(request: NextRequest) {
                 })
 
               if (settingsError) {
-                console.error('Error creating user settings for new user:', settingsError)
+                // Ignore duplicate key errors (trigger already created settings)
+                if (settingsError.code === '23505') {
+                  console.log('User settings already exist (created by trigger):', authUser.id)
+                } else {
+                  console.error('Error creating user settings for new user:', settingsError)
+                }
                 // Don't fail - user can still proceed
               } else {
                 console.log('User settings created successfully for new user:', authUser.id)

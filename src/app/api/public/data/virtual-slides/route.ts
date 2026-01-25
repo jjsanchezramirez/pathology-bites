@@ -7,7 +7,7 @@ export async function GET() {
   const base = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
   const url = `${base}/virtual-slides/virtual-slides.json`
   try {
-    // Note: This endpoint returns the full 15MB dataset for compatibility
+    // Note: This endpoint returns the full 15MB dataset
     // For large file handling, Next.js will show a caching warning during build
     // This is expected and doesn't affect functionality - just means the response
     // won't be cached by Next.js (but browser/CDN caching still works)

@@ -75,7 +75,6 @@ export class QuizService {
           shuffleAnswers: formData.shuffleAnswers,
           showProgress: formData.showProgress,
           showExplanations: formData.mode === "tutor",
-          timePerQuestion: formData.timing === "timed" ? 60 : undefined, // kept for backward compatibility
           totalTimeLimit,
         },
         question_ids: limitedQuestions.map((q) => q.id),
@@ -106,7 +105,7 @@ export class QuizService {
         totalQuestions: session.total_questions,
         totalTimeLimit: session.total_time_limit,
         timeRemaining: session.time_remaining,
-        quizStartedAt: session.quiz_started_at,
+        quizStartedAt: session.started_at,
         createdAt: session.created_at,
         updatedAt: session.updated_at,
       };
@@ -257,8 +256,6 @@ export class QuizService {
       question_options: q.question_options || [],
       question_images: q.question_images || [],
       question_set: Array.isArray(q.question_set) ? q.question_set[0] : q.question_set,
-      set: Array.isArray(q.question_set) ? q.question_set[0] : q.question_set, // Backward compatibility
-      answer_options: q.question_options || [], // Backward compatibility
       categories: undefined, // Not loaded in this query
       tags: undefined, // Not loaded in this query
       analytics: undefined,
@@ -400,7 +397,7 @@ export class QuizService {
         totalQuestions: session.total_questions,
         totalTimeLimit: session.total_time_limit,
         timeRemaining: session.time_remaining,
-        quizStartedAt: session.started_at, // Map started_at to quizStartedAt for compatibility
+        quizStartedAt: session.started_at,
         createdAt: session.created_at,
         updatedAt: session.updated_at,
       };
@@ -459,10 +456,9 @@ export class QuizService {
       .map((id) => questionMap.get(id))
       .filter(Boolean) as unknown[];
 
-    // Map to QuestionWithDetails format with proper answer_options mapping
+    // Map to QuestionWithDetails format
     const mappedQuestions = orderedQuestions.map((q) => ({
       ...q,
-      answer_options: q.question_options || [], // Map question_options to answer_options for backward compatibility
       question_options: q.question_options || [],
     }));
 
@@ -550,7 +546,6 @@ export class QuizService {
           correct_answers: updates.correctAnswers,
           total_time_limit: updates.totalTimeLimit,
           time_remaining: updates.timeRemaining,
-          quiz_started_at: updates.quizStartedAt,
           updated_at: new Date().toISOString(),
         })
         .eq("id", sessionId);
@@ -573,7 +568,6 @@ export class QuizService {
         {
           status: "in_progress",
           startedAt: now,
-          quizStartedAt: now, // Set when the global timer starts
         },
         authenticatedSupabase
       );
@@ -615,7 +609,7 @@ export class QuizService {
         sessionId,
         {
           status: "in_progress",
-          quizStartedAt: new Date().toISOString(), // Reset timer start time for accurate tracking
+          startedAt: new Date().toISOString(), // Reset timer reference point for pause/resume
         },
         authenticatedSupabase
       );

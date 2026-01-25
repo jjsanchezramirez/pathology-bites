@@ -1,18 +1,18 @@
 // src/hooks/use-question-sets.ts
 import { useState, useEffect, useCallback } from "react";
 import { createClient } from "@/shared/services/client";
-import { QuestionSetData } from "@/features/questions/types/question-sets";
+import { SetData } from "@/features/questions/types/question-sets";
 import { TABLE_NAMES } from "@/shared/constants/database-types";
 
 export interface UseQuestionSetsReturn {
-  questionSets: QuestionSetData[];
+  questionSets: SetData[];
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
 }
 
 export function useQuestionSets(): UseQuestionSetsReturn {
-  const [questionSets, setQuestionSets] = useState<QuestionSetData[]>([]);
+  const [questionSets, setQuestionSets] = useState<SetData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

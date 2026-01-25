@@ -1,4 +1,3 @@
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 // src/app/api/admin/categories/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
@@ -7,26 +6,15 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth is now handled by middleware - get user info from headers
+    // Auth check - require admin, creator, or reviewer role
     const userId = request.headers.get("x-user-id");
     const userRole = request.headers.get("x-user-role");
 
-    // Fallback to manual auth check if headers are missing (for backward compatibility)
-    if (!userId || !userRole) {
-      const userId = getUserIdFromHeaders(request);
-      if (!userId) {
-        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-      }
-
-      const { data: userData, error: userError } = await supabase
-        .from("users")
-        .select("role")
-        .eq("id", userId)
-        .single();
-
-      if (userError || !["admin", "creator", "reviewer"].includes(userData?.role)) {
-        return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
-      }
+    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
     }
 
     // Get query parameters
@@ -109,7 +97,16 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth is now handled by middleware
+    // Auth check - require admin, creator, or reviewer role
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
 
     const body = await request.json();
     const { name, shortForm, parentId, color } = body;
@@ -167,7 +164,16 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth is now handled by middleware
+    // Auth check - require admin, creator, or reviewer role
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
 
     const body = await request.json();
     const { categoryId, name, shortForm, parentId, color } = body;
@@ -226,7 +232,16 @@ export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth is now handled by middleware
+    // Auth check - require admin, creator, or reviewer role
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
 
     const body = await request.json();
     const { categoryId } = body;

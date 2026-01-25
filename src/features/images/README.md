@@ -191,12 +191,7 @@ This ensures accurate storage calculations and prevents external images from aff
 ### Search Implementation
 
 ```sql
--- Full-text search with GIN index
-SELECT * FROM images
-WHERE search_vector @@ to_tsquery('english', 'microscopic:*')
-AND category != 'external';
-
--- Fallback ILIKE search
+-- ILIKE search on text fields
 SELECT * FROM images
 WHERE (alt_text ILIKE '%term%' OR description ILIKE '%term%')
 AND category != 'external';

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/shared/services/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { revalidateQuestions } from "@/lib/revalidation";
 
@@ -12,21 +11,21 @@ function createAdminClient() {
 
 export async function POST(request: NextRequest) {
   try {
-    // Use regular client for auth
-    const authClient = await createClient();
-    const {
-      data: { user },
-    } = await authClient.auth.getUser();
+    // Auth check - require admin, creator, or reviewer role
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
 
     // Use service role client for database operations to bypass RLS
     const supabase = createAdminClient();
 
     const questionData = await request.json();
-
-    // Normalize options field - support both question_options and answer_options for backward compatibility
-    if (!questionData.question_options && questionData.answer_options) {
-      questionData.question_options = questionData.answer_options;
-    }
 
     // Validate required fields
     if (!questionData.title || !questionData.stem || !questionData.question_options) {
@@ -47,9 +46,8 @@ export async function POST(request: NextRequest) {
         category_id: questionData.category_id,
         lesson: questionData.lesson,
         topic: questionData.topic,
-        created_by: user.id,
-        updated_by: user.id,
-        version: "1.0.0",
+        created_by: userId,
+        updated_by: userId,
         version_major: 1,
         version_minor: 0,
         version_patch: 0,

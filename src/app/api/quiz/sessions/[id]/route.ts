@@ -1,8 +1,8 @@
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 // src/app/api/quiz/sessions/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { quizService } from "@/features/quiz/services/quiz-service";
+import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 
 interface QuizSessionUpdate {
   timeRemaining?: number;
@@ -18,6 +18,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     // Check if user is authenticated
     const userId = getUserIdFromHeaders(request);
+
     if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }

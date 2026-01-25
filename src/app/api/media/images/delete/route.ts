@@ -48,8 +48,8 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Parse request body
-    const { imageId, imagePath } = await request.json();
-    console.log("📋 Request data:", { imageId, imagePath });
+    const { imageId } = await request.json();
+    console.log("📋 Request data:", { imageId });
 
     if (!imageId) {
       console.log("❌ Missing imageId");
@@ -70,16 +70,13 @@ export async function DELETE(request: NextRequest) {
     // Only delete from storage if it's not an external image
     if (imageData && imageData.category !== "external") {
       try {
-        // Try to extract R2 key from URL first (for migrated images)
+        // Try to extract R2 key from URL first
         const r2Key = extractR2KeyFromUrl(imageData.url);
         if (r2Key) {
           await deleteFromR2(r2Key);
-        } else if (imagePath || imageData.storage_path) {
-          // Fallback: use storage_path or imagePath for legacy images
-          const keyToDelete = imagePath || imageData.storage_path;
-          if (keyToDelete) {
-            await deleteFromR2(keyToDelete);
-          }
+        } else if (imageData.storage_path) {
+          // Fallback: use storage_path if URL extraction fails
+          await deleteFromR2(imageData.storage_path);
         }
       } catch (storageError) {
         console.warn("R2 deletion error (continuing with database deletion):", storageError);

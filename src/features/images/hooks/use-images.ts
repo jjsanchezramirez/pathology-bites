@@ -22,7 +22,7 @@ export interface UseImagesReturn {
   loading: boolean;
   error: string | null;
   refetch: () => Promise<void>;
-  deleteImageById: (imagePath: string, imageId: string) => Promise<void>;
+  deleteImageById: (imageId: string) => Promise<void>;
   updateImageById: (
     imageId: string,
     data: { description: string; alt_text: string; category: ImageCategory; source_ref?: string }
@@ -80,9 +80,9 @@ export function useImages(params: UseImagesParams = {}): UseImagesReturn {
     }
   }, [page, pageSize, searchTerm, category]);
 
-  const deleteImageById = useCallback(async (imagePath: string | null, imageId: string) => {
+  const deleteImageById = useCallback(async (imageId: string) => {
     try {
-      await deleteImage(imagePath, imageId);
+      await deleteImage(imageId);
       // Remove the deleted image from local state
       setImages((prev) => prev.filter((img) => img.id !== imageId));
       setTotal((prev) => prev - 1);

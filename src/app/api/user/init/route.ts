@@ -17,21 +17,16 @@ interface UserInitData {
   settings: unknown;
 }
 
-export async function GET(): Promise<NextResponse> {
+export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const supabase = await createClient();
 
     // Get authenticated user
-    const {
-      data: { user },
-      error: authError,
-    } = await supabase.auth.getUser();
+    const userId = request.headers.get("x-user-id");
 
-    if (authError || !user) {
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const userId = user.id;
 
     // Fetch both user data and settings in parallel
     const [userDataResult, settingsResult, userProfileResult] = await Promise.all([
@@ -45,7 +40,9 @@ export async function GET(): Promise<NextResponse> {
       supabase.from("users").select("id, role, status").eq("id", userId).maybeSingle(),
     ]);
 
-    // FALLBACK: If user doesn't exist in database (race condition from OAuth callback)
+    // FALLBACK: If user doesn't exist in database
+    // NOTE: With the handle_new_user trigger, this should rarely happen since the trigger
+    //       creates public.users automatically when auth.users is created
     if (userProfileResult.error?.code === "PGRST116" || !userProfileResult.data) {
       console.warn("[UserInit API] User not found in database, creating fallback user:", userId);
 
@@ -61,8 +58,13 @@ export async function GET(): Promise<NextResponse> {
       });
 
       if (createUserError) {
-        console.error("[UserInit API] Failed to create fallback user:", createUserError);
-        // Continue anyway - user might have been created by another concurrent request
+        // Ignore duplicate key errors (trigger or concurrent request already created user)
+        if (createUserError.code === '23505') {
+          console.log("[UserInit API] User already exists (created by trigger or concurrent request):", userId);
+        } else {
+          console.error("[UserInit API] Failed to create fallback user:", createUserError);
+        }
+        // Continue anyway - user might have been created by another concurrent request or trigger
       } else {
         console.log("[UserInit API] Fallback user created successfully");
       }

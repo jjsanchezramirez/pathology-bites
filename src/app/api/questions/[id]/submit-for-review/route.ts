@@ -1,8 +1,8 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 import { revalidateQuestions } from "@/lib/revalidation";
+import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 
 /**
  * POST /api/questions/:id/submit-for-review
@@ -18,7 +18,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const supabase = await createClient();
     const { id: questionId } = await params;
 
-    // Get current user
+    // Get current user from headers (set by middleware)
     const userId = getUserIdFromHeaders(request);
     if (!userId) {
       return NextResponse.json(

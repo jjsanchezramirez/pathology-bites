@@ -31,10 +31,7 @@ const editQuestionSchema = z.object({
   category_id: z.string().nullable().optional(),
   lesson: z.string().max(200, "Lesson too long").nullable().optional(),
   topic: z.string().max(200, "Topic too long").nullable().optional(),
-  anki_card_id: z
-    .union([z.number().positive(), z.string().min(1)])
-    .nullable()
-    .optional(),
+  anki_card_id: z.string().min(1).nullable().optional(),
   anki_deck_name: z.string().max(100, "Deck name too long").nullable().optional(),
   updateType: z.enum(["patch", "minor", "major"]).optional(),
   isPatchEdit: z.boolean().optional(),

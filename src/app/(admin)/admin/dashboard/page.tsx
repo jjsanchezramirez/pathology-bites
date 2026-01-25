@@ -12,12 +12,12 @@ import { SystemStatus } from "@/shared/components/layout/dashboard/system-status
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useUserRole } from "@/shared/hooks/use-user-role";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 
 export default function AdminDashboardPage() {
   const { role, isLoading: roleLoading } = useUserRole();
-  const { user } = useAuth({ minimal: true });
+  const { user } = useAuthContext();
   const { adminMode, isTransitioning } = useDashboardTheme();
 
   const [stats, setStats] = useState<DashboardStats | null>(null);

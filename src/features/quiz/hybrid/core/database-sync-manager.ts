@@ -111,7 +111,7 @@ export class DatabaseSyncManager {
   }> {
     try {
       // OPTIMIZATION: Check localStorage cache first
-      const cacheKey = `quiz-session-${sessionId}`;
+      const cacheKey = `pathology-bites-quiz-session-${sessionId}`;
       const cachedData = this.getFromCache(cacheKey);
 
       if (cachedData) {
@@ -172,7 +172,7 @@ export class DatabaseSyncManager {
 
   /**
    * Get data from localStorage cache
-   * Compatible with CacheEntry format from cache-service.ts
+   * Works with with CacheEntry format from cache-service.ts
    */
   private getFromCache(key: string): unknown | null {
     try {
@@ -201,7 +201,7 @@ export class DatabaseSyncManager {
 
   /**
    * Save data to localStorage cache
-   * Uses CacheEntry format compatible with cache-service.ts
+   * Uses CacheEntry format that works with cache-service.ts
    * Default 7-day TTL for quiz sessions (needed for review, ~10-20KB per quiz)
    */
   private saveToCache(key: string, data: unknown, ttl: number = 7 * 24 * 60 * 60 * 1000): void {
@@ -227,8 +227,8 @@ export class DatabaseSyncManager {
   clearSessionCache(sessionId: string): void {
     try {
       if (typeof window === "undefined") return;
-      localStorage.removeItem(`quiz-session-${sessionId}`);
-      localStorage.removeItem(`quiz-results-${sessionId}`);
+      localStorage.removeItem(`pathology-bites-quiz-session-${sessionId}`);
+      localStorage.removeItem(`pathology-bites-quiz-results-${sessionId}`);
     } catch (error) {
       console.warn("Failed to clear cache:", error);
     }
@@ -441,7 +441,7 @@ export class DatabaseSyncManager {
         // This eliminates the need for a separate API call to /results
         if (serverResponse.success && serverResponse.data) {
           try {
-            const resultsKey = `pathology-bites-quiz:quiz-results-${syncData.sessionId}`;
+            const resultsKey = `pathology-bites-quiz-results-${syncData.sessionId}`;
 
             // Merge newAchievements into data for display
             const resultsWithAchievements = {

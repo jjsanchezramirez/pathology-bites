@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/shared/services/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { revalidateQuestions } from "@/lib/revalidation";
 
@@ -23,13 +22,9 @@ function createAdminClient() {
  */
 export async function POST(request: NextRequest) {
   try {
-    const authClient = await createClient();
-    const {
-      data: { user },
-      error: authError,
-    } = await authClient.auth.getUser();
+    const userId = request.headers.get("x-user-id");
 
-    if (authError || !user) {
+    if (!userId) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -56,7 +51,7 @@ export async function POST(request: NextRequest) {
     const { data: userProfile } = await supabase
       .from("users")
       .select("role")
-      .eq("id", user.id)
+      .eq("id", userId)
       .single();
 
     const userRole = userProfile?.role || "user";
@@ -93,7 +88,7 @@ export async function POST(request: NextRequest) {
         // Only allow submitting own draft questions or admin can submit any draft
         const draftQuestions =
           questions?.filter(
-            (q) => q.status === "draft" && (q.created_by === user.id || userRole === "admin")
+            (q) => q.status === "draft" && (q.created_by === userId || userRole === "admin")
           ) || [];
 
         if (draftQuestions.length === 0) {
@@ -137,7 +132,7 @@ export async function POST(request: NextRequest) {
           .update({
             status: "published",
             published_at: new Date().toISOString(),
-            updated_by: user.id,
+            updated_by: userId,
           })
           .in(
             "id",
@@ -168,7 +163,7 @@ export async function POST(request: NextRequest) {
           .update({
             status: "rejected",
             updated_at: new Date().toISOString(),
-            updated_by: user.id,
+            updated_by: userId,
           })
           .in(
             "id",
@@ -182,7 +177,7 @@ export async function POST(request: NextRequest) {
         // Only allow deleting own draft questions or admin can delete any draft
         const deletableQuestions =
           questions?.filter(
-            (q) => q.status === "draft" && (q.created_by === user.id || userRole === "admin")
+            (q) => q.status === "draft" && (q.created_by === userId || userRole === "admin")
           ) || [];
 
         if (deletableQuestions.length === 0) {

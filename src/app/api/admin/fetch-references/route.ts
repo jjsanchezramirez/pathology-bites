@@ -8,6 +8,17 @@ import { PATHOLOGY_JOURNALS } from "@/shared/utils/pathology-journals";
 
 export async function POST(request: NextRequest) {
   try {
+    // Auth check - require admin, creator, or reviewer role
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
+
     const body = await request.json();
     const searchTerms = body.searchTerms;
 
@@ -86,6 +97,17 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Auth check - require admin, creator, or reviewer role
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("query");
     const limit = searchParams.get("limit") || "20";

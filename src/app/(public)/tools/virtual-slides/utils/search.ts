@@ -1,7 +1,7 @@
 // src/app/(public)/tools/virtual-slides/utils/search.ts
 
 import { VirtualSlide, SearchIndex } from "../types";
-import { expandSearchTerm } from "@/app/api/public/tools/diagnostic-search/umls-expansion";
+import { expandSearchTerm } from "@/wip/diagnostic-search/umls-expansion";
 
 // Helper function to generate acronym from phrase
 export const generateAcronym = (phrase: string): string => {

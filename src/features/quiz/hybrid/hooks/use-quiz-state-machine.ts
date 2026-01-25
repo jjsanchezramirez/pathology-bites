@@ -64,7 +64,7 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
     onQuizCompleted,
     onStateChange,
     enableLocalStorage = true,
-    localStorageKey = `quiz-state-${sessionId}`,
+    localStorageKey = `pathology-bites-quiz-state-${sessionId}`,
   } = options;
 
   // Initialize state from localStorage if available

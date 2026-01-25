@@ -45,6 +45,8 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
       if (profileError && profileError.code === 'PGRST116') {
         // If user doesn't exist, create them
         // New account creation is always allowed now
+        // NOTE: The handle_new_user database trigger may have already created this user,
+        //       so we handle potential duplicate errors gracefully
 
         // Create user in public.users
         const { data: newUser, error: createError } = await supabase
@@ -62,25 +64,47 @@ export const GET = rateLimitedHandler(async function(request: NextRequest) {
           .single()
 
         if (createError) {
-          console.error('Error creating user:', createError)
-          return NextResponse.redirect(`${origin}/auth-error?error=user_creation_failed&description=Failed to create user account`)
+          // Check if error is due to duplicate key (trigger already created user)
+          if (createError.code === '23505') {
+            console.log('User already exists (likely created by trigger), fetching existing user:', data.user.id)
+            // Fetch the existing user instead
+            const { data: fetchedUser, error: fetchError } = await supabase
+              .from('users')
+              .select('role')
+              .eq('id', data.user.id)
+              .single()
+
+            if (fetchError) {
+              console.error('Error fetching existing user:', fetchError)
+              return NextResponse.redirect(`${origin}/auth-error?error=user_fetch_failed&description=Failed to retrieve user account`)
+            }
+            userData = fetchedUser
+          } else {
+            console.error('Error creating user:', createError)
+            return NextResponse.redirect(`${origin}/auth-error?error=user_creation_failed&description=Failed to create user account`)
+          }
+        } else {
+          userData = newUser
         }
 
-        userData = newUser
+        // Create default user settings (only if we created the user, trigger may have already created settings)
+        if (newUser) {
+          const { error: settingsError } = await supabase
+            .from('user_settings')
+            .insert({
+              user_id: data.user.id,
+              quiz_settings: DEFAULT_QUIZ_SETTINGS,
+              notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
+              ui_settings: DEFAULT_UI_SETTINGS
+            })
 
-        // Create default user settings
-        const { error: settingsError } = await supabase
-          .from('user_settings')
-          .insert({
-            user_id: data.user.id,
-            quiz_settings: DEFAULT_QUIZ_SETTINGS,
-            notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
-            ui_settings: DEFAULT_UI_SETTINGS
-          })
-
-        if (settingsError) {
-          console.error('Error creating user settings:', settingsError)
-          // Don't fail the redirect if settings creation fails - user can still log in
+          if (settingsError) {
+            // Ignore duplicate key errors (trigger already created settings)
+            if (settingsError.code !== '23505') {
+              console.error('Error creating user settings:', settingsError)
+            }
+            // Don't fail the redirect if settings creation fails - user can still log in
+          }
         }
       } else if (profileError) {
         console.error('Error checking user:', profileError)

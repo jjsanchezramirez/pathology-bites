@@ -40,10 +40,6 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
  * - theme: Color mode preference ('light', 'dark', or 'system') - synced with next-themes
  * - welcome_message_seen: Whether user has seen the welcome message
  * - security_notice_dismissed: Whether user has dismissed the security update notice
- *
- * REMOVED LEGACY FIELDS:
- * - font_size: Replaced by text_zoom field
- * - sidebar_collapsed: Not used anywhere in the codebase
  */
 export const DEFAULT_UI_SETTINGS = {
   text_zoom: 1.0,

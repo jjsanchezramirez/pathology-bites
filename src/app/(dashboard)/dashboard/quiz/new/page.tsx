@@ -17,7 +17,6 @@ import {
   CategoryWithStats,
   QuestionTypeStats,
   QUIZ_MODE_CONFIG,
-  QUIZ_TIMING_CONFIG,
   DEFAULT_QUIZ_CONFIG,
 } from "@/features/quiz/types/quiz";
 import { toast } from "@/shared/utils/toast";
@@ -255,8 +254,6 @@ export default function NewQuizPage() {
         title,
         questionCount: finalQuestionCount,
         showExplanations: QUIZ_MODE_CONFIG[formData.mode].showExplanations,
-        timePerQuestion:
-          formData.timing === "timed" ? QUIZ_TIMING_CONFIG.timed.timePerQuestion : undefined,
       };
 
       // Get CSRF token

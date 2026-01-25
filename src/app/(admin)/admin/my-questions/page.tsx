@@ -4,7 +4,7 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/shared/services/client";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import {
   Table,
@@ -72,7 +72,7 @@ export default function MyQuestionsPage() {
   const [selectedQuestions, setSelectedQuestions] = useState<Set<string>>(new Set());
   const [collapsedFeedback, setCollapsedFeedback] = useState<Set<string>>(new Set());
 
-  const { user } = useAuth({ minimal: true });
+  const { user } = useAuthContext();
   const { canAccess } = useUserRole();
   const supabase = createClient();
 

@@ -113,7 +113,7 @@ export async function GET(request: NextRequest) {
 
 function parseHGNCData(xmlData: string) {
   // Parse XML using DOMParser would require a browser environment
-  // For server-side, we'll use regex parsing or a server-compatible XML parser
+  // For server-side, we'll use regex parsing or an XML parser that works with the server
   
   // Extract basic gene information using regex
   const symbolMatch = xmlData.match(/<str name="symbol">([^<]+)<\/str>/)

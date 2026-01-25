@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/shared/services/client";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { debounce } from "@/lib/utils";
 
 interface PendingCounts {
@@ -19,7 +19,7 @@ export function usePendingQuestionsCount() {
     draftsCount: 0,
   });
   const [loading, setLoading] = useState(true);
-  const { user } = useAuth({ minimal: true });
+  const { user } = useAuthContext();
 
   const fetchCounts = useCallback(async () => {
     if (!user) {

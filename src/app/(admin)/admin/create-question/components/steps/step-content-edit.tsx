@@ -47,7 +47,7 @@ export function StepContentEdit({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          mode: "enhance_question",
+          mode: "refinement",
           content: {
             title: formState.title,
             stem: formState.stem,

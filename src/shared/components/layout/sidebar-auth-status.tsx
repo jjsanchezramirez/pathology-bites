@@ -12,7 +12,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { RefreshCw, LogOut, ChevronUp, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { apiClient } from "@/shared/utils/api-client";
 
 interface UserProfile {
@@ -28,7 +28,7 @@ interface SidebarAuthStatusProps {
 }
 
 export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProps) {
-  const { user, isLoading, isAuthenticated, error } = useAuth({ minimal: true });
+  const { user, isLoading, isAuthenticated, error } = useAuthContext();
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
   const [profileLoading, setProfileLoading] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);

@@ -1,11 +1,21 @@
 // src/app/api/admin/tags/route.ts
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { requireContentRole } from "@/shared/middleware/api-auth";
 
-export const GET = requireContentRole(async (request) => {
+export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
+
+    // Auth check - require content role (admin, creator, or reviewer)
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Content role required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
 
     // Get query parameters
     const { searchParams } = new URL(request.url);
@@ -84,11 +94,22 @@ export const GET = requireContentRole(async (request) => {
     console.error("Error in admin tags API:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-});
+}
 
-export const POST = requireContentRole(async (request) => {
+export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
+
+    // Auth check - require content role (admin, creator, or reviewer)
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Content role required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
 
     const body = await request.json();
     const { name } = body;
@@ -117,11 +138,22 @@ export const POST = requireContentRole(async (request) => {
     console.error("Error creating tag:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-});
+}
 
-export const PATCH = requireContentRole(async (request) => {
+export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
+
+    // Auth check - require content role (admin, creator, or reviewer)
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Content role required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
 
     const body = await request.json();
     const { tagId, name } = body;
@@ -151,11 +183,22 @@ export const PATCH = requireContentRole(async (request) => {
     console.error("Error updating tag:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-});
+}
 
-export const DELETE = requireContentRole(async (request) => {
+export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();
+
+    // Auth check - require content role (admin, creator, or reviewer)
+    const userId = request.headers.get("x-user-id");
+    const userRole = request.headers.get("x-user-role");
+
+    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
+      return NextResponse.json(
+        { error: userRole ? "Forbidden - Content role required" : "Unauthorized" },
+        { status: userRole ? 403 : 401 }
+      );
+    }
 
     const body = await request.json();
     const { tagId } = body;
@@ -186,4 +229,4 @@ export const DELETE = requireContentRole(async (request) => {
     console.error("Error deleting tag:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
-});
+}

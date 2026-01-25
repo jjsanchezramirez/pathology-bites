@@ -13,7 +13,7 @@ import {
   StudentQuickActions,
   StudentQuickActionsLoading,
 } from "@/features/dashboard/components";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { userSettingsService } from "@/shared/services/user-settings";
 import { PageErrorBoundary, FeatureErrorBoundary, ScrollReveal } from "@/shared/components/common";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
@@ -24,10 +24,6 @@ interface DashboardStats {
   needsReview?: number;
   mastered?: number;
   unused?: number;
-
-  // Legacy fields for backward compatibility
-  totalQuestions: number;
-  completedQuestions: number;
 
   // Other stats
   averageScore: number;
@@ -67,7 +63,7 @@ interface DashboardStats {
 }
 
 export default function DashboardPage() {
-  const { user } = useAuth({ loadUserData: true });
+  const { user } = useAuthContext();
   const { data: unifiedData } = useUnifiedData();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
@@ -118,9 +114,7 @@ export default function DashboardPage() {
         setShowWelcomeMessage(!hasSeenWelcome);
 
         // Determine user status based on activity
-        const isFirstTime =
-          !hasSeenWelcome &&
-          (mergedStats.recentQuizzes === 0 || mergedStats.completedQuestions === 0);
+        const isFirstTime = !hasSeenWelcome && mergedStats.recentQuizzes === 0;
         setIsFirstTimeUser(isFirstTime);
 
         // Check if user is returning after 7+ days (based on recent activity)

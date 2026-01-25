@@ -63,16 +63,15 @@ export function invalidateImageCache() {
   console.log("[Images] Cache invalidated");
 }
 
-export async function deleteImage(imagePath: string | null, imageId: string) {
+export async function deleteImage(imageId: string) {
   try {
-    console.log("🗑️ Deleting image:", { imageId, imagePath });
+    console.log("🗑️ Deleting image:", { imageId });
 
     const url = "/api/media/images/delete";
     console.log("📡 Making DELETE request to:", url);
 
     const response = await apiClient.delete(url, {
       imageId,
-      imagePath,
     });
 
     console.log("📥 Delete response:", {

@@ -2,7 +2,7 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { useAuth } from "@/shared/hooks/use-auth";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 
 import { UserRole as DatabaseUserRole } from "@/shared/constants/database-types";
 
@@ -56,7 +56,7 @@ const FEATURE_PERMISSIONS: Record<string, UserRole[]> = {
 } as const;
 
 export function useUserRole(): UserRoleData {
-  const { _user, role: authRole, isLoading: authLoading } = useAuth({ minimal: true });
+  const { role: authRole, isLoading: authLoading } = useAuthContext();
   const [role, setRole] = useState<UserRole>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, _setError] = useState<string | null>(null);

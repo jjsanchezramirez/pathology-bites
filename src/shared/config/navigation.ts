@@ -19,8 +19,7 @@ export interface NavigationSection {
 }
 
 export interface NavigationConfig {
-  items?: NavigationItem[];
-  sections?: NavigationSection[];
+  sections: NavigationSection[];
   userRole?: "admin" | "creator" | "reviewer" | "user";
 }
 
@@ -384,86 +383,6 @@ export function getUserNavigationSections(): NavigationSection[] {
   ];
 }
 
-// User Navigation Sections Configuration (deprecated - use getUserNavigationSections() instead)
-export const userNavigationSections: NavigationSection[] = [
-  {
-    title: "Overview",
-    items: [
-      {
-        name: "Dashboard",
-        href: "/dashboard",
-        icon: "LayoutDashboard",
-      },
-    ],
-  },
-  {
-    title: "Education",
-    items: [
-      {
-        name: "New Quiz",
-        href: "/dashboard/quiz/new",
-        icon: "Plus",
-      },
-      {
-        name: "My Quizzes",
-        href: "/dashboard/quizzes",
-        icon: "ClipboardList",
-      },
-      {
-        name: "Slide-Based Questions",
-        href: "/dashboard/wsi-questions",
-        icon: "Microscope",
-      },
-      {
-        name: "Ankoma Deck",
-        href: "/dashboard/anki",
-        icon: "Library",
-      },
-      {
-        name: "Learning Modules",
-        href: "/dashboard/learning",
-        icon: "BookOpen",
-        comingSoon: true,
-      },
-    ],
-  },
-  {
-    title: "Analytics",
-    items: [
-      {
-        name: "Performance",
-        href: "/dashboard/performance",
-        icon: "BarChart2",
-      },
-      {
-        name: "Achievements",
-        href: "/dashboard/achievements",
-        icon: "Trophy",
-      },
-      {
-        name: "Progress",
-        href: "/dashboard/progress",
-        icon: "TrendingUp",
-      },
-    ],
-  },
-  {
-    title: "Account",
-    items: [
-      {
-        name: "Profile",
-        href: "/dashboard/profile",
-        icon: "User",
-      },
-      {
-        name: "Settings",
-        href: "/dashboard/settings",
-        icon: "Settings",
-      },
-    ],
-  },
-];
-
 // Navigation configuration factory
 export function getNavigationConfig(
   userRole: "admin" | "creator" | "reviewer" | "user"
@@ -474,14 +393,12 @@ export function getNavigationConfig(
     case "reviewer":
       return {
         sections: adminNavigationSections,
-        items: adminNavigationItems, // Keep for backward compatibility
         userRole,
       };
     case "user":
     default:
       return {
         sections: getUserNavigationSections(),
-        items: userNavigationItems, // Keep for backward compatibility
         userRole: "user",
       };
   }

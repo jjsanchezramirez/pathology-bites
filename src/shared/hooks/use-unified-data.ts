@@ -154,7 +154,7 @@ const fetcher = async () => {
  * ```
  */
 export function useUnifiedData() {
-  const { data, error, isLoading, mutate } = useSWR<UnifiedData>("data", fetcher, {
+  const { data, error, isLoading, mutate } = useSWR<UnifiedData>("user-data", fetcher, {
     // Cache is fresh for 30 minutes (good balance between freshness and API calls)
     // Combined with localStorage persistence, this means:
     // - First load: API call

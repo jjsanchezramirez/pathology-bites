@@ -1,4 +1,4 @@
-// src/hooks/use-demo-questions.ts
+// src/shared/hooks/use-demo-questions.ts
 import { useState, useEffect, useCallback, useRef } from "react";
 import { toast } from "@/shared/utils/toast";
 

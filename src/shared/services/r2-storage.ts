@@ -2,7 +2,7 @@
  * Cloudflare R2 Storage Service
  *
  * Centralized service for all R2 storage operations, replacing Supabase Storage.
- * Provides S3-compatible API for image upload, deletion, and management.
+ * Provides API for S3 image upload, deletion, and management.
  */
 
 import {

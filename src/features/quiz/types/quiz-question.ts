@@ -28,7 +28,7 @@ export interface QuizQuestion {
   };
 }
 
-// UI-compatible quiz question interface (for components)
+// UI quiz question interface (for components)
 export interface UIQuizQuestion {
   id: string;
   title?: string;

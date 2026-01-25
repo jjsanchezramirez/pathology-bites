@@ -7,17 +7,17 @@ import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 
 import { Plus, Trash2 } from "lucide-react";
-import { AnswerOptionFormData } from "@/features/questions/types/questions";
+import { QuestionOptionFormData } from "@/features/questions/types/questions";
 
 interface CompactAnswerOptionsProps {
-  options: AnswerOptionFormData[];
-  onChange: (options: AnswerOptionFormData[]) => void;
+  options: QuestionOptionFormData[];
+  onChange: (options: QuestionOptionFormData[]) => void;
   errors?: Record<string, string>;
 }
 
 export function CompactAnswerOptions({ options, onChange, errors }: CompactAnswerOptionsProps) {
   const addOption = useCallback(() => {
-    const newOption: AnswerOptionFormData = {
+    const newOption: QuestionOptionFormData = {
       text: "",
       is_correct: false,
       explanation: "",
@@ -49,7 +49,7 @@ export function CompactAnswerOptions({ options, onChange, errors }: CompactAnswe
   );
 
   const updateOption = useCallback(
-    (index: number, field: keyof AnswerOptionFormData, value: unknown) => {
+    (index: number, field: keyof QuestionOptionFormData, value: unknown) => {
       const updatedOptions = options.map((option, i) => {
         if (i === index) {
           return { ...option, [field]: value };

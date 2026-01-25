@@ -70,7 +70,6 @@ export interface FormState {
   tag_ids: string[];
   difficulty: "easy" | "medium" | "hard";
   status: string;
-  version: string;
 }
 
 export function MultiStepQuestionForm({
@@ -167,7 +166,6 @@ export function MultiStepQuestionForm({
         tag_ids: initialData.question_tags?.map((qt) => qt.tag.id) || [],
         difficulty: initialData.difficulty || "medium",
         status: initialData.status || "draft",
-        version: initialData.version || "1.0.0",
       };
     }
 
@@ -194,7 +192,6 @@ export function MultiStepQuestionForm({
       tag_ids: [],
       difficulty: "medium",
       status: "draft",
-      version: "1.0.0",
     };
   };
 
@@ -245,7 +242,7 @@ export function MultiStepQuestionForm({
       const questionData: QuestionFormData = {
         title: formState.title,
         stem: formState.stem,
-        answer_options: formState.answerOptions,
+        question_options: formState.answerOptions,
         teaching_point: formState.teaching_point,
         question_references: formState.question_references,
         question_images: formState.questionImages,

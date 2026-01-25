@@ -319,12 +319,11 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
   // Field 5: Citation
   const fields = note.fields || [];
 
-  // Detect Image Occlusion notes (all variants)
+  // Detect Image Occlusion notes (current variants)
   // Known Note Model UUIDs present in ankoma.json for IOE variants
   const OCCLUSION_UUIDS = new Set([
     "8748b282-73b3-11f0-bc32-8b3dff665248", // IOE +++ (11 fields)
     "877ffc4c-73b3-11f0-bc32-8b3dff665248", // IOE + (compact)
-    "8745afec-73b3-11f0-bc32-8b3dff665248", // Legacy Image Occlusion
   ]);
 
   // Heuristic: any field with inline <svg> or reference to an .svg mask or -Q.svg/-A.svg filenames
