@@ -147,10 +147,10 @@ function VirtualSlidesContent() {
       clearTimeout(debounceTimerRef.current);
     }
 
-    // Set new timer - only update state after 200ms of no typing
+    // Set new timer - only update state after 100ms of no typing
     debounceTimerRef.current = setTimeout(() => {
       setDebouncedSearchTerm(value);
-    }, 200);
+    }, 100);
   }, []);
 
   // Console-only notice of dataset URL after initial load completes

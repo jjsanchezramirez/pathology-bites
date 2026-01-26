@@ -22,6 +22,10 @@ interface SearchIndexEntry {
 
 let searchIndex: SearchIndexEntry[] | null = null;
 
+// Reverse index: word → Set of slide indices
+// This allows us to check ONLY relevant slides instead of ALL slides
+let reverseIndex: Map<string, Set<number>> | null = null;
+
 // Minimal client-entry type coming from CDN JSON
 interface ClientEntry {
   id: string;
@@ -126,22 +130,53 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
     // Store in memory for session (HTTP cache handles persistence)
     cachedSlides = slides;
 
-    // Pre-compute search index for faster lookups
-    searchIndex = slides.map((slide) => {
+    // Pre-compute search index AND reverse index for O(1) lookups
+    searchIndex = [];
+    reverseIndex = new Map();
+
+    for (let i = 0; i < slides.length; i++) {
+      const slide = slides[i];
       const diagnosisLower = (slide.diagnosis || "").toLowerCase();
       const diagnosisTokens = tokenize(diagnosisLower);
       const diagnosisAcronym = makeAcr(diagnosisTokens);
 
-      return {
+      searchIndex.push({
         slide,
         diagnosisLower,
         diagnosisTokens,
         diagnosisAcronym,
-      };
-    });
+      });
+
+      // Build reverse index: each word → set of slide indices
+      for (const token of diagnosisTokens) {
+        if (!reverseIndex.has(token)) {
+          reverseIndex.set(token, new Set());
+        }
+        reverseIndex.get(token)!.add(i);
+
+        // Also index prefixes (3+ chars) for prefix matching
+        if (token.length >= 4) {
+          const prefix = token.substring(0, 3);
+          const prefixKey = `prefix:${prefix}`;
+          if (!reverseIndex.has(prefixKey)) {
+            reverseIndex.set(prefixKey, new Set());
+          }
+          reverseIndex.get(prefixKey)!.add(i);
+        }
+      }
+
+      // Index acronyms too
+      if (diagnosisAcronym.length >= 2) {
+        const acrKey = `acr:${diagnosisAcronym}`;
+        if (!reverseIndex.has(acrKey)) {
+          reverseIndex.set(acrKey, new Set());
+        }
+        reverseIndex.get(acrKey)!.add(i);
+      }
+    }
 
     console.log(
-      `[VirtualSlides Enhanced] 💾 Cached ${slides.length} slides + search index in memory`
+      `[VirtualSlides Enhanced] 💾 Cached ${slides.length} slides + reverse index (${reverseIndex.size} keys) in memory`
     );
 
     return slides;
@@ -150,39 +185,7 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
   return cachedSlidesPromise;
 }
 
-function escapeRegex(str: string): string {
-  return str.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-}
-
-// Cache compiled regex patterns to avoid recreating them in tight loops
-const regexCache = new Map<string, RegExp>();
-const MAX_REGEX_CACHE_SIZE = 500;
-
-function getWordBoundaryRegex(term: string): RegExp {
-  const cacheKey = `wb:${term}`;
-  let regex = regexCache.get(cacheKey);
-
-  if (!regex) {
-    regex = new RegExp(`\\b${escapeRegex(term)}\\b`, "i");
-
-    // Prevent unbounded cache growth
-    if (regexCache.size >= MAX_REGEX_CACHE_SIZE) {
-      // Clear oldest half when limit reached
-      const keysToDelete = Array.from(regexCache.keys()).slice(0, MAX_REGEX_CACHE_SIZE / 2);
-      keysToDelete.forEach((k) => regexCache.delete(k));
-    }
-
-    regexCache.set(cacheKey, regex);
-  }
-
-  return regex;
-}
-
-function isCompleteWordMatch(text: string, term: string): boolean {
-  if (!term) return false;
-  const regex = getWordBoundaryRegex(term);
-  return regex.test(text);
-}
+// Simple helper functions for tokenization
 
 function tokenize(text: string): string[] {
   return text.toLowerCase().match(/[a-z0-9]+/g) || [];
@@ -220,100 +223,104 @@ function expandMedicalAcronyms(query: string): string[] {
   return terms;
 }
 
-// Helper to rank slides by a single term with optional organ context
-// OPTIMIZED: Uses pre-computed search index to avoid repeated tokenization
+// HIGHLY OPTIMIZED: Uses reverse index to check ONLY relevant slides
 function rankSlidesByTerm(
   slides: VirtualSlide[],
   term: string,
-  organContext?: OrganTerm[]
-): Map<string, { slide: VirtualSlide; bucketIndex: number; organBoost: number }> {
+  organContext?: OrganTerm[],
+  maxResults: number = 200 // Limit results
+): Map<string, { slide: VirtualSlide; score: number }> {
   const termLower = term.toLowerCase().trim();
   const words = tokenize(termLower);
-  const last = words[words.length - 1];
-  const usePrefix = last && last.length >= 4;
-  const acr = words.length >= 2 ? makeAcr(words) : "";
 
-  // For multi-word queries, find the longest word that's NOT a common medical term
-  // e.g., "renal angiomyolipoma" → "angiomyolipoma" (specific)
-  // but "renal cell carcinoma" → none ("carcinoma" is blacklisted)
-  const specificWord =
-    words.length > 1
-      ? words.filter((w) => !COMMON_MEDICAL_TERMS.has(w)).sort((a, b) => b.length - a.length)[0]
-      : "";
+  if (!searchIndex || !reverseIndex) {
+    // Fallback if indices not ready
+    return new Map();
+  }
 
-  const rankedSlides = new Map<
-    string,
-    { slide: VirtualSlide; bucketIndex: number; organBoost: number }
-  >();
+  const rankedSlides = new Map<string, { slide: VirtualSlide; score: number }>();
 
-  // Use pre-computed search index if available, otherwise fall back to slides
-  const entries =
-    searchIndex ||
-    slides.map((s) => ({
-      slide: s,
-      diagnosisLower: (s.diagnosis || "").toLowerCase(),
-      diagnosisTokens: tokenize((s.diagnosis || "").toLowerCase()),
-      diagnosisAcronym: makeAcr(tokenize((s.diagnosis || "").toLowerCase())),
-    }));
+  // Step 1: Find ALL candidate slide indices using reverse index
+  const candidateIndices = new Set<number>();
 
-  for (const entry of entries) {
+  // Add slides that contain ANY word from the query
+  for (const word of words) {
+    if (word.length >= 3) {
+      const indices = reverseIndex.get(word);
+      if (indices) {
+        indices.forEach((idx) => candidateIndices.add(idx));
+      }
+
+      // Also check prefixes for single-word queries
+      if (words.length === 1 && word.length >= 3) {
+        const prefix = word.substring(0, 3);
+        const prefixIndices = reverseIndex.get(`prefix:${prefix}`);
+        if (prefixIndices) {
+          prefixIndices.forEach((idx) => candidateIndices.add(idx));
+        }
+      }
+    }
+  }
+
+  // Also add acronym matches
+  if (words.length >= 2) {
+    const acr = makeAcr(words);
+    const acrIndices = reverseIndex.get(`acr:${acr}`);
+    if (acrIndices) {
+      acrIndices.forEach((idx) => candidateIndices.add(idx));
+    }
+  }
+
+  // Step 2: Score ONLY the candidate slides (much smaller set!)
+  for (const idx of candidateIndices) {
+    const entry = searchIndex[idx];
     const { slide: s, diagnosisLower: d, diagnosisTokens, diagnosisAcronym } = entry;
     if (!d) continue;
 
-    let bucketIndex = -1;
+    let score = 0;
 
-    // Bucket 1: exact equality on diagnosis
+    // Score 100: exact match
     if (d === termLower) {
-      bucketIndex = 1;
+      score = 100;
     }
-    // Bucket 2: exact phrase with word boundaries (highest priority for multi-word)
-    // e.g., "renal cell carcinoma" finds "clear cell renal cell carcinoma" but NOT "spindle cell carcinoma"
-    else if (isCompleteWordMatch(d, termLower)) {
-      bucketIndex = 2;
+    // Score 90: contains exact phrase
+    else if (d.includes(termLower)) {
+      score = 90;
     }
-    // Bucket 3: specific (non-common) word for multi-word queries
-    // e.g., "renal angiomyolipoma" → matches "angiomyolipoma" alone (not in blacklist)
-    // but "renal cell carcinoma" → does NOT match any single word ("carcinoma" is blacklisted)
-    else if (specificWord && specificWord.length >= 5 && isCompleteWordMatch(d, specificWord)) {
-      bucketIndex = 3;
-    }
-    // Bucket 4: acronym match (use pre-computed acronym)
-    else if (
-      (acr && acr === diagnosisAcronym) ||
-      (termLower.length >= 2 && termLower.length <= 5 && termLower === diagnosisAcronym)
-    ) {
-      bucketIndex = 4;
-    }
-    // Bucket 5 & 6: ONLY for single-word queries
-    else if (words.length === 1) {
-      const singleWord = words[0];
-      // Bucket 5: single word match (≥4 chars)
-      if (singleWord.length >= 4 && isCompleteWordMatch(d, singleWord)) {
-        bucketIndex = 5;
+    // Score 70-80: word-level matches
+    else {
+      let matchedWords = 0;
+      for (const word of words) {
+        if (word.length >= 3 && diagnosisTokens.includes(word)) {
+          matchedWords++;
+        }
       }
-      // Bucket 6: prefix match on single word (use pre-computed tokens)
-      else if (usePrefix && diagnosisTokens.some((w) => w.startsWith(singleWord))) {
-        bucketIndex = 6;
-      }
-    }
-    // Bucket 7+: REMOVED for multi-word queries - too much noise
 
-    if (bucketIndex >= 0) {
+      if (matchedWords > 0) {
+        score = 70 + (matchedWords / words.length) * 10;
+      }
+      // Score 60: acronym match
+      else if (words.length >= 2 && makeAcr(words) === diagnosisAcronym) {
+        score = 60;
+      }
+      // Score 50: prefix match
+      else if (words.length === 1 && words[0].length >= 3) {
+        if (diagnosisTokens.some((w) => w.startsWith(words[0]))) {
+          score = 50;
+        }
+      }
+    }
+
+    if (score > 0) {
       const slideKey = s.id || s.diagnosis || Math.random().toString();
 
-      // Calculate organ context boost
-      const organBoost = organContext ? getOrganBoostScore(s, organContext) : 1.0;
-
-      const existing = rankedSlides.get(slideKey);
-
-      // Keep the best (lowest) bucket index for each slide, with organ boost
-      if (
-        !existing ||
-        bucketIndex < existing.bucketIndex ||
-        (bucketIndex === existing.bucketIndex && organBoost > existing.organBoost)
-      ) {
-        rankedSlides.set(slideKey, { slide: s, bucketIndex, organBoost });
+      // Apply organ context boost
+      if (organContext && organContext.length > 0) {
+        const organBoost = getOrganBoostScore(s, organContext);
+        score *= organBoost;
       }
+
+      rankedSlides.set(slideKey, { slide: s, score });
     }
   }
 
@@ -327,7 +334,7 @@ export type SearchMode = "standard" | "nci-fallback";
 const GOOD_RESULT_THRESHOLD = 2; // Bucket 2 or better (exact phrase matches)
 const MIN_GOOD_RESULTS = 5; // Minimum number of good results before considering NCI fallback
 
-// Main ranking function with optional NCI fallback
+// Simplified main ranking function with optional NCI fallback
 async function rankSlidesWithExpansion(
   slides: VirtualSlide[],
   query: string,
@@ -348,48 +355,37 @@ async function rankSlidesWithExpansion(
   const { organs } = extractOrganTerms(query);
 
   // Step 2: Search across all expanded queries and aggregate results
-  const aggregatedRankings = new Map<
-    string,
-    { slide: VirtualSlide; bucketIndex: number; organBoost: number }
-  >();
+  const aggregatedRankings = new Map<string, { slide: VirtualSlide; score: number }>();
 
   for (const searchTerm of expandedQueries) {
     const termRankings = rankSlidesByTerm(
       slides,
       searchTerm,
-      organs.length > 0 ? organs : undefined
+      organs.length > 0 ? organs : undefined,
+      200 // Limit per term for performance
     );
 
-    for (const [slideKey, { slide, bucketIndex, organBoost }] of termRankings.entries()) {
+    for (const [slideKey, { slide, score }] of termRankings.entries()) {
       const existing = aggregatedRankings.get(slideKey);
 
-      // Keep the best (lowest) bucket index across all expansions
-      if (
-        !existing ||
-        bucketIndex < existing.bucketIndex ||
-        (bucketIndex === existing.bucketIndex && organBoost > existing.organBoost)
-      ) {
-        aggregatedRankings.set(slideKey, { slide, bucketIndex, organBoost });
+      // Keep the best (highest) score across all expansions
+      if (!existing || score > existing.score) {
+        aggregatedRankings.set(slideKey, { slide, score });
       }
     }
   }
 
   const standardRankings = aggregatedRankings;
 
-  // Count good quality results (bucket 3 or better)
+  // Count good quality results (score >= 70)
   const goodResults = Array.from(standardRankings.values()).filter(
-    ({ bucketIndex }) => bucketIndex <= GOOD_RESULT_THRESHOLD
+    ({ score }) => score >= 70
   );
 
-  // Step 2: If we have enough good results, return them
+  // If we have enough good results OR standard mode, return immediately
   if (goodResults.length >= MIN_GOOD_RESULTS || searchMode === "standard") {
     const sortedSlides = Array.from(standardRankings.values())
-      .sort((a, b) => {
-        if (a.bucketIndex !== b.bucketIndex) {
-          return a.bucketIndex - b.bucketIndex;
-        }
-        return b.organBoost - a.organBoost;
-      })
+      .sort((a, b) => b.score - a.score) // Higher scores first
       .map((item) => item.slide);
 
     return {
@@ -399,45 +395,33 @@ async function rankSlidesWithExpansion(
     };
   }
 
-  // Step 3: Fall back to NCI expansion for better results
+  // Step 3: Fall back to NCI expansion ONLY if few results
   const nciExpandedTerms = await expandSearchTermClient(term);
 
   // Aggregate NCI rankings across all expanded terms with organ context
-  const nciRankings = new Map<
-    string,
-    { slide: VirtualSlide; bucketIndex: number; organBoost: number }
-  >();
+  const nciRankings = new Map<string, { slide: VirtualSlide; score: number }>();
 
   for (const searchTermItem of nciExpandedTerms) {
     const termRankings = rankSlidesByTerm(
       slides,
       searchTermItem,
-      organs.length > 0 ? organs : undefined
+      organs.length > 0 ? organs : undefined,
+      200 // Limit per term for performance
     );
 
-    for (const [slideKey, { slide, bucketIndex, organBoost }] of termRankings.entries()) {
+    for (const [slideKey, { slide, score }] of termRankings.entries()) {
       const existing = nciRankings.get(slideKey);
 
-      // Keep the best (lowest) bucket index, or same bucket with higher organ boost
-      if (
-        !existing ||
-        bucketIndex < existing.bucketIndex ||
-        (bucketIndex === existing.bucketIndex && organBoost > existing.organBoost)
-      ) {
-        nciRankings.set(slideKey, { slide, bucketIndex, organBoost });
+      // Keep the best (highest) score
+      if (!existing || score > existing.score) {
+        nciRankings.set(slideKey, { slide, score });
       }
     }
   }
 
-  // Sort by bucket index (best matches first), then by organ boost (highest first)
+  // Sort by score (highest first)
   const sortedSlides = Array.from(nciRankings.values())
-    .sort((a, b) => {
-      if (a.bucketIndex !== b.bucketIndex) {
-        return a.bucketIndex - b.bucketIndex;
-      }
-      // Within same bucket, prioritize organ matches
-      return b.organBoost - a.organBoost;
-    })
+    .sort((a, b) => b.score - a.score)
     .map((item) => item.slide);
 
   return {
