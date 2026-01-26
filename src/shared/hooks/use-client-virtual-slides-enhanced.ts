@@ -26,7 +26,7 @@ let searchIndex: SearchIndexEntry[] | null = null;
 // This allows us to check ONLY relevant slides instead of ALL slides
 let reverseIndex: Map<string, Set<number>> | null = null;
 
-// Minimal client-entry type coming from CDN JSON
+// Minimal client-entry type coming from CDN JSON (legacy format)
 interface ClientEntry {
   id: string;
   diagnosis: string;
@@ -44,25 +44,83 @@ interface ClientEntry {
   other_urls?: string[];
 }
 
-function normalizeToVirtualSlide(e: ClientEntry): VirtualSlide {
-  return {
-    id: e.id,
-    repository: getRepositoryFromId(e.id),
-    category: e.category || "",
-    subcategory: e.subcategory || "",
-    diagnosis: e.diagnosis || "",
-    patient_info: e.patient_info || "",
-    age: e.age ?? null,
-    gender: e.gender ?? null,
-    clinical_history: e.clinical_history || "",
-    stain_type: e.stain_type || "",
-    preview_image_url: e.preview_image_url || "",
-    image_url: undefined,
-    slide_url: e.slide_url || "",
-    case_url: e.case_url || "",
-    other_urls: e.other_urls || [],
-    source_metadata: {},
-  };
+// Optimized format (v2.0)
+interface OptimizedEntry {
+  i: string; // id
+  d: string; // diagnosis
+  c: string; // category
+  s: string; // subcategory
+  a?: string; // acr
+  p?: string; // patient_info
+  ag?: string | null; // age
+  g?: string; // gender
+  h?: string; // clinical_history
+  st?: string; // stain_type
+  pv?: string; // preview_image_url
+  b?: number; // base_index
+  u?: string; // url_path or full url
+  cu?: string; // case_url
+  o?: string[]; // other_urls
+}
+
+interface OptimizedData {
+  version: string;
+  bases: string[];
+  data: OptimizedEntry[];
+}
+
+// URL bases cache for optimized format
+let urlBases: string[] | null = null;
+
+function normalizeToVirtualSlide(e: ClientEntry | OptimizedEntry, isOptimized: boolean = false): VirtualSlide {
+  if (isOptimized) {
+    const opt = e as OptimizedEntry;
+
+    // Reconstruct slide_url from base + path
+    let slideUrl = opt.u || "";
+    if (opt.b !== undefined && urlBases && urlBases[opt.b]) {
+      slideUrl = urlBases[opt.b] + (opt.u || "");
+    }
+
+    return {
+      id: opt.i,
+      repository: getRepositoryFromId(opt.i),
+      category: opt.c || "",
+      subcategory: opt.s || "",
+      diagnosis: opt.d || "",
+      patient_info: opt.p || "",
+      age: opt.ag ?? null,
+      gender: opt.g ?? null,
+      clinical_history: opt.h || "",
+      stain_type: opt.st || "",
+      preview_image_url: opt.pv || "",
+      image_url: undefined,
+      slide_url: slideUrl,
+      case_url: opt.cu || "",
+      other_urls: opt.o || [],
+      source_metadata: {},
+    };
+  } else {
+    const legacy = e as ClientEntry;
+    return {
+      id: legacy.id,
+      repository: getRepositoryFromId(legacy.id),
+      category: legacy.category || "",
+      subcategory: legacy.subcategory || "",
+      diagnosis: legacy.diagnosis || "",
+      patient_info: legacy.patient_info || "",
+      age: legacy.age ?? null,
+      gender: legacy.gender ?? null,
+      clinical_history: legacy.clinical_history || "",
+      stain_type: legacy.stain_type || "",
+      preview_image_url: legacy.preview_image_url || "",
+      image_url: undefined,
+      slide_url: legacy.slide_url || "",
+      case_url: legacy.case_url || "",
+      other_urls: legacy.other_urls || [],
+      source_metadata: {},
+    };
+  }
 }
 
 async function loadClientSlides(): Promise<VirtualSlide[]> {
@@ -124,8 +182,26 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
   cachedSlidesPromise = fetchWithFallback().then(async (res) => {
     if (!res.ok) throw new Error(`Failed to fetch client slides: ${res.status}`);
     const json = await res.json();
-    const entries: ClientEntry[] = Array.isArray(json) ? json : (json.data ?? []);
-    const slides = entries.map(normalizeToVirtualSlide);
+
+    // Detect format: optimized (v2.0) or legacy
+    const isOptimized = json.version && json.bases && json.data;
+
+    let entries: (ClientEntry | OptimizedEntry)[];
+    let slides: VirtualSlide[];
+
+    if (isOptimized) {
+      // Optimized format (v2.0)
+      const optimized = json as OptimizedData;
+      urlBases = optimized.bases; // Cache URL bases
+      entries = optimized.data;
+      slides = entries.map((e) => normalizeToVirtualSlide(e, true));
+      console.log(`[VirtualSlides] Loaded optimized format v${optimized.version}`);
+    } else {
+      // Legacy format (array of entries)
+      entries = Array.isArray(json) ? json : (json.data ?? []);
+      slides = entries.map((e) => normalizeToVirtualSlide(e as ClientEntry, false));
+      console.log('[VirtualSlides] Loaded legacy format');
+    }
 
     // Store in memory for session (HTTP cache handles persistence)
     cachedSlides = slides;
