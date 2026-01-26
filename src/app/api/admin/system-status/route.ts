@@ -158,8 +158,9 @@ export async function GET(request: Request) {
       if (usersResponse.data?.users) {
         // Filter users by last_sign_in_at for different time periods
         usersResponse.data.users.forEach((user) => {
-          if (!user.last_sign_in_at) return;
-          const lastSignIn = new Date(user.last_sign_in_at);
+          const typedUser = user as { last_sign_in_at?: string | null };
+          if (!typedUser.last_sign_in_at) return;
+          const lastSignIn = new Date(typedUser.last_sign_in_at);
 
           // Count for 24 hours
           if (lastSignIn >= twentyFourHoursAgo) {

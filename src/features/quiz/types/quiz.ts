@@ -174,11 +174,18 @@ export interface QuizStats {
     score: number;
     quizCount: number;
   }>;
+  weeklyQuizzes?: number; // Number of quizzes completed in the last week
+  weeklyStudyTime?: number;
   difficultyStats: {
     easy: { attempted: number; correct: number; averageScore: number };
     medium: { attempted: number; correct: number; averageScore: number };
     hard: { attempted: number; correct: number; averageScore: number };
   };
+  categoryPerformance?: Array<{
+    categoryName: string;
+    correct: number;
+    total: number;
+  }>;
 }
 
 // Quiz mode configurations - simplified binary options

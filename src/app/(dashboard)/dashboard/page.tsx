@@ -24,6 +24,7 @@ interface DashboardStats {
   needsReview?: number;
   mastered?: number;
   unused?: number;
+  completedQuestions: number;
 
   // Other stats
   averageScore: number;
@@ -96,6 +97,7 @@ export default function DashboardPage() {
         // Use unified API data directly (all data is now in one call!)
         const mergedStats = {
           ...unifiedData.dashboard,
+          completedQuestions: unifiedData.dashboard.completedQuestions || 0,
           performance: {
             userPercentile: unifiedData.summary.userPercentile,
             peerRank: unifiedData.summary.peerRank,

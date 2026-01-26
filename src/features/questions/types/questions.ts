@@ -27,6 +27,8 @@ export type QuestionAnalyticsUpdate = Database["public"]["Tables"]["question_ana
 export interface TagData {
   id: string;
   name: string;
+  description?: string | null;
+  color?: string | null;
   created_at: string;
 }
 
@@ -78,9 +80,12 @@ export interface Question {
   updated_at: string;
 }
 
-// Enhanced question interfaces
-export interface QuestionWithDetails extends QuestionData {
-  set?: SetData;
+// Enhanced question interfaces - using Omit to make optional fields work correctly
+export interface QuestionWithDetails extends Omit<
+  QuestionData,
+  "version_major" | "version_minor" | "version_patch"
+> {
+  set?: SetData; // Renamed from question_set to match actual Supabase join alias
   category?: CategoryData; // Single category object (from API join)
   question_options?: QuestionOptionData[];
   question_images?: (QuestionImageData & {
@@ -146,19 +151,6 @@ export interface QuestionFiltersData {
   page?: number;
   pageSize?: number;
 }
-
-// Constants for UI display
-export const DIFFICULTY_LABELS: Record<QuestionDifficulty, string> = {
-  EASY: "Easy",
-  MEDIUM: "Medium",
-  HARD: "Hard",
-};
-
-export const YIELD_LABELS: Record<QuestionYield, string> = {
-  HIGH_YIELD: "High Yield",
-  MEDIUM_YIELD: "Medium Yield",
-  LOW_YIELD: "Low Yield",
-};
 
 // Styling configurations
 export const DIFFICULTY_CONFIG = {
@@ -284,59 +276,6 @@ export const STATUS_CONFIG = {
   },
 } as const;
 
-// Review action configuration - SIMPLIFIED TO 3 ACTIONS
-export const REVIEW_ACTION_CONFIG = {
-  approve: {
-    label: "Approve",
-    description: "Approve and publish the question",
-    color: "bg-green-600 hover:bg-green-700",
-    icon: "✓",
-    resultStatus: "published" as QuestionStatus,
-  },
-  request_changes: {
-    label: "Request Changes",
-    description: "Send back to creator with feedback for revision",
-    color: "bg-yellow-600 hover:bg-yellow-700",
-    icon: "↻",
-    resultStatus: "draft" as QuestionStatus,
-  },
-  reject: {
-    label: "Reject",
-    description: "Reject the question permanently",
-    color: "bg-red-600 hover:bg-red-700",
-    icon: "✗",
-    resultStatus: "draft" as QuestionStatus,
-  },
-} as const;
-
-// Flag status configuration - SIMPLIFIED
-export const FLAG_STATUS_CONFIG = {
-  open: {
-    label: "Open",
-    color: "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300",
-    description: "Flag is pending review",
-  },
-  closed: {
-    label: "Closed",
-    color: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300",
-    description: "Flag has been resolved or dismissed",
-  },
-} as const;
-
-// Flag resolution type configuration
-export const FLAG_RESOLUTION_CONFIG = {
-  fixed: {
-    label: "Fixed",
-    description: "Issue was resolved by editing the question",
-    color: "bg-green-100 text-green-800",
-  },
-  dismissed: {
-    label: "Dismissed",
-    description: "Flag was determined to be invalid",
-    color: "bg-gray-100 text-gray-800",
-  },
-} as const;
-
 // Flag type configuration
 export const FLAG_TYPE_CONFIG = {
   incorrect_answer: {
@@ -358,20 +297,5 @@ export const FLAG_TYPE_CONFIG = {
   other: {
     label: "Other",
     description: "Other issues not covered above",
-  },
-} as const;
-
-export const YIELD_CONFIG = {
-  HIGH_YIELD: {
-    color: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300",
-    short: "HY",
-  },
-  MEDIUM_YIELD: {
-    color: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
-    short: "MY",
-  },
-  LOW_YIELD: {
-    color: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300",
-    short: "LY",
   },
 } as const;

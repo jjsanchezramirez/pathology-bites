@@ -52,11 +52,11 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
             <div>
               <SimpleImageCarousel
                 images={stemImages
-                  .filter((si) => si.image?.url || si.images?.url)
+                  .filter((si) => si.images?.url)
                   .map((si) => ({
-                    url: si.image?.url || si.images?.url || "",
-                    alt: si.image?.alt_text || si.images?.alt_text || "Question image",
-                    caption: si.image?.description || si.images?.description || undefined,
+                    url: si.images?.url || "",
+                    alt: si.images?.alt_text || "Question image",
+                    caption: si.images?.description || undefined,
                   }))}
                 className="border rounded-lg"
               />
@@ -148,11 +148,11 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                   <h4 className="font-medium text-xs uppercase mb-2">Reference Images</h4>
                   <SimpleImageCarousel
                     images={explanationImages
-                      .filter((ei) => ei.image?.url || ei.images?.url)
+                      .filter((ei) => ei.images?.url)
                       .map((ei) => ({
-                        url: ei.image?.url || ei.images?.url || "",
-                        alt: ei.image?.alt_text || ei.images?.alt_text || "Reference image",
-                        caption: ei.image?.description || ei.images?.description || undefined,
+                        url: ei.images?.url || "",
+                        alt: ei.images?.alt_text || "Reference image",
+                        caption: ei.images?.description || undefined,
                       }))}
                     className="bg-white border rounded-lg"
                   />
@@ -207,11 +207,11 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
             {/* Badges row */}
             <div className="flex items-center gap-2 flex-wrap text-xs">
               {/* Category with color */}
-              {question.categories &&
+              {question.category &&
                 (() => {
                   const categoryColor = getCategoryColor({
-                    color: question.categories.color ?? undefined,
-                    short_form: question.categories.short_form ?? undefined,
+                    color: question.category.color ?? undefined,
+                    short_form: question.category.short_form ?? undefined,
                     parent_short_form: undefined,
                   });
 
@@ -225,15 +225,15 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                         color: categoryColor,
                       }}
                     >
-                      {question.categories.name}
+                      {question.category.name}
                     </Badge>
                   );
                 })()}
 
               {/* Set */}
-              {question.question_sets && (
+              {question.set && (
                 <Badge variant="outline" className="text-xs">
-                  {question.question_sets.name || "Unknown"}
+                  {question.set.name || "Unknown"}
                 </Badge>
               )}
 
@@ -247,13 +247,7 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
               {question.created_at && (
                 <span>
                   Created
-                  {question.created_by_user && (
-                    <>
-                      {" "}
-                      by {question.created_by_user.first_name} {question.created_by_user.last_name}
-                    </>
-                  )}{" "}
-                  on{" "}
+                  {question.created_by_name && <> by {question.created_by_name}</>} on{" "}
                   {new Date(question.created_at).toLocaleDateString("en-US", {
                     month: "short",
                     day: "numeric",
@@ -268,14 +262,7 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                   <span>•</span>
                   <span>
                     Modified
-                    {question.updated_by_user && (
-                      <>
-                        {" "}
-                        by {question.updated_by_user.first_name}{" "}
-                        {question.updated_by_user.last_name}
-                      </>
-                    )}{" "}
-                    on{" "}
+                    {question.updated_by_name && <> by {question.updated_by_name}</>} on{" "}
                     {new Date(question.updated_at).toLocaleDateString("en-US", {
                       month: "short",
                       day: "numeric",
@@ -285,16 +272,7 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                 </>
               )}
 
-              {/* Reviewer */}
-              {question.reviewer_user && (
-                <>
-                  <span>•</span>
-                  <span>
-                    Last reviewed by {question.reviewer_user.first_name}{" "}
-                    {question.reviewer_user.last_name}
-                  </span>
-                </>
-              )}
+              {/* Reviewer info is available through the reviews relationship */}
             </div>
           </div>
         </CardContent>

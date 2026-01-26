@@ -20,10 +20,8 @@ const CACHE_VERSION = "v1";
 // Namespace configurations with default TTLs
 // Simplified: Only store what can't be handled by HTTP browser cache
 export const CACHE_NAMESPACES = {
-  USER: { name: "user", ttl: Infinity }, // Auth state - cleared on logout
-  SWR: { name: "swr", ttl: 30 * 24 * 60 * 60 * 1000 }, // 30 days - SWR library persistence
-  STATS: { name: "stats", ttl: 30 * 60 * 1000 }, // 30 minutes - DB query results
-  COOKIE: { name: "cookie", ttl: 365 * 24 * 60 * 60 * 1000 }, // 1 year - consent preferences
+  SWR: { name: "swr", ttl: 30 * 24 * 60 * 60 * 1000 }, // 30 days - All cached data (SWR + custom)
+  COOKIE: { name: "cookie", ttl: 30 * 24 * 60 * 60 * 1000 }, // 30 days - consent preferences
 } as const;
 
 export type CacheNamespace = (typeof CACHE_NAMESPACES)[keyof typeof CACHE_NAMESPACES]["name"];

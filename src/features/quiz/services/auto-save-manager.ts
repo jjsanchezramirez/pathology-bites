@@ -9,7 +9,7 @@ import {
 } from "../config/auto-save-config";
 import { OfflineQueueManager } from "./offline-queue-manager";
 import { DatabaseSyncManager } from "../hybrid/core/database-sync-manager";
-import type { QuizState } from "../hybrid/core/quiz-state-machine";
+import type { QuizState } from "../types/quiz-question";
 
 /**
  * Manages all auto-save operations for quiz sessions
@@ -74,8 +74,11 @@ export class AutoSaveManager {
         this.lastSaveTime = Date.now();
         this.lastAnswerCount = quizState.answers.size;
 
-        const message = trigger === "manual" ? "Quiz saved" : "All changes synced";
-        this.updateSyncStatus({ state: "synced", message });
+        if (trigger === "manual") {
+          this.updateSyncStatus({ state: "saved", message: "Quiz saved" });
+        } else {
+          this.updateSyncStatus({ state: "synced", message: "All changes synced" });
+        }
 
         debugLog("Auto-save successful", { trigger, timestamp: result.timestamp });
 
@@ -196,8 +199,11 @@ export class AutoSaveManager {
       status: dbState.status ?? localState.status,
       // Merge answers - database wins on conflicts
       answers: new Map([...localState.answers, ...dbState.answers]),
-      // Keep local progress if more advanced
-      progress: Math.max(localState.progress, dbState.progress || 0),
+      // Keep local progress if more advanced (based on number of answered questions)
+      progress:
+        (localState.progress?.answered || 0) >= (dbState.progress?.answered || 0)
+          ? localState.progress
+          : dbState.progress || { answered: 0, correct: 0, incorrect: 0, percentage: 0 },
       // Sum time spent
       totalTimeSpent: (localState.totalTimeSpent || 0) + (dbState.totalTimeSpent || 0),
     };
@@ -227,7 +233,7 @@ export class AutoSaveManager {
 
         await this.offlineQueue.processQueue(async (sessionId, data) => {
           try {
-            const result = await this.syncManager.syncQuizData(data);
+            const result = await this.syncManager.syncQuizData(data as QuizState);
             return result.success;
           } catch {
             return false;

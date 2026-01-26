@@ -60,7 +60,7 @@ export async function POST(request: NextRequest) {
         question_options(text, is_correct)
       `
       )
-      .eq("quiz_sessions.user_id", user.id)
+      .eq("quiz_sessions.user_id", userId)
       .order("created_at", { ascending: false });
 
     if (attemptsError) {

@@ -10,7 +10,7 @@ interface CategoryMapping {
  * Maps educational content category + subject combinations to database category IDs
  * Based on the actual categories in the database
  */
-export const CONTENT_TO_CATEGORY_MAPPING: CategoryMapping = {
+const CONTENT_TO_CATEGORY_MAPPING: CategoryMapping = {
   "Anatomic Pathology": {
     Bone: "fdaf44b9-b8e7-4f33-ad04-0c005aaafe4d", // Bone & Soft Tissue
     Breast: "e9032a40-2d26-43b0-965b-2188e949b76e", // Breast
@@ -68,7 +68,7 @@ export function getCategoryIdFromContent(category: string, subject: string): str
 /**
  * Get category information for display purposes
  */
-export function getCategoryDisplayInfo(
+function getCategoryDisplayInfo(
   category: string,
   subject: string
 ): {

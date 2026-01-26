@@ -4,7 +4,7 @@ import { uploadToR2, generateImageStoragePath, deleteFromR2 } from "@/shared/ser
 import { getImageDimensionsFromFile } from "@/shared/utils/server-image-utils";
 import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
 import { parseImageFilename } from "@/features/images/services/filename-parser";
-import { revalidateImages } from "@/lib/revalidation";
+import { revalidateImages } from "@/shared/utils/revalidation";
 
 export async function POST(request: NextRequest) {
   let uploadedStoragePath: string | null = null;

@@ -23,99 +23,6 @@ export interface NavigationConfig {
   userRole?: "admin" | "creator" | "reviewer" | "user";
 }
 
-// Admin/Creator/Reviewer Navigation Configuration
-export const adminNavigationItems: NavigationItem[] = [
-  {
-    name: "Dashboard",
-    href: "/admin/dashboard",
-    icon: "LayoutDashboard",
-    requiredPermission: "dashboard.view",
-  },
-  // Question Management Section
-  {
-    name: "Question Database",
-    href: "/admin/questions",
-    icon: "FileQuestion",
-    requiredPermission: "questions.view",
-    showToRoles: ["admin", "creator", "reviewer"], // Visible to all, but bulk operations only for admin
-  },
-  {
-    name: "My Workflow",
-    href: "/admin/my-questions",
-    icon: "ListTodo",
-    requiredPermission: "questions.create",
-    showToRoles: ["admin", "creator"],
-  },
-  {
-    name: "My Review Queue",
-    href: "/admin/review-queue",
-    icon: "ClipboardList",
-    requiredPermission: "questions.review",
-    showToRoles: ["admin", "reviewer"],
-  },
-  {
-    name: "Create Question",
-    href: "/admin/create-question",
-    icon: "Brain",
-    requiredPermission: "questions.create",
-    showToRoles: ["admin", "creator"],
-  },
-
-  // Content Management Section
-  {
-    name: "Question Labels",
-    href: "/admin/labels",
-    icon: "Tags",
-    requiredPermission: "categories.manage",
-    adminOnly: true,
-  },
-  {
-    name: "Images",
-    href: "/admin/images",
-    icon: "Image",
-    requiredPermission: "images.manage",
-    showToRoles: ["admin", "creator", "reviewer"],
-  },
-  // User Management Section
-  {
-    name: "Users",
-    href: "/admin/users",
-    icon: "Users",
-    requiredPermission: "users.manage",
-    adminOnly: true,
-  },
-
-  {
-    name: "Manage Inquiries",
-    href: "/admin/inquiries",
-    icon: "MessageSquare",
-    requiredPermission: "inquiries.manage",
-    adminOnly: true,
-  },
-  // System Section
-  {
-    name: "Site Analytics",
-    href: "/admin/analytics",
-    icon: "BarChart",
-    requiredPermission: "analytics.view",
-    adminOnly: true,
-  },
-  {
-    name: "Notifications",
-    href: "/admin/notifications",
-    icon: "Megaphone",
-    requiredPermission: "notifications.manage",
-    adminOnly: true,
-  },
-  {
-    name: "Settings",
-    href: "/admin/settings",
-    icon: "Settings",
-    requiredPermission: "settings.manage",
-    showToRoles: ["admin", "creator", "reviewer"],
-  },
-];
-
 // Admin/Creator/Reviewer Navigation Sections Configuration
 export const adminNavigationSections: NavigationSection[] = [
   {
@@ -146,7 +53,7 @@ export const adminNavigationSections: NavigationSection[] = [
         requiredPermission: "questions.view",
         showToRoles: ["admin", "creator", "reviewer"],
         showBadge: true,
-        badgeKey: "myQuestions", // Combined badge for revision + drafts
+        badgeKey: "drafts",
       },
       {
         name: "My Review Queue",
@@ -231,69 +138,6 @@ export const adminNavigationSections: NavigationSection[] = [
         showToRoles: ["admin", "creator", "reviewer"],
       },
     ],
-  },
-];
-
-// User Navigation Configuration
-export const userNavigationItems: NavigationItem[] = [
-  {
-    name: "Dashboard",
-    href: "/dashboard",
-    icon: "LayoutDashboard",
-  },
-  {
-    name: "New Quiz",
-    href: "/dashboard/quiz/new",
-    icon: "Plus",
-  },
-  {
-    name: "My Quizzes",
-    href: "/dashboard/quizzes",
-    icon: "ClipboardList",
-  },
-  {
-    name: "Slide-Based Questions",
-    href: "/dashboard/wsi-questions",
-    icon: "Microscope",
-    isNew: true,
-  },
-  {
-    name: "Ankoma Deck Viewer",
-    href: "/dashboard/anki",
-    icon: "Library",
-    isNew: true,
-  },
-  {
-    name: "Performance",
-    href: "/dashboard/performance",
-    icon: "BarChart2",
-  },
-  {
-    name: "Achievements",
-    href: "/dashboard/achievements",
-    icon: "Trophy",
-  },
-  {
-    name: "Learning Modules",
-    href: "/dashboard/learning",
-    icon: "BookOpen",
-    comingSoon: true,
-  },
-  {
-    name: "My Progress",
-    href: "/dashboard/progress",
-    icon: "TrendingUp",
-    comingSoon: true,
-  },
-  {
-    name: "Profile",
-    href: "/dashboard/profile",
-    icon: "User",
-  },
-  {
-    name: "Settings",
-    href: "/dashboard/settings",
-    icon: "Settings",
   },
 ];
 

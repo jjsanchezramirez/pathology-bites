@@ -1,13 +1,51 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignore": ["dev/**", "src/wip/**"],
+  "ignore": [
+    "dev/**",
+    "src/wip/**"
+  ],
   "ignoreDependencies": [
     "@types/diff",
     "@typescript-eslint/eslint-plugin",
     "eslint-config-next",
     "eslint-config-prettier",
-    "eslint-plugin-prettier",
-    "tailwindcss",
-    "knip"
+    "eslint-plugin-prettier"
+  ],
+  "entry": [
+    "src/app/**/page.{ts,tsx}",
+    "src/app/**/layout.{ts,tsx}",
+    "src/app/**/template.{ts,tsx}",
+    "src/app/**/loading.{ts,tsx}",
+    "src/app/**/error.{ts,tsx}",
+    "src/app/**/not-found.{ts,tsx}",
+    "src/app/**/default.{ts,tsx}",
+    "src/app/robots.ts",
+    "src/app/sitemap.ts",
+    "src/app/api/**/route.{ts,tsx}",
+    "src/middleware.{ts,tsx}",
+    "src/shared/components/ui/**/*.{ts,tsx}",
+    "src/shared/components/layout/**/*.{ts,tsx}",
+    "src/shared/components/analytics/**/*.{ts,tsx}",
+    "src/shared/components/seo/**/*.{ts,tsx}",
+    "src/shared/components/genomic/**/*.{ts,tsx}",
+    "src/shared/components/error-boundaries/**/*.tsx",
+    "src/shared/components/auth/role-guard.tsx",
+    "src/shared/components/features/**/*.{ts,tsx}",
+    "src/shared/hooks/**/*.{ts,tsx}",
+    "src/shared/services/**/*.{ts,tsx}",
+    "src/shared/contexts/**/*.{ts,tsx}",
+    "src/shared/config/**/*.ts",
+    "src/shared/constants/**/*.ts",
+    "src/shared/types/**/*.ts",
+    "src/shared/utils/**/*.ts",
+    "src/features/**/hooks/**/*.{ts,tsx}",
+    "src/features/**/services/**/*.{ts,tsx}",
+    "src/features/**/contexts/**/*.{ts,tsx}",
+    "src/features/**/types/**/*.ts",
+    "src/features/**/utils/**/*.ts",
+    "src/features/cell-quiz/data/**/*.ts"
+  ],
+  "project": [
+    "src/**/*.{ts,tsx}"
   ]
 }

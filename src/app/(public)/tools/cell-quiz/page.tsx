@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import {
@@ -16,12 +16,16 @@ import Image from "next/image";
 import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
-import { useClientCellQuiz } from "@/shared/hooks/use-client-cell-quiz";
+import {
+  useClientCellQuiz,
+  BloodCellsReferenceData,
+  CellQuizImagesData,
+  BloodCellReference,
+} from "@/shared/hooks/use-client-cell-quiz";
 import {
   generateLookAlikeOptions,
   generateBiologicalOptions,
 } from "@/features/cell-quiz/data/cell-pathways";
-import { useCallback } from "react";
 
 interface Question {
   cellType: string;
@@ -32,13 +36,16 @@ interface Question {
 }
 
 // Helper function to find reference cell info by cell data key
-function findReferenceCellInfo(cellDataKey: string, bloodCellsReference: unknown) {
+function findReferenceCellInfo(
+  cellDataKey: string,
+  bloodCellsReference: BloodCellsReferenceData | null
+): BloodCellReference | null {
   if (!bloodCellsReference?.cells) {
     console.warn("⚠️ No reference cells available for matching");
     return null;
   }
 
-  const match = bloodCellsReference.cells.find((refCell: unknown) => {
+  const match = bloodCellsReference.cells.find((refCell: BloodCellReference) => {
     // Convert reference cell name to match cellData key format (lowercase, underscores)
     const normalizedRefName = refCell.name.toLowerCase().replace(/\s+/g, "_");
     const isMatch = normalizedRefName === cellDataKey;
@@ -57,15 +64,18 @@ function findReferenceCellInfo(cellDataKey: string, bloodCellsReference: unknown
     console.warn(`⚠️ No reference match found for cell key: "${cellDataKey}"`);
     console.log(
       "Available reference cell names:",
-      bloodCellsReference.cells.map((c: unknown) => c.name)
+      bloodCellsReference.cells.map((c: BloodCellReference) => c.name)
     );
   }
 
-  return match;
+  return match || null;
 }
 
 // Helper function to generate a single random question with biological relationships
-function generateRandomQuestion(cellData: unknown, bloodCellsReference: unknown): Question {
+function generateRandomQuestion(
+  cellData: CellQuizImagesData,
+  bloodCellsReference: BloodCellsReferenceData
+): Question {
   if (!cellData || !bloodCellsReference) {
     throw new Error("Cell data not loaded");
   }
@@ -78,7 +88,7 @@ function generateRandomQuestion(cellData: unknown, bloodCellsReference: unknown)
   // Find cells that have both image data and reference data
   const validCells = allCells.filter((cellKey) => {
     const hasImages = cellData[cellKey]?.images?.length > 0;
-    const hasReference = findReferenceCellInfo(cellKey, bloodCellsReference);
+    const hasReference = !!findReferenceCellInfo(cellKey, bloodCellsReference);
     return hasImages && hasReference;
   });
 
@@ -87,13 +97,13 @@ function generateRandomQuestion(cellData: unknown, bloodCellsReference: unknown)
     console.log("Available cell keys:", allCells);
     console.log(
       "Available reference names:",
-      bloodCellsReference?.cells?.map((c: unknown) => c.name) || []
+      bloodCellsReference?.cells?.map((c: BloodCellReference) => c.name) || []
     );
     throw new Error("No valid cells found for quiz generation");
   }
 
   const correctCellType = validCells[Math.floor(Math.random() * validCells.length)];
-  const cellInfo = cellData[correctCellType as keyof typeof cellData];
+  const cellInfo = cellData[correctCellType];
   const referenceInfo = findReferenceCellInfo(correctCellType, bloodCellsReference);
 
   // Pick a random image for this cell type
@@ -108,11 +118,11 @@ function generateRandomQuestion(cellData: unknown, bloodCellsReference: unknown)
   // Map cell types to display names, preferring reference names when available
   const options = lookAlikeOptions
     .map((cellType) => {
-      const cellInfo = cellData[cellType as keyof typeof cellData];
-      if (!cellInfo) return null;
+      const cellInfoItem = cellData[cellType];
+      if (!cellInfoItem) return null;
 
-      const referenceInfo = findReferenceCellInfo(cellType, bloodCellsReference);
-      return referenceInfo ? referenceInfo.name : cellInfo.name;
+      const referenceInfoItem = findReferenceCellInfo(cellType, bloodCellsReference);
+      return referenceInfoItem ? referenceInfoItem.name : cellInfoItem.name;
     })
     .filter(Boolean) as string[];
 
@@ -123,10 +133,10 @@ function generateRandomQuestion(cellData: unknown, bloodCellsReference: unknown)
       .filter((cellType) => !lookAlikeOptions.includes(cellType))
       .slice(0, 4 - options.length)
       .map((cell) => {
-        const cellInfo = cellData[cell as keyof typeof cellData];
-        if (!cellInfo) return null;
-        const referenceInfo = findReferenceCellInfo(cell, bloodCellsReference);
-        return referenceInfo ? referenceInfo.name : cellInfo.name;
+        const cellInfoItem = cellData[cell];
+        if (!cellInfoItem) return null;
+        const referenceInfoItem = findReferenceCellInfo(cell, bloodCellsReference);
+        return referenceInfoItem ? referenceInfoItem.name : cellInfoItem.name;
       })
       .filter(Boolean) as string[];
 
@@ -574,7 +584,7 @@ export default function CellQuizPage() {
                       const correctCellEntry = Object.entries(cellData).find(([cellKey, cell]) => {
                         const referenceInfo = findReferenceCellInfo(cellKey, bloodCellsReference);
                         return (
-                          (referenceInfo ? referenceInfo.name : (cell as unknown).name) ===
+                          (referenceInfo ? referenceInfo.name : cell.name) ===
                           currentQuestion.correctAnswer
                         );
                       });
@@ -698,8 +708,8 @@ function CellTutorial({
   cellData,
 }: {
   onBack: () => void;
-  bloodCellsReference: unknown;
-  cellData: unknown;
+  bloodCellsReference: BloodCellsReferenceData | null;
+  cellData: CellQuizImagesData | null;
 }) {
   const [currentCellIndex, setCurrentCellIndex] = useState(0);
 
@@ -710,15 +720,13 @@ function CellTutorial({
   const matchingCellDataEntry = currentReferenceCell
     ? Object.entries(cellData || {}).find(([cellKey, cellValue]) => {
         const normalizedRefName = currentReferenceCell.name.toLowerCase().replace(/\s+/g, "_");
-        const cellValueName = (cellValue as unknown)?.name?.toLowerCase();
+        const cellValueName = cellValue?.name?.toLowerCase();
         const refCellName = currentReferenceCell.name.toLowerCase();
         return cellKey === normalizedRefName || cellValueName === refCellName;
       })
     : null;
 
-  const currentImageSrc = matchingCellDataEntry
-    ? (matchingCellDataEntry[1] as unknown)?.images?.[0] || ""
-    : "";
+  const currentImageSrc = matchingCellDataEntry ? matchingCellDataEntry[1]?.images?.[0] || "" : "";
 
   // ✅ Fix: Call useImageCacheHandler at top level to avoid hook rule violations
   const handleTutorialImageLoad = useImageCacheHandler(currentImageSrc, true);
@@ -729,7 +737,8 @@ function CellTutorial({
       exists: !!bloodCellsReference,
       hasCells: !!bloodCellsReference?.cells,
       cellCount: bloodCellsReference?.cells?.length || 0,
-      sampleCellNames: bloodCellsReference?.cells?.slice(0, 5)?.map((c: unknown) => c.name) || [],
+      sampleCellNames:
+        bloodCellsReference?.cells?.slice(0, 5)?.map((c: BloodCellReference) => c.name) || [],
     },
     cellData: {
       exists: !!cellData,
@@ -813,7 +822,7 @@ function CellTutorial({
     // Convert reference cell name to match cellData key format (lowercase, underscores)
     const normalizedRefName = currentReferenceCell.name.toLowerCase().replace(/\s+/g, "_");
     // Also check if the cellValue name matches (case insensitive)
-    const cellValueName = (cellValue as unknown)?.name?.toLowerCase();
+    const cellValueName = cellValue?.name?.toLowerCase();
     const refCellName = currentReferenceCell.name.toLowerCase();
 
     const keyMatch = cellKey === normalizedRefName;
@@ -881,11 +890,11 @@ function CellTutorial({
                 {/* Image - Smaller area */}
                 <div className="flex justify-center">
                   {matchingCellData &&
-                  (matchingCellData as unknown).images &&
-                  (matchingCellData as unknown).images.length > 0 ? (
+                  matchingCellData.images &&
+                  matchingCellData.images.length > 0 ? (
                     <div className="relative w-40 h-40 sm:w-48 sm:h-48 rounded-lg overflow-hidden border bg-gray-50 dark:bg-gray-900">
                       <Image
-                        src={(matchingCellData as unknown).images[0]}
+                        src={matchingCellData.images[0]}
                         alt={currentReferenceCell.name}
                         fill
                         className="object-contain"

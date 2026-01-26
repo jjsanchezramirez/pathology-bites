@@ -235,7 +235,7 @@ function TableControls({
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="all">All Question Sets</SelectItem>
-            {questionSets.map((set) => (
+            {questionSets.map((set: { id: string; name: string }) => (
               <SelectItem key={set.id} value={set.id}>
                 {set.name}
               </SelectItem>
@@ -360,7 +360,7 @@ function RowActions({
   const { user } = useAuthContext();
 
   // Check if user can edit this question
-  const canEdit = question.status !== "approved" || isAdmin;
+  const canEdit = question.status !== "published" || isAdmin;
 
   // Check if user can delete this question
   const canDelete = shouldShowDeleteButton(question, role, user?.id || null);
@@ -387,7 +387,7 @@ function RowActions({
             Edit (Admin Only)
           </DropdownMenuItem>
         )}
-        {question.status === "approved" && onFlag && (
+        {question.status === "published" && onFlag && (
           <DropdownMenuItem onClick={() => onFlag(question)}>
             <Flag className="h-4 w-4 mr-2" />
             Flag for Review
@@ -399,7 +399,7 @@ function RowActions({
             Version History
           </DropdownMenuItem>
         )}
-        {canEdit && question.status === "approved" && onCreateVersion && (
+        {canEdit && question.status === "published" && onCreateVersion && (
           <DropdownMenuItem onClick={() => onCreateVersion(question)}>
             <GitBranch className="h-4 w-4 mr-2" />
             Create Version
@@ -491,30 +491,24 @@ function QuestionRow({
       </TableCell>
       <TableCell className="w-[140px]">
         <div className="flex flex-wrap gap-1">
-          {question.categories && question.categories.length > 0 ? (
-            question.categories.slice(0, 1).map((category) => (
-              <Badge
-                key={category.id}
-                variant="outline"
-                className={`text-[10px] px-1.5 py-0 border ${getCategoryBadgeClass(category)}`}
-                style={category.color ? getCustomColorStyle(category.color) : undefined}
-              >
-                {category.short_form || category.name}
-              </Badge>
-            ))
+          {question.category ? (
+            <Badge
+              variant="outline"
+              className={`text-[10px] px-1.5 py-0 border ${getCategoryBadgeClass(question.category)}`}
+              style={
+                question.category.color ? getCustomColorStyle(question.category.color) : undefined
+              }
+            >
+              {question.category.short_form || question.category.name}
+            </Badge>
           ) : (
             <span className="text-xs text-muted-foreground">No category</span>
-          )}
-          {question.categories && question.categories.length > 1 && (
-            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
-              +{question.categories.length - 1}
-            </Badge>
           )}
         </div>
       </TableCell>
       <TableCell className="w-[120px]">
         <p className="line-clamp-1 text-sm">
-          {question.question_set?.short_form || question.question_set?.name || "No set"}
+          {question.set?.short_form || question.set?.name || "No set"}
         </p>
       </TableCell>
       <TableCell className="w-[80px]">

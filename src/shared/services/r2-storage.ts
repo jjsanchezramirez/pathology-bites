@@ -270,8 +270,12 @@ export async function getFileContent(bucket: string, key: string): Promise<Uint8
     }
 
     // Convert stream to bytes
-    const chunks: unknown[] = [];
-    const stream = response.Body as unknown;
+    const chunks: Uint8Array[] = [];
+    const stream = response.Body as {
+      transformToByteArray?: () => Promise<Uint8Array>;
+      getReader?: () => ReadableStreamDefaultReader<Uint8Array>;
+      [Symbol.asyncIterator]?: () => AsyncIterator<Uint8Array>;
+    };
 
     // Handle different stream types
     if (stream.transformToByteArray) {
@@ -283,11 +287,11 @@ export async function getFileContent(bucket: string, key: string): Promise<Uint8
       while (true) {
         const { done, value } = await reader.read();
         if (done) break;
-        chunks.push(value);
+        if (value) chunks.push(value);
       }
-    } else {
+    } else if (stream[Symbol.asyncIterator]) {
       // Node.js stream
-      for await (const chunk of stream) {
+      for await (const chunk of stream as AsyncIterable<Uint8Array>) {
         chunks.push(chunk);
       }
     }

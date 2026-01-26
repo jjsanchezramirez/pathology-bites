@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { revalidateQuestions } from "@/lib/revalidation";
+import { revalidateQuestions } from "@/shared/utils/revalidation";
 import { formatVersion } from "@/shared/utils/version";
 
 // Create Supabase client with service role for admin operations
@@ -145,26 +145,22 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     // Flatten the tags structure and add user names for easier consumption
-    interface QuestionTag {
-      tag: {
-        id: string;
-        name: string;
-        created_at: string;
-      } | null;
-    }
-
     const questionWithFlattenedTags = {
       ...question,
       tags:
-        question.question_tags
-          ?.map((qt: QuestionTag) => qt.tag)
-          .filter((tag): tag is NonNullable<QuestionTag["tag"]> => tag !== null) || [],
+        (
+          (question.question_tags || []) as unknown as Array<{
+            tag: { id: string; name: string; created_at: string } | null;
+          }>
+        )
+          .map((qt) => qt.tag)
+          .filter((tag): tag is NonNullable<typeof tag> => tag !== null) || [],
       created_by_name: question.created_by_user
-        ? `${question.created_by_user.first_name || ""} ${question.created_by_user.last_name || ""}`.trim() ||
+        ? `${(question.created_by_user as { first_name?: string }).first_name || ""} ${(question.created_by_user as { last_name?: string }).last_name || ""}`.trim() ||
           "Unknown"
         : "Unknown",
       updated_by_name: question.updated_by_user
-        ? `${question.updated_by_user.first_name || ""} ${question.updated_by_user.last_name || ""}`.trim() ||
+        ? `${(question.updated_by_user as { first_name?: string }).first_name || ""} ${(question.updated_by_user as { last_name?: string }).last_name || ""}`.trim() ||
           "Unknown"
         : "Unknown",
     };
@@ -218,7 +214,39 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       patchEditReason,
       updateType,
       reviewerId,
-    } = body;
+    } = body as {
+      questionData?: {
+        title?: string;
+        stem?: string;
+        difficulty?: string;
+        teaching_point?: string;
+        question_references?: string;
+        question_set_id?: string;
+        lesson?: string;
+        topic?: string;
+        reviewer_id?: string;
+        status?: string;
+        anki_card_id?: number | null;
+        anki_deck_name?: string | null;
+      };
+      changeSummary?: string;
+      answerOptions?: Array<{
+        id?: string;
+        text: string;
+        is_correct: boolean;
+        explanation?: string | null;
+      }>;
+      questionImages?: Array<{
+        image_id: string;
+        question_section: string;
+      }>;
+      tagIds?: string[];
+      categoryId?: string;
+      isPatchEdit?: boolean;
+      patchEditReason?: string;
+      updateType?: string;
+      reviewerId?: string;
+    };
 
     console.log("PATCH /api/admin/questions/[id] - Body received:", {
       hasQuestionData: !!questionData,
@@ -244,11 +272,34 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     // Get current question to check status and permissions
     console.log("PATCH - Fetching question with ID:", questionId);
-    const { data: currentQuestion, error: questionError } = await adminClient
+    const { data: currentQuestionData, error: questionError } = await adminClient
       .from("questions")
-      .select("id, status, created_by, reviewer_id, version_major, version_minor, version_patch")
+      .select(
+        "id, status, created_by, reviewer_id, version_major, version_minor, version_patch, title, stem, difficulty, teaching_point, question_references, question_set_id, category_id, lesson, topic, anki_card_id, anki_deck_name"
+      )
       .eq("id", questionId)
       .single();
+
+    const currentQuestion = currentQuestionData as unknown as {
+      id: string;
+      status: string;
+      created_by: string;
+      reviewer_id: string | null;
+      version_major: number;
+      version_minor: number;
+      version_patch: number;
+      title: string;
+      stem: string;
+      difficulty: string;
+      teaching_point: string | null;
+      question_references: string | null;
+      question_set_id: string | null;
+      category_id: string | null;
+      lesson: string | null;
+      topic: string | null;
+      anki_card_id: number | null;
+      anki_deck_name: string | null;
+    };
 
     console.log("PATCH - Question fetch result:", {
       found: !!currentQuestion,
@@ -491,7 +542,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           .from("quiz_attempts")
           .select("selected_answer_id")
           .not("selected_answer_id", "is", null)
-          .in("selected_answer_id", existingOptions?.map((opt) => opt.id) || []);
+          .in(
+            "selected_answer_id",
+            (existingOptions as unknown as Array<{ id: string }>)?.map((opt) => opt.id) || []
+          );
 
         if (referencedError) {
           console.error("Error checking referenced options:", referencedError);
@@ -564,7 +618,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         }
 
         // Delete options that are no longer needed (but only if not referenced)
-        const existingOptionIds = new Set(existingOptions?.map((opt) => opt.id) || []);
+        const existingOptionIds = new Set(
+          (existingOptions as unknown as Array<{ id: string }>)?.map((opt) => opt.id) || []
+        );
         const optionsToDelete = Array.from(existingOptionIds).filter(
           (id) => !incomingOptionIds.has(id) && !referencedOptionIds.has(id)
         );

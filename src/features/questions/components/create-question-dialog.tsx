@@ -48,6 +48,8 @@ import {
   QuestionImageFormData,
 } from "@/features/questions/types/questions";
 import { apiClient } from "@/shared/utils/api-client";
+import { ImageData } from "@/features/images/types/images";
+import { TagData, CategoryData } from "@/features/questions/types/questions";
 
 const createQuestionSchema = z.object({
   title: z.string().min(1, "Title is required").max(200, "Title too long"),
@@ -77,7 +79,7 @@ interface MediaSectionProps {
 
 function MediaSection({ images, section, maxImages, onImagesChange }: MediaSectionProps) {
   const [showImagePicker, setShowImagePicker] = useState(false);
-  const [availableImages, setAvailableImages] = useState<unknown[]>([]);
+  const [availableImages, setAvailableImages] = useState<ImageData[]>([]);
   const [selectedImageIds, setSelectedImageIds] = useState<string[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
@@ -329,8 +331,8 @@ export function CreateQuestionDialog({ open, onOpenChange, onSave }: CreateQuest
   const [selectedTagIds, setSelectedTagIds] = useState<string[]>([]);
   const [selectedCategoryId, setSelectedCategoryId] = useState<string>("");
   const [tagSearch, setTagSearch] = useState("");
-  const [availableTags, setAvailableTags] = useState<unknown[]>([]);
-  const [availableCategories, setAvailableCategories] = useState<unknown[]>([]);
+  const [availableTags, setAvailableTags] = useState<TagData[]>([]);
+  const [availableCategories, setAvailableCategories] = useState<CategoryData[]>([]);
   const { questionSets } = useQuestionSets();
   const { user } = useAuthContext();
 

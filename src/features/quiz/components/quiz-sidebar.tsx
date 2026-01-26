@@ -2,10 +2,17 @@
 
 import { CheckCircle, XCircle, Circle, Clock } from "lucide-react";
 import { QuizSession } from "@/features/quiz/types/quiz";
+import { UIQuizQuestion } from "@/features/quiz/types/quiz-question";
+import { QuestionWithDetails } from "@/features/questions/types/questions";
 import { cn } from "@/shared/utils/utils";
 
+// Define a flexible session type that works with both QuestionWithDetails and UIQuizQuestion
+type FlexibleQuizSession = Omit<QuizSession, "questions"> & {
+  questions: (QuestionWithDetails | UIQuizQuestion)[];
+};
+
 interface QuizSidebarProps {
-  session: QuizSession;
+  session: FlexibleQuizSession;
   currentQuestionIndex: number;
   attempts: Array<{
     questionId: string;
@@ -85,11 +92,12 @@ export function QuizSidebar({
     }
   };
 
-  const getQuestionSnippet = (question: unknown) => {
-    if (!question.stem) return "Question content...";
+  const getQuestionSnippet = (question: QuestionWithDetails | UIQuizQuestion) => {
+    const stem = question.stem || "";
+    if (!stem) return "Question content...";
 
     // Remove HTML tags and get first 40 characters
-    const plainText = question.stem.replace(/<[^>]*>/g, "").trim();
+    const plainText = stem.replace(/<[^>]*>/g, "").trim();
     return plainText.length > 40 ? plainText.substring(0, 40) + "..." : plainText;
   };
 

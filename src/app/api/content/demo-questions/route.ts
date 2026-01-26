@@ -25,11 +25,37 @@ interface ProcessedQuestion {
   title: string;
   body: string;
   teachingPoint: string;
-  images: QuestionImage[];
+  images: Array<{ url: string; caption: string; alt: string }>;
   options: QuestionOption[];
   incorrectExplanations: Record<string, string>;
   references: string[];
-  comparativeImage: QuestionImage | null;
+  comparativeImage: { url: string; caption: string; alt: string } | null;
+}
+
+// Database query result interfaces
+interface QuestionImageRow {
+  image_id: string;
+  question_section: string;
+  order_index: number;
+  images: {
+    id: string;
+    url: string | null;
+    alt_text: string | null;
+    description: string | null;
+  } | null;
+}
+
+interface QuestionOptionRow {
+  id: string;
+  text: string;
+  is_correct: boolean;
+  explanation: string | null;
+}
+
+interface _DemoQuestionRow {
+  id: string;
+  question_id: string;
+  display_order: number;
 }
 
 export async function GET(request: Request) {
@@ -67,7 +93,7 @@ export async function GET(request: Request) {
       const [
         { data: questionData, error: questionError },
         { data: answerOptions, error: optionsError },
-        { data: questionImagesWithDetails },
+        { data: rawImages },
       ] = await Promise.all([
         // Get question data
         supabase
@@ -124,23 +150,25 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "Question options not found" }, { status: 404 });
       }
 
+      // Cast the images data to proper type
+      const questionImagesWithDetails = (rawImages || []) as unknown as QuestionImageRow[];
+
       try {
         // Process the question data to match expected format
-        const stemImages =
-          questionImagesWithDetails
-            ?.filter((qi: unknown) => qi.question_section === "stem")
-            ?.sort((a: unknown, b: unknown) => a.order_index - b.order_index)
-            ?.map((qi: unknown) => {
-              const imageDetail = Array.isArray(qi.images) ? qi.images[0] : qi.images;
-              return {
-                url: imageDetail?.url || "",
-                caption: imageDetail?.description || "",
-                alt: imageDetail?.alt_text || "Question image",
-              };
-            }) || [];
+        const stemImages = (questionImagesWithDetails || [])
+          .filter((qi) => qi.question_section === "stem")
+          .sort((a, b) => a.order_index - b.order_index)
+          .map((qi) => {
+            const imageDetail = Array.isArray(qi.images) ? qi.images[0] : qi.images;
+            return {
+              url: imageDetail?.url || "",
+              caption: imageDetail?.description || "",
+              alt: imageDetail?.alt_text || "Question image",
+            };
+          });
 
-        const explanationImageData = questionImagesWithDetails?.find(
-          (qi: unknown) => qi.question_section === "explanation"
+        const explanationImageData = (questionImagesWithDetails || []).find(
+          (qi) => qi.question_section === "explanation"
         );
         const explanationImageDetail = Array.isArray(explanationImageData?.images)
           ? explanationImageData?.images[0]
@@ -152,20 +180,22 @@ export async function GET(request: Request) {
           body: questionData.stem,
           images: stemImages,
           options:
-            answerOptions?.map((option: unknown) => ({
+            (answerOptions || []).map((option: QuestionOptionRow) => ({
               id: option.id,
               text: option.text,
               correct: option.is_correct,
               explanation: option.explanation,
             })) || [],
           teachingPoint: questionData.teaching_point,
-          incorrectExplanations:
-            answerOptions?.reduce((acc: Record<string, string>, option: unknown) => {
+          incorrectExplanations: (answerOptions || []).reduce(
+            (acc: Record<string, string>, option: QuestionOptionRow) => {
               if (!option.is_correct && option.explanation) {
                 acc[option.id] = option.explanation;
               }
               return acc;
-            }, {}) || {},
+            },
+            {}
+          ),
           references: questionData.question_references ? [questionData.question_references] : [],
           comparativeImage: explanationImageDetail
             ? {
@@ -255,7 +285,7 @@ export async function GET(request: Request) {
       const [
         { data: questionData, error: questionError },
         { data: answerOptions, error: optionsError },
-        { data: questionImagesWithDetails },
+        { data: rawImages2 },
       ] = await Promise.all([
         supabase
           .from("questions")
@@ -297,22 +327,24 @@ export async function GET(request: Request) {
         return NextResponse.json({ error: "Question options not found" }, { status: 404 });
       }
 
-      try {
-        const stemImages =
-          questionImagesWithDetails
-            ?.filter((qi: unknown) => qi.question_section === "stem")
-            ?.sort((a: unknown, b: unknown) => a.order_index - b.order_index)
-            ?.map((qi: unknown) => {
-              const imageDetail = Array.isArray(qi.images) ? qi.images[0] : qi.images;
-              return {
-                url: imageDetail?.url || "",
-                caption: imageDetail?.description || "",
-                alt: imageDetail?.alt_text || "Question image",
-              };
-            }) || [];
+      // Cast the images data to proper type
+      const questionImagesWithDetails = (rawImages2 || []) as unknown as QuestionImageRow[];
 
-        const explanationImageData = questionImagesWithDetails?.find(
-          (qi: unknown) => qi.question_section === "explanation"
+      try {
+        const stemImages = (questionImagesWithDetails || [])
+          .filter((qi) => qi.question_section === "stem")
+          .sort((a, b) => a.order_index - b.order_index)
+          .map((qi) => {
+            const imageDetail = Array.isArray(qi.images) ? qi.images[0] : qi.images;
+            return {
+              url: imageDetail?.url || "",
+              caption: imageDetail?.description || "",
+              alt: imageDetail?.alt_text || "Question image",
+            };
+          });
+
+        const explanationImageData = (questionImagesWithDetails || []).find(
+          (qi) => qi.question_section === "explanation"
         );
         const explanationImageDetail = Array.isArray(explanationImageData?.images)
           ? explanationImageData?.images[0]
@@ -323,21 +355,22 @@ export async function GET(request: Request) {
           title: questionData.title,
           body: questionData.stem,
           images: stemImages,
-          options:
-            answerOptions?.map((option: unknown) => ({
-              id: option.id,
-              text: option.text,
-              correct: option.is_correct,
-              explanation: option.explanation,
-            })) || [],
+          options: (answerOptions || []).map((option: QuestionOptionRow) => ({
+            id: option.id,
+            text: option.text,
+            correct: option.is_correct,
+            explanation: option.explanation,
+          })),
           teachingPoint: questionData.teaching_point,
-          incorrectExplanations:
-            answerOptions?.reduce((acc: Record<string, string>, option: unknown) => {
+          incorrectExplanations: (answerOptions || []).reduce(
+            (acc: Record<string, string>, option: QuestionOptionRow) => {
               if (!option.is_correct && option.explanation) {
                 acc[option.id] = option.explanation;
               }
               return acc;
-            }, {}) || {},
+            },
+            {}
+          ),
           references: questionData.question_references ? [questionData.question_references] : [],
           comparativeImage: explanationImageDetail
             ? {

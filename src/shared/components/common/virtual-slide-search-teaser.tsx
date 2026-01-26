@@ -42,7 +42,7 @@ export function VirtualSlideSearchTeaser() {
       // Simple search: find first slide that matches query in diagnosis
       const term = query.toLowerCase();
       const firstMatch = slides.find((slide: unknown) =>
-        slide.diagnosis?.toLowerCase().includes(term)
+        (slide as { diagnosis?: string }).diagnosis?.toLowerCase().includes(term)
       );
 
       if (firstMatch) {

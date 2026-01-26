@@ -5,6 +5,13 @@
  */
 
 import { useState, useCallback } from "react";
+import {
+  getCachedItem,
+  setCachedItem,
+  clearToolCache,
+  getCacheStats as getPublicToolsCacheStats,
+  getRecentItems,
+} from "@/shared/utils/public-tools-cache";
 
 interface GeneInfo {
   hgncId: string;
@@ -16,80 +23,22 @@ interface GeneInfo {
   description: string;
 }
 
-interface GeneCache {
-  [key: string]: {
-    data: GeneInfo;
-    timestamp: number;
-  };
-}
-
 interface UseSmartGeneLookupResult {
   lookupGene: (symbol: string) => Promise<GeneInfo>;
   isLoading: boolean;
   error: string | null;
   clearCache: () => void;
-  getCacheStats: () => { size: number; oldestEntry: string | null };
+  getCacheStats: () => { size: number };
+  getRecentGenes: (limit?: number) => Array<{ key: string; data: GeneInfo; timestamp: number }>;
 }
-
-// Cache duration: 7 days (gene info is relatively stable)
-const CACHE_TTL = 7 * 24 * 60 * 60 * 1000;
-const MAX_CACHE_SIZE = 50; // Common genes only
 
 export function useSmartGeneLookup(): UseSmartGeneLookupResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cache, setCache] = useState<GeneCache>(() => {
-    // Load cache from localStorage on initialization
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("pathology-bites-gene-cache");
-        return stored ? JSON.parse(stored) : {};
-      } catch {
-        return {};
-      }
-    }
-    return {};
-  });
 
   // Normalize gene symbol for consistent caching
   const normalizeSymbol = useCallback((symbol: string): string => {
     return symbol.trim().toUpperCase();
-  }, []);
-
-  // Save cache to localStorage
-  const saveCache = useCallback((newCache: GeneCache) => {
-    setCache(newCache);
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("pathology-bites-gene-cache", JSON.stringify(newCache));
-      } catch (error) {
-        console.warn("Failed to save gene cache to localStorage:", error);
-      }
-    }
-  }, []);
-
-  // Clean expired entries and manage cache size
-  const cleanCache = useCallback((currentCache: GeneCache): GeneCache => {
-    const now = Date.now();
-    const validEntries: GeneCache = {};
-
-    // Remove expired entries
-    Object.entries(currentCache).forEach(([key, entry]) => {
-      if (now - entry.timestamp < CACHE_TTL) {
-        validEntries[key] = entry;
-      }
-    });
-
-    // If still too large, remove oldest entries
-    if (Object.keys(validEntries).length > MAX_CACHE_SIZE) {
-      const sortedEntries = Object.entries(validEntries)
-        .sort(([, a], [, b]) => b.timestamp - a.timestamp) // Newest first
-        .slice(0, MAX_CACHE_SIZE);
-
-      return Object.fromEntries(sortedEntries);
-    }
-
-    return validEntries;
   }, []);
 
   const lookupGene = useCallback(
@@ -106,17 +55,16 @@ export function useSmartGeneLookup(): UseSmartGeneLookupResult {
         const cacheKey = normalizedSymbol;
 
         // Check cache first
-        const cachedEntry = cache[cacheKey];
-        if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL) {
+        const cached = getCachedItem<GeneInfo>("milan", cacheKey);
+        if (cached) {
           console.log(`🎯 Gene cache hit: ${normalizedSymbol}`);
           setIsLoading(false);
-          setError(null); // Ensure error is cleared on cache hit
-          return cachedEntry.data;
+          setError(null);
+          return cached;
         }
 
         // Cache miss - fetch from API
         console.log(`🔄 Gene cache miss: ${normalizedSymbol}`);
-
         const response = await fetch(
           `/api/public/tools/milan?symbol=${encodeURIComponent(symbol.trim())}`
         );
@@ -130,17 +78,8 @@ export function useSmartGeneLookup(): UseSmartGeneLookupResult {
 
         const geneInfo = result.data;
 
-        // Update cache
-        const cleanedCache = cleanCache(cache);
-        const newCache = {
-          ...cleanedCache,
-          [cacheKey]: {
-            data: geneInfo,
-            timestamp: Date.now(),
-          },
-        };
-
-        saveCache(newCache);
+        // Save to cache
+        setCachedItem("milan", cacheKey, geneInfo);
         console.log(`✅ Gene cached: ${normalizedSymbol}`);
 
         // Clear any previous errors on successful lookup
@@ -154,27 +93,20 @@ export function useSmartGeneLookup(): UseSmartGeneLookupResult {
         setIsLoading(false);
       }
     },
-    [cache, normalizeSymbol, cleanCache, saveCache]
+    [normalizeSymbol]
   );
 
   const clearCache = useCallback(() => {
-    setCache({});
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("pathology-bites-gene-cache");
-    }
-    console.log("🗑️ Gene cache cleared");
+    clearToolCache("milan");
   }, []);
 
   const getCacheStats = useCallback(() => {
-    const entries = Object.values(cache);
-    return {
-      size: entries.length,
-      oldestEntry:
-        entries.length > 0
-          ? new Date(Math.min(...entries.map((e) => e.timestamp))).toLocaleString()
-          : null,
-    };
-  }, [cache]);
+    return getPublicToolsCacheStats("milan");
+  }, []);
+
+  const getRecentGenes = useCallback((limit: number = 10) => {
+    return getRecentItems<GeneInfo>("milan", limit);
+  }, []);
 
   // Initialize pre-loading of common genes after user interaction
   // Disabled to prevent interference with user searches
@@ -192,5 +124,6 @@ export function useSmartGeneLookup(): UseSmartGeneLookupResult {
     error,
     clearCache,
     getCacheStats,
+    getRecentGenes,
   };
 }

@@ -20,7 +20,7 @@ export const metadata = {
     template: "%s | Pathology Bites",
   },
   description:
-    "Master pathology with free practice questions, detailed explanations, and comprehensive study materials. Perfect for medical students, residents, and pathology professionals.",
+    "Master pathology one bite at a time. Free practice questions, interactive virtual slides, and bite-sized educational content. Perfect for medical students, residents, and pathology professionals.",
   keywords: [
     "pathology",
     "medical education",
@@ -53,7 +53,7 @@ export const metadata = {
     siteName: "Pathology Bites",
     title: "Pathology Bites - Free Pathology Education & Practice Questions",
     description:
-      "Master pathology with free practice questions, detailed explanations, and comprehensive study materials. Perfect for medical students, residents, and pathology professionals.",
+      "Master pathology one bite at a time. Free practice questions, interactive virtual slides, and bite-sized educational content for medical students and professionals.",
     images: [
       {
         url: "/images/og-image.png",
@@ -67,7 +67,7 @@ export const metadata = {
     card: "summary_large_image",
     title: "Pathology Bites - Free Pathology Education & Practice Questions",
     description:
-      "Master pathology with free practice questions, detailed explanations, and comprehensive study materials.",
+      "Master pathology one bite at a time. Free practice questions, interactive virtual slides, and bite-sized educational content.",
     images: ["/images/twitter-image.png"],
     creator: "@pathologybites",
     site: "@pathologybites",

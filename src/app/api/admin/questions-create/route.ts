@@ -1,12 +1,41 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { revalidateQuestions } from "@/lib/revalidation";
+import { revalidateQuestions } from "@/shared/utils/revalidation";
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
   return createSupabaseClient(supabaseUrl, supabaseServiceKey);
+}
+
+// Type definitions for request body
+interface QuestionOptionInput {
+  text: string;
+  is_correct?: boolean;
+  explanation?: string;
+  order_index?: number;
+}
+
+interface QuestionImageInput {
+  image_id: string;
+  question_section: string;
+  order_index: number;
+}
+
+interface CreateQuestionRequest {
+  title: string;
+  stem: string;
+  difficulty?: string;
+  teaching_point?: string;
+  question_references?: string;
+  question_set_id?: string;
+  category_id?: string;
+  lesson?: string;
+  topic?: string;
+  question_options: QuestionOptionInput[];
+  tag_ids?: string[];
+  question_images?: QuestionImageInput[];
 }
 
 export async function POST(request: NextRequest) {
@@ -25,7 +54,7 @@ export async function POST(request: NextRequest) {
     // Use service role client for database operations to bypass RLS
     const supabase = createAdminClient();
 
-    const questionData = await request.json();
+    const questionData = (await request.json()) as CreateQuestionRequest;
 
     // Validate required fields
     if (!questionData.title || !questionData.stem || !questionData.question_options) {
@@ -65,14 +94,16 @@ export async function POST(request: NextRequest) {
 
     // Create question options
     if (questionData.question_options && questionData.question_options.length > 0) {
-      const answerOptions = questionData.question_options.map((option: unknown, index: number) => ({
-        question_id: question.id,
-        text: option.text,
-        is_correct: option.is_correct ?? false,
-        explanation: option.explanation || null,
-        order_index: option.order_index ?? index,
-        // Note: Don't include 'id' field - let database generate UUID
-      }));
+      const answerOptions = questionData.question_options.map(
+        (option: QuestionOptionInput, index: number) => ({
+          question_id: question.id,
+          text: option.text,
+          is_correct: option.is_correct ?? false,
+          explanation: option.explanation || null,
+          order_index: option.order_index ?? index,
+          // Note: Don't include 'id' field - let database generate UUID
+        })
+      );
 
       const { error: optionsError } = await supabase.from("question_options").insert(answerOptions);
 
@@ -108,7 +139,7 @@ export async function POST(request: NextRequest) {
 
     // Handle question images if provided
     if (questionData.question_images && questionData.question_images.length > 0) {
-      const questionImages = questionData.question_images.map((img: unknown) => ({
+      const questionImages = questionData.question_images.map((img: QuestionImageInput) => ({
         question_id: question.id,
         image_id: img.image_id, // This should be set after image upload
         question_section: img.question_section,

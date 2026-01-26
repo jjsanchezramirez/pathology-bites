@@ -235,6 +235,7 @@ export function SignupForm() {
         {/* User Type */}
         <FormField
           id="userType"
+          name="userType"
           label="What best describes you?"
           error={isSubmitted ? errors.userType?.message : undefined}
         >
@@ -294,7 +295,7 @@ export function SignupForm() {
                 theme: "auto",
                 size: "normal",
                 retry: "auto",
-                "retry-interval": 8000,
+                retryInterval: 8000,
               }}
               onSuccess={(token) => {
                 setCaptchaToken(token);

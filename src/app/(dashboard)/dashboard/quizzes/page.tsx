@@ -51,11 +51,10 @@ export default function QuizzesPage() {
       return result.data;
     },
     {
+      namespace: "swr",
       refetchOnMount: true, // Always fetch on mount if no valid cache
       ttl: 2 * 60 * 1000, // 2 minutes cache
       staleTime: 1 * 60 * 1000, // 1 minute stale time
-      storage: "memory", // Use memory for session data
-      prefix: "pathology-bites-quizzes",
     }
   );
 

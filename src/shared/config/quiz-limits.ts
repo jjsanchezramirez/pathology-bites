@@ -97,5 +97,3 @@ export function formatQuizTime(seconds: number): string {
     return `${minutes}m ${remainingSeconds}s`;
   }
 }
-
-export default QUIZ_LIMITS;

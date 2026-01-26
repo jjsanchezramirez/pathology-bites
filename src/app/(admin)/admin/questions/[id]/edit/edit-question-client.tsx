@@ -14,6 +14,7 @@ import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 
 import { QuestionWithDetails } from "@/features/questions/types/questions";
 import { useEditQuestionForm } from "@/features/questions/hooks/use-edit-question-form";
+import { EducationalContent } from "@/app/(admin)/admin/create-question/components/content-selector";
 
 // Import tab components
 import { TabNavigation } from "./tab-navigation";
@@ -53,16 +54,18 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   const [showReviewerDialog, setShowReviewerDialog] = useState(false);
   const [_pendingChangeSummary, setPendingChangeSummary] = useState("");
   const [isPatchEditDisabled, setIsPatchEditDisabled] = useState(false);
-  const [educationalContext, setEducationalContext] = useState<Record<string, unknown> | null>(
-    null
-  );
+  const [educationalContext, setEducationalContext] = useState<EducationalContent | null>(null);
   const [assignedReviewerId, setAssignedReviewerId] = useState<string | null>(null);
   const [selectedReviewerId, setSelectedReviewerId] = useState<string>("");
-  const [reviewers, setReviewers] = useState<Array<{ id: string; name: string }>>([]);
+  const [reviewers, setReviewers] = useState<
+    Array<{ id: string; name: string; full_name: string; pending_count: number }>
+  >([]);
   const [loadingReviewers, setLoadingReviewers] = useState(false);
   const hasAutoAdvanced = useRef(false);
   const originalCorrectAnswerRef = useRef<string | null>(null);
-  const originalImagesRef = useRef<Array<{ url: string; caption?: string }>>([]);
+  const originalImagesRef = useRef<
+    import("@/features/questions/types/questions").QuestionImageFormData[]
+  >([]);
 
   // Get return URL from query params, default to /admin/my-questions
   const searchParams = new URLSearchParams(
@@ -136,7 +139,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
           await import("@/app/(admin)/admin/create-question/components/content-selector");
 
         // Find the appropriate content file based on the question's subject
-        const subjectName = question.category?.name || question.categories?.[0]?.name;
+        const subjectName = question.category?.name;
         const contentFile = CONTENT_FILES.find((file) => file.subject === subjectName);
 
         if (contentFile) {
@@ -287,7 +290,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       setShowSaveConfirmDialog(true);
     } else {
       // For non-published questions, submit directly
-      form.handleSubmit(handleSubmit)();
+      form.handleSubmit((data) => handleSubmit(data))();
     }
   };
 
@@ -322,7 +325,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
     // Submit the form
     try {
-      await form.handleSubmit(handleSubmit)();
+      await form.handleSubmit((data) => handleSubmit(data))();
     } catch (error) {
       // Error is already displayed in toast by useEditQuestionForm
       console.error("Save confirmation error:", error);
@@ -381,7 +384,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       form.setValue("status", "pending_review");
 
       // Submit the form (the onSave callback will handle toast and navigation)
-      await form.handleSubmit(handleSubmit)();
+      await form.handleSubmit((data) => handleSubmit(data))();
     } catch (error) {
       console.error("Save and submit error:", error);
       toast.error("Failed to save and submit question");
@@ -530,7 +533,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            form.handleSubmit(handleSubmit)(e);
+            form.handleSubmit((data) => handleSubmit(data))(e);
           }}
           className="space-y-6"
         >

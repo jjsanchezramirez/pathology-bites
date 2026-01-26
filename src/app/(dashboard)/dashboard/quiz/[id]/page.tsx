@@ -19,7 +19,7 @@ import { QuizSidebar } from "@/features/quiz/components/quiz-sidebar";
 import { QuizQuestionDisplay } from "@/features/quiz/components/quiz-question-display";
 import { QuizNavigation } from "@/features/quiz/components/quiz-navigation";
 import { FeatureErrorBoundary } from "@/shared/components/common";
-import { QuizResult } from "@/features/quiz/types/quiz";
+import { QuizSession, QuizResult } from "@/features/quiz/types/quiz";
 import { toast } from "@/shared/utils/toast";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useHybridQuiz, HybridPresets } from "@/features/quiz/hybrid";
@@ -37,7 +37,7 @@ export default function QuizSessionPage() {
 
   // Review mode state
   const [reviewResult, setReviewResult] = useState<QuizResult | null>(null);
-  const [reviewSession, setReviewSession] = useState<unknown>(null);
+  const [reviewSession, setReviewSession] = useState<QuizSession | null>(null);
   const [reviewLoading, setReviewLoading] = useState(isReviewMode);
   const [reviewError, setReviewError] = useState<string | null>(null);
   const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
@@ -533,7 +533,7 @@ export default function QuizSessionPage() {
     };
 
     // Create attempts array for sidebar from results
-    const reviewAttempts = reviewResult.questionDetails.map((q: unknown) => ({
+    const reviewAttempts = reviewResult.questionDetails.map((q) => ({
       questionId: q.id,
       selectedAnswerId: q.selectedAnswerId,
       isCorrect: q.isCorrect,
@@ -563,7 +563,7 @@ export default function QuizSessionPage() {
         >
           <FeatureErrorBoundary featureName="Quiz Review Sidebar">
             <QuizSidebar
-              session={reviewModeSession as unknown}
+              session={reviewModeSession}
               currentQuestionIndex={currentReviewIndex}
               attempts={reviewAttempts}
               onQuestionSelect={(index) => {
@@ -622,7 +622,7 @@ export default function QuizSessionPage() {
                 {/* Question Display */}
                 <FeatureErrorBoundary featureName="Quiz Review Question Display">
                   <QuizQuestionDisplay
-                    question={currentReviewQuestion as unknown}
+                    question={currentReviewQuestion}
                     selectedAnswerId={currentReviewResult.selectedAnswerId}
                     showExplanation={true}
                     onAnswerSelect={() => {}} // No-op in review mode
@@ -953,7 +953,7 @@ export default function QuizSessionPage() {
                 {!isPaused && hybridState.status !== "not_started" && (
                   <FeatureErrorBoundary featureName="Quiz Question Display">
                     <QuizQuestionDisplay
-                      question={currentQuestion as unknown}
+                      question={currentQuestion}
                       selectedAnswerId={
                         hybridActions.getAnswerForQuestion(currentQuestion.id)?.selectedOptionId ||
                         null

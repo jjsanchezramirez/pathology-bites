@@ -102,34 +102,56 @@ export interface QuizState {
   };
 }
 
+// Type for API question response (flexible structure from API)
+export interface ApiQuestionResponse {
+  id: string;
+  stem?: string;
+  text?: string;
+  teaching_point?: string;
+  explanation?: string;
+  difficulty?: "easy" | "medium" | "hard";
+  title?: string;
+  question_references?: string;
+  question_options?: Array<{
+    id: string;
+    text: string;
+    is_correct?: boolean;
+    isCorrect?: boolean;
+    explanation?: string;
+  }>;
+  question_images?: unknown[];
+  images?: unknown[];
+  tags?: string[];
+  category?: { name?: string } | string;
+}
+
 // Transformation utilities
 export class QuizQuestionTransformer {
   /**
    * Transform API response to hybrid system format
    */
-  static apiToHybrid(apiQuestion: unknown): QuizQuestion {
+  static apiToHybrid(apiQuestion: ApiQuestionResponse): QuizQuestion {
     const options = apiQuestion.question_options || [];
 
     return {
       id: apiQuestion.id,
-      text: apiQuestion.stem || apiQuestion.text,
-      question_options: options.map((opt: unknown) => ({
+      text: apiQuestion.stem || apiQuestion.text || "",
+      question_options: options.map((opt) => ({
         id: opt.id,
         text: opt.text,
-        is_correct: opt.is_correct || opt.isCorrect,
+        is_correct: opt.is_correct || opt.isCorrect || false,
         explanation: opt.explanation,
       })),
       explanation: apiQuestion.teaching_point || apiQuestion.explanation,
-      category: apiQuestion.category?.name || apiQuestion.category,
+      category:
+        typeof apiQuestion.category === "object"
+          ? apiQuestion.category?.name || ""
+          : apiQuestion.category,
       difficulty: apiQuestion.difficulty,
       metadata: {
         images: apiQuestion.question_images || apiQuestion.images || [],
         tags: apiQuestion.tags || [],
-        originalData: {
-          ...apiQuestion,
-          title: apiQuestion.title,
-          question_references: apiQuestion.question_references,
-        },
+        originalData: apiQuestion,
       },
     };
   }
@@ -138,19 +160,21 @@ export class QuizQuestionTransformer {
    * Transform hybrid system format to UI component format
    */
   static hybridToUI(hybridQuestion: QuizQuestion): UIQuizQuestion {
+    const originalData = hybridQuestion.metadata?.originalData as ApiQuestionResponse | undefined;
+
     return {
       id: hybridQuestion.id,
-      title: hybridQuestion.metadata?.originalData?.title || "",
+      title: originalData?.title || "",
       stem: hybridQuestion.text,
       teaching_point: hybridQuestion.explanation,
-      question_references: hybridQuestion.metadata?.originalData?.question_references || "",
+      question_references: originalData?.question_references || "",
       question_options: hybridQuestion.question_options.map((opt) => ({
         id: opt.id,
         text: opt.text,
         is_correct: opt.is_correct,
         explanation: opt.explanation,
       })),
-      question_images: hybridQuestion.metadata?.images || [],
+      question_images: (hybridQuestion.metadata?.images as UIQuizQuestion["question_images"]) || [],
     };
   }
 }

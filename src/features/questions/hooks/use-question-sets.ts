@@ -33,7 +33,7 @@ export function useQuestionSets(): UseQuestionSetsReturn {
         throw new Error(fetchError.message);
       }
 
-      setQuestionSets(data || []);
+      setQuestionSets((data as SetData[]) || []);
     } catch (err) {
       const message = err instanceof Error ? err.message : "Failed to fetch question sets";
       setError(message);

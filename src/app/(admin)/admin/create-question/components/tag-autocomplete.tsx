@@ -6,20 +6,16 @@ import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Plus, X, Loader2 } from "lucide-react";
 import { toast } from "@/shared/utils/toast";
+import { TagData } from "@/features/questions/types/questions";
 
-interface Tag {
-  id: string;
-  name: string;
-  description: string | null;
-  color: string | null;
-  created_at: string;
-}
+// Local type alias for convenience
+type Tag = TagData;
 
 interface TagAutocompleteProps {
   selectedTags: string[];
   onTagsChange: (tagIds: string[]) => void;
-  allTags: Tag[];
-  onTagCreated: (tag: Tag) => void;
+  allTags: TagData[];
+  onTagCreated: (tag: TagData) => void;
 }
 
 export function TagAutocomplete({
@@ -30,7 +26,7 @@ export function TagAutocomplete({
 }: TagAutocompleteProps) {
   const [searchTerm, setSearchTerm] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
-  const [filteredTags, setFilteredTags] = useState<Tag[]>([]);
+  const [filteredTags, setFilteredTags] = useState<TagData[]>([]);
   const [isCreating, setIsCreating] = useState(false);
   const [highlightedIndex, setHighlightedIndex] = useState(0);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -261,7 +257,9 @@ export function TagAutocomplete({
                 {filteredTags.map((tag, index) => (
                   <button
                     key={tag.id}
-                    ref={(el) => (optionRefs.current[index] = el)}
+                    ref={(el) => {
+                      optionRefs.current[index] = el;
+                    }}
                     type="button"
                     onClick={() => handleSelectTag(tag)}
                     onMouseEnter={() => setHighlightedIndex(index)}

@@ -6,6 +6,34 @@ import { PATHOLOGY_JOURNALS } from "@/shared/utils/pathology-journals";
  * Optimized for pathology research with advanced filtering options
  */
 
+// Type definitions for Semantic Scholar API responses
+interface SemanticScholarAuthor {
+  authorId: string;
+  name: string;
+  paperCount?: number;
+  citationCount?: number;
+}
+
+interface SemanticScholarPaper {
+  paperId: string;
+  title: string;
+  authors: SemanticScholarAuthor[];
+  year: number | null;
+  venue: string;
+  journal?: {
+    name: string;
+  };
+  publicationDate: string | null;
+  citationCount: number;
+  influentialCitationCount?: number;
+  isOpenAccess: boolean;
+  openAccessPdf?: {
+    url: string;
+  } | null;
+  abstract: string | null;
+  publicationTypes?: string[];
+}
+
 export async function POST(request: NextRequest) {
   try {
     // Auth check - require admin, creator, or reviewer role
@@ -65,10 +93,10 @@ export async function POST(request: NextRequest) {
     const papers = data.data || [];
 
     // Format references as strings
-    const references = papers.map((paper: unknown) => {
+    const references = papers.map((paper: SemanticScholarPaper) => {
       const authors =
         paper.authors
-          ?.map((a: unknown) => a.name)
+          ?.map((a) => a.name)
           .slice(0, 3)
           .join(", ") || "Unknown";
       const moreAuthors = paper.authors?.length > 3 ? " et al." : "";
@@ -174,7 +202,7 @@ export async function GET(request: NextRequest) {
 
     // Apply filters
     if (onlyReviews) {
-      papers = papers.filter((paper: unknown) => {
+      papers = papers.filter((paper: SemanticScholarPaper) => {
         const title = paper.title?.toLowerCase() || "";
         const abstract = paper.abstract?.toLowerCase() || "";
         const publicationTypes = paper.publicationTypes || [];
@@ -188,16 +216,18 @@ export async function GET(request: NextRequest) {
     }
 
     if (onlyOpenAccess) {
-      papers = papers.filter((paper: unknown) => paper.isOpenAccess === true);
+      papers = papers.filter((paper: SemanticScholarPaper) => paper.isOpenAccess === true);
     }
 
     if (minCitations > 0) {
-      papers = papers.filter((paper: unknown) => (paper.citationCount || 0) >= minCitations);
+      papers = papers.filter(
+        (paper: SemanticScholarPaper) => (paper.citationCount || 0) >= minCitations
+      );
     }
 
     // Filter by pathology journals if specified
     if (venue === "pathology-journals") {
-      papers = papers.filter((paper: unknown) => {
+      papers = papers.filter((paper: SemanticScholarPaper) => {
         const paperVenue = paper.venue || paper.journal?.name || "";
         return PATHOLOGY_JOURNALS.some(
           (journal) =>
@@ -210,29 +240,39 @@ export async function GET(request: NextRequest) {
     // Sort results based on sortBy parameter
     switch (sortBy) {
       case "citations":
-        papers.sort((a: unknown, b: unknown) => (b.citationCount || 0) - (a.citationCount || 0));
+        papers.sort(
+          (a: SemanticScholarPaper, b: SemanticScholarPaper) =>
+            (b.citationCount || 0) - (a.citationCount || 0)
+        );
         break;
       case "year-desc":
-        papers.sort((a: unknown, b: unknown) => (b.year || 0) - (a.year || 0));
+        papers.sort(
+          (a: SemanticScholarPaper, b: SemanticScholarPaper) => (b.year || 0) - (a.year || 0)
+        );
         break;
       case "year-asc":
-        papers.sort((a: unknown, b: unknown) => (a.year || 0) - (b.year || 0));
+        papers.sort(
+          (a: SemanticScholarPaper, b: SemanticScholarPaper) => (a.year || 0) - (b.year || 0)
+        );
         break;
       case "relevance":
         // Keep original order from Semantic Scholar (already sorted by relevance)
         break;
       default:
-        papers.sort((a: unknown, b: unknown) => (b.citationCount || 0) - (a.citationCount || 0));
+        papers.sort(
+          (a: SemanticScholarPaper, b: SemanticScholarPaper) =>
+            (b.citationCount || 0) - (a.citationCount || 0)
+        );
     }
 
     const results = papers;
 
     return NextResponse.json({
       total: results.length,
-      papers: results.map((paper: unknown) => ({
+      papers: results.map((paper: SemanticScholarPaper) => ({
         paperId: paper.paperId,
         title: paper.title,
-        authors: paper.authors?.map((a: unknown) => a.name) || [],
+        authors: paper.authors?.map((a) => a.name) || [],
         year: paper.year,
         venue: paper.venue,
         journal: paper.journal?.name || paper.venue,

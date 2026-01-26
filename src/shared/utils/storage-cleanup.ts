@@ -8,13 +8,9 @@
 
 const QUIZ_SESSION_PREFIX = "pathology-bites-quiz-session-"; // Correct prefix
 const QUIZ_STATE_PREFIX = "pathology-bites-quiz-state-"; // Correct prefix
-const QUIZ_RESULTS_PREFIX = "pathology-bites-quiz-results-"; // Correct prefix
 
-// Keep quiz sessions for 7 days
-const QUIZ_SESSION_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
-
-// Keep quiz results for 30 days
-const QUIZ_RESULTS_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
+// Keep quiz sessions for 30 days (includes results)
+const QUIZ_SESSION_MAX_AGE = 30 * 24 * 60 * 60 * 1000;
 
 interface StorageStats {
   totalSize: number;
@@ -132,71 +128,23 @@ export function cleanupOldQuizSessions(maxAge = QUIZ_SESSION_MAX_AGE): number {
 }
 
 /**
- * Clean up old quiz results
- * Removes quiz results older than maxAge
- */
-export function cleanupOldQuizResults(maxAge = QUIZ_RESULTS_MAX_AGE): number {
-  if (typeof window === "undefined") return 0;
-
-  let cleanedCount = 0;
-  const keysToRemove: string[] = [];
-  const now = Date.now();
-
-  for (let i = 0; i < localStorage.length; i++) {
-    const key = localStorage.key(i);
-    if (!key) continue;
-
-    if (key.startsWith(QUIZ_RESULTS_PREFIX)) {
-      try {
-        const value = localStorage.getItem(key);
-        if (!value) continue;
-
-        const data = JSON.parse(value) as { timestamp?: number };
-        const timestamp = data.timestamp;
-
-        if (timestamp && now - timestamp > maxAge) {
-          keysToRemove.push(key);
-        }
-      } catch {
-        // Invalid JSON, remove it
-        keysToRemove.push(key);
-      }
-    }
-  }
-
-  keysToRemove.forEach((key) => {
-    localStorage.removeItem(key);
-    cleanedCount++;
-  });
-
-  if (cleanedCount > 0) {
-    console.log(`[Storage Cleanup] 🗑️ Removed ${cleanedCount} old quiz results`);
-  }
-
-  return cleanedCount;
-}
-
-/**
  * Perform full storage cleanup
  * Runs all cleanup functions
  */
 export function performFullCleanup(): {
   oldSessions: number;
-  oldResults: number;
   totalCleaned: number;
   stats: StorageStats;
 } {
   console.log("[Storage Cleanup] 🧹 Starting full cleanup...");
 
   const oldSessions = cleanupOldQuizSessions();
-  const oldResults = cleanupOldQuizResults();
 
   const stats = getStorageStats();
 
   const result = {
     oldSessions,
-    oldResults,
-    totalCleaned: oldSessions + oldResults,
+    totalCleaned: oldSessions,
     stats,
   };
 
@@ -250,11 +198,7 @@ export function enforceStorageQuota(): number {
     if (!key) continue;
 
     // Only target quiz sessions and state (not SWR cache or settings!)
-    if (
-      key.startsWith(QUIZ_SESSION_PREFIX) ||
-      key.startsWith(QUIZ_STATE_PREFIX) ||
-      key.startsWith(QUIZ_RESULTS_PREFIX)
-    ) {
+    if (key.startsWith(QUIZ_SESSION_PREFIX) || key.startsWith(QUIZ_STATE_PREFIX)) {
       try {
         const value = localStorage.getItem(key);
         if (!value) continue;
@@ -325,7 +269,6 @@ export function autoCleanup() {
 const storageCleanup = {
   getStorageStats,
   cleanupOldQuizSessions,
-  cleanupOldQuizResults,
   performFullCleanup,
   isStorageNearQuota,
   enforceStorageQuota,

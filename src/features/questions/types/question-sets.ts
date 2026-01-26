@@ -170,37 +170,3 @@ export interface QuestionSetFormData {
   source_details: QuestionSetSourceDetails;
   is_active: boolean;
 }
-
-// Helper function to get source type configuration
-export function getSourceTypeConfig(sourceType: QuestionSetSourceType) {
-  return SOURCE_TYPE_CONFIG[sourceType] || SOURCE_TYPE_CONFIG.other;
-}
-
-// Helper function to format source details for display
-export function formatSourceDetails(
-  sourceType: QuestionSetSourceType,
-  details: QuestionSetSourceDetails
-): string {
-  if (!details || typeof details !== "object") return "";
-
-  switch (sourceType) {
-    case "textbook":
-      const textbookDetails = details as TextbookSourceDetails;
-      return textbookDetails.book_title
-        ? `${textbookDetails.book_title}${textbookDetails.edition ? ` (${textbookDetails.edition})` : ""}`
-        : "";
-    case "pathology_outlines":
-      const pathologyDetails = details as PathologyOutlinesSourceDetails;
-      return pathologyDetails.collection_type
-        ? `Collection: ${pathologyDetails.collection_type}`
-        : "";
-    case "ai_generated":
-      const aiDetails = details as AIGeneratedSourceDetails;
-      return aiDetails.primary_model ? `Model: ${aiDetails.primary_model}` : "";
-    case "expert_generated":
-      const expertDetails = details as ExpertGeneratedSourceDetails;
-      return expertDetails.expertise_level ? `Level: ${expertDetails.expertise_level}` : "";
-    default:
-      return "";
-  }
-}

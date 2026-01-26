@@ -3,7 +3,7 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/shared/services/client";
-import { debounce } from "@/lib/utils";
+import { debounce } from "@/shared/utils/debounce";
 
 export function usePendingInquiriesCount() {
   const [count, setCount] = useState(0);

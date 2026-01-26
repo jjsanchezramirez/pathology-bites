@@ -88,9 +88,14 @@ export function transformCellQuizData(cellData: unknown): unknown {
 
   // Transform each cell type's images
   for (const cellInfo of Object.values(transformed)) {
-    if (cellInfo && typeof cellInfo === "object" && Array.isArray((cellInfo as unknown).images)) {
-      (cellInfo as unknown).images = (cellInfo as unknown).images.map((imagePath: string) =>
-        transformCellQuizImageUrl(imagePath)
+    if (
+      cellInfo &&
+      typeof cellInfo === "object" &&
+      "images" in cellInfo &&
+      Array.isArray(cellInfo.images)
+    ) {
+      (cellInfo as { images: string[] }).images = (cellInfo as { images: string[] }).images.map(
+        (imagePath: string) => transformCellQuizImageUrl(imagePath)
       );
     }
   }
@@ -125,15 +130,22 @@ export function transformAnkomaData(ankomaData: unknown): unknown {
   };
 
   const transformNote = (note: unknown): unknown => {
-    if (!note || !note.fields) return note;
+    if (
+      !note ||
+      typeof note !== "object" ||
+      !("fields" in note) ||
+      !Array.isArray((note as { fields: unknown }).fields)
+    ) {
+      return note;
+    }
 
-    const transformedNote = { ...note };
+    const transformedNote = { ...(note as Record<string, unknown>) };
     transformedNote.extractedImages = [];
 
     // Extract image paths from all fields for use with Next.js Image components
-    transformedNote.fields = note.fields.map((field: string) => {
+    transformedNote.fields = ((note as { fields: string[] }).fields || []).map((field: string) => {
       const { html, imagePaths } = extractAndTransformImagePaths(field);
-      transformedNote.extractedImages.push(...imagePaths);
+      (transformedNote.extractedImages as string[]).push(...imagePaths);
       return html;
     });
 
@@ -141,18 +153,20 @@ export function transformAnkomaData(ankomaData: unknown): unknown {
   };
 
   const transformDeck = (deck: unknown): unknown => {
-    if (!deck) return deck;
+    if (!deck || typeof deck !== "object") return deck;
 
-    const transformedDeck = { ...deck };
+    const transformedDeck = { ...(deck as Record<string, unknown>) };
 
     // Transform notes in this deck
-    if (deck.notes && Array.isArray(deck.notes)) {
-      transformedDeck.notes = deck.notes.map(transformNote);
+    if ("notes" in deck && Array.isArray((deck as { notes: unknown[] }).notes)) {
+      transformedDeck.notes = ((deck as { notes: unknown[] }).notes || []).map(transformNote);
     }
 
     // Recursively transform child decks
-    if (deck.children && Array.isArray(deck.children)) {
-      transformedDeck.children = deck.children.map(transformDeck);
+    if ("children" in deck && Array.isArray((deck as { children: unknown[] }).children)) {
+      transformedDeck.children = ((deck as { children: unknown[] }).children || []).map(
+        transformDeck
+      );
     }
 
     return transformedDeck;

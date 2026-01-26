@@ -173,7 +173,12 @@ class SessionSecurity {
   /**
    * Validate session structure and expiration
    */
-  validateSession(session: unknown): { isValid: boolean; reason?: string } {
+  validateSession(session: {
+    access_token?: string;
+    expires_at?: number;
+    user?: { id?: string };
+    created_at?: number;
+  }): { isValid: boolean; reason?: string } {
     // Check session structure
     if (!session) {
       return { isValid: false, reason: "Session is null or undefined" };

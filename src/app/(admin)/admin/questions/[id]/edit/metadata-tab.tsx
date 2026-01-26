@@ -60,9 +60,9 @@ export function MetadataTab({
 
   // Get question set name from preloaded data
   const questionSetName = useMemo(() => {
-    const questionSet = question.question_set || question.set;
+    const questionSet = question.set;
     return questionSet ? questionSet.name : "No Question Set";
-  }, [question.question_set, question.set]);
+  }, [question.set]);
 
   // Load all available tags in the background for the autocomplete dropdown
   useEffect(() => {

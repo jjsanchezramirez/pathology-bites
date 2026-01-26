@@ -24,7 +24,9 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
 
       // Check unified cache first (unless forcing refresh)
       if (!forceRefresh) {
-        const cached = unifiedCache.get<UserStatsFormatted>(CACHE_NAMESPACES.STATS.name, CACHE_KEY);
+        const cached = unifiedCache.get<UserStatsFormatted>(CACHE_NAMESPACES.SWR.name, CACHE_KEY, {
+          ttl: 30 * 60 * 1000, // 30 minutes
+        });
 
         if (cached) {
           setStats(cached);
@@ -38,7 +40,9 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
       setStats(data);
 
       // Cache the result in unified cache
-      unifiedCache.set(CACHE_NAMESPACES.STATS.name, CACHE_KEY, data);
+      unifiedCache.set(CACHE_NAMESPACES.SWR.name, CACHE_KEY, data, {
+        ttl: 30 * 60 * 1000, // 30 minutes
+      });
     } catch (error) {
       console.error("Failed to load user stats:", error);
       toast.error("Failed to load user statistics");

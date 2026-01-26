@@ -15,116 +15,13 @@ import { Check, X, Loader2, AlertCircle, ExternalLink, RefreshCw, Info } from "l
 import { WSIViewer } from "@/shared/components/common/wsi-viewer";
 
 // Import client-side hook for WSI question generation
-import { useWSIQuestionGenerator } from "@/shared/hooks/use-wsi-question-generator";
+import {
+  useWSIQuestionGenerator,
+  type GeneratedQuestion,
+} from "@/shared/hooks/use-wsi-question-generator";
 
 // Import the canonical VirtualSlide interface
 import { VirtualSlide } from "@/shared/types/virtual-slides";
-
-// Import AI models configuration
-import { ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
-
-// Client-side WSI interface (from client utilities)
-interface ClientVirtualSlide {
-  id: string;
-  repository: string;
-  category: string;
-  subcategory: string;
-  diagnosis: string;
-  patient_info: string;
-  age: string | null;
-  gender: string | null;
-  clinical_history: string;
-  stain_type: string;
-  image_url?: string;
-  slide_url?: string;
-  case_url?: string;
-  thumbnail_url?: string;
-  preview_image_url?: string;
-  magnification?: string;
-  organ_system?: string;
-  difficulty_level?: string;
-  keywords?: string[];
-  other_urls?: string[];
-  source_metadata?: Record<string, unknown>;
-  created_at?: string;
-  updated_at?: string;
-}
-
-// Function to convert client WSI to canonical format
-function _normalizeClientWSI(clientWSI: ClientVirtualSlide): VirtualSlide {
-  // Ensure we have a valid image URL (prefer slide_url, then case_url, then image_url)
-  const imageUrl = clientWSI.slide_url || clientWSI.case_url || clientWSI.image_url || "";
-
-  return {
-    id: clientWSI.id,
-    repository: clientWSI.repository,
-    category: clientWSI.category,
-    subcategory: clientWSI.subcategory,
-    diagnosis: clientWSI.diagnosis,
-    patient_info: clientWSI.patient_info,
-    age: clientWSI.age,
-    gender: clientWSI.gender,
-    clinical_history: clientWSI.clinical_history,
-    stain_type: clientWSI.stain_type,
-    image_url: imageUrl, // Add the image_url field that LLM generation expects
-    preview_image_url: clientWSI.preview_image_url || clientWSI.thumbnail_url || "",
-    slide_url: clientWSI.slide_url || clientWSI.image_url || "",
-    case_url: clientWSI.case_url || clientWSI.slide_url || clientWSI.image_url || "",
-    other_urls: clientWSI.other_urls || [],
-    source_metadata: clientWSI.source_metadata || {},
-  };
-}
-
-interface QuestionOption {
-  id: string;
-  text: string;
-  is_correct: boolean;
-  explanation: string;
-}
-
-interface QuestionData {
-  stem: string;
-  options: QuestionOption[];
-  references: string[];
-}
-
-interface GeneratedQuestion {
-  id: string;
-  wsi: VirtualSlide;
-  question: QuestionData;
-  context: unknown;
-  metadata: {
-    generated_at: string;
-    model: string;
-    generation_time_ms: number;
-    modelIndex?: number;
-    image_verification?: unknown;
-    fallback_attempts?: number;
-    successful_model?: string;
-    token_usage?: {
-      prompt_tokens: number;
-      completion_tokens: number;
-      total_tokens: number;
-    };
-  };
-  debug?: {
-    prompt: string;
-    instructions: string;
-  };
-}
-
-// Embeddable repositories only (no Leeds, Toronto, Recut Club)
-const _EMBEDDABLE_REPOSITORIES = [
-  "Hematopathology eTutorial",
-  "Rosai Collection",
-  "PathPresenter",
-  "MGH Pathology",
-];
-
-// WSI Question Generator fallback model names for display - from centralized config
-const _WSI_FALLBACK_MODEL_NAMES = ACTIVE_AI_MODELS.filter((model) => model.available).map(
-  (model) => model.name
-);
 
 // Funny loading messages for question generation
 const LOADING_MESSAGES = [
@@ -194,7 +91,7 @@ export function WSIQuestionGenerator({
 
     // Extract unique categories from loaded WSI data
     const categories = Array.from(
-      new Set(wsiData.map((slide: unknown) => (slide.category || "").toString().trim()))
+      new Set(wsiData.map((slide) => (slide.category || "").toString().trim()))
     )
       .filter((val: string) => val.length > 0)
       .sort();
@@ -215,9 +112,12 @@ export function WSIQuestionGenerator({
   };
 
   // Ensure WSI object has repository field
-  const ensureWSIRepository = useCallback((wsi: unknown) => {
+  const ensureWSIRepository = useCallback((wsi: VirtualSlide): VirtualSlide => {
     if (!wsi.repository && wsi.id) {
-      wsi.repository = getRepositoryFromId(wsi.id);
+      return {
+        ...wsi,
+        repository: getRepositoryFromId(wsi.id),
+      };
     }
     return wsi;
   }, []);
@@ -241,11 +141,14 @@ export function WSIQuestionGenerator({
       );
 
       // Ensure the WSI has the repository field (in case the API response doesn't include it)
-      if (question.wsi) {
-        question.wsi = ensureWSIRepository(question.wsi);
-      }
+      const questionWithRepository: GeneratedQuestion = question.wsi
+        ? {
+            ...question,
+            wsi: ensureWSIRepository(question.wsi),
+          }
+        : question;
 
-      setCurrentQuestion(question);
+      setCurrentQuestion(questionWithRepository);
     } catch (err) {
       console.error("Error generating question:", err);
       // Error state is managed by the hook

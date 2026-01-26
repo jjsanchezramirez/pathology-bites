@@ -2,6 +2,7 @@
 // API endpoint for admins to broadcast system update notifications
 
 import { NextRequest, NextResponse } from "next/server";
+import { createClient } from "@/shared/services/server";
 import { notificationGenerators } from "@/shared/services/notification-generators";
 
 export async function POST(request: NextRequest) {
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
 // GET endpoint to retrieve system updates (for admin management)
 export async function GET(request: NextRequest) {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     // Auth is now handled by middleware
 

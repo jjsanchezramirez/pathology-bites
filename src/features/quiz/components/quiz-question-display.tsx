@@ -7,9 +7,10 @@ import { ImageCarousel } from "@/features/images/components/image-carousel";
 import { ReferencesList } from "@/shared/components/common/references-list";
 import { Check, X } from "lucide-react";
 import { UIQuizQuestion } from "@/features/quiz/types/quiz-question";
+import { QuestionWithDetails } from "@/features/questions/types/questions";
 
 interface QuizQuestionDisplayProps {
-  question: UIQuizQuestion;
+  question: UIQuizQuestion | QuestionWithDetails;
   selectedAnswerId: string | null;
   showExplanation: boolean;
   onAnswerSelect: (answerId: string) => void;
@@ -23,6 +24,19 @@ export function QuizQuestionDisplay({
 }: QuizQuestionDisplayProps) {
   // Use question_options (the correct field for quiz display)
   const answerOptions = question.question_options || [];
+
+  // Helper to get image data from either UIQuizQuestion or QuestionWithDetails format
+  const getImageData = (qi: unknown) => {
+    // UIQuizQuestion format: { image?: { id, url, alt_text, description } }
+    // QuestionWithDetails format: { images?: { id, url, alt_text, description } }
+    const imageData = (qi as { image?: unknown }).image || (qi as { images?: unknown }).images;
+    return {
+      id: (imageData as { id?: string })?.id || "",
+      url: (imageData as { url?: string })?.url || "",
+      alt_text: (imageData as { alt_text?: string })?.alt_text,
+      description: (imageData as { description?: string })?.description,
+    };
+  };
 
   // Helper to get a letter label for an option ID
   const getOptionLabel = (optionId: string, index: number): string => {
@@ -46,12 +60,15 @@ export function QuizQuestionDisplay({
             <ImageCarousel
               images={question.question_images
                 .filter((qi) => qi.question_section === "stem")
-                .map((qi) => ({
-                  id: qi.image?.id || "",
-                  url: qi.image?.url || "",
-                  alt: qi.image?.alt_text || qi.image?.description || "Question image",
-                  caption: qi.image?.description || undefined,
-                }))}
+                .map((qi) => {
+                  const img = getImageData(qi);
+                  return {
+                    id: img.id,
+                    url: img.url,
+                    alt: img.alt_text || img.description || "Question image",
+                    caption: img.description || undefined,
+                  };
+                })}
               className="border rounded-lg"
             />
           </div>
@@ -142,12 +159,15 @@ export function QuizQuestionDisplay({
                   <ImageCarousel
                     images={question.question_images
                       .filter((qi) => qi.question_section === "explanation")
-                      .map((qi) => ({
-                        id: qi.image?.id || "",
-                        url: qi.image?.url || "",
-                        alt: qi.image?.alt_text || qi.image?.description || "Reference image",
-                        caption: qi.image?.description || undefined,
-                      }))}
+                      .map((qi) => {
+                        const img = getImageData(qi);
+                        return {
+                          id: img.id,
+                          url: img.url,
+                          alt: img.alt_text || img.description || "Reference image",
+                          caption: img.description || undefined,
+                        };
+                      })}
                     className="bg-white border rounded-lg"
                   />
                 </div>

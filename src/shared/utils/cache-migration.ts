@@ -5,6 +5,9 @@
  * Run this on app initialization to ensure localStorage is clean.
  *
  * After first run, old keys won't exist anymore so subsequent runs are no-ops.
+ *
+ * TODO: Remove this file and CacheInitializer component after July 2026
+ * (6 months after unified cache deployment - all users will have migrated by then)
  */
 
 import { unifiedCache } from "@/shared/services/unified-cache";
@@ -17,7 +20,7 @@ const OLD_CACHE_KEYS = [
   "pathology-bites-swr-cache", // Old SWR cache format
   "pathology-bites-ai-model-preference", // Removed - now uses default model
   "nlm-journal-abbreviations", // Now uses HTTP browser cache
-  "user-stats-cache", // Migrated to unified cache (stats namespace)
+  "user-stats-cache", // Migrated to unified cache (swr namespace)
   "pathology-bites-demo-questions", // Now uses HTTP browser cache (API has cache headers)
   "pathology-bites-virtual-slides-virtual-slides-dataset", // Old redundant key name
   "pathology-bites-virtual-slides-dataset", // Now uses HTTP browser cache
@@ -26,6 +29,8 @@ const OLD_CACHE_KEYS = [
   "pathology-bites-swr-/api/user/settings/", // Old duplicate SWR key (with trailing slash)
   "pathology-bites-swr-/api/user/settings", // Old duplicate SWR key (without trailing slash)
   "quiz_offline_queue", // Old quiz offline queue (missing pathology-bites- prefix)
+  "pathology-bites-citations-cache", // Migrated to unified cache (public-tools namespace)
+  "pathology-bites-gene-cache", // Migrated to unified cache (public-tools namespace)
 ];
 
 /**
@@ -41,8 +46,8 @@ const OLD_CACHE_PATTERNS = [
   // Old demo questions (now uses HTTP cache + memory)
   /^pathology-bites-demo-questions/,
 
-  // Old citations (now uses HTTP cache + memory)
-  /^pathology-bites-citations/,
+  // Old public-tools namespace keys (now using single nested key)
+  /^pathology-bites-public-tools-/, // Old format with separate keys per item
 
   // Removed namespaces
   /^pathology-bites-images/,
@@ -52,6 +57,7 @@ const OLD_CACHE_PATTERNS = [
 
   // Old quiz keys with incorrect prefixes
   /^pathology-bites-quiz:quiz-results-/, // Old format with colon
+  /^pathology-bites-quiz-results-/, // Deprecated - results now stored in session cache
   /^quiz-session-/, // Old format without pathology-bites- prefix
   /^quiz-state-/, // Old format without pathology-bites- prefix
   /^quiz_/, // Old format with underscore instead of dash

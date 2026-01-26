@@ -20,7 +20,7 @@ interface StatsCardsProps {
 }
 
 export function StatsCards({ stats }: StatsCardsProps) {
-  const { isAdmin, _isCreator, _isReviewer, canAccess } = useUserRole();
+  const { isAdmin, canAccess } = useUserRole();
   const { adminMode } = useDashboardTheme();
 
   const allCards = [

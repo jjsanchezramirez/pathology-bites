@@ -163,7 +163,7 @@ export const CONTENT_FILES: ContentFile[] = [
 ];
 
 // Cache for loaded content to avoid redundant fetches
-export const contentCache = new Map<string, ContentData>();
+const contentCache = new Map<string, ContentData>();
 
 // Shared utility to load educational content from R2
 export async function loadContentFromR2(filename: string): Promise<ContentData | null> {

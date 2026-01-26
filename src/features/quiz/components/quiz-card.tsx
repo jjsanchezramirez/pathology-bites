@@ -67,7 +67,7 @@ const formatShortDate = (dateString: string) => {
   }
 };
 
-export function QuizCard({ quiz, _onDelete, formatDate, formatTimeSpent }: QuizCardProps) {
+export function QuizCard({ quiz, formatDate, formatTimeSpent }: QuizCardProps) {
   // Default time formatter if not provided
   const defaultFormatTimeSpent = (seconds: number) => {
     if (seconds < 60) return `${seconds}s`;

@@ -5,18 +5,48 @@ import { CELL_QUIZ_IMAGES_URL, CELL_QUIZ_REFERENCES_URL } from "@/shared/config/
 import { transformCellQuizData } from "@/shared/utils/r2-url-transformer";
 import { toast } from "@/shared/utils/toast";
 
+// Type definitions for cell quiz data
+export interface CellImageData {
+  name: string;
+  description: string;
+  key_features: string[];
+  images: string[];
+  look_alikes?: string[];
+}
+
+export interface BloodCellReference {
+  name: string;
+  key_features: string;
+  description: string;
+  size?: string;
+  nc_ratio?: string;
+  nucleus?: string;
+  lineage?: string;
+  normal_percentage?: string;
+  clinical_significance?: string;
+  notes?: string;
+}
+
+export interface BloodCellsReferenceData {
+  cells: BloodCellReference[];
+}
+
+export interface CellQuizImagesData {
+  [cellKey: string]: CellImageData;
+}
+
 // Module-scope cache so we only fetch once per session
-let cachedImagesPromise: Promise<unknown> | null = null;
-let cachedReferencesPromise: Promise<unknown> | null = null;
+let cachedImagesPromise: Promise<CellQuizImagesData> | null = null;
+let cachedReferencesPromise: Promise<BloodCellsReferenceData> | null = null;
 
 interface UseCellQuizResult {
-  cellData: unknown | null;
-  bloodCellsReference: unknown | null;
+  cellData: CellQuizImagesData | null;
+  bloodCellsReference: BloodCellsReferenceData | null;
   isLoading: boolean;
   error: string | null;
 }
 
-async function loadCellQuizImages(): Promise<unknown> {
+async function loadCellQuizImages(): Promise<CellQuizImagesData> {
   if (cachedImagesPromise) return cachedImagesPromise;
 
   async function fetchWithFallback() {
@@ -77,13 +107,13 @@ async function loadCellQuizImages(): Promise<unknown> {
     if (!res.ok) throw new Error(`Failed to fetch cell quiz images: ${res.status}`);
     const data = await res.json();
     // Transform URLs to use R2 public URLs on client-side
-    return transformCellQuizData(data);
+    return transformCellQuizData(data) as CellQuizImagesData;
   });
 
   return cachedImagesPromise;
 }
 
-async function loadCellQuizReferences(): Promise<unknown> {
+async function loadCellQuizReferences(): Promise<BloodCellsReferenceData> {
   if (cachedReferencesPromise) return cachedReferencesPromise;
 
   async function fetchWithFallback() {
@@ -149,8 +179,10 @@ async function loadCellQuizReferences(): Promise<unknown> {
 }
 
 export function useClientCellQuiz(): UseCellQuizResult {
-  const [cellData, setCellData] = useState<unknown | null>(null);
-  const [bloodCellsReference, setBloodCellsReference] = useState<unknown | null>(null);
+  const [cellData, setCellData] = useState<CellQuizImagesData | null>(null);
+  const [bloodCellsReference, setBloodCellsReference] = useState<BloodCellsReferenceData | null>(
+    null
+  );
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

@@ -69,11 +69,12 @@ export async function GET(request: NextRequest) {
         if (work) {
           const result = {
             title: work.title?.[0] || 'Unknown Title',
-            authors: work.author?.map((author: unknown) =>
-              author.family && author.given
-                ? `${author.family}, ${author.given}`
-                : author.family || author.given || 'Unknown Author'
-            ) || ['Unknown Author'],
+            authors: work.author?.map((author: unknown) => {
+              const typedAuthor = author as { family?: string; given?: string };
+              return typedAuthor.family && typedAuthor.given
+                ? `${typedAuthor.family}, ${typedAuthor.given}`
+                : typedAuthor.family || typedAuthor.given || 'Unknown Author';
+            }) || ['Unknown Author'],
             year: work.published?.['date-parts']?.[0]?.[0]?.toString() || new Date().getFullYear().toString(),
             journal: work['container-title']?.[0] || 'Unknown Journal',
             volume: work.volume,

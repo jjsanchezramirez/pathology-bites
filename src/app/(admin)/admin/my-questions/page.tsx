@@ -697,13 +697,13 @@ export default function MyQuestionsPage() {
                                   )}
 
                                   {/* Question Set Badge */}
-                                  {question.question_set && (
+                                  {question.set && (
                                     <div className="flex gap-2">
                                       {activeTab === "revision" && (
                                         <div className="w-6 flex-shrink-0" />
                                       )}
                                       <Badge variant="outline" className="text-xs">
-                                        {question.question_set.name}
+                                        {question.set.name}
                                       </Badge>
                                     </div>
                                   )}

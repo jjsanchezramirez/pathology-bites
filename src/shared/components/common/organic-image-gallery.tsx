@@ -250,6 +250,7 @@ export function OrganicImageGallery({ className = "" }: OrganicImageGalleryProps
                 className="object-cover pointer-events-none"
                 sizes="280px"
                 unoptimized
+                priority={displayImages[0]?.id === img.id}
               />
             </div>
           </div>

@@ -517,16 +517,17 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
       >
         {/* Scaled iframe wrapper - 50% scale */}
         <div
-          style={{
-            width: "200%",
-            height: "200%",
-            transformOrigin: "0 0",
-            WebkitTransform: "scale(0.5)",
-            MozTransform: "scale(0.5)",
-            OTransform: "scale(0.5)",
-            transform: "scale(0.5)",
-            msZoom: 0.5,
-          }}
+          style={
+            {
+              width: "200%",
+              height: "200%",
+              transformOrigin: "0 0",
+              WebkitTransform: "scale(0.5)",
+              MozTransform: "scale(0.5)",
+              OTransform: "scale(0.5)",
+              transform: "scale(0.5)",
+            } as React.CSSProperties
+          }
         >
           <iframe
             ref={iframeRef}

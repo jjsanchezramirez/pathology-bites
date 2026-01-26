@@ -27,16 +27,41 @@ interface APIQuestionData {
   references: string[];
 }
 
-interface GeneratedQuestion {
+export interface GeneratedQuestion {
   id: string;
   wsi: VirtualSlide;
   question: QuestionData;
-  context: unknown | null;
+  context: unknown;
   metadata: {
     generated_at: string;
     model: string;
     generation_time_ms: number;
+    modelIndex?: number;
     image_verification?: unknown;
+    fallback_attempts?: number;
+    successful_model?: string;
+    token_usage?: {
+      prompt_tokens: number;
+      completion_tokens: number;
+      total_tokens: number;
+    } | null;
+  };
+  debug?: {
+    prompt: string;
+    instructions: string;
+  } | null;
+}
+
+// Type for the API response from generateQuestionWithFallback
+interface QuestionGenerationResponse {
+  success: boolean;
+  question: APIQuestionData;
+  metadata?: {
+    model?: string;
+    retry_info?: {
+      retries: number;
+      totalTime: number;
+    };
     token_usage?: unknown;
   };
   debug?: unknown;
@@ -59,13 +84,7 @@ interface UseWSIQuestionGeneratorReturn {
 export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const {
-    wsiData,
-    isLoading: isLoadingWSI,
-    error: wsiError,
-    _selectRandomWSI,
-    _getWSIByCategory,
-  } = useClientWSIData();
+  const { wsiData, isLoading: isLoadingWSI, error: wsiError } = useClientWSIData();
 
   console.log("[WSI Hook] Loaded - SINGLE ENDPOINT VERSION - no prepare/parse routes");
 
@@ -75,7 +94,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
   // Main generation function with model fallback
   const generateQuestionWithFallback = useCallback(
-    async (wsi: unknown, modelIndex: number): Promise<unknown> => {
+    async (wsi: unknown, modelIndex: number): Promise<QuestionGenerationResponse> => {
       console.log(`[WSI Generator] Attempting generation with model index: ${modelIndex}`);
 
       const baseUrl =
@@ -290,10 +309,13 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
             generated_at: new Date().toISOString(),
             model: questionData.metadata?.model || "unknown",
             generation_time_ms: generationTime,
-            image_verification: null, // Image verification happens client-side if needed
-            token_usage: questionData.metadata?.token_usage || null,
+            image_verification: undefined,
+            token_usage: questionData.metadata?.token_usage as
+              | { prompt_tokens: number; completion_tokens: number; total_tokens: number }
+              | null
+              | undefined,
           },
-          debug: questionData.debug,
+          debug: questionData.debug as { prompt: string; instructions: string } | null | undefined,
         };
 
         // Add to history after successful generation

@@ -175,7 +175,7 @@ export function clearSWRCache() {
 /**
  * Utility function to get cache statistics
  */
-export function getSWRCacheStats(): {
+function getSWRCacheStats(): {
   exists: boolean;
   entries: number;
   size: number;

@@ -4,6 +4,22 @@ import { useEffect, useState } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { toast } from "@/shared/utils/toast";
 
+// Type for PathPresenter case data from JSON
+interface PathPresenterCase {
+  authors?: string[] | string;
+  clinical_history?: string;
+  chapter?: string;
+  organ_system?: string;
+  diagnosis?: string;
+  url?: string;
+  pages?: string;
+  microscopic_features?: string;
+  other_prognostic_factors?: string;
+  immuno_profile?: string;
+  molecular_profile?: string;
+  differential_diagnosis?: string;
+}
+
 // Module-scope cache so we only fetch once per session
 let cachedWSIPromise: Promise<VirtualSlide[]> | null = null;
 
@@ -49,10 +65,10 @@ export async function loadClientWSIData(): Promise<VirtualSlide[]> {
     const json = await res.json();
 
     // Handle the new PathPresenter cases JSON format
-    const pathPresenterCases = json.cases || [];
+    const pathPresenterCases = (json.cases || []) as PathPresenterCase[];
 
     // Convert PathPresenter cases to VirtualSlide format
-    const entries: VirtualSlide[] = pathPresenterCases.map((pathCase: unknown, index: number) => {
+    const entries: VirtualSlide[] = pathPresenterCases.map((pathCase, index) => {
       // Generate consistent ID
       const caseId = `pathpresenter_${index + 1}`;
 

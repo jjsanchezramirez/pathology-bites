@@ -1,6 +1,7 @@
 // src/features/auth/components/ui/form-field.tsx
 "use client";
 
+import { ComponentProps } from "react";
 import { ReactNode, forwardRef } from "react";
 import { Label } from "@/shared/components/ui/label";
 import { Input } from "@/shared/components/ui/input";
@@ -20,11 +21,12 @@ interface FormFieldProps {
   rightElement?: ReactNode;
   children?: ReactNode;
   defaultValue?: string;
-  // Allow any additional props for react-hook-form integration
-  [key: string]: unknown;
 }
 
-export const FormField = forwardRef<HTMLInputElement, FormFieldProps>(
+export const FormField = forwardRef<
+  HTMLInputElement,
+  FormFieldProps & Omit<ComponentProps<typeof Input>, "id" | "name" | "label">
+>(
   (
     {
       id,

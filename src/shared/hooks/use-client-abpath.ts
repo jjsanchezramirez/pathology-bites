@@ -1,15 +1,17 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import type { ABPathData } from "@/shared/types/abpath";
+
 // Direct R2 access - CORS is configured on bucket
 const ABPATH_API_URL =
   "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/ab-path/content-specs.json";
 
 // Module-scope cache so we only fetch once per session
-let cachedABPathPromise: Promise<unknown> | null = null;
+let cachedABPathPromise: Promise<ABPathData> | null = null;
 
 interface UseClientABPathResult {
-  data: unknown | null;
+  data: ABPathData | null;
   isLoading: boolean;
   error: string | null;
 }
@@ -27,7 +29,7 @@ function _fetchWithTimeout(url: string, options: RequestInit & { timeoutMs?: num
   }).finally(() => clearTimeout(timeoutId));
 }
 
-async function loadABPathContentSpecs(): Promise<unknown> {
+async function loadABPathContentSpecs(): Promise<ABPathData> {
   if (cachedABPathPromise) return cachedABPathPromise;
 
   async function fetchWithFallback() {
@@ -99,7 +101,7 @@ async function loadABPathContentSpecs(): Promise<unknown> {
 }
 
 export function useClientABPath(): UseClientABPathResult {
-  const [data, setData] = useState<unknown | null>(null);
+  const [data, setData] = useState<ABPathData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 

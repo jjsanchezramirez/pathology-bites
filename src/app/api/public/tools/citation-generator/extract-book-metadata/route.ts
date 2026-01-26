@@ -84,7 +84,7 @@ export async function GET(request: NextRequest) {
 
           const result = {
             title: book.title || 'Unknown Title',
-            authors: book.authors?.map((author: unknown) => author.name).filter((name: string) => name) || ['Unknown Author'],
+            authors: book.authors?.map((author: unknown) => (author as { name?: string }).name).filter((name: string): name is string => !!name) || ['Unknown Author'],
             year: extractYearFromDate(book.publish_date),
             publisher: publisher,
             type: 'book'

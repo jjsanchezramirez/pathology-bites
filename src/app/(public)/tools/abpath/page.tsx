@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { useSmartABPath } from "@/shared/hooks/use-smart-abpath";
+import type { ABPathSection, ABPathItem, ABPathSubSection } from "@/shared/types/abpath";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Input } from "@/shared/components/ui/input";
 import { Badge } from "@/shared/components/ui/badge";
@@ -17,40 +18,6 @@ import { Search, BookOpen, X, ChevronDown, ChevronRight, Download, BookText } fr
 import { ABPathPDFGenerator } from "./pdf-generator";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
-
-interface PathologyItem {
-  number?: number;
-  letter?: string;
-  roman?: string;
-  title: string;
-  designation?: string;
-  line?: number;
-  note?: string;
-  subitems?: PathologyItem[];
-}
-
-interface PathologySubsection {
-  number?: number;
-  letter?: string;
-  title: string;
-  line?: number;
-  items?: PathologyItem[];
-  sections?: {
-    title: string;
-    line?: number;
-    items?: PathologyItem[];
-  }[];
-}
-
-interface PathologySection {
-  section: number;
-  title: string;
-  type: "ap" | "cp";
-  items?: PathologyItem[];
-  subsections?: PathologySubsection[];
-  line?: number;
-  note?: string;
-}
 
 export default function ABPathContentPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -106,7 +73,7 @@ export default function ABPathContentPage() {
   }, [searchTerm]);
 
   // Memoized helper function to check if an item or its subitems match search
-  const itemMatchesSearch = useCallback((item: PathologyItem, search: string): boolean => {
+  const itemMatchesSearch = useCallback((item: ABPathItem, search: string): boolean => {
     if (!search) return true;
 
     // Check if this item matches
@@ -126,7 +93,7 @@ export default function ABPathContentPage() {
 
   // Memoized filterItems function to prevent re-creation
   const filterItems = useCallback(
-    (items: PathologyItem[], search: string): PathologyItem[] => {
+    (items: ABPathItem[], search: string): ABPathItem[] => {
       return items
         .filter((item) => {
           // Apply search filter first
@@ -206,12 +173,13 @@ export default function ABPathContentPage() {
 
               if (subsection.sections) {
                 filteredSubsection.sections = subsection.sections
-                  .map((subSection: unknown) => ({
+                  .map((subSection: ABPathSubSection) => ({
                     ...subSection,
                     items: subSection.items ? filterItems(subSection.items, "") : undefined,
                   }))
                   .filter(
-                    (subSection: unknown) => !subSection.items || subSection.items.length > 0
+                    (subSection: ABPathSubSection) =>
+                      !subSection.items || subSection.items.length > 0
                   );
               }
 
@@ -254,7 +222,7 @@ export default function ABPathContentPage() {
 
     // Helper function to count items recursively
     const countItems = (
-      items: PathologyItem[]
+      items: ABPathItem[]
     ): { total: number; c: number; ar: number; f: number } => {
       let total = 0,
         c = 0,
@@ -280,7 +248,7 @@ export default function ABPathContentPage() {
     };
 
     // Helper function to count all items in a section
-    const countSection = (section: PathologySection) => {
+    const countSection = (section: ABPathSection) => {
       const counts = { total: 0, c: 0, ar: 0, f: 0 };
 
       if (section.items) {
@@ -444,7 +412,7 @@ export default function ABPathContentPage() {
     }
   };
 
-  const renderItem = (item: PathologyItem, level: number = 0, parentKey: string = "") => {
+  const renderItem = (item: ABPathItem, level: number = 0, parentKey: string = "") => {
     const indent = level * 16;
     const itemKey = `${parentKey}-${item.number || ""}-${item.letter || ""}-${item.roman || ""}-${item.title}-${level}`;
 
@@ -596,9 +564,7 @@ export default function ABPathContentPage() {
         <section className="flex-1 py-12">
           <div className="container mx-auto px-4 max-w-7xl">
             <div className="text-center py-8">
-              <p className="text-red-600">
-                Error loading content specifications: {loadingError.message}
-              </p>
+              <p className="text-red-600">Error loading content specifications: {loadingError}</p>
               <Button onClick={() => window.location.reload()} className="mt-4" variant="outline">
                 Try Again
               </Button>
@@ -916,7 +882,7 @@ export default function ABPathContentPage() {
                                   {/* Subsection direct items */}
                                   {subsection.items && subsection.items.length > 0 && (
                                     <div className="mb-3">
-                                      {subsection.items.map((item: unknown) =>
+                                      {subsection.items.map((item) =>
                                         renderItem(item, 0, subsectionKey)
                                       )}
                                     </div>
@@ -925,7 +891,7 @@ export default function ABPathContentPage() {
                                   {/* Subsection sections */}
                                   {subsection.sections &&
                                     subsection.sections.map(
-                                      (subSection: unknown, subSectionIndex: number) => (
+                                      (subSection: ABPathSubSection, subSectionIndex: number) => (
                                         <div
                                           key={`${subsectionKey}-section-${subSectionIndex}`}
                                           className="mb-3 last:mb-0"
@@ -935,7 +901,7 @@ export default function ABPathContentPage() {
                                           </div>
                                           {subSection.items && subSection.items.length > 0 && (
                                             <div className="ml-4">
-                                              {subSection.items.map((item: unknown) =>
+                                              {subSection.items.map((item) =>
                                                 renderItem(
                                                   item,
                                                   0,

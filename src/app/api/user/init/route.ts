@@ -2,7 +2,7 @@
 // Combined endpoint for initial user data + settings
 // Reduces 2 API calls to 1
 
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import {
   DEFAULT_QUIZ_SETTINGS,
@@ -29,7 +29,14 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     }
 
     // Fetch both user data and settings in parallel
-    const [userDataResult, settingsResult, userProfileResult] = await Promise.all([
+    const [
+      userDataResult,
+      settingsResult,
+      userProfileResult,
+      {
+        data: { user },
+      },
+    ] = await Promise.all([
       // User performance data
       supabase.rpc("get_user_performance_data", { user_id_param: userId }),
 
@@ -38,6 +45,9 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
       // User profile (to check if user exists)
       supabase.from("users").select("id, role, status").eq("id", userId).maybeSingle(),
+
+      // Get user metadata from auth
+      supabase.auth.getUser(),
     ]);
 
     // FALLBACK: If user doesn't exist in database

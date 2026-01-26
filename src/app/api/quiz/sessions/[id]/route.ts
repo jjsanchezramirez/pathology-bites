@@ -3,12 +3,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { quizService } from "@/features/quiz/services/quiz-service";
 import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
+import { QuizStatus } from "@/features/quiz/types/quiz";
 
 interface QuizSessionUpdate {
+  action?: "start" | "pause" | "resume";
   timeRemaining?: number;
   currentQuestionIndex?: number;
   totalTimeSpent?: number;
-  status?: string;
+  status?: QuizStatus;
 }
 
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {

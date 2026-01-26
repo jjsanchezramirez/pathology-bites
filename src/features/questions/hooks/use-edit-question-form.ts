@@ -110,7 +110,14 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
         difficulty: (question.difficulty as "easy" | "medium" | "hard") || "medium",
         teaching_point: question.teaching_point || "",
         question_references: question.question_references || "",
-        status: (question.status as "draft" | "pending_review" | "approved" | "flagged") || "draft",
+        status:
+          (question.status as
+            | "draft"
+            | "pending_review"
+            | "flagged"
+            | "rejected"
+            | "published"
+            | "archived") || "draft",
         question_set_id: question.question_set_id || "none",
         category_id: question.category_id || null,
         lesson: question.lesson || null,

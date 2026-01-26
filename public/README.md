@@ -17,6 +17,8 @@ public/
 │   ├── og-image.png                  # Open Graph social preview
 │   ├── twitter-image.png             # Twitter card image
 │   └── screenshot-mobile.png         # Mobile app screenshot
+├── favicon.ico                # Legacy favicon for older browsers
+├── health.json                # Health check endpoint for monitoring
 ├── manifest.json              # PWA manifest with app shortcuts
 └── README.md                  # This documentation file
 ```
@@ -54,18 +56,28 @@ Social media and marketing assets:
 - **`twitter-image.png`** - Twitter card image optimized for Twitter sharing
 - **`screenshot-mobile.png`** - Mobile app screenshot for documentation
 
+### Health Check Endpoint (`health.json`)
+Static health check endpoint for uptime monitoring and status verification:
+
+```json
+{"status":"ok","static":true}
+```
+
+- **Purpose**: Provides a lightweight endpoint for health checks and monitoring services
+- **Static**: Returns consistent JSON without backend processing
+- **Use Case**: Uptime monitoring, load balancer health checks, CDN verification
+
 ### Progressive Web App Manifest (`manifest.json`)
 Comprehensive PWA configuration with optimized shortcuts:
 
 ```json
 {
   "name": "Pathology Bites",
-  "description": "Advanced pathology education platform with smart caching...",
+  "description": "Master pathology one bite at a time. Interactive learning platform...",
   "shortcuts": [
     {"name": "Virtual Slides", "url": "/tools/virtual-slides"},
-    {"name": "Citations Manager", "url": "/tools/citations"},
-    {"name": "MILAN", "url": "/tools/milan"},
-    {"name": "Cell Quiz", "url": "/tools/cell-quiz"}
+    {"name": "Genova", "url": "/tools/genova"},
+    {"name": "MILAN", "url": "/tools/milan"}
   ]
 }
 ```
@@ -142,11 +154,10 @@ The `manifest.json` file enables:
 - **Theme Customization**: Brand colors and display preferences
 
 ### **App Shortcuts**
-Pre-configured shortcuts for major educational tools:
-1. **Virtual Slides** - Direct access to slide viewer
-2. **Citations Manager** - Quick citation generation
-3. **MILAN** - Molecular Information Lookup And Nomenclature
-4. **Cell Quiz** - Immediate quiz access
+Pre-configured shortcuts for core pathology tools:
+1. **Virtual Slides** - Interactive whole slide imaging viewer for hands-on microscopic pathology learning
+2. **Genova** - Genomic variant analysis and interpretation tool for molecular pathology
+3. **MILAN** - Molecular information lookup and nomenclature for genes, proteins, and pathways
 
 ## 🔄 Maintenance Guidelines
 

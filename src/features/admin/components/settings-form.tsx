@@ -255,7 +255,10 @@ export function SettingsForm() {
               <Select
                 value={settings.defaultDifficultyFilter}
                 onValueChange={(value) =>
-                  setSettings((prev) => ({ ...prev, defaultDifficultyFilter: value as unknown }))
+                  setSettings((prev) => ({
+                    ...prev,
+                    defaultDifficultyFilter: value as "easy" | "medium" | "hard" | "all",
+                  }))
                 }
               >
                 <SelectTrigger>
@@ -275,7 +278,10 @@ export function SettingsForm() {
               <Select
                 value={settings.defaultQuestionTypeFilter}
                 onValueChange={(value) =>
-                  setSettings((prev) => ({ ...prev, defaultQuestionTypeFilter: value as unknown }))
+                  setSettings((prev) => ({
+                    ...prev,
+                    defaultQuestionTypeFilter: value as "multiple_choice" | "true_false" | "all",
+                  }))
                 }
               >
                 <SelectTrigger>
@@ -429,7 +435,10 @@ export function SettingsForm() {
             <Select
               value={settings.dashboardLayout}
               onValueChange={(value) =>
-                setSettings((prev) => ({ ...prev, dashboardLayout: value as unknown }))
+                setSettings((prev) => ({
+                  ...prev,
+                  dashboardLayout: value as "compact" | "detailed",
+                }))
               }
             >
               <SelectTrigger>

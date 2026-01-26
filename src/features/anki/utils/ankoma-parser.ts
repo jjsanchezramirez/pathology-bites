@@ -543,7 +543,7 @@ function convertNoteToCard(note: AnkomaNote, deckName: string, index: number): A
         "Personal Notes": personalNotes,
         Textbook: textbook,
         Citation: citation,
-        __imageUrls: imageUrls, // Store all image URLs for potential UI cycling
+        __imageUrls: JSON.stringify(imageUrls), // Store all image URLs for potential UI cycling
         __selectedImageUrl: selectedImageUrl, // Store the selected random image
       },
       tags: [...tags, "#multiple-images"],
@@ -730,113 +730,6 @@ function generateSectionId(path: string[]): string {
     .join("::")
     .toLowerCase()
     .replace(/[^a-z0-9:]/g, "-");
-}
-
-/**
- * Find section by ID
- */
-export function findSectionById(sections: AnkomaSection[], id: string): AnkomaSection | null {
-  for (const section of sections) {
-    if (section.id === id) {
-      return section;
-    }
-
-    const found = findSectionById(section.subsections, id);
-    if (found) {
-      return found;
-    }
-  }
-
-  return null;
-}
-
-/**
- * Get all cards from a section and its subsections
- */
-export function getAllCardsFromSection(section: AnkomaSection): AnkiCard[] {
-  const cards = [...section.cards];
-
-  for (const subsection of section.subsections) {
-    cards.push(...getAllCardsFromSection(subsection));
-  }
-
-  return cards;
-}
-
-/**
- * Get section statistics
- */
-export function getSectionStats(section: AnkomaSection): {
-  totalCards: number;
-  directCards: number;
-  subsectionCount: number;
-  maxDepth: number;
-} {
-  const directCards = section.cards.length;
-  let totalCards = directCards;
-  let maxDepth = 1;
-
-  for (const subsection of section.subsections) {
-    const subStats = getSectionStats(subsection);
-    totalCards += subStats.totalCards;
-    maxDepth = Math.max(maxDepth, subStats.maxDepth + 1);
-  }
-
-  return {
-    totalCards,
-    directCards,
-    subsectionCount: section.subsections.length,
-    maxDepth,
-  };
-}
-
-/**
- * Create a flattened list of all sections for easy navigation
- */
-export function flattenSections(sections: AnkomaSection[]): AnkomaSection[] {
-  const flattened: AnkomaSection[] = [];
-
-  function flatten(sectionList: AnkomaSection[]) {
-    for (const section of sectionList) {
-      flattened.push(section);
-      if (section.subsections.length > 0) {
-        flatten(section.subsections);
-      }
-    }
-  }
-
-  flatten(sections);
-  return flattened;
-}
-
-/**
- * Filter sections by name or content
- */
-export function filterSections(sections: AnkomaSection[], query: string): AnkomaSection[] {
-  const queryLower = query.toLowerCase();
-
-  return sections.filter((section) => {
-    // Check section name
-    if (section.name.toLowerCase().includes(queryLower)) {
-      return true;
-    }
-
-    // Check if any cards contain the query
-    const hasMatchingCard = section.cards.some(
-      (card) =>
-        card.question.toLowerCase().includes(queryLower) ||
-        card.answer.toLowerCase().includes(queryLower) ||
-        card.tags.some((tag) => tag.toLowerCase().includes(queryLower))
-    );
-
-    if (hasMatchingCard) {
-      return true;
-    }
-
-    // Check subsections
-    const hasMatchingSubsection = filterSections(section.subsections, query).length > 0;
-    return hasMatchingSubsection;
-  });
 }
 
 /**

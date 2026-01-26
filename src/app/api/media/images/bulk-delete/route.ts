@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { bulkDeleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage";
 import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
-import { Database } from "@/shared/types/supabase";
 
 export async function DELETE(request: NextRequest) {
   try {
@@ -53,9 +52,17 @@ export async function DELETE(request: NextRequest) {
 
     // Collect R2 keys for bulk deletion
     const r2Keys: string[] = [];
-    const imageMap = new Map<string, Database["public"]["Tables"]["images"]["Row"]>();
+    const imageMap = new Map<
+      string,
+      { id: string; url: string; storage_path: string; category: string }
+    >();
 
-    for (const image of imageData || []) {
+    for (const image of (imageData || []) as Array<{
+      id: string;
+      url: string;
+      storage_path: string;
+      category: string;
+    }>) {
       imageMap.set(image.id, image);
 
       // Only collect keys for non-external images

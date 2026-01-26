@@ -8,30 +8,38 @@ const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
 
 interface QuestionGenerationRequest {
   mode?: "educational_content" | "refinement" | "metadata_suggestion";
-  content?: {
-    category: string;
-    subject: string;
-    lesson: string;
-    topic: string;
-    content?: unknown;
-    // For metadata suggestion mode
-    title?: string;
-    stem?: string;
-    teaching_point?: string;
-    available_categories?: Array<{ id: string; name: string }>;
-    available_question_sets?: Array<{ id: string; name: string }>;
-    available_tags?: Array<{ id: string; name: string }>;
-  };
-  currentQuestion?: {
-    title: string;
-    stem: string;
-    answer_options: unknown[];
-    teaching_point: string;
-    question_references: string;
-  };
+  content?: QuestionGenerationContent;
+  currentQuestion?: QuestionGenerationCurrent;
   instructions: string;
   additionalContext?: string;
   model?: string;
+}
+
+interface QuestionGenerationContent {
+  category: string;
+  subject: string;
+  lesson: string;
+  topic: string;
+  content?: unknown;
+  // For metadata suggestion mode
+  title?: string;
+  stem?: string;
+  teaching_point?: string;
+  available_categories?: Array<{ id: string; name: string }>;
+  available_question_sets?: Array<{ id: string; name: string }>;
+  available_tags?: Array<{ id: string; name: string }>;
+}
+
+interface QuestionGenerationCurrent {
+  title: string;
+  stem: string;
+  answer_options: Array<{
+    text: string;
+    is_correct: boolean;
+    explanation: string;
+  }>;
+  teaching_point: string;
+  question_references: string;
 }
 
 // AI API call functions
@@ -231,7 +239,7 @@ async function callMistralAPI(
 }
 
 function buildAdminQuestionPrompt(
-  content: unknown,
+  content: QuestionGenerationContent,
   instructions: string,
   additionalContext: string,
   mode: string = "educational_content"
@@ -325,13 +333,13 @@ Teaching Point: ${content.teaching_point || "Not provided"}
 AVAILABLE OPTIONS:
 
 Categories:
-${content.available_categories?.map((cat: unknown) => `- ${cat.name} (ID: ${cat.id})`).join("\n") || "None available"}
+${content.available_categories?.map((cat) => `- ${cat.name} (ID: ${cat.id})`).join("\n") || "None available"}
 
 Question Sets:
-${content.available_question_sets?.map((qs: unknown) => `- ${qs.name} (ID: ${qs.id})`).join("\n") || "None available"}
+${content.available_question_sets?.map((qs) => `- ${qs.name} (ID: ${qs.id})`).join("\n") || "None available"}
 
 Available Tags:
-${content.available_tags?.map((tag: unknown) => `- ${tag.name} (ID: ${tag.id})`).join("\n") || "None available"}
+${content.available_tags?.map((tag) => `- ${tag.name} (ID: ${tag.id})`).join("\n") || "None available"}
 
 INSTRUCTIONS:
 Based on the question content, suggest the most appropriate:

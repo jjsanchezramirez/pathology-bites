@@ -18,7 +18,7 @@ import { useRouter } from "next/navigation";
 import { useQuizStateMachine } from "./hooks/use-quiz-state-machine";
 import { DatabaseSyncManager, SyncResult } from "./core/database-sync-manager";
 import { AutoSaveManager } from "../services/auto-save-manager";
-import { AUTO_SAVE_CONFIG, SyncStatus, type as _type } from "../config/auto-save-config";
+import { AUTO_SAVE_CONFIG, SyncStatus } from "../config/auto-save-config";
 import {
   QuizAnswer,
   QuizState,

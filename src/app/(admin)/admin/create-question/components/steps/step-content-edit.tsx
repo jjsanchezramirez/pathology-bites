@@ -73,12 +73,19 @@ export function StepContentEdit({
       if (data.stem) updateFormState({ stem: data.stem });
       if (data.teaching_point) updateFormState({ teaching_point: data.teaching_point });
       if (data.answer_options) {
-        const enhancedOptions = data.answer_options.map((option: unknown, index: number) => ({
-          text: option.text || "",
-          is_correct: option.is_correct || false,
-          explanation: option.explanation || "",
-          order_index: index,
-        }));
+        interface AnswerOptionItem {
+          text?: string;
+          is_correct?: boolean;
+          explanation?: string;
+        }
+        const enhancedOptions = data.answer_options.map(
+          (option: AnswerOptionItem, index: number) => ({
+            text: option.text || "",
+            is_correct: option.is_correct || false,
+            explanation: option.explanation || "",
+            order_index: index,
+          })
+        );
         updateFormState({ answerOptions: enhancedOptions });
       }
 

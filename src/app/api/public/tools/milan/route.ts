@@ -167,9 +167,10 @@ function parseHGNCData(xmlData: string) {
 }
 
 function parseHarmonizomeData(data: unknown) {
+  const harmonizomeData = data as { synonyms?: string[]; description?: string }
   return {
-    aliasSymbols: data.synonyms || [],
-    description: data.description || ''
+    aliasSymbols: harmonizomeData.synonyms || [],
+    description: harmonizomeData.description || ''
   }
 }
 

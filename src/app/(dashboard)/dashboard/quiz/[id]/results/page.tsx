@@ -22,8 +22,27 @@ export default function QuizResultsPage() {
     isLoading: loading,
     error: fetchError,
   } = useCachedData<QuizResult>(
-    `quiz-results-${sessionId}`,
+    `quiz-session-${sessionId}`,
     async () => {
+      // OPTIMIZATION: Check session cache first for results
+      try {
+        const sessionKey = `pathology-bites-quiz-session-${sessionId}`;
+        const cachedSession = localStorage.getItem(sessionKey);
+
+        if (cachedSession) {
+          const parsed = JSON.parse(cachedSession);
+          const sessionData = parsed.data;
+
+          // Check if session has results (quiz completed)
+          if (sessionData?.results) {
+            console.log("[Results Page] ✅ Found results in session cache - 0 API calls");
+            return sessionData.results;
+          }
+        }
+      } catch (error) {
+        console.warn("[Results Page] Failed to read session cache:", error);
+      }
+
       // Retry logic for race conditions where quiz completion hasn't fully propagated
       const maxRetries = 3;
       const retryDelays = [500, 1000, 2000]; // Exponential backoff: 0.5s, 1s, 2s
@@ -62,11 +81,10 @@ export default function QuizResultsPage() {
       throw new Error("Quiz results not found - quiz may not be completed");
     },
     {
+      namespace: "swr",
       enabled: !!sessionId,
-      ttl: 7 * 24 * 60 * 60 * 1000, // 7 days cache (results immutable, needed for review)
-      staleTime: 7 * 24 * 60 * 60 * 1000, // 7 days stale time
-      storage: "localStorage", // Use localStorage for persistence - results are cached from completion
-      prefix: "pathology-bites-quiz",
+      ttl: 30 * 24 * 60 * 60 * 1000, // 30 days cache (results immutable, needed for review)
+      staleTime: 30 * 24 * 60 * 60 * 1000, // 30 days stale time
       onError: (error) => {
         console.error("Error fetching results:", error);
         toast.error(error.message);

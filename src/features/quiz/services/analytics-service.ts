@@ -3,6 +3,17 @@
 
 import { createClient } from "@/shared/services/server";
 
+// Database row interfaces
+interface QuizAttemptRow {
+  question_id: string;
+  is_correct?: boolean;
+  time_spent?: number;
+}
+
+interface QuestionWithAttempts {
+  question_id: string;
+}
+
 export class QuizAnalyticsService {
   private supabase;
 
@@ -43,7 +54,9 @@ export class QuizAnalyticsService {
       }
 
       // Get unique question IDs
-      const questionIds = [...new Set(attempts.map((a: unknown) => a.question_id))] as string[];
+      const questionIds = [
+        ...new Set((attempts as QuizAttemptRow[]).map((a) => a.question_id)),
+      ] as string[];
       console.log("[Analytics] Updating analytics for questions:", questionIds);
 
       // Call database function to update analytics (bypasses RLS with SECURITY DEFINER)
@@ -112,7 +125,9 @@ export class QuizAnalyticsService {
       }
 
       // Get unique question IDs
-      const questionIds = [...new Set(questions.map((q: unknown) => q.question_id))] as string[];
+      const questionIds = [
+        ...new Set((questions as QuestionWithAttempts[]).map((q) => q.question_id)),
+      ] as string[];
 
       // Call database function to update all analytics at once
       await this.updateMultipleQuestionAnalytics(questionIds);
@@ -149,10 +164,11 @@ export class QuizAnalyticsService {
         return null;
       }
 
-      const totalQuestions = attempts.length;
-      const correctAnswers = attempts.filter((a: unknown) => a.is_correct).length;
+      const typedAttempts = attempts as QuizAttemptRow[];
+      const totalQuestions = typedAttempts.length;
+      const correctAnswers = typedAttempts.filter((a) => a.is_correct).length;
       const accuracy = totalQuestions > 0 ? correctAnswers / totalQuestions : 0;
-      const totalTime = attempts.reduce((sum: number, a: unknown) => sum + (a.time_spent || 0), 0);
+      const totalTime = typedAttempts.reduce((sum, a) => sum + (a.time_spent || 0), 0);
       const averageTimePerQuestion = totalQuestions > 0 ? totalTime / totalQuestions : 0;
 
       return {

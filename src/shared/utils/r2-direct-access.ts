@@ -48,14 +48,14 @@ class R2Cache {
 
     // Return fresh cached data
     if (cached && now - cached.timestamp < ttl) {
-      return cached.data;
+      return cached.data as T;
     }
 
     // Return stale data while revalidating in background
     if (cached && now - cached.timestamp < ttl + staleWhileRevalidate) {
       // Revalidate in background
       this.fetchAndCache(url, cacheKey).catch(console.error);
-      return cached.data;
+      return cached.data as T;
     }
 
     // Fetch fresh data
@@ -92,7 +92,7 @@ class R2Cache {
       const cached = this.cache.get(cacheKey);
       if (cached) {
         console.warn("Returning stale data due to fetch error");
-        return cached.data;
+        return cached.data as T;
       }
 
       throw error;

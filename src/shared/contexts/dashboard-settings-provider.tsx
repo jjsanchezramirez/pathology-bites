@@ -26,11 +26,7 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
 
   // Use cached user settings hook (eliminates redundant API calls)
   // Note: refetchOnMount removed - cache handles freshness with 5-min TTL and 2-min stale time
-  const {
-    data: settings,
-    isLoading,
-    _invalidate,
-  } = useUserSettings({
+  const { data: settings, isLoading } = useUserSettings({
     onSuccess: (data) => {
       console.log("[DashboardSettings] Settings loaded from cache:", data.ui_settings);
     },

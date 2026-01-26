@@ -205,7 +205,7 @@ export function LoginForm({
                 theme: "auto",
                 size: "normal",
                 retry: "auto",
-                "retry-interval": 8000,
+                retryInterval: 8000,
               }}
               onSuccess={(token) => {
                 setCaptchaToken(token);

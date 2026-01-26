@@ -341,17 +341,25 @@ $$;
 ```typescript
 // src/shared/hooks/use-cached-data.ts
 const { data, isLoading, error } = useCachedData<QuizResult>(
-  `quiz-results-${sessionId}`,
+  `quiz-session-${sessionId}`,
   async () => {
+    // Check session cache first for results
+    const sessionKey = `pathology-bites-quiz-session-${sessionId}`;
+    const cachedSession = localStorage.getItem(sessionKey);
+    if (cachedSession) {
+      const parsed = JSON.parse(cachedSession);
+      if (parsed.data?.results) return parsed.data.results;
+    }
+
+    // Fallback to API
     const response = await fetch(`/api/quiz/sessions/${sessionId}/results`);
     return response.json();
   },
   {
+    namespace: "swr",
     enabled: !!sessionId,
-    ttl: 5 * 60 * 1000, // 5 minutes cache
-    staleTime: 2 * 60 * 1000, // 2 minutes stale time
-    storage: "memory",
-    prefix: "pathology-bites-quiz",
+    ttl: 30 * 24 * 60 * 60 * 1000, // 30 days cache
+    staleTime: 30 * 24 * 60 * 60 * 1000,
     onError: (error) => console.error("Error:", error),
   }
 );

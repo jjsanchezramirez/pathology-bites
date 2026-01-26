@@ -54,7 +54,7 @@ export function ContentTab({
 
   // Determine which AI model to use for refinement
   const refinementModel = useMemo(() => {
-    const questionSet = question.question_set || question.set;
+    const questionSet = question.set;
     if (questionSet?.source_type === "ai_generated") {
       const sourceDetails = questionSet.source_details as Record<string, unknown> | undefined;
       const modelId = sourceDetails?.primary_model || sourceDetails?.model;
@@ -162,8 +162,8 @@ export function ContentTab({
     const searchParts: string[] = [];
 
     // Add category if available (remove redundant "Pathology" words)
-    if (question.categories && question.categories.length > 0) {
-      const category = question.categories[0].name
+    if (question.category) {
+      const category = question.category.name
         .replace(/Anatomic Pathology/gi, "")
         .replace(/Clinical Pathology/gi, "")
         .replace(/Pathology/gi, "")

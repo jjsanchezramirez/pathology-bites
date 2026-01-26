@@ -131,7 +131,15 @@ class UserSettingsService {
         : T extends "ui_settings"
           ? Partial<UISettings>
           : never
-  ): Promise<unknown> {
+  ): Promise<
+    T extends "quiz_settings"
+      ? QuizSettings
+      : T extends "notification_settings"
+        ? NotificationSettings
+        : T extends "ui_settings"
+          ? UISettings
+          : never
+  > {
     // Get CSRF token for the request
     const csrfToken = await this.getCSRFToken();
 
@@ -162,7 +170,7 @@ class UserSettingsService {
         statusText: response.statusText,
         error: error,
         section,
-        settings: mappedSettings,
+        settings: settings,
       });
       console.error("[UserSettings] Full error object:", JSON.stringify(error, null, 2));
       console.error("[UserSettings] Raw response:", responseText);

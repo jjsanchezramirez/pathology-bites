@@ -16,6 +16,7 @@ import { FormState } from "../multi-step-question-form";
 import { TagAutocomplete } from "../tag-autocomplete";
 import { createClient } from "@/shared/services/client";
 import { toast } from "@/shared/utils/toast";
+import { TagData } from "@/features/questions/types/questions";
 
 interface StepMetadataProps {
   formState: FormState;
@@ -35,12 +36,6 @@ interface QuestionSet {
   created_at: string;
 }
 
-interface Tag {
-  id: string;
-  name: string;
-  created_at: string;
-}
-
 export function StepMetadata({
   formState,
   updateFormState,
@@ -48,7 +43,7 @@ export function StepMetadata({
 }: StepMetadataProps) {
   const [categories, setCategories] = useState<Category[]>([]);
   const [questionSets, setQuestionSets] = useState<QuestionSet[]>([]);
-  const [tags, setTags] = useState<Tag[]>([]);
+  const [tags, setTags] = useState<TagData[]>([]);
   const [loadingCategories, setLoadingCategories] = useState(true);
   const [loadingQuestionSets, setLoadingQuestionSets] = useState(true);
   const [isGeneratingMetadata, setIsGeneratingMetadata] = useState(false);

@@ -85,7 +85,7 @@ export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, E
         );
       }
 
-      const { level = "component", _context, showHomeButton, _showBackButton } = this.props;
+      const { level = "component", showHomeButton } = this.props;
       const isPageLevel = level === "page";
       const _isFeatureLevel = level === "feature";
 

@@ -1,7 +1,7 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
-import { revalidateQuestions } from "@/lib/revalidation";
+import { revalidateQuestions } from "@/shared/utils/revalidation";
 
 /**
  * POST /api/questions/:id/reject

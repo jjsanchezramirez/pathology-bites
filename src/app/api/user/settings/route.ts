@@ -188,18 +188,24 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch current settings" }, { status: 500 });
     }
 
+    const currentSettings = currentData as {
+      quiz_settings?: Record<string, unknown>;
+      notification_settings?: Record<string, unknown>;
+      ui_settings?: Record<string, unknown>;
+    } | null;
+
     // Prepare the update object based on the section
-    const updateData: unknown = {
+    const updateData: Record<string, unknown> = {
       user_id: userId,
       updated_at: new Date().toISOString(),
     };
 
     // Merge the new settings with existing settings for the section
     // This is critical to avoid wiping out other fields in the JSONB object
-    if (currentData && currentData[section]) {
+    if (currentSettings && currentSettings[section as keyof typeof currentSettings]) {
       // Merge new settings with existing settings
       updateData[section] = {
-        ...currentData[section],
+        ...currentSettings[section as keyof typeof currentSettings],
         ...settings,
       };
     } else {

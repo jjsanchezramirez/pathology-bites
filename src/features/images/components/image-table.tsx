@@ -532,7 +532,8 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
                 const stats = imageStats.find((stat) => stat.id === image.id);
 
                 // Get pathology category from the joined data
-                const pathologyCategory = (image as unknown).pathology_category;
+                const pathologyCategory = (image as { pathology_category?: unknown })
+                  .pathology_category;
 
                 // Get category color if available
                 const categoryWithColor = image.pathology_category_id
@@ -608,7 +609,9 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
                             color: badgeStyle.color,
                           }}
                         >
-                          {pathologyCategory.short_form || pathologyCategory.name}
+                          {(pathologyCategory as { short_form?: string; name?: string })
+                            .short_form ||
+                            (pathologyCategory as { short_form?: string; name?: string }).name}
                         </span>
                       ) : (
                         <span className="text-xs text-muted-foreground">Uncategorized</span>

@@ -18,10 +18,11 @@ import {
   Zap,
   Rocket,
   Lock,
+  type LucideIcon,
 } from "lucide-react";
 import { Progress } from "@/shared/components/ui/progress";
 
-const iconMap: Record<string, unknown> = {
+const iconMap: Record<string, LucideIcon> = {
   Play,
   BookOpen,
   GraduationCap,
@@ -49,7 +50,7 @@ export function AchievementBadge({
   size = "md",
   showProgress = false,
 }: AchievementBadgeProps) {
-  const Icon = iconMap[achievement.icon] || Award;
+  const Icon: LucideIcon = iconMap[achievement.icon] || Award;
   const isLocked = !achievement.unlocked;
 
   const sizeClasses = {

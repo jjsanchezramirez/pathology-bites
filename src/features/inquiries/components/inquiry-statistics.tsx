@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { createClient } from "@/shared/services/client";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { MessageSquare, CheckCircle, Clock, HelpCircle } from "lucide-react";
+import { MessageSquare, CheckCircle, Clock, HelpCircle, type LucideIcon } from "lucide-react";
 import { toast } from "@/shared/utils/toast";
 import { INQUIRY_TYPES } from "../types/inquiries";
 
@@ -88,7 +88,7 @@ export function InquiryStatistics({ onStatsChange, refreshTrigger }: InquiryStat
   }: {
     title: string;
     value: number;
-    icon: unknown;
+    icon: LucideIcon;
   }) => (
     <Card>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">

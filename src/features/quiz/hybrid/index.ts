@@ -22,35 +22,8 @@
  * for easy integration with the existing quiz interface.
  */
 
-// Main Hook
+// Main Hook (Public API)
 export { useHybridQuiz } from "./use-hybrid-quiz";
-export type { UseHybridQuizOptions, HybridQuizState, HybridQuizActions } from "./use-hybrid-quiz";
-
-// Core State Machine
-export {
-  quizStateReducer,
-  createInitialQuizState,
-  QuizStateUtils,
-} from "./core/quiz-state-machine";
-export type { QuizAction } from "./core/quiz-state-machine";
-
-// Re-export types from the main types module
-export type { QuizState, QuizQuestion, QuizAnswer } from "../types/quiz-question";
-
-// State Machine Hook
-export { useQuizStateMachine } from "./hooks/use-quiz-state-machine";
-export type {
-  UseQuizStateMachineOptions,
-  QuizStateMachineActions,
-} from "./hooks/use-quiz-state-machine";
-
-// Database Sync Manager
-export { DatabaseSyncManager, SyncUtils } from "./core/database-sync-manager";
-export type {
-  QuizSyncData,
-  SyncResult,
-  DatabaseSyncManagerOptions,
-} from "./core/database-sync-manager";
 
 // Preset Configurations
 export const HybridPresets = {

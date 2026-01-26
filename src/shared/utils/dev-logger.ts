@@ -89,7 +89,14 @@ export const devLog = {
   debug: (message: string, data?: unknown) => {
     if (!isDevelopment || !isVerbose) return;
 
-    console.log(`[Debug] ${message}`, data ? { ...data, timestamp: new Date().toISOString() } : "");
+    console.log(
+      `[Debug] ${message}`,
+      data
+        ? typeof data === "object" && data !== null
+          ? { ...data, timestamp: new Date().toISOString() }
+          : { value: data, timestamp: new Date().toISOString() }
+        : ""
+    );
   },
 
   /**

@@ -6,16 +6,13 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react";
 import { useClientABPath } from "./use-client-abpath";
-
-interface PathologySection {
-  section: number;
-  title: string;
-  type: "ap" | "cp";
-  items?: unknown[];
-  subsections?: unknown[];
-  line?: number;
-  note?: string;
-}
+import type {
+  ABPathSection,
+  ABPathItem,
+  ABPathSubsection,
+  ABPathSubSection,
+  ABPathMetadata,
+} from "@/shared/types/abpath";
 
 interface UseSmartABPathOptions {
   search?: string;
@@ -25,14 +22,23 @@ interface UseSmartABPathOptions {
   sectionsPerPage?: number;
 }
 
+interface PaginationInfo {
+  currentPage: number;
+  totalPages: number;
+  sectionsPerPage: number;
+  totalSections: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
 interface SmartABPathResult {
-  sections: PathologySection[];
-  allSections: PathologySection[]; // For accurate statistics (unfiltered)
-  filteredSections: PathologySection[]; // For accurate statistics (filtered)
-  metadata: unknown;
-  pagination: unknown;
+  sections: ABPathSection[];
+  allSections: ABPathSection[]; // For accurate statistics (unfiltered)
+  filteredSections: ABPathSection[]; // For accurate statistics (filtered)
+  metadata: ABPathMetadata | null;
+  pagination: PaginationInfo;
   isLoading: boolean;
-  error: unknown;
+  error: string | null;
   actions: {
     loadPage: (page: number) => void;
     switchToFullDataset: () => void;
@@ -75,7 +81,7 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
   // Memoize filtering functions for better performance
   const filterHelpers = useMemo(() => {
     // Helper function to check if an item matches search
-    const itemMatches = (item: unknown, searchLower: string): boolean => {
+    const itemMatches = (item: ABPathItem, searchLower: string): boolean => {
       const title = (item.title || "").toLowerCase();
       const note = (item.note || "").toLowerCase();
       const designation = (item.designation || "").toLowerCase();
@@ -88,7 +94,7 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
     };
 
     // Helper function to filter items recursively
-    const filterItems = (items: unknown[], searchLower: string): unknown[] => {
+    const filterItems = (items: ABPathItem[], searchLower: string): ABPathItem[] => {
       return items
         .filter((item) => {
           const matches = itemMatches(item, searchLower);
@@ -127,7 +133,7 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
     if (typeFilter === "none") {
       filteredSections = []; // No results when neither AP nor CP is selected
     } else if (typeFilter !== "all") {
-      filteredSections = filteredSections.filter((section: unknown) => section.type === typeFilter);
+      filteredSections = filteredSections.filter((section) => section.type === typeFilter);
     }
 
     // Category filter
@@ -135,7 +141,7 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
       const [filterType, sectionNum] = options.category.split("_");
       if (filterType && sectionNum) {
         filteredSections = filteredSections.filter(
-          (section: unknown) =>
+          (section) =>
             section.type.toUpperCase() === filterType.toUpperCase() &&
             section.section.toString() === sectionNum
         );
@@ -148,7 +154,7 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
       const { filterItems } = filterHelpers;
 
       filteredSections = filteredSections
-        .map((section: unknown) => {
+        .map((section: ABPathSection) => {
           const sectionTitle = (section.title || "").toLowerCase();
           const sectionNote = (section.note || "").toLowerCase();
           const sectionMatches =
@@ -169,7 +175,7 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
           // Filter subsections
           if (section.subsections) {
             filteredSection.subsections = section.subsections
-              .map((subsection: unknown) => {
+              .map((subsection: ABPathSubsection) => {
                 const subsectionTitle = (subsection.title || "").toLowerCase();
                 const subsectionMatches = subsectionTitle.includes(searchLower);
 
@@ -188,7 +194,7 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
                 // Filter subsection sections
                 if (subsection.sections) {
                   filteredSubsection.sections = subsection.sections
-                    .map((subSection: unknown) => {
+                    .map((subSection: ABPathSubSection) => {
                       const subSectionTitle = (subSection.title || "").toLowerCase();
                       const subSectionMatches = subSectionTitle.includes(searchLower);
 
@@ -204,14 +210,15 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
                       };
                     })
                     .filter(
-                      (subSection: unknown) => subSection.items && subSection.items.length > 0
+                      (subSection: ABPathSubSection) =>
+                        subSection.items && subSection.items.length > 0
                     );
                 }
 
                 return filteredSubsection;
               })
               .filter(
-                (subsection: unknown) =>
+                (subsection: ABPathSubsection) =>
                   (subsection.items && subsection.items.length > 0) ||
                   (subsection.sections && subsection.sections.length > 0)
               );
@@ -220,7 +227,7 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
           return filteredSection;
         })
         .filter(
-          (section: unknown) =>
+          (section: ABPathSection) =>
             (section.items && section.items.length > 0) ||
             (section.subsections && section.subsections.length > 0)
         );

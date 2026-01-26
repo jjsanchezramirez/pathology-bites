@@ -3,7 +3,7 @@
 
 import { createClient } from "@/shared/services/client";
 import { isPublicRoute } from "@/shared/utils/route-helpers";
-import type { AuthChangeEvent, Session } from "@supabase/supabase-js";
+import type { AuthChangeEvent, Session, RealtimeChannel } from "@supabase/supabase-js";
 
 type AuthListener = (event: AuthChangeEvent, session: Session | null) => void;
 type DatabaseListener = (payload: unknown) => void;
@@ -129,7 +129,7 @@ class RealtimeService {
   }
 
   private createDatabaseSubscription(key: string, subscription: DatabaseSubscription): void {
-    const channel = this.supabase.channel(`shared-${key}`);
+    const channel: RealtimeChannel = this.supabase.channel(`shared-${key}`);
 
     const config: {
       event: string;
@@ -146,7 +146,13 @@ class RealtimeService {
       config.filter = subscription.filter;
     }
 
-    channel.on("postgres_changes", config, (payload) => {
+    // Type assertion needed - Supabase types don't correctly reflect postgres_changes support
+    type PostgresChangesMethod = (
+      event: string,
+      config: unknown,
+      callback: (payload: unknown) => void
+    ) => void;
+    (channel.on as PostgresChangesMethod)("postgres_changes", config, (payload: unknown) => {
       const listeners = this.databaseListeners.get(key);
       if (listeners) {
         listeners.forEach((listener) => {

@@ -14,7 +14,13 @@ interface AnkomaJsonStructure {
   extendRev: number;
   media_files: string[];
   name: string;
-  note_models: unknown[];
+  note_models: Array<{
+    crowdanki_uuid?: string;
+    name: string;
+    flds: { name: string; ord: number }[];
+    tmpls: { name: string; qfmt: string; afmt: string }[];
+    css: string;
+  }>;
   notes: AnkomaNote[];
 }
 
@@ -154,10 +160,11 @@ function renderTemplate(template: string, fields: Record<string, string>): strin
   }
 
   // Remove conditional tags {{#Field}}...{{/Field}}
-  result = result.replace(/{{#\w+}}(.*?){{\/\w+}}/gs, "$1");
+  // Using a function-based approach to handle multiline content
+  result = result.replace(/{{#(\w+)}}([\s\S]*?){{\/\1}}/g, "$2");
 
   // Remove inverted conditional tags {{^Field}}...{{/Field}}
-  result = result.replace(/{{^\w+}}(.*?){{\/\w+}}/gs, "");
+  result = result.replace(/{{^(\w+)}}[\s\S]*?{{\/\1}}/g, "");
 
   // Clean up any remaining template syntax
   result = result.replace(/{{[^}]+}}/g, "");

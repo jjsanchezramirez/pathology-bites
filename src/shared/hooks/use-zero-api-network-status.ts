@@ -9,6 +9,24 @@ interface NetworkStatusOptions {
   showToasts?: boolean;
 }
 
+// Type for Network Information API (not in standard TypeScript DOM types)
+interface NetworkInformation {
+  type?: string;
+  effectiveType?: string;
+  downlink?: number;
+  rtt?: number;
+  saveData?: boolean;
+  addEventListener?: (type: string, listener: EventListener) => void;
+  removeEventListener?: (type: string, listener: EventListener) => void;
+}
+
+// Extend Navigator to include connection properties
+interface NavigatorWithConnection extends Navigator {
+  connection?: NetworkInformation;
+  mozConnection?: NetworkInformation;
+  webkitConnection?: NetworkInformation;
+}
+
 /**
  * Network connectivity hook that uses zero API calls
  *
@@ -19,7 +37,7 @@ interface NetworkStatusOptions {
  * 4. WebSocket connectivity tests to external services (optional)
  */
 export function useZeroApiNetworkStatus(options: NetworkStatusOptions = {}) {
-  const { onOnline, onOffline, _showToasts = false } = options;
+  const { onOnline, onOffline } = options;
   const [isOnline, setIsOnline] = useState(() => {
     return typeof navigator !== "undefined" ? navigator.onLine : true;
   });
@@ -31,10 +49,8 @@ export function useZeroApiNetworkStatus(options: NetworkStatusOptions = {}) {
   // Update connection info if Network Information API is available
   const updateConnectionInfo = useCallback(() => {
     if (typeof navigator !== "undefined" && "connection" in navigator) {
-      const connection =
-        (navigator as unknown).connection ||
-        (navigator as unknown).mozConnection ||
-        (navigator as unknown).webkitConnection;
+      const nav = navigator as NavigatorWithConnection;
+      const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
 
       if (connection) {
         setConnectionType(connection.type || "unknown");
@@ -81,10 +97,8 @@ export function useZeroApiNetworkStatus(options: NetworkStatusOptions = {}) {
     if (!navigator.onLine) return false;
 
     // Secondary checks when available
-    const connection =
-      (navigator as unknown).connection ||
-      (navigator as unknown).mozConnection ||
-      (navigator as unknown).webkitConnection;
+    const nav = navigator as NavigatorWithConnection;
+    const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
 
     if (connection) {
       // If connection type is 'none', we're definitely offline
@@ -135,11 +149,9 @@ export function useZeroApiNetworkStatus(options: NetworkStatusOptions = {}) {
     document.addEventListener("visibilitychange", handleVisibilityChange);
 
     // Network Information API events (when supported)
-    const connection =
-      (navigator as unknown).connection ||
-      (navigator as unknown).mozConnection ||
-      (navigator as unknown).webkitConnection;
-    if (connection) {
+    const nav = navigator as NavigatorWithConnection;
+    const connection = nav.connection || nav.mozConnection || nav.webkitConnection;
+    if (connection && connection.addEventListener) {
       connection.addEventListener("change", handleConnectionChange);
     }
 

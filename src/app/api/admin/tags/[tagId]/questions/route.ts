@@ -60,13 +60,17 @@ export async function GET(
     }
 
     // Transform the data to a more usable format
-    const questions =
-      questionTags?.map((qt) => ({
-        id: qt.questions?.id,
-        title: qt.questions?.title,
-        stem: qt.questions?.stem,
-        category: qt.questions?.categories?.name,
-      })) || [];
+    const questions = (questionTags || []).map((qt) => {
+      const typedQt = qt as unknown as {
+        questions?: { id: string; title: string; stem: string; categories?: { name: string }[] };
+      };
+      return {
+        id: typedQt.questions?.id,
+        title: typedQt.questions?.title,
+        stem: typedQt.questions?.stem,
+        category: typedQt.questions?.categories?.[0]?.name,
+      };
+    });
 
     return NextResponse.json({
       questions,

@@ -157,19 +157,25 @@ export function generateCellRelationships(): Record<string, CellRelationship> {
 // Pre-generate the relationships
 export const CELL_RELATIONSHIPS = generateCellRelationships();
 
+import { CellQuizImagesData, CellImageData } from "@/shared/hooks/use-client-cell-quiz";
+
 /**
  * Generate quiz options using look_alikes data from cell-data.json
  * @param correctCellType The correct answer cell type
  * @param cellData The cell data object containing look_alikes
  * @returns Array of 4 options: [correct, look_alike1, look_alike2, pathway_related/unrelated]
  */
-export function generateLookAlikeOptions(correctCellType: string, cellData: unknown): string[] {
+export function generateLookAlikeOptions(
+  correctCellType: string,
+  cellData: CellQuizImagesData
+): string[] {
   const cellInfo = cellData[correctCellType];
   const options: string[] = [correctCellType];
 
-  if (cellInfo && cellInfo.look_alikes && cellInfo.look_alikes.length > 0) {
+  const typedCellInfo = cellInfo as CellImageData | undefined;
+  if (typedCellInfo && typedCellInfo.look_alikes && typedCellInfo.look_alikes.length > 0) {
     // Add look-alikes (these are the most challenging distractors)
-    const lookAlikes = [...cellInfo.look_alikes];
+    const lookAlikes = [...typedCellInfo.look_alikes];
 
     // Add up to 2 look-alikes
     while (options.length < 3 && lookAlikes.length > 0) {

@@ -38,6 +38,8 @@ export interface UseQuestionsReturn {
       questionImages?: unknown[];
       tagIds?: string[];
       categoryId?: string;
+      isPatchEdit?: boolean;
+      patchEditReason?: string;
       reviewerId?: string;
     }
   ) => Promise<unknown>;
@@ -169,22 +171,43 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
       }
 
       // Transform the data
-      const transformedQuestions: QuestionWithDetails[] = (data || []).map((question) => {
+      const transformedQuestions = (data || []).map((question) => {
         // Find the category for this question
         const questionCategory = question.category_id
-          ? categoriesData.find((cat) => cat.id === question.category_id)
+          ? (categoriesData as Array<{ id: string }>).find((cat) => cat.id === question.category_id)
           : null;
 
         return {
           ...question,
           created_by_name: question.created_by_user
-            ? `${question.created_by_user.first_name || ""} ${question.created_by_user.last_name || ""}`.trim()
+            ? `${(question.created_by_user as { first_name?: string }).first_name || ""} ${(question.created_by_user as { last_name?: string }).last_name || ""}`.trim()
             : "Unknown",
           image_count: question.question_images?.[0]?.count || 0,
-          categories: questionCategory ? [questionCategory] : [],
-          tags: question.question_tags?.map((qt: unknown) => qt.tag).filter(Boolean) || [],
+          category: questionCategory
+            ? {
+                ...questionCategory,
+                name: "",
+                description: null,
+                parent_id: undefined,
+                level: 0,
+                color: null,
+                short_form: null,
+                created_at: "",
+              }
+            : undefined,
+          categories: [], // Deprecated, use category instead
+          tags:
+            question.question_tags
+              ?.map((qt: unknown) => (qt as { tag?: unknown }).tag)
+              .filter(Boolean) || [],
+          anki_card_id: (question as { anki_card_id?: string | null }).anki_card_id ?? null,
+          anki_deck_name: (question as { anki_deck_name?: string | null }).anki_deck_name ?? null,
+          lesson: (question as { lesson?: string }).lesson || "",
+          topic: (question as { topic?: string }).topic || "",
+          reviewer_id: (question as { reviewer_id?: string }).reviewer_id || null,
+          reviewer_feedback: (question as { reviewer_feedback?: string }).reviewer_feedback || null,
         };
-      });
+      }) as unknown as QuestionWithDetails[];
 
       setQuestions(transformedQuestions);
       setTotal(count || 0);

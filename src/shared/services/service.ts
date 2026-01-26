@@ -9,6 +9,7 @@ import {
   MilestonePayload as _MilestonePayload,
   ReminderPayload as _ReminderPayload,
 } from "@/shared/types/notifications";
+import { InquiryData, QuestionReportData } from "@/features/inquiries/types/inquiries";
 
 export class NotificationsService {
   private getSupabase() {
@@ -160,7 +161,7 @@ export class NotificationsService {
     }
   }
 
-  private async getInquiries(ids: string[]): Promise<Inquiry[]> {
+  private async getInquiries(ids: string[]): Promise<InquiryData[]> {
     if (ids.length === 0) return [];
 
     const { data, error } = await this.getSupabase().from("inquiries").select("*").in("id", ids);
@@ -172,7 +173,7 @@ export class NotificationsService {
     return data || [];
   }
 
-  private async getReports(ids: string[]): Promise<QuestionReport[]> {
+  private async getReports(ids: string[]): Promise<QuestionReportData[]> {
     if (ids.length === 0) return [];
 
     const { data, error } = await this.getSupabase()

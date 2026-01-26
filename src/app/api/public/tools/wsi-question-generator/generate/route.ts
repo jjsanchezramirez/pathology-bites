@@ -470,7 +470,7 @@ function preprocessWSI(wsi: VirtualSlide): { normalizedWSI: VirtualSlide; isVali
 // Fast prompt builder - Pre-compute prompt structure
 function buildOptimizedPrompt(normalizedWSI: VirtualSlide, context: unknown | null = null, customPrompt?: string): string {
   if (customPrompt) return customPrompt
-  return buildQuestionPrompt(normalizedWSI, context)
+  return buildQuestionPrompt(normalizedWSI, context as Record<string, unknown> | null)
 }
 
 // Enhanced question generation with retry logic for each model
