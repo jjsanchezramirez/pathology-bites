@@ -18,7 +18,7 @@ import {
   ListTodo,
 } from "lucide-react";
 
-export type IconKeys =
+type IconKeys =
   | "spinner"
   | "error"
   | "success"

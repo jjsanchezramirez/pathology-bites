@@ -628,7 +628,7 @@ export class DatabaseSyncManager {
 /**
  * Utility functions for sync operations
  */
-export const SyncUtils = {
+const SyncUtils = {
   /**
    * Calculate payload size for monitoring
    */
