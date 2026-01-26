@@ -26,7 +26,14 @@ let searchIndex: SearchIndexEntry[] | null = null;
 // This allows us to check ONLY relevant slides instead of ALL slides
 let reverseIndex: Map<string, Set<number>> | null = null;
 
-// Minimal client-entry type coming from CDN JSON (legacy format)
+// ============================================================================
+// LEGACY FORMAT SUPPORT (DEPRECATED - Remove after July 2026)
+// ============================================================================
+// This interface supports the old virtual-slides.json format (11MB).
+// The optimized format (v2.0, 7.4MB) is now the default.
+// Legacy file is kept as backup but can be removed after July 2026.
+// TODO: Remove this interface and all legacy format code after July 2026
+// ============================================================================
 interface ClientEntry {
   id: string;
   diagnosis: string;
@@ -101,6 +108,8 @@ function normalizeToVirtualSlide(e: ClientEntry | OptimizedEntry, isOptimized: b
       source_metadata: {},
     };
   } else {
+    // DEPRECATED: Legacy format support (Remove after July 2026)
+    // This handles the old virtual-slides.json format for backward compatibility
     const legacy = e as ClientEntry;
     return {
       id: legacy.id,
@@ -190,17 +199,19 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
     let slides: VirtualSlide[];
 
     if (isOptimized) {
-      // Optimized format (v2.0)
+      // Optimized format (v2.0) - Default format
       const optimized = json as OptimizedData;
       urlBases = optimized.bases; // Cache URL bases
       entries = optimized.data;
       slides = entries.map((e) => normalizeToVirtualSlide(e, true));
       console.log(`[VirtualSlides] Loaded optimized format v${optimized.version}`);
     } else {
-      // Legacy format (array of entries)
+      // DEPRECATED: Legacy format support (Remove after July 2026)
+      // This handles the old virtual-slides.json format for backward compatibility
+      // Users on old app versions can still access the legacy file
       entries = Array.isArray(json) ? json : (json.data ?? []);
       slides = entries.map((e) => normalizeToVirtualSlide(e as ClientEntry, false));
-      console.log('[VirtualSlides] Loaded legacy format');
+      console.log('[VirtualSlides] Loaded legacy format (deprecated, remove after July 2026)');
     }
 
     // Store in memory for session (HTTP cache handles persistence)
