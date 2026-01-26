@@ -7,6 +7,45 @@ import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { ExternalLink, Eye, Microscope } from "lucide-react";
 import Image from "next/image";
 
+// Repository color mapping
+const REPOSITORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
+  "Hematopathology eTutorial": {
+    bg: "bg-red-100 dark:bg-red-950",
+    text: "text-red-700 dark:text-red-300",
+    border: "border-red-300 dark:border-red-700",
+  },
+  "Leeds University": {
+    bg: "bg-blue-100 dark:bg-blue-950",
+    text: "text-blue-700 dark:text-blue-300",
+    border: "border-blue-300 dark:border-blue-700",
+  },
+  "PathPresenter": {
+    bg: "bg-green-100 dark:bg-green-950",
+    text: "text-green-700 dark:text-green-300",
+    border: "border-green-300 dark:border-green-700",
+  },
+  "MGH Pathology": {
+    bg: "bg-purple-100 dark:bg-purple-950",
+    text: "text-purple-700 dark:text-purple-300",
+    border: "border-purple-300 dark:border-purple-700",
+  },
+  "University of Toronto LMP": {
+    bg: "bg-orange-100 dark:bg-orange-950",
+    text: "text-orange-700 dark:text-orange-300",
+    border: "border-orange-300 dark:border-orange-700",
+  },
+  "Rosai Collection": {
+    bg: "bg-pink-100 dark:bg-pink-950",
+    text: "text-pink-700 dark:text-pink-300",
+    border: "border-pink-300 dark:border-pink-700",
+  },
+  "Recut Club": {
+    bg: "bg-teal-100 dark:bg-teal-950",
+    text: "text-teal-700 dark:text-teal-300",
+    border: "border-teal-300 dark:border-teal-700",
+  },
+};
+
 interface SlideRowUnifiedProps {
   slide: VirtualSlide;
   showDiagnoses: boolean;
@@ -103,7 +142,25 @@ export function SlideRowUnified({
 
       {/* Repository */}
       <td className="p-2 md:p-4 hidden lg:table-cell">
-        <span className="text-sm text-gray-600">{slide.repository}</span>
+        {(() => {
+          const colors = REPOSITORY_COLORS[slide.repository] || {
+            bg: "bg-gray-100 dark:bg-gray-800",
+            text: "text-gray-700 dark:text-gray-300",
+            border: "border-gray-300 dark:border-gray-600",
+          };
+          const shortName = slide.repository
+            .replace("Hematopathology eTutorial", "Heme eTutorial")
+            .replace("University of Toronto LMP", "Toronto")
+            .replace("Leeds University", "Leeds")
+            .replace("MGH Pathology", "MGH")
+            .replace("Rosai Collection", "Rosai");
+
+          return (
+            <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}>
+              {shortName}
+            </span>
+          );
+        })()}
       </td>
 
       {/* Category */}

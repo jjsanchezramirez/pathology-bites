@@ -325,6 +325,54 @@ function VirtualSlidesContent() {
         }
       />
 
+      {/* Repository Icons Row */}
+      <section className="py-4 md:py-6 border-b bg-muted/20">
+        <div className="container px-4 mx-auto max-w-6xl">
+          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+            {[
+              { name: "Heme eTutorial", url: "http://www.hematopathologyetutorial.com/", color: "red" },
+              { name: "Leeds", url: "https://www.virtualpathology.leeds.ac.uk/", color: "blue" },
+              { name: "PathPresenter", url: "https://pathpresenter.net/", color: "green" },
+              { name: "MGH", url: "https://learn.mghpathology.org/", color: "purple" },
+              { name: "Toronto", url: "https://lmpimg.med.utoronto.ca/", color: "orange" },
+              { name: "Rosai", url: "https://rosai.secondslide.com/", color: "pink" },
+              { name: "Recut Club", url: "https://recutclub.com/", color: "teal" },
+            ].map((repo) => (
+              <a
+                key={repo.name}
+                href={repo.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className={`
+                  group relative px-4 py-2 rounded-lg border-2
+                  transition-all duration-300 ease-out
+                  opacity-60 grayscale hover:opacity-100 hover:grayscale-0
+                  hover:scale-110 hover:shadow-lg
+                  ${
+                    repo.color === "red"
+                      ? "border-red-300 bg-red-100 text-red-700 hover:border-red-500 hover:bg-red-200 dark:border-red-700 dark:bg-red-950 dark:text-red-300 dark:hover:border-red-500"
+                      : repo.color === "blue"
+                      ? "border-blue-300 bg-blue-100 text-blue-700 hover:border-blue-500 hover:bg-blue-200 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-300 dark:hover:border-blue-500"
+                      : repo.color === "green"
+                      ? "border-green-300 bg-green-100 text-green-700 hover:border-green-500 hover:bg-green-200 dark:border-green-700 dark:bg-green-950 dark:text-green-300 dark:hover:border-green-500"
+                      : repo.color === "purple"
+                      ? "border-purple-300 bg-purple-100 text-purple-700 hover:border-purple-500 hover:bg-purple-200 dark:border-purple-700 dark:bg-purple-950 dark:text-purple-300 dark:hover:border-purple-500"
+                      : repo.color === "orange"
+                      ? "border-orange-300 bg-orange-100 text-orange-700 hover:border-orange-500 hover:bg-orange-200 dark:border-orange-700 dark:bg-orange-950 dark:text-orange-300 dark:hover:border-orange-500"
+                      : repo.color === "pink"
+                      ? "border-pink-300 bg-pink-100 text-pink-700 hover:border-pink-500 hover:bg-pink-200 dark:border-pink-700 dark:bg-pink-950 dark:text-pink-300 dark:hover:border-pink-500"
+                      : "border-teal-300 bg-teal-100 text-teal-700 hover:border-teal-500 hover:bg-teal-200 dark:border-teal-700 dark:bg-teal-950 dark:text-teal-300 dark:hover:border-teal-500"
+                  }
+                `}
+              >
+                <span className="text-sm font-medium">{repo.name}</span>
+                <ExternalLink className="inline-block ml-1 h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+              </a>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Search and Filter Section */}
       <section className="py-2 md:py-4">
         <div className="container px-4 mx-auto max-w-6xl">
@@ -664,7 +712,7 @@ function VirtualSlidesContent() {
       </section>
 
       {/* Results Section */}
-      {isInitialLoading || isLoading ? (
+      {isInitialLoading ? (
         <section className="relative py-4 md:py-8">
           <div className="container px-4 mx-auto max-w-6xl">
             <Card className="shadow-lg">
@@ -673,8 +721,8 @@ function VirtualSlidesContent() {
                   <table className="w-full">
                     <thead className="bg-muted/50 border-b">
                       <tr>
-                        <th className="text-left p-2 md:p-4 font-semibold">Preview</th>
-                        <th className="text-left p-2 md:p-4 font-semibold">
+                        <th className="text-left p-2 md:p-4 font-semibold w-24 md:w-32">Preview</th>
+                        <th className="text-left p-2 md:p-4 font-semibold min-w-[200px] md:min-w-[300px]">
                           <span className="md:hidden">Slide Info</span>
                           <span className="hidden md:inline lg:hidden">
                             {showDiagnoses ? "Diagnosis and Clinical Info" : "Slide Info"}
@@ -683,16 +731,16 @@ function VirtualSlidesContent() {
                             {showDiagnoses ? "Diagnosis and Clinical Info" : "Slide Info"}
                           </span>
                         </th>
-                        <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell">
+                        <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell w-32 md:w-40">
                           Repository
                         </th>
-                        <th className="text-left p-2 md:p-4 font-semibold hidden md:table-cell">
+                        <th className="text-left p-2 md:p-4 font-semibold hidden md:table-cell w-32 md:w-40">
                           Category
                         </th>
-                        <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell">
+                        <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell w-24 md:w-32">
                           Details
                         </th>
-                        <th className="text-left p-2 md:p-4 font-semibold">
+                        <th className="text-left p-2 md:p-4 font-semibold w-24 md:w-32">
                           <span className="md:hidden">Action</span>
                           <span className="hidden md:inline">Actions</span>
                         </th>
@@ -713,11 +761,16 @@ function VirtualSlidesContent() {
                 <CardContent className="p-0">
                   {/* Results Table */}
                   <div className="overflow-x-auto">
-                    <table className="w-full">
+                    <table className="w-full table-fixed">
                       <thead className="bg-muted/50 border-b">
                         <tr>
-                          <th className="text-left p-2 md:p-4 font-semibold">Preview</th>
-                          <th className="text-left p-2 md:p-4 font-semibold">
+                          <th className="text-left p-2 md:p-4 font-semibold w-24 md:w-32">
+                            Preview
+                            {(isLoading || isPending) && (
+                              <Loader2 className="inline-block ml-2 h-3 w-3 animate-spin text-muted-foreground" />
+                            )}
+                          </th>
+                          <th className="text-left p-2 md:p-4 font-semibold min-w-[200px] md:min-w-[300px]">
                             <span className="md:hidden">Slide Info</span>
                             <span className="hidden md:inline lg:hidden">
                               {showDiagnoses ? "Diagnosis and Clinical Info" : "Slide Info"}
@@ -726,16 +779,16 @@ function VirtualSlidesContent() {
                               {showDiagnoses ? "Diagnosis and Clinical Info" : "Slide Info"}
                             </span>
                           </th>
-                          <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell">
+                          <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell w-32 md:w-40">
                             Repository
                           </th>
-                          <th className="text-left p-2 md:p-4 font-semibold hidden md:table-cell">
+                          <th className="text-left p-2 md:p-4 font-semibold hidden md:table-cell w-32 md:w-40">
                             Category
                           </th>
-                          <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell">
+                          <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell w-24 md:w-32">
                             Details
                           </th>
-                          <th className="text-left p-2 md:p-4 font-semibold">
+                          <th className="text-left p-2 md:p-4 font-semibold w-24 md:w-32">
                             <span className="md:hidden">Action</span>
                             <span className="hidden md:inline">Actions</span>
                           </th>
