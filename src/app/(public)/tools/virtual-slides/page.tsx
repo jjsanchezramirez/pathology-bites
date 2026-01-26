@@ -68,6 +68,7 @@ function VirtualSlidesContent() {
     expandedSearchTerms: client.expandedSearchTerms,
   };
 
+  const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedRepository, setSelectedRepository] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -75,8 +76,7 @@ function VirtualSlidesContent() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [urlParamsProcessed, setUrlParamsProcessed] = useState(false);
 
-  // Use ref for search input to avoid re-renders on every keystroke
-  const searchInputRef = useRef<HTMLInputElement>(null);
+  // Use ref for debounce timer
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Metadata for filters
@@ -103,9 +103,7 @@ function VirtualSlidesContent() {
       const searchQuery = searchParams.get("search");
 
       if (searchQuery) {
-        if (searchInputRef.current) {
-          searchInputRef.current.value = searchQuery;
-        }
+        setSearchTerm(searchQuery);
         setDebouncedSearchTerm(searchQuery);
       }
 
@@ -207,19 +205,17 @@ function VirtualSlidesContent() {
   // Simplified handlers for unified search
   const clearFilters = async () => {
     // Reset local UI state
-    if (searchInputRef.current) {
-      searchInputRef.current.value = "";
-    }
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
+    setSearchTerm("");
+    setDebouncedSearchTerm("");
     setSelectedRepository("all");
     setSelectedCategory("all");
     setSelectedOrganSystem("all");
     setRevealedDiagnoses(new Set());
 
     // Immediately reset search options (avoid waiting for debounce/effects)
-    setDebouncedSearchTerm("");
     await searchWithFilters({
       query: "",
       repository: undefined,
@@ -334,12 +330,6 @@ function VirtualSlidesContent() {
                       setShowDiagnoses(searchModeDiagnosesVisibility.current);
                     }
                     setMode("search");
-                    // Restore search input value after component remounts
-                    setTimeout(() => {
-                      if (searchInputRef.current) {
-                        searchInputRef.current.value = debouncedSearchTerm;
-                      }
-                    }, 0);
                   }}
                   className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md font-medium transition-all ${
                     mode === "search"
@@ -441,25 +431,24 @@ function VirtualSlidesContent() {
                   </Label>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <Input
-                      ref={searchInputRef}
                       id="search-input"
                       placeholder="Search by diagnosis, patient info, repository, category, or organ system..."
-                      defaultValue=""
+                      value={searchTerm}
                       onChange={(e) => {
                         const val = e.target.value;
+                        setSearchTerm(val);
                         handleSearchInput(val);
                       }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           // On Enter: immediately search with current value
                           e.preventDefault();
-                          const currentValue = searchInputRef.current?.value || "";
                           if (debounceTimerRef.current) {
                             clearTimeout(debounceTimerRef.current);
                           }
-                          setDebouncedSearchTerm(currentValue);
+                          setDebouncedSearchTerm(searchTerm);
                           searchWithFilters({
-                            query: currentValue || undefined,
+                            query: searchTerm || undefined,
                             repository:
                               selectedRepository !== "all" ? selectedRepository : undefined,
                             category: selectedCategory !== "all" ? selectedCategory : undefined,
@@ -475,13 +464,12 @@ function VirtualSlidesContent() {
                     <Button
                       onClick={() => {
                         // On Search button click: immediately search with current input value
-                        const currentValue = searchInputRef.current?.value || "";
                         if (debounceTimerRef.current) {
                           clearTimeout(debounceTimerRef.current);
                         }
-                        setDebouncedSearchTerm(currentValue);
+                        setDebouncedSearchTerm(searchTerm);
                         searchWithFilters({
-                          query: currentValue || undefined,
+                          query: searchTerm || undefined,
                           repository: selectedRepository !== "all" ? selectedRepository : undefined,
                           category: selectedCategory !== "all" ? selectedCategory : undefined,
                           subcategory:
