@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useRef, useCallback, useMemo, useTransition } from "react";
+import { useState, useEffect, Suspense, useRef, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import { useClientVirtualSlidesEnhanced } from "@/shared/hooks/use-client-virtual-slides-enhanced";
 import { VIRTUAL_SLIDES_JSON_URL } from "@/shared/config/virtual-slides";
@@ -28,7 +28,6 @@ import {
   AlertCircle,
   Info,
   GraduationCap,
-  ExternalLink,
 } from "lucide-react";
 import Image from "next/image";
 import { PublicHero } from "@/shared/components/common/public-hero";
@@ -71,7 +70,6 @@ function VirtualSlidesContent() {
     expandedSearchTerms: client.expandedSearchTerms,
   };
 
-  const [searchTerm, setSearchTerm] = useState("");
   const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [selectedRepository, setSelectedRepository] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -79,11 +77,9 @@ function VirtualSlidesContent() {
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const [urlParamsProcessed, setUrlParamsProcessed] = useState(false);
 
-  // Use ref for debounce timer
+  // Use ref for debounce timer and input
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
-
-  // useTransition for non-blocking search updates
-  const [isPending, startTransition] = useTransition();
+  const searchInputRef = useRef<HTMLInputElement>(null);
 
   // Metadata for filters
   const [repositories, setRepositories] = useState<string[]>([]);
@@ -108,8 +104,8 @@ function VirtualSlidesContent() {
     if (!urlParamsProcessed && !client.isLoading) {
       const searchQuery = searchParams.get("search");
 
-      if (searchQuery) {
-        setSearchTerm(searchQuery);
+      if (searchQuery && searchInputRef.current) {
+        searchInputRef.current.value = searchQuery;
         setDebouncedSearchTerm(searchQuery);
       }
 
@@ -146,22 +142,18 @@ function VirtualSlidesContent() {
     if (!client.isLoading) setIsInitialLoading(false);
   }, [client.isLoading]);
 
-  // Debounced search handler - only updates state after user stops typing
+  // Debounce handler for search input
   const handleSearchInput = useCallback((value: string) => {
     // Clear existing timer
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
 
-    // Set new timer - only update state after 300ms of no typing
+    // Set new timer - only update state after 200ms of no typing
     debounceTimerRef.current = setTimeout(() => {
-      // Wrap in startTransition to mark as non-urgent update
-      // This keeps typing responsive while search happens in background
-      startTransition(() => {
-        setDebouncedSearchTerm(value);
-      });
-    }, 300);
-  }, [startTransition]);
+      setDebouncedSearchTerm(value);
+    }, 200);
+  }, []);
 
   // Console-only notice of dataset URL after initial load completes
   useEffect(() => {
@@ -218,10 +210,10 @@ function VirtualSlidesContent() {
     if (debounceTimerRef.current) {
       clearTimeout(debounceTimerRef.current);
     }
-    setSearchTerm("");
-    startTransition(() => {
-      setDebouncedSearchTerm("");
-    });
+    if (searchInputRef.current) {
+      searchInputRef.current.value = "";
+    }
+    setDebouncedSearchTerm("");
     setSelectedRepository("all");
     setSelectedCategory("all");
     setSelectedOrganSystem("all");
@@ -331,22 +323,59 @@ function VirtualSlidesContent() {
       {/* Repository Icons Row */}
       <section className="py-4 md:py-6">
         <div className="container px-4 mx-auto max-w-6xl">
-          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
+          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 md:gap-4 max-w-4xl mx-auto">
             {[
-              { name: "Heme eTutorial", url: "http://www.hematopathologyetutorial.com/", logo: "logos/hematopathology-etutorial-logo.png" },
-              { name: "Leeds", url: "https://www.virtualpathology.leeds.ac.uk/", logo: "logos/university-of-leeds-logo.png" },
-              { name: "PathPresenter", url: "https://pathpresenter.net/", logo: "logos/path-presenter-logo.png" },
-              { name: "MGH", url: "https://learn.mghpathology.org/", logo: "logos/mgh-logo.png" },
-              { name: "Toronto", url: "https://lmpimg.med.utoronto.ca/", logo: "logos/university-of-toronto-logo.png" },
-              { name: "Rosai", url: "https://rosai.secondslide.com/", logo: "logos/rosai-collection-logo.png" },
-              { name: "Recut Club", url: "https://recutclub.com/", logo: "logos/recut-club-logo.png" },
+              {
+                name: "Heme eTutorial",
+                url: "http://www.hematopathologyetutorial.com/",
+                logo: "logos/hematopathology-etutorial-logo.png",
+                mobileSize: "large",
+              },
+              {
+                name: "Leeds",
+                url: "https://www.virtualpathology.leeds.ac.uk/",
+                logo: "logos/university-of-leeds-logo.png",
+                mobileSize: "large",
+              },
+              {
+                name: "PathPresenter",
+                url: "https://pathpresenter.net/",
+                logo: "logos/path-presenter-logo.png",
+                mobileSize: "small",
+              },
+              {
+                name: "MGH",
+                url: "https://learn.mghpathology.org/",
+                logo: "logos/mgh-logo.png",
+                mobileSize: "small",
+              },
+              {
+                name: "Toronto",
+                url: "https://lmpimg.med.utoronto.ca/",
+                logo: "logos/university-of-toronto-logo.png",
+                mobileSize: "small",
+              },
+              {
+                name: "Rosai",
+                url: "https://rosai.secondslide.com/",
+                logo: "logos/rosai-collection-logo.png",
+                mobileSize: "large",
+              },
+              {
+                name: "Recut Club",
+                url: "https://recutclub.com/",
+                logo: "logos/recut-club-logo.png",
+                mobileSize: "large",
+              },
             ].map((repo) => (
               <a
                 key={repo.name}
                 href={repo.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative w-24 h-16 md:w-28 md:h-16 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
+                className={`group relative h-14 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2
+                  ${repo.mobileSize === "large" ? "w-[calc(42%-4px)]" : "w-[calc(28%-4px)]"}
+                  sm:w-28`}
               >
                 <Image
                   src={getR2PublicUrl(repo.logo)}
@@ -354,60 +383,62 @@ function VirtualSlidesContent() {
                   width={100}
                   height={50}
                   unoptimized
-                  className="object-contain opacity-80 group-hover:opacity-100 transition-opacity"
+                  className="object-contain opacity-50 group-hover:opacity-100 transition-opacity"
                 />
-                <ExternalLink className="absolute top-1 right-1 h-3 w-3 opacity-0 group-hover:opacity-60 transition-opacity" />
               </a>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Search and Filter Section */}
+      {/* Mode Toggle - Above Card */}
       <section className="py-2 md:py-4">
         <div className="container px-4 mx-auto max-w-6xl">
+          {/* Mode Toggle - Segmented control on desktop, pills on mobile */}
+          <div className="flex items-center justify-center mb-4">
+            <div className="inline-flex bg-muted/50 rounded-full p-1 gap-1">
+              <button
+                onClick={() => {
+                  // If coming from Study mode, restore the saved diagnosis visibility
+                  if (mode === "study") {
+                    setShowDiagnoses(searchModeDiagnosesVisibility.current);
+                  }
+                  setMode("search");
+                }}
+                className={`flex items-center gap-2 px-4 md:px-6 py-2 rounded-full font-medium transition-all ${
+                  mode === "search"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <Search className="h-4 w-4" />
+                <span className="text-sm md:text-base">Search</span>
+              </button>
+              <button
+                onClick={() => {
+                  // Save current diagnosis visibility before entering Study mode
+                  if (mode === "search") {
+                    searchModeDiagnosesVisibility.current = showDiagnoses;
+                  }
+                  // Always hide diagnoses in Study mode
+                  setShowDiagnoses(false);
+                  setMode("study");
+                }}
+                className={`flex items-center gap-2 px-4 md:px-6 py-2 rounded-full font-medium transition-all ${
+                  mode === "study"
+                    ? "bg-background text-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                <GraduationCap className="h-4 w-4" />
+                <span className="text-sm md:text-base">Study</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Search and Filter Card */}
           <Card className="p-4 md:p-8 shadow-lg">
             <CardContent className="space-y-4 md:space-y-6">
-              {/* Mode Toggle */}
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 p-2 bg-muted/30 rounded-lg">
-                <button
-                  onClick={() => {
-                    // If coming from Study mode, restore the saved diagnosis visibility
-                    if (mode === "study") {
-                      setShowDiagnoses(searchModeDiagnosesVisibility.current);
-                    }
-                    setMode("search");
-                  }}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md font-medium transition-all ${
-                    mode === "search"
-                      ? "bg-background shadow-sm border border-border"
-                      : "hover:bg-muted/50"
-                  }`}
-                >
-                  <Search className="h-4 w-4" />
-                  Search Mode
-                </button>
-                <button
-                  onClick={() => {
-                    // Save current diagnosis visibility before entering Study mode
-                    if (mode === "search") {
-                      searchModeDiagnosesVisibility.current = showDiagnoses;
-                    }
-                    // Always hide diagnoses in Study mode
-                    setShowDiagnoses(false);
-                    setMode("study");
-                  }}
-                  className={`flex-1 flex items-center justify-center gap-2 px-4 py-3 rounded-md font-medium transition-all ${
-                    mode === "study"
-                      ? "bg-background shadow-sm border border-border"
-                      : "hover:bg-muted/50"
-                  }`}
-                >
-                  <GraduationCap className="h-4 w-4" />
-                  Study Mode
-                </button>
-              </div>
-
               {/* Study Mode Configuration */}
               {mode === "study" && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -478,13 +509,12 @@ function VirtualSlidesContent() {
                   </Label>
                   <div className="flex flex-col sm:flex-row gap-2">
                     <Input
+                      ref={searchInputRef}
                       id="search-input"
                       placeholder="Search by diagnosis, patient info, repository, category, or organ system..."
-                      value={searchTerm}
+                      defaultValue=""
                       onChange={(e) => {
-                        const val = e.target.value;
-                        setSearchTerm(val);
-                        handleSearchInput(val);
+                        handleSearchInput(e.target.value);
                       }}
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
@@ -493,11 +523,10 @@ function VirtualSlidesContent() {
                           if (debounceTimerRef.current) {
                             clearTimeout(debounceTimerRef.current);
                           }
-                          startTransition(() => {
-                            setDebouncedSearchTerm(searchTerm);
-                          });
+                          const currentValue = searchInputRef.current?.value || "";
+                          setDebouncedSearchTerm(currentValue);
                           searchWithFilters({
-                            query: searchTerm || undefined,
+                            query: currentValue || undefined,
                             repository:
                               selectedRepository !== "all" ? selectedRepository : undefined,
                             category: selectedCategory !== "all" ? selectedCategory : undefined,
@@ -516,11 +545,10 @@ function VirtualSlidesContent() {
                         if (debounceTimerRef.current) {
                           clearTimeout(debounceTimerRef.current);
                         }
-                        startTransition(() => {
-                          setDebouncedSearchTerm(searchTerm);
-                        });
+                        const currentValue = searchInputRef.current?.value || "";
+                        setDebouncedSearchTerm(currentValue);
                         searchWithFilters({
-                          query: searchTerm || undefined,
+                          query: currentValue || undefined,
                           repository: selectedRepository !== "all" ? selectedRepository : undefined,
                           category: selectedCategory !== "all" ? selectedCategory : undefined,
                           subcategory:
@@ -528,10 +556,10 @@ function VirtualSlidesContent() {
                           page: 1,
                         });
                       }}
-                      disabled={isLoading || isPending}
+                      disabled={isLoading}
                       className="px-6 w-full sm:w-auto"
                     >
-                      {isLoading || isPending ? (
+                      {isLoading ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <>
@@ -756,9 +784,6 @@ function VirtualSlidesContent() {
                         <tr>
                           <th className="text-left p-2 md:p-4 font-semibold w-24 md:w-32">
                             Preview
-                            {(isLoading || isPending) && (
-                              <Loader2 className="inline-block ml-2 h-3 w-3 animate-spin text-muted-foreground" />
-                            )}
                           </th>
                           <th className="text-left p-2 md:p-4 font-semibold min-w-[200px] md:min-w-[300px]">
                             <span className="md:hidden">Slide Info</span>

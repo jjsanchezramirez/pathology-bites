@@ -5,7 +5,7 @@ import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { getRepositoryFromId } from "@/shared/utils/repository";
 import { expandSearchTermClient } from "@/shared/utils/nci-evs-client";
 import { extractOrganTerms, getOrganBoostScore, type OrganTerm } from "@/shared/utils/organ-terms";
-import { MEDICAL_ACRONYMS, COMMON_MEDICAL_TERMS } from "@/shared/utils/medical-acronyms";
+import { MEDICAL_ACRONYMS } from "@/shared/utils/medical-acronyms";
 
 // Module-scope cache for request deduplication and in-session speed
 // HTTP browser cache handles persistence across sessions
@@ -79,7 +79,10 @@ interface OptimizedData {
 // URL bases cache for optimized format
 let urlBases: string[] | null = null;
 
-function normalizeToVirtualSlide(e: ClientEntry | OptimizedEntry, isOptimized: boolean = false): VirtualSlide {
+function normalizeToVirtualSlide(
+  e: ClientEntry | OptimizedEntry,
+  isOptimized: boolean = false
+): VirtualSlide {
   if (isOptimized) {
     const opt = e as OptimizedEntry;
 
@@ -211,7 +214,7 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
       // Users on old app versions can still access the legacy file
       entries = Array.isArray(json) ? json : (json.data ?? []);
       slides = entries.map((e) => normalizeToVirtualSlide(e as ClientEntry, false));
-      console.log('[VirtualSlides] Loaded legacy format (deprecated, remove after July 2026)');
+      console.log("[VirtualSlides] Loaded legacy format (deprecated, remove after July 2026)");
     }
 
     // Store in memory for session (HTTP cache handles persistence)
@@ -315,7 +318,7 @@ function rankSlidesByTerm(
   slides: VirtualSlide[],
   term: string,
   organContext?: OrganTerm[],
-  maxResults: number = 200 // Limit results
+  _maxResults: number = 150 // Reduced from 200 for even better performance
 ): Map<string, { slide: VirtualSlide; score: number }> {
   const termLower = term.toLowerCase().trim();
   const words = tokenize(termLower);
@@ -356,6 +359,11 @@ function rankSlidesByTerm(
     if (acrIndices) {
       acrIndices.forEach((idx) => candidateIndices.add(idx));
     }
+  }
+
+  // Early exit if no candidates found
+  if (candidateIndices.size === 0) {
+    return rankedSlides;
   }
 
   // Step 2: Score ONLY the candidate slides (much smaller set!)
@@ -418,7 +426,6 @@ function rankSlidesByTerm(
 export type SearchMode = "standard" | "nci-fallback";
 
 // Minimum score threshold to consider a result "good quality"
-const GOOD_RESULT_THRESHOLD = 2; // Bucket 2 or better (exact phrase matches)
 const MIN_GOOD_RESULTS = 5; // Minimum number of good results before considering NCI fallback
 
 // Simplified main ranking function with optional NCI fallback
@@ -449,7 +456,7 @@ async function rankSlidesWithExpansion(
       slides,
       searchTerm,
       organs.length > 0 ? organs : undefined,
-      200 // Limit per term for performance
+      150 // Limit per term for better performance
     );
 
     for (const [slideKey, { slide, score }] of termRankings.entries()) {
@@ -465,9 +472,7 @@ async function rankSlidesWithExpansion(
   const standardRankings = aggregatedRankings;
 
   // Count good quality results (score >= 70)
-  const goodResults = Array.from(standardRankings.values()).filter(
-    ({ score }) => score >= 70
-  );
+  const goodResults = Array.from(standardRankings.values()).filter(({ score }) => score >= 70);
 
   // If we have enough good results OR standard mode, return immediately
   if (goodResults.length >= MIN_GOOD_RESULTS || searchMode === "standard") {
@@ -493,7 +498,7 @@ async function rankSlidesWithExpansion(
       slides,
       searchTermItem,
       organs.length > 0 ? organs : undefined,
-      200 // Limit per term for performance
+      150 // Limit per term for better performance
     );
 
     for (const [slideKey, { slide, score }] of termRankings.entries()) {

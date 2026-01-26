@@ -3,6 +3,7 @@
  * Works with full slide data from unified search API
  */
 
+import { memo } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { ExternalLink, Eye, Microscope } from "lucide-react";
 import Image from "next/image";
@@ -19,7 +20,7 @@ const REPOSITORY_COLORS: Record<string, { bg: string; text: string; border: stri
     text: "text-blue-700 dark:text-blue-300",
     border: "border-blue-300 dark:border-blue-700",
   },
-  "PathPresenter": {
+  PathPresenter: {
     bg: "bg-green-100 dark:bg-green-950",
     text: "text-green-700 dark:text-green-300",
     border: "border-green-300 dark:border-green-700",
@@ -54,7 +55,7 @@ interface SlideRowUnifiedProps {
   index?: number;
 }
 
-export function SlideRowUnified({
+export const SlideRowUnified = memo(function SlideRowUnified({
   slide,
   showDiagnoses,
   isRevealed = false,
@@ -156,7 +157,9 @@ export function SlideRowUnified({
             .replace("Rosai Collection", "Rosai");
 
           return (
-            <span className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}>
+            <span
+              className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}
+            >
               {shortName}
             </span>
           );
@@ -217,4 +220,4 @@ export function SlideRowUnified({
       </td>
     </tr>
   );
-}
+});
