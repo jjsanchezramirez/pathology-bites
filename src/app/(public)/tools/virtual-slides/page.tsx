@@ -28,10 +28,13 @@ import {
   AlertCircle,
   Info,
   GraduationCap,
+  ExternalLink,
 } from "lucide-react";
+import Image from "next/image";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
 import { ContentDisclaimer } from "@/shared/components/common/content-disclaimer";
+import { getR2PublicUrl } from "@/shared/services/r2-storage";
 
 // Import components
 import { SlideRowUnified } from "./components/slide-row-unified";
@@ -326,47 +329,34 @@ function VirtualSlidesContent() {
       />
 
       {/* Repository Icons Row */}
-      <section className="py-4 md:py-6 border-b bg-muted/20">
+      <section className="py-4 md:py-6">
         <div className="container px-4 mx-auto max-w-6xl">
-          <div className="flex flex-wrap items-center justify-center gap-4 md:gap-6">
+          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4">
             {[
-              { name: "Heme eTutorial", url: "http://www.hematopathologyetutorial.com/", color: "red" },
-              { name: "Leeds", url: "https://www.virtualpathology.leeds.ac.uk/", color: "blue" },
-              { name: "PathPresenter", url: "https://pathpresenter.net/", color: "green" },
-              { name: "MGH", url: "https://learn.mghpathology.org/", color: "purple" },
-              { name: "Toronto", url: "https://lmpimg.med.utoronto.ca/", color: "orange" },
-              { name: "Rosai", url: "https://rosai.secondslide.com/", color: "pink" },
-              { name: "Recut Club", url: "https://recutclub.com/", color: "teal" },
+              { name: "Heme eTutorial", url: "http://www.hematopathologyetutorial.com/", logo: "logos/hematopathology-etutorial-logo.png" },
+              { name: "Leeds", url: "https://www.virtualpathology.leeds.ac.uk/", logo: "logos/university-of-leeds-logo.png" },
+              { name: "PathPresenter", url: "https://pathpresenter.net/", logo: "logos/path-presenter-logo.png" },
+              { name: "MGH", url: "https://learn.mghpathology.org/", logo: "logos/mgh-logo.png" },
+              { name: "Toronto", url: "https://lmpimg.med.utoronto.ca/", logo: "logos/university-of-toronto-logo.png" },
+              { name: "Rosai", url: "https://rosai.secondslide.com/", logo: "logos/rosai-collection-logo.png" },
+              { name: "Recut Club", url: "https://recutclub.com/", logo: "logos/recut-club-logo.png" },
             ].map((repo) => (
               <a
                 key={repo.name}
                 href={repo.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`
-                  group relative px-4 py-2 rounded-lg border-2
-                  transition-all duration-300 ease-out
-                  opacity-60 grayscale hover:opacity-100 hover:grayscale-0
-                  hover:scale-110 hover:shadow-lg
-                  ${
-                    repo.color === "red"
-                      ? "border-red-300 bg-red-100 text-red-700 hover:border-red-500 hover:bg-red-200 dark:border-red-700 dark:bg-red-950 dark:text-red-300 dark:hover:border-red-500"
-                      : repo.color === "blue"
-                      ? "border-blue-300 bg-blue-100 text-blue-700 hover:border-blue-500 hover:bg-blue-200 dark:border-blue-700 dark:bg-blue-950 dark:text-blue-300 dark:hover:border-blue-500"
-                      : repo.color === "green"
-                      ? "border-green-300 bg-green-100 text-green-700 hover:border-green-500 hover:bg-green-200 dark:border-green-700 dark:bg-green-950 dark:text-green-300 dark:hover:border-green-500"
-                      : repo.color === "purple"
-                      ? "border-purple-300 bg-purple-100 text-purple-700 hover:border-purple-500 hover:bg-purple-200 dark:border-purple-700 dark:bg-purple-950 dark:text-purple-300 dark:hover:border-purple-500"
-                      : repo.color === "orange"
-                      ? "border-orange-300 bg-orange-100 text-orange-700 hover:border-orange-500 hover:bg-orange-200 dark:border-orange-700 dark:bg-orange-950 dark:text-orange-300 dark:hover:border-orange-500"
-                      : repo.color === "pink"
-                      ? "border-pink-300 bg-pink-100 text-pink-700 hover:border-pink-500 hover:bg-pink-200 dark:border-pink-700 dark:bg-pink-950 dark:text-pink-300 dark:hover:border-pink-500"
-                      : "border-teal-300 bg-teal-100 text-teal-700 hover:border-teal-500 hover:bg-teal-200 dark:border-teal-700 dark:bg-teal-950 dark:text-teal-300 dark:hover:border-teal-500"
-                  }
-                `}
+                className="group relative w-24 h-16 md:w-28 md:h-16 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 hover:shadow-md hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
               >
-                <span className="text-sm font-medium">{repo.name}</span>
-                <ExternalLink className="inline-block ml-1 h-3 w-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+                <Image
+                  src={getR2PublicUrl(repo.logo)}
+                  alt={repo.name}
+                  width={100}
+                  height={50}
+                  unoptimized
+                  className="object-contain opacity-80 group-hover:opacity-100 transition-opacity"
+                />
+                <ExternalLink className="absolute top-1 right-1 h-3 w-3 opacity-0 group-hover:opacity-60 transition-opacity" />
               </a>
             ))}
           </div>
