@@ -29,7 +29,6 @@ import {
   formatAMA,
   formatVancouver,
   formatNLM,
-  getJournalAbbreviationStats,
   forceReloadJournalAbbreviations,
 } from "@/shared/utils/citation-formatters";
 
@@ -44,18 +43,10 @@ export default function CitationGeneratorPage() {
 
   // Ensure NLM journal abbreviations are loaded
   useEffect(() => {
-    // Force reload journal abbreviations and show debug info
-    forceReloadJournalAbbreviations()
-      .then(() => {
-        const stats = getJournalAbbreviationStats();
-        console.log("✅ NLM journal abbreviations loaded:", stats.total, "entries");
-        console.log("📋 Sample entries:", stats.sampleEntries);
-      })
-      .catch((err) => {
-        console.warn("⚠️ Failed to load NLM journal abbreviations:", err);
-        const stats = getJournalAbbreviationStats();
-        console.log("📊 Current abbreviations count:", stats.total);
-      });
+    // Force reload journal abbreviations silently
+    forceReloadJournalAbbreviations().catch(() => {
+      // Silently fail - journal abbreviations are optional
+    });
   }, []);
 
   const detectInputType = (input: string): "url" | "doi" | "isbn" | "unknown" => {
@@ -112,7 +103,9 @@ export default function CitationGeneratorPage() {
       const inputType = detectInputType(trimmedInput);
 
       if (inputType === "unknown") {
-        throw new Error("Unable to detect input type. Please enter a valid URL, DOI, or ISBN.");
+        // Set error state to display in UI instead of throwing
+        setError("Unable to detect input type. Please enter a valid URL, DOI, or ISBN.");
+        return;
       }
 
       // Process the input based on type
@@ -126,9 +119,9 @@ export default function CitationGeneratorPage() {
       setCitationData(metadata);
       setEditableData(metadata);
       setIsEditing(false);
-    } catch (err) {
-      console.error("Citation generation error:", err);
-      // Error is already handled by the hook
+      setError(null);
+    } catch (_err) {
+      // Error is already handled by the hook and setError above
     }
   };
 

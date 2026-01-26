@@ -18,7 +18,6 @@ let JOURNAL_ABBREVIATIONS: Record<string, string> = {};
 async function loadJournalAbbreviations(): Promise<void> {
   // Only load in browser environment to avoid SSR issues
   if (typeof window === "undefined") {
-    console.log("Skipping journal abbreviations load during SSR");
     return;
   }
 
@@ -44,11 +43,7 @@ async function loadJournalAbbreviations(): Promise<void> {
 
     const data = await response.json();
     JOURNAL_ABBREVIATIONS = data.abbreviations || {};
-
-    console.log(`✅ Loaded ${Object.keys(JOURNAL_ABBREVIATIONS).length} journal abbreviations`);
-  } catch (error) {
-    console.error("⚠️ Failed to load NLM journal abbreviations:", error);
-
+  } catch (_error) {
     // Keep abbreviations empty - use journal names as-is
     JOURNAL_ABBREVIATIONS = {};
   }
@@ -93,12 +88,6 @@ export async function forceReloadJournalAbbreviations(): Promise<void> {
 
   // Force reload
   await loadJournalAbbreviations();
-
-  console.log(
-    "🔄 Force reloaded journal abbreviations:",
-    Object.keys(JOURNAL_ABBREVIATIONS).length,
-    "entries"
-  );
 }
 
 /**
@@ -166,17 +155,9 @@ function abbreviateJournal(journalName: string): string {
   // Decode HTML entities first
   const decodedJournal = decodeHtmlEntities(journalName);
 
-  // Debug logging
-  console.log(`🔍 Attempting to abbreviate journal: "${journalName}"`);
-  if (decodedJournal !== journalName) {
-    console.log(`🔤 Decoded to: "${decodedJournal}"`);
-  }
-  console.log(`📊 Available abbreviations: ${Object.keys(JOURNAL_ABBREVIATIONS).length}`);
-
   // Direct lookup first (try both original and decoded)
   const directMatch = JOURNAL_ABBREVIATIONS[journalName] || JOURNAL_ABBREVIATIONS[decodedJournal];
   if (directMatch) {
-    console.log(`✅ Direct match found: "${decodedJournal}" → "${directMatch}"`);
     return directMatch;
   }
 
@@ -244,7 +225,6 @@ function abbreviateJournal(journalName: string): string {
   }
 
   // If no match found, return original title
-  console.log(`❌ No abbreviation found for: "${journalName}" - returning original`);
   return journalName;
 }
 

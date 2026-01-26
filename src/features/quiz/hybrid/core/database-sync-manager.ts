@@ -9,7 +9,13 @@
  * API Call #2: Final batch submission of all answers and completion data
  */
 
-import { QuizState, QuizAnswer, QuizQuestionTransformer } from "../../types/quiz-question";
+import {
+  QuizState,
+  QuizAnswer,
+  QuizQuestion,
+  QuizQuestionTransformer,
+  ApiQuestionResponse,
+} from "../../types/quiz-question";
 
 export interface QuizSyncData {
   sessionId: string;
@@ -53,7 +59,10 @@ export interface SyncResult {
   success: boolean;
   timestamp: number;
   error?: string;
-  serverResponse?: unknown;
+  serverResponse?: {
+    message?: string;
+    [key: string]: unknown;
+  };
 }
 
 export interface DatabaseSyncManagerOptions {
@@ -102,8 +111,15 @@ export class DatabaseSyncManager {
    * - Review mode (uses cached quiz data + results)
    */
   async fetchQuizData(sessionId: string): Promise<{
-    questions: unknown[];
-    config: unknown;
+    questions: QuizQuestion[];
+    config: {
+      mode: "tutor" | "exam";
+      timing: "timed" | "untimed";
+      showExplanations: boolean;
+      allowReview: boolean;
+      totalTimeLimit?: number;
+      [key: string]: unknown;
+    };
     status?: string;
     existingAnswers?: QuizAnswer[];
     timeRemaining?: number | null;
@@ -116,7 +132,21 @@ export class DatabaseSyncManager {
 
       if (cachedData) {
         console.log("[Hybrid] Using cached quiz session data - 0 API calls");
-        return cachedData;
+        return cachedData as {
+          questions: QuizQuestion[];
+          config: {
+            mode: "tutor" | "exam";
+            timing: "timed" | "untimed";
+            showExplanations: boolean;
+            allowReview: boolean;
+            totalTimeLimit?: number;
+            [key: string]: unknown;
+          };
+          status?: string;
+          existingAnswers?: QuizAnswer[];
+          timeRemaining?: number | null;
+          totalTimeLimit?: number | null;
+        };
       }
 
       console.log("[Hybrid] No cache found, fetching from server");
@@ -139,13 +169,13 @@ export class DatabaseSyncManager {
 
       // Transform QuestionWithDetails[] to QuizQuestion[] format using standardized transformer
       const transformedQuestions = (data.questions || []).map((q: unknown) =>
-        QuizQuestionTransformer.apiToHybrid(q)
+        QuizQuestionTransformer.apiToHybrid(q as ApiQuestionResponse)
       );
 
       // Transform config to hybrid system format
       const transformedConfig = {
-        mode: data.config?.mode || "tutor",
-        timing: data.config?.timing || "untimed",
+        mode: (data.config?.mode as "tutor" | "exam") || "tutor",
+        timing: (data.config?.timing as "timed" | "untimed") || "untimed",
         showExplanations: data.config?.showExplanations ?? true,
         allowReview: data.config?.allowReview ?? true,
         ...data.config,
@@ -184,7 +214,7 @@ export class DatabaseSyncManager {
       const parsed = JSON.parse(cached);
 
       // Check if cache is still valid using TTL from entry
-      const ttl = parsed.ttl || 7 * 24 * 60 * 60 * 1000; // Default 7 days if not set
+      const ttl = parsed.ttl || 30 * 24 * 60 * 60 * 1000; // Default 30 days if not set
       const now = Date.now();
       if (parsed.timestamp && now - parsed.timestamp < ttl) {
         return parsed.data;
@@ -202,9 +232,9 @@ export class DatabaseSyncManager {
   /**
    * Save data to localStorage cache
    * Uses CacheEntry format that works with cache-service.ts
-   * Default 7-day TTL for quiz sessions (needed for review, ~10-20KB per quiz)
+   * Default 30-day TTL for quiz sessions (needed for review, ~10-20KB per quiz)
    */
-  private saveToCache(key: string, data: unknown, ttl: number = 7 * 24 * 60 * 60 * 1000): void {
+  private saveToCache(key: string, data: unknown, ttl: number = 30 * 24 * 60 * 60 * 1000): void {
     try {
       if (typeof window === "undefined") return;
 
@@ -222,13 +252,12 @@ export class DatabaseSyncManager {
   }
 
   /**
-   * Clear quiz session cache (call after completion or deletion)
+   * Clear quiz session cache (call after deletion)
    */
   clearSessionCache(sessionId: string): void {
     try {
       if (typeof window === "undefined") return;
       localStorage.removeItem(`pathology-bites-quiz-session-${sessionId}`);
-      localStorage.removeItem(`pathology-bites-quiz-results-${sessionId}`);
     } catch (error) {
       console.warn("Failed to clear cache:", error);
     }
@@ -437,11 +466,14 @@ export class DatabaseSyncManager {
         });
         console.log("=".repeat(80));
 
-        // OPTIMIZATION: Cache the quiz results for results page using same format as useCachedData
+        // OPTIMIZATION: Update session cache with results
         // This eliminates the need for a separate API call to /results
         if (serverResponse.success && serverResponse.data) {
           try {
-            const resultsKey = `pathology-bites-quiz-results-${syncData.sessionId}`;
+            const sessionKey = `pathology-bites-quiz-session-${syncData.sessionId}`;
+
+            // Get existing session data
+            const existingSession = this.getFromCache(sessionKey);
 
             // Merge newAchievements into data for display
             const resultsWithAchievements = {
@@ -449,32 +481,21 @@ export class DatabaseSyncManager {
               newAchievements: serverResponse.newAchievements || [],
             };
 
-            const cacheEntry = {
-              data: resultsWithAchievements,
-              timestamp: Date.now(),
-              ttl: 7 * 24 * 60 * 60 * 1000, // 7 days (results immutable, needed for review)
-              key: resultsKey,
+            // Update session cache with results
+            const updatedSession = {
+              ...(existingSession || {}),
+              status: "completed",
+              results: resultsWithAchievements,
             };
 
-            console.log("💾 [HYBRID CACHE] Caching results:", {
-              key: resultsKey,
-              hasData: !!cacheEntry.data,
-              dataKeys: Object.keys(cacheEntry.data).slice(0, 5),
-              cacheEntryStructure: Object.keys(cacheEntry),
-            });
+            this.saveToCache(sessionKey, updatedSession);
 
-            localStorage.setItem(resultsKey, JSON.stringify(cacheEntry));
-
-            // Verify it was saved
-            const verification = localStorage.getItem(resultsKey);
-            console.log("✅ [HYBRID CACHE] SAVED TO LOCALSTORAGE:", {
-              saved: !!verification,
-              size: verification?.length,
-              canParse: !!JSON.parse(verification || "{}"),
+            console.log("💾 [HYBRID CACHE] Updated session cache with results:", {
+              key: sessionKey,
+              hasResults: !!resultsWithAchievements,
+              resultKeys: Object.keys(resultsWithAchievements).slice(0, 5),
             });
-            console.log(
-              "[Hybrid] Cached quiz results with achievements for results page - saves 1 API call"
-            );
+            console.log("[Hybrid] Cached quiz results in session - saves 1 API call");
           } catch (error) {
             console.warn("Failed to cache results:", error);
           }

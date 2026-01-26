@@ -96,14 +96,6 @@ interface QuizAttemptRow {
   reviewed_at: string | null;
 }
 
-interface CategoryRow {
-  id: string;
-  name: string;
-  short_form: string | null;
-  color: string | null;
-  parent_id: string | null;
-}
-
 interface CategoryIdRow {
   id: string;
 }

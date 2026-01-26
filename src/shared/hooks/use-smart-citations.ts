@@ -7,42 +7,28 @@
 import { useState, useCallback } from "react";
 import { CitationData } from "@/shared/utils/citation-extractor";
 import { toast } from "@/shared/utils/toast";
-
-interface CitationCache {
-  [key: string]: {
-    data: CitationData;
-    timestamp: number;
-    type: "url" | "doi" | "isbn";
-  };
-}
+import {
+  getCachedItem,
+  setCachedItem,
+  clearToolCache,
+  getCacheStats as getPublicToolsCacheStats,
+  getRecentItems,
+} from "@/shared/utils/public-tools-cache";
 
 interface UseSmartCitationsResult {
   generateCitation: (input: string, type: "url" | "doi" | "isbn") => Promise<CitationData>;
   isLoading: boolean;
   error: string | null;
   clearCache: () => void;
-  getCacheStats: () => { size: number; oldestEntry: string | null };
+  getCacheStats: () => { size: number };
+  getRecentCitations: (
+    limit?: number
+  ) => Array<{ key: string; data: CitationData; timestamp: number }>;
 }
-
-// Cache duration: 24 hours for citations (they rarely change)
-const CACHE_TTL = 24 * 60 * 60 * 1000;
-const MAX_CACHE_SIZE = 100; // Limit memory usage
 
 export function useSmartCitations(): UseSmartCitationsResult {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [cache, setCache] = useState<CitationCache>(() => {
-    // Load cache from localStorage on initialization
-    if (typeof window !== "undefined") {
-      try {
-        const stored = localStorage.getItem("pathology-bites-citations-cache");
-        return stored ? JSON.parse(stored) : {};
-      } catch {
-        return {};
-      }
-    }
-    return {};
-  });
 
   // Normalize input for consistent caching
   const normalizeInput = useCallback((input: string, type: "url" | "doi" | "isbn"): string => {
@@ -60,42 +46,6 @@ export function useSmartCitations(): UseSmartCitationsResult {
     }
   }, []);
 
-  // Save cache to localStorage
-  const saveCache = useCallback((newCache: CitationCache) => {
-    setCache(newCache);
-    if (typeof window !== "undefined") {
-      try {
-        localStorage.setItem("pathology-bites-citations-cache", JSON.stringify(newCache));
-      } catch (error) {
-        console.warn("Failed to save citations cache to localStorage:", error);
-      }
-    }
-  }, []);
-
-  // Clean expired entries and manage cache size
-  const cleanCache = useCallback((currentCache: CitationCache): CitationCache => {
-    const now = Date.now();
-    const validEntries: CitationCache = {};
-
-    // Remove expired entries
-    Object.entries(currentCache).forEach(([key, entry]) => {
-      if (now - entry.timestamp < CACHE_TTL) {
-        validEntries[key] = entry;
-      }
-    });
-
-    // If still too large, remove oldest entries
-    if (Object.keys(validEntries).length > MAX_CACHE_SIZE) {
-      const sortedEntries = Object.entries(validEntries)
-        .sort(([, a], [, b]) => b.timestamp - a.timestamp) // Newest first
-        .slice(0, MAX_CACHE_SIZE);
-
-      return Object.fromEntries(sortedEntries);
-    }
-
-    return validEntries;
-  }, []);
-
   const generateCitation = useCallback(
     async (input: string, type: "url" | "doi" | "isbn"): Promise<CitationData> => {
       if (!input.trim()) {
@@ -110,15 +60,11 @@ export function useSmartCitations(): UseSmartCitationsResult {
         const cacheKey = `${type}:${normalizedInput}`;
 
         // Check cache first
-        const cachedEntry = cache[cacheKey];
-        if (cachedEntry && Date.now() - cachedEntry.timestamp < CACHE_TTL) {
-          console.log(`🎯 Citation cache hit: ${type} - ${normalizedInput.substring(0, 50)}...`);
+        const cached = getCachedItem<CitationData>("citations", cacheKey);
+        if (cached) {
           setIsLoading(false);
-          return cachedEntry.data;
+          return cached;
         }
-
-        // Cache miss - fetch from API
-        console.log(`🔄 Citation cache miss: ${type} - ${normalizedInput.substring(0, 50)}...`);
 
         let citationData: CitationData;
 
@@ -207,19 +153,8 @@ export function useSmartCitations(): UseSmartCitationsResult {
             throw new Error("Unsupported citation type");
         }
 
-        // Update cache
-        const cleanedCache = cleanCache(cache);
-        const newCache = {
-          ...cleanedCache,
-          [cacheKey]: {
-            data: citationData,
-            timestamp: Date.now(),
-            type,
-          },
-        };
-
-        saveCache(newCache);
-        console.log(`✅ Citation cached: ${type} - ${normalizedInput.substring(0, 50)}...`);
+        // Save to cache
+        setCachedItem("citations", cacheKey, citationData);
 
         return citationData;
       } catch (err) {
@@ -242,27 +177,20 @@ export function useSmartCitations(): UseSmartCitationsResult {
         setIsLoading(false);
       }
     },
-    [cache, normalizeInput, cleanCache, saveCache]
+    [normalizeInput]
   );
 
   const clearCache = useCallback(() => {
-    setCache({});
-    if (typeof window !== "undefined") {
-      localStorage.removeItem("pathology-bites-citations-cache");
-    }
-    console.log("🗑️ Citations cache cleared");
+    clearToolCache("citations");
   }, []);
 
   const getCacheStats = useCallback(() => {
-    const entries = Object.values(cache);
-    return {
-      size: entries.length,
-      oldestEntry:
-        entries.length > 0
-          ? new Date(Math.min(...entries.map((e) => e.timestamp))).toLocaleString()
-          : null,
-    };
-  }, [cache]);
+    return getPublicToolsCacheStats("citations");
+  }, []);
+
+  const getRecentCitations = useCallback((limit: number = 10) => {
+    return getRecentItems<CitationData>("citations", limit);
+  }, []);
 
   return {
     generateCitation,
@@ -270,6 +198,7 @@ export function useSmartCitations(): UseSmartCitationsResult {
     error,
     clearCache,
     getCacheStats,
+    getRecentCitations,
   };
 }
 
