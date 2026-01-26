@@ -61,7 +61,8 @@ export async function getUserStats(userId: string): Promise<UserStats> {
   // Count correct answers per subject
   const subjectCounts = new Map<string, number>();
   correctAttempts?.forEach((attempt) => {
-    const categoryId = (attempt.questions as { category_id: string | null })?.category_id;
+    const categoryId = (attempt.questions as unknown as { category_id: string | null })
+      ?.category_id;
     if (categoryId) {
       subjectCounts.set(categoryId, (subjectCounts.get(categoryId) || 0) + 1);
     }

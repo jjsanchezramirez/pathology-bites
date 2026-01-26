@@ -483,7 +483,7 @@ export class DatabaseSyncManager {
 
             // Update session cache with results
             const updatedSession = {
-              ...(existingSession || {}),
+              ...(existingSession && typeof existingSession === "object" ? existingSession : {}),
               status: "completed",
               results: resultsWithAchievements,
             };

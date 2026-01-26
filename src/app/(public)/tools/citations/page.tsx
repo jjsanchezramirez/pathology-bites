@@ -103,9 +103,8 @@ export default function CitationGeneratorPage() {
       const inputType = detectInputType(trimmedInput);
 
       if (inputType === "unknown") {
-        // Set error state to display in UI instead of throwing
-        setError("Unable to detect input type. Please enter a valid URL, DOI, or ISBN.");
-        return;
+        // Error will be displayed via the error state from useSmartCitations
+        throw new Error("Unable to detect input type. Please enter a valid URL, DOI, or ISBN.");
       }
 
       // Process the input based on type
@@ -119,9 +118,8 @@ export default function CitationGeneratorPage() {
       setCitationData(metadata);
       setEditableData(metadata);
       setIsEditing(false);
-      setError(null);
     } catch (_err) {
-      // Error is already handled by the hook and setError above
+      // Error is already handled by the hook
     }
   };
 
