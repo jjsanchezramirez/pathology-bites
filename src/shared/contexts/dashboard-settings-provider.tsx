@@ -2,6 +2,7 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
+import { useTheme } from "next-themes";
 import { userSettingsService } from "@/shared/services/user-settings";
 import { useUserSettings } from "@/shared/hooks/use-user-settings";
 import { getTextZoomConfig, applyTextZoom, getValidZoomLevel } from "@/shared/utils/text-zoom";
@@ -23,6 +24,7 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
   const [textZoom, setTextZoomState] = useState(1.0);
   const [dashboardTheme, setDashboardThemeState] = useState("default");
   const config = getTextZoomConfig();
+  const { setTheme: setNextTheme } = useTheme();
 
   // Use cached user settings hook (eliminates redundant API calls)
   // Note: refetchOnMount removed - cache handles freshness with 5-min TTL and 2-min stale time
@@ -50,15 +52,21 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
     const theme = settings.ui_settings?.[themeKey] ?? "default";
     setDashboardThemeState(theme);
 
+    // Sync light/dark mode theme from database to next-themes
+    const colorMode = settings.ui_settings?.theme ?? "system";
+    setNextTheme(colorMode);
+
     console.log(
       "[DashboardSettings] Applied - zoom:",
       validZoom,
-      "theme:",
+      "dashboardTheme:",
       theme,
+      "colorMode:",
+      colorMode,
       "adminMode:",
       adminMode
     );
-  }, [settings, config.default, isAdmin]);
+  }, [settings, config.default, isAdmin, setNextTheme]);
 
   // Update text zoom
   const setTextZoom = async (newZoom: number) => {

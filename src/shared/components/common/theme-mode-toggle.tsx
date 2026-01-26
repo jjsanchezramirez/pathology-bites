@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { usePathname } from "next/navigation";
 import { Button } from "@/shared/components/ui/button";
 import { useEffect, useState } from "react";
+import { userSettingsService } from "@/shared/services/user-settings";
 
 export function ThemeModeToggle() {
   const { theme, setTheme, forcedTheme } = useTheme();
@@ -34,18 +35,30 @@ export function ThemeModeToggle() {
     return null;
   }
 
-  const cycleTheme = () => {
+  const cycleTheme = async () => {
+    let newTheme: string;
     switch (theme) {
       case "light":
-        setTheme("dark");
+        newTheme = "dark";
         break;
       case "dark":
-        setTheme("system");
+        newTheme = "system";
         break;
       case "system":
       default:
-        setTheme("light");
+        newTheme = "light";
         break;
+    }
+
+    // Update next-themes (localStorage + UI)
+    setTheme(newTheme);
+
+    // Update database and cache
+    try {
+      await userSettingsService.updateUISettings({ theme: newTheme });
+      console.log("[ThemeModeToggle] Theme saved to database:", newTheme);
+    } catch (error) {
+      console.error("[ThemeModeToggle] Failed to save theme:", error);
     }
   };
 
