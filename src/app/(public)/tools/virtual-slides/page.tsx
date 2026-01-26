@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, Suspense, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, Suspense, useRef, useCallback, useMemo, useTransition } from "react";
 import { useSearchParams } from "next/navigation";
 import { useClientVirtualSlidesEnhanced } from "@/shared/hooks/use-client-virtual-slides-enhanced";
 import { VIRTUAL_SLIDES_JSON_URL } from "@/shared/config/virtual-slides";
@@ -79,6 +79,9 @@ function VirtualSlidesContent() {
   // Use ref for debounce timer
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
 
+  // useTransition for non-blocking search updates
+  const [isPending, startTransition] = useTransition();
+
   // Metadata for filters
   const [repositories, setRepositories] = useState<string[]>([]);
   const [categories, setCategories] = useState<string[]>([]);
@@ -147,11 +150,15 @@ function VirtualSlidesContent() {
       clearTimeout(debounceTimerRef.current);
     }
 
-    // Set new timer - only update state after 100ms of no typing
+    // Set new timer - only update state after 300ms of no typing
     debounceTimerRef.current = setTimeout(() => {
-      setDebouncedSearchTerm(value);
-    }, 100);
-  }, []);
+      // Wrap in startTransition to mark as non-urgent update
+      // This keeps typing responsive while search happens in background
+      startTransition(() => {
+        setDebouncedSearchTerm(value);
+      });
+    }, 300);
+  }, [startTransition]);
 
   // Console-only notice of dataset URL after initial load completes
   useEffect(() => {
@@ -209,7 +216,9 @@ function VirtualSlidesContent() {
       clearTimeout(debounceTimerRef.current);
     }
     setSearchTerm("");
-    setDebouncedSearchTerm("");
+    startTransition(() => {
+      setDebouncedSearchTerm("");
+    });
     setSelectedRepository("all");
     setSelectedCategory("all");
     setSelectedOrganSystem("all");
@@ -446,7 +455,9 @@ function VirtualSlidesContent() {
                           if (debounceTimerRef.current) {
                             clearTimeout(debounceTimerRef.current);
                           }
-                          setDebouncedSearchTerm(searchTerm);
+                          startTransition(() => {
+                            setDebouncedSearchTerm(searchTerm);
+                          });
                           searchWithFilters({
                             query: searchTerm || undefined,
                             repository:
@@ -467,7 +478,9 @@ function VirtualSlidesContent() {
                         if (debounceTimerRef.current) {
                           clearTimeout(debounceTimerRef.current);
                         }
-                        setDebouncedSearchTerm(searchTerm);
+                        startTransition(() => {
+                          setDebouncedSearchTerm(searchTerm);
+                        });
                         searchWithFilters({
                           query: searchTerm || undefined,
                           repository: selectedRepository !== "all" ? selectedRepository : undefined,
@@ -477,10 +490,10 @@ function VirtualSlidesContent() {
                           page: 1,
                         });
                       }}
-                      disabled={isLoading}
+                      disabled={isLoading || isPending}
                       className="px-6 w-full sm:w-auto"
                     >
-                      {isLoading ? (
+                      {isLoading || isPending ? (
                         <Loader2 className="h-4 w-4 animate-spin" />
                       ) : (
                         <>

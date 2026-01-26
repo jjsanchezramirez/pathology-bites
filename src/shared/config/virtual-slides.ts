@@ -5,4 +5,4 @@ const DATA_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev";
 
 // UPDATED: Now using optimized format (32% smaller: 11MB → 7.4MB)
 // Legacy file (virtual-slides.json) is kept as backup for old clients
-export const VIRTUAL_SLIDES_JSON_URL = `${DATA_BASE}/virtual-slides/virtual-slides-optimized.json`;
+export const VIRTUAL_SLIDES_JSON_URL = `${DATA_BASE}/virtual-slides/virtual-slides-optimized.json?v=2`;
