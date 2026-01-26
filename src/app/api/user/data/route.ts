@@ -10,7 +10,7 @@ import {
 } from "@/features/achievements/services/achievement-checker";
 import type { Achievement } from "@/features/achievements/types/achievement";
 
-interface UserCategoryStats {
+interface _UserCategoryStats {
   category_id: string;
   all_count: number;
   unused_count: number;
@@ -173,39 +173,30 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Parallelize all data fetching
-    const [sessionsResult, allUsersScoresResult] = await Promise.all([
-      // Get all quiz sessions with attempts
-      supabase
-        .from("quiz_sessions")
-        .select(
-          `
-          id,
-          title,
-          created_at,
-          completed_at,
-          score,
-          status,
-          total_questions,
-          total_time_spent,
-          quiz_attempts!inner(
-            question_id,
-            is_correct,
-            time_spent,
-            attempted_at
-          )
+    // Fetch user's quiz sessions (optimized with limit)
+    const sessionsResult = await supabase
+      .from("quiz_sessions")
+      .select(
         `
+        id,
+        title,
+        created_at,
+        completed_at,
+        score,
+        status,
+        total_questions,
+        total_time_spent,
+        quiz_attempts!inner(
+          question_id,
+          is_correct,
+          time_spent,
+          attempted_at
         )
-        .eq("user_id", userId)
-        .order("created_at", { ascending: false }),
-
-      // Get all users' scores for percentile calculation
-      supabase
-        .from("quiz_sessions")
-        .select("user_id, score")
-        .eq("status", "completed")
-        .not("score", "is", null),
-    ]);
+      `
+      )
+      .eq("user_id", userId)
+      .order("created_at", { ascending: false })
+      .limit(100);
 
     if (sessionsResult.error) {
       console.error("Error fetching sessions:", sessionsResult.error);
@@ -214,9 +205,16 @@ export async function GET(request: NextRequest) {
 
     const sessions = sessionsResult.data || [];
 
-    // Flatten all attempts
+    // Flatten all attempts with proper typing
+    interface QuizAttemptItem {
+      question_id: string;
+      is_correct: boolean | null;
+      time_spent: number | null;
+      attempted_at: string;
+    }
+
     const allAttempts = sessions.flatMap((s) =>
-      (s.quiz_attempts || []).map((a: unknown) => ({
+      (s.quiz_attempts || []).map((a: QuizAttemptItem) => ({
         ...a,
         session_id: s.id,
         session_created_at: s.created_at,
@@ -227,33 +225,43 @@ export async function GET(request: NextRequest) {
     );
 
     // Get all unique question IDs
-    const questionIds = [...new Set(allAttempts.map((a: unknown) => a.question_id))];
+    const questionIds = [...new Set(allAttempts.map((a) => a.question_id))];
 
     const { data: questions } = await supabase
       .from("questions")
       .select("id, category_id")
       .in("id", questionIds);
 
-    // Get category names
-    const questionCategoryMap = new Map(
-      questions?.map((q: unknown) => [q.id, q.category_id]) || []
+    // Get category names with proper typing
+    interface QuestionBasic {
+      id: string;
+      category_id: string | null;
+    }
+    const questionCategoryMap = new Map<string, string | null>(
+      (questions || []).map((q: QuestionBasic) => [q.id, q.category_id])
     );
 
     // categoryIds removed - not used in this implementation
 
     // Fetch ALL categories (for quiz init data), not just ones user has attempted
+    interface CategoryBasic {
+      id: string;
+      name: string;
+    }
     const { data: allCategories } = await supabase
       .from("categories")
       .select("id, name, short_form, parent_id, level")
       .order("name")
       .limit(100);
 
-    const categoryMap = new Map(allCategories?.map((cat: unknown) => [cat.id, cat.name]) || []);
+    const categoryMap = new Map<string, string>(
+      (allCategories || []).map((cat: CategoryBasic) => [cat.id, cat.name])
+    );
 
     // Calculate completed sessions
     const completedSessions = sessions.filter((s) => s.status === "completed");
     const totalAttempts = allAttempts.length;
-    const correctAttempts = allAttempts.filter((a: unknown) => a.is_correct).length;
+    const correctAttempts = allAttempts.filter((a) => a.is_correct).length;
     const overallScore =
       totalAttempts > 0 ? Math.round((correctAttempts / totalAttempts) * 100) : 0;
 
@@ -265,37 +273,16 @@ export async function GET(request: NextRequest) {
           )
         : 0;
 
-    // Calculate percentile and peer ranking
-    let userPercentile = 50;
-    let peerRank = 50;
-    let totalUsers = 100;
+    // Calculate percentile and peer ranking using optimized database function
+    // This replaces fetching all users' scores (entire database) with a single aggregation query
+    const { data: percentileData } = await supabase.rpc("get_user_percentile", {
+      p_user_id: userId,
+      p_avg_score: avgScore,
+    });
 
-    if (!allUsersScoresResult.error && allUsersScoresResult.data && avgScore > 0) {
-      const allScores = allUsersScoresResult.data;
-      const userScores = new Map<string, number[]>();
-
-      allScores.forEach((item: unknown) => {
-        const scores = userScores.get(item.user_id) || [];
-        scores.push(item.score);
-        userScores.set(item.user_id, scores);
-      });
-
-      const userAverages = Array.from(userScores.entries()).map(([userId, scores]) => ({
-        userId,
-        avgScore: scores.reduce((sum, s) => sum + s, 0) / scores.length,
-      }));
-
-      const usersWithLowerScore = userAverages.filter((u) => u.avgScore < avgScore).length;
-      userPercentile =
-        userAverages.length > 1
-          ? Math.round((usersWithLowerScore / userAverages.length) * 100)
-          : 50;
-
-      const sortedUsers = userAverages.sort((a, b) => b.avgScore - a.avgScore);
-      const userRank = sortedUsers.findIndex((u) => u.userId === userId) + 1;
-      peerRank = userRank > 0 ? userRank : 50;
-      totalUsers = userAverages.length;
-    }
+    const userPercentile = percentileData?.[0]?.percentile || 50;
+    const peerRank = percentileData?.[0]?.rank || 50;
+    const totalUsers = Number(percentileData?.[0]?.total_users || 100);
 
     // Group attempts by category
     const categoryStatsMap = new Map<
@@ -309,7 +296,14 @@ export async function GET(request: NextRequest) {
       }
     >();
 
-    allAttempts.forEach((attempt: unknown) => {
+    interface AttemptItem {
+      question_id: string;
+      is_correct: boolean;
+      attempted_at: string;
+      time_spent: number | null;
+    }
+
+    allAttempts.forEach((attempt: AttemptItem) => {
       const categoryId = questionCategoryMap.get(attempt.question_id);
       if (!categoryId) return;
 
@@ -455,43 +449,19 @@ export async function GET(request: NextRequest) {
       }))
       .sort((a, b) => a.date.localeCompare(b.date));
 
-    // Calculate activity heatmap (last 365 days)
-    const oneYearAgo = new Date();
-    oneYearAgo.setDate(oneYearAgo.getDate() - 365);
-
-    const dailyActivity: Record<string, { quizzes: number; questions: number }> = {};
-
-    sessions.forEach((session) => {
-      const date = new Date(session.created_at).toISOString().split("T")[0];
-      if (!dailyActivity[date]) {
-        dailyActivity[date] = { quizzes: 0, questions: 0 };
-      }
-      dailyActivity[date].quizzes++;
+    // Get 365-day activity heatmap using optimized database function
+    // This replaces JavaScript processing with database-side aggregation
+    const { data: rawHeatmapData } = await supabase.rpc("get_user_activity_heatmap", {
+      p_user_id: userId,
+      days_back: 365,
     });
 
-    allAttempts.forEach((attempt: unknown) => {
-      const date = new Date(attempt.attempted_at).toISOString().split("T")[0];
-      if (!dailyActivity[date]) {
-        dailyActivity[date] = { quizzes: 0, questions: 0 };
-      }
-      dailyActivity[date].questions++;
-    });
-
-    // Create array with all 365 days
-    const heatmapData = [];
-    const today = new Date();
-
-    for (let i = 364; i >= 0; i--) {
-      const date = new Date(today);
-      date.setDate(date.getDate() - i);
-      const dateStr = date.toISOString().split("T")[0];
-
-      heatmapData.push({
-        date: dateStr,
-        quizzes: dailyActivity[dateStr]?.quizzes || 0,
-        questions: dailyActivity[dateStr]?.questions || 0,
-      });
-    }
+    // Convert bigint to number and ensure date is string
+    const heatmapData = (rawHeatmapData || []).map((day) => ({
+      date: day.date,
+      quizzes: Number(day.quizzes),
+      questions: Number(day.questions),
+    }));
 
     // Calculate heatmap statistics
     const daysWithActivity = heatmapData.filter((d) => d.questions > 0).length;
@@ -535,38 +505,55 @@ export async function GET(request: NextRequest) {
       .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime())
       .slice(0, 10);
 
-    const recentAccuracy =
+    const _recentAccuracy =
       last10Quizzes.length > 0
         ? last10Quizzes.reduce((sum, s) => sum + (s.score || 0), 0) / last10Quizzes.length
         : 0;
 
     // Unique subjects (already have categoryDetails)
-    const uniqueSubjects = categoryDetails.length;
-    const totalCategories = categoryDetails.length; // Total categories user has interacted with
+    const _uniqueSubjects = categoryDetails.length;
+    const _totalCategories = categoryDetails.length; // Total categories user has interacted with
 
     // Speed records - check perfect score quizzes with time limits
-    let speedRecords5min = 0;
-    let speedRecords2min = 0;
-    let speedRecords25in5min = 0;
-    let speedRecords25in2min = 0;
+    let speedRecords10in6min = 0;
+    let speedRecords10in3min = 0;
+    let speedRecords25in12min = 0;
+    let speedRecords25in8min = 0;
 
+    interface QuizSessionItem {
+      total_questions: number | null;
+      total_time_spent: number | null;
+    }
     const perfectQuizzes = completedSessions.filter((s) => s.score === 100);
-    perfectQuizzes.forEach((quiz: unknown) => {
+    perfectQuizzes.forEach((quiz: QuizSessionItem) => {
       // Use total_questions and total_time_spent from the session (more reliable)
       const totalQuestions = quiz.total_questions || 0;
       const totalTime = quiz.total_time_spent || 0;
 
       // Count each qualifying quiz (not just set to 1)
       if (totalQuestions >= 10) {
-        if (totalTime <= 300) speedRecords5min++; // 5 minutes = 300 seconds
-        if (totalTime <= 120) speedRecords2min++; // 2 minutes = 120 seconds
+        if (totalTime <= 360) speedRecords10in6min++; // 6 minutes = 360 seconds
+        if (totalTime <= 180) speedRecords10in3min++; // 3 minutes = 180 seconds
       }
 
       if (totalQuestions >= 25) {
-        if (totalTime <= 300) speedRecords25in5min++; // 5 minutes = 300 seconds
-        if (totalTime <= 120) speedRecords25in2min++; // 2 minutes = 120 seconds
+        if (totalTime <= 720) speedRecords25in12min++; // 12 minutes = 720 seconds
+        if (totalTime <= 480) speedRecords25in8min++; // 8 minutes = 480 seconds
       }
     });
+
+    // Accuracy over last 10 quizzes
+    const accuracyOver10 =
+      last10Quizzes.length > 0
+        ? Math.round(
+            last10Quizzes.reduce((sum, s) => sum + (s.score || 0), 0) / last10Quizzes.length
+          )
+        : 0;
+
+    // Subjects with 100 questions answered correctly
+    const subjectsWith100Questions = categoryDetails.filter(
+      (cat) => cat.correct_attempts >= 100
+    ).length;
 
     // Build UserStats object
     const achievementStats: UserStats = {
@@ -574,13 +561,25 @@ export async function GET(request: NextRequest) {
       perfectScores,
       currentStreak,
       longestStreak,
-      speedRecords5min,
-      speedRecords2min,
-      speedRecords25in5min,
-      speedRecords25in2min,
-      recentAccuracy,
-      uniqueSubjects,
-      totalCategories,
+      speedRecords10in6min,
+      speedRecords10in3min,
+      speedRecords25in12min,
+      speedRecords25in8min,
+      speedRecords25in4min: 0,
+      speedRecords50in14min: 0,
+      speedRecords50in11min: 0,
+      speedRecords50in8min: 0,
+      accuracyOver3: 0,
+      accuracyOver5: 0,
+      accuracyOver8: 0,
+      accuracyOver10,
+      accuracyOver12: 0,
+      accuracyOver15: 0,
+      subjectsWith10Questions: categoryDetails.filter((cat) => cat.correct_attempts >= 10).length,
+      subjectsWith25Questions: categoryDetails.filter((cat) => cat.correct_attempts >= 25).length,
+      subjectsWith50Questions: categoryDetails.filter((cat) => cat.correct_attempts >= 50).length,
+      subjectsWith100Questions,
+      totalCategories: categoryDetails.length,
     };
 
     // Get unlocked achievements from database
@@ -613,26 +612,56 @@ export async function GET(request: NextRequest) {
           break;
         case "speed":
           // Show progress for speed achievements
-          if (def.id === "speed-10in5") {
-            progress = Math.min(achievementStats.speedRecords5min, def.requirement);
-          } else if (def.id === "speed-10in2") {
-            progress = Math.min(achievementStats.speedRecords2min, def.requirement);
-          } else if (def.id === "speed-25in5") {
-            progress = Math.min(achievementStats.speedRecords25in5min, def.requirement);
-          } else if (def.id === "speed-25in2") {
-            progress = Math.min(achievementStats.speedRecords25in2min, def.requirement);
+          if (def.id === "speed-10in6") {
+            progress = Math.min(achievementStats.speedRecords10in6min, def.requirement);
+          } else if (def.id === "speed-10in3") {
+            progress = Math.min(achievementStats.speedRecords10in3min, def.requirement);
+          } else if (def.id === "speed-25in12") {
+            progress = Math.min(achievementStats.speedRecords25in12min, def.requirement);
+          } else if (def.id === "speed-25in8") {
+            progress = Math.min(achievementStats.speedRecords25in8min, def.requirement);
+          } else if (def.id === "speed-25in4") {
+            progress = Math.min(achievementStats.speedRecords25in4min, def.requirement);
+          } else if (def.id === "speed-50in14") {
+            progress = Math.min(achievementStats.speedRecords50in14min, def.requirement);
+          } else if (def.id === "speed-50in11") {
+            progress = Math.min(achievementStats.speedRecords50in11min, def.requirement);
+          } else if (def.id === "speed-50in8") {
+            progress = Math.min(achievementStats.speedRecords50in8min, def.requirement);
           }
           break;
         case "accuracy":
           // Show current accuracy as progress
-          progress = Math.min(achievementStats.recentAccuracy, def.requirement);
+          if (def.id === "accuracy-50-3") {
+            progress = Math.min(achievementStats.accuracyOver3, def.requirement);
+          } else if (def.id === "accuracy-60-5") {
+            progress = Math.min(achievementStats.accuracyOver5, def.requirement);
+          } else if (def.id === "accuracy-70-8") {
+            progress = Math.min(achievementStats.accuracyOver8, def.requirement);
+          } else if (def.id === "accuracy-80-10") {
+            progress = Math.min(achievementStats.accuracyOver10, def.requirement);
+          } else if (def.id === "accuracy-90-12") {
+            progress = Math.min(achievementStats.accuracyOver12, def.requirement);
+          } else if (def.id === "accuracy-100-15") {
+            progress = Math.min(achievementStats.accuracyOver15, def.requirement);
+          }
           break;
         case "differential":
-          if (def.id === "differential-all" && achievementStats.totalCategories) {
-            requirement = achievementStats.totalCategories;
-            progress = achievementStats.uniqueSubjects;
+          if (def.id === "differential-10-3") {
+            progress = Math.min(achievementStats.subjectsWith10Questions, def.requirement);
+          } else if (def.id === "differential-25-10") {
+            progress = Math.min(achievementStats.subjectsWith25Questions, def.requirement);
+          } else if (def.id === "differential-50-20") {
+            progress = Math.min(achievementStats.subjectsWith50Questions, def.requirement);
+          } else if (def.id === "differential-100-all") {
+            if (achievementStats.totalCategories) {
+              requirement = achievementStats.totalCategories;
+              progress = achievementStats.subjectsWith100Questions;
+            } else {
+              progress = 0;
+            }
           } else {
-            progress = Math.min(achievementStats.uniqueSubjects, def.requirement);
+            progress = Math.min(achievementStats.subjectsWith100Questions, def.requirement);
           }
           break;
       }
@@ -661,7 +690,7 @@ export async function GET(request: NextRequest) {
     // Calculate mastered/needs review from attempts
     const questionAttempts = new Map<string, { correct: number; incorrect: number }>();
 
-    allAttempts.forEach((attempt: unknown) => {
+    allAttempts.forEach((attempt: AttemptItem) => {
       const existing = questionAttempts.get(attempt.question_id) || { correct: 0, incorrect: 0 };
       if (attempt.is_correct) {
         existing.correct++;
@@ -699,8 +728,17 @@ export async function GET(request: NextRequest) {
       navigationUrl?: string;
     }> = [];
 
+    interface CompletedSessionItem {
+      id: string;
+      status: string;
+      completed_at: string | null;
+      created_at: string;
+      title: string | null;
+      score: number | null;
+    }
+
     // Add completed quiz sessions
-    completedSessions.forEach((session: unknown) => {
+    completedSessions.forEach((session: CompletedSessionItem) => {
       const isCompleted = session.status === "completed";
       recentActivity.push({
         id: `session-${session.id}`,
@@ -716,8 +754,14 @@ export async function GET(request: NextRequest) {
     });
 
     // Add pending quizzes (in-progress sessions)
+    interface PendingSessionItem {
+      id: string;
+      status: string;
+      created_at: string;
+      title: string | null;
+    }
     const pendingSessions = sessions.filter((s) => s.status === "in_progress");
-    pendingSessions.forEach((session: unknown) => {
+    pendingSessions.forEach((session: PendingSessionItem) => {
       recentActivity.push({
         id: `pending-${session.id}`,
         type: "quiz_started",
@@ -729,8 +773,13 @@ export async function GET(request: NextRequest) {
     });
 
     // Add recently unlocked achievements
+    interface AchievementItem {
+      id: string;
+      group_key: string;
+      created_at: string;
+    }
     const recentAchievements = (unlockedAchievements || []).slice(0, 10);
-    recentAchievements.forEach((achievement: unknown) => {
+    recentAchievements.forEach((achievement: AchievementItem) => {
       const achievementDef = ACHIEVEMENT_DEFINITIONS.find(
         (def) => def.id === achievement.group_key
       );
@@ -784,20 +833,34 @@ export async function GET(request: NextRequest) {
 
     // Extract session titles (last 100 sessions)
     // Sessions data already includes title field from the initial query
-    const sessionTitles = sessions.slice(0, 100).map((s: unknown) => s.title);
+    interface SessionTitleItem {
+      title: string | null;
+    }
+    const sessionTitles = sessions.slice(0, 100).map((s: SessionTitleItem) => s.title || "");
 
     // Process categories for quiz init
-    const subcategories = allCategories?.filter((cat: unknown) => cat.level === 2) || [];
-    const parentCategories = allCategories?.filter((cat: unknown) => cat.level === 1) || [];
+    interface CategoryItem {
+      id: string;
+      name: string;
+      short_form: string | null;
+      parent_id: string | null;
+      level: number;
+    }
+    const subcategories = (allCategories || []).filter((cat: CategoryItem) => cat.level === 2);
+    const parentCategories = (allCategories || []).filter((cat: CategoryItem) => cat.level === 1);
 
     // Create parent lookup
+    interface _ParentCategory {
+      id: string;
+      name: string;
+    }
     const parentLookup = new Map<string, string>();
     for (const parent of parentCategories) {
       parentLookup.set(parent.id, parent.name);
     }
 
     // Get category IDs for stats calculation
-    const allCategoryIds = subcategories.map((cat: unknown) => cat.id);
+    const allCategoryIds = subcategories.map((cat: CategoryItem) => cat.id);
 
     // Fetch user stats for ALL categories using optimized database function
     const { data: allUserStatsData } = await supabase.rpc("get_user_category_stats", {
@@ -805,22 +868,37 @@ export async function GET(request: NextRequest) {
       p_category_ids: allCategoryIds,
     });
 
-    // Create stats lookup map
-    const allStatsMap = new Map<string, Omit<UserCategoryStats, "category_id">>();
-    for (const stat of allUserStatsData || []) {
+    // Create stats lookup map with proper property names
+    interface QuizQuestionStats {
+      all: number;
+      unused: number;
+      needsReview: number;
+      marked: number;
+      mastered: number;
+    }
+    interface UserStatItem {
+      category_id: string;
+      all_count: number;
+      unused_count: number;
+      incorrect_count: number;
+      marked_count: number;
+      correct_count: number;
+    }
+    const allStatsMap = new Map<string, QuizQuestionStats>();
+    for (const stat of (allUserStatsData || []) as UserStatItem[]) {
       const categoryId =
         typeof stat.category_id === "string" ? stat.category_id : String(stat.category_id);
       allStatsMap.set(categoryId, {
         all: stat.all_count,
         unused: stat.unused_count,
-        needsReview: stat.incorrect_count, // Rename to match QuestionTypeStats interface
+        needsReview: stat.incorrect_count,
         marked: stat.marked_count,
-        mastered: stat.correct_count, // Rename to match QuestionTypeStats interface
+        mastered: stat.correct_count,
       });
     }
 
     // Build categories with user stats for quiz init
-    const categoriesForQuizInit = subcategories.map((category: unknown) => {
+    const categoriesForQuizInit = subcategories.map((category: CategoryItem) => {
       const stats = allStatsMap.get(category.id) || {
         all: 0,
         unused: 0,
