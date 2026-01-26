@@ -10,42 +10,36 @@ import { UserStats, AchievementDefinition, checkAchievements } from "./achieveme
 export async function getUserStats(userId: string): Promise<UserStats> {
   const supabase = await createClient();
 
-  // Get total completed quizzes
-  const { count: totalQuizzes } = await supabase
+  // OPTIMIZATION: Fetch ALL quiz sessions once for multiple calculations
+  // This single query replaces 5 separate queries:
+  // 1. totalQuizzes count
+  // 2. perfectScores count
+  // 3. recent quizzes for accuracy metrics
+  // 4. all quizzes for streak calculation
+  // 5. perfect quizzes for speed records
+  const { data: allQuizSessions } = await supabase
     .from("quiz_sessions")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .eq("status", "completed");
-
-  // Get perfect scores (100% accuracy)
-  const { count: perfectScores } = await supabase
-    .from("quiz_sessions")
-    .select("*", { count: "exact", head: true })
+    .select("score, created_at, completed_at, total_questions, total_time_spent")
     .eq("user_id", userId)
     .eq("status", "completed")
-    .gte("score", 100);
+    .order("created_at", { ascending: false });
 
-  // Get accuracy over different numbers of recent quizzes
-  const getAccuracyOverLastN = async (n: number): Promise<number> => {
-    const { data: quizzes } = await supabase
-      .from("quiz_sessions")
-      .select("score")
-      .eq("user_id", userId)
-      .eq("status", "completed")
-      .order("created_at", { ascending: false })
-      .limit(n);
+  // Count total completed quizzes and perfect scores
+  const totalQuizzes = allQuizSessions?.length || 0;
+  const perfectScores = allQuizSessions?.filter((q) => (q.score || 0) >= 100).length || 0;
 
+  // Calculate accuracy over recent N quizzes (already sorted by created_at DESC)
+  const calculateAccuracy = (quizzes: typeof allQuizSessions, n: number): number => {
     if (!quizzes || quizzes.length < n) return -1; // Not enough quizzes
-
-    return quizzes.reduce((sum, q) => sum + (q.score || 0), 0) / quizzes.length;
+    return quizzes.slice(0, n).reduce((sum, q) => sum + (q.score || 0), 0) / n;
   };
 
-  const accuracyOver3 = await getAccuracyOverLastN(3);
-  const accuracyOver5 = await getAccuracyOverLastN(5);
-  const accuracyOver8 = await getAccuracyOverLastN(8);
-  const accuracyOver10 = await getAccuracyOverLastN(10);
-  const accuracyOver12 = await getAccuracyOverLastN(12);
-  const accuracyOver15 = await getAccuracyOverLastN(15);
+  const accuracyOver3 = calculateAccuracy(allQuizSessions, 3);
+  const accuracyOver5 = calculateAccuracy(allQuizSessions, 5);
+  const accuracyOver8 = calculateAccuracy(allQuizSessions, 8);
+  const accuracyOver10 = calculateAccuracy(allQuizSessions, 10);
+  const accuracyOver12 = calculateAccuracy(allQuizSessions, 12);
+  const accuracyOver15 = calculateAccuracy(allQuizSessions, 15);
 
   console.log("Accuracy calculations:", {
     accuracyOver3,
@@ -57,23 +51,19 @@ export async function getUserStats(userId: string): Promise<UserStats> {
   });
 
   // Get correct answers grouped by subject (for differential diagnosis achievements)
+  // OPTIMIZATION: Use nested select to get category_id in single query (JOIN)
   const { data: correctAttempts } = await supabase
     .from("quiz_attempts")
-    .select("question_id")
+    .select("questions!inner(category_id)")
     .eq("user_id", userId)
     .eq("is_correct", true);
 
-  const questionIds = correctAttempts?.map((a) => a.question_id) || [];
-  const { data: questionsData } = await supabase
-    .from("questions")
-    .select("category_id")
-    .in("id", questionIds.length > 0 ? questionIds : ["00000000-0000-0000-0000-000000000000"]); // Dummy ID if no questions
-
   // Count correct answers per subject
   const subjectCounts = new Map<string, number>();
-  questionsData?.forEach((q) => {
-    if (q.category_id) {
-      subjectCounts.set(q.category_id, (subjectCounts.get(q.category_id) || 0) + 1);
+  correctAttempts?.forEach((attempt) => {
+    const categoryId = (attempt.questions as { category_id: string | null })?.category_id;
+    if (categoryId) {
+      subjectCounts.set(categoryId, (subjectCounts.get(categoryId) || 0) + 1);
     }
   });
 
@@ -98,21 +88,14 @@ export async function getUserStats(userId: string): Promise<UserStats> {
 
   const totalCategories = new Set(categoriesWithQuestions?.map((q) => q.category_id) || []).size;
 
-  // Calculate streaks from quiz_sessions dates
-  const { data: allCompletedQuizzes } = await supabase
-    .from("quiz_sessions")
-    .select("created_at, completed_at")
-    .eq("user_id", userId)
-    .eq("status", "completed")
-    .order("created_at", { ascending: true });
-
+  // Calculate streaks from quiz_sessions dates (reusing allQuizSessions)
   let currentStreak = 0;
   let longestStreak = 0;
 
-  if (allCompletedQuizzes && allCompletedQuizzes.length > 0) {
+  if (allQuizSessions && allQuizSessions.length > 0) {
     // Get unique dates (days) when quizzes were completed
     const uniqueDates = new Set(
-      allCompletedQuizzes.map((q) => {
+      allQuizSessions.map((q) => {
         const date = new Date(q.completed_at || q.created_at);
         // Normalize to start of day in UTC
         return new Date(Date.UTC(date.getUTCFullYear(), date.getUTCMonth(), date.getUTCDate()))
@@ -170,14 +153,7 @@ export async function getUserStats(userId: string): Promise<UserStats> {
 
   console.log("Streak calculation - current:", currentStreak, "longest:", longestStreak);
 
-  // Calculate speed records - check perfect score quizzes with sufficient questions
-  const { data: perfectQuizzes } = await supabase
-    .from("quiz_sessions")
-    .select("id, total_questions, total_time_spent, score")
-    .eq("user_id", userId)
-    .eq("status", "completed")
-    .eq("score", 100); // Perfect score only
-
+  // Calculate speed records - filter perfect score quizzes (reusing allQuizSessions)
   let speedRecords10in6min = 0; // 10 questions in 6 min
   let speedRecords10in3min = 0; // 10 questions in 3 min
   let speedRecords25in12min = 0; // 25 questions in 12 min
@@ -187,7 +163,8 @@ export async function getUserStats(userId: string): Promise<UserStats> {
   let speedRecords50in11min = 0; // 50 questions in 11 min
   let speedRecords50in8min = 0; // 50 questions in 8 min
 
-  if (perfectQuizzes && perfectQuizzes.length > 0) {
+  const perfectQuizzes = allQuizSessions?.filter((q) => (q.score || 0) === 100) || [];
+  if (perfectQuizzes.length > 0) {
     perfectQuizzes.forEach((quiz) => {
       const totalQuestions = quiz.total_questions;
       const totalTime = quiz.total_time_spent || 0;
