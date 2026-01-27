@@ -20,7 +20,7 @@ dist/
 
 # TypeScript
 *.tsbuildinfo
-next-env.d.ts
+# Note: next-env.d.ts is auto-generated but should be committed for type safety
 
 # Testing
 coverage/
@@ -32,6 +32,8 @@ coverage/
 .env
 .env.*
 *.env
+# Exception: .env.example should be committed
+!.env.example
 
 # ==============================================================================
 # DEVELOPMENT & DEBUGGING
