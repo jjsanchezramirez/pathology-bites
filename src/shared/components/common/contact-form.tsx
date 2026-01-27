@@ -58,18 +58,21 @@ export function ContactForm({
 
   // Prefill form data when props change or user is loaded
   useEffect(() => {
+    const firstName =
+      user?.user_metadata?.first_name ||
+      user?.user_metadata?.full_name?.split(" ")[0] ||
+      "";
+    const lastName =
+      user?.user_metadata?.last_name ||
+      user?.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
+      "";
+
     setFormData((prev) => ({
       ...prev,
       requestType: prefillType || "general",
       email: user?.email || prev.email,
-      firstName:
-        user?.user_metadata?.first_name ||
-        user?.user_metadata?.full_name?.split(" ")[0] ||
-        prev.firstName,
-      lastName:
-        user?.user_metadata?.last_name ||
-        user?.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
-        prev.lastName,
+      firstName: firstName || prev.firstName,
+      lastName: lastName || prev.lastName,
       organization: user?.user_metadata?.organization || prev.organization,
       inquiry:
         prefillSubject && prefillMessage

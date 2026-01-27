@@ -33,9 +33,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Check if we're on a public page that doesn't need auth
   const isPublic = typeof window !== "undefined" && isPublicRoute(window.location.pathname);
 
-  // Use minimal auth for public pages, full auth for protected pages
+  // Always load auth data (minimal: false) so user data is available for prefilling forms
+  // Just disable security enforcement on public pages
   const authState = useAuth({
-    minimal: isPublic,
+    minimal: false,
     enableSecurity: !isPublic,
   });
 
