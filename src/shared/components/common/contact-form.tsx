@@ -62,12 +62,15 @@ export function ContactForm({
       ...prev,
       requestType: prefillType || "general",
       email: user?.email || prev.email,
+      firstName: user?.user_metadata?.first_name || prev.firstName,
+      lastName: user?.user_metadata?.last_name || prev.lastName,
+      organization: user?.user_metadata?.organization || prev.organization,
       inquiry:
         prefillSubject && prefillMessage
           ? `Subject: ${prefillSubject}\n\n${prefillMessage}`
           : prefillMessage || prev.inquiry,
     }));
-  }, [prefillType, prefillSubject, prefillMessage, user?.email]);
+  }, [prefillType, prefillSubject, prefillMessage, user?.email, user?.user_metadata]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

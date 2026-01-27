@@ -75,7 +75,7 @@ export function V1ReleaseMessage({ onDismiss }: V1ReleaseMessageProps) {
 
             <div className="flex flex-col sm:flex-row gap-2 pt-2">
               <Link
-                href={`/contact?type=general&subject=${encodeURIComponent("Feature Suggestion")}&message=${encodeURIComponent("I have a suggestion for improving Pathology Bites:")}`}
+                href={`/contact?type=technical&subject=${encodeURIComponent("Feature Suggestion")}&message=${encodeURIComponent("I have a suggestion for improving Pathology Bites:")}`}
                 target="_blank"
                 rel="noopener noreferrer"
                 className="flex-1"
