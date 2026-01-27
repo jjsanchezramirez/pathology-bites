@@ -8,6 +8,24 @@ import { createServerClient } from "@supabase/ssr";
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
+  // Check if maintenance mode is enabled
+  const isMaintenanceMode = process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true";
+
+  // Maintenance mode: redirect all routes except maintenance page and essential APIs
+  if (isMaintenanceMode) {
+    const isMaintenancePage = pathname === "/maintenance";
+    const isMaintenanceApi = pathname.startsWith("/api/public/maintenance");
+    const isAuthApi = pathname.startsWith("/api/auth/");
+
+    // Allow access to maintenance page, maintenance API, and auth APIs
+    if (!isMaintenancePage && !isMaintenanceApi && !isAuthApi) {
+      return NextResponse.redirect(new URL("/maintenance", request.url));
+    }
+
+    // If on maintenance page or allowed API, continue
+    return NextResponse.next();
+  }
+
   // Define which routes need protection
   const isAdminRoute = pathname.startsWith("/admin");
   const isDashboardRoute = pathname.startsWith("/dashboard");

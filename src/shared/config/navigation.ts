@@ -7,7 +7,6 @@ export interface NavigationItem {
   requiredPermission?: string;
   adminOnly?: boolean;
   showToRoles?: string[]; // Array of roles that can see this item
-  comingSoon?: boolean; // Badge to indicate feature is coming soon
   isNew?: boolean; // Badge to indicate feature is new
   showBadge?: boolean; // Whether to show a badge count
   badgeKey?: "revisionQueue" | "reviewQueue" | "drafts"; // Key for fetching badge count
@@ -121,7 +120,6 @@ export const adminNavigationSections: NavigationSection[] = [
         icon: "BarChart",
         requiredPermission: "analytics.view",
         adminOnly: true,
-        comingSoon: true,
       },
       {
         name: "Notifications",
@@ -184,7 +182,6 @@ export function getUserNavigationSections(): NavigationSection[] {
           name: "Learning Modules",
           href: "/dashboard/learning",
           icon: "BookOpen",
-          comingSoon: true,
         },
       ],
     },
@@ -205,7 +202,6 @@ export function getUserNavigationSections(): NavigationSection[] {
           name: "My Progress",
           href: "/dashboard/progress",
           icon: "TrendingUp",
-          comingSoon: true,
         },
       ],
     },

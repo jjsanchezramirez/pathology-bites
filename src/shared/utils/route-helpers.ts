@@ -26,7 +26,6 @@ export function isPublicRoute(pathname: string): boolean {
     "/privacy",
     "/terms",
     "/maintenance",
-    "/coming-soon",
   ];
 
   // Exact matches

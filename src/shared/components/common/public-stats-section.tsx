@@ -5,7 +5,7 @@ import { usePublicStats } from "@/shared/hooks/use-public-stats";
 
 interface PublicStatsSectionProps {
   className?: string;
-  variant?: "landing" | "coming-soon" | "about";
+  variant?: "landing" | "about";
 }
 
 export function PublicStatsSection({
@@ -16,12 +16,6 @@ export function PublicStatsSection({
 
   const getLabels = () => {
     switch (variant) {
-      case "coming-soon":
-        return {
-          aiQuestions: { title: "AI-Generated Questions", subtitle: "Unlimited practice material" },
-          expertQuestions: { title: "Expert-Curated Questions", subtitle: "High-quality content" },
-          categories: { title: "Pathology Subspecialties", subtitle: "Complete coverage" },
-        };
       case "about":
         return {
           aiQuestions: { title: "AI-Generated Questions", subtitle: "Unlimited practice material" },

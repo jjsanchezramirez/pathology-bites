@@ -1,9 +1,69 @@
 "use client";
 
 import React from "react";
+import dynamic from "next/dynamic";
 
 import { Button } from "@/shared/components/ui/button";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
+import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
+
+// Dynamically import Lottie to avoid SSR issues
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
+
+// Full-screen page-level error component with Lottie animation
+function PageLevelError({ retry, goHome }: { retry: () => void; goHome?: () => void }) {
+  const { animationData } = useLottieAnimation("access_denied");
+
+  return (
+    <div className="min-h-[80vh] flex items-center justify-center px-4">
+      <div className="max-w-2xl mx-auto text-center space-y-8">
+        {/* Lottie Animation */}
+        {animationData && (
+          <div className="w-full max-w-[150px] mx-auto">
+            <Lottie
+              animationData={animationData}
+              loop={true}
+              style={{ width: "100%", height: "auto" }}
+            />
+          </div>
+        )}
+
+        {/* Title */}
+        <div className="space-y-3">
+          <h1 className="text-4xl font-bold tracking-tight">Something went wrong</h1>
+          <p className="text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
+            We encountered an unexpected error while loading this page. Please try again or return
+            to the dashboard.
+          </p>
+        </div>
+
+        {/* Action Buttons */}
+        <div className="flex flex-col items-center justify-center gap-3 pt-4">
+          <Button
+            onClick={retry}
+            size="lg"
+            className="flex items-center justify-center gap-2 py-6 text-lg w-full max-w-xs"
+          >
+            <RefreshCw className="w-5 h-5" />
+            Try Again
+          </Button>
+
+          {goHome && (
+            <Button
+              onClick={goHome}
+              size="lg"
+              variant="ghost"
+              className="flex items-center justify-center gap-2 py-6 text-lg w-full max-w-xs"
+            >
+              <Home className="w-5 h-5" />
+              Back to Dashboard
+            </Button>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface ErrorBoundaryState {
   hasError: boolean;
@@ -87,8 +147,15 @@ export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, E
 
       const { level = "component", showHomeButton } = this.props;
       const isPageLevel = level === "page";
-      const _isFeatureLevel = level === "feature";
 
+      // Page-level error: Full-screen design with Lottie animation
+      if (isPageLevel) {
+        return (
+          <PageLevelError retry={this.retry} goHome={showHomeButton ? this.goHome : undefined} />
+        );
+      }
+
+      // Component/Feature-level error: Compact design
       return (
         <div className="flex items-center justify-center min-h-[200px] p-6">
           <div className="text-center space-y-4 max-w-md">
@@ -99,7 +166,7 @@ export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, E
               Something went wrong
             </h3>
             <p className="text-sm text-gray-600 dark:text-gray-400">
-              {isPageLevel ? "Please try refreshing the page" : "This component failed to load"}
+              This component failed to load
             </p>
             <div className="flex gap-2 justify-center">
               <Button onClick={this.retry} variant="outline" size="sm">

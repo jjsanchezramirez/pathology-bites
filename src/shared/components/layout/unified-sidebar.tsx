@@ -181,8 +181,7 @@ export function UnifiedSidebar({
                               "flex items-center h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
                               isOpen ? "pl-[8px] pr-3" : "justify-center px-0 w-10",
                               isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
-                              isLoading && "pointer-events-none opacity-60",
-                              item.comingSoon && "opacity-60"
+                              isLoading && "pointer-events-none opacity-60"
                             )}
                             title={!isOpen ? item.name : undefined}
                           >
@@ -219,11 +218,6 @@ export function UnifiedSidebar({
                                   {reviewQueueCount}
                                 </span>
                               )}
-                            {isOpen && item.comingSoon && (
-                              <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-                                Soon
-                              </span>
-                            )}
                             {isOpen && item.isNew && (
                               <span className="ml-auto text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
                                 New

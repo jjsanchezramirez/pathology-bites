@@ -2,10 +2,14 @@
 "use client";
 
 import { useEffect } from "react";
+import { usePathname } from "next/navigation";
 import { Navbar } from "@/shared/components/layout/navbar";
 import { Footer } from "@/shared/components/layout/footer";
 
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const isMaintenancePage = pathname === "/maintenance";
+
   // Enforce light mode on public pages (but NOT dashboard theme)
   // Dashboard theme should be loaded from database when user navigates to dashboard
   useEffect(() => {
@@ -21,9 +25,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
   return (
     <>
-      <Navbar />
+      {!isMaintenancePage && <Navbar />}
       <main>{children}</main>
-      <Footer />
+      {!isMaintenancePage && <Footer />}
     </>
   );
 }
