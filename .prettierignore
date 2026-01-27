@@ -19,10 +19,15 @@ next-env.d.ts
 
 # Cache
 .cache
+.swc
 tsconfig.tsbuildinfo
 
 # Development directories
 dev
+
+# AI Assistant configurations
+.claude
+.kilocode
 
 # Git
 .git

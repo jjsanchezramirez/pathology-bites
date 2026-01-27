@@ -18,6 +18,9 @@ out/
 build/
 dist/
 
+# SWC (Speedy Web Compiler) cache
+.swc/
+
 # TypeScript
 *.tsbuildinfo
 # Note: next-env.d.ts is auto-generated but should be committed for type safety
@@ -70,6 +73,10 @@ Icon
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# AI Assistant configurations
+.claude/
+.kilocode/
 
 # ==============================================================================
 # TEMPORARY & MISC FILES

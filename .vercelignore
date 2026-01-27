@@ -5,6 +5,7 @@
 out
 build
 dist
+.swc
 
 # Dependencies (installed on Vercel)
 node_modules
@@ -16,6 +17,8 @@ node_modules
 .git
 .gitignore
 .vscode
+.claude
+.kilocode
 
 # Tests/coverage/logs
 coverage
