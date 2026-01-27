@@ -59,9 +59,7 @@ export function ContactForm({
   // Prefill form data when props change or user is loaded
   useEffect(() => {
     const firstName =
-      user?.user_metadata?.first_name ||
-      user?.user_metadata?.full_name?.split(" ")[0] ||
-      "";
+      user?.user_metadata?.first_name || user?.user_metadata?.full_name?.split(" ")[0] || "";
     const lastName =
       user?.user_metadata?.last_name ||
       user?.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
