@@ -62,8 +62,14 @@ export function ContactForm({
       ...prev,
       requestType: prefillType || "general",
       email: user?.email || prev.email,
-      firstName: user?.user_metadata?.first_name || prev.firstName,
-      lastName: user?.user_metadata?.last_name || prev.lastName,
+      firstName:
+        user?.user_metadata?.first_name ||
+        user?.user_metadata?.full_name?.split(" ")[0] ||
+        prev.firstName,
+      lastName:
+        user?.user_metadata?.last_name ||
+        user?.user_metadata?.full_name?.split(" ").slice(1).join(" ") ||
+        prev.lastName,
       organization: user?.user_metadata?.organization || prev.organization,
       inquiry:
         prefillSubject && prefillMessage
