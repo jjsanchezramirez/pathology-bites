@@ -149,10 +149,10 @@ function VirtualSlidesContent() {
       clearTimeout(debounceTimerRef.current);
     }
 
-    // Set new timer - only update state after 200ms of no typing
+    // Set new timer - only update state after 300ms of no typing
     debounceTimerRef.current = setTimeout(() => {
       setDebouncedSearchTerm(value);
-    }, 200);
+    }, 300);
   }, []);
 
   // Console-only notice of dataset URL after initial load completes
@@ -165,11 +165,14 @@ function VirtualSlidesContent() {
   // Automatic search when debounced term or filters change (only in Search mode)
   useEffect(() => {
     if (mode === "search") {
+      const isEmptySearch = !debouncedSearchTerm || debouncedSearchTerm.trim() === "";
       searchWithFilters({
         query: debouncedSearchTerm || undefined,
         repository: selectedRepository !== "all" ? selectedRepository : undefined,
         category: selectedCategory !== "all" ? selectedCategory : undefined,
         subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
+        randomMode: isEmptySearch, // Use random mode when search is empty
+        randomSeed: isEmptySearch ? Math.floor(Math.random() * 1e9) : undefined,
         page: 1, // Reset to first page when filters change
       });
     }
@@ -225,6 +228,8 @@ function VirtualSlidesContent() {
       repository: undefined,
       category: undefined,
       subcategory: undefined,
+      randomMode: mode === "study", // Keep randomMode if in Study mode
+      randomSeed: mode === "study" ? Math.floor(Math.random() * 1e9) : undefined,
       page: 1,
     });
   };
@@ -320,52 +325,45 @@ function VirtualSlidesContent() {
         }
       />
 
-      {/* Repository Icons Row */}
-      <section className="py-4 md:py-6">
+      {/* Repository Icons Row - Hidden on mobile */}
+      <section className="py-4 md:py-6 hidden md:block">
         <div className="container px-4 mx-auto max-w-6xl">
-          <div className="flex flex-wrap items-center justify-center gap-2 sm:gap-3 md:gap-4 max-w-4xl mx-auto">
+          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 max-w-4xl mx-auto">
             {[
               {
                 name: "Heme eTutorial",
                 url: "http://www.hematopathologyetutorial.com/",
                 logo: "logos/hematopathology-etutorial-logo.png",
-                mobileSize: "large",
               },
               {
                 name: "Leeds",
                 url: "https://www.virtualpathology.leeds.ac.uk/",
                 logo: "logos/university-of-leeds-logo.png",
-                mobileSize: "large",
               },
               {
                 name: "PathPresenter",
                 url: "https://pathpresenter.net/",
                 logo: "logos/path-presenter-logo.png",
-                mobileSize: "small",
               },
               {
                 name: "MGH",
                 url: "https://learn.mghpathology.org/",
                 logo: "logos/mgh-logo.png",
-                mobileSize: "small",
               },
               {
                 name: "Toronto",
                 url: "https://lmpimg.med.utoronto.ca/",
                 logo: "logos/university-of-toronto-logo.png",
-                mobileSize: "small",
               },
               {
                 name: "Rosai",
                 url: "https://rosai.secondslide.com/",
                 logo: "logos/rosai-collection-logo.png",
-                mobileSize: "large",
               },
               {
                 name: "Recut Club",
                 url: "https://recutclub.com/",
                 logo: "logos/recut-club-logo.png",
-                mobileSize: "large",
               },
             ].map((repo) => (
               <a
@@ -373,9 +371,7 @@ function VirtualSlidesContent() {
                 href={repo.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`group relative h-14 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2
-                  ${repo.mobileSize === "large" ? "w-[calc(42%-4px)]" : "w-[calc(28%-4px)]"}
-                  sm:w-28`}
+                className="group relative h-14 w-28 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
               >
                 <Image
                   src={getR2PublicUrl(repo.logo)}
@@ -398,12 +394,26 @@ function VirtualSlidesContent() {
           <div className="flex items-center justify-center mb-4">
             <div className="inline-flex bg-muted/50 rounded-full p-1 gap-1">
               <button
-                onClick={() => {
-                  // If coming from Study mode, restore the saved diagnosis visibility
+                onClick={async () => {
+                  // If coming from Study mode, restore the saved diagnosis visibility and re-run search
                   if (mode === "study") {
                     setShowDiagnoses(searchModeDiagnosesVisibility.current);
+                    // First set the mode
+                    setMode("search");
+                    // Then explicitly trigger search with current filters
+                    const isEmptySearch = !debouncedSearchTerm || debouncedSearchTerm.trim() === "";
+                    await searchWithFilters({
+                      query: debouncedSearchTerm || undefined,
+                      repository: selectedRepository !== "all" ? selectedRepository : undefined,
+                      category: selectedCategory !== "all" ? selectedCategory : undefined,
+                      subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
+                      randomMode: isEmptySearch,
+                      randomSeed: isEmptySearch ? Math.floor(Math.random() * 1e9) : undefined,
+                      page: 1,
+                    });
+                  } else {
+                    setMode("search");
                   }
-                  setMode("search");
                 }}
                 className={`flex items-center gap-2 px-4 md:px-6 py-2 rounded-full font-medium transition-all ${
                   mode === "search"
@@ -525,6 +535,7 @@ function VirtualSlidesContent() {
                           }
                           const currentValue = searchInputRef.current?.value || "";
                           setDebouncedSearchTerm(currentValue);
+                          const isEmptySearch = !currentValue || currentValue.trim() === "";
                           searchWithFilters({
                             query: currentValue || undefined,
                             repository:
@@ -532,6 +543,8 @@ function VirtualSlidesContent() {
                             category: selectedCategory !== "all" ? selectedCategory : undefined,
                             subcategory:
                               selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
+                            randomMode: isEmptySearch,
+                            randomSeed: isEmptySearch ? Math.floor(Math.random() * 1e9) : undefined,
                             page: 1,
                           });
                         }
@@ -547,26 +560,23 @@ function VirtualSlidesContent() {
                         }
                         const currentValue = searchInputRef.current?.value || "";
                         setDebouncedSearchTerm(currentValue);
+                        const isEmptySearch = !currentValue || currentValue.trim() === "";
                         searchWithFilters({
                           query: currentValue || undefined,
                           repository: selectedRepository !== "all" ? selectedRepository : undefined,
                           category: selectedCategory !== "all" ? selectedCategory : undefined,
                           subcategory:
                             selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
+                          randomMode: isEmptySearch,
+                          randomSeed: isEmptySearch ? Math.floor(Math.random() * 1e9) : undefined,
                           page: 1,
                         });
                       }}
                       disabled={isLoading}
                       className="px-6 w-full sm:w-auto"
                     >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin" />
-                      ) : (
-                        <>
-                          <Search className="h-4 w-4 mr-2" />
-                          Search
-                        </>
-                      )}
+                      <Search className="h-4 w-4 mr-2" />
+                      Search
                     </Button>
                   </div>
 
@@ -739,29 +749,17 @@ function VirtualSlidesContent() {
                   <table className="w-full">
                     <thead className="bg-muted/50 border-b">
                       <tr>
-                        <th className="text-left p-2 md:p-4 font-semibold w-24 md:w-32">Preview</th>
-                        <th className="text-left p-2 md:p-4 font-semibold min-w-[200px] md:min-w-[300px]">
-                          <span className="md:hidden">Slide Info</span>
-                          <span className="hidden md:inline lg:hidden">
-                            {showDiagnoses ? "Diagnosis and Clinical Info" : "Slide Info"}
-                          </span>
-                          <span className="hidden lg:inline">
+                        <th className="text-left p-2 md:p-4 font-semibold w-20 md:w-24">Preview</th>
+                        <th className="text-left p-2 md:p-4 font-semibold">
+                          <span className="md:hidden">{showDiagnoses ? "Diagnosis" : "Info"}</span>
+                          <span className="hidden md:inline">
                             {showDiagnoses ? "Diagnosis and Clinical Info" : "Slide Info"}
                           </span>
                         </th>
-                        <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell w-32 md:w-40">
+                        <th className="text-left p-2 md:p-4 font-semibold w-24 md:w-32 hidden lg:table-cell">
                           Repository
                         </th>
-                        <th className="text-left p-2 md:p-4 font-semibold hidden md:table-cell w-32 md:w-40">
-                          Category
-                        </th>
-                        <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell w-24 md:w-32">
-                          Details
-                        </th>
-                        <th className="text-left p-2 md:p-4 font-semibold w-24 md:w-32">
-                          <span className="md:hidden">Action</span>
-                          <span className="hidden md:inline">Actions</span>
-                        </th>
+                        <th className="text-left p-2 md:p-4 font-semibold w-16 md:w-40">Actions</th>
                       </tr>
                     </thead>
                     <LoadingSkeleton variant="table" />
@@ -779,33 +777,25 @@ function VirtualSlidesContent() {
                 <CardContent className="p-0">
                   {/* Results Table */}
                   <div className="overflow-x-auto">
-                    <table className="w-full table-fixed">
+                    <table className="w-full">
                       <thead className="bg-muted/50 border-b">
                         <tr>
-                          <th className="text-left p-2 md:p-4 font-semibold w-24 md:w-32">
+                          <th className="text-left p-2 md:p-4 font-semibold w-20 md:w-24">
                             Preview
                           </th>
-                          <th className="text-left p-2 md:p-4 font-semibold min-w-[200px] md:min-w-[300px]">
-                            <span className="md:hidden">Slide Info</span>
-                            <span className="hidden md:inline lg:hidden">
-                              {showDiagnoses ? "Diagnosis and Clinical Info" : "Slide Info"}
+                          <th className="text-left p-2 md:p-4 font-semibold">
+                            <span className="md:hidden">
+                              {showDiagnoses ? "Diagnosis" : "Info"}
                             </span>
-                            <span className="hidden lg:inline">
+                            <span className="hidden md:inline">
                               {showDiagnoses ? "Diagnosis and Clinical Info" : "Slide Info"}
                             </span>
                           </th>
-                          <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell w-32 md:w-40">
+                          <th className="text-left p-2 md:p-4 font-semibold w-24 md:w-32 hidden lg:table-cell">
                             Repository
                           </th>
-                          <th className="text-left p-2 md:p-4 font-semibold hidden md:table-cell w-32 md:w-40">
-                            Category
-                          </th>
-                          <th className="text-left p-2 md:p-4 font-semibold hidden lg:table-cell w-24 md:w-32">
-                            Details
-                          </th>
-                          <th className="text-left p-2 md:p-4 font-semibold w-24 md:w-32">
-                            <span className="md:hidden">Action</span>
-                            <span className="hidden md:inline">Actions</span>
+                          <th className="text-left p-2 md:p-4 font-semibold w-16 md:w-40">
+                            Actions
                           </th>
                         </tr>
                       </thead>

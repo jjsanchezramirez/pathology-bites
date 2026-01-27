@@ -7,44 +7,18 @@ import { memo } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { ExternalLink, Eye, Microscope } from "lucide-react";
 import Image from "next/image";
+import { getR2PublicUrl } from "@/shared/services/r2-storage";
+import { getVirtualSlideCategoryInfo } from "../utils/virtual-slides-category-map";
 
-// Repository color mapping
-const REPOSITORY_COLORS: Record<string, { bg: string; text: string; border: string }> = {
-  "Hematopathology eTutorial": {
-    bg: "bg-red-100 dark:bg-red-950",
-    text: "text-red-700 dark:text-red-300",
-    border: "border-red-300 dark:border-red-700",
-  },
-  "Leeds University": {
-    bg: "bg-blue-100 dark:bg-blue-950",
-    text: "text-blue-700 dark:text-blue-300",
-    border: "border-blue-300 dark:border-blue-700",
-  },
-  PathPresenter: {
-    bg: "bg-green-100 dark:bg-green-950",
-    text: "text-green-700 dark:text-green-300",
-    border: "border-green-300 dark:border-green-700",
-  },
-  "MGH Pathology": {
-    bg: "bg-purple-100 dark:bg-purple-950",
-    text: "text-purple-700 dark:text-purple-300",
-    border: "border-purple-300 dark:border-purple-700",
-  },
-  "University of Toronto LMP": {
-    bg: "bg-orange-100 dark:bg-orange-950",
-    text: "text-orange-700 dark:text-orange-300",
-    border: "border-orange-300 dark:border-orange-700",
-  },
-  "Rosai Collection": {
-    bg: "bg-pink-100 dark:bg-pink-950",
-    text: "text-pink-700 dark:text-pink-300",
-    border: "border-pink-300 dark:border-pink-700",
-  },
-  "Recut Club": {
-    bg: "bg-teal-100 dark:bg-teal-950",
-    text: "text-teal-700 dark:text-teal-300",
-    border: "border-teal-300 dark:border-teal-700",
-  },
+// Repository logo mapping
+const REPOSITORY_LOGOS: Record<string, string> = {
+  "Hematopathology eTutorial": "logos/hematopathology-etutorial-logo.png",
+  "Leeds University": "logos/university-of-leeds-logo.png",
+  PathPresenter: "logos/path-presenter-logo.png",
+  "MGH Pathology": "logos/mgh-logo.png",
+  "University of Toronto LMP": "logos/university-of-toronto-logo.png",
+  "Rosai Collection": "logos/rosai-collection-logo.png",
+  "Recut Club": "logos/recut-club-logo.png",
 };
 
 interface SlideRowUnifiedProps {
@@ -61,10 +35,13 @@ export const SlideRowUnified = memo(function SlideRowUnified({
   isRevealed = false,
   onToggleReveal,
 }: SlideRowUnifiedProps) {
+  const logoPath = REPOSITORY_LOGOS[slide.repository];
+  const categoryInfo = getVirtualSlideCategoryInfo(slide.category);
+
   return (
     <tr className="border-b border-gray-200 hover:bg-gray-50">
       {/* Preview */}
-      <td className="p-2 md:p-4">
+      <td className="p-2 md:p-4 w-20 md:w-24">
         <div className="relative w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded overflow-hidden">
           {slide.preview_image_url ? (
             <Image
@@ -82,9 +59,9 @@ export const SlideRowUnified = memo(function SlideRowUnified({
         </div>
       </td>
 
-      {/* Diagnosis and Clinical Info */}
+      {/* Diagnosis and Clinical Information */}
       <td className="p-2 md:p-4">
-        <div className="space-y-1">
+        <div className="space-y-2">
           {showDiagnoses ? (
             <>
               <h3 className="font-medium text-gray-900 leading-tight text-sm md:text-base">
@@ -108,7 +85,7 @@ export const SlideRowUnified = memo(function SlideRowUnified({
           ) : (
             <>
               {isRevealed ? (
-                <div className="space-y-1">
+                <>
                   <h3 className="font-medium text-gray-900 leading-tight text-sm md:text-base">
                     {slide.diagnosis}
                   </h3>
@@ -126,7 +103,7 @@ export const SlideRowUnified = memo(function SlideRowUnified({
                       <p className="text-xs text-gray-600 italic">{slide.clinical_history}</p>
                     )}
                   </div>
-                </div>
+                </>
               ) : (
                 <button
                   onClick={onToggleReveal}
@@ -138,67 +115,70 @@ export const SlideRowUnified = memo(function SlideRowUnified({
               )}
             </>
           )}
+
+          {/* Metadata badges - standardized styling */}
+          <div className="flex flex-wrap items-center gap-2 pt-1">
+            {/* Category - Color-coded */}
+            <span
+              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border"
+              style={{
+                backgroundColor: `color-mix(in srgb, ${categoryInfo.color} 20%, white)`,
+                color: `color-mix(in srgb, ${categoryInfo.color} 90%, black)`,
+                borderColor: `color-mix(in srgb, ${categoryInfo.color} 30%, white)`,
+              }}
+            >
+              {categoryInfo.shortForm}
+            </span>
+
+            {/* Subcategory (Organ System) - Light gray */}
+            {slide.subcategory && (
+              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
+                {slide.subcategory}
+              </span>
+            )}
+
+            {/* Stain Type - Medium gray with icon */}
+            {slide.stain_type && (
+              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
+                <Microscope className="w-3 h-3" />
+                {slide.stain_type}
+              </span>
+            )}
+          </div>
         </div>
       </td>
 
       {/* Repository */}
-      <td className="p-2 md:p-4 hidden lg:table-cell">
-        {(() => {
-          const colors = REPOSITORY_COLORS[slide.repository] || {
-            bg: "bg-gray-100 dark:bg-gray-800",
-            text: "text-gray-700 dark:text-gray-300",
-            border: "border-gray-300 dark:border-gray-600",
-          };
-          const shortName = slide.repository
-            .replace("Hematopathology eTutorial", "Heme eTutorial")
-            .replace("University of Toronto LMP", "Toronto")
-            .replace("Leeds University", "Leeds")
-            .replace("MGH Pathology", "MGH")
-            .replace("Rosai Collection", "Rosai");
-
-          return (
-            <span
-              className={`inline-flex items-center px-2 py-1 rounded-md text-xs font-medium border ${colors.bg} ${colors.text} ${colors.border}`}
-            >
-              {shortName}
-            </span>
-          );
-        })()}
-      </td>
-
-      {/* Category */}
-      <td className="p-2 md:p-4 hidden md:table-cell">
-        <div className="space-y-1">
-          <p className="text-sm text-gray-600">{slide.category}</p>
-          {slide.subcategory && <p className="text-xs text-gray-500">{slide.subcategory}</p>}
-        </div>
-      </td>
-
-      {/* Details */}
-      <td className="p-2 md:p-4 hidden lg:table-cell">
-        <div className="flex items-center gap-2">
-          {slide.stain_type && (
-            <>
-              <Microscope className="w-4 h-4 text-gray-400" />
-              <span className="text-xs text-gray-600">{slide.stain_type}</span>
-            </>
-          )}
-        </div>
+      <td className="p-2 md:p-4 w-24 md:w-32 hidden lg:table-cell">
+        {logoPath ? (
+          <div className="flex items-center justify-center h-8">
+            <Image
+              src={getR2PublicUrl(logoPath)}
+              alt={slide.repository}
+              width={80}
+              height={32}
+              unoptimized
+              className="object-contain opacity-70 hover:opacity-100 transition-opacity"
+            />
+          </div>
+        ) : (
+          <span className="text-xs text-gray-600">{slide.repository}</span>
+        )}
       </td>
 
       {/* Actions */}
-      <td className="p-2 md:p-4">
-        <div className="flex gap-2">
+      <td className="p-2 md:p-4 w-16 md:w-40">
+        <div className="flex flex-col gap-2">
           {slide.slide_url && (
             <a
               href={slide.slide_url}
               target="_blank"
               rel="noopener noreferrer"
               aria-label="View Slide"
-              className="inline-flex items-center justify-center rounded-md text-primary-foreground bg-primary hover:bg-primary/90 transition-colors p-2 md:px-3 md:py-1 text-xs font-medium"
+              className="inline-flex items-center justify-center rounded-md text-primary-foreground bg-primary hover:bg-primary/90 transition-colors p-2 md:px-3 md:py-1.5 text-xs font-medium"
             >
-              <ExternalLink className="w-4 h-4" />
-              <span className="hidden md:inline ml-1">View Slide</span>
+              <ExternalLink className="w-4 h-4 md:mr-1.5" />
+              <span className="hidden md:inline">View Slide</span>
             </a>
           )}
           {slide.repository === "Hematopathology eTutorial" &&
@@ -210,10 +190,10 @@ export const SlideRowUnified = memo(function SlideRowUnified({
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Study Notes"
-                className="inline-flex items-center justify-center rounded-md text-foreground bg-background border border-border hover:bg-muted transition-colors p-2 md:px-3 md:py-1 text-xs font-medium"
+                className="inline-flex items-center justify-center rounded-md text-foreground bg-background border border-border hover:bg-muted transition-colors p-2 md:px-3 md:py-1.5 text-xs font-medium"
               >
-                <ExternalLink className="w-4 h-4" />
-                <span className="hidden md:inline ml-1">Study Notes</span>
+                <ExternalLink className="w-4 h-4 md:mr-1.5" />
+                <span className="hidden md:inline">Study Notes</span>
               </a>
             )}
         </div>
