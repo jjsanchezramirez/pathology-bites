@@ -1,49 +1,39 @@
-# Vercel: exclude heavy/local files from upload. Vercel will build from package.json.
-
-# Build artifacts (built on Vercel)
+# Build artifacts (built by Vercel)
 .next
+.swc
 out
 build
 dist
-.swc
 
-# Dependencies (installed on Vercel)
+# Dependencies (installed by Vercel)
 node_modules
 
-# Vercel local metadata
-.vercel
+# Development files
+dev/
+src/wip/
 
-# VCS and editor
-.git
-.gitignore
+# Local configuration
+.vercel
 .vscode
 .claude
 .kilocode
 
-# Tests/coverage/logs
+# Version control
+.git
+.gitignore
+
+# Testing & logs
 coverage
 *.log
 
-# Temporary
+# Temporary files
 .tmp
 .temp
 tmp
 temp
 
-# Local data/assets not needed in deploy
+# Data files not needed in deployment
 expertpath/
-expertpath/complete_expertpath_data.json
-
-# Development-only files - not needed for deployment
-dev/
-
-# Console output logs
-console.log
-
-# Work-in-progress features - not production-ready
-src/wip/
-
-# Anki source data
 anki/
 json/anki/
-
+console.log

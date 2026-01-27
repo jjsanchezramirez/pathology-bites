@@ -1,39 +1,31 @@
 # Dependencies
 node_modules
 
-# Build outputs
+# Build outputs & cache
 .next
+.swc
 out
 build
 dist
+.cache
+*.tsbuildinfo
 
-# Logs
+# Environment & logs
+.env*
 *.log
-
-# Environment files
-.env
-.env*.local
 
 # Type definitions
 next-env.d.ts
 
-# Cache
-.cache
-.swc
-tsconfig.tsbuildinfo
-
-# Development directories
+# Project directories
 dev
+public
 
-# AI Assistant configurations
+# IDEs & VCS
+.git
+.vscode
 .claude
 .kilocode
 
-# Git
-.git
-
 # Lock files
 package-lock.json
-
-# Public assets (may have specific formatting)
-public

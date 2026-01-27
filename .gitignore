@@ -1,99 +1,56 @@
-# ==============================================================================
-# PATHOLOGY BITES - GIT IGNORE CONFIGURATION
-# ==============================================================================
-# Documentation: https://git-scm.com/docs/gitignore
-
-# ==============================================================================
-# DEPENDENCIES & PACKAGE MANAGERS
-# ==============================================================================
+# Dependencies
 node_modules/
 .npm/
 
-# ==============================================================================
-# BUILD OUTPUTS & CACHE
-# ==============================================================================
-# Next.js
+# Build outputs & cache
 .next/
+.swc/
 out/
 build/
 dist/
-
-# SWC (Speedy Web Compiler) cache
-.swc/
-
-# TypeScript
 *.tsbuildinfo
-# Note: next-env.d.ts is auto-generated but should be committed for type safety
 
-# Testing
-coverage/
-.nyc_output/
-
-# ==============================================================================
-# ENVIRONMENT
-# ==============================================================================
+# Environment variables
 .env
 .env.*
 *.env
-# Exception: .env.example should be committed
 !.env.example
 
-# ==============================================================================
-# DEVELOPMENT & DEBUGGING
-# ==============================================================================
-# Logs
+# Logs & runtime
 *.log
-npm-debug.log*
-
-# Runtime data
 pids/
 *.pid
 *.seed
 *.pid.lock
 
-# ==============================================================================
-# OPERATING SYSTEM FILES
-# ==============================================================================
+# Testing
+coverage/
+.nyc_output/
+
+# OS files
 .DS_Store
 .AppleDouble
 .LSOverride
-Icon
 ._*
 
-# ==============================================================================
-# DEPLOYMENT & HOSTING
-# ==============================================================================
-.vercel
-
-# ==============================================================================
-# IDE & EDITOR FILES
-# ==============================================================================
+# IDEs & editors
 .vscode/
 !.vscode/settings.json
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
-
-# AI Assistant configurations
 .claude/
 .kilocode/
 
-# ==============================================================================
-# TEMPORARY & MISC FILES
-# ==============================================================================
+# Deployment
+.vercel
+
+# Temporary
 *.tmp
 *.temp
 .cache/
 .parcel-cache/
 
-# ==============================================================================
-# PROJECT DIRECTORIES (PRIVATE)
-# ==============================================================================
-# Development-only files (docs, scripts, etc.) - keep local
+# Project-specific
 dev/
-
-# ==============================================================================
-# EXPERIMENTAL & WIP CODE
-# ==============================================================================
-# Work-in-progress features not yet part of main app
 src/wip/
