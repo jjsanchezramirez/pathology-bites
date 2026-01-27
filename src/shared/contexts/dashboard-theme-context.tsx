@@ -17,10 +17,11 @@ import {
   getThemeKeyForMode,
   isAdminTypeMode,
 } from "@/shared/utils/admin-mode";
+import { userSettingsService } from "@/shared/services/user-settings";
 
 interface DashboardThemeContextType {
   currentTheme: DashboardTheme;
-  setTheme: (themeId: string) => void;
+  setTheme: (themeId: string) => Promise<void>;
   availableThemes: DashboardTheme[];
   isLoading: boolean;
   adminMode: AdminMode;
@@ -304,35 +305,23 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
     return () => observer.disconnect();
   }, [currentTheme, isLoading]);
 
-  const setTheme = (themeId: string) => {
+  const setTheme = async (themeId: string) => {
     const theme = getThemeById(themeId);
     const availableThemes = getAvailableThemes(adminMode);
 
     // Check if theme is available for current mode
     if (theme && availableThemes.some((t) => t.id === theme.id)) {
       setCurrentTheme(theme);
+
+      // Store theme preference per mode
+      const themeKey = getThemeKeyForMode(adminMode);
+
       try {
-        // Update localStorage immediately (no API call!)
-        const uiSettingsStr = localStorage.getItem("pathology-bites-ui-settings");
-        const uiSettings = uiSettingsStr ? JSON.parse(uiSettingsStr) : {};
-
-        // Store theme preference per mode
-        const themeKey = getThemeKeyForMode(adminMode);
-        uiSettings[themeKey] = themeId;
-
-        localStorage.setItem("pathology-bites-ui-settings", JSON.stringify(uiSettings));
-
-        // Mark as dirty for next sync
-        const dirtySections = localStorage.getItem("pathology-bites-dirty-sections");
-        const dirty = dirtySections ? JSON.parse(dirtySections) : [];
-        if (!dirty.includes("ui_settings")) {
-          dirty.push("ui_settings");
-          localStorage.setItem("pathology-bites-dirty-sections", JSON.stringify(dirty));
-        }
-
-        console.log(`[DashboardTheme] Saved ${adminMode} theme:`, themeId);
+        // Save to database immediately
+        await userSettingsService.updateUISettings({ [themeKey]: themeId });
+        console.log(`[DashboardTheme] Saved ${adminMode} theme to database:`, themeId);
       } catch (error) {
-        console.warn("[DashboardTheme] Failed to save theme:", error);
+        console.error("[DashboardTheme] Failed to save theme to database:", error);
       }
     }
   };

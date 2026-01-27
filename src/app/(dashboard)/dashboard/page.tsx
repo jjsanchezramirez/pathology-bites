@@ -5,6 +5,8 @@ import { useState, useEffect } from "react";
 import { toast } from "@/shared/utils/toast";
 import {
   WelcomeMessage,
+  CloudflareMigrationMessage,
+  V1ReleaseMessage,
   PerformanceAnalytics,
   StudentStatsCards,
   StudentStatsCardsLoading,
@@ -70,6 +72,8 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
+  const [showCloudflareMigrationMessage, setShowCloudflareMigrationMessage] = useState(false);
+  const [showV1ReleaseMessage, setShowV1ReleaseMessage] = useState(false);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
   const [isReturningUser, setIsReturningUser] = useState(false);
 
@@ -82,7 +86,32 @@ export default function DashboardPage() {
     };
   }, []);
 
-  // Fetch dashboard stats and check welcome message status on component mount
+  // Check for notification messages (independent of unified data)
+  useEffect(() => {
+    if (!user) return;
+
+    const checkNotifications = async () => {
+      try {
+        // Check if user has seen welcome message
+        const hasSeenWelcome = await userSettingsService.hasSeenWelcomeMessage();
+        setShowWelcomeMessage(!hasSeenWelcome);
+
+        // Check if user has dismissed Cloudflare migration message
+        const hasDismissedCloudflare = await userSettingsService.hasDismissedCloudflareMigration();
+        setShowCloudflareMigrationMessage(!hasDismissedCloudflare);
+
+        // Check if user has dismissed v1.0 release message
+        const hasDismissedV1Release = await userSettingsService.hasDismissedV1Release();
+        setShowV1ReleaseMessage(!hasDismissedV1Release);
+      } catch (error) {
+        console.error("[Dashboard] Error checking notification messages:", error);
+      }
+    };
+
+    checkNotifications();
+  }, [user]);
+
+  // Fetch dashboard stats on component mount
   useEffect(() => {
     // Don't fetch until user is loaded
     if (!user) {
@@ -111,12 +140,8 @@ export default function DashboardPage() {
 
         setStats(mergedStats);
 
-        // Check if user has seen welcome message
-        const hasSeenWelcome = await userSettingsService.hasSeenWelcomeMessage();
-        setShowWelcomeMessage(!hasSeenWelcome);
-
         // Determine user status based on activity
-        const isFirstTime = !hasSeenWelcome && mergedStats.recentQuizzes === 0;
+        const isFirstTime = !showWelcomeMessage && mergedStats.recentQuizzes === 0;
         setIsFirstTimeUser(isFirstTime);
 
         // Check if user is returning after 7+ days (based on recent activity)
@@ -149,7 +174,7 @@ export default function DashboardPage() {
     };
 
     fetchData();
-  }, [user, unifiedData]);
+  }, [user, unifiedData, showWelcomeMessage]);
 
   return (
     <PageErrorBoundary pageName="Dashboard" showHomeButton={false} showBackButton={false}>
@@ -167,6 +192,16 @@ export default function DashboardPage() {
 
         {/* Welcome Message for First-Time Users */}
         {showWelcomeMessage && <WelcomeMessage onDismiss={() => setShowWelcomeMessage(false)} />}
+
+        {/* V1.0 Release Announcement */}
+        {showV1ReleaseMessage && (
+          <V1ReleaseMessage onDismiss={() => setShowV1ReleaseMessage(false)} />
+        )}
+
+        {/* Cloudflare Migration Message */}
+        {showCloudflareMigrationMessage && (
+          <CloudflareMigrationMessage onDismiss={() => setShowCloudflareMigrationMessage(false)} />
+        )}
 
         {/* Show loading state for everything until data is ready */}
         {loading || !stats ? (

@@ -18,7 +18,7 @@ import {
   ListTodo,
 } from "lucide-react";
 
-type IconKeys =
+type _IconKeys =
   | "spinner"
   | "error"
   | "success"

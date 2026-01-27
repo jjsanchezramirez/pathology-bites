@@ -257,28 +257,54 @@ class UserSettingsService {
   }
 
   /**
-   * Mark security notice as dismissed
+   * Mark Cloudflare migration message as dismissed
    */
-  async markSecurityNoticeDismissed(): Promise<void> {
+  async markCloudflareMigrationDismissed(): Promise<void> {
     try {
-      await this.updateUISettings({ security_notice_dismissed: true });
+      await this.updateUISettings({ cloudflare_migration_dismissed: true });
     } catch (error) {
-      console.error("Error marking security notice as dismissed:", error);
+      console.error("Error marking Cloudflare migration message as dismissed:", error);
       throw error;
     }
   }
 
   /**
-   * Check if user has dismissed the security notice
+   * Check if user has dismissed the Cloudflare migration message
    */
-  async hasSeenSecurityNotice(): Promise<boolean> {
+  async hasDismissedCloudflareMigration(): Promise<boolean> {
     try {
       const userSettings = await this.getUserSettings();
-      return userSettings.ui_settings.security_notice_dismissed ?? false;
+      return userSettings.ui_settings.cloudflare_migration_dismissed ?? false;
     } catch (error) {
-      console.error("Error checking security notice status:", error);
-      // Default to true to avoid showing security notice on error
-      return true;
+      console.error("Error checking Cloudflare migration message status:", error);
+      // Default to false to show the message on error (better to inform users)
+      return false;
+    }
+  }
+
+  /**
+   * Mark v1.0 release announcement as dismissed
+   */
+  async markV1ReleaseDismissed(): Promise<void> {
+    try {
+      await this.updateUISettings({ v1_release_dismissed: true });
+    } catch (error) {
+      console.error("Error marking v1.0 release announcement as dismissed:", error);
+      throw error;
+    }
+  }
+
+  /**
+   * Check if user has dismissed the v1.0 release announcement
+   */
+  async hasDismissedV1Release(): Promise<boolean> {
+    try {
+      const userSettings = await this.getUserSettings();
+      return userSettings.ui_settings.v1_release_dismissed ?? false;
+    } catch (error) {
+      console.error("Error checking v1.0 release announcement status:", error);
+      // Default to false to show the message on error (better to inform users)
+      return false;
     }
   }
 

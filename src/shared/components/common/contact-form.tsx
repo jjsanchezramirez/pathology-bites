@@ -1,7 +1,7 @@
 // src/shared/components/common/contact-form.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { Label } from "@/shared/components/ui/label";
@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 import { toast } from "@/shared/utils/toast";
 import { Icons } from "@/shared/components/common/icons";
 import { submitContactForm } from "@/app/api/public/contact/contact";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
 
 type FormData = {
   requestType: "technical" | "general";
@@ -32,7 +33,18 @@ interface ZodIssue {
   // Other Zod issue properties can be included if needed
 }
 
-export function ContactForm() {
+interface ContactFormProps {
+  prefillType?: "technical" | "general" | null;
+  prefillSubject?: string | null;
+  prefillMessage?: string | null;
+}
+
+export function ContactForm({
+  prefillType,
+  prefillSubject,
+  prefillMessage,
+}: ContactFormProps = {}) {
+  const { user } = useAuthContext();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<FormErrors>({});
   const [formData, setFormData] = useState<FormData>({
@@ -43,6 +55,19 @@ export function ContactForm() {
     email: "",
     inquiry: "",
   });
+
+  // Prefill form data when props change or user is loaded
+  useEffect(() => {
+    setFormData((prev) => ({
+      ...prev,
+      requestType: prefillType || "general",
+      email: user?.email || prev.email,
+      inquiry:
+        prefillSubject && prefillMessage
+          ? `Subject: ${prefillSubject}\n\n${prefillMessage}`
+          : prefillMessage || prev.inquiry,
+    }));
+  }, [prefillType, prefillSubject, prefillMessage, user?.email]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

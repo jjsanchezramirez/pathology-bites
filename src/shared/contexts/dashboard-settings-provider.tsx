@@ -53,19 +53,32 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
     setDashboardThemeState(theme);
 
     // Sync light/dark mode theme from database to next-themes
-    const colorMode = settings.ui_settings?.theme ?? "system";
-    setNextTheme(colorMode);
-
-    console.log(
-      "[DashboardSettings] Applied - zoom:",
-      validZoom,
-      "dashboardTheme:",
-      theme,
-      "colorMode:",
-      colorMode,
-      "adminMode:",
-      adminMode
-    );
+    // Only sync if the database has a theme value (to avoid overwriting localStorage for existing users)
+    if (settings.ui_settings?.theme !== undefined) {
+      const colorMode = settings.ui_settings.theme;
+      setNextTheme(colorMode);
+      console.log(
+        "[DashboardSettings] Applied - zoom:",
+        validZoom,
+        "dashboardTheme:",
+        theme,
+        "colorMode:",
+        colorMode,
+        "adminMode:",
+        adminMode
+      );
+    } else {
+      console.log(
+        "[DashboardSettings] Applied - zoom:",
+        validZoom,
+        "dashboardTheme:",
+        theme,
+        "colorMode:",
+        "(using localStorage)",
+        "adminMode:",
+        adminMode
+      );
+    }
   }, [settings, config.default, isAdmin, setNextTheme]);
 
   // Update text zoom

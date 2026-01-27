@@ -39,7 +39,8 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
  * - dashboard_theme_user: Dashboard theme for student mode (default 'tangerine', can be 'notebook' or 'tangerine')
  * - theme: Color mode preference ('light', 'dark', or 'system') - synced with next-themes
  * - welcome_message_seen: Whether user has seen the welcome message
- * - security_notice_dismissed: Whether user has dismissed the security update notice
+ * - cloudflare_migration_dismissed: Whether user has dismissed the Cloudflare DNS migration notice
+ * - v1_release_dismissed: Whether user has dismissed the v1.0 release announcement
  */
 export const DEFAULT_UI_SETTINGS = {
   text_zoom: 1.0,
@@ -47,7 +48,8 @@ export const DEFAULT_UI_SETTINGS = {
   dashboard_theme_user: "tangerine",
   theme: "system",
   welcome_message_seen: false,
-  security_notice_dismissed: false,
+  cloudflare_migration_dismissed: false,
+  v1_release_dismissed: false,
 };
 
 /**

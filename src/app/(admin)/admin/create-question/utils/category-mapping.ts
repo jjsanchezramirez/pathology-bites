@@ -68,7 +68,7 @@ export function getCategoryIdFromContent(category: string, subject: string): str
 /**
  * Get category information for display purposes
  */
-function getCategoryDisplayInfo(
+function _getCategoryDisplayInfo(
   category: string,
   subject: string
 ): {

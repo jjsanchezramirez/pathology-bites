@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { X, Microscope, BookOpen, Plus } from "lucide-react";
+import { X, Microscope, BookOpen, ClipboardList } from "lucide-react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { userSettingsService } from "@/shared/services/user-settings";
@@ -77,17 +77,6 @@ export function WelcomeMessage({ onDismiss }: WelcomeMessageProps) {
           </div>
 
           <div className="flex flex-col lg:flex-row gap-3">
-            <Link href="/dashboard/quiz/new" className="flex-1 min-w-0">
-              <Button
-                size="lg"
-                className="w-full bg-primary hover:bg-primary/90 flex items-center justify-center gap-2 px-3"
-              >
-                <Plus className="h-4 w-4 flex-shrink-0" />
-                <span className="whitespace-nowrap overflow-hidden text-ellipsis">
-                  Create Your First Quiz
-                </span>
-              </Button>
-            </Link>
             <Link href="/dashboard/wsi-questions" className="flex-1 min-w-0">
               <Button
                 size="lg"
@@ -109,6 +98,17 @@ export function WelcomeMessage({ onDismiss }: WelcomeMessageProps) {
                 <BookOpen className="h-4 w-4 flex-shrink-0" />
                 <span className="whitespace-nowrap overflow-hidden text-ellipsis">
                   Ankoma Deck Viewer
+                </span>
+              </Button>
+            </Link>
+            <Link href="/dashboard/quiz/new" className="flex-1 min-w-0">
+              <Button
+                size="lg"
+                className="w-full bg-primary hover:bg-primary/90 flex items-center justify-center gap-2 px-3"
+              >
+                <ClipboardList className="h-4 w-4 flex-shrink-0" />
+                <span className="whitespace-nowrap overflow-hidden text-ellipsis">
+                  Create Your First Quiz
                 </span>
               </Button>
             </Link>
