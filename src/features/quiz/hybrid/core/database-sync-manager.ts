@@ -88,7 +88,7 @@ export class DatabaseSyncManager {
 
   constructor(options: DatabaseSyncManagerOptions = {}) {
     this.options = {
-      apiBaseUrl: "/api/quiz",
+      apiBaseUrl: "/api/user/quiz",
       enableCompression: true,
       enableRetry: true,
       maxRetries: 3,

@@ -259,7 +259,7 @@ export default function NewQuizPage() {
       // Get CSRF token
       const csrfToken = await getToken();
 
-      const response = await fetch("/api/quiz/sessions", {
+      const response = await fetch("/api/user/quiz/sessions", {
         method: "POST",
         headers: addTokenToHeaders(
           {

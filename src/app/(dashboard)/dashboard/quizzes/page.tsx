@@ -42,7 +42,7 @@ export default function QuizzesPage() {
       const params = new URLSearchParams();
       params.append("limit", "100"); // Increased limit
 
-      const response = await fetch(`/api/quiz/sessions?${params}`);
+      const response = await fetch(`/api/user/quiz/sessions?${params}`);
       if (!response.ok) {
         throw new Error("Failed to fetch quizzes");
       }
@@ -84,7 +84,7 @@ export default function QuizzesPage() {
     try {
       setIsDeleting(true);
 
-      const response = await apiClient.delete(`/api/quiz/sessions/${selectedQuiz.id}`);
+      const response = await apiClient.delete(`/api/user/quiz/sessions/${selectedQuiz.id}`);
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
