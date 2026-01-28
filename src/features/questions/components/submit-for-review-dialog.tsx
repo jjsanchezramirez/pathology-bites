@@ -65,7 +65,7 @@ export function SubmitForReviewDialog({
   const fetchReviewers = async () => {
     setLoading(true);
     try {
-      const response = await fetch("/api/admin/reviewers");
+      const response = await fetch("/api/admin/questions/reviewers");
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
         throw new Error(errorData.error || `Failed to fetch reviewers: ${response.status}`);

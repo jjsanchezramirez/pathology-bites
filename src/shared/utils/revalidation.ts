@@ -57,7 +57,7 @@ export function revalidateQuestions(options?: { questionId?: string; includeDash
   revalidatePath("/admin/questions", "page");
   revalidatePath("/admin/review-queue", "page");
   revalidatePath("/admin/my-questions", "page");
-  revalidatePath("/admin/dashboard", "page");
+  revalidatePath("/admin", "page");
 }
 
 export function revalidateImages(options?: { imageId?: string; includeDashboard?: boolean }) {
@@ -74,7 +74,7 @@ export function revalidateImages(options?: { imageId?: string; includeDashboard?
 
   // Revalidate admin pages
   revalidatePath("/admin/images", "page");
-  revalidatePath("/admin/dashboard", "page");
+  revalidatePath("/admin", "page");
 }
 
 export function revalidateInquiries() {
@@ -85,13 +85,13 @@ export function revalidateInquiries() {
 
   // Revalidate admin pages
   revalidatePath("/admin/inquiries", "page");
-  revalidatePath("/admin/dashboard", "page");
+  revalidatePath("/admin", "page");
 }
 
 export function revalidateDashboard() {
   revalidateTag(CACHE_TAGS.DASHBOARD_STATS);
   revalidateTag(CACHE_TAGS.RECENT_ACTIVITY);
-  revalidatePath("/admin/dashboard", "page");
+  revalidatePath("/admin", "page");
 }
 
 /**

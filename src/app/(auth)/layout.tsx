@@ -4,7 +4,7 @@
 import { useEffect } from "react";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
-  // Enforce light mode on auth pages (but NOT dashboard theme)
+  // Enforce light mode and system theme on auth pages (but NOT dashboard theme)
   // Dashboard theme should be loaded from database when user navigates to dashboard
   useEffect(() => {
     const html = document.documentElement;
@@ -12,6 +12,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     // Force light color mode
     html.classList.remove("dark");
     html.classList.add("light");
+
+    // Enforce system theme (blue theme, not user's dashboard theme)
+    html.setAttribute("data-theme", "system");
 
     // Set data attribute to identify forced theme state
     html.setAttribute("data-auth-layout-enforced", "true");

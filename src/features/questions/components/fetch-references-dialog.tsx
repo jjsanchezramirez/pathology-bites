@@ -77,7 +77,7 @@ export function FetchReferencesDialog({
         onlyOpenAccess: onlyOpenAccess.toString(),
       });
 
-      const response = await fetch(`/api/admin/fetch-references?${params.toString()}`);
+      const response = await fetch(`/api/admin/questions/fetch-references?${params.toString()}`);
 
       if (!response.ok) {
         throw new Error(`API error: ${response.status}`);

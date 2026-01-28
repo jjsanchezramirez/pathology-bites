@@ -30,6 +30,7 @@ const FEATURE_PERMISSIONS: Record<string, UserRole[]> = {
   "sets.manage": ["admin"],
   "images.manage": ["admin"],
   "inquiries.manage": ["admin"],
+  "notifications.manage": ["admin"],
   "analytics.view": ["admin"],
   "settings.manage": ["admin"],
   "system.monitor": ["admin"],

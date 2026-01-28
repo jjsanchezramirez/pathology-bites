@@ -57,7 +57,7 @@ export function EditCategoryDialog({
     setLoadingCategories(true);
     try {
       // Use a large page size to get all categories for the dropdown
-      const response = await fetch("/api/admin/categories?page=0&pageSize=1000");
+      const response = await fetch("/api/admin/questions/metadata/categories?page=0&pageSize=1000");
 
       if (!response.ok) {
         throw new Error("Failed to load categories");
@@ -104,7 +104,7 @@ export function EditCategoryDialog({
 
     setIsUpdating(true);
     try {
-      const response = await apiClient.patch("/api/admin/categories", {
+      const response = await apiClient.patch("/api/admin/questions/metadata/categories", {
         categoryId: category.id,
         name: name.trim(),
         shortForm: shortForm.trim() || null,

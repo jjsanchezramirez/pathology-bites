@@ -113,7 +113,7 @@ interface UnifiedData {
 }
 
 const fetcher = async () => {
-  const res = await fetch("/api/user/data");
+  const res = await fetch("/api/user/performance-data");
 
   if (!res.ok) {
     const error = new Error("Failed to fetch data");

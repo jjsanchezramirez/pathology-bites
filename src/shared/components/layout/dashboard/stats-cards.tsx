@@ -1,6 +1,6 @@
 "use client";
 
-// src/components/admin/dashboard/stats-cards.tsx
+// src/shared/components/layout/dashboard/stats-cards.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import {
   FileQuestion,

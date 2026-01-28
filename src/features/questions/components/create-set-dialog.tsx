@@ -64,7 +64,7 @@ export function CreateSetDialog({ open, onOpenChange, onSuccess }: CreateSetDial
 
     setIsCreating(true);
     try {
-      const response = await fetch("/api/admin/question-sets", {
+      const response = await fetch("/api/admin/questions/metadata/sets", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

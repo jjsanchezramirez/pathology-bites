@@ -62,7 +62,7 @@ export function ForgotPasswordForm({ className, initialError, ...props }: Forgot
       setLoading(true);
 
       // Send password reset link
-      const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/public/auth/confirm?type=recovery&next=/reset-password`;
+      const redirectTo = `${process.env.NEXT_PUBLIC_SITE_URL}/api/auth/confirm?type=recovery&next=/reset-password`;
 
       const { error } = await supabase.auth.resetPasswordForEmail(values.email, {
         redirectTo: redirectTo,

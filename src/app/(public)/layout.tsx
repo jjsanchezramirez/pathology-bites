@@ -10,7 +10,7 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
   const pathname = usePathname();
   const isMaintenancePage = pathname === "/maintenance";
 
-  // Enforce light mode on public pages (but NOT dashboard theme)
+  // Enforce light mode and system theme on public pages (but NOT dashboard theme)
   // Dashboard theme should be loaded from database when user navigates to dashboard
   useEffect(() => {
     const html = document.documentElement;
@@ -18,6 +18,9 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
     // Force light color mode
     html.classList.remove("dark");
     html.classList.add("light");
+
+    // Enforce system theme (blue theme, not user's dashboard theme)
+    html.setAttribute("data-theme", "system");
 
     // Set data attribute to identify forced theme state
     html.setAttribute("data-public-layout-enforced", "true");

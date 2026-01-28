@@ -158,7 +158,7 @@ export async function login(formData: FormData) {
   // Redirect based on role
   if (userRole === "admin" || userRole === "creator" || userRole === "reviewer") {
     console.log("[Auth] Redirecting to admin dashboard for role:", userRole);
-    redirect("/admin/dashboard");
+    redirect("/admin");
   } else {
     console.log("[Auth] Redirecting to user dashboard for role:", userRole);
     redirect("/dashboard");

@@ -864,6 +864,52 @@ export interface Database {
           },
         ];
       };
+      system_updates: {
+        Row: {
+          id: string;
+          title: string;
+          message: string;
+          update_type: string;
+          severity: string;
+          target_audience: string;
+          created_by: string | null;
+          created_at: string;
+          published_at: string;
+          expires_at: string | null;
+        };
+        Insert: {
+          id?: string;
+          title: string;
+          message: string;
+          update_type: string;
+          severity?: string;
+          target_audience?: string;
+          created_by?: string | null;
+          created_at?: string;
+          published_at?: string;
+          expires_at?: string | null;
+        };
+        Update: {
+          id?: string;
+          title?: string;
+          message?: string;
+          update_type?: string;
+          severity?: string;
+          target_audience?: string;
+          created_by?: string | null;
+          created_at?: string;
+          published_at?: string;
+          expires_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "system_updates_created_by_fkey";
+            columns: ["created_by"];
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       question_reviews: {
         Row: {
           id: string;

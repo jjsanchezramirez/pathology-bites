@@ -1,4 +1,4 @@
-// src/components/admin/dashboard/system-status.tsx
+// src/shared/components/layout/dashboard/system-status.tsx
 "use client";
 
 import { useEffect, useState, useCallback } from "react";

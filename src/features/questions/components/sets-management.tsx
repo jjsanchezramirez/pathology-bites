@@ -116,7 +116,7 @@ export function SetsManagement() {
         ...(searchTerm && { search: searchTerm }),
       });
 
-      const response = await fetch(`/api/admin/question-sets?${params}`);
+      const response = await fetch(`/api/admin/questions/metadata/sets?${params}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -141,7 +141,7 @@ export function SetsManagement() {
 
     setIsDeleting(true);
     try {
-      const response = await fetch("/api/admin/question-sets", {
+      const response = await fetch("/api/admin/questions/metadata/sets", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -177,7 +177,7 @@ export function SetsManagement() {
     try {
       const setIds = Array.from(selectedSetIds);
 
-      const response = await fetch("/api/admin/question-sets/bulk-delete", {
+      const response = await fetch("/api/admin/questions/metadata/sets/bulk-delete", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -212,7 +212,7 @@ export function SetsManagement() {
     try {
       const sourceSetIds = Array.from(selectedSetIds).filter((id) => id !== mergeTargetSet.id);
 
-      const response = await fetch("/api/admin/question-sets/merge", {
+      const response = await fetch("/api/admin/questions/metadata/sets/merge", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -259,7 +259,7 @@ export function SetsManagement() {
 
   const toggleSetStatus = async (set: QuestionSet) => {
     try {
-      const response = await fetch("/api/admin/question-sets", {
+      const response = await fetch("/api/admin/questions/metadata/sets", {
         method: "PATCH",
         headers: {
           "Content-Type": "application/json",

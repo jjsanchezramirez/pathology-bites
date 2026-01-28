@@ -55,7 +55,7 @@ export function PasswordChangeForm({ className, onSuccess }: PasswordChangeFormP
     try {
       setLoading(true);
 
-      const response = await fetch("/api/user/password-reset", {
+      const response = await fetch("/api/auth/password-reset", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

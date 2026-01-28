@@ -29,7 +29,7 @@ export const adminNavigationSections: NavigationSection[] = [
     items: [
       {
         name: "Dashboard",
-        href: "/admin/dashboard",
+        href: "/admin",
         icon: "LayoutDashboard",
         requiredPermission: "dashboard.view",
       },
@@ -65,14 +65,14 @@ export const adminNavigationSections: NavigationSection[] = [
       },
       {
         name: "Create Question",
-        href: "/admin/create-question",
+        href: "/admin/questions/create",
         icon: "Brain",
         requiredPermission: "questions.create",
         showToRoles: ["admin", "creator"],
       },
       {
         name: "Question Metadata",
-        href: "/admin/labels",
+        href: "/admin/questions/metadata",
         icon: "Tags",
         requiredPermission: "categories.manage",
         adminOnly: true,
@@ -101,7 +101,13 @@ export const adminNavigationSections: NavigationSection[] = [
         requiredPermission: "users.manage",
         adminOnly: true,
       },
-
+      {
+        name: "Notifications",
+        href: "/admin/notifications",
+        icon: "Bell",
+        requiredPermission: "notifications.manage",
+        adminOnly: true,
+      },
       {
         name: "Manage Inquiries",
         href: "/admin/inquiries",
@@ -119,13 +125,6 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/analytics",
         icon: "BarChart",
         requiredPermission: "analytics.view",
-        adminOnly: true,
-      },
-      {
-        name: "Notifications",
-        href: "/admin/notifications",
-        icon: "MessageSquare",
-        requiredPermission: "notifications.manage",
         adminOnly: true,
       },
       {

@@ -77,7 +77,7 @@ export function SignupForm() {
   // Function to check if email already exists
   async function checkEmailExists(email: string): Promise<boolean> {
     try {
-      const response = await fetch("/api/public/auth/check-email", {
+      const response = await fetch("/api/auth/check-email", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -124,7 +124,7 @@ export function SignupForm() {
 
       // Use environment variable for redirect URL with fallback
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
-      const redirectTo = `${siteUrl}/api/public/auth/confirm`;
+      const redirectTo = `${siteUrl}/api/auth/confirm`;
 
       console.log("Signup attempt:", {
         email: values.email,

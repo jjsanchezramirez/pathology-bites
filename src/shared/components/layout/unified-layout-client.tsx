@@ -32,11 +32,9 @@ export function UnifiedLayoutClient({
   const isAnkiPage = pathname === "/dashboard/anki";
   // Only quiz active session and review pages need full-height layout (they have their own scrolling areas)
   // Results page needs standard scrollable layout
-  // Exclude /quiz/new and /quiz/tutor - they need scrollable layout
+  // Exclude /quiz/new - it needs scrollable layout
   const isQuizActivePage =
-    pathname?.match(/^\/dashboard\/quiz\/[^/]+$/) &&
-    pathname !== "/dashboard/quiz/new" &&
-    pathname !== "/dashboard/quiz/tutor"; // Active quiz: /quiz/[id]
+    pathname?.match(/^\/dashboard\/quiz\/[^/]+$/) && pathname !== "/dashboard/quiz/new"; // Active quiz: /quiz/[id]
   const isQuizReviewPage = pathname?.includes("/review"); // Review page: /quiz/[id]/review
   const isFullHeightPage = isAnkiPage || isQuizActivePage || isQuizReviewPage;
 

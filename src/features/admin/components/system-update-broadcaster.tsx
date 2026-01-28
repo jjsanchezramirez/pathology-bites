@@ -114,7 +114,7 @@ export function SystemUpdateBroadcaster() {
   ];
 
   return (
-    <Card className="w-full max-w-2xl">
+    <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Megaphone className="h-5 w-5" />

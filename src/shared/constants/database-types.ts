@@ -30,6 +30,7 @@ export const TABLE_NAMES = {
   // System tables
   QUESTION_REPORTS: "question_reports",
   NOTIFICATION_STATES: "notification_states",
+  SYSTEM_UPDATES: "system_updates",
   TAGS: "tags",
   QUESTION_TAGS: "question_tags",
 

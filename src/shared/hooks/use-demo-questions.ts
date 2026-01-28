@@ -60,7 +60,7 @@ export function useDemoQuestions() {
       setLoading(true);
       setError(null);
 
-      const response = await fetch(`/api/content/demo-questions?index=${index}`);
+      const response = await fetch(`/api/public/demo-questions?index=${index}`);
 
       if (response.ok) {
         const data = await response.json();

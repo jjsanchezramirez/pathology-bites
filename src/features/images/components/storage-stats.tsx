@@ -37,7 +37,7 @@ export const StorageStatsCards = forwardRef<StorageStatsRef>(
         // Handle errors gracefully for each request
         const [imageStatsResult, r2StatsResult] = await Promise.allSettled([
           getStorageStats(),
-          fetch("/api/admin/r2-storage-stats"),
+          fetch("/api/admin/dashboard/r2-storage-stats"),
         ]);
 
         // Handle image stats (required)

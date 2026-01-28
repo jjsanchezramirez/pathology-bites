@@ -153,14 +153,14 @@ class ClientDashboardService {
       {
         title: "Create Question",
         description: "Add a new pathology question",
-        href: "/admin/create-question",
+        href: "/admin/questions/create",
         permission: "questions.create",
       },
       {
         title: "Review Pending Questions",
         description: `${stats.pendingQuestions} awaiting review`,
         count: stats.pendingQuestions,
-        href: "/admin/questions/review",
+        href: "/admin/review-queue",
         urgent: stats.pendingQuestions > 0,
         permission: "questions.review",
       },
@@ -200,7 +200,7 @@ class ClientDashboardService {
       {
         title: "Create New Question",
         description: "Add a new pathology question",
-        href: "/admin/create-question",
+        href: "/admin/questions/create",
         permission: "questions.create",
       },
       {
@@ -233,7 +233,7 @@ class ClientDashboardService {
         title: "Review Pending Questions",
         description: `${stats.pendingQuestions} awaiting review`,
         count: stats.pendingQuestions,
-        href: "/admin/questions/review",
+        href: "/admin/review-queue",
         urgent: stats.pendingQuestions > 0,
         permission: "questions.review",
       },

@@ -20,7 +20,7 @@ import { ImageData } from "@/features/images/types/images";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
 import { ImageViewerModal } from "@/shared/components/ui/image-viewer-modal";
-import { ImageGridSkeleton } from "./components/image-grid-skeleton";
+import { ImageGridSkeleton } from "@/features/tools/images/components/image-grid-skeleton";
 
 type CategoryFilterType = "all" | "microscopic" | "gross";
 

@@ -42,10 +42,13 @@ const getRandomElement = <T,>(arr: readonly T[]): T => arr[Math.floor(Math.rando
 
 export default function ErrorPage({ error }: { error: Error & { digest?: string } }) {
   useEffect(() => {
-    // Enforce light mode on error pages (but NOT dashboard theme)
+    // Enforce light mode and system theme on error pages (but NOT dashboard theme)
     const html = document.documentElement;
     html.classList.remove("dark");
     html.classList.add("light");
+
+    // Enforce system theme (blue theme, not user's dashboard theme)
+    html.setAttribute("data-theme", "system");
 
     // Set data attribute to identify forced theme state
     html.setAttribute("data-error-page-enforced", "true");

@@ -182,9 +182,9 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
         throw new Error(msg);
       }
       console.warn(
-        "[VirtualSlides] R2 fetch failed in dev, falling back to /api/public/data/virtual-slides"
+        "[VirtualSlides] R2 fetch failed in dev, falling back to /api/public/tools/virtual-slides"
       );
-      return await fetchWithTimeout("/api/public/data/virtual-slides", {
+      return await fetchWithTimeout("/api/public/tools/virtual-slides", {
         cache: "force-cache",
         timeoutMs: 8000,
       });

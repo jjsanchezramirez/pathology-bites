@@ -27,7 +27,7 @@ export async function extractWebsiteMetadata(url: string): Promise<CitationData>
     new URL(url);
 
     const response = await fetch(
-      `/api/public/tools/citation-generator/extract-url-metadata?url=${encodeURIComponent(url)}`,
+      `/api/public/tools/citations/extract-url-metadata?url=${encodeURIComponent(url)}`,
       {
         method: "GET",
         headers: {
@@ -86,7 +86,7 @@ export async function extractBookMetadata(isbn: string): Promise<CitationData> {
     }
 
     const response = await fetch(
-      `/api/public/tools/citation-generator/extract-book-metadata?isbn=${encodeURIComponent(cleanIsbn)}`,
+      `/api/public/tools/citations/extract-book-metadata?isbn=${encodeURIComponent(cleanIsbn)}`,
       {
         method: "GET",
         headers: {
@@ -139,7 +139,7 @@ export async function extractJournalMetadata(doi: string): Promise<CitationData>
     }
 
     const response = await fetch(
-      `/api/public/tools/citation-generator/extract-journal-metadata?doi=${encodeURIComponent(cleanDoi)}`,
+      `/api/public/tools/citations/extract-journal-metadata?doi=${encodeURIComponent(cleanDoi)}`,
       {
         method: "GET",
         headers: {

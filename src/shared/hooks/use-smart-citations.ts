@@ -71,7 +71,7 @@ export function useSmartCitations(): UseSmartCitationsResult {
         switch (type) {
           case "url":
             const urlResponse = await fetch(
-              `/api/public/tools/citation-generator/extract-url-metadata?url=${encodeURIComponent(input.trim())}`
+              `/api/public/tools/citations/extract-url-metadata?url=${encodeURIComponent(input.trim())}`
             );
             if (!urlResponse.ok) {
               const errorData = await urlResponse.json().catch(() => ({ error: "Unknown error" }));
@@ -97,7 +97,7 @@ export function useSmartCitations(): UseSmartCitationsResult {
           case "isbn":
             const cleanIsbn = input.replace(/[-\s]/g, "");
             const isbnResponse = await fetch(
-              `/api/public/tools/citation-generator/extract-book-metadata?isbn=${encodeURIComponent(cleanIsbn)}`
+              `/api/public/tools/citations/extract-book-metadata?isbn=${encodeURIComponent(cleanIsbn)}`
             );
             if (!isbnResponse.ok) {
               const errorData = await isbnResponse.json().catch(() => ({ error: "Unknown error" }));
@@ -123,7 +123,7 @@ export function useSmartCitations(): UseSmartCitationsResult {
               .replace(/^doi:/, "")
               .replace(/^https?:\/\/(dx\.)?doi\.org\//, "");
             const doiResponse = await fetch(
-              `/api/public/tools/citation-generator/extract-journal-metadata?doi=${encodeURIComponent(cleanDoi)}`
+              `/api/public/tools/citations/extract-journal-metadata?doi=${encodeURIComponent(cleanDoi)}`
             );
             if (!doiResponse.ok) {
               const errorData = await doiResponse.json().catch(() => ({ error: "Unknown error" }));

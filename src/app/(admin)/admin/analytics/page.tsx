@@ -60,7 +60,7 @@ export default function AnalyticsPage() {
             </Button>
           </Link>
 
-          <Link href="/admin/dashboard" className="w-full max-w-xs">
+          <Link href="/admin" className="w-full max-w-xs">
             <Button
               size="lg"
               variant="ghost"

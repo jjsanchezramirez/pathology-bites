@@ -70,14 +70,18 @@ export class NotificationsService {
       );
 
       // Fetch source data for existing tables only
-      const [inquiries, reports] = await Promise.all([
+      const [inquiries, reports, systemUpdates] = await Promise.all([
         sourceIdsByType.inquiry?.length > 0 ? this.getInquiries(sourceIdsByType.inquiry) : [],
         sourceIdsByType.report?.length > 0 ? this.getReports(sourceIdsByType.report) : [],
+        sourceIdsByType.system_update?.length > 0
+          ? this.getSystemUpdates(sourceIdsByType.system_update)
+          : [],
       ]);
 
       // Create lookup maps for existing source types
       const inquiryMap = new Map(inquiries.map((i) => [i.id, i] as const));
       const reportMap = new Map(reports.map((r) => [r.id, r] as const));
+      const systemUpdateMap = new Map(systemUpdates.map((s) => [s.id, s] as const));
 
       // Combine notification states with source data
       const notifications: NotificationWithSource[] = notificationStates
@@ -141,6 +145,22 @@ export class NotificationsService {
               status: "updated",
               metadata: {},
             };
+          } else if (state.source_type === "system_update") {
+            const systemUpdate = systemUpdateMap.get(state.source_id);
+            if (!systemUpdate) return null;
+
+            return {
+              ...state,
+              title: systemUpdate.title,
+              description: systemUpdate.message,
+              status: systemUpdate.severity,
+              metadata: {
+                update_type: systemUpdate.update_type,
+                severity: systemUpdate.severity,
+                target_audience: systemUpdate.target_audience,
+                published_at: systemUpdate.published_at,
+              },
+            };
           }
 
           return null;
@@ -179,6 +199,31 @@ export class NotificationsService {
     const { data, error } = await this.getSupabase()
       .from("question_reports")
       .select("*")
+      .in("id", ids);
+
+    if (error) {
+      throw error;
+    }
+
+    return data || [];
+  }
+
+  private async getSystemUpdates(ids: string[]): Promise<
+    Array<{
+      id: string;
+      title: string;
+      message: string;
+      update_type: string;
+      severity: string;
+      target_audience: string;
+      published_at: string;
+    }>
+  > {
+    if (ids.length === 0) return [];
+
+    const { data, error } = await this.getSupabase()
+      .from("system_updates")
+      .select("id, title, message, update_type, severity, target_audience, published_at")
       .in("id", ids);
 
     if (error) {

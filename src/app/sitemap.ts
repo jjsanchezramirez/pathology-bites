@@ -7,12 +7,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
 
   // Static pages with high priority - build time generation only
   const staticPages: MetadataRoute.Sitemap = [
+    // Homepage
     {
       url: baseUrl,
       lastModified: currentDate,
       changeFrequency: "daily",
       priority: 1.0,
     },
+    // Main static pages
     {
       url: `${baseUrl}/about`,
       lastModified: currentDate,
@@ -20,22 +22,23 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.8,
     },
     {
-      url: `${baseUrl}/categories`,
-      lastModified: currentDate,
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    {
-      url: `${baseUrl}/tools`,
+      url: `${baseUrl}/contact`,
       lastModified: currentDate,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/tools/citations`,
+      url: `${baseUrl}/faq`,
       lastModified: currentDate,
       changeFrequency: "monthly",
-      priority: 0.6,
+      priority: 0.7,
+    },
+    // Tools section
+    {
+      url: `${baseUrl}/tools`,
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.7,
     },
     {
       url: `${baseUrl}/tools/abpath`,
@@ -56,7 +59,25 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
     {
+      url: `${baseUrl}/tools/citations`,
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
       url: `${baseUrl}/tools/diagnostic-search`,
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/tools/images`,
+      lastModified: currentDate,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/tools/tnm`,
       lastModified: currentDate,
       changeFrequency: "monthly",
       priority: 0.6,
@@ -67,6 +88,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "weekly",
       priority: 0.8,
     },
+    // Legal pages
     {
       url: `${baseUrl}/privacy`,
       lastModified: currentDate,

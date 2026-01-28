@@ -28,7 +28,7 @@ export default function GenomicAnalysisPage() {
     setResult(null);
 
     try {
-      const response = await fetch("/api/public/genomic/classify", {
+      const response = await fetch("/api/public/tools/genova/classify", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

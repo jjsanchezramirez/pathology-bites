@@ -14,15 +14,15 @@ import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 
 import { QuestionWithDetails } from "@/features/questions/types/questions";
 import { useEditQuestionForm } from "@/features/questions/hooks/use-edit-question-form";
-import { EducationalContent } from "@/app/(admin)/admin/create-question/components/content-selector";
+import { EducationalContent } from "@/features/questions/components/create/content-selector";
 
 // Import tab components
-import { TabNavigation } from "./tab-navigation";
-import { SourceTab } from "./source-tab";
-import { ContentTab } from "./content-tab";
-import { ImagesTab } from "./images-tab";
-import { MetadataTab } from "./metadata-tab";
-import { SaveConfirmationDialog } from "./save-confirmation-dialog";
+import { TabNavigation } from "@/features/questions/components/edit/tab-navigation";
+import { SourceTab } from "@/features/questions/components/edit/source-tab";
+import { ContentTab } from "@/features/questions/components/edit/content-tab";
+import { ImagesTab } from "@/features/questions/components/edit/images-tab";
+import { MetadataTab } from "@/features/questions/components/edit/metadata-tab";
+import { SaveConfirmationDialog } from "@/features/questions/components/edit/save-confirmation-dialog";
 import {
   Dialog,
   DialogContent,
@@ -136,7 +136,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       try {
         // Import the loadContentFromR2 function
         const { loadContentFromR2, CONTENT_FILES } =
-          await import("@/app/(admin)/admin/create-question/components/content-selector");
+          await import("@/features/questions/components/create/content-selector");
 
         // Find the appropriate content file based on the question's subject
         const subjectName = question.category?.name;
@@ -338,7 +338,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       const fetchReviewers = async () => {
         setLoadingReviewers(true);
         try {
-          const response = await fetch("/api/admin/reviewers");
+          const response = await fetch("/api/admin/questions/reviewers");
           if (!response.ok) throw new Error("Failed to fetch reviewers");
           const data = await response.json();
           setReviewers(data.reviewers || []);

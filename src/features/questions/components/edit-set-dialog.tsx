@@ -83,7 +83,7 @@ export function EditSetDialog({ open, onOpenChange, onSuccess, questionSet }: Ed
 
     setIsUpdating(true);
     try {
-      const response = await apiClient.patch("/api/admin/question-sets", {
+      const response = await apiClient.patch("/api/admin/questions/metadata/sets", {
         setId: questionSet.id,
         updates: {
           name: name.trim(),

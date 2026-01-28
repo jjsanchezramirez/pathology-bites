@@ -67,7 +67,7 @@ export async function deleteImage(imageId: string) {
   try {
     console.log("🗑️ Deleting image:", { imageId });
 
-    const url = "/api/media/images/delete";
+    const url = "/api/admin/images/delete";
     console.log("📡 Making DELETE request to:", url);
 
     const response = await apiClient.delete(url, {
@@ -392,7 +392,7 @@ export async function uploadImage(
     formData.append("description", metadata.description);
     if (metadata.source_ref) formData.append("sourceRef", metadata.source_ref);
 
-    const response = await fetch("/api/media/images/upload", {
+    const response = await fetch("/api/admin/images/upload", {
       method: "POST",
       body: formData,
     });
@@ -500,7 +500,7 @@ export async function bulkDeleteImages(
       return { success: true, deleted: 0, errors: [] };
     }
 
-    const response = await fetch("/api/media/images/bulk-delete", {
+    const response = await fetch("/api/admin/images/bulk-delete", {
       method: "DELETE",
       headers: {
         "Content-Type": "application/json",

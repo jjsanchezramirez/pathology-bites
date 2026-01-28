@@ -340,7 +340,7 @@ export function TagsManagementGrid() {
         ...(debouncedSearchTerm && { search: debouncedSearchTerm }),
       });
 
-      const response = await fetch(`/api/admin/tags?${params}`);
+      const response = await fetch(`/api/admin/questions/metadata/tags?${params}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -392,7 +392,7 @@ export function TagsManagementGrid() {
 
     setIsDeleting(true);
     try {
-      const response = await apiClient.delete("/api/admin/tags", {
+      const response = await apiClient.delete("/api/admin/questions/metadata/tags", {
         tagId: selectedTag.id,
       });
 
@@ -441,7 +441,7 @@ export function TagsManagementGrid() {
     setLoadingQuestions(true);
 
     try {
-      const response = await fetch(`/api/admin/tags/${tag.id}/questions`);
+      const response = await fetch(`/api/admin/questions/metadata/tags/${tag.id}/questions`);
       if (!response.ok) {
         throw new Error("Failed to load questions");
       }
@@ -484,7 +484,7 @@ export function TagsManagementGrid() {
     setIsBulkDeleting(true);
     try {
       const promises = Array.from(selectedTagIds).map((tagId) =>
-        fetch("/api/admin/tags", {
+        fetch("/api/admin/questions/metadata/tags", {
           method: "DELETE",
           headers: { "Content-Type": "application/json" },
           credentials: "include",
@@ -519,7 +519,7 @@ export function TagsManagementGrid() {
     try {
       const sourceTagIds = Array.from(selectedTagIds).filter((id) => id !== mergeTargetTag.id);
 
-      const response = await fetch("/api/admin/tags/merge", {
+      const response = await fetch("/api/admin/questions/metadata/tags/merge", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

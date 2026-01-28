@@ -56,10 +56,13 @@ export default function NotFoundPage() {
   const [randomContent, setRandomContent] = useState<RandomContent | null>(null);
 
   useEffect(() => {
-    // Enforce light mode on 404 page (but NOT dashboard theme)
+    // Enforce light mode and system theme on 404 page (but NOT dashboard theme)
     const html = document.documentElement;
     html.classList.remove("dark");
     html.classList.add("light");
+
+    // Enforce system theme (blue theme, not user's dashboard theme)
+    html.setAttribute("data-theme", "system");
 
     // Set data attribute to identify forced theme state
     html.setAttribute("data-not-found-page-enforced", "true");

@@ -349,7 +349,7 @@ export function CreateQuestionDialog({ open, onOpenChange, onSave }: CreateQuest
   // Create new tag function
   const createNewTag = async (tagName: string) => {
     try {
-      const response = await fetch("/api/admin/tags", {
+      const response = await fetch("/api/admin/questions/metadata/tags", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name: tagName.trim() }),
@@ -413,13 +413,15 @@ export function CreateQuestionDialog({ open, onOpenChange, onSave }: CreateQuest
       form.reset();
 
       // Load tags (latest 10 created)
-      fetch("/api/admin/tags?page=0&pageSize=10&sortBy=created_at&sortOrder=desc")
+      fetch(
+        "/api/admin/questions/metadata/tags?page=0&pageSize=10&sortBy=created_at&sortOrder=desc"
+      )
         .then((res) => res.json())
         .then((data) => setAvailableTags(data.tags || []))
         .catch((err) => console.error("Failed to load tags:", err));
 
       // Load categories
-      fetch("/api/admin/categories?page=0&pageSize=1000")
+      fetch("/api/admin/questions/metadata/categories?page=0&pageSize=1000")
         .then((res) => res.json())
         .then((data) => setAvailableCategories(data.categories || []))
         .catch((err) => console.error("Failed to load categories:", err));
@@ -559,9 +561,9 @@ export function CreateQuestionDialog({ open, onOpenChange, onSave }: CreateQuest
       };
 
       // Use the comprehensive API endpoint that handles everything in one transaction
-      console.log("🔍 Making request to /api/admin/questions-create with data:", questionData);
+      console.log("🔍 Making request to /api/admin/questions/create with data:", questionData);
 
-      const response = await apiClient.post("/api/admin/questions-create", questionData);
+      const response = await apiClient.post("/api/admin/questions/create", questionData);
 
       console.log("📡 Response status:", response.status);
       console.log("📡 Response headers:", Object.fromEntries(response.headers.entries()));

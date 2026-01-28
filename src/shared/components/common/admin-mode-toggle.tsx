@@ -38,7 +38,7 @@ export function AdminModeToggle() {
 
       // Navigate to appropriate dashboard immediately
       if (newMode === "admin") {
-        router.push("/admin/dashboard");
+        router.push("/admin");
       } else {
         router.push("/dashboard");
       }

@@ -246,7 +246,7 @@ export function CategoriesManagement() {
         ...(searchTerm && { search: searchTerm }),
       });
 
-      const response = await fetch(`/api/admin/categories?${params}`);
+      const response = await fetch(`/api/admin/questions/metadata/categories?${params}`);
 
       if (!response.ok) {
         const errorData = await response.json();
@@ -285,7 +285,7 @@ export function CategoriesManagement() {
 
     setIsDeleting(true);
     try {
-      const response = await fetch("/api/admin/categories", {
+      const response = await fetch("/api/admin/questions/metadata/categories", {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -332,7 +332,7 @@ export function CategoriesManagement() {
     try {
       const categoryIds = Array.from(selectedCategoryIds);
 
-      const response = await fetch("/api/admin/categories/bulk-delete", {
+      const response = await fetch("/api/admin/questions/metadata/categories/bulk-delete", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -367,7 +367,7 @@ export function CategoriesManagement() {
     try {
       const categoryIds = Array.from(selectedCategoryIds);
 
-      const response = await fetch("/api/admin/categories/bulk-assign-parent", {
+      const response = await fetch("/api/admin/questions/metadata/categories/bulk-assign-parent", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

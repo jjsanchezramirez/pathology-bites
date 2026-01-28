@@ -65,7 +65,7 @@ export function CreateTagDialog({ open, onOpenChange, onSuccess }: CreateTagDial
 
     setIsCreating(true);
     try {
-      const response = await fetch("/api/admin/tags", {
+      const response = await fetch("/api/admin/questions/metadata/tags", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

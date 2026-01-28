@@ -87,7 +87,7 @@ export async function csrfProtection(request: NextRequest): Promise<boolean> {
   }
 
   // Skip CSRF protection for API routes that use other authentication
-  if (request.nextUrl.pathname.startsWith("/api/public/auth/")) {
+  if (request.nextUrl.pathname.startsWith("/api/auth/")) {
     return true;
   }
 

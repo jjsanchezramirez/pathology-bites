@@ -36,9 +36,9 @@ import { ContentDisclaimer } from "@/shared/components/common/content-disclaimer
 import { getR2PublicUrl } from "@/shared/services/r2-storage";
 
 // Import components
-import { SlideRowUnified } from "./components/slide-row-unified";
-import { Pagination } from "./components/pagination";
-import { LoadingSkeleton } from "./components/loading-skeleton";
+import { SlideRowUnified } from "@/features/tools/virtual-slides/components/slide-row-unified";
+import { Pagination } from "@/features/tools/virtual-slides/components/pagination";
+import { LoadingSkeleton } from "@/features/tools/virtual-slides/components/loading-skeleton";
 
 function VirtualSlidesContent() {
   const searchParams = useSearchParams();

@@ -99,8 +99,8 @@ export function useImageReupload({
         formData.append("imageId", imageId);
         formData.append("updateMetadata", updateMetadata.toString());
 
-        console.log("📤 Sending request to /api/media/images/replace...");
-        const response = await fetch("/api/media/images/replace", {
+        console.log("📤 Sending request to /api/admin/images/replace...");
+        const response = await fetch("/api/admin/images/replace", {
           method: "POST",
           body: formData,
         });

@@ -15,7 +15,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Search, BookOpen, X, ChevronDown, ChevronRight, Download, BookText } from "lucide-react";
-import { ABPathPDFGenerator } from "./pdf-generator";
+import { ABPathPDFGenerator } from "@/features/tools/abpath/utils/pdf-generator";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
 

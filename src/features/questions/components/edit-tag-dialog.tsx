@@ -86,7 +86,7 @@ export function EditTagDialog({ open, onOpenChange, onSuccess, tag }: EditTagDia
 
     setIsUpdating(true);
     try {
-      const response = await apiClient.patch("/api/admin/tags", {
+      const response = await apiClient.patch("/api/admin/questions/metadata/tags", {
         tagId: tag.id,
         name: name.trim(),
       });

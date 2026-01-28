@@ -112,7 +112,7 @@ async function searchNCIEVSClient(term: string): Promise<string[]> {
     const timeoutId = setTimeout(() => controller.abort(), 8000); // 8s timeout
 
     const response = await fetch(
-      `/api/public/tools/nci-evs-expand?term=${encodeURIComponent(term)}`,
+      `/api/public/tools/virtual-slides/nci?term=${encodeURIComponent(term)}`,
       {
         signal: controller.signal,
         headers: {

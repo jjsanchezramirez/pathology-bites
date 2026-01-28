@@ -76,13 +76,13 @@ async function loadCellQuizImages(): Promise<CellQuizImagesData> {
       return res;
     } catch (e) {
       console.warn(
-        "[CellQuiz Images] R2 fetch failed in dev, falling back to /api/public/data/cell-quiz-images",
+        "[CellQuiz Images] R2 fetch failed in dev, falling back to /api/public/tools/cell-quiz/images",
         e
       );
 
       // Fallback to server-side API (same as virtual slides)
       try {
-        const fallbackRes = await fetchWithTimeout("/api/public/data/cell-quiz-images", {
+        const fallbackRes = await fetchWithTimeout("/api/public/tools/cell-quiz/images", {
           cache: "force-cache",
           headers: {
             Accept: "application/json",
@@ -143,13 +143,13 @@ async function loadCellQuizReferences(): Promise<BloodCellsReferenceData> {
       return res;
     } catch (e) {
       console.warn(
-        "[CellQuiz References] R2 fetch failed in dev, falling back to /api/public/data/cell-quiz-references",
+        "[CellQuiz References] R2 fetch failed in dev, falling back to /api/public/tools/cell-quiz/references",
         e
       );
 
       // Fallback to server-side API (same as virtual slides)
       try {
-        const fallbackRes = await fetchWithTimeout("/api/public/data/cell-quiz-references", {
+        const fallbackRes = await fetchWithTimeout("/api/public/tools/cell-quiz/references", {
           cache: "force-cache",
           headers: {
             Accept: "application/json",

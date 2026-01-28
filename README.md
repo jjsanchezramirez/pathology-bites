@@ -1043,7 +1043,7 @@ notification_states (user_id, type, data, read_at, created_at)
 
 When a user signs up (via email or OAuth), they are created in `auth.users` by Supabase. The application code then creates the corresponding records in `public.users` and `public.user_settings`.
 
-**Auth Callback Routes** (`/api/public/auth/callback`, `/api/public/auth/confirm`):
+**Auth Callback Routes** (`/api/auth/callback`, `/api/auth/confirm`):
 
 - **Responsibility**: Manually create `public.users` and `public.user_settings` entries
 - **Process**:
@@ -1054,8 +1054,8 @@ When a user signs up (via email or OAuth), they are created in `auth.users` by S
   5. Defaults match `src/shared/constants/user-settings-defaults.ts`
 - **Error Handling**: If user creation fails, logs error but allows user to proceed (they can still log in)
 - **Files**:
-  - `src/app/api/public/auth/callback/route.ts` (OAuth flow)
-  - `src/app/api/public/auth/confirm/route.ts` (Email verification flow)
+  - `src/app/api/auth/callback/route.ts` (OAuth flow)
+  - `src/app/api/auth/confirm/route.ts` (Email verification flow)
 
 ##### User Deletion (Application Code)
 
@@ -1124,9 +1124,8 @@ The application provides a comprehensive REST API organized by feature area. All
 
 **Question Management**
 
-- `POST /api/admin/ai-generate-question` - Generate questions using AI models (OpenAI, Anthropic, Meta Llama)
-- `POST /api/admin/question-generator` - Legacy question generator endpoint
-- `POST /api/admin/questions-create` - Create new question with full validation
+- `POST /api/admin/questions/ai-generate` - AI-powered question generation and refinement (Llama, Google, Mistral)
+- `POST /api/admin/questions/create` - Create new question with full validation
 - `GET /api/admin/questions/[id]` - Get question details with all relationships
 - `PATCH /api/admin/questions/[id]` - Update question (admin override)
 - `DELETE /api/admin/questions/[id]/delete` - Permanently delete question
@@ -1134,32 +1133,50 @@ The application provides a comprehensive REST API organized by feature area. All
 - `POST /api/admin/questions/[id]/version` - Create new version of published question
 - `POST /api/admin/questions/bulk` - Bulk operations (submit_for_review, approve, reject, delete, export)
 
-**Category Management**
+**Question Review Workflow**
 
-- `GET /api/admin/categories` - List all categories with hierarchy
-- `POST /api/admin/categories` - Create new category
-- `PATCH /api/admin/categories` - Update category details
-- `DELETE /api/admin/categories` - Delete category (if unused)
-- `POST /api/admin/categories/bulk-assign-parent` - Bulk update parent categories
-- `POST /api/admin/categories/bulk-delete` - Bulk delete unused categories
+- `POST /api/admin/questions/[id]/submit-for-review` - Submit question for review
+- `POST /api/admin/questions/[id]/approve` - Approve question (reviewer/admin)
+- `POST /api/admin/questions/[id]/reject` - Reject question with feedback
+- `POST /api/admin/questions/[id]/reassign` - Reassign to different reviewer
 
-**Question Set Management**
+**Question Metadata Management**
 
-- `GET /api/admin/question-sets` - List all question sets
-- `POST /api/admin/question-sets` - Create new question set
-- `PATCH /api/admin/question-sets` - Update question set
-- `DELETE /api/admin/question-sets` - Delete question set
-- `POST /api/admin/question-sets/merge` - Merge multiple question sets
-- `POST /api/admin/question-sets/bulk-delete` - Bulk delete question sets
+*Categories*
+- `GET /api/admin/questions/metadata/categories` - List all categories with hierarchy
+- `POST /api/admin/questions/metadata/categories` - Create new category
+- `PATCH /api/admin/questions/metadata/categories` - Update category details
+- `DELETE /api/admin/questions/metadata/categories` - Delete category (if unused)
+- `POST /api/admin/questions/metadata/categories/bulk-assign-parent` - Bulk update parent categories
+- `POST /api/admin/questions/metadata/categories/bulk-delete` - Bulk delete unused categories
 
-**Tag Management**
+*Question Sets*
+- `GET /api/admin/questions/metadata/sets` - List all question sets
+- `POST /api/admin/questions/metadata/sets` - Create new question set
+- `PATCH /api/admin/questions/metadata/sets` - Update question set
+- `DELETE /api/admin/questions/metadata/sets` - Delete question set
+- `POST /api/admin/questions/metadata/sets/merge` - Merge multiple question sets
+- `POST /api/admin/questions/metadata/sets/bulk-delete` - Bulk delete question sets
 
-- `GET /api/admin/tags` - List all tags with usage counts
-- `POST /api/admin/tags` - Create new tag
-- `PATCH /api/admin/tags` - Update tag name/color
-- `DELETE /api/admin/tags` - Delete tag (if unused)
-- `POST /api/admin/tags/merge` - Merge multiple tags into one
-- `GET /api/admin/tags/[tagId]/questions` - Get all questions with specific tag
+*Tags*
+- `GET /api/admin/questions/metadata/tags` - List all tags with usage counts
+- `POST /api/admin/questions/metadata/tags` - Create new tag
+- `PATCH /api/admin/questions/metadata/tags` - Update tag name/color
+- `DELETE /api/admin/questions/metadata/tags` - Delete tag (if unused)
+- `POST /api/admin/questions/metadata/tags/merge` - Merge multiple tags into one
+- `GET /api/admin/questions/metadata/tags/[id]/questions` - Get all questions with specific tag
+
+**Image Management**
+
+- `POST /api/admin/images/upload` - Upload image to R2 storage
+- `DELETE /api/admin/images/delete` - Delete image from R2 and database
+- `POST /api/admin/images/replace` - Replace existing image
+- `POST /api/admin/images/bulk-delete` - Bulk delete images
+
+**Question Utilities**
+
+- `POST /api/admin/questions/fetch-references` - Fetch academic references via Semantic Scholar API
+- `GET /api/admin/questions/reviewers` - Get list of reviewers with workload statistics
 
 **User Management**
 
@@ -1184,10 +1201,13 @@ The application provides a comprehensive REST API organized by feature area. All
 - `PATCH /api/admin/learning-modules` - Update module content
 - `DELETE /api/admin/learning-modules` - Delete module
 
+**Dashboard APIs**
+
+- `GET /api/admin/dashboard/r2-storage-stats` - Get R2 bucket usage statistics
+
 **System Management**
 
 - `GET /api/admin/system-status` - Get system health and metrics
-- `GET /api/admin/r2-storage-stats` - Get R2 bucket usage statistics
 - `GET /api/admin/rate-limit-status` - Check rate limit status for user
 - `POST /api/admin/refresh-stats` - Refresh materialized views
 - `POST /api/admin/test-notifications` - Create test notifications
@@ -1200,8 +1220,8 @@ The application provides a comprehensive REST API organized by feature area. All
 
 **Demo Questions**
 
-- `GET /api/content/demo-questions` - List featured demo questions (public access)
-- `GET /api/content/demo-questions/[id]` - Get single demo question with full details
+- `GET /api/public/demo-questions` - List featured demo questions (public access)
+- `GET /api/public/demo-questions/[id]` - Get single demo question with full details
 
 **Question Operations**
 
@@ -1241,46 +1261,29 @@ The application provides a comprehensive REST API organized by feature area. All
 - `GET /api/content/quiz/options` - Get quiz configuration options
 - `GET /api/content/quiz/questions/paginated` - Get paginated quiz questions
 
-#### Media APIs (`/api/media/*`)
+#### Authentication APIs (`/api/auth/*`)
 
-**Image Management**
-
-- `POST /api/media/images/upload` - Upload image to R2 storage
-- `DELETE /api/media/images/delete` - Delete image from R2 and database
-- `POST /api/media/images/replace` - Replace existing image
-- `POST /api/media/images/bulk-delete` - Bulk delete images
-
-**R2 Storage Operations**
-
-- `POST /api/media/r2/signed-url` - Generate signed URL for single file
-- `POST /api/media/r2/signed-urls/batch` - Generate batch signed URLs
-- `GET /api/media/r2/download` - Download file from R2
-- `POST /api/media/r2/upload-anki-media` - Upload Anki media files
-- `DELETE /api/media/r2/anki-media/delete-all` - Bulk delete all Anki media
+- `GET /api/auth/callback` - OAuth callback handler
+- `POST /api/auth/check-email` - Check if email exists
+- `GET /api/auth/confirm` - Email confirmation handler
+- `POST /api/auth/password-reset` - Request password reset
+- `PATCH /api/auth/password-reset` - Update password with reset token
 
 #### Public APIs (`/api/public/*`)
 
-**Authentication**
+**Tool APIs** (No authentication required)
 
-- `GET /api/public/auth/callback` - OAuth callback handler
-- `POST /api/public/auth/check-email` - Check if email exists
-- `GET /api/public/auth/confirm` - Email confirmation handler
-
-**Data Endpoints** (No authentication required)
-
-- `GET /api/public/data/cell-quiz-images` - Cell quiz image dataset (24h cache)
-- `GET /api/public/data/cell-quiz-references` - Cell quiz references (24h cache)
-- `GET /api/public/data/virtual-slides` - Full virtual slides dataset (15MB)
-- `GET /api/public/data/virtual-slides/paginated` - Paginated virtual slides
-
-**Educational Tools**
-
-- `POST /api/public/tools/citation-generator/extract-url-metadata` - Extract citation from URL
-- `POST /api/public/tools/citation-generator/extract-journal-metadata` - Extract DOI metadata
-- `POST /api/public/tools/citation-generator/extract-book-metadata` - Extract ISBN metadata
+- `GET /api/public/tools/cell-quiz/images` - Cell quiz image dataset (24h cache)
+- `GET /api/public/tools/cell-quiz/references` - Cell quiz references (24h cache)
+- `GET /api/public/tools/virtual-slides` - Full virtual slides dataset (15MB)
+- `GET /api/public/tools/virtual-slides/nci` - Expand NCI Thesaurus terms for virtual slides
+- `POST /api/public/tools/citations/extract-url-metadata` - Extract citation from URL
+- `POST /api/public/tools/citations/extract-journal-metadata` - Extract DOI metadata
+- `POST /api/public/tools/citations/extract-book-metadata` - Extract ISBN metadata
+- `POST /api/public/tools/genova/classify` - Classify genomic variants (AMP/ASCO/CAP)
+- `POST /api/public/tools/genova/myvariant` - Query MyVariant.info API
 - `POST /api/public/tools/milan` - MILAN: Molecular Information Lookup And Nomenclature (HGNC/Harmonizome)
 - `POST /api/public/tools/diagnostic-search` - Search diagnostic criteria
-- `POST /api/public/tools/wsi-question-generator/generate` - Generate WSI questions with AI
 
 **System Endpoints**
 
@@ -1292,25 +1295,26 @@ The application provides a comprehensive REST API organized by feature area. All
 - `GET /api/public/security/events` - Get security events (admin only)
 - `POST /api/public/security/events` - Log security event
 
-#### Question Review APIs (`/api/questions/*`)
+#### User APIs (`/api/user/*`)
 
-**Review Workflow**
+**AI-Powered Tools** (Authentication required)
 
-- `POST /api/questions/[id]/submit-for-review` - Submit question for review
-- `POST /api/questions/[id]/approve` - Approve question (reviewer/admin)
-- `POST /api/questions/[id]/reject` - Reject question with feedback
-- `POST /api/questions/[id]/reassign` - Reassign to different reviewer
-
-**Reviewer Management**
-
-- `GET /api/admin/reviewers` - List all reviewers with workload stats
+- `POST /api/user/wsi-questions/generate` - Generate WSI questions with AI
 
 #### User APIs (`/api/user/*`)
+
+**Quiz Sessions**
+
+- `GET /api/user/quiz/sessions` - Get user's quiz sessions
+- `POST /api/user/quiz/sessions` - Create new quiz session
+- `GET /api/user/quiz/sessions/[id]` - Get quiz session details
+- `PATCH /api/user/quiz/sessions/[id]` - Update quiz session
+- `POST /api/user/quiz/sessions/[id]/complete` - Complete quiz session
+- `GET /api/user/quiz/sessions/[id]/results` - Get quiz results
 
 **Account Management**
 
 - `DELETE /api/user/account/delete` - Delete user account (soft/hard based on role)
-- `POST /api/user/password-reset` - Request password reset
 - `POST /api/user/data-export` - Export all user data (GDPR compliance)
 
 **User Settings**
@@ -1324,6 +1328,7 @@ The application provides a comprehensive REST API organized by feature area. All
 - `GET /api/user/dashboard/stats` - Get dashboard statistics
 - `GET /api/user/dashboard/activities` - Get recent activities
 - `GET /api/user/dashboard/consolidated` - Get consolidated dashboard data
+- `GET /api/user/performance-data` - Get unified performance data (timeline, stats, achievements, heatmap)
 
 **Favorites**
 

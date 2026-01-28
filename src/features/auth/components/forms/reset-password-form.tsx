@@ -96,7 +96,7 @@ export function ResetPasswordForm({ className, initialError, ...props }: ResetPa
       // Success - show success message and redirect
       toast.success("Password updated successfully!");
       setTimeout(() => {
-        router.push("/password-reset-success");
+        router.push("/reset-success");
       }, 1000);
     } catch (error) {
       console.error("Reset password error:", error);

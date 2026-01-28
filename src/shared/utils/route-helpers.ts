@@ -19,7 +19,7 @@ export function isPublicRoute(pathname: string): boolean {
     "/email-verified",
     "/email-already-verified",
     "/link-expired",
-    "/password-reset-success",
+    "/reset-success",
     "/about",
     "/faq",
     "/contact",

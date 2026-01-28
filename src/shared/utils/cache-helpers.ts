@@ -116,7 +116,7 @@ export async function prefetchUnifiedData() {
   console.log("[Cache] 🔮 Pre-fetching unified data");
 
   try {
-    const res = await fetch("/api/user/data");
+    const res = await fetch("/api/user/performance-data");
     if (res.ok) {
       const data = await res.json();
       // Cache will be populated automatically by SWR

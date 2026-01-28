@@ -1,6 +1,6 @@
 "use client";
 
-// src/components/admin/dashboard/quick-actions.tsx
+// src/shared/components/layout/dashboard/quick-actions.tsx
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { ArrowRight, AlertCircle, Zap } from "lucide-react";

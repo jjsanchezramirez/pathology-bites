@@ -3,16 +3,7 @@
 
 import { ReactNode } from "react";
 import { useUserRole } from "@/shared/hooks/use-user-role";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { ShieldAlert, ArrowLeft } from "lucide-react";
-import Link from "next/link";
+import { AccessDenied, AccessDeniedPresets } from "@/shared/components/common/access-denied";
 
 interface RoleGuardProps {
   children: ReactNode;
@@ -29,7 +20,7 @@ export function RoleGuard({
   fallback,
   showFallback = true,
 }: RoleGuardProps) {
-  const { isAdmin, canAccess, isLoading, role } = useUserRole();
+  const { isAdmin, canAccess, isLoading } = useUserRole();
 
   // Show loading state
   if (isLoading) {
@@ -44,35 +35,7 @@ export function RoleGuard({
   if (adminOnly && !isAdmin) {
     if (!showFallback) return null;
 
-    return (
-      fallback || (
-        <div className="flex items-center justify-center min-h-[400px] p-6">
-          <Card className="w-full max-w-md">
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-red-100 dark:bg-red-900/20">
-                <ShieldAlert className="h-6 w-6 text-red-600 dark:text-red-400" />
-              </div>
-              <CardTitle className="text-xl">Admin Access Required</CardTitle>
-              <CardDescription>This feature is only available to administrators.</CardDescription>
-            </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Your current role:{" "}
-                <span className="font-medium capitalize">{role || "Unknown"}</span>
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                <Button variant="outline" asChild>
-                  <Link href="/admin/dashboard">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Dashboard
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )
-    );
+    return fallback || <AccessDenied {...AccessDeniedPresets.adminOnly} backHref="/admin" />;
   }
 
   // Check specific permission
@@ -81,37 +44,11 @@ export function RoleGuard({
 
     return (
       fallback || (
-        <div className="flex items-center justify-center min-h-[400px] p-6">
-          <Card className="w-full max-w-md">
-            <CardHeader className="text-center">
-              <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/20">
-                <ShieldAlert className="h-6 w-6 text-orange-600 dark:text-orange-400" />
-              </div>
-              <CardTitle className="text-xl">Insufficient Permissions</CardTitle>
-              <CardDescription>You don't have permission to access this feature.</CardDescription>
-            </CardHeader>
-            <CardContent className="text-center space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Required permission:{" "}
-                <span className="font-mono text-xs bg-muted px-2 py-1 rounded">
-                  {requiredPermission}
-                </span>
-              </p>
-              <p className="text-sm text-muted-foreground">
-                Your current role:{" "}
-                <span className="font-medium capitalize">{role || "Unknown"}</span>
-              </p>
-              <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                <Button variant="outline" asChild>
-                  <Link href="/admin/dashboard">
-                    <ArrowLeft className="h-4 w-4 mr-2" />
-                    Back to Dashboard
-                  </Link>
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
+        <AccessDenied
+          title="Insufficient Permissions"
+          description={`You don't have the required permission (${requiredPermission}) to access this feature. If you believe you should have access, please contact an administrator on Discord.`}
+          backHref="/admin"
+        />
       )
     );
   }
