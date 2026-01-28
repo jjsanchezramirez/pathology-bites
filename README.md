@@ -1859,6 +1859,42 @@ R2_SECRET_ACCESS_KEY=r2_secret_key
 RESEND_API_KEY=email_service_key
 ```
 
+### Supabase OAuth Configuration
+
+The following redirect URLs must be configured in your Supabase project dashboard under **Authentication → URL Configuration**:
+
+#### Development URLs
+```
+http://localhost:3000/api/auth/callback
+http://localhost:3000/api/auth/callback/*
+http://localhost:3000/api/auth/confirm
+http://localhost:3000/api/auth/confirm/*
+```
+
+#### Production URLs (Cloudflare CDN)
+```
+https://www.pathologybites.com/api/auth/callback
+https://www.pathologybites.com/api/auth/callback/*
+https://www.pathologybites.com/api/auth/confirm
+https://www.pathologybites.com/api/auth/confirm/*
+```
+
+#### Vercel Deployment URLs (Main + Preview Branches)
+```
+https://pathology-bites-qbank-*.vercel.app/api/auth/callback
+https://pathology-bites-qbank-*.vercel.app/api/auth/callback/*
+https://pathology-bites-qbank-*.vercel.app/api/auth/confirm
+https://pathology-bites-qbank-*.vercel.app/api/auth/confirm/*
+```
+
+**Note**: The wildcard (`*`) in Vercel URLs enables OAuth to work on both:
+- Production deployments: `pathology-bites-qbank-pathology-bites.vercel.app`
+- Preview deployments: `pathology-bites-qbank-[unique-hash].vercel.app`
+
+**Deployment Flow**:
+1. Main branch (`main`) → Production Vercel → Cloudflare CDN → `www.pathologybites.com`
+2. Feature branches → Preview Vercel → `pathology-bites-qbank-[hash].vercel.app` (testing only)
+
 ### Production Optimizations
 
 - **Image Optimization Disabled**: Unoptimized strategy to avoid Vercel costs
