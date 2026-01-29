@@ -863,10 +863,18 @@ export async function GET(request: NextRequest) {
     const allCategoryIds = subcategories.map((cat: CategoryItem) => cat.id);
 
     // Fetch user stats for ALL categories using optimized database function
-    const { data: allUserStatsData } = await supabase.rpc("get_user_category_stats", {
-      p_user_id: userId,
-      p_category_ids: allCategoryIds,
-    });
+    const { data: allUserStatsData, error: statsError } = await supabase.rpc(
+      "get_user_category_stats",
+      {
+        p_user_id: userId,
+        p_category_ids: allCategoryIds,
+      }
+    );
+
+    if (statsError) {
+      console.error("Error fetching user category stats:", statsError);
+      // Continue with empty stats rather than failing the whole request
+    }
 
     // Create stats lookup map with proper property names
     interface QuizQuestionStats {
