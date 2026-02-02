@@ -15,14 +15,14 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { Play, Pause, PanelLeftOpen, Clock } from "lucide-react";
-import { QuizSidebar } from "@/features/quiz/components/quiz-sidebar";
-import { QuizQuestionDisplay } from "@/features/quiz/components/quiz-question-display";
-import { QuizNavigation } from "@/features/quiz/components/quiz-navigation";
+import { QuizSidebar } from "@/features/user/quiz/components/quiz-sidebar";
+import { QuizQuestionDisplay } from "@/features/user/quiz/components/quiz-question-display";
+import { QuizNavigation } from "@/features/user/quiz/components/quiz-navigation";
 import { FeatureErrorBoundary } from "@/shared/components/common";
-import { QuizSession, QuizResult } from "@/features/quiz/types/quiz";
-import { toast } from "@/shared/utils/toast";
+import { QuizSession, QuizResult } from "@/features/user/quiz/types/quiz";
+import { toast } from "@/shared/utils/ui/toast";
 import { useState, useEffect, useCallback, useRef } from "react";
-import { useHybridQuiz, HybridPresets } from "@/features/quiz/hybrid";
+import { useHybridQuiz, HybridPresets } from "@/features/user/quiz/hybrid";
 import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useCSRFToken } from "@/features/auth/hooks/use-csrf-token";

@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { uploadToR2 } from "@/shared/services/r2-storage";
-import { formatImageName } from "@/features/images/services/image-upload";
-import { getImageDimensionsFromFile } from "@/shared/utils/server-image-utils";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
+import { formatImageName } from "@/features/admin/images/services/image-upload";
+import { getImageDimensionsFromFile } from "@/shared/utils/images/server-image-utils";
+import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
 export async function POST(request: NextRequest) {
   console.log("🔄 Image replace API called");

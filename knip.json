@@ -27,7 +27,6 @@
     "src/shared/components/layout/**/*.{ts,tsx}",
     "src/shared/components/analytics/**/*.{ts,tsx}",
     "src/shared/components/seo/**/*.{ts,tsx}",
-    "src/shared/components/genomic/**/*.{ts,tsx}",
     "src/shared/components/error-boundaries/**/*.tsx",
     "src/shared/components/auth/role-guard.tsx",
     "src/shared/components/features/**/*.{ts,tsx}",
@@ -43,7 +42,7 @@
     "src/features/**/contexts/**/*.{ts,tsx}",
     "src/features/**/types/**/*.ts",
     "src/features/**/utils/**/*.ts",
-    "src/features/cell-quiz/data/**/*.ts"
+    "src/features/public/tools/cell-quiz/data/**/*.ts"
   ],
   "project": [
     "src/**/*.{ts,tsx}"

@@ -22,7 +22,7 @@ import {
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
 import { useSmartCitations } from "@/shared/hooks/use-smart-citations";
-import { CitationData } from "@/shared/utils/citation-extractor";
+import { CitationData } from "@/shared/utils/citations/citation-extractor";
 import {
   formatAPA,
   formatMLA,
@@ -30,7 +30,7 @@ import {
   formatVancouver,
   formatNLM,
   forceReloadJournalAbbreviations,
-} from "@/shared/utils/citation-formatters";
+} from "@/shared/utils/citations/citation-formatters";
 
 export default function CitationGeneratorPage() {
   const [input, setInput] = useState("");

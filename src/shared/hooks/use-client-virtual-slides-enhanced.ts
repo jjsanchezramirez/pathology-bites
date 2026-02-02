@@ -2,10 +2,12 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
-import { getRepositoryFromId } from "@/shared/utils/repository";
-import { expandSearchTermClient } from "@/shared/utils/nci-evs-client";
-import { extractOrganTerms, getOrganBoostScore, type OrganTerm } from "@/shared/utils/organ-terms";
-import { MEDICAL_ACRONYMS } from "@/shared/utils/medical-acronyms";
+import { getRepositoryFromId } from "@/shared/utils/domain/repository";
+import {
+  extractOrganTerms,
+  getOrganBoostScore,
+  type OrganTerm,
+} from "@/shared/utils/domain/organ-terms";
 
 // Module-scope cache for request deduplication and in-session speed
 // HTTP browser cache handles persistence across sessions
@@ -17,7 +19,9 @@ interface SearchIndexEntry {
   slide: VirtualSlide;
   diagnosisLower: string;
   diagnosisTokens: string[];
-  diagnosisAcronym: string;
+  diagnosisAcronym: string; // Generated first-letter acronym
+  whoAcronyms: string[]; // WHO medical abbreviations (ERMS, ARMS, etc.)
+  frequency: number; // Number of slides with this exact diagnosis (for ranking)
 }
 
 let searchIndex: SearchIndexEntry[] | null = null;
@@ -25,6 +29,10 @@ let searchIndex: SearchIndexEntry[] | null = null;
 // Reverse index: word → Set of slide indices
 // This allows us to check ONLY relevant slides instead of ALL slides
 let reverseIndex: Map<string, Set<number>> | null = null;
+
+// Diagnosis frequency map: diagnosisLower → count
+// Used for ranking ambiguous WHO abbreviations
+let diagnosisFrequencies: Map<string, number> | null = null;
 
 // ============================================================================
 // LEGACY FORMAT SUPPORT (DEPRECATED - Remove after July 2026)
@@ -51,45 +59,182 @@ interface ClientEntry {
   other_urls?: string[];
 }
 
-// Optimized format (v2.0)
+// Optimized format (v3.0-v6 - DEPRECATED)
 interface OptimizedEntry {
   i: string; // id
   d: string; // diagnosis
   c: string; // category
-  s: string; // subcategory
+  s?: string; // subcategory
   a?: string; // acr
   p?: string; // patient_info
   ag?: string | null; // age
   g?: string; // gender
   h?: string; // clinical_history
   st?: string; // stain_type
-  pv?: string; // preview_image_url
-  b?: number; // base_index
+  pb?: string; // preview_base (e.g., "b1")
+  ps?: string; // preview_suffix (path)
+  b?: number; // base_index (legacy v2.0)
   u?: string; // url_path or full url
-  cu?: string; // case_url
-  o?: string[]; // other_urls
+  cb?: string; // case_url_base (e.g., "b4")
+  cs?: string; // case_url_suffix
+  cu?: string; // case_url (legacy)
+  o?: Array<{ b: string; s: string }>; // other_urls with base+suffix
 }
+
+// v7 Production format (current)
+interface V7Entry {
+  x: string; // id
+  d: string; // diagnosis
+  c: string; // category
+  s?: string; // subcategory (normalized organ system)
+  i?: string; // patient_info
+  q?: string | string[]; // acronym (WHO abbreviation)
+  a?: string | null; // age
+  g?: string; // gender
+  h?: string; // clinical_history
+  t?: string; // stain_type
+  p?: V7UrlRef | V7UrlRef[]; // preview_image_url
+  u?: V7UrlRef | V7UrlRef[]; // case_url
+  w?: V7UrlRef | V7UrlRef[]; // other_urls
+}
+
+// v7 URL reference: {baseId: path} e.g., {"p2": "path/to/slide.svs"}
+type V7UrlRef = Record<string, string>;
 
 interface OptimizedData {
   version: string;
-  bases: string[];
-  data: OptimizedEntry[];
+  bases: {
+    cu?: Record<string, string>; // case_url bases (v3-v6)
+    pv?: Record<string, string>; // preview_url bases (v3-v6)
+    o?: Record<string, string>; // other_url bases (v3-v6)
+    preview?: Record<string, string>; // v7 preview bases (p1, p2, etc.)
+    case?: Record<string, string>; // v7 case bases (c1, c2, etc.)
+    other?: Record<string, string>; // v7 other bases (o1, o2, etc.)
+  };
+  data: (OptimizedEntry | V7Entry)[];
 }
 
 // URL bases cache for optimized format
-let urlBases: string[] | null = null;
+let urlBases: OptimizedData["bases"] | null = null;
+
+// Helper to reverse URL mapping: {url: id} → {id: url}
+function reverseMapping(mapping: Record<string, string> | undefined): Record<string, string> {
+  if (!mapping) return {};
+  const reversed: Record<string, string> = {};
+  for (const [url, id] of Object.entries(mapping)) {
+    reversed[id] = url;
+  }
+  return reversed;
+}
+
+// Helper to reconstruct v7 URLs from {baseId: path} format
+function reconstructV7Url(
+  urlRef: V7UrlRef | V7UrlRef[] | undefined,
+  basesMap: Record<string, string> | undefined
+): string | string[] {
+  if (!urlRef || !basesMap) return Array.isArray(urlRef) ? [] : "";
+
+  // Handle array of URL refs
+  if (Array.isArray(urlRef)) {
+    return urlRef
+      .map((ref) => {
+        const baseId = Object.keys(ref)[0];
+        const path = ref[baseId];
+        const baseUrl = basesMap[baseId];
+        return baseUrl && path ? baseUrl + path : "";
+      })
+      .filter(Boolean);
+  }
+
+  // Handle single URL ref
+  const baseId = Object.keys(urlRef)[0];
+  const path = urlRef[baseId];
+  const baseUrl = basesMap[baseId];
+  return baseUrl && path ? baseUrl + path : "";
+}
 
 function normalizeToVirtualSlide(
-  e: ClientEntry | OptimizedEntry,
-  isOptimized: boolean = false
+  e: ClientEntry | OptimizedEntry | V7Entry,
+  format: "legacy" | "v4" | "v7" = "legacy"
 ): VirtualSlide {
-  if (isOptimized) {
+  // v7 format (current production)
+  if (format === "v7") {
+    const v7 = e as V7Entry;
+
+    // Reconstruct URLs
+    const previewUrls = reconstructV7Url(v7.p, urlBases?.preview);
+    const caseUrls = reconstructV7Url(v7.u, urlBases?.case);
+    const otherUrls = reconstructV7Url(v7.w, urlBases?.other);
+
+    // Get primary URLs (first if array, string if single)
+    const primaryPreview = Array.isArray(previewUrls) ? previewUrls[0] || "" : previewUrls;
+    const primaryCase = Array.isArray(caseUrls) ? caseUrls[0] || "" : caseUrls;
+    const otherUrlsArray = Array.isArray(otherUrls) ? otherUrls : otherUrls ? [otherUrls] : [];
+
+    return {
+      id: v7.x,
+      repository: getRepositoryFromId(v7.x),
+      category: v7.c || "",
+      subcategory: v7.s || "",
+      diagnosis: v7.d || "",
+      acronym: v7.q, // Preserve WHO abbreviation(s)
+      patient_info: v7.i || "",
+      age: v7.a ?? null,
+      gender: v7.g ?? null,
+      clinical_history: v7.h || "",
+      stain_type: v7.t || "",
+      preview_image_url: primaryPreview,
+      image_url: undefined,
+      slide_url: primaryCase, // v7 uses case_url as primary viewer
+      case_url: primaryCase,
+      other_urls: otherUrlsArray,
+      source_metadata: {},
+    };
+  }
+
+  // v4-v6 format (deprecated)
+  if (format === "v4") {
     const opt = e as OptimizedEntry;
 
-    // Reconstruct slide_url from base + path
+    // Reconstruct slide_url from base + path (v2.0 legacy support)
     let slideUrl = opt.u || "";
-    if (opt.b !== undefined && urlBases && urlBases[opt.b]) {
+    if (opt.b !== undefined && urlBases && Array.isArray(urlBases) && urlBases[opt.b]) {
       slideUrl = urlBases[opt.b] + (opt.u || "");
+    }
+
+    // Reconstruct preview_image_url from base + suffix (v3.0+)
+    let previewUrl = "";
+    if (opt.pb && opt.ps && urlBases?.pv?.[opt.pb]) {
+      previewUrl = urlBases.pv[opt.pb] + opt.ps;
+    } else if (opt.pb || opt.ps) {
+      // Debug: Log when we have partial data but can't reconstruct
+      console.warn(`[VirtualSlides] Missing preview data for ${opt.i}:`, {
+        hasBase: !!opt.pb,
+        hasSuffix: !!opt.ps,
+        baseExists: opt.pb ? !!urlBases?.pv?.[opt.pb] : false,
+      });
+    }
+
+    // Reconstruct case_url from base + suffix (v3.0+)
+    let caseUrl = opt.cu || ""; // Legacy fallback
+    if (opt.cb && opt.cs && urlBases?.cu?.[opt.cb]) {
+      caseUrl = urlBases.cu[opt.cb] + opt.cs;
+    } else if (opt.cb && urlBases?.cu?.[opt.cb] && !opt.cs) {
+      // Some entries only have base, no suffix
+      caseUrl = urlBases.cu[opt.cb];
+    }
+
+    // Reconstruct other_urls from base + suffix array (v3.0+)
+    let otherUrls: string[] = [];
+    if (opt.o && Array.isArray(opt.o)) {
+      otherUrls = opt.o
+        .map((item) => {
+          if (typeof item === "object" && item.b && item.s && urlBases?.o?.[item.b]) {
+            return urlBases.o[item.b] + item.s;
+          }
+          return typeof item === "string" ? item : ""; // Legacy string fallback
+        })
+        .filter(Boolean);
     }
 
     return {
@@ -103,11 +248,11 @@ function normalizeToVirtualSlide(
       gender: opt.g ?? null,
       clinical_history: opt.h || "",
       stain_type: opt.st || "",
-      preview_image_url: opt.pv || "",
+      preview_image_url: previewUrl,
       image_url: undefined,
       slide_url: slideUrl,
-      case_url: opt.cu || "",
-      other_urls: opt.o || [],
+      case_url: caseUrl,
+      other_urls: otherUrls,
       source_metadata: {},
     };
   } else {
@@ -144,7 +289,12 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
   // If already fetching, return the existing promise (deduplication)
   if (cachedSlidesPromise) return cachedSlidesPromise;
 
-  const { VIRTUAL_SLIDES_JSON_URL } = await import("@/shared/config/virtual-slides");
+  const { VIRTUAL_SLIDES_JSON_URL, VIRTUAL_SLIDES_JSON_URL_FALLBACK } =
+    await import("@/shared/config/virtual-slides");
+
+  // Check if URL is gzipped at the top level (before promise chain)
+  // Need to check before query params (e.g., .gz?v=4)
+  const isGzippedFile = VIRTUAL_SLIDES_JSON_URL.includes(".json.gz");
 
   async function fetchWithFallback() {
     const fetchWithTimeout = async (
@@ -154,8 +304,7 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
       const controller = new AbortController();
       const timeout = setTimeout(() => controller.abort(), init?.timeoutMs ?? 8000);
       try {
-        const res = await fetch(input, { ...init, signal: controller.signal });
-        return res;
+        return await fetch(input, { ...init, signal: controller.signal });
       } finally {
         clearTimeout(timeout);
       }
@@ -167,12 +316,27 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
         timeoutMs: 8000,
       });
       if (!res.ok) throw new Error(`Failed: ${res.status}`);
+      console.log("[VirtualSlides] ✅ Response OK, returning to processing...");
       return res;
     } catch (e) {
       const msg =
         e?.name === "AbortError"
           ? "Timed out fetching virtual slides. Please check your network and try again."
           : e?.message || "Failed to fetch virtual slides dataset.";
+
+      // Try non-gzipped fallback first if gzip failed
+      if (VIRTUAL_SLIDES_JSON_URL.endsWith(".gz") && VIRTUAL_SLIDES_JSON_URL_FALLBACK) {
+        try {
+          console.warn("[VirtualSlides] Gzipped fetch failed, trying non-gzipped fallback");
+          const fallbackRes = await fetchWithTimeout(VIRTUAL_SLIDES_JSON_URL_FALLBACK, {
+            cache: "force-cache",
+            timeoutMs: 8000,
+          });
+          if (fallbackRes.ok) return fallbackRes;
+        } catch (fallbackError) {
+          console.error("[VirtualSlides] Fallback also failed:", fallbackError);
+        }
+      }
 
       if (process.env.NODE_ENV === "production") {
         console.error(
@@ -191,135 +355,278 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
     }
   }
 
-  cachedSlidesPromise = fetchWithFallback().then(async (res) => {
-    if (!res.ok) throw new Error(`Failed to fetch client slides: ${res.status}`);
-    const json = await res.json();
+  cachedSlidesPromise = fetchWithFallback()
+    .then(async (res) => {
+      if (!res.ok) throw new Error(`Failed to fetch client slides: ${res.status}`);
 
-    // Detect format: optimized (v2.0) or legacy
-    const isOptimized = json.version && json.bases && json.data;
+      // Handle gzipped responses (.json.gz files)
+      let json: OptimizedData | ClientEntry[];
 
-    let entries: (ClientEntry | OptimizedEntry)[];
-    let slides: VirtualSlide[];
+      if (isGzippedFile) {
+        if (typeof DecompressionStream !== "undefined") {
+          // Use browser's native DecompressionStream API to decompress gzip
+          try {
+            if (!res.body) {
+              throw new Error("Response body is null - cannot decompress");
+            }
 
-    if (isOptimized) {
-      // Optimized format (v2.0) - Default format
-      const optimized = json as OptimizedData;
-      urlBases = optimized.bases; // Cache URL bases
-      entries = optimized.data;
-      slides = entries.map((e) => normalizeToVirtualSlide(e, true));
-      console.log(`[VirtualSlides] Loaded optimized format v${optimized.version}`);
-    } else {
-      // DEPRECATED: Legacy format support (Remove after July 2026)
-      // This handles the old virtual-slides.json format for backward compatibility
-      // Users on old app versions can still access the legacy file
-      entries = Array.isArray(json) ? json : (json.data ?? []);
-      slides = entries.map((e) => normalizeToVirtualSlide(e as ClientEntry, false));
-      console.log("[VirtualSlides] Loaded legacy format (deprecated, remove after July 2026)");
-    }
+            const decompressedStream = res.body.pipeThrough(new DecompressionStream("gzip"));
+            const decompressedResponse = new Response(decompressedStream);
+            json = await decompressedResponse.json();
+            console.log("[VirtualSlides] ✅ Decompressed gzipped data (832KB → 6.6MB)");
+          } catch (decompressError) {
+            console.error("[VirtualSlides] ❌ Decompression failed:", decompressError);
 
-    // Store in memory for session (HTTP cache handles persistence)
-    cachedSlides = slides;
-
-    // Pre-compute search index AND reverse index for O(1) lookups
-    searchIndex = [];
-    reverseIndex = new Map();
-
-    for (let i = 0; i < slides.length; i++) {
-      const slide = slides[i];
-      const diagnosisLower = (slide.diagnosis || "").toLowerCase();
-      const diagnosisTokens = tokenize(diagnosisLower);
-      const diagnosisAcronym = makeAcr(diagnosisTokens);
-
-      searchIndex.push({
-        slide,
-        diagnosisLower,
-        diagnosisTokens,
-        diagnosisAcronym,
-      });
-
-      // Build reverse index: each word → set of slide indices
-      for (const token of diagnosisTokens) {
-        if (!reverseIndex.has(token)) {
-          reverseIndex.set(token, new Set());
-        }
-        reverseIndex.get(token)!.add(i);
-
-        // Also index prefixes (3+ chars) for prefix matching
-        if (token.length >= 4) {
-          const prefix = token.substring(0, 3);
-          const prefixKey = `prefix:${prefix}`;
-          if (!reverseIndex.has(prefixKey)) {
-            reverseIndex.set(prefixKey, new Set());
+            // Try fallback to non-gzipped version
+            if (VIRTUAL_SLIDES_JSON_URL_FALLBACK) {
+              console.warn("[VirtualSlides] Trying fallback URL...");
+              try {
+                const fallbackRes = await fetch(VIRTUAL_SLIDES_JSON_URL_FALLBACK, {
+                  cache: "force-cache",
+                });
+                if (!fallbackRes.ok) throw new Error(`Fallback failed: ${fallbackRes.status}`);
+                json = await fallbackRes.json();
+              } catch (fallbackError) {
+                console.error("[VirtualSlides] ❌ Fallback failed:", fallbackError);
+                throw new Error(
+                  `Failed to load virtual slides: Decompression failed and fallback unavailable`
+                );
+              }
+            } else {
+              throw new Error(
+                `Failed to decompress gzipped data: ${decompressError instanceof Error ? decompressError.message : "Unknown error"}`
+              );
+            }
           }
-          reverseIndex.get(prefixKey)!.add(i);
+        } else {
+          // DecompressionStream not supported - try fallback
+          if (VIRTUAL_SLIDES_JSON_URL_FALLBACK) {
+            console.warn("[VirtualSlides] DecompressionStream not supported, using fallback...");
+            const fallbackRes = await fetch(VIRTUAL_SLIDES_JSON_URL_FALLBACK, {
+              cache: "force-cache",
+            });
+            if (!fallbackRes.ok) throw new Error(`Fallback failed: ${fallbackRes.status}`);
+            json = await fallbackRes.json();
+            console.log("[VirtualSlides] ✅ Loaded from fallback (no DecompressionStream)");
+          } else {
+            throw new Error(
+              "Your browser does not support decompressing gzipped files. Please use a modern browser or try again later."
+            );
+          }
+        }
+      } else {
+        // Non-gzipped
+        json = await res.json();
+      }
+
+      // Detect format: v7, v4-v6 (optimized), or legacy
+      const isOptimized =
+        (json as OptimizedData).version &&
+        (json as OptimizedData).bases &&
+        (json as OptimizedData).data;
+
+      let entries: (ClientEntry | OptimizedEntry | V7Entry)[];
+      let processedSlides: VirtualSlide[];
+
+      if (isOptimized) {
+        const optimized = json as OptimizedData;
+
+        // Reverse the bases mapping: v7 stores {url: id}, but we need {id: url}
+        urlBases = {
+          preview: reverseMapping(optimized.bases?.preview),
+          case: reverseMapping(optimized.bases?.case),
+          other: reverseMapping(optimized.bases?.other),
+        };
+
+        entries = optimized.data;
+
+        // Detect v7 format by checking first entry for 'x' field (id)
+        const isV7 = entries.length > 0 && "x" in entries[0];
+
+        if (isV7) {
+          // v7 Production format (current)
+          processedSlides = entries.map((e) => normalizeToVirtualSlide(e as V7Entry, "v7"));
+          console.log("[VirtualSlides] ✅ Loaded v7 production format (WHO abbreviations)");
+        } else {
+          // v4-v6 Optimized format (deprecated)
+          processedSlides = entries.map((e) => normalizeToVirtualSlide(e as OptimizedEntry, "v4"));
+          console.log("[VirtualSlides] ⚠️ Loaded v4-v6 format (deprecated, upgrade to v7)");
+        }
+      } else {
+        // DEPRECATED: Legacy format support (Remove after July 2026)
+        // This handles the old virtual-slides.json format for backward compatibility
+        // Users on old app versions can still access the legacy file
+        const dataArray = Array.isArray(json)
+          ? json
+          : ((json as { data?: unknown[] }).data ?? []);
+        entries = dataArray as (ClientEntry | OptimizedEntry | V7Entry)[];
+        processedSlides = entries.map((e) => normalizeToVirtualSlide(e as ClientEntry, "legacy"));
+        console.log("[VirtualSlides] ⚠️ Loaded legacy format (deprecated, remove after July 2026)");
+      }
+
+      // Store in memory for session (HTTP cache handles persistence)
+      cachedSlides = processedSlides;
+
+      // STEP 1: Calculate diagnosis frequencies (for ranking ambiguous WHO abbreviations)
+      diagnosisFrequencies = new Map();
+      for (const slide of processedSlides) {
+        const diagnosisLower = (slide.diagnosis || "").toLowerCase();
+        diagnosisFrequencies.set(
+          diagnosisLower,
+          (diagnosisFrequencies.get(diagnosisLower) || 0) + 1
+        );
+      }
+
+      // STEP 2: Pre-compute search index AND reverse index for O(1) lookups
+      searchIndex = [];
+      reverseIndex = new Map();
+
+      for (let i = 0; i < processedSlides.length; i++) {
+        const slide = processedSlides[i];
+        const diagnosisLower = (slide.diagnosis || "").toLowerCase();
+        const diagnosisTokens = tokenize(diagnosisLower);
+        const diagnosisAcronym = makeAcr(diagnosisTokens);
+        const frequency = diagnosisFrequencies.get(diagnosisLower) || 0;
+
+        // Extract WHO acronyms (can be string or array)
+        const whoAcronyms: string[] = [];
+        if (slide.acronym) {
+          if (Array.isArray(slide.acronym)) {
+            whoAcronyms.push(...slide.acronym.map((a) => a.toLowerCase()));
+          } else {
+            whoAcronyms.push(slide.acronym.toLowerCase());
+          }
+        }
+
+        searchIndex.push({
+          slide,
+          diagnosisLower,
+          diagnosisTokens,
+          diagnosisAcronym,
+          whoAcronyms,
+          frequency,
+        });
+
+        // Build reverse index: each word → set of slide indices
+        for (const token of diagnosisTokens) {
+          if (!reverseIndex.has(token)) {
+            reverseIndex.set(token, new Set());
+          }
+          reverseIndex.get(token)!.add(i);
+
+          // Also index prefixes (3+ chars) for prefix matching
+          if (token.length >= 4) {
+            const prefix = token.substring(0, 3);
+            const prefixKey = `prefix:${prefix}`;
+            if (!reverseIndex.has(prefixKey)) {
+              reverseIndex.set(prefixKey, new Set());
+            }
+            reverseIndex.get(prefixKey)!.add(i);
+          }
+        }
+
+        // Index first-letter acronym (fallback)
+        if (diagnosisAcronym.length >= 2) {
+          const acrKey = `acr:${diagnosisAcronym}`;
+          if (!reverseIndex.has(acrKey)) {
+            reverseIndex.set(acrKey, new Set());
+          }
+          reverseIndex.get(acrKey)!.add(i);
+        }
+
+        // Index WHO acronyms (HIGHEST PRIORITY!)
+        for (const whoAcr of whoAcronyms) {
+          if (whoAcr.length >= 2) {
+            const whoKey = `who:${whoAcr}`;
+            if (!reverseIndex.has(whoKey)) {
+              reverseIndex.set(whoKey, new Set());
+            }
+            reverseIndex.get(whoKey)!.add(i);
+          }
         }
       }
 
-      // Index acronyms too
-      if (diagnosisAcronym.length >= 2) {
-        const acrKey = `acr:${diagnosisAcronym}`;
-        if (!reverseIndex.has(acrKey)) {
-          reverseIndex.set(acrKey, new Set());
-        }
-        reverseIndex.get(acrKey)!.add(i);
-      }
-    }
+      console.log(
+        `[VirtualSlides Enhanced] 💾 Cached ${processedSlides.length} slides + reverse index (${reverseIndex.size} keys) in memory`
+      );
 
-    console.log(
-      `[VirtualSlides Enhanced] 💾 Cached ${slides.length} slides + reverse index (${reverseIndex.size} keys) in memory`
-    );
-
-    return slides;
-  });
+      return processedSlides;
+    })
+    .catch((error) => {
+      // Clear the cached promise on error so next attempt will retry
+      console.error("[VirtualSlides] ❌ Fatal error, clearing cache:", error);
+      cachedSlidesPromise = null;
+      throw error;
+    });
 
   return cachedSlidesPromise;
 }
 
 // Simple helper functions for tokenization
+// CRITICAL: Normalize punctuation (hyphens, slashes) BEFORE tokenization
+// This ensures reverse index and scoring use the same tokens
+// Example: "EBV-positive DLBCL" → ["ebv", "positive", "dlbcl"]
 
 function tokenize(text: string): string[] {
-  return text.toLowerCase().match(/[a-z0-9]+/g) || [];
+  return (
+    text
+      .toLowerCase()
+      .replace(/[-\/]/g, " ") // normalize punctuation to spaces
+      .match(/[a-z0-9]+/g) || []
+  );
 }
 
 function makeAcr(words: string[]): string {
   return words.map((w) => w[0]).join("");
 }
 
-// Expand medical acronyms in a query
-// e.g., "papillary rcc" → ["papillary rcc", "papillary renal cell carcinoma"]
-// e.g., "renal aml" → ["renal aml", "renal angiomyolipoma", "renal acute myeloid leukemia"]
-function expandMedicalAcronyms(query: string): string[] {
-  const terms = [query]; // Always include original query
-  const words = query.toLowerCase().split(/\s+/);
+// Calculate Levenshtein distance between two strings
+// Used for fuzzy matching (only for queries ≥8 chars with distance 1)
+function levenshteinDistance(a: string, b: string): number {
+  if (a.length === 0) return b.length;
+  if (b.length === 0) return a.length;
 
-  // Check each word for acronym expansion
-  for (let i = 0; i < words.length; i++) {
-    const word = words[i];
-    const expansion = MEDICAL_ACRONYMS[word];
+  const matrix: number[][] = [];
 
-    if (expansion) {
-      // Handle both single expansions and multiple expansions (array)
-      const expansions = Array.isArray(expansion) ? expansion : [expansion];
+  // Initialize first column
+  for (let i = 0; i <= b.length; i++) {
+    matrix[i] = [i];
+  }
 
-      for (const exp of expansions) {
-        // Create expanded version by replacing the acronym
-        const expandedWords = [...words];
-        expandedWords[i] = exp;
-        terms.push(expandedWords.join(" "));
+  // Initialize first row
+  for (let j = 0; j <= a.length; j++) {
+    matrix[0][j] = j;
+  }
+
+  // Fill in the rest of the matrix
+  for (let i = 1; i <= b.length; i++) {
+    for (let j = 1; j <= a.length; j++) {
+      if (b.charAt(i - 1) === a.charAt(j - 1)) {
+        matrix[i][j] = matrix[i - 1][j - 1];
+      } else {
+        matrix[i][j] = Math.min(
+          matrix[i - 1][j - 1] + 1, // substitution
+          matrix[i][j - 1] + 1, // insertion
+          matrix[i - 1][j] + 1 // deletion
+        );
       }
     }
   }
 
-  return terms;
+  return matrix[b.length][a.length];
 }
+
+// Medical acronym expansion removed - using WHO acronyms embedded in dataset (q field)
+// The dataset contains 7,584 WHO acronyms which are more comprehensive and authoritative
+// than the 19 hardcoded medical acronyms that were previously here
 
 // HIGHLY OPTIMIZED: Uses reverse index to check ONLY relevant slides
 function rankSlidesByTerm(
-  slides: VirtualSlide[],
+  _slides: VirtualSlide[], // Not used - we use searchIndex instead
   term: string,
   organContext?: OrganTerm[],
   _maxResults: number = 150 // Reduced from 200 for even better performance
-): Map<string, { slide: VirtualSlide; score: number }> {
+): Map<string, { slide: VirtualSlide; score: number; frequency?: number }> {
   const termLower = term.toLowerCase().trim();
   const words = tokenize(termLower);
 
@@ -328,13 +635,83 @@ function rankSlidesByTerm(
     return new Map();
   }
 
-  const rankedSlides = new Map<string, { slide: VirtualSlide; score: number }>();
+  const rankedSlides = new Map<
+    string,
+    { slide: VirtualSlide; score: number; frequency?: number }
+  >();
 
   // Step 1: Find ALL candidate slide indices using reverse index
   const candidateIndices = new Set<number>();
 
-  // Add slides that contain ANY word from the query
-  for (const word of words) {
+  // CRITICAL: Multi-word queries need INTERSECTION (ALL terms match)
+  // Single-word queries use UNION (cast wider net)
+  const isMultiWordQuery = words.length > 1;
+
+  if (isMultiWordQuery) {
+    // MULTI-WORD: Only include slides that have ALL query terms
+    // Example: "dlbcl ebv" → slides with BOTH "dlbcl" AND "ebv"
+
+    // Collect sets for each word
+    const wordSets: Set<number>[] = [];
+
+    for (const word of words) {
+      // Skip very short words (but allow 2-letter WHO acronyms like "FL", "HL")
+      if (word.length < 2) continue;
+
+      const wordSet = new Set<number>();
+
+      // Check WHO acronyms (add to set, don't replace it)
+      const whoIndices = reverseIndex.get(`who:${word}`);
+      if (whoIndices) {
+        whoIndices.forEach((idx) => wordSet.add(idx));
+      }
+
+      // Check regular word matches in diagnosis text (CRITICAL for multi-word!)
+      // Allow 2-letter words in multi-word queries (e.g., "t cell", "b cell")
+      if (word.length >= 2) {
+        const indices = reverseIndex.get(word);
+        if (indices) {
+          indices.forEach((idx) => wordSet.add(idx));
+        }
+      }
+
+      // If no matches for this word, no results possible
+      if (wordSet.size === 0) {
+        return new Map(); // Early exit - can't satisfy ALL terms
+      }
+
+      wordSets.push(wordSet);
+    }
+
+    // Intersect all sets: keep only slides that appear in ALL sets
+    if (wordSets.length > 0) {
+      let intersection = wordSets[0];
+      for (let i = 1; i < wordSets.length; i++) {
+        intersection = new Set([...intersection].filter((idx) => wordSets[i].has(idx)));
+      }
+      intersection.forEach((idx) => candidateIndices.add(idx));
+
+      // Only use first-letter acronym fallback if intersection found SOME results
+      // This prevents false matches like "scc ebv" → "se" matching random diagnoses
+      if (intersection.size > 0) {
+        const acr = makeAcr(words);
+        const acrIndices = reverseIndex.get(`acr:${acr}`);
+        if (acrIndices) {
+          acrIndices.forEach((idx) => candidateIndices.add(idx));
+        }
+      }
+    }
+  } else {
+    // SINGLE-WORD: Use UNION (ANY match) for broader results
+    const word = words[0];
+
+    // Check WHO acronyms
+    const whoIndices = reverseIndex.get(`who:${word}`);
+    if (whoIndices) {
+      whoIndices.forEach((idx) => candidateIndices.add(idx));
+    }
+
+    // Check word matches
     if (word.length >= 3) {
       const indices = reverseIndex.get(word);
       if (indices) {
@@ -342,22 +719,11 @@ function rankSlidesByTerm(
       }
 
       // Also check prefixes for single-word queries
-      if (words.length === 1 && word.length >= 3) {
-        const prefix = word.substring(0, 3);
-        const prefixIndices = reverseIndex.get(`prefix:${prefix}`);
-        if (prefixIndices) {
-          prefixIndices.forEach((idx) => candidateIndices.add(idx));
-        }
+      const prefix = word.substring(0, 3);
+      const prefixIndices = reverseIndex.get(`prefix:${prefix}`);
+      if (prefixIndices) {
+        prefixIndices.forEach((idx) => candidateIndices.add(idx));
       }
-    }
-  }
-
-  // Also add acronym matches
-  if (words.length >= 2) {
-    const acr = makeAcr(words);
-    const acrIndices = reverseIndex.get(`acr:${acr}`);
-    if (acrIndices) {
-      acrIndices.forEach((idx) => candidateIndices.add(idx));
     }
   }
 
@@ -366,42 +732,159 @@ function rankSlidesByTerm(
     return rankedSlides;
   }
 
+  // ============================================================================
+  // SHORT QUERY FILTER: For 2-char queries, ONLY match WHO abbreviations
+  // For 3-char queries, prefer WHO but fallback to normal search if no match
+  // This prevents noise and leverages WHO as authoritative source
+  // ============================================================================
+  const isVeryShortQuery = termLower.length === 2; // Strict WHO-only for 2 chars
+  const isShortQuery = termLower.length === 3; // Prefer WHO, fallback for 3 chars
+
   // Step 2: Score ONLY the candidate slides (much smaller set!)
   for (const idx of candidateIndices) {
     const entry = searchIndex[idx];
-    const { slide: s, diagnosisLower: d, diagnosisTokens, diagnosisAcronym } = entry;
+    const {
+      slide: s,
+      diagnosisLower: d,
+      diagnosisTokens,
+      diagnosisAcronym,
+      whoAcronyms,
+      frequency,
+    } = entry;
     if (!d) continue;
 
     let score = 0;
 
-    // Score 100: exact match
-    if (d === termLower) {
-      score = 100;
+    // WHO abbreviation match - check this first for short queries
+    const isWhoMatch = whoAcronyms.some((acr) => words.includes(acr));
+
+    // STRICT FILTER: 2-char queries ONLY match WHO abbreviations
+    if (isVeryShortQuery) {
+      if (!isWhoMatch) {
+        continue; // Skip non-WHO matches for 2-char queries
+      }
+
+      // Calculate frequency bonus (max +5 points)
+      const frequencyBonus = Math.min(frequency / 100, 5);
+
+      // Single WHO acronym (specific diagnosis)
+      if (whoAcronyms.length === 1) {
+        score = 98 + frequencyBonus;
+      }
+      // Multiple WHO acronyms (generic diagnosis)
+      else {
+        const baseScore = 95 - Math.min(whoAcronyms.length, 10);
+        score = baseScore + frequencyBonus;
+      }
     }
-    // Score 90: contains exact phrase
-    else if (d.includes(termLower)) {
-      score = 90;
+    // PREFER WHO: 3-char queries prefer WHO matches but allow fallback
+    else if (isShortQuery && isWhoMatch) {
+      // Calculate frequency bonus (max +5 points)
+      const frequencyBonus = Math.min(frequency / 100, 5);
+
+      // Single WHO acronym (specific diagnosis)
+      if (whoAcronyms.length === 1) {
+        score = 98 + frequencyBonus;
+      }
+      // Multiple WHO acronyms (generic diagnosis)
+      else {
+        const baseScore = 95 - Math.min(whoAcronyms.length, 10);
+        score = baseScore + frequencyBonus;
+      }
     }
-    // Score 70-80: word-level matches
+    // FULL SCORING FOR LONGER QUERIES (4+ characters) OR 3-CHAR FALLBACK
     else {
-      let matchedWords = 0;
+      // ========================================================================
+      // MULTI-TERM DETECTION: Count how many query terms appear in diagnosis
+      // This boosts results that contain ALL terms (e.g., "dlbcl + ebv")
+      // ========================================================================
+      let matchedTerms = 0;
+
       for (const word of words) {
-        if (word.length >= 3 && diagnosisTokens.includes(word)) {
-          matchedWords++;
+        if (word.length < 2) continue;
+
+        // Check if this word is a WHO acronym
+        const isWhoTerm = whoAcronyms.includes(word);
+        if (isWhoTerm) {
+          matchedTerms++;
+          continue;
+        }
+
+        // Check if word appears in diagnosis (as whole word or part of word)
+        const wordRegex = new RegExp(`\\b${word}|${word}\\b`, "i");
+        if (wordRegex.test(d)) {
+          matchedTerms++;
         }
       }
 
-      if (matchedWords > 0) {
-        score = 70 + (matchedWords / words.length) * 10;
+      const multiTermBonus = words.length > 1 && matchedTerms === words.length ? 10 : 0;
+      // ========================================================================
+
+      // Score 100: exact diagnosis match
+      if (d === termLower) {
+        score = 100 + multiTermBonus;
       }
-      // Score 60: acronym match
-      else if (words.length >= 2 && makeAcr(words) === diagnosisAcronym) {
-        score = 60;
+      // Score 95-103+: WHO acronym exact match with frequency bonus
+      else if (isWhoMatch) {
+        const frequencyBonus = Math.min(frequency / 100, 5);
+        const hasOnlyOneAcronym = whoAcronyms.length === 1;
+        const diagnosisContainsSearchTerm = words.some(
+          (word) => word.length >= 4 && d.includes(word)
+        );
+
+        // Best: Single WHO acronym + diagnosis contains search term
+        if (hasOnlyOneAcronym && diagnosisContainsSearchTerm) {
+          score = 98 + frequencyBonus + multiTermBonus; // "Embryonal Rhabdomyosarcoma" with q:"ERMS"
+        }
+        // Good: Single WHO acronym (specific diagnosis)
+        else if (hasOnlyOneAcronym) {
+          score = 97 + frequencyBonus + multiTermBonus;
+        }
+        // OK: Multiple WHO acronyms (generic diagnosis like "Rhabdomyosarcoma")
+        else {
+          const baseScore = 95 - Math.min(whoAcronyms.length, 10);
+          score = baseScore + frequencyBonus + multiTermBonus;
+        }
       }
-      // Score 50: prefix match
-      else if (words.length === 1 && words[0].length >= 3) {
-        if (diagnosisTokens.some((w) => w.startsWith(words[0]))) {
-          score = 50;
+      // Score 90+: contains exact phrase
+      else if (d.includes(termLower)) {
+        score = 90 + multiTermBonus;
+      }
+      // Score 85+: WHO acronym partial match (query contains WHO acronym)
+      else if (whoAcronyms.some((acr) => termLower.includes(acr))) {
+        score = 85 + multiTermBonus;
+      }
+      // Score 70-80+: word-level matches
+      else {
+        let matchedWords = 0;
+        for (const word of words) {
+          if (word.length >= 3 && diagnosisTokens.includes(word)) {
+            matchedWords++;
+          }
+        }
+
+        if (matchedWords > 0) {
+          score = 70 + (matchedWords / words.length) * 10 + multiTermBonus;
+        }
+        // Score 60+: first-letter acronym match
+        else if (words.length >= 2 && makeAcr(words) === diagnosisAcronym) {
+          score = 60 + multiTermBonus;
+        }
+        // Score 50: prefix match
+        else if (words.length === 1 && words[0].length >= 3) {
+          if (diagnosisTokens.some((w) => w.startsWith(words[0]))) {
+            score = 50;
+          }
+        }
+        // Score 30: fuzzy match (≥8 chars, distance 1 only)
+        // Only for long queries to be safe - avoids dangerous medical term confusion
+        else if (termLower.length >= 8) {
+          for (const diagWord of diagnosisTokens) {
+            if (diagWord.length >= 8 && levenshteinDistance(diagWord, termLower) === 1) {
+              score = 30;
+              break;
+            }
+          }
         }
       }
     }
@@ -415,24 +898,18 @@ function rankSlidesByTerm(
         score *= organBoost;
       }
 
-      rankedSlides.set(slideKey, { slide: s, score });
+      rankedSlides.set(slideKey, { slide: s, score, frequency });
     }
   }
 
   return rankedSlides;
 }
 
-// Search mode types
-export type SearchMode = "standard" | "nci-fallback";
-
-// Minimum score threshold to consider a result "good quality"
-const MIN_GOOD_RESULTS = 5; // Minimum number of good results before considering NCI fallback
-
-// Simplified main ranking function with optional NCI fallback
+// NCI fallback removed - using only WHO acronyms embedded in dataset
+// Simplified main ranking function
 async function rankSlidesWithExpansion(
   slides: VirtualSlide[],
-  query: string,
-  searchMode: SearchMode = "standard"
+  query: string
 ): Promise<{
   slides: VirtualSlide[];
   expandedTerms: string[];
@@ -442,84 +919,36 @@ async function rankSlidesWithExpansion(
   const term = (query || "").toLowerCase().trim();
   if (!term) return { slides, expandedTerms: [] };
 
-  // Step 1: Expand medical acronyms (e.g., "papillary rcc" → ["papillary rcc", "papillary renal cell carcinoma"])
-  const expandedQueries = expandMedicalAcronyms(term);
-
-  // Extract organ/anatomical context from original query
+  // Extract organ/anatomical context from original query for boosting
   const { organs } = extractOrganTerms(query);
 
-  // Step 2: Search across all expanded queries and aggregate results
-  const aggregatedRankings = new Map<string, { slide: VirtualSlide; score: number }>();
+  // Search using the query term directly
+  // WHO acronyms (7,584 embedded in dataset) are matched via reverse index
+  const termRankings = rankSlidesByTerm(
+    slides,
+    term,
+    organs.length > 0 ? organs : undefined,
+    150 // Limit per term for better performance
+  );
 
-  for (const searchTerm of expandedQueries) {
-    const termRankings = rankSlidesByTerm(
-      slides,
-      searchTerm,
-      organs.length > 0 ? organs : undefined,
-      150 // Limit per term for better performance
-    );
-
-    for (const [slideKey, { slide, score }] of termRankings.entries()) {
-      const existing = aggregatedRankings.get(slideKey);
-
-      // Keep the best (highest) score across all expansions
-      if (!existing || score > existing.score) {
-        aggregatedRankings.set(slideKey, { slide, score });
+  // Sort by score (highest first), then frequency, then length
+  const sortedSlides = Array.from(termRankings.values())
+    .sort((a, b) => {
+      // Primary: score descending (higher scores first)
+      if (b.score !== a.score) return b.score - a.score;
+      // Secondary: frequency descending (more common diagnoses first)
+      if ((a.frequency || 0) !== (b.frequency || 0)) {
+        return (b.frequency || 0) - (a.frequency || 0);
       }
-    }
-  }
-
-  const standardRankings = aggregatedRankings;
-
-  // Count good quality results (score >= 70)
-  const goodResults = Array.from(standardRankings.values()).filter(({ score }) => score >= 70);
-
-  // If we have enough good results OR standard mode, return immediately
-  if (goodResults.length >= MIN_GOOD_RESULTS || searchMode === "standard") {
-    const sortedSlides = Array.from(standardRankings.values())
-      .sort((a, b) => b.score - a.score) // Higher scores first
-      .map((item) => item.slide);
-
-    return {
-      slides: sortedSlides,
-      expandedTerms: [],
-      method: "standard",
-    };
-  }
-
-  // Step 3: Fall back to NCI expansion ONLY if few results
-  const nciExpandedTerms = await expandSearchTermClient(term);
-
-  // Aggregate NCI rankings across all expanded terms with organ context
-  const nciRankings = new Map<string, { slide: VirtualSlide; score: number }>();
-
-  for (const searchTermItem of nciExpandedTerms) {
-    const termRankings = rankSlidesByTerm(
-      slides,
-      searchTermItem,
-      organs.length > 0 ? organs : undefined,
-      150 // Limit per term for better performance
-    );
-
-    for (const [slideKey, { slide, score }] of termRankings.entries()) {
-      const existing = nciRankings.get(slideKey);
-
-      // Keep the best (highest) score
-      if (!existing || score > existing.score) {
-        nciRankings.set(slideKey, { slide, score });
-      }
-    }
-  }
-
-  // Sort by score (highest first)
-  const sortedSlides = Array.from(nciRankings.values())
-    .sort((a, b) => b.score - a.score)
+      // Tertiary: diagnosis length ascending (shorter/more specific first)
+      return a.slide.diagnosis.length - b.slide.diagnosis.length;
+    })
     .map((item) => item.slide);
 
   return {
     slides: sortedSlides,
-    expandedTerms: nciExpandedTerms.slice(1), // Exclude original term
-    method: "nci-fallback",
+    expandedTerms: [],
+    method: "standard",
   };
 }
 
@@ -532,7 +961,6 @@ export interface ClientSearchOptions {
   randomSeed?: number;
   page?: number;
   limit?: number;
-  searchMode?: SearchMode; // Control search strategy (standard or nci-fallback)
 }
 
 export function useClientVirtualSlidesEnhanced(defaultLimit: number = 20) {
@@ -547,7 +975,6 @@ export function useClientVirtualSlidesEnhanced(defaultLimit: number = 20) {
   const [options, setOptions] = useState<ClientSearchOptions>({
     page: 1,
     limit: defaultLimit,
-    searchMode: "standard",
   });
 
   useEffect(() => {
@@ -643,15 +1070,14 @@ export function useClientVirtualSlidesEnhanced(defaultLimit: number = 20) {
           return;
         }
 
-        // Search with configurable mode
+        // Search using query
         if (hasQuery) {
-          const mode = options.searchMode || "standard";
           const {
             slides: rankedSlides,
             expandedTerms,
             method,
             confidence,
-          } = await rankSlidesWithExpansion(list, options.query, mode);
+          } = await rankSlidesWithExpansion(list, options.query);
           if (mounted) {
             setFilteredAndRanked(rankedSlides);
             setExpandedSearchTerms(expandedTerms);
@@ -710,13 +1136,8 @@ export function useClientVirtualSlidesEnhanced(defaultLimit: number = 20) {
         if (Object.prototype.hasOwnProperty.call(opts, "randomSeed"))
           next.randomSeed = opts.randomSeed;
 
-        if (Object.prototype.hasOwnProperty.call(opts, "searchMode")) {
-          next.searchMode = opts.searchMode;
-        }
-
         if (next.limit == null) next.limit = prev.limit ?? defaultLimit;
         if (next.page == null) next.page = 1;
-        if (next.searchMode == null) next.searchMode = "standard"; // Default to standard mode for speed
         return next;
       });
     },

@@ -3,8 +3,8 @@
 
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
-import { QuestionsTable } from "@/features/questions/components/questions-table";
-import { QuestionsStatsCards } from "@/features/questions/components/questions-stats-cards";
+import { QuestionsTable } from "@/features/admin/questions/components/shared/questions-table";
+import { QuestionsStatsCards } from "@/features/admin/questions/components/shared/questions-stats-cards";
 import {
   Card,
   CardContent,

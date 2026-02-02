@@ -1,8 +1,8 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
-import { revalidateQuestions } from "@/shared/utils/revalidation";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
+import { revalidateQuestions } from "@/shared/utils/api/revalidation";
+import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
 /**
  * POST /api/questions/:id/submit-for-review

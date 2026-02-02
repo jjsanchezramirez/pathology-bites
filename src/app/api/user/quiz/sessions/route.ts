@@ -1,10 +1,10 @@
 // src/app/api/quiz/sessions/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { QuizCreationForm } from "@/features/quiz/types/quiz";
-import { quizService } from "@/features/quiz/services/quiz-service";
-import { TABLE_NAMES } from "@/shared/constants/database-types";
-import { devLog } from "@/shared/utils/dev-logger";
+import { QuizCreationForm } from "@/features/user/quiz/types/quiz";
+import { quizService } from "@/features/user/quiz/services/quiz-service";
+import { TABLE_NAMES } from "@/shared/types/database";
+import { devLog } from "@/shared/utils/logging/dev-logger";
 
 export async function POST(request: NextRequest) {
   const startTime = Date.now();

@@ -1,9 +1,9 @@
 // src/app/(admin)/admin/notifications/page.tsx
 import { Metadata } from "next";
 import { Suspense } from "react";
-import { SystemUpdateBroadcaster } from "@/features/admin/components/system-update-broadcaster";
+import { SystemUpdateBroadcaster } from "@/features/admin/notifications/components/system-update-broadcaster";
 import { RequirePermission } from "@/shared/components/auth/role-guard";
-import { NotificationsSkeleton } from "@/features/admin/components/notifications-skeleton";
+import { NotificationsSkeleton } from "@/features/admin/notifications/components/notifications-skeleton";
 
 export const metadata: Metadata = {
   title: "System Notifications - Admin Dashboard",

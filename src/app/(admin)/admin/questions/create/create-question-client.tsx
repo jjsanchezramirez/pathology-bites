@@ -1,10 +1,10 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { toast } from "@/shared/utils/toast";
-import { MultiStepQuestionForm } from "@/features/questions/components/create/multi-step-question-form";
-import { QuestionFormData } from "@/features/questions/types/questions";
-import { apiClient } from "@/shared/utils/api-client";
+import { toast } from "@/shared/utils/ui/toast";
+import { MultiStepQuestionForm } from "@/features/admin/questions/components/create/multi-step-question-form";
+import { QuestionFormData } from "@/shared/types/questions";
+import { apiClient } from "@/shared/utils/api/api-client";
 
 export function CreateQuestionClient() {
   const router = useRouter();

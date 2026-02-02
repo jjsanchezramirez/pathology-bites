@@ -1,9 +1,9 @@
 // src/app/api/quiz/sessions/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { quizService } from "@/features/quiz/services/quiz-service";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
-import { QuizStatus } from "@/features/quiz/types/quiz";
+import { quizService } from "@/features/user/quiz/services/quiz-service";
+import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { QuizStatus } from "@/features/user/quiz/types/quiz";
 
 interface QuizSessionUpdate {
   action?: "start" | "pause" | "resume";

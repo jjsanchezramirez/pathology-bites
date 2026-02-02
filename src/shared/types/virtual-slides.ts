@@ -10,6 +10,7 @@ export interface VirtualSlide {
   category: string;
   subcategory: string;
   diagnosis: string;
+  acronym?: string | string[]; // WHO medical abbreviation(s)
   patient_info: string;
   age: string | null; // Note: This is string in the actual data, not number
   gender: string | null;

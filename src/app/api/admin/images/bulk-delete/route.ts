@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { bulkDeleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
+import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
 export async function DELETE(request: NextRequest) {
   try {

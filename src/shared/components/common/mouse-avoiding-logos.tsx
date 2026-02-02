@@ -28,6 +28,7 @@ const logos = [
     alt: "Hematopathology eTutorial",
   },
   { id: "recut", src: getR2PublicUrl("logos/recut-club-logo.png"), alt: "Recut Club" },
+  { id: "stjude", src: getR2PublicUrl("logos/st-jude-logo.png"), alt: "St. Jude Cloud" },
 ];
 
 export function MouseAvoidingLogos() {
@@ -87,8 +88,9 @@ export function MouseAvoidingLogos() {
   };
 
   const positions = [
-    { left: "35%", top: "25%" }, // top-left
-    { left: "65%", top: "25%" }, // top-right
+    { left: "25%", top: "25%" }, // top-left
+    { left: "50%", top: "25%" }, // top-center
+    { left: "75%", top: "25%" }, // top-right
     { left: "20%", top: "50%" }, // middle-left
     { left: "50%", top: "50%" }, // middle-center
     { left: "80%", top: "50%" }, // middle-right

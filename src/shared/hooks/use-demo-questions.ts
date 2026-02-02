@@ -1,6 +1,6 @@
 // src/shared/hooks/use-demo-questions.ts
 import { useState, useEffect, useCallback, useRef } from "react";
-import { toast } from "@/shared/utils/toast";
+import { toast } from "@/shared/utils/ui/toast";
 
 export interface Option {
   id: string;

@@ -11,8 +11,8 @@ import {
   ProfileLoading,
   ProfileInformationCard,
   AccountDetailsCard,
-} from "@/features/profile/components";
-import { toast } from "@/shared/utils/toast";
+} from "@/features/user/profile/components";
+import { toast } from "@/shared/utils/ui/toast";
 
 interface UserProfile {
   id: string;

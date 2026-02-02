@@ -5,7 +5,7 @@ import { createContext, useContext } from "react";
 import { User, Session } from "@supabase/supabase-js";
 import { useAuth } from "@/shared/hooks/use-auth";
 import { isPublicRoute } from "@/shared/utils/route-helpers";
-import type { UserRole } from "@/shared/utils/auth-helpers";
+import type { UserRole } from "@/shared/utils/auth/auth-helpers";
 
 interface AuthContextType {
   user: User | null;

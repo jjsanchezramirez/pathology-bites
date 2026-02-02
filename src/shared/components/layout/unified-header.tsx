@@ -7,7 +7,7 @@ import { FontSizeControl } from "@/shared/components/common/font-size-control";
 import { ThemeModeToggle } from "@/shared/components/common/theme-mode-toggle";
 import { AdminModeToggle } from "@/shared/components/common/admin-mode-toggle";
 import { NotificationsHandler } from "@/shared/components/layout/notifications-handler";
-import { ProfileDropdown } from "@/features/dashboard/components/profile-dropdown";
+import { ProfileDropdown } from "./profile-dropdown";
 
 export interface HeaderConfig {
   showNotifications?: boolean;

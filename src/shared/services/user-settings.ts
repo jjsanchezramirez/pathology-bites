@@ -8,7 +8,7 @@ import {
   type QuizSettings,
   type NotificationSettings,
   type UISettings,
-} from "@/shared/constants/user-settings-defaults";
+} from "@/shared/config/user-settings-defaults";
 
 export type { QuizSettings, NotificationSettings, UISettings };
 
@@ -256,31 +256,6 @@ class UserSettingsService {
     }
   }
 
-  /**
-   * Mark Cloudflare migration message as dismissed
-   */
-  async markCloudflareMigrationDismissed(): Promise<void> {
-    try {
-      await this.updateUISettings({ cloudflare_migration_dismissed: true });
-    } catch (error) {
-      console.error("Error marking Cloudflare migration message as dismissed:", error);
-      throw error;
-    }
-  }
-
-  /**
-   * Check if user has dismissed the Cloudflare migration message
-   */
-  async hasDismissedCloudflareMigration(): Promise<boolean> {
-    try {
-      const userSettings = await this.getUserSettings();
-      return userSettings.ui_settings.cloudflare_migration_dismissed ?? false;
-    } catch (error) {
-      console.error("Error checking Cloudflare migration message status:", error);
-      // Default to false to show the message on error (better to inform users)
-      return false;
-    }
-  }
 
   /**
    * Mark v1.0 release announcement as dismissed

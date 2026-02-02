@@ -11,7 +11,7 @@ import {
   clearToolCache,
   getCacheStats as getPublicToolsCacheStats,
   getRecentItems,
-} from "@/shared/utils/public-tools-cache";
+} from "@/shared/utils/cache/public-tools-cache";
 
 interface GeneInfo {
   hgncId: string;

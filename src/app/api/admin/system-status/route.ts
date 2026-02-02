@@ -3,8 +3,8 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { getBucketSize } from "@/shared/services/r2-storage";
-import { formatSize } from "@/features/images/services/image-upload";
-import { devLog } from "@/shared/utils/dev-logger";
+import { formatSize } from "@/features/admin/images/services/image-upload";
+import { devLog } from "@/shared/utils/logging/dev-logger";
 
 interface SystemHealth {
   vercelStatus: "operational" | "error";

@@ -1,12 +1,12 @@
 // src/app/api/auth/callback/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { withRateLimit, authRateLimiter } from "@/shared/utils/api-rate-limiter";
+import { withRateLimit, authRateLimiter } from "@/shared/utils/api/api-rate-limiter";
 import {
   DEFAULT_QUIZ_SETTINGS,
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_UI_SETTINGS,
-} from "@/shared/constants/user-settings-defaults";
+} from "@/shared/config/user-settings-defaults";
 
 const rateLimitedHandler = withRateLimit(authRateLimiter);
 

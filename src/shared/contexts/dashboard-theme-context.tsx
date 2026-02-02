@@ -16,7 +16,7 @@ import {
   setAdminModeCookie,
   getThemeKeyForMode,
   isAdminTypeMode,
-} from "@/shared/utils/admin-mode";
+} from "@/shared/utils/auth/admin-mode";
 import { userSettingsService } from "@/shared/services/user-settings";
 
 interface DashboardThemeContextType {

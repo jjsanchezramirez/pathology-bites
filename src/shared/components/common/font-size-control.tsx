@@ -7,7 +7,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/shared/components/ui/
 import { Separator } from "@/shared/components/ui/separator";
 import { useState } from "react";
 import { useDashboardSettings } from "@/shared/contexts/dashboard-settings-provider";
-import { getTextZoomConfig } from "@/shared/utils/text-zoom";
+import { getTextZoomConfig } from "@/shared/utils/ui/text-zoom";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 import { cn } from "@/shared/utils";
 

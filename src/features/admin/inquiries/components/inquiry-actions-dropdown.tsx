@@ -1,0 +1,159 @@
+"use client";
+
+import { useState } from "react";
+import { MoreHorizontal, Reply, CheckCircle, Trash2 } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
+import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
+import { toast } from "@/shared/utils/ui/toast";
+import { useNotificationRefresh } from "@/shared/contexts/notification-refresh-context";
+
+interface Inquiry {
+  id: string;
+  request_type: string;
+  first_name: string;
+  last_name: string;
+  organization: string | null;
+  email: string;
+  inquiry: string;
+  status: string;
+  created_at: string;
+  updated_at: string;
+}
+
+interface InquiryActionsDropdownProps {
+  inquiry: Inquiry;
+  onReply: (inquiry: Inquiry) => void;
+  onStatusUpdate: (inquiryId: string, newStatus: string) => void;
+  onDelete: (inquiryId: string) => void;
+}
+
+export function InquiryActionsDropdown({
+  inquiry,
+  onReply,
+  onStatusUpdate,
+  onDelete,
+}: InquiryActionsDropdownProps) {
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [isUpdating, setIsUpdating] = useState(false);
+  const { refreshNotifications } = useNotificationRefresh();
+
+  const handleMarkAsResolved = async () => {
+    if (inquiry.status === "resolved") {
+      toast.info("Inquiry is already resolved");
+      return;
+    }
+
+    setIsUpdating(true);
+    try {
+      const response = await fetch(`/api/admin/inquiries/${inquiry.id}/status`, {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ status: "resolved" }),
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to update status");
+      }
+
+      toast.success("Inquiry marked as resolved");
+      onStatusUpdate(inquiry.id, "resolved");
+      refreshNotifications();
+    } catch (error) {
+      console.error("Error updating status:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to update status");
+    } finally {
+      setIsUpdating(false);
+    }
+  };
+
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(`/api/admin/inquiries/${inquiry.id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to delete inquiry");
+      }
+
+      toast.success("Inquiry deleted successfully");
+      onDelete(inquiry.id);
+      refreshNotifications();
+    } catch (error) {
+      console.error("Error deleting inquiry:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete inquiry");
+    } finally {
+      setDeleteDialogOpen(false);
+    }
+  };
+
+  return (
+    <>
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+            <span className="sr-only">Open menu</span>
+            <MoreHorizontal className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-48">
+          <DropdownMenuItem onClick={() => onReply(inquiry)}>
+            <Reply className="mr-2 h-4 w-4" />
+            Reply
+          </DropdownMenuItem>
+          <DropdownMenuItem
+            onClick={handleMarkAsResolved}
+            disabled={isUpdating || inquiry.status === "resolved"}
+          >
+            <CheckCircle className="mr-2 h-4 w-4" />
+            {inquiry.status === "resolved" ? "Already Resolved" : "Mark as Resolved"}
+          </DropdownMenuItem>
+          <DropdownMenuSeparator />
+          <DropdownMenuItem
+            onClick={() => setDeleteDialogOpen(true)}
+            className="text-destructive focus:text-destructive"
+          >
+            <Trash2 className="mr-2 h-4 w-4" />
+            Delete
+          </DropdownMenuItem>
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <BlurredDialog
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        title="Delete Inquiry"
+        description={`Are you sure you want to delete this inquiry from ${inquiry.first_name} ${inquiry.last_name}? This action cannot be undone.`}
+        maxWidth="md"
+      >
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            This will permanently remove the inquiry and cannot be recovered.
+          </p>
+        </div>
+        <div className="flex justify-end gap-3 pt-4">
+          <Button variant="outline" onClick={() => setDeleteDialogOpen(false)}>
+            Cancel
+          </Button>
+          <Button
+            onClick={handleDelete}
+            className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+          >
+            Delete
+          </Button>
+        </div>
+      </BlurredDialog>
+    </>
+  );
+}

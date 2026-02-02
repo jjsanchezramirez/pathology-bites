@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { CELL_QUIZ_IMAGES_URL, CELL_QUIZ_REFERENCES_URL } from "@/shared/config/cell-quiz";
-import { transformCellQuizData } from "@/shared/utils/r2-url-transformer";
-import { toast } from "@/shared/utils/toast";
+import { transformCellQuizData } from "@/shared/utils/r2/r2-url-transformer";
+import { toast } from "@/shared/utils/ui/toast";
 
 // Type definitions for cell quiz data
 export interface CellImageData {

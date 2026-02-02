@@ -5,15 +5,15 @@
  */
 
 import { useState, useCallback } from "react";
-import { CitationData } from "@/shared/utils/citation-extractor";
-import { toast } from "@/shared/utils/toast";
+import { CitationData } from "@/shared/utils/citations/citation-extractor";
+import { toast } from "@/shared/utils/ui/toast";
 import {
   getCachedItem,
   setCachedItem,
   clearToolCache,
   getCacheStats as getPublicToolsCacheStats,
   getRecentItems,
-} from "@/shared/utils/public-tools-cache";
+} from "@/shared/utils/cache/public-tools-cache";
 
 interface UseSmartCitationsResult {
   generateCitation: (input: string, type: "url" | "doi" | "isbn") => Promise<CitationData>;

@@ -23,7 +23,7 @@ import {
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
 import { KeyboardVisualizer } from "@/shared/components/common/keyboard-visualizer";
-import { toast } from "@/shared/utils/toast";
+import { toast } from "@/shared/utils/ui/toast";
 
 interface CellType {
   id: string;

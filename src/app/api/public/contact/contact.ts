@@ -3,7 +3,7 @@
 import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
-import { createContactNotificationEmail } from '@/shared/utils/email-templates'
+import { createContactNotificationEmail } from '@/shared/config/email-templates'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 

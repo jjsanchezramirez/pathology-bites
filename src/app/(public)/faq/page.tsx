@@ -6,7 +6,7 @@ import Link from "next/link";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { FAQCategory } from "@/shared/components/common/faq-category";
 import { PublicPageCTA } from "@/shared/components/common/public-page-cta";
-import { faqData } from "@/shared/data/faq-data";
+import { faqData } from "@/shared/config/faq-data";
 import { ScrollReveal } from "@/shared/components/common/scroll-reveal";
 
 export default function FAQPage() {

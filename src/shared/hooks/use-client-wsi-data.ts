@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
-import { toast } from "@/shared/utils/toast";
+import { toast } from "@/shared/utils/ui/toast";
 
 // Type for PathPresenter case data from JSON
 interface PathPresenterCase {

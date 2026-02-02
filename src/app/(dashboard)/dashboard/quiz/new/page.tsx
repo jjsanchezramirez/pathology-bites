@@ -18,8 +18,8 @@ import {
   QuestionTypeStats,
   QUIZ_MODE_CONFIG,
   DEFAULT_QUIZ_CONFIG,
-} from "@/features/quiz/types/quiz";
-import { toast } from "@/shared/utils/toast";
+} from "@/features/user/quiz/types/quiz";
+import { toast } from "@/shared/utils/ui/toast";
 import {
   NewQuizLoading,
   QuizNameInput,
@@ -28,7 +28,7 @@ import {
   QuestionTypeSelector,
   CategorySelector,
   StartQuizButton,
-} from "@/features/quiz/components";
+} from "@/features/user/quiz/components";
 
 interface QuizOptionsData {
   categories: CategoryWithStats[];

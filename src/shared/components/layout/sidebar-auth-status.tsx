@@ -13,7 +13,7 @@ import {
 } from "@/shared/components/ui/dropdown-menu";
 import { RefreshCw, LogOut, ChevronUp, Shield, ShieldAlert, ShieldCheck } from "lucide-react";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
-import { apiClient } from "@/shared/utils/api-client";
+import { apiClient } from "@/shared/utils/api/api-client";
 
 interface UserProfile {
   id: string;

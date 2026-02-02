@@ -3,12 +3,12 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
+import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 import {
   ACHIEVEMENT_DEFINITIONS,
   type UserStats,
-} from "@/features/achievements/services/achievement-checker";
-import type { Achievement } from "@/features/achievements/types/achievement";
+} from "@/features/user/achievements/services/achievement-checker";
+import type { Achievement } from "@/features/user/achievements/types/achievement";
 
 interface _UserCategoryStats {
   category_id: string;

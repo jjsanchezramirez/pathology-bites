@@ -7,7 +7,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { toast } from "@/shared/utils/toast";
+import { toast } from "@/shared/utils/ui/toast";
 import { Turnstile, type TurnstileInstance } from "@marsidev/react-turnstile";
 import { FormField } from "@/features/auth/components/ui/form-field";
 import { FormButton } from "@/features/auth/components/ui/form-button";

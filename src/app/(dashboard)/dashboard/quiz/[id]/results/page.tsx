@@ -3,10 +3,10 @@
 
 import { useParams } from "next/navigation";
 import { Button } from "@/shared/components/ui/button";
-import { QuizResultsSummary } from "@/features/quiz/components/quiz-results-summary";
-import { QuizResultsSkeleton } from "@/features/quiz/components/quiz-results-skeleton";
-import { QuizResult } from "@/features/quiz/types/quiz";
-import { toast } from "@/shared/utils/toast";
+import { QuizResultsSummary } from "@/features/user/quiz/components/quiz-results-summary";
+import { QuizResultsSkeleton } from "@/features/user/quiz/components/quiz-results-skeleton";
+import { QuizResult } from "@/features/user/quiz/types/quiz";
+import { toast } from "@/shared/utils/ui/toast";
 import Link from "next/link";
 import { useCachedData } from "@/shared/hooks/use-cached-data";
 

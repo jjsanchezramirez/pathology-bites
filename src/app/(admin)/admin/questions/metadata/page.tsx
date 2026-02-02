@@ -1,6 +1,6 @@
 // src/app/(admin)/admin/questions/metadata/page.tsx
 import { Metadata } from "next";
-import { QuestionManagementTable } from "@/features/questions/components/question-management-table";
+import { QuestionManagementTable } from "@/features/admin/questions/components/shared/question-management-table";
 import {
   Card,
   CardContent,

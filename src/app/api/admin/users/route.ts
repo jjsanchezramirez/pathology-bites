@@ -1,4 +1,4 @@
-import { UserRole } from "@/shared/utils/auth-helpers";
+import { UserRole } from "@/shared/utils/auth/auth-helpers";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";

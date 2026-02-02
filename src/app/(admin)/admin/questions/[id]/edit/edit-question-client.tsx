@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useRef } from "react";
 import { useRouter } from "next/navigation";
-import { toast } from "@/shared/utils/toast";
+import { toast } from "@/shared/utils/ui/toast";
 import { AlertCircle, Send, ArrowLeft, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
@@ -12,17 +12,17 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Label } from "@/shared/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 
-import { QuestionWithDetails } from "@/features/questions/types/questions";
-import { useEditQuestionForm } from "@/features/questions/hooks/use-edit-question-form";
-import { EducationalContent } from "@/features/questions/components/create/content-selector";
+import { QuestionWithDetails } from "@/shared/types/questions";
+import { useEditQuestionForm } from "@/features/admin/questions/hooks/use-edit-question-form";
+import { EducationalContent } from "@/features/admin/questions/components/create/content-selector";
 
 // Import tab components
-import { TabNavigation } from "@/features/questions/components/edit/tab-navigation";
-import { SourceTab } from "@/features/questions/components/edit/source-tab";
-import { ContentTab } from "@/features/questions/components/edit/content-tab";
-import { ImagesTab } from "@/features/questions/components/edit/images-tab";
-import { MetadataTab } from "@/features/questions/components/edit/metadata-tab";
-import { SaveConfirmationDialog } from "@/features/questions/components/edit/save-confirmation-dialog";
+import { TabNavigation } from "@/features/admin/questions/components/edit/tab-navigation";
+import { SourceTab } from "@/features/admin/questions/components/edit/source-tab";
+import { ContentTab } from "@/features/admin/questions/components/edit/content-tab";
+import { ImagesTab } from "@/features/admin/questions/components/edit/images-tab";
+import { MetadataTab } from "@/features/admin/questions/components/edit/metadata-tab";
+import { SaveConfirmationDialog } from "@/features/admin/questions/components/edit/save-confirmation-dialog";
 import {
   Dialog,
   DialogContent,
@@ -64,7 +64,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   const hasAutoAdvanced = useRef(false);
   const originalCorrectAnswerRef = useRef<string | null>(null);
   const originalImagesRef = useRef<
-    import("@/features/questions/types/questions").QuestionImageFormData[]
+    import("@/shared/types/questions").QuestionImageFormData[]
   >([]);
 
   // Get return URL from query params, default to /admin/my-questions
@@ -136,7 +136,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       try {
         // Import the loadContentFromR2 function
         const { loadContentFromR2, CONTENT_FILES } =
-          await import("@/features/questions/components/create/content-selector");
+          await import("@/features/admin/questions/components/create/content-selector");
 
         // Find the appropriate content file based on the question's subject
         const subjectName = question.category?.name;

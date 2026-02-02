@@ -7,7 +7,7 @@ import {
   type CacheOptions,
   type CacheNamespace,
 } from "@/shared/services/unified-cache";
-import { toast } from "@/shared/utils/toast";
+import { toast } from "@/shared/utils/ui/toast";
 
 interface UseCachedDataOptions<T> extends CacheOptions {
   namespace: CacheNamespace; // Required: specify which namespace to use

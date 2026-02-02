@@ -5,8 +5,8 @@ import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { useTheme } from "next-themes";
-import { toast } from "@/shared/utils/toast";
-import { getTextZoomConfig, getValidZoomLevel } from "@/shared/utils/text-zoom";
+import { toast } from "@/shared/utils/ui/toast";
+import { getTextZoomConfig, getValidZoomLevel } from "@/shared/utils/ui/text-zoom";
 import { useDashboardSettings } from "@/shared/contexts/dashboard-settings-provider";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 import {
@@ -25,7 +25,7 @@ import {
   DeleteAccountDialog,
   ResetSettingsDialog,
   SettingsLoading,
-} from "@/features/settings/components";
+} from "@/features/user/settings/components";
 
 export default function SettingsPage() {
   const { user, isAuthenticated, isLoading } = useAuthContext();

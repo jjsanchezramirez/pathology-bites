@@ -2,8 +2,8 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { AchievementsSection } from "@/features/achievements/components";
-import { Achievement, AchievementCategory } from "@/features/achievements/types/achievement";
+import { AchievementsSection } from "@/features/user/achievements/components";
+import { Achievement, AchievementCategory } from "@/features/user/achievements/types/achievement";
 import { Loader2 } from "lucide-react";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 import { ScrollReveal } from "@/shared/components/common";

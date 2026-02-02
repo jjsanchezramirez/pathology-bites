@@ -3,13 +3,13 @@
 
 import { useState, useEffect } from "react";
 
-import { PerformanceAnalytics } from "@/features/dashboard/components";
-import { PerformanceLoading, CategoryPerformanceCard } from "@/features/performance/components";
+import { PerformanceAnalytics } from "@/features/user/dashboard/components";
+import { PerformanceLoading, CategoryPerformanceCard } from "@/features/user/performance/components";
 import {
   PerformanceTimelineChart,
   CategoryRadarChart,
   ActivityHeatmap,
-} from "@/features/performance/components/interactive-charts";
+} from "@/features/user/performance/components/interactive-charts";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 import { ScrollReveal } from "@/shared/components/common";
 

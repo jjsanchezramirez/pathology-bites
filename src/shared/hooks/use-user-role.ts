@@ -4,7 +4,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 
-import { UserRole as DatabaseUserRole } from "@/shared/constants/database-types";
+import { UserRole as DatabaseUserRole } from "@/shared/types/database";
 
 export type UserRole = DatabaseUserRole | null;
 

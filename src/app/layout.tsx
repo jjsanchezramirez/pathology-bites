@@ -3,13 +3,13 @@ import { ConditionalThemeProvider } from "@/shared/components/common/conditional
 import { Toaster as SonnerToaster } from "sonner";
 import { ConnectionStatus } from "@/shared/components/common/connection-status";
 import { CookieConsentBanner } from "@/shared/components/common/cookie-consent-banner";
-import { CacheInitializer } from "@/shared/components/common/cache-initializer";
-import { SWRCacheProvider } from "@/shared/providers/swr-cache-provider";
+import { CacheInitializer } from "@/shared/contexts/cache-initializer";
+import { SWRCacheProvider } from "@/shared/contexts/swr-cache-provider";
 
 import { cn } from "@/shared/utils";
 import "@/styles/globals.css";
 import { AuthProvider } from "@/features/auth/components/auth-provider";
-import { AnalyticsProvider } from "@/shared/components/analytics/analytics-provider";
+import { AnalyticsProvider } from "@/shared/contexts/analytics-provider";
 import { OrganizationSchema, WebsiteSchema } from "@/shared/components/seo/structured-data";
 import { NotificationRefreshProvider } from "@/shared/contexts/notification-refresh-context";
 

@@ -2,8 +2,8 @@
 "use client";
 
 import { useRef } from "react";
-import { ImagesTable } from "@/features/images/components/image-table";
-import { StorageStatsCards, StorageStatsRef } from "@/features/images/components/storage-stats";
+import { ImagesTable } from "@/features/admin/images/components/image-table";
+import { StorageStatsCards, StorageStatsRef } from "@/features/admin/images/components/storage-stats";
 import {
   Card,
   CardContent,

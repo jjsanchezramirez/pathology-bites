@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { deleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
-import { revalidateImages } from "@/shared/utils/revalidation";
+import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { revalidateImages } from "@/shared/utils/api/revalidation";
 
 export async function DELETE(request: NextRequest) {
   console.log("🗑️ DELETE /api/admin/images/delete called");

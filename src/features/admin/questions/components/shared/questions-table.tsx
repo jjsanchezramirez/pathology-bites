@@ -1,0 +1,1166 @@
+// src/components/questions/questions-table.tsx
+"use client";
+
+import React, { useState, useCallback, useEffect } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/components/ui/table";
+import { Input } from "@/shared/components/ui/input";
+import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
+import { toast } from "@/shared/utils/ui/toast";
+import {
+  Search,
+  Loader2,
+  MoreVertical,
+  Edit,
+  Trash2,
+  Image as Flag,
+  History,
+  GitBranch,
+  Eye,
+  Download,
+  Check,
+  X,
+  Send,
+} from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
+import { Checkbox } from "@/shared/components/ui/checkbox";
+
+import { useQuestions } from "@/features/admin/questions/hooks/use-questions";
+import { QuestionWithDetails } from "@/shared/types/questions";
+import { useQuestionSets } from "@/features/admin/questions/hooks/use-question-sets";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
+import { useUserRole } from "@/shared/hooks/use-user-role";
+import { shouldShowDeleteButton } from "@/features/admin/questions/utils/deletion-helpers";
+import { formatVersion } from "@/shared/utils/version";
+import { ComponentErrorBoundary } from "@/shared/components/common";
+import { CreateQuestionDialog } from "../dialogs/create-question-dialog";
+import { QuestionFlagDialog } from "../dialogs/question-flag-dialog";
+import { DeleteQuestionDialog } from "../dialogs/delete-question-dialog";
+
+import { VersionHistoryDialog } from "../versioning/version-history-dialog";
+import { AdminVersionUpdateDialog } from "../versioning/admin-version-update-dialog";
+import { QuestionPreviewDialog } from "../dialogs/question-preview-dialog";
+
+import { createClient } from "@/shared/services/client";
+import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
+import { apiClient } from "@/shared/utils/api/api-client";
+import { useRouter } from "next/navigation";
+
+const DEFAULT_PAGE_SIZE = 100;
+const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
+
+// Difficulty configuration
+const _DIFFICULTY_CONFIG = {
+  easy: {
+    label: "Easy",
+    color: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
+  },
+  medium: {
+    label: "Medium",
+    color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
+  },
+  hard: { label: "Hard", color: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300" },
+} as const;
+
+// Import the status configuration from types
+import { STATUS_CONFIG } from "@/shared/types/questions";
+
+// Category color mapping for better badge appearance
+const getCategoryBadgeClass = (category: {
+  short_form?: string;
+  color?: string;
+  parent_short_form?: string;
+}) => {
+  // If custom color is set, return empty string to use inline styles
+  if (category.color) {
+    return "";
+  }
+
+  // Fallback to predefined colors based on short form
+  const shortForm = category.short_form || category.parent_short_form;
+
+  // Main categories
+  if (shortForm === "AP")
+    return "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800";
+  if (shortForm === "CP")
+    return "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800";
+
+  // AP subspecialties - stronger colors
+  if (category.parent_short_form === "AP") {
+    const colors = [
+      "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800",
+      "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800",
+      "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800",
+      "bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800",
+      "bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800",
+      "bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800",
+      "bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-900/20 dark:text-teal-300 dark:border-teal-800",
+      "bg-lime-100 text-lime-800 border-lime-200 dark:bg-lime-900/20 dark:text-lime-300 dark:border-lime-800",
+    ];
+    const hash = shortForm ? shortForm.split("").reduce((a, b) => a + b.charCodeAt(0), 0) : 0;
+    return colors[hash % colors.length];
+  }
+
+  // CP subspecialties - stronger colors
+  if (category.parent_short_form === "CP") {
+    const colors = [
+      "bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/20 dark:text-sky-300 dark:border-sky-800",
+      "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800",
+      "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800",
+      "bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800",
+      "bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/20 dark:text-violet-300 dark:border-violet-800",
+    ];
+    const hash = shortForm ? shortForm.split("").reduce((a, b) => a + b.charCodeAt(0), 0) : 0;
+    return colors[hash % colors.length];
+  }
+
+  // Default fallback
+  return "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800";
+};
+
+// Helper function to create standardized custom color styles
+const getCustomColorStyle = (color: string) => {
+  // Convert HSL to a lighter background version for consistency
+  // Extract HSL values and create a light background with darker text
+  const hslMatch = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
+  if (hslMatch) {
+    const [, h, s] = hslMatch;
+    return {
+      backgroundColor: `hsl(${h} ${Math.min(parseInt(s), 50)}% 90%)`, // Light background
+      color: `hsl(${h} ${s}% 20%)`, // Dark text
+      borderColor: `hsl(${h} ${Math.min(parseInt(s), 60)}% 70%)`, // Medium border
+    };
+  }
+  return undefined;
+};
+
+// Helper function to format version string in semantic versioning format
+const getVersionString = (question: QuestionWithDetails): string => {
+  const major = question.version_major ?? 1;
+  const minor = question.version_minor ?? 0;
+  const patch = question.version_patch ?? 0;
+  return `v${major}.${minor}.${patch}`;
+};
+
+// Table Controls component
+function TableControls({
+  onSearch,
+  onDifficultyChange,
+  onStatusChange,
+  onQuestionSetChange,
+  onExportAll,
+  difficultyFilter,
+  statusFilter,
+  questionSetFilter,
+  questionSets,
+  selectedQuestions,
+  onBulkOperation,
+  isAdmin,
+}: {
+  onSearch: (term: string) => void;
+  onDifficultyChange: (difficulty: string) => void;
+  onStatusChange: (status: string) => void;
+  onQuestionSetChange: (questionSetId: string) => void;
+  onExportAll: () => void;
+  difficultyFilter: string;
+  statusFilter: string;
+  questionSetFilter: string;
+  questionSets: unknown[];
+  selectedQuestions: string[];
+  onBulkOperation: (action: string) => void;
+  isAdmin: boolean;
+}) {
+  return (
+    <div className="space-y-4">
+      {/* Search and Filters Row */}
+      <div className="flex gap-4 items-center">
+        <div className="relative flex-1">
+          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search questions..."
+            onChange={(e) => onSearch(e.target.value)}
+            className="pl-8"
+          />
+        </div>
+        <Select value={difficultyFilter} onValueChange={onDifficultyChange}>
+          <SelectTrigger className="w-[140px]">
+            <SelectValue placeholder="Difficulty" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Difficulties</SelectItem>
+            <SelectItem value="easy">Easy</SelectItem>
+            <SelectItem value="medium">Medium</SelectItem>
+            <SelectItem value="hard">Hard</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={statusFilter} onValueChange={onStatusChange}>
+          <SelectTrigger className="w-[120px]">
+            <SelectValue placeholder="Status" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All status</SelectItem>
+            <SelectItem value="draft">Draft</SelectItem>
+            <SelectItem value="pending_review">Pending review</SelectItem>
+            <SelectItem value="approved">Approved</SelectItem>
+            <SelectItem value="published">Published</SelectItem>
+            <SelectItem value="rejected">Rejected</SelectItem>
+            <SelectItem value="flagged">Flagged</SelectItem>
+            <SelectItem value="archived">Archived</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select value={questionSetFilter} onValueChange={onQuestionSetChange}>
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Question Set" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Question Sets</SelectItem>
+            {questionSets.map((set: { id: string; name: string }) => (
+              <SelectItem key={set.id} value={set.id}>
+                {set.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button variant="outline" onClick={onExportAll}>
+          <Download className="h-4 w-4 mr-2" />
+          Export All
+        </Button>
+      </div>
+
+      {/* Bulk Operations Row - Only shown for admins when questions are selected */}
+      {isAdmin && selectedQuestions.length > 0 && (
+        <div className="flex gap-2 items-center p-3 bg-muted/50 rounded-lg border">
+          <span className="text-sm font-medium mr-2">{selectedQuestions.length} selected</span>
+          <Button variant="outline" size="sm" onClick={() => onBulkOperation("submit_for_review")}>
+            <Send className="h-4 w-4 mr-2" />
+            Submit for Review
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => onBulkOperation("approve")}>
+            <Check className="h-4 w-4 mr-2" />
+            Approve
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => onBulkOperation("reject")}>
+            <X className="h-4 w-4 mr-2" />
+            Reject
+          </Button>
+          <Button variant="destructive" size="sm" onClick={() => onBulkOperation("delete")}>
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </Button>
+          <Button variant="outline" size="sm" onClick={() => onBulkOperation("export")}>
+            <Download className="h-4 w-4 mr-2" />
+            Export Selected
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Pagination component
+function TablePagination({
+  currentPage,
+  totalPages,
+  onPageChange,
+  totalItems,
+  pageSize,
+  onPageSizeChange,
+}: {
+  currentPage: number;
+  totalPages: number;
+  onPageChange: (page: number) => void;
+  totalItems: number;
+  pageSize: number;
+  onPageSizeChange: (size: number) => void;
+}) {
+  return (
+    <div className="flex justify-between items-center">
+      <div className="flex items-center gap-4">
+        <p className="text-sm text-muted-foreground">
+          Showing {totalItems > 0 ? currentPage * pageSize + 1 : 0} to{" "}
+          {Math.min((currentPage + 1) * pageSize, totalItems)} of {totalItems} questions
+        </p>
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-muted-foreground">Per page:</span>
+          <select
+            value={pageSize}
+            onChange={(e) => onPageSizeChange(Number(e.target.value))}
+            className="text-sm border rounded px-2 py-1 bg-background"
+          >
+            {PAGE_SIZE_OPTIONS.map((size) => (
+              <option key={size} value={size}>
+                {size}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+      <div className="flex gap-2">
+        <Button
+          variant="outline"
+          onClick={() => onPageChange(currentPage - 1)}
+          disabled={currentPage === 0}
+        >
+          Previous
+        </Button>
+        <Button
+          variant="outline"
+          onClick={() => onPageChange(currentPage + 1)}
+          disabled={currentPage >= totalPages - 1}
+        >
+          Next
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// Row Actions component
+function RowActions({
+  question,
+  onEdit,
+  onDelete,
+  onFlag,
+  onViewHistory,
+  onCreateVersion,
+  onExport,
+  onCopyJson,
+}: {
+  question: QuestionWithDetails;
+  onEdit: (question: QuestionWithDetails) => void;
+  onDelete: (question: QuestionWithDetails) => void;
+  onFlag?: (question: QuestionWithDetails) => void;
+  onViewHistory?: (question: QuestionWithDetails) => void;
+  onCreateVersion?: (question: QuestionWithDetails) => void;
+  onExport?: (question: QuestionWithDetails) => void;
+  onCopyJson?: (question: QuestionWithDetails) => void;
+}) {
+  const { isAdmin, role } = useUserRole();
+  const { user } = useAuthContext();
+
+  // Check if user can edit this question
+  const canEdit = question.status !== "published" || isAdmin;
+
+  // Check if user can delete this question
+  const canDelete = shouldShowDeleteButton(question, role, user?.id || null);
+
+  return (
+    <DropdownMenu>
+      <DropdownMenuTrigger asChild>
+        <Button variant="ghost" className="h-8 w-8 p-0">
+          <span className="sr-only">Open menu</span>
+          <MoreVertical className="h-4 w-4" />
+        </Button>
+      </DropdownMenuTrigger>
+      <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuSeparator />
+        {canEdit ? (
+          <DropdownMenuItem onClick={() => onEdit(question)}>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem disabled>
+            <Edit className="h-4 w-4 mr-2" />
+            Edit (Admin Only)
+          </DropdownMenuItem>
+        )}
+        {question.status === "published" && onFlag && (
+          <DropdownMenuItem onClick={() => onFlag(question)}>
+            <Flag className="h-4 w-4 mr-2" />
+            Flag for Review
+          </DropdownMenuItem>
+        )}
+        {onViewHistory && (
+          <DropdownMenuItem onClick={() => onViewHistory(question)}>
+            <History className="h-4 w-4 mr-2" />
+            Version History
+          </DropdownMenuItem>
+        )}
+        {canEdit && question.status === "published" && onCreateVersion && (
+          <DropdownMenuItem onClick={() => onCreateVersion(question)}>
+            <GitBranch className="h-4 w-4 mr-2" />
+            Create Version
+          </DropdownMenuItem>
+        )}
+        <DropdownMenuSeparator />
+
+        {onExport && (
+          <DropdownMenuItem onClick={() => onExport(question)}>
+            <Download className="h-4 w-4 mr-2" />
+            Export JSON
+          </DropdownMenuItem>
+        )}
+        {onCopyJson && (
+          <DropdownMenuItem onClick={() => onCopyJson(question)}>
+            <Download className="h-4 w-4 mr-2" />
+            Copy JSON
+          </DropdownMenuItem>
+        )}
+        {canDelete ? (
+          <DropdownMenuItem className="text-red-600" onClick={() => onDelete(question)}>
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete
+          </DropdownMenuItem>
+        ) : (
+          <DropdownMenuItem disabled className="text-muted-foreground">
+            <Trash2 className="h-4 w-4 mr-2" />
+            Delete (Draft Only)
+          </DropdownMenuItem>
+        )}
+      </DropdownMenuContent>
+    </DropdownMenu>
+  );
+}
+
+// Question Row component
+function QuestionRow({
+  question,
+  onEdit,
+  onDelete,
+  onFlag,
+  onViewHistory,
+  onCreateVersion,
+  onPreview,
+  onExport,
+  onCopyJson,
+  isSelected,
+  onSelect,
+  isAdmin,
+}: {
+  question: QuestionWithDetails;
+  onEdit: (question: QuestionWithDetails) => void;
+  onDelete: (question: QuestionWithDetails) => void;
+  onFlag?: (question: QuestionWithDetails) => void;
+  onViewHistory?: (question: QuestionWithDetails) => void;
+  onCreateVersion?: (question: QuestionWithDetails) => void;
+  onPreview?: (question: QuestionWithDetails) => void;
+  onExport?: (question: QuestionWithDetails) => void;
+  onCopyJson?: (question: QuestionWithDetails) => void;
+  isSelected: boolean;
+  onSelect: (questionId: string, checked: boolean) => void;
+  isAdmin: boolean;
+}) {
+  return (
+    <TableRow key={question.id}>
+      {isAdmin && (
+        <TableCell className="text-center">
+          <Checkbox
+            checked={isSelected}
+            onCheckedChange={(checked) => onSelect(question.id, checked as boolean)}
+          />
+        </TableCell>
+      )}
+      <TableCell className="text-center">
+        {(question.flag_count || 0) > 0 && <Flag className="h-4 w-4 text-red-500" />}
+      </TableCell>
+      <TableCell className="min-w-[200px]">
+        <div className="flex-1 min-w-0">
+          <p className="line-clamp-2 text-sm font-medium">{question.title}</p>
+        </div>
+      </TableCell>
+      <TableCell className="w-[120px]">
+        <Badge
+          variant="outline"
+          className={`${STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.color || "border-gray-300 bg-gray-50 text-gray-700"} text-xs`}
+        >
+          {STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.label || question.status}
+        </Badge>
+      </TableCell>
+      <TableCell className="w-[140px]">
+        <div className="flex flex-wrap gap-1">
+          {question.category ? (
+            <Badge
+              variant="outline"
+              className={`text-[10px] px-1.5 py-0 border ${getCategoryBadgeClass(question.category)}`}
+              style={
+                question.category.color ? getCustomColorStyle(question.category.color) : undefined
+              }
+            >
+              {question.category.short_form || question.category.name}
+            </Badge>
+          ) : (
+            <span className="text-xs text-muted-foreground">No category</span>
+          )}
+        </div>
+      </TableCell>
+      <TableCell className="w-[120px]">
+        <p className="line-clamp-1 text-sm">
+          {question.set?.short_form || question.set?.name || "No set"}
+        </p>
+      </TableCell>
+      <TableCell className="w-[80px]">
+        <div className="text-sm font-mono">{getVersionString(question)}</div>
+      </TableCell>
+      <TableCell className="w-[100px] text-sm text-muted-foreground">
+        {new Date(question.created_at).toLocaleDateString("en-US", {
+          month: "numeric",
+          day: "numeric",
+          year: "2-digit",
+        })}
+      </TableCell>
+      <TableCell className="w-[100px] text-sm text-muted-foreground">
+        {new Date(question.updated_at).toLocaleDateString("en-US", {
+          month: "numeric",
+          day: "numeric",
+          year: "2-digit",
+        })}
+      </TableCell>
+      <TableCell className="text-center">
+        {onPreview && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => onPreview(question)}
+            className="h-8 w-8 p-0"
+          >
+            <Eye className="h-4 w-4" />
+          </Button>
+        )}
+      </TableCell>
+      <TableCell>
+        <RowActions
+          question={question}
+          onEdit={onEdit}
+          onDelete={onDelete}
+          onFlag={onFlag}
+          onViewHistory={onViewHistory}
+          onCreateVersion={onCreateVersion}
+          onExport={onExport}
+          onCopyJson={onCopyJson}
+        />
+      </TableCell>
+    </TableRow>
+  );
+}
+
+interface QuestionsTableProps {
+  adminMode?: string;
+}
+
+export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
+  const router = useRouter();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [difficultyFilter, setDifficultyFilter] = useState("all");
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [questionSetFilter, setQuestionSetFilter] = useState("all");
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
+  const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
+  const [isBulkDeleting, setIsBulkDeleting] = useState(false);
+
+  // Get user role to determine admin access
+  const { role } = useUserRole();
+  const isActualAdmin = role === "admin";
+
+  // Use adminMode to determine what features to show (but still check actual permissions for security)
+  const showAdminFeatures = adminMode === "admin" && isActualAdmin;
+
+  const supabase = createClient();
+  const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showFlagDialog, setShowFlagDialog] = useState(false);
+  const [showVersionHistory, setShowVersionHistory] = useState(false);
+  const [showVersionUpdateDialog, setShowVersionUpdateDialog] = useState(false);
+  const [showPreviewDialog, setShowPreviewDialog] = useState(false);
+  const [questionToDelete, setQuestionToDelete] = useState<QuestionWithDetails | null>(null);
+  const [questionToFlag, setQuestionToFlag] = useState<QuestionWithDetails | null>(null);
+  const [questionForHistory, setQuestionForHistory] = useState<QuestionWithDetails | null>(null);
+  const [questionToPreview, setQuestionToPreview] = useState<QuestionWithDetails | null>(null);
+  const [questionForVersionUpdate, setQuestionForVersionUpdate] =
+    useState<QuestionWithDetails | null>(null);
+
+  // Fetch questions with current filters
+  const { questions, total, loading, error, refetch, deleteQuestion } = useQuestions({
+    page,
+    pageSize,
+    searchTerm: searchTerm || undefined,
+    difficulty: difficultyFilter === "all" ? undefined : difficultyFilter,
+    status: statusFilter === "all" ? undefined : statusFilter,
+    questionSetId: questionSetFilter === "all" ? undefined : questionSetFilter,
+  });
+
+  // Fetch question sets for filter dropdown
+  const { questionSets } = useQuestionSets();
+
+  const totalPages = Math.ceil(total / pageSize);
+
+  const handlePageSizeChange = useCallback((newSize: number) => {
+    setPageSize(newSize);
+    setPage(0); // Reset to first page when changing page size
+  }, []);
+
+  const handleSearch = useCallback((value: string) => {
+    setSearchTerm(value);
+    setPage(0);
+  }, []);
+
+  const handleDifficultyChange = useCallback((value: string) => {
+    setDifficultyFilter(value);
+    setPage(0);
+  }, []);
+
+  const handleStatusChange = useCallback((value: string) => {
+    setStatusFilter(value);
+    setPage(0);
+  }, []);
+
+  const handleQuestionSetChange = useCallback((value: string) => {
+    setQuestionSetFilter(value);
+    setPage(0);
+  }, []);
+
+  const handleEdit = useCallback(
+    (question: QuestionWithDetails) => {
+      // Navigate to the edit page with returnUrl to current page
+      const currentPath = window.location.pathname + window.location.search;
+      router.push(
+        `/admin/questions/${question.id}/edit?returnUrl=${encodeURIComponent(currentPath)}`
+      );
+    },
+    [router]
+  );
+
+  const handleDelete = useCallback((question: QuestionWithDetails) => {
+    setQuestionToDelete(question);
+    setShowDeleteDialog(true);
+  }, []);
+
+  const handleFlag = useCallback((question: QuestionWithDetails) => {
+    setQuestionToFlag(question);
+    setShowFlagDialog(true);
+  }, []);
+
+  const handleViewHistory = useCallback((question: QuestionWithDetails) => {
+    setQuestionForHistory(question);
+    setShowVersionHistory(true);
+  }, []);
+
+  const handleCreateVersion = useCallback((question: QuestionWithDetails) => {
+    setQuestionForVersionUpdate(question);
+    setShowVersionUpdateDialog(true);
+  }, []);
+
+  const handlePreview = useCallback(
+    async (question: QuestionWithDetails) => {
+      try {
+        // Fetch complete question data with options and images for preview
+        const { data: fullQuestion, error } = await supabase
+          .from("questions")
+          .select(
+            `
+          id,
+          title,
+          stem,
+          difficulty,
+          teaching_point,
+          question_references,
+          status,
+          question_set_id,
+          category_id,
+          lesson,
+          topic,
+          anki_card_id,
+          anki_deck_name,
+          created_by,
+          updated_by,
+          reviewer_id,
+          reviewer_feedback,
+          published_at,
+          created_at,
+          updated_at,
+          version_major,
+          version_minor,
+          version_patch,
+          question_options(*),
+          question_images(*, image:images(*)),
+          categories(*),
+          question_sets(
+            id,
+            name,
+            source_type,
+            short_form
+          ),
+          created_by_user:users!questions_created_by_fkey(
+            first_name,
+            last_name
+          ),
+          updated_by_user:users!questions_updated_by_fkey(
+            first_name,
+            last_name
+          ),
+          reviewer_user:users!questions_reviewer_id_fkey(
+            first_name,
+            last_name
+          )
+        `
+          )
+          .eq("id", question.id)
+          .single();
+
+        if (error) {
+          console.error("Error fetching full question data:", error);
+          toast.error("Failed to load question details");
+          return;
+        }
+
+        setQuestionToPreview(fullQuestion);
+        setShowPreviewDialog(true);
+      } catch (error) {
+        console.error("Error fetching question for preview:", error);
+        toast.error("Failed to load question preview");
+      }
+    },
+    [supabase]
+  );
+
+  const handleExportQuestion = useCallback(async (question: QuestionWithDetails) => {
+    try {
+      const response = await fetch(`/api/questions/${question.id}/export`);
+      if (!response.ok) {
+        throw new Error("Failed to export question");
+      }
+
+      const questionData = await response.json();
+
+      // Create and download the file
+      const blob = new Blob([JSON.stringify(questionData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `question-${question.title.replace(/[^a-z0-9]/gi, "_").toLowerCase()}-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success("Question exported successfully");
+    } catch (error) {
+      console.error("Error exporting question:", error);
+      toast.error("Failed to export question");
+    }
+  }, []);
+
+  const handleExportAll = useCallback(async () => {
+    try {
+      const response = await fetch("/api/questions/export");
+      if (!response.ok) {
+        throw new Error("Failed to export questions");
+      }
+
+      const questionsData = await response.json();
+
+      // Create and download the file
+      const blob = new Blob([JSON.stringify(questionsData, null, 2)], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `pathology-bites-questions-export-${new Date().toISOString().split("T")[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+
+      toast.success("All questions exported successfully");
+    } catch (error) {
+      console.error("Error exporting questions:", error);
+      toast.error("Failed to export questions");
+    }
+  }, []);
+
+  const handleCopyJsonQuestion = useCallback(async (question: QuestionWithDetails) => {
+    try {
+      const response = await fetch(`/api/questions/${question.id}/export`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch question data");
+      }
+
+      const questionData = await response.json();
+
+      // Copy to clipboard
+      await navigator.clipboard.writeText(JSON.stringify(questionData, null, 2));
+
+      toast.success("Question JSON copied to clipboard");
+    } catch (error) {
+      console.error("Error copying question JSON:", error);
+      toast.error("Failed to copy question JSON");
+    }
+  }, []);
+
+  // Bulk selection handlers
+  const handleSelectQuestion = useCallback((questionId: string, checked: boolean) => {
+    setSelectedQuestions((prev) =>
+      checked ? [...prev, questionId] : prev.filter((id) => id !== questionId)
+    );
+  }, []);
+
+  const handleSelectAll = useCallback(
+    (checked: boolean) => {
+      if (checked) {
+        const allQuestionIds = questions?.map((q) => q.id) || [];
+        setSelectedQuestions(allQuestionIds);
+      } else {
+        setSelectedQuestions([]);
+      }
+    },
+    [questions]
+  );
+
+  // Bulk operations
+  const handleBulkOperation = useCallback(
+    async (action: string) => {
+      if (selectedQuestions.length === 0) {
+        toast.error("Please select questions first");
+        return;
+      }
+
+      // Show confirmation dialog for delete action
+      if (action === "delete") {
+        setShowBulkDeleteConfirm(true);
+        return;
+      }
+
+      try {
+        const response = await apiClient.post("/api/admin/questions/bulk", {
+          action,
+          questionIds: selectedQuestions,
+        });
+
+        const data = await response.json();
+
+        if (!response.ok) {
+          throw new Error(data.error || `Failed to ${action} questions`);
+        }
+
+        // Handle export differently
+        if (action === "export") {
+          const blob = new Blob([JSON.stringify(data.data, null, 2)], { type: "application/json" });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `pathology-bites-questions-bulk-export-${new Date().toISOString().split("T")[0]}.json`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          toast.success(`Successfully exported ${data.count} question(s)`);
+        } else {
+          toast.success(
+            data.message ||
+              `Successfully ${action.replace("_", " ")}ed ${data.affectedCount} question(s)`
+          );
+          refetch();
+          // Refresh to update sidebar counts
+          router.refresh();
+        }
+
+        setSelectedQuestions([]);
+      } catch (error) {
+        console.error(`Error performing bulk ${action}:`, error);
+        toast.error(error instanceof Error ? error.message : `Failed to ${action} questions`);
+      }
+    },
+    [selectedQuestions, refetch, router]
+  );
+
+  // Confirmed bulk delete handler
+  const handleConfirmedBulkDelete = useCallback(async () => {
+    setIsBulkDeleting(true);
+    try {
+      const response = await fetch("/api/admin/questions/bulk", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          action: "delete",
+          questionIds: selectedQuestions,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || "Failed to delete questions");
+      }
+
+      toast.success(data.message || `Successfully deleted ${data.affectedCount} question(s)`);
+      refetch();
+      // Refresh to update sidebar counts
+      router.refresh();
+      setSelectedQuestions([]);
+      setShowBulkDeleteConfirm(false);
+    } catch (error) {
+      console.error("Error performing bulk delete:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to delete questions");
+    } finally {
+      setIsBulkDeleting(false);
+    }
+  }, [selectedQuestions, refetch, router]);
+
+  const handleCreateSave = useCallback(() => {
+    setShowCreateDialog(false);
+    refetch();
+    // Refresh to update sidebar counts
+    router.refresh();
+  }, [refetch, router]);
+
+  const handleFlagSave = useCallback(() => {
+    setShowFlagDialog(false);
+    setQuestionToFlag(null);
+    refetch();
+  }, [refetch]);
+
+  const handleVersionUpdateSave = useCallback(() => {
+    setShowVersionUpdateDialog(false);
+    setQuestionForVersionUpdate(null);
+    refetch();
+  }, [refetch]);
+
+  // Load questions when component mounts or filters change
+  useEffect(() => {
+    refetch();
+  }, [refetch]);
+
+  if (error) {
+    return (
+      <div className="text-center py-6">
+        <p className="text-red-600">Error loading questions: {error}</p>
+        <Button onClick={refetch} className="mt-2">
+          Try Again
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <ComponentErrorBoundary componentName="Questions Table">
+      <div className="space-y-4">
+        <TableControls
+          onSearch={handleSearch}
+          onDifficultyChange={handleDifficultyChange}
+          onStatusChange={handleStatusChange}
+          onQuestionSetChange={handleQuestionSetChange}
+          onExportAll={handleExportAll}
+          difficultyFilter={difficultyFilter}
+          statusFilter={statusFilter}
+          questionSetFilter={questionSetFilter}
+          questionSets={questionSets}
+          selectedQuestions={selectedQuestions}
+          onBulkOperation={handleBulkOperation}
+          isAdmin={showAdminFeatures}
+        />
+
+        <div className="rounded-md border bg-card">
+          <Table>
+            <TableHeader className="bg-muted/50">
+              <TableRow>
+                {showAdminFeatures && (
+                  <TableHead className="w-[50px]">
+                    <Checkbox
+                      checked={
+                        selectedQuestions.length === questions?.length && questions.length > 0
+                      }
+                      onCheckedChange={handleSelectAll}
+                    />
+                  </TableHead>
+                )}
+                <TableHead className="w-[50px]"></TableHead>
+                <TableHead className="min-w-[200px]">Title</TableHead>
+                <TableHead className="w-[120px]">Status</TableHead>
+                <TableHead className="w-[140px]">Category</TableHead>
+                <TableHead className="w-[120px]">Set</TableHead>
+                <TableHead className="w-[80px]">Version</TableHead>
+                <TableHead className="w-[100px]">Created</TableHead>
+                <TableHead className="w-[100px]">Updated</TableHead>
+                <TableHead className="w-[50px]"></TableHead>
+                <TableHead className="w-[70px]"></TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {loading ? (
+                <TableRow>
+                  <TableCell colSpan={showAdminFeatures ? 11 : 10} className="h-24 text-center">
+                    <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                  </TableCell>
+                </TableRow>
+              ) : questions.length === 0 ? (
+                <TableRow>
+                  <TableCell
+                    colSpan={showAdminFeatures ? 11 : 10}
+                    className="h-24 text-center text-muted-foreground"
+                  >
+                    {searchTerm ||
+                    difficultyFilter !== "all" ||
+                    statusFilter !== "all" ||
+                    questionSetFilter !== "all"
+                      ? "No questions found matching your filters"
+                      : "No questions created yet"}
+                  </TableCell>
+                </TableRow>
+              ) : (
+                questions.map((question) => (
+                  <QuestionRow
+                    key={question.id}
+                    question={question}
+                    onEdit={handleEdit}
+                    onDelete={handleDelete}
+                    onFlag={handleFlag}
+                    onViewHistory={handleViewHistory}
+                    onCreateVersion={handleCreateVersion}
+                    onPreview={handlePreview}
+                    onExport={handleExportQuestion}
+                    onCopyJson={handleCopyJsonQuestion}
+                    isSelected={selectedQuestions.includes(question.id)}
+                    onSelect={handleSelectQuestion}
+                    isAdmin={showAdminFeatures}
+                  />
+                ))
+              )}
+            </TableBody>
+          </Table>
+        </div>
+
+        {totalPages > 1 && (
+          <TablePagination
+            currentPage={page}
+            totalPages={totalPages}
+            onPageChange={setPage}
+            totalItems={total}
+            pageSize={pageSize}
+            onPageSizeChange={handlePageSizeChange}
+          />
+        )}
+
+        {/* Dialogs */}
+        <CreateQuestionDialog
+          open={showCreateDialog}
+          onOpenChange={setShowCreateDialog}
+          onSave={handleCreateSave}
+        />
+
+        {/* Preview Dialog */}
+        <QuestionPreviewDialog
+          question={questionToPreview}
+          open={showPreviewDialog}
+          onOpenChange={setShowPreviewDialog}
+        />
+
+        {/* Flag Dialog */}
+        <QuestionFlagDialog
+          question={questionToFlag}
+          open={showFlagDialog}
+          onOpenChange={setShowFlagDialog}
+          onFlagComplete={handleFlagSave}
+        />
+
+        {/* Version History Dialog */}
+        <VersionHistoryDialog
+          questionId={questionForHistory?.id || null}
+          questionTitle={questionForHistory?.title}
+          open={showVersionHistory}
+          onOpenChange={setShowVersionHistory}
+        />
+
+        {/* Admin Version Update Dialog */}
+        <AdminVersionUpdateDialog
+          questionId={questionForVersionUpdate?.id || null}
+          questionTitle={questionForVersionUpdate?.title}
+          currentVersion={
+            questionForVersionUpdate
+              ? formatVersion(
+                  questionForVersionUpdate.version_major,
+                  questionForVersionUpdate.version_minor,
+                  questionForVersionUpdate.version_patch
+                )
+              : undefined
+          }
+          open={showVersionUpdateDialog}
+          onOpenChange={setShowVersionUpdateDialog}
+          onVersionCreated={handleVersionUpdateSave}
+        />
+
+        {/* Delete Confirmation Dialog */}
+        <DeleteQuestionDialog
+          open={showDeleteDialog}
+          onOpenChange={setShowDeleteDialog}
+          question={questionToDelete}
+          onSuccess={() => {
+            // Refresh the questions list
+            refetch();
+            // Refresh to update sidebar counts
+            router.refresh();
+          }}
+          onDelete={deleteQuestion}
+        />
+
+        {/* Bulk Delete Confirmation Dialog */}
+        <BlurredDialog
+          open={showBulkDeleteConfirm}
+          onOpenChange={setShowBulkDeleteConfirm}
+          title="Delete Selected Questions"
+          description={`Are you sure you want to delete ${selectedQuestions.length} selected question${selectedQuestions.length === 1 ? "" : "s"}? This action cannot be undone.`}
+          maxWidth="md"
+          footer={
+            <>
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setShowBulkDeleteConfirm(false)}
+                disabled={isBulkDeleting}
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={handleConfirmedBulkDelete}
+                disabled={isBulkDeleting}
+                variant="destructive"
+              >
+                {isBulkDeleting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                    Deleting...
+                  </>
+                ) : (
+                  `Delete ${selectedQuestions.length} Question${selectedQuestions.length === 1 ? "" : "s"}`
+                )}
+              </Button>
+            </>
+          }
+        >
+          <div className="py-4">
+            <p className="text-sm text-muted-foreground">
+              This will permanently remove the selected questions from the database. Questions that
+              are currently approved or in use may not be deletable based on your permissions.
+            </p>
+          </div>
+        </BlurredDialog>
+      </div>
+    </ComponentErrorBoundary>
+  );
+}

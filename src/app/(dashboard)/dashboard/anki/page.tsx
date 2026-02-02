@@ -18,8 +18,8 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import { InteractiveAnkiViewer } from "@/features/anki/components/interactive-anki-viewer";
-import { AnkiCard, AnkomaSection } from "@/features/anki/types/anki-card";
+import { InteractiveAnkiViewer } from "@/features/user/anki/components/interactive-anki-viewer";
+import { AnkiCard, AnkomaSection } from "@/features/user/anki/types/anki-card";
 
 interface CategoryData {
   id: string;

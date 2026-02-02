@@ -16,7 +16,7 @@ import { realtimeService } from "@/shared/services/realtime-service";
 import { createClient } from "@/shared/services/client";
 import { isPublicRoute } from "@/shared/utils/route-helpers";
 import type { User, Session } from "@supabase/supabase-js";
-import type { UserRole } from "@/shared/utils/auth-helpers";
+import type { UserRole } from "@/shared/utils/auth/auth-helpers";
 
 interface UseAuthOptions {
   /** Enable security validation (session monitoring) */

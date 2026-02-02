@@ -5,9 +5,10 @@ export const revalidate = 86400 // 24h ISR-like caching
 
 export async function GET() {
   const base = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
-  const url = `${base}/virtual-slides/virtual-slides.json`
+  // Updated: Use the optimized v4 format (6.6MB, non-gzipped for API compatibility)
+  const url = `${base}/virtual-slides/virtual-slides-v4-min.json`
   try {
-    // Note: This endpoint returns the full 15MB dataset
+    // Note: This endpoint returns the optimized v4 dataset (6.6MB)
     // For large file handling, Next.js will show a caching warning during build
     // This is expected and doesn't affect functionality - just means the response
     // won't be cached by Next.js (but browser/CDN caching still works)

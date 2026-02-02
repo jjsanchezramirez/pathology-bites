@@ -8,7 +8,7 @@ import {
   getPrimaryLink,
   getPDFLink,
   getLinkTypeLabel,
-} from "@/shared/utils/reference-parser";
+} from "@/shared/utils/citations/reference-parser";
 import { Button } from "@/shared/components/ui/button";
 
 interface ReferencesListProps {

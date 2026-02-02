@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
+import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
 const passwordResetSchema = z.object({
   email: z.string().email("Please enter a valid email address"),

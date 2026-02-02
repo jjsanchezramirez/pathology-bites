@@ -11,10 +11,10 @@ import {
   TechnicalArtifactWarning,
   ClassificationResults,
   AlgorithmComponents,
-} from "@/shared/components/genomic";
+} from "@/features/public/tools/genova/components";
 import { Dna, Database, Rocket } from "lucide-react";
 import Link from "next/link";
-import { toast } from "@/shared/utils/toast";
+import { toast } from "@/shared/utils/ui/toast";
 
 export default function GenomicAnalysisPage() {
   const [rawText, setRawText] = useState("");

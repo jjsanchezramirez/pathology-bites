@@ -6,7 +6,7 @@ import {
   DEFAULT_QUIZ_SETTINGS,
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_UI_SETTINGS,
-} from "@/shared/constants/user-settings-defaults";
+} from "@/shared/config/user-settings-defaults";
 
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);

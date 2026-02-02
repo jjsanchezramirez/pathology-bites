@@ -25,7 +25,7 @@ import {
 import {
   generateLookAlikeOptions,
   generateBiologicalOptions,
-} from "@/features/cell-quiz/data/cell-pathways";
+} from "@/features/public/tools/cell-quiz/data/cell-pathways";
 
 interface Question {
   cellType: string;

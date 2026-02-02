@@ -2,10 +2,9 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { toast } from "@/shared/utils/toast";
+import { toast } from "@/shared/utils/ui/toast";
 import {
   WelcomeMessage,
-  CloudflareMigrationMessage,
   V1ReleaseMessage,
   PerformanceAnalytics,
   StudentStatsCards,
@@ -14,7 +13,7 @@ import {
   StudentRecentActivityLoading,
   StudentQuickActions,
   StudentQuickActionsLoading,
-} from "@/features/dashboard/components";
+} from "@/features/user/dashboard/components";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { userSettingsService } from "@/shared/services/user-settings";
 import { PageErrorBoundary, FeatureErrorBoundary, ScrollReveal } from "@/shared/components/common";
@@ -72,7 +71,6 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
 
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
-  const [showCloudflareMigrationMessage, setShowCloudflareMigrationMessage] = useState(false);
   const [showV1ReleaseMessage, setShowV1ReleaseMessage] = useState(false);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
   const [isReturningUser, setIsReturningUser] = useState(false);
@@ -95,10 +93,6 @@ export default function DashboardPage() {
         // Check if user has seen welcome message
         const hasSeenWelcome = await userSettingsService.hasSeenWelcomeMessage();
         setShowWelcomeMessage(!hasSeenWelcome);
-
-        // Check if user has dismissed Cloudflare migration message
-        const hasDismissedCloudflare = await userSettingsService.hasDismissedCloudflareMigration();
-        setShowCloudflareMigrationMessage(!hasDismissedCloudflare);
 
         // Check if user has dismissed v1.0 release message
         const hasDismissedV1Release = await userSettingsService.hasDismissedV1Release();
@@ -196,11 +190,6 @@ export default function DashboardPage() {
         {/* V1.0 Release Announcement */}
         {showV1ReleaseMessage && (
           <V1ReleaseMessage onDismiss={() => setShowV1ReleaseMessage(false)} />
-        )}
-
-        {/* Cloudflare Migration Message */}
-        {showCloudflareMigrationMessage && (
-          <CloudflareMigrationMessage onDismiss={() => setShowCloudflareMigrationMessage(false)} />
         )}
 
         {/* Show loading state for everything until data is ready */}

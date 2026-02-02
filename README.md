@@ -1418,52 +1418,62 @@ The application provides a comprehensive REST API organized by feature area. All
 - **Progressive Learning**: Adaptive difficulty based on performance
 - **External APIs**: Integration with hematology reference sources
 
-## 📁 Optimized Project Structure
+## 📁 Project Structure
+
+Pathology Bites follows a **semantic organizational structure** based on authentication scope and access level. This architecture creates clear boundaries between different parts of the application.
+
+### Core Organization (4-Tier Access Model)
+
+The project uses a consistent 4-tier structure across all layers:
+
+1. **Admin** - Admin/creator/reviewer access only
+2. **Auth** - Authentication flows (no session required)
+3. **User** - Authenticated user features (corresponds to Dashboard routes)
+4. **Public** - Public access (no auth required)
+
+This structure is mirrored across:
+- **App Routes** (`src/app/`) - Next.js pages
+- **Features** (`src/features/`) - Feature modules
+- **API Routes** (`src/app/api/`) - API endpoints
+
+### Directory Overview
 
 ```
-pathology-bites/
-├── src/                           # Application source code
-│   ├── app/                      # Next.js app router pages
-│   │   ├── (admin)/             # Admin dashboard routes
-│   │   ├── (auth)/              # Authentication routes
-│   │   ├── (public)/            # Public pages and tools
-│   │   │   └── tools/           # Educational tool suite
-│   │   │       ├── citations/   # Citation generator
-│   │   │       ├── milan/       # MILAN: Molecular Information Lookup
-│   │   │       ├── genova/      # Genova: Genomic Variant Analysis
-│   │   │       ├── lupus-anticoagulant/ # LAC interpreter
-│   │   │       ├── virtual-slides/      # Slide viewer
-│   │   │       ├── abpath/      # Content specifications
-│   │   │       └── cell-quiz/   # Cell morphology quiz
-│   │   └── api/                 # API routes and proxies
-│   │       ├── r2/              # R2 storage endpoints
-│   │       ├── tools/           # Tool-specific APIs
-│   │       └── auth/            # Authentication endpoints
-│   ├── features/                # Feature-based modules
-│   │   ├── auth/               # Authentication system
-│   │   ├── questions/          # Question management
-│   │   ├── images/             # Image management
-│   │   └── debug/              # Debug and monitoring
-│   └── shared/                 # Shared resources
-│       ├── components/         # Reusable UI components
-│       ├── hooks/              # Smart caching hooks
-│       │   ├── use-smart-citations.ts   # Citation caching
-│       │   ├── use-smart-gene-lookup.ts # Gene caching
-│       │   └── use-smart-slides.ts      # Slide caching
-│       ├── services/           # External service integration
-│       ├── utils/              # Utility functions
-│       │   ├── client-data-manager.ts   # Client-side optimization
-│       │   ├── r2-direct-access.ts      # R2 private bucket access
-│       │   └── common-data-preloader.ts # Background pre-loading
-│       └── types/              # TypeScript definitions
-├── public/                     # Essential app assets only
-│   ├── icons/                  # App icons and favicons (7 files)
-│   ├── images/                 # Social media images (3 files)
-│   └── manifest.json           # PWA manifest
-├── docs/                       # Comprehensive documentation
-├── tests/                      # Testing suite
-└── tools/                      # Development utilities
+src/
+├── app/                        # Next.js App Router
+│   ├── (admin)/               # Admin pages
+│   ├── (auth)/                # Auth pages (login, signup, etc.)
+│   ├── (dashboard)/           # User dashboard pages
+│   ├── (public)/              # Public pages and tools
+│   └── api/                   # API routes
+│       ├── admin/             # Admin APIs
+│       ├── auth/              # Auth APIs
+│       ├── user/              # User APIs
+│       └── public/            # Public APIs
+│
+├── features/                  # Feature modules
+│   ├── admin/                 # Admin features
+│   │   ├── questions/        # Question management
+│   │   ├── images/           # Image library
+│   │   └── inquiries/        # Contact form management
+│   ├── auth/                 # Auth features
+│   ├── user/                 # User features
+│   │   ├── quiz/             # Quiz system
+│   │   ├── settings/         # User settings
+│   │   ├── profile/          # Profile management
+│   │   └── dashboard/        # Dashboard components
+│   └── public/               # Public features
+│       └── tools/            # Educational tools
+│
+└── shared/                   # Shared resources
+    ├── components/           # Reusable UI components
+    ├── hooks/                # Custom hooks
+    ├── services/             # Service layer
+    ├── types/                # TypeScript types
+    └── utils/                # Utility functions
 ```
+
+**For complete details**, see [Project Structure Documentation](./dev/docs/architecture/project-structure.md)
 
 ## 👥 User Roles & Permissions
 

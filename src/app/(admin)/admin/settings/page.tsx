@@ -1,6 +1,6 @@
 // src/app/(admin)/admin/settings/page.tsx
 import { Metadata } from "next";
-import { SettingsForm } from "@/features/admin/components/settings-form";
+import { SettingsForm } from "@/features/admin/settings/components/settings-form";
 
 export const metadata: Metadata = {
   title: "Settings - Admin Dashboard",

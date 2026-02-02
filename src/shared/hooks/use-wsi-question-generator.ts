@@ -1,7 +1,7 @@
 import { useState, useCallback } from "react";
 import { useClientWSIData } from "./use-client-wsi-data";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
-import { getWSIHistoryTracker } from "@/shared/utils/wsi-history-tracker";
+import { getWSIHistoryTracker } from "@/features/user/wsi-questions/utils/wsi-history-tracker";
 
 interface QuestionData {
   stem: string;

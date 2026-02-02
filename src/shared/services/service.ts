@@ -9,7 +9,7 @@ import {
   MilestonePayload as _MilestonePayload,
   ReminderPayload as _ReminderPayload,
 } from "@/shared/types/notifications";
-import { InquiryData, QuestionReportData } from "@/features/inquiries/types/inquiries";
+import { InquiryData, QuestionReportData } from "@/features/admin/inquiries/types/inquiries";
 
 export class NotificationsService {
   private getSupabase() {

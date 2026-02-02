@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getBucketSize } from "@/shared/services/r2-storage";
-import { formatSize } from "@/features/images/services/image-upload";
+import { formatSize } from "@/features/admin/images/services/image-upload";
 
 export async function GET() {
   try {

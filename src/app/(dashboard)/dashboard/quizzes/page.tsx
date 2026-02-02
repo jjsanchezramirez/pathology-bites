@@ -5,9 +5,9 @@ import { useState, useEffect } from "react";
 import { useCachedData } from "@/shared/hooks/use-cached-data";
 import { Button } from "@/shared/components/ui/button";
 import { Plus } from "lucide-react";
-import { toast } from "@/shared/utils/toast";
+import { toast } from "@/shared/utils/ui/toast";
 import Link from "next/link";
-import { apiClient } from "@/shared/utils/api-client";
+import { apiClient } from "@/shared/utils/api/api-client";
 import {
   QuizStatsCards,
   QuizFilters,
@@ -16,7 +16,7 @@ import {
   QuizDeleteDialog,
   QuizzesLoading,
   type QuizSessionListItem,
-} from "@/features/quiz/components";
+} from "@/features/user/quiz/components";
 
 export default function QuizzesPage() {
   // All hooks must be called before any conditional returns

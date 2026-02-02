@@ -1,4 +1,4 @@
-import { getUserIdFromHeaders } from '@/shared/utils/auth-helpers'
+import { getUserIdFromHeaders } from '@/shared/utils/auth/auth-helpers'
 // src/app/api/public/security/events/route.ts
 
 import { NextRequest, NextResponse } from 'next/server'

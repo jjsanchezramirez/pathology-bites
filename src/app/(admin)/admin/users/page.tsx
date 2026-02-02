@@ -2,7 +2,7 @@
 "use client";
 
 import { useRef, useState, useEffect } from "react";
-import { UserStatsCards, UserStatsRef } from "@/features/users/components/user-stats-cards";
+import { UserStatsCards, UserStatsRef } from "@/features/admin/users/components/user-stats-cards";
 import {
   Card,
   CardContent,
@@ -10,7 +10,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
-import { UsersManagementTabs } from "@/features/users/components";
+import { UsersManagementTabs } from "@/features/admin/users/components/users-management-tabs";
 import { Loader2 } from "lucide-react";
 
 export default function UsersPage() {

@@ -35,12 +35,12 @@ import {
   Loader2,
 } from "lucide-react";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { QuestionPreviewDialog } from "@/features/questions/components/question-preview-dialog";
-import { SubmitForReviewDialog } from "@/features/questions/components/submit-for-review-dialog";
-import { BulkSubmitDialog } from "@/features/questions/components/bulk-submit-dialog";
-import { toast } from "@/shared/utils/toast";
+import { QuestionPreviewDialog } from "@/features/admin/questions/components/dialogs/question-preview-dialog";
+import { SubmitForReviewDialog } from "@/features/admin/questions/components/dialogs/submit-for-review-dialog";
+import { BulkSubmitDialog } from "@/features/admin/questions/components/dialogs/bulk-submit-dialog";
+import { toast } from "@/shared/utils/ui/toast";
 import { formatDistanceToNow } from "date-fns";
-import { QuestionWithDetails, DIFFICULTY_CONFIG } from "@/features/questions/types/questions";
+import { QuestionWithDetails, DIFFICULTY_CONFIG } from "@/shared/types/questions";
 import { formatVersion } from "@/shared/utils/version";
 import { AccessDenied, AccessDeniedPresets } from "@/shared/components/common/access-denied";
 import {

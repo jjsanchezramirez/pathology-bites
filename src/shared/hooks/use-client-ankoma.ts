@@ -1,10 +1,10 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { AnkomaData, AnkomaDeck } from "@/features/anki/types/anki-card";
-import { parseAnkomaData } from "@/features/anki/utils/ankoma-parser";
+import { AnkomaData, AnkomaDeck } from "@/features/user/anki/types/anki-card";
+import { parseAnkomaData } from "@/features/user/anki/utils/ankoma-parser";
 import { ANKOMA_JSON_URL } from "@/shared/config/ankoma";
-import { toast } from "@/shared/utils/toast";
+import { toast } from "@/shared/utils/ui/toast";
 
 // Module-scope cache so we only fetch once per session
 let cachedAnkomaPromise: Promise<AnkomaData> | null = null;

@@ -3,7 +3,7 @@
 
 import { createClient } from "@/shared/services/client";
 import { SocialButton } from "@/features/auth/components/ui/social-button";
-import { toast } from "@/shared/utils/toast";
+import { toast } from "@/shared/utils/ui/toast";
 
 export function GoogleSignInButton() {
   // Feature flags removed - always allow Google sign-in

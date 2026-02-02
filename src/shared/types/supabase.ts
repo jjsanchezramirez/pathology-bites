@@ -1,5 +1,5 @@
 // src/types/supabase.ts
-import { QuestionSetSourceDetails } from "@/features/questions/types/question-sets";
+import { QuestionSetSourceDetails } from "@/shared/types/question-sets";
 
 // Define the quiz configuration type
 export interface QuizConfig {

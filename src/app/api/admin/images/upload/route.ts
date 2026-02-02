@@ -1,10 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { uploadToR2, generateImageStoragePath, deleteFromR2 } from "@/shared/services/r2-storage";
-import { getImageDimensionsFromFile } from "@/shared/utils/server-image-utils";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
-import { parseImageFilename } from "@/features/images/services/filename-parser";
-import { revalidateImages } from "@/shared/utils/revalidation";
+import { getImageDimensionsFromFile } from "@/shared/utils/images/server-image-utils";
+import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { parseImageFilename } from "@/shared/utils/images/filename-parser";
+import { revalidateImages } from "@/shared/utils/api/revalidation";
 
 export async function POST(request: NextRequest) {
   let uploadedStoragePath: string | null = null;

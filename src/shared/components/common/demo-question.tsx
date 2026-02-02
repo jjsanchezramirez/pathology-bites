@@ -7,7 +7,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { Check, X, ExternalLink } from "lucide-react";
 import QuestionSkeleton from "./skeletons/demo-question-skeleton";
 import DemoQuestionError from "./demo-question-error";
-import { ImageCarousel } from "@/features/images/components/image-carousel";
+import { ImageCarousel } from "@/shared/components/media/image-carousel";
 import { useDemoQuestions } from "@/shared/hooks/use-demo-questions";
 
 export default function DemoQuestion() {

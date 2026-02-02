@@ -1,6 +1,6 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
-import { revalidateQuestions } from "@/shared/utils/revalidation";
+import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 
 /**
  * POST /api/questions/:id/reassign

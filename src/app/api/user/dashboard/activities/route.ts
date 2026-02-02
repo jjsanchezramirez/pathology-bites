@@ -1,7 +1,7 @@
 // src/app/api/dashboard/activities/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
+import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
 // Simple activity types - keeping it focused
 const ACTIVITY_TYPES = {

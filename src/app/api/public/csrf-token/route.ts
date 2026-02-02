@@ -1,7 +1,7 @@
 // src/app/api/public/csrf-token/route.ts
 import { NextResponse } from 'next/server'
 import { getCSRFToken } from '@/features/auth/utils/csrf-protection'
-import { withRateLimit, generalAPIRateLimiter } from '@/shared/utils/api-rate-limiter'
+import { withRateLimit, generalAPIRateLimiter } from '@/shared/utils/api/api-rate-limiter'
 
 const rateLimitedHandler = withRateLimit(generalAPIRateLimiter)
 

@@ -8,7 +8,7 @@ import {
   DEFAULT_QUIZ_SETTINGS,
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_UI_SETTINGS,
-} from "@/shared/constants/user-settings-defaults";
+} from "@/shared/config/user-settings-defaults";
 
 export const dynamic = "force-dynamic";
 

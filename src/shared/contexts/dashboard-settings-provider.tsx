@@ -5,9 +5,9 @@ import { createContext, useContext, useEffect, useState, ReactNode } from "react
 import { useTheme } from "next-themes";
 import { userSettingsService } from "@/shared/services/user-settings";
 import { useUserSettings } from "@/shared/hooks/use-user-settings";
-import { getTextZoomConfig, applyTextZoom, getValidZoomLevel } from "@/shared/utils/text-zoom";
+import { getTextZoomConfig, applyTextZoom, getValidZoomLevel } from "@/shared/utils/ui/text-zoom";
 import { useUserRole } from "@/shared/hooks/use-user-role";
-import { getAdminModeFromCookie, getThemeKeyForMode } from "@/shared/utils/admin-mode";
+import { getAdminModeFromCookie, getThemeKeyForMode } from "@/shared/utils/auth/admin-mode";
 
 interface DashboardSettingsContextType {
   textZoom: number;

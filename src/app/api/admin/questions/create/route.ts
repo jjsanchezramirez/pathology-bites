@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { revalidateQuestions } from "@/shared/utils/revalidation";
+import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {

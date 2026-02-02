@@ -4,7 +4,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/shared/services/client";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
-import { debounce } from "@/shared/utils/debounce";
+import { debounce } from "@/shared/utils/ui/debounce";
 
 interface PendingCounts {
   revisionQueueCount: number; // rejected questions for creators

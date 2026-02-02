@@ -2,8 +2,8 @@
 "use client";
 
 import { useState } from "react";
-import { InquiriesTable } from "@/features/inquiries/components/inquiries-table";
-import { InquiryStatistics } from "@/features/inquiries/components/inquiry-statistics";
+import { InquiriesTable } from "@/features/admin/inquiries/components/inquiries-table";
+import { InquiryStatistics } from "@/features/admin/inquiries/components/inquiry-statistics";
 import {
   Card,
   CardContent,

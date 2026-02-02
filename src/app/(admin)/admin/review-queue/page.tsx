@@ -1,5 +1,5 @@
 import { Metadata } from "next";
-import { ReviewQueue } from "@/features/questions/components/review-queue";
+import { ReviewQueue } from "@/features/admin/questions/components/review/review-queue";
 import { RequirePermission } from "@/shared/components/auth/role-guard";
 
 export const metadata: Metadata = {

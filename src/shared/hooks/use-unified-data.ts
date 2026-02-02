@@ -1,7 +1,7 @@
 // Custom SWR hook for unified performance/dashboard data
 import useSWR from "swr";
-import type { UserStats } from "@/features/achievements/services/achievement-checker";
-import type { Achievement } from "@/features/achievements/types/achievement";
+import type { UserStats } from "@/features/user/achievements/services/achievement-checker";
+import type { Achievement } from "@/features/user/achievements/types/achievement";
 
 interface UnifiedData {
   summary: {

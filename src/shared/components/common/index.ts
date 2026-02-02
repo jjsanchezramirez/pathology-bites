@@ -7,7 +7,6 @@ export * from "./demo-question";
 export * from "./dr-albright";
 export * from "./font-size-control";
 export * from "./icons";
-export * from "./interactive-learning-tools";
 export * from "./join-community-section";
 export * from "./mouse-avoiding-logos";
 export * from "./public-hero";

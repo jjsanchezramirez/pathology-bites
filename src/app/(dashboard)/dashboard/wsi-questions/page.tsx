@@ -1,6 +1,6 @@
 "use client";
 
-import { WSIQuestionGenerator } from "@/shared/components/features/wsi-question-generator";
+import { WSIQuestionGenerator } from "@/features/user/wsi-questions/components/wsi-question-generator";
 
 // Note: Metadata would be exported from a parent layout or server component
 // This is a client component so metadata is handled by the layout

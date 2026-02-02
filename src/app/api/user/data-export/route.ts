@@ -1,7 +1,7 @@
 // src/app/api/user/data-export/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth-helpers";
+import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
 export async function POST(request: NextRequest) {
   try {

@@ -6,7 +6,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { useMaintenanceNotifications } from "@/shared/hooks/use-maintenance-notifications";
-import { toast } from "@/shared/utils/toast";
+import { toast } from "@/shared/utils/ui/toast";
 import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
 import Link from "next/link";
 

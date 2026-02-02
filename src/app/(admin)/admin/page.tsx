@@ -1,14 +1,14 @@
 // src/app/(admin)/admin/page.tsx
 "use client";
 
-import { UserRole } from "@/shared/utils/auth-helpers";
+import { UserRole } from "@/shared/utils/auth/auth-helpers";
 import { useEffect, useState } from "react";
-import { clientDashboardService } from "@/features/dashboard/services/client-service";
-import { DashboardStats, RecentActivity } from "@/features/dashboard/services/service";
-import { StatsCards } from "@/shared/components/layout/dashboard/stats-cards";
-import { RecentActivityCard } from "@/shared/components/layout/dashboard/recent-activity";
-import { QuickActionsCard } from "@/shared/components/layout/dashboard/quick-actions";
-import { SystemStatus } from "@/shared/components/layout/dashboard/system-status";
+import { clientDashboardService } from "@/features/admin/dashboard/services/client-service";
+import { DashboardStats, RecentActivity } from "@/features/admin/dashboard/services/service";
+import { StatsCards } from "@/features/admin/dashboard/components/stats-cards";
+import { RecentActivityCard } from "@/features/admin/dashboard/components/recent-activity";
+import { QuickActionsCard } from "@/features/admin/dashboard/components/quick-actions";
+import { SystemStatus } from "@/features/admin/dashboard/components/system-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useUserRole } from "@/shared/hooks/use-user-role";

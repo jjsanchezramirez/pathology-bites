@@ -2,7 +2,7 @@
 "use client";
 
 import { useState } from "react";
-import { toast } from "@/shared/utils/toast";
+import { toast } from "@/shared/utils/ui/toast";
 import { Button } from "@/shared/components/ui/button";
 import {
   Card,

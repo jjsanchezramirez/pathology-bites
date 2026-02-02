@@ -1,10 +1,10 @@
 // src/app/api/quiz/sessions/[id]/complete/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { quizAnalyticsService } from "@/features/quiz/services/analytics-service";
-import { quizService } from "@/features/quiz/services/quiz-service";
+import { quizAnalyticsService } from "@/features/user/quiz/services/analytics-service";
+import { quizService } from "@/features/user/quiz/services/quiz-service";
 import { ActivityGenerator } from "@/shared/services/activity-generator";
-import { awardAchievements } from "@/features/achievements/services/achievement-service.server";
+import { awardAchievements } from "@/features/user/achievements/services/achievement-service.server";
 
 interface BatchAnswerSubmission {
   questionId: string;

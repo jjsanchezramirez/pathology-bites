@@ -2,7 +2,9 @@
 
 import { useState, useEffect, Suspense, useRef, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
+import dynamic from "next/dynamic";
 import { useClientVirtualSlidesEnhanced } from "@/shared/hooks/use-client-virtual-slides-enhanced";
+import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
 import { VIRTUAL_SLIDES_JSON_URL } from "@/shared/config/virtual-slides";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
@@ -35,10 +37,71 @@ import { JoinCommunitySection } from "@/shared/components/common/join-community-
 import { ContentDisclaimer } from "@/shared/components/common/content-disclaimer";
 import { getR2PublicUrl } from "@/shared/services/r2-storage";
 
+// Dynamically import Lottie to avoid SSR issues
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
+
 // Import components
-import { SlideRowUnified } from "@/features/tools/virtual-slides/components/slide-row-unified";
-import { Pagination } from "@/features/tools/virtual-slides/components/pagination";
-import { LoadingSkeleton } from "@/features/tools/virtual-slides/components/loading-skeleton";
+import { SlideRowUnified } from "@/features/public/tools/virtual-slides/components/slide-row-unified";
+import { Pagination } from "@/features/public/tools/virtual-slides/components/pagination";
+import { LoadingSkeleton } from "@/features/public/tools/virtual-slides/components/loading-skeleton";
+
+// Error state component with Lottie animation
+function VirtualSlidesErrorState({ error }: { error: string }) {
+  const { animationData } = useLottieAnimation("error");
+  const lottieRef = useRef<any>(null);
+
+  useEffect(() => {
+    if (lottieRef.current && animationData) {
+      const anim = lottieRef.current;
+
+      // Play forward-reverse loop
+      const handleComplete = () => {
+        if (anim.animationItem) {
+          anim.animationItem.setDirection(anim.animationItem.playDirection * -1);
+          anim.animationItem.play();
+        }
+      };
+
+      anim.animationItem?.addEventListener('complete', handleComplete);
+
+      return () => {
+        anim.animationItem?.removeEventListener('complete', handleComplete);
+      };
+    }
+  }, [animationData]);
+
+  return (
+    <div className="flex min-h-screen flex-col bg-background">
+      <PublicHero
+        title="Virtual Slide Search Engine"
+        description="Search and explore thousands of virtual pathology slides from leading institutions worldwide."
+      />
+      <div className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
+        <Card className="p-8 md:p-12 text-center">
+          {/* Lottie Animation - Forward-reverse loop */}
+          {animationData && (
+            <div className="w-full max-w-[200px] mx-auto mb-6">
+              <Lottie
+                lottieRef={lottieRef}
+                animationData={animationData}
+                loop={false}
+                autoplay={true}
+                style={{ width: "100%", height: "auto" }}
+              />
+            </div>
+          )}
+
+          <h3 className="text-xl font-semibold mb-3">Failed to Load Virtual Slides</h3>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">{error || "Unknown error occurred"}</p>
+          <Button onClick={() => window.location.reload()} size="lg">
+            <RefreshCw className="h-4 w-4 mr-2" />
+            Try Again
+          </Button>
+        </Card>
+      </div>
+    </div>
+  );
+}
 
 function VirtualSlidesContent() {
   const searchParams = useSearchParams();
@@ -282,27 +345,7 @@ function VirtualSlidesContent() {
 
   // Show error state if data failed to load
   if (dataError) {
-    return (
-      <div className="flex min-h-screen flex-col bg-background">
-        <PublicHero
-          title="Virtual Slide Search Engine"
-          description="Search and explore thousands of virtual pathology slides from leading institutions worldwide."
-        />
-        <div className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
-          <Card className="p-6 text-center">
-            <div className="text-red-500 mb-4">
-              <AlertCircle className="h-12 w-12 mx-auto" />
-            </div>
-            <h3 className="text-lg font-semibold mb-2">Failed to Load Virtual Slides</h3>
-            <p className="text-muted-foreground mb-4">{dataError || "Unknown error occurred"}</p>
-            <Button onClick={() => window.location.reload()}>
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Try Again
-            </Button>
-          </Card>
-        </div>
-      </div>
-    );
+    return <VirtualSlidesErrorState error={dataError} />;
   }
 
   return (
@@ -319,7 +362,7 @@ function VirtualSlidesContent() {
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <FileText className="h-4 w-4" />
-              <span>7 Repositories</span>
+              <span>8 Repositories</span>
             </div>
           </div>
         }
@@ -364,6 +407,11 @@ function VirtualSlidesContent() {
                 name: "Recut Club",
                 url: "https://recutclub.com/",
                 logo: "logos/recut-club-logo.png",
+              },
+              {
+                name: "St. Jude",
+                url: "https://pecan.stjude.cloud/",
+                logo: "logos/st-jude-logo.png",
               },
             ].map((repo) => (
               <a

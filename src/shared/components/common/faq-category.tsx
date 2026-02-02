@@ -6,7 +6,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/shared/components/ui/accordion";
-import { FAQCategory as FAQCategoryType } from "@/shared/data/faq-data";
+import { FAQCategory as FAQCategoryType } from "@/shared/config/faq-data";
 
 interface FAQCategoryProps {
   category: FAQCategoryType;
