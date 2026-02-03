@@ -141,7 +141,7 @@ export function UnifiedSidebar({
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto">
+      <nav className={cn("flex-1 overflow-y-auto", !isOpen && "ml-[2px]")}>
         <div className="p-3">
           {/* Show loading skeleton when no navigation sections are provided or transitioning */}
           {!navigationSections?.length || isLoading || isTransitioning ? (
