@@ -224,7 +224,7 @@ export function UnifiedSidebar({
                               </span>
                             )}
                             {isOpen && item.isSoon && (
-                              <span className="ml-auto text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                              <span className="ml-auto text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
                                 Soon
                               </span>
                             )}
