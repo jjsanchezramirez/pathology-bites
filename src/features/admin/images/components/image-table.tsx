@@ -42,7 +42,10 @@ import { EditImageDialog } from "./edit-dialog";
 import { UploadDialog } from "./upload-dialog";
 import { DeleteImageDialog } from "./delete-image-dialog";
 import { fetchImages } from "@/features/admin/images/services/images";
-import { getImageUsageStats, ImageUsageStats } from "@/features/admin/images/services/image-analytics";
+import {
+  getImageUsageStats,
+  ImageUsageStats,
+} from "@/features/admin/images/services/image-analytics";
 import { getCategoryById } from "@/shared/config/category-color-map";
 import { CATEGORIES } from "@/shared/config/categories";
 

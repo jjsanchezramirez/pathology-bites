@@ -4,7 +4,10 @@
 import { useState, useEffect } from "react";
 
 import { PerformanceAnalytics } from "@/features/user/dashboard/components";
-import { PerformanceLoading, CategoryPerformanceCard } from "@/features/user/performance/components";
+import {
+  PerformanceLoading,
+  CategoryPerformanceCard,
+} from "@/features/user/performance/components";
 import {
   PerformanceTimelineChart,
   CategoryRadarChart,

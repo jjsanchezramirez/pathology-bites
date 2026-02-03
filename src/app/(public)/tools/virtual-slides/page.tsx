@@ -27,7 +27,6 @@ import {
   EyeOff,
   Shuffle,
   RefreshCw,
-  AlertCircle,
   Info,
   GraduationCap,
 } from "lucide-react";
@@ -48,6 +47,7 @@ import { LoadingSkeleton } from "@/features/public/tools/virtual-slides/componen
 // Error state component with Lottie animation
 function VirtualSlidesErrorState({ error }: { error: string }) {
   const { animationData } = useLottieAnimation("error");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const lottieRef = useRef<any>(null);
 
   useEffect(() => {
@@ -62,10 +62,10 @@ function VirtualSlidesErrorState({ error }: { error: string }) {
         }
       };
 
-      anim.animationItem?.addEventListener('complete', handleComplete);
+      anim.animationItem?.addEventListener("complete", handleComplete);
 
       return () => {
-        anim.animationItem?.removeEventListener('complete', handleComplete);
+        anim.animationItem?.removeEventListener("complete", handleComplete);
       };
     }
   }, [animationData]);
@@ -92,7 +92,9 @@ function VirtualSlidesErrorState({ error }: { error: string }) {
           )}
 
           <h3 className="text-xl font-semibold mb-3">Failed to Load Virtual Slides</h3>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">{error || "Unknown error occurred"}</p>
+          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+            {error || "Unknown error occurred"}
+          </p>
           <Button onClick={() => window.location.reload()} size="lg">
             <RefreshCw className="h-4 w-4 mr-2" />
             Try Again
@@ -133,7 +135,11 @@ function VirtualSlidesContent() {
     expandedSearchTerms: client.expandedSearchTerms,
   };
 
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(() => {
+    // Initialize from URL parameter if present
+    const searchQuery = searchParams.get("search");
+    return searchQuery || "";
+  });
   const [selectedRepository, setSelectedRepository] = useState("all");
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedOrganSystem, setSelectedOrganSystem] = useState("all");
@@ -162,19 +168,34 @@ function VirtualSlidesContent() {
   // Study mode specific state
   const [studyQuestionCount, setStudyQuestionCount] = useState(20);
 
-  // Process URL parameters on mount
+  // Set input field value from URL parameter on mount
   useEffect(() => {
-    if (!urlParamsProcessed && !client.isLoading) {
+    if (!urlParamsProcessed) {
       const searchQuery = searchParams.get("search");
 
       if (searchQuery && searchInputRef.current) {
         searchInputRef.current.value = searchQuery;
-        setDebouncedSearchTerm(searchQuery);
       }
 
       setUrlParamsProcessed(true);
     }
-  }, [searchParams, urlParamsProcessed, client.isLoading]);
+  }, [searchParams, urlParamsProcessed]);
+
+  // Update URL when search term changes (only in Search mode)
+  useEffect(() => {
+    if (urlParamsProcessed && mode === "search") {
+      const url = new URL(window.location.href);
+
+      if (debouncedSearchTerm && debouncedSearchTerm.trim() !== "") {
+        url.searchParams.set("search", debouncedSearchTerm);
+      } else {
+        url.searchParams.delete("search");
+      }
+
+      // Update URL without page reload
+      window.history.replaceState({}, "", url.toString());
+    }
+  }, [debouncedSearchTerm, urlParamsProcessed, mode]);
 
   // Load metadata for filters (client-only when available)
   useEffect(() => {
@@ -570,7 +591,7 @@ function VirtualSlidesContent() {
                       ref={searchInputRef}
                       id="search-input"
                       placeholder="Search by diagnosis, patient info, repository, category, or organ system..."
-                      defaultValue=""
+                      defaultValue={searchParams.get("search") || ""}
                       onChange={(e) => {
                         handleSearchInput(e.target.value);
                       }}
@@ -798,13 +819,12 @@ function VirtualSlidesContent() {
                     <thead className="bg-muted/50 border-b">
                       <tr>
                         <th className="text-left p-2 md:p-4 font-semibold w-20 md:w-24">Preview</th>
-                        <th className="text-left p-2 md:p-4 font-semibold">
-                          <span className="md:hidden">{showDiagnoses ? "Diagnosis" : "Info"}</span>
-                          <span className="hidden md:inline">
-                            {showDiagnoses ? "Diagnosis and Clinical Info" : "Slide Info"}
-                          </span>
+                        <th className="text-left p-2 md:p-4 font-semibold">Slide Info</th>
+                        {/* Site column (Category + Organ) - visible on desktop (lg+) */}
+                        <th className="text-left p-2 md:p-4 font-semibold w-32 md:w-40 hidden lg:table-cell">
+                          Site
                         </th>
-                        <th className="text-left p-2 md:p-4 font-semibold w-24 md:w-32 hidden lg:table-cell">
+                        <th className="text-left p-2 md:p-4 font-semibold w-20 md:w-32 hidden md:table-cell">
                           Repository
                         </th>
                         <th className="text-left p-2 md:p-4 font-semibold w-16 md:w-40">Actions</th>
@@ -823,7 +843,6 @@ function VirtualSlidesContent() {
             <div className="container px-4 mx-auto max-w-6xl">
               <Card className="shadow-lg">
                 <CardContent className="p-0">
-                  {/* Results Table */}
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead className="bg-muted/50 border-b">
@@ -831,15 +850,12 @@ function VirtualSlidesContent() {
                           <th className="text-left p-2 md:p-4 font-semibold w-20 md:w-24">
                             Preview
                           </th>
-                          <th className="text-left p-2 md:p-4 font-semibold">
-                            <span className="md:hidden">
-                              {showDiagnoses ? "Diagnosis" : "Info"}
-                            </span>
-                            <span className="hidden md:inline">
-                              {showDiagnoses ? "Diagnosis and Clinical Info" : "Slide Info"}
-                            </span>
+                          <th className="text-left p-2 md:p-4 font-semibold">Slide Info</th>
+                          {/* Site column (Category + Organ) - visible on desktop (lg+) */}
+                          <th className="text-left p-2 md:p-4 font-semibold w-32 md:w-40 hidden lg:table-cell">
+                            Site
                           </th>
-                          <th className="text-left p-2 md:p-4 font-semibold w-24 md:w-32 hidden lg:table-cell">
+                          <th className="text-left p-2 md:p-4 font-semibold w-20 md:w-32 hidden md:table-cell">
                             Repository
                           </th>
                           <th className="text-left p-2 md:p-4 font-semibold w-16 md:w-40">
@@ -879,19 +895,29 @@ function VirtualSlidesContent() {
         )
       )}
 
-      {/* No Results */}
-      {displaySlides.length === 0 && !isLoading && !isInitialLoading && (
+      {/* No Results - Show immediately when no results, hide during loading */}
+      {displaySlides.length === 0 && !isInitialLoading && (
         <section className="relative py-16">
           <div className="container px-4 mx-auto max-w-4xl text-center">
             <div className="space-y-4">
               <Microscope className="h-16 w-16 text-muted-foreground mx-auto" />
               <h3 className="text-xl font-semibold">No slides found</h3>
               <p className="text-muted-foreground">
-                Try adjusting your search terms or filters to find more results.
+                Try adjusting your search terms
+                {(selectedRepository !== "all" ||
+                  selectedCategory !== "all" ||
+                  selectedOrganSystem !== "all") &&
+                  " or filters"}{" "}
+                to find more results.
               </p>
-              <Button onClick={clearFilters} variant="outline">
-                Clear All Filters
-              </Button>
+              {(debouncedSearchTerm ||
+                selectedRepository !== "all" ||
+                selectedCategory !== "all" ||
+                selectedOrganSystem !== "all") && (
+                <Button onClick={clearFilters} variant="outline">
+                  Clear All Filters
+                </Button>
+              )}
             </div>
           </div>
         </section>

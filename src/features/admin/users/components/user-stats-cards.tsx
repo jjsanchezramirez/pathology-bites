@@ -5,7 +5,10 @@ import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Loader2, Users, UserCheck, UserX, UserMinus, UserCog } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
-import { getFormattedUserStats, UserStatsFormatted } from "@/features/admin/users/services/user-stats";
+import {
+  getFormattedUserStats,
+  UserStatsFormatted,
+} from "@/features/admin/users/services/user-stats";
 import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
 export interface UserStatsRef {

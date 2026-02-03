@@ -117,8 +117,8 @@ export const SlideRowUnified = memo(function SlideRowUnified({
             </>
           )}
 
-          {/* Metadata badges - standardized styling */}
-          <div className="flex flex-wrap items-center gap-2 pt-1">
+          {/* Site badges (Category + Organ) - visible on mobile/tablet only (inline in diagnosis column) */}
+          <div className="flex flex-wrap items-center gap-2 pt-1 lg:hidden">
             {/* Category - Color-coded */}
             <span
               className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border"
@@ -137,20 +137,36 @@ export const SlideRowUnified = memo(function SlideRowUnified({
                 {slide.subcategory}
               </span>
             )}
-
-            {/* Stain Type - Medium gray with icon */}
-            {slide.stain_type && (
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded text-xs font-medium border bg-gray-100 text-gray-600 border-gray-300 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
-                <Microscope className="w-3 h-3" />
-                {slide.stain_type}
-              </span>
-            )}
           </div>
         </div>
       </td>
 
-      {/* Repository */}
-      <td className="p-2 md:p-4 w-24 md:w-32 hidden lg:table-cell">
+      {/* Site column (Category + Organ) - visible on desktop (lg+) */}
+      <td className="p-2 md:p-4 w-32 md:w-40 hidden lg:table-cell">
+        <div className="flex flex-col gap-1.5">
+          {/* Category - Color-coded */}
+          <span
+            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border w-fit"
+            style={{
+              backgroundColor: `color-mix(in srgb, ${categoryInfo.color} 20%, white)`,
+              color: `color-mix(in srgb, ${categoryInfo.color} 90%, black)`,
+              borderColor: `color-mix(in srgb, ${categoryInfo.color} 30%, white)`,
+            }}
+          >
+            {categoryInfo.shortForm}
+          </span>
+
+          {/* Subcategory (Organ System) - Light gray */}
+          {slide.subcategory && (
+            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 w-fit">
+              {slide.subcategory}
+            </span>
+          )}
+        </div>
+      </td>
+
+      {/* Repository - hidden on mobile, visible on tablet+ */}
+      <td className="p-2 md:p-4 w-20 md:w-32 hidden md:table-cell">
         {logoPath ? (
           <div className="flex items-center justify-center h-8">
             <Image

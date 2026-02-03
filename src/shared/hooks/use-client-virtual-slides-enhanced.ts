@@ -456,9 +456,7 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
         // DEPRECATED: Legacy format support (Remove after July 2026)
         // This handles the old virtual-slides.json format for backward compatibility
         // Users on old app versions can still access the legacy file
-        const dataArray = Array.isArray(json)
-          ? json
-          : ((json as { data?: unknown[] }).data ?? []);
+        const dataArray = Array.isArray(json) ? json : ((json as { data?: unknown[] }).data ?? []);
         entries = dataArray as (ClientEntry | OptimizedEntry | V7Entry)[];
         processedSlides = entries.map((e) => normalizeToVirtualSlide(e as ClientEntry, "legacy"));
         console.log("[VirtualSlides] ⚠️ Loaded legacy format (deprecated, remove after July 2026)");
@@ -622,7 +620,7 @@ function levenshteinDistance(a: string, b: string): number {
 
 // HIGHLY OPTIMIZED: Uses reverse index to check ONLY relevant slides
 function rankSlidesByTerm(
-  _slides: VirtualSlide[], // Not used - we use searchIndex instead
+  _slides: VirtualSlide[], // Not used - we use searchIndex instead (filters applied after)
   term: string,
   organContext?: OrganTerm[],
   _maxResults: number = 150 // Reduced from 200 for even better performance
@@ -922,7 +920,7 @@ async function rankSlidesWithExpansion(
   // Extract organ/anatomical context from original query for boosting
   const { organs } = extractOrganTerms(query);
 
-  // Search using the query term directly
+  // Search using the query term directly (searches ALL slides)
   // WHO acronyms (7,584 embedded in dataset) are matched via reverse index
   const termRankings = rankSlidesByTerm(
     slides,
@@ -945,8 +943,13 @@ async function rankSlidesWithExpansion(
     })
     .map((item) => item.slide);
 
+  // APPLY FILTERS: Filter the search results to match the filtered slides list
+  // This is simpler and cleaner than filtering during search
+  const allowedSlideIds = new Set(slides.map((s) => s.id));
+  const filteredSlides = sortedSlides.filter((slide) => allowedSlideIds.has(slide.id));
+
   return {
-    slides: sortedSlides,
+    slides: filteredSlides,
     expandedTerms: [],
     method: "standard",
   };
@@ -1047,8 +1050,23 @@ export function useClientVirtualSlidesEnhanced(defaultLimit: number = 20) {
           list = list.filter((s) => s.subcategory === options.subcategory);
         }
 
-        // Random mode
-        if (options.randomMode) {
+        // Search using query
+        if (hasQuery) {
+          const {
+            slides: rankedSlides,
+            expandedTerms,
+            method,
+            confidence,
+          } = await rankSlidesWithExpansion(list, options.query);
+          if (mounted) {
+            setFilteredAndRanked(rankedSlides);
+            setExpandedSearchTerms(expandedTerms);
+            setSearchMethod(method);
+            setSearchConfidence(confidence);
+          }
+        } else {
+          // No search text: show random slides from filtered list
+          // This applies whether there are filters or not
           const seedBase = options.randomSeed ?? Date.now();
           const seed = (options.page || 1) * 1337 + seedBase;
           const rng = (n: number) => {
@@ -1065,28 +1083,6 @@ export function useClientVirtualSlidesEnhanced(defaultLimit: number = 20) {
           if (arr.length > randomLimit) arr = arr.slice(0, randomLimit);
           if (mounted) {
             setFilteredAndRanked(arr);
-            setExpandedSearchTerms([]);
-          }
-          return;
-        }
-
-        // Search using query
-        if (hasQuery) {
-          const {
-            slides: rankedSlides,
-            expandedTerms,
-            method,
-            confidence,
-          } = await rankSlidesWithExpansion(list, options.query);
-          if (mounted) {
-            setFilteredAndRanked(rankedSlides);
-            setExpandedSearchTerms(expandedTerms);
-            setSearchMethod(method);
-            setSearchConfidence(confidence);
-          }
-        } else {
-          if (mounted) {
-            setFilteredAndRanked(list);
             setExpandedSearchTerms([]);
             setSearchMethod(undefined);
             setSearchConfidence(undefined);

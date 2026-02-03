@@ -63,9 +63,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   const [loadingReviewers, setLoadingReviewers] = useState(false);
   const hasAutoAdvanced = useRef(false);
   const originalCorrectAnswerRef = useRef<string | null>(null);
-  const originalImagesRef = useRef<
-    import("@/shared/types/questions").QuestionImageFormData[]
-  >([]);
+  const originalImagesRef = useRef<import("@/shared/types/questions").QuestionImageFormData[]>([]);
 
   // Get return URL from query params, default to /admin/my-questions
   const searchParams = new URLSearchParams(

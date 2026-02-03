@@ -256,7 +256,6 @@ class UserSettingsService {
     }
   }
 
-
   /**
    * Mark v1.0 release announcement as dismissed
    */

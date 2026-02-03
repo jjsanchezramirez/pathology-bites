@@ -31,8 +31,8 @@ export function VirtualSlideSearchEngine({
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
                   <p className="text-muted-foreground">
-                    Search across 8 prestigious institutions including Leeds, PathPresenter,
-                    MGH, University of Toronto, and St. Jude Cloud
+                    Search across 8 prestigious institutions including Leeds, PathPresenter, MGH,
+                    University of Toronto, and St. Jude Cloud
                   </p>
                 </div>
                 <div className="flex items-start gap-3">
