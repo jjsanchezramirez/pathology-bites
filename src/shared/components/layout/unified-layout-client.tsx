@@ -50,7 +50,8 @@ export function UnifiedLayoutClient({
   // Simplified state management - separate desktop and mobile states
   const [desktopCollapsed, setDesktopCollapsed] = useState(false); // Desktop: false = expanded, true = collapsed
   const [mobileVisible, setMobileVisible] = useState(false); // Mobile: false = hidden, true = visible
-  const [preQuizDesktopState, setPreQuizDesktopState] = useState(false); // Store desktop state before quiz/anki mode
+  const preQuizDesktopStateRef = useRef(false); // Store desktop state before quiz/anki mode
+  const wasInSpecialModeRef = useRef(false); // Track if we were in quiz/anki mode
   const [isHydrated, setIsHydrated] = useState(false);
   const [sidebarHovered, setSidebarHovered] = useState(false); // Hover state for collapsed sidebar
   const sidebarRef = useRef<HTMLDivElement>(null);
@@ -63,16 +64,28 @@ export function UnifiedLayoutClient({
   // Handle quiz/anki mode changes on desktop only
   useEffect(() => {
     if (!isMobile && isHydrated) {
-      if (isInQuizMode || isInAnkiMode) {
-        // Entering quiz/anki mode: save current state and collapse
-        setPreQuizDesktopState(desktopCollapsed);
+      const isInSpecialMode = isInQuizMode || isInAnkiMode;
+
+      // Entering special mode (quiz or anki)
+      if (isInSpecialMode && !wasInSpecialModeRef.current) {
+        // Save current state and collapse
+        preQuizDesktopStateRef.current = desktopCollapsed;
+        wasInSpecialModeRef.current = true;
         setDesktopCollapsed(true);
-      } else {
-        // Exiting quiz/anki mode: restore previous state
-        setDesktopCollapsed(preQuizDesktopState);
+        console.log("[Sidebar] Entering special mode, saving state:", desktopCollapsed);
+      }
+      // Exiting special mode
+      else if (!isInSpecialMode && wasInSpecialModeRef.current) {
+        // Restore previous state
+        wasInSpecialModeRef.current = false;
+        setDesktopCollapsed(preQuizDesktopStateRef.current);
+        console.log(
+          "[Sidebar] Exiting special mode, restoring state:",
+          preQuizDesktopStateRef.current
+        );
       }
     }
-  }, [isInQuizMode, isInAnkiMode, isMobile, isHydrated, desktopCollapsed, preQuizDesktopState]);
+  }, [isInQuizMode, isInAnkiMode, isMobile, isHydrated, desktopCollapsed]);
 
   // Handle click outside to close mobile sidebar
   useEffect(() => {
