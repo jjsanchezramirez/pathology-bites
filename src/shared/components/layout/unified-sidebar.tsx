@@ -223,6 +223,11 @@ export function UnifiedSidebar({
                                 New
                               </span>
                             )}
+                            {isOpen && item.isSoon && (
+                              <span className="ml-auto text-xs bg-blue-100 text-blue-700 px-2 py-0.5 rounded-full">
+                                Soon
+                              </span>
+                            )}
                             {isOpen && item.adminOnly && !isAdmin && !isLoading && (
                               <span className="ml-auto text-xs text-sidebar-foreground/50">
                                 Admin
