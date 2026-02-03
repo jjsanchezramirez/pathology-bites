@@ -167,7 +167,7 @@ export class AutoSaveManager {
    */
   private async fetchDatabaseState(sessionId: string): Promise<QuizState | null> {
     try {
-      const response = await fetch(`/api/quiz/sessions/${sessionId}`);
+      const response = await fetch(`/api/user/quiz/sessions/${sessionId}`);
       if (!response.ok) return null;
 
       const data = await response.json();

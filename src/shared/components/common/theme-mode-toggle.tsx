@@ -15,11 +15,16 @@ export function ThemeModeToggle() {
 
   useEffect(() => {
     setMounted(true);
-  }, []);
+    console.log(
+      "[ThemeModeToggle] Component mounted, current theme:",
+      theme,
+      "forcedTheme:",
+      forcedTheme
+    );
+  }, [theme, forcedTheme]);
 
-  // Check if theming is allowed on current route
-  const themedRoutes = ["/admin", "/dashboard"];
-  const isThemedRoute = pathname ? themedRoutes.some((route) => pathname.startsWith(route)) : false;
+  // Only show on dashboard and admin routes where users can control theme
+  const isUserThemedRoute = pathname?.startsWith("/dashboard") || pathname?.startsWith("/admin");
 
   // Don't render until mounted to prevent hydration mismatch
   if (!mounted) {
@@ -30,12 +35,12 @@ export function ThemeModeToggle() {
     );
   }
 
-  // Don't show toggle on non-themed routes (since theme is forced)
-  if (!isThemedRoute || forcedTheme) {
+  // Don't show toggle if theme is forced (public/auth/error pages)
+  if (!isUserThemedRoute || forcedTheme) {
     return null;
   }
 
-  const cycleTheme = async () => {
+  const cycleTheme = () => {
     let newTheme: string;
     switch (theme) {
       case "light":
@@ -50,16 +55,21 @@ export function ThemeModeToggle() {
         break;
     }
 
-    // Update next-themes (localStorage + UI)
+    console.log("[ThemeModeToggle] Switching theme from", theme, "to", newTheme);
+
+    // Update next-themes (localStorage + UI) - this should happen immediately
     setTheme(newTheme);
 
-    // Update database and cache
-    try {
-      await userSettingsService.updateUISettings({ theme: newTheme });
-      console.log("[ThemeModeToggle] Theme saved to database:", newTheme);
-    } catch (error) {
-      console.error("[ThemeModeToggle] Failed to save theme:", error);
-    }
+    // Update database and cache (non-blocking)
+    userSettingsService
+      .updateUISettings({ theme: newTheme })
+      .then(() => {
+        console.log("[ThemeModeToggle] Theme saved to database:", newTheme);
+      })
+      .catch((error) => {
+        console.error("[ThemeModeToggle] Failed to save theme:", error);
+        // Theme already changed in UI, so we don't need to revert
+      });
   };
 
   const getIcon = () => {

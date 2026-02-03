@@ -48,7 +48,7 @@ export default function QuizResultsPage() {
       const retryDelays = [500, 1000, 2000]; // Exponential backoff: 0.5s, 1s, 2s
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        const resultsResponse = await fetch(`/api/quiz/sessions/${sessionId}/results`);
+        const resultsResponse = await fetch(`/api/user/quiz/sessions/${sessionId}/results`);
 
         if (resultsResponse.ok) {
           const resultsData = await resultsResponse.json();

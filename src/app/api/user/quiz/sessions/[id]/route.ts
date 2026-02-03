@@ -1,4 +1,4 @@
-// src/app/api/quiz/sessions/[id]/route.ts
+// src/app/api/user/quiz/sessions/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { quizService } from "@/features/user/quiz/services/quiz-service";

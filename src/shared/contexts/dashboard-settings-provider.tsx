@@ -2,7 +2,6 @@
 "use client";
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
-import { useTheme } from "next-themes";
 import { userSettingsService } from "@/shared/services/user-settings";
 import { useUserSettings } from "@/shared/hooks/use-user-settings";
 import { getTextZoomConfig, applyTextZoom, getValidZoomLevel } from "@/shared/utils/ui/text-zoom";
@@ -24,7 +23,6 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
   const [textZoom, setTextZoomState] = useState(1.0);
   const [dashboardTheme, setDashboardThemeState] = useState("default");
   const config = getTextZoomConfig();
-  const { setTheme: setNextTheme } = useTheme();
 
   // Use cached user settings hook (eliminates redundant API calls)
   // Note: refetchOnMount removed - cache handles freshness with 5-min TTL and 2-min stale time
@@ -52,34 +50,26 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
     const theme = settings.ui_settings?.[themeKey] ?? "default";
     setDashboardThemeState(theme);
 
-    // Sync light/dark mode theme from database to next-themes
-    // Only sync if the database has a theme value (to avoid overwriting localStorage for existing users)
-    if (settings.ui_settings?.theme !== undefined) {
-      const colorMode = settings.ui_settings.theme;
-      setNextTheme(colorMode);
-      console.log(
-        "[DashboardSettings] Applied - zoom:",
-        validZoom,
-        "dashboardTheme:",
-        theme,
-        "colorMode:",
-        colorMode,
-        "adminMode:",
-        adminMode
-      );
-    } else {
-      console.log(
-        "[DashboardSettings] Applied - zoom:",
-        validZoom,
-        "dashboardTheme:",
-        theme,
-        "colorMode:",
-        "(using localStorage)",
-        "adminMode:",
-        adminMode
-      );
-    }
-  }, [settings, config.default, isAdmin, setNextTheme]);
+    // IMPORTANT: DO NOT sync light/dark mode theme here!
+    // The ThemeModeToggle component manages the theme via next-themes directly.
+    // Syncing here causes a race condition where the database value (from SWR cache)
+    // overrides the user's immediate theme change from the toggle button.
+    //
+    // The theme is persisted in two places:
+    // 1. localStorage by next-themes (for immediate updates)
+    // 2. Database by ThemeModeToggle (for cross-device sync)
+    //
+    // On initial load, next-themes reads from localStorage, which is the source of truth.
+    console.log(
+      "[DashboardSettings] Applied - zoom:",
+      validZoom,
+      "dashboardTheme:",
+      theme,
+      "adminMode:",
+      adminMode,
+      "(colorMode managed by next-themes)"
+    );
+  }, [settings, config.default, isAdmin]);
 
   // Update text zoom
   const setTextZoom = async (newZoom: number) => {

@@ -1,74 +1,52 @@
-// src/components/theme/conditional-theme-provider.tsx
+// src/shared/components/common/conditional-theme-provider.tsx
 /**
  * ConditionalThemeProvider
  *
- * Manages color mode (light/dark/system) across the application using next-themes.
+ * Simplified theme provider that enforces light mode on public pages
+ * and allows user-controlled themes on authenticated pages.
  *
- * THEME SYSTEM OVERVIEW:
- * ----------------------
- * The application has TWO separate theming concepts:
+ * THEME RULES:
+ * -----------
+ * - Public pages (/): FORCED light mode + default theme
+ * - Auth pages (/login, /signup, etc.): FORCED light mode + default theme
+ * - Error pages (/not-found, etc.): FORCED light mode + default theme
+ * - Dashboard (/dashboard/*): User can toggle light/dark/system
+ * - Admin (/admin/*): User can toggle light/dark/system
  *
- * 1. COLOR MODE (managed by this provider):
- *    - Controls light/dark/system color scheme
- *    - Stored in ui_settings.theme
- *    - Public pages: FORCED to light mode
- *    - Dashboard/Admin pages: User can toggle light/dark/system
- *
- * 2. DASHBOARD THEME (managed by DashboardThemeContext):
- *    - Controls which theme CSS variables are applied (Default/Notebook/Tangerine)
- *    - Stored in ui_settings.dashboard_theme_admin or ui_settings.dashboard_theme_user
- *    - Admin/Creator/Reviewer mode: Only 'default' theme available
- *    - Student mode: 'notebook' and 'tangerine' themes available
- *
- * ROUTE BEHAVIOR:
- * ---------------
- * - Public routes (/, /about, /login, etc.): Light mode enforced, Default theme
- * - Auth routes (/login, /signup, etc.): Light mode enforced, Default theme
- * - Error routes (/not-found, etc.): Light mode enforced, Default theme
- * - Dashboard routes (/dashboard/*): User can toggle color mode, theme based on role
- * - Admin routes (/admin/*): User can toggle color mode, Default theme only
+ * NOTE: Dashboard theme colors (notebook/tangerine) are managed separately
+ * by DashboardThemeContext, not by this provider.
  */
 "use client";
 
-import { useEffect } from "react";
 import { usePathname } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import type { ThemeProviderProps } from "next-themes";
 
+/**
+ * Check if a route should allow user theme control
+ */
+function isUserThemedRoute(pathname: string | null): boolean {
+  if (!pathname) return false;
+
+  // Only dashboard and admin routes allow user theme control
+  return pathname.startsWith("/dashboard") || pathname.startsWith("/admin");
+}
+
 export function ConditionalThemeProvider({ children, ...props }: ThemeProviderProps) {
   const pathname = usePathname();
+  const allowUserTheme = isUserThemedRoute(pathname);
 
-  // Define which routes allow color mode customization
-  const themedRoutes = ["/admin", "/dashboard"];
-  const isThemedRoute = pathname ? themedRoutes.some((route) => pathname.startsWith(route)) : false;
-
-  // Theme configuration
-  const themeProps: ThemeProviderProps = {
-    attribute: "class",
-    defaultTheme: "system",
-    enableSystem: true,
-    disableTransitionOnChange: false,
-    storageKey: "pathology-bites-theme",
-    ...props,
-    // Force light theme on public routes
-    forcedTheme: isThemedRoute ? undefined : "light",
-  };
-
-  // Clean up theme classes on route changes
-  useEffect(() => {
-    const html = document.documentElement;
-
-    if (!isThemedRoute) {
-      // Force light mode on public pages
-      html.classList.remove("dark");
-      html.classList.add("light");
-      // Optional: Add a data attribute to identify forced theme state
-      html.setAttribute("data-theme-forced", "true");
-    } else {
-      // Remove forced theme indicator on themed routes
-      html.removeAttribute("data-theme-forced");
-    }
-  }, [isThemedRoute, pathname]);
-
-  return <NextThemesProvider {...themeProps}>{children}</NextThemesProvider>;
+  return (
+    <NextThemesProvider
+      attribute="class"
+      defaultTheme="system"
+      enableSystem={true}
+      disableTransitionOnChange={false}
+      storageKey="pathology-bites-theme"
+      forcedTheme={allowUserTheme ? undefined : "light"}
+      {...props}
+    >
+      {children}
+    </NextThemesProvider>
+  );
 }
