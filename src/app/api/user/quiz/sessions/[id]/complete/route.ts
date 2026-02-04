@@ -143,15 +143,20 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Check and award achievements
     let newAchievements = [];
+    let metadata = undefined;
     try {
       console.log("[Quiz Complete] Checking for new achievements...");
-      newAchievements = await awardAchievements(userId);
+      const achievementResult = await awardAchievements(userId);
+      newAchievements = achievementResult.newAchievements;
+      metadata = achievementResult.metadata;
+
       if (newAchievements.length > 0) {
         console.log(
           `✅ Awarded ${newAchievements.length} new achievement(s):`,
           newAchievements.map((a) => a.title)
         );
       }
+      console.log("[Quiz Complete] Stats metadata for cache validation:", metadata);
     } catch (achievementError) {
       // Don't fail the quiz completion if achievement check fails
       console.error("Failed to check/award achievements:", achievementError);
@@ -161,6 +166,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       success: true,
       data: result,
       newAchievements,
+      metadata, // Include for client-side cache validation
     });
   } catch (error) {
     console.error("Error completing quiz:", error);

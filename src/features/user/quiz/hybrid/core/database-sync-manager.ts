@@ -61,6 +61,12 @@ export interface SyncResult {
   error?: string;
   serverResponse?: {
     message?: string;
+    data?: unknown;
+    newAchievements?: unknown[];
+    metadata?: {
+      totalQuizzes: number;
+      lastQuizTimestamp: string;
+    };
     [key: string]: unknown;
   };
 }

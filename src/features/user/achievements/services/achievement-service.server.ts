@@ -259,8 +259,16 @@ export async function getUserStats(userId: string): Promise<UserStats> {
 /**
  * Award achievements to a user (called after quiz completion)
  * SERVER-SIDE ONLY
+ *
+ * @returns Object containing new achievements and stats metadata for cache validation
  */
-export async function awardAchievements(userId: string): Promise<AchievementDefinition[]> {
+export async function awardAchievements(userId: string): Promise<{
+  newAchievements: AchievementDefinition[];
+  metadata: {
+    totalQuizzes: number;
+    lastQuizTimestamp: string;
+  };
+}> {
   const supabase = await createClient();
 
   // Get user stats
@@ -317,7 +325,26 @@ export async function awardAchievements(userId: string): Promise<AchievementDefi
     console.log("No new achievements to insert");
   }
 
-  return newAchievements;
+  // Get last quiz timestamp for cache validation
+  const { data: lastQuiz } = await supabase
+    .from("quiz_sessions")
+    .select("completed_at, created_at")
+    .eq("user_id", userId)
+    .eq("status", "completed")
+    .order("completed_at", { ascending: false })
+    .limit(1)
+    .single();
+
+  const lastQuizTimestamp =
+    lastQuiz?.completed_at || lastQuiz?.created_at || new Date().toISOString();
+
+  return {
+    newAchievements,
+    metadata: {
+      totalQuizzes: stats.totalQuizzes,
+      lastQuizTimestamp,
+    },
+  };
 }
 
 /**

@@ -25,8 +25,9 @@ import {
   QuizQuestionTransformer,
   UIQuizQuestion,
 } from "../types/quiz-question";
+import type { QuizResult } from "../types/quiz";
 import { toast } from "@/shared/utils/ui/toast";
-import { onQuizComplete } from "@/shared/utils/cache/cache-helpers";
+import { updateCacheAfterQuiz } from "@/shared/utils/cache/cache-helpers";
 
 export interface UseHybridQuizOptions {
   sessionId: string;
@@ -419,12 +420,21 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
           console.log("[Hybrid] Quiz was already completed on server, sync treated as success");
         }
 
-        // Invalidate unified data cache to update dashboard stats, achievements, etc.
-        // This runs in background, doesn't block navigation
-        onQuizComplete().catch((err) => {
-          console.warn("[Hybrid] Failed to invalidate cache after quiz completion:", err);
-          // Non-critical error, don't throw
-        });
+        // Update cache incrementally instead of refetching everything
+        // This provides instant UI updates and saves ~50KB of data transfer
+        if (result.serverResponse?.data && result.serverResponse?.newAchievements !== undefined) {
+          console.log("[Hybrid] Updating cache incrementally with quiz results");
+          updateCacheAfterQuiz(
+            result.serverResponse.data as QuizResult,
+            result.serverResponse.newAchievements as QuizResult["newAchievements"],
+            result.serverResponse.metadata // Pass metadata for cache validation guards
+          ).catch((err) => {
+            console.warn("[Hybrid] Failed to update cache after quiz completion:", err);
+            // Non-critical error, don't throw
+          });
+        } else {
+          console.warn("[Hybrid] Missing quiz result data, skipping cache update");
+        }
       } else {
         stateActions.markSyncFailed();
       }
