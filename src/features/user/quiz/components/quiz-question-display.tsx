@@ -89,9 +89,9 @@ export function QuizQuestionDisplay({
                 disabled={showExplanation}
                 className={`
                   w-full p-3 text-left border rounded-lg transition-colors
-                  ${isSelected && !showExplanation ? "border-blue-500 bg-blue-50" : "border-gray-200"}
-                  ${showCorrect ? "border-green-500 bg-green-50 text-green-900 dark:text-green-950" : ""}
-                  ${showIncorrect ? "border-red-500 bg-red-50 text-red-900 dark:text-red-950" : ""}
+                  ${isSelected && !showExplanation ? "border-blue-500 bg-blue-500/10" : "border-gray-200"}
+                  ${showCorrect ? "border-green-500 bg-green-500/15" : ""}
+                  ${showIncorrect ? "border-red-500 bg-red-500/15" : ""}
                   ${!showExplanation ? "hover:border-gray-300 cursor-pointer" : "cursor-default"}
                 `}
                 role="option"
@@ -102,15 +102,15 @@ export function QuizQuestionDisplay({
                     className={`
                     flex-shrink-0 w-6 h-6 rounded-full border flex items-center justify-center text-xs font-medium
                     ${isSelected && !showExplanation ? "border-blue-500 bg-blue-500 text-white" : "border-gray-300"}
-                    ${showCorrect ? "border-green-500 bg-green-500 text-white" : ""}
-                    ${showIncorrect ? "border-red-500 bg-red-100 text-red-700" : ""}
+                    ${showCorrect ? "border-green-600 bg-green-600 text-white" : ""}
+                    ${showIncorrect ? "border-red-600 bg-red-600 text-white" : ""}
                   `}
                   >
                     {optionLabel}
                   </span>
                   <span className="flex-1">{option.text}</span>
-                  {showCorrect && <Check className="w-4 h-4 text-green-700 dark:text-green-800" />}
-                  {showIncorrect && <X className="w-4 h-4 text-red-700 dark:text-red-800" />}
+                  {showCorrect && <Check className="w-4 h-4 text-green-600" />}
+                  {showIncorrect && <X className="w-4 h-4 text-red-600" />}
                 </div>
               </button>
             );
