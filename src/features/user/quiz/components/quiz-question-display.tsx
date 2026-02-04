@@ -90,8 +90,8 @@ export function QuizQuestionDisplay({
                 className={`
                   w-full p-3 text-left border rounded-lg transition-colors
                   ${isSelected && !showExplanation ? "border-blue-500 bg-blue-500/10" : "border-gray-200"}
-                  ${showCorrect ? "border-green-500 bg-green-500/15" : ""}
-                  ${showIncorrect ? "border-red-500 bg-red-500/15" : ""}
+                  ${showCorrect ? "border-green-500 bg-green-500/5" : ""}
+                  ${showIncorrect ? "border-red-500 bg-red-500/5" : ""}
                   ${!showExplanation ? "hover:border-gray-300 cursor-pointer" : "cursor-default"}
                 `}
                 role="option"
