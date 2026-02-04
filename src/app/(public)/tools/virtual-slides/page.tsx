@@ -389,10 +389,11 @@ function VirtualSlidesContent() {
         }
       />
 
-      {/* Repository Icons Row - Hidden on mobile */}
-      <section className="py-4 md:py-6 hidden md:block">
+      {/* Repository Icons - Hidden on mobile, 2 rows (4+4) on small, 2 rows (6+2) on medium, 1 row on large */}
+      <section className="py-4 md:py-6 hidden sm:block">
         <div className="container px-4 mx-auto max-w-6xl">
-          <div className="flex flex-wrap items-center justify-center gap-3 md:gap-4 max-w-4xl mx-auto">
+          {/* Large screens (lg+): Single row */}
+          <div className="hidden lg:flex items-center justify-center gap-6">
             {[
               {
                 name: "Heme eTutorial",
@@ -440,18 +441,194 @@ function VirtualSlidesContent() {
                 href={repo.url}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative h-14 w-28 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
+                className="group relative h-16 w-32 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
               >
                 <Image
                   src={getR2PublicUrl(repo.logo)}
                   alt={repo.name}
-                  width={100}
-                  height={50}
+                  width={120}
+                  height={60}
                   unoptimized
                   className="object-contain opacity-50 group-hover:opacity-100 transition-opacity"
                 />
               </a>
             ))}
+          </div>
+
+          {/* Medium screens (md to lg): 2 rows (6 + 2) */}
+          <div className="hidden md:block lg:hidden space-y-4">
+            {/* First row - 6 logos */}
+            <div className="flex items-center justify-center gap-4">
+              {[
+                {
+                  name: "Heme eTutorial",
+                  url: "http://www.hematopathologyetutorial.com/",
+                  logo: "logos/hematopathology-etutorial-logo.png",
+                },
+                {
+                  name: "Leeds",
+                  url: "https://www.virtualpathology.leeds.ac.uk/",
+                  logo: "logos/university-of-leeds-logo.png",
+                },
+                {
+                  name: "PathPresenter",
+                  url: "https://pathpresenter.net/",
+                  logo: "logos/path-presenter-logo.png",
+                },
+                {
+                  name: "MGH",
+                  url: "https://learn.mghpathology.org/",
+                  logo: "logos/mgh-logo.png",
+                },
+                {
+                  name: "Toronto",
+                  url: "https://lmpimg.med.utoronto.ca/",
+                  logo: "logos/university-of-toronto-logo.png",
+                },
+                {
+                  name: "Rosai",
+                  url: "https://rosai.secondslide.com/",
+                  logo: "logos/rosai-collection-logo.png",
+                },
+              ].map((repo) => (
+                <a
+                  key={repo.name}
+                  href={repo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative h-14 w-28 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
+                >
+                  <Image
+                    src={getR2PublicUrl(repo.logo)}
+                    alt={repo.name}
+                    width={105}
+                    height={52}
+                    unoptimized
+                    className="object-contain opacity-50 group-hover:opacity-100 transition-opacity"
+                  />
+                </a>
+              ))}
+            </div>
+            {/* Second row - 2 logos */}
+            <div className="flex items-center justify-center gap-4">
+              {[
+                {
+                  name: "Recut Club",
+                  url: "https://recutclub.com/",
+                  logo: "logos/recut-club-logo.png",
+                },
+                {
+                  name: "St. Jude",
+                  url: "https://pecan.stjude.cloud/",
+                  logo: "logos/st-jude-logo.png",
+                },
+              ].map((repo) => (
+                <a
+                  key={repo.name}
+                  href={repo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative h-14 w-28 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
+                >
+                  <Image
+                    src={getR2PublicUrl(repo.logo)}
+                    alt={repo.name}
+                    width={105}
+                    height={52}
+                    unoptimized
+                    className="object-contain opacity-50 group-hover:opacity-100 transition-opacity"
+                  />
+                </a>
+              ))}
+            </div>
+          </div>
+
+          {/* Small screens (sm to md): 2 rows (4 + 4) */}
+          <div className="md:hidden space-y-4">
+            {/* First row - 4 logos */}
+            <div className="flex items-center justify-center gap-4">
+              {[
+                {
+                  name: "Heme eTutorial",
+                  url: "http://www.hematopathologyetutorial.com/",
+                  logo: "logos/hematopathology-etutorial-logo.png",
+                },
+                {
+                  name: "Leeds",
+                  url: "https://www.virtualpathology.leeds.ac.uk/",
+                  logo: "logos/university-of-leeds-logo.png",
+                },
+                {
+                  name: "PathPresenter",
+                  url: "https://pathpresenter.net/",
+                  logo: "logos/path-presenter-logo.png",
+                },
+                {
+                  name: "MGH",
+                  url: "https://learn.mghpathology.org/",
+                  logo: "logos/mgh-logo.png",
+                },
+              ].map((repo) => (
+                <a
+                  key={repo.name}
+                  href={repo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative h-12 w-24 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
+                >
+                  <Image
+                    src={getR2PublicUrl(repo.logo)}
+                    alt={repo.name}
+                    width={90}
+                    height={45}
+                    unoptimized
+                    className="object-contain opacity-50 group-hover:opacity-100 transition-opacity"
+                  />
+                </a>
+              ))}
+            </div>
+            {/* Second row - 4 logos */}
+            <div className="flex items-center justify-center gap-4">
+              {[
+                {
+                  name: "Toronto",
+                  url: "https://lmpimg.med.utoronto.ca/",
+                  logo: "logos/university-of-toronto-logo.png",
+                },
+                {
+                  name: "Rosai",
+                  url: "https://rosai.secondslide.com/",
+                  logo: "logos/rosai-collection-logo.png",
+                },
+                {
+                  name: "Recut Club",
+                  url: "https://recutclub.com/",
+                  logo: "logos/recut-club-logo.png",
+                },
+                {
+                  name: "St. Jude",
+                  url: "https://pecan.stjude.cloud/",
+                  logo: "logos/st-jude-logo.png",
+                },
+              ].map((repo) => (
+                <a
+                  key={repo.name}
+                  href={repo.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="group relative h-12 w-24 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
+                >
+                  <Image
+                    src={getR2PublicUrl(repo.logo)}
+                    alt={repo.name}
+                    width={90}
+                    height={45}
+                    unoptimized
+                    className="object-contain opacity-50 group-hover:opacity-100 transition-opacity"
+                  />
+                </a>
+              ))}
+            </div>
           </div>
         </div>
       </section>

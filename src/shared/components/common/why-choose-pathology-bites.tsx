@@ -10,10 +10,7 @@ interface WhyChoosePathologyBitesProps {
 
 export function WhyChoosePathologyBites({ id, className = "" }: WhyChoosePathologyBitesProps) {
   return (
-    <section
-      id={id}
-      className={`relative py-24 bg-gradient-to-br from-slate-50 to-blue-50/30 dark:from-slate-900 dark:to-slate-800 ${className}`}
-    >
+    <section id={id} className={`relative py-24 bg-muted/30 ${className}`}>
       <div className="container mx-auto px-4 relative">
         <div className="max-w-6xl mx-auto">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">

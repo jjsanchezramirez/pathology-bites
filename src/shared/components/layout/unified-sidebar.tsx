@@ -135,13 +135,13 @@ export function UnifiedSidebar({
       }}
     >
       {/* Logo Section */}
-      <div className="h-16 flex items-center border-b border-sidebar-border shrink-0 pl-[20px] pr-6">
+      <div className="h-16 flex items-center border-b border-sidebar-border shrink-0 pl-[14px] pr-6">
         <Microscope className="h-6 w-6 shrink-0" />
         {isOpen && <h1 className="font-bold text-lg ml-3 whitespace-nowrap">Pathology Bites</h1>}
       </div>
 
       {/* Navigation */}
-      <nav className={cn("flex-1 overflow-y-auto", !isOpen && "ml-[2px]")}>
+      <nav className={cn("flex-1 overflow-y-auto", !isOpen && "-ml-0.5")}>
         <div className="p-3">
           {/* Show loading skeleton when no navigation sections are provided or transitioning */}
           {!navigationSections?.length || isLoading || isTransitioning ? (
@@ -154,7 +154,7 @@ export function UnifiedSidebar({
                   <div
                     key={section.title}
                     className={cn(
-                      sectionIndex === 0 && isOpen ? "mt-[4px]" : "" // Move Dashboard down 4px in expanded state
+                      sectionIndex === 0 && isOpen ? "mt-[0px]" : "" // Keep at 0px to align with collapsed state
                     )}
                   >
                     {/* Section header - always takes space to keep alignment consistent */}
@@ -179,18 +179,18 @@ export function UnifiedSidebar({
                             href={item.href}
                             className={cn(
                               "flex items-center h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
-                              isOpen ? "pl-[8px] pr-3" : "justify-center px-0 w-10",
+                              isOpen ? "pl-2" : "justify-center px-0 w-10",
                               isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
                               isLoading && "pointer-events-none opacity-60"
                             )}
                             title={!isOpen ? item.name : undefined}
                           >
                             <IconComponent className="h-5 w-5 shrink-0" />
-                            {isOpen && <span className="truncate ml-3">{item.name}</span>}
+                            {isOpen && <span className="truncate ml-2.5">{item.name}</span>}
                             {isOpen &&
                               item.href === "/admin/inquiries" &&
                               pendingInquiriesCount > 0 && (
-                                <span className="ml-auto text-xs bg-red-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                                <span className="ml-auto text-xs bg-red-500 text-white px-3 rounded-full font-semibold">
                                   {pendingInquiriesCount}
                                 </span>
                               )}

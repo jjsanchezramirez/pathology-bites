@@ -88,14 +88,14 @@ export function MouseAvoidingLogos() {
   };
 
   const positions = [
-    { left: "25%", top: "25%" }, // top-left
-    { left: "50%", top: "25%" }, // top-center
-    { left: "75%", top: "25%" }, // top-right
-    { left: "20%", top: "50%" }, // middle-left
-    { left: "50%", top: "50%" }, // middle-center
-    { left: "80%", top: "50%" }, // middle-right
-    { left: "35%", top: "75%" }, // bottom-left
-    { left: "65%", top: "75%" }, // bottom-right
+    { left: "25%", top: "28%" }, // top-left
+    { left: "50%", top: "28%" }, // top-center
+    { left: "75%", top: "28%" }, // top-right
+    { left: "35%", top: "50%" }, // middle-left
+    { left: "65%", top: "50%" }, // middle-right
+    { left: "25%", top: "72%" }, // bottom-left
+    { left: "50%", top: "72%" }, // bottom-center
+    { left: "75%", top: "72%" }, // bottom-right
   ];
 
   return (

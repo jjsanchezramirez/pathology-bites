@@ -61,10 +61,19 @@ export function VirtualSlideSearchTeaser() {
   const cachedDataRef = useRef<CachedVirtualSlidesData | null>(null);
   const prefetchingRef = useRef(false);
 
+  // Track if data is ready for use
+  const [isDataReady, setIsDataReady] = useState(false);
+
   // Prefetch and decompress data after component mounts
   useEffect(() => {
     const prefetchData = async () => {
-      if (prefetchingRef.current || cachedDataRef.current) return;
+      if (prefetchingRef.current || cachedDataRef.current) {
+        // If data already cached, mark as ready immediately
+        if (cachedDataRef.current) {
+          setIsDataReady(true);
+        }
+        return;
+      }
       prefetchingRef.current = true;
 
       try {
@@ -97,9 +106,13 @@ export function VirtualSlideSearchTeaser() {
           console.log(
             `[VirtualSlideSearchTeaser] ✅ Prefetched ${cachedDataRef.current.slides.length} slides`
           );
+
+          // Mark data as ready
+          setIsDataReady(true);
         }
       } catch (error) {
         console.error("[VirtualSlideSearchTeaser] Prefetch failed:", error);
+        // Don't mark as ready if prefetch failed - buttons will stay disabled
       } finally {
         prefetchingRef.current = false;
       }
@@ -123,7 +136,11 @@ export function VirtualSlideSearchTeaser() {
 
     const query = searchQuery.trim();
     if (!query) {
-      // If no search query, do nothing
+      return;
+    }
+
+    // Check if data is ready (button should be disabled, but double-check)
+    if (!isDataReady) {
       return;
     }
 
@@ -140,8 +157,9 @@ export function VirtualSlideSearchTeaser() {
       // Perform search using the search hook - get multiple results to find valid URL
       await searchClient.searchWithFilters({ query, page: 1, limit: 10 });
 
-      // Wait a tick for React state to update
-      await new Promise((resolve) => setTimeout(resolve, 100));
+      // IMPORTANT: Wait for the search to actually complete
+      // The hook uses React state updates which are async
+      await new Promise((resolve) => setTimeout(resolve, 300));
 
       console.log(`[I'm Feeling Lucky] Search completed, slides:`, searchClient.slides.length);
 
@@ -208,39 +226,15 @@ export function VirtualSlideSearchTeaser() {
     // Prevent form submission
     e?.preventDefault();
 
+    // Check if data is ready (button should be disabled, but double-check)
+    if (!isDataReady || !cachedDataRef.current) {
+      return;
+    }
+
     try {
-      // Use cached data if available
-      let basesCase: Record<string, string>;
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      let slides: any[];
-
-      if (cachedDataRef.current) {
-        // Use prefetched cached data (instant!)
-        basesCase = cachedDataRef.current.basesCase;
-        slides = cachedDataRef.current.slides;
-      } else {
-        // Fallback: fetch and decompress on demand
-        const { VIRTUAL_SLIDES_JSON_URL } = await import("@/shared/config/virtual-slides");
-
-        const response = await fetch(VIRTUAL_SLIDES_JSON_URL, {
-          cache: "force-cache",
-        });
-
-        if (!response.ok) throw new Error("Failed to fetch slides");
-
-        // Decompress gzipped data
-        let json;
-        if (typeof DecompressionStream !== "undefined" && response.body) {
-          const decompressedStream = response.body.pipeThrough(new DecompressionStream("gzip"));
-          const decompressedResponse = new Response(decompressedStream);
-          json = await decompressedResponse.json();
-        } else {
-          throw new Error("DecompressionStream not supported");
-        }
-
-        basesCase = reverseMapping(json.bases?.case);
-        slides = json.data ?? [];
-      }
+      // Use prefetched cached data (instant!)
+      const basesCase = cachedDataRef.current.basesCase;
+      const slides = cachedDataRef.current.slides;
 
       // Helper function to check if a URL is a valid WSI viewer (not a raw image file)
       const isValidWSIUrl = (url: string): boolean => {
@@ -328,18 +322,20 @@ export function VirtualSlideSearchTeaser() {
             variant="secondary"
             size="lg"
             onClick={handleRandomSlide}
+            disabled={!isDataReady}
             className="px-6 transition-all hover:scale-105 hover:shadow-md"
           >
-            Visit Random Slide
+            {isDataReady ? "Visit Random Slide" : "Loading..."}
           </Button>
           <Button
             type="button"
             variant="secondary"
             size="lg"
             onClick={handleFeelingLucky}
+            disabled={!isDataReady || !searchQuery.trim()}
             className="px-6 transition-all hover:scale-105 hover:shadow-md"
           >
-            I'm Feeling Lucky
+            {isDataReady ? "I'm Feeling Lucky" : "Loading..."}
           </Button>
         </div>
       </form>
