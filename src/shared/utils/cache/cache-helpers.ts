@@ -205,7 +205,8 @@ export async function updateCacheAfterQuiz(
     const speedRecordUpdates = calculateSpeedRecordUpdates(
       quizResult.totalQuestions,
       quizResult.totalTimeSpent,
-      isPerfectScore
+      isPerfectScore,
+      currentCache.achievements?.stats as UserStats
     );
 
     // Create updated data structure
@@ -414,11 +415,13 @@ function isYesterday(dateString: string): boolean {
 
 /**
  * Calculate speed record updates based on quiz performance
+ * Increments existing counts when quiz qualifies for speed records
  */
 function calculateSpeedRecordUpdates(
   totalQuestions: number,
   totalTimeSpent: number,
-  isPerfectScore: boolean
+  isPerfectScore: boolean,
+  currentStats: UserStats
 ): Partial<UserStats> {
   if (!isPerfectScore) {
     return {}; // Speed records only count for perfect scores
@@ -428,22 +431,30 @@ function calculateSpeedRecordUpdates(
 
   // 10 question records
   if (totalQuestions >= 10) {
-    if (totalTimeSpent <= 360) updates.speedRecords10in6min = 1; // 6 min
-    if (totalTimeSpent <= 180) updates.speedRecords10in3min = 1; // 3 min
+    if (totalTimeSpent <= 360)
+      updates.speedRecords10in6min = (currentStats.speedRecords10in6min || 0) + 1; // 6 min
+    if (totalTimeSpent <= 180)
+      updates.speedRecords10in3min = (currentStats.speedRecords10in3min || 0) + 1; // 3 min
   }
 
   // 25 question records
   if (totalQuestions >= 25) {
-    if (totalTimeSpent <= 720) updates.speedRecords25in12min = 1; // 12 min
-    if (totalTimeSpent <= 480) updates.speedRecords25in8min = 1; // 8 min
-    if (totalTimeSpent <= 240) updates.speedRecords25in4min = 1; // 4 min
+    if (totalTimeSpent <= 720)
+      updates.speedRecords25in12min = (currentStats.speedRecords25in12min || 0) + 1; // 12 min
+    if (totalTimeSpent <= 480)
+      updates.speedRecords25in8min = (currentStats.speedRecords25in8min || 0) + 1; // 8 min
+    if (totalTimeSpent <= 240)
+      updates.speedRecords25in4min = (currentStats.speedRecords25in4min || 0) + 1; // 4 min
   }
 
   // 50 question records
   if (totalQuestions >= 50) {
-    if (totalTimeSpent <= 840) updates.speedRecords50in14min = 1; // 14 min
-    if (totalTimeSpent <= 660) updates.speedRecords50in11min = 1; // 11 min
-    if (totalTimeSpent <= 480) updates.speedRecords50in8min = 1; // 8 min
+    if (totalTimeSpent <= 840)
+      updates.speedRecords50in14min = (currentStats.speedRecords50in14min || 0) + 1; // 14 min
+    if (totalTimeSpent <= 660)
+      updates.speedRecords50in11min = (currentStats.speedRecords50in11min || 0) + 1; // 11 min
+    if (totalTimeSpent <= 480)
+      updates.speedRecords50in8min = (currentStats.speedRecords50in8min || 0) + 1; // 8 min
   }
 
   return updates;
