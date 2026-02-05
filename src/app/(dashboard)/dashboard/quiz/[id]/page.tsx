@@ -14,11 +14,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
-import { Play, Pause, PanelLeftOpen, Clock } from "lucide-react";
+import { Play, Pause, PanelLeftOpen, Clock, Flag } from "lucide-react";
 import { QuizSidebar } from "@/features/user/quiz/components/quiz-sidebar";
 import { QuizQuestionDisplay } from "@/features/user/quiz/components/quiz-question-display";
 import { QuizNavigation } from "@/features/user/quiz/components/quiz-navigation";
 import { FeatureErrorBoundary } from "@/shared/components/common";
+import { QuestionFlagDialog } from "@/features/admin/questions/components/dialogs/question-flag-dialog";
 import { QuizSession, QuizResult } from "@/features/user/quiz/types/quiz";
 import { toast } from "@/shared/utils/ui/toast";
 import { useState, useEffect, useCallback, useRef } from "react";
@@ -57,6 +58,9 @@ export default function QuizSessionPage() {
 
   // Unanswered questions warning dialog state
   const [showUnansweredWarning, setShowUnansweredWarning] = useState(false);
+
+  // Flag dialog state
+  const [showFlagDialog, setShowFlagDialog] = useState(false);
 
   // Ref for scrollable content area
   const contentAreaRef = useRef<HTMLDivElement>(null);
@@ -541,130 +545,151 @@ export default function QuizSessionPage() {
     }));
 
     return (
-      <div className="h-full flex overflow-hidden">
-        {/* Mobile Backdrop */}
-        {mobileSidebarOpen && (
-          <div
-            className="fixed inset-0 bg-black/30 z-40 md:hidden"
-            onClick={() => setMobileSidebarOpen(false)}
-          />
-        )}
+      <>
+        {/* Flag Dialog */}
+        <QuestionFlagDialog
+          question={currentReviewQuestion}
+          open={showFlagDialog}
+          onOpenChange={setShowFlagDialog}
+          onFlagComplete={() => {
+            toast.success("Question flagged successfully");
+          }}
+        />
 
-        {/* Sidebar */}
-        <aside
-          className={cn(
-            "h-full shrink-0 bg-secondary border-r border-border overflow-hidden z-50 w-[280px]",
-            // Desktop: relative positioning, always visible
-            "md:relative md:translate-x-0",
-            // Mobile: fixed positioning, slide animation
-            "fixed left-0 top-0 transition-transform duration-300 ease-in-out",
-            mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
-          )}
-        >
-          <FeatureErrorBoundary featureName="Quiz Review Sidebar">
-            <QuizSidebar
-              session={reviewModeSession}
-              currentQuestionIndex={currentReviewIndex}
-              attempts={reviewAttempts}
-              onQuestionSelect={(index) => {
-                setCurrentReviewIndex(index);
-                setMobileSidebarOpen(false);
-              }}
-              timeRemaining={null}
-              isReviewMode={true}
+        <div className="h-full flex overflow-hidden">
+          {/* Mobile Backdrop */}
+          {mobileSidebarOpen && (
+            <div
+              className="fixed inset-0 bg-black/30 z-40 md:hidden"
+              onClick={() => setMobileSidebarOpen(false)}
             />
-          </FeatureErrorBoundary>
-        </aside>
+          )}
 
-        {/* Main Content */}
-        <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
-          {/* Header - Fixed at top */}
-          <header className="shrink-0 border-b border-border bg-background p-3 md:p-5">
-            <div className="flex items-center justify-between gap-2 md:gap-4">
-              <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
-                {/* Mobile Menu Button */}
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-                  className="md:hidden"
-                >
-                  <PanelLeftOpen className="h-4 w-4 mr-2" />
-                  Quiz Navigation
-                </Button>
+          {/* Sidebar */}
+          <aside
+            className={cn(
+              "h-full shrink-0 bg-secondary border-r border-border overflow-hidden z-50 w-[280px]",
+              // Desktop: relative positioning, always visible
+              "md:relative md:translate-x-0",
+              // Mobile: fixed positioning, slide animation
+              "fixed left-0 top-0 transition-transform duration-300 ease-in-out",
+              mobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0"
+            )}
+          >
+            <FeatureErrorBoundary featureName="Quiz Review Sidebar">
+              <QuizSidebar
+                session={reviewModeSession}
+                currentQuestionIndex={currentReviewIndex}
+                attempts={reviewAttempts}
+                onQuestionSelect={(index) => {
+                  setCurrentReviewIndex(index);
+                  setMobileSidebarOpen(false);
+                }}
+                timeRemaining={null}
+                isReviewMode={true}
+              />
+            </FeatureErrorBoundary>
+          </aside>
 
-                <div className="min-w-0 flex-1">
-                  <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
-                    QUIZ REVIEW
-                  </div>
-                  <div className="text-[13px] md:text-[14px] font-medium text-foreground truncate">
-                    Question {currentReviewIndex + 1} of {reviewResult.questionDetails.length}
+          {/* Main Content */}
+          <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
+            {/* Header - Fixed at top */}
+            <header className="shrink-0 border-b border-border bg-background p-3 md:p-5">
+              <div className="flex items-center justify-between gap-2 md:gap-4">
+                <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+                  {/* Mobile Menu Button */}
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
+                    className="md:hidden"
+                  >
+                    <PanelLeftOpen className="h-4 w-4 mr-2" />
+                    Quiz Navigation
+                  </Button>
+
+                  <div className="min-w-0 flex-1">
+                    <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
+                      QUIZ REVIEW
+                    </div>
+                    <div className="text-[13px] md:text-[14px] font-medium text-foreground truncate">
+                      Question {currentReviewIndex + 1} of {reviewResult.questionDetails.length}
+                    </div>
                   </div>
                 </div>
-              </div>
 
-              <div className="flex items-center gap-2 shrink-0">
-                <Link href={`/dashboard/quiz/${sessionId}/results`}>
-                  <Button variant="outline" size="sm">
-                    <ArrowLeft className="h-4 w-4 mr-2 hidden sm:block" />
-                    <span className="hidden sm:inline">Back to Results</span>
-                    <ArrowLeft className="h-4 w-4 sm:hidden" />
+                <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowFlagDialog(true)}
+                    title="Flag question for review"
+                    className="h-8 w-8 p-0"
+                  >
+                    <Flag className="h-4 w-4" />
                   </Button>
-                </Link>
-              </div>
-            </div>
-          </header>
-
-          {/* Card Content Area - Scrollable */}
-          <div ref={contentAreaRef} className="flex-1 overflow-auto">
-            <div className="flex justify-center p-2 md:p-3">
-              <div className="w-full max-w-2xl space-y-3">
-                {/* Question Display */}
-                <FeatureErrorBoundary featureName="Quiz Review Question Display">
-                  <QuizQuestionDisplay
-                    question={currentReviewQuestion}
-                    selectedAnswerId={currentReviewResult.selectedAnswerId}
-                    showExplanation={true}
-                    onAnswerSelect={() => {}} // No-op in review mode
-                  />
-                </FeatureErrorBoundary>
-
-                {/* Navigation */}
-                <FeatureErrorBoundary featureName="Quiz Review Navigation">
-                  <div className="flex justify-between items-center pt-4">
-                    <Button
-                      variant="outline"
-                      onClick={handlePreviousReview}
-                      disabled={currentReviewIndex === 0}
-                    >
-                      <ArrowLeft className="h-4 w-4 mr-2" />
-                      Previous
+                  <Link href={`/dashboard/quiz/${sessionId}/results`}>
+                    <Button variant="outline" size="sm">
+                      <ArrowLeft className="h-4 w-4 mr-2 hidden sm:block" />
+                      <span className="hidden sm:inline">Back to Results</span>
+                      <ArrowLeft className="h-4 w-4 sm:hidden" />
                     </Button>
+                  </Link>
+                </div>
+              </div>
+            </header>
 
-                    <div className="text-sm text-muted-foreground">
-                      {currentReviewIndex + 1} / {reviewResult.questionDetails.length}
-                    </div>
+            {/* Card Content Area - Scrollable */}
+            <div ref={contentAreaRef} className="flex-1 overflow-auto">
+              <div className="flex justify-center p-2 md:p-3">
+                <div className="w-full max-w-2xl space-y-3">
+                  {/* Question Display */}
+                  <FeatureErrorBoundary featureName="Quiz Review Question Display">
+                    <QuizQuestionDisplay
+                      question={currentReviewQuestion}
+                      selectedAnswerId={currentReviewResult.selectedAnswerId}
+                      showExplanation={true}
+                      onAnswerSelect={() => {}} // No-op in review mode
+                    />
+                  </FeatureErrorBoundary>
 
-                    {currentReviewIndex === reviewResult.questionDetails.length - 1 ? (
-                      <Link href={`/dashboard/quiz/${sessionId}/results`}>
-                        <Button variant="outline">
-                          <ArrowLeft className="h-4 w-4 mr-2" />
-                          Back to Results
-                        </Button>
-                      </Link>
-                    ) : (
-                      <Button variant="outline" onClick={handleNextReview}>
-                        Next
-                        <ArrowRight className="h-4 w-4 ml-2" />
+                  {/* Navigation */}
+                  <FeatureErrorBoundary featureName="Quiz Review Navigation">
+                    <div className="flex justify-between items-center pt-4">
+                      <Button
+                        variant="outline"
+                        onClick={handlePreviousReview}
+                        disabled={currentReviewIndex === 0}
+                      >
+                        <ArrowLeft className="h-4 w-4 mr-2" />
+                        Previous
                       </Button>
-                    )}
-                  </div>
-                </FeatureErrorBoundary>
+
+                      <div className="text-sm text-muted-foreground">
+                        {currentReviewIndex + 1} / {reviewResult.questionDetails.length}
+                      </div>
+
+                      {currentReviewIndex === reviewResult.questionDetails.length - 1 ? (
+                        <Link href={`/dashboard/quiz/${sessionId}/results`}>
+                          <Button variant="outline">
+                            <ArrowLeft className="h-4 w-4 mr-2" />
+                            Back to Results
+                          </Button>
+                        </Link>
+                      ) : (
+                        <Button variant="outline" onClick={handleNextReview}>
+                          Next
+                          <ArrowRight className="h-4 w-4 ml-2" />
+                        </Button>
+                      )}
+                    </div>
+                  </FeatureErrorBoundary>
+                </div>
               </div>
             </div>
-          </div>
-        </main>
-      </div>
+          </main>
+        </div>
+      </>
     );
   }
 
@@ -689,6 +714,16 @@ export default function QuizSessionPage() {
 
   return (
     <>
+      {/* Flag Dialog */}
+      <QuestionFlagDialog
+        question={currentQuestion}
+        open={showFlagDialog}
+        onOpenChange={setShowFlagDialog}
+        onFlagComplete={() => {
+          toast.success("Question flagged successfully");
+        }}
+      />
+
       {/* Pause Dialog */}
       <Dialog open={isPaused} onOpenChange={setIsPaused}>
         <DialogContent className="sm:max-w-md" showCloseButton={false}>
@@ -878,6 +913,15 @@ export default function QuizSessionPage() {
                 )}
 
                 <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setShowFlagDialog(true)}
+                    title="Flag question for review"
+                    className="h-8 w-8 p-0"
+                  >
+                    <Flag className="h-4 w-4" />
+                  </Button>
                   {!isPaused ? (
                     <Button
                       variant="outline"

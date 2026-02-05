@@ -176,6 +176,7 @@ export type FlagType =
   | "unclear_question"
   | "outdated_content"
   | "incorrect_explanations"
+  | "image_issue"
   | "other";
 export type FlagStatus = "open" | "closed";
 export type FlagResolutionType = "fixed" | "dismissed";
@@ -293,6 +294,10 @@ export const FLAG_TYPE_CONFIG = {
   incorrect_explanations: {
     label: "Incorrect Explanations",
     description: "The explanations for wrong answers are incorrect",
+  },
+  image_issue: {
+    label: "Image Issue",
+    description: "Image is incorrect, not loading, or poor quality",
   },
   other: {
     label: "Other",

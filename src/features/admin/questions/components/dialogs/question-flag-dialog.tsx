@@ -22,12 +22,12 @@ import {
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Label } from "@/shared/components/ui/label";
 import { toast } from "@/shared/utils/ui/toast";
-import { QuestionWithDetails, FlagType, FLAG_TYPE_CONFIG } from "@/shared/types/questions";
+import { FlagType, FLAG_TYPE_CONFIG } from "@/shared/types/questions";
 import { createClient } from "@/shared/services/client";
 import { Flag } from "lucide-react";
 
 interface QuestionFlagDialogProps {
-  question: QuestionWithDetails | null;
+  question: { id: string; title?: string; stem: string } | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onFlagComplete: () => void;
@@ -93,7 +93,7 @@ export function QuestionFlagDialog({
 
       if (flagError) {
         console.error("Error creating flag:", flagError);
-        toast.error("Failed to flag question");
+        toast.error(`Failed to flag question: ${flagError.message || "Unknown error"}`);
         return;
       }
 
@@ -135,7 +135,7 @@ export function QuestionFlagDialog({
           <div className="space-y-4">
             {/* Question Info */}
             <div className="p-3 bg-muted rounded-md">
-              <p className="font-medium text-sm">{question.title}</p>
+              {question.title && <p className="font-medium text-sm">{question.title}</p>}
               <p className="text-xs text-muted-foreground mt-1">
                 {question.stem.substring(0, 100)}...
               </p>
