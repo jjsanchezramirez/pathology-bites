@@ -4,10 +4,8 @@
 import { mutate } from "swr";
 import { clearSWRCache } from "@/shared/contexts/swr-cache-provider";
 import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
-import {
-  ACHIEVEMENT_DEFINITIONS,
-  type UserStats,
-} from "@/features/user/achievements/services/achievement-checker";
+import type { UserStats } from "@/features/user/achievements/services/achievement-checker";
+import { calculateAchievementProgress } from "@/features/user/achievements/services/achievement-checker.client";
 import type { QuizResult } from "@/features/user/quiz/types/quiz";
 
 /**
@@ -201,13 +199,8 @@ export async function updateCacheAfterQuiz(
       newCurrentStreak
     );
 
-    // Check if this quiz qualifies for speed records
-    const speedRecordUpdates = calculateSpeedRecordUpdates(
-      quizResult.totalQuestions,
-      quizResult.totalTimeSpent,
-      isPerfectScore,
-      currentCache.achievements?.stats as UserStats
-    );
+    // Note: Speed achievements are now handled by client-side achievement checking
+    // No need to track speed records as stats anymore
 
     // Create updated data structure
     const updatedData = {
@@ -236,18 +229,11 @@ export async function updateCacheAfterQuiz(
             (currentCache.achievements?.stats?.perfectScores || 0) + (isPerfectScore ? 1 : 0),
           currentStreak: newCurrentStreak,
           longestStreak: newLongestStreak,
-          ...speedRecordUpdates,
+          // Note: Other stats (accuracy, differential) are complex to calculate client-side
+          // Server will recalculate these and client can refetch if needed
         } as UserStats,
-        unlocked: [
-          ...(newAchievements || []).map((a) => ({
-            id: crypto.randomUUID(),
-            group_key: a.id,
-            created_at: new Date().toISOString(),
-          })),
-          ...(currentCache.achievements?.unlocked || []),
-        ],
-        // Recalculate achievement progress based on new stats
-        progress: recalculateAchievementProgress(
+        // Use client-side achievement progress calculator
+        progress: calculateAchievementProgress(
           {
             ...currentCache.achievements?.stats,
             totalQuizzes: (currentCache.achievements?.stats?.totalQuizzes || 0) + 1,
@@ -255,9 +241,13 @@ export async function updateCacheAfterQuiz(
               (currentCache.achievements?.stats?.perfectScores || 0) + (isPerfectScore ? 1 : 0),
             currentStreak: newCurrentStreak,
             longestStreak: newLongestStreak,
-            ...speedRecordUpdates,
           } as UserStats,
-          newAchievements?.map((a) => a.id) || []
+          [
+            ...(newAchievements || []).map((a) => a.id),
+            ...(currentCache.achievements?.progress || [])
+              .filter((a) => a.isUnlocked)
+              .map((a) => a.id),
+          ]
         ),
       },
 
@@ -413,146 +403,8 @@ function isYesterday(dateString: string): boolean {
   return dateString === yesterdayStr;
 }
 
-/**
- * Calculate speed record updates based on quiz performance
- * Increments existing counts when quiz qualifies for speed records
- */
-function calculateSpeedRecordUpdates(
-  totalQuestions: number,
-  totalTimeSpent: number,
-  isPerfectScore: boolean,
-  currentStats: UserStats
-): Partial<UserStats> {
-  if (!isPerfectScore) {
-    return {}; // Speed records only count for perfect scores
-  }
-
-  const updates: Partial<UserStats> = {};
-
-  // 10 question records
-  if (totalQuestions >= 10) {
-    if (totalTimeSpent <= 360)
-      updates.speedRecords10in6min = (currentStats.speedRecords10in6min || 0) + 1; // 6 min
-    if (totalTimeSpent <= 180)
-      updates.speedRecords10in3min = (currentStats.speedRecords10in3min || 0) + 1; // 3 min
-  }
-
-  // 25 question records
-  if (totalQuestions >= 25) {
-    if (totalTimeSpent <= 720)
-      updates.speedRecords25in12min = (currentStats.speedRecords25in12min || 0) + 1; // 12 min
-    if (totalTimeSpent <= 480)
-      updates.speedRecords25in8min = (currentStats.speedRecords25in8min || 0) + 1; // 8 min
-    if (totalTimeSpent <= 240)
-      updates.speedRecords25in4min = (currentStats.speedRecords25in4min || 0) + 1; // 4 min
-  }
-
-  // 50 question records
-  if (totalQuestions >= 50) {
-    if (totalTimeSpent <= 840)
-      updates.speedRecords50in14min = (currentStats.speedRecords50in14min || 0) + 1; // 14 min
-    if (totalTimeSpent <= 660)
-      updates.speedRecords50in11min = (currentStats.speedRecords50in11min || 0) + 1; // 11 min
-    if (totalTimeSpent <= 480)
-      updates.speedRecords50in8min = (currentStats.speedRecords50in8min || 0) + 1; // 8 min
-  }
-
-  return updates;
-}
-
-/**
- * Recalculate achievement progress based on updated stats
- */
-function recalculateAchievementProgress(
-  updatedStats: UserStats,
-  newlyUnlockedIds: string[]
-): Array<{
-  id: string;
-  title: string;
-  description: string;
-  animationType: string;
-  category: string;
-  requirement: number;
-  isUnlocked: boolean;
-  progress: number;
-  unlockedDate?: string;
-}> {
-  const unlockedSet = new Set(newlyUnlockedIds);
-
-  return ACHIEVEMENT_DEFINITIONS.map((def) => {
-    const isUnlocked = unlockedSet.has(def.id);
-    let progress = 0;
-
-    // Calculate progress based on achievement category
-    switch (def.category) {
-      case "quiz":
-        progress = Math.min(updatedStats.totalQuizzes, def.requirement);
-        break;
-      case "perfect":
-        progress = Math.min(updatedStats.perfectScores, def.requirement);
-        break;
-      case "streak":
-        progress = Math.min(updatedStats.currentStreak, def.requirement);
-        break;
-      case "speed":
-        // Map achievement ID to corresponding speed record stat
-        if (def.id === "speed-10in6")
-          progress = Math.min(updatedStats.speedRecords10in6min || 0, def.requirement);
-        else if (def.id === "speed-10in3")
-          progress = Math.min(updatedStats.speedRecords10in3min || 0, def.requirement);
-        else if (def.id === "speed-25in12")
-          progress = Math.min(updatedStats.speedRecords25in12min || 0, def.requirement);
-        else if (def.id === "speed-25in8")
-          progress = Math.min(updatedStats.speedRecords25in8min || 0, def.requirement);
-        else if (def.id === "speed-25in4")
-          progress = Math.min(updatedStats.speedRecords25in4min || 0, def.requirement);
-        else if (def.id === "speed-50in14")
-          progress = Math.min(updatedStats.speedRecords50in14min || 0, def.requirement);
-        else if (def.id === "speed-50in11")
-          progress = Math.min(updatedStats.speedRecords50in11min || 0, def.requirement);
-        else if (def.id === "speed-50in8")
-          progress = Math.min(updatedStats.speedRecords50in8min || 0, def.requirement);
-        break;
-      case "accuracy":
-        // Map accuracy achievements (these need rolling averages, may not be accurate locally)
-        if (def.id === "accuracy-50-3")
-          progress = Math.min(updatedStats.accuracyOver3 || 0, def.requirement);
-        else if (def.id === "accuracy-60-5")
-          progress = Math.min(updatedStats.accuracyOver5 || 0, def.requirement);
-        else if (def.id === "accuracy-70-8")
-          progress = Math.min(updatedStats.accuracyOver8 || 0, def.requirement);
-        else if (def.id === "accuracy-80-10")
-          progress = Math.min(updatedStats.accuracyOver10 || 0, def.requirement);
-        else if (def.id === "accuracy-90-12")
-          progress = Math.min(updatedStats.accuracyOver12 || 0, def.requirement);
-        else if (def.id === "accuracy-100-15")
-          progress = Math.min(updatedStats.accuracyOver15 || 0, def.requirement);
-        break;
-      case "differential":
-        if (def.id === "differential-10-3")
-          progress = Math.min(updatedStats.subjectsWith10Questions || 0, def.requirement);
-        else if (def.id === "differential-25-10")
-          progress = Math.min(updatedStats.subjectsWith25Questions || 0, def.requirement);
-        else if (def.id === "differential-50-20")
-          progress = Math.min(updatedStats.subjectsWith50Questions || 0, def.requirement);
-        else if (def.id === "differential-100-all")
-          progress = Math.min(updatedStats.subjectsWith100Questions || 0, def.requirement);
-        break;
-    }
-
-    return {
-      id: def.id,
-      title: def.title,
-      description: def.description,
-      animationType: def.animationType,
-      category: def.category,
-      requirement: def.requirement,
-      isUnlocked,
-      progress,
-      unlockedDate: isUnlocked ? new Date().toISOString() : undefined,
-    };
-  });
-}
+// Note: Speed record tracking and achievement progress calculation
+// have been moved to achievement-checker.client.ts for better organization
 
 /**
  * Update heatmap data with today's quiz activity

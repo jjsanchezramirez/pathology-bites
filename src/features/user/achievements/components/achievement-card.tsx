@@ -32,8 +32,12 @@ export function AchievementCard({
   // Determine if we should show progress
   // Speed and Accuracy are binary (you either did it or didn't), so no progress shown
   // Differential, Quiz, Perfect, and Streak show progress
-  const shouldShowProgress =
+  const shouldShowProgressBar =
     showProgress !== undefined ? showProgress : category !== "speed" && category !== "accuracy";
+
+  // Hide progress if unlocked OR progress is less than 25%
+  // This prevents discouraging displays like "1/15" or "2/20"
+  const hasMinimalProgress = !isUnlocked && progressPercentage < 25;
 
   return (
     <Card className="text-center">
@@ -53,8 +57,8 @@ export function AchievementCard({
         {/* Description */}
         <p className="text-sm text-muted-foreground mb-4 min-h-[40px]">{description}</p>
 
-        {/* Progress - only show for certain categories */}
-        {shouldShowProgress && (
+        {/* Progress - only show for certain categories and when meaningful */}
+        {shouldShowProgressBar && !hasMinimalProgress && (
           <div className="space-y-2">
             <Progress value={progressPercentage} className="h-2" />
             <p className="text-xs text-muted-foreground">
@@ -63,8 +67,8 @@ export function AchievementCard({
           </div>
         )}
 
-        {/* For speed and accuracy, show locked/unlocked status instead */}
-        {!shouldShowProgress && !isUnlocked && (
+        {/* Show "Locked" for achievements with no meaningful progress yet */}
+        {((!shouldShowProgressBar && !isUnlocked) || hasMinimalProgress) && (
           <p className="text-xs text-muted-foreground">Locked</p>
         )}
       </CardContent>

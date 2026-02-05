@@ -28,6 +28,8 @@ import {
 import type { QuizResult } from "../types/quiz";
 import { toast } from "@/shared/utils/ui/toast";
 import { updateCacheAfterQuiz } from "@/shared/utils/cache/cache-helpers";
+import { calculateAchievementsToUnlock } from "@/features/user/achievements/services/achievement-checker.client";
+import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 
 export interface UseHybridQuizOptions {
   sessionId: string;
@@ -141,6 +143,9 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
   // Router for navigation detection
   const _router = useRouter();
+
+  // Get unified performance data (includes stats and unlocked achievements)
+  const { data: unifiedData } = useUnifiedData();
 
   // Sync status state
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({ state: "idle", message: "" });
@@ -403,8 +408,33 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
       const startTime = Date.now();
 
-      // API Call #2: Batch sync all data
-      const result = await syncManager.current!.syncQuizData(quizState);
+      // Calculate achievements to unlock based on quiz result and current stats
+      let achievementsToUnlock: string[] = [];
+      if (unifiedData?.achievements) {
+        const currentStats = unifiedData.achievements.stats;
+        const unlockedAchievementIds = unifiedData.achievements.progress
+          .filter((a) => a.isUnlocked)
+          .map((a) => a.id);
+
+        // Build quiz result object for achievement calculation
+        const quizResult = {
+          totalQuestions: quizState.totalQuestions,
+          totalTimeSpent: quizState.totalTimeSpent,
+          score: Math.round((quizState.progress.correct / quizState.totalQuestions) * 100),
+        };
+
+        // Calculate which achievements should be unlocked
+        achievementsToUnlock = calculateAchievementsToUnlock(
+          quizResult,
+          currentStats,
+          unlockedAchievementIds
+        );
+
+        console.log("[Hybrid] Calculated achievements to unlock:", achievementsToUnlock);
+      }
+
+      // API Call #2: Batch sync all data with achievements
+      const result = await syncManager.current!.syncQuizData(quizState, achievementsToUnlock);
 
       // Track API call metrics
       const responseTime = Date.now() - startTime;
@@ -446,7 +476,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       hasCompletedRef.current = false; // Reset on error so user can retry
       return { success: false, timestamp: Date.now(), error: errorMessage };
     }
-  }, [quizState, stateActions, onError, sessionId]);
+  }, [quizState, stateActions, onError, sessionId, unifiedData?.achievements]);
 
   // Initialize quiz data (API Call #1)
   useEffect(() => {

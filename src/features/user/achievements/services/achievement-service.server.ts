@@ -1,7 +1,28 @@
 // src/features/achievements/services/achievement-service.server.ts
 // SERVER-SIDE ONLY - Do not import in client components
 import { createClient } from "@/shared/services/server";
-import { UserStats, AchievementDefinition, checkAchievements } from "./achievement-checker";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import {
+  UserStats,
+  AchievementDefinition,
+  checkAchievements,
+  ACHIEVEMENT_DEFINITIONS,
+} from "./achievement-checker";
+
+/**
+ * Create a Supabase client with service role for bypassing RLS
+ * Used for achievement insertion which needs to bypass user RLS policies
+ */
+function createServiceClient() {
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+  if (!supabaseUrl || !supabaseServiceKey) {
+    throw new Error("Missing Supabase environment variables for service role");
+  }
+
+  return createSupabaseClient(supabaseUrl, supabaseServiceKey);
+}
 
 /**
  * Get user stats from the database
@@ -154,90 +175,11 @@ export async function getUserStats(userId: string): Promise<UserStats> {
 
   console.log("Streak calculation - current:", currentStreak, "longest:", longestStreak);
 
-  // Calculate speed records - filter perfect score quizzes (reusing allQuizSessions)
-  let speedRecords10in6min = 0; // 10 questions in 6 min
-  let speedRecords10in3min = 0; // 10 questions in 3 min
-  let speedRecords25in12min = 0; // 25 questions in 12 min
-  let speedRecords25in8min = 0; // 25 questions in 8 min
-  let speedRecords25in4min = 0; // 25 questions in 4 min
-  let speedRecords50in14min = 0; // 50 questions in 14 min
-  let speedRecords50in11min = 0; // 50 questions in 11 min
-  let speedRecords50in8min = 0; // 50 questions in 8 min
-
-  const perfectQuizzes = allQuizSessions?.filter((q) => (q.score || 0) === 100) || [];
-  if (perfectQuizzes.length > 0) {
-    perfectQuizzes.forEach((quiz) => {
-      const totalQuestions = quiz.total_questions;
-      const totalTime = quiz.total_time_spent || 0;
-
-      // Count each qualifying quiz
-      if (totalQuestions >= 10) {
-        if (totalTime <= 360) {
-          // 6 minutes = 360 seconds
-          speedRecords10in6min++;
-        }
-        if (totalTime <= 180) {
-          // 3 minutes = 180 seconds
-          speedRecords10in3min++;
-        }
-      }
-
-      if (totalQuestions >= 25) {
-        if (totalTime <= 720) {
-          // 12 minutes = 720 seconds
-          speedRecords25in12min++;
-        }
-        if (totalTime <= 480) {
-          // 8 minutes = 480 seconds
-          speedRecords25in8min++;
-        }
-        if (totalTime <= 240) {
-          // 4 minutes = 240 seconds
-          speedRecords25in4min++;
-        }
-      }
-
-      if (totalQuestions >= 50) {
-        if (totalTime <= 840) {
-          // 14 minutes = 840 seconds
-          speedRecords50in14min++;
-        }
-        if (totalTime <= 660) {
-          // 11 minutes = 660 seconds
-          speedRecords50in11min++;
-        }
-        if (totalTime <= 480) {
-          // 8 minutes = 480 seconds
-          speedRecords50in8min++;
-        }
-      }
-    });
-  }
-
-  console.log("Speed records:", {
-    speedRecords10in6min,
-    speedRecords10in3min,
-    speedRecords25in12min,
-    speedRecords25in8min,
-    speedRecords25in4min,
-    speedRecords50in14min,
-    speedRecords50in11min,
-    speedRecords50in8min,
-  });
-
   const stats = {
     totalQuizzes: totalQuizzes || 0,
     perfectScores: perfectScores || 0,
     currentStreak,
     longestStreak,
-    speedRecords10in6min,
-    speedRecords10in3min,
-    speedRecords25in12min,
-    speedRecords25in8min,
-    speedRecords25in4min,
-    speedRecords50in14min,
-    speedRecords50in11min,
-    speedRecords50in8min,
     accuracyOver3,
     accuracyOver5,
     accuracyOver8,
@@ -260,9 +202,14 @@ export async function getUserStats(userId: string): Promise<UserStats> {
  * Award achievements to a user (called after quiz completion)
  * SERVER-SIDE ONLY
  *
+ * @param userId - User ID
+ * @param achievementIdsToUnlock - Array of achievement IDs to unlock (from client)
  * @returns Object containing new achievements and stats metadata for cache validation
  */
-export async function awardAchievements(userId: string): Promise<{
+export async function awardAchievements(
+  userId: string,
+  achievementIdsToUnlock: string[] = []
+): Promise<{
   newAchievements: AchievementDefinition[];
   metadata: {
     totalQuizzes: number;
@@ -271,49 +218,83 @@ export async function awardAchievements(userId: string): Promise<{
 }> {
   const supabase = await createClient();
 
-  // Get user stats
+  // Get user stats for validation
   const stats = await getUserStats(userId);
-
-  // Check which achievements should be unlocked
-  const achievementsToUnlock = checkAchievements(stats);
-  console.log(
-    "Achievements to unlock:",
-    achievementsToUnlock.length,
-    achievementsToUnlock.map((a) => a.id)
-  );
 
   // Get already unlocked achievements
   const { data: existingAchievements } = await supabase
     .from("user_achievements")
-    .select("group_key")
-    .eq("user_id", userId)
-    .eq("type", "achievement");
+    .select("achievement_id")
+    .eq("user_id", userId);
 
-  const existingIds = new Set(existingAchievements?.map((a) => a.group_key) || []);
+  const existingIds = new Set(existingAchievements?.map((a) => a.achievement_id) || []);
 
-  // Filter out already unlocked achievements
-  const newAchievements = achievementsToUnlock.filter((a) => !existingIds.has(a.id));
+  // Server-side validation: re-check all achievements to ensure they're valid
+  const qualified = checkAchievements(stats);
 
-  // Insert new achievements
-  if (newAchievements.length > 0) {
-    const achievementsToInsert = newAchievements.map((achievement) => ({
+  // BACKFILL MODE: Check if user is missing any achievements they qualify for
+  // This happens when achievements were skipped (e.g., quiz-20 when user goes from quiz-10 to quiz-30)
+  const qualifiedIds = new Set(qualified.map((a) => a.id));
+  const missingAchievements = qualified.filter((a) => !existingIds.has(a.id));
+
+  // For backfilling, we need to unlock ALL qualified achievements, not just sequential
+  // But still respect sequential order within each category
+  const achievementsToUnlock: AchievementDefinition[] = [];
+
+  // Group missing achievements by category
+  const categories = ["quiz", "perfect", "streak", "accuracy", "differential"] as const;
+
+  for (const category of categories) {
+    const categoryAchievements = missingAchievements
+      .filter((a) => a.category === category)
+      .sort((a, b) => a.requirement - b.requirement);
+
+    // Unlock all qualified achievements in order for this category
+    for (const achievement of categoryAchievements) {
+      achievementsToUnlock.push(achievement);
+    }
+  }
+
+  // Add speed achievements (non-sequential, can unlock multiple)
+  const speedAchievements = missingAchievements.filter((a) => a.category === "speed");
+  achievementsToUnlock.push(...speedAchievements);
+
+  const validIds = new Set(achievementsToUnlock.map((a) => a.id));
+
+  // Filter client-provided IDs to only include valid ones
+  // Speed achievements bypass qualifiedIds check since they're validated per-quiz, not by stats
+  const clientRequestedValid = achievementIdsToUnlock.filter((id) => {
+    // Speed achievements: trust client validation (already checked per-quiz)
+    if (id.startsWith("speed-")) {
+      return !existingIds.has(id);
+    }
+    // Other achievements: validate against server stats
+    return qualifiedIds.has(id) && !existingIds.has(id);
+  });
+
+  // Combine client-requested and backfilled achievements
+  const filteredIds = [...new Set([...clientRequestedValid, ...validIds])];
+
+  console.log("Client requested achievements:", achievementIdsToUnlock);
+  console.log("Server validated achievements:", filteredIds);
+
+  const newAchievements: AchievementDefinition[] = [];
+
+  // Insert new achievements using new schema
+  if (filteredIds.length > 0) {
+    const achievementsToInsert = filteredIds.map((id) => ({
       user_id: userId,
-      type: "achievement",
-      title: achievement.title,
-      description: achievement.description,
-      group_key: achievement.id,
-      data: {
-        category: achievement.category,
-        requirement: achievement.requirement,
-        animationType: achievement.animationType,
-      },
-      is_read: false,
-      priority: "medium",
+      achievement_id: id,
     }));
 
     console.log("Attempting to insert achievements:", achievementsToInsert.length);
 
-    const { data, error } = await supabase.from("user_achievements").insert(achievementsToInsert);
+    // Use service client to bypass RLS for achievement insertion
+    const serviceClient = createServiceClient();
+    const { data, error } = await serviceClient
+      .from("user_achievements")
+      .insert(achievementsToInsert)
+      .select("achievement_id");
 
     if (error) {
       console.error("Error inserting achievements:", error);
@@ -321,6 +302,14 @@ export async function awardAchievements(userId: string): Promise<{
     }
 
     console.log("Successfully inserted achievements:", data);
+
+    // Get achievement definitions for return value
+    for (const id of filteredIds) {
+      const def = ACHIEVEMENT_DEFINITIONS.find((a) => a.id === id);
+      if (def) {
+        newAchievements.push(def);
+      }
+    }
   } else {
     console.log("No new achievements to insert");
   }
@@ -357,16 +346,14 @@ export async function getRecentUnshownAchievements(
 ): Promise<AchievementDefinition[]> {
   const supabase = await createClient();
 
-  // Get achievements unlocked in the last 5 minutes that haven't been marked as read
+  // Get achievements unlocked in the last 5 minutes
   const fiveMinutesAgo = new Date(Date.now() - 5 * 60 * 1000).toISOString();
   const since = sinceTimestamp || fiveMinutesAgo;
 
   const { data: recentAchievements, error } = await supabase
     .from("user_achievements")
-    .select("*")
+    .select("achievement_id")
     .eq("user_id", userId)
-    .eq("type", "achievement")
-    .eq("is_read", false) // Only get achievements that haven't been shown
     .gte("created_at", since)
     .order("created_at", { ascending: false });
 
@@ -379,15 +366,14 @@ export async function getRecentUnshownAchievements(
     `[Achievements] Found ${recentAchievements?.length || 0} recent unshown achievements`
   );
 
-  // Transform database records to AchievementDefinition format
-  return (
-    recentAchievements?.map((ach) => ({
-      id: ach.group_key,
-      title: ach.title,
-      description: ach.description,
-      category: ach.data?.category || "general",
-      requirement: ach.data?.requirement || { type: "quiz_count", value: 1 },
-      animationType: ach.data?.animationType || "star_medal",
-    })) || []
-  );
+  // Get achievement definitions for the IDs
+  const achievementDefs: AchievementDefinition[] = [];
+  for (const ach of recentAchievements || []) {
+    const def = ACHIEVEMENT_DEFINITIONS.find((a) => a.id === ach.achievement_id);
+    if (def) {
+      achievementDefs.push(def);
+    }
+  }
+
+  return achievementDefs;
 }

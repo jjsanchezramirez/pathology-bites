@@ -47,10 +47,13 @@ interface UnifiedData {
   };
   achievements: {
     stats: UserStats;
-    unlocked: Array<{
+    definitions: Array<{
       id: string;
-      group_key: string;
-      created_at: string;
+      title: string;
+      description: string;
+      category: string;
+      requirement: number;
+      animation_type: string;
     }>;
     progress: Achievement[];
   };

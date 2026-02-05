@@ -5,14 +5,6 @@ export interface UserStats {
   perfectScores: number;
   currentStreak: number;
   longestStreak: number;
-  speedRecords10in6min: number; // 10 questions in 6 min
-  speedRecords10in3min: number; // 10 questions in 3 min
-  speedRecords25in12min: number; // 25 questions in 12 min
-  speedRecords25in8min: number; // 25 questions in 8 min
-  speedRecords25in4min: number; // 25 questions in 4 min
-  speedRecords50in14min: number; // 50 questions in 14 min
-  speedRecords50in11min: number; // 50 questions in 11 min
-  speedRecords50in8min: number; // 50 questions in 8 min
   accuracyOver3: number; // accuracy over last 3 quizzes
   accuracyOver5: number; // accuracy over last 5 quizzes
   accuracyOver8: number; // accuracy over last 8 quizzes
@@ -355,7 +347,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   {
     id: "differential-10-3",
     title: "Broad Exposure",
-    description: "Answer 10 Qs from 3 different subjects",
+    description: "Reach 10 correct in 3 subjects",
     category: "differential",
     requirement: 3,
     animationType: "trophy_large",
@@ -363,7 +355,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   {
     id: "differential-25-10",
     title: "Generalist",
-    description: "Answer 25 Qs from 10 different subjects",
+    description: "Reach 25 correct in 10 subjects",
     category: "differential",
     requirement: 10,
     animationType: "trophy_large",
@@ -371,7 +363,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   {
     id: "differential-50-20",
     title: "Community Pathologist",
-    description: "Answer 50 Qs from 20 different subjects",
+    description: "Reach 50 correct in 20 subjects",
     category: "differential",
     requirement: 20,
     animationType: "trophy_large",
@@ -379,7 +371,7 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
   {
     id: "differential-100-all",
     title: "Jack Of All Trades",
-    description: "Answer 100 Qs from all subjects",
+    description: "Reach 100 correct in all subjects",
     category: "differential",
     requirement: 999, // Dynamic - checks all available subjects
     animationType: "trophy_large",
@@ -388,7 +380,8 @@ export const ACHIEVEMENT_DEFINITIONS: AchievementDefinition[] = [
 
 /**
  * Check which achievements a user should unlock based on their stats
- * Only returns the highest achievement per category that the user qualifies for
+ * Returns ALL qualified achievements (not just the highest per category)
+ * Sequential checking is now handled by checkSequentialAchievements
  */
 export function checkAchievements(stats: UserStats): AchievementDefinition[] {
   const qualifiedAchievements: AchievementDefinition[] = [];
@@ -407,24 +400,9 @@ export function checkAchievements(stats: UserStats): AchievementDefinition[] {
         shouldUnlock = stats.longestStreak >= achievement.requirement;
         break;
       case "speed":
-        // Handle different speed achievement types
-        if (achievement.id === "speed-10in6") {
-          shouldUnlock = stats.speedRecords10in6min >= achievement.requirement;
-        } else if (achievement.id === "speed-10in3") {
-          shouldUnlock = stats.speedRecords10in3min >= achievement.requirement;
-        } else if (achievement.id === "speed-25in12") {
-          shouldUnlock = stats.speedRecords25in12min >= achievement.requirement;
-        } else if (achievement.id === "speed-25in8") {
-          shouldUnlock = stats.speedRecords25in8min >= achievement.requirement;
-        } else if (achievement.id === "speed-25in4") {
-          shouldUnlock = stats.speedRecords25in4min >= achievement.requirement;
-        } else if (achievement.id === "speed-50in14") {
-          shouldUnlock = stats.speedRecords50in14min >= achievement.requirement;
-        } else if (achievement.id === "speed-50in11") {
-          shouldUnlock = stats.speedRecords50in11min >= achievement.requirement;
-        } else if (achievement.id === "speed-50in8") {
-          shouldUnlock = stats.speedRecords50in8min >= achievement.requirement;
-        }
+        // Speed achievements are handled separately per quiz (not stat-based)
+        // This function only checks stat-based achievements
+        shouldUnlock = false;
         break;
       case "accuracy":
         // Handle different accuracy achievement types based on quiz count
@@ -458,6 +436,7 @@ export function checkAchievements(stats: UserStats): AchievementDefinition[] {
           // For "all subjects", check if user has 100+ questions from all available subjects
           shouldUnlock =
             stats.totalCategories !== undefined &&
+            stats.totalCategories > 0 &&
             stats.subjectsWith100Questions >= stats.totalCategories;
         }
         break;
@@ -468,15 +447,86 @@ export function checkAchievements(stats: UserStats): AchievementDefinition[] {
     }
   }
 
-  // Group by category and keep only the highest requirement achievement per category
-  const categoryMap = new Map<string, AchievementDefinition>();
+  return qualifiedAchievements;
+}
 
-  for (const achievement of qualifiedAchievements) {
-    const existing = categoryMap.get(achievement.category);
-    if (!existing || achievement.requirement > existing.requirement) {
-      categoryMap.set(achievement.category, achievement);
+/**
+ * Filter qualified achievements to only include the next sequential one per category
+ * Speed achievements are excluded (handled separately)
+ */
+export function checkSequentialAchievements(
+  qualifiedAchievements: AchievementDefinition[],
+  unlockedIds: Set<string>
+): AchievementDefinition[] {
+  const achievementsToUnlock: AchievementDefinition[] = [];
+
+  // Group achievements by category
+  const categories = ["quiz", "perfect", "streak", "accuracy", "differential"] as const;
+
+  for (const category of categories) {
+    const categoryAchievements = ACHIEVEMENT_DEFINITIONS.filter(
+      (a) => a.category === category
+    ).sort((a, b) => a.requirement - b.requirement);
+
+    // Find the next one to unlock
+    for (const achievement of categoryAchievements) {
+      if (unlockedIds.has(achievement.id)) {
+        continue; // Already unlocked, skip
+      }
+
+      // Check if it's qualified
+      if (qualifiedAchievements.some((a) => a.id === achievement.id)) {
+        achievementsToUnlock.push(achievement);
+        break; // Only unlock one per category
+      } else {
+        break; // If not qualified, can't unlock higher ones
+      }
     }
   }
 
-  return Array.from(categoryMap.values());
+  return achievementsToUnlock;
+}
+
+/**
+ * Check if a quiz qualifies for speed achievements
+ * Returns array of speed achievement IDs that should be unlocked
+ */
+export function checkSpeedAchievements(
+  totalQuestions: number,
+  totalTimeSpent: number,
+  score: number,
+  unlockedIds: Set<string>
+): string[] {
+  // Speed achievements only count for perfect scores
+  if (score !== 100) {
+    return [];
+  }
+
+  const unlockedSpeedAchievements: string[] = [];
+
+  // Speed criteria mapping: [achievementId, minQuestions, maxSeconds]
+  const speedCriteria: Array<[string, number, number]> = [
+    ["speed-10in6", 10, 360], // 10 questions in 6 minutes (360 seconds)
+    ["speed-10in3", 10, 180], // 10 questions in 3 minutes (180 seconds)
+    ["speed-25in12", 25, 720], // 25 questions in 12 minutes (720 seconds)
+    ["speed-25in8", 25, 480], // 25 questions in 8 minutes (480 seconds)
+    ["speed-25in4", 25, 240], // 25 questions in 4 minutes (240 seconds)
+    ["speed-50in14", 50, 840], // 50 questions in 14 minutes (840 seconds)
+    ["speed-50in11", 50, 660], // 50 questions in 11 minutes (660 seconds)
+    ["speed-50in8", 50, 480], // 50 questions in 8 minutes (480 seconds)
+  ];
+
+  for (const [achievementId, minQuestions, maxSeconds] of speedCriteria) {
+    // Skip if already unlocked
+    if (unlockedIds.has(achievementId)) {
+      continue;
+    }
+
+    // Check if quiz meets criteria
+    if (totalQuestions >= minQuestions && totalTimeSpent <= maxSeconds) {
+      unlockedSpeedAchievements.push(achievementId);
+    }
+  }
+
+  return unlockedSpeedAchievements;
 }

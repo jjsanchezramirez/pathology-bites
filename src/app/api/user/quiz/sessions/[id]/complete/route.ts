@@ -13,6 +13,11 @@ interface BatchAnswerSubmission {
   timestamp: number;
 }
 
+interface CompleteQuizRequest {
+  answers?: BatchAnswerSubmission[];
+  achievementIds?: string[]; // Client-calculated achievement IDs to unlock
+}
+
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -25,15 +30,15 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // OPTIMIZATION: Parse request body for optional answers
-    let requestBody: { answers?: BatchAnswerSubmission[] } = {};
+    // OPTIMIZATION: Parse request body for optional answers and achievement IDs
+    let requestBody: CompleteQuizRequest = {};
     try {
       const text = await request.text();
       if (text) {
         requestBody = JSON.parse(text);
       }
     } catch {
-      // Empty body is fine - means no final answers to submit
+      // Empty body is fine - means no final answers or achievements to submit
     }
 
     // Verify user owns the quiz session
@@ -146,7 +151,10 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     let metadata = undefined;
     try {
       console.log("[Quiz Complete] Checking for new achievements...");
-      const achievementResult = await awardAchievements(userId);
+      const clientAchievementIds = requestBody.achievementIds || [];
+      console.log("[Quiz Complete] Client provided achievement IDs:", clientAchievementIds);
+
+      const achievementResult = await awardAchievements(userId, clientAchievementIds);
       newAchievements = achievementResult.newAchievements;
       metadata = achievementResult.metadata;
 

@@ -8,12 +8,22 @@ export type AnimationType =
   | "crown"
   | "trophy_large";
 
+// Full achievement with display metadata (used client-side for rendering)
 export interface Achievement {
   id: string;
   title: string;
   description: string;
   animationType: AnimationType;
   category: "quiz" | "perfect" | "streak" | "speed" | "accuracy" | "differential";
+  requirement: number;
+  isUnlocked: boolean;
+  progress: number;
+  unlockedDate?: string;
+}
+
+// Optimized achievement progress (used in API responses and cache)
+export interface AchievementProgress {
+  id: string;
   requirement: number;
   isUnlocked: boolean;
   progress: number;

@@ -39,6 +39,7 @@ export interface QuizSyncData {
   };
   status: QuizState["status"];
   metadata?: Record<string, unknown>;
+  achievementIds?: string[]; // Client-calculated achievement IDs to unlock
 }
 
 export interface QuizProgressData {
@@ -273,7 +274,7 @@ export class DatabaseSyncManager {
    * API Call #2: Batch submit all quiz data
    * This is the only "write" operation in the hybrid system
    */
-  async syncQuizData(quizState: QuizState): Promise<SyncResult> {
+  async syncQuizData(quizState: QuizState, achievementIds?: string[]): Promise<SyncResult> {
     if (this.isSyncing) {
       return { success: false, timestamp: Date.now(), error: "Sync already in progress" };
     }
@@ -283,6 +284,10 @@ export class DatabaseSyncManager {
 
     try {
       const syncData = this.prepareSyncData(quizState);
+      // Add achievement IDs to sync data if provided
+      if (achievementIds) {
+        syncData.achievementIds = achievementIds;
+      }
       const result = await this.performSync(syncData);
 
       if (result.success) {
@@ -424,6 +429,7 @@ export class DatabaseSyncManager {
             timeSpent: answer.timeSpent, // Already in seconds from state machine
             timestamp: answer.timestamp,
           })),
+          achievementIds: syncData.achievementIds || [], // Client-calculated achievements
         };
 
         console.log("[Hybrid] Completing quiz with single API call (answers + completion)");

@@ -8,7 +8,7 @@ import {
   ACHIEVEMENT_DEFINITIONS,
   type UserStats,
 } from "@/features/user/achievements/services/achievement-checker";
-import type { Achievement } from "@/features/user/achievements/types/achievement";
+import type { AchievementProgress } from "@/features/user/achievements/types/achievement";
 
 interface _UserCategoryStats {
   category_id: string;
@@ -92,12 +92,21 @@ interface UnifiedPerformanceResponse {
     // Achievements data
     achievements: {
       stats: UserStats;
-      unlocked: Array<{
+      definitions: Array<{
         id: string;
-        group_key: string;
-        created_at: string;
+        title: string;
+        description: string;
+        category: string;
+        requirement: number;
+        animation_type: string;
       }>;
-      progress: Array<Achievement>;
+      progress: Array<{
+        id: string;
+        requirement: number;
+        isUnlocked: boolean;
+        progress: number;
+        unlockedDate?: string;
+      }>;
     };
 
     // Dashboard-specific data
@@ -514,39 +523,50 @@ export async function GET(request: NextRequest) {
     const _uniqueSubjects = categoryDetails.length;
     const _totalCategories = categoryDetails.length; // Total categories user has interacted with
 
-    // Speed records - check perfect score quizzes with time limits
-    let speedRecords10in6min = 0;
-    let speedRecords10in3min = 0;
-    let speedRecords25in12min = 0;
-    let speedRecords25in8min = 0;
+    // Calculate accuracy over different quiz counts
+    const sortedCompletedSessions = completedSessions.sort(
+      (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    );
 
-    interface QuizSessionItem {
-      total_questions: number | null;
-      total_time_spent: number | null;
-    }
-    const perfectQuizzes = completedSessions.filter((s) => s.score === 100);
-    perfectQuizzes.forEach((quiz: QuizSessionItem) => {
-      // Use total_questions and total_time_spent from the session (more reliable)
-      const totalQuestions = quiz.total_questions || 0;
-      const totalTime = quiz.total_time_spent || 0;
-
-      // Count each qualifying quiz (not just set to 1)
-      if (totalQuestions >= 10) {
-        if (totalTime <= 360) speedRecords10in6min++; // 6 minutes = 360 seconds
-        if (totalTime <= 180) speedRecords10in3min++; // 3 minutes = 180 seconds
-      }
-
-      if (totalQuestions >= 25) {
-        if (totalTime <= 720) speedRecords25in12min++; // 12 minutes = 720 seconds
-        if (totalTime <= 480) speedRecords25in8min++; // 8 minutes = 480 seconds
-      }
-    });
-
-    // Accuracy over last 10 quizzes
-    const accuracyOver10 =
-      last10Quizzes.length > 0
+    const accuracyOver3 =
+      sortedCompletedSessions.length >= 3
         ? Math.round(
-            last10Quizzes.reduce((sum, s) => sum + (s.score || 0), 0) / last10Quizzes.length
+            sortedCompletedSessions.slice(0, 3).reduce((sum, s) => sum + (s.score || 0), 0) / 3
+          )
+        : 0;
+
+    const accuracyOver5 =
+      sortedCompletedSessions.length >= 5
+        ? Math.round(
+            sortedCompletedSessions.slice(0, 5).reduce((sum, s) => sum + (s.score || 0), 0) / 5
+          )
+        : 0;
+
+    const accuracyOver8 =
+      sortedCompletedSessions.length >= 8
+        ? Math.round(
+            sortedCompletedSessions.slice(0, 8).reduce((sum, s) => sum + (s.score || 0), 0) / 8
+          )
+        : 0;
+
+    const accuracyOver10 =
+      sortedCompletedSessions.length >= 10
+        ? Math.round(
+            sortedCompletedSessions.slice(0, 10).reduce((sum, s) => sum + (s.score || 0), 0) / 10
+          )
+        : 0;
+
+    const accuracyOver12 =
+      sortedCompletedSessions.length >= 12
+        ? Math.round(
+            sortedCompletedSessions.slice(0, 12).reduce((sum, s) => sum + (s.score || 0), 0) / 12
+          )
+        : 0;
+
+    const accuracyOver15 =
+      sortedCompletedSessions.length >= 15
+        ? Math.round(
+            sortedCompletedSessions.slice(0, 15).reduce((sum, s) => sum + (s.score || 0), 0) / 15
           )
         : 0;
 
@@ -561,20 +581,12 @@ export async function GET(request: NextRequest) {
       perfectScores,
       currentStreak,
       longestStreak,
-      speedRecords10in6min,
-      speedRecords10in3min,
-      speedRecords25in12min,
-      speedRecords25in8min,
-      speedRecords25in4min: 0,
-      speedRecords50in14min: 0,
-      speedRecords50in11min: 0,
-      speedRecords50in8min: 0,
-      accuracyOver3: 0,
-      accuracyOver5: 0,
-      accuracyOver8: 0,
+      accuracyOver3,
+      accuracyOver5,
+      accuracyOver8,
       accuracyOver10,
-      accuracyOver12: 0,
-      accuracyOver15: 0,
+      accuracyOver12,
+      accuracyOver15,
       subjectsWith10Questions: categoryDetails.filter((cat) => cat.correct_attempts >= 10).length,
       subjectsWith25Questions: categoryDetails.filter((cat) => cat.correct_attempts >= 25).length,
       subjectsWith50Questions: categoryDetails.filter((cat) => cat.correct_attempts >= 50).length,
@@ -582,20 +594,28 @@ export async function GET(request: NextRequest) {
       totalCategories: categoryDetails.length,
     };
 
+    // Get achievement definitions from database (source of truth)
+    const { data: achievementDefinitions } = await supabase
+      .from("achievements")
+      .select("*")
+      .order("category, requirement");
+
+    // Fallback to hardcoded definitions if database fetch fails
+    const definitions = achievementDefinitions || ACHIEVEMENT_DEFINITIONS;
+
     // Get unlocked achievements from database
     const { data: unlockedAchievements } = await supabase
       .from("user_achievements")
-      .select("id, group_key, created_at")
+      .select("id, achievement_id, created_at")
       .eq("user_id", userId)
-      .eq("type", "achievement")
       .order("created_at", { ascending: false });
 
-    const unlockedIds = new Set((unlockedAchievements || []).map((a) => a.group_key));
+    const unlockedIds = new Set((unlockedAchievements || []).map((a) => a.achievement_id));
 
     // Calculate progress for all achievements
-    const achievementProgress: Achievement[] = ACHIEVEMENT_DEFINITIONS.map((def) => {
+    const achievementProgress: AchievementProgress[] = definitions.map((def) => {
       const isUnlocked = unlockedIds.has(def.id);
-      const userAchievement = unlockedAchievements?.find((a) => a.group_key === def.id);
+      const userAchievement = unlockedAchievements?.find((a) => a.achievement_id === def.id);
 
       let progress = 0;
       let requirement = def.requirement;
@@ -608,27 +628,12 @@ export async function GET(request: NextRequest) {
           progress = Math.min(achievementStats.perfectScores, def.requirement);
           break;
         case "streak":
-          progress = Math.min(achievementStats.currentStreak, def.requirement);
+          progress = Math.min(achievementStats.longestStreak, def.requirement);
           break;
         case "speed":
-          // Show progress for speed achievements
-          if (def.id === "speed-10in6") {
-            progress = Math.min(achievementStats.speedRecords10in6min, def.requirement);
-          } else if (def.id === "speed-10in3") {
-            progress = Math.min(achievementStats.speedRecords10in3min, def.requirement);
-          } else if (def.id === "speed-25in12") {
-            progress = Math.min(achievementStats.speedRecords25in12min, def.requirement);
-          } else if (def.id === "speed-25in8") {
-            progress = Math.min(achievementStats.speedRecords25in8min, def.requirement);
-          } else if (def.id === "speed-25in4") {
-            progress = Math.min(achievementStats.speedRecords25in4min, def.requirement);
-          } else if (def.id === "speed-50in14") {
-            progress = Math.min(achievementStats.speedRecords50in14min, def.requirement);
-          } else if (def.id === "speed-50in11") {
-            progress = Math.min(achievementStats.speedRecords50in11min, def.requirement);
-          } else if (def.id === "speed-50in8") {
-            progress = Math.min(achievementStats.speedRecords50in8min, def.requirement);
-          }
+          // Speed achievements are binary: unlocked or not
+          // Progress is 1 if unlocked, 0 otherwise
+          progress = isUnlocked ? 1 : 0;
           break;
         case "accuracy":
           // Show current accuracy as progress
@@ -668,10 +673,6 @@ export async function GET(request: NextRequest) {
 
       return {
         id: def.id,
-        title: def.title,
-        description: def.description,
-        animationType: def.animationType,
-        category: def.category,
         requirement,
         isUnlocked,
         progress,
@@ -775,13 +776,13 @@ export async function GET(request: NextRequest) {
     // Add recently unlocked achievements
     interface AchievementItem {
       id: string;
-      group_key: string;
+      achievement_id: string;
       created_at: string;
     }
     const recentAchievements = (unlockedAchievements || []).slice(0, 10);
     recentAchievements.forEach((achievement: AchievementItem) => {
       const achievementDef = ACHIEVEMENT_DEFINITIONS.find(
-        (def) => def.id === achievement.group_key
+        (def) => def.id === achievement.achievement_id
       );
       if (achievementDef) {
         recentActivity.push({
@@ -1009,7 +1010,14 @@ export async function GET(request: NextRequest) {
         },
         achievements: {
           stats: achievementStats,
-          unlocked: unlockedAchievements || [],
+          definitions: definitions.map((d) => ({
+            id: d.id,
+            title: d.title,
+            description: d.description,
+            category: d.category,
+            requirement: d.requirement,
+            animation_type: d.animation_type || d.animationType, // Handle both snake_case and camelCase
+          })),
           progress: achievementProgress,
         },
         dashboard: {

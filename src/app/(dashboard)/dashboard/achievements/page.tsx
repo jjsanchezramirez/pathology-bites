@@ -3,7 +3,11 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { AchievementsSection } from "@/features/user/achievements/components";
-import { Achievement, AchievementCategory } from "@/features/user/achievements/types/achievement";
+import {
+  Achievement,
+  AchievementCategory,
+  AchievementProgress,
+} from "@/features/user/achievements/types/achievement";
 import { Loader2 } from "lucide-react";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 import { ScrollReveal } from "@/shared/components/common";
@@ -16,7 +20,30 @@ export default function AchievementsPage() {
     if (!unifiedData?.achievements) return;
 
     const { achievements: achievementsData } = unifiedData;
-    const achievementProgress = achievementsData.progress as Achievement[];
+    const achievementProgress = achievementsData.progress as AchievementProgress[];
+    const definitions = achievementsData.definitions;
+
+    // Hydrate progress data with achievement definitions from database
+    const fullAchievements: Achievement[] = achievementProgress
+      .map((progress) => {
+        const definition = definitions.find((def) => def.id === progress.id);
+        if (!definition) {
+          console.error(`Achievement definition not found for ID: ${progress.id}`);
+          return null;
+        }
+        return {
+          id: definition.id,
+          title: definition.title,
+          description: definition.description,
+          animationType: definition.animation_type as Achievement["animationType"],
+          category: definition.category as Achievement["category"],
+          requirement: progress.requirement, // Use dynamic requirement from progress
+          isUnlocked: progress.isUnlocked,
+          progress: progress.progress,
+          unlockedDate: progress.unlockedDate,
+        };
+      })
+      .filter((a): a is Achievement => a !== null);
 
     // Group achievements by category (progress is already calculated by API)
     const categories: Record<string, Achievement[]> = {
@@ -46,8 +73,8 @@ export default function AchievementsPage() {
       "differential-diagnosis": "Answer questions from multiple subjects",
     };
 
-    // Group achievements by category using pre-calculated progress
-    achievementProgress.forEach((achievement) => {
+    // Group achievements by category using hydrated achievement data
+    fullAchievements.forEach((achievement) => {
       const categoryId =
         achievement.category === "quiz"
           ? "diagnostic-experience"
