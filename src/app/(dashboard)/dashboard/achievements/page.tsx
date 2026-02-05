@@ -40,8 +40,8 @@ export default function AchievementsPage() {
           requirement: progress.requirement, // Use dynamic requirement from progress
           isUnlocked: progress.isUnlocked,
           progress: progress.progress,
-          unlockedDate: progress.unlockedDate,
-        };
+          unlockedDate: progress.unlockedDate || undefined,
+        } as Achievement;
       })
       .filter((a): a is Achievement => a !== null);
 

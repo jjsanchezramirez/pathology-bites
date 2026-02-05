@@ -65,21 +65,120 @@ export default function QuizSessionPage() {
   // Ref for scrollable content area
   const contentAreaRef = useRef<HTMLDivElement>(null);
 
+  // Session config state (fetched from API to determine mode/timing)
+  const [sessionConfig, setSessionConfig] = useState<QuizSession["config"] | null>(null);
+  const [sessionConfigLoading, setSessionConfigLoading] = useState(true);
+
+  // Practice mode: track pending answer selection (not yet submitted)
+  const [pendingAnswerSelection, setPendingAnswerSelection] = useState<{
+    questionId: string;
+    answerId: string;
+  } | null>(null);
+
   // CSRF token for POST requests
   const { getToken } = useCSRFToken();
+
+  // Fetch session config to determine mode and timing
+  useEffect(() => {
+    if (isReviewMode || !sessionId) {
+      setSessionConfigLoading(false);
+      return;
+    }
+
+    const fetchSessionConfig = async () => {
+      try {
+        const response = await fetch(`/api/user/quiz/sessions/${sessionId}`);
+        if (!response.ok) {
+          throw new Error("Failed to fetch session config");
+        }
+        const data = await response.json();
+        if (data.success && data.data?.config) {
+          setSessionConfig(data.data.config);
+        }
+      } catch (error) {
+        console.error("Error fetching session config:", error);
+      } finally {
+        setSessionConfigLoading(false);
+      }
+    };
+
+    fetchSessionConfig();
+  }, [isReviewMode, sessionId]);
+
+  // Determine hybrid preset based on session config
+  const getHybridPreset = useCallback(() => {
+    if (!sessionConfig) {
+      // Default to TUTOR_MODE while loading
+      return HybridPresets.TUTOR_MODE;
+    }
+
+    const { mode, timing } = sessionConfig;
+
+    // For practice mode (no immediate feedback)
+    if (mode === "practice") {
+      if (timing === "timed") {
+        // Practice + Timed = Custom timed practice preset (no explanations, timed)
+        return {
+          mode: "practice" as const,
+          timing: "timed" as const,
+          showExplanations: false,
+          allowReview: true,
+          enableRealtime: true, // Enable realtime for timer
+          enableOfflineSupport: false,
+          autoSync: true,
+          syncOnComplete: true,
+        };
+      } else {
+        // Practice + Untimed = Custom practice preset
+        return {
+          mode: "practice" as const,
+          timing: "untimed" as const,
+          showExplanations: false, // Key difference: no explanations in practice mode
+          allowReview: true,
+          enableRealtime: false,
+          enableOfflineSupport: true,
+          autoSync: false,
+          syncOnComplete: true,
+        };
+      }
+    }
+
+    // For tutor mode (immediate feedback)
+    if (mode === "tutor") {
+      if (timing === "timed") {
+        // Tutor + Timed = Custom timed tutor preset
+        return {
+          mode: "tutor" as const,
+          timing: "timed" as const,
+          showExplanations: true,
+          allowReview: true,
+          enableRealtime: true, // Enable realtime for timer
+          enableOfflineSupport: false,
+          autoSync: true,
+          syncOnComplete: true,
+        };
+      } else {
+        // Tutor + Untimed = Standard tutor mode
+        return HybridPresets.TUTOR_MODE;
+      }
+    }
+
+    // Default fallback
+    return HybridPresets.TUTOR_MODE;
+  }, [sessionConfig]);
 
   // Initialize hybrid quiz system (disabled in review mode)
   const [hybridState, hybridActions] = useHybridQuiz({
     sessionId: isReviewMode ? "" : sessionId || "", // Disable in review mode
-    ...HybridPresets.TUTOR_MODE,
+    ...getHybridPreset(),
     csrfTokenGetter: getToken,
     onAnswerSubmitted: () => {
       if (isReviewMode) return; // Skip in review mode
-      // Toast messages removed for better UX
+      // No toast messages for better UX
     },
-    onQuizCompleted: (result) => {
+    onQuizCompleted: (_result) => {
       if (isReviewMode) return; // Skip in review mode
-      toast.success(`Quiz completed! Final score: ${result.score}/${result.totalQuestions}`);
+      // No toast - user will be redirected to results page
     },
     onError: (error) => {
       if (isReviewMode) return; // Skip in review mode
@@ -90,25 +189,19 @@ export default function QuizSessionPage() {
         error.includes("Quiz session is already completed")
       ) {
         console.log("[Hybrid] Quiz already completed, redirecting to results");
-        toast.info("Quiz is already completed");
         setTimeout(() => {
           window.location.href = `/dashboard/quiz/${sessionId}/results`;
-        }, 1000);
+        }, 500);
         return;
       }
 
+      // Only show error for critical failures
       console.error("[Hybrid] Quiz error:", error);
-      toast.error(`Quiz error: ${error}`);
+      toast.error("Unable to save quiz progress. Please check your connection.");
     },
-    onSyncStatusChange: (status) => {
+    onSyncStatusChange: (_status) => {
       if (isReviewMode) return; // Skip in review mode
-      if (status === "syncing") {
-        toast.info("Syncing quiz data...");
-      } else if (status === "synced") {
-        toast.success("Quiz data synced successfully");
-      } else if (status === "error") {
-        toast.error("Failed to sync quiz data");
-      }
+      // No toast messages for sync status - it happens in background
     },
   });
 
@@ -214,7 +307,6 @@ export default function QuizSessionPage() {
     );
     if (!isReviewMode && hybridState.isInitialized && hybridState.status === "completed") {
       console.log("[Quiz Page] Quiz already completed, redirecting to results");
-      toast.info("Quiz is already completed");
       setTimeout(() => {
         window.location.href = `/dashboard/quiz/${sessionId}/results`;
       }, 500);
@@ -239,6 +331,13 @@ export default function QuizSessionPage() {
   useEffect(() => {
     if (!isReviewMode && contentAreaRef.current && hybridState.currentQuestion) {
       contentAreaRef.current.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  }, [hybridState.currentQuestion, isReviewMode]);
+
+  // Clear pending answer selection when question changes
+  useEffect(() => {
+    if (!isReviewMode && hybridState.currentQuestion) {
+      setPendingAnswerSelection(null);
     }
   }, [hybridState.currentQuestion, isReviewMode]);
 
@@ -270,7 +369,7 @@ export default function QuizSessionPage() {
       setShowExitDialog(false);
     } catch (error) {
       console.error("Error saving and exiting:", error);
-      toast.error("Failed to save quiz progress");
+      toast.error("Unable to save quiz. Please try again.");
       setIsExiting(false);
     }
   }, [hybridActions, pendingNavigation]);
@@ -353,7 +452,7 @@ export default function QuizSessionPage() {
   }, [isReviewMode, hybridState.status, isExiting, hybridActions]);
 
   // Early returns for loading and error states
-  if (reviewLoading || (!isReviewMode && hybridState.isLoading)) {
+  if (reviewLoading || (!isReviewMode && (hybridState.isLoading || sessionConfigLoading))) {
     return (
       <div className="h-full flex overflow-hidden">
         {/* Sidebar Skeleton - Desktop only */}
@@ -552,7 +651,7 @@ export default function QuizSessionPage() {
           open={showFlagDialog}
           onOpenChange={setShowFlagDialog}
           onFlagComplete={() => {
-            toast.success("Question flagged successfully");
+            // No toast - dialog provides feedback
           }}
         />
 
@@ -594,7 +693,7 @@ export default function QuizSessionPage() {
           {/* Main Content */}
           <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
             {/* Header - Fixed at top */}
-            <header className="shrink-0 border-b border-border bg-background p-3 md:p-5">
+            <header className="shrink-0 border-b border-border bg-background p-5">
               <div className="flex items-center justify-between gap-2 md:gap-4">
                 <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
                   {/* Mobile Menu Button */}
@@ -720,7 +819,7 @@ export default function QuizSessionPage() {
         open={showFlagDialog}
         onOpenChange={setShowFlagDialog}
         onFlagComplete={() => {
-          toast.success("Question flagged successfully");
+          // No toast - dialog provides feedback
         }}
       />
 
@@ -797,10 +896,9 @@ export default function QuizSessionPage() {
                 // Complete the quiz
                 const result = await hybridActions.completeQuiz();
                 if (result.success) {
-                  toast.success("Quiz completed successfully!");
                   window.location.href = `/dashboard/quiz/${sessionId}/results`;
                 } else {
-                  toast.error("Failed to complete quiz. Please try again.");
+                  toast.error("Unable to complete quiz. Please try again.");
                 }
               }}
               variant="destructive"
@@ -843,7 +941,7 @@ export default function QuizSessionPage() {
                 userId: "",
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
-                config: {
+                config: sessionConfig || {
                   mode: "tutor",
                   timing: "untimed",
                   showExplanations: true,
@@ -871,6 +969,7 @@ export default function QuizSessionPage() {
                 setMobileSidebarOpen(false);
               }}
               timeRemaining={null}
+              showAnswerFeedback={sessionConfig?.mode === "tutor"}
             />
           </FeatureErrorBoundary>
         </aside>
@@ -878,7 +977,7 @@ export default function QuizSessionPage() {
         {/* Main Content */}
         <main className="flex-1 min-w-0 flex flex-col overflow-hidden">
           {/* Header - Fixed at top */}
-          <header className="shrink-0 border-b border-border bg-background p-3 md:p-5">
+          <header className="shrink-0 border-b border-border bg-background p-5">
             <div className="flex items-center justify-between gap-2 md:gap-4">
               <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
                 {/* Mobile Menu Button */}
@@ -999,14 +1098,32 @@ export default function QuizSessionPage() {
                     <QuizQuestionDisplay
                       question={currentQuestion}
                       selectedAnswerId={
+                        // Show submitted answer if exists, otherwise show pending selection
                         hybridActions.getAnswerForQuestion(currentQuestion.id)?.selectedOptionId ||
-                        null
+                        (pendingAnswerSelection?.questionId === currentQuestion.id
+                          ? pendingAnswerSelection.answerId
+                          : null)
                       }
                       showExplanation={
-                        hybridActions.getAnswerForQuestion(currentQuestion.id) ? true : false
-                      } // Only show explanations after answer is submitted
+                        // In tutor mode: show explanations after answering
+                        // In practice mode: never show explanations during quiz (only in review)
+                        sessionConfig?.mode === "tutor" &&
+                        hybridActions.getAnswerForQuestion(currentQuestion.id)
+                          ? true
+                          : false
+                      }
                       onAnswerSelect={(answerId: string) => {
-                        hybridActions.submitAnswer(currentQuestion.id, answerId);
+                        // In tutor mode: submit immediately to show explanation
+                        // In practice mode: just record selection, submit when user clicks "Submit Answer"
+                        if (sessionConfig?.mode === "tutor") {
+                          hybridActions.submitAnswer(currentQuestion.id, answerId);
+                        } else {
+                          // Practice mode: store pending selection
+                          setPendingAnswerSelection({
+                            questionId: currentQuestion.id,
+                            answerId: answerId,
+                          });
+                        }
                       }}
                     />
                   </FeatureErrorBoundary>
@@ -1019,13 +1136,19 @@ export default function QuizSessionPage() {
                       currentQuestionIndex={hybridState.currentQuestion - 1}
                       totalQuestions={hybridState.totalQuestions}
                       selectedAnswerId={
+                        // Show submitted answer if exists, otherwise show pending selection
                         hybridActions.getAnswerForQuestion(currentQuestion.id)?.selectedOptionId ||
-                        null
+                        (pendingAnswerSelection?.questionId === currentQuestion.id
+                          ? pendingAnswerSelection.answerId
+                          : null)
                       }
                       showExplanation={
-                        hybridActions.getAnswerForQuestion(currentQuestion.id) ? true : false
+                        sessionConfig?.mode === "tutor" &&
+                        hybridActions.getAnswerForQuestion(currentQuestion.id)
+                          ? true
+                          : false
                       }
-                      timing="untimed"
+                      timing={sessionConfig?.timing || "untimed"}
                       onPreviousQuestion={() => {
                         hybridActions.previousQuestion();
                       }}
@@ -1035,7 +1158,6 @@ export default function QuizSessionPage() {
                         if (isLastQuestion) {
                           // Prevent multiple completion attempts
                           if (hybridState.status === "completed") {
-                            toast.info("Quiz is already completed");
                             window.location.href = `/dashboard/quiz/${sessionId}/results`;
                             return;
                           }
@@ -1055,17 +1177,49 @@ export default function QuizSessionPage() {
                           // Complete the quiz
                           const result = await hybridActions.completeQuiz();
                           if (result.success) {
-                            toast.success("Quiz completed successfully!");
                             window.location.href = `/dashboard/quiz/${sessionId}/results`;
                           } else {
-                            toast.error("Failed to complete quiz. Please try again.");
+                            toast.error("Unable to complete quiz. Please try again.");
                           }
                         } else {
                           hybridActions.nextQuestion();
                         }
                       }}
-                      onSubmitAnswer={() => {
-                        // Answer is already submitted in onAnswerSelect
+                      onSubmitAnswer={async () => {
+                        // In practice mode: submit the pending answer and move to next question or complete
+                        if (
+                          pendingAnswerSelection &&
+                          pendingAnswerSelection.questionId === currentQuestion.id
+                        ) {
+                          // Submit the pending answer
+                          hybridActions.submitAnswer(
+                            pendingAnswerSelection.questionId,
+                            pendingAnswerSelection.answerId
+                          );
+                          setPendingAnswerSelection(null);
+
+                          // Check if this is the last question
+                          const isLastQuestion =
+                            hybridState.currentQuestion === hybridState.totalQuestions;
+
+                          if (isLastQuestion) {
+                            // On last question: Complete the quiz immediately after submitting
+                            // We just submitted this question's answer, so no need to check for unanswered
+                            setTimeout(async () => {
+                              const result = await hybridActions.completeQuiz();
+                              if (result.success) {
+                                window.location.href = `/dashboard/quiz/${sessionId}/results`;
+                              } else {
+                                toast.error("Unable to complete quiz. Please try again.");
+                              }
+                            }, 100);
+                          } else {
+                            // Move to next question after a brief delay to allow submission to register
+                            setTimeout(() => {
+                              hybridActions.nextQuestion();
+                            }, 100);
+                          }
+                        }
                       }}
                       canGoBack={hybridState.currentQuestion > 1}
                       isSubmitting={false}

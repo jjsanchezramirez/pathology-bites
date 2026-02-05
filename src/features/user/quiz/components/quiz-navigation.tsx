@@ -42,7 +42,11 @@ export function QuizNavigation({
       <div className="flex gap-2">
         {!showExplanation && selectedAnswerId && (
           <Button onClick={onSubmitAnswer} disabled={isSubmitting}>
-            {isSubmitting ? "Submitting..." : "Submit Answer"}
+            {isSubmitting
+              ? "Submitting..."
+              : isLastQuestion
+                ? "Submit & Complete Quiz"
+                : "Submit Answer"}
           </Button>
         )}
 

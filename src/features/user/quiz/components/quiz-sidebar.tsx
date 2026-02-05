@@ -23,6 +23,7 @@ interface QuizSidebarProps {
   onQuestionSelect?: (index: number) => void;
   timeRemaining?: number | null;
   isReviewMode?: boolean;
+  showAnswerFeedback?: boolean; // Hide correct/incorrect indicators in practice mode
 }
 
 export function QuizSidebar({
@@ -32,6 +33,7 @@ export function QuizSidebar({
   onQuestionSelect,
   timeRemaining,
   isReviewMode = false,
+  showAnswerFeedback = true, // Default to true for backward compatibility
 }: QuizSidebarProps) {
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -46,6 +48,9 @@ export function QuizSidebar({
     const attempt = attempts.find((a) => a.questionId === question.id);
     if (!attempt || !attempt.selectedAnswerId) return "unanswered";
 
+    // In practice mode (showAnswerFeedback=false), only show if answered, not if correct/incorrect
+    if (!showAnswerFeedback) return "answered";
+
     return attempt.isCorrect ? "correct" : "incorrect";
   };
 
@@ -59,6 +64,11 @@ export function QuizSidebar({
         return <CheckCircle className="h-4 w-4 text-primary-foreground shrink-0" />;
       } else if (status === "incorrect") {
         return <XCircle className="h-4 w-4 text-primary-foreground shrink-0" />;
+      } else if (status === "answered") {
+        // In practice mode: show filled circle for answered questions
+        return (
+          <Circle className="h-4 w-4 text-primary-foreground fill-primary-foreground shrink-0" />
+        );
       } else {
         return (
           <Circle className="h-4 w-4 text-primary-foreground fill-primary-foreground shrink-0" />
@@ -71,6 +81,9 @@ export function QuizSidebar({
       return <CheckCircle className="h-4 w-4 text-blue-500 shrink-0" />;
     } else if (status === "incorrect") {
       return <XCircle className="h-4 w-4 text-destructive shrink-0" />;
+    } else if (status === "answered") {
+      // In practice mode: show filled circle for answered questions (neutral color)
+      return <Circle className="h-4 w-4 text-blue-500 fill-blue-500 shrink-0" />;
     } else {
       return <Circle className="h-4 w-4 text-muted-foreground shrink-0" />;
     }
@@ -87,6 +100,9 @@ export function QuizSidebar({
       return "bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30";
     } else if (status === "incorrect") {
       return "bg-destructive/10 text-destructive-foreground hover:bg-destructive/20 border border-destructive/50";
+    } else if (status === "answered") {
+      // In practice mode: show neutral answered state (similar to correct but more subtle)
+      return "bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/30";
     } else {
       return "bg-transparent hover:bg-muted border border-border";
     }
@@ -106,7 +122,7 @@ export function QuizSidebar({
   return (
     <div className="h-full w-full flex flex-col min-w-[280px]">
       {/* Header */}
-      <div className="p-5 border-b border-border shrink-0">
+      <div className="shrink-0 border-b border-border p-5">
         <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
           QUIZ PROGRESS
         </div>
