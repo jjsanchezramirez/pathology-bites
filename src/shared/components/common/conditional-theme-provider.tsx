@@ -21,6 +21,7 @@
 import { usePathname } from "next/navigation";
 import { ThemeProvider as NextThemesProvider } from "next-themes";
 import type { ThemeProviderProps } from "next-themes";
+import { useEffect, useState } from "react";
 
 /**
  * Check if a route should allow user theme control
@@ -35,6 +36,26 @@ function isUserThemedRoute(pathname: string | null): boolean {
 export function ConditionalThemeProvider({ children, ...props }: ThemeProviderProps) {
   const pathname = usePathname();
   const allowUserTheme = isUserThemedRoute(pathname);
+  const [isErrorPage, setIsErrorPage] = useState(false);
+
+  // Check if we're on an error page (error.tsx sets data-error-page-enforced attribute)
+  useEffect(() => {
+    const checkErrorPage = () => {
+      const hasErrorAttr = document.documentElement.hasAttribute("data-error-page-enforced");
+      setIsErrorPage(hasErrorAttr);
+    };
+
+    checkErrorPage();
+
+    // Watch for attribute changes (when error page mounts/unmounts)
+    const observer = new MutationObserver(checkErrorPage);
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["data-error-page-enforced"],
+    });
+
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <NextThemesProvider
@@ -43,7 +64,7 @@ export function ConditionalThemeProvider({ children, ...props }: ThemeProviderPr
       enableSystem={true}
       disableTransitionOnChange={false}
       storageKey="pathology-bites-theme"
-      forcedTheme={allowUserTheme ? undefined : "light"}
+      forcedTheme={allowUserTheme && !isErrorPage ? undefined : "light"}
       {...props}
     >
       {children}

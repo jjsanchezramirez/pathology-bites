@@ -518,15 +518,18 @@ export class QuizService {
       }
 
       // Transform attempts to the format expected by hybrid system
-      const answers = attempts?.map((attempt) => ({
-        questionId: attempt.question_id,
-        selectedOptionId: attempt.selected_answer_id,
-        isCorrect: attempt.is_correct,
-        timeSpent: attempt.time_spent || 0,
-        timestamp: new Date(attempt.attempted_at).getTime(),
-      })) || [];
+      const answers =
+        attempts?.map((attempt) => ({
+          questionId: attempt.question_id,
+          selectedOptionId: attempt.selected_answer_id,
+          isCorrect: attempt.is_correct,
+          timeSpent: attempt.time_spent || 0,
+          timestamp: new Date(attempt.attempted_at).getTime(),
+        })) || [];
 
-      console.log(`[Quiz Service] Fetched ${answers.length} existing answers for session ${sessionId}`);
+      console.log(
+        `[Quiz Service] Fetched ${answers.length} existing answers for session ${sessionId}`
+      );
 
       return {
         id: sessionRow.id,

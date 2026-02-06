@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { CircularProgress } from "@/shared/components/ui/circular-progress";
-import { Clock, Target, TrendingUp } from "lucide-react";
+import { Clock, Target, TrendingUp, Star } from "lucide-react";
 import { QuizResult } from "@/features/user/quiz/types/quiz";
 import { AchievementCelebrationModal } from "@/features/user/achievements/components/achievement-celebration-modal";
 import Link from "next/link";
@@ -12,6 +12,8 @@ import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
 import { getCategoryByName, getCategoryStyle } from "@/shared/config/categories";
 import { getCategoryColor } from "@/shared/utils/category-colors";
+import { useFavoritesGlobal } from "@/features/user/questions/hooks/use-favorites-global";
+import { cn } from "@/shared/utils/utils";
 
 interface QuizResultsSummaryProps {
   result: QuizResult;
@@ -23,6 +25,9 @@ export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSum
   const incorrectCount = result.totalQuestions - result.correctAnswers;
   const [showCelebrationModal, setShowCelebrationModal] = useState(false);
   const [celebrationShown, setCelebrationShown] = useState(false);
+
+  // Global favorites hook - shared across all components
+  const { isFavorited, toggleFavorite } = useFavoritesGlobal();
 
   const formatTime = (timeValue: number): string => {
     // Handle invalid input (but allow 0)
@@ -409,6 +414,27 @@ export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSum
                         </>
                       )}
                     </Badge>
+
+                    {/* Favorite Star Button */}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        toggleFavorite(question.id);
+                      }}
+                      className="h-8 w-8 p-0 flex-shrink-0"
+                      title={
+                        isFavorited(question.id) ? "Remove from favorites" : "Add to favorites"
+                      }
+                    >
+                      <Star
+                        className={cn(
+                          "h-4 w-4",
+                          isFavorited(question.id) && "fill-yellow-400 text-yellow-400"
+                        )}
+                      />
+                    </Button>
                   </div>
                 );
               })}

@@ -14,7 +14,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
-import { Play, Pause, PanelLeftOpen, Clock, Flag } from "lucide-react";
+import { Play, Pause, PanelLeftOpen, Clock, Flag, Star } from "lucide-react";
 import { QuizSidebar } from "@/features/user/quiz/components/quiz-sidebar";
 import { QuizQuestionDisplay } from "@/features/user/quiz/components/quiz-question-display";
 import { QuizNavigation } from "@/features/user/quiz/components/quiz-navigation";
@@ -28,6 +28,7 @@ import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { useCSRFToken } from "@/features/auth/hooks/use-csrf-token";
 import { cn } from "@/shared/utils/utils";
+import { useFavoritesGlobal } from "@/features/user/questions/hooks/use-favorites-global";
 
 export default function QuizSessionPage() {
   const params = useParams();
@@ -80,6 +81,13 @@ export default function QuizSessionPage() {
 
   // CSRF token for POST requests
   const { getToken } = useCSRFToken();
+
+  // Global favorites hook - shared across all components
+  const { isFavorited, toggleFavorite } = useFavoritesGlobal();
+
+  // Get current review question ID
+  const currentReviewQuestionId =
+    isReviewMode && reviewSession?.questions?.[currentReviewIndex]?.id;
 
   // Fetch session config to determine mode and timing
   useEffect(() => {
@@ -728,6 +736,29 @@ export default function QuizSessionPage() {
                 </div>
 
                 <div className="flex items-center gap-2 shrink-0">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() =>
+                      currentReviewQuestionId && toggleFavorite(currentReviewQuestionId)
+                    }
+                    disabled={!currentReviewQuestionId}
+                    title={
+                      currentReviewQuestionId && isFavorited(currentReviewQuestionId)
+                        ? "Remove from favorites"
+                        : "Add to favorites"
+                    }
+                    className="h-8 w-8 p-0"
+                  >
+                    <Star
+                      className={cn(
+                        "h-4 w-4",
+                        currentReviewQuestionId &&
+                          isFavorited(currentReviewQuestionId) &&
+                          "fill-yellow-400 text-yellow-400"
+                      )}
+                    />
+                  </Button>
                   <Button
                     variant="outline"
                     size="sm"

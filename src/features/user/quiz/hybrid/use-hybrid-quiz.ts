@@ -27,10 +27,7 @@ import {
 } from "../types/quiz-question";
 import type { QuizResult } from "../types/quiz";
 import { toast } from "@/shared/utils/ui/toast";
-import {
-  updateCacheAfterQuiz,
-  invalidateQuizSessions,
-} from "@/shared/utils/cache/cache-helpers";
+import { updateCacheAfterQuiz, invalidateQuizSessions } from "@/shared/utils/cache/cache-helpers";
 import { calculateAchievementsToUnlock } from "@/features/user/achievements/services/achievement-checker.client";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 

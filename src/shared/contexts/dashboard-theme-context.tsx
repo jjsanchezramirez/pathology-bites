@@ -245,6 +245,13 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
     const applyThemeVariables = (theme: DashboardTheme) => {
       const root = document.documentElement;
 
+      // IMPORTANT: Don't apply dashboard theme on error pages
+      // Error pages should always use light mode and system theme
+      if (root.hasAttribute("data-error-page-enforced")) {
+        console.log("[DashboardTheme] Error page detected, skipping theme application");
+        return;
+      }
+
       // Check if we're in dark mode
       const isDarkMode = root.classList.contains("dark");
       const variables = isDarkMode ? theme.variables.dark : theme.variables.light;
@@ -292,7 +299,10 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
     const observer = new MutationObserver((mutations) => {
       mutations.forEach((mutation) => {
         if (mutation.type === "attributes" && mutation.attributeName === "class") {
-          applyThemeVariables(currentTheme);
+          // Don't reapply theme on error pages
+          if (!document.documentElement.hasAttribute("data-error-page-enforced")) {
+            applyThemeVariables(currentTheme);
+          }
         }
       });
     });
