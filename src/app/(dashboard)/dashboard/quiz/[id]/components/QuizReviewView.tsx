@@ -205,7 +205,7 @@ export function QuizReviewView({
                 variant="outline"
                 size="sm"
                 onClick={onToggleMobileSidebar}
-                className="md:hidden"
+                className="lg:hidden"
               >
                 <PanelLeftOpen className="h-4 w-4 mr-2" />
                 Quiz Navigation

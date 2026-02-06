@@ -90,6 +90,7 @@ export async function GET(request: Request) {
       }
 
       // Consolidated query to fetch all question data in parallel
+      // Note: We don't filter by status for demo questions since they're manually curated
       const [
         { data: questionData, error: questionError },
         { data: answerOptions, error: optionsError },
@@ -110,7 +111,6 @@ export async function GET(request: Request) {
           `
           )
           .eq("id", demoData.question_id)
-          .eq("status", "published")
           .single(),
 
         // Get answer options
@@ -282,6 +282,7 @@ export async function GET(request: Request) {
       const selectedDemo = demoQuestions[selectedIndex];
 
       // Fetch fresh question data
+      // Note: We don't filter by status for demo questions since they're manually curated
       const [
         { data: questionData, error: questionError },
         { data: answerOptions, error: optionsError },
@@ -291,7 +292,6 @@ export async function GET(request: Request) {
           .from("questions")
           .select("id, title, stem, teaching_point, question_references, status, difficulty")
           .eq("id", selectedDemo.question_id)
-          .eq("status", "published")
           .single(),
         supabase
           .from("question_options")

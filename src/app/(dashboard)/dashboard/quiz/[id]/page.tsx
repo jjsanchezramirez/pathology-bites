@@ -320,7 +320,6 @@ export default function QuizSessionPage() {
           onNextQuestion={hybridActions.nextQuestion}
           onSubmitAnswer={handleSubmitAnswer}
           canGoBack={hybridState.currentQuestion > 1}
-          isLastQuestion={hybridState.currentQuestion === hybridState.totalQuestions}
           mode={sessionConfig?.mode || "tutor"}
           timing={sessionConfig?.timing || "untimed"}
           allQuestions={hybridActions.getQuestions()}
@@ -339,7 +338,6 @@ export default function QuizSessionPage() {
           onFlagQuestion={() => setShowFlagDialog(true)}
           onSaveAndExit={handleSaveAndExit}
           timeRemaining={hybridState.timeRemaining}
-          totalTimeLimit={hybridState.totalTimeLimit}
         />
       )}
 
