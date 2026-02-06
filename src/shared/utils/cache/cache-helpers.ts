@@ -43,6 +43,22 @@ export async function invalidateUserSettings(revalidate = true) {
 }
 
 /**
+ * Invalidate quiz sessions list cache
+ * Call this after creating, updating, or completing a quiz
+ *
+ * @param revalidate - Whether to immediately fetch fresh data (default: true)
+ */
+export async function invalidateQuizSessions(revalidate = true) {
+  console.log("[Cache] 🔄 Invalidating quiz sessions cache");
+
+  if (revalidate) {
+    await mutate("quiz-sessions-all");
+  } else {
+    await mutate("quiz-sessions-all", undefined, { revalidate: false });
+  }
+}
+
+/**
  * Invalidate all SWR caches
  * Useful for logout, critical errors, etc.
  */
@@ -454,6 +470,7 @@ const cacheHelpers = {
   updateCacheAfterQuiz,
   invalidateUnifiedData,
   invalidateUserSettings,
+  invalidateQuizSessions,
   invalidateAllCaches,
   refreshAllCaches,
   onSettingsUpdate,

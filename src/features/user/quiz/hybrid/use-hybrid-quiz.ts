@@ -27,7 +27,10 @@ import {
 } from "../types/quiz-question";
 import type { QuizResult } from "../types/quiz";
 import { toast } from "@/shared/utils/ui/toast";
-import { updateCacheAfterQuiz } from "@/shared/utils/cache/cache-helpers";
+import {
+  updateCacheAfterQuiz,
+  invalidateQuizSessions,
+} from "@/shared/utils/cache/cache-helpers";
 import { calculateAchievementsToUnlock } from "@/features/user/achievements/services/achievement-checker.client";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 
@@ -469,6 +472,9 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
             console.warn("[Hybrid] Failed to update cache after quiz completion:", err);
             // Non-critical error, don't throw
           });
+
+          // Also invalidate quiz sessions cache to show quiz as completed
+          invalidateQuizSessions(false);
         } else {
           console.warn("[Hybrid] Missing quiz result data, skipping cache update");
         }
@@ -547,7 +553,10 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
     const answersCount = quizState.answers.size;
     if (answersCount > 0 && autoSaveManager.current.shouldPeriodicSave(answersCount)) {
-      autoSaveManager.current.autoSave(sessionId, quizState, "periodic", timeRemaining);
+      autoSaveManager.current.autoSave(sessionId, quizState, "periodic", timeRemaining).then(() => {
+        // Invalidate quiz sessions cache to show updated progress
+        invalidateQuizSessions(false);
+      });
     }
   }, [quizState.answers.size, sessionId, timeRemaining, quizState]);
 
@@ -650,6 +659,8 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       // Auto-save when pausing
       if (autoSaveManager.current) {
         await autoSaveManager.current.autoSave(sessionId, quizState, "pause", timeRemaining);
+        // Invalidate quiz sessions cache to show updated progress
+        invalidateQuizSessions(false);
       }
     }, [stateActions, sessionId, quizState, timeRemaining]),
 
@@ -664,6 +675,9 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       try {
         // Save current state to database
         await autoSaveManager.current.autoSave(sessionId, quizState, "manual", timeRemaining);
+
+        // Invalidate quiz sessions cache to show updated progress
+        invalidateQuizSessions(false); // Don't wait for revalidation
 
         // Show success toast
         toast.success("Quiz saved successfully");
