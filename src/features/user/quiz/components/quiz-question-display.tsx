@@ -11,16 +11,26 @@ import { QuestionWithDetails } from "@/shared/types/questions";
 
 interface QuizQuestionDisplayProps {
   question: UIQuizQuestion | QuestionWithDetails;
+  questionNumber: number;
+  totalQuestions: number;
+  textZoom: number;
+  mode: "tutor" | "exam" | "practice";
   selectedAnswerId: string | null;
-  showExplanation: boolean;
   onAnswerSelect: (answerId: string) => void;
+  showExplanation: boolean;
+  isReviewMode: boolean;
 }
 
 export function QuizQuestionDisplay({
   question,
+  questionNumber: _questionNumber,
+  totalQuestions: _totalQuestions,
+  textZoom: _textZoom,
+  mode: _mode,
   selectedAnswerId,
   showExplanation,
   onAnswerSelect,
+  isReviewMode: _isReviewMode,
 }: QuizQuestionDisplayProps) {
   // Use question_options (the correct field for quiz display)
   const answerOptions = question.question_options || [];

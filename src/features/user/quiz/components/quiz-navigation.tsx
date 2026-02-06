@@ -6,42 +6,41 @@ import { Button } from "@/shared/components/ui/button";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface QuizNavigationProps {
-  currentQuestionIndex: number;
+  currentQuestion: number;
   totalQuestions: number;
-  selectedAnswerId: string | null;
-  showExplanation: boolean;
+  onPrevious: () => void;
+  onNext: () => void;
+  onSubmit: () => void;
+  mode: "tutor" | "exam" | "practice";
   timing: "timed" | "untimed";
-  onPreviousQuestion: () => void;
-  onNextQuestion: () => void;
-  onSubmitAnswer: () => void;
   canGoBack: boolean;
-  isSubmitting?: boolean;
+  isSubmitting: boolean;
 }
 
 export function QuizNavigation({
-  currentQuestionIndex,
+  currentQuestion,
   totalQuestions,
-  selectedAnswerId,
-  showExplanation,
+  onPrevious,
+  onNext,
+  onSubmit,
+  mode,
   timing: _timing,
-  onPreviousQuestion,
-  onNextQuestion,
-  onSubmitAnswer,
   canGoBack,
-  isSubmitting = false,
+  isSubmitting,
 }: QuizNavigationProps) {
-  const isLastQuestion = currentQuestionIndex === totalQuestions - 1;
+  const isLastQuestion = currentQuestion === totalQuestions;
+  const showExplanation = mode === "tutor";
 
   return (
     <div className="flex justify-between">
-      <Button variant="outline" onClick={onPreviousQuestion} disabled={!canGoBack}>
+      <Button variant="outline" onClick={onPrevious} disabled={!canGoBack}>
         <ChevronLeft className="h-4 w-4 mr-2" />
         Previous
       </Button>
 
       <div className="flex gap-2">
-        {!showExplanation && selectedAnswerId && (
-          <Button onClick={onSubmitAnswer} disabled={isSubmitting}>
+        {!showExplanation && (
+          <Button onClick={onSubmit} disabled={isSubmitting}>
             {isSubmitting
               ? "Submitting..."
               : isLastQuestion
@@ -51,14 +50,14 @@ export function QuizNavigation({
         )}
 
         {showExplanation && (
-          <Button onClick={onNextQuestion}>
+          <Button onClick={onNext}>
             {isLastQuestion ? "Complete Quiz" : "Next"}
             <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
         )}
 
-        {!showExplanation && !selectedAnswerId && (
-          <Button variant="outline" onClick={onNextQuestion}>
+        {!showExplanation && mode !== "practice" && (
+          <Button variant="outline" onClick={onNext}>
             Skip Question
             <ChevronRight className="h-4 w-4 ml-2" />
           </Button>

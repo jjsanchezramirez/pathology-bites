@@ -440,6 +440,21 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         console.log("[Hybrid] Calculated achievements to unlock:", achievementsToUnlock);
       }
 
+      // DEBUG: Log quiz state before syncing
+      console.log("[Hybrid] Quiz state before sync:", {
+        sessionId: quizState.sessionId,
+        answersCount: quizState.answers.size,
+        answersPreview: Array.from(quizState.answers.entries())
+          .slice(0, 3)
+          .map(([qId, ans]) => ({
+            questionId: qId,
+            selectedOptionId: ans.selectedOptionId,
+            isCorrect: ans.isCorrect,
+          })),
+        totalQuestions: quizState.totalQuestions,
+        progress: quizState.progress,
+      });
+
       // API Call #2: Batch sync all data with achievements
       const result = await syncManager.current!.syncQuizData(quizState, achievementsToUnlock);
 
@@ -694,7 +709,14 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
     submitAnswer: useCallback(
       (questionId: string, answerId: string) => {
+        console.log("[Hybrid] submitAnswer called:", { questionId, answerId });
         const isCorrect = stateActions.submitAnswer(questionId, answerId);
+        console.log(
+          "[Hybrid] Answer submitted, isCorrect:",
+          isCorrect,
+          "Total answers now:",
+          quizState.answers.size
+        );
         return {
           isCorrect,
           feedback: {
@@ -703,7 +725,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
           },
         };
       },
-      [stateActions]
+      [stateActions, quizState.answers.size]
     ),
 
     nextQuestion: useCallback(() => {

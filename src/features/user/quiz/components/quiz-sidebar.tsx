@@ -1,39 +1,34 @@
 "use client";
 
-import { CheckCircle, XCircle, Circle, Clock } from "lucide-react";
-import { QuizSession } from "@/features/user/quiz/types/quiz";
+import { CheckCircle, XCircle, Circle, Clock, X } from "lucide-react";
 import { UIQuizQuestion } from "@/features/user/quiz/types/quiz-question";
-import { QuestionWithDetails } from "@/shared/types/questions";
 import { cn } from "@/shared/utils/utils";
-
-// Define a flexible session type that works with both QuestionWithDetails and UIQuizQuestion
-type FlexibleQuizSession = Omit<QuizSession, "questions"> & {
-  questions: (QuestionWithDetails | UIQuizQuestion)[];
-};
+import { Button } from "@/shared/components/ui/button";
 
 interface QuizSidebarProps {
-  session: FlexibleQuizSession;
+  questions: UIQuizQuestion[];
   currentQuestionIndex: number;
-  attempts: Array<{
-    questionId: string;
-    selectedAnswerId: string | null;
-    isCorrect: boolean;
-    timeSpent: number;
-  }>;
-  onQuestionSelect?: (index: number) => void;
-  timeRemaining?: number | null;
+  getAnswerForQuestion: (
+    questionId: string
+  ) => { selectedOptionId: string | null; isCorrect: boolean } | null;
+  onNavigateToQuestion: (index: number) => void;
+  mobileOpen: boolean;
+  onMobileClose: () => void;
   isReviewMode?: boolean;
-  showAnswerFeedback?: boolean; // Hide correct/incorrect indicators in practice mode
+  showAnswerFeedback?: boolean;
+  timeRemaining?: number | null;
 }
 
 export function QuizSidebar({
-  session,
+  questions,
   currentQuestionIndex,
-  attempts,
-  onQuestionSelect,
-  timeRemaining,
+  getAnswerForQuestion,
+  onNavigateToQuestion,
+  mobileOpen,
+  onMobileClose,
   isReviewMode: _isReviewMode = false,
-  showAnswerFeedback = true, // Default to true for backward compatibility
+  showAnswerFeedback = true,
+  timeRemaining,
 }: QuizSidebarProps) {
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -42,16 +37,16 @@ export function QuizSidebar({
   };
 
   const getQuestionStatus = (questionIndex: number) => {
-    const question = session.questions[questionIndex];
+    const question = questions[questionIndex];
     if (!question) return "unanswered";
 
-    const attempt = attempts.find((a) => a.questionId === question.id);
-    if (!attempt || !attempt.selectedAnswerId) return "unanswered";
+    const answer = getAnswerForQuestion(question.id);
+    if (!answer || !answer.selectedOptionId) return "unanswered";
 
     // In practice mode (showAnswerFeedback=false), only show if answered, not if correct/incorrect
     if (!showAnswerFeedback) return "answered";
 
-    return attempt.isCorrect ? "correct" : "incorrect";
+    return answer.isCorrect ? "correct" : "incorrect";
   };
 
   const getStatusIcon = (questionIndex: number) => {
@@ -108,7 +103,7 @@ export function QuizSidebar({
     }
   };
 
-  const getQuestionSnippet = (question: QuestionWithDetails | UIQuizQuestion) => {
+  const getQuestionSnippet = (question: UIQuizQuestion) => {
     const stem = question.stem || "";
     if (!stem) return "Question content...";
 
@@ -117,17 +112,28 @@ export function QuizSidebar({
     return plainText.length > 40 ? plainText.substring(0, 40) + "..." : plainText;
   };
 
-  const progress = ((currentQuestionIndex + 1) / session.totalQuestions) * 100;
+  const totalQuestions = questions.length;
+  const progress = ((currentQuestionIndex + 1) / totalQuestions) * 100;
 
-  return (
+  const sidebarContent = (
     <div className="h-full w-full flex flex-col min-w-[280px]">
+      {/* Mobile header with close button */}
+      {mobileOpen && (
+        <div className="lg:hidden flex items-center justify-between p-4 border-b">
+          <h2 className="font-semibold">Quiz Navigation</h2>
+          <Button variant="ghost" size="sm" onClick={onMobileClose}>
+            <X className="h-4 w-4" />
+          </Button>
+        </div>
+      )}
+
       {/* Header */}
       <div className="shrink-0 border-b border-border p-5">
         <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
           QUIZ PROGRESS
         </div>
         <div className="text-[13px] text-muted-foreground">
-          Question {currentQuestionIndex + 1} of {session.totalQuestions}
+          Question {currentQuestionIndex + 1} of {totalQuestions}
         </div>
       </div>
 
@@ -166,12 +172,12 @@ export function QuizSidebar({
 
         {/* Question List */}
         <div className="space-y-1">
-          {session.questions.map((question, index) => {
+          {questions.map((question, index) => {
             // Allow clicking any question in both quiz and review mode
             return (
               <button
                 key={question.id}
-                onClick={() => onQuestionSelect?.(index)}
+                onClick={() => onNavigateToQuestion(index)}
                 className={cn(
                   "w-full px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out flex items-center text-left cursor-pointer gap-2",
                   getQuestionButtonClass(index)
@@ -205,4 +211,24 @@ export function QuizSidebar({
       </div>
     </div>
   );
+
+  // Mobile overlay wrapper
+  if (mobileOpen) {
+    return (
+      <>
+        {/* Backdrop */}
+        <div
+          className="lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
+          onClick={onMobileClose}
+        />
+        {/* Sidebar */}
+        <div className="lg:hidden fixed left-0 top-0 bottom-0 w-[280px] bg-background border-r z-50">
+          {sidebarContent}
+        </div>
+      </>
+    );
+  }
+
+  // Desktop view
+  return <div className="hidden lg:block w-[280px] border-r bg-background">{sidebarContent}</div>;
 }
