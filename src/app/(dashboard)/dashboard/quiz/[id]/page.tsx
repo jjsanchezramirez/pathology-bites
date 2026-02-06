@@ -59,6 +59,9 @@ export default function QuizSessionPage() {
   // Unanswered questions warning dialog state
   const [showUnansweredWarning, setShowUnansweredWarning] = useState(false);
 
+  // Timer expired state
+  const [timerExpired, setTimerExpired] = useState(false);
+
   // Flag dialog state
   const [showFlagDialog, setShowFlagDialog] = useState(false);
 
@@ -294,6 +297,13 @@ export default function QuizSessionPage() {
       hybridActions.startQuiz();
     }
   }, [isReviewMode, hybridState.isInitialized, hybridState.status, hybridActions]);
+
+  // Detect timer expiration
+  useEffect(() => {
+    if (!isReviewMode && hybridState.timeRemaining === 0 && !timerExpired) {
+      setTimerExpired(true);
+    }
+  }, [isReviewMode, hybridState.timeRemaining, timerExpired]);
 
   // Redirect to results if quiz is already completed (e.g., user hit back button)
   useEffect(() => {
@@ -813,6 +823,17 @@ export default function QuizSessionPage() {
 
   return (
     <>
+      {/* Timer Expired Overlay */}
+      {timerExpired && (
+        <div className="fixed inset-0 bg-background/95 backdrop-blur-sm z-[100] flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <Clock className="h-16 w-16 mx-auto text-primary" />
+            <h2 className="text-3xl font-bold">Time's Up!</h2>
+            <p className="text-lg text-muted-foreground">Submitting your quiz...</p>
+          </div>
+        </div>
+      )}
+
       {/* Flag Dialog */}
       <QuestionFlagDialog
         question={currentQuestion}
@@ -968,7 +989,7 @@ export default function QuizSessionPage() {
                 hybridActions.navigateToQuestion(index);
                 setMobileSidebarOpen(false);
               }}
-              timeRemaining={null}
+              timeRemaining={hybridState.timeRemaining}
               showAnswerFeedback={sessionConfig?.mode === "tutor"}
             />
           </FeatureErrorBoundary>
@@ -1001,16 +1022,7 @@ export default function QuizSessionPage() {
                 </div>
               </div>
 
-              <div className="flex items-center gap-2 md:gap-3 shrink-0">
-                {hybridState.timeRemaining !== null && (
-                  <div className="flex items-center gap-1 md:gap-2 text-xs md:text-sm">
-                    <Clock className="h-3 w-3 md:h-4 md:w-4" />
-                    <span className="font-mono font-medium">
-                      {formatTime(hybridState.timeRemaining)}
-                    </span>
-                  </div>
-                )}
-
+              <div className="flex flex-col items-end gap-1 shrink-0">
                 <div className="flex items-center gap-1">
                   <Button
                     variant="outline"
@@ -1058,6 +1070,12 @@ export default function QuizSessionPage() {
                     Save & Exit
                   </Button>
                 </div>
+                {hybridState.timeRemaining !== null && (
+                  <div className="flex items-center gap-1 md:gap-2 text-[13px] md:text-[14px] font-medium text-foreground">
+                    <Clock className="h-4 w-4" />
+                    <span className="font-mono">{formatTime(hybridState.timeRemaining)}</span>
+                  </div>
+                )}
               </div>
             </div>
           </header>
@@ -1203,9 +1221,21 @@ export default function QuizSessionPage() {
                             hybridState.currentQuestion === hybridState.totalQuestions;
 
                           if (isLastQuestion) {
-                            // On last question: Complete the quiz immediately after submitting
-                            // We just submitted this question's answer, so no need to check for unanswered
+                            // On last question: Check for unanswered questions before completing
                             setTimeout(async () => {
+                              // Check for unanswered questions (including the one we just submitted)
+                              const allQuestions = hybridActions.getQuestions();
+                              const unansweredCount = allQuestions.filter(
+                                (q) => !hybridActions.getAnswerForQuestion(q.id)
+                              ).length;
+
+                              if (unansweredCount > 0) {
+                                // Show warning dialog
+                                setShowUnansweredWarning(true);
+                                return;
+                              }
+
+                              // Complete the quiz
                               const result = await hybridActions.completeQuiz();
                               if (result.success) {
                                 window.location.href = `/dashboard/quiz/${sessionId}/results`;

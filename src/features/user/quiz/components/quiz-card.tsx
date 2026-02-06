@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
@@ -68,6 +69,36 @@ const formatShortDate = (dateString: string) => {
 };
 
 export function QuizCard({ quiz, formatDate, formatTimeSpent }: QuizCardProps) {
+  // Real-time time remaining calculation for in-progress timed quizzes
+  const [currentTimeRemaining, setCurrentTimeRemaining] = useState(quiz.timeRemaining);
+
+  useEffect(() => {
+    // Only update for in-progress timed quizzes
+    if (
+      quiz.status === "in_progress" &&
+      quiz.isTimedMode &&
+      quiz.timeRemaining !== undefined &&
+      quiz.timeRemaining !== null
+    ) {
+      // Update every second
+      const interval = setInterval(() => {
+        setCurrentTimeRemaining((prev) => {
+          if (prev === undefined || prev === null || prev <= 0) {
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(interval);
+    }
+  }, [quiz.status, quiz.isTimedMode, quiz.timeRemaining]);
+
+  // Reset when quiz data changes (e.g., after refetch)
+  useEffect(() => {
+    setCurrentTimeRemaining(quiz.timeRemaining);
+  }, [quiz.timeRemaining]);
+
   // Default time formatter if not provided
   const defaultFormatTimeSpent = (seconds: number) => {
     if (seconds < 60) return `${seconds}s`;
@@ -174,11 +205,11 @@ export function QuizCard({ quiz, formatDate, formatTimeSpent }: QuizCardProps) {
               {/* Time Remaining (for in-progress timed quizzes) */}
               {quiz.status === "in_progress" &&
                 quiz.isTimedMode &&
-                quiz.timeRemaining !== undefined &&
-                quiz.timeRemaining !== null && (
+                currentTimeRemaining !== undefined &&
+                currentTimeRemaining !== null && (
                   <div className="flex items-center gap-1">
                     <Clock className="h-4 w-4" />
-                    <span>{timeFormatter(quiz.timeRemaining)} left</span>
+                    <span>{timeFormatter(currentTimeRemaining)} left</span>
                   </div>
                 )}
 
@@ -274,11 +305,11 @@ export function QuizCard({ quiz, formatDate, formatTimeSpent }: QuizCardProps) {
             {/* Time Remaining (for in-progress timed) */}
             {quiz.status === "in_progress" &&
               quiz.isTimedMode &&
-              quiz.timeRemaining !== undefined &&
-              quiz.timeRemaining !== null && (
+              currentTimeRemaining !== undefined &&
+              currentTimeRemaining !== null && (
                 <div className="flex items-center gap-1">
                   <Clock className="h-3.5 w-3.5" />
-                  <span>{timeFormatter(quiz.timeRemaining)} left</span>
+                  <span>{timeFormatter(currentTimeRemaining)} left</span>
                 </div>
               )}
 

@@ -32,7 +32,7 @@ export function QuizSidebar({
   attempts,
   onQuestionSelect,
   timeRemaining,
-  isReviewMode = false,
+  isReviewMode: _isReviewMode = false,
   showAnswerFeedback = true, // Default to true for backward compatibility
 }: QuizSidebarProps) {
   const formatTime = (seconds: number) => {
@@ -167,19 +167,14 @@ export function QuizSidebar({
         {/* Question List */}
         <div className="space-y-1">
           {session.questions.map((question, index) => {
-            // In review mode, allow clicking any question
-            // In quiz mode, only allow clicking current or previous questions
-            const isDisabled = !isReviewMode && index > currentQuestionIndex;
-
+            // Allow clicking any question in both quiz and review mode
             return (
               <button
                 key={question.id}
                 onClick={() => onQuestionSelect?.(index)}
-                disabled={isDisabled}
                 className={cn(
                   "w-full px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out flex items-center text-left cursor-pointer gap-2",
-                  getQuestionButtonClass(index),
-                  isDisabled && "opacity-50 cursor-not-allowed"
+                  getQuestionButtonClass(index)
                 )}
               >
                 {getStatusIcon(index)}

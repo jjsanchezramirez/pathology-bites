@@ -23,7 +23,7 @@ export function QuizNavigation({
   totalQuestions,
   selectedAnswerId,
   showExplanation,
-  timing,
+  timing: _timing,
   onPreviousQuestion,
   onNextQuestion,
   onSubmitAnswer,
@@ -57,7 +57,7 @@ export function QuizNavigation({
           </Button>
         )}
 
-        {!showExplanation && !selectedAnswerId && timing !== "timed" && (
+        {!showExplanation && !selectedAnswerId && (
           <Button variant="outline" onClick={onNextQuestion}>
             Skip Question
             <ChevronRight className="h-4 w-4 ml-2" />

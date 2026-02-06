@@ -188,6 +188,11 @@ export class DatabaseSyncManager {
         ...data.config,
       };
 
+      // Enhanced logging to debug quiz continuation issue
+      console.log("[Hybrid] Server response data.answers:", data.answers);
+      console.log("[Hybrid] Server response data.status:", data.status);
+      console.log("[Hybrid] Server response data.currentQuestionIndex:", data.currentQuestionIndex);
+
       const result = {
         questions: transformedQuestions,
         config: transformedConfig,

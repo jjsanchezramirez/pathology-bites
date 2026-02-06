@@ -326,6 +326,13 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         answersCount: existingAnswersMap?.size || 0,
         currentIndex: currentIndex ?? 0,
         totalTimeSpent: totalTimeSpentToRestore ?? 0,
+        existingAnswers: existingAnswersMap
+          ? Array.from(existingAnswersMap.entries()).map(([qId, ans]) => ({
+              questionId: qId,
+              selected: ans.selectedOptionId,
+              correct: ans.isCorrect,
+            }))
+          : [],
       });
 
       // Initialize state machine with fetched data AND existing state

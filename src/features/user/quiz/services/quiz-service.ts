@@ -507,6 +507,27 @@ export class QuizService {
       // Get questions for this session
       const questions = await this.getQuestionsForSession(sessionRow.question_ids, supabaseClient);
 
+      // Get quiz attempts (answers) for this session
+      const { data: attempts, error: attemptsError } = await supabaseClient
+        .from("quiz_attempts")
+        .select("question_id, selected_answer_id, is_correct, time_spent, attempted_at")
+        .eq("quiz_session_id", sessionId);
+
+      if (attemptsError) {
+        console.error("Error fetching quiz attempts:", attemptsError);
+      }
+
+      // Transform attempts to the format expected by hybrid system
+      const answers = attempts?.map((attempt) => ({
+        questionId: attempt.question_id,
+        selectedOptionId: attempt.selected_answer_id,
+        isCorrect: attempt.is_correct,
+        timeSpent: attempt.time_spent || 0,
+        timestamp: new Date(attempt.attempted_at).getTime(),
+      })) || [];
+
+      console.log(`[Quiz Service] Fetched ${answers.length} existing answers for session ${sessionId}`);
+
       return {
         id: sessionRow.id,
         userId: sessionRow.user_id,
@@ -526,6 +547,7 @@ export class QuizService {
         quizStartedAt: sessionRow.started_at,
         createdAt: sessionRow.created_at,
         updatedAt: sessionRow.updated_at,
+        answers, // Include answers in the response
       };
     } catch (error) {
       console.error("Error getting quiz session:", error);

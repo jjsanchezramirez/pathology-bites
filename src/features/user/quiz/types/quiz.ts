@@ -63,6 +63,14 @@ export interface QuizSession {
   quizStartedAt?: string; // when the quiz timer actually started (for pause/resume)
   createdAt: string;
   updatedAt: string;
+  // Existing answers for resuming quizzes
+  answers?: Array<{
+    questionId: string;
+    selectedOptionId: string;
+    isCorrect: boolean;
+    timeSpent: number;
+    timestamp: number;
+  }>;
 }
 
 // Quiz attempt interface (for individual question attempts)

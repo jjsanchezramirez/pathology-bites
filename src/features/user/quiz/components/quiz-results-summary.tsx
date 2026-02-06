@@ -333,10 +333,26 @@ export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSum
                         </div>
                         {/* Result badge - moved to top right on mobile */}
                         <Badge
-                          variant={question.isCorrect ? "outline" : "destructive"}
-                          className={`flex-shrink-0 text-xs sm:hidden ${question.isCorrect ? "bg-green-100 text-green-800 border-0 dark:bg-green-900/20 dark:text-green-300" : ""}`}
+                          variant={
+                            question.isCorrect
+                              ? "outline"
+                              : question.selectedAnswerId === null
+                                ? "secondary"
+                                : "destructive"
+                          }
+                          className={`flex-shrink-0 text-xs sm:hidden ${
+                            question.isCorrect
+                              ? "bg-green-100 text-green-800 border-0 dark:bg-green-900/20 dark:text-green-300"
+                              : question.selectedAnswerId === null
+                                ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                                : ""
+                          }`}
                         >
-                          {question.isCorrect ? "✓" : "✗"}
+                          {question.isCorrect
+                            ? "✓"
+                            : question.selectedAnswerId === null
+                              ? "−"
+                              : "✗"}
                         </Badge>
                       </div>
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-xs">
@@ -361,13 +377,30 @@ export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSum
 
                     {/* Result badge - desktop only */}
                     <Badge
-                      variant={question.isCorrect ? "outline" : "destructive"}
-                      className={`hidden sm:flex flex-shrink-0 ${question.isCorrect ? "bg-green-100 text-green-800 border-0 dark:bg-green-900/20 dark:text-green-300" : ""}`}
+                      variant={
+                        question.isCorrect
+                          ? "outline"
+                          : question.selectedAnswerId === null
+                            ? "secondary"
+                            : "destructive"
+                      }
+                      className={`hidden sm:flex flex-shrink-0 ${
+                        question.isCorrect
+                          ? "bg-green-100 text-green-800 border-0 dark:bg-green-900/20 dark:text-green-300"
+                          : question.selectedAnswerId === null
+                            ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
+                            : ""
+                      }`}
                     >
                       {question.isCorrect ? (
                         <>
                           <Target className="h-3 w-3 mr-1" />
                           Correct
+                        </>
+                      ) : question.selectedAnswerId === null ? (
+                        <>
+                          <Target className="h-3 w-3 mr-1" />
+                          Unanswered
                         </>
                       ) : (
                         <>
