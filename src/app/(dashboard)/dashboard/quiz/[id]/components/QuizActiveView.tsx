@@ -119,8 +119,8 @@ export function QuizActiveView({
                 onClick={onToggleMobileSidebar}
                 className="lg:hidden"
               >
-                <PanelLeftOpen className="h-4 w-4 mr-2" />
-                Quiz Navigation
+                <PanelLeftOpen className="h-4 w-4" />
+                <span className="hidden sm:inline ml-2">Navigation</span>
               </Button>
 
               <div className="min-w-0 flex-1">
