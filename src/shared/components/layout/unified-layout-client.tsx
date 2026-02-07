@@ -148,10 +148,10 @@ export function UnifiedLayoutClient({
         minHeight: "100vh", // Fallback for browsers that don't support svh
       }}
     >
-      {/* Mobile Backdrop - subtle dark tint */}
+      {/* Mobile Backdrop - subtle dark tint with blur */}
       {isMobile && mobileVisible && (
         <div
-          className="fixed inset-0 bg-black/30 z-40 transition-all duration-300"
+          className="fixed inset-0 bg-black/20 backdrop-blur-md z-40 transition-all duration-300 ease-in-out"
           onClick={() => setMobileVisible(false)}
         />
       )}
