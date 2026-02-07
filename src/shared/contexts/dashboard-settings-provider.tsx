@@ -78,10 +78,22 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
     applyTextZoom(validZoom);
 
     try {
-      await userSettingsService.updateUISettings({ text_zoom: validZoom });
+      const updatedSettings = await userSettingsService.updateUISettings({ text_zoom: validZoom });
       console.log("[DashboardSettings] Text zoom saved:", validZoom);
-      // Don't invalidate cache immediately - local state is already updated
-      // Cache will be refreshed on next page load
+
+      // Update SWR cache to keep it in sync
+      if (settings) {
+        const { mutate } = await import("swr");
+        mutate(
+          "user-settings",
+          {
+            ...settings,
+            ui_settings: updatedSettings,
+          },
+          false
+        );
+        console.log("[DashboardSettings] SWR cache updated");
+      }
     } catch (error) {
       console.error("[DashboardSettings] Failed to save text zoom:", error);
     }
@@ -95,10 +107,22 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
       const adminMode = getAdminModeFromCookie(isAdmin);
       const themeKey = getThemeKeyForMode(adminMode);
 
-      await userSettingsService.updateUISettings({ [themeKey]: theme });
+      const updatedSettings = await userSettingsService.updateUISettings({ [themeKey]: theme });
       console.log("[DashboardSettings] Theme saved:", theme);
-      // Don't invalidate cache immediately - local state is already updated
-      // Cache will be refreshed on next page load
+
+      // Update SWR cache to keep it in sync
+      if (settings) {
+        const { mutate } = await import("swr");
+        mutate(
+          "user-settings",
+          {
+            ...settings,
+            ui_settings: updatedSettings,
+          },
+          false
+        );
+        console.log("[DashboardSettings] SWR cache updated");
+      }
     } catch (error) {
       console.error("[DashboardSettings] Failed to save theme:", error);
     }

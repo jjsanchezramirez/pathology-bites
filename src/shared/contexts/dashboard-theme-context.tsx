@@ -327,9 +327,23 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
       const themeKey = getThemeKeyForMode(adminMode);
 
       try {
-        // Save to database immediately
-        await userSettingsService.updateUISettings({ [themeKey]: themeId });
+        // Save to database immediately and update SWR cache
+        const updatedSettings = await userSettingsService.updateUISettings({ [themeKey]: themeId });
         console.log(`[DashboardTheme] Saved ${adminMode} theme to database:`, themeId);
+
+        // Manually update SWR cache to keep it in sync
+        if (settings) {
+          const { mutate } = await import("swr");
+          mutate(
+            "user-settings",
+            {
+              ...settings,
+              ui_settings: updatedSettings,
+            },
+            false
+          );
+          console.log(`[DashboardTheme] SWR cache updated`);
+        }
       } catch (error) {
         console.error("[DashboardTheme] Failed to save theme to database:", error);
       }

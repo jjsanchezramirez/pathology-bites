@@ -7,11 +7,13 @@ import { usePathname } from "next/navigation";
 import { Button } from "@/shared/components/ui/button";
 import { useEffect, useState } from "react";
 import { userSettingsService } from "@/shared/services/user-settings";
+import { useUserSettings } from "@/shared/hooks/use-user-settings";
 
 export function ThemeModeToggle() {
   const { theme, setTheme, forcedTheme } = useTheme();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const { invalidate } = useUserSettings();
 
   useEffect(() => {
     setMounted(true);
@@ -60,11 +62,14 @@ export function ThemeModeToggle() {
     // Update next-themes (localStorage + UI) - this should happen immediately
     setTheme(newTheme);
 
-    // Update database and cache (non-blocking)
+    // Update database and invalidate SWR cache
     userSettingsService
       .updateUISettings({ theme: newTheme })
       .then(() => {
         console.log("[ThemeModeToggle] Theme saved to database:", newTheme);
+        // Invalidate SWR cache to sync with database
+        invalidate();
+        console.log("[ThemeModeToggle] SWR cache invalidated");
       })
       .catch((error) => {
         console.error("[ThemeModeToggle] Failed to save theme:", error);
