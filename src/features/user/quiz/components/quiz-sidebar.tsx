@@ -216,13 +216,13 @@ export function QuizSidebar({
   if (mobileOpen) {
     return (
       <>
-        {/* Backdrop */}
+        {/* Backdrop with fade animation */}
         <div
-          className="lg:hidden fixed inset-0 bg-background/80 backdrop-blur-sm z-40"
+          className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-md z-40 animate-in fade-in-0 duration-200"
           onClick={onMobileClose}
         />
-        {/* Sidebar */}
-        <div className="lg:hidden fixed left-0 top-0 bottom-0 w-[280px] bg-background border-r z-50">
+        {/* Sidebar with slide-in animation from left */}
+        <div className="lg:hidden fixed left-0 top-0 bottom-0 w-[280px] bg-background border-r z-50 animate-in slide-in-from-left duration-300">
           {sidebarContent}
         </div>
       </>
