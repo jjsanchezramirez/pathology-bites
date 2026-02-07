@@ -4,6 +4,7 @@ import { CheckCircle, XCircle, Circle, Clock, X } from "lucide-react";
 import { UIQuizQuestion } from "@/features/user/quiz/types/quiz-question";
 import { cn } from "@/shared/utils/utils";
 import { Button } from "@/shared/components/ui/button";
+import { useSidebarState } from "@/shared/contexts/sidebar-state-context";
 
 interface QuizSidebarProps {
   questions: UIQuizQuestion[];
@@ -30,6 +31,9 @@ export function QuizSidebar({
   showAnswerFeedback = true,
   timeRemaining,
 }: QuizSidebarProps) {
+  // Get main sidebar state from context
+  const { isCollapsed, isHovered, isMobile } = useSidebarState();
+
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -212,22 +216,41 @@ export function QuizSidebar({
     </div>
   );
 
+  // Calculate the left offset based on main sidebar state
+  // Mobile (< md): left-0 (main sidebar overlays, not visible)
+  // Tablet/Desktop (≥ md):
+  //   - Collapsed: left-16 (64px)
+  //   - Expanded or Hovered: left-64 (256px)
+  const getLeftOffset = () => {
+    if (isMobile) return "left-0";
+    if (isCollapsed && !isHovered) return "md:left-16";
+    return "md:left-64";
+  };
+
   return (
     <>
-      {/* Mobile sidebar - only shown when mobileOpen is true */}
-      {mobileOpen && (
-        <>
-          {/* Backdrop with fade animation */}
-          <div
-            className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-md z-40 animate-in fade-in-0 duration-200"
-            onClick={onMobileClose}
-          />
-          {/* Sidebar with slide-in animation from left */}
-          <div className="lg:hidden fixed left-0 top-0 bottom-0 w-[280px] bg-background border-r z-50 animate-in slide-in-from-left duration-300">
-            {sidebarContent}
-          </div>
-        </>
-      )}
+      {/* Mobile backdrop - always rendered for smooth transitions */}
+      <div
+        className={cn(
+          "lg:hidden fixed inset-0 bg-black/20 backdrop-blur-md z-40 transition-all duration-300 ease-in-out",
+          getLeftOffset(),
+          mobileOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none"
+        )}
+        onClick={onMobileClose}
+      />
+
+      {/* Mobile sidebar - always rendered for smooth slide transitions */}
+      {/* Uses transform for smooth enter/exit animations */}
+      <div
+        className={cn(
+          "lg:hidden fixed top-0 bottom-0 w-[280px] bg-background border-r z-50",
+          "transition-all duration-300 ease-in-out",
+          getLeftOffset(),
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
+        )}
+      >
+        {sidebarContent}
+      </div>
 
       {/* Desktop sidebar - always rendered but hidden on mobile */}
       <div className="hidden lg:block w-[280px] border-r bg-background shrink-0">

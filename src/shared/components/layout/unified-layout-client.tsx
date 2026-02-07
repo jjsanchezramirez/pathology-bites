@@ -9,6 +9,7 @@ import { useQuizMode, useAnkiMode } from "@/shared/hooks/use-quiz-mode";
 import { UnifiedSidebar } from "./unified-sidebar";
 import { UnifiedHeader, HeaderConfig } from "./unified-header";
 import { getNavigationConfig } from "@/shared/config/navigation";
+import { SidebarStateProvider } from "@/shared/contexts/sidebar-state-context";
 // import { useUserRole } from '@/shared/hooks/use-user-role' // Commented out - middleware already validates role server-side
 
 interface UnifiedLayoutClientProps {
@@ -187,39 +188,47 @@ export function UnifiedLayoutClient({
       )}
 
       {/* Main Content Area */}
-      <div
-        className={`fixed top-0 right-0 flex flex-col transition-all duration-300 ease-in-out ${
-          isMobile
-            ? "left-0" // Mobile: always full width, sidebar overlays
-            : desktopCollapsed && !sidebarHovered
-              ? "left-16" // Desktop collapsed: 64px
-              : "left-64" // Desktop expanded or hovered: 256px
-        }`}
-        style={{
-          height: "100svh", // Use small viewport height for mobile browsers (excludes address bar)
-          minHeight: "100vh", // Fallback for browsers that don't support svh
+      <SidebarStateProvider
+        value={{
+          isCollapsed: desktopCollapsed,
+          isHovered: sidebarHovered,
+          isMobile,
         }}
       >
-        {/* Header */}
-        <UnifiedHeader onToggleSidebar={handleToggleSidebar} config={headerConfig} />
-
-        {/* Main Content */}
-        <main
-          className={
-            isFullHeightPage
-              ? "flex-1 overflow-hidden bg-background"
-              : "flex-1 overflow-y-auto bg-background"
-          }
+        <div
+          className={`fixed top-0 right-0 flex flex-col transition-all duration-300 ease-in-out ${
+            isMobile
+              ? "left-0" // Mobile: always full width, sidebar overlays
+              : desktopCollapsed && !sidebarHovered
+                ? "left-16" // Desktop collapsed: 64px
+                : "left-64" // Desktop expanded or hovered: 256px
+          }`}
+          style={{
+            height: "100svh", // Use small viewport height for mobile browsers (excludes address bar)
+            minHeight: "100vh", // Fallback for browsers that don't support svh
+          }}
         >
-          {isFullHeightPage ? (
-            // Anki/Anki2 pages: no padding, no scroll
-            <div className="h-full">{children}</div>
-          ) : (
-            // Other pages: default padding with scroll
-            <div className="container mx-auto max-w-7xl p-6 pb-24">{children}</div>
-          )}
-        </main>
-      </div>
+          {/* Header */}
+          <UnifiedHeader onToggleSidebar={handleToggleSidebar} config={headerConfig} />
+
+          {/* Main Content */}
+          <main
+            className={
+              isFullHeightPage
+                ? "flex-1 overflow-hidden bg-background"
+                : "flex-1 overflow-y-auto bg-background"
+            }
+          >
+            {isFullHeightPage ? (
+              // Anki/Anki2 pages: no padding, no scroll
+              <div className="h-full">{children}</div>
+            ) : (
+              // Other pages: default padding with scroll
+              <div className="container mx-auto max-w-7xl p-6 pb-24">{children}</div>
+            )}
+          </main>
+        </div>
+      </SidebarStateProvider>
     </div>
   );
 }
