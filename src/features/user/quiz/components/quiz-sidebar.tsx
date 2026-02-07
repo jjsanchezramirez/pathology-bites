@@ -212,23 +212,27 @@ export function QuizSidebar({
     </div>
   );
 
-  // Mobile overlay wrapper
-  if (mobileOpen) {
-    return (
-      <>
-        {/* Backdrop with fade animation */}
-        <div
-          className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-md z-40 animate-in fade-in-0 duration-200"
-          onClick={onMobileClose}
-        />
-        {/* Sidebar with slide-in animation from left */}
-        <div className="lg:hidden fixed left-0 top-0 bottom-0 w-[280px] bg-background border-r z-50 animate-in slide-in-from-left duration-300">
-          {sidebarContent}
-        </div>
-      </>
-    );
-  }
+  return (
+    <>
+      {/* Mobile sidebar - only shown when mobileOpen is true */}
+      {mobileOpen && (
+        <>
+          {/* Backdrop with fade animation */}
+          <div
+            className="lg:hidden fixed inset-0 bg-black/20 backdrop-blur-md z-40 animate-in fade-in-0 duration-200"
+            onClick={onMobileClose}
+          />
+          {/* Sidebar with slide-in animation from left */}
+          <div className="lg:hidden fixed left-0 top-0 bottom-0 w-[280px] bg-background border-r z-50 animate-in slide-in-from-left duration-300">
+            {sidebarContent}
+          </div>
+        </>
+      )}
 
-  // Desktop view
-  return <div className="hidden lg:block w-[280px] border-r bg-background">{sidebarContent}</div>;
+      {/* Desktop sidebar - always rendered but hidden on mobile */}
+      <div className="hidden lg:block w-[280px] border-r bg-background shrink-0">
+        {sidebarContent}
+      </div>
+    </>
+  );
 }
