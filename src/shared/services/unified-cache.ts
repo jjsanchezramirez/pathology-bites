@@ -248,13 +248,18 @@ class UnifiedCacheService {
     // Clear memory cache
     this.memoryCache.clear();
 
-    // Clear localStorage
+    // Clear localStorage - only remove keys belonging to known cache namespaces
+    // to avoid deleting non-cache keys like 'pathology-bites-theme' (from next-themes)
     if (this.isLocalStorageAvailable) {
       try {
         const keysToRemove: string[] = [];
         for (let i = 0; i < localStorage.length; i++) {
           const key = localStorage.key(i);
-          if (key && key.startsWith(CACHE_PREFIX)) {
+          if (!key) continue;
+          const isKnownCacheKey = Object.values(CACHE_NAMESPACES).some((ns) =>
+            key.startsWith(`${CACHE_PREFIX}-${ns.name}-`)
+          );
+          if (isKnownCacheKey) {
             keysToRemove.push(key);
           }
         }
@@ -272,11 +277,18 @@ class UnifiedCacheService {
   public cleanup(namespace?: CacheNamespace): void {
     const now = Date.now();
     let cleanedCount = 0;
-    const prefix = namespace ? `${CACHE_PREFIX}-${namespace}-` : CACHE_PREFIX;
+
+    // When no namespace specified, build prefixes for all known namespaces
+    // to avoid matching non-cache keys like 'pathology-bites-theme' (from next-themes)
+    const prefixes = namespace
+      ? [`${CACHE_PREFIX}-${namespace}-`]
+      : Object.values(CACHE_NAMESPACES).map((ns) => `${CACHE_PREFIX}-${ns.name}-`);
+
+    const matchesPrefix = (key: string) => prefixes.some((p) => key.startsWith(p));
 
     // Cleanup memory cache
     for (const [key, entry] of this.memoryCache) {
-      if (key.startsWith(prefix) && now - entry.timestamp > entry.ttl) {
+      if (matchesPrefix(key) && now - entry.timestamp > entry.ttl) {
         this.memoryCache.delete(key);
         cleanedCount++;
       }
@@ -288,7 +300,7 @@ class UnifiedCacheService {
         const keysToRemove: string[] = [];
         for (let i = 0; i < localStorage.length; i++) {
           const storageKey = localStorage.key(i);
-          if (!storageKey || !storageKey.startsWith(prefix)) continue;
+          if (!storageKey || !matchesPrefix(storageKey)) continue;
 
           try {
             const stored = localStorage.getItem(storageKey);
@@ -300,8 +312,15 @@ class UnifiedCacheService {
               keysToRemove.push(storageKey);
             }
           } catch {
-            // Invalid entry, remove it
-            keysToRemove.push(storageKey);
+            // Only remove if key matches a known cache namespace pattern.
+            // Don't remove non-cache keys like 'pathology-bites-theme' (from next-themes)
+            // that happen to share the same prefix but aren't JSON CacheEntry objects.
+            const isKnownCacheKey = Object.values(CACHE_NAMESPACES).some((ns) =>
+              storageKey.startsWith(`${CACHE_PREFIX}-${ns.name}-`)
+            );
+            if (isKnownCacheKey) {
+              keysToRemove.push(storageKey);
+            }
           }
         }
 

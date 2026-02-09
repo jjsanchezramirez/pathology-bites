@@ -4,7 +4,7 @@
 "use client";
 
 import { SWRConfig, Cache } from "swr";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { autoCleanup } from "@/shared/utils/cache/storage-cleanup";
 import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
@@ -26,11 +26,7 @@ import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache"
  * - Standardized caching across entire application
  */
 export function SWRCacheProvider({ children }: { children: React.ReactNode }) {
-  const [isClient, setIsClient] = useState(false);
-
   useEffect(() => {
-    setIsClient(true);
-
     // Run auto-cleanup on app initialization (client-side only)
     if (typeof window !== "undefined") {
       // Run cleanup after a short delay to not block initial render
@@ -39,11 +35,6 @@ export function SWRCacheProvider({ children }: { children: React.ReactNode }) {
       }, 2000);
     }
   }, []);
-
-  // Don't render until client-side to avoid hydration mismatch
-  if (!isClient) {
-    return <>{children}</>;
-  }
 
   return (
     <SWRConfig
@@ -68,7 +59,9 @@ export function SWRCacheProvider({ children }: { children: React.ReactNode }) {
               const prefix = `pathology-bites-${CACHE_NAMESPACES.SWR.name}-`;
               for (const [fullKey, value] of entries) {
                 const key = fullKey.replace(prefix, "");
-                map.set(key, value);
+                // SWR stores state objects in its cache: { data, error, isValidating, _k }
+                // We persist only the raw data to localStorage, so wrap it back
+                map.set(key, { data: value, _k: key });
               }
 
               console.log("[SWR Cache] ✅ Restored cache from unified cache:", {
@@ -90,9 +83,13 @@ export function SWRCacheProvider({ children }: { children: React.ReactNode }) {
           // Override set to sync with unified cache
           const originalSet = cachedMap.set.bind(cachedMap);
           cachedMap.set = (key: string, value: unknown) => {
-            // Update unified cache
-            unifiedCache.set(CACHE_NAMESPACES.SWR.name, key, value);
-            // Update in-memory map
+            // SWR stores state objects { data, error, isValidating, _k, ... }
+            // Extract just the raw data for localStorage persistence
+            const stateObj = value as Record<string, unknown> | undefined;
+            if (stateObj?.data !== undefined) {
+              unifiedCache.set(CACHE_NAMESPACES.SWR.name, key, stateObj.data);
+            }
+            // Update in-memory map (with full SWR state object)
             return originalSet(key, value);
           };
 

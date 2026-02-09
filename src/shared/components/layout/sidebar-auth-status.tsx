@@ -164,8 +164,13 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
 
       // Clear any local storage or cached data
       if (typeof window !== "undefined") {
+        // Preserve theme preference to prevent dark flash on re-login
+        const savedTheme = localStorage.getItem("pathology-bites-theme");
         localStorage.clear();
         sessionStorage.clear();
+        if (savedTheme) {
+          localStorage.setItem("pathology-bites-theme", savedTheme);
+        }
 
         // Clear admin-mode cookie to prevent it from persisting across sessions
         document.cookie = "admin-mode=; path=/; max-age=0";
