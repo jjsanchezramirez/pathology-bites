@@ -104,6 +104,7 @@ export function QuizActiveView({
         onNavigateToQuestion={onNavigateToQuestion}
         mobileOpen={mobileSidebarOpen}
         onMobileClose={onCloseMobileSidebar}
+        showAnswerFeedback={mode === "tutor"}
       />
 
       {/* Main content */}
@@ -232,7 +233,10 @@ export function QuizActiveView({
                       : getAnswerForQuestion(currentQuestion.id)?.selectedOptionId || null
                   }
                   onAnswerSelect={onAnswerSelect}
-                  showExplanation={mode === "tutor"}
+                  showExplanation={
+                    mode === "tutor" &&
+                    !!getAnswerForQuestion(currentQuestion.id)
+                  }
                   isReviewMode={false}
                 />
               </FeatureErrorBoundary>
@@ -248,6 +252,7 @@ export function QuizActiveView({
                   timing={timing}
                   canGoBack={canGoBack}
                   isSubmitting={false}
+                  isCurrentQuestionAnswered={!!getAnswerForQuestion(currentQuestion.id)}
                 />
               </FeatureErrorBoundary>
             </div>

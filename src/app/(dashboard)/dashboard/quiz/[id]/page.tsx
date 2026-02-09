@@ -169,6 +169,38 @@ export default function QuizSessionPage() {
     fetchReviewData();
   }, [isReviewMode, sessionId]);
 
+  // Review mode answer lookup - uses review data instead of hybrid quiz state
+  const getReviewAnswerForQuestion = useCallback(
+    (questionId: string) => {
+      // Try reviewResult.questionDetails first (has isCorrect info)
+      if (reviewResult?.questionDetails) {
+        const detail = reviewResult.questionDetails.find((q) => q.id === questionId);
+        if (detail && detail.selectedAnswerId) {
+          return {
+            selectedOptionId: detail.selectedAnswerId,
+            isCorrect: detail.isCorrect,
+            timeSpent: detail.timeSpent || 0,
+            timestamp: 0,
+          };
+        }
+      }
+      // Fallback to session answers
+      if (reviewSession?.answers) {
+        const answer = reviewSession.answers.find((a) => a.questionId === questionId);
+        if (answer) {
+          return {
+            selectedOptionId: answer.selectedOptionId,
+            isCorrect: answer.isCorrect,
+            timeSpent: answer.timeSpent || 0,
+            timestamp: answer.timestamp || 0,
+          };
+        }
+      }
+      return null;
+    },
+    [reviewResult, reviewSession]
+  );
+
   // Handlers
   const handleSaveAndExit = async () => {
     if (isReviewMode) {
@@ -211,25 +243,40 @@ export default function QuizSessionPage() {
   };
 
   const handleSubmitAnswer = async () => {
-    if (!pendingAnswerSelection) return;
-
     const currentQuestion = hybridActions.getCurrentQuestion();
-    if (!currentQuestion || pendingAnswerSelection.questionId !== currentQuestion.id) return;
+    if (!currentQuestion) return;
 
-    hybridActions.submitAnswer(pendingAnswerSelection.questionId, pendingAnswerSelection.answerId);
-    setPendingAnswerSelection(null);
+    // Practice/exam mode: two-step flow with pending selection
+    if (pendingAnswerSelection) {
+      if (pendingAnswerSelection.questionId !== currentQuestion.id) return;
 
-    const isLastQuestion = hybridState.currentQuestion === hybridState.totalQuestions;
+      hybridActions.submitAnswer(pendingAnswerSelection.questionId, pendingAnswerSelection.answerId);
+      setPendingAnswerSelection(null);
 
-    if (isLastQuestion) {
-      setTimeout(async () => {
+      const isLastQuestion = hybridState.currentQuestion === hybridState.totalQuestions;
+
+      if (isLastQuestion) {
+        setTimeout(async () => {
+          const result = await hybridActions.completeQuiz();
+          if (result.success) {
+            window.location.href = `/dashboard/quiz/${sessionId}/results`;
+          }
+        }, 100);
+      } else {
+        setTimeout(() => hybridActions.nextQuestion(), 100);
+      }
+      return;
+    }
+
+    // Tutor mode: answer already submitted, this is the "Complete Quiz" action on last question
+    if (sessionConfig?.mode === "tutor") {
+      const isLastQuestion = hybridState.currentQuestion === hybridState.totalQuestions;
+      if (isLastQuestion) {
         const result = await hybridActions.completeQuiz();
         if (result.success) {
           window.location.href = `/dashboard/quiz/${sessionId}/results`;
         }
-      }, 100);
-    } else {
-      setTimeout(() => hybridActions.nextQuestion(), 100);
+      }
     }
   };
 
@@ -300,7 +347,7 @@ export default function QuizSessionPage() {
           mobileSidebarOpen={mobileSidebarOpen}
           onCloseMobileSidebar={() => setMobileSidebarOpen(false)}
           onToggleMobileSidebar={() => setMobileSidebarOpen(!mobileSidebarOpen)}
-          getAnswerForQuestion={hybridActions.getAnswerForQuestion}
+          getAnswerForQuestion={getReviewAnswerForQuestion}
           contentAreaRef={contentAreaRef}
           sessionId={sessionId}
           currentQuestionId={currentQuestionId}
