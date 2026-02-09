@@ -3,10 +3,10 @@
 
 import useSWR from "swr";
 import { userSettingsService, type UserSettings } from "@/shared/services/user-settings";
+import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
 interface UseUserSettingsOptions {
   enabled?: boolean;
-  refetchOnMount?: boolean;
   onSuccess?: (data: UserSettings) => void;
   onError?: (error: Error) => void;
 }
@@ -43,6 +43,14 @@ interface UseUserSettingsOptions {
 export function useUserSettings(options: UseUserSettingsOptions = {}) {
   const { enabled = true, onSuccess, onError } = options;
 
+  // Check if we have cached data in localStorage (via unified cache).
+  // If so, skip revalidation on mount — the SWR cache provider already restored it.
+  // If not, allow mount revalidation so the first load fetches from API.
+  // This must be computed outside useSWR to avoid conditional hook issues.
+  const hasCachedData =
+    typeof window !== "undefined" &&
+    unifiedCache.get(CACHE_NAMESPACES.SWR.name, "user-settings") !== null;
+
   // IMPORTANT: Always use the same SWR key to ensure proper deduplication
   // The enabled flag is handled by returning null data, not by changing the key
   const { data, error, isLoading, mutate } = useSWR<UserSettings>(
@@ -58,6 +66,13 @@ export function useUserSettings(options: UseUserSettingsOptions = {}) {
       // - First load: API call
       // - Page refresh within 30min: Instant from localStorage, no API call
       revalidateIfStale: false,
+
+      // CRITICAL: Prevent revalidation on mount when cache has data.
+      // Without this, SWR's internal check `isUndefined(data) || revalidateIfStale`
+      // can still trigger a fetch even with revalidateIfStale: false.
+      // Setting revalidateOnMount explicitly bypasses that check entirely.
+      // When no cache exists (fresh session), allow mount revalidation to fetch data.
+      revalidateOnMount: !hasCachedData,
 
       // Dedupe requests within 30 minutes
       dedupingInterval: 30 * 60 * 1000,

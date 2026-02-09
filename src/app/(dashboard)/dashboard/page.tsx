@@ -15,7 +15,7 @@ import {
   StudentQuickActionsLoading,
 } from "@/features/user/dashboard/components";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
-import { userSettingsService } from "@/shared/services/user-settings";
+import { useUserSettings } from "@/shared/hooks/use-user-settings";
 import { PageErrorBoundary, FeatureErrorBoundary, ScrollReveal } from "@/shared/components/common";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 
@@ -67,6 +67,7 @@ interface DashboardStats {
 export default function DashboardPage() {
   const { user } = useAuthContext();
   const { data: unifiedData } = useUnifiedData();
+  const { data: userSettings } = useUserSettings();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -75,35 +76,16 @@ export default function DashboardPage() {
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
   const [isReturningUser, setIsReturningUser] = useState(false);
 
-  // Debug: Track component lifecycle
+  // Check for notification messages from SWR cache (no direct API calls)
   useEffect(() => {
-    const instanceId = Math.random().toString(36).substring(7);
-    console.log(`[Dashboard] 🟢 Mounted (${instanceId})`);
-    return () => {
-      console.log(`[Dashboard] 🔴 Unmounted (${instanceId})`);
-    };
-  }, []);
+    if (!user || !userSettings) return;
 
-  // Check for notification messages (independent of unified data)
-  useEffect(() => {
-    if (!user) return;
+    const hasSeenWelcome = userSettings.ui_settings?.welcome_message_seen ?? false;
+    setShowWelcomeMessage(!hasSeenWelcome);
 
-    const checkNotifications = async () => {
-      try {
-        // Check if user has seen welcome message
-        const hasSeenWelcome = await userSettingsService.hasSeenWelcomeMessage();
-        setShowWelcomeMessage(!hasSeenWelcome);
-
-        // Check if user has dismissed v1.0 release message
-        const hasDismissedV1Release = await userSettingsService.hasDismissedV1Release();
-        setShowV1ReleaseMessage(!hasDismissedV1Release);
-      } catch (error) {
-        console.error("[Dashboard] Error checking notification messages:", error);
-      }
-    };
-
-    checkNotifications();
-  }, [user]);
+    const hasDismissedV1 = userSettings.ui_settings?.v1_release_dismissed ?? false;
+    setShowV1ReleaseMessage(!hasDismissedV1);
+  }, [user, userSettings]);
 
   // Fetch dashboard stats on component mount
   useEffect(() => {

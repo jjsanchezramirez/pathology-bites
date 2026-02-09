@@ -6,24 +6,18 @@ import { useTheme } from "next-themes";
 import { usePathname } from "next/navigation";
 import { Button } from "@/shared/components/ui/button";
 import { useEffect, useState } from "react";
+import { useSWRConfig } from "swr";
 import { userSettingsService } from "@/shared/services/user-settings";
-import { useUserSettings } from "@/shared/hooks/use-user-settings";
 
 export function ThemeModeToggle() {
   const { theme, setTheme, forcedTheme } = useTheme();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
-  const { invalidate } = useUserSettings();
+  const { mutate } = useSWRConfig();
 
   useEffect(() => {
     setMounted(true);
-    console.log(
-      "[ThemeModeToggle] Component mounted, current theme:",
-      theme,
-      "forcedTheme:",
-      forcedTheme
-    );
-  }, [theme, forcedTheme]);
+  }, []);
 
   // Only show on dashboard and admin routes where users can control theme
   const isUserThemedRoute = pathname?.startsWith("/dashboard") || pathname?.startsWith("/admin");
@@ -57,8 +51,6 @@ export function ThemeModeToggle() {
         break;
     }
 
-    console.log("[ThemeModeToggle] Switching theme from", theme, "to", newTheme);
-
     // Update next-themes (localStorage + UI) - this should happen immediately
     setTheme(newTheme);
 
@@ -66,10 +58,7 @@ export function ThemeModeToggle() {
     userSettingsService
       .updateUISettings({ theme: newTheme })
       .then(() => {
-        console.log("[ThemeModeToggle] Theme saved to database:", newTheme);
-        // Invalidate SWR cache to sync with database
-        invalidate();
-        console.log("[ThemeModeToggle] SWR cache invalidated");
+        mutate("user-settings");
       })
       .catch((error) => {
         console.error("[ThemeModeToggle] Failed to save theme:", error);

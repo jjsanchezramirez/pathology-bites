@@ -63,10 +63,6 @@ export function SWRCacheProvider({ children }: { children: React.ReactNode }) {
                 // We persist only the raw data to localStorage, so wrap it back
                 map.set(key, { data: value, _k: key });
               }
-
-              console.log("[SWR Cache] ✅ Restored cache from unified cache:", {
-                entries: map.size,
-              });
             }
           } catch (error) {
             console.error("[SWR Cache] ❌ Failed to restore cache:", error);
@@ -162,33 +158,8 @@ export function clearSWRCache() {
   if (typeof window !== "undefined") {
     try {
       unifiedCache.clearNamespace(CACHE_NAMESPACES.SWR.name);
-      console.log("[SWR Cache] 🗑️ Cache cleared");
     } catch (error) {
       console.error("[SWR Cache] ❌ Failed to clear cache:", error);
     }
-  }
-}
-
-/**
- * Utility function to get cache statistics
- */
-function _getSWRCacheStats(): {
-  exists: boolean;
-  entries: number;
-  size: number;
-} | null {
-  if (typeof window === "undefined") return null;
-
-  try {
-    const stats = unifiedCache.getStats(CACHE_NAMESPACES.SWR.name);
-
-    return {
-      exists: stats.localStorageEntries > 0 || stats.memoryEntries > 0,
-      entries: stats.localStorageEntries || stats.memoryEntries,
-      size: stats.totalSize,
-    };
-  } catch (error) {
-    console.error("[SWR Cache] ❌ Failed to get cache stats:", error);
-    return null;
   }
 }

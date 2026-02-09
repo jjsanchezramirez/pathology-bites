@@ -28,17 +28,11 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
 
   // Use cached user settings hook (eliminates redundant API calls)
   // Note: refetchOnMount removed - cache handles freshness with 5-min TTL and 2-min stale time
-  const { data: settings, isLoading } = useUserSettings({
-    onSuccess: (data) => {
-      console.log("[DashboardSettings] Settings loaded from cache:", data.ui_settings);
-    },
-  });
+  const { data: settings, isLoading } = useUserSettings();
 
   // Apply settings when loaded
   useEffect(() => {
     if (!settings) return;
-
-    console.log("[DashboardSettings] Applying settings:", settings.ui_settings);
 
     // Apply text zoom
     const zoom = settings.ui_settings?.text_zoom ?? config.default;
@@ -59,17 +53,6 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
     if (!storedTheme && settings.ui_settings?.theme) {
       setColorMode(settings.ui_settings.theme);
     }
-
-    console.log(
-      "[DashboardSettings] Applied - zoom:",
-      validZoom,
-      "dashboardTheme:",
-      theme,
-      "adminMode:",
-      adminMode,
-      "colorMode:",
-      storedTheme || settings.ui_settings?.theme || "system"
-    );
   }, [settings, config.default, isAdmin, setColorMode]);
 
   // Update text zoom
@@ -80,7 +63,6 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
 
     try {
       const updatedSettings = await userSettingsService.updateUISettings({ text_zoom: validZoom });
-      console.log("[DashboardSettings] Text zoom saved:", validZoom);
 
       // Update SWR cache to keep it in sync
       if (settings) {
@@ -93,7 +75,6 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
           },
           false
         );
-        console.log("[DashboardSettings] SWR cache updated");
       }
     } catch (error) {
       console.error("[DashboardSettings] Failed to save text zoom:", error);
@@ -109,7 +90,6 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
       const themeKey = getThemeKeyForMode(adminMode);
 
       const updatedSettings = await userSettingsService.updateUISettings({ [themeKey]: theme });
-      console.log("[DashboardSettings] Theme saved:", theme);
 
       // Update SWR cache to keep it in sync
       if (settings) {
@@ -122,7 +102,6 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
           },
           false
         );
-        console.log("[DashboardSettings] SWR cache updated");
       }
     } catch (error) {
       console.error("[DashboardSettings] Failed to save theme:", error);

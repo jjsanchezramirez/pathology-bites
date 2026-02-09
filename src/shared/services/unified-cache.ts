@@ -232,9 +232,6 @@ class UnifiedCacheService {
           }
         }
         keysToRemove.forEach((key) => localStorage.removeItem(key));
-        console.log(
-          `[UnifiedCache] Cleared ${keysToRemove.length} entries from ${namespace} namespace`
-        );
       } catch (error) {
         console.warn(`[UnifiedCache] Failed to clear namespace ${namespace}:`, error);
       }
@@ -264,7 +261,6 @@ class UnifiedCacheService {
           }
         }
         keysToRemove.forEach((key) => localStorage.removeItem(key));
-        console.log(`[UnifiedCache] Cleared ${keysToRemove.length} total cache entries`);
       } catch (error) {
         console.warn("[UnifiedCache] Failed to clear all caches:", error);
       }
@@ -276,7 +272,6 @@ class UnifiedCacheService {
    */
   public cleanup(namespace?: CacheNamespace): void {
     const now = Date.now();
-    let cleanedCount = 0;
 
     // When no namespace specified, build prefixes for all known namespaces
     // to avoid matching non-cache keys like 'pathology-bites-theme' (from next-themes)
@@ -290,7 +285,6 @@ class UnifiedCacheService {
     for (const [key, entry] of this.memoryCache) {
       if (matchesPrefix(key) && now - entry.timestamp > entry.ttl) {
         this.memoryCache.delete(key);
-        cleanedCount++;
       }
     }
 
@@ -325,14 +319,9 @@ class UnifiedCacheService {
         }
 
         keysToRemove.forEach((key) => localStorage.removeItem(key));
-        cleanedCount += keysToRemove.length;
       } catch (error) {
         console.warn("[UnifiedCache] Cleanup failed:", error);
       }
-    }
-
-    if (cleanedCount > 0) {
-      console.log(`[UnifiedCache] Cleaned up ${cleanedCount} expired entries`);
     }
   }
 
@@ -378,7 +367,6 @@ class UnifiedCacheService {
     if (!this.isLocalStorageAvailable) return;
 
     try {
-      let restoredCount = 0;
       const now = Date.now();
 
       for (let i = 0; i < localStorage.length; i++) {
@@ -394,15 +382,10 @@ class UnifiedCacheService {
           // Only restore if valid and not expired
           if (entry.version === CACHE_VERSION && now - entry.timestamp <= entry.ttl) {
             this.memoryCache.set(key, entry);
-            restoredCount++;
           }
         } catch {
           // Skip invalid entries
         }
-      }
-
-      if (restoredCount > 0) {
-        console.log(`[UnifiedCache] Restored ${restoredCount} cache entries to memory`);
       }
     } catch (error) {
       console.warn("[UnifiedCache] Failed to restore memory cache:", error);

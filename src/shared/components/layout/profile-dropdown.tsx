@@ -185,12 +185,6 @@ export function ProfileDropdown() {
 
   // Show login button if not authenticated
   if (!isAuthenticated || !user) {
-    console.log("[ProfileDropdown] [DIAGNOSTIC] 🚨 Not authenticated, showing login button:", {
-      isAuthenticated,
-      hasUser: !!user,
-      pathname: typeof window !== "undefined" ? window.location.pathname : "SSR",
-      timestamp: new Date().toISOString(),
-    });
     return (
       <Button variant="ghost" size="sm" asChild>
         <a href="/login">
