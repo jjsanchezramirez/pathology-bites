@@ -177,6 +177,7 @@ export default function QuizSessionPage() {
         const detail = reviewResult.questionDetails.find((q) => q.id === questionId);
         if (detail && detail.selectedAnswerId) {
           return {
+            questionId,
             selectedOptionId: detail.selectedAnswerId,
             isCorrect: detail.isCorrect,
             timeSpent: detail.timeSpent || 0,
@@ -189,6 +190,7 @@ export default function QuizSessionPage() {
         const answer = reviewSession.answers.find((a) => a.questionId === questionId);
         if (answer) {
           return {
+            questionId,
             selectedOptionId: answer.selectedOptionId,
             isCorrect: answer.isCorrect,
             timeSpent: answer.timeSpent || 0,
