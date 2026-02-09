@@ -15,6 +15,7 @@ interface QuizNavigationProps {
   timing: "timed" | "untimed";
   canGoBack: boolean;
   isSubmitting: boolean;
+  isCurrentQuestionAnswered?: boolean;
 }
 
 export function QuizNavigation({
@@ -27,9 +28,15 @@ export function QuizNavigation({
   timing: _timing,
   canGoBack,
   isSubmitting,
+  isCurrentQuestionAnswered = false,
 }: QuizNavigationProps) {
   const isLastQuestion = currentQuestion === totalQuestions;
-  const showExplanation = mode === "tutor";
+
+  // In tutor mode: after answering, show Next/Complete button
+  // In tutor mode: before answering, user clicks an option which auto-submits, so no submit button needed
+  // In practice/exam mode: show Submit Answer button (two-step flow)
+  const showNextButton = mode === "tutor" && isCurrentQuestionAnswered;
+  const showSubmitButton = mode !== "tutor";
 
   return (
     <div className="flex justify-between">
@@ -39,7 +46,7 @@ export function QuizNavigation({
       </Button>
 
       <div className="flex gap-2">
-        {!showExplanation && (
+        {showSubmitButton && (
           <Button onClick={onSubmit} disabled={isSubmitting}>
             {isSubmitting
               ? "Submitting..."
@@ -49,14 +56,21 @@ export function QuizNavigation({
           </Button>
         )}
 
-        {showExplanation && (
-          <Button onClick={onNext}>
+        {showNextButton && (
+          <Button onClick={isLastQuestion ? onSubmit : onNext}>
             {isLastQuestion ? "Complete Quiz" : "Next"}
             <ChevronRight className="h-4 w-4 ml-2" />
           </Button>
         )}
 
-        {!showExplanation && mode !== "practice" && (
+        {!showNextButton && !showSubmitButton && (
+          <Button variant="outline" onClick={onNext}>
+            Skip Question
+            <ChevronRight className="h-4 w-4 ml-2" />
+          </Button>
+        )}
+
+        {showSubmitButton && mode !== "practice" && (
           <Button variant="outline" onClick={onNext}>
             Skip Question
             <ChevronRight className="h-4 w-4 ml-2" />
