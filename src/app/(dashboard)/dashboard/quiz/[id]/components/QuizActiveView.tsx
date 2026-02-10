@@ -8,8 +8,7 @@ import { UIQuizQuestion } from "@/features/user/quiz/types/quiz-question";
 import { QuizAnswer } from "@/features/user/quiz/types/quiz-question";
 import { RefObject } from "react";
 import { Button } from "@/shared/components/ui/button";
-import { PanelLeftOpen, Flag, Pause, Play, Clock, Star } from "lucide-react";
-import { cn } from "@/shared/utils/utils";
+import { PanelLeftOpen, Flag, Pause, Play, Clock } from "lucide-react";
 
 interface QuizActiveViewProps {
   // Current question
@@ -45,8 +44,6 @@ interface QuizActiveViewProps {
   onPause: () => void;
   onResume: () => void;
   currentQuestionId?: string;
-  isQuestionFavorited?: boolean;
-  onToggleFavorite?: () => void;
   onFlagQuestion?: () => void;
   onSaveAndExit: () => void;
   timeRemaining?: number | null;
@@ -79,9 +76,7 @@ export function QuizActiveView({
   isPaused,
   onPause,
   onResume,
-  currentQuestionId,
-  isQuestionFavorited,
-  onToggleFavorite,
+  currentQuestionId: _currentQuestionId,
   onFlagQuestion,
   onSaveAndExit,
   timeRemaining,
@@ -136,24 +131,6 @@ export function QuizActiveView({
 
             <div className="flex flex-col items-end gap-1 shrink-0">
               <div className="flex items-center gap-1">
-                {/* Star/Favorite Button */}
-                {onToggleFavorite && currentQuestionId && (
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={onToggleFavorite}
-                    title="Add to favorites"
-                    className="h-8 w-8 p-0"
-                  >
-                    <Star
-                      className={cn(
-                        "h-4 w-4",
-                        isQuestionFavorited && "fill-yellow-500 text-yellow-500"
-                      )}
-                    />
-                  </Button>
-                )}
-
                 {/* Flag Button */}
                 {onFlagQuestion && (
                   <Button
@@ -233,10 +210,7 @@ export function QuizActiveView({
                       : getAnswerForQuestion(currentQuestion.id)?.selectedOptionId || null
                   }
                   onAnswerSelect={onAnswerSelect}
-                  showExplanation={
-                    mode === "tutor" &&
-                    !!getAnswerForQuestion(currentQuestion.id)
-                  }
+                  showExplanation={mode === "tutor" && !!getAnswerForQuestion(currentQuestion.id)}
                   isReviewMode={false}
                 />
               </FeatureErrorBoundary>
