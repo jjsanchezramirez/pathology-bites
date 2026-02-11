@@ -463,6 +463,28 @@ export function generateDataStoragePath(filename: string): string {
 }
 
 /**
+ * Generate standardized storage path for audio files
+ * Format: audio/YYYYMMDDHHMMSS-{cleaned-filename}
+ */
+export function generateAudioStoragePath(filename: string): string {
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 19).replace(/[-:T]/g, "").slice(0, 14);
+
+  const nameParts = filename.split(".");
+  const extension = nameParts.pop()?.toLowerCase() || "mp3";
+  const baseName = nameParts
+    .join(".")
+    .toLowerCase()
+    .trim()
+    .replace(/[\s\-_]+/g, "-")
+    .replace(/[^\w\-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return `audio/${dateStr}-${baseName}.${extension}`;
+}
+
+/**
  * Copy an object within R2 storage
  */
 export async function copyR2Object(
@@ -604,6 +626,7 @@ const r2Storage = {
   listFiles: listR2Files,
   generateImagePath: generateImageStoragePath,
   generateDataPath: generateDataStoragePath,
+  generateAudioPath: generateAudioStoragePath,
   copyObject: copyR2Object,
   moveObject: moveR2Object,
   moveFolder: moveR2Folder,
