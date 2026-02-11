@@ -44,6 +44,7 @@ export function CategorySelector({
           return (
             <Button
               key={key}
+              data-testid={`category-${key}`}
               variant={categorySelection === key ? "default" : "outline"}
               size="sm"
               onClick={() => onCategorySelectionChange(key as CategorySelection)}

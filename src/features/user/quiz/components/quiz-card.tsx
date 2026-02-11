@@ -256,6 +256,13 @@ export function QuizCard({ quiz, formatDate, formatTimeSpent }: QuizCardProps) {
 
           {/* Right side: Action buttons */}
           <div className="flex items-center gap-2 ml-4">
+            {quiz.status === "not_started" && (
+              <Link href={`/dashboard/quiz/${quiz.id}`}>
+                <Button size="sm" className="w-[180px]">
+                  Start Quiz
+                </Button>
+              </Link>
+            )}
             {quiz.status === "in_progress" && (
               <Link href={`/dashboard/quiz/${quiz.id}`}>
                 <Button size="sm" className="w-[180px]">
@@ -347,6 +354,13 @@ export function QuizCard({ quiz, formatDate, formatTimeSpent }: QuizCardProps) {
             </div>
           </div>
 
+          {quiz.status === "not_started" && (
+            <Link href={`/dashboard/quiz/${quiz.id}`}>
+              <Button size="sm" className="w-full">
+                Start Quiz
+              </Button>
+            </Link>
+          )}
           {quiz.status === "in_progress" && (
             <Link href={`/dashboard/quiz/${quiz.id}`}>
               <Button size="sm" className="w-full">

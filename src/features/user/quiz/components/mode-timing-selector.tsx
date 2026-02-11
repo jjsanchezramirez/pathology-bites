@@ -30,6 +30,7 @@ export function ModeTimingSelector({
           {Object.entries(QUIZ_MODE_CONFIG).map(([key, config]) => (
             <Button
               key={key}
+              data-testid={`mode-${key}`}
               variant={mode === key ? "default" : "outline"}
               onClick={() => onModeChange(key as QuizMode)}
             >
@@ -45,6 +46,7 @@ export function ModeTimingSelector({
           {Object.entries(QUIZ_TIMING_CONFIG).map(([key, config]) => (
             <Button
               key={key}
+              data-testid={`timing-${key}`}
               variant={timing === key ? "default" : "outline"}
               onClick={() => onTimingChange(key as QuizTiming)}
             >

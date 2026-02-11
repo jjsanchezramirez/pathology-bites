@@ -57,9 +57,9 @@ export function QuizNavigation({
         )}
 
         {showNextButton && (
-          <Button onClick={isLastQuestion ? onSubmit : onNext}>
-            {isLastQuestion ? "Complete Quiz" : "Next"}
-            <ChevronRight className="h-4 w-4 ml-2" />
+          <Button onClick={isLastQuestion ? onSubmit : onNext} disabled={isSubmitting}>
+            {isSubmitting ? "Completing Quiz..." : isLastQuestion ? "Complete Quiz" : "Next"}
+            {!isSubmitting && <ChevronRight className="h-4 w-4 ml-2" />}
           </Button>
         )}
 

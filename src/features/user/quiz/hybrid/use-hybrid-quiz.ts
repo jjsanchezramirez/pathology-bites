@@ -441,16 +441,17 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       }
 
       // DEBUG: Log quiz state before syncing
+      const answersArray =
+        quizState.answers instanceof Map ? Array.from(quizState.answers.entries()) : [];
+
       console.log("[Hybrid] Quiz state before sync:", {
         sessionId: quizState.sessionId,
-        answersCount: quizState.answers.size,
-        answersPreview: Array.from(quizState.answers.entries())
-          .slice(0, 3)
-          .map(([qId, ans]) => ({
-            questionId: qId,
-            selectedOptionId: ans.selectedOptionId,
-            isCorrect: ans.isCorrect,
-          })),
+        answersCount: quizState.answers instanceof Map ? quizState.answers.size : 0,
+        answersPreview: answersArray.slice(0, 3).map(([qId, ans]) => ({
+          questionId: qId,
+          selectedOptionId: ans.selectedOptionId,
+          isCorrect: ans.isCorrect,
+        })),
         totalQuestions: quizState.totalQuestions,
         progress: quizState.progress,
       });
@@ -527,9 +528,13 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     if (isInitialized && sessionId) {
       const saveToLocal = () => {
         try {
+          // Safety check: ensure answers is a Map
+          const answersArray =
+            quizState.answers instanceof Map ? Array.from(quizState.answers.entries()) : [];
+
           const quizData = {
             sessionId,
-            answers: Array.from(quizState.answers.entries()),
+            answers: answersArray,
             progress: quizState.progress,
             currentIndex: quizState.currentQuestionIndex,
             status: quizState.status,

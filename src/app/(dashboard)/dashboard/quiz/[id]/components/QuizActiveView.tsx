@@ -26,6 +26,7 @@ interface QuizActiveViewProps {
   onNextQuestion: () => void;
   onSubmitAnswer: () => void;
   canGoBack: boolean;
+  isSubmitting?: boolean;
 
   // Quiz config
   mode: "tutor" | "exam" | "practice";
@@ -44,6 +45,8 @@ interface QuizActiveViewProps {
   onPause: () => void;
   onResume: () => void;
   currentQuestionId?: string;
+  isQuestionFavorited?: boolean;
+  onToggleFavorite?: () => void;
   onFlagQuestion?: () => void;
   onSaveAndExit: () => void;
   timeRemaining?: number | null;
@@ -64,6 +67,7 @@ export function QuizActiveView({
   onNextQuestion,
   onSubmitAnswer,
   canGoBack,
+  isSubmitting = false,
   mode,
   timing,
   allQuestions,
@@ -77,6 +81,8 @@ export function QuizActiveView({
   onPause,
   onResume,
   currentQuestionId: _currentQuestionId,
+  isQuestionFavorited: _isQuestionFavorited,
+  onToggleFavorite: _onToggleFavorite,
   onFlagQuestion,
   onSaveAndExit,
   timeRemaining,
@@ -225,7 +231,7 @@ export function QuizActiveView({
                   mode={mode}
                   timing={timing}
                   canGoBack={canGoBack}
-                  isSubmitting={false}
+                  isSubmitting={isSubmitting}
                   isCurrentQuestionAnswered={!!getAnswerForQuestion(currentQuestion.id)}
                 />
               </FeatureErrorBoundary>

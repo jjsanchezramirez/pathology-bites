@@ -59,6 +59,7 @@ export function QuestionTypeSelector({
           return (
             <Button
               key={key}
+              data-testid={`question-type-${key}`}
               variant={questionType === key ? "default" : "outline"}
               className="h-auto p-3 justify-between"
               onClick={() => onChange(key as QuestionType)}

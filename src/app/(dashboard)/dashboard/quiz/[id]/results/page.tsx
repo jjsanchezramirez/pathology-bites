@@ -9,10 +9,18 @@ import { QuizResult } from "@/features/user/quiz/types/quiz";
 import { toast } from "@/shared/utils/ui/toast";
 import Link from "next/link";
 import { useCachedData } from "@/shared/hooks/use-cached-data";
+import dynamic from "next/dynamic";
+import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
+import { AlertCircle } from "lucide-react";
+
+// Dynamically import Lottie to avoid SSR issues
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 export default function QuizResultsPage() {
   const params = useParams();
   const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id;
+  const { animationData: errorAnimation, isLoading: errorAnimationLoading } =
+    useLottieAnimation("error");
 
   console.log("[Results Page] sessionId:", sessionId);
 
@@ -60,6 +68,15 @@ export default function QuizResultsPage() {
               );
             }
             return resultsData.data;
+          }
+        }
+
+        // Check if quiz is incomplete (400 status)
+        if (resultsResponse.status === 400) {
+          const errorData = await resultsResponse.json();
+          if (errorData.error?.includes("not completed yet")) {
+            // Quiz is legitimately incomplete - redirect to quiz page
+            throw new Error("INCOMPLETE_QUIZ");
           }
         }
 
@@ -119,19 +136,74 @@ export default function QuizResultsPage() {
 
   // Error state - keep within dashboard layout
   if (error || !result) {
+    // Check if quiz is incomplete
+    const isIncomplete = error?.includes("INCOMPLETE_QUIZ");
+
+    if (isIncomplete) {
+      // Redirect to quiz page to complete it
+      if (typeof window !== "undefined") {
+        window.location.href = `/dashboard/quiz/${sessionId}`;
+      }
+      return (
+        <div className="container mx-auto py-8">
+          <div className="max-w-2xl mx-auto space-y-6">
+            <div className="text-center py-12">
+              <h1 className="text-2xl font-bold">Redirecting to Quiz...</h1>
+              <p className="text-muted-foreground mt-2">
+                This quiz hasn't been completed yet. Taking you back to finish it.
+              </p>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
     return (
       <div className="container mx-auto py-8">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div className="text-center py-12">
-            <h1 className="text-2xl font-bold text-destructive">Quiz Results Not Available</h1>
-            <p className="text-muted-foreground mt-2">
-              {error || "The quiz results you're looking for don't exist or couldn't be loaded."}
-            </p>
-            <div className="flex justify-center gap-2 mt-4">
-              <Button onClick={() => window.location.reload()}>Try Again</Button>
-              <Link href="/dashboard">
-                <Button variant="outline">Back to Dashboard</Button>
-              </Link>
+        <div className="max-w-2xl mx-auto">
+          <div
+            className="w-full min-h-[400px] flex items-center justify-center relative overflow-hidden rounded-lg border bg-card"
+            role="alert"
+            aria-live="assertive"
+          >
+            {/* Subtle gradient background */}
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(239,68,68,0.05),transparent_50%)]" />
+
+            {/* Content */}
+            <div className="relative z-10 flex flex-col items-center text-center space-y-4 px-6 py-8">
+              {/* Lottie animation */}
+              <div className="w-32 h-32 flex items-center justify-center">
+                {errorAnimationLoading || !errorAnimation ? (
+                  <div className="w-full h-full bg-muted/20 rounded-full animate-pulse" />
+                ) : (
+                  <Lottie
+                    animationData={errorAnimation}
+                    loop={false}
+                    autoplay={true}
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                )}
+              </div>
+
+              {/* Error message */}
+              <div className="space-y-2 max-w-md">
+                <h1 className="text-2xl font-bold text-destructive flex items-center justify-center gap-2">
+                  <AlertCircle className="w-6 h-6" />
+                  Quiz Results Not Available
+                </h1>
+                <p className="text-sm text-muted-foreground">
+                  {error ||
+                    "The quiz results you're looking for don't exist or couldn't be loaded."}
+                </p>
+              </div>
+
+              {/* Action buttons */}
+              <div className="flex justify-center gap-2 mt-4">
+                <Button onClick={() => window.location.reload()}>Try Again</Button>
+                <Link href="/dashboard">
+                  <Button variant="outline">Back to Dashboard</Button>
+                </Link>
+              </div>
             </div>
           </div>
         </div>

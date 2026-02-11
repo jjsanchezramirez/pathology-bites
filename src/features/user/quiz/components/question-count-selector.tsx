@@ -31,6 +31,7 @@ export function QuestionCountSelector({
           return (
             <Button
               key={count}
+              data-testid={`question-count-${count}`}
               variant={isSelected ? "default" : "outline"}
               size="sm"
               onClick={() => onChange(count)}
@@ -47,6 +48,7 @@ export function QuestionCountSelector({
           <span className="text-muted-foreground">Max: {availableQuestions}</span>
         </div>
         <Slider
+          data-testid="question-count-slider"
           value={[questionCount]}
           onValueChange={([value]) => onChange(value)}
           max={Math.min(50, availableQuestions)}

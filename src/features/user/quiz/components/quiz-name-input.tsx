@@ -15,6 +15,7 @@ export function QuizNameInput({ value, placeholder, loadingTitles, onChange }: Q
     <div className="space-y-2">
       <Label className="text-sm font-medium">Quiz Name</Label>
       <Input
+        data-testid="quiz-name-input"
         placeholder={loadingTitles ? "Loading..." : placeholder}
         value={value}
         onChange={(e) => onChange(e.target.value)}

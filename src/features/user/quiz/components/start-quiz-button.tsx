@@ -22,6 +22,7 @@ export function StartQuizButton({
     <div className="space-y-3">
       <div className="flex justify-center">
         <Button
+          data-testid="start-quiz-button"
           onClick={onClick}
           size="lg"
           className="w-full h-16 text-lg font-semibold"

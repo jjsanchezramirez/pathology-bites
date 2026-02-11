@@ -54,6 +54,7 @@ export default function QuizSessionPage() {
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [timerExpired] = useState(false);
   const [, setIsExiting] = useState(false);
+  const [isCompletingQuiz, setIsCompletingQuiz] = useState(false);
   const [pendingAnswerSelection, setPendingAnswerSelection] = useState<{
     questionId: string;
     answerId: string;
@@ -140,6 +141,55 @@ export default function QuizSessionPage() {
     },
   });
 
+  // Track if we're intentionally navigating away (e.g., Save & Exit)
+  const isNavigatingAwayRef = useRef(false);
+
+  // Prevent accidental navigation away from quiz
+  useEffect(() => {
+    // Don't block navigation in review mode or during completion
+    if (isReviewMode || isCompletingQuiz) return;
+
+    // Only block if quiz is initialized
+    if (!hybridState.isInitialized) return;
+
+    // Intercept link clicks to show custom exit dialog
+    const handleLinkClick = (e: MouseEvent) => {
+      // Allow navigation if we're intentionally leaving
+      if (isNavigatingAwayRef.current) return;
+
+      const target = e.target as HTMLElement;
+      const link = target.closest("a");
+
+      // If clicking a link that navigates away from quiz
+      if (link && link.href && !link.href.includes(window.location.pathname)) {
+        e.preventDefault();
+        e.stopPropagation();
+        setShowExitDialog(true);
+      }
+    };
+
+    // Intercept browser back/forward buttons
+    const handlePopState = () => {
+      // Allow navigation if we're intentionally leaving
+      if (isNavigatingAwayRef.current) return;
+
+      setShowExitDialog(true);
+      // Push state back to keep user on quiz page
+      window.history.pushState(null, "", window.location.href);
+    };
+
+    // Add initial history entry to enable popstate detection
+    window.history.pushState(null, "", window.location.href);
+
+    document.addEventListener("click", handleLinkClick, true);
+    window.addEventListener("popstate", handlePopState);
+
+    return () => {
+      document.removeEventListener("click", handleLinkClick, true);
+      window.removeEventListener("popstate", handlePopState);
+    };
+  }, [isReviewMode, hybridState.isInitialized, isCompletingQuiz]);
+
   // Fetch review data
   useEffect(() => {
     if (!isReviewMode || !sessionId) return;
@@ -206,6 +256,7 @@ export default function QuizSessionPage() {
   // Handlers
   const handleSaveAndExit = async () => {
     if (isReviewMode) {
+      isNavigatingAwayRef.current = true;
       window.location.href = "/dashboard/quizzes";
       return;
     }
@@ -213,6 +264,7 @@ export default function QuizSessionPage() {
     setIsExiting(true);
     try {
       await hybridActions.saveAndExit();
+      isNavigatingAwayRef.current = true;
       window.location.href = "/dashboard/quizzes";
     } catch {
       setIsExiting(false);
@@ -252,16 +304,23 @@ export default function QuizSessionPage() {
     if (pendingAnswerSelection) {
       if (pendingAnswerSelection.questionId !== currentQuestion.id) return;
 
-      hybridActions.submitAnswer(pendingAnswerSelection.questionId, pendingAnswerSelection.answerId);
+      hybridActions.submitAnswer(
+        pendingAnswerSelection.questionId,
+        pendingAnswerSelection.answerId
+      );
       setPendingAnswerSelection(null);
 
       const isLastQuestion = hybridState.currentQuestion === hybridState.totalQuestions;
 
       if (isLastQuestion) {
+        setIsCompletingQuiz(true);
         setTimeout(async () => {
           const result = await hybridActions.completeQuiz();
           if (result.success) {
             window.location.href = `/dashboard/quiz/${sessionId}/results`;
+          } else {
+            setIsCompletingQuiz(false);
+            toast.error(result.error || "Failed to complete quiz. Please try again.");
           }
         }, 100);
       } else {
@@ -274,9 +333,62 @@ export default function QuizSessionPage() {
     if (sessionConfig?.mode === "tutor") {
       const isLastQuestion = hybridState.currentQuestion === hybridState.totalQuestions;
       if (isLastQuestion) {
-        const result = await hybridActions.completeQuiz();
-        if (result.success) {
-          window.location.href = `/dashboard/quiz/${sessionId}/results`;
+        // Prevent duplicate completion calls
+        if (isCompletingQuiz) {
+          console.log("[Quiz Page] Already completing quiz, ignoring duplicate click");
+          return;
+        }
+
+        console.log("[Quiz Page] User clicked 'Complete Quiz' button - starting completion");
+        setIsCompletingQuiz(true);
+
+        try {
+          // Retry logic for network failures
+          let result;
+          let attempts = 0;
+          const maxAttempts = 3;
+
+          while (attempts < maxAttempts) {
+            attempts++;
+            console.log(`[Quiz Page] Completion attempt ${attempts}/${maxAttempts}`);
+
+            result = await hybridActions.completeQuiz();
+
+            if (result.success) {
+              console.log("[Quiz Page] ✅ Quiz completed successfully, redirecting to results");
+              window.location.href = `/dashboard/quiz/${sessionId}/results`;
+              return;
+            }
+
+            // If error is due to network issue, retry
+            if (
+              result.error &&
+              (result.error.includes("aborted") ||
+                result.error.includes("ECONNRESET") ||
+                result.error.includes("network") ||
+                result.error.includes("fetch"))
+            ) {
+              console.warn(`[Quiz Page] Network error on attempt ${attempts}, retrying...`);
+              if (attempts < maxAttempts) {
+                await new Promise((resolve) => setTimeout(resolve, 1000 * attempts)); // Exponential backoff
+                continue;
+              }
+            }
+
+            // Non-network error or max retries reached
+            break;
+          }
+
+          // All attempts failed
+          console.error("[Quiz Page] ❌ Failed to complete quiz after", attempts, "attempts");
+          setIsCompletingQuiz(false);
+          toast.error(
+            result?.error || "Failed to complete quiz. Please check your connection and try again."
+          );
+        } catch (error) {
+          console.error("[Quiz Page] Exception during completion:", error);
+          setIsCompletingQuiz(false);
+          toast.error("Failed to complete quiz. Please try again.");
         }
       }
     }
@@ -369,6 +481,7 @@ export default function QuizSessionPage() {
           onNextQuestion={hybridActions.nextQuestion}
           onSubmitAnswer={handleSubmitAnswer}
           canGoBack={hybridState.currentQuestion > 1}
+          isSubmitting={isCompletingQuiz}
           mode={sessionConfig?.mode || "tutor"}
           timing={sessionConfig?.timing || "untimed"}
           allQuestions={hybridActions.getQuestions()}
@@ -400,6 +513,7 @@ export default function QuizSessionPage() {
         onOpenChange={setShowExitDialog}
         onConfirmExit={() => {
           setIsExiting(true);
+          isNavigatingAwayRef.current = true;
           window.location.href = "/dashboard/quizzes";
         }}
         onSaveAndExit={handleSaveAndExit}
