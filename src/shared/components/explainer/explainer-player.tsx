@@ -1,14 +1,13 @@
 "use client";
 
-import { useRef, useState, useCallback, useEffect } from "react";
+import { useRef, useCallback, useEffect } from "react";
 import { cn } from "@/shared/utils";
 import { useAudioSync } from "./use-audio-sync";
 import { useExplainerEngine } from "./use-explainer-engine";
+import { useResourcePreloader } from "./use-resource-preloader";
 import { ExplainerViewport } from "./explainer-viewport";
 import { ExplainerControls } from "./explainer-controls";
 import type { ExplainerPlayerProps } from "@/shared/types/explainer";
-
-const CONTROLS_HIDE_DELAY = 3000;
 
 export function ExplainerPlayer({
   sequence,
@@ -17,10 +16,16 @@ export function ExplainerPlayer({
   className,
   onEnded,
   onTimeUpdate,
+  onAudioLoaded,
+  seekToTime,
 }: ExplainerPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
-  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [controlsVisible, setControlsVisible] = useState(true);
+
+  // Preload all resources before playback
+  const preloader = useResourcePreloader({
+    sequence,
+    audioUrl,
+  });
 
   const audio = useAudioSync({
     audioUrl,
@@ -35,55 +40,33 @@ export function ExplainerPlayer({
 
   // Auto-play
   useEffect(() => {
-    if (autoPlay && audio.isLoaded) {
+    if (autoPlay && preloader.isReady && audio.isLoaded) {
       audio.play();
     }
     // Only on mount + when loaded
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [autoPlay, audio.isLoaded]);
+  }, [autoPlay, preloader.isReady, audio.isLoaded]);
 
-  // Auto-hide controls
-  const resetHideTimer = useCallback(() => {
-    setControlsVisible(true);
-    if (hideTimerRef.current) {
-      clearTimeout(hideTimerRef.current);
-    }
-    hideTimerRef.current = setTimeout(() => {
-      if (audio.isPlaying) {
-        setControlsVisible(false);
-      }
-    }, CONTROLS_HIDE_DELAY);
-  }, [audio.isPlaying]);
-
-  // Show controls when paused
+  // Seek when seekToTime changes
   useEffect(() => {
-    if (!audio.isPlaying) {
-      setControlsVisible(true);
-      if (hideTimerRef.current) {
-        clearTimeout(hideTimerRef.current);
-      }
-    } else {
-      resetHideTimer();
+    if (seekToTime !== undefined && audio.isLoaded) {
+      audio.seek(seekToTime);
     }
-  }, [audio.isPlaying, resetHideTimer]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [seekToTime]);
 
-  // Cleanup timer
+  // Notify parent when audio duration is available
   useEffect(() => {
-    return () => {
-      if (hideTimerRef.current) {
-        clearTimeout(hideTimerRef.current);
-      }
-    };
-  }, []);
+    if (audio.isLoaded && audio.duration > 0 && onAudioLoaded) {
+      onAudioLoaded(audio.duration);
+    }
+  }, [audio.isLoaded, audio.duration, onAudioLoaded]);
 
   const handleViewportClick = useCallback(() => {
-    audio.togglePlay();
-    resetHideTimer();
-  }, [audio, resetHideTimer]);
-
-  const handleMouseMove = useCallback(() => {
-    resetHideTimer();
-  }, [resetHideTimer]);
+    if (preloader.isReady) {
+      audio.togglePlay();
+    }
+  }, [audio, preloader.isReady]);
 
   // Keyboard controls
   const handleKeyDown = useCallback(
@@ -115,47 +98,73 @@ export function ExplainerPlayer({
           audio.setVolume(audio.volume > 0 ? 0 : 1);
           break;
       }
-      resetHideTimer();
     },
-    [audio, resetHideTimer]
+    [audio]
   );
 
   return (
     <div
       ref={containerRef}
-      className={cn(
-        "relative rounded-lg overflow-hidden bg-black group focus:outline-none",
-        className
-      )}
-      onMouseMove={handleMouseMove}
+      className={cn("focus:outline-none", className)}
       onKeyDown={handleKeyDown}
       tabIndex={0}
       role="application"
       aria-label="Explanation video player"
     >
-      <ExplainerViewport
-        currentSegment={engine.currentSegment}
-        incomingSegment={engine.incomingSegment}
-        transform={engine.interpolatedTransform}
-        highlights={engine.activeHighlights}
-        textOverlays={engine.activeTextOverlays}
-        transitionOpacity={engine.transitionOpacity}
-        aspectRatio={sequence.aspectRatio}
-        onClick={handleViewportClick}
-      />
+      {/* Video viewport */}
+      <div className="relative rounded-lg overflow-hidden bg-black">
+        <ExplainerViewport
+          currentSegment={engine.currentSegment}
+          incomingSegment={engine.incomingSegment}
+          transform={engine.interpolatedTransform}
+          highlights={engine.activeHighlights}
+          arrows={engine.activeArrows}
+          textOverlays={engine.activeTextOverlays}
+          transitionOpacity={engine.transitionOpacity}
+          incomingOpacity={engine.incomingOpacity}
+          aspectRatio={sequence.aspectRatio}
+          onClick={handleViewportClick}
+        />
 
+        {/* Loading overlay */}
+        {preloader.isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/90">
+            <div className="text-center space-y-3">
+              <div className="text-white/80 text-sm">Loading...</div>
+              <div className="w-32 h-0.5 bg-white/20 rounded-full overflow-hidden">
+                <div
+                  className="h-full bg-white/60 transition-all duration-300"
+                  style={{ width: `${preloader.progress}%` }}
+                />
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Error overlay */}
+        {preloader.error && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/90">
+            <div className="text-center space-y-1 max-w-md px-4">
+              <div className="text-red-400 text-sm">Failed to load</div>
+              <div className="text-white/50 text-xs">{preloader.error}</div>
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* Controls below video */}
       <ExplainerControls
         isPlaying={audio.isPlaying}
         currentTime={audio.currentTime}
         duration={audio.duration}
         volume={audio.volume}
         playbackRate={audio.playbackRate}
+        isReady={preloader.isReady}
         onPlay={audio.play}
         onPause={audio.pause}
         onSeek={audio.seek}
         onVolumeChange={audio.setVolume}
         onPlaybackRateChange={audio.setPlaybackRate}
-        visible={controlsVisible}
       />
 
       {/* Hidden audio element */}

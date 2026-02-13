@@ -37,7 +37,9 @@ export function UnifiedLayoutClient({
   const isQuizActivePage =
     pathname?.match(/^\/dashboard\/quiz\/[^/]+$/) && pathname !== "/dashboard/quiz/new"; // Active quiz: /quiz/[id]
   const isQuizReviewPage = pathname?.includes("/review"); // Review page: /quiz/[id]/review
-  const isFullHeightPage = isAnkiPage || isQuizActivePage || isQuizReviewPage;
+  const isExplainerEditorPage = pathname === "/admin/explainer-editor"; // Explainer editor needs full-width
+  const isFullHeightPage =
+    isAnkiPage || isQuizActivePage || isQuizReviewPage || isExplainerEditorPage;
 
   // Get navigation items based on user type
   // Middleware already validated role server-side, so we can trust userType prop

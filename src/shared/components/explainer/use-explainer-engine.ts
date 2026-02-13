@@ -6,6 +6,7 @@ import type {
   Segment,
   Transform,
   HighlightRegion,
+  ArrowPointer,
   TextOverlay,
   Keyframe,
 } from "@/shared/types/explainer";
@@ -20,14 +21,32 @@ interface EngineState {
   incomingSegment: Segment | null;
   interpolatedTransform: Transform;
   activeHighlights: HighlightRegion[];
+  activeArrows: ArrowPointer[];
   activeTextOverlays: TextOverlay[];
-  transitionOpacity: number; // 1 = fully showing current, 0 = fully showing incoming
+  transitionOpacity: number; // Current image opacity (always 1.0 for crossfades)
+  incomingOpacity: number; // Incoming image opacity (0.0 → 1.0)
 }
 
 const DEFAULT_TRANSFORM: Transform = { x: 0, y: 0, scale: 1 };
 
 function lerp(a: number, b: number, t: number): number {
   return a + (b - a) * t;
+}
+
+/**
+ * Smoothstep easing function (ease-in-out cubic)
+ * Creates a smoother transition curve
+ */
+function smoothstep(t: number): number {
+  return t * t * (3 - 2 * t);
+}
+
+/**
+ * Ease-in-out quartic (even smoother than smoothstep)
+ * Better for fade-in transitions
+ */
+function easeInOutQuart(t: number): number {
+  return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
 }
 
 function lerpTransform(a: Transform, b: Transform, t: number): Transform {
@@ -54,6 +73,22 @@ function lerpHighlight(a: HighlightRegion, b: HighlightRegion, t: number): Highl
   };
 }
 
+function lerpArrow(a: ArrowPointer, b: ArrowPointer, t: number): ArrowPointer {
+  return {
+    ...b,
+    startPosition: {
+      x: lerp(a.startPosition.x, b.startPosition.x, t),
+      y: lerp(a.startPosition.y, b.startPosition.y, t),
+    },
+    endPosition: {
+      x: lerp(a.endPosition.x, b.endPosition.x, t),
+      y: lerp(a.endPosition.y, b.endPosition.y, t),
+    },
+    opacity: lerp(a.opacity, b.opacity, t),
+    strokeWidth: lerp(a.strokeWidth, b.strokeWidth, t),
+  };
+}
+
 /**
  * Find the keyframe pair that brackets the given elapsed time within a segment.
  * Returns [index, t] where t is the interpolation factor between keyframes[index] and keyframes[index+1].
@@ -63,7 +98,13 @@ function findKeyframePair(
   elapsed: number
 ): { kf1: Keyframe; kf2: Keyframe; t: number } {
   if (keyframes.length === 0) {
-    const empty: Keyframe = { time: 0, transform: DEFAULT_TRANSFORM, highlights: [], textOverlays: [] };
+    const empty: Keyframe = {
+      time: 0,
+      transform: DEFAULT_TRANSFORM,
+      highlights: [],
+      arrows: [],
+      textOverlays: [],
+    };
     return { kf1: empty, kf2: empty, t: 0 };
   }
 
@@ -102,11 +143,7 @@ function findKeyframePair(
  * Interpolate highlights between two keyframes.
  * Matches highlights by ID for smooth animation.
  */
-function interpolateHighlights(
-  kf1: Keyframe,
-  kf2: Keyframe,
-  t: number
-): HighlightRegion[] {
+function interpolateHighlights(kf1: Keyframe, kf2: Keyframe, t: number): HighlightRegion[] {
   // Build a map of kf1 highlights by id
   const kf1Map = new Map(kf1.highlights.map((h) => [h.id, h]));
   const result: HighlightRegion[] = [];
@@ -132,6 +169,35 @@ function interpolateHighlights(
 }
 
 /**
+ * Interpolate arrows between two keyframes.
+ * Matches arrows by ID for smooth animation.
+ */
+function interpolateArrows(kf1: Keyframe, kf2: Keyframe, t: number): ArrowPointer[] {
+  // Build a map of kf1 arrows by id
+  const kf1Map = new Map(kf1.arrows.map((a) => [a.id, a]));
+  const result: ArrowPointer[] = [];
+
+  for (const a2 of kf2.arrows) {
+    const a1 = kf1Map.get(a2.id);
+    if (a1) {
+      result.push(lerpArrow(a1, a2, t));
+    } else {
+      // New arrow fading in
+      result.push({ ...a2, opacity: a2.opacity * t });
+    }
+  }
+
+  // Arrows in kf1 but not kf2 are fading out
+  for (const a1 of kf1.arrows) {
+    if (!kf2.arrows.find((a) => a.id === a1.id)) {
+      result.push({ ...a1, opacity: a1.opacity * (1 - t) });
+    }
+  }
+
+  return result;
+}
+
+/**
  * Interpolate text overlays between two keyframes.
  * Shows overlays from kf2 with fade-in, fades out overlays only in kf1.
  */
@@ -146,18 +212,23 @@ function interpolateTextOverlays(
   for (const o2 of kf2.textOverlays) {
     const o1 = kf1Map.get(o2.id);
     if (o1) {
-      // Present in both — full opacity
-      result.push({ ...o2, computedOpacity: 1 });
+      // Present in both — interpolate opacity
+      const opacity1 = (o1 as TextOverlay & { computedOpacity?: number }).computedOpacity ?? 1;
+      const opacity2 = (o2 as TextOverlay & { computedOpacity?: number }).computedOpacity ?? 1;
+      result.push({ ...o2, computedOpacity: lerp(opacity1, opacity2, t) });
     } else {
-      // New overlay fading in
-      result.push({ ...o2, computedOpacity: t });
+      // New overlay - fade from 0 to its target opacity
+      const targetOpacity = (o2 as TextOverlay & { computedOpacity?: number }).computedOpacity ?? 1;
+      result.push({ ...o2, computedOpacity: lerp(0, targetOpacity, t) });
     }
   }
 
-  // Overlays in kf1 but not kf2 are fading out
+  // Overlays in kf1 but not kf2 - fade from their current opacity to 0
   for (const o1 of kf1.textOverlays) {
     if (!kf2.textOverlays.find((o) => o.id === o1.id)) {
-      result.push({ ...o1, computedOpacity: 1 - t });
+      const currentOpacity =
+        (o1 as TextOverlay & { computedOpacity?: number }).computedOpacity ?? 1;
+      result.push({ ...o1, computedOpacity: lerp(currentOpacity, 0, t) });
     }
   }
 
@@ -180,8 +251,10 @@ export function useExplainerEngine({
         incomingSegment: null,
         interpolatedTransform: DEFAULT_TRANSFORM,
         activeHighlights: [],
+        activeArrows: [],
         activeTextOverlays: [],
         transitionOpacity: 1,
+        incomingOpacity: 0,
       };
     }
 
@@ -216,6 +289,7 @@ export function useExplainerEngine({
     // Determine transition state
     let incomingSegment: Segment | null = null;
     let transitionOpacity = 1;
+    let incomingOpacity = 0;
 
     if (currentSegment && currentIndex < segments.length - 1) {
       const nextSegment = segments[currentIndex + 1];
@@ -229,7 +303,13 @@ export function useExplainerEngine({
         incomingSegment = nextSegment;
         const transitionProgress =
           (currentTime - transitionStart) / currentSegment.transitionDuration;
-        transitionOpacity = 1 - Math.max(0, Math.min(1, transitionProgress));
+        // Fade-in only: incoming image fades in on top of current (no fade-out)
+        // Current image stays at full opacity (transitionOpacity = 1)
+        // This prevents the dark moment during transitions
+        // Linear transition - no easing curve
+        const linearProgress = Math.max(0, Math.min(1, transitionProgress));
+        transitionOpacity = 1; // Keep current image at full opacity
+        incomingOpacity = linearProgress; // Incoming fades from 0.0 → 1.0 linearly
       }
     }
 
@@ -255,6 +335,7 @@ export function useExplainerEngine({
 
     const interpolatedTransform = lerpTransform(kf1.transform, kf2.transform, t);
     const activeHighlights = interpolateHighlights(kf1, kf2, t);
+    const activeArrows = interpolateArrows(kf1, kf2, t);
     const activeTextOverlays = interpolateTextOverlays(kf1, kf2, t);
 
     return {
@@ -262,8 +343,10 @@ export function useExplainerEngine({
       incomingSegment,
       interpolatedTransform,
       activeHighlights,
+      activeArrows: activeArrows.filter((a) => a.opacity > 0.01),
       activeTextOverlays: activeTextOverlays.filter((o) => o.computedOpacity > 0.01),
       transitionOpacity,
+      incomingOpacity,
     };
   }, [sequence, currentTime]);
 

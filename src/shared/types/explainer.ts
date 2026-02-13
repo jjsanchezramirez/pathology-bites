@@ -22,13 +22,26 @@ export interface Transform {
 
 export interface HighlightRegion {
   id: string;
-  type: "circle" | "rectangle";
-  position: Position; // center (circle) or top-left (rectangle)
-  size: Size; // width/height; for circle width = diameter
+  type: "circle" | "oval" | "rectangle";
+  position: Position; // center for circle/oval, top-left for rectangle
+  size: Size; // width/height; for circle width = diameter, for oval width/height = radii
   borderColor: string;
   borderWidth: number; // px
+  borderStyle?: "solid" | "dotted" | "dashed"; // border style (default: solid)
   fillColor?: string;
   opacity: number; // 0-1
+  spotlight?: boolean; // if true, dims everything except this region
+}
+
+export interface ArrowPointer {
+  id: string;
+  startPosition: Position; // arrow tail
+  endPosition: Position; // arrow head (points to feature)
+  color: string;
+  strokeWidth: number; // px
+  opacity: number; // 0-1
+  headSize?: number; // arrowhead size in px (default 12)
+  direction: "up" | "down" | "left" | "right" | "up-left" | "up-right" | "down-left" | "down-right";
 }
 
 export interface TextOverlay {
@@ -50,6 +63,7 @@ export interface Keyframe {
   time: number; // seconds from segment start
   transform: Transform;
   highlights: HighlightRegion[];
+  arrows: ArrowPointer[];
   textOverlays: TextOverlay[];
 }
 
@@ -82,4 +96,6 @@ export interface ExplainerPlayerProps {
   className?: string;
   onEnded?: () => void;
   onTimeUpdate?: (currentTime: number) => void;
+  onAudioLoaded?: (duration: number) => void; // Called when audio loads with its duration
+  seekToTime?: number; // Seek to this time when it changes
 }

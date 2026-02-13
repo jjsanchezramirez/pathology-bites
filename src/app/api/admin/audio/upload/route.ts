@@ -22,10 +22,7 @@ export async function POST(request: NextRequest) {
 
     const userId = getUserIdFromHeaders(request);
     if (!userId) {
-      return NextResponse.json(
-        { error: "Authentication required." },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
 
     const { data: userData, error: roleError } = await supabase
@@ -35,20 +32,14 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (roleError || !userData || userData.role !== "admin") {
-      return NextResponse.json(
-        { error: "Administrator privileges required." },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Administrator privileges required." }, { status: 403 });
     }
 
     const formData = await request.formData();
     const file = formData.get("file") as File;
 
     if (!file) {
-      return NextResponse.json(
-        { error: "No file provided." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "No file provided." }, { status: 400 });
     }
 
     if (!ALLOWED_AUDIO_TYPES.includes(file.type)) {
@@ -71,10 +62,7 @@ export async function POST(request: NextRequest) {
     try {
       fileBuffer = Buffer.from(await file.arrayBuffer());
     } catch {
-      return NextResponse.json(
-        { error: "Failed to read audio file." },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: "Failed to read audio file." }, { status: 400 });
     }
 
     const storagePath = generateAudioStoragePath(file.name);
@@ -94,10 +82,7 @@ export async function POST(request: NextRequest) {
     } catch (error) {
       console.error("R2 audio upload failed:", error);
       uploadedStoragePath = null;
-      return NextResponse.json(
-        { error: "Failed to upload audio to storage." },
-        { status: 500 }
-      );
+      return NextResponse.json({ error: "Failed to upload audio to storage." }, { status: 500 });
     }
 
     uploadedStoragePath = null;
@@ -121,9 +106,6 @@ export async function POST(request: NextRequest) {
     }
 
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
-    return NextResponse.json(
-      { error: `Upload failed: ${errorMessage}` },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: `Upload failed: ${errorMessage}` }, { status: 500 });
   }
 }
