@@ -18,7 +18,17 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/shared/components/ui/accordion";
-import { X, Play, Image as ImageIcon, Plus, Trash2, Flag, Palette, Download } from "lucide-react";
+import {
+  X,
+  Play,
+  Image as ImageIcon,
+  Plus,
+  Trash2,
+  Flag,
+  Palette,
+  Download,
+  Video,
+} from "lucide-react";
 import type { ExplainerSequence, Segment } from "@/shared/types/explainer";
 import { ExplainerImageSelector } from "./components/explainer-image-selector";
 
@@ -202,7 +212,12 @@ export default function ExplainerEditorPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [seekTime, setSeekTime] = useState<number | undefined>(undefined);
   const [audioDuration, setAudioDuration] = useState<number>(0);
+  const [isRecording, setIsRecording] = useState(false);
+  const [recordingProgress, setRecordingProgress] = useState(0);
   const timelineRef = useRef<HTMLDivElement>(null);
+  const playerContainerRef = useRef<HTMLDivElement>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const recordedChunksRef = useRef<Blob[]>([]);
 
   // Helper function to get display name for animation types
   const getAnimationDisplayName = (type: string): string => {
@@ -974,20 +989,191 @@ export default function ExplainerEditorPage() {
     URL.revokeObjectURL(url);
   };
 
+  const startRecording = async () => {
+    if (!playerContainerRef.current || selectedImages.length === 0) return;
+
+    try {
+      setIsRecording(true);
+      setRecordingProgress(0);
+      recordedChunksRef.current = [];
+
+      // Build the preview sequence for recording
+      const segments: Segment[] = selectedImages.map((img, index) => {
+        const startTime =
+          index === 0 ? 0 : selectedImages.slice(0, index).reduce((sum, i) => sum + i.duration, 0);
+        const endTime = startTime + img.duration;
+
+        const keyframes = img.animations.map((anim) => ({
+          time: anim.start,
+          transform: {
+            x: anim.targetX || 0,
+            y: anim.targetY || 0,
+            scale: anim.targetScale || 1,
+          },
+          highlights: [],
+          arrows: [],
+          textOverlays: [],
+        }));
+
+        if (keyframes.length === 0) {
+          keyframes.push({
+            time: 0,
+            transform: { x: 0, y: 0, scale: 1 },
+            highlights: [],
+            arrows: [],
+            textOverlays: [],
+          });
+        }
+
+        return {
+          imageUrl: img.url,
+          startTime,
+          endTime,
+          transition: index < selectedImages.length - 1 ? "crossfade" : "cut",
+          transitionDuration: index < selectedImages.length - 1 ? img.transitionDuration : 0,
+          keyframes,
+        };
+      });
+
+      const sequence: ExplainerSequence = {
+        version: 1,
+        duration: segments[segments.length - 1]?.endTime || 0,
+        aspectRatio: "16:9",
+        segments,
+      };
+
+      // Set preview sequence and reset to start
+      setPreviewSequence(sequence);
+      setSeekTime(0);
+
+      // Wait for preview to be ready
+      await new Promise((resolve) => setTimeout(resolve, 1000));
+
+      // Request screen capture permission
+      // @ts-expect-error - getDisplayMedia has experimental options
+      const stream = await navigator.mediaDevices.getDisplayMedia({
+        video: {
+          displaySurface: "browser",
+          width: { ideal: 1920 },
+          height: { ideal: 1080 },
+          frameRate: { ideal: 30 },
+        },
+        audio: {
+          suppressLocalAudioPlayback: false,
+        },
+        preferCurrentTab: true,
+      });
+
+      // Check if audio track is available
+      const audioTracks = stream.getAudioTracks();
+      if (audioTracks.length === 0) {
+        console.warn("No audio track captured. Recording will be silent.");
+      }
+
+      // Create MediaRecorder
+      const options = { mimeType: "video/webm;codecs=vp9,opus" };
+      const mediaRecorder = new MediaRecorder(stream, options);
+      mediaRecorderRef.current = mediaRecorder;
+
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data && event.data.size > 0) {
+          recordedChunksRef.current.push(event.data);
+        }
+      };
+
+      mediaRecorder.onstop = () => {
+        // Stop all tracks
+        stream.getTracks().forEach((track) => track.stop());
+
+        // Download the recorded video
+        const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = `explainer-${Date.now()}.webm`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        setIsRecording(false);
+        setRecordingProgress(0);
+      };
+
+      // Handle user canceling screen share
+      stream.getVideoTracks()[0].addEventListener("ended", () => {
+        if (mediaRecorder.state === "recording") {
+          mediaRecorder.stop();
+        }
+      });
+
+      // Start recording
+      mediaRecorder.start(100); // Capture in 100ms chunks
+
+      // Start playback from the beginning
+      setSeekTime(0);
+
+      // Monitor progress and stop when done
+      const duration = sequence.duration;
+      const startTime = Date.now();
+      const progressInterval = setInterval(() => {
+        const elapsed = (Date.now() - startTime) / 1000;
+        const progress = Math.min((elapsed / duration) * 100, 100);
+        setRecordingProgress(progress);
+
+        if (elapsed >= duration) {
+          clearInterval(progressInterval);
+          setTimeout(() => {
+            mediaRecorder.stop();
+          }, 500); // Small delay to ensure last frames are captured
+        }
+      }, 100);
+    } catch (error) {
+      console.error("Recording error:", error);
+      alert("Failed to start recording. Please try again or use screen recording software.");
+      setIsRecording(false);
+      setRecordingProgress(0);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
+      // Get the stream before stopping
+      const mediaRecorder = mediaRecorderRef.current;
+      if (mediaRecorder.stream) {
+        mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+      }
+      mediaRecorder.stop();
+    }
+    setIsRecording(false);
+    setRecordingProgress(0);
+  };
+
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
       <div className="border-b px-6 py-4 flex items-center justify-between">
         <h1 className="text-xl font-semibold">Explainer Editor</h1>
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={saveToJSON}
-          className="flex items-center gap-2"
-        >
-          <Download className="h-4 w-4" />
-          Save to JSON
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={saveToJSON}
+            className="flex items-center gap-2"
+          >
+            <Download className="h-4 w-4" />
+            Save to JSON
+          </Button>
+          <Button
+            variant={isRecording ? "destructive" : "default"}
+            size="sm"
+            onClick={isRecording ? stopRecording : startRecording}
+            disabled={selectedImages.length === 0}
+            className="flex items-center gap-2"
+          >
+            <Video className="h-4 w-4" />
+            {isRecording ? `Recording... ${Math.round(recordingProgress)}%` : "Record Video"}
+          </Button>
+        </div>
       </div>
 
       {/* Main Content Area */}
@@ -1074,7 +1260,7 @@ export default function ExplainerEditorPage() {
           {/* Preview Area */}
           <div className="flex-1 flex items-center justify-center bg-muted/30 p-8">
             {previewSequence ? (
-              <div className="w-full max-w-5xl">
+              <div ref={playerContainerRef} className="w-full max-w-5xl">
                 <ExplainerPlayer
                   sequence={previewSequence}
                   audioUrl={audioUrl}
