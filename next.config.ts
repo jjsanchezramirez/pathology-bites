@@ -88,6 +88,7 @@ const nextConfig = {
       enabled: true,
     },
   },
+  serverExternalPackages: [],
   async headers() {
     // Aggressive caching for performance
     const cacheHeaders = [
@@ -190,20 +191,30 @@ const nextConfig = {
           // Permissions policy to restrict browser features
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+            value: "camera=(self), microphone=(self), geolocation=(), interest-cohort=()",
+          },
+          // Enable SharedArrayBuffer for FFmpeg.wasm (required for WASM threading)
+          {
+            key: "Cross-Origin-Embedder-Policy",
+            value: "require-corp",
+          },
+          {
+            key: "Cross-Origin-Opener-Policy",
+            value: "same-origin",
           },
           // Content Security Policy
           {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://vercel.live https://va.vercel-scripts.com https://www.googletagmanager.com https://challenges.cloudflare.com https://cdn.jsdelivr.net",
-              "worker-src 'self' blob:",
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://vercel.live https://va.vercel-scripts.com https://www.googletagmanager.com https://challenges.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com",
+              "worker-src 'self' blob: https://cdn.jsdelivr.net",
+              "child-src 'self' blob:",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https: http:",
-              "media-src 'self' https://pub-9b9085c172ac445ca3d87dec27a0518f.r2.dev https://pub-a4bec7073d99465f99043c842be6318c.r2.dev",
-              "connect-src 'self' https://*.supabase.co https://vercel.live wss://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://virtualpathology.leeds.ac.uk https://www.virtualpathology.leeds.ac.uk https://images.virtualpathology.leeds.ac.uk https://pub-a4bec7073d99465f99043c842be6318c.r2.dev https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev https://challenges.cloudflare.com https://turnstile.com",
+              "media-src 'self' data: blob: https://pub-9b9085c172ac445ca3d87dec27a0518f.r2.dev https://pub-a4bec7073d99465f99043c842be6318c.r2.dev",
+              "connect-src 'self' https://*.supabase.co https://vercel.live wss://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://virtualpathology.leeds.ac.uk https://www.virtualpathology.leeds.ac.uk https://images.virtualpathology.leeds.ac.uk https://pub-a4bec7073d99465f99043c842be6318c.r2.dev https://pub-9b9085c172ac445ca3d87dec27a0518f.r2.dev https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev https://challenges.cloudflare.com https://turnstile.com https://unpkg.com https://cdn.jsdelivr.net",
               "frame-src 'self' https://accounts.google.com https://vercel.live https://image.upmc.edu https://*.supabase.co https://pathpresenter.net https://pathpresenter.blob.core.windows.net https://pathpresenter2.blob.core.windows.net https://learn.mghpathology.org https://virtualpathology.leeds.ac.uk https://www.virtualpathology.leeds.ac.uk https://images.virtualpathology.leeds.ac.uk https://dlm.lmp.utoronto.ca https://rosai.secondslide.com https://rosaicollection.net http://www.hematopathologyetutorial.com https://hematopathologyetutorial.com https://images.virtualpathology.leeds.ac.uk/ https://challenges.cloudflare.com https://turnstile.com",
               "object-src 'none'",
               "base-uri 'self'",

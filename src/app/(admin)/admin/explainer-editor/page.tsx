@@ -213,11 +213,9 @@ export default function ExplainerEditorPage() {
   const [seekTime, setSeekTime] = useState<number | undefined>(undefined);
   const [audioDuration, setAudioDuration] = useState<number>(0);
   const [isRecording, setIsRecording] = useState(false);
-  const [recordingProgress, setRecordingProgress] = useState(0);
+  const [recordingStatus, setRecordingStatus] = useState<string>("");
   const timelineRef = useRef<HTMLDivElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const recordedChunksRef = useRef<Blob[]>([]);
 
   // Helper function to get display name for animation types
   const getAnimationDisplayName = (type: string): string => {
@@ -291,32 +289,64 @@ export default function ExplainerEditorPage() {
   };
 
   const addImage = (image: LibraryImage) => {
+    const initialZoom = calculateCoverZoom(image);
+    const duration = 10;
+
+    // Create automatic soft pan/zoom animation
+    const autoPanAnimation: Animation = {
+      id: `auto-pan-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+      type: "pan",
+      start: 0,
+      duration: duration,
+      fadeTime: duration, // Smooth transition throughout entire duration
+      targetScale: initialZoom * 1.2, // 20% zoom increase
+      targetX: Math.random() * 10 - 5, // Random ±5% from center
+      targetY: Math.random() * 10 - 5, // Random ±5% from center
+    };
+
     setSelectedImages([
       ...selectedImages,
       {
         ...image,
-        duration: 10,
+        duration,
         transitionDuration: 1,
-        initialZoom: calculateCoverZoom(image),
+        initialZoom,
         initialX: 0,
         initialY: 0,
-        animations: [],
+        animations: [autoPanAnimation],
         textOverlays: [],
       },
     ]);
   };
 
   const addImages = (images: LibraryImage[]) => {
-    const newImages = images.map((image) => ({
-      ...image,
-      duration: 10,
-      transitionDuration: 1,
-      initialZoom: calculateCoverZoom(image),
-      initialX: 0,
-      initialY: 0,
-      animations: [],
-      textOverlays: [],
-    }));
+    const newImages = images.map((image) => {
+      const initialZoom = calculateCoverZoom(image);
+      const duration = 10;
+
+      // Create automatic soft pan/zoom animation
+      const autoPanAnimation: Animation = {
+        id: `auto-pan-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
+        type: "pan",
+        start: 0,
+        duration: duration,
+        fadeTime: duration, // Smooth transition throughout entire duration
+        targetScale: initialZoom * 1.2, // 20% zoom increase
+        targetX: Math.random() * 10 - 5, // Random ±5% from center
+        targetY: Math.random() * 10 - 5, // Random ±5% from center
+      };
+
+      return {
+        ...image,
+        duration,
+        transitionDuration: 1,
+        initialZoom,
+        initialX: 0,
+        initialY: 0,
+        animations: [autoPanAnimation],
+        textOverlays: [],
+      };
+    });
     setSelectedImages([...selectedImages, ...newImages]);
   };
 
@@ -989,163 +1019,348 @@ export default function ExplainerEditorPage() {
     URL.revokeObjectURL(url);
   };
 
-  const startRecording = async () => {
-    if (!playerContainerRef.current || selectedImages.length === 0) return;
+  const renderVideo = async () => {
+    // TODO: Video Export Issues to Fix
+    // 1. Canvas drawing is stuck on first frame - source video not updating properly
+    //    - Need to verify sourceVideo.currentTime is advancing during recording
+    //    - May need to ensure video element is actually playing (check paused state)
+    // 2. FFmpeg conversion working but slow - consider optimization
+    // 3. Crop region calculation may need adjustment based on actual player bounds
+    // 4. Consider adding preview of crop region before recording starts
+    // 5. Add better progress indication during recording (frame count, time remaining)
+
+    if (selectedImages.length === 0) return;
+    if (!playerContainerRef.current) return;
+
+    // Calculate total duration
+    const totalDuration = selectedImages.reduce((sum, img) => sum + img.duration, 0);
+
+    // Generate and show preview
+    generateSequence();
+
+    // Wait for preview to render
+    await new Promise((resolve) => setTimeout(resolve, 500));
 
     try {
       setIsRecording(true);
-      setRecordingProgress(0);
-      recordedChunksRef.current = [];
+      setRecordingStatus("Preparing to record...");
 
-      // Build the preview sequence for recording
-      const segments: Segment[] = selectedImages.map((img, index) => {
-        const startTime =
-          index === 0 ? 0 : selectedImages.slice(0, index).reduce((sum, i) => sum + i.duration, 0);
-        const endTime = startTime + img.duration;
-
-        const keyframes = img.animations.map((anim) => ({
-          time: anim.start,
-          transform: {
-            x: anim.targetX || 0,
-            y: anim.targetY || 0,
-            scale: anim.targetScale || 1,
-          },
-          highlights: [],
-          arrows: [],
-          textOverlays: [],
-        }));
-
-        if (keyframes.length === 0) {
-          keyframes.push({
-            time: 0,
-            transform: { x: 0, y: 0, scale: 1 },
-            highlights: [],
-            arrows: [],
-            textOverlays: [],
-          });
-        }
-
-        return {
-          imageUrl: img.url,
-          startTime,
-          endTime,
-          transition: index < selectedImages.length - 1 ? "crossfade" : "cut",
-          transitionDuration: index < selectedImages.length - 1 ? img.transitionDuration : 0,
-          keyframes,
-        };
-      });
-
-      const sequence: ExplainerSequence = {
-        version: 1,
-        duration: segments[segments.length - 1]?.endTime || 0,
-        aspectRatio: "16:9",
-        segments,
-      };
-
-      // Set preview sequence and reset to start
-      setPreviewSequence(sequence);
+      // Start playback FIRST, before requesting screen share
       setSeekTime(0);
 
-      // Wait for preview to be ready
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      // Wait a moment for playback to initialize
+      await new Promise((resolve) => setTimeout(resolve, 100));
 
-      // Request screen capture permission
-      // @ts-expect-error - getDisplayMedia has experimental options
-      const stream = await navigator.mediaDevices.getDisplayMedia({
+      // Get player element bounds for cropping
+      const playerRect = playerContainerRef.current.getBoundingClientRect();
+      const videoWidth = 1920;
+      const videoHeight = 1080;
+
+      setRecordingStatus(
+        "Select 'Browser Tab' and choose THIS tab. Make sure 'Share tab audio' is checked!"
+      );
+
+      // Request screen + audio capture at high resolution
+      const displayStream = await navigator.mediaDevices.getDisplayMedia({
         video: {
           displaySurface: "browser",
-          width: { ideal: 1920 },
-          height: { ideal: 1080 },
-          frameRate: { ideal: 30 },
-        },
-        audio: {
-          suppressLocalAudioPlayback: false,
-        },
+          width: { ideal: 3840 }, // Request 4K for better quality when cropping
+          height: { ideal: 2160 },
+          frameRate: { ideal: 60 },
+        } as MediaTrackConstraints,
+        audio: true,
         preferCurrentTab: true,
+      } as any);
+
+      // Create hidden video element to receive the display stream
+      const sourceVideo = document.createElement("video");
+      sourceVideo.srcObject = displayStream;
+      sourceVideo.muted = true;
+      sourceVideo.autoplay = true;
+      sourceVideo.playsInline = true;
+
+      // Wait for video metadata to load
+      await new Promise<void>((resolve) => {
+        if (sourceVideo.readyState >= 2) {
+          resolve();
+        } else {
+          sourceVideo.onloadedmetadata = () => resolve();
+        }
       });
 
-      // Check if audio track is available
-      const audioTracks = stream.getAudioTracks();
-      if (audioTracks.length === 0) {
-        console.warn("No audio track captured. Recording will be silent.");
+      // Ensure video is playing
+      try {
+        await sourceVideo.play();
+      } catch (e) {
+        console.error("Failed to play source video:", e);
       }
 
-      // Create MediaRecorder
-      const options = { mimeType: "video/webm;codecs=vp9,opus" };
-      const mediaRecorder = new MediaRecorder(stream, options);
-      mediaRecorderRef.current = mediaRecorder;
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data && event.data.size > 0) {
-          recordedChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        // Stop all tracks
-        stream.getTracks().forEach((track) => track.stop());
-
-        // Download the recorded video
-        const blob = new Blob(recordedChunksRef.current, { type: "video/webm" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = `explainer-${Date.now()}.webm`;
-        document.body.appendChild(a);
-        a.click();
-        document.body.removeChild(a);
-        URL.revokeObjectURL(url);
-        setIsRecording(false);
-        setRecordingProgress(0);
-      };
-
-      // Handle user canceling screen share
-      stream.getVideoTracks()[0].addEventListener("ended", () => {
-        if (mediaRecorder.state === "recording") {
-          mediaRecorder.stop();
-        }
+      console.log("Source video ready:", {
+        width: sourceVideo.videoWidth,
+        height: sourceVideo.videoHeight,
+        readyState: sourceVideo.readyState,
+        paused: sourceVideo.paused,
+        currentTime: sourceVideo.currentTime,
       });
+
+      // Create canvas for cropping
+      const canvas = document.createElement("canvas");
+      canvas.width = videoWidth;
+      canvas.height = videoHeight;
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx) {
+        throw new Error("Failed to get canvas context");
+      }
+
+      // Calculate scale factor between actual capture and screen coordinates
+      const scaleX = sourceVideo.videoWidth / window.innerWidth;
+      const scaleY = sourceVideo.videoHeight / window.innerHeight;
+
+      // Calculate source crop region (scaled to capture resolution)
+      const cropX = playerRect.left * scaleX;
+      const cropY = playerRect.top * scaleY;
+      const cropWidth = playerRect.width * scaleX;
+      const cropHeight = playerRect.height * scaleY;
+
+      console.log("Player rect:", playerRect);
+      console.log("Scale factors:", { scaleX, scaleY });
+      console.log("Crop region:", { cropX, cropY, cropWidth, cropHeight });
+      console.log("Canvas output:", { videoWidth, videoHeight });
+
+      // Draw frames to canvas with cropping
+      let animationFrameId: number;
+      let frameCount = 0;
+      const drawFrame = () => {
+        if (sourceVideo.readyState >= 2) {
+          // Draw cropped region from source video to canvas, scaling to fit
+          ctx.drawImage(
+            sourceVideo,
+            cropX,
+            cropY,
+            cropWidth,
+            cropHeight, // Source crop region
+            0,
+            0,
+            videoWidth,
+            videoHeight // Destination (full canvas)
+          );
+          frameCount++;
+          if (frameCount % 60 === 0) {
+            console.log("Drawing frame", frameCount, "at time:", sourceVideo.currentTime);
+          }
+        }
+        animationFrameId = requestAnimationFrame(drawFrame);
+      };
+      drawFrame();
+
+      // Get stream from canvas (video only)
+      const canvasStream = canvas.captureStream(60); // 60 FPS
+
+      // Get audio track from display stream
+      const audioTracks = displayStream.getAudioTracks();
+
+      // Combine canvas video with display audio
+      const combinedStream = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
+
+      // Determine best codec
+      let mimeType = "video/webm;codecs=vp9,opus";
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "video/webm;codecs=vp8,opus";
+      }
+      if (!MediaRecorder.isTypeSupported(mimeType)) {
+        mimeType = "video/webm";
+      }
+
+      console.log("Creating MediaRecorder with:", {
+        mimeType,
+        videoBitsPerSecond: 20_000_000,
+        videoTracks: combinedStream.getVideoTracks().length,
+        audioTracks: combinedStream.getAudioTracks().length,
+      });
+
+      const recorder = new MediaRecorder(combinedStream, {
+        mimeType,
+        videoBitsPerSecond: 20_000_000,
+      });
+
+      const chunks: Blob[] = [];
+
+      recorder.ondataavailable = (e) => {
+        console.log("Data available:", e.data.size, "bytes");
+        if (e.data.size > 0) {
+          chunks.push(e.data);
+        }
+      };
+
+      recorder.onerror = (e) => {
+        console.error("MediaRecorder error:", e);
+      };
+
+      recorder.onstop = async () => {
+        console.log("Recording stopped. Total chunks:", chunks.length);
+        console.log(
+          "Total size:",
+          chunks.reduce((sum, chunk) => sum + chunk.size, 0),
+          "bytes"
+        );
+
+        // Cleanup streams
+        cancelAnimationFrame(animationFrameId);
+        displayStream.getTracks().forEach((track) => track.stop());
+        sourceVideo.srcObject = null;
+        canvasStream.getTracks().forEach((track) => track.stop());
+
+        if (chunks.length === 0) {
+          console.error("No data recorded!");
+          alert("Recording failed: No data was captured. Please try again.");
+          setIsRecording(false);
+          setRecordingStatus("");
+          setPreviewSequence(null);
+          return;
+        }
+
+        const webmBlob = new Blob(chunks, { type: mimeType });
+        console.log("Created WebM blob:", webmBlob.size, "bytes");
+
+        try {
+          // Convert WebM to MP4
+          setRecordingStatus("Converting to MP4...");
+          console.log("Loading FFmpeg...");
+
+          const { FFmpeg } = await import("@ffmpeg/ffmpeg");
+          const { fetchFile } = await import("@ffmpeg/util");
+
+          const ffmpeg = new FFmpeg();
+
+          ffmpeg.on("log", ({ message }) => {
+            console.log("[FFmpeg]", message);
+          });
+
+          ffmpeg.on("progress", ({ progress }) => {
+            const percent = Math.round(progress * 100);
+            setRecordingStatus(`Converting to MP4... ${percent}%`);
+            console.log("Conversion progress:", percent + "%");
+          });
+
+          await ffmpeg.load({
+            coreURL: "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.js",
+            wasmURL: "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.wasm",
+          });
+
+          console.log("FFmpeg loaded, writing file...");
+          await ffmpeg.writeFile("input.webm", await fetchFile(webmBlob));
+
+          console.log("Starting conversion...");
+          await ffmpeg.exec([
+            "-i",
+            "input.webm",
+            "-c:v",
+            "libx264",
+            "-preset",
+            "fast",
+            "-crf",
+            "22",
+            "-c:a",
+            "aac",
+            "-b:a",
+            "192k",
+            "-movflags",
+            "+faststart",
+            "output.mp4",
+          ]);
+
+          console.log("Reading output...");
+          const data = await ffmpeg.readFile("output.mp4");
+          const mp4Blob = new Blob([data], { type: "video/mp4" });
+
+          console.log("Created MP4 blob:", mp4Blob.size, "bytes");
+
+          // Download MP4
+          const url = URL.createObjectURL(mp4Blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `explainer-${Date.now()}.mp4`;
+          document.body.appendChild(a);
+          a.click();
+          console.log("Download triggered");
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          setRecordingStatus("Complete!");
+          setTimeout(() => {
+            setIsRecording(false);
+            setRecordingStatus("");
+            setPreviewSequence(null);
+          }, 2000);
+        } catch (conversionError) {
+          console.error("MP4 conversion failed:", conversionError);
+          alert("MP4 conversion failed. Downloading WebM instead.");
+
+          // Fallback: download WebM
+          const url = URL.createObjectURL(webmBlob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = `explainer-${Date.now()}.webm`;
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+
+          setIsRecording(false);
+          setRecordingStatus("");
+          setPreviewSequence(null);
+        }
+      };
+
+      setRecordingStatus("Recording... (cropped to player only)");
+
+      // Restart playback from beginning to ensure sync
+      setSeekTime(0);
+      await new Promise((resolve) => setTimeout(resolve, 50));
 
       // Start recording
-      mediaRecorder.start(100); // Capture in 100ms chunks
+      console.log("Starting recorder...");
+      recorder.start(100);
+      console.log("Recorder state:", recorder.state);
 
-      // Start playback from the beginning
-      setSeekTime(0);
-
-      // Monitor progress and stop when done
-      const duration = sequence.duration;
-      const startTime = Date.now();
-      const progressInterval = setInterval(() => {
-        const elapsed = (Date.now() - startTime) / 1000;
-        const progress = Math.min((elapsed / duration) * 100, 100);
-        setRecordingProgress(progress);
-
-        if (elapsed >= duration) {
-          clearInterval(progressInterval);
-          setTimeout(() => {
-            mediaRecorder.stop();
-          }, 500); // Small delay to ensure last frames are captured
+      // Monitor for when user stops sharing
+      displayStream.getVideoTracks()[0].addEventListener("ended", () => {
+        console.log("Display stream ended by user");
+        if (recorder.state !== "inactive") {
+          recorder.stop();
         }
-      }, 100);
-    } catch (error) {
-      console.error("Recording error:", error);
-      alert("Failed to start recording. Please try again or use screen recording software.");
-      setIsRecording(false);
-      setRecordingProgress(0);
-    }
-  };
+      });
 
-  const stopRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state !== "inactive") {
-      // Get the stream before stopping
-      const mediaRecorder = mediaRecorderRef.current;
-      if (mediaRecorder.stream) {
-        mediaRecorder.stream.getTracks().forEach((track) => track.stop());
+      // Auto-stop when sequence ends
+      const autoStopTimeout = setTimeout(
+        () => {
+          console.log("Auto-stop timeout reached. Recorder state:", recorder.state);
+          if (recorder.state !== "inactive") {
+            console.log("Stopping recorder...");
+            recorder.stop();
+          }
+        },
+        (totalDuration + 1) * 1000
+      );
+
+      console.log("Auto-stop will trigger in", totalDuration + 1, "seconds");
+    } catch (error) {
+      console.error("Video recording error:", error);
+      if (
+        error instanceof Error &&
+        (error.name === "NotAllowedError" || error.name === "NotFoundError")
+      ) {
+        alert(
+          "Screen recording was cancelled or denied. Please try again and select the browser tab with 'Share tab audio' enabled."
+        );
+      } else {
+        alert(`Failed to record video: ${error instanceof Error ? error.message : String(error)}`);
       }
-      mediaRecorder.stop();
+      setIsRecording(false);
+      setRecordingStatus("");
+      setPreviewSequence(null);
     }
-    setIsRecording(false);
-    setRecordingProgress(0);
   };
 
   return (
@@ -1164,14 +1379,14 @@ export default function ExplainerEditorPage() {
             Save to JSON
           </Button>
           <Button
-            variant={isRecording ? "destructive" : "default"}
+            variant="default"
             size="sm"
-            onClick={isRecording ? stopRecording : startRecording}
-            disabled={selectedImages.length === 0}
+            onClick={renderVideo}
+            disabled={selectedImages.length === 0 || isRecording}
             className="flex items-center gap-2"
           >
             <Video className="h-4 w-4" />
-            {isRecording ? `Recording... ${Math.round(recordingProgress)}%` : "Record Video"}
+            {isRecording ? recordingStatus : "Export Video (MP4)"}
           </Button>
         </div>
       </div>

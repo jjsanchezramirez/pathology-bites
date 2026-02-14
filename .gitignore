@@ -58,3 +58,6 @@ e2e-results/
 # Project-specific
 dev/
 src/wip/
+
+# Local-only sandbox (never committed, never deployed)
+src/app/test/
