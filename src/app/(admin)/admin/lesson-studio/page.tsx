@@ -1498,16 +1498,30 @@ export default function LessonStudioPage() {
             <Download className="h-4 w-4" />
             Save to JSON
           </Button>
-          <Button
-            variant="default"
-            size="sm"
-            onClick={renderVideo}
-            disabled={selectedImages.length === 0 || isRecording}
-            className="flex items-center gap-2"
-          >
-            <Video className="h-4 w-4" />
-            {isRecording ? recordingStatus : "Export Video (MP4)"}
-          </Button>
+          {/* Export Video — disabled in production (dev-only screen-capture pipeline) */}
+          {process.env.NODE_ENV !== "production" ? (
+            <Button
+              variant="default"
+              size="sm"
+              onClick={renderVideo}
+              disabled={selectedImages.length === 0 || isRecording}
+              className="flex items-center gap-2"
+            >
+              <Video className="h-4 w-4" />
+              {isRecording ? recordingStatus : "Export Video (MP4)"}
+            </Button>
+          ) : (
+            <Button
+              variant="outline"
+              size="sm"
+              disabled
+              className="flex items-center gap-2 opacity-40 cursor-not-allowed"
+              title="Video export is only available in development"
+            >
+              <Video className="h-4 w-4" />
+              Export Video
+            </Button>
+          )}
         </div>
       </div>
 
