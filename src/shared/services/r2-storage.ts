@@ -121,11 +121,8 @@ export async function uploadToR2(
 
     await r2Client.send(command);
 
-    // Use custom bucket URL if specified
-    const baseUrl = options.bucket
-      ? `https://${options.bucket}.r2.dev`
-      : config.CLOUDFLARE_R2_PUBLIC_URL;
-    const publicUrl = `${baseUrl}/${key}`;
+    // Use getR2PublicUrl so bucket-specific public domains are resolved correctly
+    const publicUrl = getR2PublicUrl(key, bucketName);
 
     return {
       url: publicUrl,
