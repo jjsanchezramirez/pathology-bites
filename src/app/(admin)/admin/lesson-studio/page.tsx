@@ -1103,9 +1103,13 @@ export default function LessonStudioPage() {
 
     const totalDuration = segments[segments.length - 1]?.endTime || 0;
 
+    // Use audioDuration (actual audio length) for caption timing, not totalDuration
+    // (segment block length). audioDuration is typically longer due to intro cushion
+    // and tail; falling back to totalDuration only if audioDuration wasn't captured.
+    const captionDuration = audioDuration > 0 ? audioDuration : totalDuration;
     const sequenceCaptions =
-      audioTranscript && totalDuration > 0
-        ? buildCaptionChunks(audioTranscript, totalDuration)
+      audioTranscript && captionDuration > 0
+        ? buildCaptionChunks(audioTranscript, captionDuration)
         : undefined;
 
     const sequence: ExplainerSequence = {

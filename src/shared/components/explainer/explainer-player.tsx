@@ -168,15 +168,27 @@ export function ExplainerPlayer({
   return (
     <div
       ref={containerRef}
-      className={cn("focus:outline-none", className)}
+      className={cn(
+        "focus:outline-none",
+        isFullscreen && "flex items-center justify-center bg-black w-full h-full",
+        className
+      )}
       onKeyDown={handleKeyDown}
       onMouseMove={isFullscreen ? resetHideTimer : undefined}
       tabIndex={0}
       role="application"
       aria-label="Explanation video player"
     >
-      {/* Video viewport + overlaid controls */}
-      <div className={cn("relative overflow-hidden bg-black group", isFullscreen ? "" : "rounded-2xl")}>
+      {/* Video viewport + overlaid controls.
+          In fullscreen: fill height and let aspect-ratio constrain the width.
+          In normal mode: fill the container width with rounded corners. */}
+      <div
+        className={cn(
+          "relative overflow-hidden bg-black group",
+          isFullscreen ? "h-full" : "w-full rounded-2xl"
+        )}
+        style={isFullscreen ? { aspectRatio: sequence.aspectRatio.replace(":", "/") } : undefined}
+      >
         <ExplainerViewport
           currentSegment={engine.currentSegment}
           incomingSegment={engine.incomingSegment}
