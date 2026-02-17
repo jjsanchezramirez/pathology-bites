@@ -491,7 +491,7 @@ export function generateAudioStoragePath(filename: string): string {
     .replace(/-+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-  return `audio/${dateStr}-${baseName}.${extension}`;
+  return `library/${dateStr}-${baseName}.${extension}`;
 }
 
 /**
