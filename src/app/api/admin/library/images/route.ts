@@ -9,14 +9,15 @@ export async function GET(request: NextRequest) {
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search");
     const category = searchParams.get("category");
-    const limit = parseInt(searchParams.get("limit") || "50");
+    const limit = Math.min(parseInt(searchParams.get("limit") || "40"), 100);
+    const offset = parseInt(searchParams.get("offset") || "0");
 
     // Build query
     let query = supabase
       .from("images")
       .select("id, url, description, alt_text, category, file_type, width, height, created_at")
       .order("created_at", { ascending: false })
-      .limit(limit);
+      .range(offset, offset + limit - 1);
 
     // Apply filters
     if (search) {
@@ -34,7 +35,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch images" }, { status: 500 });
     }
 
-    return NextResponse.json({ images: data || [] });
+    const images = data || [];
+    return NextResponse.json({ images, hasMore: images.length === limit });
   } catch (error) {
     console.error("Error in GET /api/admin/library/images:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });

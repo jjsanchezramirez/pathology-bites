@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import Image from "next/image";
 import { Search } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
@@ -22,6 +22,9 @@ import {
   DialogPortal,
   DialogOverlay,
 } from "@/shared/components/ui/dialog";
+
+const PAGE_SIZE = 40;
+const DEBOUNCE_MS = 350;
 
 interface LibraryImage {
   id: string;
@@ -49,31 +52,85 @@ export function ExplainerImageSelector({
   const [isOpen, setIsOpen] = useState(false);
   const [images, setImages] = useState<LibraryImage[]>([]);
   const [loading, setLoading] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [hasMore, setHasMore] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [selectedImages, setSelectedImages] = useState<LibraryImage[]>([]);
 
-  const loadImages = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (searchTerm) params.append("search", searchTerm);
-      if (categoryFilter && categoryFilter !== "all") params.append("category", categoryFilter);
-      params.append("limit", "100");
+  // Debounced values used for actual fetching
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [debouncedCategory, setDebouncedCategory] = useState<string>("all");
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-      const response = await fetch(`/api/admin/library/images?${params}`);
-      const data = await response.json();
-      if (data.images) setImages(data.images);
-    } catch (error) {
-      console.error("Error loading images:", error);
-    } finally {
-      setLoading(false);
-    }
-  }, [searchTerm, categoryFilter]);
-
+  // Debounce search term changes
   useEffect(() => {
-    if (isOpen) loadImages();
-  }, [isOpen, loadImages]);
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setDebouncedSearch(searchTerm);
+    }, DEBOUNCE_MS);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [searchTerm]);
+
+  // Category changes apply immediately (no debounce needed for a dropdown)
+  useEffect(() => {
+    setDebouncedCategory(categoryFilter);
+  }, [categoryFilter]);
+
+  // Fetch first page whenever dialog opens or filters change
+  useEffect(() => {
+    if (!isOpen) return;
+
+    let cancelled = false;
+
+    async function fetchFirstPage() {
+      setLoading(true);
+      try {
+        const params = new URLSearchParams({ limit: String(PAGE_SIZE) });
+        if (debouncedSearch) params.set("search", debouncedSearch);
+        if (debouncedCategory !== "all") params.set("category", debouncedCategory);
+
+        const res = await fetch(`/api/admin/library/images?${params}`);
+        const data = await res.json();
+        if (!cancelled) {
+          setImages(data.images ?? []);
+          setHasMore(data.hasMore ?? false);
+        }
+      } catch (err) {
+        console.error("Error loading images:", err);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    }
+
+    fetchFirstPage();
+    return () => {
+      cancelled = true;
+    };
+  }, [isOpen, debouncedSearch, debouncedCategory]);
+
+  const loadMore = async () => {
+    setLoadingMore(true);
+    try {
+      const params = new URLSearchParams({
+        limit: String(PAGE_SIZE),
+        offset: String(images.length),
+      });
+      if (debouncedSearch) params.set("search", debouncedSearch);
+      if (debouncedCategory !== "all") params.set("category", debouncedCategory);
+
+      const res = await fetch(`/api/admin/library/images?${params}`);
+      const data = await res.json();
+      setImages((prev) => [...prev, ...(data.images ?? [])]);
+      setHasMore(data.hasMore ?? false);
+    } catch (err) {
+      console.error("Error loading more images:", err);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
 
   const handleImageClick = (image: LibraryImage) => {
     const exists = selectedImages.some((img) => img.id === image.id);
@@ -94,7 +151,13 @@ export function ExplainerImageSelector({
 
   const handleOpenChange = (open: boolean) => {
     setIsOpen(open);
-    if (!open) setSelectedImages([]);
+    if (!open) {
+      setSelectedImages([]);
+      setSearchTerm("");
+      setDebouncedSearch("");
+      setCategoryFilter("all");
+      setDebouncedCategory("all");
+    }
   };
 
   return (
@@ -155,40 +218,50 @@ export function ExplainerImageSelector({
                 No images found
               </div>
             ) : (
-              <div className="grid grid-cols-6 gap-2">
-                {images.map((image) => {
-                  const orderIndex = selectedImages.findIndex((img) => img.id === image.id);
-                  const isSelected = orderIndex >= 0;
+              <div className="space-y-4">
+                <div className="grid grid-cols-6 gap-2">
+                  {images.map((image) => {
+                    const orderIndex = selectedImages.findIndex((img) => img.id === image.id);
+                    const isSelected = orderIndex >= 0;
 
-                  return (
-                    <div
-                      key={image.id}
-                      className="relative group cursor-pointer"
-                      onClick={() => handleImageClick(image)}
-                    >
+                    return (
                       <div
-                        className={`aspect-square overflow-hidden rounded border-2 transition-all relative ${
-                          isSelected
-                            ? "border-primary ring-2 ring-primary/20"
-                            : "border-border hover:border-primary/50"
-                        }`}
+                        key={image.id}
+                        className="relative group cursor-pointer"
+                        onClick={() => handleImageClick(image)}
                       >
-                        <Image
-                          src={image.url}
-                          alt={image.description || image.alt_text || ""}
-                          fill
-                          className="object-cover"
-                          unoptimized
-                        />
-                        {isSelected && (
-                          <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg ring-2 ring-white z-20 pointer-events-none">
-                            {orderIndex + 1}
-                          </div>
-                        )}
+                        <div
+                          className={`aspect-square overflow-hidden rounded border-2 transition-all relative ${
+                            isSelected
+                              ? "border-primary ring-2 ring-primary/20"
+                              : "border-border hover:border-primary/50"
+                          }`}
+                        >
+                          <Image
+                            src={image.url}
+                            alt={image.description || image.alt_text || ""}
+                            fill
+                            className="object-cover"
+                            unoptimized
+                          />
+                          {isSelected && (
+                            <div className="absolute top-1.5 right-1.5 bg-primary text-primary-foreground rounded-full w-6 h-6 flex items-center justify-center text-xs font-bold shadow-lg ring-2 ring-white z-20 pointer-events-none">
+                              {orderIndex + 1}
+                            </div>
+                          )}
+                        </div>
                       </div>
-                    </div>
-                  );
-                })}
+                    );
+                  })}
+                </div>
+
+                {hasMore && (
+                  <div className="flex justify-center pb-2">
+                    <Button variant="outline" size="sm" onClick={loadMore} disabled={loadingMore}>
+                      {loadingMore ? "Loading…" : `Load more`}
+                    </Button>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -196,6 +269,7 @@ export function ExplainerImageSelector({
           {/* Footer */}
           <div className="flex items-center justify-between pt-2 border-t shrink-0">
             <span className="text-sm text-muted-foreground">
+              {images.length > 0 && <span className="mr-3 text-xs">{images.length} shown</span>}
               {selectedImages.length > 0
                 ? `${selectedImages.length} image${selectedImages.length !== 1 ? "s" : ""} selected`
                 : "No images selected"}
