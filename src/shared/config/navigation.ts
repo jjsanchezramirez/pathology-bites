@@ -97,6 +97,13 @@ export const adminNavigationSections: NavigationSection[] = [
         requiredPermission: "audio.manage",
         showToRoles: ["admin"],
       },
+      {
+        name: "Lesson Studio",
+        href: "/admin/lesson-studio",
+        icon: "Clapperboard",
+        requiredPermission: "images.manage",
+        adminOnly: true,
+      },
     ],
   },
   {

@@ -25,7 +25,7 @@ interface ExplainerViewportProps {
   transform: Transform;
   highlights: HighlightRegion[];
   arrows: ArrowPointer[];
-  textOverlays: (TextOverlay & { computedOpacity?: number })[];
+  textOverlays: TextOverlay[];
   transitionOpacity: number;
   incomingOpacity?: number;
   aspectRatio: string;
@@ -56,16 +56,23 @@ const ImageLayer = memo(function ImageLayer({
   transform: Transform;
   opacity: number;
 }) {
-  const [loaded, setLoaded] = useState(false);
+  // Initialise loaded=true immediately if the browser already has this image cached,
+  // so we never flicker to opacity-0 for a cached frame.
+  const [loaded, setLoaded] = useState(() => {
+    if (typeof window === "undefined") return false;
+    const img = new window.Image();
+    img.src = src;
+    return img.complete && img.naturalHeight !== 0;
+  });
   const [error, setError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
 
-  // Check if image is already loaded (cached)
+  // When src changes, re-evaluate whether the new image is already cached
   useEffect(() => {
+    setError(false);
     const img = imgRef.current;
-    if (img && img.complete && img.naturalHeight !== 0) {
-      setLoaded(true);
-    }
+    const alreadyCached = img ? img.complete && img.naturalHeight !== 0 : false;
+    setLoaded(alreadyCached);
   }, [src]);
 
   return error ? (
@@ -79,6 +86,7 @@ const ImageLayer = memo(function ImageLayer({
       </div>
     </div>
   ) : (
+    // eslint-disable-next-line @next/next/no-img-element
     <img
       ref={imgRef}
       src={src}
@@ -309,7 +317,7 @@ function SpotlightOverlay({
   );
 }
 
-function TextOverlayElement({ overlay }: { overlay: TextOverlay & { computedOpacity?: number } }) {
+function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
   const computedOpacity = overlay.computedOpacity ?? 1;
 
   // Build transform with centering and optional slide-up animation

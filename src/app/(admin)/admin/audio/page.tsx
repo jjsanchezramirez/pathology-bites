@@ -137,7 +137,7 @@ async function compressAudioToMP3(
   ]);
 
   const mp3Data = await ffmpeg.readFile("output.mp3");
-  const mp3Blob = new Blob([mp3Data as Uint8Array], { type: "audio/mpeg" });
+  const mp3Blob = new Blob([mp3Data as unknown as BlobPart], { type: "audio/mpeg" });
   return new File([mp3Blob], file.name.replace(/\.[^.]+$/, ".mp3"), { type: "audio/mpeg" });
 }
 

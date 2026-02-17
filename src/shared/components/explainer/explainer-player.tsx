@@ -168,7 +168,7 @@ export function ExplainerPlayer({
       />
 
       {/* Hidden audio element */}
-      <audio ref={audio.audioRef} src={audioUrl} preload="auto" />
+      {audioUrl && <audio ref={audio.audioRef} src={audioUrl} preload="auto" />}
     </div>
   );
 }

@@ -28,6 +28,8 @@ import {
   FileText,
   Library,
   Trophy,
+  AudioLines,
+  Clapperboard,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/shared/utils";
@@ -64,6 +66,8 @@ const iconMap: Record<string, LucideIcon> = {
   AlertTriangle,
   FileText,
   Trophy,
+  AudioLines,
+  Clapperboard,
 };
 
 interface UnifiedSidebarProps {

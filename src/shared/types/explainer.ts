@@ -55,6 +55,8 @@ export interface TextOverlay {
   maxWidth?: number; // percentage of viewport width
   textAlign?: "left" | "center" | "right";
   animation?: "fade" | "slide-up" | "none";
+  /** Runtime-only: computed opacity for fade animations (0–1) */
+  computedOpacity?: number;
 }
 
 // ---- Keyframe & Segment ----

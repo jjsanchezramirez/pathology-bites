@@ -203,34 +203,28 @@ function interpolateArrows(kf1: Keyframe, kf2: Keyframe, t: number): ArrowPointe
  * Interpolate text overlays between two keyframes.
  * Shows overlays from kf2 with fade-in, fades out overlays only in kf1.
  */
-function interpolateTextOverlays(
-  kf1: Keyframe,
-  kf2: Keyframe,
-  t: number
-): (TextOverlay & { computedOpacity: number })[] {
+function interpolateTextOverlays(kf1: Keyframe, kf2: Keyframe, t: number): TextOverlay[] {
   const kf1Map = new Map(kf1.textOverlays.map((o) => [o.id, o]));
-  const result: (TextOverlay & { computedOpacity: number })[] = [];
+  const result: TextOverlay[] = [];
 
   for (const o2 of kf2.textOverlays) {
     const o1 = kf1Map.get(o2.id);
     if (o1) {
       // Present in both — interpolate opacity
-      const opacity1 = (o1 as TextOverlay & { computedOpacity?: number }).computedOpacity ?? 1;
-      const opacity2 = (o2 as TextOverlay & { computedOpacity?: number }).computedOpacity ?? 1;
-      result.push({ ...o2, computedOpacity: lerp(opacity1, opacity2, t) });
+      result.push({
+        ...o2,
+        computedOpacity: lerp(o1.computedOpacity ?? 1, o2.computedOpacity ?? 1, t),
+      });
     } else {
       // New overlay - fade from 0 to its target opacity
-      const targetOpacity = (o2 as TextOverlay & { computedOpacity?: number }).computedOpacity ?? 1;
-      result.push({ ...o2, computedOpacity: lerp(0, targetOpacity, t) });
+      result.push({ ...o2, computedOpacity: lerp(0, o2.computedOpacity ?? 1, t) });
     }
   }
 
   // Overlays in kf1 but not kf2 - fade from their current opacity to 0
   for (const o1 of kf1.textOverlays) {
     if (!kf2.textOverlays.find((o) => o.id === o1.id)) {
-      const currentOpacity =
-        (o1 as TextOverlay & { computedOpacity?: number }).computedOpacity ?? 1;
-      result.push({ ...o1, computedOpacity: lerp(currentOpacity, 0, t) });
+      result.push({ ...o1, computedOpacity: lerp(o1.computedOpacity ?? 1, 0, t) });
     }
   }
 

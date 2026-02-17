@@ -44,59 +44,60 @@ export function useResourcePreloader({
           }
         }
 
-        const totalResources = imageUrls.size + 1; // images + audio
+        const hasAudio = !!audioUrl;
+        const totalResources = imageUrls.size + (hasAudio ? 1 : 0);
         let loadedCount = 0;
 
-        // Preload audio
-        const audioPromise = new Promise<void>((resolve, reject) => {
-          const audio = new Audio();
-          audio.preload = "auto";
+        const updateProgress = () => {
+          if (!cancelled) {
+            loadedCount++;
+            setProgress(
+              totalResources > 0 ? Math.round((loadedCount / totalResources) * 100) : 100
+            );
+          }
+        };
 
-          const onCanPlayThrough = () => {
-            if (!cancelled) {
-              loadedCount++;
-              setProgress(Math.round((loadedCount / totalResources) * 100));
-              loadedResourcesRef.current.add(audioUrl);
-            }
-            cleanup();
-            resolve();
-          };
+        // Preload audio (only if a URL is provided)
+        const audioPromise: Promise<void> = hasAudio
+          ? new Promise<void>((resolve) => {
+              const audio = new Audio();
+              audio.preload = "auto";
 
-          const onError = () => {
-            cleanup();
-            reject(new Error("Failed to load audio"));
-          };
+              const cleanup = () => {
+                audio.removeEventListener("canplaythrough", onReady);
+                audio.removeEventListener("error", onReady);
+              };
 
-          const cleanup = () => {
-            audio.removeEventListener("canplaythrough", onCanPlayThrough);
-            audio.removeEventListener("error", onError);
-          };
+              const onReady = () => {
+                updateProgress();
+                loadedResourcesRef.current.add(audioUrl);
+                cleanup();
+                resolve();
+              };
 
-          audio.addEventListener("canplaythrough", onCanPlayThrough);
-          audio.addEventListener("error", onError);
-          audio.src = audioUrl;
-          audio.load();
-        });
+              audio.addEventListener("canplaythrough", onReady);
+              // Resolve on error too — don't block the whole player for audio
+              audio.addEventListener("error", onReady);
+              audio.src = audioUrl;
+              audio.load();
+            })
+          : Promise.resolve();
 
         // Preload all images
         const imagePromises = Array.from(imageUrls).map(
           (url) =>
-            new Promise<void>((resolve, reject) => {
+            new Promise<void>((resolve) => {
               const img = new Image();
 
-              img.onload = () => {
-                if (!cancelled) {
-                  loadedCount++;
-                  setProgress(Math.round((loadedCount / totalResources) * 100));
-                  loadedResourcesRef.current.add(url);
-                }
+              const onReady = () => {
+                updateProgress();
+                loadedResourcesRef.current.add(url);
                 resolve();
               };
 
-              img.onerror = () => {
-                reject(new Error(`Failed to load image: ${url}`));
-              };
-
+              // Resolve on error too — show broken image rather than blocking forever
+              img.onload = onReady;
+              img.onerror = onReady;
               img.src = url;
             })
         );
