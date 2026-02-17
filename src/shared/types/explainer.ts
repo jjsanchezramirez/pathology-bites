@@ -80,15 +80,6 @@ export interface Segment {
   keyframes: Keyframe[]; // at least 2: start and end
 }
 
-// ---- Top-Level Sequence ----
-
-export interface ExplainerSequence {
-  version: 1;
-  duration: number; // total duration in seconds
-  aspectRatio: "16:9" | "16:10" | "4:3";
-  segments: Segment[];
-}
-
 // ---- Captions ----
 
 /** A single subtitle chunk with absolute start/end times (seconds from sequence start). */
@@ -96,6 +87,19 @@ export interface CaptionChunk {
   text: string;
   start: number;
   end: number;
+}
+
+// ---- Top-Level Sequence ----
+
+export interface ExplainerSequence {
+  version: 1;
+  duration: number; // total duration in seconds
+  aspectRatio: "16:9" | "16:10" | "4:3";
+  segments: Segment[];
+  /** URL of the audio track associated with this sequence */
+  audioUrl?: string;
+  /** Pre-computed caption chunks (uniform word timing) */
+  captions?: CaptionChunk[];
 }
 
 // ---- Component Props ----

@@ -1103,11 +1103,18 @@ export default function LessonStudioPage() {
 
     const totalDuration = segments[segments.length - 1]?.endTime || 0;
 
+    const sequenceCaptions =
+      audioTranscript && totalDuration > 0
+        ? buildCaptionChunks(audioTranscript, totalDuration)
+        : undefined;
+
     const sequence: ExplainerSequence = {
       version: 1,
       duration: totalDuration,
       aspectRatio: "16:9",
       segments,
+      ...(audioUrl ? { audioUrl } : {}),
+      ...(sequenceCaptions && sequenceCaptions.length > 0 ? { captions: sequenceCaptions } : {}),
     };
 
     // Round all floats to 4 decimal places to avoid 16-digit precision bloat
