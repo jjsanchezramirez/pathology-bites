@@ -918,7 +918,7 @@ export default function LessonStudioPage() {
       return;
     }
 
-    // Generate the sequence using the same logic as preview
+    // 5-second lead-in cushion before first segment
     const startCushion = 5;
     let currentTime = startCushion;
 
@@ -927,14 +927,36 @@ export default function LessonStudioPage() {
       const endTime = currentTime + img.duration;
       currentTime = endTime;
 
-      // Generate keyframes for this segment
-      const sampleRate = 60;
-      const frameDuration = 1 / sampleRate;
-      const numFrames = Math.ceil(img.duration / frameDuration);
+      // Collect all unique time points where something changes (same logic as generateSequence)
+      const timePoints = new Set<number>([0, img.duration]);
 
-      const keyframes = Array.from({ length: numFrames }, (_, frameIndex) => {
-        const time = frameIndex * frameDuration;
+      img.animations.forEach((anim) => {
+        if (anim.type === "zoom") {
+          timePoints.add(anim.start);
+          timePoints.add(anim.start + anim.fadeTime);
+          timePoints.add(anim.start + anim.fadeTime + anim.duration);
+          timePoints.add(anim.start + anim.fadeTime + anim.duration + anim.fadeTime);
+        } else if (anim.type === "pan") {
+          timePoints.add(anim.start);
+          timePoints.add(anim.start + anim.fadeTime);
+        } else {
+          timePoints.add(anim.start);
+          timePoints.add(anim.start + anim.fadeTime);
+          timePoints.add(anim.start + anim.fadeTime + anim.duration);
+          timePoints.add(anim.start + anim.fadeTime + anim.duration + anim.fadeTime);
+        }
+      });
 
+      img.textOverlays.forEach((text) => {
+        timePoints.add(text.start);
+        timePoints.add(text.start + text.fadeTime);
+        timePoints.add(text.start + text.fadeTime + text.duration);
+        timePoints.add(text.start + text.fadeTime + text.duration + text.fadeTime);
+      });
+
+      const sortedTimes = Array.from(timePoints).sort((a, b) => a - b);
+
+      const keyframes: Segment["keyframes"] = sortedTimes.map((time) => {
         let baseTransform = { x: img.initialX, y: img.initialY, scale: img.initialZoom };
 
         const sortedPanAnims = img.animations
@@ -942,8 +964,7 @@ export default function LessonStudioPage() {
           .sort((a, b) => a.start - b.start);
 
         for (const panAnim of sortedPanAnims) {
-          const panEnd = panAnim.start + panAnim.fadeTime;
-          if (time >= panEnd) {
+          if (time >= panAnim.start + panAnim.fadeTime) {
             baseTransform = {
               x: panAnim.targetX,
               y: panAnim.targetY,
@@ -952,33 +973,30 @@ export default function LessonStudioPage() {
           }
         }
 
-        let transform = { ...baseTransform };
+        const transform = { ...baseTransform };
 
-        const zoomAnims = img.animations
-          .filter((a) => a.type === "zoom")
-          .sort((a, b) => a.start - b.start);
+        img.animations.forEach((anim) => {
+          if (anim.type === "zoom") {
+            const fadeInEnd = anim.start + anim.fadeTime;
+            const fadeOutStart = anim.start + anim.fadeTime + anim.duration;
+            const fadeOutEnd = fadeOutStart + anim.fadeTime;
 
-        for (const zoomAnim of zoomAnims) {
-          const zoomEnd = zoomAnim.start + zoomAnim.fadeTime + zoomAnim.duration;
-          if (time >= zoomAnim.start && time < zoomEnd) {
-            if (time < zoomAnim.start + zoomAnim.fadeTime) {
-              const fadeInProgress = (time - zoomAnim.start) / zoomAnim.fadeTime;
-              transform = {
-                x: baseTransform.x + (zoomAnim.targetX - baseTransform.x) * fadeInProgress,
-                y: baseTransform.y + (zoomAnim.targetY - baseTransform.y) * fadeInProgress,
-                scale:
-                  baseTransform.scale +
-                  (zoomAnim.targetScale - baseTransform.scale) * fadeInProgress,
-              };
-            } else if (time < zoomAnim.start + zoomAnim.fadeTime + zoomAnim.duration) {
-              transform = {
-                x: zoomAnim.targetX,
-                y: zoomAnim.targetY,
-                scale: zoomAnim.targetScale,
-              };
+            if (time >= anim.start && time <= fadeOutEnd) {
+              let progress = 0;
+              if (time < fadeInEnd) {
+                progress = anim.fadeTime > 0 ? (time - anim.start) / anim.fadeTime : 1;
+              } else if (time <= fadeOutStart) {
+                progress = 1;
+              } else {
+                progress = anim.fadeTime > 0 ? 1 - (time - fadeOutStart) / anim.fadeTime : 0;
+              }
+              transform.scale =
+                baseTransform.scale + (anim.targetScale - baseTransform.scale) * progress;
+              transform.x = baseTransform.x + (anim.targetX - baseTransform.x) * progress;
+              transform.y = baseTransform.y + (anim.targetY - baseTransform.y) * progress;
             }
           }
-        }
+        });
 
         const highlights: HighlightRegion[] = [];
         const arrows: ArrowPointer[] = [];
@@ -986,20 +1004,17 @@ export default function LessonStudioPage() {
 
         img.animations.forEach((anim) => {
           if (anim.type === "figure" || anim.type === "spotlight") {
-            const start = anim.start;
-            const fadeInEnd = start + anim.fadeTime;
+            const fadeInEnd = anim.start + anim.fadeTime;
             const holdEnd = fadeInEnd + anim.duration;
             const fadeOutEnd = holdEnd + anim.fadeTime;
-
             let opacity = 0;
-            if (time >= start && time < fadeInEnd) {
-              opacity = (time - start) / anim.fadeTime;
+            if (time >= anim.start && time < fadeInEnd) {
+              opacity = (time - anim.start) / anim.fadeTime;
             } else if (time >= fadeInEnd && time < holdEnd) {
               opacity = 1;
             } else if (time >= holdEnd && time < fadeOutEnd) {
               opacity = 1 - (time - holdEnd) / anim.fadeTime;
             }
-
             if (opacity > 0) {
               highlights.push({
                 id: anim.id,
@@ -1015,20 +1030,17 @@ export default function LessonStudioPage() {
               });
             }
           } else if (anim.type === "arrow") {
-            const start = anim.start;
-            const fadeInEnd = start + anim.fadeTime;
+            const fadeInEnd = anim.start + anim.fadeTime;
             const holdEnd = fadeInEnd + anim.duration;
             const fadeOutEnd = holdEnd + anim.fadeTime;
-
             let opacity = 0;
-            if (time >= start && time < fadeInEnd) {
-              opacity = (time - start) / anim.fadeTime;
+            if (time >= anim.start && time < fadeInEnd) {
+              opacity = (time - anim.start) / anim.fadeTime;
             } else if (time >= fadeInEnd && time < holdEnd) {
               opacity = 1;
             } else if (time >= holdEnd && time < fadeOutEnd) {
               opacity = 1 - (time - holdEnd) / anim.fadeTime;
             }
-
             if (opacity > 0) {
               arrows.push({
                 id: anim.id,
@@ -1044,20 +1056,17 @@ export default function LessonStudioPage() {
         });
 
         img.textOverlays.forEach((text) => {
-          const start = text.start;
-          const fadeInEnd = start + text.fadeTime;
-          const holdEnd = fadeInEnd + text.duration;
-          const fadeOutEnd = holdEnd + text.fadeTime;
-
+          const fadeInEnd = text.start + text.fadeTime;
+          const fadeOutStart = text.start + text.fadeTime + text.duration;
+          const fadeOutEnd = fadeOutStart + text.fadeTime;
           let opacity = 0;
-          if (time >= start && time < fadeInEnd) {
-            opacity = (time - start) / text.fadeTime;
-          } else if (time >= fadeInEnd && time < holdEnd) {
+          if (time >= text.start && time < fadeInEnd) {
+            opacity = text.fadeTime > 0 ? (time - text.start) / text.fadeTime : 1;
+          } else if (time >= fadeInEnd && time <= fadeOutStart) {
             opacity = 1;
-          } else if (time >= holdEnd && time < fadeOutEnd) {
-            opacity = 1 - (time - holdEnd) / text.fadeTime;
+          } else if (time > fadeOutStart && time <= fadeOutEnd) {
+            opacity = text.fadeTime > 0 ? (fadeOutEnd - time) / text.fadeTime : 0;
           }
-
           if (opacity > 0) {
             textOverlays.push({
               id: text.id,
@@ -1075,27 +1084,21 @@ export default function LessonStudioPage() {
           }
         });
 
-        return {
-          time,
-          transform,
-          highlights,
-          arrows,
-          textOverlays,
-        };
+        return { time, transform, highlights, arrows, textOverlays };
       });
 
-      const segment: Segment = {
+      return {
         id: `seg-${index}`,
         imageUrl: img.url,
         imageAlt: img.description || "Untitled",
         startTime,
         endTime,
-        transition: index < selectedImages.length - 1 ? "crossfade" : "cut",
+        transition: (index < selectedImages.length - 1
+          ? "crossfade"
+          : "cut") as Segment["transition"],
         transitionDuration: index < selectedImages.length - 1 ? img.transitionDuration : 0,
         keyframes,
       };
-
-      return segment;
     });
 
     const totalDuration = segments[segments.length - 1]?.endTime || 0;
@@ -1107,9 +1110,14 @@ export default function LessonStudioPage() {
       segments,
     };
 
-    // Create and download JSON file
-    const json = JSON.stringify(sequence, null, 2);
-    const blob = new Blob([json], { type: "application/json" });
+    // Round all floats to 4 decimal places to avoid 16-digit precision bloat
+    const roundedJson = JSON.stringify(
+      sequence,
+      (_, value) => (typeof value === "number" ? Math.round(value * 10000) / 10000 : value),
+      2
+    );
+
+    const blob = new Blob([roundedJson], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a");
     a.href = url;
