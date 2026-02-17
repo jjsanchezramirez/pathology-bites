@@ -37,6 +37,7 @@ function lerp(a: number, b: number, t: number): number {
  * Smoothstep easing function (ease-in-out cubic)
  * Creates a smoother transition curve
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function smoothstep(t: number): number {
   return t * t * (3 - 2 * t);
 }
@@ -45,6 +46,7 @@ function smoothstep(t: number): number {
  * Ease-in-out quartic (even smoother than smoothstep)
  * Better for fade-in transitions
  */
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function easeInOutQuart(t: number): number {
   return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
 }

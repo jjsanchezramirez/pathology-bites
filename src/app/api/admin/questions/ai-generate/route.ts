@@ -253,8 +253,32 @@ Subject: ${content.subject}
 Lesson: ${content.lesson}
 Topic: ${content.topic}
 
-INSTRUCTIONS:
+INSTRUCTIONS (AUDIO SCRIPT FORMAT):
 ${instructions}
+
+Write the question as a script for audio narration following this structure:
+
+1. DEFINITION AND CLASSIFICATION
+   - What is this entity or spectrum of entities?
+   - How is it classified within pathology?
+
+2. KEY MORPHOLOGIC FEATURES
+   - What does it look like microscopically/macroscopically?
+   - What distinguishes each entity from others?
+
+3. MOLECULAR/IMMUNOHISTOCHEMICAL PROFILE
+   - What drives it molecularly?
+   - What immunohistochemical markers are relevant?
+
+4. BROADER PATHOLOGIC CONTEXT
+   - Where does this fit in a broader pathway or continuum?
+   - What are the related entities?
+
+CONSTRAINTS:
+- NO hyphens (text will be read aloud - use "to" instead of ranges like "5-10")
+- Use precise pathology terminology but keep sentence structure flowing for narration
+- Avoid vague clinical advice like "warrants follow up" - anchor concepts instead
+- Keep within ${additionalContext || "standard length"}
 
 ADDITIONAL CONTEXT:
 ${additionalContext || "None provided"}
@@ -271,6 +295,7 @@ CRITICAL REQUIREMENTS:
 9. DO NOT describe histologic/microscopic findings in the question stem - instead reference that "histologic images are shown below" or similar
 10. The question stem should focus on clinical presentation, patient demographics, and clinical context
 11. Detailed histopathological descriptions belong in the answer explanations, not the question stem
+12. Follow the four-beat framework: what is it → what does it look like → what drives it molecularly → where does it sit in the bigger picture
 
 Return your response in this EXACT JSON format (no markdown, no code blocks, just pure JSON):
 

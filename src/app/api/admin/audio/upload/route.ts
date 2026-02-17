@@ -85,14 +85,53 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to upload audio to storage." }, { status: 500 });
     }
 
+    // Get metadata from form
+    const title = (formData.get("title") as string) || file.name;
+    const description = formData.get("description") as string | null;
+    const pathology_category_id = formData.get("pathology_category_id") as string | null;
+    const generated_text = formData.get("generated_text") as string | null;
+    const duration_seconds = formData.get("duration_seconds") as string | null;
+
+    const parsedDuration = duration_seconds ? parseFloat(duration_seconds) : null;
+
+    // Insert database record
+    const { data: audioData, error: dbError } = await supabase
+      .from("audio")
+      .insert({
+        url: uploadResult.url,
+        storage_path: storagePath,
+        title: title.trim(),
+        description: description?.trim() || null,
+        pathology_category_id: pathology_category_id?.trim() || null,
+        file_type: file.type,
+        file_size_bytes: fileBuffer.length,
+        duration_seconds: parsedDuration,
+        generated_text: generated_text?.trim() || null,
+        created_by: userId,
+      })
+      .select()
+      .single();
+
+    if (dbError) {
+      console.error("Database insert failed:", dbError);
+      // Clean up R2 storage on database error
+      try {
+        await deleteFromR2(storagePath);
+      } catch (cleanupError) {
+        console.error("Failed to cleanup R2 after database error:", cleanupError);
+      }
+      uploadedStoragePath = null;
+      return NextResponse.json(
+        { error: `Failed to save audio metadata: ${dbError.message}` },
+        { status: 500 }
+      );
+    }
+
     uploadedStoragePath = null;
 
     return NextResponse.json({
       success: true,
-      url: uploadResult.url,
-      key: uploadResult.key,
-      size: uploadResult.size,
-      contentType: uploadResult.contentType,
+      audio: audioData,
     });
   } catch (error) {
     console.error("Audio upload error:", error);

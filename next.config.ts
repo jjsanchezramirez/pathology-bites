@@ -163,6 +163,39 @@ const nextConfig = {
       },
     ];
 
+    // COEP/COOP headers required for SharedArrayBuffer (FFmpeg.wasm threading).
+    // Applied only to admin/audio routes to avoid breaking cross-origin embeds elsewhere.
+    const sharedArrayBufferHeaders = [
+      {
+        source: "/admin/audio/:path*",
+        headers: [
+          { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+        ],
+      },
+      {
+        source: "/test/audio-upload-test",
+        headers: [
+          { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
+          { key: "Cross-Origin-Opener-Policy", value: "same-origin" },
+        ],
+      },
+      // FFmpeg WASM/JS files and Next.js chunks must opt in to cross-origin
+      // isolation so the browser allows them to load under COEP.
+      {
+        source: "/ffmpeg/:path*",
+        headers: [
+          { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+        ],
+      },
+      {
+        source: "/_next/:path*",
+        headers: [
+          { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
+        ],
+      },
+    ];
+
     const securityHeaders = [
       {
         // Apply security headers to all routes
@@ -192,15 +225,6 @@ const nextConfig = {
           {
             key: "Permissions-Policy",
             value: "camera=(self), microphone=(self), geolocation=(), interest-cohort=()",
-          },
-          // Enable SharedArrayBuffer for FFmpeg.wasm (required for WASM threading)
-          {
-            key: "Cross-Origin-Embedder-Policy",
-            value: "require-corp",
-          },
-          {
-            key: "Cross-Origin-Opener-Policy",
-            value: "same-origin",
           },
           // Content Security Policy
           {
@@ -242,7 +266,7 @@ const nextConfig = {
       },
     ];
 
-    return [...cacheHeaders, ...securityHeaders];
+    return [...cacheHeaders, ...sharedArrayBufferHeaders, ...securityHeaders];
   },
 };
 

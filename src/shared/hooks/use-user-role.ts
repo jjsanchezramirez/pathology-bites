@@ -29,6 +29,7 @@ const FEATURE_PERMISSIONS: Record<string, UserRole[]> = {
   "tags.manage": ["admin"],
   "sets.manage": ["admin"],
   "images.manage": ["admin"],
+  "audio.manage": ["admin"],
   "inquiries.manage": ["admin"],
   "notifications.manage": ["admin"],
   "analytics.view": ["admin"],

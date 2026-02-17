@@ -90,6 +90,13 @@ export const adminNavigationSections: NavigationSection[] = [
         requiredPermission: "images.manage",
         showToRoles: ["admin", "creator", "reviewer"],
       },
+      {
+        name: "Audio",
+        href: "/admin/audio",
+        icon: "AudioLines",
+        requiredPermission: "audio.manage",
+        showToRoles: ["admin"],
+      },
     ],
   },
   {

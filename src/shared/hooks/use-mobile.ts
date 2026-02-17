@@ -9,29 +9,21 @@ import { useState, useEffect } from "react";
  * Only responds to actual viewport size changes, not text scaling
  */
 export function useMobile() {
-  // Initialize as true (mobile-first) to prevent layout shift on mobile devices
-  const [isMobile, setIsMobile] = useState(true);
+  // Initialize as undefined to avoid SSR/client mismatch.
+  // Components should treat undefined as "not yet known" and defer layout decisions.
+  const [isMobile, setIsMobile] = useState<boolean | undefined>(undefined);
 
   useEffect(() => {
-    // Use fixed breakpoint based on actual viewport width only
     const mediaQuery = window.matchMedia("(max-width: 767px)");
-
-    // Set initial value
     setIsMobile(mediaQuery.matches);
 
-    // Create event listener
     const handleChange = (e: MediaQueryListEvent) => {
       setIsMobile(e.matches);
     };
 
-    // Add listener
     mediaQuery.addEventListener("change", handleChange);
-
-    // Cleanup
-    return () => {
-      mediaQuery.removeEventListener("change", handleChange);
-    };
-  }, []); // No dependencies - only respond to viewport changes
+    return () => mediaQuery.removeEventListener("change", handleChange);
+  }, []);
 
   return isMobile;
 }

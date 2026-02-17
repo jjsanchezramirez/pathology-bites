@@ -48,7 +48,10 @@ export function UnifiedLayoutClient({
   const navigationSections = navigationConfig.sections;
   const { isInQuizMode } = useQuizMode();
   const { isInAnkiMode } = useAnkiMode();
-  const isMobile = useMobile();
+  const isMobileRaw = useMobile();
+  // Treat undefined (pre-hydration) as false (desktop) so SSR and first client
+  // render agree, eliminating the hydration mismatch.
+  const isMobile = isMobileRaw ?? false;
 
   // Simplified state management - separate desktop and mobile states
   const [desktopCollapsed, setDesktopCollapsed] = useState(false); // Desktop: false = expanded, true = collapsed

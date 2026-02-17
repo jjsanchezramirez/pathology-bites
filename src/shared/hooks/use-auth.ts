@@ -11,6 +11,10 @@
 
 "use client";
 
+// Bump this when auth/middleware logic changes to bust stale sessionStorage caches.
+// In dev, we always skip the cache so restarts pick up changes immediately.
+const AUTH_CACHE_VERSION = "v1";
+
 import { useState, useEffect, useRef } from "react";
 import { realtimeService } from "@/shared/services/realtime-service";
 import { createClient } from "@/shared/services/client";
@@ -87,37 +91,25 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
   // Initialize state from sessionStorage for faster perceived load
   const [authState, setAuthState] = useState<AuthState>(() => {
     // Try to restore from sessionStorage on mount
-    if (typeof window !== "undefined" && !skipAuth) {
+    // In development, always skip cache so server restarts pick up auth/middleware changes immediately.
+    const isDev = process.env.NODE_ENV === "development";
+    if (typeof window !== "undefined" && !skipAuth && !isDev) {
       try {
         const cached = sessionStorage.getItem("auth-state");
-        console.log("[useAuth] [DIAGNOSTIC] Checking sessionStorage:", {
-          hasCached: !!cached,
-          cachedLength: cached?.length || 0,
-          pathname: window.location.pathname,
-          timestamp: new Date().toISOString(),
-        });
 
         if (cached) {
           const parsed = JSON.parse(cached);
-          // Only use cache if it has a user (valid session)
-          if (parsed.user && parsed.session) {
+          // Only use cache if it has a user, valid session, and matching version
+          if (parsed.user && parsed.session && parsed._v === AUTH_CACHE_VERSION) {
             const cachedState = {
               ...parsed,
               isLoading: false, // Cache is ready, no need to show loading
               error: null,
             };
-            console.log("[useAuth] ✅ Restored from cache:", {
-              isAuthenticated: cachedState.isAuthenticated,
-              role: cachedState.role,
-              userId: parsed.user?.id,
-            });
             return cachedState;
-          } else {
-            console.log("[useAuth] ⚠️ Cache exists but invalid (no user/session):", {
-              hasUser: !!parsed.user,
-              hasSession: !!parsed.session,
-            });
           }
+          // Stale or version-mismatched cache — discard it
+          sessionStorage.removeItem("auth-state");
         }
       } catch (e) {
         // Ignore parse errors
@@ -125,10 +117,6 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
       }
     }
 
-    console.log("[useAuth] No cache found, starting with unauthenticated state", {
-      skipAuth,
-      pathname: typeof window !== "undefined" ? window.location.pathname : "SSR",
-    });
     return {
       user: null,
       session: null,
@@ -146,11 +134,17 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
   const previousSessionRef = useRef<Session | null>(null);
   const supabase = createClient();
 
-  // Helper to save auth state to sessionStorage
+  // Helper to save auth state to sessionStorage (skipped in dev)
   const saveAuthState = (state: AuthState) => {
-    if (typeof window !== "undefined" && state.user && state.session) {
+    if (
+      typeof window !== "undefined" &&
+      state.user &&
+      state.session &&
+      process.env.NODE_ENV !== "development"
+    ) {
       try {
         const dataToSave = {
+          _v: AUTH_CACHE_VERSION,
           user: state.user,
           session: state.session,
           role: state.role,
@@ -159,15 +153,9 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
         };
         // Only save minimal data needed for fast restore
         sessionStorage.setItem("auth-state", JSON.stringify(dataToSave));
-        console.log("[useAuth] [DIAGNOSTIC] 💾 Saved auth state to sessionStorage:", {
-          userId: state.user?.id,
-          role: state.role,
-          pathname: window.location.pathname,
-          timestamp: new Date().toISOString(),
-        });
       } catch (e) {
         // Ignore storage errors (quota exceeded, etc.)
-        console.error("[useAuth] [DIAGNOSTIC] ❌ Failed to save to sessionStorage:", e);
+        console.error("[useAuth] ❌ Failed to save to sessionStorage:", e);
       }
     }
   };
@@ -177,12 +165,8 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
     if (typeof window !== "undefined") {
       try {
         sessionStorage.removeItem("auth-state");
-        console.log("[useAuth] [DIAGNOSTIC] 🗑️ Cleared auth state from sessionStorage:", {
-          pathname: window.location.pathname,
-          timestamp: new Date().toISOString(),
-        });
       } catch (e) {
-        console.error("[useAuth] [DIAGNOSTIC] ❌ Failed to clear sessionStorage:", e);
+        console.error("[useAuth] ❌ Failed to clear sessionStorage:", e);
       }
     }
   };
@@ -212,25 +196,13 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
 
     const initAuth = async () => {
       try {
-        console.log("[useAuth] [DIAGNOSTIC] 🔄 Starting auth initialization:", {
-          pathname: typeof window !== "undefined" ? window.location.pathname : "SSR",
-          timestamp: new Date().toISOString(),
-        });
-
         const {
           data: { session },
           error,
         } = await supabase.auth.getSession();
 
-        console.log("[useAuth] [DIAGNOSTIC] 📡 getSession() completed:", {
-          hasSession: !!session,
-          hasUser: !!session?.user,
-          userId: session?.user?.id,
-          error: error?.message,
-        });
-
         if (error) {
-          console.error("[useAuth] [DIAGNOSTIC] ❌ Error getting session:", error);
+          console.error("[useAuth] Error getting session:", error);
           if (mounted.current) {
             setAuthState((prev) => ({
               ...prev,

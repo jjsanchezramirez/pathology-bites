@@ -18,17 +18,7 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/shared/components/ui/accordion";
-import {
-  X,
-  Play,
-  Image as ImageIcon,
-  Plus,
-  Trash2,
-  Flag,
-  Palette,
-  Download,
-  Video,
-} from "lucide-react";
+import { X, Play, Image as ImageIcon, Plus, Trash2, Palette, Download, Video } from "lucide-react";
 import type { ExplainerSequence, Segment } from "@/shared/types/explainer";
 import { ExplainerImageSelector } from "./components/explainer-image-selector";
 
@@ -1333,7 +1323,7 @@ export default function ExplainerEditorPage() {
       });
 
       // Auto-stop when sequence ends
-      const autoStopTimeout = setTimeout(
+      const _autoStopTimeout = setTimeout(
         () => {
           console.log("Auto-stop timeout reached. Recorder state:", recorder.state);
           if (recorder.state !== "inactive") {
