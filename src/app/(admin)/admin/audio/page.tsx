@@ -42,7 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { fetchAudio, getAudioStats, softDeleteAudio } from "@/features/admin/audio/services/audio";
+import { fetchAudio, getAudioStats } from "@/features/admin/audio/services/audio";
 import type { Audio, AudioListFilters } from "@/features/admin/audio/types";
 import { toast } from "@/shared/utils/ui/toast";
 import {
@@ -50,6 +50,7 @@ import {
   type AudioFileReadyState,
 } from "@/features/admin/audio/components/upload-dialog";
 import { EditAudioDialog } from "@/features/admin/audio/components/edit-dialog";
+import { DeleteAudioDialog } from "@/features/admin/audio/components/delete-dialog";
 import { CATEGORIES } from "@/shared/config/categories";
 import { getCategoryById } from "@/shared/config/category-color-map";
 
@@ -152,6 +153,8 @@ export default function AdminAudioPage() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedAudio, setSelectedAudio] = useState<Audio | null>(null);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [audioToDelete, setAudioToDelete] = useState<Audio | null>(null);
   const [categoryFilter, setCategoryFilter] = useState<string>("all");
   const [showCleanupDialog, setShowCleanupDialog] = useState(false);
   const [audioDurations, setAudioDurations] = useState<Record<string, number>>({});
@@ -275,18 +278,9 @@ export default function AdminAudioPage() {
     setEditDialogOpen(true);
   };
 
-  const handleDelete = async (audio: Audio) => {
-    if (!confirm("Are you sure you want to permanently delete this audio file?")) return;
-
-    try {
-      await softDeleteAudio(audio.id);
-      toast.success("Audio file deleted successfully");
-      loadAudio();
-      loadStats();
-    } catch (error) {
-      console.error("Error deleting audio:", error);
-      toast.error("Failed to delete audio file");
-    }
+  const handleDelete = (audio: Audio) => {
+    setAudioToDelete(audio);
+    setDeleteDialogOpen(true);
   };
 
   return (
@@ -589,6 +583,16 @@ export default function AdminAudioPage() {
         open={editDialogOpen}
         onOpenChange={setEditDialogOpen}
         onSave={() => {
+          loadAudio();
+          loadStats();
+        }}
+      />
+
+      <DeleteAudioDialog
+        audio={audioToDelete}
+        open={deleteDialogOpen}
+        onOpenChange={setDeleteDialogOpen}
+        onSuccess={() => {
           loadAudio();
           loadStats();
         }}
