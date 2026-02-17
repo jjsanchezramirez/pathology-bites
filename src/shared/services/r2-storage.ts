@@ -334,6 +334,11 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
       return `https://pathology-bites-anki.r2.dev/${key}`;
     }
 
+    // Audio bucket
+    if (bucketName === "pathology-bites-audio") {
+      return `https://pub-9b9085c172ac445ca3d87dec27a0518f.r2.dev/${key}`;
+    }
+
     // For private buckets, return a placeholder that indicates signed URL needed
     return `[PRIVATE:${bucketName}]${key}`;
   } catch {
@@ -352,6 +357,11 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
     // Anki media bucket uses its own domain
     if (bucketName === "pathology-bites-anki") {
       return `https://pathology-bites-anki.r2.dev/${key}`;
+    }
+
+    // Audio bucket
+    if (bucketName === "pathology-bites-audio") {
+      return `https://pub-9b9085c172ac445ca3d87dec27a0518f.r2.dev/${key}`;
     }
 
     // For private buckets, return a placeholder that indicates signed URL needed

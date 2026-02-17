@@ -73,6 +73,7 @@ export async function POST(request: NextRequest) {
       uploadResult = await uploadToR2(fileBuffer, storagePath, {
         contentType: file.type,
         cacheControl: "3600",
+        bucket: "pathology-bites-audio",
         metadata: {
           originalName: file.name,
           uploadedBy: userId,
@@ -116,7 +117,7 @@ export async function POST(request: NextRequest) {
       console.error("Database insert failed:", dbError);
       // Clean up R2 storage on database error
       try {
-        await deleteFromR2(storagePath);
+        await deleteFromR2(storagePath, "pathology-bites-audio");
       } catch (cleanupError) {
         console.error("Failed to cleanup R2 after database error:", cleanupError);
       }
@@ -138,7 +139,7 @@ export async function POST(request: NextRequest) {
 
     if (uploadedStoragePath) {
       try {
-        await deleteFromR2(uploadedStoragePath);
+        await deleteFromR2(uploadedStoragePath, "pathology-bites-audio");
       } catch (cleanupError) {
         console.error("Failed to cleanup R2 audio file:", cleanupError);
       }
