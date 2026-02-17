@@ -27,6 +27,7 @@ import {
 } from "@/shared/components/ui/select";
 import { ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
+import { CATEGORIES } from "@/shared/config/categories";
 
 export interface AudioFileReadyState {
   /** The file to upload (already MP3-compressed if conversion happened) */
@@ -62,6 +63,7 @@ export function AudioUploadDialog({
   const [isDragging, setIsDragging] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
   const [transcript, setTranscript] = useState("");
   const [isUploading, setIsUploading] = useState(false);
   const [error, setError] = useState("");
@@ -86,6 +88,7 @@ export function AudioUploadDialog({
     if (!open) {
       setTitle("");
       setDescription("");
+      setCategory("");
       setTranscript("");
       setError("");
       setSelectedContent(null);
@@ -200,6 +203,7 @@ export function AudioUploadDialog({
       formData.append("file", fileReady.file);
       formData.append("title", title.trim());
       if (description.trim()) formData.append("description", description.trim());
+      if (category) formData.append("pathology_category_id", category);
       if (transcript.trim()) formData.append("generated_text", transcript.trim());
       if (fileReady.duration) formData.append("duration_seconds", fileReady.duration.toString());
 
@@ -409,6 +413,29 @@ export function AudioUploadDialog({
               rows={2}
               disabled={isWorking}
             />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="category">Pathology Category (Optional)</Label>
+            <Select
+              value={category || "none"}
+              onValueChange={(value) => setCategory(value === "none" ? "" : value)}
+              disabled={isWorking}
+            >
+              <SelectTrigger id="category">
+                <SelectValue placeholder="Select category" />
+              </SelectTrigger>
+              <SelectContent className="max-h-[300px]">
+                <SelectItem value="none">None</SelectItem>
+                {[...CATEGORIES]
+                  .sort((a, b) => a.name.localeCompare(b.name))
+                  .map((cat) => (
+                    <SelectItem key={cat.id} value={cat.id}>
+                      {cat.shortForm} — {cat.name}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="space-y-2">
