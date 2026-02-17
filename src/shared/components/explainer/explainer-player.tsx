@@ -1,13 +1,13 @@
 "use client";
 
-import { useRef, useCallback, useEffect } from "react";
+import { useRef, useCallback, useEffect, useState, useMemo } from "react";
 import { cn } from "@/shared/utils";
 import { useAudioSync } from "./use-audio-sync";
 import { useExplainerEngine } from "./use-explainer-engine";
 import { useResourcePreloader } from "./use-resource-preloader";
 import { ExplainerViewport } from "./explainer-viewport";
 import { ExplainerControls } from "./explainer-controls";
-import type { ExplainerPlayerProps } from "@/shared/types/explainer";
+import type { ExplainerPlayerProps, CaptionChunk } from "@/shared/types/explainer";
 
 export function ExplainerPlayer({
   sequence,
@@ -18,8 +18,17 @@ export function ExplainerPlayer({
   onTimeUpdate,
   onAudioLoaded,
   seekToTime,
+  captions,
 }: ExplainerPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  // CC visibility — defaults on when captions are provided
+  const [captionsVisible, setCaptionsVisible] = useState(true);
+
+  // Reset CC on when captions prop changes (new sequence generated)
+  useEffect(() => {
+    if (captions && captions.length > 0) setCaptionsVisible(true);
+  }, [captions]);
 
   // Preload all resources before playback
   const preloader = useResourcePreloader({
@@ -37,6 +46,12 @@ export function ExplainerPlayer({
     sequence,
     currentTime: audio.currentTime,
   });
+
+  // Find the active caption chunk for the current time
+  const activeCaption = useMemo((): CaptionChunk | null => {
+    if (!captions || !captionsVisible) return null;
+    return captions.find((c) => audio.currentTime >= c.start && audio.currentTime < c.end) ?? null;
+  }, [captions, captionsVisible, audio.currentTime]);
 
   // Auto-play
   useEffect(() => {
@@ -126,6 +141,22 @@ export function ExplainerPlayer({
           onClick={handleViewportClick}
         />
 
+        {/* Caption overlay — rendered outside the engine to avoid interpolation blinks */}
+        {activeCaption && (
+          <div className="absolute inset-x-0 bottom-[6%] flex justify-center px-4 pointer-events-none">
+            <div
+              className="px-3 py-1.5 rounded text-white text-center leading-snug"
+              style={{
+                fontSize: "1.05rem",
+                backgroundColor: "rgba(0,0,0,0.55)",
+                maxWidth: "80%",
+              }}
+            >
+              {activeCaption.text}
+            </div>
+          </div>
+        )}
+
         {/* Loading overlay */}
         {preloader.isLoading && (
           <div className="absolute inset-0 flex items-center justify-center bg-black/90">
@@ -165,6 +196,9 @@ export function ExplainerPlayer({
         onSeek={audio.seek}
         onVolumeChange={audio.setVolume}
         onPlaybackRateChange={audio.setPlaybackRate}
+        captionsAvailable={!!captions && captions.length > 0}
+        captionsVisible={captionsVisible}
+        onToggleCaptions={() => setCaptionsVisible((v) => !v)}
       />
 
       {/* Hidden audio element */}

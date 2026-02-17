@@ -17,6 +17,9 @@ interface ExplainerControlsProps {
   onSeek: (time: number) => void;
   onVolumeChange: (volume: number) => void;
   onPlaybackRateChange: (rate: number) => void;
+  captionsAvailable?: boolean;
+  captionsVisible?: boolean;
+  onToggleCaptions?: () => void;
 }
 
 const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -40,6 +43,9 @@ export function ExplainerControls({
   onSeek,
   onVolumeChange,
   onPlaybackRateChange,
+  captionsAvailable = false,
+  captionsVisible = true,
+  onToggleCaptions,
 }: ExplainerControlsProps) {
   const handleSeekChange = useCallback(
     (value: number[]) => {
@@ -107,6 +113,21 @@ export function ExplainerControls({
             className="w-20"
           />
         </div>
+
+        {/* CC button — only shown when captions are available */}
+        {captionsAvailable && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`h-9 w-9 shrink-0 text-xs font-bold ${
+              captionsVisible ? "text-foreground" : "text-muted-foreground/50"
+            }`}
+            onClick={onToggleCaptions}
+            title={captionsVisible ? "Hide captions" : "Show captions"}
+          >
+            CC
+          </Button>
+        )}
 
         {/* Speed */}
         <select

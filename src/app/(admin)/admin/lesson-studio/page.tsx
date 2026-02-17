@@ -47,6 +47,7 @@ import type {
   HighlightRegion,
   ArrowPointer,
   TextOverlay,
+  CaptionChunk,
 } from "@/shared/types/explainer";
 import { ExplainerImageSelector } from "./components/explainer-image-selector";
 import { fetchAudio } from "@/features/admin/audio/services/audio";
@@ -242,6 +243,8 @@ export default function LessonStudioPage() {
   const [audioSearch, setAudioSearch] = useState("");
   const [audioLoading, setAudioLoading] = useState(false);
   const [audioTitle, setAudioTitle] = useState("");
+  const [audioTranscript, setAudioTranscript] = useState("");
+  const [captionChunks, setCaptionChunks] = useState<CaptionChunk[]>([]);
 
   const loadAudioRecords = useCallback(async (search?: string) => {
     setAudioLoading(true);
@@ -270,6 +273,10 @@ export default function LessonStudioPage() {
   const handleSelectAudio = (record: AudioRecord) => {
     setAudioUrl(record.url);
     setAudioTitle(record.title);
+    setAudioTranscript(record.generated_text ?? "");
+    // Seed duration immediately from the record so captions can use it before
+    // the player fires onAudioLoaded
+    if (record.duration_seconds) setAudioDuration(record.duration_seconds);
     setAudioPickerOpen(false);
     setAudioSearch("");
   };
@@ -551,6 +558,28 @@ export default function LessonStudioPage() {
       "textOverlays",
       img.textOverlays.map((t) => (t.id === textId ? { ...t, ...updates } : t))
     );
+  };
+
+  /**
+   * Build a flat list of caption chunks from a transcript using uniform word timing.
+   * Times are absolute (seconds from sequence start, offset by segmentTimeOffset).
+   */
+  const buildCaptionChunks = (transcript: string, totalDuration: number): CaptionChunk[] => {
+    const CHUNK_SIZE = 5;
+    const words = transcript.trim().split(/\s+/).filter(Boolean);
+    if (words.length === 0 || totalDuration <= 0) return [];
+
+    const wordDuration = totalDuration / words.length;
+    const chunks: CaptionChunk[] = [];
+    for (let i = 0; i < words.length; i += CHUNK_SIZE) {
+      const chunkWords = words.slice(i, i + CHUNK_SIZE);
+      chunks.push({
+        text: chunkWords.join(" "),
+        start: i * wordDuration,
+        end: (i + chunkWords.length) * wordDuration,
+      });
+    }
+    return chunks;
   };
 
   const generateSequence = () => {
@@ -874,6 +903,13 @@ export default function LessonStudioPage() {
       aspectRatio: "16:9",
       segments,
     });
+
+    // Build flat caption chunks (rendered outside the engine, no keyframe interpolation)
+    if (audioTranscript && audioDuration > 0) {
+      setCaptionChunks(buildCaptionChunks(audioTranscript, audioDuration));
+    } else {
+      setCaptionChunks([]);
+    }
   };
 
   const saveToJSON = () => {
@@ -1556,6 +1592,7 @@ export default function LessonStudioPage() {
                   className="w-full"
                   seekToTime={seekTime}
                   onAudioLoaded={setAudioDuration}
+                  captions={captionChunks.length > 0 ? captionChunks : undefined}
                 />
               </div>
             ) : (

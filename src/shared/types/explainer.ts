@@ -89,6 +89,15 @@ export interface ExplainerSequence {
   segments: Segment[];
 }
 
+// ---- Captions ----
+
+/** A single subtitle chunk with absolute start/end times (seconds from sequence start). */
+export interface CaptionChunk {
+  text: string;
+  start: number;
+  end: number;
+}
+
 // ---- Component Props ----
 
 export interface ExplainerPlayerProps {
@@ -100,4 +109,5 @@ export interface ExplainerPlayerProps {
   onTimeUpdate?: (currentTime: number) => void;
   onAudioLoaded?: (duration: number) => void; // Called when audio loads with its duration
   seekToTime?: number; // Seek to this time when it changes
+  captions?: CaptionChunk[]; // Optional flat list of caption chunks
 }
