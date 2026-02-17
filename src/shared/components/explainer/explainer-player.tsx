@@ -168,7 +168,7 @@ export function ExplainerPlayer({
   return (
     <div
       ref={containerRef}
-      className={cn("focus:outline-none bg-black", className)}
+      className={cn("focus:outline-none", className)}
       onKeyDown={handleKeyDown}
       onMouseMove={isFullscreen ? resetHideTimer : undefined}
       tabIndex={0}
@@ -176,7 +176,7 @@ export function ExplainerPlayer({
       aria-label="Explanation video player"
     >
       {/* Video viewport + overlaid controls */}
-      <div className="relative rounded-lg overflow-hidden bg-black group">
+      <div className={cn("relative overflow-hidden bg-black group", isFullscreen ? "" : "rounded-2xl")}>
         <ExplainerViewport
           currentSegment={engine.currentSegment}
           incomingSegment={engine.incomingSegment}
