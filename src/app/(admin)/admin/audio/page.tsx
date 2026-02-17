@@ -462,9 +462,9 @@ export default function AdminAudioPage() {
                                   {formatDuration(audioDurations[item.id] ?? item.duration_seconds)}
                                 </div>
                               </div>
-                              {item.description && (
+                              {(item.description || item.generated_text) && (
                                 <p className="line-clamp-1 text-xs text-muted-foreground">
-                                  {item.description}
+                                  {item.description || item.generated_text}
                                 </p>
                               )}
                             </div>
