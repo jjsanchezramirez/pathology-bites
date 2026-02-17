@@ -3,7 +3,7 @@
 import { useCallback } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Slider } from "@/shared/components/ui/slider";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
+import { Play, Pause, Volume2, VolumeX, Maximize, Minimize } from "lucide-react";
 
 interface ExplainerControlsProps {
   isPlaying: boolean;
@@ -20,6 +20,8 @@ interface ExplainerControlsProps {
   captionsAvailable?: boolean;
   captionsVisible?: boolean;
   onToggleCaptions?: () => void;
+  isFullscreen?: boolean;
+  onToggleFullscreen?: () => void;
 }
 
 const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -46,6 +48,8 @@ export function ExplainerControls({
   captionsAvailable = false,
   captionsVisible = true,
   onToggleCaptions,
+  isFullscreen = false,
+  onToggleFullscreen,
 }: ExplainerControlsProps) {
   const handleSeekChange = useCallback(
     (value: number[]) => {
@@ -66,7 +70,7 @@ export function ExplainerControls({
   }, [volume, onVolumeChange]);
 
   return (
-    <div className="mt-2 space-y-2">
+    <div className="space-y-1.5 px-3 pb-2 pt-1">
       {/* Progress bar */}
       <Slider
         value={[currentTime]}
@@ -79,20 +83,20 @@ export function ExplainerControls({
       />
 
       {/* Controls row */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center gap-2">
         {/* Play/Pause */}
         <Button
           variant="ghost"
           size="icon"
-          className="h-9 w-9 shrink-0"
+          className="h-8 w-8 shrink-0 text-white hover:bg-white/20 hover:text-white"
           onClick={isPlaying ? onPause : onPlay}
           disabled={!isReady}
         >
-          {isPlaying ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+          {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </Button>
 
         {/* Time */}
-        <div className="text-sm text-muted-foreground tabular-nums">
+        <div className="text-xs text-white/80 tabular-nums shrink-0">
           {formatTime(currentTime)} / {formatTime(duration)}
         </div>
 
@@ -100,8 +104,13 @@ export function ExplainerControls({
         <div className="flex-1" />
 
         {/* Volume */}
-        <div className="hidden sm:flex items-center gap-2">
-          <Button variant="ghost" size="icon" className="h-9 w-9 shrink-0" onClick={toggleMute}>
+        <div className="hidden sm:flex items-center gap-1.5">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0 text-white hover:bg-white/20 hover:text-white"
+            onClick={toggleMute}
+          >
             {volume === 0 ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
           </Button>
           <Slider
@@ -110,7 +119,7 @@ export function ExplainerControls({
             max={1}
             step={0.05}
             onValueChange={handleVolumeChange}
-            className="w-20"
+            className="w-16"
           />
         </div>
 
@@ -119,8 +128,8 @@ export function ExplainerControls({
           <Button
             variant="ghost"
             size="icon"
-            className={`h-9 w-9 shrink-0 text-xs font-bold ${
-              captionsVisible ? "text-foreground" : "text-muted-foreground/50"
+            className={`h-8 w-8 shrink-0 text-xs font-bold hover:bg-white/20 ${
+              captionsVisible ? "text-white" : "text-white/40"
             }`}
             onClick={onToggleCaptions}
             title={captionsVisible ? "Hide captions" : "Show captions"}
@@ -133,14 +142,27 @@ export function ExplainerControls({
         <select
           value={playbackRate}
           onChange={(e) => onPlaybackRateChange(Number(e.target.value))}
-          className="text-sm bg-transparent border border-input rounded px-2 py-1 cursor-pointer hover:bg-accent"
+          className="text-xs bg-transparent text-white border border-white/30 rounded px-1.5 py-0.5 cursor-pointer hover:bg-white/20"
         >
           {SPEED_OPTIONS.map((rate) => (
-            <option key={rate} value={rate}>
+            <option key={rate} value={rate} className="bg-black text-white">
               {rate}x
             </option>
           ))}
         </select>
+
+        {/* Fullscreen toggle */}
+        {onToggleFullscreen && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0 text-white hover:bg-white/20 hover:text-white"
+            onClick={onToggleFullscreen}
+            title={isFullscreen ? "Exit fullscreen (f)" : "Fullscreen (f)"}
+          >
+            {isFullscreen ? <Minimize className="h-4 w-4" /> : <Maximize className="h-4 w-4" />}
+          </Button>
+        )}
       </div>
     </div>
   );

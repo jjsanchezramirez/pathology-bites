@@ -25,10 +25,54 @@ export function ExplainerPlayer({
   // CC visibility — defaults on when captions are provided
   const [captionsVisible, setCaptionsVisible] = useState(true);
 
-  // Reset CC on when captions prop changes (new sequence generated)
+  // Fullscreen state — tracked via fullscreenchange event so it stays in sync
+  // when the user presses Escape or uses the browser's native controls
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
+  // Controls visibility — hide after inactivity (only relevant in fullscreen)
+  const [controlsVisible, setControlsVisible] = useState(true);
+  const hideTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Reset CC when captions prop changes (new sequence generated)
   useEffect(() => {
     if (captions && captions.length > 0) setCaptionsVisible(true);
   }, [captions]);
+
+  // Sync isFullscreen with the browser's native fullscreen state
+  useEffect(() => {
+    const onFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+      // Always show controls when fullscreen state changes
+      setControlsVisible(true);
+    };
+    document.addEventListener("fullscreenchange", onFullscreenChange);
+    return () => document.removeEventListener("fullscreenchange", onFullscreenChange);
+  }, []);
+
+  const toggleFullscreen = useCallback(async () => {
+    if (!containerRef.current) return;
+    if (!document.fullscreenElement) {
+      await containerRef.current.requestFullscreen();
+    } else {
+      await document.exitFullscreen();
+    }
+  }, []);
+
+  // Auto-hide controls after 3s of inactivity (fullscreen only)
+  const resetHideTimer = useCallback(() => {
+    setControlsVisible(true);
+    if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+    hideTimerRef.current = setTimeout(() => {
+      if (document.fullscreenElement) setControlsVisible(false);
+    }, 3000);
+  }, []);
+
+  useEffect(() => {
+    if (!isFullscreen) {
+      if (hideTimerRef.current) clearTimeout(hideTimerRef.current);
+      setControlsVisible(true);
+    }
+  }, [isFullscreen]);
 
   // Preload all resources before playback
   const preloader = useResourcePreloader({
@@ -112,22 +156,27 @@ export function ExplainerPlayer({
           e.preventDefault();
           audio.setVolume(audio.volume > 0 ? 0 : 1);
           break;
+        case "f":
+          e.preventDefault();
+          toggleFullscreen();
+          break;
       }
     },
-    [audio]
+    [audio, toggleFullscreen]
   );
 
   return (
     <div
       ref={containerRef}
-      className={cn("focus:outline-none", className)}
+      className={cn("focus:outline-none bg-black", className)}
       onKeyDown={handleKeyDown}
+      onMouseMove={isFullscreen ? resetHideTimer : undefined}
       tabIndex={0}
       role="application"
       aria-label="Explanation video player"
     >
-      {/* Video viewport */}
-      <div className="relative rounded-lg overflow-hidden bg-black">
+      {/* Video viewport + overlaid controls */}
+      <div className="relative rounded-lg overflow-hidden bg-black group">
         <ExplainerViewport
           currentSegment={engine.currentSegment}
           incomingSegment={engine.incomingSegment}
@@ -143,7 +192,10 @@ export function ExplainerPlayer({
 
         {/* Caption overlay — rendered outside the engine to avoid interpolation blinks */}
         {activeCaption && (
-          <div className="absolute inset-x-0 bottom-[6%] flex justify-center px-4 pointer-events-none">
+          <div
+            className="absolute inset-x-0 flex justify-center px-4 pointer-events-none transition-all duration-200"
+            style={{ bottom: controlsVisible ? "15%" : "6%" }}
+          >
             <div
               className="px-3 py-1.5 rounded text-white text-center leading-snug"
               style={{
@@ -156,6 +208,34 @@ export function ExplainerPlayer({
             </div>
           </div>
         )}
+
+        {/* Controls overlay — always inside the viewport, shown on hover or when not fullscreen */}
+        <div
+          className={cn(
+            "absolute inset-x-0 bottom-0 transition-opacity duration-300",
+            "bg-gradient-to-t from-black/80 via-black/40 to-transparent pt-8",
+            controlsVisible ? "opacity-100" : "opacity-0 pointer-events-none"
+          )}
+        >
+          <ExplainerControls
+            isPlaying={audio.isPlaying}
+            currentTime={audio.currentTime}
+            duration={audio.duration}
+            volume={audio.volume}
+            playbackRate={audio.playbackRate}
+            isReady={preloader.isReady}
+            onPlay={audio.play}
+            onPause={audio.pause}
+            onSeek={audio.seek}
+            onVolumeChange={audio.setVolume}
+            onPlaybackRateChange={audio.setPlaybackRate}
+            captionsAvailable={!!captions && captions.length > 0}
+            captionsVisible={captionsVisible}
+            onToggleCaptions={() => setCaptionsVisible((v) => !v)}
+            isFullscreen={isFullscreen}
+            onToggleFullscreen={toggleFullscreen}
+          />
+        </div>
 
         {/* Loading overlay */}
         {preloader.isLoading && (
@@ -182,24 +262,6 @@ export function ExplainerPlayer({
           </div>
         )}
       </div>
-
-      {/* Controls below video */}
-      <ExplainerControls
-        isPlaying={audio.isPlaying}
-        currentTime={audio.currentTime}
-        duration={audio.duration}
-        volume={audio.volume}
-        playbackRate={audio.playbackRate}
-        isReady={preloader.isReady}
-        onPlay={audio.play}
-        onPause={audio.pause}
-        onSeek={audio.seek}
-        onVolumeChange={audio.setVolume}
-        onPlaybackRateChange={audio.setPlaybackRate}
-        captionsAvailable={!!captions && captions.length > 0}
-        captionsVisible={captionsVisible}
-        onToggleCaptions={() => setCaptionsVisible((v) => !v)}
-      />
 
       {/* Hidden audio element */}
       {audioUrl && <audio ref={audio.audioRef} src={audioUrl} preload="auto" />}
