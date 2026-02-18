@@ -219,8 +219,8 @@ export function findTransitionCaptionIndices(
 // Public API
 // ---------------------------------------------------------------------------
 
-/** Minimum segment duration in seconds — prevents degenerate zero-length segments */
-const MIN_SEGMENT_DURATION = 1.5;
+/** Minimum segment duration in seconds — prevents degenerate short segments */
+const MIN_SEGMENT_DURATION = 3.0;
 
 /**
  * Compute absolute startTime/endTime for each image segment.

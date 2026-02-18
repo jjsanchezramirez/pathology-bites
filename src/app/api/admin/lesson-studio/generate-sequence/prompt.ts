@@ -226,10 +226,11 @@ export function buildUserPrompt(
   captions: CaptionChunk[],
   audioDuration: number,
   audioUrl: string,
-  visionResults?: VisionResult[]
+  visionResults?: VisionResult[],
+  preComputedTimings?: ReturnType<typeof computeSegmentTimings>
 ): string {
-  // Pre-compute segment timings from caption semantics (hard constraints, not suggestions)
-  const timings = computeSegmentTimings(images, captions, audioDuration);
+  // Use pre-computed timings if provided (from AI segmenter), otherwise compute from keywords
+  const timings = preComputedTimings ?? computeSegmentTimings(images, captions, audioDuration);
 
   // Pre-compute camera keyframes from vision data
   const cameraKeyframes = computeAllCameraKeyframes(images, visionResults ?? []);

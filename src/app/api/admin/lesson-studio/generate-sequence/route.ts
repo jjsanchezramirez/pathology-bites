@@ -4,6 +4,9 @@ import type { ExplainerSequence, CaptionChunk } from "@/shared/types/explainer";
 import { SYSTEM_PROMPT, buildUserPrompt } from "./prompt";
 import type { ImageInput } from "./prompt";
 import { analyzeImages } from "./vision";
+import { computeSegmentTimings } from "./timing";
+import { computeAllCameraKeyframes } from "./camera";
+import { segmentByAI } from "./segmenter";
 
 // Tell Next.js to allow up to 150 seconds for this route (vision pass + assembly pass)
 export const maxDuration = 150;
@@ -226,16 +229,33 @@ export async function POST(request: NextRequest) {
     }
 
     // ---------------------------------------------------------------------------
-    // Pass 1: Vision — analyse each image in parallel to get feature positions
-    // This is non-blocking on failure; vision results are best-effort.
+    // Pass 1: Vision analysis + AI segmentation — run in parallel
+    // Both are best-effort; failures fall back gracefully.
     // ---------------------------------------------------------------------------
-    console.log(`[generate-sequence] Pass 1 — vision analysis for ${images.length} images`);
-    const visionResults = await analyzeImages(images, apiKey);
+    console.log(
+      `[generate-sequence] Pass 1 — vision analysis + AI segmentation for ${images.length} images`
+    );
+    const [visionResults, segmentTimings] = await Promise.all([
+      analyzeImages(images, apiKey),
+      segmentByAI(images, captions, audioDuration, apiKey),
+    ]);
+
+    // Pre-compute camera keyframes (for assembly prompt + debug panel)
+    const debugCameraKeyframes = computeAllCameraKeyframes(images, visionResults);
+    // Timings come from AI segmenter (with keyword-overlap fallback)
+    const debugTimings = segmentTimings;
 
     // ---------------------------------------------------------------------------
-    // Pass 2: Build prompts (enriched with vision data) and call assembly model
+    // Pass 2: Build prompts (enriched with vision data + pre-computed timings)
     // ---------------------------------------------------------------------------
-    const userPrompt = buildUserPrompt(images, captions, audioDuration, audioUrl, visionResults);
+    const userPrompt = buildUserPrompt(
+      images,
+      captions,
+      audioDuration,
+      audioUrl,
+      visionResults,
+      segmentTimings
+    );
 
     console.log(
       `[generate-sequence] Pass 2 — sequence assembly for ${images.length} images, ${audioDuration.toFixed(1)}s audio`
@@ -280,7 +300,16 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    return NextResponse.json({ success: true, sequence });
+    return NextResponse.json({
+      success: true,
+      sequence,
+      debug: {
+        visionResults,
+        timings: debugTimings,
+        cameraKeyframes: debugCameraKeyframes,
+        userPrompt,
+      },
+    });
   } catch (error) {
     console.error("[generate-sequence] Unexpected error:", error);
     return NextResponse.json(
