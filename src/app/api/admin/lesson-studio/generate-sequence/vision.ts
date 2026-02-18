@@ -50,7 +50,8 @@ export interface VisionResult {
 // Parse helpers
 // ---------------------------------------------------------------------------
 
-function parseXY(text: string): { x: number; y: number } | null {
+/** @internal exported for testing */
+export function parseXY(text: string): { x: number; y: number } | null {
   const m = text.match(/x\s*[=:]\s*(\d+(?:\.\d+)?)\s*%?,?\s*y\s*[=:]\s*(\d+(?:\.\d+)?)\s*%?/i);
   if (m) {
     const x = parseFloat(m[1]);
@@ -79,7 +80,8 @@ function parseAnnotationShape(lines: string[]): AnnotationShape | null {
   return null;
 }
 
-function parseObjectPresent(text: string): boolean | null {
+/** @internal exported for testing */
+export function parseObjectPresent(text: string): boolean | null {
   const lower = text.toLowerCase();
   // Look for explicit yes/no near Q0
   if (/\byes\b/.test(lower)) return true;
@@ -87,7 +89,8 @@ function parseObjectPresent(text: string): boolean | null {
   return null;
 }
 
-function parseObjectShape(text: string): ObjectShape | null {
+/** @internal exported for testing */
+export function parseObjectShape(text: string): ObjectShape | null {
   const lower = text.toLowerCase();
   if (/\bcircular\b|\bround\b/.test(lower)) return "circular";
   if (/\bovoid\b|\boval\b|\belliptical\b/.test(lower)) return "ovoid";
@@ -95,7 +98,8 @@ function parseObjectShape(text: string): ObjectShape | null {
   return null;
 }
 
-function parseObjectSize(text: string): ObjectSize | null {
+/** @internal exported for testing */
+export function parseObjectSize(text: string): ObjectSize | null {
   const lower = text.toLowerCase();
   if (/\blarge\b/.test(lower)) return "large";
   if (/\bmedium\b/.test(lower)) return "medium";
@@ -184,7 +188,8 @@ export function normaliseMagnification(
 //   Object, other mag, small,        irregular          → spotlight + zoom-in
 // ---------------------------------------------------------------------------
 
-function deriveMicroscopicTool(
+/** @internal exported for testing */
+export function deriveMicroscopicTool(
   objectPresent: boolean | null,
   objectShape: ObjectShape | null,
   objectSize: ObjectSize | null,
@@ -262,23 +267,11 @@ This is a histologic/microscopic image. Answer each question on its own numbered
    medium — occupies roughly one-fifth to one-half (20–50%)
    small — occupies less than one-fifth (<20%)
 
-4. Based on Q3/3a/3b and the magnification, choose the annotation tool:
-   - No discrete object, any magnification                   → none (pan/zoom only, no overlay)
-   - Object present, low mag,   circular/ovoid               → spotlight
-   - Object present, low mag,   irregular                    → arrow
-   - Object present, other mag, medium/large, circular/ovoid → circle (or ellipse if ovoid)
-   - Object present, other mag, small,        circular/ovoid → arrow
-   - Object present, other mag, medium/large, irregular      → none (pan/zoom only)
-   - Object present, other mag, small,        irregular      → spotlight
-   State: tool = <choice> — one sentence of reasoning.
+4. Position of the key feature (always answer, even if Q3 = no — point to the most important area):
+   x=<0–100>, y=<0–100>
+   (x=0 left, x=100 right, y=0 top, y=100 bottom. Centre = x=50, y=50)
 
-5. Position and size of the annotation target:
-   If tool is circle or ellipse: x=<0–100>, y=<0–100>, w=<width as % of image>, h=<height as % of image>
-   If tool is arrow:    x=<0–100>, y=<0–100>, w=0, h=0
-   If tool is spotlight: x=<0–100>, y=<0–100>, w=<radius as % of image>, h=<radius as % of image>
-   If tool is none:     x=50, y=50, w=0, h=0
-
-6. Suggested text overlay label (5 words or fewer, naming the key feature or variant shown).`;
+5. Suggested text overlay label (5 words or fewer, naming the key feature or variant shown).`;
 }
 
 // Gross prompt intentionally omitted — gross images skip the vision pass for now.
@@ -287,7 +280,11 @@ This is a histologic/microscopic image. Answer each question on its own numbered
 // Parse vision response — category-aware
 // ---------------------------------------------------------------------------
 
-function parseVisionResponse(raw: string, image: ImageInput): Omit<VisionResult, "canSeeImage"> {
+/** @internal exported for testing */
+export function parseVisionResponse(
+  raw: string,
+  image: ImageInput
+): Omit<VisionResult, "canSeeImage"> {
   const lines = raw
     .split("\n")
     .map((l) => l.trim())
@@ -335,12 +332,12 @@ function parseVisionResponse(raw: string, image: ImageInput): Omit<VisionResult,
     }
   }
 
-  // --- Parse suggested label (Q6) ---
+  // --- Parse suggested label (Q5) ---
   let suggestedLabel = "";
   for (const line of lines) {
-    if (/^6[.)]/i.test(line) || /suggested.*label|text.*overlay/i.test(line)) {
+    if (/^5[.)]/i.test(line) || /suggested.*label|text.*overlay/i.test(line)) {
       const cleaned = line
-        .replace(/^6[.)]\s*/i, "")
+        .replace(/^5[.)]\s*/i, "")
         .replace(/suggested (text )?label[:\s]*/i, "")
         .replace(/^["']|["']$/g, "")
         .trim();
@@ -355,30 +352,16 @@ function parseVisionResponse(raw: string, image: ImageInput): Omit<VisionResult,
     if (quoted) suggestedLabel = quoted[1];
   }
 
-  // --- Parse model's tool choice (Q4) — used only for annotationReason text ---
-  let modelToolReason = "";
-  for (const line of lines) {
-    if (/^4[.)]/i.test(line) || /\btool\b.*=|tool choice|annotation tool/i.test(line)) {
-      modelToolReason = line
-        .replace(/^4[.)]\s*/i, "")
-        .trim()
-        .slice(0, 200);
-      break;
-    }
-  }
-
-  // --- Always derive tool deterministically from Q3/3a/3b + magnification ---
+  // --- Derive tool deterministically from Q3/3a/3b + magnification ---
   const annotationTool = deriveMicroscopicTool(
     objectPresent,
     objectShape,
     objectSize,
     image.magnification
   );
-  const annotationReason =
-    modelToolReason ||
-    `Derived: object=${objectPresent ? "yes" : "no"}, shape=${objectShape ?? "n/a"}, size=${objectSize ?? "n/a"}, mag=${image.magnification ?? "unknown"} → ${annotationTool}.`;
+  const annotationReason = `Derived: object=${objectPresent ? "yes" : "no"}, shape=${objectShape ?? "n/a"}, size=${objectSize ?? "n/a"}, mag=${image.magnification ?? "unknown"} → ${annotationTool}.`;
 
-  // --- Extract shape dimensions (Q5) for shape-based tools ---
+  // --- Extract shape dimensions (Q4 position line) for shape-based tools ---
   const annotationShape = ["circle", "ellipse", "spotlight"].includes(annotationTool)
     ? parseAnnotationShape(lines)
     : null;

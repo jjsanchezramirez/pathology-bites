@@ -1,5 +1,11 @@
 import type { CaptionChunk } from "@/shared/types/explainer";
 import type { VisionResult } from "./vision";
+import { computeSegmentTimings } from "./timing";
+import {
+  computeAllCameraKeyframes,
+  formatCameraKeyframesForPrompt,
+  describeAnnotationForPrompt,
+} from "./camera";
 
 export interface ImageInput {
   url: string;
@@ -215,21 +221,6 @@ startPosition and endPosition must be different. direction = where arrowhead poi
 \`\`\`
 `;
 
-// Roughly allocate audio duration to images based on caption semantics.
-// Returns suggested [startTime, endTime] pairs (absolute) for each image.
-function suggestSegmentTimes(
-  images: ImageInput[],
-  captions: CaptionChunk[],
-  audioDuration: number
-): { start: number; end: number }[] {
-  // Simple equal-split as a baseline hint — the model will refine based on captions
-  const perImage = audioDuration / images.length;
-  return images.map((_, i) => ({
-    start: Math.round(i * perImage * 100) / 100,
-    end: Math.round((i === images.length - 1 ? audioDuration : (i + 1) * perImage) * 100) / 100,
-  }));
-}
-
 export function buildUserPrompt(
   images: ImageInput[],
   captions: CaptionChunk[],
@@ -237,78 +228,74 @@ export function buildUserPrompt(
   audioUrl: string,
   visionResults?: VisionResult[]
 ): string {
-  const suggestions = suggestSegmentTimes(images, captions, audioDuration);
+  // Pre-compute segment timings from caption semantics (hard constraints, not suggestions)
+  const timings = computeSegmentTimings(images, captions, audioDuration);
+
+  // Pre-compute camera keyframes from vision data
+  const cameraKeyframes = computeAllCameraKeyframes(images, visionResults ?? []);
 
   const imageList = images
     .map((img, i) => {
-      const s = suggestions[i];
-      const dur = (s.end - s.start).toFixed(2);
+      const t = timings[i];
+      const dur = t.endTime - t.startTime;
       const vision = visionResults?.[i];
+      const camera = cameraKeyframes[i];
+      const isMicroOrGross = img.category === "microscopic" || img.category === "gross";
 
-      const needsKenBurns = img.category === "microscopic" || img.category === "gross";
+      // Label: use vision suggestion if available, else derive from title
+      const label =
+        vision?.suggestedLabel ||
+        img.title.split(/[-–,]/)[0].trim().slice(0, 40) ||
+        img.description.split(/[-–,]/)[0].trim().slice(0, 40);
 
-      // Build vision annotation block
-      let visionBlock = "";
-      if (vision) {
-        if (!vision.canSeeImage) {
-          visionBlock = `  - Vision analysis: model could not interpret this image — use text overlay only, no annotation`;
-        } else {
-          const posStr = vision.featurePosition
-            ? `x=${vision.featurePosition.x.toFixed(1)}, y=${vision.featurePosition.y.toFixed(1)}`
-            : "unavailable";
-          const labelStr = vision.suggestedLabel
-            ? `"${vision.suggestedLabel}"`
-            : "(use title-derived label)";
-          visionBlock = `  - Vision analysis: model interpreted image successfully
-  - Primary feature position: ${posStr}
-  - Suggested text overlay label: ${labelStr}
-  - Recommended annotation tool: ${vision.annotationTool} — ${vision.annotationReason}`;
-        }
-      }
+      // Annotation description (pre-computed tool + position)
+      const annotationLine =
+        isMicroOrGross && vision
+          ? describeAnnotationForPrompt(vision.annotationTool, vision.featurePosition, label)
+          : `  Annotation: none — ${img.category === "figure" || img.category === "table" ? "figure/table, model discretion" : "no vision data"}`;
 
-      return `Image ${i + 1} → seg-${i} (suggested startTime=${s.start.toFixed(2)}, endTime=${s.end.toFixed(2)}, duration≈${dur}s):
-  - URL: ${img.url}
-  - Title: ${img.title}
-  - Description: ${img.description}
-  - Category: ${img.category || "unknown"}
-  - Dimensions: ${img.width}×${img.height}px
-  - Ken Burns required: ${needsKenBurns ? "YES" : "no"}
-  - Text overlay required: ${needsKenBurns ? "YES" : "optional"}${visionBlock ? "\n" + visionBlock : ""}`;
+      // Camera keyframes (pre-computed)
+      const cameraLine = formatCameraKeyframesForPrompt(camera, dur);
+
+      // Relevant captions for this segment (for context — model does not set timing)
+      const segCaptions = captions
+        .filter((c) => c.end > t.startTime && c.start < t.endTime)
+        .map((c) => `    [${c.start.toFixed(2)}s→${c.end.toFixed(2)}s] "${c.text}"`)
+        .join("\n");
+
+      return `seg-${i}  [${t.startTime.toFixed(2)}s → ${t.endTime.toFixed(2)}s]  (${dur.toFixed(2)}s)  ${img.category || "unknown"}
+  URL: ${img.url}
+  Label: "${label}"
+${annotationLine}
+${cameraLine}
+  Text overlay: ${isMicroOrGross ? `REQUIRED — "${label}" at x=50, y=88, fade in at t=0.8s, fade out at t=${(dur - 0.5).toFixed(2)}s` : "optional"}
+  Relevant captions:
+${segCaptions || "    (none in this window)"}`;
     })
     .join("\n\n");
 
-  const captionList = captions
-    .map((c) => `  [${c.start.toFixed(2)}s → ${c.end.toFixed(2)}s] "${c.text}"`)
-    .join("\n");
+  return `## Segments (${images.length} total — produce EXACTLY ${images.length} segments)
 
-  return `## Images (${images.length} total — produce EXACTLY ${images.length} segments, one per image)
+Timing is PRE-COMPUTED and FIXED. Do NOT adjust startTime/endTime values.
+Camera keyframes are PRE-COMPUTED. Copy them exactly into the keyframes array.
+Your job: assemble the JSON, set annotation overlays at the given positions, add text overlay fade timing, and handle figure/table animation freely.
 
 ${imageList}
 
-## Audio captions (${captions.length} chunks, total duration: ${audioDuration.toFixed(2)}s)
+## All captions (pass through UNCHANGED as objects)
 
-${captionList}
+${captions.map((c) => `  { "text": "${c.text.replace(/"/g, '\\"')}", "start": ${c.start}, "end": ${c.end} }`).join("\n")}
 
 ## Task
-Generate a complete ExplainerSequence JSON for these ${images.length} images synchronized to the ${audioDuration.toFixed(2)}-second audio track above.
+audioUrl: ${audioUrl}
+Total duration (exact): ${audioDuration.toFixed(4)}s
 
 Rules:
-- audioUrl to embed: ${audioUrl}
-- Total sequence duration must be exactly: ${audioDuration.toFixed(4)}
-- Produce EXACTLY ${images.length} segments — one per image, in order (seg-0 through seg-${images.length - 1}).
-- Adjust segment startTime/endTime based on the caption text — use the suggested times as a starting point, but shift boundaries to align with where the narration shifts topic.
-- CRITICAL: All keyframe "time" values are RELATIVE to their segment start (0 → segmentDuration). Never use absolute timestamps as keyframe times.
-- Each caption chunk must be passed through as an object: { "text": "...", "start": number, "end": number }.
-- For every microscopic/gross image: add text overlay label AND choose pan/zoom strategy based on vision data.${
-    visionResults
-      ? `
-- Vision data is provided per image above. USE IT:
-  - "Recommended annotation tool" tells you which tool to use (spotlight / circle / arrow / none).
-  - "Primary feature position" gives the x/y for the annotation AND informs the camera zoom target.
-  - "Suggested text overlay label" is the overlay text (refine if needed for clarity).
-  - If tool is "none": text overlay only, use gentle Ken Burns drift (CASE A).
-  - If tool is "spotlight", "circle", or "arrow": zoom into the feature (CASE B) AND add the annotation at the given position.`
-      : ""
-  }
+- CRITICAL: keyframe "time" values are RELATIVE to their segment start (0 → segmentDuration). Never use absolute timestamps.
+- startTime/endTime on segments are absolute seconds — copy them from above EXACTLY.
+- Captions: pass through all ${captions.length} chunks unchanged as objects { "text", "start", "end" }.
+- For each segment: use the pre-computed camera keyframes as-is. Do not invent different pan/zoom values.
+- For microscopic/gross: add the specified annotation overlay AND the text overlay with fade timing.
+- For figure/table: animate freely (pan, zoom, arrows, rectangles) based on the caption context.
 - Output ONLY the JSON object, nothing else.`;
 }
