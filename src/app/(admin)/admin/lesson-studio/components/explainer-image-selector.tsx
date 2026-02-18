@@ -35,6 +35,7 @@ interface LibraryImage {
   file_type: string;
   width: number;
   height: number;
+  magnification?: string | null;
   created_at: string;
 }
 

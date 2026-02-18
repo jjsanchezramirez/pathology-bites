@@ -15,7 +15,9 @@ export async function GET(request: NextRequest) {
     // Build query
     let query = supabase
       .from("images")
-      .select("id, url, description, alt_text, category, file_type, width, height, created_at")
+      .select(
+        "id, url, description, alt_text, category, file_type, width, height, magnification, created_at"
+      )
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 

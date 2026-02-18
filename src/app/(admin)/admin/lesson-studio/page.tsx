@@ -40,14 +40,19 @@ import {
   Search,
   Check,
   Clock,
+  Upload,
+  Sparkles,
+  Loader2,
 } from "lucide-react";
 import type {
   ExplainerSequence,
   Segment,
+  Transform,
   HighlightRegion,
   ArrowPointer,
   TextOverlay,
   CaptionChunk,
+  Keyframe,
 } from "@/shared/types/explainer";
 import { ExplainerImageSelector } from "./components/explainer-image-selector";
 import { fetchAudio } from "@/features/admin/audio/services/audio";
@@ -62,6 +67,7 @@ interface LibraryImage {
   file_type: string;
   width: number;
   height: number;
+  magnification?: string | null;
   created_at: string;
 }
 
@@ -225,6 +231,398 @@ interface SelectedImage extends LibraryImage {
   textOverlays: TimeBasedText[]; // Multiple time-based text overlays
 }
 
+// ---------------------------------------------------------------------------
+// Canvas export engine (same logic as /test/video-export, inlined here so the
+// studio has no extra dependencies and works self-contained in production)
+// ---------------------------------------------------------------------------
+
+const DEFAULT_TRANSFORM: Transform = { x: 0, y: 0, scale: 1 };
+
+function lerp(a: number, b: number, t: number) {
+  return a + (b - a) * t;
+}
+
+function lerpTransform(a: Transform, b: Transform, t: number): Transform {
+  return { x: lerp(a.x, b.x, t), y: lerp(a.y, b.y, t), scale: lerp(a.scale, b.scale, t) };
+}
+
+function findKeyframePair(
+  keyframes: Keyframe[],
+  elapsed: number
+): { kf1: Keyframe; kf2: Keyframe; t: number } {
+  const empty: Keyframe = {
+    time: 0,
+    transform: DEFAULT_TRANSFORM,
+    highlights: [],
+    arrows: [],
+    textOverlays: [],
+  };
+  if (keyframes.length === 0) return { kf1: empty, kf2: empty, t: 0 };
+  if (keyframes.length === 1) return { kf1: keyframes[0], kf2: keyframes[0], t: 0 };
+  if (elapsed >= keyframes[keyframes.length - 1].time) {
+    const last = keyframes[keyframes.length - 1];
+    return { kf1: last, kf2: last, t: 0 };
+  }
+  if (elapsed <= keyframes[0].time) return { kf1: keyframes[0], kf2: keyframes[0], t: 0 };
+  for (let i = 0; i < keyframes.length - 1; i++) {
+    const kf1 = keyframes[i],
+      kf2 = keyframes[i + 1];
+    if (elapsed >= kf1.time && elapsed <= kf2.time) {
+      const span = kf2.time - kf1.time;
+      return { kf1, kf2, t: span > 0 ? (elapsed - kf1.time) / span : 0 };
+    }
+  }
+  const last = keyframes[keyframes.length - 1];
+  return { kf1: last, kf2: last, t: 0 };
+}
+
+function lerpHighlight(a: HighlightRegion, b: HighlightRegion, t: number): HighlightRegion {
+  return {
+    ...b,
+    position: { x: lerp(a.position.x, b.position.x, t), y: lerp(a.position.y, b.position.y, t) },
+    size: {
+      width: lerp(a.size.width, b.size.width, t),
+      height: lerp(a.size.height, b.size.height, t),
+    },
+    opacity: lerp(a.opacity, b.opacity, t),
+    borderWidth: lerp(a.borderWidth, b.borderWidth, t),
+  };
+}
+
+function interpolateHighlights(kf1: Keyframe, kf2: Keyframe, t: number): HighlightRegion[] {
+  const map1 = new Map(kf1.highlights.map((h) => [h.id, h]));
+  const result: HighlightRegion[] = [];
+  for (const h2 of kf2.highlights) {
+    const h1 = map1.get(h2.id);
+    result.push(h1 ? lerpHighlight(h1, h2, t) : { ...h2, opacity: h2.opacity * t });
+  }
+  for (const h1 of kf1.highlights) {
+    if (!kf2.highlights.find((h) => h.id === h1.id))
+      result.push({ ...h1, opacity: h1.opacity * (1 - t) });
+  }
+  return result;
+}
+
+function interpolateArrows(kf1: Keyframe, kf2: Keyframe, t: number): ArrowPointer[] {
+  const map1 = new Map(kf1.arrows.map((a) => [a.id, a]));
+  const result: ArrowPointer[] = [];
+  for (const a2 of kf2.arrows) {
+    const a1 = map1.get(a2.id);
+    result.push({ ...a2, opacity: a1 ? lerp(a1.opacity, a2.opacity, t) : a2.opacity * t });
+  }
+  for (const a1 of kf1.arrows) {
+    if (!kf2.arrows.find((a) => a.id === a1.id))
+      result.push({ ...a1, opacity: a1.opacity * (1 - t) });
+  }
+  return result;
+}
+
+function interpolateTextOverlays(kf1: Keyframe, kf2: Keyframe, t: number): TextOverlay[] {
+  const map1 = new Map(kf1.textOverlays.map((o) => [o.id, o]));
+  const result: TextOverlay[] = [];
+  for (const o2 of kf2.textOverlays) {
+    const o1 = map1.get(o2.id);
+    result.push({
+      ...o2,
+      computedOpacity: o1
+        ? lerp(o1.computedOpacity ?? 1, o2.computedOpacity ?? 1, t)
+        : lerp(0, o2.computedOpacity ?? 1, t),
+    });
+  }
+  for (const o1 of kf1.textOverlays) {
+    if (!kf2.textOverlays.find((o) => o.id === o1.id))
+      result.push({ ...o1, computedOpacity: lerp(o1.computedOpacity ?? 1, 0, t) });
+  }
+  return result;
+}
+
+interface FrameState {
+  currentSegment: Segment | null;
+  incomingSegment: Segment | null;
+  interpolatedTransform: Transform;
+  activeHighlights: HighlightRegion[];
+  activeTextOverlays: TextOverlay[];
+  activeArrows: ArrowPointer[];
+  transitionOpacity: number;
+  incomingOpacity: number;
+}
+
+function computeFrameState(sequence: ExplainerSequence, currentTime: number): FrameState {
+  const { segments } = sequence;
+  if (segments.length === 0)
+    return {
+      currentSegment: null,
+      incomingSegment: null,
+      interpolatedTransform: DEFAULT_TRANSFORM,
+      activeHighlights: [],
+      activeTextOverlays: [],
+      activeArrows: [],
+      transitionOpacity: 1,
+      incomingOpacity: 0,
+    };
+  let currentSegment: Segment | null = null,
+    currentIndex = -1;
+  for (let i = 0; i < segments.length; i++) {
+    const isLast = i === segments.length - 1;
+    if (
+      isLast
+        ? currentTime >= segments[i].startTime && currentTime <= segments[i].endTime
+        : currentTime >= segments[i].startTime && currentTime < segments[i].endTime
+    ) {
+      currentSegment = segments[i];
+      currentIndex = i;
+      break;
+    }
+  }
+  if (!currentSegment && currentTime >= (segments[segments.length - 1]?.endTime ?? 0)) {
+    currentSegment = segments[segments.length - 1];
+    currentIndex = segments.length - 1;
+  }
+  if (!currentSegment) {
+    currentSegment = segments[0];
+    currentIndex = 0;
+  }
+  let incomingSegment: Segment | null = null,
+    transitionOpacity = 1,
+    incomingOpacity = 0;
+  if (currentSegment && currentIndex < segments.length - 1) {
+    const nextSegment = segments[currentIndex + 1];
+    const transitionStart = currentSegment.endTime - currentSegment.transitionDuration;
+    if (
+      currentTime >= transitionStart &&
+      currentTime < currentSegment.endTime &&
+      currentSegment.transition === "crossfade"
+    ) {
+      incomingSegment = nextSegment;
+      incomingOpacity = Math.max(
+        0,
+        Math.min(1, (currentTime - transitionStart) / currentSegment.transitionDuration)
+      );
+    }
+  }
+  if (currentSegment?.transition === "fade-to-black" && currentIndex < segments.length - 1) {
+    const transitionStart = currentSegment.endTime - currentSegment.transitionDuration;
+    if (currentTime >= transitionStart && currentTime < currentSegment.endTime) {
+      const p = (currentTime - transitionStart) / currentSegment.transitionDuration;
+      transitionOpacity = p <= 0.5 ? 1 - p * 2 : (p - 0.5) * 2;
+      if (p > 0.5) incomingSegment = segments[currentIndex + 1];
+    }
+  }
+  const elapsed = currentTime - currentSegment.startTime;
+  const { kf1, kf2, t } = findKeyframePair(currentSegment.keyframes, elapsed);
+  return {
+    currentSegment,
+    incomingSegment,
+    interpolatedTransform: lerpTransform(kf1.transform, kf2.transform, t),
+    activeHighlights: interpolateHighlights(kf1, kf2, t).filter((h) => h.opacity > 0.01),
+    activeTextOverlays: interpolateTextOverlays(kf1, kf2, t).filter(
+      (o) => (o.computedOpacity ?? 1) > 0.01
+    ),
+    activeArrows: interpolateArrows(kf1, kf2, t).filter((a) => a.opacity > 0.01),
+    transitionOpacity,
+    incomingOpacity,
+  };
+}
+
+function drawExportFrame(
+  ctx: CanvasRenderingContext2D,
+  W: number,
+  H: number,
+  state: FrameState,
+  images: Map<string, HTMLImageElement>
+) {
+  ctx.clearRect(0, 0, W, H);
+  ctx.fillStyle = "#000";
+  ctx.fillRect(0, 0, W, H);
+
+  function drawSegmentImage(seg: Segment, transform: Transform, opacity: number) {
+    const img = images.get(seg.imageUrl);
+    if (!img || !img.complete) return;
+    ctx.save();
+    ctx.globalAlpha = opacity;
+    ctx.translate(W / 2, H / 2);
+    ctx.scale(transform.scale, transform.scale);
+    ctx.translate((transform.x / 100) * W, (transform.y / 100) * H);
+    ctx.drawImage(img, -W / 2, -H / 2, W, H);
+    ctx.restore();
+  }
+
+  if (state.currentSegment)
+    drawSegmentImage(state.currentSegment, state.interpolatedTransform, state.transitionOpacity);
+  if (state.incomingSegment && state.incomingOpacity > 0)
+    drawSegmentImage(
+      state.incomingSegment,
+      state.incomingSegment.keyframes[0]?.transform ?? DEFAULT_TRANSFORM,
+      state.incomingOpacity
+    );
+
+  const spotlights = state.activeHighlights.filter((h) => h.spotlight);
+  if (spotlights.length > 0) {
+    const maxOpacity = Math.max(...spotlights.map((h) => h.opacity));
+    const tmpCanvas = document.createElement("canvas");
+    tmpCanvas.width = W;
+    tmpCanvas.height = H;
+    const tmp = tmpCanvas.getContext("2d")!;
+    tmp.fillStyle = "rgba(0,0,0,1)";
+    tmp.fillRect(0, 0, W, H);
+    tmp.globalCompositeOperation = "destination-out";
+    for (const hl of spotlights) {
+      const cx = (hl.position.x / 100) * W,
+        cy = (hl.position.y / 100) * H,
+        hw = (hl.size.width / 100) * W,
+        hh = (hl.size.height / 100) * H;
+      tmp.filter = `blur(${Math.max(1, ((hw + hh) / 2) * 0.04)}px)`;
+      tmp.beginPath();
+      if (hl.type === "circle") tmp.arc(cx, cy, hw / 2, 0, Math.PI * 2);
+      else if (hl.type === "oval") tmp.ellipse(cx, cy, hw / 2, hh / 2, 0, 0, Math.PI * 2);
+      else tmp.rect(cx - hw / 2, cy - hh / 2, hw, hh);
+      tmp.fill();
+    }
+    tmp.filter = "none";
+    ctx.save();
+    ctx.globalAlpha = 0.5 * maxOpacity;
+    ctx.drawImage(tmpCanvas, 0, 0);
+    ctx.restore();
+  }
+
+  for (const hl of state.activeHighlights.filter((h) => !h.spotlight)) {
+    ctx.save();
+    ctx.globalAlpha = hl.opacity;
+    ctx.strokeStyle = hl.borderColor;
+    ctx.lineWidth = hl.borderWidth * (H / 450) + 1.5 * (H / 1080);
+    ctx.setLineDash(
+      hl.borderStyle === "dashed" ? [12, 8] : hl.borderStyle === "dotted" ? [2, 6] : []
+    );
+    const cx = (hl.position.x / 100) * W,
+      cy = (hl.position.y / 100) * H,
+      hw = (hl.size.width / 100) * W,
+      hh = (hl.size.height / 100) * H;
+    ctx.shadowColor = "rgba(0,0,0,0.7)";
+    ctx.shadowBlur = 8 * (H / 1080);
+    ctx.shadowOffsetY = 2 * (H / 1080);
+    ctx.beginPath();
+    if (hl.type === "circle") ctx.arc(cx, cy, hw / 2, 0, Math.PI * 2);
+    else if (hl.type === "oval") ctx.ellipse(cx, cy, hw / 2, hh / 2, 0, 0, Math.PI * 2);
+    else ctx.roundRect(cx - hw / 2, cy - hh / 2, hw, hh, 4 * (H / 1080));
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  for (const arrow of state.activeArrows) {
+    ctx.save();
+    ctx.globalAlpha = arrow.opacity;
+    const cx = (arrow.endPosition.x / 100) * W,
+      cy = (arrow.endPosition.y / 100) * H;
+    const iconSize = 48 * (H / 450),
+      strokeW = 6 * (H / 450);
+    const dirAngles: Record<string, number> = {
+      right: 0,
+      "down-right": Math.PI / 4,
+      down: Math.PI / 2,
+      "down-left": (3 * Math.PI) / 4,
+      left: Math.PI,
+      "up-left": (5 * Math.PI) / 4,
+      up: (3 * Math.PI) / 2,
+      "up-right": (7 * Math.PI) / 4,
+    };
+    const angle = dirAngles[arrow.direction] ?? Math.PI / 2;
+    const pad = Math.ceil(iconSize * 0.6),
+      ow = Math.ceil(iconSize + pad * 2),
+      oh = Math.ceil(iconSize + pad * 2);
+    const off = document.createElement("canvas");
+    off.width = ow;
+    off.height = oh;
+    const oc = off.getContext("2d")!;
+    oc.strokeStyle = arrow.color;
+    oc.lineWidth = strokeW;
+    oc.lineCap = "round";
+    oc.lineJoin = "round";
+    oc.translate(ow / 2, oh / 2);
+    oc.rotate(angle - Math.PI / 2);
+    const half = iconSize / 2,
+      tipY = half,
+      shaftTop = -half * 0.5,
+      headW = half * 0.6,
+      headH = half * 0.5;
+    oc.beginPath();
+    oc.moveTo(0, shaftTop);
+    oc.lineTo(0, tipY);
+    oc.stroke();
+    oc.beginPath();
+    oc.moveTo(0, tipY);
+    oc.lineTo(-headW, tipY - headH);
+    oc.stroke();
+    oc.beginPath();
+    oc.moveTo(0, tipY);
+    oc.lineTo(headW, tipY - headH);
+    oc.stroke();
+    ctx.shadowColor = "rgba(0,0,0,0.85)";
+    ctx.shadowBlur = 6 * (H / 450);
+    ctx.shadowOffsetY = 2 * (H / 450);
+    ctx.drawImage(off, cx - ow / 2, cy - oh / 2);
+    ctx.restore();
+  }
+
+  const DOM_VIEWPORT_H = 450;
+  for (const o of state.activeTextOverlays) {
+    ctx.save();
+    ctx.globalAlpha = o.computedOpacity ?? 1;
+    const fontSize = o.fontSize * 16 * (H / DOM_VIEWPORT_H);
+    const weight =
+      o.fontWeight === "bold" ? "bold" : o.fontWeight === "semibold" ? "600" : "normal";
+    ctx.font = `${weight} ${fontSize}px sans-serif`;
+    ctx.textBaseline = "middle";
+    ctx.textAlign = (o.textAlign as CanvasTextAlign) ?? "left";
+    const x = (o.position.x / 100) * W,
+      y = (o.position.y / 100) * H;
+    const maxPx = o.maxWidth ? (o.maxWidth / 100) * W : W * 0.9;
+    const words = o.text.split(" ");
+    const lines: string[] = [];
+    let line = "";
+    for (const word of words) {
+      const test = line ? `${line} ${word}` : word;
+      if (ctx.measureText(test).width > maxPx && line) {
+        lines.push(line);
+        line = word;
+      } else {
+        line = test;
+      }
+    }
+    if (line) lines.push(line);
+    const lineHeight = fontSize * 1.3,
+      totalH = lines.length * lineHeight,
+      pad = fontSize * 0.25;
+    if (o.backgroundColor) {
+      const maxLineW = Math.max(...lines.map((l) => ctx.measureText(l).width));
+      const alignOffsetX =
+        ctx.textAlign === "center" ? -maxLineW / 2 : ctx.textAlign === "right" ? -maxLineW : 0;
+      ctx.fillStyle = o.backgroundColor;
+      ctx.beginPath();
+      ctx.roundRect(
+        x + alignOffsetX - pad,
+        y - totalH / 2 - pad,
+        maxLineW + pad * 2,
+        totalH + pad * 2,
+        4 * (H / 1080)
+      );
+      ctx.fill();
+    }
+    ctx.shadowColor = "rgba(0,0,0,0.8)";
+    ctx.shadowBlur = 4 * (H / 1080);
+    ctx.shadowOffsetY = 1 * (H / 1080);
+    ctx.fillStyle = o.color;
+    lines.forEach((l, i) => ctx.fillText(l, x, y - totalH / 2 + lineHeight * i + lineHeight / 2));
+    ctx.restore();
+  }
+}
+
+const EXPORT_RESOLUTIONS = [
+  { label: "1080p", w: 1920, h: 1080 },
+  { label: "720p", w: 1280, h: 720 },
+  { label: "480p", w: 854, h: 480 },
+];
+const EXPORT_FPS_OPTIONS = [24, 30, 60];
+
 export default function LessonStudioPage() {
   const [selectedImages, setSelectedImages] = useState<SelectedImage[]>([]);
   const [audioUrl, setAudioUrl] = useState(DEFAULT_AUDIO_URL);
@@ -232,8 +630,25 @@ export default function LessonStudioPage() {
   const [selectedImageIndex, setSelectedImageIndex] = useState<number | null>(null);
   const [seekTime, setSeekTime] = useState<number | undefined>(undefined);
   const [audioDuration, setAudioDuration] = useState<number>(0);
-  const [isRecording, setIsRecording] = useState(false);
-  const [recordingStatus, setRecordingStatus] = useState<string>("");
+  // Export state
+  const [exportOpen, setExportOpen] = useState(false);
+  const [exportPhase, setExportPhase] = useState<
+    | "idle"
+    | "fetching-audio"
+    | "loading-images"
+    | "encoding"
+    | "rendering"
+    | "muxing"
+    | "done"
+    | "error"
+  >("idle");
+  const [exportProgress, setExportProgress] = useState(0);
+  const [exportStatus, setExportStatus] = useState("");
+  const [exportUrl, setExportUrl] = useState<string | null>(null);
+  const [exportName, setExportName] = useState("");
+  const exportCancelRef = useRef(false);
+  const [exportResolution, setExportResolution] = useState(1); // index into EXPORT_RESOLUTIONS (default 720p)
+  const [exportFps, setExportFps] = useState(30);
   const timelineRef = useRef<HTMLDivElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
 
@@ -245,6 +660,182 @@ export default function LessonStudioPage() {
   const [audioTitle, setAudioTitle] = useState("");
   const [audioTranscript, setAudioTranscript] = useState("");
   const [captionChunks, setCaptionChunks] = useState<CaptionChunk[]>([]);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [isGenerating, setIsGenerating] = useState(false);
+
+  // Load a saved sequence JSON back into the studio.
+  // Reconstructs animations and text overlays by reverse-engineering the keyframe
+  // opacity timeline: find first/last appearance of each element id to recover
+  // start, fadeTime, and duration.
+  const loadFromJSON = (sequence: ExplainerSequence) => {
+    const images: SelectedImage[] = sequence.segments.map((seg, i) => {
+      const duration = seg.endTime - seg.startTime;
+      const kfs = seg.keyframes;
+
+      // ── Collect timing windows per element id ──────────────────────────
+      // For each id, track all {time, opacity} pairs across keyframes.
+      const highlightWindows = new Map<
+        string,
+        { time: number; opacity: number; data: HighlightRegion }[]
+      >();
+      const arrowWindows = new Map<
+        string,
+        { time: number; opacity: number; data: ArrowPointer }[]
+      >();
+      const textWindows = new Map<string, { time: number; opacity: number; data: TextOverlay }[]>();
+
+      for (const kf of kfs) {
+        for (const h of kf.highlights) {
+          if (!highlightWindows.has(h.id)) highlightWindows.set(h.id, []);
+          highlightWindows.get(h.id)!.push({ time: kf.time, opacity: h.opacity, data: h });
+        }
+        for (const a of kf.arrows) {
+          if (!arrowWindows.has(a.id)) arrowWindows.set(a.id, []);
+          arrowWindows.get(a.id)!.push({ time: kf.time, opacity: a.opacity, data: a });
+        }
+        for (const t of kf.textOverlays) {
+          if (!textWindows.has(t.id)) textWindows.set(t.id, []);
+          textWindows.get(t.id)!.push({ time: kf.time, opacity: t.computedOpacity ?? 1, data: t });
+        }
+      }
+
+      // Helper: from a sorted list of {time, opacity} entries recover animation timing.
+      // Returns {start, fadeTime, holdDuration} in segment-local time.
+      function recoverTiming(entries: { time: number; opacity: number }[]): {
+        start: number;
+        fadeTime: number;
+        holdDuration: number;
+      } {
+        const visible = entries.filter((e) => e.opacity > 0.01).map((e) => e.time);
+        if (visible.length === 0) return { start: 0, fadeTime: 0.5, holdDuration: 1 };
+        const firstVisible = Math.min(...visible);
+        const lastVisible = Math.max(...visible);
+        const atFull = entries.filter((e) => e.opacity >= 0.99).map((e) => e.time);
+        const firstFull = atFull.length > 0 ? Math.min(...atFull) : firstVisible;
+        const lastFull = atFull.length > 0 ? Math.max(...atFull) : lastVisible;
+        const fadeTime = Math.max(0, firstFull - firstVisible);
+        const holdDuration = Math.max(0, lastFull - firstFull);
+        return { start: firstVisible, fadeTime, holdDuration };
+      }
+
+      // ── Rebuild animations ──────────────────────────────────────────────
+      const animations: Animation[] = [];
+
+      for (const [id, entries] of highlightWindows) {
+        const { start, fadeTime, holdDuration } = recoverTiming(entries);
+        const sample = entries[entries.length - 1].data; // last entry has full data
+        if (sample.spotlight) {
+          animations.push({
+            id,
+            type: "spotlight",
+            figureType: sample.type,
+            position: sample.position,
+            size: sample.size,
+            start,
+            duration: holdDuration,
+            fadeTime: fadeTime || 0.5,
+          });
+        } else {
+          animations.push({
+            id,
+            type: "figure",
+            figureType: sample.type,
+            position: sample.position,
+            size: sample.size,
+            borderColor: sample.borderColor,
+            borderWidth: sample.borderWidth,
+            borderStyle: (sample.borderStyle ?? "solid") as "solid" | "dotted" | "dashed",
+            start,
+            duration: holdDuration,
+            fadeTime: fadeTime || 0.5,
+          });
+        }
+      }
+
+      for (const [id, entries] of arrowWindows) {
+        const { start, fadeTime, holdDuration } = recoverTiming(entries);
+        const sample = entries[entries.length - 1].data;
+        animations.push({
+          id,
+          type: "arrow",
+          position: sample.endPosition,
+          color: sample.color,
+          direction: sample.direction,
+          start,
+          duration: holdDuration,
+          fadeTime: fadeTime || 0.5,
+        });
+      }
+
+      // ── Rebuild text overlays ───────────────────────────────────────────
+      const textOverlays: TimeBasedText[] = [];
+      for (const [id, entries] of textWindows) {
+        const { start, fadeTime, holdDuration } = recoverTiming(entries);
+        const sample = entries[entries.length - 1].data;
+        textOverlays.push({
+          id,
+          text: sample.text,
+          position: sample.position,
+          fontSize: sample.fontSize,
+          fontWeight: sample.fontWeight as "normal" | "bold" | "semibold",
+          color: sample.color,
+          backgroundColor: sample.backgroundColor,
+          start,
+          duration: holdDuration,
+          fadeTime: fadeTime || 0.5,
+        });
+      }
+
+      return {
+        id: `loaded-${i}`,
+        url: seg.imageUrl,
+        description: seg.imageAlt ?? "",
+        alt_text: seg.imageAlt ?? "",
+        file_type: "image",
+        width: 1920,
+        height: 1080,
+        created_at: "",
+        duration,
+        transitionDuration: seg.transitionDuration ?? 1,
+        initialZoom: kfs[0]?.transform.scale ?? 1,
+        initialX: kfs[0]?.transform.x ?? 0,
+        initialY: kfs[0]?.transform.y ?? 0,
+        animations,
+        textOverlays,
+      };
+    });
+
+    setSelectedImages(images);
+    setSelectedImageIndex(null);
+    setPreviewSequence(sequence);
+    if (sequence.audioUrl) setAudioUrl(sequence.audioUrl);
+    if (sequence.captions && sequence.captions.length > 0) {
+      setCaptionChunks(sequence.captions);
+    }
+  };
+
+  const handleStageDrop = (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.name.endsWith(".json")) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      try {
+        const raw = JSON.parse(ev.target?.result as string);
+        // Accept both bare ExplainerSequence and the API response wrapper { success, sequence }
+        const parsed: ExplainerSequence = raw?.sequence ?? raw;
+        if (!parsed.segments || !Array.isArray(parsed.segments)) {
+          alert("Invalid sequence JSON — missing segments array.");
+          return;
+        }
+        loadFromJSON(parsed);
+      } catch {
+        alert("Failed to parse JSON file.");
+      }
+    };
+    reader.readAsText(file);
+  };
 
   const loadAudioRecords = useCallback(async (search?: string) => {
     setAudioLoading(true);
@@ -902,6 +1493,7 @@ export default function LessonStudioPage() {
       duration: totalDuration,
       aspectRatio: "16:9",
       segments,
+      ...(audioUrl ? { audioUrl } : {}),
     });
 
     // Build flat caption chunks (rendered outside the engine, no keyframe interpolation)
@@ -912,15 +1504,58 @@ export default function LessonStudioPage() {
     }
   };
 
+  // AI-powered sequence generation via Llama 4 Maverick
+  const handleAIGenerate = async () => {
+    if (selectedImages.length === 0 || !audioUrl || captionChunks.length === 0) return;
+
+    setIsGenerating(true);
+    try {
+      const images = selectedImages.map((img) => ({
+        url: img.url,
+        title: img.description
+          ? img.description.split(/[-–.]/)[0].trim().slice(0, 80)
+          : (img.url.split("/").pop() ?? ""),
+        description: img.description ?? img.alt_text ?? "",
+        category: img.category ?? "",
+        magnification: img.magnification ?? null,
+        width: img.width,
+        height: img.height,
+      }));
+
+      const response = await fetch("/api/admin/lesson-studio/generate-sequence", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          images,
+          captions: captionChunks,
+          audioDuration:
+            audioDuration > 0 ? audioDuration : (captionChunks[captionChunks.length - 1]?.end ?? 0),
+          audioUrl,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok || !data.success) {
+        alert(`AI generation failed: ${data.error ?? "Unknown error"}`);
+        return;
+      }
+
+      loadFromJSON(data.sequence);
+    } catch (err) {
+      alert(`AI generation error: ${err instanceof Error ? err.message : "Unknown error"}`);
+    } finally {
+      setIsGenerating(false);
+    }
+  };
+
   const saveToJSON = () => {
     if (selectedImages.length === 0) {
       alert("Please add at least one image before saving.");
       return;
     }
 
-    // 5-second lead-in cushion before first segment
-    const startCushion = 5;
-    let currentTime = startCushion;
+    let currentTime = 0;
 
     const segments: Segment[] = selectedImages.map((img, index) => {
       const startTime = currentTime;
@@ -1139,347 +1774,180 @@ export default function LessonStudioPage() {
     URL.revokeObjectURL(url);
   };
 
-  const renderVideo = async () => {
-    // TODO: Video Export Issues to Fix
-    // 1. Canvas drawing is stuck on first frame - source video not updating properly
-    //    - Need to verify sourceVideo.currentTime is advancing during recording
-    //    - May need to ensure video element is actually playing (check paused state)
-    // 2. FFmpeg conversion working but slow - consider optimization
-    // 3. Crop region calculation may need adjustment based on actual player bounds
-    // 4. Consider adding preview of crop region before recording starts
-    // 5. Add better progress indication during recording (frame count, time remaining)
+  // Open the export dialog (generate sequence first if needed).
+  const renderVideo = () => {
+    if (!previewSequence) generateSequence();
+    setExportOpen(true);
+  };
 
-    if (selectedImages.length === 0) return;
-    if (!playerContainerRef.current) return;
+  // Actually run the canvas-render + FFmpeg pipeline.
+  const startExport = async () => {
+    if (!previewSequence) return;
+    setExportPhase("fetching-audio");
+    setExportProgress(0);
+    setExportStatus("Fetching audio…");
+    setExportUrl(null);
+    exportCancelRef.current = false;
 
-    // Calculate total duration
-    const totalDuration = selectedImages.reduce((sum, img) => sum + img.duration, 0);
-
-    // Generate and show preview
-    generateSequence();
-
-    // Wait for preview to render
-    await new Promise((resolve) => setTimeout(resolve, 500));
-
+    const sequence = previewSequence;
+    // Use audioUrl from the sequence if present, else fall back to component state
+    const resolvedAudioUrl = sequence.audioUrl ?? audioUrl ?? null;
+    const blobUrls: string[] = []; // blob: URLs for image data — freed in finally
     try {
-      setIsRecording(true);
-      setRecordingStatus("Preparing to record...");
-
-      // Start playback FIRST, before requesting screen share
-      setSeekTime(0);
-
-      // Wait a moment for playback to initialize
-      await new Promise((resolve) => setTimeout(resolve, 100));
-
-      // Get player element bounds for cropping
-      const playerRect = playerContainerRef.current.getBoundingClientRect();
-      const videoWidth = 1920;
-      const videoHeight = 1080;
-
-      setRecordingStatus(
-        "Select 'Browser Tab' and choose THIS tab. Make sure 'Share tab audio' is checked!"
-      );
-
-      // Request screen + audio capture at high resolution
-      const displayStream = await navigator.mediaDevices.getDisplayMedia({
-        video: {
-          displaySurface: "browser",
-          width: { ideal: 3840 }, // Request 4K for better quality when cropping
-          height: { ideal: 2160 },
-          frameRate: { ideal: 60 },
-        } as MediaTrackConstraints,
-        audio: true,
-        preferCurrentTab: true,
-      } as DisplayMediaStreamOptions);
-
-      // Create hidden video element to receive the display stream
-      const sourceVideo = document.createElement("video");
-      sourceVideo.srcObject = displayStream;
-      sourceVideo.muted = true;
-      sourceVideo.autoplay = true;
-      sourceVideo.playsInline = true;
-
-      // Wait for video metadata to load
-      await new Promise<void>((resolve) => {
-        if (sourceVideo.readyState >= 2) {
-          resolve();
-        } else {
-          sourceVideo.onloadedmetadata = () => resolve();
-        }
-      });
-
-      // Ensure video is playing
-      try {
-        await sourceVideo.play();
-      } catch (e) {
-        console.error("Failed to play source video:", e);
-      }
-
-      console.log("Source video ready:", {
-        width: sourceVideo.videoWidth,
-        height: sourceVideo.videoHeight,
-        readyState: sourceVideo.readyState,
-        paused: sourceVideo.paused,
-        currentTime: sourceVideo.currentTime,
-      });
-
-      // Create canvas for cropping
-      const canvas = document.createElement("canvas");
-      canvas.width = videoWidth;
-      canvas.height = videoHeight;
-      const ctx = canvas.getContext("2d");
-
-      if (!ctx) {
-        throw new Error("Failed to get canvas context");
-      }
-
-      // Calculate scale factor between actual capture and screen coordinates
-      const scaleX = sourceVideo.videoWidth / window.innerWidth;
-      const scaleY = sourceVideo.videoHeight / window.innerHeight;
-
-      // Calculate source crop region (scaled to capture resolution)
-      const cropX = playerRect.left * scaleX;
-      const cropY = playerRect.top * scaleY;
-      const cropWidth = playerRect.width * scaleX;
-      const cropHeight = playerRect.height * scaleY;
-
-      console.log("Player rect:", playerRect);
-      console.log("Scale factors:", { scaleX, scaleY });
-      console.log("Crop region:", { cropX, cropY, cropWidth, cropHeight });
-      console.log("Canvas output:", { videoWidth, videoHeight });
-
-      // Draw frames to canvas with cropping
-      let animationFrameId: number;
-      let frameCount = 0;
-      const drawFrame = () => {
-        if (sourceVideo.readyState >= 2) {
-          // Draw cropped region from source video to canvas, scaling to fit
-          ctx.drawImage(
-            sourceVideo,
-            cropX,
-            cropY,
-            cropWidth,
-            cropHeight, // Source crop region
-            0,
-            0,
-            videoWidth,
-            videoHeight // Destination (full canvas)
-          );
-          frameCount++;
-          if (frameCount % 60 === 0) {
-            console.log("Drawing frame", frameCount, "at time:", sourceVideo.currentTime);
-          }
-        }
-        animationFrameId = requestAnimationFrame(drawFrame);
-      };
-      drawFrame();
-
-      // Get stream from canvas (video only)
-      const canvasStream = canvas.captureStream(60); // 60 FPS
-
-      // Get audio track from display stream
-      const audioTracks = displayStream.getAudioTracks();
-
-      // Combine canvas video with display audio
-      const combinedStream = new MediaStream([...canvasStream.getVideoTracks(), ...audioTracks]);
-
-      // Determine best codec
-      let mimeType = "video/webm;codecs=vp9,opus";
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = "video/webm;codecs=vp8,opus";
-      }
-      if (!MediaRecorder.isTypeSupported(mimeType)) {
-        mimeType = "video/webm";
-      }
-
-      console.log("Creating MediaRecorder with:", {
-        mimeType,
-        videoBitsPerSecond: 20_000_000,
-        videoTracks: combinedStream.getVideoTracks().length,
-        audioTracks: combinedStream.getAudioTracks().length,
-      });
-
-      const recorder = new MediaRecorder(combinedStream, {
-        mimeType,
-        videoBitsPerSecond: 20_000_000,
-      });
-
-      const chunks: Blob[] = [];
-
-      recorder.ondataavailable = (e) => {
-        console.log("Data available:", e.data.size, "bytes");
-        if (e.data.size > 0) {
-          chunks.push(e.data);
-        }
-      };
-
-      recorder.onerror = (e) => {
-        console.error("MediaRecorder error:", e);
-      };
-
-      recorder.onstop = async () => {
-        console.log("Recording stopped. Total chunks:", chunks.length);
-        console.log(
-          "Total size:",
-          chunks.reduce((sum, chunk) => sum + chunk.size, 0),
-          "bytes"
-        );
-
-        // Cleanup streams
-        cancelAnimationFrame(animationFrameId);
-        displayStream.getTracks().forEach((track) => track.stop());
-        sourceVideo.srcObject = null;
-        canvasStream.getTracks().forEach((track) => track.stop());
-
-        if (chunks.length === 0) {
-          console.error("No data recorded!");
-          alert("Recording failed: No data was captured. Please try again.");
-          setIsRecording(false);
-          setRecordingStatus("");
-          setPreviewSequence(null);
-          return;
-        }
-
-        const webmBlob = new Blob(chunks, { type: mimeType });
-        console.log("Created WebM blob:", webmBlob.size, "bytes");
-
+      // ── 1. Fetch audio ────────────────────────────────────────────────────
+      let audioData: ArrayBuffer | null = null;
+      let totalDuration = sequence.duration;
+      if (resolvedAudioUrl) {
         try {
-          // Convert WebM to MP4
-          setRecordingStatus("Converting to MP4...");
-          console.log("Loading FFmpeg...");
-
-          const { FFmpeg } = await import("@ffmpeg/ffmpeg");
-          const { fetchFile } = await import("@ffmpeg/util");
-
-          const ffmpeg = new FFmpeg();
-
-          ffmpeg.on("log", ({ message }) => {
-            console.log("[FFmpeg]", message);
-          });
-
-          ffmpeg.on("progress", ({ progress }) => {
-            const percent = Math.round(progress * 100);
-            setRecordingStatus(`Converting to MP4... ${percent}%`);
-            console.log("Conversion progress:", percent + "%");
-          });
-
-          await ffmpeg.load({
-            coreURL: "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.js",
-            wasmURL: "https://cdn.jsdelivr.net/npm/@ffmpeg/core@0.12.6/dist/esm/ffmpeg-core.wasm",
-          });
-
-          console.log("FFmpeg loaded, writing file...");
-          await ffmpeg.writeFile("input.webm", await fetchFile(webmBlob));
-
-          console.log("Starting conversion...");
-          await ffmpeg.exec([
-            "-i",
-            "input.webm",
-            "-c:v",
-            "libx264",
-            "-preset",
-            "fast",
-            "-crf",
-            "22",
-            "-c:a",
-            "aac",
-            "-b:a",
-            "192k",
-            "-movflags",
-            "+faststart",
-            "output.mp4",
-          ]);
-
-          console.log("Reading output...");
-          const data = await ffmpeg.readFile("output.mp4");
-          const mp4Blob = new Blob([data as unknown as BlobPart], { type: "video/mp4" });
-
-          console.log("Created MP4 blob:", mp4Blob.size, "bytes");
-
-          // Download MP4
-          const url = URL.createObjectURL(mp4Blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `explainer-${Date.now()}.mp4`;
-          document.body.appendChild(a);
-          a.click();
-          console.log("Download triggered");
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-
-          setRecordingStatus("Complete!");
-          setTimeout(() => {
-            setIsRecording(false);
-            setRecordingStatus("");
-            setPreviewSequence(null);
-          }, 2000);
-        } catch (conversionError) {
-          console.error("MP4 conversion failed:", conversionError);
-          alert("MP4 conversion failed. Downloading WebM instead.");
-
-          // Fallback: download WebM
-          const url = URL.createObjectURL(webmBlob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = `explainer-${Date.now()}.webm`;
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-
-          setIsRecording(false);
-          setRecordingStatus("");
-          setPreviewSequence(null);
-        }
-      };
-
-      setRecordingStatus("Recording... (cropped to player only)");
-
-      // Restart playback from beginning to ensure sync
-      setSeekTime(0);
-      await new Promise((resolve) => setTimeout(resolve, 50));
-
-      // Start recording
-      console.log("Starting recorder...");
-      recorder.start(100);
-      console.log("Recorder state:", recorder.state);
-
-      // Monitor for when user stops sharing
-      displayStream.getVideoTracks()[0].addEventListener("ended", () => {
-        console.log("Display stream ended by user");
-        if (recorder.state !== "inactive") {
-          recorder.stop();
-        }
-      });
-
-      // Auto-stop when sequence ends
-      const _autoStopTimeout = setTimeout(
-        () => {
-          console.log("Auto-stop timeout reached. Recorder state:", recorder.state);
-          if (recorder.state !== "inactive") {
-            console.log("Stopping recorder...");
-            recorder.stop();
+          const resp = await fetch(resolvedAudioUrl);
+          if (resp.ok) {
+            audioData = await resp.arrayBuffer();
+            const ac = new AudioContext();
+            const decoded = await ac.decodeAudioData(audioData.slice(0));
+            totalDuration = decoded.duration;
+            ac.close();
           }
-        },
-        (totalDuration + 1) * 1000
-      );
-
-      console.log("Auto-stop will trigger in", totalDuration + 1, "seconds");
-    } catch (error) {
-      console.error("Video recording error:", error);
-      if (
-        error instanceof Error &&
-        (error.name === "NotAllowedError" || error.name === "NotFoundError")
-      ) {
-        alert(
-          "Screen recording was cancelled or denied. Please try again and select the browser tab with 'Share tab audio' enabled."
-        );
-      } else {
-        alert(`Failed to record video: ${error instanceof Error ? error.message : String(error)}`);
+        } catch (err) {
+          console.warn("Audio fetch/decode failed, using sequence.duration:", err);
+        }
       }
-      setIsRecording(false);
-      setRecordingStatus("");
-      setPreviewSequence(null);
+      if (exportCancelRef.current) return;
+
+      // ── 2. Preload images ─────────────────────────────────────────────────
+      // We fetch each image via the Fetch API and create a same-origin blob URL.
+      // This avoids the CORS + canvas-taint problem entirely: the browser has
+      // already loaded these images without crossOrigin (for the live player),
+      // so any subsequent crossOrigin=anonymous request hits the cache as opaque
+      // and taints the canvas. blob: URLs are always same-origin — no taint.
+      setExportPhase("loading-images");
+      setExportStatus("Loading images…");
+      setExportProgress(5);
+      const uniqueUrls = [...new Set(sequence.segments.map((s) => s.imageUrl))];
+      const imgMap = new Map<string, HTMLImageElement>();
+      // Route each image through the server-side proxy so the browser receives
+      // it as a same-origin response — no CORS restriction, no canvas taint.
+      await Promise.all(
+        uniqueUrls.map(async (url) => {
+          try {
+            const proxyUrl = `/api/admin/proxy-image?url=${encodeURIComponent(url)}`;
+            const resp = await fetch(proxyUrl);
+            if (!resp.ok) throw new Error(`HTTP ${resp.status}`);
+            const blob = await resp.blob();
+            const blobUrl = URL.createObjectURL(blob);
+            blobUrls.push(blobUrl);
+            await new Promise<void>((resolve, reject) => {
+              const img = new Image();
+              img.onload = () => {
+                imgMap.set(url, img);
+                resolve();
+              };
+              img.onerror = reject;
+              img.src = blobUrl;
+            });
+          } catch (err) {
+            console.error(`[export] failed to load image ${url}:`, err);
+          }
+        })
+      );
+      if (imgMap.size === 0)
+        throw new Error(`Failed to load any images (${uniqueUrls.length} attempted).`);
+      if (exportCancelRef.current) {
+        blobUrls.forEach(URL.revokeObjectURL);
+        return;
+      }
+
+      // ── 3. Load FFmpeg ────────────────────────────────────────────────────
+      setExportPhase("encoding");
+      setExportStatus("Loading FFmpeg…");
+      setExportProgress(10);
+      const { FFmpeg } = await import("@ffmpeg/ffmpeg");
+      const ffmpeg = new FFmpeg();
+      ffmpeg.on("progress", ({ progress: p }) => setExportProgress(70 + Math.round(p * 25)));
+      ffmpeg.on("log", ({ message }) => console.log("[FFmpeg]", message));
+      await ffmpeg.load({ coreURL: "/ffmpeg/ffmpeg-core.js", wasmURL: "/ffmpeg/ffmpeg-core.wasm" });
+      if (exportCancelRef.current) return;
+
+      // ── 4. Render frames ──────────────────────────────────────────────────
+      setExportPhase("rendering");
+      setExportStatus("Rendering frames…");
+      setExportProgress(15);
+      const { w, h } = EXPORT_RESOLUTIONS[exportResolution];
+      const fps = exportFps;
+      const frameDuration = 1 / fps;
+      const totalFrames = Math.ceil(totalDuration * fps);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d")!;
+      const useJpeg = w >= 1280;
+      const imgMime = useJpeg ? "image/jpeg" : "image/png";
+      const imgExt = useJpeg ? "jpg" : "png";
+      const imgQ = useJpeg ? 0.92 : undefined;
+      for (let fi = 0; fi < totalFrames; fi++) {
+        if (exportCancelRef.current) return;
+        drawExportFrame(ctx, w, h, computeFrameState(sequence, fi * frameDuration), imgMap);
+        const blob = await new Promise<Blob>((res, rej) =>
+          canvas.toBlob((b) => (b ? res(b) : rej(new Error("toBlob failed"))), imgMime, imgQ)
+        );
+        await ffmpeg.writeFile(
+          `frame${String(fi).padStart(6, "0")}.${imgExt}`,
+          new Uint8Array(await blob.arrayBuffer())
+        );
+        if (fi % 5 === 0) {
+          setExportProgress(15 + Math.round((fi / totalFrames) * 55));
+          await new Promise((r) => setTimeout(r, 0));
+        }
+      }
+
+      // ── 5. Write audio ────────────────────────────────────────────────────
+      let hasAudio = false;
+      if (audioData) {
+        try {
+          await ffmpeg.writeFile("audio.mp3", new Uint8Array(audioData));
+          hasAudio = true;
+        } catch (err) {
+          console.warn("Failed to write audio:", err);
+        }
+      }
+      if (exportCancelRef.current) return;
+
+      // ── 6. Encode ─────────────────────────────────────────────────────────
+      setExportPhase("muxing");
+      setExportStatus("Encoding MP4…");
+      await ffmpeg.exec([
+        "-framerate",
+        String(fps),
+        "-i",
+        `frame%06d.${imgExt}`,
+        ...(hasAudio ? ["-i", "audio.mp3", "-c:a", "aac", "-b:a", "192k"] : []),
+        "-c:v",
+        "libx264",
+        "-preset",
+        "fast",
+        "-crf",
+        "22",
+        "-pix_fmt",
+        "yuv420p",
+        "-movflags",
+        "+faststart",
+        "output.mp4",
+      ]);
+      setExportProgress(95);
+      setExportStatus("Packaging…");
+      const mp4Data = await ffmpeg.readFile("output.mp4");
+      const mp4Blob = new Blob([mp4Data as unknown as BlobPart], { type: "video/mp4" });
+      const name = `explainer-${Date.now()}.mp4`;
+      setExportUrl(URL.createObjectURL(mp4Blob));
+      setExportName(name);
+      setExportProgress(100);
+      setExportStatus(`Done — ${(mp4Blob.size / 1024 / 1024).toFixed(1)} MB`);
+      setExportPhase("done");
+    } catch (error) {
+      console.error("Export error:", error);
+      setExportStatus(`Error: ${error instanceof Error ? error.message : String(error)}`);
+      setExportPhase("error");
+    } finally {
+      blobUrls.forEach(URL.revokeObjectURL);
     }
   };
 
@@ -1498,30 +1966,16 @@ export default function LessonStudioPage() {
             <Download className="h-4 w-4" />
             Save to JSON
           </Button>
-          {/* Export Video — disabled in production (dev-only screen-capture pipeline) */}
-          {process.env.NODE_ENV !== "production" ? (
-            <Button
-              variant="default"
-              size="sm"
-              onClick={renderVideo}
-              disabled={selectedImages.length === 0 || isRecording}
-              className="flex items-center gap-2"
-            >
-              <Video className="h-4 w-4" />
-              {isRecording ? recordingStatus : "Export Video (MP4)"}
-            </Button>
-          ) : (
-            <Button
-              variant="outline"
-              size="sm"
-              disabled
-              className="flex items-center gap-2 opacity-40 cursor-not-allowed"
-              title="Video export is only available in development"
-            >
-              <Video className="h-4 w-4" />
-              Export Video
-            </Button>
-          )}
+          <Button
+            variant="default"
+            size="sm"
+            onClick={renderVideo}
+            disabled={selectedImages.length === 0}
+            className="flex items-center gap-2"
+          >
+            <Video className="h-4 w-4" />
+            Export MP4
+          </Button>
         </div>
       </div>
 
@@ -1615,8 +2069,27 @@ export default function LessonStudioPage() {
 
         {/* Center Stage - Preview & Editor */}
         <div className="flex-1 flex overflow-hidden">
-          {/* Preview Area */}
-          <div className="flex-1 flex items-center justify-center bg-muted/30 p-8">
+          {/* Preview Area — also accepts JSON drops to reload a sequence */}
+          <div
+            className="flex-1 flex items-center justify-center bg-muted/30 p-8 relative"
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragOver(true);
+            }}
+            onDragLeave={(e) => {
+              // Only clear if leaving the container itself, not a child
+              if (!e.currentTarget.contains(e.relatedTarget as Node)) setIsDragOver(false);
+            }}
+            onDrop={handleStageDrop}
+          >
+            {/* Drop overlay */}
+            {isDragOver && (
+              <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-primary/10 border-2 border-dashed border-primary rounded-lg pointer-events-none">
+                <Upload className="h-10 w-10 text-primary" />
+                <p className="text-sm font-medium text-primary">Drop sequence JSON to load</p>
+              </div>
+            )}
+
             {previewSequence ? (
               <div ref={playerContainerRef} className="w-full max-w-5xl">
                 <ExplainerPlayer
@@ -1637,11 +2110,38 @@ export default function LessonStudioPage() {
                     : "Add images to the sequence and click Update Preview"}
                 </p>
                 {selectedImages.length > 0 && (
-                  <Button onClick={generateSequence} disabled={!audioUrl}>
-                    <Play className="h-4 w-4 mr-2" />
-                    Generate Preview
-                  </Button>
+                  <div className="flex flex-col gap-2 items-center">
+                    <Button
+                      onClick={handleAIGenerate}
+                      disabled={!audioUrl || captionChunks.length === 0 || isGenerating}
+                      className="w-full"
+                    >
+                      {isGenerating ? (
+                        <>
+                          <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                          Generating…
+                        </>
+                      ) : (
+                        <>
+                          <Sparkles className="h-4 w-4 mr-2" />
+                          AI Generate
+                        </>
+                      )}
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={generateSequence}
+                      disabled={!audioUrl || isGenerating}
+                      className="w-full"
+                    >
+                      <Play className="h-4 w-4 mr-2" />
+                      Manual Preview
+                    </Button>
+                  </div>
                 )}
+                <p className="text-xs text-muted-foreground/50 mt-2">
+                  or drop a sequence JSON here to reload
+                </p>
               </div>
             )}
           </div>
@@ -3029,15 +3529,14 @@ export default function LessonStudioPage() {
               {(() => {
                 const segmentsDuration = selectedImages.reduce((sum, img) => sum + img.duration, 0);
                 const baseTimelineDuration = Math.max(segmentsDuration, audioDuration);
-                const startCushion = 5; // 5 second cushion at start
-                const endCushion = 5; // 5 second cushion at end
-                const timelineDuration = baseTimelineDuration + startCushion + endCushion;
+                const endCushion = 2; // small visual breathing room on the right
+                const timelineDuration = baseTimelineDuration + endCushion;
                 const ticks = [];
 
                 // Generate tick marks
                 for (let t = 0; t <= baseTimelineDuration; t += 1) {
                   const isMajor = t % 5 === 0;
-                  const left = ((t + startCushion) / timelineDuration) * 100;
+                  const left = (t / timelineDuration) * 100;
 
                   ticks.push(
                     <div
@@ -3069,18 +3568,11 @@ export default function LessonStudioPage() {
                 {(() => {
                   const segmentsDuration = selectedImages.reduce((sum, i) => sum + i.duration, 0);
                   const baseTimelineDuration = Math.max(segmentsDuration, audioDuration);
-                  const startCushion = 5;
-                  const endCushion = 5;
-                  const timelineDuration = baseTimelineDuration + startCushion + endCushion;
-
-                  // Calculate start position (4s offset to align with 0s tick)
-                  const startOffsetPercent = ((startCushion - 1) / timelineDuration) * 100;
+                  const endCushion = 2;
+                  const timelineDuration = baseTimelineDuration + endCushion;
 
                   return (
                     <>
-                      {/* Empty space for start cushion */}
-                      <div style={{ width: `${startOffsetPercent}%` }} />
-
                       {/* Segments */}
                       {selectedImages.map((img, index) => {
                         const widthPercent = (img.duration / timelineDuration) * 100;
@@ -3166,10 +3658,9 @@ export default function LessonStudioPage() {
               (() => {
                 const segmentsDuration = selectedImages.reduce((sum, img) => sum + img.duration, 0);
                 const baseTimelineDuration = Math.max(segmentsDuration, audioDuration);
-                const startCushion = 5;
-                const endCushion = 5;
-                const timelineDuration = baseTimelineDuration + startCushion + endCushion;
-                const audioEndLeft = ((audioDuration + startCushion) / timelineDuration) * 100;
+                const endCushion = 2;
+                const timelineDuration = baseTimelineDuration + endCushion;
+                const audioEndLeft = (audioDuration / timelineDuration) * 100;
 
                 return (
                   <div
@@ -3181,6 +3672,160 @@ export default function LessonStudioPage() {
           </div>
         )}
       </div>
+
+      {/* Export MP4 Dialog */}
+      <Dialog
+        open={exportOpen}
+        onOpenChange={(open) => {
+          if (
+            !open &&
+            exportPhase !== "rendering" &&
+            exportPhase !== "muxing" &&
+            exportPhase !== "encoding" &&
+            exportPhase !== "loading-images" &&
+            exportPhase !== "fetching-audio"
+          ) {
+            setExportOpen(false);
+            setExportPhase("idle");
+            setExportProgress(0);
+            setExportStatus("");
+            if (exportUrl) {
+              URL.revokeObjectURL(exportUrl);
+              setExportUrl(null);
+            }
+          }
+        }}
+      >
+        <DialogPortal>
+          <DialogOverlay className="backdrop-blur-md bg-black/20" />
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Export MP4</DialogTitle>
+              <DialogDescription>
+                Render every frame to canvas and mux with FFmpeg WASM.
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Resolution + FPS selectors — disabled while running */}
+            {(() => {
+              const isRunning =
+                exportPhase !== "idle" && exportPhase !== "done" && exportPhase !== "error";
+              const totalDuration = previewSequence?.duration ?? 0;
+              const totalFrames = Math.ceil(totalDuration * exportFps);
+              const { w, h } = EXPORT_RESOLUTIONS[exportResolution];
+              const BASE_FPS = 8;
+              const BASE_PIXELS = 854 * 480;
+              const estFps = BASE_FPS * (BASE_PIXELS / (w * h));
+              const estSec = totalFrames / estFps;
+              const estMin = Math.floor(estSec / 60);
+              const estRemSec = Math.round(estSec % 60);
+              const etaStr = estMin > 0 ? `~${estMin}m ${estRemSec}s` : `~${estRemSec}s`;
+              return (
+                <div className="space-y-4 py-2">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium">Resolution</label>
+                      <select
+                        value={exportResolution}
+                        onChange={(e) => setExportResolution(Number(e.target.value))}
+                        disabled={isRunning}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                      >
+                        {EXPORT_RESOLUTIONS.map((r, i) => (
+                          <option key={i} value={i}>
+                            {r.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-1.5">
+                      <label className="text-sm font-medium">Frame rate</label>
+                      <select
+                        value={exportFps}
+                        onChange={(e) => setExportFps(Number(e.target.value))}
+                        disabled={isRunning}
+                        className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50"
+                      >
+                        {EXPORT_FPS_OPTIONS.map((f) => (
+                          <option key={f} value={f}>
+                            {f} fps
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Info row */}
+                  <p className="text-xs text-muted-foreground">
+                    {w}×{h} &middot; {totalFrames} frames &middot; est. render time{" "}
+                    <span className="text-foreground font-medium">{etaStr}</span>
+                  </p>
+
+                  {/* Progress */}
+                  {isRunning && (
+                    <div className="space-y-2">
+                      <div className="flex items-center justify-between text-sm">
+                        <span className="text-muted-foreground">{exportStatus}</span>
+                        <span className="tabular-nums text-muted-foreground">
+                          {exportProgress}%
+                        </span>
+                      </div>
+                      <div className="w-full h-1.5 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className="h-full bg-primary transition-all duration-300"
+                          style={{ width: `${exportProgress}%` }}
+                        />
+                      </div>
+                      <button
+                        onClick={() => {
+                          exportCancelRef.current = true;
+                          setExportPhase("idle");
+                          setExportStatus("");
+                          setExportProgress(0);
+                        }}
+                        className="text-xs text-muted-foreground hover:text-destructive transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Status message when idle/done/error */}
+                  {!isRunning && exportStatus && exportPhase !== "idle" && (
+                    <p
+                      className={`text-sm ${exportPhase === "error" ? "text-destructive" : "text-muted-foreground"}`}
+                    >
+                      {exportStatus}
+                    </p>
+                  )}
+
+                  {/* Download button when done */}
+                  {exportPhase === "done" && exportUrl && (
+                    <a
+                      href={exportUrl}
+                      download={exportName}
+                      className="flex items-center justify-center gap-2 w-full rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+                    >
+                      <Download className="h-4 w-4" />
+                      Download {exportName}
+                    </a>
+                  )}
+
+                  {/* Start button when not running and not done */}
+                  {!isRunning && exportPhase !== "done" && (
+                    <button
+                      onClick={startExport}
+                      className="w-full rounded-md bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/90 transition-colors"
+                    >
+                      Start Export
+                    </button>
+                  )}
+                </div>
+              );
+            })()}
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
 
       {/* Audio Picker Dialog */}
       <Dialog
