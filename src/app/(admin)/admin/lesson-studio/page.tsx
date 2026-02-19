@@ -955,21 +955,25 @@ export default function LessonStudioPage() {
 
   // Calculate initial zoom to cover the viewport (16:9 aspect ratio)
   const calculateCoverZoom = (image: LibraryImage): number => {
-    const viewportAspectRatio = 16 / 9;
+    const viewportAspectRatio = 16 / 9; // 1.777...
     const imageAspectRatio = image.width / image.height;
 
-    // Calculate zoom needed to cover the entire viewport
+    // Calculate zoom needed to make the image cover (fill) the viewport
+    // zoom > 1 means we see LESS of the image (zoomed in)
+    // zoom < 1 means we see MORE of the image (zoomed out)
     let zoom: number;
     if (imageAspectRatio > viewportAspectRatio) {
-      // Image is wider than viewport - scale by height
+      // Image is wider than viewport (e.g., 21:9 vs 16:9)
+      // Need to fit by height → zoom IN to crop the sides
       zoom = imageAspectRatio / viewportAspectRatio;
     } else {
-      // Image is taller than viewport - scale by width
+      // Image is taller than viewport (e.g., 4:3 vs 16:9)
+      // Need to fit by width → zoom IN to crop top/bottom
       zoom = viewportAspectRatio / imageAspectRatio;
     }
 
-    // Cap at 2x maximum
-    return Math.min(zoom, 2);
+    // Clamp between 0.5x and 2x
+    return Math.max(0.5, Math.min(zoom, 2));
   };
 
   const addImage = (image: LibraryImage) => {
