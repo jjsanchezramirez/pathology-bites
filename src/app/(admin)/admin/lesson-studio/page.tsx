@@ -73,6 +73,11 @@ interface LibraryImage {
 
 const DEFAULT_AUDIO_URL = "";
 
+// Helper function to format numbers without trailing zeros
+const formatNumber = (num: number): string => {
+  return num % 1 === 0 ? num.toString() : num.toFixed(2).replace(/\.?0+$/, "");
+};
+
 // Editable label component
 function EditableLabel({
   label,
@@ -122,7 +127,7 @@ function EditableLabel({
 
   if (isEditing) {
     return (
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1.5">
         <span className="text-xs text-muted-foreground">{label}:</span>
         <Input
           ref={inputRef}
@@ -134,24 +139,27 @@ function EditableLabel({
           onChange={(e) => setEditValue(e.target.value)}
           onBlur={handleSave}
           onKeyDown={handleKeyDown}
-          className="h-5 w-16 text-xs px-1 py-0"
+          className="h-6 w-20 text-xs px-2"
         />
-        {suffix && <span className="text-xs">{suffix}</span>}
+        {suffix && <span className="text-xs text-muted-foreground">{suffix}</span>}
       </div>
     );
   }
 
   return (
-    <Label
-      className="text-xs cursor-pointer hover:text-primary transition-colors"
+    <div
+      className="text-xs cursor-pointer hover:bg-muted/40 px-1 py-0.5 rounded transition-colors inline-block mb-1"
       onClick={() => {
         setEditValue(value.toString());
         setIsEditing(true);
       }}
     >
-      {label}: {value}
-      {suffix}
-    </Label>
+      <span className="text-muted-foreground">{label}:</span>{" "}
+      <span className="font-medium">
+        {formatNumber(value)}
+        {suffix}
+      </span>
+    </div>
   );
 }
 
@@ -662,6 +670,20 @@ export default function LessonStudioPage() {
   const [captionChunks, setCaptionChunks] = useState<CaptionChunk[]>([]);
   const [isDragOver, setIsDragOver] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
+
+  // Automatic preview update whenever images change (but not audio)
+  // Debounced to avoid excessive regeneration
+  useEffect(() => {
+    if (selectedImages.length > 0 && audioUrl) {
+      const timer = setTimeout(() => {
+        generateSequence();
+      }, 500); // 500ms delay buffer
+
+      return () => clearTimeout(timer);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedImages]);
 
   // Load a saved sequence JSON back into the studio.
   // Reconstructs animations and text overlays by reverse-engineering the keyframe
@@ -951,6 +973,10 @@ export default function LessonStudioPage() {
   };
 
   const addImage = (image: LibraryImage) => {
+    console.log(
+      `[lesson-studio] Adding image: ${image.description?.slice(0, 50)} — category: ${image.category}, magnification: ${image.magnification ?? "null"}`
+    );
+
     const initialZoom = calculateCoverZoom(image);
     const duration = 10;
 
@@ -1031,16 +1057,19 @@ export default function LessonStudioPage() {
 
     switch (type) {
       case "zoom":
-        newAnimation = {
-          id: newId,
-          type: "zoom",
-          start: 0,
-          duration: Math.min(2, img.duration - 1),
-          fadeTime: 0.5,
-          targetScale: img.initialZoom * 1.5,
-          targetX: 0,
-          targetY: 0,
-        };
+        {
+          const zoomDuration = Math.min(2, img.duration - 1);
+          newAnimation = {
+            id: newId,
+            type: "zoom",
+            start: 0,
+            duration: zoomDuration,
+            fadeTime: img.duration - zoomDuration - 0, // segmentDuration - zoomDuration - start
+            targetScale: img.initialZoom * 1.5,
+            targetX: 0,
+            targetY: 0,
+          };
+        }
         break;
       case "pan":
         newAnimation = {
@@ -1048,50 +1077,59 @@ export default function LessonStudioPage() {
           type: "pan",
           start: 0,
           duration: 0, // Not used for pan animations
-          fadeTime: 0.5,
+          fadeTime: img.duration - 0, // segmentDuration - start
           targetScale: img.initialZoom * 1.5,
           targetX: 0,
           targetY: 0,
         };
         break;
       case "figure":
-        newAnimation = {
-          id: newId,
-          type: "figure",
-          start: 0,
-          duration: 2,
-          fadeTime: 0.3,
-          figureType: "circle",
-          position: { x: 50, y: 50 },
-          size: { width: 30, height: 30 },
-          borderColor: "#FFFFFF",
-          borderWidth: 3,
-          borderStyle: "solid",
-        };
+        {
+          const duration = Math.min(2, img.duration - 0.3);
+          newAnimation = {
+            id: newId,
+            type: "figure",
+            start: 0,
+            duration,
+            fadeTime: img.duration - duration - 0, // segmentDuration - animationDuration - start
+            figureType: "circle",
+            position: { x: 50, y: 50 },
+            size: { width: 30, height: 30 },
+            borderColor: "#FFFFFF",
+            borderWidth: 3,
+            borderStyle: "solid",
+          };
+        }
         break;
       case "spotlight":
-        newAnimation = {
-          id: newId,
-          type: "spotlight",
-          start: 0,
-          duration: 2,
-          fadeTime: 0.3,
-          figureType: "circle",
-          position: { x: 50, y: 50 },
-          size: { width: 30, height: 30 },
-        };
+        {
+          const duration = Math.min(2, img.duration - 0.3);
+          newAnimation = {
+            id: newId,
+            type: "spotlight",
+            start: 0,
+            duration,
+            fadeTime: img.duration - duration - 0, // segmentDuration - animationDuration - start
+            figureType: "circle",
+            position: { x: 50, y: 50 },
+            size: { width: 30, height: 30 },
+          };
+        }
         break;
       case "arrow":
-        newAnimation = {
-          id: newId,
-          type: "arrow",
-          start: 0,
-          duration: 2,
-          fadeTime: 0.3,
-          position: { x: 50, y: 50 },
-          color: "#FFFFFF",
-          direction: "down",
-        };
+        {
+          const duration = Math.min(2, img.duration - 0.3);
+          newAnimation = {
+            id: newId,
+            type: "arrow",
+            start: 0,
+            duration,
+            fadeTime: img.duration - duration - 0, // segmentDuration - animationDuration - start
+            position: { x: 50, y: 50 },
+            color: "#FFFFFF",
+            direction: "down",
+          };
+        }
         break;
     }
 
@@ -1118,11 +1156,12 @@ export default function LessonStudioPage() {
 
   const addText = (imageIndex: number) => {
     const img = selectedImages[imageIndex];
+    const textDuration = Math.min(3, img.duration - 1);
     const newText: TimeBasedText = {
       id: `text-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`,
       start: 0,
-      duration: Math.min(3, img.duration - 1),
-      fadeTime: 0.5,
+      duration: textDuration,
+      fadeTime: img.duration - textDuration - 0, // segmentDuration - textDuration - start
       text: getImageTitle(img),
       position: { x: 50, y: 15 },
       fontSize: 1.5,
@@ -1506,7 +1545,19 @@ export default function LessonStudioPage() {
 
   // AI-powered sequence generation via Llama 4 Maverick
   const handleAIGenerate = async () => {
-    if (selectedImages.length === 0 || !audioUrl || captionChunks.length === 0) return;
+    if (selectedImages.length === 0 || !audioUrl) return;
+
+    // Build caption chunks from transcript if available
+    const finalAudioDuration = audioDuration > 0 ? audioDuration : 60; // fallback duration
+    const captions =
+      audioTranscript && finalAudioDuration > 0
+        ? buildCaptionChunks(audioTranscript, finalAudioDuration)
+        : [];
+
+    if (captions.length === 0) {
+      alert("No transcript available for the selected audio. Please select audio with a transcript.");
+      return;
+    }
 
     setIsGenerating(true);
     try {
@@ -1522,14 +1573,20 @@ export default function LessonStudioPage() {
         height: img.height,
       }));
 
+      console.log("[lesson-studio] Sending AI generation request:");
+      images.forEach((img, i) => {
+        console.log(`  [${i}] ${img.title}`);
+        console.log(`      category: ${img.category}, magnification: ${img.magnification ?? "null"}`);
+      });
+      console.log(`[lesson-studio] ${captions.length} captions, ${finalAudioDuration.toFixed(1)}s`);
+
       const response = await fetch("/api/admin/lesson-studio/generate-sequence", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           images,
-          captions: captionChunks,
-          audioDuration:
-            audioDuration > 0 ? audioDuration : (captionChunks[captionChunks.length - 1]?.end ?? 0),
+          captions,
+          audioDuration: finalAudioDuration,
           audioUrl,
         }),
       });
@@ -2004,43 +2061,51 @@ export default function LessonStudioPage() {
                 No images added yet
               </div>
             ) : (
-              selectedImages.map((img, index) => (
-                <div
-                  key={index}
-                  className={`
-                    border rounded-lg p-3 cursor-pointer transition-all
+              selectedImages.map((img, index) => {
+                const figureCount = img.animations.filter((a) => a.type === "figure").length;
+                const spotlightCount = img.animations.filter((a) => a.type === "spotlight").length;
+                const arrowCount = img.animations.filter((a) => a.type === "arrow").length;
+                const zoomCount = img.animations.filter((a) => a.type === "zoom").length;
+                const panCount = img.animations.filter((a) => a.type === "pan").length;
+
+                const tags = [
+                  figureCount > 0 && `Fig ${figureCount}`,
+                  spotlightCount > 0 && `Spot ${spotlightCount}`,
+                  arrowCount > 0 && `Arrow ${arrowCount}`,
+                  zoomCount > 0 && `Zoom ${zoomCount}`,
+                  panCount > 0 && `Pan ${panCount}`,
+                  img.textOverlays.length > 0 && `Text ${img.textOverlays.length}`,
+                ]
+                  .filter(Boolean)
+                  .join(" • ");
+
+                return (
+                  <div
+                    key={index}
+                    className={`
+                    border rounded-lg p-2 cursor-pointer transition-all
                     ${selectedImageIndex === index ? "border-blue-500 bg-blue-50 shadow-sm" : "border-gray-200 hover:border-gray-300"}
                   `}
-                  onClick={() => handleSegmentSelect(index)}
-                >
-                  <div className="flex gap-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={img.url}
-                      alt={img.description || "Image"}
-                      className="w-16 h-16 object-cover rounded"
-                    />
-                    <div className="flex-1 min-w-0">
-                      <div className="text-sm font-medium truncate">{getImageTitle(img)}</div>
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Segment {index + 1} • {img.duration}s
-                      </div>
-                      <div className="mt-1 flex gap-1">
-                        {img.animations.length > 0 && (
-                          <span className="text-xs px-2 py-0.5 bg-blue-100 text-blue-700 rounded-full font-medium">
-                            {img.animations.length} anim{img.animations.length !== 1 ? "s" : ""}
-                          </span>
-                        )}
-                        {img.textOverlays.length > 0 && (
-                          <span className="text-xs px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full font-medium">
-                            {img.textOverlays.length} text
-                          </span>
-                        )}
+                    onClick={() => handleSegmentSelect(index)}
+                  >
+                    <div className="flex gap-2">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={img.url}
+                        alt={img.description || "Image"}
+                        className="w-12 h-12 object-cover rounded"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="text-sm font-medium truncate">{getImageTitle(img)}</div>
+                        <div className="text-xs text-muted-foreground">
+                          Segment {index + 1} • {formatNumber(img.duration)}s
+                        </div>
+                        {tags && <div className="text-xs text-muted-foreground mt-0.5">{tags}</div>}
                       </div>
                     </div>
                   </div>
-                </div>
-              ))
+                );
+              })
             )}
           </div>
 
@@ -2106,14 +2171,18 @@ export default function LessonStudioPage() {
                 <div className="text-muted-foreground text-sm">No preview yet</div>
                 <p className="text-xs text-muted-foreground/70">
                   {!audioUrl
-                    ? "Select audio and add images, then generate a preview"
-                    : "Add images to the sequence and click Update Preview"}
+                    ? "1. Select audio, 2. Add images, 3. Click AI Generate"
+                    : selectedImages.length === 0
+                      ? "Add images to the sequence"
+                      : !audioTranscript
+                        ? "Selected audio has no transcript — choose different audio or use Manual Preview"
+                        : "Ready! Click AI Generate to create your sequence"}
                 </p>
                 {selectedImages.length > 0 && (
                   <div className="flex flex-col gap-2 items-center">
                     <Button
                       onClick={handleAIGenerate}
-                      disabled={!audioUrl || captionChunks.length === 0 || isGenerating}
+                      disabled={!audioUrl || !audioTranscript || isGenerating}
                       className="w-full"
                     >
                       {isGenerating ? (
@@ -2153,8 +2222,13 @@ export default function LessonStudioPage() {
                 {/* Header */}
                 <div className="p-4 border-b bg-muted/30 flex items-center justify-between shrink-0">
                   <h3 className="font-semibold text-sm">Edit Segment {selectedImageIndex + 1}</h3>
-                  <Button size="sm" variant="ghost" onClick={() => removeImage(selectedImageIndex)}>
-                    <X className="h-4 w-4 text-destructive" />
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => setDeleteConfirmIndex(selectedImageIndex)}
+                    className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
+                  >
+                    <Trash2 className="h-4 w-4" />
                   </Button>
                 </div>
 
@@ -2163,11 +2237,17 @@ export default function LessonStudioPage() {
                   {/* Timing */}
                   <AccordionItem value="timing">
                     <AccordionTrigger className="text-sm font-medium py-3">Timing</AccordionTrigger>
-                    <AccordionContent className="space-y-3 pb-4">
-                      <div className="space-y-2">
-                        <Label className="text-xs">
-                          Duration: {selectedImages[selectedImageIndex].duration}s
-                        </Label>
+                    <AccordionContent className="space-y-2 pb-4">
+                      <div>
+                        <EditableLabel
+                          label="Duration"
+                          value={selectedImages[selectedImageIndex].duration}
+                          min={3}
+                          max={60}
+                          step={0.1}
+                          suffix="s"
+                          onSave={(val) => updateImage(selectedImageIndex, "duration", val)}
+                        />
                         <Input
                           type="range"
                           min={3}
@@ -2177,14 +2257,20 @@ export default function LessonStudioPage() {
                           onChange={(e) =>
                             updateImage(selectedImageIndex, "duration", Number(e.target.value))
                           }
-                          className="w-full"
+                          className="w-full [&::-webkit-slider-thumb]:bg-primary [&::-moz-range-thumb]:bg-primary"
                         />
                       </div>
 
-                      <div className="space-y-2">
-                        <Label className="text-xs">
-                          Transition: {selectedImages[selectedImageIndex].transitionDuration}s
-                        </Label>
+                      <div>
+                        <EditableLabel
+                          label="Transition"
+                          value={selectedImages[selectedImageIndex].transitionDuration}
+                          min={0}
+                          max={5}
+                          step={0.1}
+                          suffix="s"
+                          onSave={(val) => updateImage(selectedImageIndex, "transitionDuration", val)}
+                        />
                         <Input
                           type="range"
                           min={0}
@@ -2199,7 +2285,7 @@ export default function LessonStudioPage() {
                             )
                           }
                           disabled={selectedImageIndex === selectedImages.length - 1}
-                          className="w-full"
+                          className="w-full [&::-webkit-slider-thumb]:bg-primary [&::-moz-range-thumb]:bg-primary"
                         />
                       </div>
                     </AccordionContent>
@@ -2210,11 +2296,17 @@ export default function LessonStudioPage() {
                     <AccordionTrigger className="text-sm font-medium py-3">
                       Image & Framing
                     </AccordionTrigger>
-                    <AccordionContent className="space-y-3 pb-4">
-                      <div className="space-y-2">
-                        <Label className="text-xs">
-                          Initial Zoom: {selectedImages[selectedImageIndex].initialZoom.toFixed(2)}x
-                        </Label>
+                    <AccordionContent className="space-y-2 pb-4">
+                      <div className="space-y-1">
+                        <EditableLabel
+                          label="Initial Zoom"
+                          value={selectedImages[selectedImageIndex].initialZoom}
+                          min={0.5}
+                          max={2}
+                          step={0.1}
+                          suffix="x"
+                          onSave={(val) => updateImage(selectedImageIndex, "initialZoom", val)}
+                        />
                         <Input
                           type="range"
                           min={0.5}
@@ -2224,63 +2316,91 @@ export default function LessonStudioPage() {
                           onChange={(e) =>
                             updateImage(selectedImageIndex, "initialZoom", Number(e.target.value))
                           }
-                          className="w-full"
+                          className="w-full [&::-webkit-slider-thumb]:bg-primary [&::-moz-range-thumb]:bg-primary"
                         />
                       </div>
 
                       <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-2">
-                          <Label className="text-xs">X Position (%)</Label>
-                          <Input
-                            key={`x-${selectedImageIndex}`}
-                            type="number"
+                        <div className="space-y-1">
+                          <EditableLabel
+                            label="X"
+                            value={selectedImages[selectedImageIndex].initialX}
                             min={-50}
                             max={50}
                             step={1}
-                            defaultValue={selectedImages[selectedImageIndex].initialX}
-                            onBlur={(e) => {
-                              const val = Number(e.target.value);
-                              if (!isNaN(val)) {
-                                updateImage(
-                                  selectedImageIndex,
-                                  "initialX",
-                                  Math.max(-50, Math.min(50, val))
-                                );
-                              }
-                            }}
-                            className="h-8 text-xs"
+                            suffix="%"
+                            onSave={(val) => updateImage(selectedImageIndex, "initialX", val)}
                           />
-                        </div>
-                        <div className="space-y-2">
-                          <Label className="text-xs">Y Position (%)</Label>
                           <Input
-                            key={`y-${selectedImageIndex}`}
-                            type="number"
+                            type="range"
                             min={-50}
                             max={50}
                             step={1}
-                            defaultValue={selectedImages[selectedImageIndex].initialY}
-                            onBlur={(e) => {
-                              const val = Number(e.target.value);
-                              if (!isNaN(val)) {
-                                updateImage(
-                                  selectedImageIndex,
-                                  "initialY",
-                                  Math.max(-50, Math.min(50, val))
-                                );
-                              }
-                            }}
-                            className="h-8 text-xs"
+                            value={selectedImages[selectedImageIndex].initialX}
+                            onChange={(e) =>
+                              updateImage(selectedImageIndex, "initialX", Number(e.target.value))
+                            }
+                            className="w-full [&::-webkit-slider-thumb]:bg-primary [&::-moz-range-thumb]:bg-primary"
                           />
                         </div>
+
+                        <div className="space-y-1">
+                          <EditableLabel
+                            label="Y"
+                            value={selectedImages[selectedImageIndex].initialY}
+                            min={-50}
+                            max={50}
+                            step={1}
+                            suffix="%"
+                            onSave={(val) => updateImage(selectedImageIndex, "initialY", val)}
+                          />
+                          <Input
+                            type="range"
+                            min={-50}
+                            max={50}
+                            step={1}
+                            value={selectedImages[selectedImageIndex].initialY}
+                            onChange={(e) =>
+                              updateImage(selectedImageIndex, "initialY", Number(e.target.value))
+                            }
+                            className="w-full [&::-webkit-slider-thumb]:bg-primary [&::-moz-range-thumb]:bg-primary"
+                          />
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const img = selectedImages[selectedImageIndex];
+                            updateImage(selectedImageIndex, "initialZoom", calculateCoverZoom(img));
+                          }}
+                          className="text-xs h-7"
+                        >
+                          Zoom to Fit
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => {
+                            const img = selectedImages[selectedImageIndex];
+                            updateImage(selectedImageIndex, "initialZoom", calculateCoverZoom(img));
+                            updateImage(selectedImageIndex, "initialX", 0);
+                            updateImage(selectedImageIndex, "initialY", 0);
+                          }}
+                          className="text-xs h-7"
+                        >
+                          Reset to Default
+                        </Button>
                       </div>
                     </AccordionContent>
                   </AccordionItem>
 
-                  {/* Zoom & Camera */}
+                  {/* Zoom & Pan */}
                   <AccordionItem value="zoom">
                     <AccordionTrigger className="text-sm font-medium py-3">
-                      Zoom & Camera (
+                      Zoom & Pan (
                       {
                         selectedImages[selectedImageIndex].animations.filter(
                           (a) => a.type === "zoom" || a.type === "pan"
@@ -2333,9 +2453,9 @@ export default function LessonStudioPage() {
                                     size="sm"
                                     variant="ghost"
                                     onClick={() => removeAnimation(selectedImageIndex, anim.id)}
-                                    className="h-6 w-6 p-0"
+                                    className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                                   >
-                                    <Trash2 className="h-3 w-3 text-destructive" />
+                                    <Trash2 className="h-3.5 w-3.5" />
                                   </Button>
                                 </div>
 
@@ -2344,7 +2464,7 @@ export default function LessonStudioPage() {
                                   className={`grid ${anim.type === "pan" ? "grid-cols-2" : "grid-cols-3"} gap-2`}
                                 >
                                   <div>
-                                    <Label className="text-xs">Start: {anim.start}s</Label>
+                                    <Label className="text-xs">Start (s)</Label>
                                     <Input
                                       type="number"
                                       min={0}
@@ -2371,7 +2491,7 @@ export default function LessonStudioPage() {
                                   </div>
                                   {anim.type === "zoom" && (
                                     <div>
-                                      <Label className="text-xs">Duration: {anim.duration}s</Label>
+                                      <Label className="text-xs">Duration (s)</Label>
                                       <Input
                                         type="number"
                                         min={0}
@@ -2398,7 +2518,7 @@ export default function LessonStudioPage() {
                                     </div>
                                   )}
                                   <div>
-                                    <Label className="text-xs">Fade: {anim.fadeTime}s</Label>
+                                    <Label className="text-xs">Fade (s)</Label>
                                     <Input
                                       type="number"
                                       min={0}
@@ -2433,7 +2553,7 @@ export default function LessonStudioPage() {
                                     <div>
                                       <EditableLabel
                                         label="Target Scale"
-                                        value={Number(anim.targetScale.toFixed(1))}
+                                        value={anim.targetScale}
                                         min={0.5}
                                         max={3}
                                         step={0.1}
@@ -2448,14 +2568,14 @@ export default function LessonStudioPage() {
                                         type="range"
                                         min={0.5}
                                         max={3}
-                                        step={0.5}
+                                        step={0.1}
                                         value={anim.targetScale}
                                         onChange={(e) =>
                                           updateAnimation(selectedImageIndex, anim.id, {
                                             targetScale: Number(e.target.value),
                                           })
                                         }
-                                        className="h-6"
+                                        className="h-6 [&::-webkit-slider-thumb]:bg-primary [&::-moz-range-thumb]:bg-primary"
                                       />
                                     </div>
                                     <div className="grid grid-cols-2 gap-2">
@@ -2540,10 +2660,10 @@ export default function LessonStudioPage() {
                     </AccordionContent>
                   </AccordionItem>
 
-                  {/* Visual Annotations */}
+                  {/* Animations */}
                   <AccordionItem value="annotations">
                     <AccordionTrigger className="text-sm font-medium py-3">
-                      Visual Annotations (
+                      Animations (
                       {
                         selectedImages[selectedImageIndex].animations.filter(
                           (a) => a.type !== "zoom" && a.type !== "pan"
@@ -2606,16 +2726,16 @@ export default function LessonStudioPage() {
                                     size="sm"
                                     variant="ghost"
                                     onClick={() => removeAnimation(selectedImageIndex, anim.id)}
-                                    className="h-6 w-6 p-0"
+                                    className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                                   >
-                                    <Trash2 className="h-3 w-3 text-destructive" />
+                                    <Trash2 className="h-3.5 w-3.5" />
                                   </Button>
                                 </div>
 
                                 {/* Timing controls */}
                                 <div className="grid grid-cols-3 gap-2">
                                   <div>
-                                    <Label className="text-xs">Start: {anim.start}s</Label>
+                                    <Label className="text-xs">Start (s)</Label>
                                     <Input
                                       type="number"
                                       min={0}
@@ -2641,7 +2761,7 @@ export default function LessonStudioPage() {
                                     />
                                   </div>
                                   <div>
-                                    <Label className="text-xs">Duration: {anim.duration}s</Label>
+                                    <Label className="text-xs">Duration (s)</Label>
                                     <Input
                                       type="number"
                                       min={0}
@@ -2667,7 +2787,7 @@ export default function LessonStudioPage() {
                                     />
                                   </div>
                                   <div>
-                                    <Label className="text-xs">Fade: {anim.fadeTime}s</Label>
+                                    <Label className="text-xs">Fade (s)</Label>
                                     <Input
                                       type="number"
                                       min={0}
@@ -2871,14 +2991,13 @@ export default function LessonStudioPage() {
                                       </div>
                                     )}
                                     {anim.type === "figure" && (
-                                      <>
+                                      <div className="grid grid-cols-2 gap-2">
                                         <div>
                                           <Label className="text-xs mb-2 block">Border Color</Label>
                                           <div className="flex gap-2 items-center flex-wrap">
                                             {[
                                               { color: "#FFFFFF", label: "White" },
                                               { color: "#000000", label: "Black" },
-                                              { color: "#FFEB3B", label: "Yellow" },
                                             ].map((option) => (
                                               <button
                                                 key={option.color}
@@ -2890,7 +3009,7 @@ export default function LessonStudioPage() {
                                                 }
                                                 className={`
                                               w-6 h-6 rounded-full border-2 transition-all
-                                              ${anim.borderColor.toUpperCase() === option.color ? "ring-2 ring-blue-500 ring-offset-1" : "hover:scale-110"}
+                                              ${anim.borderColor.toUpperCase() === option.color ? "ring-2 ring-primary ring-offset-1" : "hover:scale-110"}
                                             `}
                                                 style={{
                                                   backgroundColor: option.color,
@@ -2926,7 +3045,7 @@ export default function LessonStudioPage() {
                                         </div>
                                         <div>
                                           <Label className="text-xs mb-2 block">Border Style</Label>
-                                          <div className="flex gap-2">
+                                          <div className="flex gap-1">
                                             {[
                                               { style: "solid", label: "Solid" },
                                               { style: "dotted", label: "Dotted" },
@@ -2942,10 +3061,10 @@ export default function LessonStudioPage() {
                                                   })
                                                 }
                                                 className={`
-                                              px-3 py-1 text-xs rounded transition-all
+                                              px-2 py-1 text-xs rounded transition-all
                                               ${
                                                 anim.borderStyle === option.style
-                                                  ? "bg-blue-500 text-white"
+                                                  ? "bg-primary text-primary-foreground"
                                                   : "bg-gray-100 hover:bg-gray-200 text-gray-700"
                                               }
                                             `}
@@ -2955,7 +3074,7 @@ export default function LessonStudioPage() {
                                             ))}
                                           </div>
                                         </div>
-                                      </>
+                                      </div>
                                     )}
                                   </>
                                 )}
@@ -3056,7 +3175,7 @@ export default function LessonStudioPage() {
                                             ${!item.dir ? "cursor-default text-gray-400" : ""}
                                             ${
                                               item.dir && anim.direction === item.dir
-                                                ? "bg-blue-500 text-white"
+                                                ? "bg-primary text-primary-foreground"
                                                 : item.dir
                                                   ? "bg-gray-100 hover:bg-gray-200 text-gray-700"
                                                   : "bg-transparent"
@@ -3076,7 +3195,6 @@ export default function LessonStudioPage() {
                                           {[
                                             { color: "#FFFFFF", label: "White" },
                                             { color: "#000000", label: "Black" },
-                                            { color: "#FFEB3B", label: "Yellow" },
                                           ].map((option) => (
                                             <button
                                               key={option.color}
@@ -3088,7 +3206,7 @@ export default function LessonStudioPage() {
                                               }
                                               className={`
                                             w-6 h-6 rounded-full border-2 transition-all
-                                            ${anim.color.toUpperCase() === option.color ? "ring-2 ring-blue-500 ring-offset-1" : "hover:scale-110"}
+                                            ${anim.color.toUpperCase() === option.color ? "ring-2 ring-primary ring-offset-1" : "hover:scale-110"}
                                           `}
                                               style={{
                                                 backgroundColor: option.color,
@@ -3132,10 +3250,10 @@ export default function LessonStudioPage() {
                     </AccordionContent>
                   </AccordionItem>
 
-                  {/* Text Overlays */}
+                  {/* Text */}
                   <AccordionItem value="text">
                     <AccordionTrigger className="text-sm font-medium py-3">
-                      Text Overlays ({selectedImages[selectedImageIndex].textOverlays.length})
+                      Text ({selectedImages[selectedImageIndex].textOverlays.length})
                     </AccordionTrigger>
                     <AccordionContent className="space-y-3 pb-4">
                       <Button
@@ -3160,21 +3278,18 @@ export default function LessonStudioPage() {
                               className="p-3 border rounded-lg bg-muted/20 space-y-2"
                             >
                               <div className="flex items-center justify-between">
-                                <span className="text-xs font-medium truncate flex-1">
-                                  {text.text}
-                                </span>
+                                <span className="text-xs font-medium">Text</span>
                                 <Button
                                   size="sm"
                                   variant="ghost"
                                   onClick={() => removeText(selectedImageIndex, text.id)}
-                                  className="h-6 w-6 p-0"
+                                  className="h-7 w-7 p-0 text-muted-foreground hover:text-destructive hover:bg-destructive/10"
                                 >
-                                  <Trash2 className="h-3 w-3 text-destructive" />
+                                  <Trash2 className="h-3.5 w-3.5" />
                                 </Button>
                               </div>
 
                               <div>
-                                <Label className="text-xs">Text</Label>
                                 <Input
                                   value={text.text}
                                   onChange={(e) =>
@@ -3189,7 +3304,7 @@ export default function LessonStudioPage() {
                               {/* Timing controls */}
                               <div className="grid grid-cols-3 gap-2">
                                 <div>
-                                  <Label className="text-xs">Start: {text.start}s</Label>
+                                  <Label className="text-xs">Start (s)</Label>
                                   <Input
                                     key={`start-${text.id}-${selectedImageIndex}`}
                                     type="number"
@@ -3215,7 +3330,7 @@ export default function LessonStudioPage() {
                                   />
                                 </div>
                                 <div>
-                                  <Label className="text-xs">Duration: {text.duration}s</Label>
+                                  <Label className="text-xs">Duration (s)</Label>
                                   <Input
                                     key={`duration-${text.id}-${selectedImageIndex}`}
                                     type="number"
@@ -3241,7 +3356,7 @@ export default function LessonStudioPage() {
                                   />
                                 </div>
                                 <div>
-                                  <Label className="text-xs">Fade: {text.fadeTime}s</Label>
+                                  <Label className="text-xs">Fade (s)</Label>
                                   <Input
                                     key={`fade-${text.id}-${selectedImageIndex}`}
                                     type="number"
@@ -3323,19 +3438,19 @@ export default function LessonStudioPage() {
 
                               <div className="grid grid-cols-2 gap-2">
                                 <div>
-                                  <Label className="text-xs">Font Size: {text.fontSize}rem</Label>
+                                  <Label className="text-xs">Font Size: {formatNumber(text.fontSize)}rem</Label>
                                   <Input
                                     type="range"
                                     min={1}
                                     max={3}
-                                    step={0.5}
+                                    step={0.1}
                                     value={text.fontSize}
                                     onChange={(e) =>
                                       updateText(selectedImageIndex, text.id, {
                                         fontSize: Number(e.target.value),
                                       })
                                     }
-                                    className="h-6"
+                                    className="h-6 [&::-webkit-slider-thumb]:bg-primary [&::-moz-range-thumb]:bg-primary"
                                   />
                                 </div>
                                 <div>
@@ -3360,13 +3475,13 @@ export default function LessonStudioPage() {
                                 </div>
                               </div>
 
-                              <div>
-                                <Label className="text-xs mb-2 block">Text Color</Label>
+                              <div className="grid grid-cols-2 gap-2">
+                                <div>
+                                  <Label className="text-xs mb-2 block">Text Color</Label>
                                 <div className="flex gap-2 items-center">
                                   {[
                                     { color: "#FFFFFF", label: "White" },
                                     { color: "#000000", label: "Black" },
-                                    { color: "#FFEB3B", label: "Yellow" },
                                   ].map((option) => (
                                     <button
                                       key={option.color}
@@ -3378,7 +3493,7 @@ export default function LessonStudioPage() {
                                       }
                                       className={`
                                       w-6 h-6 rounded-full border-2 transition-all
-                                      ${text.color.toUpperCase() === option.color ? "ring-2 ring-blue-500 ring-offset-1" : "hover:scale-110"}
+                                      ${text.color.toUpperCase() === option.color ? "ring-2 ring-primary ring-offset-1" : "hover:scale-110"}
                                     `}
                                       style={{
                                         backgroundColor: option.color,
@@ -3409,10 +3524,9 @@ export default function LessonStudioPage() {
                                     </label>
                                   </div>
                                 </div>
-                              </div>
-
-                              <div>
-                                <Label className="text-xs mb-2 block">Background</Label>
+                                </div>
+                                <div>
+                                  <Label className="text-xs mb-2 block">Background Color</Label>
                                 <div className="flex gap-2 items-center">
                                   {[
                                     {
@@ -3438,7 +3552,7 @@ export default function LessonStudioPage() {
                                       }
                                       className={`
                                       w-6 h-6 rounded-full border-2 transition-all relative
-                                      ${text.backgroundColor === option.color ? "ring-2 ring-blue-500 ring-offset-1" : "hover:scale-110"}
+                                      ${text.backgroundColor === option.color ? "ring-2 ring-primary ring-offset-1" : "hover:scale-110"}
                                     `}
                                       style={{
                                         backgroundColor: option.display,
@@ -3483,6 +3597,7 @@ export default function LessonStudioPage() {
                                     </label>
                                   </div>
                                 </div>
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -3525,7 +3640,7 @@ export default function LessonStudioPage() {
         ) : (
           <div className="h-full flex flex-col relative">
             {/* Time Ruler */}
-            <div className="relative h-8 border-b bg-muted/20 px-4">
+            <div className="relative h-8 border-b bg-muted/20 px-8">
               {(() => {
                 const segmentsDuration = selectedImages.reduce((sum, img) => sum + img.duration, 0);
                 const baseTimelineDuration = Math.max(segmentsDuration, audioDuration);
@@ -3551,7 +3666,7 @@ export default function LessonStudioPage() {
                       {/* Time label for major ticks */}
                       {isMajor && (
                         <span className="text-[10px] text-muted-foreground mt-0.5 select-none">
-                          {t}s
+                          {formatNumber(t)}s
                         </span>
                       )}
                     </div>
@@ -3563,7 +3678,7 @@ export default function LessonStudioPage() {
             </div>
 
             {/* Segment Blocks */}
-            <div className="flex-1 relative px-4 py-3 overflow-x-auto" ref={timelineRef}>
+            <div className="flex-1 relative px-8 py-3 overflow-x-auto" ref={timelineRef}>
               <div className="h-full flex relative">
                 {(() => {
                   const segmentsDuration = selectedImages.reduce((sum, i) => sum + i.duration, 0);
@@ -3626,7 +3741,7 @@ export default function LessonStudioPage() {
                               {showDetails && (
                                 <>
                                   <div className="text-[10px] opacity-90 mt-0.5 drop-shadow-md">
-                                    {img.duration}s
+                                    {formatNumber(img.duration)}s
                                   </div>
                                   <div className="flex-1" />
                                   <div className="text-[10px] opacity-90 drop-shadow-md truncate">
@@ -3641,7 +3756,7 @@ export default function LessonStudioPage() {
                             {/* Tooltip on hover */}
                             <div className="absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden group-hover:block z-10 pointer-events-none">
                               <div className="bg-gray-900 text-white text-xs rounded px-2 py-1 whitespace-nowrap">
-                                {getImageTitle(img)} ({img.duration}s)
+                                {getImageTitle(img)} ({formatNumber(img.duration)}s)
                               </div>
                             </div>
                           </div>
@@ -3903,6 +4018,38 @@ export default function LessonStudioPage() {
                   );
                 })
               )}
+            </div>
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
+
+      {/* Delete Segment Confirmation Dialog */}
+      <Dialog open={deleteConfirmIndex !== null} onOpenChange={() => setDeleteConfirmIndex(null)}>
+        <DialogPortal>
+          <DialogOverlay />
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Delete Segment?</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to delete Segment {deleteConfirmIndex !== null ? deleteConfirmIndex + 1 : ""}?
+                This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="flex gap-2 justify-end mt-4">
+              <Button variant="outline" onClick={() => setDeleteConfirmIndex(null)}>
+                Cancel
+              </Button>
+              <Button
+                variant="destructive"
+                onClick={() => {
+                  if (deleteConfirmIndex !== null) {
+                    removeImage(deleteConfirmIndex);
+                    setDeleteConfirmIndex(null);
+                  }
+                }}
+              >
+                Delete Segment
+              </Button>
             </div>
           </DialogContent>
         </DialogPortal>

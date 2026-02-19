@@ -65,7 +65,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.6,
     },
     {
-      url: `${baseUrl}/tools/diagnostic-search`,
+      url: `${baseUrl}/tools/genova`,
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/tools/lupus-anticoagulant`,
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/tools/milan`,
       lastModified: currentDate,
       changeFrequency: "monthly",
       priority: 0.6,
@@ -75,12 +87,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
       lastModified: currentDate,
       changeFrequency: "weekly",
       priority: 0.7,
-    },
-    {
-      url: `${baseUrl}/tools/tnm`,
-      lastModified: currentDate,
-      changeFrequency: "monthly",
-      priority: 0.6,
     },
     {
       url: `${baseUrl}/tools/virtual-slides`,

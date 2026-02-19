@@ -433,6 +433,10 @@ async function analyzeOneImage(
   const imageWithMag: ImageInput =
     resolvedMag !== image.magnification ? { ...image, magnification: resolvedMag } : image;
 
+  console.log(
+    `[vision] ${image.title.slice(0, 50)} — category: ${image.category}, mag: ${image.magnification} → ${resolvedMag}`
+  );
+
   // Build prompt (microscopic only for now)
   const promptText = buildMicroscopicPrompt(imageWithMag);
   if (debug) debug.promptSent = promptText;
@@ -540,5 +544,11 @@ export async function analyzeImages(images: ImageInput[], apiKey: string): Promi
   console.log(
     `[vision] Done — ${seen}/${images.length} seen, tools: ${JSON.stringify(toolCounts)}`
   );
+  console.log(`[vision] Results summary:`);
+  results.forEach((r, i) => {
+    console.log(
+      `  [${i}] tool: ${r.annotationTool}, position: ${r.featurePosition ? `x=${r.featurePosition.x}, y=${r.featurePosition.y}` : "null"}, label: ${r.suggestedLabel || "(none)"}`
+    );
+  });
   return results;
 }

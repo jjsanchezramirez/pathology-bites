@@ -21,6 +21,7 @@ next-env.d.ts
 dev
 public
 src/app/test
+src/app/api/test
 
 # IDEs & VCS
 .git

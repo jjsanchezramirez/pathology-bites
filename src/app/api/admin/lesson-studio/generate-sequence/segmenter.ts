@@ -171,6 +171,12 @@ export async function segmentByAI(
     return computeSegmentTimings(images, captions, totalDuration);
   }
 
+  console.log(`[segmenter] Input images for segmentation:`);
+  images.forEach((img, i) => {
+    console.log(`  [${i}] ${img.title} — ${img.category}, mag: ${img.magnification ?? "null"}`);
+  });
+  console.log(`[segmenter] ${captions.length} captions, ${totalDuration.toFixed(1)}s duration`);
+
   const prompt = buildSegmenterPrompt(images, captions);
 
   const controller = new AbortController();

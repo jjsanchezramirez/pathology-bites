@@ -43,7 +43,6 @@
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.858.0",
-    "@ffmpeg/core": "^0.12.10",
     "@ffmpeg/ffmpeg": "^0.12.15",
     "@ffmpeg/util": "^0.12.2",
     "@hookform/resolvers": "^5.0.1",
@@ -98,9 +97,6 @@
     "@eslint/eslintrc": "^3.3.1",
     "@playwright/test": "^1.58.2",
     "@tailwindcss/cli": "^4.1.18",
-    "@testing-library/jest-dom": "^6.9.1",
-    "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.1",
     "@types/canvas-confetti": "^1.9.0",
     "@types/diff": "^7.0.2",
     "@types/react": "^19.1.4",

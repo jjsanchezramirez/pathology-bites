@@ -67,6 +67,16 @@ export async function POST(request: NextRequest) {
     const startTime = Date.now();
 
     // ---------------------------------------------------------------------------
+    // Log input images with magnification data
+    // ---------------------------------------------------------------------------
+    console.log("[generate-sequence] Input images:");
+    images.forEach((img, i) => {
+      console.log(`  [${i}] ${img.title}`);
+      console.log(`      category: ${img.category}, magnification: ${img.magnification ?? "null"}`);
+      console.log(`      url: ${img.url.slice(-60)}`);
+    });
+
+    // ---------------------------------------------------------------------------
     // AI pass: Vision analysis + AI segmentation — run in parallel
     // Both are best-effort; failures fall back gracefully.
     // ---------------------------------------------------------------------------

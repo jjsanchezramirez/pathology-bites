@@ -61,3 +61,4 @@ src/wip/
 
 # Local-only sandbox (never committed, never deployed)
 src/app/test/
+src/app/api/test/
