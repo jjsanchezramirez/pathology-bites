@@ -1527,13 +1527,19 @@ export default function LessonStudioPage() {
 
     const totalDuration = segments[segments.length - 1]?.endTime || 0;
 
-    setPreviewSequence({
-      version: 1,
+    const newSequence: ExplainerSequence = {
+      version: 1 as const,
       duration: totalDuration,
       aspectRatio: "16:9",
       segments,
       ...(audioUrl ? { audioUrl } : {}),
-    });
+    };
+
+    // Only update if the sequence actually changed (avoid unnecessary re-renders/blinking)
+    const sequenceChanged = JSON.stringify(newSequence) !== JSON.stringify(previewSequence);
+    if (sequenceChanged) {
+      setPreviewSequence(newSequence);
+    }
 
     // Build flat caption chunks (rendered outside the engine, no keyframe interpolation)
     if (audioTranscript && audioDuration > 0) {
