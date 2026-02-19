@@ -4,25 +4,28 @@ import type { ExplainerSequence, CaptionChunk } from "@/shared/types/explainer";
 import { SYSTEM_PROMPT, buildUserPrompt } from "./prompt";
 import type { ImageInput } from "./prompt";
 import { analyzeImages } from "./vision";
-import { computeSegmentTimings } from "./timing";
 import { computeAllCameraKeyframes } from "./camera";
 import { segmentByAI } from "./segmenter";
+import { assembleSequenceDeterministically } from "./assembler";
 
 // Tell Next.js to allow up to 150 seconds for this route (vision pass + assembly pass)
 export const maxDuration = 150;
 
+// 10-second buffer reserved for Next.js overhead + JSON parsing
+const NEXT_OVERHEAD_S = 10;
+
 // ---------------------------------------------------------------------------
-// Meta Llama API call
+// Meta Llama API call — dynamic timeout, single attempt
 // ---------------------------------------------------------------------------
 
 async function callMetaAPI(
   systemPrompt: string,
   userPrompt: string,
-  apiKey: string
+  apiKey: string,
+  timeoutMs: number
 ): Promise<string> {
   const controller = new AbortController();
-  // Sequence generation is complex — allow 110s (under Next.js maxDuration of 120s)
-  const timeoutId = setTimeout(() => controller.abort(), 110000);
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
 
   let response: Response;
   try {
@@ -34,21 +37,20 @@ async function callMetaAPI(
       },
       signal: controller.signal,
       body: JSON.stringify({
-        // Llama 4 Scout: 10M context, faster inference than Maverick
         model: "Llama-4-Scout-17B-16E-Instruct-FP8",
         messages: [
           { role: "system", content: systemPrompt },
           { role: "user", content: userPrompt },
         ],
         max_completion_tokens: 6000,
-        temperature: 0.3, // Lower = more consistent JSON structure
+        temperature: 0.3,
       }),
     });
     clearTimeout(timeoutId);
   } catch (error) {
     clearTimeout(timeoutId);
     if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Meta Llama API timeout after 110 seconds");
+      throw new Error(`Meta Llama API timeout after ${Math.round(timeoutMs / 1000)}s`);
     }
     throw error;
   }
@@ -67,7 +69,6 @@ async function callMetaAPI(
 
   const data = await response.json();
 
-  // Handle both response formats (Meta API has changed formats across versions)
   let content = "";
   if (data.completion_message?.content?.text) {
     content = data.completion_message.content.text;
@@ -76,6 +77,44 @@ async function callMetaAPI(
   }
 
   return content;
+}
+
+// ---------------------------------------------------------------------------
+// Assembly with retry — tries once, retries with remaining budget on failure
+// ---------------------------------------------------------------------------
+
+async function callAssemblyWithRetry(
+  systemPrompt: string,
+  userPrompt: string,
+  apiKey: string,
+  startTime: number
+): Promise<string> {
+  const budgetMs = (maxDuration - NEXT_OVERHEAD_S) * 1000;
+
+  const elapsed = () => Date.now() - startTime;
+  const remainingMs = () => Math.max(0, budgetMs - elapsed());
+
+  // First attempt — use the full remaining budget
+  const firstTimeout = Math.max(30_000, remainingMs());
+  console.log(
+    `[generate-sequence] Assembly attempt 1 — timeout ${Math.round(firstTimeout / 1000)}s`
+  );
+
+  try {
+    return await callMetaAPI(systemPrompt, userPrompt, apiKey, firstTimeout);
+  } catch (firstErr) {
+    const retryBudget = remainingMs() - 5_000; // 5s buffer before giving up
+    if (retryBudget < 10_000) {
+      // Not enough time to retry meaningfully
+      throw firstErr;
+    }
+
+    console.warn(
+      `[generate-sequence] Assembly attempt 1 failed (${firstErr instanceof Error ? firstErr.message : firstErr}) — retrying with ${Math.round(retryBudget / 1000)}s`
+    );
+
+    return await callMetaAPI(systemPrompt, userPrompt, apiKey, retryBudget);
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -228,6 +267,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Llama API key not configured" }, { status: 500 });
     }
 
+    // Record start time for dynamic timeout budgeting
+    const startTime = Date.now();
+
     // ---------------------------------------------------------------------------
     // Pass 1: Vision analysis + AI segmentation — run in parallel
     // Both are best-effort; failures fall back gracefully.
@@ -240,13 +282,14 @@ export async function POST(request: NextRequest) {
       segmentByAI(images, captions, audioDuration, apiKey),
     ]);
 
+    const pass1Elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
+    console.log(`[generate-sequence] Pass 1 complete in ${pass1Elapsed}s`);
+
     // Pre-compute camera keyframes (for assembly prompt + debug panel)
-    const debugCameraKeyframes = computeAllCameraKeyframes(images, visionResults);
-    // Timings come from AI segmenter (with keyword-overlap fallback)
-    const debugTimings = segmentTimings;
+    const cameraKeyframes = computeAllCameraKeyframes(images, visionResults);
 
     // ---------------------------------------------------------------------------
-    // Pass 2: Build prompts (enriched with vision data + pre-computed timings)
+    // Pass 2: Assembly — with dynamic timeout + retry + deterministic fallback
     // ---------------------------------------------------------------------------
     const userPrompt = buildUserPrompt(
       images,
@@ -261,52 +304,55 @@ export async function POST(request: NextRequest) {
       `[generate-sequence] Pass 2 — sequence assembly for ${images.length} images, ${audioDuration.toFixed(1)}s audio`
     );
 
-    // Call Meta Llama API
-    const rawContent = await callMetaAPI(SYSTEM_PROMPT, userPrompt, apiKey);
-
-    if (!rawContent) {
-      return NextResponse.json({ error: "AI model returned empty response" }, { status: 500 });
-    }
-
-    // Parse the returned JSON
     let sequence: ExplainerSequence;
+    let degraded = false;
+
     try {
-      sequence = extractJSON(rawContent) as ExplainerSequence;
-    } catch (parseError) {
-      console.error("[generate-sequence] JSON parse failed:", parseError);
-      return NextResponse.json(
-        {
-          error: `Failed to parse AI response as JSON: ${parseError instanceof Error ? parseError.message : "Parse error"}`,
-        },
-        { status: 500 }
-      );
-    }
+      const rawContent = await callAssemblyWithRetry(SYSTEM_PROMPT, userPrompt, apiKey, startTime);
 
-    // Basic validation — ensure the result looks like a sequence
-    if (!sequence.segments || !Array.isArray(sequence.segments)) {
-      return NextResponse.json(
-        { error: "AI returned invalid sequence structure (missing segments array)" },
-        { status: 500 }
-      );
-    }
+      if (!rawContent) throw new Error("AI model returned empty response");
 
-    // Normalise captions: model sometimes returns arrays [text, start, end] instead of objects
-    if (sequence.captions && Array.isArray(sequence.captions)) {
-      sequence.captions = sequence.captions.map((c: unknown) => {
-        if (Array.isArray(c)) {
-          return { text: String(c[0] ?? ""), start: Number(c[1] ?? 0), end: Number(c[2] ?? 0) };
-        }
-        return c as CaptionChunk;
-      });
+      const parsed = extractJSON(rawContent) as ExplainerSequence;
+      if (!parsed.segments || !Array.isArray(parsed.segments)) {
+        throw new Error("AI returned invalid sequence structure (missing segments array)");
+      }
+
+      // Normalise captions: model sometimes returns arrays [text, start, end] instead of objects
+      if (parsed.captions && Array.isArray(parsed.captions)) {
+        parsed.captions = parsed.captions.map((c: unknown) => {
+          if (Array.isArray(c)) {
+            return { text: String(c[0] ?? ""), start: Number(c[1] ?? 0), end: Number(c[2] ?? 0) };
+          }
+          return c as CaptionChunk;
+        });
+      }
+
+      sequence = parsed;
+    } catch (assemblyError) {
+      // Assembly failed (timeout, parse error, invalid JSON) — use deterministic fallback
+      console.warn(
+        `[generate-sequence] Assembly failed — using deterministic fallback. Reason: ${assemblyError instanceof Error ? assemblyError.message : assemblyError}`
+      );
+      sequence = assembleSequenceDeterministically(
+        images,
+        captions,
+        audioDuration,
+        audioUrl,
+        visionResults,
+        segmentTimings,
+        cameraKeyframes
+      );
+      degraded = true;
     }
 
     return NextResponse.json({
       success: true,
       sequence,
+      degraded,
       debug: {
         visionResults,
-        timings: debugTimings,
-        cameraKeyframes: debugCameraKeyframes,
+        timings: segmentTimings,
+        cameraKeyframes,
         userPrompt,
       },
     });
