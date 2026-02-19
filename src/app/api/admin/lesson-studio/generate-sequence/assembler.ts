@@ -227,9 +227,7 @@ function buildKeyframes(
     const d = camera.kenBurnsDrift;
     const w = camera.wide;
 
-    const kfs: Keyframe[] = [
-      { time: 0, transform: { x: w.x, y: w.y, scale: w.scale }, ...empty },
-    ];
+    const kfs: Keyframe[] = [{ time: 0, transform: { x: w.x, y: w.y, scale: w.scale }, ...empty }];
 
     if (textOverlay) {
       kfs.push({
@@ -257,9 +255,7 @@ function buildKeyframes(
 
   // --- Figure/table or no camera data — static wide shot ---
   const w = camera.wide;
-  const kfs: Keyframe[] = [
-    { time: 0, transform: { x: w.x, y: w.y, scale: w.scale }, ...empty },
-  ];
+  const kfs: Keyframe[] = [{ time: 0, transform: { x: w.x, y: w.y, scale: w.scale }, ...empty }];
 
   if (textOverlay) {
     kfs.push({

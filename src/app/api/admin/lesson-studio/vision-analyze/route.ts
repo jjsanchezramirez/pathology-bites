@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiKey } from "@/shared/config/ai-models";
-import { analyzeImages } from "../generate-sequence/vision";
+import { analyzeSingleImageWithDebug } from "../generate-sequence/vision";
 import type { ImageInput } from "../generate-sequence/prompt";
 
 export const maxDuration = 30;
@@ -18,9 +18,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Llama API key not configured" }, { status: 500 });
     }
 
-    const [result] = await analyzeImages([image], apiKey);
+    const { result, debug } = await analyzeSingleImageWithDebug(image, apiKey);
 
-    return NextResponse.json({ success: true, result });
+    return NextResponse.json({ success: true, result, debug });
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error" },

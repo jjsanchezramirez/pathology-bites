@@ -26,10 +26,7 @@ const MIN_SEGMENT_DURATION = 3.0;
 // Prompt builders
 // ---------------------------------------------------------------------------
 
-function buildSegmenterPrompt(
-  images: ImageInput[],
-  captions: CaptionChunk[]
-): string {
+function buildSegmenterPrompt(images: ImageInput[], captions: CaptionChunk[]): string {
   const imageList = images
     .map(
       (img, i) =>
@@ -67,7 +64,8 @@ No explanation, no prose — just the JSON array.`;
 // Response parser
 // ---------------------------------------------------------------------------
 
-function parseSegmenterResponse(
+/** @internal exported for testing */
+export function parseSegmenterResponse(
   raw: string,
   numImages: number,
   numCaptions: number
@@ -105,7 +103,8 @@ function parseSegmenterResponse(
 // Convert caption indices → SegmentTiming[], enforcing min duration
 // ---------------------------------------------------------------------------
 
-function indicesToTimings(
+/** @internal exported for testing */
+export function indicesToTimings(
   captionStartIndices: number[],
   captions: CaptionChunk[],
   totalDuration: number
@@ -115,7 +114,7 @@ function indicesToTimings(
     const startTime = captions[startIdx]?.start ?? 0;
     const endTime =
       i < numImages - 1
-        ? captions[captionStartIndices[i + 1]]?.start ?? totalDuration
+        ? (captions[captionStartIndices[i + 1]]?.start ?? totalDuration)
         : totalDuration;
     return { startTime, endTime };
   });

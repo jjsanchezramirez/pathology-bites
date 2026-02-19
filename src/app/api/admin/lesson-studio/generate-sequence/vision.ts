@@ -390,7 +390,17 @@ export function parseVisionResponse(
 // Single image vision call
 // ---------------------------------------------------------------------------
 
-async function analyzeOneImage(image: ImageInput, apiKey: string): Promise<VisionResult> {
+/** @internal — exported so vision-analyze route can return debug info */
+export interface VisionDebug {
+  rawModelResponse: string;
+  promptSent: string;
+}
+
+async function analyzeOneImage(
+  image: ImageInput,
+  apiKey: string,
+  debug?: VisionDebug
+): Promise<VisionResult> {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), 20000);
 
@@ -425,6 +435,7 @@ async function analyzeOneImage(image: ImageInput, apiKey: string): Promise<Visio
 
   // Build prompt (microscopic only for now)
   const promptText = buildMicroscopicPrompt(imageWithMag);
+  if (debug) debug.promptSent = promptText;
 
   let response: Response;
   try {
@@ -471,6 +482,8 @@ async function analyzeOneImage(image: ImageInput, apiKey: string): Promise<Visio
   const content: string =
     data.completion_message?.content?.text || data.choices?.[0]?.message?.content || "";
 
+  if (debug) debug.rawModelResponse = content;
+
   if (!content) return FALLBACK;
 
   // Check if model could see the image (Q1 answer)
@@ -494,6 +507,19 @@ async function analyzeOneImage(image: ImageInput, apiKey: string): Promise<Visio
 
   const parsed = parseVisionResponse(content, imageWithMag);
   return { canSeeImage, ...parsed };
+}
+
+// ---------------------------------------------------------------------------
+// Public: analyse a single image and return debug info (for test routes)
+// ---------------------------------------------------------------------------
+
+export async function analyzeSingleImageWithDebug(
+  image: ImageInput,
+  apiKey: string
+): Promise<{ result: VisionResult; debug: VisionDebug }> {
+  const debugObj: VisionDebug = { rawModelResponse: "", promptSent: "" };
+  const result = await analyzeOneImage(image, apiKey, debugObj);
+  return { result, debug: debugObj };
 }
 
 // ---------------------------------------------------------------------------
