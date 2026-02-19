@@ -3647,40 +3647,42 @@ export default function LessonStudioPage() {
           <div className="h-full flex flex-col relative">
             {/* Time Ruler */}
             <div className="relative h-8 border-b bg-muted/20 px-8">
-              {(() => {
-                const segmentsDuration = selectedImages.reduce((sum, img) => sum + img.duration, 0);
-                const baseTimelineDuration = Math.max(segmentsDuration, audioDuration);
-                const endCushion = 2; // small visual breathing room on the right
-                const timelineDuration = baseTimelineDuration + endCushion;
-                const ticks = [];
+              <div className="relative h-full">
+                {(() => {
+                  const segmentsDuration = selectedImages.reduce((sum, img) => sum + img.duration, 0);
+                  const baseTimelineDuration = Math.max(segmentsDuration, audioDuration);
+                  const endCushion = 2; // small visual breathing room on the right
+                  const timelineDuration = baseTimelineDuration + endCushion;
+                  const ticks = [];
 
-                // Generate tick marks
-                for (let t = 0; t <= baseTimelineDuration; t += 1) {
-                  const isMajor = t % 5 === 0;
-                  const left = (t / timelineDuration) * 100;
+                  // Generate tick marks
+                  for (let t = 0; t <= baseTimelineDuration; t += 1) {
+                    const isMajor = t % 5 === 0;
+                    const left = (t / timelineDuration) * 100;
 
-                  ticks.push(
-                    <div
-                      key={t}
-                      className="absolute flex flex-col items-center"
-                      style={{ left: `${left}%`, transform: "translateX(-50%)" }}
-                    >
-                      {/* Tick mark */}
+                    ticks.push(
                       <div
-                        className={`${isMajor ? "h-4 w-0.5 bg-gray-400" : "h-2 w-px bg-gray-300"}`}
-                      />
-                      {/* Time label for major ticks */}
-                      {isMajor && (
-                        <span className="text-[10px] text-muted-foreground mt-0.5 select-none">
-                          {formatNumber(t)}s
-                        </span>
-                      )}
-                    </div>
-                  );
-                }
+                        key={t}
+                        className="absolute flex flex-col items-center"
+                        style={{ left: `${left}%`, transform: "translateX(-50%)" }}
+                      >
+                        {/* Tick mark */}
+                        <div
+                          className={`${isMajor ? "h-4 w-0.5 bg-gray-400" : "h-2 w-px bg-gray-300"}`}
+                        />
+                        {/* Time label for major ticks */}
+                        {isMajor && (
+                          <span className="text-[10px] text-muted-foreground mt-0.5 select-none">
+                            {formatNumber(t)}s
+                          </span>
+                        )}
+                      </div>
+                    );
+                  }
 
-                return ticks;
-              })()}
+                  return ticks;
+                })()}
+              </div>
             </div>
 
             {/* Segment Blocks */}
