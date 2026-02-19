@@ -673,9 +673,10 @@ export default function LessonStudioPage() {
   const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
 
   // Automatic preview update whenever images change (but not audio)
+  // Only updates if there's already a preview - doesn't create the initial preview
   // Debounced to avoid excessive regeneration
   useEffect(() => {
-    if (selectedImages.length > 0 && audioUrl) {
+    if (selectedImages.length > 0 && audioUrl && previewSequence) {
       const timer = setTimeout(() => {
         generateSequence();
       }, 500); // 500ms delay buffer
