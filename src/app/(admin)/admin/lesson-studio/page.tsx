@@ -2122,6 +2122,11 @@ export default function LessonStudioPage() {
               <div className="flex items-center gap-2 text-xs text-muted-foreground bg-muted/50 rounded-md px-3 py-2 min-w-0">
                 <Music className="h-3.5 w-3.5 shrink-0 text-primary" />
                 <span className="truncate flex-1">{audioTitle || audioUrl}</span>
+                {audioDuration > 0 && (
+                  <span className="shrink-0 text-muted-foreground/70">
+                    {formatNumber(audioDuration)}s
+                  </span>
+                )}
               </div>
             ) : (
               <p className="text-xs text-muted-foreground">No audio selected</p>
