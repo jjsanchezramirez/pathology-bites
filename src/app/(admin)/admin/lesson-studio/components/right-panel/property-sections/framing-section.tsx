@@ -98,8 +98,11 @@ export function FramingSection({
             variant="outline"
             onClick={() => {
               // Zoom to Fit: ensure no black spaces by covering viewport, centered
+              const coverZoom = onCalculateCoverZoom(selectedImage);
+              console.log('[Zoom to Fit] Image dimensions:', selectedImage.width, 'x', selectedImage.height);
+              console.log('[Zoom to Fit] Calculated cover zoom:', coverZoom);
               onUpdateImageMultiple(imageIndex, {
-                initialZoom: onCalculateCoverZoom(selectedImage),
+                initialZoom: coverZoom,
                 initialX: 50,
                 initialY: 50,
               });
