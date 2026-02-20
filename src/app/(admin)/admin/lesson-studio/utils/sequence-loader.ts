@@ -43,6 +43,10 @@ function recoverTiming(entries: { time: number; opacity: number }[]): {
  * opacity timeline: find first/last appearance of each element id to recover
  * start, fadeTime, and duration.
  *
+ * Note: Width/height are hardcoded to 1920x1080 since sequences don't store
+ * original image dimensions. When using AI Generate, dimensions should be
+ * preserved by merging animations into existing images rather than replacing them.
+ *
  * @param sequence - The ExplainerSequence to load
  * @returns Array of SelectedImage objects ready for editing in the studio
  */

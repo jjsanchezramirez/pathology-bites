@@ -454,7 +454,31 @@ export default function LessonStudioPage() {
         return;
       }
 
-      loadFromJSON(data.sequence);
+      // Merge AI-generated animations into existing images (preserving dimensions)
+      const aiResult = loadFromJSONUtil(data.sequence);
+      const mergedImages = selectedImages.map((img, i) => {
+        const aiImage = aiResult.images[i];
+        if (!aiImage) return img;
+
+        // Keep original dimensions and metadata, merge AI-generated animations
+        return {
+          ...img, // Preserve original image data including width, height
+          animations: aiImage.animations,
+          textOverlays: aiImage.textOverlays,
+          duration: aiImage.duration,
+          transitionDuration: aiImage.transitionDuration,
+          initialZoom: aiImage.initialZoom,
+          initialX: aiImage.initialX,
+          initialY: aiImage.initialY,
+        };
+      });
+
+      setSelectedImages(mergedImages);
+      setSelectedImageIndex(null);
+      setPreviewSequence(data.sequence);
+      if (aiResult.captions && aiResult.captions.length > 0) {
+        setCaptionChunks(aiResult.captions);
+      }
     } catch (err) {
       alert(`AI generation error: ${err instanceof Error ? err.message : "Unknown error"}`);
     } finally {
