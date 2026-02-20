@@ -73,16 +73,17 @@ export default function LessonStudioPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (selectedImages.length > 0 && audioUrl && previewSequence) {
-      setIsRegeneratingPreview(true);
+      // Temporarily disabled to investigate blinking
+      // setIsRegeneratingPreview(true);
       const timer = setTimeout(() => {
         generateSequence();
         // Keep loading state for smooth transition (~600ms total)
-        setTimeout(() => setIsRegeneratingPreview(false), 350);
+        // setTimeout(() => setIsRegeneratingPreview(false), 350);
       }, 250); // 250ms debounce
 
       return () => {
         clearTimeout(timer);
-        setIsRegeneratingPreview(false);
+        // setIsRegeneratingPreview(false);
       };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
