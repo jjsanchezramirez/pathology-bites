@@ -76,9 +76,9 @@ export default function LessonStudioPage() {
       setIsRegeneratingPreview(true);
       const timer = setTimeout(() => {
         generateSequence();
-        // Keep loading state for smooth transition (500-1000ms)
-        setTimeout(() => setIsRegeneratingPreview(false), 750);
-      }, 500); // 500ms debounce
+        // Keep loading state for smooth transition (~600ms total)
+        setTimeout(() => setIsRegeneratingPreview(false), 350);
+      }, 250); // 250ms debounce
 
       return () => {
         clearTimeout(timer);
