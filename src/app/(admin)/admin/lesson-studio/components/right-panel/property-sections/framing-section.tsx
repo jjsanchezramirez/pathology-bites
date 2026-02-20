@@ -97,8 +97,12 @@ export function FramingSection({
             size="sm"
             variant="outline"
             onClick={() => {
-              // Zoom to Fit: ensure no black spaces by covering viewport
-              onUpdateImage(imageIndex, "initialZoom", onCalculateCoverZoom(selectedImage));
+              // Zoom to Fit: ensure no black spaces by covering viewport, centered
+              onUpdateImageMultiple(imageIndex, {
+                initialZoom: onCalculateCoverZoom(selectedImage),
+                initialX: 50,
+                initialY: 50,
+              });
             }}
             className="text-xs h-7"
           >
