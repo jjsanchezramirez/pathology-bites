@@ -144,10 +144,8 @@ export default function LessonStudioPage() {
     console.log(
       `[lesson-studio] Adding image: ${image.description?.slice(0, 50)} — category: ${image.category}, magnification: ${image.magnification ?? "null"}`
     );
-    console.log(`[addImage] Image dimensions from library: ${image.width} x ${image.height}`);
 
     const initialZoom = calculateCoverZoom(image);
-    console.log(`[addImage] Calculated initialZoom: ${initialZoom}`);
     const duration = 10;
 
     // Create automatic soft pan/zoom animation
