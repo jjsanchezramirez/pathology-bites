@@ -95,6 +95,7 @@ export function FramingSection({
             size="sm"
             variant="outline"
             onClick={() => {
+              // Zoom to Fit: ensure no black spaces by covering viewport
               onUpdateImage(imageIndex, "initialZoom", onCalculateCoverZoom(selectedImage));
             }}
             className="text-xs h-7"
@@ -105,7 +106,8 @@ export function FramingSection({
             size="sm"
             variant="outline"
             onClick={() => {
-              onUpdateImage(imageIndex, "initialZoom", onCalculateCoverZoom(selectedImage));
+              // Reset to Default: entire image fits on screen (zoom = 1.0)
+              onUpdateImage(imageIndex, "initialZoom", 1.0);
               onUpdateImage(imageIndex, "initialX", 0);
               onUpdateImage(imageIndex, "initialY", 0);
             }}

@@ -18,14 +18,15 @@ export function getImageTitle(image: LibraryImage): string {
 }
 
 /**
- * Calculate initial zoom to cover the viewport (16:9 aspect ratio).
+ * Calculate zoom to cover the viewport (16:9 aspect ratio) with no black spaces.
  * Returns a zoom value where:
  * - zoom > 1 means we see LESS of the image (zoomed in)
  * - zoom < 1 means we see MORE of the image (zoomed out)
  * - zoom = 1 means no zoom (100%)
  *
  * The calculation ensures the image covers (fills) the 16:9 viewport
- * without any letterboxing or pillarboxing.
+ * without any letterboxing or pillarboxing (no black spaces).
+ * Result is rounded UP to 2 decimal places (e.g., 1.159786 → 1.16).
  */
 export function calculateCoverZoom(image: LibraryImage): number {
   const viewportAspectRatio = 16 / 9; // 1.777...
@@ -43,6 +44,7 @@ export function calculateCoverZoom(image: LibraryImage): number {
     zoom = viewportAspectRatio / imageAspectRatio;
   }
 
-  // Clamp between 0.5x and 2x
-  return Math.max(0.5, Math.min(zoom, 2));
+  // Clamp between 0.5x and 2x, then round UP to 2 decimal places
+  const clamped = Math.max(0.5, Math.min(zoom, 2));
+  return Math.ceil(clamped * 100) / 100;
 }
