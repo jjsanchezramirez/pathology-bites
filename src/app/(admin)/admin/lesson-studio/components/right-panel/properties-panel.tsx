@@ -15,6 +15,7 @@ interface PropertiesPanelProps {
   selectedImageIndex: number | null;
   isLastImage: boolean;
   onUpdateImage: (index: number, field: keyof SelectedImage, value: any) => void;
+  onUpdateImageMultiple: (index: number, updates: Partial<SelectedImage>) => void;
   onCalculateCoverZoom: (image: LibraryImage) => number;
   onAddAnimation: (imageIndex: number, type: Animation["type"]) => void;
   onRemoveAnimation: (imageIndex: number, animId: string) => void;
@@ -30,6 +31,7 @@ export function PropertiesPanel({
   selectedImageIndex,
   isLastImage,
   onUpdateImage,
+  onUpdateImageMultiple,
   onCalculateCoverZoom,
   onAddAnimation,
   onRemoveAnimation,
@@ -79,6 +81,7 @@ export function PropertiesPanel({
           selectedImage={selectedImage}
           imageIndex={selectedImageIndex}
           onUpdateImage={onUpdateImage}
+          onUpdateImageMultiple={onUpdateImageMultiple}
           onCalculateCoverZoom={onCalculateCoverZoom}
         />
 

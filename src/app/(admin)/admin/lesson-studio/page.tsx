@@ -217,6 +217,13 @@ export default function LessonStudioPage() {
     );
   };
 
+  // Update multiple fields at once (avoids React state update race conditions)
+  const updateImageMultiple = (index: number, updates: Partial<SelectedImage>) => {
+    setSelectedImages(
+      selectedImages.map((img, i) => (i === index ? { ...img, ...updates } : img))
+    );
+  };
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Animation management functions
   // ─────────────────────────────────────────────────────────────────────────────
@@ -601,6 +608,7 @@ export default function LessonStudioPage() {
               selectedImageIndex={selectedImageIndex}
               isLastImage={selectedImageIndex === selectedImages.length - 1}
               onUpdateImage={updateImage}
+              onUpdateImageMultiple={updateImageMultiple}
               onCalculateCoverZoom={calculateCoverZoom}
               onAddAnimation={addAnimation}
               onRemoveAnimation={removeAnimation}

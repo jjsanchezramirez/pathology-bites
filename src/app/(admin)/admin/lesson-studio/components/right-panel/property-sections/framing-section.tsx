@@ -12,6 +12,7 @@ interface FramingSectionProps {
   selectedImage: SelectedImage;
   imageIndex: number;
   onUpdateImage: (index: number, field: keyof SelectedImage, value: any) => void;
+  onUpdateImageMultiple: (index: number, updates: Partial<SelectedImage>) => void;
   onCalculateCoverZoom: (image: LibraryImage) => number;
 }
 
@@ -19,6 +20,7 @@ export function FramingSection({
   selectedImage,
   imageIndex,
   onUpdateImage,
+  onUpdateImageMultiple,
   onCalculateCoverZoom,
 }: FramingSectionProps) {
   return (
@@ -107,9 +109,11 @@ export function FramingSection({
             variant="outline"
             onClick={() => {
               // Reset to Default: entire image fits on screen (zoom = 1.0, centered)
-              onUpdateImage(imageIndex, "initialZoom", 1.0);
-              onUpdateImage(imageIndex, "initialX", 50);
-              onUpdateImage(imageIndex, "initialY", 50);
+              onUpdateImageMultiple(imageIndex, {
+                initialZoom: 1.0,
+                initialX: 50,
+                initialY: 50,
+              });
             }}
             className="text-xs h-7"
           >
