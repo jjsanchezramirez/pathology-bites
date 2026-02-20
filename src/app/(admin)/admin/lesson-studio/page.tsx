@@ -392,7 +392,10 @@ export default function LessonStudioPage() {
     );
 
     if (sequence) {
-      setPreviewSequence(sequence);
+      // Only update if sequence has changed (prevent unnecessary blinks)
+      if (JSON.stringify(sequence) !== JSON.stringify(previewSequence)) {
+        setPreviewSequence(sequence);
+      }
       if (captionChunks.length === 0 && sequence.captions && sequence.captions.length > 0) {
         setCaptionChunks(sequence.captions);
       }
