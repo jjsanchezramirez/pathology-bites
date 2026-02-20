@@ -156,8 +156,8 @@ export default function LessonStudioPage() {
       duration: duration,
       fadeTime: duration, // Smooth transition throughout entire duration
       targetScale: initialZoom * 1.2, // 20% zoom increase
-      targetX: Math.random() * 10 - 5, // Random ±5% from center
-      targetY: Math.random() * 10 - 5, // Random ±5% from center
+      targetX: 50 + Math.random() * 10 - 5, // Random ±5% from center (45-55)
+      targetY: 50 + Math.random() * 10 - 5, // Random ±5% from center (45-55)
     };
 
     setSelectedImages([
@@ -167,8 +167,8 @@ export default function LessonStudioPage() {
         duration,
         transitionDuration: 1,
         initialZoom,
-        initialX: 0,
-        initialY: 0,
+        initialX: 50,
+        initialY: 50,
         animations: [autoPanAnimation],
         textOverlays: [],
       },
@@ -188,8 +188,8 @@ export default function LessonStudioPage() {
         duration: duration,
         fadeTime: duration, // Smooth transition throughout entire duration
         targetScale: initialZoom * 1.2, // 20% zoom increase
-        targetX: Math.random() * 10 - 5, // Random ±5% from center
-        targetY: Math.random() * 10 - 5, // Random ±5% from center
+        targetX: 50 + Math.random() * 10 - 5, // Random ±5% from center (45-55)
+        targetY: 50 + Math.random() * 10 - 5, // Random ±5% from center (45-55)
       };
 
       return {
@@ -197,8 +197,8 @@ export default function LessonStudioPage() {
         duration,
         transitionDuration: 1,
         initialZoom,
-        initialX: 0,
-        initialY: 0,
+        initialX: 50,
+        initialY: 50,
         animations: [autoPanAnimation],
         textOverlays: [],
       };
@@ -236,8 +236,8 @@ export default function LessonStudioPage() {
             duration: zoomDuration,
             fadeTime: img.duration - zoomDuration - 0, // segmentDuration - zoomDuration - start
             targetScale: img.initialZoom * 1.5,
-            targetX: 0,
-            targetY: 0,
+            targetX: 50, // Center (0-100 coordinate system)
+            targetY: 50, // Center (0-100 coordinate system)
           };
         }
         break;
@@ -249,8 +249,8 @@ export default function LessonStudioPage() {
           duration: 0, // Not used for pan animations
           fadeTime: img.duration - 0, // segmentDuration - start
           targetScale: img.initialZoom * 1.5,
-          targetX: 0,
-          targetY: 0,
+          targetX: 50, // Center (0-100 coordinate system)
+          targetY: 50, // Center (0-100 coordinate system)
         };
         break;
       case "figure":

@@ -7,6 +7,7 @@ import type {
 } from "@/shared/types/explainer";
 import type { SelectedImage, Animation, TimeBasedText } from "../types";
 import { buildCaptionChunks } from "./caption-builder";
+import { uiToTransform, transformToUI } from "./image-helpers";
 
 /**
  * Helper: from a sorted list of {time, opacity} entries recover animation timing.
@@ -158,8 +159,9 @@ export function loadFromJSON(sequence: ExplainerSequence): {
       duration,
       transitionDuration: seg.transitionDuration ?? 1,
       initialZoom: kfs[0]?.transform.scale ?? 1,
-      initialX: kfs[0]?.transform.x ?? 0,
-      initialY: kfs[0]?.transform.y ?? 0,
+      // Convert transform coordinates (-50 to 50) to UI coordinates (0-100)
+      initialX: transformToUI(kfs[0]?.transform.x ?? 0),
+      initialY: transformToUI(kfs[0]?.transform.y ?? 0),
       animations,
       textOverlays,
     };
@@ -230,7 +232,12 @@ export function saveToJSON(
     const sortedTimes = Array.from(timePoints).sort((a, b) => a - b);
 
     const keyframes: Segment["keyframes"] = sortedTimes.map((time) => {
-      let baseTransform = { x: img.initialX, y: img.initialY, scale: img.initialZoom };
+      // Convert UI coordinates (0-100) to transform coordinates (-50 to 50)
+      let baseTransform = {
+        x: uiToTransform(img.initialX),
+        y: uiToTransform(img.initialY),
+        scale: img.initialZoom
+      };
 
       const sortedPanAnims = img.animations
         .filter((a) => a.type === "pan")
@@ -238,9 +245,10 @@ export function saveToJSON(
 
       for (const panAnim of sortedPanAnims) {
         if (time >= panAnim.start + panAnim.fadeTime) {
+          // Convert UI coordinates (0-100) to transform coordinates (-50 to 50)
           baseTransform = {
-            x: panAnim.targetX,
-            y: panAnim.targetY,
+            x: uiToTransform(panAnim.targetX),
+            y: uiToTransform(panAnim.targetY),
             scale: panAnim.targetScale,
           };
         }
@@ -263,10 +271,11 @@ export function saveToJSON(
             } else {
               progress = anim.fadeTime > 0 ? 1 - (time - fadeOutStart) / anim.fadeTime : 0;
             }
+            // Convert UI coordinates (0-100) to transform coordinates (-50 to 50)
             transform.scale =
               baseTransform.scale + (anim.targetScale - baseTransform.scale) * progress;
-            transform.x = baseTransform.x + (anim.targetX - baseTransform.x) * progress;
-            transform.y = baseTransform.y + (anim.targetY - baseTransform.y) * progress;
+            transform.x = baseTransform.x + (uiToTransform(anim.targetX) - baseTransform.x) * progress;
+            transform.y = baseTransform.y + (uiToTransform(anim.targetY) - baseTransform.y) * progress;
           }
         }
       });

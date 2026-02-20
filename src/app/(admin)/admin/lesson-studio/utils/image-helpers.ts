@@ -18,6 +18,24 @@ export function getImageTitle(image: LibraryImage): string {
 }
 
 /**
+ * Convert UI coordinate (0-100 range) to CSS transform coordinate (-50 to 50 range).
+ * UI coordinates: 0 = left/top edge, 50 = center, 100 = right/bottom edge
+ * Transform coordinates: -50 = left/top edge, 0 = center, 50 = right/bottom edge
+ */
+export function uiToTransform(uiValue: number): number {
+  return uiValue - 50;
+}
+
+/**
+ * Convert CSS transform coordinate (-50 to 50 range) to UI coordinate (0-100 range).
+ * Transform coordinates: -50 = left/top edge, 0 = center, 50 = right/bottom edge
+ * UI coordinates: 0 = left/top edge, 50 = center, 100 = right/bottom edge
+ */
+export function transformToUI(transformValue: number): number {
+  return transformValue + 50;
+}
+
+/**
  * Calculate zoom to cover the viewport (16:9 aspect ratio) with no black spaces.
  * Returns a zoom value where:
  * - zoom > 1 means we see LESS of the image (zoomed in)

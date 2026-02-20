@@ -81,8 +81,8 @@ export interface SelectedImage extends LibraryImage {
   duration: number;
   transitionDuration: number;
   initialZoom: number; // 1.0 = 100%, 1.5 = 150%
-  initialX: number; // -50 to 50 (percentage offset)
-  initialY: number; // -50 to 50 (percentage offset)
+  initialX: number; // 0 to 100 (percentage, 50 = center)
+  initialY: number; // 0 to 100 (percentage, 50 = center)
   animations: Animation[]; // Multiple time-based animations
   textOverlays: TimeBasedText[]; // Multiple time-based text overlays
 }

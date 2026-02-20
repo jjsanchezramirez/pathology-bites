@@ -51,16 +51,16 @@ export function FramingSection({
             <EditableLabel
               label="X"
               value={selectedImage.initialX}
-              min={-50}
-              max={50}
+              min={0}
+              max={100}
               step={1}
               suffix="%"
               onSave={(val) => onUpdateImage(imageIndex, "initialX", val)}
             />
             <Input
               type="range"
-              min={-50}
-              max={50}
+              min={0}
+              max={100}
               step={1}
               value={selectedImage.initialX}
               onChange={(e) => onUpdateImage(imageIndex, "initialX", Number(e.target.value))}
@@ -72,16 +72,16 @@ export function FramingSection({
             <EditableLabel
               label="Y"
               value={selectedImage.initialY}
-              min={-50}
-              max={50}
+              min={0}
+              max={100}
               step={1}
               suffix="%"
               onSave={(val) => onUpdateImage(imageIndex, "initialY", val)}
             />
             <Input
               type="range"
-              min={-50}
-              max={50}
+              min={0}
+              max={100}
               step={1}
               value={selectedImage.initialY}
               onChange={(e) => onUpdateImage(imageIndex, "initialY", Number(e.target.value))}
@@ -106,10 +106,10 @@ export function FramingSection({
             size="sm"
             variant="outline"
             onClick={() => {
-              // Reset to Default: entire image fits on screen (zoom = 1.0)
+              // Reset to Default: entire image fits on screen (zoom = 1.0, centered)
               onUpdateImage(imageIndex, "initialZoom", 1.0);
-              onUpdateImage(imageIndex, "initialX", 0);
-              onUpdateImage(imageIndex, "initialY", 0);
+              onUpdateImage(imageIndex, "initialX", 50);
+              onUpdateImage(imageIndex, "initialY", 50);
             }}
             className="text-xs h-7"
           >
