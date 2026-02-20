@@ -238,11 +238,11 @@ export function computeSegmentTimings(
   if (images.length === 0) return [];
   if (images.length === 1) return [{ startTime: 0, endTime: totalDuration }];
   if (captions.length === 0) {
-    // No captions — equal split
+    // No captions — equal split with whole-second boundaries
     const perImage = totalDuration / images.length;
     return images.map((_, i) => ({
-      startTime: Math.round(i * perImage * 100) / 100,
-      endTime: Math.round((i + 1) * perImage * 100) / 100,
+      startTime: Math.round(i * perImage),
+      endTime: Math.round((i + 1) * perImage),
     }));
   }
 
@@ -275,10 +275,10 @@ export function computeSegmentTimings(
     const maxEnd = totalDuration - remainingImages * MIN_SEGMENT_DURATION;
     end = Math.max(minEnd, Math.min(maxEnd, end));
 
-    // Round to 2dp
+    // Round to whole seconds for clean segment boundaries
     timings.push({
-      startTime: Math.round(start * 100) / 100,
-      endTime: Math.round(end * 100) / 100,
+      startTime: Math.round(start),
+      endTime: Math.round(end),
     });
     cursor = end;
   }
