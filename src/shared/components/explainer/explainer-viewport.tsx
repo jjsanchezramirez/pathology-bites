@@ -66,13 +66,18 @@ const ImageLayer = memo(function ImageLayer({
   });
   const [error, setError] = useState(false);
   const imgRef = useRef<HTMLImageElement>(null);
+  const prevSrcRef = useRef(src);
 
   // When src changes, re-evaluate whether the new image is already cached
   useEffect(() => {
-    setError(false);
-    const img = imgRef.current;
-    const alreadyCached = img ? img.complete && img.naturalHeight !== 0 : false;
-    setLoaded(alreadyCached);
+    // Only reset state if the URL actually changed
+    if (prevSrcRef.current !== src) {
+      setError(false);
+      const img = imgRef.current;
+      const alreadyCached = img ? img.complete && img.naturalHeight !== 0 : false;
+      setLoaded(alreadyCached);
+      prevSrcRef.current = src;
+    }
   }, [src]);
 
   return error ? (

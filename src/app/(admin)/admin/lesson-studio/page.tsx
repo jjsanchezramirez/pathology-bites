@@ -393,9 +393,18 @@ export default function LessonStudioPage() {
 
     if (sequence) {
       // Only update if sequence has changed (prevent unnecessary blinks)
-      if (JSON.stringify(sequence) !== JSON.stringify(previewSequence)) {
+      const sequenceStr = JSON.stringify(sequence);
+      const prevSequenceStr = JSON.stringify(previewSequence);
+      const hasChanged = sequenceStr !== prevSequenceStr;
+
+      console.log('[generateSequence] Sequence changed:', hasChanged);
+      if (hasChanged) {
+        console.log('[generateSequence] Updating preview sequence');
         setPreviewSequence(sequence);
+      } else {
+        console.log('[generateSequence] Sequence unchanged, skipping update');
       }
+
       if (captionChunks.length === 0 && sequence.captions && sequence.captions.length > 0) {
         setCaptionChunks(sequence.captions);
       }
