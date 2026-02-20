@@ -61,6 +61,7 @@ export default function LessonStudioPage() {
   // UI state
   const [isDragOver, setIsDragOver] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [isRegeneratingPreview, setIsRegeneratingPreview] = useState(false);
   const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
 
   // Refs
@@ -72,11 +73,17 @@ export default function LessonStudioPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
     if (selectedImages.length > 0 && audioUrl && previewSequence) {
+      setIsRegeneratingPreview(true);
       const timer = setTimeout(() => {
         generateSequence();
+        // Keep loading state for smooth transition (500-1000ms)
+        setTimeout(() => setIsRegeneratingPreview(false), 750);
       }, 500); // 500ms debounce
 
-      return () => clearTimeout(timer);
+      return () => {
+        clearTimeout(timer);
+        setIsRegeneratingPreview(false);
+      };
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedImages]);
@@ -612,6 +619,7 @@ export default function LessonStudioPage() {
               captionChunks={captionChunks}
               selectedImagesCount={selectedImages.length}
               isGenerating={isGenerating}
+              isRegeneratingPreview={isRegeneratingPreview}
               isDragOver={isDragOver}
               onDragOver={(e) => {
                 e.preventDefault();

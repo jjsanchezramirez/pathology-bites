@@ -12,6 +12,7 @@ interface PreviewPanelProps {
   captionChunks: CaptionChunk[];
   selectedImagesCount: number;
   isGenerating: boolean;
+  isRegeneratingPreview: boolean;
   isDragOver: boolean;
   onDragOver: (e: React.DragEvent) => void;
   onDragLeave: (e: React.DragEvent) => void;
@@ -31,6 +32,7 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
       captionChunks,
       selectedImagesCount,
       isGenerating,
+      isRegeneratingPreview,
       isDragOver,
       onDragOver,
       onDragLeave,
@@ -53,6 +55,14 @@ export const PreviewPanel = forwardRef<HTMLDivElement, PreviewPanelProps>(
           <div className="absolute inset-0 z-50 flex flex-col items-center justify-center gap-3 bg-primary/10 border-2 border-dashed border-primary rounded-lg pointer-events-none">
             <Upload className="h-10 w-10 text-primary" />
             <p className="text-sm font-medium text-primary">Drop sequence JSON to load</p>
+          </div>
+        )}
+
+        {/* Updating overlay */}
+        {isRegeneratingPreview && (
+          <div className="absolute inset-0 z-40 flex flex-col items-center justify-center gap-3 bg-background/80 backdrop-blur-sm pointer-events-none">
+            <Loader2 className="h-8 w-8 text-primary animate-spin" />
+            <p className="text-sm font-medium text-muted-foreground">Updating preview...</p>
           </div>
         )}
 
