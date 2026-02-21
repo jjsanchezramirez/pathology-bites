@@ -175,10 +175,7 @@ function calculateCoverZoom(imageWidth: number, imageHeight: number): number {
  *
  * @returns true if should use Ken Burns, false if should zoom to feature
  */
-function shouldUseKenBurns(
-  image: ImageInput,
-  vision: VisionResult | undefined
-): boolean {
+function shouldUseKenBurns(image: ImageInput, vision: VisionResult | undefined): boolean {
   const category = image.category?.toLowerCase() ?? "";
 
   // Rule 1: Figures/tables handled separately (no animation)

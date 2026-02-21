@@ -161,9 +161,11 @@ function buildTextOverlay(id: string, label: string): TextOverlay {
  * - duration: time at full opacity (excludes fade time)
  * - fadeTime: duration of fade-in/fade-out transitions
  */
-function calculateTextTiming(
-  segmentDuration: number
-): { start: number; duration: number; fadeTime: number } {
+function calculateTextTiming(segmentDuration: number): {
+  start: number;
+  duration: number;
+  fadeTime: number;
+} {
   const fadeTime = 0.5; // Fixed fade transition duration
   const start = roundFineTiming(Math.min(0.8, segmentDuration * 0.1));
 
@@ -211,7 +213,12 @@ function buildKeyframes(
   // Trust camera.hasTarget — it already evaluated all Ken Burns rules
   let annotationHighlights: HighlightRegion[] = [];
   let annotationArrows: ArrowPointer[] = [];
-  if (isMicroOrGross && camera.hasTarget && vision?.featurePosition && vision.annotationTool !== "none") {
+  if (
+    isMicroOrGross &&
+    camera.hasTarget &&
+    vision?.featurePosition &&
+    vision.annotationTool !== "none"
+  ) {
     const pos = vision.featurePosition;
     if (vision.annotationTool === "arrow") {
       annotationArrows = [buildArrow(arrowId, pos)];

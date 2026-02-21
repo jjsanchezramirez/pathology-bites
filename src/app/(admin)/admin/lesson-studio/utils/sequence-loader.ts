@@ -259,7 +259,7 @@ export function saveToJSON(
       let baseTransform = {
         x: uiToTransform(img.initialX),
         y: uiToTransform(img.initialY),
-        scale: img.initialZoom
+        scale: img.initialZoom,
       };
 
       const sortedPanAnims = img.animations
@@ -297,8 +297,10 @@ export function saveToJSON(
             // Convert UI coordinates (0-100) to transform coordinates (-50 to 50)
             transform.scale =
               baseTransform.scale + (anim.targetScale - baseTransform.scale) * progress;
-            transform.x = baseTransform.x + (uiToTransform(anim.targetX) - baseTransform.x) * progress;
-            transform.y = baseTransform.y + (uiToTransform(anim.targetY) - baseTransform.y) * progress;
+            transform.x =
+              baseTransform.x + (uiToTransform(anim.targetX) - baseTransform.x) * progress;
+            transform.y =
+              baseTransform.y + (uiToTransform(anim.targetY) - baseTransform.y) * progress;
           }
         }
       });

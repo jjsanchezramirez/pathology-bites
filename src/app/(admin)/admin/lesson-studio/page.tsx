@@ -78,7 +78,7 @@ export default function LessonStudioPage() {
 
     // Create a hash of the current images state to detect actual changes
     const currentHash = JSON.stringify([
-      selectedImages.map(img => ({
+      selectedImages.map((img) => ({
         url: img.url,
         duration: img.duration,
         transitionDuration: img.transitionDuration,
@@ -249,9 +249,7 @@ export default function LessonStudioPage() {
 
   // Update multiple fields at once (avoids React state update race conditions)
   const updateImageMultiple = (index: number, updates: Partial<SelectedImage>) => {
-    setSelectedImages(
-      selectedImages.map((img, i) => (i === index ? { ...img, ...updates } : img))
-    );
+    setSelectedImages(selectedImages.map((img, i) => (i === index ? { ...img, ...updates } : img)));
   };
 
   // ─────────────────────────────────────────────────────────────────────────────

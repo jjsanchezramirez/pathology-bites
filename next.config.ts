@@ -184,15 +184,11 @@ const nextConfig = {
       // isolation so the browser allows them to load under COEP.
       {
         source: "/ffmpeg/:path*",
-        headers: [
-          { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
-        ],
+        headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
       },
       {
         source: "/_next/:path*",
-        headers: [
-          { key: "Cross-Origin-Resource-Policy", value: "cross-origin" },
-        ],
+        headers: [{ key: "Cross-Origin-Resource-Policy", value: "cross-origin" }],
       },
     ];
 

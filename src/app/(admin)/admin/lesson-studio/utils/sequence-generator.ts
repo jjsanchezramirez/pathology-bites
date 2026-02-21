@@ -72,7 +72,7 @@ export function generateSequence(
       let baseTransform = {
         x: uiToTransform(img.initialX),
         y: uiToTransform(img.initialY),
-        scale: img.initialZoom
+        scale: img.initialZoom,
       };
 
       // Update base transform with completed pan animations (processed in order)
@@ -124,8 +124,10 @@ export function generateSequence(
             // Convert UI coordinates (0-100) to transform coordinates (-50 to 50)
             transform.scale =
               baseTransform.scale + (anim.targetScale - baseTransform.scale) * progress;
-            transform.x = baseTransform.x + (uiToTransform(anim.targetX) - baseTransform.x) * progress;
-            transform.y = baseTransform.y + (uiToTransform(anim.targetY) - baseTransform.y) * progress;
+            transform.x =
+              baseTransform.x + (uiToTransform(anim.targetX) - baseTransform.x) * progress;
+            transform.y =
+              baseTransform.y + (uiToTransform(anim.targetY) - baseTransform.y) * progress;
           }
         } else if (anim.type === "pan") {
           const fadeInEnd = anim.start + anim.fadeTime;
@@ -137,7 +139,7 @@ export function generateSequence(
             let panBaseTransform = {
               x: uiToTransform(img.initialX),
               y: uiToTransform(img.initialY),
-              scale: img.initialZoom
+              scale: img.initialZoom,
             };
             const priorPans = sortedPanAnims.filter((p) => p.start + p.fadeTime <= anim.start);
             if (priorPans.length > 0) {
@@ -156,8 +158,10 @@ export function generateSequence(
             // Convert UI coordinates (0-100) to transform coordinates (-50 to 50)
             transform.scale =
               panBaseTransform.scale + (anim.targetScale - panBaseTransform.scale) * progress;
-            transform.x = panBaseTransform.x + (uiToTransform(anim.targetX) - panBaseTransform.x) * progress;
-            transform.y = panBaseTransform.y + (uiToTransform(anim.targetY) - panBaseTransform.y) * progress;
+            transform.x =
+              panBaseTransform.x + (uiToTransform(anim.targetX) - panBaseTransform.x) * progress;
+            transform.y =
+              panBaseTransform.y + (uiToTransform(anim.targetY) - panBaseTransform.y) * progress;
           }
           // Note: Once complete (time >= fadeInEnd), the base transform already includes this pan
         }
