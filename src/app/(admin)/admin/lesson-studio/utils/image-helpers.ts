@@ -10,7 +10,9 @@ export function getImageTitle(image: LibraryImage): string {
   if (image.description) {
     // Take first 40 chars or up to first dash/period
     const shortened = image.description.split(/[–—-]/)[0].trim();
-    return shortened.length > 40 ? shortened.substring(0, 40) + "..." : shortened;
+    // Remove trailing punctuation and quotes
+    const cleaned = shortened.replace(/[.,;:!?"']+$/, "");
+    return cleaned.length > 40 ? cleaned.substring(0, 40) + "..." : cleaned;
   }
   // Fallback to filename from URL
   const filename = image.url.split("/").pop()?.split(".")[0] || "Untitled";

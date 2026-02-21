@@ -271,7 +271,13 @@ This is a histologic/microscopic image. Answer each question on its own numbered
    x=<0–100>, y=<0–100>
    (x=0 left, x=100 right, y=0 top, y=100 bottom. Centre = x=50, y=50)
 
-5. Suggested text overlay label (5 words or fewer, naming the key feature or variant shown).`;
+5. Suggested text overlay label:
+   - Write ONLY the label text (no quotes, no punctuation, no preamble)
+   - Maximum 5 words
+   - Name the specific feature or pathologic variant shown
+   - Examples: "Onion skin pattern" NOT "Onion skin pattern."
+   - Examples: "Plasma cell infiltrate" NOT "This shows plasma cell infiltrate."
+   Answer:`;
 }
 
 // Gross prompt intentionally omitted — gross images skip the vision pass for now.
@@ -339,7 +345,8 @@ export function parseVisionResponse(
       const cleaned = line
         .replace(/^5[.)]\s*/i, "")
         .replace(/suggested (text )?label[:\s]*/i, "")
-        .replace(/^["']|["']$/g, "")
+        .replace(/^["']|["']$/g, "") // Remove quotes at start or end
+        .replace(/[.,;:!?"']+$/, "") // Remove trailing punctuation (including ". or .)
         .trim();
       if (cleaned.length > 0 && cleaned.length < 60) {
         suggestedLabel = cleaned;
@@ -349,7 +356,9 @@ export function parseVisionResponse(
   }
   if (!suggestedLabel) {
     const quoted = raw.match(/"([^"]{3,40})"/);
-    if (quoted) suggestedLabel = quoted[1];
+    if (quoted) {
+      suggestedLabel = quoted[1].replace(/[.,;:!?"']+$/, ""); // Clean up extracted quote
+    }
   }
 
   // --- Derive tool deterministically from Q3/3a/3b + magnification ---

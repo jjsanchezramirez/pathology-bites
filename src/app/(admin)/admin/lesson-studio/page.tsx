@@ -474,7 +474,11 @@ export default function LessonStudioPage() {
       const images = selectedImages.map((img) => ({
         url: img.url,
         title: img.description
-          ? img.description.split(/[-–.]/)[0].trim().slice(0, 80)
+          ? img.description
+              .split(/[-–.]/)[0]
+              .trim()
+              .replace(/[.,;:!?"']+$/, "") // Remove trailing punctuation and quotes
+              .slice(0, 80)
           : (img.url.split("/").pop() ?? ""),
         description: img.description ?? img.alt_text ?? "",
         category: img.category ?? "",
