@@ -28,6 +28,26 @@ import type { SegmentTiming } from "./timing";
 // ---------------------------------------------------------------------------
 
 // ---------------------------------------------------------------------------
+// Rounding utilities
+// ---------------------------------------------------------------------------
+
+/**
+ * Round segment-level timing to whole seconds for clean timeline boundaries.
+ * Used for: segment startTime/endTime, transitionDuration
+ */
+function roundSegmentTiming(value: number): number {
+  return Math.round(value);
+}
+
+/**
+ * Round fine-grained timing to 0.01s (centiseconds) for smooth animations.
+ * Used for: keyframe times, animation timings, text fade timings
+ */
+function roundFineTiming(value: number): number {
+  return Math.round(value * 100) / 100;
+}
+
+// ---------------------------------------------------------------------------
 // Overlay builders
 // ---------------------------------------------------------------------------
 
@@ -125,6 +145,47 @@ function buildTextOverlay(id: string, label: string): TextOverlay {
 }
 
 // ---------------------------------------------------------------------------
+// Text overlay timing calculation
+// ---------------------------------------------------------------------------
+
+/**
+ * Calculate text overlay timing values for TimeBasedText.
+ *
+ * Strategy:
+ * - Fade in early (10% of duration, max 0.8s)
+ * - Guarantee minimum 1.5s at full opacity
+ * - Fade transitions take 0.5s each
+ *
+ * Returns timing values that match the TimeBasedText interface:
+ * - start: when fade-in begins
+ * - duration: time at full opacity (excludes fade time)
+ * - fadeTime: duration of fade-in/fade-out transitions
+ */
+function calculateTextTiming(
+  segmentDuration: number
+): { start: number; duration: number; fadeTime: number } {
+  const fadeTime = 0.5; // Fixed fade transition duration
+  const start = roundFineTiming(Math.min(0.8, segmentDuration * 0.1));
+
+  // Text should be visible for at least 1.5s at full opacity
+  const minFullOpacityDuration = 1.5;
+
+  // Calculate when fade-out should start to end 0.5s before segment ends
+  const idealFadeOutStart = roundFineTiming(segmentDuration - fadeTime - 0.5);
+
+  // Ensure minimum display time
+  const earliestFadeOutStart = roundFineTiming(start + fadeTime + minFullOpacityDuration);
+
+  // Use the later of the two
+  const fadeOutStart = Math.max(earliestFadeOutStart, idealFadeOutStart);
+
+  // Duration is the time between end of fade-in and start of fade-out
+  const duration = roundFineTiming(fadeOutStart - start - fadeTime);
+
+  return { start, duration, fadeTime };
+}
+
+// ---------------------------------------------------------------------------
 // Keyframe builder for one segment
 // ---------------------------------------------------------------------------
 
@@ -165,58 +226,77 @@ function buildKeyframes(
   }
 
   const textOverlay = isMicroOrGross && label ? buildTextOverlay(txtId, label) : null;
-  const fadeIn = Math.min(0.8, duration * 0.1);
-  const fadeOut = Math.max(fadeIn + 0.5, duration - 0.5);
+  const textTiming = calculateTextTiming(duration);
+
+  // Calculate critical text timing points
+  const fadeInComplete = roundFineTiming(textTiming.start + textTiming.fadeTime);
+  const fadeOutStart = roundFineTiming(fadeInComplete + textTiming.duration);
+  const fadeOutComplete = roundFineTiming(fadeOutStart + textTiming.fadeTime);
+
+  // Helper: generates the 3 essential text keyframes for any camera path
+  // This ensures consistent timing recovery regardless of camera movement
+  const buildTextKeyframes = (transform: { x: number; y: number; scale: number }) => {
+    if (!textOverlay) return [];
+    return [
+      {
+        time: fadeInComplete,
+        transform,
+        highlights: [],
+        arrows: [],
+        textOverlays: [{ ...textOverlay, computedOpacity: 1 }],
+      },
+      {
+        time: fadeOutStart,
+        transform,
+        highlights: [],
+        arrows: [],
+        textOverlays: [{ ...textOverlay, computedOpacity: 1 }],
+      },
+      {
+        time: fadeOutComplete,
+        transform,
+        highlights: [],
+        arrows: [],
+        textOverlays: [{ ...textOverlay, computedOpacity: 0 }],
+      },
+    ];
+  };
 
   // --- Zoom-in path ---
   if (camera.hasTarget) {
-    const holdStart = camera.zoomInStartTime;
-    const zoomArrival = holdStart + 2.0;
-    const holdEnd = Math.max(zoomArrival + 0.5, duration - camera.zoomOutDuration);
+    const holdStart = roundFineTiming(camera.zoomInStartTime);
+    const zoomArrival = roundFineTiming(holdStart + 2.0);
+    const holdEnd = roundFineTiming(Math.max(zoomArrival + 0.5, duration - camera.zoomOutDuration));
     const w = camera.wide;
     const z = camera.zoomed;
 
     const kfs: Keyframe[] = [
       { time: 0, transform: { x: w.x, y: w.y, scale: w.scale }, ...empty },
       {
-        time: fadeIn,
-        transform: { x: w.x, y: w.y, scale: w.scale },
-        highlights: [],
-        arrows: [],
-        textOverlays: textOverlay ? [{ ...textOverlay, computedOpacity: 1 }] : [],
-      },
-      {
         time: holdStart,
         transform: { x: w.x, y: w.y, scale: w.scale },
         highlights: [],
         arrows: [],
-        textOverlays: textOverlay ? [{ ...textOverlay, computedOpacity: 1 }] : [],
+        textOverlays: [],
       },
       {
         time: zoomArrival,
         transform: { x: z.x, y: z.y, scale: z.scale },
         highlights: annotationHighlights,
         arrows: annotationArrows,
-        textOverlays: textOverlay ? [{ ...textOverlay, computedOpacity: 1 }] : [],
+        textOverlays: [],
       },
       {
         time: holdEnd,
         transform: { x: z.x, y: z.y, scale: z.scale },
         highlights: annotationHighlights,
         arrows: annotationArrows,
-        textOverlays: textOverlay ? [{ ...textOverlay, computedOpacity: 1 }] : [],
+        textOverlays: [],
       },
     ];
 
-    if (textOverlay && fadeOut < duration) {
-      kfs.push({
-        time: fadeOut,
-        transform: { x: w.x, y: w.y, scale: w.scale },
-        highlights: [],
-        arrows: [],
-        textOverlays: [{ ...textOverlay, computedOpacity: 0 }],
-      });
-    }
+    // Add text keyframes using consistent 3-keyframe structure
+    kfs.push(...buildTextKeyframes(z));
 
     kfs.push({ time: duration, transform: { x: w.x, y: w.y, scale: w.scale }, ...empty });
     return kfs;
@@ -229,25 +309,9 @@ function buildKeyframes(
 
     const kfs: Keyframe[] = [{ time: 0, transform: { x: w.x, y: w.y, scale: w.scale }, ...empty }];
 
-    if (textOverlay) {
-      kfs.push({
-        time: fadeIn,
-        transform: { x: w.x, y: w.y, scale: w.scale },
-        highlights: [],
-        arrows: [],
-        textOverlays: [{ ...textOverlay, computedOpacity: 1 }],
-      });
-
-      if (fadeOut < duration) {
-        kfs.push({
-          time: fadeOut,
-          transform: { x: d.x, y: d.y, scale: d.scale },
-          highlights: [],
-          arrows: [],
-          textOverlays: [{ ...textOverlay, computedOpacity: 0 }],
-        });
-      }
-    }
+    // Add text keyframes using consistent 3-keyframe structure
+    // Note: Ken Burns drifts, so we use the end position for text
+    kfs.push(...buildTextKeyframes(d));
 
     kfs.push({ time: duration, transform: { x: d.x, y: d.y, scale: d.scale }, ...empty });
     return kfs;
@@ -257,24 +321,8 @@ function buildKeyframes(
   const w = camera.wide;
   const kfs: Keyframe[] = [{ time: 0, transform: { x: w.x, y: w.y, scale: w.scale }, ...empty }];
 
-  if (textOverlay) {
-    kfs.push({
-      time: fadeIn,
-      transform: { x: w.x, y: w.y, scale: w.scale },
-      highlights: [],
-      arrows: [],
-      textOverlays: [{ ...textOverlay, computedOpacity: 1 }],
-    });
-    if (fadeOut < duration) {
-      kfs.push({
-        time: fadeOut,
-        transform: { x: w.x, y: w.y, scale: w.scale },
-        highlights: [],
-        arrows: [],
-        textOverlays: [{ ...textOverlay, computedOpacity: 0 }],
-      });
-    }
-  }
+  // Add text keyframes using consistent 3-keyframe structure
+  kfs.push(...buildTextKeyframes(w));
 
   kfs.push({ time: duration, transform: { x: w.x, y: w.y, scale: w.scale }, ...empty });
   return kfs;
@@ -302,7 +350,6 @@ export function assembleSequenceDeterministically(
     const vision = visionResults[i];
     const camera = cameraKeyframes[i];
     const duration = timing.endTime - timing.startTime;
-
     const isMicroOrGross = img.category === "microscopic" || img.category === "gross";
 
     const label =
@@ -316,10 +363,10 @@ export function assembleSequenceDeterministically(
       id: `seg-${i}`,
       imageUrl: img.url,
       imageAlt: img.title || img.description,
-      startTime: timing.startTime,
-      endTime: timing.endTime,
+      startTime: roundSegmentTiming(timing.startTime),
+      endTime: roundSegmentTiming(timing.endTime),
       transition: "crossfade",
-      transitionDuration: 1,
+      transitionDuration: roundSegmentTiming(1),
       keyframes,
     };
   });

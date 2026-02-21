@@ -135,8 +135,8 @@ export function indicesToTimings(
     end = Math.max(minEnd, Math.min(maxEnd, end));
 
     timings.push({
-      startTime: Math.round(start * 100) / 100,
-      endTime: Math.round(end * 100) / 100,
+      startTime: Math.round(start),
+      endTime: Math.round(end),
     });
     cursor = end;
   }

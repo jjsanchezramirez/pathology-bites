@@ -61,33 +61,55 @@ export default function LessonStudioPage() {
   // UI state
   const [isDragOver, setIsDragOver] = useState(false);
   const [isGenerating, setIsGenerating] = useState(false);
-  const [isRegeneratingPreview, setIsRegeneratingPreview] = useState(false);
   const [deleteConfirmIndex, setDeleteConfirmIndex] = useState<number | null>(null);
 
   // Refs
   const timelineRef = useRef<HTMLDivElement>(null);
   const playerContainerRef = useRef<HTMLDivElement>(null);
+  const lastImagesHashRef = useRef<string>("");
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Auto-preview effect: regenerate sequence when images change
+  // Auto-preview: regenerate sequence only when data actually changes
+  // Uses hash-based comparison to avoid expensive JSON.stringify on every render
   // ─────────────────────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (selectedImages.length > 0 && audioUrl && previewSequence) {
-      // Temporarily disabled to investigate blinking
-      // setIsRegeneratingPreview(true);
-      const timer = setTimeout(() => {
-        generateSequence();
-        // Keep loading state for smooth transition (~600ms total)
-        // setTimeout(() => setIsRegeneratingPreview(false), 350);
-      }, 250); // 250ms debounce
+    // Only auto-update if we already have a preview (don't create initial preview automatically)
+    if (selectedImages.length === 0 || !audioUrl || !previewSequence) return;
 
-      return () => {
-        clearTimeout(timer);
-        // setIsRegeneratingPreview(false);
-      };
+    // Create a hash of the current images state to detect actual changes
+    const currentHash = JSON.stringify([
+      selectedImages.map(img => ({
+        url: img.url,
+        duration: img.duration,
+        transitionDuration: img.transitionDuration,
+        initialZoom: img.initialZoom,
+        initialX: img.initialX,
+        initialY: img.initialY,
+        animations: img.animations,
+        textOverlays: img.textOverlays,
+      })),
+      audioUrl,
+      audioTranscript,
+      audioDuration,
+    ]);
+
+    // Only regenerate if the hash has changed
+    if (currentHash === lastImagesHashRef.current) return;
+
+    lastImagesHashRef.current = currentHash;
+
+    const newSequence = generateSequenceUtil(
+      selectedImages,
+      audioUrl,
+      audioTranscript,
+      audioDuration > 0 ? audioDuration : undefined
+    );
+
+    if (newSequence) {
+      setPreviewSequence(newSequence);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedImages]);
+  }, [selectedImages, audioUrl, audioTranscript, audioDuration]);
 
   // ─────────────────────────────────────────────────────────────────────────────
   // Scroll timeline to selected segment
@@ -379,7 +401,7 @@ export default function LessonStudioPage() {
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
-  // Sequence generation
+  // Sequence generation (manual trigger for Manual Preview button)
   // ─────────────────────────────────────────────────────────────────────────────
   const generateSequence = () => {
     if (selectedImages.length === 0) return;
@@ -392,18 +414,7 @@ export default function LessonStudioPage() {
     );
 
     if (sequence) {
-      // Only update if sequence has changed (prevent unnecessary blinks)
-      const sequenceStr = JSON.stringify(sequence);
-      const prevSequenceStr = JSON.stringify(previewSequence);
-      const hasChanged = sequenceStr !== prevSequenceStr;
-
-      console.log('[generateSequence] Sequence changed:', hasChanged);
-      if (hasChanged) {
-        console.log('[generateSequence] Updating preview sequence');
-        setPreviewSequence(sequence);
-      } else {
-        console.log('[generateSequence] Sequence unchanged, skipping update');
-      }
+      setPreviewSequence(sequence);
 
       if (captionChunks.length === 0 && sequence.captions && sequence.captions.length > 0) {
         setCaptionChunks(sequence.captions);
@@ -632,7 +643,6 @@ export default function LessonStudioPage() {
               captionChunks={captionChunks}
               selectedImagesCount={selectedImages.length}
               isGenerating={isGenerating}
-              isRegeneratingPreview={isRegeneratingPreview}
               isDragOver={isDragOver}
               onDragOver={(e) => {
                 e.preventDefault();

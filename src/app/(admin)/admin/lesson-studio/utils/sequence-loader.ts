@@ -16,25 +16,44 @@ import { uiToTransform, transformToUI } from "./image-helpers";
  * This is used to reverse-engineer the original animation parameters from
  * the generated keyframes when loading a saved sequence.
  */
+/**
+ * Recovers timing from the 3-keyframe structure emitted by the assembler:
+ * 1. fadeInComplete (opacity 1) - end of fade-in
+ * 2. fadeOutStart (opacity 1) - start of fade-out
+ * 3. fadeOutComplete (opacity 0) - end of fade-out
+ *
+ * This deterministic structure allows reliable round-trip timing recovery.
+ */
 function recoverTiming(entries: { time: number; opacity: number }[]): {
   start: number;
   fadeTime: number;
   holdDuration: number;
 } {
-  const visible = entries.filter((e) => e.opacity > 0.01).map((e) => e.time);
-  if (visible.length === 0) {
-    return { start: 0, fadeTime: 0.5, holdDuration: 1 };
+  // Filter to full-opacity keyframes
+  const fullOpacity = entries.filter((e) => e.opacity >= 0.99).map((e) => e.time);
+
+  if (fullOpacity.length === 0) {
+    // Fallback for malformed data
+    return { start: 0, fadeTime: 0.5, holdDuration: 1.5 };
   }
 
-  const firstVisible = Math.min(...visible);
-  const lastVisible = Math.max(...visible);
-  const atFull = entries.filter((e) => e.opacity >= 0.99).map((e) => e.time);
-  const firstFull = atFull.length > 0 ? Math.min(...atFull) : firstVisible;
-  const lastFull = atFull.length > 0 ? Math.max(...atFull) : lastVisible;
-  const fadeTime = Math.max(0, firstFull - firstVisible);
-  const holdDuration = Math.max(0, lastFull - firstFull);
+  // First full opacity keyframe = end of fade-in
+  // Last full opacity keyframe = start of fade-out
+  const fadeInComplete = Math.min(...fullOpacity);
+  const fadeOutStart = Math.max(...fullOpacity);
 
-  return { start: firstVisible, fadeTime, holdDuration };
+  // holdDuration is the time text stays at full opacity
+  const holdDuration = Math.max(0, fadeOutStart - fadeInComplete);
+
+  // Find fade-out complete (opacity 0) to calculate fadeTime
+  const zeroOpacity = entries.filter((e) => e.opacity < 0.01).map((e) => e.time);
+  const fadeOutComplete = zeroOpacity.length > 0 ? Math.max(...zeroOpacity) : fadeOutStart + 0.5;
+  const fadeTime = Math.max(0.1, fadeOutComplete - fadeOutStart);
+
+  // Start time is when fade-in begins (before reaching full opacity)
+  const start = Math.max(0, fadeInComplete - fadeTime);
+
+  return { start, fadeTime, holdDuration };
 }
 
 /**
