@@ -284,10 +284,10 @@ export default function LessonStudioPage() {
           type: "pan",
           start: 0,
           duration: 0, // Not used for pan animations
-          fadeTime: img.duration - 0, // segmentDuration - start
-          targetScale: img.initialZoom * 1.5,
-          targetX: 50, // Center (0-100 coordinate system)
-          targetY: 50, // Center (0-100 coordinate system)
+          fadeTime: 0.5,
+          targetScale: img.initialZoom + 0.1,
+          targetX: img.initialX + (Math.random() * 10 - 5), // Random offset -5 to +5
+          targetY: img.initialY + (Math.random() * 10 - 5), // Random offset -5 to +5
         };
         break;
       case "figure":
