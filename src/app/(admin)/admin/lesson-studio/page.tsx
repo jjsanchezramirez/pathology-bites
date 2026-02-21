@@ -366,12 +366,15 @@ export default function LessonStudioPage() {
   // ─────────────────────────────────────────────────────────────────────────────
   const addText = (imageIndex: number) => {
     const img = selectedImages[imageIndex];
-    const textDuration = Math.min(3, img.duration - 1);
+    const fadeTime = 0.5;
+    // Duration = (segment duration - fade*2) / 2, rounded up to nearest 0.5
+    const rawDuration = (img.duration - fadeTime * 2) / 2;
+    const duration = Math.ceil(rawDuration * 2) / 2; // Round up to nearest 0.5
     const newText: TimeBasedText = {
       id: `text-${Date.now()}-${Math.random().toString(36).substring(2, 11)}`,
       start: 0,
-      duration: textDuration,
-      fadeTime: img.duration - textDuration - 0, // segmentDuration - textDuration - start
+      duration: Math.max(0.5, duration), // Ensure at least 0.5s duration
+      fadeTime,
       text: getImageTitle(img),
       position: { x: 50, y: 15 },
       fontSize: 1.5,
