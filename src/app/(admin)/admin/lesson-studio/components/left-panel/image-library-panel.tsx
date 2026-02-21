@@ -40,7 +40,7 @@ function SortableSegmentCard({ img, index, isSelected, onSelect }: SortableSegme
 
   const style = {
     transform: CSS.Transform.toString(transform),
-    transition,
+    transition: isDragging ? "none" : transition, // Disable transition while dragging for instant feedback
     opacity: isDragging ? 0.5 : 1,
   };
 
