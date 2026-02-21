@@ -10,8 +10,9 @@ import type { ImageInput } from "./prompt";
 //
 // Coordinate conventions (matching the ExplainerPlayer):
 //   - Camera x/y: pan offset as % of viewport from centre, range −50 to +50
-//   - x=0, y=0, scale=1.0 = no pan, full image visible
-//   - scale >= 1.0 always; max 1.6
+//   - x=0, y=0, scale=1.0 = no pan, full image visible (may show letterboxing)
+//   - Initial scale uses calculateCoverZoom to fill viewport (no black spaces)
+//   - scale range: 0.5x–2.0x (clamped); zoom-in target max 1.6x
 //   - Safe pan range at a given scale: max_pan = (scale − 1) / scale × 50
 // ---------------------------------------------------------------------------
 
@@ -31,7 +32,7 @@ export interface CameraKeyframes {
    */
   hasTarget: boolean;
 
-  /** Full-image starting anchor (scale=1, x=0, y=0) */
+  /** Full-image starting anchor (zoom-to-fit to cover viewport, x=0, y=0) */
   wide: CameraAnchor;
 
   /**
@@ -124,13 +125,90 @@ export function kenBurnsDriftFor(segmentIndex: number): CameraAnchor {
 }
 
 // ---------------------------------------------------------------------------
+// Zoom calculation
+// ---------------------------------------------------------------------------
+
+/**
+ * Calculate zoom to cover the viewport (16:9 aspect ratio) with no black spaces.
+ * Returns a scale value where:
+ * - scale > 1 means we see LESS of the image (zoomed in)
+ * - scale < 1 means we see MORE of the image (zoomed out)
+ * - scale = 1 means no zoom (100%)
+ *
+ * The calculation ensures the image covers (fills) the 16:9 viewport
+ * without any letterboxing or pillarboxing (no black spaces).
+ */
+function calculateCoverZoom(imageWidth: number, imageHeight: number): number {
+  const viewportAspectRatio = 16 / 9; // 1.777...
+  const imageAspectRatio = imageWidth / imageHeight;
+
+  // Calculate zoom needed to make the image cover (fill) the viewport
+  let zoom: number;
+  if (imageAspectRatio > viewportAspectRatio) {
+    // Image is wider than viewport (e.g., 21:9 vs 16:9)
+    // Need to fit by height → zoom IN to crop the sides
+    zoom = imageAspectRatio / viewportAspectRatio;
+  } else {
+    // Image is taller than viewport (e.g., 4:3 vs 16:9)
+    // Need to fit by width → zoom IN to crop top/bottom
+    zoom = viewportAspectRatio / imageAspectRatio;
+  }
+
+  // Clamp between 0.5x and 2x, then round UP to 2 decimal places
+  const clamped = Math.max(0.5, Math.min(zoom, 2));
+  return Math.ceil(clamped * 100) / 100;
+}
+
+// ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
 
 /**
+ * Determine if an image should use Ken Burns drift or zoom-to-feature animation.
+ *
+ * Decision rules (evaluated in order):
+ * 1. Figures/tables → neither (model controls camera)
+ * 2. No vision data OR model couldn't see image → Ken Burns
+ * 3. annotationTool === "none" → Ken Burns (overview image, no specific feature)
+ * 4. annotationTool !== "none" BUT no position → Ken Burns (safety fallback)
+ * 5. annotationTool !== "none" AND has position → zoom-to-feature
+ *
+ * @returns true if should use Ken Burns, false if should zoom to feature
+ */
+function shouldUseKenBurns(
+  image: ImageInput,
+  vision: VisionResult | undefined
+): boolean {
+  const category = image.category?.toLowerCase() ?? "";
+
+  // Rule 1: Figures/tables handled separately (no animation)
+  if (category === "figure" || category === "table") {
+    return false; // Neither Ken Burns nor zoom — static
+  }
+
+  // Rule 2: No vision data or model couldn't see the image
+  if (!vision || !vision.canSeeImage) {
+    return true;
+  }
+
+  // Rule 3: Explicit "none" tool means overview image (no annotation needed)
+  if (vision.annotationTool === "none") {
+    return true;
+  }
+
+  // Rule 4: Tool requires annotation but position is missing (safety fallback)
+  if (!vision.featurePosition) {
+    return true;
+  }
+
+  // Rule 5: Has annotation tool AND position → zoom to feature
+  return false;
+}
+
+/**
  * Pre-compute concrete camera keyframe values for one image segment.
  *
- * @param image         The image (used for category check)
+ * @param image         The image (used for category check and dimensions)
  * @param vision        Vision result for this image (may be undefined)
  * @param segmentIndex  Position of this segment (0-based), used for Ken Burns cycling
  * @returns             Concrete keyframe anchors ready to embed in the prompt
@@ -140,10 +218,12 @@ export function computeCameraKeyframes(
   vision: VisionResult | undefined,
   segmentIndex: number
 ): CameraKeyframes {
-  const wide: CameraAnchor = { scale: 1.0, x: 0, y: 0 };
-
-  // Figures and tables: no zoom animation (model handles these freely)
+  // Calculate initial zoom to fill viewport with no black spaces
+  const initialZoom = calculateCoverZoom(image.width, image.height);
+  const wide: CameraAnchor = { scale: initialZoom, x: 0, y: 0 };
   const category = image.category?.toLowerCase() ?? "";
+
+  // Figures and tables: no animation (model handles camera freely)
   if (category === "figure" || category === "table") {
     return {
       hasTarget: false,
@@ -155,11 +235,10 @@ export function computeCameraKeyframes(
     };
   }
 
-  // No vision result, or model couldn't see the image, or tool is none with no position
-  const hasUsableTarget =
-    vision?.canSeeImage && vision.featurePosition !== null && vision.annotationTool !== "none";
+  // Use centralized decision logic
+  const useKenBurns = shouldUseKenBurns(image, vision);
 
-  if (!hasUsableTarget || !vision?.featurePosition) {
+  if (useKenBurns) {
     // Ken Burns drift — gentle pan across the image
     return {
       hasTarget: false,
@@ -171,9 +250,10 @@ export function computeCameraKeyframes(
     };
   }
 
-  // Compute zoomed-in anchor centred on the feature
-  const camX = featureToCameraPan(vision.featurePosition.x, ZOOM_SCALE);
-  const camY = featureToCameraPan(vision.featurePosition.y, ZOOM_SCALE);
+  // Zoom-to-feature: compute camera position centered on annotation
+  // (We know vision.featurePosition exists due to shouldUseKenBurns logic)
+  const camX = featureToCameraPan(vision!.featurePosition!.x, ZOOM_SCALE);
+  const camY = featureToCameraPan(vision!.featurePosition!.y, ZOOM_SCALE);
   const zoomed: CameraAnchor = {
     scale: ZOOM_SCALE,
     x: Math.round(camX * 100) / 100,

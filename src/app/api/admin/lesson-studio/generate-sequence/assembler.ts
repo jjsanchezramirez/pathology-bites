@@ -207,10 +207,11 @@ function buildKeyframes(
   const arrowId = `arrow-${segIdx}`;
   const txtId = `txt-${segIdx}`;
 
-  // Build annotation overlays
+  // Build annotation overlays (only when camera has a target to zoom to)
+  // Trust camera.hasTarget — it already evaluated all Ken Burns rules
   let annotationHighlights: HighlightRegion[] = [];
   let annotationArrows: ArrowPointer[] = [];
-  if (isMicroOrGross && vision?.featurePosition && vision.annotationTool !== "none") {
+  if (isMicroOrGross && camera.hasTarget && vision?.featurePosition && vision.annotationTool !== "none") {
     const pos = vision.featurePosition;
     if (vision.annotationTool === "arrow") {
       annotationArrows = [buildArrow(arrowId, pos)];
