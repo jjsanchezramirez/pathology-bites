@@ -271,13 +271,17 @@ This is a histologic/microscopic image. Answer each question on its own numbered
    x=<0–100>, y=<0–100>
    (x=0 left, x=100 right, y=0 top, y=100 bottom. Centre = x=50, y=50)
 
-5. Suggested text overlay label:
-   - Write ONLY the label text (no quotes, no punctuation, no preamble)
-   - Maximum 5 words
-   - Name the specific feature or pathologic variant shown
-   - Examples: "Onion skin pattern" NOT "Onion skin pattern."
-   - Examples: "Plasma cell infiltrate" NOT "This shows plasma cell infiltrate."
-   Answer:`;
+5. Text overlay label — write 3-5 words naming the key feature, with NO punctuation or quotes at the end.
+
+   Examples of good answers:
+   5. Onion skin pattern
+   5. Plasma cell infiltrate
+   5. Lollipop lesion
+
+   Examples of BAD answers (do not copy these):
+   5. Onion skin pattern.
+   5. "Plasma cell infiltrate"
+   5. This shows a lollipop lesion.`;
 }
 
 // Gross prompt intentionally omitted — gross images skip the vision pass for now.
