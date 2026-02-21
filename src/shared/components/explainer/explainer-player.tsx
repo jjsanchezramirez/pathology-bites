@@ -178,6 +178,7 @@ export function ExplainerPlayer({
       tabIndex={0}
       role="application"
       aria-label="Explanation video player"
+      style={{ containerType: "inline-size" }}
     >
       {/* Video viewport + overlaid controls.
           In fullscreen: fill height and let aspect-ratio constrain the width.
@@ -205,15 +206,17 @@ export function ExplainerPlayer({
         {/* Caption overlay — rendered outside the engine to avoid interpolation blinks */}
         {activeCaption && (
           <div
-            className="absolute inset-x-0 flex justify-center px-4 pointer-events-none transition-all duration-200"
-            style={{ bottom: controlsVisible ? "15%" : "6%" }}
+            className="absolute inset-x-0 flex justify-center pointer-events-none transition-all duration-200"
+            style={{ bottom: controlsVisible ? "15%" : "6%", padding: "0 1cqw" }}
           >
             <div
-              className="px-3 py-1.5 rounded text-white text-center leading-snug"
+              className="text-white text-center leading-snug"
               style={{
-                fontSize: "1.05rem",
+                fontSize: "1.75cqw", // 1.05rem converted to cqw (1.05 * 1.67)
                 backgroundColor: "rgba(0,0,0,0.55)",
                 maxWidth: "80%",
+                padding: "0.5cqw 1cqw",
+                borderRadius: "0.4cqw",
               }}
             >
               {activeCaption.text}

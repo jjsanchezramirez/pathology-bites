@@ -330,10 +330,15 @@ function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
     const centerTransform = "translate(-50%, -50%)";
     if (overlay.animation === "slide-up") {
       const slideOffset = (1 - computedOpacity) * 0.5;
-      return `${centerTransform} translateY(${slideOffset}rem)`;
+      return `${centerTransform} translateY(${slideOffset}cqw)`;
     }
     return centerTransform;
   };
+
+  // Convert rem-based fontSize to container query units (cqw)
+  // 1.6rem at 1920px viewport ≈ 1.33cqw (1.6 * 16 / 1920 * 100)
+  // We use a scaling factor to maintain readability across sizes
+  const fontSizeCqw = overlay.fontSize * 1.67; // Tuned for good appearance
 
   return (
     <div
@@ -342,7 +347,7 @@ function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
         left: `${overlay.position.x}%`,
         top: `${overlay.position.y}%`,
         transform: buildTransform(),
-        fontSize: `${overlay.fontSize}rem`,
+        fontSize: `${fontSizeCqw}cqw`,
         fontWeight:
           overlay.fontWeight === "semibold" ? 600 : overlay.fontWeight === "bold" ? 700 : 400,
         color: overlay.color,
@@ -350,12 +355,12 @@ function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
         maxWidth: overlay.maxWidth ? `${overlay.maxWidth}%` : undefined,
         textAlign: overlay.textAlign || "left",
         opacity: computedOpacity,
-        padding: overlay.backgroundColor ? "0.25rem 0.5rem" : undefined,
-        borderRadius: overlay.backgroundColor ? "4px" : undefined,
+        padding: overlay.backgroundColor ? "0.4cqw 0.8cqw" : undefined,
+        borderRadius: overlay.backgroundColor ? "0.4cqw" : undefined,
         whiteSpace: "pre-wrap",
         transition: "opacity 0.15s ease, transform 0.15s ease",
         textShadow: !overlay.backgroundColor
-          ? "0 1px 3px rgba(0,0,0,0.8), 0 0 8px rgba(0,0,0,0.5)"
+          ? "0 0.1cqw 0.3cqw rgba(0,0,0,0.8), 0 0 0.8cqw rgba(0,0,0,0.5)"
           : undefined,
         zIndex: 20,
       }}
