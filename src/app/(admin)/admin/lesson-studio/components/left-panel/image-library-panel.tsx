@@ -1,10 +1,104 @@
 import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
-import { ImageIcon, Music } from "lucide-react";
+import { ImageIcon, Music, GripVertical } from "lucide-react";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { ExplainerImageSelector } from "../explainer-image-selector";
 import type { LibraryImage, SelectedImage } from "../../types";
 import { getImageTitle } from "../../utils/image-helpers";
 import { formatNumber } from "../../utils/formatters";
+
+interface SortableSegmentCardProps {
+  img: SelectedImage;
+  index: number;
+  isSelected: boolean;
+  onSelect: (index: number) => void;
+}
+
+function SortableSegmentCard({ img, index, isSelected, onSelect }: SortableSegmentCardProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id: `segment-${index}`,
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    opacity: isDragging ? 0.5 : 1,
+  };
+
+  const figureCount = img.animations.filter((a) => a.type === "figure").length;
+  const spotlightCount = img.animations.filter((a) => a.type === "spotlight").length;
+  const arrowCount = img.animations.filter((a) => a.type === "arrow").length;
+  const zoomCount = img.animations.filter((a) => a.type === "zoom").length;
+  const panCount = img.animations.filter((a) => a.type === "pan").length;
+
+  const tags = [
+    figureCount > 0 && `Fig ${figureCount}`,
+    spotlightCount > 0 && `Spot ${spotlightCount}`,
+    arrowCount > 0 && `Arrow ${arrowCount}`,
+    zoomCount > 0 && `Zoom ${zoomCount}`,
+    panCount > 0 && `Pan ${panCount}`,
+    img.textOverlays.length > 0 && `Text ${img.textOverlays.length}`,
+  ]
+    .filter(Boolean)
+    .join(" • ");
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={`
+        border rounded-lg p-2 cursor-pointer transition-all
+        ${isSelected ? "border-blue-500 bg-blue-50 shadow-sm" : "border-gray-200 hover:border-gray-300"}
+        ${isDragging ? "z-50" : ""}
+      `}
+      onClick={() => onSelect(index)}
+    >
+      <div className="flex gap-2">
+        {/* Drag Handle */}
+        <div
+          {...attributes}
+          {...listeners}
+          className="flex items-center cursor-grab active:cursor-grabbing text-gray-400 hover:text-gray-600"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <GripVertical className="h-4 w-4" />
+        </div>
+
+        {/* Thumbnail */}
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={img.url}
+          alt={img.description || "Image"}
+          className="w-12 h-12 object-cover rounded"
+        />
+
+        {/* Content */}
+        <div className="flex-1 min-w-0">
+          <div className="text-sm font-medium truncate">{getImageTitle(img)}</div>
+          <div className="text-xs text-muted-foreground">
+            Segment {index + 1} • {formatNumber(img.duration)}s
+          </div>
+          {tags && <div className="text-xs text-muted-foreground mt-0.5">{tags}</div>}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 interface ImageLibraryPanelProps {
   selectedImages: SelectedImage[];
@@ -16,6 +110,7 @@ interface ImageLibraryPanelProps {
   onAddImages: (images: LibraryImage[]) => void;
   onSegmentSelect: (index: number) => void;
   onAudioPickerOpen: () => void;
+  onReorderImages: (oldIndex: number, newIndex: number) => void;
 }
 
 export function ImageLibraryPanel({
@@ -28,7 +123,30 @@ export function ImageLibraryPanel({
   onAddImages,
   onSegmentSelect,
   onAudioPickerOpen,
+  onReorderImages,
 }: ImageLibraryPanelProps) {
+  // Setup drag sensors
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8, // Require 8px movement before drag starts (prevents accidental drags)
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    const { active, over } = event;
+
+    if (over && active.id !== over.id) {
+      const oldIndex = parseInt(active.id.toString().replace("segment-", ""));
+      const newIndex = parseInt(over.id.toString().replace("segment-", ""));
+      onReorderImages(oldIndex, newIndex);
+    }
+  };
+
   return (
     <div className="w-80 border-r flex flex-col bg-muted/30">
       {/* Browse Library Button */}
@@ -50,51 +168,26 @@ export function ImageLibraryPanel({
         {selectedImages.length === 0 ? (
           <div className="text-sm text-muted-foreground text-center py-12">No images added yet</div>
         ) : (
-          selectedImages.map((img, index) => {
-            const figureCount = img.animations.filter((a) => a.type === "figure").length;
-            const spotlightCount = img.animations.filter((a) => a.type === "spotlight").length;
-            const arrowCount = img.animations.filter((a) => a.type === "arrow").length;
-            const zoomCount = img.animations.filter((a) => a.type === "zoom").length;
-            const panCount = img.animations.filter((a) => a.type === "pan").length;
-
-            const tags = [
-              figureCount > 0 && `Fig ${figureCount}`,
-              spotlightCount > 0 && `Spot ${spotlightCount}`,
-              arrowCount > 0 && `Arrow ${arrowCount}`,
-              zoomCount > 0 && `Zoom ${zoomCount}`,
-              panCount > 0 && `Pan ${panCount}`,
-              img.textOverlays.length > 0 && `Text ${img.textOverlays.length}`,
-            ]
-              .filter(Boolean)
-              .join(" • ");
-
-            return (
-              <div
-                key={index}
-                className={`
-                  border rounded-lg p-2 cursor-pointer transition-all
-                  ${selectedImageIndex === index ? "border-blue-500 bg-blue-50 shadow-sm" : "border-gray-200 hover:border-gray-300"}
-                `}
-                onClick={() => onSegmentSelect(index)}
-              >
-                <div className="flex gap-2">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={img.url}
-                    alt={img.description || "Image"}
-                    className="w-12 h-12 object-cover rounded"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className="text-sm font-medium truncate">{getImageTitle(img)}</div>
-                    <div className="text-xs text-muted-foreground">
-                      Segment {index + 1} • {formatNumber(img.duration)}s
-                    </div>
-                    {tags && <div className="text-xs text-muted-foreground mt-0.5">{tags}</div>}
-                  </div>
-                </div>
-              </div>
-            );
-          })
+          <DndContext
+            sensors={sensors}
+            collisionDetection={closestCenter}
+            onDragEnd={handleDragEnd}
+          >
+            <SortableContext
+              items={selectedImages.map((_, i) => `segment-${i}`)}
+              strategy={verticalListSortingStrategy}
+            >
+              {selectedImages.map((img, index) => (
+                <SortableSegmentCard
+                  key={`segment-${index}`}
+                  img={img}
+                  index={index}
+                  isSelected={selectedImageIndex === index}
+                  onSelect={onSegmentSelect}
+                />
+              ))}
+            </SortableContext>
+          </DndContext>
         )}
       </div>
 

@@ -252,6 +252,32 @@ export default function LessonStudioPage() {
     setSelectedImages(selectedImages.map((img, i) => (i === index ? { ...img, ...updates } : img)));
   };
 
+  // Reorder images (for drag-and-drop)
+  const handleReorderImages = (oldIndex: number, newIndex: number) => {
+    const newImages = [...selectedImages];
+    const [movedImage] = newImages.splice(oldIndex, 1);
+    newImages.splice(newIndex, 0, movedImage);
+    setSelectedImages(newImages);
+
+    // Update selected index if needed
+    if (selectedImageIndex === oldIndex) {
+      setSelectedImageIndex(newIndex);
+    } else if (selectedImageIndex !== null) {
+      // Adjust selected index if it was affected by the move
+      if (oldIndex < newIndex) {
+        // Moving down: indices between old and new shift up
+        if (selectedImageIndex > oldIndex && selectedImageIndex <= newIndex) {
+          setSelectedImageIndex(selectedImageIndex - 1);
+        }
+      } else {
+        // Moving up: indices between new and old shift down
+        if (selectedImageIndex >= newIndex && selectedImageIndex < oldIndex) {
+          setSelectedImageIndex(selectedImageIndex + 1);
+        }
+      }
+    }
+  };
+
   // ─────────────────────────────────────────────────────────────────────────────
   // Animation management functions
   // ─────────────────────────────────────────────────────────────────────────────
@@ -630,6 +656,7 @@ export default function LessonStudioPage() {
             audioUrl={audioUrl}
             audioTitle={audioTitle}
             onAudioPickerOpen={() => setAudioPickerOpen(true)}
+            onReorderImages={handleReorderImages}
           />
 
           {/* Center & Right Panel Container */}
