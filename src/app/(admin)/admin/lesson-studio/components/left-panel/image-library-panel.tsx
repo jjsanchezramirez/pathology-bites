@@ -32,6 +32,10 @@ interface SortableSegmentCardProps {
 function SortableSegmentCard({ img, index, isSelected, onSelect }: SortableSegmentCardProps) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
     id: `segment-${index}`,
+    transition: {
+      duration: 150, // Faster transition (default is 250ms)
+      easing: "cubic-bezier(0.25, 1, 0.5, 1)", // Snappier easing curve
+    },
   });
 
   const style = {
