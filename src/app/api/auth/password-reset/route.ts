@@ -25,7 +25,68 @@ const passwordUpdateSchema = z
     path: ["confirmPassword"],
   });
 
-// POST /api/auth/password-reset - Request password reset
+/**
+ * @swagger
+ * /api/auth/password-reset:
+ *   post:
+ *     summary: Request password reset or magic link
+ *     description: Initiates a password reset or sends a magic link for passwordless login. Sends an email with a secure link to the user's registered email address. Returns success even if user doesn't exist for security reasons.
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email address of the account
+ *                 example: user@example.com
+ *               type:
+ *                 type: string
+ *                 enum: [reset, magic_link]
+ *                 default: reset
+ *                 description: Type of email to send - password reset or magic login link
+ *     responses:
+ *       200:
+ *         description: Password reset email sent successfully (or user doesn't exist)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Password reset link sent! Check your email to reset your password.
+ *       400:
+ *         description: Bad request - invalid email format or validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Please enter a valid email address
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Failed to send password reset email
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -125,7 +186,82 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// PATCH /api/auth/password-reset - Update password with reset token
+/**
+ * @swagger
+ * /api/auth/password-reset:
+ *   patch:
+ *     summary: Update password with reset token
+ *     description: Updates user password after they've clicked the password reset link. Requires a valid reset token (user must be authenticated via the reset link). Creates an audit log entry for the password change.
+ *     tags:
+ *       - Authentication
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *               - confirmPassword
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *                 description: New password (min 8 chars, must contain uppercase, lowercase, and number)
+ *                 example: MyNewPass123
+ *               confirmPassword:
+ *                 type: string
+ *                 format: password
+ *                 description: Password confirmation (must match password)
+ *                 example: MyNewPass123
+ *     responses:
+ *       200:
+ *         description: Password updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Password updated successfully
+ *       400:
+ *         description: Bad request - validation error or password requirements not met
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Passwords don't match
+ *       401:
+ *         description: Unauthorized - invalid or expired reset token
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid or expired reset token
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ */
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();

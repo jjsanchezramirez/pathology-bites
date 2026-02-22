@@ -1,5 +1,74 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+/**
+ * @swagger
+ * /api/public/tools/citations/extract-book-metadata:
+ *   get:
+ *     summary: Extract book metadata from ISBN
+ *     description: Retrieve book metadata from OpenLibrary and Google Books APIs using ISBN. Results are cached for 24 hours.
+ *     tags:
+ *       - Public - Tools
+ *     parameters:
+ *       - in: query
+ *         name: isbn
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: ISBN-10 or ISBN-13 (hyphens and spaces are automatically removed)
+ *         example: 978-0-596-52068-7
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved book metadata
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 title:
+ *                   type: string
+ *                   description: Book title
+ *                   example: JavaScript The Good Parts
+ *                 authors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: List of authors
+ *                   example: ["Douglas Crockford"]
+ *                 year:
+ *                   type: string
+ *                   description: Publication year (4-digit)
+ *                   example: "2008"
+ *                 publisher:
+ *                   type: string
+ *                   description: Publisher name
+ *                   example: O'Reilly Media
+ *                 type:
+ *                   type: string
+ *                   enum: [book]
+ *                   description: Content type (always "book")
+ *                   example: book
+ *       400:
+ *         description: Bad request - ISBN is required or invalid format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: ISBN parameter is required
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Failed to extract book metadata
+ */
+
 // Server-side cache for ISBN lookups (24 hour TTL)
 const isbnCache = new Map<string, { data: unknown; timestamp: number }>()
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours

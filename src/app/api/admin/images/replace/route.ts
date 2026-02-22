@@ -5,6 +5,134 @@ import { formatImageName } from "@/features/admin/images/services/image-upload";
 import { getImageDimensionsFromFile } from "@/shared/utils/images/server-image-utils";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
+/**
+ * @swagger
+ * /api/admin/images/replace:
+ *   post:
+ *     summary: Replace an existing image
+ *     description: Replace an existing image with a new file while preserving the same storage path and database record. Optionally update metadata (alt text and description). Requires admin role.
+ *     tags:
+ *       - Admin - Images
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *               - imageId
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: The new image file to upload
+ *               imageId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: The ID of the image to replace
+ *               updateMetadata:
+ *                 type: boolean
+ *                 description: Whether to update alt_text and description based on the new filename
+ *                 default: false
+ *     responses:
+ *       200:
+ *         description: Image replaced successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Image replaced successfully
+ *                 image:
+ *                   type: object
+ *                   description: The updated image record
+ *                 metadata:
+ *                   type: object
+ *                   properties:
+ *                     oldFileType:
+ *                       type: string
+ *                       example: image/png
+ *                     newFileType:
+ *                       type: string
+ *                       example: image/jpeg
+ *                     oldSize:
+ *                       type: integer
+ *                       description: Old file size in bytes
+ *                     newSize:
+ *                       type: integer
+ *                       description: New file size in bytes
+ *                     oldDimensions:
+ *                       type: string
+ *                       example: 1920x1080
+ *                     newDimensions:
+ *                       type: string
+ *                       example: 2560x1440
+ *       400:
+ *         description: Bad request - missing file, imageId, or invalid file type
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: No file provided
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: You must be logged in to replace images
+ *       403:
+ *         description: Forbidden - admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Only administrators can replace images
+ *       404:
+ *         description: Image not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Image not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ *                 message:
+ *                   type: string
+ *                 details:
+ *                   type: object
+ */
 export async function POST(request: NextRequest) {
   console.log("🔄 Image replace API called");
 

@@ -8,6 +8,57 @@ import {
   DEFAULT_UI_SETTINGS,
 } from "@/shared/config/user-settings-defaults";
 
+/**
+ * @swagger
+ * /api/auth/confirm:
+ *   get:
+ *     summary: Confirm email verification or password reset
+ *     description: Handles email verification, password reset confirmations, and email change confirmations. This endpoint is called when users click confirmation links sent to their email. It verifies the OTP token and creates user records if needed.
+ *     tags:
+ *       - Authentication
+ *     parameters:
+ *       - in: query
+ *         name: token_hash
+ *         schema:
+ *           type: string
+ *         description: Email verification token hash
+ *       - in: query
+ *         name: token
+ *         schema:
+ *           type: string
+ *         description: Alternative token parameter (used as token_hash if token_hash not provided)
+ *       - in: query
+ *         name: code
+ *         schema:
+ *           type: string
+ *         description: Authorization code for password reset
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [signup, email, recovery, email_change]
+ *         description: Type of email confirmation
+ *       - in: query
+ *         name: next
+ *         schema:
+ *           type: string
+ *           default: /
+ *         description: Redirect path after successful confirmation
+ *     responses:
+ *       302:
+ *         description: Redirect to appropriate page based on confirmation result
+ *         headers:
+ *           Location:
+ *             schema:
+ *               type: string
+ *               description: URL to redirect to (success page, error page, or link-expired page)
+ *       400:
+ *         description: Bad request - missing required parameters
+ *       401:
+ *         description: Unauthorized - invalid or expired token
+ *       500:
+ *         description: Internal server error during user creation
+ */
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const token_hash = searchParams.get("token_hash");

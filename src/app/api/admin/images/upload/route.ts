@@ -6,6 +6,136 @@ import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 import { parseImageFilename } from "@/shared/utils/images/filename-parser";
 import { revalidateImages } from "@/shared/utils/api/revalidation";
 
+/**
+ * @swagger
+ * /api/admin/images/upload:
+ *   post:
+ *     summary: Upload a new image
+ *     description: Upload a new image to R2 storage and create a database record. The image is automatically parsed for pathology metadata (category and magnification). Includes validation for file type, size, and dimensions. Requires admin role.
+ *     tags:
+ *       - Admin - Images
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *               - category
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: The image file to upload (max 10MB, max 10000x10000 pixels)
+ *               category:
+ *                 type: string
+ *                 enum: [microscopic, gross, figure, table]
+ *                 description: The image category
+ *               description:
+ *                 type: string
+ *                 description: Optional description for the image (defaults to parsed filename)
+ *               sourceRef:
+ *                 type: string
+ *                 description: Optional reference to the source of the image
+ *     responses:
+ *       200:
+ *         description: Image uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 image:
+ *                   type: object
+ *                   description: The created image record with all metadata
+ *                 uploadResult:
+ *                   type: object
+ *                   properties:
+ *                     url:
+ *                       type: string
+ *                       description: The public URL of the uploaded image
+ *                     key:
+ *                       type: string
+ *                       description: The R2 storage key
+ *                     size:
+ *                       type: integer
+ *                       description: File size in bytes
+ *                     contentType:
+ *                       type: string
+ *                       example: image/jpeg
+ *       400:
+ *         description: Bad request - validation error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   examples:
+ *                     noFile:
+ *                       value: No file provided. Please select an image to upload.
+ *                     noCategory:
+ *                       value: Image category is required.
+ *                     invalidCategory:
+ *                       value: Invalid category. Must be one of microscopic, gross, figure, table
+ *                     invalidFileType:
+ *                       value: Invalid file type. Only image files are allowed.
+ *                     fileTooLarge:
+ *                       value: File too large. Maximum size is 10MB. Your file is 12.34MB.
+ *                     invalidFileName:
+ *                       value: Invalid file name.
+ *                     dimensionsTooLarge:
+ *                       value: Image dimensions too large. Maximum 10000x10000 pixels.
+ *                     invalidDimensions:
+ *                       value: Invalid image dimensions.
+ *                     corruptedFile:
+ *                       value: Failed to read image file. The file may be corrupted.
+ *                     invalidImage:
+ *                       value: Failed to read image dimensions. The file may not be a valid image.
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Authentication required. Please log in to upload images.
+ *       403:
+ *         description: Forbidden - admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Administrator privileges required to upload images.
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   examples:
+ *                     uploadFailed:
+ *                       value: Failed to upload image to storage. Please try again.
+ *                     databaseFailed:
+ *                       value: "Failed to save image metadata: [error details]"
+ *                     genericError:
+ *                       value: "Upload failed: [error message]. Please try again."
+ */
 export async function POST(request: NextRequest) {
   let uploadedStoragePath: string | null = null;
 

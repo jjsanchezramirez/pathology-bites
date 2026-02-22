@@ -1,6 +1,78 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as cheerio from 'cheerio'
 
+/**
+ * @swagger
+ * /api/public/tools/citations/extract-url-metadata:
+ *   get:
+ *     summary: Extract metadata from a URL
+ *     description: Extract citation metadata from a webpage URL including title, authors, publication year, publisher, description, and content type. Uses Open Graph, Twitter Cards, Schema.org, and other metadata sources.
+ *     tags:
+ *       - Public - Tools
+ *     parameters:
+ *       - in: query
+ *         name: url
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uri
+ *         description: URL of the webpage to extract metadata from
+ *         example: https://example.com/article
+ *     responses:
+ *       200:
+ *         description: Successfully extracted metadata
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 title:
+ *                   type: string
+ *                   description: Page or article title
+ *                   example: Sample Article Title
+ *                 authors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: List of authors
+ *                   example: ["John Doe", "Jane Smith"]
+ *                 year:
+ *                   type: string
+ *                   description: Publication year (4-digit)
+ *                   example: "2024"
+ *                 publisher:
+ *                   type: string
+ *                   description: Publisher or website domain
+ *                   example: example.com
+ *                 description:
+ *                   type: string
+ *                   description: Page description or summary
+ *                 type:
+ *                   type: string
+ *                   enum: [academic, website]
+ *                   description: Content type (academic paper or general website)
+ *                   example: website
+ *       400:
+ *         description: Bad request - URL parameter is required or invalid format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: URL parameter is required
+ *       500:
+ *         description: Internal server error or failed to fetch URL
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Failed to extract metadata from the provided URL
+ */
 export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url)

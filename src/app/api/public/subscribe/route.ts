@@ -10,6 +10,77 @@ interface SupabaseError {
   hint?: string;
 }
 
+/**
+ * @swagger
+ * /api/public/subscribe:
+ *   post:
+ *     summary: Subscribe to waitlist
+ *     description: Add an email address to the waitlist. Handles duplicate emails gracefully and uses RLS policies with service role fallback.
+ *     tags:
+ *       - Public - Subscription
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email address to add to the waitlist
+ *                 example: user@example.com
+ *     responses:
+ *       200:
+ *         description: Email already exists in waitlist
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: You are already subscribed to our waitlist!
+ *       201:
+ *         description: Successfully subscribed to waitlist
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Successfully subscribed to waitlist!
+ *       400:
+ *         description: Bad request - invalid email format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Please provide a valid email address.
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 code:
+ *                   type: string
+ *                 details:
+ *                   type: string
+ *                 hint:
+ *                   type: string
+ */
 export async function POST(request: Request) {
   try {
     const { email } = await request.json()

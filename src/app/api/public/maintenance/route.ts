@@ -10,6 +10,77 @@ interface SupabaseError {
   hint?: string;
 }
 
+/**
+ * @swagger
+ * /api/public/maintenance:
+ *   post:
+ *     summary: Subscribe to maintenance notifications
+ *     description: Add an email address to receive maintenance notifications. Creates a waitlist entry with type 'maintenance'. Handles duplicate emails gracefully.
+ *     tags:
+ *       - Public - Subscription
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email address to subscribe for maintenance notifications
+ *                 example: user@example.com
+ *     responses:
+ *       200:
+ *         description: Email already subscribed for maintenance notifications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: You are already subscribed for maintenance notifications!
+ *       201:
+ *         description: Successfully subscribed for maintenance notifications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: Successfully subscribed for maintenance notifications!
+ *       400:
+ *         description: Bad request - invalid email format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Please provide a valid email address.
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 message:
+ *                   type: string
+ *                 code:
+ *                   type: string
+ *                 details:
+ *                   type: string
+ *                 hint:
+ *                   type: string
+ */
 export async function POST(request: Request) {
   try {
     const { email } = await request.json()

@@ -1,4 +1,4 @@
-import type { VisionResult, AnnotationTool } from "./vision";
+import type { VisionResult } from "./vision";
 import type { ImageInput } from "./prompt";
 
 // ---------------------------------------------------------------------------

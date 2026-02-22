@@ -1,5 +1,151 @@
 import { NextRequest, NextResponse } from "next/server";
 
+/**
+ * @swagger
+ * /api/public/tools/genova/myvariant:
+ *   get:
+ *     summary: Get variant information from MyVariant.info
+ *     description: Retrieve comprehensive variant annotation data from MyVariant.info database including population frequency, pathogenicity predictions, ClinVar significance, and COSMIC cancer driver information.
+ *     tags:
+ *       - Public - Tools
+ *     parameters:
+ *       - in: query
+ *         name: rsid
+ *         schema:
+ *           type: string
+ *         description: dbSNP rsID (e.g., rs121913343)
+ *         example: rs121913343
+ *       - in: query
+ *         name: hgvs
+ *         schema:
+ *           type: string
+ *         description: HGVS notation (e.g., chr17:g.7577121C>T)
+ *         example: chr17:g.7577121C>T
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved variant information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 found:
+ *                   type: boolean
+ *                   description: Whether the variant was found in the database
+ *                 variantId:
+ *                   type: string
+ *                   description: MyVariant.info internal ID
+ *                 rsid:
+ *                   type: string
+ *                   description: dbSNP rsID
+ *                 populationFrequency:
+ *                   type: object
+ *                   properties:
+ *                     gnomadAF:
+ *                       type: number
+ *                       nullable: true
+ *                       description: gnomAD allele frequency
+ *                     interpretation:
+ *                       type: string
+ *                       description: Clinical interpretation based on frequency (Common/Polymorphic/Rare)
+ *                 pathogenicity:
+ *                   type: object
+ *                   properties:
+ *                     revelScore:
+ *                       type: number
+ *                       nullable: true
+ *                       description: REVEL pathogenicity score (0-1)
+ *                     interpretation:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Pathogenicity interpretation
+ *                     sift:
+ *                       type: string
+ *                       nullable: true
+ *                       description: SIFT prediction
+ *                     polyphen2:
+ *                       type: string
+ *                       nullable: true
+ *                       description: PolyPhen-2 prediction
+ *                     mutationTaster:
+ *                       type: string
+ *                       nullable: true
+ *                       description: MutationTaster prediction
+ *                 clinvar:
+ *                   type: object
+ *                   nullable: true
+ *                   properties:
+ *                     clinicalSignificance:
+ *                       type: string
+ *                       description: ClinVar clinical significance
+ *                     reviewStatus:
+ *                       type: string
+ *                       description: ClinVar review status
+ *                     conditions:
+ *                       type: string
+ *                       description: Associated conditions
+ *                 somatic:
+ *                   type: object
+ *                   properties:
+ *                     cosmicId:
+ *                       type: string
+ *                       nullable: true
+ *                       description: COSMIC database ID
+ *                     isCancerDriver:
+ *                       type: boolean
+ *                       description: Whether this is a known cancer driver
+ *                     interpretation:
+ *                       type: string
+ *                       description: Somatic interpretation
+ *                 conservation:
+ *                   type: object
+ *                   properties:
+ *                     gerpScore:
+ *                       type: number
+ *                       nullable: true
+ *                       description: GERP conservation score
+ *                     interpretation:
+ *                       type: string
+ *                       nullable: true
+ *                       description: Conservation interpretation
+ *                 cadd:
+ *                   type: number
+ *                   nullable: true
+ *                   description: CADD PHRED score
+ *                 gene:
+ *                   type: string
+ *                   nullable: true
+ *                   description: Gene symbol
+ *                 data:
+ *                   type: object
+ *                   description: Full raw data from MyVariant.info
+ *                 message:
+ *                   type: string
+ *                   description: Message when variant not found
+ *       400:
+ *         description: Bad request - either rsid or hgvs parameter is required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Either rsid or hgvs parameter is required
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Failed to fetch data from MyVariant.info
+ */
 export async function GET(request: NextRequest) {
   try {
     const searchParams = request.nextUrl.searchParams;

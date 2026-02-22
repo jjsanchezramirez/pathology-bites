@@ -2,6 +2,61 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+/**
+ * @swagger
+ * /api/auth/check-email:
+ *   post:
+ *     summary: Check if email exists in the system
+ *     description: Validates email format and checks if an account with the given email address already exists. This endpoint is used during registration to prevent duplicate accounts.
+ *     tags:
+ *       - Authentication
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email address to check
+ *                 example: user@example.com
+ *     responses:
+ *       200:
+ *         description: Successfully checked email existence
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 exists:
+ *                   type: boolean
+ *                   description: Whether an account with this email exists
+ *                   example: false
+ *       400:
+ *         description: Bad request - missing or invalid email
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Email is required
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ */
 export async function POST(request: NextRequest) {
   try {
     const { email } = await request.json();

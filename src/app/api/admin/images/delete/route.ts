@@ -4,6 +4,96 @@ import { deleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage"
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 import { revalidateImages } from "@/shared/utils/api/revalidation";
 
+/**
+ * @swagger
+ * /api/admin/images/delete:
+ *   delete:
+ *     summary: Delete a single image
+ *     description: Delete an image from both R2 storage and the database. External images are only removed from the database. Requires admin role.
+ *     tags:
+ *       - Admin - Images
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - imageId
+ *             properties:
+ *               imageId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: The ID of the image to delete
+ *     responses:
+ *       200:
+ *         description: Image deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Image deleted successfully
+ *       400:
+ *         description: Bad request - missing imageId
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Image ID is required
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: You must be logged in to delete images
+ *       403:
+ *         description: Forbidden - admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Only administrators can delete images
+ *                 details:
+ *                   type: string
+ *       404:
+ *         description: Image not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Failed to fetch image details
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Failed to delete image
+ */
 export async function DELETE(request: NextRequest) {
   console.log("🗑️ DELETE /api/admin/images/delete called");
   console.log("🍪 Request headers:", {

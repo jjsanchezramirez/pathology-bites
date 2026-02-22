@@ -5,7 +5,14 @@ import { useState, useRef, useEffect, useCallback } from "react";
 
 // Shared component imports
 import { Button } from "@/shared/components/ui/button";
-import { Download, Video } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
+import { Download, Video, Database, FolderOpen, FileText, Plus, ChevronDown } from "lucide-react";
 
 // Shared type imports
 import type { ExplainerSequence, CaptionChunk } from "@/shared/types/explainer";
@@ -30,6 +37,8 @@ import {
 import { DeleteConfirmDialog } from "./components/delete-confirm-dialog";
 import { AudioPickerDialog } from "./components/audio-picker-dialog";
 import { ExportDialog } from "./components/export-dialog";
+import { SaveToDatabaseDialog } from "./components/save-to-database-dialog";
+import { LoadFromDatabaseDialog } from "./components/load-from-database-dialog";
 import { ImageLibraryPanel } from "./components/left-panel/image-library-panel";
 import { PreviewPanel } from "./components/center-panel/preview-panel";
 import { PropertiesPanel } from "./components/right-panel/properties-panel";
@@ -46,8 +55,19 @@ export default function LessonStudioPage() {
   const [seekTime, setSeekTime] = useState<number | undefined>(undefined);
   const [audioDuration, setAudioDuration] = useState<number>(0);
 
+  // Loaded sequence tracking (for update vs create)
+  const [loadedSequenceId, setLoadedSequenceId] = useState<string | null>(null);
+  const [loadedSequenceTitle, setLoadedSequenceTitle] = useState<string>("");
+  const [loadedSequenceDescription, setLoadedSequenceDescription] = useState<string>("");
+
   // Export state (simplified - dialog manages its own internal state)
   const [exportDialogOpen, setExportDialogOpen] = useState(false);
+
+  // Save to database dialog state
+  const [saveToDatabaseDialogOpen, setSaveToDatabaseDialogOpen] = useState(false);
+
+  // Load from database dialog state
+  const [loadFromDatabaseDialogOpen, setLoadFromDatabaseDialogOpen] = useState(false);
 
   // Audio picker dialog state
   const [audioPickerOpen, setAudioPickerOpen] = useState(false);
@@ -615,32 +635,108 @@ export default function LessonStudioPage() {
   };
 
   // ─────────────────────────────────────────────────────────────────────────────
+  // Save to Database
+  // ─────────────────────────────────────────────────────────────────────────────
+  const handleSaveToDatabaseClick = () => {
+    if (!previewSequence) generateSequence();
+    setSaveToDatabaseDialogOpen(true);
+  };
+
+  const handleSaveSuccess = (sequenceId: string) => {
+    // If we were creating a new sequence, track it now for future updates
+    if (!loadedSequenceId) {
+      setLoadedSequenceId(sequenceId);
+    }
+    console.log("Sequence saved with ID:", sequenceId);
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // Load from Database
+  // ─────────────────────────────────────────────────────────────────────────────
+  const handleLoadFromDatabase = (
+    sequence: ExplainerSequence,
+    sequenceId: string,
+    title: string,
+    description: string
+  ) => {
+    loadFromJSON(sequence);
+    setLoadedSequenceId(sequenceId);
+    setLoadedSequenceTitle(title);
+    setLoadedSequenceDescription(description);
+  };
+
+  // Clear loaded sequence (start new)
+  const handleNewSequence = () => {
+    setLoadedSequenceId(null);
+    setLoadedSequenceTitle("");
+    setLoadedSequenceDescription("");
+    setSelectedImages([]);
+    setAudioUrl(DEFAULT_AUDIO_URL);
+    setPreviewSequence(null);
+    setSelectedImageIndex(null);
+    setAudioTitle("");
+    setAudioTranscript("");
+    setCaptionChunks([]);
+    setAudioDuration(0);
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
   // Render
   // ─────────────────────────────────────────────────────────────────────────────
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
       <div className="border-b px-6 py-4 flex items-center justify-between">
-        <h1 className="text-xl font-semibold">Lesson Studio</h1>
+        <div className="flex items-center gap-3">
+          <h1 className="text-xl font-semibold">Lesson Studio</h1>
+          {loadedSequenceId && (
+            <span className="text-sm text-muted-foreground">
+              <FileText className="h-3.5 w-3.5 inline mr-1" />
+              {loadedSequenceTitle}
+            </span>
+          )}
+        </div>
         <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={saveToJSON}
-            className="flex items-center gap-2"
-          >
-            <Download className="h-4 w-4" />
-            Save to JSON
-          </Button>
+          {/* File Menu */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="outline" size="sm">
+                <FileText className="h-4 w-4 mr-2" />
+                File
+                <ChevronDown className="h-4 w-4 ml-2" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-56">
+              <DropdownMenuItem onClick={handleNewSequence}>
+                <Plus className="h-4 w-4 mr-2" />
+                New Sequence
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setLoadFromDatabaseDialogOpen(true)}>
+                <FolderOpen className="h-4 w-4 mr-2" />
+                Load from Database...
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem onClick={saveToJSON} disabled={selectedImages.length === 0}>
+                <Download className="h-4 w-4 mr-2" />
+                Download JSON
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={handleExportClick} disabled={selectedImages.length === 0}>
+                <Video className="h-4 w-4 mr-2" />
+                Export MP4...
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Save/Update Button */}
           <Button
             variant="default"
             size="sm"
-            onClick={handleExportClick}
+            onClick={handleSaveToDatabaseClick}
             disabled={selectedImages.length === 0}
             className="flex items-center gap-2"
           >
-            <Video className="h-4 w-4" />
-            Export MP4
+            <Database className="h-4 w-4" />
+            {loadedSequenceId ? "Update" : "Save"}
           </Button>
         </div>
       </div>
@@ -751,6 +847,22 @@ export default function LessonStudioPage() {
         onOpenChange={setExportDialogOpen}
         previewSequence={previewSequence}
         audioUrl={audioUrl}
+      />
+
+      <SaveToDatabaseDialog
+        open={saveToDatabaseDialogOpen}
+        onOpenChange={setSaveToDatabaseDialogOpen}
+        sequence={previewSequence}
+        existingSequenceId={loadedSequenceId}
+        existingTitle={loadedSequenceTitle}
+        existingDescription={loadedSequenceDescription}
+        onSaveSuccess={handleSaveSuccess}
+      />
+
+      <LoadFromDatabaseDialog
+        open={loadFromDatabaseDialogOpen}
+        onOpenChange={setLoadFromDatabaseDialogOpen}
+        onLoadSequence={handleLoadFromDatabase}
       />
     </div>
   );

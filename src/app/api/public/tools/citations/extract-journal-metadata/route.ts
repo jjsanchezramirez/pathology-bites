@@ -1,5 +1,94 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+/**
+ * @swagger
+ * /api/public/tools/citations/extract-journal-metadata:
+ *   get:
+ *     summary: Extract journal article metadata from DOI
+ *     description: Retrieve journal article metadata from CrossRef API using DOI. Results are cached for 24 hours.
+ *     tags:
+ *       - Public - Tools
+ *     parameters:
+ *       - in: query
+ *         name: doi
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Digital Object Identifier (DOI) with or without prefix (doi:, https://doi.org/, etc.)
+ *         example: 10.1038/nature12373
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved journal article metadata
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 title:
+ *                   type: string
+ *                   description: Article title
+ *                   example: Sample Journal Article Title
+ *                 authors:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: List of authors in "LastName, FirstName" format
+ *                   example: ["Smith, John", "Doe, Jane"]
+ *                 year:
+ *                   type: string
+ *                   description: Publication year (4-digit)
+ *                   example: "2023"
+ *                 journal:
+ *                   type: string
+ *                   description: Journal name
+ *                   example: Nature
+ *                 volume:
+ *                   type: string
+ *                   description: Journal volume number
+ *                   example: "500"
+ *                 issue:
+ *                   type: string
+ *                   description: Journal issue number
+ *                   example: "7462"
+ *                 pages:
+ *                   type: string
+ *                   description: Page range
+ *                   example: "175-179"
+ *                 doi:
+ *                   type: string
+ *                   description: Cleaned DOI (without prefix)
+ *                   example: 10.1038/nature12373
+ *                 url:
+ *                   type: string
+ *                   description: Full DOI URL
+ *                   example: https://doi.org/10.1038/nature12373
+ *                 type:
+ *                   type: string
+ *                   enum: [journal]
+ *                   description: Content type (always "journal")
+ *                   example: journal
+ *       400:
+ *         description: Bad request - DOI is required or invalid format
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: DOI parameter is required
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Failed to extract journal metadata
+ */
+
 // Server-side cache for DOI lookups (24 hour TTL)
 const doiCache = new Map<string, { data: unknown; timestamp: number }>()
 const CACHE_TTL = 24 * 60 * 60 * 1000 // 24 hours

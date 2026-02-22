@@ -10,6 +10,36 @@ import {
 
 const rateLimitedHandler = withRateLimit(authRateLimiter);
 
+/**
+ * @swagger
+ * /api/auth/callback:
+ *   get:
+ *     summary: OAuth authentication callback
+ *     description: Handles OAuth provider callbacks (Google, GitHub, etc.) after successful authentication. Creates new user accounts, restores soft-deleted accounts, and redirects users to the appropriate dashboard based on their role.
+ *     tags:
+ *       - Authentication
+ *     parameters:
+ *       - in: query
+ *         name: code
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: OAuth authorization code from the provider
+ *     responses:
+ *       302:
+ *         description: Redirect to dashboard or error page
+ *         headers:
+ *           Location:
+ *             schema:
+ *               type: string
+ *               description: URL to redirect to - /admin for admin/creator/reviewer roles, /dashboard for regular users, or /auth-error on failure
+ *       400:
+ *         description: Bad request - missing or invalid code parameter
+ *       401:
+ *         description: Unauthorized - OAuth authentication failed
+ *       500:
+ *         description: Internal server error during user creation or restoration
+ */
 export const GET = rateLimitedHandler(async function (request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get("code");

@@ -5,6 +5,89 @@ import { NextRequest, NextResponse } from 'next/server'
 import { createClient } from '@/shared/services/server'
 import { SecurityEvent } from '@/features/auth/services/session-security'
 
+/**
+ * @swagger
+ * /api/public/security/events:
+ *   post:
+ *     summary: Log a security event
+ *     description: Record a security event for the authenticated user. High-severity events trigger additional alerts and logging.
+ *     tags:
+ *       - Public - Security
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - type
+ *               - severity
+ *               - timestamp
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 description: Type of security event
+ *                 example: session_hijack_attempt
+ *               severity:
+ *                 type: string
+ *                 enum: [low, medium, high]
+ *                 description: Severity level of the event
+ *                 example: high
+ *               timestamp:
+ *                 type: string
+ *                 format: date-time
+ *                 description: ISO 8601 timestamp of when the event occurred
+ *                 example: 2024-01-15T10:30:00Z
+ *               details:
+ *                 type: object
+ *                 description: Additional event details
+ *               userAgent:
+ *                 type: string
+ *                 description: User agent string (optional, will use request header if not provided)
+ *     responses:
+ *       200:
+ *         description: Security event logged successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *       400:
+ *         description: Bad request - invalid event structure
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid event structure
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Unauthorized
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Internal server error
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient()
@@ -80,7 +163,81 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// Optional: GET endpoint to retrieve security events for admin/debugging
+/**
+ * @swagger
+ * /api/public/security/events:
+ *   get:
+ *     summary: Retrieve security events
+ *     description: Retrieve security events with optional filtering by user ID, severity, pagination. Intended for admin/debugging purposes.
+ *     tags:
+ *       - Public - Security
+ *     parameters:
+ *       - in: query
+ *         name: user_id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by user ID
+ *       - in: query
+ *         name: severity
+ *         schema:
+ *           type: string
+ *           enum: [low, medium, high]
+ *         description: Filter by severity level
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *         description: Number of events to retrieve
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Offset for pagination
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved security events
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 events:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       user_id:
+ *                         type: string
+ *                       event_type:
+ *                         type: string
+ *                       severity:
+ *                         type: string
+ *                       timestamp:
+ *                         type: string
+ *                         format: date-time
+ *                       details:
+ *                         type: object
+ *                       user_agent:
+ *                         type: string
+ *                       ip_address:
+ *                         type: string
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Failed to fetch events
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient()

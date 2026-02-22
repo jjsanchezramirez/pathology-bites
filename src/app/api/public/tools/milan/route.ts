@@ -4,6 +4,100 @@ import { NextRequest, NextResponse } from 'next/server'
 const CACHE_TTL = 60 * 60 * 1000 // 1 hour
 const geneCache = new Map<string, { data: unknown, timestamp: number }>()
 
+/**
+ * @swagger
+ * /api/public/tools/milan:
+ *   get:
+ *     summary: Get gene information by symbol
+ *     description: Retrieve comprehensive gene information from HGNC and Harmonizome databases by gene symbol. Results are cached for 1 hour.
+ *     tags:
+ *       - Public - Tools
+ *     parameters:
+ *       - in: query
+ *         name: symbol
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Gene symbol (e.g., TP53, BRCA1)
+ *         example: TP53
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved gene information
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     hgncId:
+ *                       type: string
+ *                       description: HGNC database identifier
+ *                     geneName:
+ *                       type: string
+ *                       description: Official gene symbol
+ *                     geneProduct:
+ *                       type: string
+ *                       description: Full gene name/product
+ *                     previousNames:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: Previous gene names
+ *                     aliasSymbols:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: Alternative gene symbols
+ *                     chromosomeLocation:
+ *                       type: string
+ *                       description: Chromosomal location
+ *                     description:
+ *                       type: string
+ *                       description: Gene description
+ *                     symbol:
+ *                       type: string
+ *                       description: Gene symbol
+ *                     entrezId:
+ *                       type: string
+ *                       description: Entrez/NCBI gene ID
+ *                     ensemblId:
+ *                       type: string
+ *                       description: Ensembl gene ID
+ *                 cached:
+ *                   type: boolean
+ *                   description: Whether the result was served from cache
+ *       400:
+ *         description: Bad request - gene symbol is required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Gene symbol is required
+ *       404:
+ *         description: Gene not found in HGNC database
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Gene not found in HGNC database.
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ */
 export async function GET(request: NextRequest) {
   const { searchParams } = new URL(request.url)
   const geneSymbol = searchParams.get('symbol')
@@ -174,7 +268,29 @@ function parseHarmonizomeData(data: unknown) {
   }
 }
 
-// Cache management endpoint
+/**
+ * @swagger
+ * /api/public/tools/milan:
+ *   delete:
+ *     summary: Clear gene lookup cache
+ *     description: Clears the server-side cache for gene lookups. This endpoint is useful for debugging or forcing fresh data retrieval.
+ *     tags:
+ *       - Public - Tools
+ *     responses:
+ *       200:
+ *         description: Cache cleared successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Gene lookup cache cleared
+ */
 export async function DELETE() {
   geneCache.clear()
   

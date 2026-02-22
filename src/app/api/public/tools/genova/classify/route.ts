@@ -10,8 +10,110 @@ import {
 } from "@/shared/utils/genomic";
 
 /**
- * POST /api/public/tools/genova/classify
- * Classify genomic variants using AMP/ASCO/CAP tiered system
+ * @swagger
+ * /api/public/tools/genova/classify:
+ *   post:
+ *     summary: Classify genomic variants
+ *     description: Classify genomic variants using AMP/ASCO/CAP tiered system. Analyzes variant text to determine pathogenicity, clinical significance, and detects technical artifacts.
+ *     tags:
+ *       - Public - Tools
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - rawText
+ *             properties:
+ *               rawText:
+ *                 type: string
+ *                 description: Raw variant text containing gene, variant, and VAF information
+ *                 example: "TP53 c.524G>A (p.Arg175His) VAF 45%"
+ *     responses:
+ *       200:
+ *         description: Successfully classified genomic variant
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 parsed:
+ *                   type: object
+ *                   description: Parsed variant information
+ *                   properties:
+ *                     gene:
+ *                       type: string
+ *                     hgvs_c:
+ *                       type: string
+ *                     hgvs_p:
+ *                       type: string
+ *                     hgvs_g:
+ *                       type: string
+ *                     transcript:
+ *                       type: string
+ *                     rsid:
+ *                       type: string
+ *                     vaf:
+ *                       type: number
+ *                 variantType:
+ *                   type: string
+ *                   enum: [somatic, germline, artifact, unknown]
+ *                   description: Determined variant type based on VAF and population frequency
+ *                 classification:
+ *                   type: object
+ *                   description: AMP/ASCO/CAP classification
+ *                   properties:
+ *                     tier:
+ *                       type: string
+ *                     level:
+ *                       type: string
+ *                     interpretation:
+ *                       type: string
+ *                 technicalArtifact:
+ *                   type: object
+ *                   description: Technical artifact detection results
+ *                   properties:
+ *                     isArtifact:
+ *                       type: boolean
+ *                     reason:
+ *                       type: string
+ *                 variantData:
+ *                   type: object
+ *                   description: External variant database information (if found)
+ *                   nullable: true
+ *                 oncokb:
+ *                   type: object
+ *                   description: OncoKB annotation data
+ *                   nullable: true
+ *       400:
+ *         description: Bad request - rawText is required or insufficient variant identifiers
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: rawText parameter is required
+ *                 success:
+ *                   type: boolean
+ *                   example: false
+ *                 parsed:
+ *                   type: object
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Failed to analyze genomic data
  */
 export async function POST(request: NextRequest) {
   try {

@@ -2,6 +2,135 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 
+/**
+ * @swagger
+ * /api/public/demo-questions:
+ *   get:
+ *     summary: Get demo questions
+ *     description: Retrieve demo questions for public viewing. Supports fetching a specific question by ID or sequential questions with server-side caching (24-hour TTL).
+ *     tags:
+ *       - Public - Questions
+ *     parameters:
+ *       - in: query
+ *         name: id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Specific demo question ID to retrieve
+ *       - in: query
+ *         name: index
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Index for sequential question retrieval (used when id is not provided)
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved demo question
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 id:
+ *                   type: string
+ *                   format: uuid
+ *                   description: Question ID
+ *                 title:
+ *                   type: string
+ *                   description: Question title
+ *                 body:
+ *                   type: string
+ *                   description: Question stem/body text
+ *                 teachingPoint:
+ *                   type: string
+ *                   description: Educational teaching point
+ *                 images:
+ *                   type: array
+ *                   description: Question images
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       url:
+ *                         type: string
+ *                       caption:
+ *                         type: string
+ *                       alt:
+ *                         type: string
+ *                 options:
+ *                   type: array
+ *                   description: Answer options
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       text:
+ *                         type: string
+ *                       correct:
+ *                         type: boolean
+ *                       explanation:
+ *                         type: string
+ *                         nullable: true
+ *                 incorrectExplanations:
+ *                   type: object
+ *                   description: Map of option IDs to explanations for incorrect answers
+ *                   additionalProperties:
+ *                     type: string
+ *                 references:
+ *                   type: array
+ *                   description: Question references
+ *                   items:
+ *                     type: string
+ *                 comparativeImage:
+ *                   type: object
+ *                   nullable: true
+ *                   description: Comparative/explanation image
+ *                   properties:
+ *                     url:
+ *                       type: string
+ *                     caption:
+ *                       type: string
+ *                     alt:
+ *                       type: string
+ *                 _metadata:
+ *                   type: object
+ *                   description: Metadata for sequential question retrieval (only present when using index parameter)
+ *                   properties:
+ *                     currentIndex:
+ *                       type: integer
+ *                     nextIndex:
+ *                       type: integer
+ *                     totalQuestions:
+ *                       type: integer
+ *                     cached:
+ *                       type: boolean
+ *         headers:
+ *           Cache-Control:
+ *             schema:
+ *               type: string
+ *               example: public, max-age=86400, stale-while-revalidate=300
+ *       404:
+ *         description: Demo question not found or no active demo questions available
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Demo question not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: An unexpected error occurred
+ */
+
 // Server-side cache for demo questions with 24-hour TTL
 const CACHE_TTL = 24 * 60 * 60 * 1000; // 24 hours
 interface CachedDemoQuestion {

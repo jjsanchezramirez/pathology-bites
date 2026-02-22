@@ -3,6 +3,111 @@ import { createClient } from "@/shared/services/server";
 import { bulkDeleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
+/**
+ * @swagger
+ * /api/admin/images/bulk-delete:
+ *   delete:
+ *     summary: Delete multiple images in bulk
+ *     description: Delete multiple images from both R2 storage and the database in a single operation. External images are only removed from the database. Requires admin role.
+ *     tags:
+ *       - Admin - Images
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - imageIds
+ *             properties:
+ *               imageIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: Array of image IDs to delete
+ *                 minItems: 1
+ *                 example: ["123e4567-e89b-12d3-a456-426614174000", "123e4567-e89b-12d3-a456-426614174001"]
+ *     responses:
+ *       200:
+ *         description: Images deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 results:
+ *                   type: object
+ *                   properties:
+ *                     deleted:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: Array of successfully deleted image IDs
+ *                     errors:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: Array of error messages for failed deletions
+ *                     storageDeleted:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: Array of R2 keys successfully deleted from storage
+ *                     storageErrors:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                       description: Array of R2 deletion error messages
+ *                 message:
+ *                   type: string
+ *                   example: Successfully deleted 2 images
+ *       400:
+ *         description: Bad request - missing or invalid imageIds array
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Image IDs array is required
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: You must be logged in to delete images
+ *       403:
+ *         description: Forbidden - admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Only administrators can delete images
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Failed to delete images
+ */
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();
