@@ -143,6 +143,13 @@ export const adminNavigationSections: NavigationSection[] = [
         adminOnly: true,
       },
       {
+        name: "API Documentation",
+        href: "/admin/docs",
+        icon: "FileCode",
+        requiredPermission: "settings.manage",
+        adminOnly: true,
+      },
+      {
         name: "Settings",
         href: "/admin/settings",
         icon: "Settings",
@@ -191,12 +198,6 @@ export function getUserNavigationSections(): NavigationSection[] {
           href: "/dashboard/anki",
           icon: "Library",
           isNew: true,
-        },
-        {
-          name: "Learning Modules",
-          href: "/dashboard/learning",
-          icon: "BookOpen",
-          isSoon: true,
         },
       ],
     },

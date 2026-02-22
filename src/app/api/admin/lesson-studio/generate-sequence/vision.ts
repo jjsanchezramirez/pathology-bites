@@ -51,7 +51,7 @@ export interface VisionResult {
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
-export function parseXY(text: string): { x: number; y: number } | null {
+function parseXY(text: string): { x: number; y: number } | null {
   const m = text.match(/x\s*[=:]\s*(\d+(?:\.\d+)?)\s*%?,?\s*y\s*[=:]\s*(\d+(?:\.\d+)?)\s*%?/i);
   if (m) {
     const x = parseFloat(m[1]);
@@ -81,7 +81,7 @@ function parseAnnotationShape(lines: string[]): AnnotationShape | null {
 }
 
 /** @internal exported for testing */
-export function parseObjectPresent(text: string): boolean | null {
+function parseObjectPresent(text: string): boolean | null {
   const lower = text.toLowerCase();
   // Look for explicit yes/no near Q0
   if (/\byes\b/.test(lower)) return true;
@@ -90,7 +90,7 @@ export function parseObjectPresent(text: string): boolean | null {
 }
 
 /** @internal exported for testing */
-export function parseObjectShape(text: string): ObjectShape | null {
+function parseObjectShape(text: string): ObjectShape | null {
   const lower = text.toLowerCase();
   if (/\bcircular\b|\bround\b/.test(lower)) return "circular";
   if (/\bovoid\b|\boval\b|\belliptical\b/.test(lower)) return "ovoid";
@@ -99,7 +99,7 @@ export function parseObjectShape(text: string): ObjectShape | null {
 }
 
 /** @internal exported for testing */
-export function parseObjectSize(text: string): ObjectSize | null {
+function parseObjectSize(text: string): ObjectSize | null {
   const lower = text.toLowerCase();
   if (/\blarge\b/.test(lower)) return "large";
   if (/\bmedium\b/.test(lower)) return "medium";
@@ -132,7 +132,7 @@ type MagnificationEnum = ImageInput["magnification"];
  *   "high power" / "high mag" / "hpf" / "×40" / "×60"           → high
  *   "oil immersion" / "×100"                                     → very_high
  */
-export function normaliseMagnification(
+function normaliseMagnification(
   dbValue: string | null | undefined,
   fallbackText?: string
 ): MagnificationEnum {
@@ -189,7 +189,7 @@ export function normaliseMagnification(
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
-export function deriveMicroscopicTool(
+function deriveMicroscopicTool(
   objectPresent: boolean | null,
   objectShape: ObjectShape | null,
   objectSize: ObjectSize | null,
@@ -291,10 +291,7 @@ This is a histologic/microscopic image. Answer each question on its own numbered
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
-export function parseVisionResponse(
-  raw: string,
-  image: ImageInput
-): Omit<VisionResult, "canSeeImage"> {
+function parseVisionResponse(raw: string, image: ImageInput): Omit<VisionResult, "canSeeImage"> {
   const lines = raw
     .split("\n")
     .map((l) => l.trim())

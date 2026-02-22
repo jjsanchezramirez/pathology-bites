@@ -86,19 +86,3 @@ export interface SelectedImage extends LibraryImage {
   animations: Animation[]; // Multiple time-based animations
   textOverlays: TimeBasedText[]; // Multiple time-based text overlays
 }
-
-export type ExportPhase =
-  | "idle"
-  | "fetching-audio"
-  | "loading-images"
-  | "encoding"
-  | "rendering"
-  | "muxing"
-  | "done"
-  | "error";
-
-export interface ExportResolution {
-  label: string;
-  width: number;
-  height: number;
-}

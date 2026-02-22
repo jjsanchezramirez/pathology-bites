@@ -14,7 +14,6 @@ import {
   Award,
   Clock,
   FileText,
-  BookOpen,
   ChevronLeft,
   ChevronRight,
 } from "lucide-react";
@@ -106,8 +105,6 @@ export function NotificationsHandler() {
         return <Clock className="h-4 w-4 text-orange-500" />;
       case "page_update":
         return <FileText className="h-4 w-4 text-green-500" />;
-      case "learning_path_update":
-        return <BookOpen className="h-4 w-4 text-indigo-500" />;
       default:
         return <Bell className="h-4 w-4 text-gray-500" />;
     }

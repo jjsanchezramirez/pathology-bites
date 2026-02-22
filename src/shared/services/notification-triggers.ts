@@ -210,68 +210,6 @@ export class NotificationTriggers {
     }
   }
 
-  // Learning path progress trigger
-  async onLearningPathProgress(
-    userId: string,
-    pathData: {
-      pathId: string;
-      pathName: string;
-      completionPercentage: number;
-      newTopicsUnlocked: string[];
-    }
-  ): Promise<void> {
-    try {
-      // Check for completion milestones
-      const milestones = [25, 50, 75, 100];
-      const currentMilestone = milestones.find(
-        (m) => pathData.completionPercentage >= m && pathData.completionPercentage - 10 < m // Assuming 10% progress increments
-      );
-
-      if (currentMilestone) {
-        if (currentMilestone === 100) {
-          await notificationGenerators.createAchievementNotification(
-            userId,
-            "learning_path_completion",
-            `🎉 Learning Path Completed!`,
-            `Congratulations! You've successfully completed the ${pathData.pathName} learning path. Ready for the next challenge?`,
-            {
-              path_id: pathData.pathId,
-              path_name: pathData.pathName,
-              completion_percentage: pathData.completionPercentage,
-            }
-          );
-        } else {
-          await notificationGenerators.createAchievementNotification(
-            userId,
-            "learning_path_milestone",
-            `🎯 Learning Path Milestone`,
-            `You've completed ${currentMilestone}% of your ${pathData.pathName} learning path. Keep going!`,
-            {
-              path_id: pathData.pathId,
-              path_name: pathData.pathName,
-              completion_percentage: pathData.completionPercentage,
-              milestone: currentMilestone,
-            }
-          );
-        }
-      }
-
-      // Notify about new topics unlocked
-      if (pathData.newTopicsUnlocked.length > 0) {
-        await notificationGenerators.createAchievementNotification(
-          userId,
-          "topics_unlocked",
-          `🔓 New Topics Unlocked!`,
-          `Great progress! You've unlocked ${pathData.newTopicsUnlocked.length} new topics: ${pathData.newTopicsUnlocked.join(", ")}`,
-          {
-            path_id: pathData.pathId,
-            unlocked_topics: pathData.newTopicsUnlocked,
-          }
-        );
-      }
-    } catch {}
-  }
-
   // System maintenance notification trigger
   async onSystemMaintenance(
     title: string,

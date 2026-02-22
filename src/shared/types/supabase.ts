@@ -1,489 +1,774 @@
-// src/types/supabase.ts
-import { QuestionSetSourceDetails } from "@/shared/types/question-sets";
-
-// Define the quiz configuration type
-export interface QuizConfig {
-  mode: "tutor" | "timed" | "untimed" | "practice" | "review";
-  questionCount: number;
-  totalTimeLimit?: number; // total time for entire quiz in seconds (global timer)
-  difficulty?: "easy" | "medium" | "hard" | "mixed";
-  categories?: string[];
-  tags?: string[];
-  questionSets?: string[];
-  shuffleQuestions?: boolean;
-  shuffleAnswers?: boolean;
-  showExplanations?: boolean;
-  allowReview?: boolean;
-  showProgress?: boolean;
-}
-
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
-export interface Database {
+export type Database = {
+  // Allows to automatically instantiate createClient with right options
+  // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
+  __InternalSupabase: {
+    PostgrestVersion: "13.0.5";
+  };
   public: {
     Tables: {
-      learning_modules: {
+      achievements: {
         Row: {
+          animation_type: string;
+          category: string;
+          created_at: string | null;
+          description: string;
           id: string;
-          parent_module_id: string | null;
-          category_id: string;
+          requirement: number;
           title: string;
-          slug: string;
-          description: string | null;
-          content: string | null;
-          learning_objectives: string[] | null;
-          difficulty_level: Database["public"]["Enums"]["difficulty_level"];
-          estimated_duration_minutes: number;
-          sort_order: number;
-          content_type: string;
-          external_content_url: string | null;
-          quiz_id: string | null;
-          status: string;
-          is_featured: boolean;
-          published_at: string | null;
-          created_by: string | null;
-          reviewed_by: string | null;
-          view_count: number;
-          average_completion_time_minutes: number | null;
-          average_rating: number | null;
-          rating_count: number;
-          created_at: string;
-          updated_at: string;
         };
         Insert: {
-          id?: string;
-          parent_module_id?: string | null;
-          category_id: string;
+          animation_type: string;
+          category: string;
+          created_at?: string | null;
+          description: string;
+          id: string;
+          requirement: number;
           title: string;
-          slug: string;
-          description?: string | null;
-          content?: string | null;
-          learning_objectives?: string[] | null;
-          difficulty_level?: Database["public"]["Enums"]["difficulty_level"];
-          estimated_duration_minutes?: number;
-          sort_order?: number;
-          content_type?: string;
-          external_content_url?: string | null;
-          quiz_id?: string | null;
-          status?: string;
-          is_featured?: boolean;
-          published_at?: string | null;
-          created_by?: string | null;
-          reviewed_by?: string | null;
-          view_count?: number;
-          average_completion_time_minutes?: number | null;
-          average_rating?: number | null;
-          rating_count?: number;
-          created_at?: string;
-          updated_at?: string;
         };
         Update: {
+          animation_type?: string;
+          category?: string;
+          created_at?: string | null;
+          description?: string;
           id?: string;
-          parent_module_id?: string | null;
-          category_id?: string;
+          requirement?: number;
           title?: string;
-          slug?: string;
-          description?: string | null;
-          content?: string | null;
-          learning_objectives?: string[] | null;
-          difficulty_level?: Database["public"]["Enums"]["difficulty_level"];
-          estimated_duration_minutes?: number;
-          sort_order?: number;
-          content_type?: string;
-          external_content_url?: string | null;
-          quiz_id?: string | null;
-          status?: string;
-          is_featured?: boolean;
-          published_at?: string | null;
-          created_by?: string | null;
-          reviewed_by?: string | null;
-          view_count?: number;
-          average_completion_time_minutes?: number | null;
-          average_rating?: number | null;
-          rating_count?: number;
-          created_at?: string;
-          updated_at?: string;
         };
-        Relationships: [
-          {
-            foreignKeyName: "learning_modules_parent_module_id_fkey";
-            columns: ["parent_module_id"];
-            referencedRelation: "learning_modules";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "learning_modules_category_id_fkey";
-            columns: ["category_id"];
-            referencedRelation: "categories";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "learning_modules_created_by_fkey";
-            columns: ["created_by"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "learning_modules_reviewed_by_fkey";
-            columns: ["reviewed_by"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-        ];
+        Relationships: [];
       };
-      learning_paths: {
+      audio: {
         Row: {
-          id: string;
-          title: string;
-          slug: string;
-          description: string | null;
-          difficulty_level: string | null;
-          estimated_total_duration_minutes: number | null;
-          learning_objectives: string[] | null;
-          prerequisites: string[] | null;
-          target_audience: string | null;
-          thumbnail_image_id: string | null;
-          category_id: string | null;
-          tags: string[] | null;
-          status: string;
-          is_featured: boolean;
-          published_at: string | null;
-
-          average_rating: number | null;
-          rating_count: number;
+          created_at: string | null;
           created_by: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: never;
+          description: string | null;
+          duration_seconds: number | null;
+          file_size_bytes: number;
+          file_type: string;
+          generated_text: string | null;
+          id: string;
+          pathology_category_id: string | null;
+          search_vector: unknown;
+          storage_path: string;
           title: string;
-          slug: string;
-          description?: string | null;
-          difficulty_level?: string | null;
-          estimated_total_duration_minutes?: number | null;
-          learning_objectives?: string[] | null;
-          prerequisites?: string[] | null;
-          target_audience?: string | null;
-          thumbnail_image_id?: string | null;
-          category_id?: string | null;
-          tags?: string[] | null;
-          status?: string;
-          is_featured?: boolean;
-          published_at?: string | null;
-
-          average_rating?: number | null;
-          rating_count?: number;
+          updated_at: string | null;
+          url: string;
+        };
+        Insert: {
+          created_at?: string | null;
           created_by?: string | null;
-          created_at?: string;
-          updated_at?: string;
+          description?: string | null;
+          duration_seconds?: number | null;
+          file_size_bytes: number;
+          file_type: string;
+          generated_text?: string | null;
+          id?: string;
+          pathology_category_id?: string | null;
+          search_vector?: unknown;
+          storage_path: string;
+          title: string;
+          updated_at?: string | null;
+          url: string;
         };
         Update: {
-          id?: never;
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          duration_seconds?: number | null;
+          file_size_bytes?: number;
+          file_type?: string;
+          generated_text?: string | null;
+          id?: string;
+          pathology_category_id?: string | null;
+          search_vector?: unknown;
+          storage_path?: string;
           title?: string;
-          slug?: string;
-          description?: string | null;
-          difficulty_level?: string | null;
-          estimated_total_duration_minutes?: number | null;
-          learning_objectives?: string[] | null;
-          prerequisites?: string[] | null;
-          target_audience?: string | null;
-          thumbnail_image_id?: string | null;
-          category_id?: string | null;
-          tags?: string[] | null;
-          status?: string;
-          is_featured?: boolean;
-          published_at?: string | null;
-
-          average_rating?: number | null;
-          rating_count?: number;
-          created_by?: string | null;
-          created_at?: string;
-          updated_at?: string;
+          updated_at?: string | null;
+          url?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "learning_paths_thumbnail_image_id_fkey";
-            columns: ["thumbnail_image_id"];
-            referencedRelation: "images";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "learning_paths_category_id_fkey";
-            columns: ["category_id"];
+            foreignKeyName: "audio_pathology_category_id_fkey";
+            columns: ["pathology_category_id"];
+            isOneToOne: false;
             referencedRelation: "categories";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "learning_paths_created_by_fkey";
-            columns: ["created_by"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      learning_path_modules: {
-        Row: {
-          id: string;
-          learning_path_id: string;
-          module_id: string;
-          sort_order: number;
-          is_required: boolean;
-          unlock_criteria: unknown | null;
-          custom_description: string | null;
-          estimated_duration_override: number | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          learning_path_id: string;
-          module_id: string;
-          sort_order: number;
-          is_required?: boolean;
-          unlock_criteria?: unknown | null;
-          custom_description?: string | null;
-          estimated_duration_override?: number | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          learning_path_id?: string;
-          module_id?: string;
-          sort_order?: number;
-          is_required?: boolean;
-          unlock_criteria?: unknown | null;
-          custom_description?: string | null;
-          estimated_duration_override?: number | null;
-          created_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "learning_path_modules_learning_path_id_fkey";
-            columns: ["learning_path_id"];
-            referencedRelation: "learning_paths";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "learning_path_modules_module_id_fkey";
-            columns: ["module_id"];
-            referencedRelation: "learning_modules";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      user_learning: {
-        Row: {
-          id: string;
-          user_id: string;
-          learning_path_id: string;
-          status: string;
-          enrolled_at: string;
-          started_at: string | null;
-          completed_at: string | null;
-          last_accessed_at: string | null;
-          current_module_id: string | null;
-          modules_completed: number;
-          total_modules: number | null;
-          progress_percentage: number;
-          total_time_minutes: number;
-          average_score: number | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          learning_path_id: string;
-          status?: string;
-          enrolled_at?: string;
-          started_at?: string | null;
-          completed_at?: string | null;
-          last_accessed_at?: string | null;
-          current_module_id?: string | null;
-          modules_completed?: number;
-          total_modules?: number | null;
-          progress_percentage?: number;
-          total_time_minutes?: number;
-          average_score?: number | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          learning_path_id?: string;
-          status?: string;
-          enrolled_at?: string;
-          started_at?: string | null;
-          completed_at?: string | null;
-          last_accessed_at?: string | null;
-          current_module_id?: string | null;
-          modules_completed?: number;
-          total_modules?: number | null;
-          progress_percentage?: number;
-          total_time_minutes?: number;
-          average_score?: number | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "user_learning_path_enrollments_user_id_fkey";
-            columns: ["user_id"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "user_learning_path_enrollments_learning_path_id_fkey";
-            columns: ["learning_path_id"];
-            referencedRelation: "learning_paths";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "user_learning_path_enrollments_current_module_id_fkey";
-            columns: ["current_module_id"];
-            referencedRelation: "learning_modules";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      question_options: {
-        Row: {
-          id: string;
-          question_id: string;
-          text: string;
-          is_correct: boolean;
-          explanation: string | null;
-          order_index: number;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          question_id: string;
-          text: string;
-          is_correct?: boolean;
-          explanation?: string | null;
-          order_index?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          question_id?: string;
-          text?: string;
-          is_correct?: boolean;
-          explanation?: string | null;
-          order_index?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "question_options_question_id_fkey";
-            columns: ["question_id"];
-            referencedRelation: "questions";
             referencedColumns: ["id"];
           },
         ];
       };
       categories: {
         Row: {
-          id: string;
-          name: string;
-          description: string | null;
-          parent_id: string | null;
-          level: number;
           color: string | null;
+          created_at: string | null;
+          id: string;
+          level: number;
+          name: string;
+          parent_id: string | null;
           short_form: string | null;
-          created_at: string;
-          updated_at: string;
         };
         Insert: {
-          id?: string;
-          name: string;
-          description?: string | null;
-          parent_id?: string | null;
-          level?: number;
           color?: string | null;
+          created_at?: string | null;
+          id?: string;
+          level?: number;
+          name: string;
+          parent_id?: string | null;
           short_form?: string | null;
-          created_at?: string;
-          updated_at?: string;
         };
         Update: {
-          id?: string;
-          name?: string;
-          description?: string | null;
-          parent_id?: string | null;
-          level?: number;
           color?: string | null;
+          created_at?: string | null;
+          id?: string;
+          level?: number;
+          name?: string;
+          parent_id?: string | null;
           short_form?: string | null;
-          created_at?: string;
-          updated_at?: string;
         };
         Relationships: [
           {
             foreignKeyName: "categories_parent_id_fkey";
             columns: ["parent_id"];
+            isOneToOne: false;
             referencedRelation: "categories";
             referencedColumns: ["id"];
           },
         ];
       };
-      tags: {
+      demo_questions: {
         Row: {
+          display_order: number | null;
           id: string;
-          name: string;
-          description: string | null;
-          color: string | null;
-          created_at: string;
+          is_active: boolean | null;
+          question_id: string;
         };
         Insert: {
+          display_order?: number | null;
           id?: string;
-          name: string;
-          description?: string | null;
-          color?: string | null;
-          created_at?: string;
+          is_active?: boolean | null;
+          question_id: string;
         };
         Update: {
+          display_order?: number | null;
           id?: string;
-          name?: string;
-          description?: string | null;
-          color?: string | null;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-      question_images: {
-        Row: {
-          question_id: string;
-          image_id: string;
-          question_section: string;
-          order_index: number;
-        };
-        Insert: {
-          question_id: string;
-          image_id: string;
-          question_section: string;
-          order_index?: number;
-        };
-        Update: {
+          is_active?: boolean | null;
           question_id?: string;
-          image_id?: string;
-          question_section?: string;
-          order_index?: number;
         };
         Relationships: [
           {
-            foreignKeyName: "question_images_question_id_fkey";
+            foreignKeyName: "demo_questions_question_id_fkey";
             columns: ["question_id"];
+            isOneToOne: true;
             referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "demo_questions_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: true;
+            referencedRelation: "v_flagged_questions";
+            referencedColumns: ["question_id"];
+          },
+        ];
+      };
+      images: {
+        Row: {
+          alt_text: string | null;
+          category: Database["public"]["Enums"]["image_category"] | null;
+          created_at: string | null;
+          created_by: string | null;
+          description: string | null;
+          file_size_bytes: number | null;
+          file_type: string | null;
+          height: number | null;
+          id: string;
+          magnification: string | null;
+          pathology_category_id: string | null;
+          search_vector: unknown;
+          source_ref: string | null;
+          storage_path: string | null;
+          url: string;
+          width: number | null;
+        };
+        Insert: {
+          alt_text?: string | null;
+          category?: Database["public"]["Enums"]["image_category"] | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          file_size_bytes?: number | null;
+          file_type?: string | null;
+          height?: number | null;
+          id?: string;
+          magnification?: string | null;
+          pathology_category_id?: string | null;
+          search_vector?: unknown;
+          source_ref?: string | null;
+          storage_path?: string | null;
+          url: string;
+          width?: number | null;
+        };
+        Update: {
+          alt_text?: string | null;
+          category?: Database["public"]["Enums"]["image_category"] | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          file_size_bytes?: number | null;
+          file_type?: string | null;
+          height?: number | null;
+          id?: string;
+          magnification?: string | null;
+          pathology_category_id?: string | null;
+          search_vector?: unknown;
+          source_ref?: string | null;
+          storage_path?: string | null;
+          url?: string;
+          width?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "images_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "images_pathology_category_id_fkey";
+            columns: ["pathology_category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      inquiries: {
+        Row: {
+          created_at: string | null;
+          email: string;
+          first_name: string;
+          id: string;
+          inquiry: string;
+          last_name: string;
+          organization: string | null;
+          request_type: string;
+          status: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          email: string;
+          first_name: string;
+          id?: string;
+          inquiry: string;
+          last_name: string;
+          organization?: string | null;
+          request_type: string;
+          status?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          email?: string;
+          first_name?: string;
+          id?: string;
+          inquiry?: string;
+          last_name?: string;
+          organization?: string | null;
+          request_type?: string;
+          status?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [];
+      };
+      notification_states: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          read: boolean;
+          source_id: string;
+          source_type: string;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          read?: boolean;
+          source_id: string;
+          source_type: string;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          read?: boolean;
+          source_id?: string;
+          source_type?: string;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "notification_states_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      performance_analytics: {
+        Row: {
+          average_time: number;
+          category_id: string | null;
+          correct_answers: number;
+          created_at: string | null;
+          id: string;
+          last_attempt_at: string | null;
+          peer_rank: number | null;
+          questions_answered: number;
+          total_questions: number;
+          updated_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          average_time?: number;
+          category_id?: string | null;
+          correct_answers?: number;
+          created_at?: string | null;
+          id?: string;
+          last_attempt_at?: string | null;
+          peer_rank?: number | null;
+          questions_answered?: number;
+          total_questions?: number;
+          updated_at?: string | null;
+          user_id: string;
+        };
+        Update: {
+          average_time?: number;
+          category_id?: string | null;
+          correct_answers?: number;
+          created_at?: string | null;
+          id?: string;
+          last_attempt_at?: string | null;
+          peer_rank?: number | null;
+          questions_answered?: number;
+          total_questions?: number;
+          updated_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "performance_analytics_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "performance_analytics_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      question_analytics: {
+        Row: {
+          avg_time_spent: unknown;
+          correct_attempts: number;
+          created_at: string | null;
+          difficulty_score: number | null;
+          flag_count: number;
+          id: string;
+          last_calculated_at: string | null;
+          median_time_spent: unknown;
+          question_id: string;
+          review_count: number;
+          success_rate: number | null;
+          total_attempts: number;
+          updated_at: string | null;
+        };
+        Insert: {
+          avg_time_spent?: unknown;
+          correct_attempts?: number;
+          created_at?: string | null;
+          difficulty_score?: number | null;
+          flag_count?: number;
+          id?: string;
+          last_calculated_at?: string | null;
+          median_time_spent?: unknown;
+          question_id: string;
+          review_count?: number;
+          success_rate?: number | null;
+          total_attempts?: number;
+          updated_at?: string | null;
+        };
+        Update: {
+          avg_time_spent?: unknown;
+          correct_attempts?: number;
+          created_at?: string | null;
+          difficulty_score?: number | null;
+          flag_count?: number;
+          id?: string;
+          last_calculated_at?: string | null;
+          median_time_spent?: unknown;
+          question_id?: string;
+          review_count?: number;
+          success_rate?: number | null;
+          total_attempts?: number;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "question_analytics_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: true;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_analytics_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: true;
+            referencedRelation: "v_flagged_questions";
+            referencedColumns: ["question_id"];
+          },
+        ];
+      };
+      question_flags: {
+        Row: {
+          created_at: string | null;
+          description: string | null;
+          flag_type: string;
+          flagged_by: string;
+          id: string;
+          question_id: string;
+          resolution_notes: string | null;
+          resolution_type: string | null;
+          resolved_at: string | null;
+          resolved_by: string | null;
+          status: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          description?: string | null;
+          flag_type: string;
+          flagged_by: string;
+          id?: string;
+          question_id: string;
+          resolution_notes?: string | null;
+          resolution_type?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          status?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          description?: string | null;
+          flag_type?: string;
+          flagged_by?: string;
+          id?: string;
+          question_id?: string;
+          resolution_notes?: string | null;
+          resolution_type?: string | null;
+          resolved_at?: string | null;
+          resolved_by?: string | null;
+          status?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "question_flags_flagged_by_fkey";
+            columns: ["flagged_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_flags_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_flags_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "v_flagged_questions";
+            referencedColumns: ["question_id"];
+          },
+          {
+            foreignKeyName: "question_flags_resolved_by_fkey";
+            columns: ["resolved_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      question_images: {
+        Row: {
+          image_id: string;
+          order_index: number;
+          question_id: string;
+          question_section: string;
+        };
+        Insert: {
+          image_id: string;
+          order_index?: number;
+          question_id: string;
+          question_section: string;
+        };
+        Update: {
+          image_id?: string;
+          order_index?: number;
+          question_id?: string;
+          question_section?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "question_images_image_id_fkey";
+            columns: ["image_id"];
+            isOneToOne: false;
+            referencedRelation: "images";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "question_images_image_id_fkey";
             columns: ["image_id"];
-            referencedRelation: "images";
+            isOneToOne: false;
+            referencedRelation: "v_image_usage_stats";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_images_image_id_fkey";
+            columns: ["image_id"];
+            isOneToOne: false;
+            referencedRelation: "v_orphaned_images";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_images_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_images_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "v_flagged_questions";
+            referencedColumns: ["question_id"];
+          },
+        ];
+      };
+      question_options: {
+        Row: {
+          created_at: string | null;
+          explanation: string | null;
+          id: string;
+          is_correct: boolean;
+          order_index: number;
+          question_id: string;
+          text: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          explanation?: string | null;
+          id?: string;
+          is_correct?: boolean;
+          order_index?: number;
+          question_id: string;
+          text: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          explanation?: string | null;
+          id?: string;
+          is_correct?: boolean;
+          order_index?: number;
+          question_id?: string;
+          text?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "question_options_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_options_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "v_flagged_questions";
+            referencedColumns: ["question_id"];
+          },
+        ];
+      };
+      question_reports: {
+        Row: {
+          created_at: string | null;
+          description: string | null;
+          id: string;
+          question_id: string;
+          report_type: Database["public"]["Enums"]["report_type"];
+          reported_by: string;
+          status: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          description?: string | null;
+          id?: string;
+          question_id: string;
+          report_type: Database["public"]["Enums"]["report_type"];
+          reported_by: string;
+          status?: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          description?: string | null;
+          id?: string;
+          question_id?: string;
+          report_type?: Database["public"]["Enums"]["report_type"];
+          reported_by?: string;
+          status?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "question_reports_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_reports_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "v_flagged_questions";
+            referencedColumns: ["question_id"];
+          },
+          {
+            foreignKeyName: "question_reports_reported_by_fkey";
+            columns: ["reported_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      question_reviews: {
+        Row: {
+          action: string;
+          changes_made: Json | null;
+          created_at: string | null;
+          feedback: string | null;
+          id: string;
+          question_id: string;
+          reviewer_id: string;
+        };
+        Insert: {
+          action: string;
+          changes_made?: Json | null;
+          created_at?: string | null;
+          feedback?: string | null;
+          id?: string;
+          question_id: string;
+          reviewer_id: string;
+        };
+        Update: {
+          action?: string;
+          changes_made?: Json | null;
+          created_at?: string | null;
+          feedback?: string | null;
+          id?: string;
+          question_id?: string;
+          reviewer_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "question_reviews_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_reviews_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "v_flagged_questions";
+            referencedColumns: ["question_id"];
+          },
+          {
+            foreignKeyName: "question_reviews_reviewer_id_fkey";
+            columns: ["reviewer_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      question_sets: {
+        Row: {
+          created_at: string | null;
+          created_by: string | null;
+          description: string | null;
+          id: string;
+          is_active: boolean | null;
+          name: string;
+          short_form: string | null;
+          source_details: Json | null;
+          source_type: string;
+          updated_at: string | null;
+        };
+        Insert: {
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean | null;
+          name: string;
+          short_form?: string | null;
+          source_details?: Json | null;
+          source_type: string;
+          updated_at?: string | null;
+        };
+        Update: {
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          id?: string;
+          is_active?: boolean | null;
+          name?: string;
+          short_form?: string | null;
+          source_details?: Json | null;
+          source_type?: string;
+          updated_at?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sets_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];
@@ -505,764 +790,196 @@ export interface Database {
           {
             foreignKeyName: "question_tags_question_id_fkey";
             columns: ["question_id"];
+            isOneToOne: false;
             referencedRelation: "questions";
             referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_tags_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "v_flagged_questions";
+            referencedColumns: ["question_id"];
           },
           {
             foreignKeyName: "question_tags_tag_id_fkey";
             columns: ["tag_id"];
+            isOneToOne: false;
             referencedRelation: "tags";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-
-      images: {
-        Row: {
-          id: string;
-          url: string;
-          storage_path: string | null;
-          description: string | null;
-          alt_text: string | null;
-          category: Database["public"]["Enums"]["image_category"];
-          file_type: string | null;
-          source_ref: string | null;
-          created_by: string | null;
-          created_at: string;
-          file_size_bytes: number | null;
-          width: number | null;
-          height: number | null;
-          pathology_category_id: string | null;
-          magnification: string | null;
-        };
-        Insert: {
-          id?: string;
-          url: string;
-          storage_path?: string | null;
-          description?: string | null;
-          alt_text?: string | null;
-          category: Database["public"]["Enums"]["image_category"];
-          file_type?: string | null;
-          source_ref?: string | null;
-          created_by?: string | null;
-          created_at?: string;
-          file_size_bytes?: number | null;
-          width?: number | null;
-          height?: number | null;
-          pathology_category_id?: string | null;
-          magnification?: string | null;
-        };
-        Update: {
-          id?: string;
-          url?: string;
-          storage_path?: string | null;
-          description?: string | null;
-          alt_text?: string | null;
-          category?: Database["public"]["Enums"]["image_category"];
-          file_type?: string | null;
-          source_ref?: string | null;
-          created_by?: string | null;
-          created_at?: string;
-          file_size_bytes?: number | null;
-          width?: number | null;
-          height?: number | null;
-          pathology_category_id?: string | null;
-          magnification?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "images_pathology_category_id_fkey";
-            columns: ["pathology_category_id"];
-            referencedRelation: "categories";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-
-      inquiries: {
-        Row: {
-          id: string;
-          request_type: string;
-          first_name: string;
-          last_name: string;
-          organization: string | null;
-          email: string;
-          inquiry: string;
-          status: string;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          request_type: string;
-          first_name: string;
-          last_name: string;
-          organization?: string | null;
-          email: string;
-          inquiry: string;
-          status?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          request_type?: string;
-          first_name?: string;
-          last_name?: string;
-          organization?: string | null;
-          email?: string;
-          inquiry?: string;
-          status?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      questions: {
-        Row: {
-          id: string;
-          title: string;
-          stem: string;
-          difficulty: Database["public"]["Enums"]["difficulty_level"];
-          teaching_point: string;
-          question_references: string | null;
-          status: Database["public"]["Enums"]["question_status"];
-          created_by: string;
-          updated_by: string;
-          version_major: number;
-          version_minor: number;
-          version_patch: number;
-          question_set_id: string | null;
-          category_id: string | null;
-          lesson: string | null;
-          topic: string | null;
-          reviewer_id: string | null;
-          reviewer_feedback: string | null;
-          published_at: string | null;
-          anki_card_id: string | null;
-          anki_deck_name: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          title: string;
-          stem: string;
-          difficulty: Database["public"]["Enums"]["difficulty_level"];
-          teaching_point: string;
-          question_references?: string | null;
-          status?: Database["public"]["Enums"]["question_status"];
-          created_by: string;
-          updated_by: string;
-          version_major?: number;
-          version_minor?: number;
-          version_patch?: number;
-          question_set_id?: string | null;
-          category_id?: string | null;
-          lesson?: string | null;
-          topic?: string | null;
-          reviewer_id?: string | null;
-          reviewer_feedback?: string | null;
-          published_at?: string | null;
-          anki_card_id?: string | null;
-          anki_deck_name?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          title?: string;
-          stem?: string;
-          difficulty?: Database["public"]["Enums"]["difficulty_level"];
-          teaching_point?: string;
-          question_references?: string | null;
-          status?: Database["public"]["Enums"]["question_status"];
-          created_by?: string;
-          updated_by?: string;
-          version_major?: number;
-          version_minor?: number;
-          version_patch?: number;
-          question_set_id?: string | null;
-          category_id?: string | null;
-          lesson?: string | null;
-          topic?: string | null;
-          reviewer_id?: string | null;
-          reviewer_feedback?: string | null;
-          published_at?: string | null;
-          anki_card_id?: string | null;
-          anki_deck_name?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "questions_created_by_fkey";
-            columns: ["created_by"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "questions_updated_by_fkey";
-            columns: ["updated_by"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "questions_set_id_fkey";
-            columns: ["question_set_id"];
-            referencedRelation: "question_sets";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "questions_category_id_fkey";
-            columns: ["category_id"];
-            referencedRelation: "categories";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      question_sets: {
-        Row: {
-          id: string;
-          name: string;
-          description: string | null;
-          source_type: string;
-          source_details: QuestionSetSourceDetails;
-          is_active: boolean;
-          created_by: string | null;
-          created_at: string;
-          updated_at: string;
-          short_form: string | null;
-        };
-        Insert: {
-          id?: string;
-          name: string;
-          description?: string | null;
-          source_type: string;
-          source_details?: QuestionSetSourceDetails;
-          is_active?: boolean;
-          created_by?: string | null;
-          created_at?: string;
-          updated_at?: string;
-          short_form?: string | null;
-        };
-        Update: {
-          id?: string;
-          name?: string;
-          description?: string | null;
-          source_type?: string;
-          source_details?: QuestionSetSourceDetails;
-          is_active?: boolean;
-          created_by?: string | null;
-          created_at?: string;
-          updated_at?: string;
-          short_form?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "sets_created_by_fkey";
-            columns: ["created_by"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-
-      users: {
-        Row: {
-          id: string;
-          email: string | null;
-          first_name: string | null;
-          middle_initial: string | null;
-          last_name: string | null;
-          role: Database["public"]["Enums"]["user_role"];
-          user_type: Database["public"]["Enums"]["user_type"];
-          status: Database["public"]["Enums"]["user_status"];
-          created_at: string;
-          updated_at: string;
-          deleted_at: string | null;
-        };
-        Insert: {
-          id: string;
-          email?: string | null;
-          first_name?: string | null;
-          middle_initial?: string | null;
-          last_name?: string | null;
-          role?: Database["public"]["Enums"]["user_role"];
-          user_type?: Database["public"]["Enums"]["user_type"];
-          status?: Database["public"]["Enums"]["user_status"];
-          created_at?: string;
-          updated_at?: string;
-          deleted_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          email?: string | null;
-          first_name?: string | null;
-          middle_initial?: string | null;
-          last_name?: string | null;
-          role?: Database["public"]["Enums"]["user_role"];
-          user_type?: Database["public"]["Enums"]["user_type"];
-          status?: Database["public"]["Enums"]["user_status"];
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [];
-      };
-      waitlist: {
-        Row: {
-          id: string;
-          email: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          email: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          email?: string;
-          created_at?: string;
-        };
-        Relationships: [];
-      };
-      notification_states: {
-        Row: {
-          id: string;
-          user_id: string;
-          source_type: string;
-          source_id: string;
-          read: boolean;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id: string;
-          source_type: string;
-          source_id: string;
-          read?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string;
-          source_type?: string;
-          source_id?: string;
-          read?: boolean;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "notification_states_user_id_fkey";
-            columns: ["user_id"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      system_updates: {
-        Row: {
-          id: string;
-          title: string;
-          message: string;
-          update_type: string;
-          severity: string;
-          target_audience: string;
-          created_by: string | null;
-          created_at: string;
-          published_at: string;
-          expires_at: string | null;
-        };
-        Insert: {
-          id?: string;
-          title: string;
-          message: string;
-          update_type: string;
-          severity?: string;
-          target_audience?: string;
-          created_by?: string | null;
-          created_at?: string;
-          published_at?: string;
-          expires_at?: string | null;
-        };
-        Update: {
-          id?: string;
-          title?: string;
-          message?: string;
-          update_type?: string;
-          severity?: string;
-          target_audience?: string;
-          created_by?: string | null;
-          created_at?: string;
-          published_at?: string;
-          expires_at?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "system_updates_created_by_fkey";
-            columns: ["created_by"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      question_reviews: {
-        Row: {
-          id: string;
-          question_id: string;
-          reviewer_id: string;
-          action: string;
-          feedback: string | null;
-          changes_made: Json | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          question_id: string;
-          reviewer_id: string;
-          action: string;
-          feedback?: string | null;
-          changes_made?: Json | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          question_id?: string;
-          reviewer_id?: string;
-          action?: string;
-          feedback?: string | null;
-          changes_made?: Json | null;
-          created_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "question_reviews_question_id_fkey";
-            columns: ["question_id"];
-            referencedRelation: "questions";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "question_reviews_reviewer_id_fkey";
-            columns: ["reviewer_id"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      question_analytics: {
-        Row: {
-          id: string;
-          question_id: string;
-          total_attempts: number;
-          correct_attempts: number;
-          avg_time_spent: string | null;
-          median_time_spent: string | null;
-          success_rate: number | null;
-          difficulty_score: number | null;
-          flag_count: number;
-          review_count: number;
-          last_calculated_at: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          question_id: string;
-          total_attempts?: number;
-          correct_attempts?: number;
-          avg_time_spent?: string | null;
-          median_time_spent?: string | null;
-          success_rate?: number | null;
-          difficulty_score?: number | null;
-          flag_count?: number;
-          review_count?: number;
-          last_calculated_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          question_id?: string;
-          total_attempts?: number;
-          correct_attempts?: number;
-          avg_time_spent?: string | null;
-          median_time_spent?: string | null;
-          success_rate?: number | null;
-          difficulty_score?: number | null;
-          flag_count?: number;
-          review_count?: number;
-          last_calculated_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "question_analytics_question_id_fkey";
-            columns: ["question_id"];
-            referencedRelation: "questions";
             referencedColumns: ["id"];
           },
         ];
       };
       question_versions: {
         Row: {
-          id: string;
-          question_id: string;
-          version_major: number;
-          version_minor: number;
-          version_patch: number;
-          question_data: Json;
-          update_type: string;
           change_summary: string | null;
           changed_by: string;
-          created_at: string;
+          created_at: string | null;
+          id: string;
+          question_data: Json;
+          question_id: string;
+          update_type: string | null;
+          version_major: number | null;
+          version_minor: number | null;
+          version_patch: number | null;
         };
         Insert: {
-          id?: string;
-          question_id: string;
-          version_major: number;
-          version_minor: number;
-          version_patch: number;
-          question_data: Json;
-          update_type: string;
           change_summary?: string | null;
           changed_by: string;
-          created_at?: string;
+          created_at?: string | null;
+          id?: string;
+          question_data: Json;
+          question_id: string;
+          update_type?: string | null;
+          version_major?: number | null;
+          version_minor?: number | null;
+          version_patch?: number | null;
         };
         Update: {
-          id?: string;
-          question_id?: string;
-          version_major?: number;
-          version_minor?: number;
-          version_patch?: number;
-          question_data?: Json;
-          update_type?: string;
           change_summary?: string | null;
           changed_by?: string;
-          created_at?: string;
+          created_at?: string | null;
+          id?: string;
+          question_data?: Json;
+          question_id?: string;
+          update_type?: string | null;
+          version_major?: number | null;
+          version_minor?: number | null;
+          version_patch?: number | null;
         };
         Relationships: [
-          {
-            foreignKeyName: "question_versions_question_id_fkey";
-            columns: ["question_id"];
-            referencedRelation: "questions";
-            referencedColumns: ["id"];
-          },
           {
             foreignKeyName: "question_versions_changed_by_fkey";
             columns: ["changed_by"];
+            isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
-        ];
-      };
-      question_flags: {
-        Row: {
-          id: string;
-          question_id: string;
-          flagged_by: string;
-          flag_type: string;
-          description: string;
-          status: string;
-          resolved_by: string | null;
-          resolved_at: string | null;
-          resolution_notes: string | null;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          question_id: string;
-          flagged_by: string;
-          flag_type: string;
-          description: string;
-          status?: string;
-          resolved_by?: string | null;
-          resolved_at?: string | null;
-          resolution_notes?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          question_id?: string;
-          flagged_by?: string;
-          flag_type?: string;
-          description?: string;
-          status?: string;
-          resolved_by?: string | null;
-          resolved_at?: string | null;
-          resolution_notes?: string | null;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
           {
-            foreignKeyName: "question_flags_question_id_fkey";
+            foreignKeyName: "question_versions_new_question_id_fkey";
             columns: ["question_id"];
+            isOneToOne: false;
             referencedRelation: "questions";
             referencedColumns: ["id"];
           },
           {
-            foreignKeyName: "question_flags_flagged_by_fkey";
-            columns: ["flagged_by"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "question_flags_resolved_by_fkey";
-            columns: ["resolved_by"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      question_reports: {
-        Row: {
-          id: string;
-          question_id: string;
-          reported_by: string;
-          report_type: Database["public"]["Enums"]["report_type"];
-          description: string | null;
-          status: string;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          question_id: string;
-          reported_by: string;
-          report_type: Database["public"]["Enums"]["report_type"];
-          description?: string | null;
-          status?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          question_id?: string;
-          reported_by?: string;
-          report_type?: Database["public"]["Enums"]["report_type"];
-          description?: string | null;
-          status?: string;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "question_reports_question_id_fkey";
+            foreignKeyName: "question_versions_new_question_id_fkey";
             columns: ["question_id"];
-            referencedRelation: "questions";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "question_reports_reported_by_fkey";
-            columns: ["reported_by"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
+            isOneToOne: false;
+            referencedRelation: "v_flagged_questions";
+            referencedColumns: ["question_id"];
           },
         ];
       };
-      demo_questions: {
+      questions: {
         Row: {
+          anki_card_id: string | null;
+          anki_deck_name: string | null;
+          category_id: string | null;
+          created_at: string | null;
+          created_by: string;
+          difficulty: Database["public"]["Enums"]["difficulty_level"] | null;
           id: string;
-          question_id: string;
-          is_active: boolean;
-          display_order: number;
-          created_at: string;
-          updated_at: string;
-        };
-        Insert: {
-          id?: string;
-          question_id: string;
-          is_active?: boolean;
-          display_order?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Update: {
-          id?: string;
-          question_id?: string;
-          is_active?: boolean;
-          display_order?: number;
-          created_at?: string;
-          updated_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "demo_questions_question_id_fkey";
-            columns: ["question_id"];
-            referencedRelation: "questions";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      quiz_sessions: {
-        Row: {
-          id: string;
-          user_id: string;
+          lesson: string | null;
+          published_at: string | null;
+          question_references: string | null;
+          question_set_id: string | null;
+          reviewer_feedback: string | null;
+          reviewer_id: string | null;
+          status: Database["public"]["Enums"]["question_status"] | null;
+          stem: string;
+          teaching_point: string;
           title: string;
-          config: QuizConfig;
-          question_ids: string[];
-          current_question_index: number;
-          status: Database["public"]["Enums"]["session_status"];
-          started_at: string | null;
-          completed_at: string | null;
-          total_time_spent: number | null;
-          score: number | null;
-          correct_answers: number | null;
-          total_questions: number;
-          total_time_limit: number | null;
-          time_remaining: number | null;
-
-          created_at: string;
-          updated_at: string;
+          topic: string | null;
+          updated_at: string | null;
+          updated_by: string;
+          version_major: number | null;
+          version_minor: number | null;
+          version_patch: number | null;
         };
         Insert: {
+          anki_card_id?: string | null;
+          anki_deck_name?: string | null;
+          category_id?: string | null;
+          created_at?: string | null;
+          created_by: string;
+          difficulty?: Database["public"]["Enums"]["difficulty_level"] | null;
           id?: string;
-          user_id: string;
+          lesson?: string | null;
+          published_at?: string | null;
+          question_references?: string | null;
+          question_set_id?: string | null;
+          reviewer_feedback?: string | null;
+          reviewer_id?: string | null;
+          status?: Database["public"]["Enums"]["question_status"] | null;
+          stem: string;
+          teaching_point: string;
           title: string;
-          config: QuizConfig;
-          question_ids: string[];
-          current_question_index?: number;
-          status?: Database["public"]["Enums"]["session_status"];
-          started_at?: string | null;
-          completed_at?: string | null;
-          total_time_spent?: number | null;
-          score?: number | null;
-          correct_answers?: number | null;
-          total_questions: number;
-          total_time_limit?: number | null;
-          time_remaining?: number | null;
-
-          created_at?: string;
-          updated_at?: string;
+          topic?: string | null;
+          updated_at?: string | null;
+          updated_by: string;
+          version_major?: number | null;
+          version_minor?: number | null;
+          version_patch?: number | null;
         };
         Update: {
+          anki_card_id?: string | null;
+          anki_deck_name?: string | null;
+          category_id?: string | null;
+          created_at?: string | null;
+          created_by?: string;
+          difficulty?: Database["public"]["Enums"]["difficulty_level"] | null;
           id?: string;
-          user_id?: string;
+          lesson?: string | null;
+          published_at?: string | null;
+          question_references?: string | null;
+          question_set_id?: string | null;
+          reviewer_feedback?: string | null;
+          reviewer_id?: string | null;
+          status?: Database["public"]["Enums"]["question_status"] | null;
+          stem?: string;
+          teaching_point?: string;
           title?: string;
-          config?: QuizConfig;
-          question_ids?: string[];
-          current_question_index?: number;
-          status?: Database["public"]["Enums"]["session_status"];
-          started_at?: string | null;
-          completed_at?: string | null;
-          total_time_spent?: number | null;
-          score?: number | null;
-          correct_answers?: number | null;
-          total_questions?: number;
-          created_at?: string;
-          updated_at?: string;
+          topic?: string | null;
+          updated_at?: string | null;
+          updated_by?: string;
+          version_major?: number | null;
+          version_minor?: number | null;
+          version_patch?: number | null;
         };
         Relationships: [
           {
-            foreignKeyName: "quiz_sessions_user_id_fkey";
-            columns: ["user_id"];
+            foreignKeyName: "questions_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "questions_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "questions_reviewer_id_fkey";
+            columns: ["reviewer_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "questions_set_id_fkey";
+            columns: ["question_set_id"];
+            isOneToOne: false;
+            referencedRelation: "question_sets";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "questions_updated_by_fkey";
+            columns: ["updated_by"];
+            isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
@@ -1270,402 +987,266 @@ export interface Database {
       };
       quiz_attempts: {
         Row: {
-          id: string;
-          quiz_session_id: string;
-          question_id: string;
-          selected_answer_id: string | null;
-          first_answer_id: string | null;
-          is_correct: boolean | null;
-          time_spent: number | null;
           attempted_at: string;
+          category_id: string | null;
+          created_at: string | null;
+          first_answer_id: string | null;
+          id: string;
+          is_correct: boolean | null;
+          question_id: string | null;
+          quiz_session_id: string;
           reviewed_at: string | null;
-          created_at: string;
-          updated_at: string;
+          selected_answer_id: string | null;
+          time_spent: number | null;
+          updated_at: string | null;
+          user_id: string | null;
         };
         Insert: {
-          id?: string;
-          quiz_session_id: string;
-          question_id: string;
-          selected_answer_id?: string | null;
-          first_answer_id?: string | null;
-          is_correct?: boolean | null;
-          time_spent?: number | null;
           attempted_at?: string;
+          category_id?: string | null;
+          created_at?: string | null;
+          first_answer_id?: string | null;
+          id?: string;
+          is_correct?: boolean | null;
+          question_id?: string | null;
+          quiz_session_id: string;
           reviewed_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
+          selected_answer_id?: string | null;
+          time_spent?: number | null;
+          updated_at?: string | null;
+          user_id?: string | null;
         };
         Update: {
-          id?: string;
-          quiz_session_id?: string;
-          question_id?: string;
-          selected_answer_id?: string | null;
-          first_answer_id?: string | null;
-          is_correct?: boolean | null;
-          time_spent?: number | null;
           attempted_at?: string;
+          category_id?: string | null;
+          created_at?: string | null;
+          first_answer_id?: string | null;
+          id?: string;
+          is_correct?: boolean | null;
+          question_id?: string | null;
+          quiz_session_id?: string;
           reviewed_at?: string | null;
-          created_at?: string;
-          updated_at?: string;
+          selected_answer_id?: string | null;
+          time_spent?: number | null;
+          updated_at?: string | null;
+          user_id?: string | null;
         };
         Relationships: [
           {
-            foreignKeyName: "quiz_attempts_quiz_session_id_fkey";
-            columns: ["quiz_session_id"];
-            referencedRelation: "quiz_sessions";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "quiz_attempts_question_id_fkey";
-            columns: ["question_id"];
-            referencedRelation: "questions";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "quiz_attempts_selected_answer_id_fkey";
-            columns: ["selected_answer_id"];
-            referencedRelation: "question_options";
+            foreignKeyName: "quiz_attempts_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "quiz_attempts_first_answer_id_fkey";
             columns: ["first_answer_id"];
+            isOneToOne: false;
             referencedRelation: "question_options";
             referencedColumns: ["id"];
           },
+          {
+            foreignKeyName: "quiz_attempts_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quiz_attempts_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "v_flagged_questions";
+            referencedColumns: ["question_id"];
+          },
+          {
+            foreignKeyName: "quiz_attempts_quiz_session_id_fkey";
+            columns: ["quiz_session_id"];
+            isOneToOne: false;
+            referencedRelation: "quiz_sessions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quiz_attempts_selected_answer_id_fkey";
+            columns: ["selected_answer_id"];
+            isOneToOne: false;
+            referencedRelation: "question_options";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quiz_attempts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
         ];
       };
-      module_attempts: {
+      quiz_sessions: {
         Row: {
-          id: string;
-          user_id: string | null;
-          module_id: string | null;
-          learning_path_id: string | null;
-          attempt_number: number;
-          started_at: string | null;
           completed_at: string | null;
-          time_spent_minutes: number | null;
-          completion_status: string;
-          assessment_score: number | null;
-          quiz_attempt_id: string | null;
-          self_rating: number | null;
-          confidence_level: number | null;
-          feedback: string | null;
-          found_helpful: boolean | null;
-          prerequisite_check_passed: boolean | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          user_id?: string | null;
-          module_id?: string | null;
-          learning_path_id?: string | null;
-          attempt_number?: number;
-          started_at?: string | null;
-          completed_at?: string | null;
-          time_spent_minutes?: number | null;
-          completion_status?: string;
-          assessment_score?: number | null;
-          quiz_attempt_id?: string | null;
-          self_rating?: number | null;
-          confidence_level?: number | null;
-          feedback?: string | null;
-          found_helpful?: boolean | null;
-          prerequisite_check_passed?: boolean | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          user_id?: string | null;
-          module_id?: string | null;
-          learning_path_id?: string | null;
-          attempt_number?: number;
-          started_at?: string | null;
-          completed_at?: string | null;
-          time_spent_minutes?: number | null;
-          completion_status?: string;
-          assessment_score?: number | null;
-          quiz_attempt_id?: string | null;
-          self_rating?: number | null;
-          confidence_level?: number | null;
-          feedback?: string | null;
-          found_helpful?: boolean | null;
-          prerequisite_check_passed?: boolean | null;
-          created_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "module_attempts_user_id_fkey";
-            columns: ["user_id"];
-            referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "module_attempts_module_id_fkey";
-            columns: ["module_id"];
-            referencedRelation: "learning_modules";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "module_attempts_learning_path_id_fkey";
-            columns: ["learning_path_id"];
-            referencedRelation: "learning_paths";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      module_images: {
-        Row: {
+          config: Json;
+          correct_answers: number | null;
+          created_at: string | null;
+          current_question_index: number;
           id: string;
-          module_id: string | null;
-          image_id: string | null;
-          usage_type: string;
-          sort_order: number | null;
-          caption: string | null;
-          alt_text: string | null;
-          content_section: string | null;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          module_id?: string | null;
-          image_id?: string | null;
-          usage_type: string;
-          sort_order?: number | null;
-          caption?: string | null;
-          alt_text?: string | null;
-          content_section?: string | null;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          module_id?: string | null;
-          image_id?: string | null;
-          usage_type?: string;
-          sort_order?: number | null;
-          caption?: string | null;
-          alt_text?: string | null;
-          content_section?: string | null;
-          created_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "module_images_module_id_fkey";
-            columns: ["module_id"];
-            referencedRelation: "learning_modules";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "module_images_image_id_fkey";
-            columns: ["image_id"];
-            referencedRelation: "images";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      module_prerequisites: {
-        Row: {
-          id: string;
-          module_id: string | null;
-          prerequisite_module_id: string | null;
-          requirement_type: string;
-          created_at: string;
-        };
-        Insert: {
-          id?: string;
-          module_id?: string | null;
-          prerequisite_module_id?: string | null;
-          requirement_type?: string;
-          created_at?: string;
-        };
-        Update: {
-          id?: string;
-          module_id?: string | null;
-          prerequisite_module_id?: string | null;
-          requirement_type?: string;
-          created_at?: string;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "module_prerequisites_module_id_fkey";
-            columns: ["module_id"];
-            referencedRelation: "learning_modules";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "module_prerequisites_prerequisite_module_id_fkey";
-            columns: ["prerequisite_module_id"];
-            referencedRelation: "learning_modules";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      module_sessions: {
-        Row: {
-          id: string;
-          user_id: string | null;
-          module_id: string | null;
-          learning_path_id: string | null;
+          question_ids: string[];
+          score: number | null;
           started_at: string | null;
-          ended_at: string | null;
-          duration_minutes: number | null;
-          sections_viewed: string[] | null;
-          completion_percentage: number | null;
-          accessed_via: string | null;
-
-          created_at: string;
+          status: Database["public"]["Enums"]["session_status"] | null;
+          time_remaining: number | null;
+          title: string;
+          total_questions: number;
+          total_time_limit: number | null;
+          total_time_spent: number | null;
+          updated_at: string | null;
+          user_id: string;
         };
         Insert: {
+          completed_at?: string | null;
+          config: Json;
+          correct_answers?: number | null;
+          created_at?: string | null;
+          current_question_index?: number;
           id?: string;
-          user_id?: string | null;
-          module_id?: string | null;
-          learning_path_id?: string | null;
+          question_ids: string[];
+          score?: number | null;
           started_at?: string | null;
-          ended_at?: string | null;
-          duration_minutes?: number | null;
-          sections_viewed?: string[] | null;
-          completion_percentage?: number | null;
-          accessed_via?: string | null;
-
-          created_at?: string;
+          status?: Database["public"]["Enums"]["session_status"] | null;
+          time_remaining?: number | null;
+          title: string;
+          total_questions: number;
+          total_time_limit?: number | null;
+          total_time_spent?: number | null;
+          updated_at?: string | null;
+          user_id: string;
         };
         Update: {
+          completed_at?: string | null;
+          config?: Json;
+          correct_answers?: number | null;
+          created_at?: string | null;
+          current_question_index?: number;
           id?: string;
-          user_id?: string | null;
-          module_id?: string | null;
-          learning_path_id?: string | null;
+          question_ids?: string[];
+          score?: number | null;
           started_at?: string | null;
-          ended_at?: string | null;
-          duration_minutes?: number | null;
-          sections_viewed?: string[] | null;
-          completion_percentage?: number | null;
-          accessed_via?: string | null;
-
-          created_at?: string;
+          status?: Database["public"]["Enums"]["session_status"] | null;
+          time_remaining?: number | null;
+          title?: string;
+          total_questions?: number;
+          total_time_limit?: number | null;
+          total_time_spent?: number | null;
+          updated_at?: string | null;
+          user_id?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "module_sessions_user_id_fkey";
+            foreignKeyName: "quiz_sessions_user_id_fkey";
             columns: ["user_id"];
+            isOneToOne: false;
             referencedRelation: "users";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "module_sessions_module_id_fkey";
-            columns: ["module_id"];
-            referencedRelation: "learning_modules";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "module_sessions_learning_path_id_fkey";
-            columns: ["learning_path_id"];
-            referencedRelation: "learning_paths";
             referencedColumns: ["id"];
           },
         ];
       };
-      performance_analytics: {
+      system_updates: {
         Row: {
-          id: string;
-          user_id: string;
-          category_id: string | null;
-          total_questions: number;
-          questions_answered: number;
-          correct_answers: number;
-          average_time: number;
-          peer_rank: number | null;
-          last_attempt_at: string | null;
           created_at: string;
-          updated_at: string;
+          created_by: string | null;
+          expires_at: string | null;
+          id: string;
+          message: string;
+          published_at: string;
+          severity: string;
+          target_audience: string;
+          title: string;
+          update_type: string;
         };
         Insert: {
-          id?: string;
-          user_id: string;
-          category_id?: string | null;
-          total_questions?: number;
-          questions_answered?: number;
-          correct_answers?: number;
-          average_time?: number;
-          peer_rank?: number | null;
-          last_attempt_at?: string | null;
           created_at?: string;
-          updated_at?: string;
+          created_by?: string | null;
+          expires_at?: string | null;
+          id?: string;
+          message: string;
+          published_at?: string;
+          severity?: string;
+          target_audience?: string;
+          title: string;
+          update_type: string;
         };
         Update: {
-          id?: string;
-          user_id?: string;
-          category_id?: string | null;
-          total_questions?: number;
-          questions_answered?: number;
-          correct_answers?: number;
-          average_time?: number;
-          peer_rank?: number | null;
-          last_attempt_at?: string | null;
           created_at?: string;
-          updated_at?: string;
+          created_by?: string | null;
+          expires_at?: string | null;
+          id?: string;
+          message?: string;
+          published_at?: string;
+          severity?: string;
+          target_audience?: string;
+          title?: string;
+          update_type?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "performance_analytics_user_id_fkey";
-            columns: ["user_id"];
+            foreignKeyName: "system_updates_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
-          {
-            foreignKeyName: "performance_analytics_category_id_fkey";
-            columns: ["category_id"];
-            referencedRelation: "categories";
-            referencedColumns: ["id"];
-          },
         ];
+      };
+      tags: {
+        Row: {
+          created_at: string | null;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          created_at?: string | null;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          created_at?: string | null;
+          id?: string;
+          name?: string;
+        };
+        Relationships: [];
       };
       user_achievements: {
         Row: {
+          achievement_id: string;
+          created_at: string | null;
           id: string;
           user_id: string;
-          type: string;
-          title: string;
-          description: string | null;
-          created_at: string;
-          group_key: string;
-          quiz_id: string | null;
-          subject_id: string | null;
-          data: Json | null;
-          is_read: boolean | null;
-          priority: string | null;
         };
         Insert: {
+          achievement_id: string;
+          created_at?: string | null;
           id?: string;
           user_id: string;
-          type: string;
-          title: string;
-          description?: string | null;
-          created_at?: string;
-          group_key: string;
-          quiz_id?: string | null;
-          subject_id?: string | null;
-          data?: Json | null;
-          is_read?: boolean | null;
-          priority?: string | null;
         };
         Update: {
+          achievement_id?: string;
+          created_at?: string | null;
           id?: string;
           user_id?: string;
-          type?: string;
-          title?: string;
-          description?: string | null;
-          created_at?: string;
-          group_key?: string;
-          quiz_id?: string | null;
-          subject_id?: string | null;
-          data?: Json | null;
-          is_read?: boolean | null;
-          priority?: string | null;
         };
         Relationships: [
           {
+            foreignKeyName: "user_achievements_achievement_id_fkey";
+            columns: ["achievement_id"];
+            isOneToOne: false;
+            referencedRelation: "achievements";
+            referencedColumns: ["id"];
+          },
+          {
             foreignKeyName: "user_achievements_user_id_fkey";
             columns: ["user_id"];
+            isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
@@ -1673,361 +1254,872 @@ export interface Database {
       };
       user_favorites: {
         Row: {
+          created_at: string | null;
           id: string;
-          user_id: string;
           question_id: string | null;
-          created_at: string;
-          updated_at: string;
+          updated_at: string | null;
+          user_id: string;
         };
         Insert: {
+          created_at?: string | null;
           id?: string;
-          user_id: string;
           question_id?: string | null;
-          created_at?: string;
-          updated_at?: string;
+          updated_at?: string | null;
+          user_id: string;
         };
         Update: {
+          created_at?: string | null;
           id?: string;
-          user_id?: string;
           question_id?: string | null;
-          created_at?: string;
-          updated_at?: string;
+          updated_at?: string | null;
+          user_id?: string;
         };
         Relationships: [
           {
-            foreignKeyName: "user_favorites_user_id_fkey";
-            columns: ["user_id"];
-            referencedRelation: "users";
+            foreignKeyName: "user_favorites_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
             referencedColumns: ["id"];
           },
           {
             foreignKeyName: "user_favorites_question_id_fkey";
             columns: ["question_id"];
-            referencedRelation: "questions";
+            isOneToOne: false;
+            referencedRelation: "v_flagged_questions";
+            referencedColumns: ["question_id"];
+          },
+          {
+            foreignKeyName: "user_favorites_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];
       };
       user_settings: {
         Row: {
+          created_at: string | null;
           id: string;
-          user_id: string;
-          quiz_settings: Json | null;
           notification_settings: Json | null;
+          quiz_settings: Json | null;
           ui_settings: Json | null;
-          created_at: string;
-          updated_at: string;
+          updated_at: string | null;
+          user_id: string;
         };
         Insert: {
+          created_at?: string | null;
           id?: string;
-          user_id: string;
-          quiz_settings?: Json | null;
           notification_settings?: Json | null;
+          quiz_settings?: Json | null;
           ui_settings?: Json | null;
-          created_at?: string;
-          updated_at?: string;
+          updated_at?: string | null;
+          user_id: string;
         };
         Update: {
+          created_at?: string | null;
           id?: string;
-          user_id?: string;
-          quiz_settings?: Json | null;
           notification_settings?: Json | null;
+          quiz_settings?: Json | null;
           ui_settings?: Json | null;
-          created_at?: string;
-          updated_at?: string;
+          updated_at?: string | null;
+          user_id?: string;
         };
         Relationships: [
           {
             foreignKeyName: "user_settings_user_id_fkey";
             columns: ["user_id"];
+            isOneToOne: true;
             referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];
       };
+      users: {
+        Row: {
+          created_at: string | null;
+          deleted_at: string | null;
+          email: string;
+          first_name: string | null;
+          id: string;
+          institution: string | null;
+          last_name: string | null;
+          role: Database["public"]["Enums"]["user_role"];
+          status: Database["public"]["Enums"]["user_status"];
+          updated_at: string | null;
+          user_type: Database["public"]["Enums"]["user_type"];
+        };
+        Insert: {
+          created_at?: string | null;
+          deleted_at?: string | null;
+          email: string;
+          first_name?: string | null;
+          id?: string;
+          institution?: string | null;
+          last_name?: string | null;
+          role?: Database["public"]["Enums"]["user_role"];
+          status: Database["public"]["Enums"]["user_status"];
+          updated_at?: string | null;
+          user_type: Database["public"]["Enums"]["user_type"];
+        };
+        Update: {
+          created_at?: string | null;
+          deleted_at?: string | null;
+          email?: string;
+          first_name?: string | null;
+          id?: string;
+          institution?: string | null;
+          last_name?: string | null;
+          role?: Database["public"]["Enums"]["user_role"];
+          status?: Database["public"]["Enums"]["user_status"];
+          updated_at?: string | null;
+          user_type?: Database["public"]["Enums"]["user_type"];
+        };
+        Relationships: [];
+      };
+      videos: {
+        Row: {
+          category_id: string | null;
+          created_at: string | null;
+          created_by: string | null;
+          description: string | null;
+          duration_seconds: number | null;
+          file_size_bytes: number | null;
+          height: number | null;
+          id: string;
+          published_at: string | null;
+          sequence_storage_path: string | null;
+          sequence_url: string | null;
+          status: string | null;
+          thumbnail_storage_path: string | null;
+          thumbnail_url: string | null;
+          title: string;
+          updated_at: string | null;
+          video_storage_path: string;
+          video_url: string;
+          width: number | null;
+        };
+        Insert: {
+          category_id?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          duration_seconds?: number | null;
+          file_size_bytes?: number | null;
+          height?: number | null;
+          id?: string;
+          published_at?: string | null;
+          sequence_storage_path?: string | null;
+          sequence_url?: string | null;
+          status?: string | null;
+          thumbnail_storage_path?: string | null;
+          thumbnail_url?: string | null;
+          title: string;
+          updated_at?: string | null;
+          video_storage_path: string;
+          video_url: string;
+          width?: number | null;
+        };
+        Update: {
+          category_id?: string | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          duration_seconds?: number | null;
+          file_size_bytes?: number | null;
+          height?: number | null;
+          id?: string;
+          published_at?: string | null;
+          sequence_storage_path?: string | null;
+          sequence_url?: string | null;
+          status?: string | null;
+          thumbnail_storage_path?: string | null;
+          thumbnail_url?: string | null;
+          title?: string;
+          updated_at?: string | null;
+          video_storage_path?: string;
+          video_url?: string;
+          width?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "videos_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      waitlist: {
+        Row: {
+          created_at: string;
+          email: string;
+          id: string;
+          type: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          email: string;
+          id?: string;
+          type?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          email?: string;
+          id?: string;
+          type?: string | null;
+        };
+        Relationships: [];
+      };
     };
     Views: {
-      v_image_usage_stats: {
+      mv_user_category_stats: {
         Row: {
-          id: string;
-          url: string;
-          alt_text: string | null;
-          description: string | null;
-          category: string;
-          file_size_bytes: number | null;
-          width: number | null;
-          height: number | null;
-          created_at: string;
-          created_by: string | null;
-          source_ref: string | null;
-          usage_count: number;
-          is_orphaned: boolean;
-          question_ids: string[];
+          category_id: string | null;
+          correct_attempts: number | null;
+          incorrect_attempts: number | null;
+          last_attempt_at: string | null;
+          total_attempts: number | null;
+          unique_questions_attempted: number | null;
+          user_id: string | null;
         };
-        Relationships: [];
-      };
-      v_storage_stats: {
-        Row: {
-          total_images: number;
-          total_size_bytes: number;
-          microscopic_count: number;
-          gross_count: number;
-          figure_count: number;
-          table_count: number;
-          microscopic_size_bytes: number;
-          gross_size_bytes: number;
-          figure_size_bytes: number;
-          table_size_bytes: number;
-          orphaned_count: number;
-          orphaned_size_bytes: number;
-        };
-        Relationships: [];
-      };
-      v_orphaned_images: {
-        Row: {
-          id: string;
-          url: string;
-          alt_text: string | null;
-          description: string | null;
-          category: Database["public"]["Enums"]["image_category"];
-          file_size_bytes: number | null;
-          storage_path: string | null;
-          created_at: string;
-        };
-        Relationships: [];
-      };
-      v_image_usage_by_category: {
-        Row: {
-          category: string;
-          total_images: number;
-          used_images: number;
-          orphaned_images: number;
-          total_size_bytes: number;
-          avg_size_bytes: number;
-          usage_percentage: number;
-        };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quiz_attempts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       v_dashboard_stats: {
         Row: {
-          published_questions: number;
-          draft_questions: number;
-          flagged_questions: number;
-          recent_questions: number;
-          total_users: number;
-          recent_users: number;
-          total_images: number;
-          total_quiz_sessions: number;
-          recent_quiz_sessions: number;
-          total_inquiries: number;
-          question_reports: number;
-          pending_reports: number;
-          last_updated: string;
-        };
-        Relationships: [];
-      };
-      v_user_stats: {
-        Row: {
-          total_users: number;
-          active_users: number;
-          inactive_users: number;
-          suspended_users: number;
-          recent_users: number;
-          internal_users: number;
-          end_users: number;
-          active_internal_users: number;
-          active_end_users: number;
-          total_admins: number;
-          total_creators: number;
-          total_reviewers: number;
-          active_admins: number;
-          active_creators: number;
-          active_reviewers: number;
-          active_percentage: string;
-          inactive_percentage: string;
-          suspended_percentage: string;
-          internal_percentage: string;
-          end_users_percentage: string;
-          last_updated: string;
-        };
-        Relationships: [];
-      };
-      v_creator_questions: {
-        Row: {
-          creator_id: string;
-          creator_name: string;
-          total_questions: number;
-          published_questions: number;
-          draft_questions: number;
-          pending_review_questions: number;
-          flagged_questions: number;
-          average_rating: number | null;
-          last_created: string | null;
+          active_users: number | null;
+          draft_questions: number | null;
+          flagged_questions: number | null;
+          last_updated: string | null;
+          pending_questions: number | null;
+          pending_reports: number | null;
+          published_questions: number | null;
+          question_reports: number | null;
+          recent_questions: number | null;
+          recent_quiz_sessions: number | null;
+          recent_users: number | null;
+          rejected_questions: number | null;
+          total_images: number | null;
+          total_inquiries: number | null;
+          total_questions: number | null;
+          total_quiz_sessions: number | null;
+          total_users: number | null;
+          unread_inquiries: number | null;
         };
         Relationships: [];
       };
       v_flagged_questions: {
         Row: {
-          question_id: string;
-          question_title: string;
-          flag_count: number;
-          latest_flag_date: string;
-          flag_types: string[];
-          question_status: string;
-          created_by: string;
-          creator_name: string;
-        };
-        Relationships: [];
-      };
-      v_learning_modules_detailed: {
-        Row: {
-          id: string;
-          title: string;
-          slug: string;
-          description: string | null;
-          difficulty_level: string;
-          estimated_duration_minutes: number;
-          content_type: string;
-          status: string;
-          is_featured: boolean;
-          view_count: number;
-          average_rating: number | null;
-          rating_count: number;
-          category_name: string | null;
+          created_by: string | null;
           creator_name: string | null;
-          image_count: number;
-          prerequisite_count: number;
-          created_at: string;
-          updated_at: string;
+          flag_count: number | null;
+          flag_types: string[] | null;
+          latest_flag_date: string | null;
+          question_id: string | null;
+          question_status: Database["public"]["Enums"]["question_status"] | null;
+          question_title: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "questions_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
-      v_learning_paths_detailed: {
+      v_image_usage_stats: {
         Row: {
-          id: string;
-          title: string;
-          slug: string;
+          alt_text: string | null;
+          category: Database["public"]["Enums"]["image_category"] | null;
+          created_at: string | null;
+          created_by: string | null;
           description: string | null;
-          difficulty_level: string | null;
-          estimated_total_duration_minutes: number | null;
-          status: string;
-          is_featured: boolean;
-
-          average_rating: number | null;
-          rating_count: number;
-          category_name: string | null;
-          creator_name: string | null;
-          module_count: number;
-          completion_rate: number | null;
-          created_at: string;
-          updated_at: string;
+          file_size_bytes: number | null;
+          height: number | null;
+          id: string | null;
+          is_orphaned: boolean | null;
+          question_ids: string[] | null;
+          url: string | null;
+          usage_count: number | null;
+          width: number | null;
+        };
+        Insert: {
+          alt_text?: string | null;
+          category?: Database["public"]["Enums"]["image_category"] | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          file_size_bytes?: number | null;
+          height?: number | null;
+          id?: string | null;
+          is_orphaned?: never;
+          question_ids?: never;
+          url?: string | null;
+          usage_count?: never;
+          width?: number | null;
+        };
+        Update: {
+          alt_text?: string | null;
+          category?: Database["public"]["Enums"]["image_category"] | null;
+          created_at?: string | null;
+          created_by?: string | null;
+          description?: string | null;
+          file_size_bytes?: number | null;
+          height?: number | null;
+          id?: string | null;
+          is_orphaned?: never;
+          question_ids?: never;
+          url?: string | null;
+          usage_count?: never;
+          width?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "images_created_by_fkey";
+            columns: ["created_by"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      v_orphaned_images: {
+        Row: {
+          alt_text: string | null;
+          category: Database["public"]["Enums"]["image_category"] | null;
+          created_at: string | null;
+          description: string | null;
+          file_size_bytes: number | null;
+          id: string | null;
+          storage_path: string | null;
+          url: string | null;
+        };
+        Insert: {
+          alt_text?: string | null;
+          category?: Database["public"]["Enums"]["image_category"] | null;
+          created_at?: string | null;
+          description?: string | null;
+          file_size_bytes?: number | null;
+          id?: string | null;
+          storage_path?: string | null;
+          url?: string | null;
+        };
+        Update: {
+          alt_text?: string | null;
+          category?: Database["public"]["Enums"]["image_category"] | null;
+          created_at?: string | null;
+          description?: string | null;
+          file_size_bytes?: number | null;
+          id?: string | null;
+          storage_path?: string | null;
+          url?: string | null;
         };
         Relationships: [];
       };
-      v_module_analytics: {
+      v_public_stats: {
         Row: {
-          module_id: string;
-          module_title: string;
-          total_attempts: number;
-          completed_attempts: number;
-          average_completion_time: number | null;
-          completion_rate: number | null;
-          average_score: number | null;
-          average_rating: number | null;
-          view_count: number;
-          last_accessed: string | null;
+          last_refreshed: string | null;
+          total_categories: number | null;
+          total_images: number | null;
+          total_questions: number | null;
         };
         Relationships: [];
       };
-      v_simplified_review_queue: {
+      v_storage_stats: {
         Row: {
-          question_id: string;
-          title: string;
-          status: string;
-          created_by: string;
-          creator_name: string;
-          created_at: string;
-          updated_at: string;
-          flag_count: number;
-          review_count: number;
-          priority_score: number;
+          figure_count: number | null;
+          figure_size_bytes: number | null;
+          gross_count: number | null;
+          gross_size_bytes: number | null;
+          microscopic_count: number | null;
+          microscopic_size_bytes: number | null;
+          orphaned_count: number | null;
+          orphaned_size_bytes: number | null;
+          table_count: number | null;
+          table_size_bytes: number | null;
+          total_images: number | null;
+          total_size_bytes: number | null;
         };
         Relationships: [];
       };
-      v_user_progress_summary: {
+      v_user_category_stats: {
         Row: {
-          user_id: string;
-          user_name: string;
-          total_quiz_sessions: number;
-          completed_quiz_sessions: number;
-          total_questions_answered: number;
-          correct_answers: number;
-          accuracy_percentage: number | null;
-          average_time_per_question: number | null;
-          favorite_categories: string[];
-          last_activity: string | null;
-          streak_days: number | null;
+          category_id: string | null;
+          correct_attempts: number | null;
+          incorrect_attempts: number | null;
+          last_attempt_at: string | null;
+          total_attempts: number | null;
+          unique_questions_attempted: number | null;
+          user_id: string | null;
         };
-        Relationships: [];
+        Relationships: [
+          {
+            foreignKeyName: "quiz_attempts_category_id_fkey";
+            columns: ["category_id"];
+            isOneToOne: false;
+            referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "quiz_attempts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
       };
-      mv_user_performance_analytics: {
+      v_user_stats: {
         Row: {
-          user_id: string;
-          full_name: string;
-          status: string;
-          role: string;
-          total_sessions: number;
-          completed_sessions: number;
-          avg_score: number | null;
-          total_attempts: number;
-          correct_attempts: number;
-          last_quiz_at: string | null;
-          success_rate: number;
-          peer_rank: number;
-          percentile: number;
-          last_calculated_at: string;
-        };
-        Relationships: [];
-      };
-      mv_user_category_stats: {
-        Row: {
-          user_id: string;
-          category_id: string;
-          total_attempts: number;
-          correct_attempts: number;
-          incorrect_attempts: number;
-          last_attempt_at: string;
-          unique_questions_attempted: number;
+          active_admins: number | null;
+          active_creators: number | null;
+          active_end_users: number | null;
+          active_internal_users: number | null;
+          active_percentage: string | null;
+          active_reviewers: number | null;
+          active_users: number | null;
+          end_users: number | null;
+          end_users_percentage: string | null;
+          inactive_percentage: string | null;
+          inactive_users: number | null;
+          internal_percentage: string | null;
+          internal_users: number | null;
+          last_updated: string | null;
+          recent_users: number | null;
+          suspended_percentage: string | null;
+          suspended_users: number | null;
+          total_admins: number | null;
+          total_creators: number | null;
+          total_reviewers: number | null;
+          total_users: number | null;
         };
         Relationships: [];
       };
     };
     Functions: {
-      [_ in never]: never;
+      analyze_user_login_activity: {
+        Args: never;
+        Returns: {
+          avg_session_duration: unknown;
+          first_login: string;
+          last_login: string;
+          total_logins: number;
+          user_id: string;
+        }[];
+      };
+      backfill_orphaned_users: {
+        Args: never;
+        Returns: {
+          settings_created: number;
+          users_created: number;
+        }[];
+      };
+      calculate_question_analytics:
+        | { Args: never; Returns: undefined }
+        | { Args: { question_id_param?: string }; Returns: undefined };
+      create_question_version_simplified: {
+        Args: {
+          change_summary_param: string;
+          changed_by_param: string;
+          question_id_param: string;
+        };
+        Returns: string;
+      };
+      get_all_user_scores: {
+        Args: never;
+        Returns: {
+          score: number;
+          user_id: string;
+        }[];
+      };
+      get_categories_with_parents: {
+        Args: { category_ids: string[] };
+        Returns: {
+          color: string;
+          id: string;
+          name: string;
+          parent_id: string;
+          parent_short_form: string;
+          short_form: string;
+        }[];
+      };
+      get_complete_quiz_dashboard:
+        | { Args: never; Returns: Json }
+        | {
+            Args: { p_recent_sessions_limit?: number; p_user_id: string };
+            Returns: {
+              cache_version: string;
+              categories: Json;
+              question_type_stats: Json;
+              recent_sessions: Json;
+              user_activity: Json;
+              user_stats: Json;
+            }[];
+          };
+      get_database_size_analysis: { Args: never; Returns: Json };
+      get_most_recent_attempts: {
+        Args: { p_question_ids: string[]; p_user_id: string };
+        Returns: {
+          most_recent_correct: boolean;
+          question_id: string;
+          second_recent_correct: boolean;
+          total_attempts: number;
+        }[];
+      };
+      get_public_stats: {
+        Args: never;
+        Returns: {
+          last_refreshed: string;
+          total_categories: number;
+          total_images: number;
+          total_questions: number;
+        }[];
+      };
+      get_question_snapshot_data: {
+        Args: { question_id_param: string };
+        Returns: Json;
+      };
+      get_question_success_rates: {
+        Args: { question_ids: string[] };
+        Returns: {
+          correct_attempts: number;
+          question_id: string;
+          success_rate: number;
+          total_attempts: number;
+        }[];
+      };
+      get_user_activity_heatmap: {
+        Args: { days_back?: number; p_user_id: string };
+        Returns: {
+          date: string;
+          questions: number;
+          quizzes: number;
+        }[];
+      };
+      get_user_category_stats: {
+        Args: { p_category_ids: string[]; p_user_id: string };
+        Returns: {
+          all_count: number;
+          category_id: string;
+          correct_count: number;
+          incorrect_count: number;
+          marked_count: number;
+          unused_count: number;
+        }[];
+      };
+      get_user_data_analysis: { Args: never; Returns: Json };
+      get_user_percentile: {
+        Args: { p_avg_score: number; p_user_id: string };
+        Returns: {
+          percentile: number;
+          rank: number;
+          total_users: number;
+        }[];
+      };
+      get_user_performance_data: {
+        Args: { target_user_id: string };
+        Returns: {
+          avg_score: number;
+          data_source: string;
+          full_name: string;
+          peer_rank: number;
+          percentile: number;
+          success_rate: number;
+          total_sessions: number;
+          user_id: string;
+        }[];
+      };
+      get_user_question_stats_optimized:
+        | {
+            Args: { p_category_ids: string[]; p_user_id: string };
+            Returns: {
+              category_id: string;
+              marked: number;
+              mastered: number;
+              needs_review: number;
+              total_questions: number;
+              unused: number;
+            }[];
+          }
+        | {
+            Args: { user_uuid: string };
+            Returns: {
+              avg_time_per_question: number;
+              correct_attempts: number;
+              success_rate: number;
+              total_attempts: number;
+              unique_questions: number;
+            }[];
+          };
+      get_user_statistics: {
+        Args: never;
+        Returns: {
+          active_admins: number;
+          active_creators: number;
+          active_end_users: number;
+          active_internal_users: number;
+          active_percentage: string;
+          active_reviewers: number;
+          active_users: number;
+          end_users: number;
+          end_users_percentage: string;
+          inactive_percentage: string;
+          inactive_users: number;
+          internal_percentage: string;
+          internal_users: number;
+          last_updated: string;
+          recent_users: number;
+          suspended_percentage: string;
+          suspended_users: number;
+          total_admins: number;
+          total_creators: number;
+          total_reviewers: number;
+          total_users: number;
+        }[];
+      };
+      get_user_stats: {
+        Args: never;
+        Returns: {
+          active_admins: number;
+          active_creators: number;
+          active_end_users: number;
+          active_internal_users: number;
+          active_percentage: string;
+          active_reviewers: number;
+          active_users: number;
+          end_users: number;
+          end_users_percentage: string;
+          inactive_percentage: string;
+          inactive_users: number;
+          internal_percentage: string;
+          internal_users: number;
+          last_updated: string;
+          recent_users: number;
+          suspended_percentage: string;
+          suspended_users: number;
+          total_admins: number;
+          total_creators: number;
+          total_reviewers: number;
+          total_users: number;
+        }[];
+      };
+      is_current_user_admin: { Args: never; Returns: boolean };
+      recalculate_all_question_analytics: { Args: never; Returns: undefined };
+      refresh_materialized_views: { Args: never; Returns: undefined };
+      refresh_public_stats: { Args: never; Returns: undefined };
+      refresh_user_category_stats: {
+        Args: { p_user_id?: string };
+        Returns: undefined;
+      };
+      refresh_user_performance_analytics: {
+        Args: never;
+        Returns: {
+          last_refresh: string;
+          refresh_duration: unknown;
+          rows_updated: number;
+        }[];
+      };
+      update_question_analytics_batch: {
+        Args: { question_ids: string[] };
+        Returns: undefined;
+      };
+      update_question_version: {
+        Args: {
+          change_summary_param?: string;
+          question_data_param?: Json;
+          question_id_param: string;
+          update_type_param: string;
+        };
+        Returns: string;
+      };
     };
     Enums: {
+      difficulty_level: "easy" | "medium" | "hard";
       image_category: "microscopic" | "gross" | "figure" | "table" | "external";
-      user_role: "admin" | "creator" | "reviewer" | "user";
-      user_status: "active" | "inactive" | "suspended";
-      user_type: "student" | "resident" | "faculty" | "other";
       question_status:
         | "draft"
         | "pending_review"
-        | "rejected"
-        | "published"
+        | "approved"
         | "flagged"
-        | "archived";
-      difficulty_level: "easy" | "medium" | "hard";
-      session_status: "not_started" | "in_progress" | "completed" | "abandoned";
+        | "archived"
+        | "rejected"
+        | "published";
       report_type:
         | "incorrect_answer"
         | "unclear_explanation"
         | "broken_image"
         | "inappropriate_content"
         | "other";
+      session_status: "not_started" | "in_progress" | "completed" | "abandoned";
+      user_role: "admin" | "creator" | "reviewer" | "user";
+      user_status: "active" | "inactive" | "suspended" | "deleted";
+      user_type: "student" | "resident" | "faculty" | "other" | "fellow" | "attending";
     };
     CompositeTypes: {
       [_ in never]: never;
     };
   };
+};
+
+type DatabaseWithoutInternals = Omit<Database, "__InternalSupabase">;
+
+type DefaultSchema = DatabaseWithoutInternals[Extract<keyof Database, "public">];
+
+export type Tables<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+        DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
 }
+  ? (DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"] &
+      DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Views"])[TableName] extends {
+      Row: infer R;
+    }
+    ? R
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof (DefaultSchema["Tables"] & DefaultSchema["Views"])
+    ? (DefaultSchema["Tables"] & DefaultSchema["Views"])[DefaultSchemaTableNameOrOptions] extends {
+        Row: infer R;
+      }
+      ? R
+      : never
+    : never;
+
+export type TablesInsert<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Insert: infer I;
+    }
+    ? I
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Insert: infer I;
+      }
+      ? I
+      : never
+    : never;
+
+export type TablesUpdate<
+  DefaultSchemaTableNameOrOptions extends
+    | keyof DefaultSchema["Tables"]
+    | { schema: keyof DatabaseWithoutInternals },
+  TableName extends DefaultSchemaTableNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"]
+    : never = never,
+> = DefaultSchemaTableNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaTableNameOrOptions["schema"]]["Tables"][TableName] extends {
+      Update: infer U;
+    }
+    ? U
+    : never
+  : DefaultSchemaTableNameOrOptions extends keyof DefaultSchema["Tables"]
+    ? DefaultSchema["Tables"][DefaultSchemaTableNameOrOptions] extends {
+        Update: infer U;
+      }
+      ? U
+      : never
+    : never;
+
+export type Enums<
+  DefaultSchemaEnumNameOrOptions extends
+    | keyof DefaultSchema["Enums"]
+    | { schema: keyof DatabaseWithoutInternals },
+  EnumName extends DefaultSchemaEnumNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"]
+    : never = never,
+> = DefaultSchemaEnumNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[DefaultSchemaEnumNameOrOptions["schema"]]["Enums"][EnumName]
+  : DefaultSchemaEnumNameOrOptions extends keyof DefaultSchema["Enums"]
+    ? DefaultSchema["Enums"][DefaultSchemaEnumNameOrOptions]
+    : never;
+
+export type CompositeTypes<
+  PublicCompositeTypeNameOrOptions extends
+    | keyof DefaultSchema["CompositeTypes"]
+    | { schema: keyof DatabaseWithoutInternals },
+  CompositeTypeName extends PublicCompositeTypeNameOrOptions extends {
+    schema: keyof DatabaseWithoutInternals;
+  }
+    ? keyof DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"]
+    : never = never,
+> = PublicCompositeTypeNameOrOptions extends {
+  schema: keyof DatabaseWithoutInternals;
+}
+  ? DatabaseWithoutInternals[PublicCompositeTypeNameOrOptions["schema"]]["CompositeTypes"][CompositeTypeName]
+  : PublicCompositeTypeNameOrOptions extends keyof DefaultSchema["CompositeTypes"]
+    ? DefaultSchema["CompositeTypes"][PublicCompositeTypeNameOrOptions]
+    : never;
+
+export const Constants = {
+  public: {
+    Enums: {
+      difficulty_level: ["easy", "medium", "hard"],
+      image_category: ["microscopic", "gross", "figure", "table", "external"],
+      question_status: [
+        "draft",
+        "pending_review",
+        "approved",
+        "flagged",
+        "archived",
+        "rejected",
+        "published",
+      ],
+      report_type: [
+        "incorrect_answer",
+        "unclear_explanation",
+        "broken_image",
+        "inappropriate_content",
+        "other",
+      ],
+      session_status: ["not_started", "in_progress", "completed", "abandoned"],
+      user_role: ["admin", "creator", "reviewer", "user"],
+      user_status: ["active", "inactive", "suspended", "deleted"],
+      user_type: ["student", "resident", "faculty", "other", "fellow", "attending"],
+    },
+  },
+} as const;

@@ -6,6 +6,77 @@ import { quizService } from "@/features/user/quiz/services/quiz-service";
 import { TABLE_NAMES } from "@/shared/types/database";
 import { devLog } from "@/shared/utils/logging/dev-logger";
 
+/**
+ * @swagger
+ * /api/user/quiz/sessions:
+ *   post:
+ *     summary: Create a new quiz session
+ *     description: Create a new quiz session with specified configuration. Requires authentication.
+ *     tags:
+ *       - User - Quiz
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - mode
+ *               - questionCount
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Title for the quiz session
+ *               mode:
+ *                 type: string
+ *                 enum: [study, exam, timed]
+ *                 description: Quiz mode
+ *               questionCount:
+ *                 type: integer
+ *                 minimum: 1
+ *                 maximum: 100
+ *                 description: Number of questions to include
+ *               categorySelection:
+ *                 type: string
+ *                 enum: [all, custom]
+ *                 description: Category selection mode
+ *               selectedCategories:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Array of category IDs (required when categorySelection is 'custom')
+ *     responses:
+ *       200:
+ *         description: Quiz session created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     sessionId:
+ *                       type: string
+ *                       format: uuid
+ *                     title:
+ *                       type: string
+ *                     questionCount:
+ *                       type: integer
+ *                     mode:
+ *                       type: string
+ *       400:
+ *         description: Bad request - missing required fields or invalid data
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest) {
   const startTime = Date.now();
   const requestId = request.headers.get("x-request-id") || "unknown";
@@ -109,6 +180,80 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/user/quiz/sessions:
+ *   get:
+ *     summary: Get user's quiz sessions
+ *     description: Retrieve a paginated list of the user's quiz sessions with optional status filtering. Requires authentication.
+ *     tags:
+ *       - User - Quiz
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [active, completed, abandoned]
+ *         description: Filter sessions by status
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of sessions to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Number of sessions to skip
+ *     responses:
+ *       200:
+ *         description: Quiz sessions retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       title:
+ *                         type: string
+ *                       status:
+ *                         type: string
+ *                       mode:
+ *                         type: string
+ *                       totalQuestions:
+ *                         type: integer
+ *                       score:
+ *                         type: number
+ *                       createdAt:
+ *                         type: string
+ *                         format: date-time
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     limit:
+ *                       type: integer
+ *                     offset:
+ *                       type: integer
+ *                     total:
+ *                       type: integer
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   const startTime = Date.now();
   const requestId = request.headers.get("x-request-id") || "unknown";

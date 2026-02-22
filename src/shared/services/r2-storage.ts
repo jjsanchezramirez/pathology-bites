@@ -336,6 +336,18 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
       return `https://pub-9b9085c172ac445ca3d87dec27a0518f.r2.dev/${key}`;
     }
 
+    // Video bucket
+    if (bucketName === "pathology-bites-videos") {
+      const videoPublicUrl =
+        process.env.CLOUDFLARE_R2_VIDEO_PUBLIC_URL ||
+        process.env.NEXT_PUBLIC_CLOUDFLARE_R2_VIDEO_PUBLIC_URL;
+      if (videoPublicUrl) {
+        return `${videoPublicUrl}/${key}`;
+      }
+      // Fallback to generic R2 domain if not configured
+      return `https://pathology-bites-videos.r2.dev/${key}`;
+    }
+
     // For private buckets, return a placeholder that indicates signed URL needed
     return `[PRIVATE:${bucketName}]${key}`;
   } catch {
@@ -359,6 +371,18 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
     // Audio bucket
     if (bucketName === "pathology-bites-audio") {
       return `https://pub-9b9085c172ac445ca3d87dec27a0518f.r2.dev/${key}`;
+    }
+
+    // Video bucket
+    if (bucketName === "pathology-bites-videos") {
+      const videoPublicUrl =
+        process.env.CLOUDFLARE_R2_VIDEO_PUBLIC_URL ||
+        process.env.NEXT_PUBLIC_CLOUDFLARE_R2_VIDEO_PUBLIC_URL;
+      if (videoPublicUrl) {
+        return `${videoPublicUrl}/${key}`;
+      }
+      // Fallback to generic R2 domain if not configured
+      return `https://pathology-bites-videos.r2.dev/${key}`;
     }
 
     // For private buckets, return a placeholder that indicates signed URL needed
@@ -489,6 +513,50 @@ export function generateAudioStoragePath(filename: string): string {
     .replace(/^-+|-+$/g, "");
 
   return `library/${dateStr}-${baseName}.${extension}`;
+}
+
+/**
+ * Generate standardized storage path for video files
+ * Format: videos/YYYYMMDDHHMMSS-{cleaned-filename}
+ */
+export function generateVideoStoragePath(filename: string): string {
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 19).replace(/[-:T]/g, "").slice(0, 14);
+
+  const nameParts = filename.split(".");
+  const extension = nameParts.pop()?.toLowerCase() || "mp4";
+  const baseName = nameParts
+    .join(".")
+    .toLowerCase()
+    .trim()
+    .replace(/[\s\-_]+/g, "-")
+    .replace(/[^\w\-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return `videos/${dateStr}-${baseName}.${extension}`;
+}
+
+/**
+ * Generate standardized storage path for video thumbnails
+ * Format: videos/thumbnails/YYYYMMDDHHMMSS-{cleaned-filename}
+ */
+export function generateVideoThumbnailStoragePath(filename: string): string {
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 19).replace(/[-:T]/g, "").slice(0, 14);
+
+  const nameParts = filename.split(".");
+  const extension = nameParts.pop()?.toLowerCase() || "jpg";
+  const baseName = nameParts
+    .join(".")
+    .toLowerCase()
+    .trim()
+    .replace(/[\s\-_]+/g, "-")
+    .replace(/[^\w\-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return `videos/thumbnails/${dateStr}-${baseName}.${extension}`;
 }
 
 /**
@@ -634,6 +702,8 @@ const r2Storage = {
   generateImagePath: generateImageStoragePath,
   generateDataPath: generateDataStoragePath,
   generateAudioPath: generateAudioStoragePath,
+  generateVideoPath: generateVideoStoragePath,
+  generateVideoThumbnailPath: generateVideoThumbnailStoragePath,
   copyObject: copyR2Object,
   moveObject: moveR2Object,
   moveFolder: moveR2Folder,

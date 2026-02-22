@@ -20,6 +20,73 @@ function createAdminClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
+/**
+ * @swagger
+ * /api/admin/users:
+ *   get:
+ *     summary: Get paginated list of users
+ *     description: Retrieve a paginated list of users with optional filtering by search term, role, and status. Requires admin role.
+ *     tags:
+ *       - Admin - Users
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Page number (0-indexed)
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of users per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term to filter by email, first name, or last name
+ *       - in: query
+ *         name: role
+ *         schema:
+ *           type: string
+ *           enum: [all, admin, creator, reviewer, student, user]
+ *           default: all
+ *         description: Filter by user role
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [all, active, inactive, suspended]
+ *           default: all
+ *         description: Filter by user status
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved users
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 users:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 totalUsers:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *                 currentPage:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - admin access required
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -106,6 +173,52 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/users:
+ *   patch:
+ *     summary: Update user information
+ *     description: Update user details including role and other metadata. Requires admin role.
+ *     tags:
+ *       - Admin - Users
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - updates
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: The ID of the user to update
+ *               updates:
+ *                 type: object
+ *                 description: Object containing fields to update
+ *     responses:
+ *       200:
+ *         description: User updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 user:
+ *                   type: object
+ *       400:
+ *         description: Bad request - missing userId or updates
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - admin access required
+ *       500:
+ *         description: Internal server error
+ */
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -164,6 +277,55 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/users:
+ *   delete:
+ *     summary: Delete a user
+ *     description: Delete a user from the system. Content creators (admin/creator/reviewer) are soft-deleted to preserve attribution, while regular users are hard-deleted. Requires admin role.
+ *     tags:
+ *       - Admin - Users
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *             properties:
+ *               userId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: The ID of the user to delete
+ *     responses:
+ *       200:
+ *         description: User deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 deletionType:
+ *                   type: string
+ *                   enum: [soft_delete, hard_delete]
+ *       400:
+ *         description: Bad request - missing userId, invalid format, or attempting to delete own account
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - admin access required
+ *       404:
+ *         description: User not found
+ *       500:
+ *         description: Internal server error
+ */
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();

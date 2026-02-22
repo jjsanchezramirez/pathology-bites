@@ -24,8 +24,7 @@ export type NotificationSourceType =
   | "page_update"
   | "achievement"
   | "goal_completion"
-  | "streak_milestone"
-  | "learning_path_update";
+  | "streak_milestone";
 
 export interface NotificationWithSource extends BaseNotification {
   // Computed fields from source data

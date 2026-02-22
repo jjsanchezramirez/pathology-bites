@@ -70,9 +70,6 @@ export async function deleteUser(
         "notification_states",
         "quiz_sessions",
         "quiz_attempts",
-        "module_sessions",
-        "module_attempts",
-        "user_learning",
       ];
 
       for (const table of tablesToDelete) {

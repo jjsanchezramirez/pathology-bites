@@ -16,26 +16,6 @@ export interface Audio {
   updated_at: string;
 }
 
-export interface AudioUploadData {
-  file: File;
-  title?: string;
-  description?: string;
-  pathology_category_id?: string;
-  generated_text?: string;
-}
-
-export interface AudioUploadProgress {
-  status: "idle" | "converting" | "uploading" | "done" | "error";
-  progress: number;
-  message: string;
-}
-
-export interface AudioUploadResult {
-  success: boolean;
-  audio?: Audio;
-  error?: string;
-}
-
 export interface AudioListFilters {
   pathology_category_id?: string;
   search?: string;

@@ -74,14 +74,14 @@ const KEN_BURNS_MAX_PAN = 4; // Max pan at scale=1.1 (safe: (1.1−1)/1.1*50 ≈
  * Compute max safe pan offset for a given scale.
  * Formula: (scale - 1) / scale * 50
  */
-export function maxSafePan(scale: number): number {
+function maxSafePan(scale: number): number {
   return ((scale - 1) / scale) * 50;
 }
 
 /**
  * Clamp a value to [-limit, +limit].
  */
-export function clamp(value: number, limit: number): number {
+function clamp(value: number, limit: number): number {
   return Math.max(-limit, Math.min(limit, value));
 }
 
@@ -95,7 +95,7 @@ export function clamp(value: number, limit: number): number {
  *
  * The result is clamped to the safe pan range so borders never appear.
  */
-export function featureToCameraPan(featurePos: number, scale: number): number {
+function featureToCameraPan(featurePos: number, scale: number): number {
   const raw = ((featurePos - 50) * (scale - 1)) / scale;
   return clamp(raw, maxSafePan(scale));
 }
@@ -120,7 +120,7 @@ const DRIFT_PRESETS: CameraAnchor[] = [
  * Pick a Ken Burns drift endpoint for segment index `segmentIndex`.
  * Uses the index to cycle through presets deterministically.
  */
-export function kenBurnsDriftFor(segmentIndex: number): CameraAnchor {
+function kenBurnsDriftFor(segmentIndex: number): CameraAnchor {
   return DRIFT_PRESETS[segmentIndex % DRIFT_PRESETS.length];
 }
 
@@ -210,7 +210,7 @@ function shouldUseKenBurns(image: ImageInput, vision: VisionResult | undefined):
  * @param segmentIndex  Position of this segment (0-based), used for Ken Burns cycling
  * @returns             Concrete keyframe anchors ready to embed in the prompt
  */
-export function computeCameraKeyframes(
+function computeCameraKeyframes(
   image: ImageInput,
   vision: VisionResult | undefined,
   segmentIndex: number
@@ -267,43 +267,6 @@ export function computeCameraKeyframes(
   };
 }
 
-/**
- * Describe camera keyframes as a concise string block for the assembly prompt.
- * The model is told to copy these values directly — no geometry required.
- */
-export function formatCameraKeyframesForPrompt(
-  kf: CameraKeyframes,
-  segmentDuration: number
-): string {
-  if (!kf.hasTarget && kf.kenBurnsDrift) {
-    // Ken Burns: drift from centre to drift endpoint over the whole segment
-    const d = kf.kenBurnsDrift;
-    return (
-      `  Camera keyframes (Ken Burns drift — copy exactly):\n` +
-      `    t=0:              scale=${kf.wide.scale.toFixed(1)}, x=${kf.wide.x}, y=${kf.wide.y}\n` +
-      `    t=${segmentDuration.toFixed(2)}: scale=${d.scale.toFixed(1)}, x=${d.x}, y=${d.y}`
-    );
-  }
-
-  if (kf.hasTarget) {
-    const holdStart = kf.zoomInStartTime;
-    const holdEnd = Math.max(holdStart + 0.5, segmentDuration - kf.zoomOutDuration);
-    const w = kf.wide;
-    const z = kf.zoomed;
-    return (
-      `  Camera keyframes (zoom to feature — copy exactly):\n` +
-      `    t=0:                    scale=${w.scale.toFixed(1)}, x=${w.x}, y=${w.y}  (full image)\n` +
-      `    t=${holdStart.toFixed(2)}:               scale=${w.scale.toFixed(1)}, x=${w.x}, y=${w.y}  (hold wide)\n` +
-      `    t=${(holdStart + 2).toFixed(2)}:               scale=${z.scale.toFixed(1)}, x=${z.x}, y=${z.y}  (zoom in)\n` +
-      `    t=${holdEnd.toFixed(2)}: scale=${z.scale.toFixed(1)}, x=${z.x}, y=${z.y}  (hold on feature)\n` +
-      `    t=${segmentDuration.toFixed(2)}: scale=${w.scale.toFixed(1)}, x=${w.x}, y=${w.y}  (zoom out)`
-    );
-  }
-
-  // Figure/table — no camera instruction, model decides
-  return `  Camera: model discretion (figure/table)`;
-}
-
 // ---------------------------------------------------------------------------
 // Batch helper
 // ---------------------------------------------------------------------------
@@ -313,31 +276,4 @@ export function computeAllCameraKeyframes(
   visionResults: VisionResult[]
 ): CameraKeyframes[] {
   return images.map((img, i) => computeCameraKeyframes(img, visionResults[i], i));
-}
-
-// ---------------------------------------------------------------------------
-// Annotation tool → recommended overlay description for prompt
-// ---------------------------------------------------------------------------
-
-export function describeAnnotationForPrompt(
-  tool: AnnotationTool,
-  position: { x: number; y: number } | null,
-  label: string
-): string {
-  if (tool === "none" || !position) {
-    return `  Annotation: none — text overlay only`;
-  }
-  const pos = `x=${position.x.toFixed(0)}, y=${position.y.toFixed(0)}`;
-  switch (tool) {
-    case "spotlight":
-      return `  Annotation: spotlight at ${pos}, w=40, h=40 — label: "${label}"`;
-    case "circle":
-      return `  Annotation: circle highlight at ${pos}, w=25, h=25, borderColor="#FFFF00" — label: "${label}"`;
-    case "ellipse":
-      return `  Annotation: ellipse highlight at ${pos}, w=30, h=20, borderColor="#FFFF00" — label: "${label}"`;
-    case "arrow":
-      return `  Annotation: arrow pointing to ${pos}, color="#FFFF00" — label: "${label}"`;
-    case "rectangle":
-      return `  Annotation: rectangle highlight at ${pos}, w=35, h=20, borderColor="#FFFF00" — label: "${label}"`;
-  }
 }

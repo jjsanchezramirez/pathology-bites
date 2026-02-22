@@ -69,7 +69,14 @@ export interface FormState {
   question_set_id: string;
   tag_ids: string[];
   difficulty: "easy" | "medium" | "hard";
-  status: "draft" | "pending_review" | "rejected" | "published" | "flagged" | "archived";
+  status:
+    | "draft"
+    | "pending_review"
+    | "approved"
+    | "rejected"
+    | "published"
+    | "flagged"
+    | "archived";
 }
 
 export function MultiStepQuestionForm({

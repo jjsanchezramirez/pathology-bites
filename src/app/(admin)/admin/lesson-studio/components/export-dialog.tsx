@@ -22,13 +22,13 @@ import type {
 } from "@/shared/types/explainer";
 
 // Export resolution options
-export const EXPORT_RESOLUTIONS = [
+const EXPORT_RESOLUTIONS = [
   { label: "1080p", w: 1920, h: 1080 },
   { label: "720p", w: 1280, h: 720 },
   { label: "480p", w: 854, h: 480 },
 ];
 
-export const EXPORT_FPS_OPTIONS = [24, 30, 60];
+const EXPORT_FPS_OPTIONS = [24, 30, 60];
 
 interface ExportDialogProps {
   open: boolean;
