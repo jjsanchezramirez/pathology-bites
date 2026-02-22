@@ -2,6 +2,78 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 
+/**
+ * @swagger
+ * /api/admin/questions/metadata/categories:
+ *   get:
+ *     summary: Get paginated categories
+ *     description: Retrieve hierarchical categories with pagination, search, parent info, and question counts. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Page number (0-indexed)
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for category name
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved categories
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 categories:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       name:
+ *                         type: string
+ *                       short_form:
+ *                         type: string
+ *                       parent_id:
+ *                         type: string
+ *                         format: uuid
+ *                       level:
+ *                         type: integer
+ *                       color:
+ *                         type: string
+ *                       question_count:
+ *                         type: integer
+ *                       parent_name:
+ *                         type: string
+ *                 totalCategories:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *                 currentPage:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -93,6 +165,59 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/metadata/categories:
+ *   post:
+ *     summary: Create a new category
+ *     description: Create a new hierarchical category. Auto-calculates level based on parent. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Category name (must be unique)
+ *               shortForm:
+ *                 type: string
+ *                 description: Short form abbreviation
+ *               parentId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Parent category ID (for subcategories)
+ *               color:
+ *                 type: string
+ *                 description: Color code for UI display
+ *     responses:
+ *       200:
+ *         description: Category created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 category:
+ *                   type: object
+ *       400:
+ *         description: Bad request - missing category name
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       409:
+ *         description: Conflict - category with this name already exists
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -160,6 +285,60 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/metadata/categories:
+ *   patch:
+ *     summary: Update a category
+ *     description: Update category details. Auto-recalculates level based on parent. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - categoryId
+ *               - name
+ *             properties:
+ *               categoryId:
+ *                 type: string
+ *                 format: uuid
+ *               name:
+ *                 type: string
+ *                 description: New category name (must be unique)
+ *               shortForm:
+ *                 type: string
+ *               parentId:
+ *                 type: string
+ *                 format: uuid
+ *               color:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Category updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 category:
+ *                   type: object
+ *       400:
+ *         description: Bad request - missing categoryId or name
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       409:
+ *         description: Conflict - category with this name already exists
+ *       500:
+ *         description: Internal server error
+ */
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -228,6 +407,47 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/metadata/categories:
+ *   delete:
+ *     summary: Delete a category
+ *     description: Delete a category. Cannot delete if it has subcategories. Unlinks all associated questions. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - categoryId
+ *             properties:
+ *               categoryId:
+ *                 type: string
+ *                 format: uuid
+ *     responses:
+ *       200:
+ *         description: Category deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       400:
+ *         description: Bad request - missing categoryId or has subcategories
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       500:
+ *         description: Internal server error
+ */
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();

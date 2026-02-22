@@ -8,6 +8,67 @@ function createAdminClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
+/**
+ * @swagger
+ * /api/admin/inquiries/{id}:
+ *   delete:
+ *     summary: Delete a single inquiry
+ *     description: Delete a specific inquiry by its ID. The inquiry details are returned in the response for audit purposes. Requires admin role.
+ *     tags:
+ *       - Admin - Inquiries
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the inquiry to delete
+ *     responses:
+ *       200:
+ *         description: Inquiry deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Inquiry deleted successfully
+ *                 deletedInquiry:
+ *                   type: object
+ *                   description: The deleted inquiry object for audit purposes
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - admin access required
+ *       404:
+ *         description: Inquiry not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Inquiry not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 details:
+ *                   type: string
+ */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

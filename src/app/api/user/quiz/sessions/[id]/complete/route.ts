@@ -18,6 +18,113 @@ interface CompleteQuizRequest {
   achievementIds?: string[]; // Client-calculated achievement IDs to unlock
 }
 
+/**
+ * @swagger
+ * /api/user/quiz/sessions/{id}/complete:
+ *   post:
+ *     summary: Complete quiz session
+ *     description: Mark a quiz session as completed, calculate final score, update analytics, check achievements, and generate activity. Supports submitting final answers in the same request for optimization. Idempotent - safe to call multiple times. Requires authentication.
+ *     tags:
+ *       - User - Quiz
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Quiz session ID
+ *     requestBody:
+ *       required: false
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               answers:
+ *                 type: array
+ *                 description: Final answer submissions (optimization to reduce API calls)
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - questionId
+ *                     - selectedAnswerId
+ *                     - timeSpent
+ *                     - timestamp
+ *                   properties:
+ *                     questionId:
+ *                       type: string
+ *                       format: uuid
+ *                     selectedAnswerId:
+ *                       type: string
+ *                       format: uuid
+ *                     timeSpent:
+ *                       type: integer
+ *                     timestamp:
+ *                       type: integer
+ *                       description: Unix timestamp in milliseconds
+ *               achievementIds:
+ *                 type: array
+ *                 description: Client-calculated achievement IDs to check and unlock
+ *                 items:
+ *                   type: string
+ *     responses:
+ *       200:
+ *         description: Quiz completed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     score:
+ *                       type: number
+ *                       description: Final quiz score percentage
+ *                     totalQuestions:
+ *                       type: integer
+ *                     correctAnswers:
+ *                       type: integer
+ *                     totalTimeSpent:
+ *                       type: integer
+ *                       description: Total time spent in seconds
+ *                     completedAt:
+ *                       type: string
+ *                       format: date-time
+ *                 newAchievements:
+ *                   type: array
+ *                   description: Newly unlocked achievements
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       title:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       category:
+ *                         type: string
+ *                 metadata:
+ *                   type: object
+ *                   description: Stats metadata for client-side cache validation
+ *                 message:
+ *                   type: string
+ *                   description: Message if quiz was already completed (idempotency)
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - user can only complete own quiz sessions
+ *       404:
+ *         description: Quiz session not found
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;

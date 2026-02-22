@@ -6,6 +6,162 @@ import { PATHOLOGY_JOURNALS } from "@/shared/utils/domain/pathology-journals";
  * Optimized for pathology research with advanced filtering options
  */
 
+/**
+ * @swagger
+ * /api/admin/questions/fetch-references:
+ *   post:
+ *     summary: Fetch academic references from Semantic Scholar
+ *     description: Search for academic papers using Semantic Scholar API (simplified version for question creation). Returns up to 5 references formatted as citation strings. Requires admin, creator, or reviewer role.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - searchTerms
+ *             properties:
+ *               searchTerms:
+ *                 type: string
+ *                 description: Search query for academic papers
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved references
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 references:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                   description: Array of formatted citation strings
+ *                 cached:
+ *                   type: boolean
+ *       400:
+ *         description: Bad request - missing searchTerms
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - requires admin, creator, or reviewer role
+ *       429:
+ *         description: Rate limited by Semantic Scholar
+ *       500:
+ *         description: Internal server error
+ *   get:
+ *     summary: Advanced search for academic references
+ *     description: Search Semantic Scholar with advanced filtering options (citations, open access, publication type, etc.). Returns detailed paper information. Requires admin, creator, or reviewer role.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: query
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: Search query
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: string
+ *           default: "20"
+ *         description: Maximum number of results
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [citations, year-desc, year-asc, relevance]
+ *           default: citations
+ *         description: Sort order for results
+ *       - in: query
+ *         name: minCitations
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Minimum citation count filter
+ *       - in: query
+ *         name: onlyOpenAccess
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Filter to only open access papers
+ *       - in: query
+ *         name: onlyReviews
+ *         schema:
+ *           type: boolean
+ *           default: false
+ *         description: Filter to only review articles
+ *       - in: query
+ *         name: yearRange
+ *         schema:
+ *           type: string
+ *           enum: [all, last5, last10]
+ *           default: all
+ *         description: Year range filter
+ *       - in: query
+ *         name: venue
+ *         schema:
+ *           type: string
+ *         description: Filter by venue/journal (use "pathology-journals" for curated list)
+ *       - in: query
+ *         name: publicationType
+ *         schema:
+ *           type: string
+ *         description: Filter by publication type
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved papers
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total:
+ *                   type: integer
+ *                 papers:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       paperId:
+ *                         type: string
+ *                       title:
+ *                         type: string
+ *                       authors:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       year:
+ *                         type: integer
+ *                       venue:
+ *                         type: string
+ *                       journal:
+ *                         type: string
+ *                       citationCount:
+ *                         type: integer
+ *                       isOpenAccess:
+ *                         type: boolean
+ *                       url:
+ *                         type: string
+ *       400:
+ *         description: Bad request - missing query parameter
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - requires admin, creator, or reviewer role
+ *       500:
+ *         description: Internal server error
+ */
+
 // Type definitions for Semantic Scholar API responses
 interface SemanticScholarAuthor {
   authorId: string;

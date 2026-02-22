@@ -57,8 +57,10 @@ e2e-results/
 
 # Project-specific
 dev/
-src/wip/
 
 # Local-only sandbox (never committed, never deployed)
 src/app/test/
 src/app/api/test/
+
+# FFmpeg WASM files (download via npm postinstall)
+public/ffmpeg/

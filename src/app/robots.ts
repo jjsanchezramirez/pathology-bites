@@ -9,22 +9,30 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: [
+          // Public pages
           "/",
           "/about",
-          "/privacy",
-          "/terms",
           "/contact",
           "/faq",
-          "/maintenance",
-          "/tools",
-          "/tools/*",
+          "/privacy",
+          "/terms",
+          // Tools
+          "/tools/abpath",
+          "/tools/cell-counter",
+          "/tools/cell-quiz",
+          "/tools/citations",
+          "/tools/genova",
+          "/tools/images",
+          "/tools/lupus-anticoagulant",
+          "/tools/milan",
+          "/tools/virtual-slides",
         ],
         disallow: [
-          // API and protected areas
+          // Protected areas
           "/api/",
           "/admin/",
           "/dashboard/",
-          // Auth pages (explicit disallow)
+          // Auth pages (no SEO value, prevent indexing)
           "/auth-error",
           "/check-email",
           "/email-already-verified",
@@ -36,14 +44,20 @@ export default function robots(): MetadataRoute.Robots {
           "/reset-success",
           "/signup",
           "/verify-email",
-          // Technical paths
+          // Technical and development paths
           "/_next/",
+          "/test/",
           "/private/",
-          "*.json",
           "/temp/",
           "/draft/",
+          "/maintenance",
+          // Prevent indexing of assets
+          "*.json",
+          "*.xml",
+          "*.txt",
         ],
       },
+      // Block all AI scrapers and crawlers
       {
         userAgent: "GPTBot",
         disallow: "/",
@@ -62,6 +76,58 @@ export default function robots(): MetadataRoute.Robots {
       },
       {
         userAgent: "Claude-Web",
+        disallow: "/",
+      },
+      {
+        userAgent: "cohere-ai",
+        disallow: "/",
+      },
+      {
+        userAgent: "Omgilibot",
+        disallow: "/",
+      },
+      {
+        userAgent: "Omgili",
+        disallow: "/",
+      },
+      {
+        userAgent: "PerplexityBot",
+        disallow: "/",
+      },
+      {
+        userAgent: "YouBot",
+        disallow: "/",
+      },
+      {
+        userAgent: "Bytespider",
+        disallow: "/",
+      },
+      {
+        userAgent: "Diffbot",
+        disallow: "/",
+      },
+      {
+        userAgent: "FacebookBot",
+        disallow: "/",
+      },
+      {
+        userAgent: "Google-Extended",
+        disallow: "/",
+      },
+      {
+        userAgent: "ImagesiftBot",
+        disallow: "/",
+      },
+      {
+        userAgent: "Meta-ExternalAgent",
+        disallow: "/",
+      },
+      {
+        userAgent: "Scrapy",
+        disallow: "/",
+      },
+      {
+        userAgent: "AdsBot-Google",
         disallow: "/",
       },
     ],

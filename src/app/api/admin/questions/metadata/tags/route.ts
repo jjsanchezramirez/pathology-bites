@@ -2,6 +2,77 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 
+/**
+ * @swagger
+ * /api/admin/questions/metadata/tags:
+ *   get:
+ *     summary: Get paginated tags
+ *     description: Retrieve tags with pagination, search, and question counts. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Page number (0-indexed)
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for tag name
+ *       - in: query
+ *         name: sortBy
+ *         schema:
+ *           type: string
+ *           enum: [name, recent]
+ *           default: name
+ *         description: Sort order
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved tags
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 tags:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       name:
+ *                         type: string
+ *                       question_count:
+ *                         type: integer
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                 totalTags:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *                 currentPage:
+ *                   type: integer
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -96,6 +167,49 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/metadata/tags:
+ *   post:
+ *     summary: Create a new tag
+ *     description: Create a new tag for categorizing questions. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Tag name (must be unique)
+ *     responses:
+ *       200:
+ *         description: Tag created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 tag:
+ *                   type: object
+ *       400:
+ *         description: Bad request - missing tag name
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       409:
+ *         description: Conflict - tag with this name already exists
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -140,6 +254,53 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/metadata/tags:
+ *   patch:
+ *     summary: Update a tag
+ *     description: Update tag name. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - tagId
+ *               - name
+ *             properties:
+ *               tagId:
+ *                 type: string
+ *                 format: uuid
+ *               name:
+ *                 type: string
+ *                 description: New tag name (must be unique)
+ *     responses:
+ *       200:
+ *         description: Tag updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 tag:
+ *                   type: object
+ *       400:
+ *         description: Bad request - missing tagId or name
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       409:
+ *         description: Conflict - tag with this name already exists
+ *       500:
+ *         description: Internal server error
+ */
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -185,6 +346,47 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/metadata/tags:
+ *   delete:
+ *     summary: Delete a tag
+ *     description: Delete a tag and remove all question associations. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - tagId
+ *             properties:
+ *               tagId:
+ *                 type: string
+ *                 format: uuid
+ *     responses:
+ *       200:
+ *         description: Tag deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       400:
+ *         description: Bad request - missing tagId
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       500:
+ *         description: Internal server error
+ */
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();

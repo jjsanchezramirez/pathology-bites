@@ -16,6 +16,96 @@ function createAdminClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
+/**
+ * @swagger
+ * /api/admin/inquiries/bulk-delete:
+ *   delete:
+ *     summary: Bulk delete multiple inquiries
+ *     description: Delete multiple inquiries at once by providing an array of inquiry IDs. Supports deletion of up to 100 inquiries in a single request. All inquiries must exist, or the operation will fail. Requires admin role.
+ *     tags:
+ *       - Admin - Inquiries
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - inquiryIds
+ *             properties:
+ *               inquiryIds:
+ *                 type: array
+ *                 description: Array of inquiry IDs to delete (min 1, max 100)
+ *                 minItems: 1
+ *                 maxItems: 100
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *     responses:
+ *       200:
+ *         description: Inquiries deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 deletedCount:
+ *                   type: integer
+ *                   description: Number of inquiries deleted
+ *                 message:
+ *                   type: string
+ *                   example: Successfully deleted 5 inquiries
+ *       400:
+ *         description: Bad request - invalid data or validation errors
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid request data
+ *                 details:
+ *                   type: array
+ *                   description: Validation error details
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - admin access required
+ *       404:
+ *         description: Some inquiries not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Some inquiries not found
+ *                 notFoundIds:
+ *                   type: array
+ *                   items:
+ *                     type: string
+ *                     format: uuid
+ *                 foundCount:
+ *                   type: integer
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 details:
+ *                   type: string
+ */
 export async function DELETE(request: NextRequest) {
   try {
     console.log("Bulk delete inquiries API called");

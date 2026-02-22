@@ -12,6 +12,48 @@ function createAdminClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
+/**
+ * @swagger
+ * /api/user/account/delete:
+ *   delete:
+ *     summary: Delete own user account
+ *     description: Allow authenticated user to delete their own account. Content creators (admin/creator/reviewer) are soft-deleted to preserve content attribution, while regular users are hard-deleted. Requires password verification and authentication.
+ *     tags:
+ *       - User - Account
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 format: password
+ *                 description: User's current password for verification
+ *     responses:
+ *       200:
+ *         description: Account deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Bad request - missing password or invalid password
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       500:
+ *         description: Internal server error
+ */
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();

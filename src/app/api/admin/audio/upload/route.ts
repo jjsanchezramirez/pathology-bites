@@ -14,6 +14,106 @@ const ALLOWED_AUDIO_TYPES = [
 
 const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
 
+/**
+ * @swagger
+ * /api/admin/audio/upload:
+ *   post:
+ *     summary: Upload audio file
+ *     description: Upload an audio file to R2 storage and create a database record. Accepts all browser-supported audio formats (MP3, M4A, WAV, WebM, OGG) up to 50MB. Files are stored in their original format. Requires admin role.
+ *     tags:
+ *       - Admin - Audio
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: Audio file in any browser-supported format (MP3, M4A, WAV, WebM, OGG - max 50MB, stored as-is)
+ *               title:
+ *                 type: string
+ *                 description: Title for the audio file (defaults to filename if not provided)
+ *                 example: "Pulmonary Edema Explanation"
+ *               description:
+ *                 type: string
+ *                 description: Description of the audio content
+ *                 example: "Audio explanation of pulmonary edema pathophysiology"
+ *               pathology_category_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID of the associated pathology category (optional)
+ *                 example: "123e4567-e89b-12d3-a456-426614174000"
+ *               generated_text:
+ *                 type: string
+ *                 description: Transcript or generated text from the audio (optional)
+ *                 example: "Pulmonary edema is characterized by fluid accumulation in the alveoli..."
+ *               duration_seconds:
+ *                 type: number
+ *                 format: float
+ *                 description: Duration of the audio file in seconds (optional)
+ *                 example: 125.5
+ *     responses:
+ *       200:
+ *         description: Audio file uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 audio:
+ *                   type: object
+ *                   description: Created audio record with URL, storage path, metadata, and file information
+ *       400:
+ *         description: Bad request - no file provided, invalid file type, or file too large
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid file type \"audio/aac\". Allowed: MP3, M4A, WAV, WebM, OGG."
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Authentication required."
+ *       403:
+ *         description: Forbidden - admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Administrator privileges required."
+ *       500:
+ *         description: Internal server error - storage upload failed or database error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to upload audio to storage."
+ */
 export async function POST(request: NextRequest) {
   let uploadedStoragePath: string | null = null;
 

@@ -1,5 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+
+/**
+ * @swagger
+ * /api/admin/questions/metadata/tags/merge:
+ *   post:
+ *     summary: Merge multiple tags into one
+ *     description: Merge source tags into a target tag, reassigning all questions and then deleting source tags. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - sourceTagIds
+ *               - targetTagId
+ *             properties:
+ *               sourceTagIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: Array of source tag IDs to merge
+ *               targetTagId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Target tag ID (cannot be in source tags)
+ *     responses:
+ *       200:
+ *         description: Tags merged successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                 mergedCount:
+ *                   type: integer
+ *       400:
+ *         description: Bad request - missing IDs or target in source tags
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();

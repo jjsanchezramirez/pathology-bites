@@ -17,6 +17,45 @@ interface UserInitData {
   settings: unknown;
 }
 
+/**
+ * @swagger
+ * /api/user/init:
+ *   get:
+ *     summary: Get initial user data and settings
+ *     description: Retrieves combined user performance data and settings in a single call. This endpoint optimizes initial page load by combining user profile, settings, and performance data. Requires authentication.
+ *     tags:
+ *       - User - Account
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user initialization data
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 userData:
+ *                   type: object
+ *                   description: User performance data from get_user_performance_data RPC
+ *                   nullable: true
+ *                 settings:
+ *                   type: object
+ *                   properties:
+ *                     quiz_settings:
+ *                       type: object
+ *                       description: Quiz preferences including default mode, timing, and question count
+ *                     notification_settings:
+ *                       type: object
+ *                       description: Notification preferences
+ *                     ui_settings:
+ *                       type: object
+ *                       description: UI preferences including text zoom and theme
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   try {
     const supabase = await createClient();

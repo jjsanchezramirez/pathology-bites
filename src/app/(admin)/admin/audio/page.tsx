@@ -99,46 +99,28 @@ function RowActions({
   );
 }
 
-async function compressAudioToMP3(
-  file: File,
-  onProgress?: (percent: number) => void
-): Promise<File> {
-  const { FFmpeg } = await import("@ffmpeg/ffmpeg");
-  const { fetchFile } = await import("@ffmpeg/util");
+/**
+ * Extract audio duration using native HTML5 Audio API
+ * No FFmpeg required - browsers can handle all common audio formats
+ */
+async function getAudioDuration(file: File): Promise<number | null> {
+  return new Promise((resolve) => {
+    const audio = new Audio();
+    const url = URL.createObjectURL(file);
+    audio.src = url;
 
-  const ffmpeg = new FFmpeg();
-  ffmpeg.on("progress", ({ progress }: { progress: number }) => {
-    onProgress?.(Math.round(progress * 100));
+    audio.addEventListener("loadedmetadata", () => {
+      URL.revokeObjectURL(url);
+      resolve(isFinite(audio.duration) ? audio.duration : null);
+    });
+
+    audio.addEventListener("error", () => {
+      URL.revokeObjectURL(url);
+      resolve(null);
+    });
+
+    audio.load();
   });
-
-  await ffmpeg.load({
-    coreURL: "/ffmpeg/ffmpeg-core.js",
-    wasmURL: "/ffmpeg/ffmpeg-core.wasm",
-  });
-
-  const ext = file.name.split(".").pop()?.toLowerCase() || "wav";
-  const inputName = `input.${ext}`;
-  await ffmpeg.writeFile(inputName, await fetchFile(file));
-
-  await ffmpeg.exec([
-    "-i",
-    inputName,
-    "-codec:a",
-    "libmp3lame",
-    "-q:a",
-    "3",
-    "-ar",
-    "24000",
-    "-ac",
-    "1",
-    "-id3v2_version",
-    "3",
-    "output.mp3",
-  ]);
-
-  const mp3Data = await ffmpeg.readFile("output.mp3");
-  const mp3Blob = new Blob([mp3Data as unknown as BlobPart], { type: "audio/mpeg" });
-  return new File([mp3Blob], file.name.replace(/\.[^.]+$/, ".mp3"), { type: "audio/mpeg" });
 }
 
 export default function AdminAudioPage() {
@@ -148,8 +130,6 @@ export default function AdminAudioPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [audioFileReady, setAudioFileReady] = useState<AudioFileReadyState | null>(null);
-  const [isCompressing, setIsCompressing] = useState(false);
-  const [compressionProgress, setCompressionProgress] = useState(0);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedAudio, setSelectedAudio] = useState<Audio | null>(null);
@@ -190,40 +170,18 @@ export default function AdminAudioPage() {
     setUploadDialogOpen(true);
     setAudioFileReady(null);
 
-    const originalSize = file.size;
-    let finalFile = file;
+    // Get duration using native Audio API - no FFmpeg needed
+    const duration = await getAudioDuration(file);
 
-    if (file.type !== "audio/mpeg") {
-      setIsCompressing(true);
-      setCompressionProgress(0);
-      try {
-        finalFile = await compressAudioToMP3(file, setCompressionProgress);
-      } catch (err) {
-        console.error("Compression failed:", err);
-        toast.error("Audio compression failed. Uploading original file.");
-        finalFile = file;
-      } finally {
-        setIsCompressing(false);
-      }
+    if (duration === null) {
+      toast.error("Could not read audio duration. File may be corrupted.");
     }
 
-    // Extract duration from the final file
-    const duration = await new Promise<number | null>((resolve) => {
-      const audio = new Audio();
-      const url = URL.createObjectURL(finalFile);
-      audio.src = url;
-      audio.addEventListener("loadedmetadata", () => {
-        URL.revokeObjectURL(url);
-        resolve(isFinite(audio.duration) ? audio.duration : null);
-      });
-      audio.addEventListener("error", () => {
-        URL.revokeObjectURL(url);
-        resolve(null);
-      });
-      audio.load();
+    setAudioFileReady({
+      file,
+      originalSize: file.size,
+      duration,
     });
-
-    setAudioFileReady({ file: finalFile, originalSize, duration });
   }, []);
 
   const loadAudio = useCallback(async () => {
@@ -562,8 +520,6 @@ export default function AdminAudioPage() {
           setUploadDialogOpen(open);
           if (!open) {
             setAudioFileReady(null);
-            setIsCompressing(false);
-            setCompressionProgress(0);
           }
         }}
         onSuccess={() => {
@@ -573,8 +529,6 @@ export default function AdminAudioPage() {
         }}
         fileReady={audioFileReady}
         onRequestFilePick={() => fileInputRef.current?.click()}
-        isCompressing={isCompressing}
-        compressionProgress={compressionProgress}
       />
 
       {/* Edit Dialog */}

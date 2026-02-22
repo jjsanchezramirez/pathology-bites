@@ -8,6 +8,79 @@ function createAdminClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
+/**
+ * @swagger
+ * /api/admin/waitlist:
+ *   get:
+ *     summary: Get waitlist entries or export as CSV
+ *     description: Retrieve paginated waitlist entries or export all entries as CSV. Requires admin role.
+ *     tags:
+ *       - Admin - Waitlist
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 1
+ *         description: Page number (1-indexed)
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 50
+ *         description: Number of entries per page
+ *       - in: query
+ *         name: export
+ *         schema:
+ *           type: string
+ *           enum: [csv]
+ *         description: Export format. When set to 'csv', returns all entries as a downloadable CSV file
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved waitlist entries or CSV export
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       email:
+ *                         type: string
+ *                         format: email
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                 pagination:
+ *                   type: object
+ *                   properties:
+ *                     page:
+ *                       type: integer
+ *                     limit:
+ *                       type: integer
+ *                     total:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ *           text/csv:
+ *             schema:
+ *               type: string
+ *               description: CSV file with columns Email, Joined Date, ID
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - admin access required
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: Request) {
   try {
     // Auth check - require admin role only

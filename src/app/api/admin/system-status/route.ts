@@ -22,6 +22,73 @@ interface SystemHealth {
   lastUpdated: string;
 }
 
+/**
+ * @swagger
+ * /api/admin/system-status:
+ *   get:
+ *     summary: Get comprehensive system health status
+ *     description: Retrieve detailed system health information including service statuses (Vercel, Supabase, Cloudflare R2), performance metrics, active user counts, and storage usage. Requires admin role.
+ *     tags:
+ *       - Admin - System
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved system health status
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 vercelStatus:
+ *                   type: string
+ *                   enum: [operational, error]
+ *                   description: Vercel platform status
+ *                 supabaseStatus:
+ *                   type: string
+ *                   enum: [operational, error]
+ *                   description: Supabase database status
+ *                 cloudflareR2Status:
+ *                   type: string
+ *                   enum: [operational, error]
+ *                   description: Cloudflare R2 storage status
+ *                 responseTime:
+ *                   type: integer
+ *                   description: Total API response time in milliseconds
+ *                 dbQueryTime:
+ *                   type: integer
+ *                   description: Average database query time in milliseconds
+ *                 dbConnections:
+ *                   type: integer
+ *                   description: Number of active database connections
+ *                 activeUsers:
+ *                   type: integer
+ *                   description: Users active in the last 24 hours (by last sign-in)
+ *                 activeUsersWeekly:
+ *                   type: integer
+ *                   description: Users active in the last 7 days (by last sign-in)
+ *                 activeUsersMonthly:
+ *                   type: integer
+ *                   description: Users active in the last 30 days (by last sign-in)
+ *                 storageUsage:
+ *                   type: integer
+ *                   description: Supabase storage usage in MB
+ *                 r2StorageUsage:
+ *                   type: integer
+ *                   description: Cloudflare R2 storage usage in MB
+ *                 r2StorageFormatted:
+ *                   type: string
+ *                   description: Human-readable formatted R2 storage usage
+ *                   example: 2.5 GB
+ *                 lastUpdated:
+ *                   type: string
+ *                   format: date-time
+ *                   description: Timestamp of when the status was retrieved
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - admin access required
+ */
 export async function GET(request: Request) {
   const startTime = performance.now();
 

@@ -3,12 +3,60 @@ import { NextRequest, NextResponse } from "next/server";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 
 /**
- * POST /api/questions/:id/reassign
- *
- * Reassign a question to a different reviewer (admin or creator action)
- * - Can reassign questions in pending_review state
- * - Requires new reviewer_id in request body
- * - Only admin or creator can reassign
+ * @swagger
+ * /api/admin/questions/{id}/reassign:
+ *   post:
+ *     summary: Reassign question to different reviewer
+ *     description: Change the assigned reviewer for a pending_review question. Only admin or question creator can reassign. Requires new reviewer to have admin or reviewer role.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Question ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - reviewer_id
+ *             properties:
+ *               reviewer_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID of new reviewer (must have admin or reviewer role)
+ *     responses:
+ *       200:
+ *         description: Question reassigned successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 question:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Bad request - invalid reviewer_id or question not in pending_review
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - only admin or creator can reassign
+ *       404:
+ *         description: Question or reviewer not found
+ *       500:
+ *         description: Internal server error
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {

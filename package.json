@@ -3,6 +3,7 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "setup-ffmpeg": "node dev/scripts/build/setup-ffmpeg.js",
     "tailwind": "tailwindcss --input ./src/styles/globals.css --output ./src/styles/output.css",
     "dev": "next dev",
     "build": "next build",

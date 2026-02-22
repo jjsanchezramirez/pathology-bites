@@ -2,6 +2,92 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
+/**
+ * @swagger
+ * /api/admin/audio/update-duration:
+ *   post:
+ *     summary: Update audio duration
+ *     description: Update the duration (in seconds) of an existing audio file. Requires admin role.
+ *     tags:
+ *       - Admin - Audio
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *               - duration
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: The ID of the audio file to update
+ *                 example: "123e4567-e89b-12d3-a456-426614174000"
+ *               duration:
+ *                 type: number
+ *                 format: float
+ *                 minimum: 0.01
+ *                 description: Duration of the audio file in seconds (must be greater than 0)
+ *                 example: 125.5
+ *     responses:
+ *       200:
+ *         description: Audio duration updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 audio:
+ *                   type: object
+ *                   description: Updated audio record
+ *       400:
+ *         description: Bad request - invalid audio ID or duration
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Invalid audio ID or duration."
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Authentication required."
+ *       403:
+ *         description: Forbidden - admin access required
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Administrator privileges required."
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: "Failed to update duration: Database error"
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();

@@ -3,6 +3,98 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
+/**
+ * @swagger
+ * /api/user/data-export:
+ *   post:
+ *     summary: Export complete user data
+ *     description: Export all user data including profile, settings, quiz sessions, quiz attempts, favorites, question flags, and question reports. Creates an audit log entry for GDPR compliance. Requires authentication.
+ *     tags:
+ *       - User - Account
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: User data exported successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     export_info:
+ *                       type: object
+ *                       properties:
+ *                         generated_at:
+ *                           type: string
+ *                           format: date-time
+ *                         user_id:
+ *                           type: string
+ *                           format: uuid
+ *                         export_type:
+ *                           type: string
+ *                     profile:
+ *                       type: object
+ *                       description: User profile data
+ *                     settings:
+ *                       type: object
+ *                       description: User settings
+ *                       nullable: true
+ *                     quiz_data:
+ *                       type: object
+ *                       properties:
+ *                         sessions:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                         attempts:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                         total_sessions:
+ *                           type: integer
+ *                         total_attempts:
+ *                           type: integer
+ *                     favorites:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                     question_flags:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                     question_reports:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                     statistics:
+ *                       type: object
+ *                       properties:
+ *                         total_quiz_sessions:
+ *                           type: integer
+ *                         total_quiz_attempts:
+ *                           type: integer
+ *                         total_favorites:
+ *                           type: integer
+ *                         total_flags_created:
+ *                           type: integer
+ *                         total_reports_created:
+ *                           type: integer
+ *                         account_created:
+ *                           type: string
+ *                           format: date-time
+ *                         last_updated:
+ *                           type: string
+ *                           format: date-time
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();

@@ -10,7 +10,6 @@ node_modules
 
 # Development files
 dev/
-src/wip/
 src/app/test/
 
 # Local configuration
@@ -38,3 +37,6 @@ expertpath/
 anki/
 json/anki/
 console.log
+
+# FFmpeg WASM files (large binaries, download via postinstall)
+public/ffmpeg/

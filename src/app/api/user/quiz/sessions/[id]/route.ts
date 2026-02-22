@@ -13,6 +13,46 @@ interface QuizSessionUpdate {
   status?: QuizStatus;
 }
 
+/**
+ * @swagger
+ * /api/user/quiz/sessions/{id}:
+ *   get:
+ *     summary: Get quiz session details
+ *     description: Retrieve detailed information about a specific quiz session. Users can only access their own quiz sessions. Requires authentication.
+ *     tags:
+ *       - User - Quiz
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Quiz session ID
+ *     responses:
+ *       200:
+ *         description: Quiz session retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   description: Quiz session details including config, status, and progress
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - user can only access own quiz sessions
+ *       404:
+ *         description: Quiz session not found
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -57,6 +97,91 @@ interface BatchAnswerSubmission {
   timestamp: number;
 }
 
+/**
+ * @swagger
+ * /api/user/quiz/sessions/{id}:
+ *   patch:
+ *     summary: Update quiz session
+ *     description: Update quiz session progress, state, or submit answers in batch. Supports actions like start, pause, resume, and general progress updates. Optimized to accept answer submissions to reduce API calls. Requires authentication.
+ *     tags:
+ *       - User - Quiz
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Quiz session ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               action:
+ *                 type: string
+ *                 enum: [start, pause, resume]
+ *                 description: Action to perform on quiz session
+ *               timeRemaining:
+ *                 type: integer
+ *                 description: Time remaining in seconds (for timed quizzes)
+ *               currentQuestionIndex:
+ *                 type: integer
+ *                 description: Current question index
+ *               totalTimeSpent:
+ *                 type: integer
+ *                 description: Total time spent in seconds
+ *               status:
+ *                 type: string
+ *                 enum: [active, paused, completed, abandoned]
+ *                 description: Quiz session status
+ *               answers:
+ *                 type: array
+ *                 description: Batch answer submissions (optimization to reduce API calls)
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - questionId
+ *                     - selectedAnswerId
+ *                     - timeSpent
+ *                     - timestamp
+ *                   properties:
+ *                     questionId:
+ *                       type: string
+ *                       format: uuid
+ *                     selectedAnswerId:
+ *                       type: string
+ *                       format: uuid
+ *                     timeSpent:
+ *                       type: integer
+ *                     timestamp:
+ *                       type: integer
+ *                       description: Unix timestamp in milliseconds
+ *     responses:
+ *       200:
+ *         description: Quiz session updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - user can only update own quiz sessions
+ *       404:
+ *         description: Quiz session not found
+ *       500:
+ *         description: Internal server error
+ */
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
@@ -191,6 +316,45 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
   }
 }
 
+/**
+ * @swagger
+ * /api/user/quiz/sessions/{id}:
+ *   delete:
+ *     summary: Delete quiz session
+ *     description: Delete a quiz session and all associated quiz attempts. Users can only delete their own quiz sessions. Requires authentication.
+ *     tags:
+ *       - User - Quiz
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Quiz session ID
+ *     responses:
+ *       200:
+ *         description: Quiz session deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - user can only delete own quiz sessions
+ *       404:
+ *         description: Quiz session not found
+ *       500:
+ *         description: Internal server error
+ */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

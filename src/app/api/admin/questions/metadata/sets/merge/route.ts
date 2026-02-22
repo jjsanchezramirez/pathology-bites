@@ -1,5 +1,63 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+
+/**
+ * @swagger
+ * /api/admin/questions/metadata/sets/merge:
+ *   post:
+ *     summary: Merge multiple question sets into one
+ *     description: Merge source sets into a target set, moving all questions and then deleting source sets. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - sourceSetIds
+ *               - targetSetId
+ *             properties:
+ *               sourceSetIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: Array of source set IDs to merge
+ *               targetSetId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Target set ID
+ *     responses:
+ *       200:
+ *         description: Sets merged successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 mergedCount:
+ *                   type: integer
+ *                 movedQuestions:
+ *                   type: integer
+ *                 targetSet:
+ *                   type: string
+ *       400:
+ *         description: Bad request - missing IDs
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       404:
+ *         description: Source or target set not found
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();

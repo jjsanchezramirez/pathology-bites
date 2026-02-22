@@ -171,6 +171,210 @@ interface UnifiedPerformanceResponse {
   };
 }
 
+/**
+ * @swagger
+ * /api/user/performance-data:
+ *   get:
+ *     summary: Get unified user performance data
+ *     description: Retrieve comprehensive user performance data including summary statistics, category performance, timeline, activity heatmap, achievements, dashboard metrics, and quiz initialization data. This unified endpoint consolidates multiple data sources into a single optimized call. Requires authentication.
+ *     tags:
+ *       - User - Dashboard
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Performance data retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     summary:
+ *                       type: object
+ *                       description: Overall performance summary
+ *                       properties:
+ *                         overallScore:
+ *                           type: integer
+ *                         completedQuizzes:
+ *                           type: integer
+ *                         totalAttempts:
+ *                           type: integer
+ *                         correctAttempts:
+ *                           type: integer
+ *                         userPercentile:
+ *                           type: integer
+ *                         peerRank:
+ *                           type: integer
+ *                         totalUsers:
+ *                           type: integer
+ *                     subjects:
+ *                       type: object
+ *                       properties:
+ *                         needsImprovement:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                         mastered:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                     timeline:
+ *                       type: array
+ *                       description: Performance timeline for last 30 days
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           date:
+ *                             type: string
+ *                             format: date
+ *                           accuracy:
+ *                             type: number
+ *                           quizzes:
+ *                             type: integer
+ *                     categories:
+ *                       type: array
+ *                       description: Detailed category performance with trends
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           category_id:
+ *                             type: string
+ *                           category_name:
+ *                             type: string
+ *                           total_attempts:
+ *                             type: integer
+ *                           correct_attempts:
+ *                             type: integer
+ *                           accuracy:
+ *                             type: integer
+ *                           average_time:
+ *                             type: integer
+ *                           last_attempt_at:
+ *                             type: string
+ *                             format: date-time
+ *                           recent_performance:
+ *                             type: array
+ *                             items:
+ *                               type: object
+ *                           trend:
+ *                             type: string
+ *                             enum: [up, down, stable]
+ *                     heatmap:
+ *                       type: object
+ *                       description: Activity heatmap for last 365 days
+ *                       properties:
+ *                         data:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                             properties:
+ *                               date:
+ *                                 type: string
+ *                                 format: date
+ *                               quizzes:
+ *                                 type: integer
+ *                               questions:
+ *                                 type: integer
+ *                         stats:
+ *                           type: object
+ *                           properties:
+ *                             avgQuestionsPerDay:
+ *                               type: integer
+ *                             avgQuizzesPerDay:
+ *                               type: string
+ *                             longestStreak:
+ *                               type: integer
+ *                             currentStreak:
+ *                               type: integer
+ *                             totalQuestions:
+ *                               type: integer
+ *                             totalQuizzes:
+ *                               type: integer
+ *                             daysWithActivity:
+ *                               type: integer
+ *                     achievements:
+ *                       type: object
+ *                       description: Achievement progress and unlocked achievements
+ *                       properties:
+ *                         stats:
+ *                           type: object
+ *                           description: Statistics used for achievement calculation
+ *                         definitions:
+ *                           type: array
+ *                           description: All available achievements
+ *                           items:
+ *                             type: object
+ *                         progress:
+ *                           type: array
+ *                           description: User progress towards each achievement
+ *                           items:
+ *                             type: object
+ *                     dashboard:
+ *                       type: object
+ *                       description: Dashboard-specific metrics
+ *                       properties:
+ *                         allQuestions:
+ *                           type: integer
+ *                         needsReview:
+ *                           type: integer
+ *                         mastered:
+ *                           type: integer
+ *                         unused:
+ *                           type: integer
+ *                         totalQuestions:
+ *                           type: integer
+ *                         completedQuestions:
+ *                           type: integer
+ *                         averageScore:
+ *                           type: integer
+ *                         studyStreak:
+ *                           type: integer
+ *                         recentQuizzes:
+ *                           type: integer
+ *                         weeklyGoal:
+ *                           type: integer
+ *                         currentWeekProgress:
+ *                           type: integer
+ *                         recentActivity:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                     quizInit:
+ *                       type: object
+ *                       description: Data for quiz initialization page
+ *                       properties:
+ *                         sessionTitles:
+ *                           type: array
+ *                           items:
+ *                             type: string
+ *                         categories:
+ *                           type: array
+ *                           items:
+ *                             type: object
+ *                             properties:
+ *                               id:
+ *                                 type: string
+ *                               name:
+ *                                 type: string
+ *                               shortName:
+ *                                 type: string
+ *                               parent:
+ *                                 type: string
+ *                                 enum: [AP, CP]
+ *                               questionStats:
+ *                                 type: object
+ *                         questionTypeStats:
+ *                           type: object
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();

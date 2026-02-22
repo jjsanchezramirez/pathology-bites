@@ -9,6 +9,64 @@ import {
   DEFAULT_UI_SETTINGS,
 } from "@/shared/config/user-settings-defaults";
 
+/**
+ * @swagger
+ * /api/user/settings:
+ *   get:
+ *     summary: Get user settings
+ *     description: Retrieve user's quiz settings, notification preferences, and UI preferences. Creates default settings if none exist. Requires authentication.
+ *     tags:
+ *       - User - Settings
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved user settings
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     quiz_settings:
+ *                       type: object
+ *                       properties:
+ *                         default_question_count:
+ *                           type: integer
+ *                           enum: [5, 10, 25, 50]
+ *                         default_mode:
+ *                           type: string
+ *                           enum: [tutor, practice]
+ *                         default_timing:
+ *                           type: string
+ *                           enum: [timed, untimed]
+ *                         default_question_type:
+ *                           type: string
+ *                           enum: [all, unused, needsReview, marked, mastered, incorrect, correct]
+ *                         default_category_selection:
+ *                           type: string
+ *                           enum: [all, ap_only, cp_only, custom]
+ *                     notification_settings:
+ *                       type: object
+ *                       description: User notification preferences
+ *                     ui_settings:
+ *                       type: object
+ *                       description: User interface preferences including text zoom
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                     updated_at:
+ *                       type: string
+ *                       format: date-time
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -111,6 +169,65 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/user/settings:
+ *   patch:
+ *     summary: Update user settings
+ *     description: Update a specific section of user settings (quiz_settings, notification_settings, or ui_settings). Merges new values with existing settings. Requires authentication.
+ *     tags:
+ *       - User - Settings
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - section
+ *               - settings
+ *             properties:
+ *               section:
+ *                 type: string
+ *                 enum: [quiz_settings, notification_settings, ui_settings]
+ *                 description: The settings section to update
+ *               settings:
+ *                 type: object
+ *                 description: Settings object with fields to update (will be merged with existing settings)
+ *     responses:
+ *       200:
+ *         description: Settings updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     quiz_settings:
+ *                       type: object
+ *                     notification_settings:
+ *                       type: object
+ *                     ui_settings:
+ *                       type: object
+ *                     created_at:
+ *                       type: string
+ *                       format: date-time
+ *                     updated_at:
+ *                       type: string
+ *                       format: date-time
+ *       400:
+ *         description: Bad request - invalid section or settings
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       500:
+ *         description: Internal server error
+ */
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();

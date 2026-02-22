@@ -38,7 +38,68 @@ function getGroupTitle(groupKey: string): string {
   return titles[groupKey] || groupKey;
 }
 
-// GET /api/dashboard/activities
+/**
+ * @swagger
+ * /api/user/dashboard/activities:
+ *   get:
+ *     summary: Get user's activity feed
+ *     description: Retrieve user's recent activities grouped by time period (today, yesterday, this week, etc.). Requires authentication.
+ *     tags:
+ *       - User - Dashboard
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *           default: 20
+ *         description: Maximum number of activities to return
+ *     responses:
+ *       200:
+ *         description: Activities retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     groups:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           key:
+ *                             type: string
+ *                             enum: [today, yesterday, this_week, last_week, earlier]
+ *                           title:
+ *                             type: string
+ *                           count:
+ *                             type: integer
+ *                           activities:
+ *                             type: array
+ *                             items:
+ *                               type: object
+ *                     stats:
+ *                       type: object
+ *                       properties:
+ *                         total:
+ *                           type: integer
+ *                         unread:
+ *                           type: integer
+ *                         byType:
+ *                           type: object
+ *                           additionalProperties:
+ *                             type: integer
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -117,7 +178,72 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/dashboard/activities - Create new activity
+/**
+ * @swagger
+ * /api/user/dashboard/activities:
+ *   post:
+ *     summary: Create a new activity
+ *     description: Create a new activity entry for the user. Activities track user actions like quiz completion, achievements, etc. Requires authentication.
+ *     tags:
+ *       - User - Dashboard
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - type
+ *               - title
+ *             properties:
+ *               type:
+ *                 type: string
+ *                 enum: [quiz_completed, quiz_started, subject_mastered, study_streak, performance_milestone, badge_earned, weak_area_improved]
+ *                 description: Type of activity
+ *               title:
+ *                 type: string
+ *                 description: Activity title
+ *               description:
+ *                 type: string
+ *                 description: Activity description
+ *               quiz_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Related quiz session ID (if applicable)
+ *               subject_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Related subject/category ID (if applicable)
+ *               data:
+ *                 type: object
+ *                 description: Additional activity data
+ *               priority:
+ *                 type: string
+ *                 enum: [low, medium, high]
+ *                 default: medium
+ *                 description: Activity priority level
+ *     responses:
+ *       200:
+ *         description: Activity created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   description: Created activity object
+ *       400:
+ *         description: Bad request - missing required fields or invalid activity type
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();

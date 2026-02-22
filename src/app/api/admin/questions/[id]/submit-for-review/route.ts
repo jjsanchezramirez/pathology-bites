@@ -5,13 +5,61 @@ import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
 /**
- * POST /api/questions/:id/submit-for-review
- *
- * Submit a question for review (creator action)
- * - Changes status from draft → pending_review OR rejected → pending_review
- * - Requires reviewer_id in request body
- * - Clears reviewer_feedback when resubmitting rejected question
- * - Only creator or admin can submit
+ * @swagger
+ * /api/admin/questions/{id}/submit-for-review:
+ *   post:
+ *     summary: Submit question for review
+ *     description: Submit a draft or rejected question for review by assigning a reviewer. Changes status to pending_review and notifies reviewer. Clears previous feedback. Only creator or admin can submit.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Question ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - reviewer_id
+ *             properties:
+ *               reviewer_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID of reviewer to assign (must have admin or reviewer role)
+ *               resubmission_notes:
+ *                 type: string
+ *                 description: Notes about changes made (optional, for rejected → pending transitions)
+ *     responses:
+ *       200:
+ *         description: Question submitted for review successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 question:
+ *                   type: object
+ *       400:
+ *         description: Bad request - invalid reviewer_id or question not in draft/rejected status
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - only creator or admin can submit
+ *       404:
+ *         description: Question or reviewer not found
+ *       500:
+ *         description: Internal server error
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {

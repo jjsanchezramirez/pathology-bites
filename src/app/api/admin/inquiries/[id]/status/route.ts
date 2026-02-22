@@ -13,6 +13,85 @@ function createAdminClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
+/**
+ * @swagger
+ * /api/admin/inquiries/{id}/status:
+ *   patch:
+ *     summary: Update inquiry status
+ *     description: Update the status of a specific inquiry. Status can be changed to pending, resolved, or closed. The updated_at timestamp is automatically updated. Requires admin role.
+ *     tags:
+ *       - Admin - Inquiries
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the inquiry
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - status
+ *             properties:
+ *               status:
+ *                 type: string
+ *                 enum: [pending, resolved, closed]
+ *                 description: The new status for the inquiry
+ *     responses:
+ *       200:
+ *         description: Inquiry status updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Inquiry status updated to resolved
+ *                 inquiry:
+ *                   type: object
+ *                   description: The updated inquiry object
+ *       400:
+ *         description: Bad request - invalid status value
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid request data
+ *                 details:
+ *                   type: array
+ *                   description: Validation error details
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - admin access required
+ *       404:
+ *         description: Inquiry not found
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                 details:
+ *                   type: string
+ */
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const resolvedParams = await params;

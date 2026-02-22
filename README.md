@@ -1665,13 +1665,27 @@ src/
    R2_SECRET_ACCESS_KEY=your_r2_secret_key
    ```
 
-3. **Start development:**
+3. **Setup FFmpeg (for admin features):**
+
+   If you plan to use Lesson Studio or Audio Manager admin features:
+
+   ```bash
+   npm run setup-ffmpeg
+   ```
+
+   This downloads ~30MB of FFmpeg WASM files needed for client-side media processing. These files are:
+   - ✅ Local development only
+   - ✅ Not committed to Git
+   - ✅ Not deployed to Vercel
+   - ℹ️ Only needed for admin features (optional for regular development)
+
+4. **Start development:**
 
    ```bash
    npm run dev
    ```
 
-4. **Access the application:**
+5. **Access the application:**
    - Main app: [http://localhost:3000](http://localhost:3000)
    - Tools: [http://localhost:3000/tools](http://localhost:3000/tools)
    - Admin: [http://localhost:3000/admin](http://localhost:3000/admin)

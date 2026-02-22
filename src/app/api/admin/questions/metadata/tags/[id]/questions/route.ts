@@ -1,5 +1,57 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+
+/**
+ * @swagger
+ * /api/admin/questions/metadata/tags/{id}/questions:
+ *   get:
+ *     summary: Get questions for a tag
+ *     description: Retrieve all questions associated with a specific tag. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Tag ID
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved questions
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 questions:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       title:
+ *                         type: string
+ *                       stem:
+ *                         type: string
+ *                       category:
+ *                         type: string
+ *                 count:
+ *                   type: integer
+ *       400:
+ *         description: Bad request - missing tag ID
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();

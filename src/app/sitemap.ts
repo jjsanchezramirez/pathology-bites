@@ -5,37 +5,63 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pathologybites.com";
   const currentDate = new Date();
 
-  // Static pages with high priority - build time generation only
+  // Static pages optimized for SEO
   const staticPages: MetadataRoute.Sitemap = [
-    // Homepage
+    // Homepage - highest priority
     {
       url: baseUrl,
       lastModified: currentDate,
       changeFrequency: "daily",
       priority: 1.0,
     },
-    // Main static pages
+
+    // High-value tool pages (primary features)
     {
-      url: `${baseUrl}/about`,
+      url: `${baseUrl}/tools/virtual-slides`,
+      lastModified: currentDate,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/tools/images`,
+      lastModified: currentDate,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/tools/cell-quiz`,
       lastModified: currentDate,
       changeFrequency: "monthly",
       priority: 0.8,
     },
+
+    // Utility tools (high value for users)
     {
-      url: `${baseUrl}/contact`,
+      url: `${baseUrl}/tools/citations`,
       lastModified: currentDate,
       changeFrequency: "monthly",
       priority: 0.7,
     },
     {
-      url: `${baseUrl}/faq`,
+      url: `${baseUrl}/tools/milan`,
       lastModified: currentDate,
       changeFrequency: "monthly",
       priority: 0.7,
     },
-    // Tools section
     {
-      url: `${baseUrl}/tools`,
+      url: `${baseUrl}/tools/genova`,
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/tools/lupus-anticoagulant`,
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
+    {
+      url: `${baseUrl}/tools/cell-counter`,
       lastModified: currentDate,
       changeFrequency: "monthly",
       priority: 0.7,
@@ -44,72 +70,43 @@ export default function sitemap(): MetadataRoute.Sitemap {
       url: `${baseUrl}/tools/abpath`,
       lastModified: currentDate,
       changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/tools/cell-counter`,
-      lastModified: currentDate,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/tools/cell-quiz`,
-      lastModified: currentDate,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/tools/citations`,
-      lastModified: currentDate,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/tools/genova`,
-      lastModified: currentDate,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/tools/lupus-anticoagulant`,
-      lastModified: currentDate,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/tools/milan`,
-      lastModified: currentDate,
-      changeFrequency: "monthly",
-      priority: 0.6,
-    },
-    {
-      url: `${baseUrl}/tools/images`,
-      lastModified: currentDate,
-      changeFrequency: "weekly",
       priority: 0.7,
     },
+
+    // Informational pages
     {
-      url: `${baseUrl}/tools/virtual-slides`,
+      url: `${baseUrl}/about`,
       lastModified: currentDate,
-      changeFrequency: "weekly",
-      priority: 0.8,
+      changeFrequency: "monthly",
+      priority: 0.6,
     },
-    // Legal pages
+    {
+      url: `${baseUrl}/faq`,
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/contact`,
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.5,
+    },
+
+    // Legal pages (low priority, but required)
     {
       url: `${baseUrl}/privacy`,
       lastModified: currentDate,
       changeFrequency: "yearly",
-      priority: 0.3,
+      priority: 0.2,
     },
     {
       url: `${baseUrl}/terms`,
       lastModified: currentDate,
       changeFrequency: "yearly",
-      priority: 0.3,
+      priority: 0.2,
     },
   ];
 
-  // Return static pages only for build-time generation
-  // Dynamic content will be handled by dynamic sitemaps or robots.txt
   return staticPages;
 }

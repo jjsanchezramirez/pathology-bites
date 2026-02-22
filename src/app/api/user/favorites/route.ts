@@ -3,7 +3,85 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
-// GET /api/user/favorites - Get user's favorite questions
+/**
+ * @swagger
+ * /api/user/favorites:
+ *   get:
+ *     summary: Get user's favorite questions
+ *     description: Retrieve a list of questions favorited by the user with optional filtering by category and pagination. Requires authentication.
+ *     tags:
+ *       - User - Favorites
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: category_id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter favorites by category ID
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *         description: Number of favorites to return
+ *       - in: query
+ *         name: offset
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Number of favorites to skip for pagination
+ *     responses:
+ *       200:
+ *         description: Favorites retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       question_id:
+ *                         type: string
+ *                         format: uuid
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                       questions:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                             format: uuid
+ *                           title:
+ *                             type: string
+ *                           category_id:
+ *                             type: string
+ *                             format: uuid
+ *                           status:
+ *                             type: string
+ *                           difficulty:
+ *                             type: string
+ *                           categories:
+ *                             type: object
+ *                             properties:
+ *                               id:
+ *                                 type: string
+ *                               name:
+ *                                 type: string
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -72,7 +150,56 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// POST /api/user/favorites - Add a question to favorites
+/**
+ * @swagger
+ * /api/user/favorites:
+ *   post:
+ *     summary: Add question to favorites
+ *     description: Add a question to the user's favorites list. Only published questions can be favorited. Idempotent - returns success if question is already favorited. Requires authentication.
+ *     tags:
+ *       - User - Favorites
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - question_id
+ *             properties:
+ *               question_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID of the question to favorite
+ *     responses:
+ *       200:
+ *         description: Question added to favorites (or already favorited)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   description: Favorite record
+ *                 message:
+ *                   type: string
+ *                   description: Message if question was already favorited
+ *       400:
+ *         description: Bad request - missing question_id
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - question not available (not published)
+ *       404:
+ *         description: Question not found
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -137,7 +264,48 @@ export async function POST(request: NextRequest) {
   }
 }
 
-// DELETE /api/user/favorites - Remove a question from favorites
+/**
+ * @swagger
+ * /api/user/favorites:
+ *   delete:
+ *     summary: Remove question from favorites
+ *     description: Remove a question from the user's favorites list. Requires authentication.
+ *     tags:
+ *       - User - Favorites
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - question_id
+ *             properties:
+ *               question_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID of the question to unfavorite
+ *     responses:
+ *       200:
+ *         description: Question removed from favorites
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Bad request - missing question_id
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       500:
+ *         description: Internal server error
+ */
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();

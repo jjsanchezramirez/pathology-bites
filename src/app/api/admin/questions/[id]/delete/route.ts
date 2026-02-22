@@ -1,13 +1,48 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
 /**
- * DELETE /api/admin/questions/:id/delete
- *
- * Delete a question with proper constraints
- * - Only draft questions can be deleted
- * - Admins can delete any draft question
- * - Creators can only delete their own draft questions
- * - Reviewers cannot delete questions
+ * @swagger
+ * /api/admin/questions/{id}/delete:
+ *   delete:
+ *     summary: Delete a draft question
+ *     description: Permanently delete a question. Only draft questions can be deleted. Admins can delete any draft question, creators can only delete their own drafts. Reviewers cannot delete questions.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Question ID
+ *     responses:
+ *       200:
+ *         description: Question deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *                 questionId:
+ *                   type: string
+ *                   format: uuid
+ *       400:
+ *         description: Bad request - question not in draft status
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - insufficient permissions or not question owner
+ *       404:
+ *         description: Question not found
+ *       500:
+ *         description: Internal server error
  */
 export async function DELETE(
   request: NextRequest,

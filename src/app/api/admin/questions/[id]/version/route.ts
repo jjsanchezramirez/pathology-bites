@@ -9,6 +9,115 @@ async function createAdminClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/{id}/version:
+ *   post:
+ *     summary: Create new question version
+ *     description: Manually create a new version of an approved question. Requires admin role.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Question ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               changeSummary:
+ *                 type: string
+ *                 description: Summary of changes made
+ *     responses:
+ *       200:
+ *         description: Version created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 versionId:
+ *                   type: string
+ *                   format: uuid
+ *                 question:
+ *                   type: object
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Bad request - question must be approved
+ *       401:
+ *         description: Unauthorized
+ *       404:
+ *         description: Question not found
+ *       500:
+ *         description: Internal server error
+ *   get:
+ *     summary: Get question version history
+ *     description: Retrieve all versions of a question ordered by version number. Requires authentication.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Question ID
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved version history
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 versions:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       version_major:
+ *                         type: integer
+ *                       version_minor:
+ *                         type: integer
+ *                       version_patch:
+ *                         type: integer
+ *                       update_type:
+ *                         type: string
+ *                         enum: [initial, patch, minor, major]
+ *                       change_summary:
+ *                         type: string
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                       changer:
+ *                         type: object
+ *                       is_current:
+ *                         type: boolean
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: questionId } = await params;

@@ -25,6 +25,157 @@ interface GenerateSequenceRequest {
 // POST handler
 // ---------------------------------------------------------------------------
 
+/**
+ * @swagger
+ * /api/admin/lesson-studio/generate-sequence:
+ *   post:
+ *     summary: Generate a complete lesson sequence from images and audio
+ *     description: Generates a complete animated lesson sequence by analyzing pathology images with AI vision, performing intelligent segmentation based on captions, computing camera keyframes, and assembling everything into a synchronized multimedia sequence. This is the core endpoint for the lesson studio. Requires admin or creator role.
+ *     tags:
+ *       - Admin - Lesson Studio
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - images
+ *               - captions
+ *               - audioDuration
+ *               - audioUrl
+ *             properties:
+ *               images:
+ *                 type: array
+ *                 minItems: 1
+ *                 description: Array of pathology images to include in the sequence
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - url
+ *                     - title
+ *                     - description
+ *                     - category
+ *                     - width
+ *                     - height
+ *                   properties:
+ *                     url:
+ *                       type: string
+ *                       format: uri
+ *                       description: URL of the image
+ *                     title:
+ *                       type: string
+ *                       description: Title of the image
+ *                     description:
+ *                       type: string
+ *                       description: Description of the image content
+ *                     category:
+ *                       type: string
+ *                       enum: [microscopic, gross, figure, table]
+ *                       description: Category of the pathology image
+ *                     magnification:
+ *                       type: string
+ *                       enum: [low, medium, high, very_high]
+ *                       nullable: true
+ *                       description: Microscopic magnification level (guides annotation strategy)
+ *                     width:
+ *                       type: integer
+ *                       description: Image width in pixels
+ *                     height:
+ *                       type: integer
+ *                       description: Image height in pixels
+ *               captions:
+ *                 type: array
+ *                 minItems: 1
+ *                 description: Timed transcript chunks that sync with the audio narration
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - text
+ *                     - start
+ *                     - end
+ *                   properties:
+ *                     text:
+ *                       type: string
+ *                       description: Subtitle text content
+ *                     start:
+ *                       type: number
+ *                       format: float
+ *                       description: Start time in seconds from sequence start
+ *                     end:
+ *                       type: number
+ *                       format: float
+ *                       description: End time in seconds from sequence start
+ *               audioDuration:
+ *                 type: number
+ *                 format: float
+ *                 minimum: 0.1
+ *                 description: Total duration of the audio track in seconds
+ *               audioUrl:
+ *                 type: string
+ *                 format: uri
+ *                 description: URL of the audio narration track
+ *     responses:
+ *       200:
+ *         description: Sequence generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 sequence:
+ *                   type: object
+ *                   description: Complete explainer sequence with segments, captions, and timing
+ *                   properties:
+ *                     version:
+ *                       type: integer
+ *                       example: 1
+ *                     duration:
+ *                       type: number
+ *                       format: float
+ *                       description: Total sequence duration in seconds
+ *                     aspectRatio:
+ *                       type: string
+ *                       enum: [16:9, 16:10, 4:3]
+ *                     segments:
+ *                       type: array
+ *                       description: Array of animated segments with camera movements
+ *                       items:
+ *                         type: object
+ *                     audioUrl:
+ *                       type: string
+ *                       format: uri
+ *                     captions:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                 debug:
+ *                   type: object
+ *                   description: Debug information including vision analysis results, timing data, and camera keyframes
+ *                   properties:
+ *                     visionResults:
+ *                       type: array
+ *                       description: AI vision analysis results for each image
+ *                     timings:
+ *                       type: array
+ *                       description: AI-generated segment timing assignments
+ *                     cameraKeyframes:
+ *                       type: object
+ *                       description: Computed camera movement keyframes for each image
+ *       400:
+ *         description: Bad request - missing required fields, empty arrays, or invalid values
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - admin or creator access required
+ *       500:
+ *         description: Internal server error - API key not configured or sequence generation failed
+ */
 export async function POST(request: NextRequest) {
   try {
     // Auth check — admin only (lesson studio is admin-only)

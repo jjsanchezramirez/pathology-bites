@@ -476,6 +476,87 @@ function sanitizeJSONString(jsonStr: string): string {
   ); // Restore escaped quotes
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/ai-generate:
+ *   post:
+ *     summary: AI-generate or refine questions
+ *     description: Use AI models to generate new questions from educational content, refine existing questions, or suggest metadata. Supports multiple AI models (LLAMA, Google Gemini, Mistral). Requires admin, creator, or reviewer role.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - instructions
+ *             properties:
+ *               mode:
+ *                 type: string
+ *                 enum: [educational_content, refinement, metadata_suggestion]
+ *                 default: educational_content
+ *                 description: AI generation mode
+ *               content:
+ *                 type: object
+ *                 description: Content depends on mode (educational content, current question, or metadata context)
+ *               instructions:
+ *                 type: string
+ *                 description: Instructions for the AI model
+ *               additionalContext:
+ *                 type: string
+ *                 description: Additional context or constraints
+ *               model:
+ *                 type: string
+ *                 default: Llama-3.3-8B-Instruct
+ *                 description: AI model to use for generation
+ *     responses:
+ *       200:
+ *         description: Successfully generated AI response
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 title:
+ *                   type: string
+ *                 stem:
+ *                   type: string
+ *                 answer_options:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 teaching_point:
+ *                   type: string
+ *                 metadata:
+ *                   type: object
+ *                   properties:
+ *                     generated_at:
+ *                       type: string
+ *                       format: date-time
+ *                     generation_time_ms:
+ *                       type: integer
+ *                     model:
+ *                       type: string
+ *                     provider:
+ *                       type: string
+ *                     mode:
+ *                       type: string
+ *       400:
+ *         description: Bad request - missing required fields or unsupported model
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - requires admin, creator, or reviewer role
+ *       500:
+ *         description: Internal server error or AI API error
+ */
+
 function extractJSON(text: string): unknown {
   console.log(`[Admin AI] Extracting JSON from response (${text.length} chars)`);
 

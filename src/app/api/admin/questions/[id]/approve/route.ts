@@ -4,12 +4,45 @@ import { NotificationTriggers } from "@/shared/services/notification-triggers";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 
 /**
- * POST /api/questions/:id/approve
- *
- * Approve a question (reviewer action)
- * - Changes status from pending_review → published
- * - Sets published_at timestamp
- * - Only assigned reviewer or admin can approve
+ * @swagger
+ * /api/admin/questions/{id}/approve:
+ *   post:
+ *     summary: Approve a question
+ *     description: Approve a pending_review question and publish it. Changes status to published, sets published_at timestamp, and notifies creator. Only assigned reviewer or admin can approve.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Question ID
+ *     responses:
+ *       200:
+ *         description: Question approved and published successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 question:
+ *                   type: object
+ *       400:
+ *         description: Bad request - question not in pending_review status
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - only assigned reviewer or admin can approve
+ *       404:
+ *         description: Question not found
+ *       500:
+ *         description: Internal server error
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {

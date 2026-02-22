@@ -486,6 +486,171 @@ Return the response in this exact JSON format:
 }`;
 }
 
+/**
+ * @swagger
+ * /api/user/wsi-questions/generate:
+ *   post:
+ *     summary: Generate AI question from whole slide image
+ *     description: Generate a board-style pathology multiple-choice question from a whole slide image (WSI) using AI models. Supports multiple fallback models for reliability. Requires authentication.
+ *     tags:
+ *       - User - WSI Questions
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - wsi
+ *             properties:
+ *               wsi:
+ *                 type: object
+ *                 description: Virtual slide image object with metadata
+ *                 properties:
+ *                   category:
+ *                     type: string
+ *                   subcategory:
+ *                     type: string
+ *                   diagnosis:
+ *                     type: string
+ *                   age:
+ *                     type: string
+ *                   gender:
+ *                     type: string
+ *                   image_url:
+ *                     type: string
+ *               context:
+ *                 type: object
+ *                 description: Educational context for question generation
+ *                 properties:
+ *                   topic:
+ *                     type: string
+ *                   subject:
+ *                     type: string
+ *                   lesson:
+ *                     type: string
+ *               modelIndex:
+ *                 type: integer
+ *                 default: 0
+ *                 description: Index of model to use from fallback chain (0-based)
+ *               customPrompt:
+ *                 type: string
+ *                 description: Custom prompt to override default question generation prompt
+ *     responses:
+ *       200:
+ *         description: Question generated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 question:
+ *                   type: object
+ *                   properties:
+ *                     title:
+ *                       type: string
+ *                     stem:
+ *                       type: string
+ *                     difficulty:
+ *                       type: string
+ *                       enum: [easy, medium, hard]
+ *                     teaching_point:
+ *                       type: string
+ *                     suggested_tags:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     options:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                           text:
+ *                             type: string
+ *                           is_correct:
+ *                             type: boolean
+ *                           explanation:
+ *                             type: string
+ *                           order_index:
+ *                             type: integer
+ *                     references:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *                     status:
+ *                       type: string
+ *                 metadata:
+ *                   type: object
+ *                   properties:
+ *                     generated_at:
+ *                       type: string
+ *                       format: date-time
+ *                     generation_time_ms:
+ *                       type: integer
+ *                     model:
+ *                       type: string
+ *                     modelIndex:
+ *                       type: integer
+ *                     diagnosis:
+ *                       type: string
+ *                     token_usage:
+ *                       type: object
+ *                       properties:
+ *                         prompt_tokens:
+ *                           type: integer
+ *                         completion_tokens:
+ *                           type: integer
+ *                         total_tokens:
+ *                           type: integer
+ *                     retry_info:
+ *                       type: object
+ *                       properties:
+ *                         attempts:
+ *                           type: integer
+ *                         retries:
+ *                           type: integer
+ *                         totalTime:
+ *                           type: integer
+ *                 debug:
+ *                   type: object
+ *       400:
+ *         description: Bad request - missing WSI parameter or all models exhausted
+ *       500:
+ *         description: Model failed - includes next model information for retry
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 error:
+ *                   type: string
+ *                 details:
+ *                   type: string
+ *                 errorType:
+ *                   type: string
+ *                   enum: [retryable, fallback, fatal]
+ *                 nextModelIndex:
+ *                   type: integer
+ *                   nullable: true
+ *                 nextModel:
+ *                   type: string
+ *                   nullable: true
+ *                 currentModelIndex:
+ *                   type: integer
+ *                 availableModels:
+ *                   type: integer
+ *                 retryExhausted:
+ *                   type: boolean
+ */
+
 // Set timeout for WSI question generation to prevent 504 errors
 export const maxDuration = 45; // 45 seconds timeout (longer than diagnostic search due to AI complexity)
 

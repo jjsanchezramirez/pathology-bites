@@ -18,6 +18,93 @@ function createAdminClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
+/**
+ * @swagger
+ * /api/admin/inquiries/{id}/respond:
+ *   post:
+ *     summary: Send email response to an inquiry
+ *     description: Send an email response to a user's inquiry. The response is sent via Resend using the verified pathologybites.com domain. After successfully sending the email, the inquiry status is automatically updated to "resolved". Requires admin role.
+ *     tags:
+ *       - Admin - Inquiries
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: The unique identifier of the inquiry to respond to
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - response
+ *             properties:
+ *               response:
+ *                 type: string
+ *                 minLength: 1
+ *                 description: The response message to send to the user
+ *                 example: Thank you for your inquiry. We have reviewed your request and...
+ *     responses:
+ *       200:
+ *         description: Response sent successfully and inquiry marked as resolved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 message:
+ *                   type: string
+ *                   example: Response sent successfully and inquiry marked as resolved
+ *       400:
+ *         description: Bad request - missing or invalid response text
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Invalid request data
+ *                 details:
+ *                   type: array
+ *                   description: Validation error details
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - admin access required
+ *       404:
+ *         description: Inquiry not found
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Inquiry not found
+ *       500:
+ *         description: Internal server error or email sending failed
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   example: Failed to send email response
+ *                 details:
+ *                   type: object
+ *                   description: Error details from email service
+ */
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;

@@ -2,6 +2,70 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 
+/**
+ * @swagger
+ * /api/admin/questions/metadata/sets:
+ *   get:
+ *     summary: Get paginated question sets
+ *     description: Retrieve question sets with pagination, search, and question counts. Requires authentication.
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *           default: 0
+ *         description: Page number (0-indexed)
+ *       - in: query
+ *         name: pageSize
+ *         schema:
+ *           type: integer
+ *           default: 10
+ *         description: Number of items per page
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Search term for set name or description
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved question sets
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 questionSets:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       name:
+ *                         type: string
+ *                       description:
+ *                         type: string
+ *                       source_type:
+ *                         type: string
+ *                       question_count:
+ *                         type: integer
+ *                       created_at:
+ *                         type: string
+ *                         format: date-time
+ *                 totalSets:
+ *                   type: integer
+ *                 totalPages:
+ *                   type: integer
+ *                 currentPage:
+ *                   type: integer
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -88,6 +152,60 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/metadata/sets:
+ *   post:
+ *     summary: Create a new question set
+ *     description: Create a new question set. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - name
+ *               - sourceType
+ *             properties:
+ *               name:
+ *                 type: string
+ *                 description: Set name (must be unique)
+ *               description:
+ *                 type: string
+ *                 description: Set description
+ *               sourceType:
+ *                 type: string
+ *                 description: Source type for the question set
+ *               isActive:
+ *                 type: boolean
+ *                 default: true
+ *                 description: Whether the set is active
+ *     responses:
+ *       200:
+ *         description: Question set created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 questionSet:
+ *                   type: object
+ *       400:
+ *         description: Bad request - missing required fields
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       409:
+ *         description: Conflict - set with this name already exists
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -146,6 +264,51 @@ export async function POST(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/metadata/sets:
+ *   patch:
+ *     summary: Update a question set
+ *     description: Update question set details. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - setId
+ *               - updates
+ *             properties:
+ *               setId:
+ *                 type: string
+ *                 format: uuid
+ *               updates:
+ *                 type: object
+ *                 description: Fields to update
+ *     responses:
+ *       200:
+ *         description: Question set updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 questionSet:
+ *                   type: object
+ *       400:
+ *         description: Bad request - missing setId or updates
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       500:
+ *         description: Internal server error
+ */
 export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -187,6 +350,47 @@ export async function PATCH(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/metadata/sets:
+ *   delete:
+ *     summary: Delete a question set
+ *     description: Delete a question set. Cannot delete if it has associated questions. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - setId
+ *             properties:
+ *               setId:
+ *                 type: string
+ *                 format: uuid
+ *     responses:
+ *       200:
+ *         description: Question set deleted successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       400:
+ *         description: Bad request - missing setId or set has questions
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       500:
+ *         description: Internal server error
+ */
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();

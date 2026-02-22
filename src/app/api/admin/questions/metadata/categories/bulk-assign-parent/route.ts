@@ -1,6 +1,56 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 
+/**
+ * @swagger
+ * /api/admin/questions/metadata/categories/bulk-assign-parent:
+ *   post:
+ *     summary: Bulk assign parent to categories
+ *     description: Assign a parent category to multiple categories at once. Prevents circular references and auto-recalculates hierarchy levels. Requires content role (admin, creator, or reviewer).
+ *     tags:
+ *       - Admin - Question Metadata
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - categoryIds
+ *             properties:
+ *               categoryIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: Array of category IDs to update
+ *               parentId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: New parent category ID (null to make root-level)
+ *     responses:
+ *       200:
+ *         description: Parent assigned successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 updatedCount:
+ *                   type: integer
+ *       400:
+ *         description: Bad request - missing categoryIds, invalid parent, or circular reference
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden - content role required
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();

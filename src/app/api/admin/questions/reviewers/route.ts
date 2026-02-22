@@ -2,10 +2,52 @@ import { createClient } from "@/shared/services/server";
 import { NextResponse } from "next/server";
 
 /**
- * GET /api/admin/questions/reviewers
- *
- * Get list of available reviewers (users with admin or reviewer role)
- * Optionally includes workload (number of pending questions assigned)
+ * @swagger
+ * /api/admin/questions/reviewers:
+ *   get:
+ *     summary: Get list of available reviewers
+ *     description: Retrieve all users with admin or reviewer role, including their current workload (number of pending review questions assigned). Requires admin, creator, or reviewer role.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved reviewers with workload
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 reviewers:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                         format: uuid
+ *                       email:
+ *                         type: string
+ *                       first_name:
+ *                         type: string
+ *                       last_name:
+ *                         type: string
+ *                       full_name:
+ *                         type: string
+ *                         description: Computed full name or email if name not available
+ *                       role:
+ *                         type: string
+ *                         enum: [admin, reviewer]
+ *                       pending_count:
+ *                         type: integer
+ *                         description: Number of pending review questions assigned
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - requires admin, creator, or reviewer role
+ *       500:
+ *         description: Internal server error
  */
 export async function GET(request: Request) {
   try {

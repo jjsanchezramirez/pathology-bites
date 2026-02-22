@@ -10,15 +10,69 @@ function createAdminClient() {
 }
 
 /**
- * POST /api/admin/questions/bulk
- *
- * Perform bulk operations on questions
- * Supported actions:
- * - submit_for_review: Change status from draft to pending_review
- * - approve: Change status to approved (admin only)
- * - reject: Change status to rejected (admin only)
- * - delete: Delete draft questions (with proper permissions)
- * - export: Export multiple questions as JSON
+ * @swagger
+ * /api/admin/questions/bulk:
+ *   post:
+ *     summary: Perform bulk operations on questions
+ *     description: Execute bulk actions on multiple questions (submit for review, approve, reject, delete, or export). Requires authentication and appropriate permissions based on action.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - action
+ *               - questionIds
+ *             properties:
+ *               action:
+ *                 type: string
+ *                 enum: [submit_for_review, approve, reject, delete, export]
+ *                 description: The bulk action to perform
+ *               questionIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 maxItems: 100
+ *                 description: Array of question IDs to operate on (maximum 100)
+ *     responses:
+ *       200:
+ *         description: Bulk operation completed successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 action:
+ *                   type: string
+ *                 affectedCount:
+ *                   type: integer
+ *                   description: Number of questions affected
+ *                 message:
+ *                   type: string
+ *                 data:
+ *                   type: array
+ *                   description: Exported question data (only for export action)
+ *                 count:
+ *                   type: integer
+ *                   description: Count of exported items (only for export action)
+ *       400:
+ *         description: Bad request - invalid action, missing questionIds, or exceeds limit
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - insufficient permissions for action
+ *       404:
+ *         description: Some questions not found
+ *       500:
+ *         description: Internal server error
  */
 export async function POST(request: NextRequest) {
   try {

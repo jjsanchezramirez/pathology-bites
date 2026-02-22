@@ -4,6 +4,78 @@ import { createClient } from "@/shared/services/server";
 import { quizService } from "@/features/user/quiz/services/quiz-service";
 import { getRecentUnshownAchievements } from "@/features/user/achievements/services/achievement-service.server";
 
+/**
+ * @swagger
+ * /api/user/quiz/sessions/{id}/results:
+ *   get:
+ *     summary: Get quiz session results
+ *     description: Retrieve detailed results for a completed quiz session including score, answers, and newly unlocked achievements. Users can only access results for their own quiz sessions. Requires authentication.
+ *     tags:
+ *       - User - Quiz
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Quiz session ID
+ *     responses:
+ *       200:
+ *         description: Quiz results retrieved successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     score:
+ *                       type: number
+ *                       description: Quiz score percentage
+ *                     totalQuestions:
+ *                       type: integer
+ *                     correctAnswers:
+ *                       type: integer
+ *                     totalTimeSpent:
+ *                       type: integer
+ *                       description: Total time spent in seconds
+ *                     completedAt:
+ *                       type: string
+ *                       format: date-time
+ *                     answers:
+ *                       type: array
+ *                       description: Detailed answer breakdown
+ *                       items:
+ *                         type: object
+ *                     newAchievements:
+ *                       type: array
+ *                       description: Newly unlocked achievements from this quiz
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           id:
+ *                             type: string
+ *                           title:
+ *                             type: string
+ *                           description:
+ *                             type: string
+ *                           category:
+ *                             type: string
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - user can only access own quiz results
+ *       404:
+ *         description: Quiz session not found or results not available (quiz may not be completed)
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;

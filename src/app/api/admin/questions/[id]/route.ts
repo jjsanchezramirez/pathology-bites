@@ -10,6 +10,46 @@ async function createAdminClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/{id}:
+ *   get:
+ *     summary: Get question details
+ *     description: Retrieve full question details including options, tags, images, and metadata. Requires authentication and appropriate permissions.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Question ID
+ *     responses:
+ *       200:
+ *         description: Successfully retrieved question
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 question:
+ *                   type: object
+ *                   description: Full question object with nested relations
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - insufficient permissions
+ *       404:
+ *         description: Question not found
+ *       500:
+ *         description: Internal server error
+ */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: questionId } = await params;
@@ -176,24 +216,130 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 }
 
 /**
- * PATCH /api/admin/questions/:id
+ * @swagger
+ * /api/admin/questions/{id}:
+ *   patch:
+ *     summary: Update a question
+ *     description: |
+ *       Update question with role-based permissions and versioning.
  *
- * Update a question with role-based permissions
+ *       Permission Rules:
+ *       - Admins: Can edit any question
+ *       - Creators: Can edit own draft/rejected/pending questions
+ *       - Reviewers: Can make patch edits to assigned pending questions
  *
- * PERMISSION RULES:
- * 1. Admins: Can edit any question at any time
- * 2. Creators: Can only edit their own draft/rejected questions
- *    - CANNOT edit approved/published questions (prevents breaking changes)
- *    - CAN edit pending_review questions (before review starts)
- * 3. Reviewers: Can make patch-level edits to assigned pending_review questions
- *    - Patch edits = typos, rewording, minor corrections
- *    - Tracked via updated_by field for audit trail
- *    - Speeds up review process, reduces back-and-forth
- *
- * VERSIONING:
- * - Approved/published questions automatically create versions (admin only)
- * - Reviewer patch edits do NOT create versions (minor changes only)
- * - Tracked via updated_by and updated_at for audit trail
+ *       Versioning:
+ *       - Published questions create version history
+ *       - Supports patch (typos), minor (updates), and major (breaking) changes
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Question ID
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               questionData:
+ *                 type: object
+ *                 properties:
+ *                   title:
+ *                     type: string
+ *                   stem:
+ *                     type: string
+ *                   difficulty:
+ *                     type: string
+ *                     enum: [easy, medium, hard]
+ *                   teaching_point:
+ *                     type: string
+ *                   question_references:
+ *                     type: string
+ *                   question_set_id:
+ *                     type: string
+ *                     format: uuid
+ *                   lesson:
+ *                     type: string
+ *                   topic:
+ *                     type: string
+ *                   status:
+ *                     type: string
+ *                     enum: [draft, pending_review, published, rejected]
+ *               answerOptions:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     text:
+ *                       type: string
+ *                     is_correct:
+ *                       type: boolean
+ *                     explanation:
+ *                       type: string
+ *               questionImages:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *               tagIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *               categoryId:
+ *                 type: string
+ *                 format: uuid
+ *               isPatchEdit:
+ *                 type: boolean
+ *                 description: Minor typo/wording fixes
+ *               patchEditReason:
+ *                 type: string
+ *               updateType:
+ *                 type: string
+ *                 enum: [patch, minor, major]
+ *               reviewerId:
+ *                 type: string
+ *                 format: uuid
+ *               changeSummary:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Question updated successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 question:
+ *                   type: object
+ *                 versionId:
+ *                   type: string
+ *                   format: uuid
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Bad request - invalid data
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - insufficient permissions
+ *       404:
+ *         description: Question not found
+ *       500:
+ *         description: Internal server error
  */
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {

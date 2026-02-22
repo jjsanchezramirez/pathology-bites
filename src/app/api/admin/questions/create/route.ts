@@ -38,6 +38,126 @@ interface CreateQuestionRequest {
   question_images?: QuestionImageInput[];
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/create:
+ *   post:
+ *     summary: Create a new question
+ *     description: Create a new draft question with options, tags, and images. Requires admin, creator, or reviewer role.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - stem
+ *               - question_options
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Question title
+ *               stem:
+ *                 type: string
+ *                 description: Question body/stem
+ *               difficulty:
+ *                 type: string
+ *                 enum: [easy, medium, hard]
+ *                 description: Question difficulty level
+ *               teaching_point:
+ *                 type: string
+ *                 description: Key learning objective
+ *               question_references:
+ *                 type: string
+ *                 description: Academic references
+ *               question_set_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Associated question set
+ *               category_id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Associated category
+ *               lesson:
+ *                 type: string
+ *                 description: Lesson name
+ *               topic:
+ *                 type: string
+ *                 description: Topic name
+ *               question_options:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - text
+ *                   properties:
+ *                     text:
+ *                       type: string
+ *                     is_correct:
+ *                       type: boolean
+ *                       default: false
+ *                     explanation:
+ *                       type: string
+ *                     order_index:
+ *                       type: integer
+ *               tag_ids:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                   format: uuid
+ *                 description: Tag IDs to associate
+ *               question_images:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - image_id
+ *                     - question_section
+ *                     - order_index
+ *                   properties:
+ *                     image_id:
+ *                       type: string
+ *                       format: uuid
+ *                     question_section:
+ *                       type: string
+ *                       enum: [stem, option, explanation]
+ *                     order_index:
+ *                       type: integer
+ *     responses:
+ *       200:
+ *         description: Question created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 question:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                       format: uuid
+ *                     title:
+ *                       type: string
+ *                     status:
+ *                       type: string
+ *                       enum: [draft]
+ *       400:
+ *         description: Bad request - missing required fields
+ *       401:
+ *         description: Unauthorized - missing authentication
+ *       403:
+ *         description: Forbidden - requires admin, creator, or reviewer role
+ *       500:
+ *         description: Internal server error
+ */
 export async function POST(request: NextRequest) {
   try {
     // Auth check - require admin, creator, or reviewer role

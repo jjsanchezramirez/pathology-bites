@@ -30,11 +30,11 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui
 import { CATEGORIES } from "@/shared/config/categories";
 
 export interface AudioFileReadyState {
-  /** The file to upload (already MP3-compressed if conversion happened) */
+  /** The file to upload */
   file: File;
-  /** Original file size before compression, same as file.size if no conversion */
+  /** File size (kept for backwards compatibility) */
   originalSize: number;
-  /** Duration in seconds extracted from the audio */
+  /** Duration in seconds extracted from the audio using native HTML5 Audio API */
   duration: number | null;
 }
 
@@ -42,13 +42,10 @@ interface AudioUploadDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSuccess?: () => void;
-  /** Pre-processed file passed in from the page (already compressed) */
+  /** File with duration extracted using native HTML5 Audio API */
   fileReady?: AudioFileReadyState | null;
   /** Called when user wants to pick/replace the file — page owns the picker */
   onRequestFilePick?: () => void;
-  /** True while the page is compressing the file */
-  isCompressing?: boolean;
-  compressionProgress?: number;
 }
 
 export function AudioUploadDialog({
@@ -57,8 +54,6 @@ export function AudioUploadDialog({
   onSuccess,
   fileReady,
   onRequestFilePick,
-  isCompressing = false,
-  compressionProgress = 0,
 }: AudioUploadDialogProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [title, setTitle] = useState("");
@@ -74,7 +69,7 @@ export function AudioUploadDialog({
   const [additionalInstructions, setAdditionalInstructions] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 
-  const isWorking = isCompressing || isUploading;
+  const isWorking = isUploading;
 
   // Auto-fill title when a new file arrives
   useEffect(() => {
@@ -218,11 +213,7 @@ export function AudioUploadDialog({
         throw new Error(result.error || "Upload failed");
       }
 
-      const savings =
-        fileReady.originalSize > fileReady.file.size
-          ? ` (${(((fileReady.originalSize - fileReady.file.size) / fileReady.originalSize) * 100).toFixed(0)}% smaller)`
-          : "";
-      toast.success(`Audio uploaded successfully!${savings}`);
+      toast.success("Audio uploaded successfully!");
       onOpenChange(false);
       onSuccess?.();
     } catch (err) {
@@ -272,45 +263,17 @@ export function AudioUploadDialog({
               ].join(" ")}
             >
               <div className="flex flex-col items-center justify-center gap-2 text-center px-4">
-                {isCompressing ? (
-                  <>
-                    <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-                    <p className="text-sm text-muted-foreground">
-                      Converting to MP3
-                      {compressionProgress > 0 ? ` — ${compressionProgress}%` : "..."}
-                    </p>
-                    {compressionProgress > 0 && (
-                      <div className="w-48 bg-muted rounded-full h-1.5">
-                        <div
-                          className="bg-primary h-1.5 rounded-full transition-all duration-200"
-                          style={{ width: `${compressionProgress}%` }}
-                        />
-                      </div>
-                    )}
-                  </>
-                ) : fileReady ? (
+                {fileReady ? (
                   <>
                     <Music className="h-8 w-8 text-primary" />
                     <div>
                       <p className="text-sm font-medium">{fileReady.file.name}</p>
-                      {fileReady.originalSize > fileReady.file.size ? (
-                        <p className="text-xs text-green-600 mt-0.5">
-                          {(fileReady.originalSize / 1024 / 1024).toFixed(2)} MB
-                          {" → "}
-                          {(fileReady.file.size / 1024 / 1024).toFixed(2)} MB MP3
-                          {" ("}
-                          {(
-                            ((fileReady.originalSize - fileReady.file.size) /
-                              fileReady.originalSize) *
-                            100
-                          ).toFixed(0)}
-                          {"% smaller)"}
-                        </p>
-                      ) : (
-                        <p className="text-xs text-muted-foreground mt-0.5">
-                          {(fileReady.file.size / 1024 / 1024).toFixed(2)} MB
-                        </p>
-                      )}
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {(fileReady.file.size / 1024 / 1024).toFixed(2)} MB
+                        {fileReady.duration
+                          ? ` • ${Math.floor(fileReady.duration / 60)}:${String(Math.floor(fileReady.duration % 60)).padStart(2, "0")}`
+                          : ""}
+                      </p>
                     </div>
                     <p className="text-xs text-muted-foreground">Click or drop to replace</p>
                   </>
@@ -321,7 +284,7 @@ export function AudioUploadDialog({
                       {isDragging ? "Drop audio file here" : "Drag & drop or click to select"}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      MP3, WAV, M4A, OGG, WebM — auto-compressed to MP3
+                      MP3, WAV, M4A, OGG, WebM, and other browser-supported formats
                     </p>
                   </>
                 )}
@@ -467,7 +430,7 @@ export function AudioUploadDialog({
               disabled={isWorking || !fileReady || !title.trim()}
               className="flex-1"
             >
-              {isUploading ? "Uploading..." : isCompressing ? "Converting..." : "Upload Audio"}
+              {isUploading ? "Uploading..." : "Upload Audio"}
             </Button>
             <Button variant="outline" onClick={() => onOpenChange(false)} disabled={isWorking}>
               Cancel
