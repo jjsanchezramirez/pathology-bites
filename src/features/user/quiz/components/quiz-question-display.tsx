@@ -2,6 +2,7 @@
 
 "use client";
 
+import { useMemo } from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { ImageCarousel } from "@/shared/components/media/image-carousel";
 import { ReferencesList } from "@/shared/components/common/references-list";
@@ -56,6 +57,42 @@ export function QuizQuestionDisplay({
     return optionId.toString().charAt(0).toUpperCase();
   };
 
+  // Memoize image arrays and reset keys to prevent unnecessary carousel resets
+  // Only recompute when question.id or question_images change
+  const stemImages = useMemo(() => {
+    if (!question.question_images || question.question_images.length === 0) return [];
+    return question.question_images
+      .filter((qi) => qi.question_section === "stem")
+      .map((qi) => {
+        const img = getImageData(qi);
+        return {
+          id: img.id,
+          url: img.url,
+          alt: img.alt_text || img.description || "Question image",
+          caption: img.description || undefined,
+        };
+      });
+  }, [question.id, question.question_images]);
+
+  const explanationImages = useMemo(() => {
+    if (!question.question_images || question.question_images.length === 0) return [];
+    return question.question_images
+      .filter((qi) => qi.question_section === "explanation")
+      .map((qi) => {
+        const img = getImageData(qi);
+        return {
+          id: img.id,
+          url: img.url,
+          alt: img.alt_text || img.description || "Reference image",
+          caption: img.description || undefined,
+        };
+      });
+  }, [question.id, question.question_images]);
+
+  // Memoize reset keys to ensure stable references
+  const stemResetKey = useMemo(() => `stem-${question.id}`, [question.id]);
+  const explanationResetKey = useMemo(() => `explanation-${question.id}`, [question.id]);
+
   return (
     <Card>
       <CardContent className="space-y-6 pt-6">
@@ -65,21 +102,12 @@ export function QuizQuestionDisplay({
         </div>
 
         {/* Question Stem Images */}
-        {question.question_images && question.question_images.length > 0 && (
+        {stemImages.length > 0 && (
           <div>
             <ImageCarousel
-              images={question.question_images
-                .filter((qi) => qi.question_section === "stem")
-                .map((qi) => {
-                  const img = getImageData(qi);
-                  return {
-                    id: img.id,
-                    url: img.url,
-                    alt: img.alt_text || img.description || "Question image",
-                    caption: img.description || undefined,
-                  };
-                })}
+              images={stemImages}
               className="border rounded-lg"
+              resetKey={stemResetKey}
             />
           </div>
         )}
@@ -162,26 +190,16 @@ export function QuizQuestionDisplay({
             )}
 
             {/* Explanation Images */}
-            {question.question_images &&
-              question.question_images.some((qi) => qi.question_section === "explanation") && (
-                <div>
-                  <h4 className="font-medium text-xs uppercase mb-2">Reference Images</h4>
-                  <ImageCarousel
-                    images={question.question_images
-                      .filter((qi) => qi.question_section === "explanation")
-                      .map((qi) => {
-                        const img = getImageData(qi);
-                        return {
-                          id: img.id,
-                          url: img.url,
-                          alt: img.alt_text || img.description || "Reference image",
-                          caption: img.description || undefined,
-                        };
-                      })}
-                    className="bg-white border rounded-lg"
-                  />
-                </div>
-              )}
+            {explanationImages.length > 0 && (
+              <div>
+                <h4 className="font-medium text-xs uppercase mb-2">Reference Images</h4>
+                <ImageCarousel
+                  images={explanationImages}
+                  className="bg-white border rounded-lg"
+                  resetKey={explanationResetKey}
+                />
+              </div>
+            )}
 
             {/* References */}
             {question.question_references && (

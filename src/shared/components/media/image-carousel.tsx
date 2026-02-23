@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight, X, Loader2 } from "lucide-react";
 import { useMobile } from "@/shared/hooks/use-mobile";
 import { SilentErrorBoundary } from "@/shared/components/error-boundaries/silent-error-boundary";
 
@@ -17,67 +17,67 @@ interface ImageProps {
 interface ImageCarouselProps {
   images: ImageProps[];
   className?: string;
+  // Optional key to force reset when context changes (e.g., new question)
+  // Without this, carousel maintains state across different image sets
+  resetKey?: string;
 }
 
 // Internal component that can throw errors
-function ImageCarouselInternal({ images, className = "" }: ImageCarouselProps) {
+function ImageCarouselInternal({ images, className = "", resetKey }: ImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
+  const [imageLoading, setImageLoading] = useState(true);
   const isMobile = useMobile();
 
-  // Get the current image for hook usage
-  const currentImage = images && images.length > 0 ? images[currentIndex] : null;
-  const handleImageLoad = useImageCacheHandler(currentImage?.url || "");
-
-  // Reset to first image when images array changes (e.g., new question)
+  // Reset to first image only when resetKey changes (e.g., new question)
+  // This prevents unwanted resets when the same images are re-rendered
   useEffect(() => {
     setCurrentIndex(0);
-  }, [images]);
+  }, [resetKey]);
 
-  // Keyboard navigation for fullscreen - must be before early return
+  // Set loading state when image changes
   useEffect(() => {
-    if (!showModal || !images || images.length === 0) return;
+    setImageLoading(true);
+  }, [currentIndex, images]);
+
+  // Keyboard navigation for fullscreen
+  useEffect(() => {
+    if (!showModal) return;
 
     const handleKeyDown = (e: KeyboardEvent) => {
-      switch (e.key) {
-        case "Escape":
-          setShowModal(false);
-          break;
-        case "ArrowLeft":
-          if (images.length > 1) {
-            setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-          }
-          break;
-        case "ArrowRight":
-          if (images.length > 1) {
-            setCurrentIndex((prev) => (prev + 1) % images.length);
-          }
-          break;
+      if (e.key === "Escape") {
+        setShowModal(false);
+        return;
+      }
+
+      // Only handle arrow keys if multiple images exist
+      if (images.length <= 1) return;
+
+      if (e.key === "ArrowLeft") {
+        setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+      } else if (e.key === "ArrowRight") {
+        setCurrentIndex((prev) => (prev + 1) % images.length);
       }
     };
 
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
-  }, [showModal, images]);
+  }, [showModal, images.length]);
 
+  // Ensure currentIndex is within bounds (defensive programming)
+  const safeIndex = Math.min(currentIndex, images.length - 1);
+  const currentImage = images[safeIndex];
+  const handleImageLoad = useImageCacheHandler(currentImage?.url || "");
+
+  // Early return if no images (after hooks to maintain hook call order)
   if (!images || images.length === 0) return null;
 
   const hasMultiple = images.length > 1;
 
-  const nextImage = () => {
-    setCurrentIndex((prev) => (prev + 1) % images.length);
-  };
-
-  const prevImage = () => {
-    setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
-  };
-
-  const openModal = () => {
-    // Disable zoom on mobile devices
-    if (!isMobile) {
-      setShowModal(true);
-    }
-  };
+  // Navigation helpers
+  const nextImage = () => setCurrentIndex((prev) => (prev + 1) % images.length);
+  const prevImage = () => setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+  const openModal = () => !isMobile && setShowModal(true);
 
   return (
     <>
@@ -91,6 +91,13 @@ function ImageCarouselInternal({ images, className = "" }: ImageCarouselProps) {
           style={{ maxHeight: "70vh" }}
           onClick={openModal}
         >
+          {/* Loading spinner overlay */}
+          {imageLoading && (
+            <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
+              <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
+            </div>
+          )}
+
           {currentImage?.url ? (
             <Image
               src={currentImage.url}
@@ -100,7 +107,10 @@ function ImageCarouselInternal({ images, className = "" }: ImageCarouselProps) {
               className="w-full h-auto max-h-[70vh] object-contain hover:opacity-90 transition-opacity"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               unoptimized={true}
-              onLoad={handleImageLoad}
+              onLoad={() => {
+                handleImageLoad();
+                setImageLoading(false);
+              }}
             />
           ) : (
             <div className="w-full h-64 flex items-center justify-center bg-muted text-muted-foreground">
@@ -185,6 +195,13 @@ function ImageCarouselInternal({ images, className = "" }: ImageCarouselProps) {
             <div className="relative inline-flex rounded-2xl shadow-2xl overflow-visible">
               {currentImage?.url ? (
                 <div className="relative" onClick={(e) => e.stopPropagation()}>
+                  {/* Loading spinner overlay for modal */}
+                  {imageLoading && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-2xl z-20">
+                      <Loader2 className="w-12 h-12 text-white animate-spin" />
+                    </div>
+                  )}
+
                   <Image
                     src={currentImage.url}
                     alt={currentImage.alt}
@@ -192,7 +209,10 @@ function ImageCarouselInternal({ images, className = "" }: ImageCarouselProps) {
                     height={800}
                     className="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain rounded-2xl"
                     unoptimized={true}
-                    onLoad={handleImageLoad}
+                    onLoad={() => {
+                      handleImageLoad();
+                      setImageLoading(false);
+                    }}
                   />
 
                   {/* Navigation controls positioned at image borders (only if multiple images) */}
@@ -250,7 +270,7 @@ function ImageCarouselInternal({ images, className = "" }: ImageCarouselProps) {
 }
 
 // Exported component with error boundary
-export function ImageCarousel({ images, className = "" }: ImageCarouselProps) {
+export function ImageCarousel({ images, className = "", resetKey }: ImageCarouselProps) {
   return (
     <SilentErrorBoundary
       maxRetries={2}
@@ -261,7 +281,7 @@ export function ImageCarousel({ images, className = "" }: ImageCarouselProps) {
         console.warn(`ImageCarousel error (attempt ${retryCount + 1}):`, error.message);
       }}
     >
-      <ImageCarouselInternal images={images} className={className} />
+      <ImageCarouselInternal images={images} className={className} resetKey={resetKey} />
     </SilentErrorBoundary>
   );
 }

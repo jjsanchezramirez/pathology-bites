@@ -15,7 +15,7 @@ interface TimerExpiredDialogProps {
   onViewResults?: () => void;
 }
 
-export function TimerExpiredDialog({ open, onViewResults }: TimerExpiredDialogProps) {
+export function TimerExpiredDialog({ open }: TimerExpiredDialogProps) {
   const [isVisible, setIsVisible] = useState(false);
   const { animationData, isLoading } = useLottieAnimation("alarm_clock");
 
