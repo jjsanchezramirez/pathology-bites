@@ -44,6 +44,7 @@ export interface UseHybridQuizOptions {
     result: { isCorrect: boolean; feedback?: unknown }
   ) => void;
   onQuizCompleted?: (result: { score: number; totalQuestions: number; timeSpent: number }) => void;
+  onTimerExpired?: () => void;
   onError?: (error: string) => void;
   onSyncStatusChange?: (status: "syncing" | "synced" | "error" | "offline") => void;
 }
@@ -90,6 +91,7 @@ export interface HybridQuizState {
   // Timer (for timed quizzes)
   timeRemaining: number | null; // seconds remaining
   totalTimeLimit: number | null; // total time limit in seconds
+  timerExpired: boolean; // true when timer reaches 0
 }
 
 export interface HybridQuizActions {
@@ -137,6 +139,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     csrfTokenGetter,
     onAnswerSubmitted,
     onQuizCompleted,
+    onTimerExpired,
     onError,
     onSyncStatusChange,
   } = options;
@@ -217,14 +220,18 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   const [timeRemaining, setTimeRemaining] = useState<number | null>(null);
   const [totalTimeLimit, setTotalTimeLimit] = useState<number | null>(null);
   const [isTimerPaused, setIsTimerPaused] = useState(false);
+  const [timerExpired, setTimerExpired] = useState(false);
   const timerIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Keep refs to callbacks and state to avoid stale closures
-  const callbacksRef = useRef({ onQuizCompleted });
-  callbacksRef.current = { onQuizCompleted };
+  const callbacksRef = useRef({ onQuizCompleted, onTimerExpired });
+  callbacksRef.current = { onQuizCompleted, onTimerExpired };
 
   const stateRef = useRef(quizState);
   stateRef.current = quizState;
+
+  // Keep ref to handleCompleteQuiz to avoid recreating timer interval
+  const handleCompleteQuizRef = useRef<(() => Promise<SyncResult>) | null>(null);
 
   // Track if we've already triggered completion to prevent infinite loop
   const hasCompletedRef = useRef(false);
@@ -345,6 +352,12 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         totalTimeSpentToRestore
       );
 
+      console.log("[Hybrid] Quiz initialized with config:", {
+        mode: config.mode,
+        timing: config.timing,
+        status: status,
+      });
+
       // Initialize timer for timed quizzes
       if (config.timing === "timed") {
         const limit = savedTotalTimeLimit || config.totalTimeLimit || questions.length * 60; // 60 seconds per question
@@ -364,10 +377,13 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
           fromLocalStorage: localData?.timeRemaining,
           fromServer: savedTimeRemaining,
           using: restoredTime,
+          limit: limit,
         });
 
         setTimeRemaining(restoredTime);
       }
+
+      console.log("[Hybrid] Initialization complete, quiz status:", status);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       const fullErrorMessage = `Failed to initialize quiz: ${errorMessage}`;
@@ -504,12 +520,27 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     }
   }, [quizState, stateActions, onError, sessionId, unifiedData?.achievements]);
 
+  // Update ref whenever handleCompleteQuiz changes
+  handleCompleteQuizRef.current = handleCompleteQuiz;
+
   // Initialize quiz data (API Call #1)
   useEffect(() => {
     if (sessionId && !isInitialized) {
       initializeQuiz();
     }
   }, [sessionId, isInitialized, initializeQuiz]);
+
+  // Auto-start quiz if it's in "not_started" status after initialization
+  // This is essential for timed quizzes to start the timer countdown
+  const hasAutoStartedRef = useRef(false);
+  useEffect(() => {
+    // Only auto-start once and only if status is "not_started"
+    if (isInitialized && quizState.status === "not_started" && !hasAutoStartedRef.current) {
+      console.log("[Hybrid] Auto-starting quiz from 'not_started' status");
+      hasAutoStartedRef.current = true;
+      stateActions.startQuiz();
+    }
+  }, [isInitialized, quizState.status, stateActions]);
 
   // Auto-sync on completion
   useEffect(() => {
@@ -578,15 +609,32 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   }, [quizState.answers.size, sessionId, timeRemaining, quizState]);
 
   // Timer countdown for timed quizzes
+  // Separate state to track if timer should be active (to trigger effect when timeRemaining is initialized)
+  const [timerActive, setTimerActive] = useState(false);
+
+  // Update timer active state when conditions change
   useEffect(() => {
-    // Only run timer if quiz is timed, in progress, and not paused
-    if (
-      quizState.config.timing !== "timed" ||
-      quizState.status !== "in_progress" ||
-      timeRemaining === null ||
-      isTimerPaused
-    ) {
-      // Clear timer if paused
+    const shouldBeActive =
+      quizState.config.timing === "timed" &&
+      quizState.status === "in_progress" &&
+      !isTimerPaused &&
+      timeRemaining !== null;
+
+    console.log("[Hybrid Timer] Timer conditions check:", {
+      timing: quizState.config.timing,
+      status: quizState.status,
+      isTimerPaused,
+      timeRemaining,
+      shouldBeActive,
+    });
+
+    setTimerActive(shouldBeActive);
+  }, [quizState.config.timing, quizState.status, isTimerPaused, timeRemaining]);
+
+  // Manage timer interval based on active state
+  useEffect(() => {
+    if (!timerActive) {
+      // Clear timer if not active
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
@@ -594,33 +642,40 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       return;
     }
 
-    // Clear any existing interval
-    if (timerIntervalRef.current) {
-      clearInterval(timerIntervalRef.current);
+    // Only create interval if one doesn't exist already
+    if (!timerIntervalRef.current) {
+      console.log("[Hybrid] Starting timer countdown");
+
+      timerIntervalRef.current = setInterval(() => {
+        setTimeRemaining((prev) => {
+          if (prev === null || prev <= 0) {
+            // Time's up - complete the quiz
+            console.log("[Hybrid] Timer expired! Completing quiz...");
+            if (timerIntervalRef.current) {
+              clearInterval(timerIntervalRef.current);
+              timerIntervalRef.current = null;
+            }
+            // Set timer expired state
+            setTimerExpired(true);
+            // Notify parent component via ref to avoid dependency
+            callbacksRef.current.onTimerExpired?.();
+            // Complete the quiz
+            handleCompleteQuizRef.current?.();
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
     }
 
-    // Start countdown
-    timerIntervalRef.current = setInterval(() => {
-      setTimeRemaining((prev) => {
-        if (prev === null || prev <= 0) {
-          // Time's up - complete the quiz
-          if (timerIntervalRef.current) {
-            clearInterval(timerIntervalRef.current);
-          }
-          handleCompleteQuiz();
-          return 0;
-        }
-        return prev - 1;
-      });
-    }, 1000);
-
-    // Cleanup on unmount or when dependencies change
+    // Cleanup on unmount or when timer becomes inactive
     return () => {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
+        timerIntervalRef.current = null;
       }
     };
-  }, [quizState.config.timing, quizState.status, timeRemaining, isTimerPaused, handleCompleteQuiz]);
+  }, [timerActive]);
 
   // Note: beforeunload event handling is managed by the page component
   // to allow for custom exit dialogs and better UX control
@@ -654,6 +709,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     queueStatus: autoSaveManager.current?.getQueueStatus() || { total: 0, ready: 0, waiting: 0 },
     timeRemaining,
     totalTimeLimit,
+    timerExpired,
   };
 
   // Create hybrid actions

@@ -60,7 +60,7 @@ export default function QuizSessionPage() {
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showUnansweredWarning, setShowUnansweredWarning] = useState(false);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
-  const [timerExpired] = useState(false);
+  const [timerExpired, setTimerExpired] = useState(false);
   const [, setIsExiting] = useState(false);
   const [isCompletingQuiz, setIsCompletingQuiz] = useState(false);
   const [pendingAnswerSelection, setPendingAnswerSelection] = useState<{
@@ -139,6 +139,12 @@ export default function QuizSessionPage() {
     onQuizCompleted: () => {
       if (isReviewMode) return;
     },
+    onTimerExpired: () => {
+      if (isReviewMode) return;
+      console.log("[Quiz Page] Timer expired, showing dialog");
+      setTimerExpired(true);
+      setIsCompletingQuiz(true);
+    },
     onError: (error) => {
       if (isReviewMode) return;
       if (error.includes("already completed")) {
@@ -151,6 +157,17 @@ export default function QuizSessionPage() {
 
   // Track if we're intentionally navigating away (e.g., Save & Exit)
   const isNavigatingAwayRef = useRef(false);
+
+  // Handle redirect after timer expiration and quiz completion
+  useEffect(() => {
+    if (timerExpired && hybridState.status === "completed") {
+      console.log("[Quiz Page] Timer expired and quiz completed, redirecting to results...");
+      // Wait a moment to show the dialog before redirecting
+      setTimeout(() => {
+        window.location.href = `/dashboard/quiz/${sessionId}/results`;
+      }, 2000); // 2 second delay to show "Time's Up!" message
+    }
+  }, [timerExpired, hybridState.status, sessionId]);
 
   // Prevent accidental navigation away from quiz
   useEffect(() => {
