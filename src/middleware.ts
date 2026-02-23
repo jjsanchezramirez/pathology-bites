@@ -29,6 +29,7 @@ export async function middleware(request: NextRequest) {
   // Define which routes need protection
   const isAdminRoute = pathname.startsWith("/admin");
   const isDashboardRoute = pathname.startsWith("/dashboard");
+  const isDocsRoute = pathname.startsWith("/docs");
   const isApiRoute = pathname.startsWith("/api/");
   const isPublicApi =
     pathname.startsWith("/api/public/") ||
@@ -53,8 +54,8 @@ export async function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Protect dashboard, admin, and private API routes
-  const needsAuth = isDashboardRoute || isAdminRoute || (isApiRoute && !isPublicApi);
+  // Protect dashboard, admin, docs, and private API routes
+  const needsAuth = isDashboardRoute || isAdminRoute || isDocsRoute || (isApiRoute && !isPublicApi);
 
   if (!needsAuth) {
     return NextResponse.next();
@@ -96,6 +97,15 @@ export async function middleware(request: NextRequest) {
 
   // DASHBOARD ROUTES: Basic authentication required
   if (isDashboardRoute) {
+    if (!user) {
+      const redirectUrl = new URL("/login", request.url);
+      redirectUrl.searchParams.set("redirect", pathname);
+      return NextResponse.redirect(redirectUrl);
+    }
+  }
+
+  // DOCS ROUTE: Basic authentication required
+  if (isDocsRoute) {
     if (!user) {
       const redirectUrl = new URL("/login", request.url);
       redirectUrl.searchParams.set("redirect", pathname);

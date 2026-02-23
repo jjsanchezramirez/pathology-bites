@@ -46,6 +46,10 @@ e2e-results/
 .claude/
 .kilocode/
 
+# Mockups & samples
+mockup-*.html
+SAMPLE_*.ts
+
 # Deployment
 .vercel
 

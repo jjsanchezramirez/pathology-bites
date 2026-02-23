@@ -143,13 +143,6 @@ export const adminNavigationSections: NavigationSection[] = [
         adminOnly: true,
       },
       {
-        name: "API Documentation",
-        href: "/admin/docs",
-        icon: "FileCode",
-        requiredPermission: "settings.manage",
-        adminOnly: true,
-      },
-      {
         name: "Settings",
         href: "/admin/settings",
         icon: "Settings",

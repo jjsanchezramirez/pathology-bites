@@ -13,7 +13,7 @@ import { Label } from "@/shared/components/ui/label";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { toast } from "@/shared/utils/ui/toast";
-import { Upload, Sparkles, FileText, Music, Loader2 } from "lucide-react";
+import { Upload, Sparkles, FileText, Music } from "lucide-react";
 import {
   ContentSelector,
   EducationalContent,
