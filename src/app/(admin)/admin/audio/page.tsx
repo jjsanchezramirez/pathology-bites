@@ -457,8 +457,7 @@ export default function AdminAudioPage() {
                               controls
                               src={item.url}
                               className="w-full h-6"
-                              crossOrigin="anonymous"
-                              preload="metadata"
+                              preload="auto"
                               style={{ maxWidth: "none" }}
                               onLoadedMetadata={(e) => {
                                 const audioElement = e.currentTarget;
@@ -483,6 +482,14 @@ export default function AdminAudioPage() {
                                     );
                                   }
                                 }
+                              }}
+                              onError={(e) => {
+                                console.error(
+                                  "Audio loading error for",
+                                  item.title,
+                                  ":",
+                                  e.currentTarget.error
+                                );
                               }}
                             />
                           </TableCell>
