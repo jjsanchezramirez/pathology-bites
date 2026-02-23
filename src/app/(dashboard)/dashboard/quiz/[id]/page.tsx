@@ -26,6 +26,7 @@ export default function QuizSessionPage() {
   const searchParams = useSearchParams();
   const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const isReviewMode = searchParams.get("review") === "true";
+  const questionParam = searchParams.get("question");
 
   // Hooks
   const { getToken } = useCSRFToken();
@@ -44,7 +45,14 @@ export default function QuizSessionPage() {
   const [reviewSession, setReviewSession] = useState<QuizSession | null>(null);
   const [reviewLoading, setReviewLoading] = useState(isReviewMode);
   const [reviewError, setReviewError] = useState<string | null>(null);
-  const [currentReviewIndex, setCurrentReviewIndex] = useState(0);
+  const [currentReviewIndex, setCurrentReviewIndex] = useState(() => {
+    // Initialize from URL query parameter if present
+    if (questionParam) {
+      const index = parseInt(questionParam, 10);
+      return !isNaN(index) && index >= 0 ? index : 0;
+    }
+    return 0;
+  });
 
   // UI state
   const [isPaused, setIsPaused] = useState(false);

@@ -256,7 +256,7 @@ export function QuizReviewView({
               {/* Back to Results Button */}
               {sessionId && (
                 <Link href={`/dashboard/quiz/${sessionId}/results`}>
-                  <Button variant="outline" size="sm">
+                  <Button size="sm">
                     <ArrowLeft className="h-4 w-4 mr-2 hidden sm:block" />
                     <span className="hidden sm:inline">Back to Results</span>
                     <ArrowLeft className="h-4 w-4 sm:hidden" />

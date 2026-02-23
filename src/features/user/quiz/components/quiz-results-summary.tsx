@@ -21,6 +21,7 @@ interface QuizResultsSummaryProps {
 }
 
 export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSummaryProps) {
+  const sessionId = result.sessionId;
   const percentage = Math.round((result.correctAnswers / result.totalQuestions) * 100);
   const incorrectCount = result.totalQuestions - result.correctAnswers;
   const [showCelebrationModal, setShowCelebrationModal] = useState(false);
@@ -321,9 +322,10 @@ export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSum
                 const successRatePercentage = Math.round(question.successRate);
 
                 return (
-                  <div
+                  <Link
                     key={question.id}
-                    className="flex items-start sm:items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border"
+                    href={`/dashboard/quiz/${sessionId}?review=true&question=${index}`}
+                    className="flex items-start sm:items-center gap-2 sm:gap-3 p-2 sm:p-3 rounded-lg border hover:bg-muted/50 transition-colors cursor-pointer"
                   >
                     {/* Question number */}
                     <div className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 flex-shrink-0 rounded-full bg-muted text-xs font-semibold">
@@ -435,7 +437,7 @@ export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSum
                         )}
                       />
                     </Button>
-                  </div>
+                  </Link>
                 );
               })}
             </div>
@@ -449,9 +451,9 @@ export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSum
           Review Questions
         </Button>
 
-        <Link href="/dashboard" className="w-full sm:w-auto">
+        <Link href="/dashboard/quiz/new" className="w-full sm:w-auto">
           <Button variant="outline" className="w-full sm:w-auto sm:min-w-[200px]">
-            Back to Dashboard
+            Start New Quiz
           </Button>
         </Link>
       </div>

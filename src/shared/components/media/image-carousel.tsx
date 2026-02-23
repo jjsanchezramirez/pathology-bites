@@ -88,21 +88,22 @@ function ImageCarouselInternal({ images, className = "" }: ImageCarouselProps) {
           className={`relative rounded-lg overflow-hidden bg-muted group ${
             isMobile ? "cursor-default" : "cursor-pointer"
           }`}
-          style={{ aspectRatio: "16/10" }}
+          style={{ maxHeight: "70vh" }}
           onClick={openModal}
         >
           {currentImage?.url ? (
             <Image
               src={currentImage.url}
               alt={currentImage.alt}
-              fill
-              className="object-contain hover:opacity-90 transition-opacity"
+              width={1200}
+              height={750}
+              className="w-full h-auto max-h-[70vh] object-contain hover:opacity-90 transition-opacity"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               unoptimized={true}
               onLoad={handleImageLoad}
             />
           ) : (
-            <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
+            <div className="w-full h-64 flex items-center justify-center bg-muted text-muted-foreground">
               No image available
             </div>
           )}
@@ -180,25 +181,54 @@ function ImageCarouselInternal({ images, className = "" }: ImageCarouselProps) {
             className="fixed inset-0 z-[9999] bg-black/40 backdrop-blur-sm flex items-center justify-center p-8"
             onClick={() => setShowModal(false)}
           >
-            {/* Image container - let image determine size within viewport limits */}
-            <div className="relative bg-white/5 rounded-2xl border border-white/10 shadow-2xl overflow-hidden">
+            {/* Image container - shrink-wraps to image size */}
+            <div className="relative inline-flex rounded-2xl shadow-2xl overflow-visible">
               {currentImage?.url ? (
-                <div
-                  className="relative max-w-[90vw] max-h-[90vh]"
-                  onClick={(e) => e.stopPropagation()}
-                >
+                <div className="relative" onClick={(e) => e.stopPropagation()}>
                   <Image
                     src={currentImage.url}
                     alt={currentImage.alt}
                     width={1200}
                     height={800}
-                    className="max-w-[90vw] max-h-[90vh] object-contain"
+                    className="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain rounded-2xl"
                     unoptimized={true}
                     onLoad={handleImageLoad}
                   />
+
+                  {/* Navigation controls positioned at image borders (only if multiple images) */}
+                  {hasMultiple && (
+                    <>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          prevImage();
+                        }}
+                        className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-gray-900/20 hover:bg-gray-900/30 rounded-full flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-gray-900/20 shadow-lg z-10"
+                        aria-label="Previous image"
+                      >
+                        <ChevronLeft className="w-6 h-6" />
+                      </button>
+
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          nextImage();
+                        }}
+                        className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-gray-900/20 hover:bg-gray-900/30 rounded-full flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-gray-900/20 shadow-lg z-10"
+                        aria-label="Next image"
+                      >
+                        <ChevronRight className="w-6 h-6" />
+                      </button>
+
+                      {/* Image counter */}
+                      <div className="absolute top-4 left-4 bg-gray-900/30 text-white text-sm font-semibold px-3 py-1.5 rounded-full border border-gray-900/30 shadow-lg z-10">
+                        {currentIndex + 1} / {images.length}
+                      </div>
+                    </>
+                  )}
                 </div>
               ) : (
-                <div className="w-full h-full flex items-center justify-center text-white/70 min-w-[300px] min-h-[200px]">
+                <div className="w-full h-full flex items-center justify-center text-white/70 min-w-[300px] min-h-[200px] bg-white/5 rounded-2xl border border-white/10">
                   No image available
                 </div>
               )}
@@ -212,38 +242,6 @@ function ImageCarouselInternal({ images, className = "" }: ImageCarouselProps) {
                 <X className="w-5 h-5" />
               </button>
             </div>
-
-            {/* Navigation controls (only if multiple images) */}
-            {hasMultiple && (
-              <>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    prevImage();
-                  }}
-                  className="absolute left-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-white/20 shadow-lg z-10"
-                  aria-label="Previous image"
-                >
-                  <ChevronLeft className="w-6 h-6" />
-                </button>
-
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    nextImage();
-                  }}
-                  className="absolute right-6 top-1/2 -translate-y-1/2 w-12 h-12 bg-white/15 hover:bg-white/25 rounded-full flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-white/20 shadow-lg z-10"
-                  aria-label="Next image"
-                >
-                  <ChevronRight className="w-6 h-6" />
-                </button>
-
-                {/* Image counter */}
-                <div className="absolute top-4 left-4 bg-white/15 text-white text-sm px-3 py-1.5 rounded-full border border-white/20 shadow-lg z-10">
-                  {currentIndex + 1} / {images.length}
-                </div>
-              </>
-            )}
           </div>,
           document.body
         )}
