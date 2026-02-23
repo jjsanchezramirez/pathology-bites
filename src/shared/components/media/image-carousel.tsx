@@ -206,7 +206,7 @@ function ImageCarouselInternal({ images, className = "" }: ImageCarouselProps) {
               {/* Close button */}
               <button
                 onClick={() => setShowModal(false)}
-                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-white/20 shadow-lg z-10"
+                className="absolute top-4 right-4 w-10 h-10 rounded-full bg-gray-900/20 hover:bg-gray-900/30 flex items-center justify-center text-white hover:text-white transition-all duration-200 hover:scale-110 border border-gray-900/20 shadow-lg z-10"
                 aria-label="Close image"
               >
                 <X className="w-5 h-5" />
