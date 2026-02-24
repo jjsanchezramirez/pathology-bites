@@ -14,6 +14,14 @@ import {
   CategoryRadarChart,
   ActivityHeatmap,
 } from "@/features/user/performance/components/interactive-charts";
+import {
+  LollipopChart,
+  PolarAreaChart,
+  TreemapChart,
+  HeatmapMatrix,
+  RadialBarChart,
+  BulletChart,
+} from "@/features/user/performance/components/alternative-charts";
 import { TrendingUp, Target, Award, Zap, Clock, CheckCircle2 } from "lucide-react";
 
 // Simple seeded random number generator for consistent results
@@ -256,7 +264,7 @@ export default function PerformanceChartsTestPage() {
 
       {/* Charts Row 1 */}
       <div
-        className="grid gap-6 lg:grid-cols-2"
+        className="grid gap-6 grid-cols-1 xl:grid-cols-2"
         style={{
           animation: "fadeInUp 0.6s ease-out 0.5s both",
         }}
@@ -346,11 +354,56 @@ export default function PerformanceChartsTestPage() {
         </Card>
       </div>
 
+      {/* Alternative Chart Visualizations Section */}
+      <div
+        style={{
+          animation: "fadeInUp 0.6s ease-out 0.8s both",
+        }}
+      >
+        <h2 className="text-2xl font-bold tracking-tight mb-4">
+          Alternative Visualizations
+        </h2>
+        <p className="text-muted-foreground mb-6">
+          Different ways to visualize the same category performance data
+        </p>
+      </div>
+
+      {/* Alternative Charts Grid */}
+      <div
+        className="grid gap-6 grid-cols-1 xl:grid-cols-2"
+        style={{
+          animation: "fadeInUp 0.6s ease-out 0.9s both",
+        }}
+      >
+        <LollipopChart data={categoryData} />
+        <PolarAreaChart data={categoryData} />
+      </div>
+
+      <div
+        className="grid gap-6 grid-cols-1 xl:grid-cols-2"
+        style={{
+          animation: "fadeInUp 0.6s ease-out 1s both",
+        }}
+      >
+        <TreemapChart data={categoryData} />
+        <HeatmapMatrix data={categoryData} />
+      </div>
+
+      <div
+        className="grid gap-6 grid-cols-1 xl:grid-cols-2"
+        style={{
+          animation: "fadeInUp 0.6s ease-out 1.1s both",
+        }}
+      >
+        <RadialBarChart data={categoryData} />
+        <BulletChart data={categoryData} />
+      </div>
+
       {/* Debug Info */}
       <Card
         className="border-dashed hover:border-solid transition-all duration-300"
         style={{
-          animation: "fadeIn 0.5s ease-out 1.1s both",
+          animation: "fadeIn 0.5s ease-out 1.2s both",
         }}
       >
         <CardHeader>

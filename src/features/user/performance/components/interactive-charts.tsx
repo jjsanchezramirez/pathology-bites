@@ -13,7 +13,7 @@ import {
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Button } from "@/shared/components/ui/button";
 import { TrendingUp, Calendar, Target, ChevronLeft, ChevronRight, LucideIcon } from "lucide-react";
-import { Line, Radar } from "react-chartjs-2";
+import { Line, Radar, Bar, PolarArea, Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -22,6 +22,11 @@ import {
   LineElement,
   RadarController,
   RadialLinearScale,
+  BarElement,
+  BarController,
+  ArcElement,
+  PolarAreaController,
+  DoughnutController,
   Title,
   Tooltip,
   Legend,
@@ -40,6 +45,11 @@ ChartJS.register(
   LineElement,
   RadarController,
   RadialLinearScale,
+  BarElement,
+  BarController,
+  ArcElement,
+  PolarAreaController,
+  DoughnutController,
   Title,
   Tooltip,
   Legend,
@@ -81,13 +91,25 @@ function hslToHex(hsl: string): string {
   return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
 }
 
+// Helper to convert hex to RGB
+function hexToRgb(hex: string): { r: number; g: number; b: number } {
+  const match = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+  if (!match) return { r: 0, g: 0, b: 0 };
+
+  return {
+    r: parseInt(match[1], 16),
+    g: parseInt(match[2], 16),
+    b: parseInt(match[3], 16),
+  };
+}
+
 // Get theme colors from CSS variables
 function getThemeColors() {
-  const accent = getCSSVariable("--accent");
-  const accentHex = hslToHex(accent);
+  const primary = getCSSVariable("--primary");
+  const primaryHex = hslToHex(primary);
 
   // Create rgba versions
-  const match = accentHex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+  const match = primaryHex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
   let r = 0, g = 0, b = 0;
   if (match) {
     r = parseInt(match[1], 16);
@@ -96,25 +118,25 @@ function getThemeColors() {
   }
 
   return {
-    accent: accentHex,
+    primary: primaryHex,
     radarFill: `rgba(${r}, ${g}, ${b}, 0.12)`,
   };
 }
 
 // Use theme colors
 const CHART_COLORS = {
-  get accent() { return getThemeColors().accent; },
+  get primary() { return getThemeColors().primary; },
   get radarFill() { return getThemeColors().radarFill; },
   white: "#ffffff",
 } as const;
 
 const HEATMAP_COLORS = {
   empty: "bg-muted/30",
-  level1: "bg-accent/20",
-  level2: "bg-accent/40",
-  level3: "bg-accent/60",
-  level4: "bg-accent/80",
-  level5: "bg-accent",
+  level1: "bg-primary/20",
+  level2: "bg-primary/40",
+  level3: "bg-primary/60",
+  level4: "bg-primary/80",
+  level5: "bg-primary",
 } as const;
 
 const THEME_COLORS = {
@@ -327,6 +349,36 @@ export function PerformanceTimelineChart({
 }: PerformanceTimelineChartProps) {
   const [error] = useState<string | null>(null);
   const { isDark } = useChartTheme();
+  const [primaryColor, setPrimaryColor] = useState("#000000");
+  const [animationProgress, setAnimationProgress] = useState(0);
+  const chartRef = useRef<any>(null);
+
+  useEffect(() => {
+    setPrimaryColor(getThemeColors().primary);
+  }, [isDark]);
+
+  // Animate progress from 0 to 1 over 3 seconds
+  useEffect(() => {
+    const duration = 3000;
+    const startTime = Date.now();
+
+    const animate = () => {
+      const elapsed = Date.now() - startTime;
+      const progress = Math.min(elapsed / duration, 1);
+
+      setAnimationProgress(progress);
+
+      if (progress < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+
+    const timer = setTimeout(() => {
+      requestAnimationFrame(animate);
+    }, 300); // Small delay before starting
+
+    return () => clearTimeout(timer);
+  }, [data]);
 
   const chartData = {
     labels: data.map((d) =>
@@ -336,17 +388,41 @@ export function PerformanceTimelineChart({
       {
         label: "Accuracy",
         data: data.map((d) => d.accuracy),
-        borderColor: "transparent",
-        backgroundColor: CHART_COLORS.accent,
-        borderWidth: 0,
+        borderColor: primaryColor,
+        backgroundColor: primaryColor,
+        borderWidth: 3,
         fill: false,
-        pointRadius: 5,
-        pointHoverRadius: 7,
-        pointBackgroundColor: CHART_COLORS.accent,
-        pointBorderColor: CHART_COLORS.white,
-        pointBorderWidth: 2,
-        pointHoverBorderWidth: 3,
-        showLine: false,
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: primaryColor,
+        pointHoverBorderColor: CHART_COLORS.white,
+        pointHoverBorderWidth: 2,
+        showLine: true,
+        tension: 0.4,
+        segment: {
+          borderColor: (ctx: any) => {
+            // Calculate which segments should be visible based on animation progress
+            const totalSegments = data.length - 1;
+            const visibleSegments = animationProgress * totalSegments;
+
+            // If this segment index is within the visible range
+            if (ctx.p0DataIndex < Math.floor(visibleSegments)) {
+              return primaryColor;
+            }
+
+            // For the segment currently being drawn
+            if (ctx.p0DataIndex === Math.floor(visibleSegments)) {
+              const segmentProgress = visibleSegments - Math.floor(visibleSegments);
+              // Fade in the segment
+              const opacity = segmentProgress;
+              const rgb = hexToRgb(primaryColor);
+              return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
+            }
+
+            // Not yet visible
+            return 'transparent';
+          },
+        },
       },
     ],
   };
@@ -358,10 +434,7 @@ export function PerformanceTimelineChart({
       mode: "index",
       intersect: false,
     },
-    animation: {
-      duration: 600,
-      easing: "easeInOutCubic",
-    },
+    animation: false, // Disable default animations
     plugins: {
       legend: {
         display: false,
@@ -396,6 +469,13 @@ export function PerformanceTimelineChart({
           display: true,
           drawOnChartArea: false,
           drawTicks: true,
+        },
+        ticks: {
+          ...createGridConfig(isDark).ticks,
+          maxRotation: 0,
+          minRotation: 0,
+          autoSkip: true,
+          maxTicksLimit: 8,
         },
       },
       y: {
@@ -444,6 +524,11 @@ interface CategoryRadarChartProps {
 export function CategoryRadarChart({ data = [], loading = false }: CategoryRadarChartProps) {
   const [error] = useState<string | null>(null);
   const { isDark } = useChartTheme();
+  const [primaryColor, setPrimaryColor] = useState("#000000");
+
+  useEffect(() => {
+    setPrimaryColor(getThemeColors().primary);
+  }, [isDark]);
 
   const chartData = {
     // TODO: Use short_form abbreviations when available from API
@@ -453,15 +538,16 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
         label: "Accuracy",
         data: data.map((d) => d.accuracy),
         backgroundColor: CHART_COLORS.radarFill,
-        borderColor: "transparent",
-        borderWidth: 0,
-        pointBackgroundColor: CHART_COLORS.accent,
-        pointBorderColor: "transparent",
-        pointBorderWidth: 0,
+        borderColor: primaryColor,
+        borderWidth: 2,
+        pointBackgroundColor: primaryColor,
+        pointBorderColor: CHART_COLORS.white,
+        pointBorderWidth: 2,
         pointRadius: 4,
         pointHoverRadius: 6,
-        pointHoverBackgroundColor: CHART_COLORS.accent,
-        pointHoverBorderColor: "transparent",
+        pointHoverBackgroundColor: primaryColor,
+        pointHoverBorderColor: CHART_COLORS.white,
+        pointHoverBorderWidth: 2,
       },
     ],
   };
@@ -475,8 +561,28 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
       intersect: false,
     },
     animation: {
-      duration: 600,
-      easing: "easeInOutCubic",
+      duration: 800,
+      easing: "easeOutQuart",
+      delay: (context) => {
+        if (context.type === "data") {
+          return context.dataIndex * 150;
+        }
+        return 0;
+      },
+    },
+    animations: {
+      r: {
+        type: "number",
+        from: 0,
+        duration: 800,
+        easing: "easeOutQuart",
+        delay: (context) => {
+          if (context.type === "data") {
+            return context.dataIndex * 150;
+          }
+          return 0;
+        },
+      },
     },
     plugins: {
       legend: {
@@ -502,7 +608,7 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
         ticks: {
           stepSize: 25,
           ...gridConfig.ticks,
-          callback: (value) => value === 0 ? "0" : `${value}`,
+          callback: (value) => (value === 0 ? "0" : `${value}`),
           backdropColor: "transparent",
           showLabelBackdrop: false,
           font: {
@@ -511,11 +617,13 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
         },
         grid: {
           ...gridConfig.grid,
-          circular: true,
-          lineWidth: 0.5,
+          circular: false,
+          lineWidth: 1,
         },
         angleLines: {
-          display: false,
+          display: true,
+          color: gridConfig.grid.color,
+          lineWidth: 1,
         },
         pointLabels: {
           ...gridConfig.ticks,
@@ -523,7 +631,7 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
             size: 11,
             weight: "normal" as const,
           },
-          padding: 12,
+          padding: 15,
         },
       },
     },
@@ -801,25 +909,25 @@ export function ActivityHeatmap({
         {hasStats && (
           <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm border-b pb-4">
             <div className="text-center">
-              <div className="font-semibold text-green-600 dark:text-green-400">
+              <div className="font-semibold text-primary">
                 {stats.avgQuestionsPerDay}
               </div>
               <div className="text-xs text-muted-foreground">Avg/day</div>
             </div>
             <div className="text-center">
-              <div className="font-semibold text-blue-600 dark:text-blue-400">
+              <div className="font-semibold text-primary">
                 {stats.avgQuizzesPerDay}
               </div>
               <div className="text-xs text-muted-foreground">Quizzes/day</div>
             </div>
             <div className="text-center">
-              <div className="font-semibold text-orange-600 dark:text-orange-400">
+              <div className="font-semibold text-primary">
                 {stats.longestStreak}
               </div>
               <div className="text-xs text-muted-foreground">Longest</div>
             </div>
             <div className="text-center">
-              <div className="font-semibold text-purple-600 dark:text-purple-400">
+              <div className="font-semibold text-primary">
                 {stats.currentStreak}
               </div>
               <div className="text-xs text-muted-foreground">Current</div>
@@ -883,7 +991,7 @@ export function ActivityHeatmap({
                   return (
                     <div
                       key={index}
-                      className={`rounded-sm ${getHeatmapColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-1 hover:ring-accent" : "cursor-default"} transition-all duration-150 min-w-[10px] min-h-[10px]`}
+                      className={`rounded-sm ${getHeatmapColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-1 hover:ring-primary" : "cursor-default"} transition-all duration-150 min-w-[10px] min-h-[10px]`}
                       title={formatDayTooltip(day)}
                     />
                   );
