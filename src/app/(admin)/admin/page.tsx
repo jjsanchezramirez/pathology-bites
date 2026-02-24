@@ -44,8 +44,8 @@ export default function AdminDashboardPage() {
   // Get quick actions based on stats and effective role
   const quickActions = stats ? clientDashboardService.getQuickActions(stats, effectiveRole as UserRole) : [];
 
-  // Single loading state: transitioning OR data loading
-  const isLoading = isTransitioning || dataLoading;
+  // Single loading state: transitioning OR data loading OR data not ready
+  const isLoading = isTransitioning || dataLoading || !stats || !activities;
 
   return (
     <div className="space-y-6">
