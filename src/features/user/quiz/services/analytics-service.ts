@@ -32,36 +32,44 @@ export class QuizAnalyticsService {
    * Update analytics for all questions in a completed quiz session
    * Uses a SECURITY DEFINER database function to bypass RLS policies
    */
-  async updateQuizSessionAnalytics(sessionId: string): Promise<void> {
+  async updateQuizSessionAnalytics(
+    sessionId: string,
+    questionIds?: string[]
+  ): Promise<void> {
     try {
       console.log("[Analytics] Starting batch analytics update for session:", sessionId);
 
-      // Get all questions from this quiz session
       const supabase = await this.getSupabase();
-      const { data: attempts, error: attemptsError } = await supabase
-        .from("quiz_attempts")
-        .select("question_id")
-        .eq("quiz_session_id", sessionId);
+      let questionIdsToUpdate = questionIds;
 
-      if (attemptsError) {
-        console.error("[Analytics] Error fetching quiz attempts:", attemptsError);
-        throw attemptsError;
+      // If question IDs not provided, fetch them (backward compatibility)
+      if (!questionIdsToUpdate || questionIdsToUpdate.length === 0) {
+        const { data: attempts, error: attemptsError } = await supabase
+          .from("quiz_attempts")
+          .select("question_id")
+          .eq("quiz_session_id", sessionId);
+
+        if (attemptsError) {
+          console.error("[Analytics] Error fetching quiz attempts:", attemptsError);
+          throw attemptsError;
+        }
+
+        if (!attempts || attempts.length === 0) {
+          console.log("[Analytics] No attempts found for session:", sessionId);
+          return;
+        }
+
+        // Get unique question IDs
+        questionIdsToUpdate = [
+          ...new Set((attempts as QuizAttemptRow[]).map((a) => a.question_id)),
+        ] as string[];
       }
 
-      if (!attempts || attempts.length === 0) {
-        console.log("[Analytics] No attempts found for session:", sessionId);
-        return;
-      }
-
-      // Get unique question IDs
-      const questionIds = [
-        ...new Set((attempts as QuizAttemptRow[]).map((a) => a.question_id)),
-      ] as string[];
-      console.log("[Analytics] Updating analytics for questions:", questionIds);
+      console.log("[Analytics] Updating analytics for questions:", questionIdsToUpdate);
 
       // Call database function to update analytics (bypasses RLS with SECURITY DEFINER)
       const { error: updateError } = await supabase.rpc("update_question_analytics_batch", {
-        question_ids: questionIds,
+        question_ids: questionIdsToUpdate,
       });
 
       if (updateError) {

@@ -1374,19 +1374,8 @@ export class QuizService {
         authenticatedSupabase
       );
 
-      // Refresh user statistics after quiz completion for better performance
-      // Use userId from existing session object (already fetched at line 1145)
-      try {
-        if (session.userId) {
-          await supabaseClient.rpc("refresh_user_category_stats", {
-            p_user_id: session.userId,
-          });
-          console.log("User statistics refreshed after quiz completion");
-        }
-      } catch (statsError) {
-        console.warn("Failed to refresh user statistics:", statsError);
-        // Don't fail the quiz completion if stats refresh fails
-      }
+      // Note: Stats refresh moved to completion route for better separation of concerns
+      // The completion route now calls refresh_user_stats_incremental() after quiz completion
 
       return {
         sessionId,

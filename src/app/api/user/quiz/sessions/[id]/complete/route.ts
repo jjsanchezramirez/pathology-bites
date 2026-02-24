@@ -225,14 +225,28 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       throw new Error("Invalid quiz completion result");
     }
 
+    // OPTIMIZATION: Extract question IDs from result to avoid redundant fetch
+    const questionIds = result.attempts?.map((attempt) => attempt.questionId) || [];
+
     // Update analytics for all questions in this quiz session (batch update)
     try {
       console.log("[Quiz Complete] Starting batch analytics update for session:", id);
-      await quizAnalyticsService.updateQuizSessionAnalytics(id);
+      // Pass question IDs to avoid re-fetching them from database
+      await quizAnalyticsService.updateQuizSessionAnalytics(id, questionIds);
       console.log("[Quiz Complete] Batch analytics update completed successfully");
     } catch (analyticsError) {
       // Don't fail the quiz completion if analytics update fails
       console.error("[Quiz Complete] Failed to update analytics:", analyticsError);
+    }
+
+    // OPTIMIZATION: Refresh user stats incrementally (uses materialized view)
+    try {
+      console.log("[Quiz Complete] Refreshing user stats incrementally for user:", userId);
+      await supabase.rpc("refresh_user_stats_incremental", { p_user_id: userId });
+      console.log("[Quiz Complete] User stats refreshed successfully");
+    } catch (statsError) {
+      // Don't fail the quiz completion if stats refresh fails
+      console.warn("[Quiz Complete] Failed to refresh user stats:", statsError);
     }
 
     // Note: Activity generation removed - dashboard now gets activities directly
