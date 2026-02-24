@@ -1,7 +1,7 @@
 // src/app/(dashboard)/dashboard/performance/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useMemo } from "react";
 
 import { PerformanceAnalytics } from "@/features/user/dashboard/components";
 import {
@@ -16,52 +16,40 @@ import {
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 import { ScrollReveal } from "@/shared/components/common";
 
-interface DashboardStats {
-  performance?: {
-    userPercentile: number;
-    peerRank: number;
-    totalUsers: number;
-    completedQuizzes: number;
-    subjectsForImprovement: Array<{
-      name: string;
-      score: number;
-      attempts: number;
-    }>;
-    subjectsMastered: Array<{
-      name: string;
-      score: number;
-      attempts: number;
-    }>;
-    overallScore: number;
-  };
-}
-
 export default function PerformancePage() {
   const { data: unifiedData, isLoading } = useUnifiedData();
-  const [stats, setStats] = useState<DashboardStats | null>(null);
 
-  useEffect(() => {
-    if (!unifiedData) return;
+  // Memoize transformed data to prevent unnecessary recalculations
+  const performanceData = useMemo(() => {
+    if (!unifiedData) return null;
 
-    // Transform unified API response to match component expectations
-    setStats({
-      performance: {
-        userPercentile: unifiedData.summary.userPercentile,
-        peerRank: unifiedData.summary.peerRank,
-        totalUsers: unifiedData.summary.totalUsers,
-        completedQuizzes: unifiedData.summary.completedQuizzes,
-        subjectsForImprovement: unifiedData.subjects.needsImprovement,
-        subjectsMastered: unifiedData.subjects.mastered,
-        overallScore: unifiedData.summary.overallScore,
-      },
-    });
+    return {
+      userPercentile: unifiedData.summary.userPercentile,
+      peerRank: unifiedData.summary.peerRank,
+      totalUsers: unifiedData.summary.totalUsers,
+      completedQuizzes: unifiedData.summary.completedQuizzes,
+      subjectsForImprovement: unifiedData.subjects.needsImprovement,
+      subjectsMastered: unifiedData.subjects.mastered,
+      overallScore: unifiedData.summary.overallScore,
+    };
   }, [unifiedData]);
 
+  const radarChartData = useMemo(() => {
+    if (!unifiedData?.categories) return [];
+
+    return unifiedData.categories.map((cat) => ({
+      category_name: cat.category_name,
+      accuracy: cat.accuracy,
+    }));
+  }, [unifiedData?.categories]);
+
+  // Handle loading state
   if (isLoading) {
     return <PerformanceLoading />;
   }
 
-  if (!stats?.performance) {
+  // Handle empty state
+  if (!performanceData) {
     return (
       <div className="space-y-6">
         <div>
@@ -76,6 +64,7 @@ export default function PerformancePage() {
 
   return (
     <div className="space-y-6">
+      {/* Page Header */}
       <div>
         <h1 className="text-3xl font-bold tracking-tight">Performance Analytics</h1>
         <p className="text-muted-foreground">
@@ -85,36 +74,24 @@ export default function PerformancePage() {
 
       {/* Performance Overview Cards */}
       <ScrollReveal animation="fade-up">
-        <PerformanceAnalytics data={stats.performance} />
+        <PerformanceAnalytics data={performanceData} />
       </ScrollReveal>
 
-      {/* Interactive Charts - All data from single API call */}
+      {/* Interactive Charts */}
       <ScrollReveal animation="fade-up">
         <div className="grid gap-6 lg:grid-cols-2">
-          <PerformanceTimelineChart data={unifiedData?.timeline || []} loading={isLoading} />
-          <CategoryRadarChart
-            data={
-              unifiedData?.categories.map((cat) => ({
-                category_name: cat.category_name,
-                accuracy: cat.accuracy,
-              })) || []
-            }
-            loading={isLoading}
-          />
+          <PerformanceTimelineChart data={unifiedData.timeline} />
+          <CategoryRadarChart data={radarChartData} />
         </div>
       </ScrollReveal>
 
       <ScrollReveal animation="fade-up">
-        <ActivityHeatmap
-          data={unifiedData?.heatmap.data || []}
-          stats={unifiedData?.heatmap.stats || null}
-          loading={isLoading}
-        />
+        <ActivityHeatmap data={unifiedData.heatmap.data} stats={unifiedData.heatmap.stats} />
       </ScrollReveal>
 
       {/* Detailed Category Breakdown */}
       <ScrollReveal animation="fade-up">
-        <CategoryPerformanceCard categoryDetails={unifiedData?.categories || []} />
+        <CategoryPerformanceCard categoryDetails={unifiedData.categories} />
       </ScrollReveal>
     </div>
   );
