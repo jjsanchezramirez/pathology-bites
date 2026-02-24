@@ -83,11 +83,11 @@ function hslToHex(hsl: string): string {
 
 // Get theme colors from CSS variables
 function getThemeColors() {
-  const primary = getCSSVariable("--primary");
-  const primaryHex = hslToHex(primary);
+  const accent = getCSSVariable("--accent");
+  const accentHex = hslToHex(accent);
 
-  // Create rgba versions for gradients
-  const match = primaryHex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+  // Create rgba versions
+  const match = accentHex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
   let r = 0, g = 0, b = 0;
   if (match) {
     r = parseInt(match[1], 16);
@@ -96,31 +96,25 @@ function getThemeColors() {
   }
 
   return {
-    primary: primaryHex,
-    gradientStart: `rgba(${r}, ${g}, ${b}, 0.3)`,
-    gradientMid: `rgba(${r}, ${g}, ${b}, 0.1)`,
-    gradientEnd: `rgba(${r}, ${g}, ${b}, 0.0)`,
-    radarFill: `rgba(${r}, ${g}, ${b}, 0.15)`,
+    accent: accentHex,
+    radarFill: `rgba(${r}, ${g}, ${b}, 0.12)`,
   };
 }
 
 // Use theme colors
 const CHART_COLORS = {
-  get primary() { return getThemeColors().primary; },
-  get gradientStart() { return getThemeColors().gradientStart; },
-  get gradientMid() { return getThemeColors().gradientMid; },
-  get gradientEnd() { return getThemeColors().gradientEnd; },
+  get accent() { return getThemeColors().accent; },
   get radarFill() { return getThemeColors().radarFill; },
   white: "#ffffff",
 } as const;
 
 const HEATMAP_COLORS = {
   empty: "bg-muted/30",
-  level1: "bg-primary/20",
-  level2: "bg-primary/40",
-  level3: "bg-primary/60",
-  level4: "bg-primary/80",
-  level5: "bg-primary",
+  level1: "bg-accent/20",
+  level2: "bg-accent/40",
+  level3: "bg-accent/60",
+  level4: "bg-accent/80",
+  level5: "bg-accent",
 } as const;
 
 const THEME_COLORS = {
@@ -342,23 +336,17 @@ export function PerformanceTimelineChart({
       {
         label: "Accuracy",
         data: data.map((d) => d.accuracy),
-        borderColor: CHART_COLORS.primary,
-        backgroundColor: (context: any) => {
-          const ctx = context.chart.ctx;
-          const gradient = ctx.createLinearGradient(0, 0, 0, 300);
-          gradient.addColorStop(0, CHART_COLORS.gradientStart);
-          gradient.addColorStop(0.5, CHART_COLORS.gradientMid);
-          gradient.addColorStop(1, CHART_COLORS.gradientEnd);
-          return gradient;
-        },
-        borderWidth: 2,
-        fill: true,
-        tension: 0.4,
-        pointRadius: 0,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: CHART_COLORS.primary,
-        pointHoverBorderColor: CHART_COLORS.white,
-        pointHoverBorderWidth: 2,
+        borderColor: "transparent",
+        backgroundColor: CHART_COLORS.accent,
+        borderWidth: 0,
+        fill: false,
+        pointRadius: 5,
+        pointHoverRadius: 7,
+        pointBackgroundColor: CHART_COLORS.accent,
+        pointBorderColor: CHART_COLORS.white,
+        pointBorderWidth: 2,
+        pointHoverBorderWidth: 3,
+        showLine: false,
       },
     ],
   };
@@ -412,7 +400,7 @@ export function PerformanceTimelineChart({
       },
       y: {
         min: 0,
-        max: 100,
+        max: 105,
         ...createGridConfig(isDark),
         grid: {
           ...createGridConfig(isDark).grid,
@@ -420,7 +408,7 @@ export function PerformanceTimelineChart({
         },
         ticks: {
           ...createGridConfig(isDark).ticks,
-          callback: (value) => `${value}%`,
+          callback: (value) => (typeof value === "number" && value <= 100 ? `${value}%` : ""),
           stepSize: 25,
         },
       },
@@ -458,6 +446,7 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
   const { isDark } = useChartTheme();
 
   const chartData = {
+    // TODO: Use short_form abbreviations when available from API
     labels: data.map((d) => d.category_name),
     datasets: [
       {
@@ -466,12 +455,12 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
         backgroundColor: CHART_COLORS.radarFill,
         borderColor: "transparent",
         borderWidth: 0,
-        pointBackgroundColor: CHART_COLORS.primary,
+        pointBackgroundColor: CHART_COLORS.accent,
         pointBorderColor: "transparent",
         pointBorderWidth: 0,
-        pointRadius: 3,
-        pointHoverRadius: 5,
-        pointHoverBackgroundColor: CHART_COLORS.primary,
+        pointRadius: 4,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: CHART_COLORS.accent,
         pointHoverBorderColor: "transparent",
       },
     ],
