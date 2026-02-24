@@ -883,7 +883,7 @@ export function ActivityHeatmap({
                   return (
                     <div
                       key={index}
-                      className={`rounded-sm ${getHeatmapColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-1 hover:ring-primary" : "cursor-default"} transition-all duration-150 min-w-[10px] min-h-[10px]`}
+                      className={`rounded-sm ${getHeatmapColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-1 hover:ring-accent" : "cursor-default"} transition-all duration-150 min-w-[10px] min-h-[10px]`}
                       title={formatDayTooltip(day)}
                     />
                   );
