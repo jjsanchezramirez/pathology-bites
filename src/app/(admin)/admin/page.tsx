@@ -1,84 +1,51 @@
 // src/app/(admin)/admin/page.tsx
 "use client";
 
-import { UserRole } from "@/shared/utils/auth/auth-helpers";
-import { useEffect, useState } from "react";
+import { useUserRole } from "@/shared/hooks/use-user-role";
+import { useAuthContext } from "@/features/auth/components/auth-provider";
+import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
+import { useDashboardData } from "@/features/admin/dashboard/hooks/use-dashboard-data";
 import { clientDashboardService } from "@/features/admin/dashboard/services/client-service";
-import { DashboardStats, RecentActivity } from "@/features/admin/dashboard/services/service";
 import { StatsCards } from "@/features/admin/dashboard/components/stats-cards";
 import { RecentActivityCard } from "@/features/admin/dashboard/components/recent-activity";
 import { QuickActionsCard } from "@/features/admin/dashboard/components/quick-actions";
 import { SystemStatus } from "@/features/admin/dashboard/components/system-status";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { useUserRole } from "@/shared/hooks/use-user-role";
-import { useAuthContext } from "@/features/auth/components/auth-provider";
-import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
+import { UserRole } from "@/shared/utils/auth/auth-helpers";
 
 export default function AdminDashboardPage() {
-  const { role, isLoading: roleLoading } = useUserRole();
+  // Get user data from auth context
   const { user } = useAuthContext();
+
+  // Get role information
+  const { role, isLoading: roleLoading } = useUserRole();
+
+  // Get theme and admin mode
   const { adminMode, isTransitioning } = useDashboardTheme();
 
-  const [stats, setStats] = useState<DashboardStats | null>(null);
-  const [activities, setActivities] = useState<RecentActivity[] | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  // Fetch dashboard data using simplified hook
+  // This hook handles all complexity:
+  // - Waits for role to load before fetching
+  // - Handles caching and revalidation via SWR
+  // - Eliminates race conditions through proper enabled flags
+  // - Provides proper error handling
+  // - No manual useEffect needed
+  const { stats, activities, isLoading: dataLoading, error } = useDashboardData(
+    role,
+    user?.id,
+    roleLoading
+  );
 
-  // Use adminMode for determining what data to fetch and show
+  // Compute effective role for UI (quick actions only)
+  // This is NOT used for data fetching (eliminates stale closure issues)
   const effectiveRole = adminMode === "user" ? "user" : adminMode;
 
-  useEffect(() => {
-    console.log(
-      "[AdminDashboard] Effect triggered - role:",
-      role,
-      "user?.id:",
-      user?.id,
-      "roleLoading:",
-      roleLoading
-    );
+  // Get quick actions based on stats and effective role
+  const quickActions = stats ? clientDashboardService.getQuickActions(stats, effectiveRole as UserRole) : [];
 
-    // Don't fetch until we have a user and role is not loading
-    if (!user || roleLoading || role === undefined) {
-      console.log("[AdminDashboard] Skipping fetch - waiting for user/role");
-      return;
-    }
-
-    async function fetchDashboardData() {
-      try {
-        setError(null);
-        console.log(
-          "[AdminDashboard] 🔄 FETCHING dashboard data for role:",
-          role,
-          "user:",
-          user?.id
-        );
-
-        // Fetch dashboard stats and activities in parallel
-        const [dashboardStats, recentActivities] = await Promise.all([
-          clientDashboardService.getDashboardStats(),
-          clientDashboardService.getRecentActivity(effectiveRole as UserRole, user?.id),
-        ]);
-
-        setStats(dashboardStats);
-        setActivities(recentActivities);
-        console.log("[AdminDashboard] ✅ Dashboard data loaded successfully");
-      } catch (err) {
-        console.error("Error fetching dashboard data:", err);
-        setError(err instanceof Error ? err.message : "Failed to load dashboard data");
-      }
-    }
-
-    fetchDashboardData();
-  }, [adminMode, user?.id, roleLoading, role, user, effectiveRole]); // Use adminMode instead of role
-
-  // Use adminMode for determining quick actions
-  const quickActions = stats
-    ? clientDashboardService.getQuickActions(stats, effectiveRole as UserRole)
-    : [];
-
-  // Single loading state - show skeleton until ALL data is ready
-  // Only show loading if we don't have user yet, or if role is still loading, or if we don't have data yet, or if transitioning
-  const isLoading = !user || roleLoading || !stats || !activities || isTransitioning;
+  // Single loading state: transitioning OR data loading
+  const isLoading = isTransitioning || dataLoading;
 
   return (
     <div className="space-y-6">

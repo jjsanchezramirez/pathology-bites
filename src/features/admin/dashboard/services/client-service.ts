@@ -6,130 +6,139 @@ class ClientDashboardService {
   private supabase = createClient();
 
   async getDashboardStats(): Promise<DashboardStats> {
-    try {
-      // Try to use the optimized view first, fallback to individual queries
-      const { data: viewData, error: viewError } = await this.supabase
-        .from("v_dashboard_stats")
-        .select("*")
-        .single();
+    // Try to use the optimized view first, fallback to individual queries
+    const { data: viewData, error: viewError } = await this.supabase
+      .from("v_dashboard_stats")
+      .select("*")
+      .single();
 
-      if (!viewError && viewData) {
-        // Map view data to our interface
-        return {
-          totalQuestions: viewData.total_questions,
-          totalUsers: viewData.total_users,
-          totalImages: viewData.total_images,
-          totalInquiries: viewData.total_inquiries,
-          pendingQuestions: viewData.pending_questions, // Questions with 'pending_review' status
-          rejectedQuestions: viewData.rejected_questions, // Questions with 'rejected' status
-          activeUsers: viewData.active_users, // Users with 'active' status
-          recentQuestions: viewData.recent_questions,
-          unreadInquiries: viewData.unread_inquiries, // Inquiries with 'open' status
-          questionReports: viewData.question_reports,
-          pendingReports: viewData.pending_reports,
-          draftQuestions: viewData.draft_questions, // Questions with 'draft' status
-          flaggedQuestions: viewData.flagged_questions, // Questions with 'flagged' status
-        };
-      }
-
-      // Fallback to individual queries if view fails
-
-      // Get all stats in parallel
-      // Use Promise.allSettled to handle cases where tables might not exist
-      const results = await Promise.allSettled([
-        this.supabase
-          .from("questions")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "approved"),
-        this.supabase.from("users").select("id", { count: "exact", head: true }),
-        this.supabase.from("images").select("id", { count: "exact", head: true }),
-        this.supabase.from("inquiries").select("id", { count: "exact", head: true }),
-        this.supabase
-          .from("questions")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "pending"),
-        this.supabase
-          .from("users")
-          .select("id", { count: "exact", head: true })
-          .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
-        this.supabase
-          .from("questions")
-          .select("id", { count: "exact", head: true })
-          .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
-        this.supabase.from("inquiries").select("id", { count: "exact", head: true }),
-        this.supabase.from("question_reports").select("id", { count: "exact", head: true }),
-        this.supabase
-          .from("question_reports")
-          .select("id", { count: "exact", head: true })
-          .eq("status", "pending"),
-      ]);
-
-      // Extract counts, defaulting to 0 if query failed
-      const getCounts = (index: number) => {
-        const result = results[index];
-        return result.status === "fulfilled" && result.value.count !== null
-          ? result.value.count
-          : 0;
-      };
-
+    if (!viewError && viewData) {
+      // Map view data to our interface
       return {
-        totalQuestions: getCounts(0),
-        totalUsers: getCounts(1),
-        totalImages: getCounts(2),
-        totalInquiries: getCounts(3),
-        pendingQuestions: getCounts(4),
-        activeUsers: getCounts(5),
-        recentQuestions: getCounts(6),
-        unreadInquiries: getCounts(7),
-        questionReports: getCounts(8),
-        pendingReports: getCounts(9),
-        rejectedQuestions: 0,
-        draftQuestions: 0,
-        flaggedQuestions: 0,
-      };
-    } catch {
-      // Return default stats on error
-      return {
-        totalQuestions: 0,
-        totalUsers: 0,
-        totalImages: 0,
-        totalInquiries: 0,
-        pendingQuestions: 0,
-        rejectedQuestions: 0,
-        activeUsers: 0,
-        recentQuestions: 0,
-        unreadInquiries: 0,
-        questionReports: 0,
-        pendingReports: 0,
-        draftQuestions: 0,
-        flaggedQuestions: 0,
+        totalQuestions: viewData.total_questions,
+        totalUsers: viewData.total_users,
+        totalImages: viewData.total_images,
+        totalInquiries: viewData.total_inquiries,
+        pendingQuestions: viewData.pending_questions,
+        rejectedQuestions: viewData.rejected_questions,
+        activeUsers: viewData.active_users,
+        recentQuestions: viewData.recent_questions,
+        unreadInquiries: viewData.unread_inquiries,
+        questionReports: viewData.question_reports,
+        pendingReports: viewData.pending_reports,
+        draftQuestions: viewData.draft_questions,
+        flaggedQuestions: viewData.flagged_questions,
       };
     }
+
+    // Log view error for debugging
+    if (viewError) {
+      console.warn("[getDashboardStats] View query failed, falling back to individual queries:", viewError);
+    }
+
+    // Fallback to individual queries if view fails
+    const results = await Promise.allSettled([
+      this.supabase
+        .from("questions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "approved"),
+      this.supabase.from("users").select("id", { count: "exact", head: true }),
+      this.supabase.from("images").select("id", { count: "exact", head: true }),
+      this.supabase.from("inquiries").select("id", { count: "exact", head: true }),
+      this.supabase
+        .from("questions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending"),
+      this.supabase
+        .from("users")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString()),
+      this.supabase
+        .from("questions")
+        .select("id", { count: "exact", head: true })
+        .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
+      this.supabase.from("inquiries").select("id", { count: "exact", head: true }),
+      this.supabase.from("question_reports").select("id", { count: "exact", head: true }),
+      this.supabase
+        .from("question_reports")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "pending"),
+    ]);
+
+    // Check if ALL queries failed - this indicates a serious problem
+    const allFailed = results.every((result) => result.status === "rejected");
+    if (allFailed) {
+      const firstError = results[0].status === "rejected" ? results[0].reason : "Unknown error";
+      console.error("[getDashboardStats] All stats queries failed:", firstError);
+      throw new Error("Failed to load dashboard statistics. Please check your connection and try again.");
+    }
+
+    // Log individual failures for debugging
+    results.forEach((result, index) => {
+      if (result.status === "rejected") {
+        console.warn(`[getDashboardStats] Query ${index} failed:`, result.reason);
+      }
+    });
+
+    // Extract counts, defaulting to 0 if query failed
+    const getCounts = (index: number) => {
+      const result = results[index];
+      return result.status === "fulfilled" && result.value.count !== null
+        ? result.value.count
+        : 0;
+    };
+
+    return {
+      totalQuestions: getCounts(0),
+      totalUsers: getCounts(1),
+      totalImages: getCounts(2),
+      totalInquiries: getCounts(3),
+      pendingQuestions: getCounts(4),
+      activeUsers: getCounts(5),
+      recentQuestions: getCounts(6),
+      unreadInquiries: getCounts(7),
+      questionReports: getCounts(8),
+      pendingReports: getCounts(9),
+      rejectedQuestions: 0,
+      draftQuestions: 0,
+      flaggedQuestions: 0,
+    };
   }
 
   async getRecentActivity(userRole?: string, userId?: string): Promise<RecentActivity[]> {
     try {
       const activities: RecentActivity[] = [];
 
+      console.log("[DashboardService] getRecentActivity called with role:", userRole, "userId:", userId);
+
       // Role-based activity filtering
       if (userRole === "admin") {
         // Admins see all activities
+        console.log("[DashboardService] Fetching ADMIN activities (questions, users, inquiries)");
         await this.getAdminActivities(activities);
       } else if (userRole === "creator") {
         // Creators see their own questions and status changes
+        console.log("[DashboardService] Fetching CREATOR activities");
         await this.getCreatorActivities(activities, userId);
       } else if (userRole === "reviewer") {
         // Reviewers see pending reviews and their review activity
+        console.log("[DashboardService] Fetching REVIEWER activities");
         await this.getReviewerActivities(activities, userId);
       } else {
         // Default: get general recent questions
+        console.log("[DashboardService] Fetching GENERAL activities (questions only - NO users/inquiries)");
         await this.getGeneralActivities(activities);
       }
 
       // Sort all activities by timestamp and return top 10
-      return activities
+      const sortedActivities = activities
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 10);
+
+      console.log("[DashboardService] Returning", sortedActivities.length, "activities. Types:",
+        sortedActivities.map(a => a.type).join(", "));
+
+      return sortedActivities;
     } catch (error) {
       console.error("Error fetching recent activity:", error);
       return [];

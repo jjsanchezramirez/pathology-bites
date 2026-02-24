@@ -117,7 +117,14 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
       // Get admin mode using utility function
       const defaultMode = getAdminModeFromCookie(isAdmin, role);
       console.log("[DashboardTheme] Admin mode:", defaultMode, "isAdmin:", isAdmin, "role:", role);
-      setAdminModeState(defaultMode);
+
+      // CRITICAL FIX: Update adminMode when role loads
+      // On first load, role might be null/undefined, so adminMode defaults to "user"
+      // When role loads, we need to update adminMode to match the actual role
+      if (defaultMode !== adminMode) {
+        console.log("[DashboardTheme] Updating adminMode from", adminMode, "to", defaultMode);
+        setAdminModeState(defaultMode);
+      }
 
       // Load theme based on admin mode from SWR cache
       const availableThemes = getAvailableThemes(defaultMode);
