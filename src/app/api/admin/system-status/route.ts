@@ -2,7 +2,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
-import { getBucketSize } from "@/shared/services/r2-storage";
+import { getCachedStorageMetrics } from "@/shared/services/r2-storage-metrics";
 import { formatSize } from "@/features/admin/images/services/image-upload";
 import { devLog } from "@/shared/utils/logging/dev-logger";
 
@@ -151,16 +151,14 @@ export async function GET(request: Request) {
     const [
       storageStats,
       vercelStatusResponse,
-      r2ImagesStats,
-      r2DataStats,
+      r2StorageMetrics,
       dailyActiveUsers,
       weeklyActiveUsers,
       monthlyActiveUsers,
     ] = await Promise.allSettled([
       supabase.from("v_storage_stats").select("*").single(),
       fetch("https://www.vercel-status.com/api/v2/status.json"),
-      getBucketSize("pathology-bites-images"),
-      getBucketSize("pathology-bites-data"),
+      getCachedStorageMetrics(), // Fast database query instead of slow R2 scan
       // Count active users based on registration date (users who joined recently)
       // This better represents user growth than quiz activity alone
       supabase.rpc("count_active_users_since", { since_date: twentyFourHoursAgo }),
@@ -172,8 +170,7 @@ export async function GET(request: Request) {
     devLog.performance("Parallel system checks", parallelDuration, {
       storageStats: storageStats.status,
       vercelStatus: vercelStatusResponse.status,
-      r2Images: r2ImagesStats.status,
-      r2Data: r2DataStats.status,
+      r2StorageMetrics: r2StorageMetrics.status,
       dailyActiveUsers: dailyActiveUsers.status,
       weeklyActiveUsers: weeklyActiveUsers.status,
       monthlyActiveUsers: monthlyActiveUsers.status,
@@ -209,21 +206,23 @@ export async function GET(request: Request) {
       storageUsage = storageStats.value.data.total_size_mb || 0;
     }
 
-    // Check Cloudflare R2 status and get real usage
+    // Check Cloudflare R2 status and get cached usage metrics
     let cloudflareR2Status: "operational" | "error" = "operational";
     let r2StorageUsage = 0; // R2 storage in MB
     let r2StorageFormatted = "0 MB";
 
-    if (r2ImagesStats.status === "fulfilled" && r2DataStats.status === "fulfilled") {
+    if (r2StorageMetrics.status === "fulfilled") {
       try {
-        const totalUsedBytes = r2ImagesStats.value.totalSize + r2DataStats.value.totalSize;
+        const metrics = r2StorageMetrics.value;
+        const totalUsedBytes = metrics.reduce((sum, m) => sum + m.totalSize, 0);
         r2StorageUsage = Math.round(totalUsedBytes / (1024 * 1024)); // Convert to MB
         r2StorageFormatted = formatSize(totalUsedBytes);
       } catch (error) {
-        console.error("Failed to calculate R2 stats:", error);
+        console.error("Failed to calculate R2 stats from cached metrics:", error);
         cloudflareR2Status = "error";
       }
     } else {
+      console.error("Failed to fetch R2 storage metrics:", r2StorageMetrics.reason);
       cloudflareR2Status = "error";
     }
 
