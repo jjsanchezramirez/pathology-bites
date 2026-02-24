@@ -158,7 +158,7 @@ export async function GET(request: Request) {
     ] = await Promise.allSettled([
       supabase.from("v_storage_stats").select("*").single(),
       fetch("https://www.vercel-status.com/api/v2/status.json"),
-      getCachedStorageMetrics(), // Fast database query instead of slow R2 scan
+      getCachedStorageMetrics(undefined, supabaseAdmin), // Use service role to bypass RLS
       // Count active users based on registration date (users who joined recently)
       // This better represents user growth than quiz activity alone
       supabase.rpc("count_active_users_since", { since_date: twentyFourHoursAgo }),

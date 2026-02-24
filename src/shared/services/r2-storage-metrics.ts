@@ -64,9 +64,13 @@ export async function decrementStorageMetrics(
  * Get cached storage metrics from database (FAST - <100ms)
  *
  * Replaces the slow getBucketSize() that scans all R2 objects
+ *
+ * @param bucketName - Optional bucket name to filter by
+ * @param supabaseClient - Optional Supabase client (for service role access)
  */
 export async function getCachedStorageMetrics(
-  bucketName?: string
+  bucketName?: string,
+  supabaseClient?: ReturnType<typeof createClient>
 ): Promise<
   Array<{
     bucketName: string;
@@ -75,7 +79,7 @@ export async function getCachedStorageMetrics(
     lastUpdated: string;
   }>
 > {
-  const supabase = createClient();
+  const supabase = supabaseClient || createClient();
 
   let query = supabase
     .from("r2_storage_metrics")
