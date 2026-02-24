@@ -161,11 +161,11 @@ export async function GET(request: Request) {
       fetch("https://www.vercel-status.com/api/v2/status.json"),
       getBucketSize("pathology-bites-images"),
       getBucketSize("pathology-bites-data"),
-      // Count distinct active users based on quiz attempts (proxy for activity)
-      // This matches how v_dashboard_stats calculates active_users
-      supabase.rpc("count_distinct_users_since", { since_date: twentyFourHoursAgo }),
-      supabase.rpc("count_distinct_users_since", { since_date: sevenDaysAgo }),
-      supabase.rpc("count_distinct_users_since", { since_date: thirtyDaysAgo }),
+      // Count active users based on registration date (users who joined recently)
+      // This better represents user growth than quiz activity alone
+      supabase.rpc("count_active_users_since", { since_date: twentyFourHoursAgo }),
+      supabase.rpc("count_active_users_since", { since_date: sevenDaysAgo }),
+      supabase.rpc("count_active_users_since", { since_date: thirtyDaysAgo }),
     ]);
 
     const parallelDuration = Math.round(performance.now() - parallelStart);
@@ -236,7 +236,7 @@ export async function GET(request: Request) {
       activeUsers = Number(dailyActiveUsers.value.data) || 0;
     } else if (dailyActiveUsers.status === "rejected") {
       console.error("[System Status] Daily active users query failed:", dailyActiveUsers.reason);
-      console.warn("[System Status] Is count_distinct_users_since() function created in database?");
+      console.warn("[System Status] Is count_active_users_since() function created in database?");
     }
 
     if (weeklyActiveUsers.status === "fulfilled" && weeklyActiveUsers.value.data !== null) {
