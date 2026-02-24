@@ -161,19 +161,11 @@ export async function GET(request: Request) {
       fetch("https://www.vercel-status.com/api/v2/status.json"),
       getBucketSize("pathology-bites-images"),
       getBucketSize("pathology-bites-data"),
-      // Efficient database count queries instead of loading ALL users into memory
-      supabase
-        .from("users")
-        .select("id", { count: "exact", head: true })
-        .gte("last_sign_in_at", twentyFourHoursAgo),
-      supabase
-        .from("users")
-        .select("id", { count: "exact", head: true })
-        .gte("last_sign_in_at", sevenDaysAgo),
-      supabase
-        .from("users")
-        .select("id", { count: "exact", head: true })
-        .gte("last_sign_in_at", thirtyDaysAgo),
+      // Count distinct active users based on quiz attempts (proxy for activity)
+      // This matches how v_dashboard_stats calculates active_users
+      supabase.rpc("count_distinct_users_since", { since_date: twentyFourHoursAgo }),
+      supabase.rpc("count_distinct_users_since", { since_date: sevenDaysAgo }),
+      supabase.rpc("count_distinct_users_since", { since_date: thirtyDaysAgo }),
     ]);
 
     const parallelDuration = Math.round(performance.now() - parallelStart);
@@ -235,21 +227,21 @@ export async function GET(request: Request) {
       cloudflareR2Status = "error";
     }
 
-    // Extract active user counts from database queries
+    // Extract active user counts from RPC function results
     let activeUsers = 0;
     let activeUsersWeekly = 0;
     let activeUsersMonthly = 0;
 
-    if (dailyActiveUsers.status === "fulfilled" && dailyActiveUsers.value.count !== null) {
-      activeUsers = dailyActiveUsers.value.count;
+    if (dailyActiveUsers.status === "fulfilled" && dailyActiveUsers.value.data !== null) {
+      activeUsers = Number(dailyActiveUsers.value.data) || 0;
     }
 
-    if (weeklyActiveUsers.status === "fulfilled" && weeklyActiveUsers.value.count !== null) {
-      activeUsersWeekly = weeklyActiveUsers.value.count;
+    if (weeklyActiveUsers.status === "fulfilled" && weeklyActiveUsers.value.data !== null) {
+      activeUsersWeekly = Number(weeklyActiveUsers.value.data) || 0;
     }
 
-    if (monthlyActiveUsers.status === "fulfilled" && monthlyActiveUsers.value.count !== null) {
-      activeUsersMonthly = monthlyActiveUsers.value.count;
+    if (monthlyActiveUsers.status === "fulfilled" && monthlyActiveUsers.value.data !== null) {
+      activeUsersMonthly = Number(monthlyActiveUsers.value.data) || 0;
     }
 
     const systemHealth: SystemHealth = {
