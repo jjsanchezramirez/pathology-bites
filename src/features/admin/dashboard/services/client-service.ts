@@ -57,7 +57,6 @@ class ClientDashboardService {
         .from("questions")
         .select("id", { count: "exact", head: true })
         .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
-      this.supabase.from("inquiries").select("id", { count: "exact", head: true }),
       this.supabase.from("question_reports").select("id", { count: "exact", head: true }),
       this.supabase
         .from("question_reports")
@@ -96,9 +95,9 @@ class ClientDashboardService {
       pendingQuestions: getCounts(4),
       activeUsers: getCounts(5),
       recentQuestions: getCounts(6),
-      unreadInquiries: getCounts(7),
-      questionReports: getCounts(8),
-      pendingReports: getCounts(9),
+      questionReports: getCounts(7),
+      pendingReports: getCounts(8),
+      unreadInquiries: getCounts(3), // Use totalInquiries count (assuming all are unread)
       rejectedQuestions: 0,
       draftQuestions: 0,
       flaggedQuestions: 0,

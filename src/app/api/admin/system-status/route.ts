@@ -143,16 +143,38 @@ export async function GET(request: Request) {
     devLog.debug("Fetching system metrics in parallel");
     const parallelStart = performance.now();
 
-    const [storageStats, vercelStatusResponse, r2ImagesStats, r2DataStats, activeUsersResult] =
-      await Promise.allSettled([
-        supabase.from("v_storage_stats").select("*").single(),
-        fetch("https://www.vercel-status.com/api/v2/status.json"),
-        getBucketSize("pathology-bites-images"),
-        getBucketSize("pathology-bites-data"),
-        // Count active users from auth schema (last sign in within 24 hours)
-        // Use service role client to access auth.admin API
-        supabaseAdmin.auth.admin.listUsers(),
-      ]);
+    // Calculate time thresholds for active user queries
+    const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+    const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString();
+
+    const [
+      storageStats,
+      vercelStatusResponse,
+      r2ImagesStats,
+      r2DataStats,
+      dailyActiveUsers,
+      weeklyActiveUsers,
+      monthlyActiveUsers,
+    ] = await Promise.allSettled([
+      supabase.from("v_storage_stats").select("*").single(),
+      fetch("https://www.vercel-status.com/api/v2/status.json"),
+      getBucketSize("pathology-bites-images"),
+      getBucketSize("pathology-bites-data"),
+      // Efficient database count queries instead of loading ALL users into memory
+      supabase
+        .from("users")
+        .select("id", { count: "exact", head: true })
+        .gte("last_sign_in_at", twentyFourHoursAgo),
+      supabase
+        .from("users")
+        .select("id", { count: "exact", head: true })
+        .gte("last_sign_in_at", sevenDaysAgo),
+      supabase
+        .from("users")
+        .select("id", { count: "exact", head: true })
+        .gte("last_sign_in_at", thirtyDaysAgo),
+    ]);
 
     const parallelDuration = Math.round(performance.now() - parallelStart);
     devLog.performance("Parallel system checks", parallelDuration, {
@@ -160,7 +182,9 @@ export async function GET(request: Request) {
       vercelStatus: vercelStatusResponse.status,
       r2Images: r2ImagesStats.status,
       r2Data: r2DataStats.status,
-      activeUsers: activeUsersResult.status,
+      dailyActiveUsers: dailyActiveUsers.status,
+      weeklyActiveUsers: weeklyActiveUsers.status,
+      monthlyActiveUsers: monthlyActiveUsers.status,
     });
 
     const endTime = performance.now();
@@ -211,42 +235,21 @@ export async function GET(request: Request) {
       cloudflareR2Status = "error";
     }
 
-    // Get active users count from auth.admin.listUsers() - daily, weekly, monthly
+    // Extract active user counts from database queries
     let activeUsers = 0;
     let activeUsersWeekly = 0;
     let activeUsersMonthly = 0;
 
-    if (activeUsersResult.status === "fulfilled") {
-      const usersResponse = activeUsersResult.value;
-      const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
-      const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
-      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    if (dailyActiveUsers.status === "fulfilled" && dailyActiveUsers.value.count !== null) {
+      activeUsers = dailyActiveUsers.value.count;
+    }
 
-      if (usersResponse.data?.users) {
-        // Filter users by last_sign_in_at for different time periods
-        usersResponse.data.users.forEach((user) => {
-          const typedUser = user as { last_sign_in_at?: string | null };
-          if (!typedUser.last_sign_in_at) return;
-          const lastSignIn = new Date(typedUser.last_sign_in_at);
+    if (weeklyActiveUsers.status === "fulfilled" && weeklyActiveUsers.value.count !== null) {
+      activeUsersWeekly = weeklyActiveUsers.value.count;
+    }
 
-          // Count for 24 hours
-          if (lastSignIn >= twentyFourHoursAgo) {
-            activeUsers++;
-          }
-
-          // Count for 7 days
-          if (lastSignIn >= sevenDaysAgo) {
-            activeUsersWeekly++;
-          }
-
-          // Count for 30 days
-          if (lastSignIn >= thirtyDaysAgo) {
-            activeUsersMonthly++;
-          }
-        });
-      } else if (usersResponse.error) {
-        console.error("[System Status] Error fetching users:", usersResponse.error);
-      }
+    if (monthlyActiveUsers.status === "fulfilled" && monthlyActiveUsers.value.count !== null) {
+      activeUsersMonthly = monthlyActiveUsers.value.count;
     }
 
     const systemHealth: SystemHealth = {
