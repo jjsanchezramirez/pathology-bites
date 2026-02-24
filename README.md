@@ -1326,7 +1326,7 @@ The application provides a comprehensive REST API organized by feature area. All
 **Dashboard Data**
 
 - `GET /api/user/dashboard/stats` - Get dashboard statistics
-- `GET /api/user/dashboard/activities` - Get recent activities
+- `GET /api/user/performance-data` - Get unified dashboard/performance data (includes activities)
 - `GET /api/user/dashboard/consolidated` - Get consolidated dashboard data
 - `GET /api/user/performance-data` - Get unified performance data (timeline, stats, achievements, heatmap)
 

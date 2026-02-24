@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { quizAnalyticsService } from "@/features/user/quiz/services/analytics-service";
 import { quizService } from "@/features/user/quiz/services/quiz-service";
-import { ActivityGenerator } from "@/shared/services/activity-generator";
 import { awardAchievements } from "@/features/user/achievements/services/achievement-service.server";
 
 interface BatchAnswerSubmission {
@@ -236,22 +235,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       console.error("[Quiz Complete] Failed to update analytics:", analyticsError);
     }
 
-    // Generate activity for quiz completion
-    try {
-      const activityData = ActivityGenerator.createQuizCompletedActivity({
-        id: id,
-        title: `Quiz Session`, // We could get the actual quiz title from the session if needed
-        score: result.score,
-        totalQuestions: result.totalQuestions,
-        timeSpent: result.totalTimeSpent || 0,
-      });
-
-      await ActivityGenerator.createActivity(userId, activityData);
-      console.log("✅ Activity created for quiz completion:", id);
-    } catch (activityError) {
-      // Don't fail the quiz completion if activity creation fails
-      console.error("Failed to create activity for quiz completion:", activityError);
-    }
+    // Note: Activity generation removed - dashboard now gets activities directly
+    // from quiz_sessions and user_achievements tables via unified API
 
     // Check and award achievements
     let newAchievements = [];
