@@ -49,19 +49,23 @@ ChartJS.register(
 // Constants
 const CHART_COLORS = {
   primary: "#3b82f6",
-  gradientStart: "rgba(59, 130, 246, 0.4)",
-  gradientEnd: "rgba(59, 130, 246, 0.05)",
-  radarFill: "rgba(59, 130, 246, 0.3)",
+  primaryHover: "#2563eb",
+  gradientStart: "rgba(59, 130, 246, 0.5)",
+  gradientEnd: "rgba(59, 130, 246, 0.02)",
+  radarFill: "rgba(59, 130, 246, 0.25)",
   white: "#fff",
+  success: "#10b981",
+  warning: "#f59e0b",
+  danger: "#ef4444",
 } as const;
 
 const HEATMAP_COLORS = {
-  empty: "bg-muted/50 dark:bg-muted/30",
-  level1: "bg-green-300 dark:bg-green-700",
-  level2: "bg-green-400 dark:bg-green-600",
-  level3: "bg-green-500 dark:bg-green-500",
-  level4: "bg-green-600 dark:bg-green-400",
-  level5: "bg-green-700 dark:bg-green-300",
+  empty: "bg-zinc-100 dark:bg-zinc-800/30",
+  level1: "bg-emerald-200 dark:bg-emerald-900/60",
+  level2: "bg-emerald-300 dark:bg-emerald-700/70",
+  level3: "bg-emerald-400 dark:bg-emerald-600/80",
+  level4: "bg-emerald-500 dark:bg-emerald-500",
+  level5: "bg-emerald-600 dark:bg-emerald-400",
 } as const;
 
 const THEME_COLORS = {
@@ -126,8 +130,21 @@ function createTooltipConfig(isDark: boolean): Partial<TooltipOptions<any>> {
     bodyColor: colors.tooltip.text,
     borderColor: colors.tooltip.border,
     borderWidth: 1,
-    padding: 12,
+    padding: 16,
     displayColors: false,
+    cornerRadius: 8,
+    titleFont: {
+      size: 13,
+      weight: "bold" as const,
+    },
+    bodyFont: {
+      size: 12,
+      weight: "normal" as const,
+    },
+    bodySpacing: 6,
+    titleMarginBottom: 8,
+    caretSize: 6,
+    caretPadding: 8,
   };
 }
 
@@ -275,17 +292,29 @@ export function PerformanceTimelineChart({
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 300);
           gradient.addColorStop(0, CHART_COLORS.gradientStart);
+          gradient.addColorStop(0.5, "rgba(59, 130, 246, 0.15)");
           gradient.addColorStop(1, CHART_COLORS.gradientEnd);
           return gradient;
         },
-        borderWidth: 2,
+        borderWidth: 3,
         fill: true,
         tension: 0.4,
-        pointRadius: 4,
-        pointHoverRadius: 6,
+        pointRadius: 5,
+        pointHoverRadius: 8,
         pointBackgroundColor: CHART_COLORS.primary,
         pointBorderColor: CHART_COLORS.white,
         pointBorderWidth: 2,
+        pointHoverBorderWidth: 3,
+        pointHoverBackgroundColor: CHART_COLORS.primaryHover,
+        segment: {
+          borderColor: (ctx: any) => {
+            // Color segments based on accuracy trend
+            if (ctx.p0.parsed.y >= 90) return CHART_COLORS.success;
+            if (ctx.p0.parsed.y >= 70) return CHART_COLORS.primary;
+            if (ctx.p0.parsed.y >= 50) return CHART_COLORS.warning;
+            return CHART_COLORS.danger;
+          },
+        },
       },
     ],
   };
@@ -293,6 +322,14 @@ export function PerformanceTimelineChart({
   const options: ChartOptions<"line"> = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: {
+      mode: "index",
+      intersect: false,
+    },
+    animation: {
+      duration: 750,
+      easing: "easeInOutQuart",
+    },
     plugins: {
       legend: {
         display: false,
@@ -320,14 +357,27 @@ export function PerformanceTimelineChart({
       },
     },
     scales: {
-      x: createGridConfig(isDark),
+      x: {
+        ...createGridConfig(isDark),
+        grid: {
+          ...createGridConfig(isDark).grid,
+          display: true,
+          drawOnChartArea: false,
+          drawTicks: true,
+        },
+      },
       y: {
         min: 0,
         max: 100,
         ...createGridConfig(isDark),
+        grid: {
+          ...createGridConfig(isDark).grid,
+          display: true,
+        },
         ticks: {
           ...createGridConfig(isDark).ticks,
           callback: (value) => `${value}%`,
+          stepSize: 25,
         },
       },
     },
@@ -371,14 +421,15 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
         data: data.map((d) => d.accuracy),
         backgroundColor: CHART_COLORS.radarFill,
         borderColor: CHART_COLORS.primary,
-        borderWidth: 2,
+        borderWidth: 3,
         pointBackgroundColor: CHART_COLORS.primary,
         pointBorderColor: CHART_COLORS.white,
         pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: CHART_COLORS.primary,
+        pointRadius: 5,
+        pointHoverRadius: 8,
+        pointHoverBackgroundColor: CHART_COLORS.primaryHover,
         pointHoverBorderColor: CHART_COLORS.white,
+        pointHoverBorderWidth: 3,
       },
     ],
   };
@@ -387,6 +438,14 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
   const options: ChartOptions<"radar"> = {
     responsive: true,
     maintainAspectRatio: false,
+    interaction: {
+      mode: "point",
+      intersect: true,
+    },
+    animation: {
+      duration: 750,
+      easing: "easeInOutQuart",
+    },
     plugins: {
       legend: {
         display: false,
@@ -407,15 +466,29 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
       r: {
         min: 0,
         max: 100,
+        beginAtZero: true,
         ticks: {
-          stepSize: 25,
+          stepSize: 20,
           ...gridConfig.ticks,
           callback: (value) => `${value}%`,
+          backdropColor: "transparent",
         },
-        grid: gridConfig.grid,
-        angleLines: gridConfig.grid,
+        grid: {
+          ...gridConfig.grid,
+          circular: true,
+          lineWidth: 1,
+        },
+        angleLines: {
+          ...gridConfig.grid,
+          lineWidth: 1,
+        },
         pointLabels: {
           ...gridConfig.ticks,
+          font: {
+            size: 12,
+            weight: "bold" as const,
+          },
+          padding: 8,
         },
       },
     },
@@ -775,7 +848,7 @@ export function ActivityHeatmap({
                   return (
                     <div
                       key={index}
-                      className={`rounded-sm ${getHeatmapColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-2 hover:ring-primary" : "cursor-default"} transition-all min-w-[10px] min-h-[10px]`}
+                      className={`rounded-[3px] ${getHeatmapColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-2 hover:ring-primary hover:scale-110" : "cursor-default"} transition-all duration-200 min-w-[10px] min-h-[10px] shadow-sm`}
                       title={formatDayTooltip(day)}
                     />
                   );
