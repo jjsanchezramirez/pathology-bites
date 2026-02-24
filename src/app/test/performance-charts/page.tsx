@@ -1,7 +1,7 @@
 // src/app/test/performance-charts/page.tsx
 "use client";
 
-import { useMemo } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -16,45 +16,28 @@ import {
 } from "@/features/user/performance/components/interactive-charts";
 import { TrendingUp, Target, Award, Zap, Clock, CheckCircle2 } from "lucide-react";
 
-// Animation variants for stagger effect
-const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-    },
-  },
-};
+// Simple seeded random number generator for consistent results
+function seededRandom(seed: number) {
+  const x = Math.sin(seed++) * 10000;
+  return x - Math.floor(x);
+}
 
-const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: {
-    opacity: 1,
-    y: 0,
-    transition: {
-      duration: 0.5,
-      ease: "easeOut",
-    },
-  },
-};
-
-// Mock data generators
+// Mock data generators with seeded randomness
 function generateTimelineData() {
   const data = [];
-  const today = new Date();
+  const today = new Date("2024-03-15"); // Fixed date for consistency
 
   for (let i = 29; i >= 0; i--) {
     const date = new Date(today);
     date.setDate(date.getDate() - i);
 
-    // Generate realistic accuracy that trends upward
-    const baseAccuracy = 60 + (29 - i) * 1.2; // Starts at ~60%, improves over time
-    const randomVariation = Math.random() * 15 - 7.5; // ±7.5% variation
+    // Generate realistic accuracy that trends upward (using seed based on day)
+    const baseAccuracy = 60 + (29 - i) * 1.2;
+    const randomVariation = seededRandom(i * 100) * 15 - 7.5;
     const accuracy = Math.min(100, Math.max(40, baseAccuracy + randomVariation));
 
-    // Random number of quizzes per day (0-5)
-    const quizzes = Math.floor(Math.random() * 6);
+    // Seeded random number of quizzes per day (0-5)
+    const quizzes = Math.floor(seededRandom(i * 200) * 6);
 
     data.push({
       date: date.toISOString().split("T")[0],
@@ -78,15 +61,15 @@ function generateCategoryData() {
     "Transfusion Medicine",
   ];
 
-  return categories.map((name) => ({
+  return categories.map((name, index) => ({
     category_name: name,
-    accuracy: Math.round((60 + Math.random() * 35) * 10) / 10, // 60-95%
+    accuracy: Math.round((60 + seededRandom(index * 300) * 35) * 10) / 10,
   }));
 }
 
 function generateHeatmapData() {
   const data = [];
-  const today = new Date();
+  const today = new Date("2024-03-15"); // Fixed date for consistency
 
   // Generate last 90 days of activity
   for (let i = 89; i >= 0; i--) {
@@ -96,8 +79,8 @@ function generateHeatmapData() {
     // More activity on weekdays, less on weekends
     const isWeekend = date.getDay() === 0 || date.getDay() === 6;
     const baseQuestions = isWeekend ? 5 : 25;
-    const questions = Math.floor(Math.random() * baseQuestions);
-    const quizzes = Math.floor(questions / 10); // ~10 questions per quiz
+    const questions = Math.floor(seededRandom(i * 400) * baseQuestions);
+    const quizzes = Math.floor(questions / 10);
 
     data.push({
       date: date.toISOString().split("T")[0],
