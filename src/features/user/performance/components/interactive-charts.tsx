@@ -1,7 +1,7 @@
 // src/features/performance/components/interactive-chart-demos.tsx
 "use client";
 
-import { useState, useEffect, useRef, ReactNode } from "react";
+import { useState, useEffect, useRef } from "react";
 import {
   Card,
   CardContent,
@@ -12,147 +12,21 @@ import {
 
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Button } from "@/shared/components/ui/button";
-import { TrendingUp, Calendar, Target, ChevronLeft, ChevronRight, LucideIcon } from "lucide-react";
-import { Line, Radar, Bar, PolarArea, Doughnut } from "react-chartjs-2";
+import { TrendingUp, Calendar, Target, ChevronLeft, ChevronRight } from "lucide-react";
 import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  RadarController,
-  RadialLinearScale,
-  BarElement,
-  BarController,
-  ArcElement,
-  PolarAreaController,
-  DoughnutController,
-  Title,
+  RadarChart,
+  Radar,
+  PolarGrid,
+  PolarAngleAxis,
+  PolarRadiusAxis,
+  XAxis,
+  YAxis,
+  CartesianGrid,
   Tooltip,
-  Legend,
-  Filler,
-  ChartOptions,
-  TooltipOptions,
-  ScaleOptions,
-} from "chart.js";
-import { useTheme } from "next-themes";
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  RadarController,
-  RadialLinearScale,
-  BarElement,
-  BarController,
-  ArcElement,
-  PolarAreaController,
-  DoughnutController,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
-
-// Helper function to get computed CSS variable value
-function getCSSVariable(variable: string): string {
-  if (typeof window === "undefined") return "";
-  const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
-  return value;
-}
-
-// Helper to convert HSL string to hex
-function hslToHex(hsl: string): string {
-  if (!hsl) return "#000000";
-  const match = hsl.match(/(\d+)\s+(\d+)%\s+(\d+)%/);
-  if (!match) return "#000000";
-
-  const h = parseInt(match[1]) / 360;
-  const s = parseInt(match[2]) / 100;
-  const l = parseInt(match[3]) / 100;
-
-  const hueToRgb = (p: number, q: number, t: number) => {
-    if (t < 0) t += 1;
-    if (t > 1) t -= 1;
-    if (t < 1/6) return p + (q - p) * 6 * t;
-    if (t < 1/2) return q;
-    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
-    return p;
-  };
-
-  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
-  const p = 2 * l - q;
-  const r = Math.round(hueToRgb(p, q, h + 1/3) * 255);
-  const g = Math.round(hueToRgb(p, q, h) * 255);
-  const b = Math.round(hueToRgb(p, q, h - 1/3) * 255);
-
-  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
-}
-
-// Helper to convert hex to RGB
-function hexToRgb(hex: string): { r: number; g: number; b: number } {
-  const match = hex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
-  if (!match) return { r: 0, g: 0, b: 0 };
-
-  return {
-    r: parseInt(match[1], 16),
-    g: parseInt(match[2], 16),
-    b: parseInt(match[3], 16),
-  };
-}
-
-// Get theme colors from CSS variables
-function getThemeColors() {
-  const primary = getCSSVariable("--primary");
-  const primaryHex = hslToHex(primary);
-
-  // Create rgba versions
-  const match = primaryHex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
-  let r = 0, g = 0, b = 0;
-  if (match) {
-    r = parseInt(match[1], 16);
-    g = parseInt(match[2], 16);
-    b = parseInt(match[3], 16);
-  }
-
-  return {
-    primary: primaryHex,
-    radarFill: `rgba(${r}, ${g}, ${b}, 0.12)`,
-  };
-}
-
-// Use theme colors
-const CHART_COLORS = {
-  get primary() { return getThemeColors().primary; },
-  get radarFill() { return getThemeColors().radarFill; },
-  white: "#ffffff",
-} as const;
-
-const HEATMAP_COLORS = {
-  empty: "bg-muted/30",
-  level1: "bg-primary/20",
-  level2: "bg-primary/40",
-  level3: "bg-primary/60",
-  level4: "bg-primary/80",
-  level5: "bg-primary",
-} as const;
-
-const THEME_COLORS = {
-  dark: {
-    tooltip: { bg: "#18181b", text: "#fafafa", border: "#3f3f46" },
-    grid: "#27272a",
-    ticks: "#a1a1aa",
-    radarGrid: "#3f3f46",
-  },
-  light: {
-    tooltip: { bg: "#ffffff", text: "#09090b", border: "#e4e4e7" },
-    grid: "#f4f4f5",
-    ticks: "#52525b",
-    radarGrid: "#e4e4e7",
-  },
-} as const;
+  ResponsiveContainer,
+  Area,
+  AreaChart,
+} from "recharts";
 
 interface TimelineData {
   date: string;
@@ -181,160 +55,6 @@ interface CategoryData {
   accuracy: number;
 }
 
-// Hooks
-function useChartTheme() {
-  const { theme, systemTheme } = useTheme();
-  const currentTheme = theme === "system" ? systemTheme : theme;
-  const isDark = currentTheme === "dark";
-  const colors = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
-
-  return { isDark, colors };
-}
-
-// Utility functions
-function createTooltipConfig(isDark: boolean): Partial<TooltipOptions<any>> {
-  const colors = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
-
-  return {
-    backgroundColor: colors.tooltip.bg,
-    titleColor: colors.tooltip.text,
-    bodyColor: colors.tooltip.text,
-    borderColor: colors.tooltip.border,
-    borderWidth: 1,
-    padding: 16,
-    displayColors: false,
-    cornerRadius: 8,
-    titleFont: {
-      size: 13,
-      weight: "bold" as const,
-    },
-    bodyFont: {
-      size: 12,
-      weight: "normal" as const,
-    },
-    bodySpacing: 6,
-    titleMarginBottom: 8,
-    caretSize: 6,
-    caretPadding: 8,
-  };
-}
-
-function createGridConfig(isDark: boolean, isRadar = false) {
-  const colors = isDark ? THEME_COLORS.dark : THEME_COLORS.light;
-
-  return {
-    grid: {
-      color: isRadar ? colors.radarGrid : colors.grid,
-    },
-    ticks: {
-      color: colors.ticks,
-      font: {
-        size: 11,
-      },
-    },
-  };
-}
-
-// Shared components
-interface ChartCardProps {
-  icon: LucideIcon;
-  title: string;
-  description: string;
-  loading: boolean;
-  error: string | null;
-  hasData: boolean;
-  emptyMessage: string;
-  height?: string;
-  children: ReactNode;
-  headerRight?: ReactNode;
-}
-
-function ChartCard({
-  icon: Icon,
-  title,
-  description,
-  loading,
-  error,
-  hasData,
-  emptyMessage,
-  height = "300px",
-  children,
-  headerRight,
-}: ChartCardProps) {
-  if (loading) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Icon className="h-5 w-5" />
-            {title}
-          </CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className={`h-[${height}] w-full`} />
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (error) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Icon className="h-5 w-5" />
-            {title}
-          </CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className={`h-[${height}] flex items-center justify-center text-destructive`}>
-            Error loading data: {error}
-          </div>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  if (!hasData) {
-    return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Icon className="h-5 w-5" />
-            {title}
-          </CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </CardHeader>
-        <CardContent className={`flex items-center justify-center h-[${height}]`}>
-          <p className="text-muted-foreground text-center px-4">
-            {emptyMessage}
-          </p>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  return (
-    <Card>
-      <CardHeader>
-        <div className={headerRight ? "flex items-start justify-between" : undefined}>
-          <div>
-            <CardTitle className="flex items-center gap-2">
-              <Icon className="h-5 w-5" />
-              {title}
-            </CardTitle>
-            <CardDescription>{description}</CardDescription>
-          </div>
-          {headerRight}
-        </div>
-      </CardHeader>
-      <CardContent>{children}</CardContent>
-    </Card>
-  );
-}
-
 /**
  * Chart 1: Performance Timeline
  */
@@ -348,168 +68,132 @@ export function PerformanceTimelineChart({
   loading = false,
 }: PerformanceTimelineChartProps) {
   const [error] = useState<string | null>(null);
-  const { isDark } = useChartTheme();
-  const [primaryColor, setPrimaryColor] = useState("#000000");
-  const [animationProgress, setAnimationProgress] = useState(0);
-  const chartRef = useRef<any>(null);
 
-  useEffect(() => {
-    setPrimaryColor(getThemeColors().primary);
-  }, [isDark]);
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Performance Timeline
+          </CardTitle>
+          <CardDescription>Your accuracy over the last 30 days</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[300px] w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
 
-  // Animate progress from 0 to 1 over 3 seconds
-  useEffect(() => {
-    const duration = 3000;
-    const startTime = Date.now();
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Performance Timeline
+          </CardTitle>
+          <CardDescription>Your accuracy over the last 30 days</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[300px] flex items-center justify-center text-destructive">
+            Error loading timeline data: {error}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-    const animate = () => {
-      const elapsed = Date.now() - startTime;
-      const progress = Math.min(elapsed / duration, 1);
-
-      setAnimationProgress(progress);
-
-      if (progress < 1) {
-        requestAnimationFrame(animate);
-      }
-    };
-
-    const timer = setTimeout(() => {
-      requestAnimationFrame(animate);
-    }, 300); // Small delay before starting
-
-    return () => clearTimeout(timer);
-  }, [data]);
-
-  const chartData = {
-    labels: data.map((d) =>
-      new Date(d.date).toLocaleDateString("en-US", { month: "short", day: "numeric" })
-    ),
-    datasets: [
-      {
-        label: "Accuracy",
-        data: data.map((d) => d.accuracy),
-        borderColor: primaryColor,
-        backgroundColor: primaryColor,
-        borderWidth: 3,
-        fill: false,
-        pointRadius: 0,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: primaryColor,
-        pointHoverBorderColor: CHART_COLORS.white,
-        pointHoverBorderWidth: 2,
-        showLine: true,
-        tension: 0.4,
-        segment: {
-          borderColor: (ctx: any) => {
-            // Calculate which segments should be visible based on animation progress
-            const totalSegments = data.length - 1;
-            const visibleSegments = animationProgress * totalSegments;
-
-            // If this segment index is within the visible range
-            if (ctx.p0DataIndex < Math.floor(visibleSegments)) {
-              return primaryColor;
-            }
-
-            // For the segment currently being drawn
-            if (ctx.p0DataIndex === Math.floor(visibleSegments)) {
-              const segmentProgress = visibleSegments - Math.floor(visibleSegments);
-              // Fade in the segment
-              const opacity = segmentProgress;
-              const rgb = hexToRgb(primaryColor);
-              return `rgba(${rgb.r}, ${rgb.g}, ${rgb.b}, ${opacity})`;
-            }
-
-            // Not yet visible
-            return 'transparent';
-          },
-        },
-      },
-    ],
-  };
-
-  const options: ChartOptions<"line"> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: "index",
-      intersect: false,
-    },
-    animation: false, // Disable default animations
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        ...createTooltipConfig(isDark),
-        callbacks: {
-          title: (context) => {
-            const index = context[0].dataIndex;
-            return new Date(data[index].date).toLocaleDateString("en-US", {
-              month: "short",
-              day: "numeric",
-              year: "numeric",
-            });
-          },
-          label: (context) => {
-            const index = context.dataIndex;
-            const quizzes = data[index].quizzes;
-            return [
-              `Accuracy: ${context.parsed.y.toFixed(1)}%`,
-              `${quizzes} quiz${quizzes !== 1 ? "zes" : ""}`,
-            ];
-          },
-        },
-      },
-    },
-    scales: {
-      x: {
-        ...createGridConfig(isDark),
-        grid: {
-          ...createGridConfig(isDark).grid,
-          display: true,
-          drawOnChartArea: false,
-          drawTicks: true,
-        },
-        ticks: {
-          ...createGridConfig(isDark).ticks,
-          maxRotation: 0,
-          minRotation: 0,
-          autoSkip: true,
-          maxTicksLimit: 8,
-        },
-      },
-      y: {
-        min: 0,
-        max: 105,
-        ...createGridConfig(isDark),
-        grid: {
-          ...createGridConfig(isDark).grid,
-          display: true,
-        },
-        ticks: {
-          ...createGridConfig(isDark).ticks,
-          callback: (value) => (typeof value === "number" && value <= 100 ? `${value}%` : ""),
-          stepSize: 25,
-        },
-      },
-    },
-  };
+  if (data.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <TrendingUp className="h-5 w-5" />
+            Performance Timeline
+          </CardTitle>
+          <CardDescription>Your accuracy over the last 30 days</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center h-[300px]">
+          <p className="text-muted-foreground text-center px-4">
+            No quiz data available yet. Start taking quizzes to see your progress!
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <ChartCard
-      icon={TrendingUp}
-      title="Performance Timeline"
-      description="Your accuracy over the last 30 days"
-      loading={loading}
-      error={error}
-      hasData={data.length > 0}
-      emptyMessage="No quiz data available yet. Start taking quizzes to see your progress!"
-      height="300px"
-    >
-      <div style={{ height: "300px" }}>
-        <Line data={chartData} options={options} />
-      </div>
-    </ChartCard>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <TrendingUp className="h-5 w-5" />
+          Performance Timeline
+        </CardTitle>
+        <CardDescription>Your accuracy over the last 30 days</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={300}>
+          <AreaChart data={data}>
+            <defs>
+              <linearGradient id="colorAccuracy" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
+                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05} />
+              </linearGradient>
+            </defs>
+            <CartesianGrid strokeDasharray="3 3" stroke="#3b82f6" opacity={0.1} />
+            <XAxis
+              dataKey="date"
+              tickFormatter={(value) =>
+                new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" })
+              }
+              tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }}
+            />
+            <YAxis
+              label={{
+                value: "Accuracy (%)",
+                angle: -90,
+                position: "insideLeft",
+                style: { fill: "hsl(var(--foreground))" },
+              }}
+              domain={[0, 100]}
+              tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }}
+            />
+            <Tooltip
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  return (
+                    <div className="bg-popover border rounded-lg p-3 shadow-lg">
+                      <p className="font-semibold">
+                        {new Date(payload[0].payload.date).toLocaleDateString()}
+                      </p>
+                      <p className="text-sm" style={{ color: "#3b82f6" }}>
+                        Accuracy: {payload[0].value?.toFixed(1)}%
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {payload[0].payload.quizzes} quiz
+                        {payload[0].payload.quizzes !== 1 ? "zes" : ""}
+                      </p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
+            />
+            <Area
+              type="monotone"
+              dataKey="accuracy"
+              stroke="#3b82f6"
+              strokeWidth={2}
+              fill="url(#colorAccuracy)"
+              dot={{ fill: "#3b82f6", r: 4 }}
+              activeDot={{ r: 6 }}
+            />
+          </AreaChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -523,135 +207,111 @@ interface CategoryRadarChartProps {
 
 export function CategoryRadarChart({ data = [], loading = false }: CategoryRadarChartProps) {
   const [error] = useState<string | null>(null);
-  const { isDark } = useChartTheme();
-  const [primaryColor, setPrimaryColor] = useState("#000000");
 
-  useEffect(() => {
-    setPrimaryColor(getThemeColors().primary);
-  }, [isDark]);
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Category Comparison
+          </CardTitle>
+          <CardDescription>Your performance across all categories</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[400px] w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
 
-  const chartData = {
-    // TODO: Use short_form abbreviations when available from API
-    labels: data.map((d) => d.category_name),
-    datasets: [
-      {
-        label: "Accuracy",
-        data: data.map((d) => d.accuracy),
-        backgroundColor: CHART_COLORS.radarFill,
-        borderColor: primaryColor,
-        borderWidth: 2,
-        pointBackgroundColor: primaryColor,
-        pointBorderColor: CHART_COLORS.white,
-        pointBorderWidth: 2,
-        pointRadius: 4,
-        pointHoverRadius: 6,
-        pointHoverBackgroundColor: primaryColor,
-        pointHoverBorderColor: CHART_COLORS.white,
-        pointHoverBorderWidth: 2,
-      },
-    ],
-  };
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Category Comparison
+          </CardTitle>
+          <CardDescription>Your performance across all categories</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[400px] flex items-center justify-center text-destructive">
+            Error loading category data: {error}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 
-  const gridConfig = createGridConfig(isDark, true);
-  const options: ChartOptions<"radar"> = {
-    responsive: true,
-    maintainAspectRatio: false,
-    interaction: {
-      mode: "nearest",
-      intersect: false,
-    },
-    animation: {
-      duration: 800,
-      easing: "easeOutQuart",
-      delay: (context) => {
-        if (context.type === "data") {
-          return context.dataIndex * 150;
-        }
-        return 0;
-      },
-    },
-    animations: {
-      r: {
-        type: "number",
-        from: 0,
-        duration: 800,
-        easing: "easeOutQuart",
-        delay: (context) => {
-          if (context.type === "data") {
-            return context.dataIndex * 150;
-          }
-          return 0;
-        },
-      },
-    },
-    plugins: {
-      legend: {
-        display: false,
-      },
-      tooltip: {
-        ...createTooltipConfig(isDark),
-        callbacks: {
-          title: (context) => {
-            return data[context[0].dataIndex].category_name;
-          },
-          label: (context) => {
-            return `${context.parsed.r.toFixed(1)}%`;
-          },
-        },
-      },
-    },
-    scales: {
-      r: {
-        min: 0,
-        max: 100,
-        beginAtZero: true,
-        ticks: {
-          stepSize: 25,
-          ...gridConfig.ticks,
-          callback: (value) => (value === 0 ? "0" : `${value}`),
-          backdropColor: "transparent",
-          showLabelBackdrop: false,
-          font: {
-            size: 10,
-          },
-        },
-        grid: {
-          ...gridConfig.grid,
-          circular: false,
-          lineWidth: 1,
-        },
-        angleLines: {
-          display: true,
-          color: gridConfig.grid.color,
-          lineWidth: 1,
-        },
-        pointLabels: {
-          ...gridConfig.ticks,
-          font: {
-            size: 11,
-            weight: "normal" as const,
-          },
-          padding: 15,
-        },
-      },
-    },
-  };
+  if (data.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Target className="h-5 w-5" />
+            Category Comparison
+          </CardTitle>
+          <CardDescription>Your performance across all categories</CardDescription>
+        </CardHeader>
+        <CardContent className="flex items-center justify-center h-[300px]">
+          <p className="text-muted-foreground text-center px-4">
+            No category data available yet. Start taking quizzes to see your performance!
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   return (
-    <ChartCard
-      icon={Target}
-      title="Category Comparison"
-      description="Your performance across all categories"
-      loading={loading}
-      error={error}
-      hasData={data.length > 0}
-      emptyMessage="No category data available yet. Start taking quizzes to see your performance!"
-      height="400px"
-    >
-      <div style={{ height: "400px" }}>
-        <Radar data={chartData} options={options} />
-      </div>
-    </ChartCard>
+    <Card>
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <Target className="h-5 w-5" />
+          Category Comparison
+        </CardTitle>
+        <CardDescription>Your performance across all categories</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <ResponsiveContainer width="100%" height={400}>
+          <RadarChart data={data}>
+            <PolarGrid stroke="#3b82f6" opacity={0.2} />
+            <PolarAngleAxis
+              dataKey="category_name"
+              tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+            />
+            <PolarRadiusAxis
+              angle={90}
+              domain={[0, 100]}
+              tick={{ fontSize: 10, fill: "hsl(var(--foreground))" }}
+            />
+            <Radar
+              name="Accuracy"
+              dataKey="accuracy"
+              stroke="#3b82f6"
+              fill="#3b82f6"
+              fillOpacity={0.4}
+              strokeWidth={2}
+            />
+            <Tooltip
+              content={({ active, payload }) => {
+                if (active && payload && payload.length) {
+                  return (
+                    <div className="bg-popover border rounded-lg p-3 shadow-lg">
+                      <p className="font-semibold">{payload[0].payload.category_name}</p>
+                      <p className="text-sm" style={{ color: "#3b82f6" }}>
+                        Accuracy: {payload[0].value?.toFixed(1)}%
+                      </p>
+                    </div>
+                  );
+                }
+                return null;
+              }}
+            />
+          </RadarChart>
+        </ResponsiveContainer>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -664,30 +324,138 @@ interface ActivityHeatmapProps {
   loading?: boolean;
 }
 
-// Heatmap helper functions
-function getHeatmapColor(questions: number): string {
-  if (questions === 0) return HEATMAP_COLORS.empty;
-  if (questions <= 5) return HEATMAP_COLORS.level1;
-  if (questions <= 10) return HEATMAP_COLORS.level2;
-  if (questions <= 20) return HEATMAP_COLORS.level3;
-  if (questions <= 30) return HEATMAP_COLORS.level4;
-  return HEATMAP_COLORS.level5;
-}
+export function ActivityHeatmap({
+  data = [],
+  stats = null,
+  loading = false,
+}: ActivityHeatmapProps) {
+  const [error] = useState<string | null>(null);
+  const [monthsToShow, setMonthsToShow] = useState(12);
+  const [currentPeriodStart, setCurrentPeriodStart] = useState(() => {
+    const now = new Date();
+    now.setHours(0, 0, 0, 0);
+    return now;
+  });
+  const containerRef = useRef<HTMLDivElement>(null);
 
-interface DateRange {
-  periodStart: Date;
-  periodEnd: Date;
-  startDate: Date;
-  endDate: Date;
-}
+  // Determine how many months to show based on container width
+  useEffect(() => {
+    const updateMonthsToShow = () => {
+      if (!containerRef.current) return;
 
-function calculateDateRange(currentPeriodStart: Date, monthsToShow: number): DateRange {
+      const containerWidth = containerRef.current.offsetWidth;
+
+      // Each week needs minimum ~15px to be readable (10px cell + gaps + padding)
+      // Account for day labels (~24px) and card padding (~32px)
+      const availableWidth = containerWidth - 56;
+
+      // Calculate how many weeks we can comfortably fit
+      const weeksPerMonth = 4.33; // Average weeks per month
+      const minWidthPerWeek = 15;
+      const maxWeeks = Math.floor(availableWidth / minWidthPerWeek);
+
+      // Determine months: 12, 6, 4, or 3
+      let months;
+      if (maxWeeks >= weeksPerMonth * 12)
+        months = 12; // ~52 weeks
+      else if (maxWeeks >= weeksPerMonth * 6)
+        months = 6; // ~26 weeks
+      else if (maxWeeks >= weeksPerMonth * 4)
+        months = 4; // ~17 weeks
+      else months = 3; // ~13 weeks minimum
+
+      setMonthsToShow(months);
+    };
+
+    // Use ResizeObserver for better performance
+    const resizeObserver = new ResizeObserver(() => {
+      updateMonthsToShow();
+    });
+
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+      updateMonthsToShow();
+    }
+
+    return () => {
+      resizeObserver.disconnect();
+    };
+  }, []);
+
+  const getColor = (questions: number) => {
+    if (questions === 0) return "bg-muted/50 dark:bg-muted/30";
+    if (questions <= 5) return "bg-green-300 dark:bg-green-700";
+    if (questions <= 10) return "bg-green-400 dark:bg-green-600";
+    if (questions <= 20) return "bg-green-500 dark:bg-green-500";
+    if (questions <= 30) return "bg-green-600 dark:bg-green-400";
+    return "bg-green-700 dark:bg-green-300";
+  };
+
+  if (loading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Activity Calendar
+          </CardTitle>
+          <CardDescription>Your quiz activity for {new Date().getFullYear()}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <Skeleton className="h-[200px] w-full" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (error) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Activity Calendar
+          </CardTitle>
+          <CardDescription>Your quiz activity for {new Date().getFullYear()}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[200px] flex items-center justify-center text-destructive">
+            Error loading activity data: {error}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (data.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <Calendar className="h-5 w-5" />
+            Activity Calendar
+          </CardTitle>
+          <CardDescription>Your quiz activity for {new Date().getFullYear()}</CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="h-[200px] flex items-center justify-center text-muted-foreground">
+            No activity data available yet.
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Create a map for quick lookup
+  const dataMap = new Map(data.map((d) => [d.date, d]));
+
+  // Calculate start and end dates based on current period and months to show
   const periodEnd = new Date(currentPeriodStart);
   periodEnd.setHours(0, 0, 0, 0);
 
   const periodStart = new Date(periodEnd);
   periodStart.setMonth(periodStart.getMonth() - monthsToShow + 1);
-  periodStart.setDate(1);
+  periodStart.setDate(1); // First day of start month
 
   // Find the first Sunday on or before the period start
   const startDate = new Date(periodStart);
@@ -697,10 +465,7 @@ function calculateDateRange(currentPeriodStart: Date, monthsToShow: number): Dat
   // End on the last day of the end month
   const endDate = new Date(periodEnd.getFullYear(), periodEnd.getMonth() + 1, 0);
 
-  return { periodStart, periodEnd, startDate, endDate };
-}
-
-function buildDaysArray(startDate: Date, endDate: Date, dataMap: Map<string, HeatmapData>): HeatmapData[] {
+  // Build all days from start to end
   const allDays: HeatmapData[] = [];
   const currentDate = new Date(startDate);
 
@@ -711,10 +476,7 @@ function buildDaysArray(startDate: Date, endDate: Date, dataMap: Map<string, Hea
     currentDate.setDate(currentDate.getDate() + 1);
   }
 
-  return allDays;
-}
-
-function groupIntoWeeks(allDays: HeatmapData[]): HeatmapData[][] {
+  // Group into weeks (Sunday to Saturday)
   const weeks: HeatmapData[][] = [];
   for (let i = 0; i < allDays.length; i += 7) {
     const week = allDays.slice(i, i + 7);
@@ -722,14 +484,13 @@ function groupIntoWeeks(allDays: HeatmapData[]): HeatmapData[][] {
       weeks.push(week);
     }
   }
-  return weeks;
-}
 
-function calculateMonthLabels(weeks: HeatmapData[][]): Array<{ month: string; weekIndex: number }> {
+  // Calculate month labels based on weeks
   const monthLabels: Array<{ month: string; weekIndex: number }> = [];
   let lastMonth = "";
 
   weeks.forEach((week, weekIndex) => {
+    // Use the Sunday (first day) of the week to determine the month
     const weekStartDate = new Date(week[0].date);
     const monthName = weekStartDate.toLocaleDateString("en-US", { month: "short" });
 
@@ -738,87 +499,6 @@ function calculateMonthLabels(weeks: HeatmapData[][]): Array<{ month: string; we
       lastMonth = monthName;
     }
   });
-
-  return monthLabels;
-}
-
-function formatPeriodDescription(periodStart: Date, periodEnd: Date): string {
-  const startMonth = periodStart.toLocaleDateString("en-US", { month: "short", year: "numeric" });
-  const endMonth = periodEnd.toLocaleDateString("en-US", { month: "short", year: "numeric" });
-  return startMonth === endMonth ? startMonth : `${startMonth} - ${endMonth}`;
-}
-
-function formatDayTooltip(day: HeatmapData): string {
-  const date = new Date(day.date).toLocaleDateString("en-US", {
-    weekday: "short",
-    month: "short",
-    day: "numeric",
-    year: "numeric",
-  });
-  const questionText = `${day.questions} question${day.questions !== 1 ? "s" : ""}`;
-  const quizText = `${day.quizzes} quiz${day.quizzes !== 1 ? "zes" : ""}`;
-  return `${date}\n${questionText}\n${quizText}`;
-}
-
-// Hook for responsive month calculation
-function useResponsiveMonths(containerRef: React.RefObject<HTMLDivElement>) {
-  const [monthsToShow, setMonthsToShow] = useState(12);
-
-  useEffect(() => {
-    const updateMonthsToShow = () => {
-      if (!containerRef.current) return;
-
-      const containerWidth = containerRef.current.offsetWidth;
-      const availableWidth = containerWidth - 56; // Account for day labels and padding
-      const weeksPerMonth = 4.33;
-      const minWidthPerWeek = 15;
-      const maxWeeks = Math.floor(availableWidth / minWidthPerWeek);
-
-      // Determine months: 12, 6, 4, or 3
-      let months: number;
-      if (maxWeeks >= weeksPerMonth * 12) months = 12;
-      else if (maxWeeks >= weeksPerMonth * 6) months = 6;
-      else if (maxWeeks >= weeksPerMonth * 4) months = 4;
-      else months = 3;
-
-      setMonthsToShow(months);
-    };
-
-    const resizeObserver = new ResizeObserver(updateMonthsToShow);
-
-    if (containerRef.current) {
-      resizeObserver.observe(containerRef.current);
-      updateMonthsToShow();
-    }
-
-    return () => resizeObserver.disconnect();
-  }, [containerRef]);
-
-  return monthsToShow;
-}
-
-export function ActivityHeatmap({
-  data = [],
-  stats = null,
-  loading = false,
-}: ActivityHeatmapProps) {
-  const [error] = useState<string | null>(null);
-  const [currentPeriodStart, setCurrentPeriodStart] = useState(() => {
-    const now = new Date();
-    now.setHours(0, 0, 0, 0);
-    return now;
-  });
-  const containerRef = useRef<HTMLDivElement>(null);
-  const monthsToShow = useResponsiveMonths(containerRef);
-
-  // Create a map for quick lookup
-  const dataMap = new Map(data.map((d) => [d.date, d]));
-
-  // Calculate dates and build data structures
-  const { periodStart, periodEnd, startDate, endDate } = calculateDateRange(currentPeriodStart, monthsToShow);
-  const allDays = buildDaysArray(startDate, endDate, dataMap);
-  const weeks = groupIntoWeeks(allDays);
-  const monthLabels = calculateMonthLabels(weeks);
 
   // Navigation handlers
   const goToPreviousPeriod = () => {
@@ -832,6 +512,7 @@ export function ActivityHeatmap({
     newStart.setMonth(newStart.getMonth() + monthsToShow);
     const now = new Date();
     now.setHours(0, 0, 0, 0);
+    // Don't go beyond current month
     if (newStart <= now) {
       setCurrentPeriodStart(newStart);
     }
@@ -843,6 +524,7 @@ export function ActivityHeatmap({
     setCurrentPeriodStart(now);
   };
 
+  // Check if we can navigate forward
   const canGoForward = () => {
     const newStart = new Date(currentPeriodStart);
     newStart.setMonth(newStart.getMonth() + monthsToShow);
@@ -851,156 +533,169 @@ export function ActivityHeatmap({
     return newStart <= now;
   };
 
-  const isCurrentPeriod = () => {
-    const now = new Date();
-    return (
-      currentPeriodStart.getMonth() === now.getMonth() &&
-      currentPeriodStart.getFullYear() === now.getFullYear()
-    );
+  // Format period description
+  const getPeriodDescription = () => {
+    const startMonth = periodStart.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    const endMonth = periodEnd.toLocaleDateString("en-US", { month: "short", year: "numeric" });
+    return startMonth === endMonth ? startMonth : `${startMonth} - ${endMonth}`;
   };
 
-  const hasStats = stats && (stats.avgQuestionsPerDay > 0 || stats.longestStreak > 0 || stats.currentStreak > 0);
-
-  const navigationButtons = (
-    <div className="flex items-center gap-1">
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={goToPreviousPeriod}
-        className="h-8 w-8 p-0"
-      >
-        <ChevronLeft className="h-4 w-4" />
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={goToToday}
-        disabled={isCurrentPeriod()}
-        className="h-8 px-2 text-xs"
-      >
-        Today
-      </Button>
-      <Button
-        variant="outline"
-        size="sm"
-        onClick={goToNextPeriod}
-        disabled={!canGoForward()}
-        className="h-8 w-8 p-0"
-      >
-        <ChevronRight className="h-4 w-4" />
-      </Button>
-    </div>
-  );
+  console.log("[ActivityHeatmap] Rendering:", {
+    totalWeeks: weeks.length,
+    totalDays: allDays.length,
+    monthsToShow,
+    periodStart: periodStart.toISOString(),
+    periodEnd: periodEnd.toISOString(),
+    daysWithActivity: allDays.filter((d) => d.questions > 0).length,
+    monthLabels: monthLabels.map((m) => `${m.month} (week ${m.weekIndex})`),
+  });
 
   return (
-    <ChartCard
-      icon={Calendar}
-      title="Activity Calendar"
-      description={formatPeriodDescription(periodStart, periodEnd)}
-      loading={loading}
-      error={error}
-      hasData={data.length > 0}
-      emptyMessage="No activity data available yet."
-      height="200px"
-      headerRight={navigationButtons}
-    >
-      <div className="space-y-4">
-        {/* Statistics - Only show if there's activity */}
-        {hasStats && (
-          <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm border-b pb-4">
-            <div className="text-center">
-              <div className="font-semibold text-primary">
-                {stats.avgQuestionsPerDay}
-              </div>
-              <div className="text-xs text-muted-foreground">Avg/day</div>
-            </div>
-            <div className="text-center">
-              <div className="font-semibold text-primary">
-                {stats.avgQuizzesPerDay}
-              </div>
-              <div className="text-xs text-muted-foreground">Quizzes/day</div>
-            </div>
-            <div className="text-center">
-              <div className="font-semibold text-primary">
-                {stats.longestStreak}
-              </div>
-              <div className="text-xs text-muted-foreground">Longest</div>
-            </div>
-            <div className="text-center">
-              <div className="font-semibold text-primary">
-                {stats.currentStreak}
-              </div>
-              <div className="text-xs text-muted-foreground">Current</div>
-            </div>
+    <Card ref={containerRef}>
+      <CardHeader>
+        <div className="flex items-start justify-between">
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              <Calendar className="h-5 w-5" />
+              Activity Calendar
+            </CardTitle>
+            <CardDescription>{getPeriodDescription()}</CardDescription>
           </div>
-        )}
-
-        {/* CSS Grid based calendar */}
-        <div className="w-full overflow-x-auto">
-          <div className="min-w-0">
-            {/* Month labels with CSS Grid */}
-            <div
-              className="grid mb-2 text-[10px] sm:text-xs text-muted-foreground font-medium pl-6"
-              style={{
-                gridTemplateColumns: `repeat(${weeks.length}, minmax(10px, 1fr))`,
-                gap: "2px",
-              }}
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPreviousPeriod}
+              className="h-8 w-8 p-0"
             >
-              {monthLabels.map((label, index) => {
-                const nextLabelIndex = monthLabels[index + 1]?.weekIndex || weeks.length;
-                const span = nextLabelIndex - label.weekIndex;
-
-                // Only show month label if it spans 3 or more weeks
-                if (span < 3) return null;
-
-                return (
-                  <div
-                    key={index}
-                    style={{ gridColumn: `${label.weekIndex + 1} / span ${span}` }}
-                  >
-                    {label.month}
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToToday}
+              disabled={
+                currentPeriodStart.getMonth() === new Date().getMonth() &&
+                currentPeriodStart.getFullYear() === new Date().getFullYear()
+              }
+              className="h-8 px-2 text-xs"
+            >
+              Today
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNextPeriod}
+              disabled={!canGoForward()}
+              className="h-8 w-8 p-0"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </CardHeader>
+      <CardContent>
+        <div className="space-y-4">
+          {/* Statistics - Only show if there's activity */}
+          {stats &&
+            (stats.avgQuestionsPerDay > 0 ||
+              stats.longestStreak > 0 ||
+              stats.currentStreak > 0) && (
+              <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm border-b pb-4">
+                <div className="text-center">
+                  <div className="font-semibold text-green-600 dark:text-green-400">
+                    {stats.avgQuestionsPerDay}
                   </div>
-                );
-              })}
-            </div>
-
-            {/* Calendar Grid */}
-            <div className="flex gap-2">
-              {/* Day labels */}
-              <div className="flex flex-col justify-between py-0.5">
-                {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
-                  <div key={index} className="h-[10px] flex items-center">
-                    <span className="text-[9px] sm:text-[10px] text-muted-foreground w-3 text-right">
-                      {day}
-                    </span>
+                  <div className="text-xs text-muted-foreground">Avg/day</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-blue-600 dark:text-blue-400">
+                    {stats.avgQuizzesPerDay}
                   </div>
-                ))}
+                  <div className="text-xs text-muted-foreground">Quizzes/day</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-orange-600 dark:text-orange-400">
+                    {stats.longestStreak}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Longest</div>
+                </div>
+                <div className="text-center">
+                  <div className="font-semibold text-purple-600 dark:text-purple-400">
+                    {stats.currentStreak}
+                  </div>
+                  <div className="text-xs text-muted-foreground">Current</div>
+                </div>
               </div>
+            )}
 
-              {/* Activity grid - CSS Grid for automatic responsiveness */}
+          {/* CSS Grid based calendar */}
+          <div className="w-full overflow-x-auto">
+            <div className="min-w-0">
+              {/* Month labels with CSS Grid */}
               <div
-                className="grid flex-1 gap-[2px]"
+                className="grid mb-2 text-[10px] sm:text-xs text-muted-foreground font-medium pl-6"
                 style={{
                   gridTemplateColumns: `repeat(${weeks.length}, minmax(10px, 1fr))`,
-                  gridTemplateRows: "repeat(7, 10px)",
-                  gridAutoFlow: "column",
+                  gap: "2px",
                 }}
               >
-                {allDays.map((day, index) => {
-                  const hasActivity = day.questions > 0;
+                {monthLabels.map((label, index) => {
+                  const nextLabelIndex = monthLabels[index + 1]?.weekIndex || weeks.length;
+                  const span = nextLabelIndex - label.weekIndex;
+
+                  // Only show month label if it spans 3 or more weeks
+                  if (span < 3) return null;
+
                   return (
                     <div
                       key={index}
-                      className={`rounded-sm ${getHeatmapColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-1 hover:ring-primary" : "cursor-default"} transition-all duration-150 min-w-[10px] min-h-[10px]`}
-                      title={formatDayTooltip(day)}
-                    />
+                      style={{ gridColumn: `${label.weekIndex + 1} / span ${span}` }}
+                    >
+                      {label.month}
+                    </div>
                   );
                 })}
+              </div>
+
+              {/* Calendar Grid */}
+              <div className="flex gap-2">
+                {/* Day labels */}
+                <div className="flex flex-col justify-between py-0.5">
+                  {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
+                    <div key={index} className="h-[10px] flex items-center">
+                      <span className="text-[9px] sm:text-[10px] text-muted-foreground w-3 text-right">
+                        {day}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+
+                {/* Activity grid - CSS Grid for automatic responsiveness */}
+                <div
+                  className="grid flex-1 gap-[2px]"
+                  style={{
+                    gridTemplateColumns: `repeat(${weeks.length}, minmax(10px, 1fr))`,
+                    gridTemplateRows: "repeat(7, 10px)",
+                    gridAutoFlow: "column",
+                  }}
+                >
+                  {allDays.map((day, index) => {
+                    const hasActivity = day.questions > 0;
+                    return (
+                      <div
+                        key={index}
+                        className={`rounded-sm ${getColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-2 hover:ring-primary" : "cursor-default"} transition-all min-w-[10px] min-h-[10px]`}
+                        title={`${new Date(day.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}\n${day.questions} question${day.questions !== 1 ? "s" : ""}\n${day.quizzes} quiz${day.quizzes !== 1 ? "zes" : ""}`}
+                      />
+                    );
+                  })}
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
-    </ChartCard>
+      </CardContent>
+    </Card>
   );
 }
