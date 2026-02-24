@@ -887,10 +887,15 @@ export async function GET(request: NextRequest) {
     // ===== DASHBOARD DATA CALCULATION =====
     // Calculate dashboard-specific stats
 
-    // Get total questions count
-    const { count: allQuestionsCount } = await supabase
-      .from("questions")
-      .select("*", { count: "exact", head: true });
+    // Get total questions count from cached system_stats table (fast!)
+    // This avoids expensive full table scan (50-200ms) by using cached value
+    const { data: totalQuestionsData } = await supabase
+      .from("system_stats")
+      .select("value")
+      .eq("key", "total_questions")
+      .single();
+
+    const allQuestionsCount = Number(totalQuestionsData?.value || 0);
 
     // Calculate mastered/needs review from attempts
     const questionAttempts = new Map<string, { correct: number; incorrect: number }>();
