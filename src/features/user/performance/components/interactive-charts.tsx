@@ -68,6 +68,45 @@ export function PerformanceTimelineChart({
   loading = false,
 }: PerformanceTimelineChartProps) {
   const [error] = useState<string | null>(null);
+  const [primaryColor, setPrimaryColor] = useState("#2D9596");
+
+  useEffect(() => {
+    // Get the computed primary color from CSS variables
+    const style = getComputedStyle(document.documentElement);
+    const primary = style.getPropertyValue("--primary").trim();
+    if (primary) {
+      // Convert hsl to hex for Recharts compatibility
+      const hslMatch = primary.match(/(\d+\.?\d*)\s+(\d+\.?\d*)%\s+(\d+\.?\d*)%/);
+      if (hslMatch) {
+        const h = parseFloat(hslMatch[1]);
+        const s = parseFloat(hslMatch[2]) / 100;
+        const l = parseFloat(hslMatch[3]) / 100;
+        const color = hslToHex(h, s, l);
+        setPrimaryColor(color);
+      }
+    }
+  }, []);
+
+  const hslToHex = (h: number, s: number, l: number) => {
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = l - c / 2;
+    let r = 0, g = 0, b = 0;
+
+    if (h >= 0 && h < 60) { r = c; g = x; b = 0; }
+    else if (h >= 60 && h < 120) { r = x; g = c; b = 0; }
+    else if (h >= 120 && h < 180) { r = 0; g = c; b = x; }
+    else if (h >= 180 && h < 240) { r = 0; g = x; b = c; }
+    else if (h >= 240 && h < 300) { r = x; g = 0; b = c; }
+    else if (h >= 300 && h < 360) { r = c; g = 0; b = x; }
+
+    const toHex = (n: number) => {
+      const hex = Math.round((n + m) * 255).toString(16);
+      return hex.length === 1 ? "0" + hex : hex;
+    };
+
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
 
   if (loading) {
     return (
@@ -138,11 +177,11 @@ export function PerformanceTimelineChart({
           <AreaChart data={data}>
             <defs>
               <linearGradient id="colorAccuracy" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.4} />
-                <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.05} />
+                <stop offset="5%" stopColor={primaryColor} stopOpacity={0.4} />
+                <stop offset="95%" stopColor={primaryColor} stopOpacity={0.05} />
               </linearGradient>
             </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke="#3b82f6" opacity={0.1} />
+            <CartesianGrid strokeDasharray="3 3" stroke={primaryColor} opacity={0.1} />
             <XAxis
               dataKey="date"
               tickFormatter={(value) =>
@@ -168,7 +207,7 @@ export function PerformanceTimelineChart({
                       <p className="font-semibold">
                         {new Date(payload[0].payload.date).toLocaleDateString()}
                       </p>
-                      <p className="text-sm" style={{ color: "#3b82f6" }}>
+                      <p className="text-sm" style={{ color: primaryColor }}>
                         Accuracy: {payload[0].value?.toFixed(1)}%
                       </p>
                       <p className="text-sm text-muted-foreground">
@@ -184,10 +223,10 @@ export function PerformanceTimelineChart({
             <Area
               type="monotone"
               dataKey="accuracy"
-              stroke="#3b82f6"
+              stroke={primaryColor}
               strokeWidth={2}
               fill="url(#colorAccuracy)"
-              dot={{ fill: "#3b82f6", r: 4 }}
+              dot={{ fill: primaryColor, r: 4 }}
               activeDot={{ r: 6 }}
             />
           </AreaChart>
@@ -207,6 +246,45 @@ interface CategoryRadarChartProps {
 
 export function CategoryRadarChart({ data = [], loading = false }: CategoryRadarChartProps) {
   const [error] = useState<string | null>(null);
+  const [primaryColor, setPrimaryColor] = useState("#2D9596");
+
+  useEffect(() => {
+    // Get the computed primary color from CSS variables
+    const style = getComputedStyle(document.documentElement);
+    const primary = style.getPropertyValue("--primary").trim();
+    if (primary) {
+      // Convert hsl to hex for Recharts compatibility
+      const hslMatch = primary.match(/(\d+\.?\d*)\s+(\d+\.?\d*)%\s+(\d+\.?\d*)%/);
+      if (hslMatch) {
+        const h = parseFloat(hslMatch[1]);
+        const s = parseFloat(hslMatch[2]) / 100;
+        const l = parseFloat(hslMatch[3]) / 100;
+        const color = hslToHex(h, s, l);
+        setPrimaryColor(color);
+      }
+    }
+  }, []);
+
+  const hslToHex = (h: number, s: number, l: number) => {
+    const c = (1 - Math.abs(2 * l - 1)) * s;
+    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
+    const m = l - c / 2;
+    let r = 0, g = 0, b = 0;
+
+    if (h >= 0 && h < 60) { r = c; g = x; b = 0; }
+    else if (h >= 60 && h < 120) { r = x; g = c; b = 0; }
+    else if (h >= 120 && h < 180) { r = 0; g = c; b = x; }
+    else if (h >= 180 && h < 240) { r = 0; g = x; b = c; }
+    else if (h >= 240 && h < 300) { r = x; g = 0; b = c; }
+    else if (h >= 300 && h < 360) { r = c; g = 0; b = x; }
+
+    const toHex = (n: number) => {
+      const hex = Math.round((n + m) * 255).toString(16);
+      return hex.length === 1 ? "0" + hex : hex;
+    };
+
+    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
+  };
 
   if (loading) {
     return (
@@ -275,7 +353,7 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
       <CardContent>
         <ResponsiveContainer width="100%" height={400}>
           <RadarChart data={data}>
-            <PolarGrid stroke="#3b82f6" opacity={0.2} />
+            <PolarGrid stroke={primaryColor} opacity={0.2} />
             <PolarAngleAxis
               dataKey="category_name"
               tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
@@ -288,8 +366,8 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
             <Radar
               name="Accuracy"
               dataKey="accuracy"
-              stroke="#3b82f6"
-              fill="#3b82f6"
+              stroke={primaryColor}
+              fill={primaryColor}
               fillOpacity={0.4}
               strokeWidth={2}
             />
@@ -299,7 +377,7 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
                   return (
                     <div className="bg-popover border rounded-lg p-3 shadow-lg">
                       <p className="font-semibold">{payload[0].payload.category_name}</p>
-                      <p className="text-sm" style={{ color: "#3b82f6" }}>
+                      <p className="text-sm" style={{ color: primaryColor }}>
                         Accuracy: {payload[0].value?.toFixed(1)}%
                       </p>
                     </div>
@@ -384,11 +462,11 @@ export function ActivityHeatmap({
 
   const getColor = (questions: number) => {
     if (questions === 0) return "bg-muted/50 dark:bg-muted/30";
-    if (questions <= 5) return "bg-green-300 dark:bg-green-700";
-    if (questions <= 10) return "bg-green-400 dark:bg-green-600";
-    if (questions <= 20) return "bg-green-500 dark:bg-green-500";
-    if (questions <= 30) return "bg-green-600 dark:bg-green-400";
-    return "bg-green-700 dark:bg-green-300";
+    if (questions <= 5) return "bg-primary/30";
+    if (questions <= 10) return "bg-primary/50";
+    if (questions <= 20) return "bg-primary/70";
+    if (questions <= 30) return "bg-primary/90";
+    return "bg-primary";
   };
 
   if (loading) {
@@ -603,25 +681,25 @@ export function ActivityHeatmap({
               stats.currentStreak > 0) && (
               <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm border-b pb-4">
                 <div className="text-center">
-                  <div className="font-semibold text-green-600 dark:text-green-400">
+                  <div className="font-semibold text-primary">
                     {stats.avgQuestionsPerDay}
                   </div>
                   <div className="text-xs text-muted-foreground">Avg/day</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-blue-600 dark:text-blue-400">
+                  <div className="font-semibold text-primary">
                     {stats.avgQuizzesPerDay}
                   </div>
                   <div className="text-xs text-muted-foreground">Quizzes/day</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-orange-600 dark:text-orange-400">
+                  <div className="font-semibold text-primary">
                     {stats.longestStreak}
                   </div>
                   <div className="text-xs text-muted-foreground">Longest</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-purple-600 dark:text-purple-400">
+                  <div className="font-semibold text-primary">
                     {stats.currentStreak}
                   </div>
                   <div className="text-xs text-muted-foreground">Current</div>
@@ -685,7 +763,7 @@ export function ActivityHeatmap({
                     return (
                       <div
                         key={index}
-                        className={`rounded-sm ${getColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-2 hover:ring-primary" : "cursor-default"} transition-all min-w-[10px] min-h-[10px]`}
+                        className={`rounded-sm ${getColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-2 hover:ring-primary/80" : "cursor-default"} transition-all min-w-[10px] min-h-[10px]`}
                         title={`${new Date(day.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}\n${day.questions} question${day.questions !== 1 ? "s" : ""}\n${day.quizzes} quiz${day.quizzes !== 1 ? "zes" : ""}`}
                       />
                     );
