@@ -16,6 +16,29 @@ import {
 } from "@/features/user/performance/components/interactive-charts";
 import { TrendingUp, Target, Award, Zap, Clock, CheckCircle2 } from "lucide-react";
 
+// Animation variants for stagger effect
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: {
+    opacity: 1,
+    y: 0,
+    transition: {
+      duration: 0.5,
+      ease: "easeOut",
+    },
+  },
+};
+
 // Mock data generators
 function generateTimelineData() {
   const data = [];
@@ -129,24 +152,31 @@ function StatCard({
   value,
   description,
   trend,
+  delay = 0,
 }: {
   icon: any;
   title: string;
   value: string | number;
   description: string;
   trend?: string;
+  delay?: number;
 }) {
   return (
-    <Card>
+    <Card
+      className="hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
+      style={{
+        animation: `fadeInUp 0.6s ease-out ${delay}s both`,
+      }}
+    >
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
+        <Icon className="h-4 w-4 text-muted-foreground transition-colors duration-300 group-hover:text-accent" />
       </CardHeader>
       <CardContent>
-        <div className="text-2xl font-bold">{value}</div>
+        <div className="text-2xl font-bold tabular-nums">{value}</div>
         <p className="text-xs text-muted-foreground">{description}</p>
         {trend && (
-          <p className="text-xs text-accent font-medium mt-1">{trend}</p>
+          <p className="text-xs text-accent font-medium mt-1 animate-pulse">{trend}</p>
         )}
       </CardContent>
     </Card>
@@ -197,7 +227,11 @@ export default function PerformanceChartsTestPage() {
   return (
     <div className="container mx-auto p-6 space-y-6">
       {/* Header */}
-      <div>
+      <div
+        style={{
+          animation: "fadeInUp 0.5s ease-out both",
+        }}
+      >
         <h1 className="text-3xl font-bold tracking-tight">Performance Dashboard</h1>
         <p className="text-muted-foreground">
           Comprehensive analytics for your learning journey (Mock Data)
@@ -212,39 +246,59 @@ export default function PerformanceChartsTestPage() {
           value={`${overallAccuracy}%`}
           description="Last 7 days average"
           trend={improvementRate > 0 ? `↑ ${improvementRate}% improvement` : undefined}
+          delay={0.1}
         />
         <StatCard
           icon={CheckCircle2}
           title="Total Quizzes"
           value={totalQuizzes}
           description="Last 30 days"
+          delay={0.2}
         />
         <StatCard
           icon={Award}
           title="Strongest Category"
           value={`${strongestCategory.accuracy}%`}
           description={strongestCategory.category_name}
+          delay={0.3}
         />
         <StatCard
           icon={Zap}
           title="Current Streak"
           value={`${heatmapStats.currentStreak} days`}
           description={`Longest: ${heatmapStats.longestStreak} days`}
+          delay={0.4}
         />
       </div>
 
       {/* Charts Row 1 */}
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div
+        className="grid gap-6 lg:grid-cols-2"
+        style={{
+          animation: "fadeInUp 0.6s ease-out 0.5s both",
+        }}
+      >
         <PerformanceTimelineChart data={timelineData} />
         <CategoryRadarChart data={categoryData} />
       </div>
 
       {/* Heatmap */}
-      <ActivityHeatmap data={heatmapData} stats={heatmapStats} />
+      <div
+        style={{
+          animation: "fadeInUp 0.6s ease-out 0.6s both",
+        }}
+      >
+        <ActivityHeatmap data={heatmapData} stats={heatmapStats} />
+      </div>
 
       {/* Insights Cards */}
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
+      <div
+        className="grid gap-4 md:grid-cols-2"
+        style={{
+          animation: "fadeInUp 0.6s ease-out 0.7s both",
+        }}
+      >
+        <Card className="hover:shadow-lg transition-all duration-300">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <TrendingUp className="h-5 w-5 text-green-500" />
@@ -259,9 +313,15 @@ export default function PerformanceChartsTestPage() {
                 .sort((a, b) => b.accuracy - a.accuracy)
                 .slice(0, 3)
                 .map((category, i) => (
-                  <div key={i} className="flex items-center justify-between">
+                  <div
+                    key={i}
+                    className="flex items-center justify-between hover:bg-accent/5 p-2 rounded-md transition-colors duration-200"
+                    style={{
+                      animation: `fadeIn 0.4s ease-out ${0.8 + i * 0.1}s both`,
+                    }}
+                  >
                     <span className="text-sm font-medium">{category.category_name}</span>
-                    <span className="text-sm text-accent font-semibold">
+                    <span className="text-sm text-accent font-semibold tabular-nums">
                       {category.accuracy}%
                     </span>
                   </div>
@@ -270,7 +330,7 @@ export default function PerformanceChartsTestPage() {
           </CardContent>
         </Card>
 
-        <Card>
+        <Card className="hover:shadow-lg transition-all duration-300">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Clock className="h-5 w-5 text-orange-500" />
@@ -285,9 +345,15 @@ export default function PerformanceChartsTestPage() {
                 .sort((a, b) => a.accuracy - b.accuracy)
                 .slice(0, 3)
                 .map((category, i) => (
-                  <div key={i} className="flex items-center justify-between">
+                  <div
+                    key={i}
+                    className="flex items-center justify-between hover:bg-muted/50 p-2 rounded-md transition-colors duration-200"
+                    style={{
+                      animation: `fadeIn 0.4s ease-out ${0.8 + i * 0.1}s both`,
+                    }}
+                  >
                     <span className="text-sm font-medium">{category.category_name}</span>
-                    <span className="text-sm text-muted-foreground">
+                    <span className="text-sm text-muted-foreground tabular-nums">
                       {category.accuracy}%
                     </span>
                   </div>
@@ -298,7 +364,12 @@ export default function PerformanceChartsTestPage() {
       </div>
 
       {/* Debug Info */}
-      <Card className="border-dashed">
+      <Card
+        className="border-dashed hover:border-solid transition-all duration-300"
+        style={{
+          animation: "fadeIn 0.5s ease-out 1.1s both",
+        }}
+      >
         <CardHeader>
           <CardTitle className="text-sm">Debug Info</CardTitle>
         </CardHeader>
