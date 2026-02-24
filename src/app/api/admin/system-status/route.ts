@@ -234,14 +234,21 @@ export async function GET(request: Request) {
 
     if (dailyActiveUsers.status === "fulfilled" && dailyActiveUsers.value.data !== null) {
       activeUsers = Number(dailyActiveUsers.value.data) || 0;
+    } else if (dailyActiveUsers.status === "rejected") {
+      console.error("[System Status] Daily active users query failed:", dailyActiveUsers.reason);
+      console.warn("[System Status] Is count_distinct_users_since() function created in database?");
     }
 
     if (weeklyActiveUsers.status === "fulfilled" && weeklyActiveUsers.value.data !== null) {
       activeUsersWeekly = Number(weeklyActiveUsers.value.data) || 0;
+    } else if (weeklyActiveUsers.status === "rejected") {
+      console.error("[System Status] Weekly active users query failed:", weeklyActiveUsers.reason);
     }
 
     if (monthlyActiveUsers.status === "fulfilled" && monthlyActiveUsers.value.data !== null) {
       activeUsersMonthly = Number(monthlyActiveUsers.value.data) || 0;
+    } else if (monthlyActiveUsers.status === "rejected") {
+      console.error("[System Status] Monthly active users query failed:", monthlyActiveUsers.reason);
     }
 
     const systemHealth: SystemHealth = {
