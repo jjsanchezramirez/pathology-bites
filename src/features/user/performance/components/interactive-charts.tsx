@@ -46,26 +46,81 @@ ChartJS.register(
   Filler
 );
 
-// Constants
+// Helper function to get computed CSS variable value
+function getCSSVariable(variable: string): string {
+  if (typeof window === "undefined") return "";
+  const value = getComputedStyle(document.documentElement).getPropertyValue(variable).trim();
+  return value;
+}
+
+// Helper to convert HSL string to hex
+function hslToHex(hsl: string): string {
+  if (!hsl) return "#000000";
+  const match = hsl.match(/(\d+)\s+(\d+)%\s+(\d+)%/);
+  if (!match) return "#000000";
+
+  const h = parseInt(match[1]) / 360;
+  const s = parseInt(match[2]) / 100;
+  const l = parseInt(match[3]) / 100;
+
+  const hueToRgb = (p: number, q: number, t: number) => {
+    if (t < 0) t += 1;
+    if (t > 1) t -= 1;
+    if (t < 1/6) return p + (q - p) * 6 * t;
+    if (t < 1/2) return q;
+    if (t < 2/3) return p + (q - p) * (2/3 - t) * 6;
+    return p;
+  };
+
+  const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+  const p = 2 * l - q;
+  const r = Math.round(hueToRgb(p, q, h + 1/3) * 255);
+  const g = Math.round(hueToRgb(p, q, h) * 255);
+  const b = Math.round(hueToRgb(p, q, h - 1/3) * 255);
+
+  return `#${r.toString(16).padStart(2, '0')}${g.toString(16).padStart(2, '0')}${b.toString(16).padStart(2, '0')}`;
+}
+
+// Get theme colors from CSS variables
+function getThemeColors() {
+  const primary = getCSSVariable("--primary");
+  const primaryHex = hslToHex(primary);
+
+  // Create rgba versions for gradients
+  const match = primaryHex.match(/^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i);
+  let r = 0, g = 0, b = 0;
+  if (match) {
+    r = parseInt(match[1], 16);
+    g = parseInt(match[2], 16);
+    b = parseInt(match[3], 16);
+  }
+
+  return {
+    primary: primaryHex,
+    gradientStart: `rgba(${r}, ${g}, ${b}, 0.3)`,
+    gradientMid: `rgba(${r}, ${g}, ${b}, 0.1)`,
+    gradientEnd: `rgba(${r}, ${g}, ${b}, 0.0)`,
+    radarFill: `rgba(${r}, ${g}, ${b}, 0.15)`,
+  };
+}
+
+// Use theme colors
 const CHART_COLORS = {
-  primary: "#3b82f6",
-  primaryHover: "#2563eb",
-  gradientStart: "rgba(59, 130, 246, 0.5)",
-  gradientEnd: "rgba(59, 130, 246, 0.02)",
-  radarFill: "rgba(59, 130, 246, 0.25)",
-  white: "#fff",
-  success: "#10b981",
-  warning: "#f59e0b",
-  danger: "#ef4444",
+  get primary() { return getThemeColors().primary; },
+  get gradientStart() { return getThemeColors().gradientStart; },
+  get gradientMid() { return getThemeColors().gradientMid; },
+  get gradientEnd() { return getThemeColors().gradientEnd; },
+  get radarFill() { return getThemeColors().radarFill; },
+  white: "#ffffff",
 } as const;
 
 const HEATMAP_COLORS = {
-  empty: "bg-zinc-100 dark:bg-zinc-800/30",
-  level1: "bg-emerald-200 dark:bg-emerald-900/60",
-  level2: "bg-emerald-300 dark:bg-emerald-700/70",
-  level3: "bg-emerald-400 dark:bg-emerald-600/80",
-  level4: "bg-emerald-500 dark:bg-emerald-500",
-  level5: "bg-emerald-600 dark:bg-emerald-400",
+  empty: "bg-muted/30",
+  level1: "bg-primary/20",
+  level2: "bg-primary/40",
+  level3: "bg-primary/60",
+  level4: "bg-primary/80",
+  level5: "bg-primary",
 } as const;
 
 const THEME_COLORS = {
@@ -292,29 +347,18 @@ export function PerformanceTimelineChart({
           const ctx = context.chart.ctx;
           const gradient = ctx.createLinearGradient(0, 0, 0, 300);
           gradient.addColorStop(0, CHART_COLORS.gradientStart);
-          gradient.addColorStop(0.5, "rgba(59, 130, 246, 0.15)");
+          gradient.addColorStop(0.5, CHART_COLORS.gradientMid);
           gradient.addColorStop(1, CHART_COLORS.gradientEnd);
           return gradient;
         },
-        borderWidth: 3,
+        borderWidth: 2,
         fill: true,
         tension: 0.4,
-        pointRadius: 5,
-        pointHoverRadius: 8,
-        pointBackgroundColor: CHART_COLORS.primary,
-        pointBorderColor: CHART_COLORS.white,
-        pointBorderWidth: 2,
-        pointHoverBorderWidth: 3,
-        pointHoverBackgroundColor: CHART_COLORS.primaryHover,
-        segment: {
-          borderColor: (ctx: any) => {
-            // Color segments based on accuracy trend
-            if (ctx.p0.parsed.y >= 90) return CHART_COLORS.success;
-            if (ctx.p0.parsed.y >= 70) return CHART_COLORS.primary;
-            if (ctx.p0.parsed.y >= 50) return CHART_COLORS.warning;
-            return CHART_COLORS.danger;
-          },
-        },
+        pointRadius: 0,
+        pointHoverRadius: 6,
+        pointHoverBackgroundColor: CHART_COLORS.primary,
+        pointHoverBorderColor: CHART_COLORS.white,
+        pointHoverBorderWidth: 2,
       },
     ],
   };
@@ -327,8 +371,8 @@ export function PerformanceTimelineChart({
       intersect: false,
     },
     animation: {
-      duration: 750,
-      easing: "easeInOutQuart",
+      duration: 600,
+      easing: "easeInOutCubic",
     },
     plugins: {
       legend: {
@@ -420,16 +464,15 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
         label: "Accuracy",
         data: data.map((d) => d.accuracy),
         backgroundColor: CHART_COLORS.radarFill,
-        borderColor: CHART_COLORS.primary,
-        borderWidth: 3,
+        borderColor: "transparent",
+        borderWidth: 0,
         pointBackgroundColor: CHART_COLORS.primary,
-        pointBorderColor: CHART_COLORS.white,
-        pointBorderWidth: 2,
-        pointRadius: 5,
-        pointHoverRadius: 8,
-        pointHoverBackgroundColor: CHART_COLORS.primaryHover,
-        pointHoverBorderColor: CHART_COLORS.white,
-        pointHoverBorderWidth: 3,
+        pointBorderColor: "transparent",
+        pointBorderWidth: 0,
+        pointRadius: 3,
+        pointHoverRadius: 5,
+        pointHoverBackgroundColor: CHART_COLORS.primary,
+        pointHoverBorderColor: "transparent",
       },
     ],
   };
@@ -439,12 +482,12 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
     responsive: true,
     maintainAspectRatio: false,
     interaction: {
-      mode: "point",
-      intersect: true,
+      mode: "nearest",
+      intersect: false,
     },
     animation: {
-      duration: 750,
-      easing: "easeInOutQuart",
+      duration: 600,
+      easing: "easeInOutCubic",
     },
     plugins: {
       legend: {
@@ -457,7 +500,7 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
             return data[context[0].dataIndex].category_name;
           },
           label: (context) => {
-            return `Accuracy: ${context.parsed.r.toFixed(1)}%`;
+            return `${context.parsed.r.toFixed(1)}%`;
           },
         },
       },
@@ -468,27 +511,30 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
         max: 100,
         beginAtZero: true,
         ticks: {
-          stepSize: 20,
+          stepSize: 25,
           ...gridConfig.ticks,
-          callback: (value) => `${value}%`,
+          callback: (value) => value === 0 ? "0" : `${value}`,
           backdropColor: "transparent",
+          showLabelBackdrop: false,
+          font: {
+            size: 10,
+          },
         },
         grid: {
           ...gridConfig.grid,
           circular: true,
-          lineWidth: 1,
+          lineWidth: 0.5,
         },
         angleLines: {
-          ...gridConfig.grid,
-          lineWidth: 1,
+          display: false,
         },
         pointLabels: {
           ...gridConfig.ticks,
           font: {
-            size: 12,
-            weight: "bold" as const,
+            size: 11,
+            weight: "normal" as const,
           },
-          padding: 8,
+          padding: 12,
         },
       },
     },
@@ -848,7 +894,7 @@ export function ActivityHeatmap({
                   return (
                     <div
                       key={index}
-                      className={`rounded-[3px] ${getHeatmapColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-2 hover:ring-primary hover:scale-110" : "cursor-default"} transition-all duration-200 min-w-[10px] min-h-[10px] shadow-sm`}
+                      className={`rounded-sm ${getHeatmapColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-1 hover:ring-primary" : "cursor-default"} transition-all duration-150 min-w-[10px] min-h-[10px]`}
                       title={formatDayTooltip(day)}
                     />
                   );
