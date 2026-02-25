@@ -62,7 +62,7 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Hide content completely when transitioning OR when adminMode is "user" to avoid title flickering */}
+      {/* Hide content when transitioning OR when adminMode is "user" to prevent showing student content on admin page */}
       {isTransitioning || adminMode === "user" ? (
         <>
           {/* Title skeleton */}
