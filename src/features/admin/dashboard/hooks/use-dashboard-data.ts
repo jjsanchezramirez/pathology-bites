@@ -32,8 +32,6 @@ export function useDashboardStats(enabled = true) {
       dedupingInterval: 30000,
       // Revalidate when window regains focus
       revalidateOnFocus: true,
-      // Don't revalidate on mount if we have cached data
-      revalidateOnMount: !enabled,
       // Retry on error with exponential backoff
       errorRetryCount: 3,
       errorRetryInterval: 1000,
@@ -87,7 +85,6 @@ export function useDashboardActivities(
       // Cache for 15 seconds - activities change more frequently
       dedupingInterval: 15000,
       revalidateOnFocus: true,
-      revalidateOnMount: !shouldFetch,
       errorRetryCount: 3,
       errorRetryInterval: 1000,
       keepPreviousData: true,

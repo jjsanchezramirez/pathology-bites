@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { getBucketSize } from "@/shared/services/r2-storage";
+import { createClient } from "@supabase/supabase-js";
+import { getCachedStorageMetrics } from "@/shared/services/r2-storage-metrics";
 import { formatSize } from "@/features/admin/images/services/image-upload";
 
 /**
@@ -90,13 +91,31 @@ import { formatSize } from "@/features/admin/images/services/image-upload";
  */
 export async function GET() {
   try {
-    // Get sizes for both buckets
-    const [imagesBucketStats, dataBucketStats] = await Promise.all([
-      getBucketSize("pathology-bites-images"),
-      getBucketSize("pathology-bites-data"),
-    ]);
+    // Create service role client to bypass RLS
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
 
-    const totalUsedBytes = imagesBucketStats.totalSize + dataBucketStats.totalSize;
+    // Get cached metrics from database (FAST - <100ms vs 10+ seconds)
+    const cachedMetrics = await getCachedStorageMetrics(undefined, supabaseAdmin);
+
+    // Find metrics for each bucket
+    const imagesBucket = cachedMetrics.find(
+      (m) => m.bucketName === "pathology-bites-images"
+    ) || { totalSize: 0, objectCount: 0 };
+
+    const dataBucket = cachedMetrics.find(
+      (m) => m.bucketName === "pathology-bites-data"
+    ) || { totalSize: 0, objectCount: 0 };
+
+    const totalUsedBytes = imagesBucket.totalSize + dataBucket.totalSize;
     const totalR2LimitBytes = 10737418240; // 10GB in bytes
     const availableBytes = Math.max(0, totalR2LimitBytes - totalUsedBytes);
 
@@ -110,14 +129,14 @@ export async function GET() {
         formattedAvailable: formatSize(availableBytes),
         buckets: {
           images: {
-            totalSize: imagesBucketStats.totalSize,
-            objectCount: imagesBucketStats.objectCount,
-            formattedSize: formatSize(imagesBucketStats.totalSize),
+            totalSize: imagesBucket.totalSize,
+            objectCount: imagesBucket.objectCount,
+            formattedSize: formatSize(imagesBucket.totalSize),
           },
           data: {
-            totalSize: dataBucketStats.totalSize,
-            objectCount: dataBucketStats.objectCount,
-            formattedSize: formatSize(dataBucketStats.totalSize),
+            totalSize: dataBucket.totalSize,
+            objectCount: dataBucket.objectCount,
+            formattedSize: formatSize(dataBucket.totalSize),
           },
         },
       },
