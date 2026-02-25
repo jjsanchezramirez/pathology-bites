@@ -109,8 +109,8 @@ export function ReviewActionDialog({
     try {
       const endpoint =
         action === "approve"
-          ? `/api/questions/${question.id}/approve`
-          : `/api/questions/${question.id}/reject`;
+          ? `/api/admin/questions/${question.id}/approve`
+          : `/api/admin/questions/${question.id}/reject`;
 
       const response = await fetch(endpoint, {
         method: "POST",

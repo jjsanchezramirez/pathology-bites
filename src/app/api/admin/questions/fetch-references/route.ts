@@ -272,8 +272,12 @@ export async function POST(request: NextRequest) {
     });
   } catch (error) {
     console.error("Semantic Scholar API error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to fetch references from Semantic Scholar" },
+      {
+        error: "Failed to fetch references from Semantic Scholar",
+        details: errorMessage
+      },
       { status: 500 }
     );
   }
@@ -350,6 +354,13 @@ export async function GET(request: NextRequest) {
     });
 
     if (!response.ok) {
+      if (response.status === 429) {
+        return NextResponse.json(
+          { error: "Rate limited by Semantic Scholar. Please try again later." },
+          { status: 429 }
+        );
+      }
+      console.error(`Semantic Scholar API error: ${response.status} ${response.statusText}`);
       throw new Error(`Semantic Scholar API error: ${response.status}`);
     }
 
@@ -444,8 +455,12 @@ export async function GET(request: NextRequest) {
     });
   } catch (error) {
     console.error("Semantic Scholar API error:", error);
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
-      { error: "Failed to fetch papers from Semantic Scholar" },
+      {
+        error: "Failed to fetch papers from Semantic Scholar",
+        details: errorMessage
+      },
       { status: 500 }
     );
   }

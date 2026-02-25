@@ -106,7 +106,7 @@ export function SubmitForReviewDialog({
 
     setSubmitting(true);
     try {
-      const response = await fetch(`/api/questions/${questionId}/submit-for-review`, {
+      const response = await fetch(`/api/admin/questions/${questionId}/submit-for-review`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

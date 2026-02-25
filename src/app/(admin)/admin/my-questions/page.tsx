@@ -340,7 +340,7 @@ export default function MyQuestionsPage() {
 
     try {
       const submissions = selectedIds.map((questionId) =>
-        fetch(`/api/questions/${questionId}/submit-for-review`, {
+        fetch(`/api/admin/questions/${questionId}/submit-for-review`, {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ reviewer_id: reviewerId }),

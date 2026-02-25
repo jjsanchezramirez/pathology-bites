@@ -80,7 +80,9 @@ export function FetchReferencesDialog({
       const response = await fetch(`/api/admin/questions/fetch-references?${params.toString()}`);
 
       if (!response.ok) {
-        throw new Error(`API error: ${response.status}`);
+        const errorData = await response.json().catch(() => ({}));
+        const errorMsg = errorData.details || errorData.error || `API error: ${response.status}`;
+        throw new Error(errorMsg);
       }
 
       const data = await response.json();
