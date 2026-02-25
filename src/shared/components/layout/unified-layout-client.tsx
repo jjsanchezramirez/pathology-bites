@@ -10,6 +10,7 @@ import { UnifiedSidebar } from "./unified-sidebar";
 import { UnifiedHeader, HeaderConfig } from "./unified-header";
 import { getNavigationConfig } from "@/shared/config/navigation";
 import { SidebarStateProvider } from "@/shared/contexts/sidebar-state-context";
+import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 // import { useUserRole } from '@/shared/hooks/use-user-role' // Commented out - middleware already validates role server-side
 
 interface UnifiedLayoutClientProps {
@@ -28,6 +29,7 @@ export function UnifiedLayoutClient({
 }: UnifiedLayoutClientProps) {
   // const { role, isLoading } = useUserRole() // Commented out - middleware already validates role server-side
   const pathname = usePathname();
+  const { adminMode } = useDashboardTheme();
 
   // Check if we're on pages that have their own full-height layouts
   const isAnkiPage = pathname === "/dashboard/anki";
@@ -40,10 +42,16 @@ export function UnifiedLayoutClient({
   const isLessonStudioPage = pathname === "/admin/lesson-studio"; // Lesson Studio needs full-width
   const isFullHeightPage = isAnkiPage || isQuizActivePage || isQuizReviewPage || isLessonStudioPage;
 
-  // Get navigation items based on user type
-  // Middleware already validated role server-side, so we can trust userType prop
-  // For admin routes, we use 'admin' role for navigation config
-  const navigationConfig = getNavigationConfig(userType === "admin" ? "admin" : "user");
+  // Get navigation items based on admin mode (dynamic) instead of static userType
+  // This ensures navigation updates correctly during mode transitions
+  // If adminMode is not set yet, fall back to userType
+  const isAdminTypeMode =
+    adminMode === "admin" || adminMode === "creator" || adminMode === "reviewer";
+  const effectiveMode =
+    adminMode && adminMode !== "user" ? adminMode : userType === "admin" ? "admin" : "user";
+  const navigationConfig = getNavigationConfig(
+    isAdminTypeMode ? (effectiveMode as "admin" | "creator" | "reviewer") : "user"
+  );
   const navigationSections = navigationConfig.sections;
   const { isInQuizMode } = useQuizMode();
   const { isInAnkiMode } = useAnkiMode();

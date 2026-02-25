@@ -1,6 +1,7 @@
 // src/app/(admin)/admin/page.tsx
 "use client";
 
+import { useEffect } from "react";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
@@ -22,7 +23,7 @@ export default function AdminDashboardPage() {
   const { role, isLoading: roleLoading } = useUserRole();
 
   // Get theme and admin mode
-  const { adminMode, isTransitioning } = useDashboardTheme();
+  const { adminMode, isTransitioning, setTransitioning } = useDashboardTheme();
 
   // Fetch dashboard data using simplified hook
   // This hook handles all complexity:
@@ -46,6 +47,17 @@ export default function AdminDashboardPage() {
 
   // Single loading state: transitioning OR data loading OR data not ready
   const isLoading = isTransitioning || dataLoading || !stats || !activities;
+
+  // Clear transition flag when data is ready
+  useEffect(() => {
+    if (!dataLoading && stats && activities && isTransitioning) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setTransitioning(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [dataLoading, stats, activities, isTransitioning, setTransitioning]);
 
   return (
     <div className="space-y-6">

@@ -18,6 +18,7 @@ import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { useUserSettings } from "@/shared/hooks/use-user-settings";
 import { PageErrorBoundary, FeatureErrorBoundary, ScrollReveal } from "@/shared/components/common";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
+import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 
 interface DashboardStats {
   // New meaningful categories
@@ -68,6 +69,7 @@ export default function DashboardPage() {
   const { user } = useAuthContext();
   const { data: unifiedData } = useUnifiedData();
   const { data: userSettings } = useUserSettings();
+  const { isTransitioning, setTransitioning } = useDashboardTheme();
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -152,6 +154,17 @@ export default function DashboardPage() {
     fetchData();
   }, [user, unifiedData, showWelcomeMessage]);
 
+  // Clear transition flag when data is ready
+  useEffect(() => {
+    if (!loading && stats && isTransitioning) {
+      // Small delay to ensure smooth transition
+      const timer = setTimeout(() => {
+        setTransitioning(false);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [loading, stats, isTransitioning, setTransitioning]);
+
   return (
     <PageErrorBoundary pageName="Dashboard" showHomeButton={false} showBackButton={false}>
       <div className="space-y-6">
@@ -174,8 +187,8 @@ export default function DashboardPage() {
           <V1ReleaseMessage onDismiss={() => setShowV1ReleaseMessage(false)} />
         )}
 
-        {/* Show loading state for everything until data is ready */}
-        {loading || !stats ? (
+        {/* Show loading state for everything until data is ready or while transitioning */}
+        {loading || !stats || isTransitioning ? (
           <>
             <StudentStatsCardsLoading />
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">

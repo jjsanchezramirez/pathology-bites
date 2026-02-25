@@ -36,17 +36,16 @@ export function AdminModeToggle() {
       // Update admin mode first (this will also handle theme switching)
       setAdminMode(targetMode);
 
-      // Navigate to appropriate dashboard immediately
+      // Navigate to appropriate dashboard
       if (newMode === "admin") {
         router.push("/admin");
       } else {
         router.push("/dashboard");
       }
 
-      // Clear loading states immediately after navigation starts
-      // The navigation itself will trigger re-renders with proper content
+      // Don't clear transition flag here - let the destination page clear it when ready
+      // This prevents showing hybrid content during navigation
       setIsLoading(false);
-      setTransitioning(false);
     } catch (error) {
       console.error("Error switching mode:", error);
       setIsLoading(false);
