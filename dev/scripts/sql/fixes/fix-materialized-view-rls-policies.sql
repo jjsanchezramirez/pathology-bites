@@ -27,20 +27,19 @@ AS
 SELECT
     user_id,
     total_quizzes,
-    total_questions_answered,
-    correct_answers,
-    accuracy_percentage,
+    completed_quizzes,
+    avg_score,
+    highest_score,
+    lowest_score,
+    total_questions_attempted,
+    total_correct_answers,
+    total_time_spent,
     avg_time_per_question,
-    total_study_time,
+    last_quiz_completed,
+    last_quiz_created,
     current_streak,
     longest_streak,
-    last_activity,
-    total_categories_attempted,
-    favorite_categories,
-    weakest_categories,
-    mastery_score,
-    rank_percentile,
-    last_computed
+    last_updated
 FROM public.user_stats_computed;
 
 -- Enable RLS on the view
