@@ -42,7 +42,7 @@ BEGIN
     NEW.search_vector :=
         setweight(to_tsvector('english', COALESCE(NEW.title, '')), 'A') ||
         setweight(to_tsvector('english', COALESCE(NEW.description, '')), 'B') ||
-        setweight(to_tsvector('english', COALESCE(NEW.transcript, '')), 'C');
+        setweight(to_tsvector('english', COALESCE(NEW.generated_text, '')), 'C');
     RETURN NEW;
 END;
 $$;
@@ -53,7 +53,7 @@ COMMENT ON FUNCTION public.update_audio_search_vector() IS
 
 -- Recreate trigger
 CREATE TRIGGER update_audio_search_vector_trigger
-    BEFORE INSERT OR UPDATE OF title, description, transcript
+    BEFORE INSERT OR UPDATE OF title, description, generated_text
     ON public.audio
     FOR EACH ROW
     EXECUTE FUNCTION update_audio_search_vector();
