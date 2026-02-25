@@ -276,7 +276,7 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(
       {
         error: "Failed to fetch references from Semantic Scholar",
-        details: errorMessage
+        details: errorMessage,
       },
       { status: 500 }
     );
@@ -459,7 +459,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(
       {
         error: "Failed to fetch papers from Semantic Scholar",
-        details: errorMessage
+        details: errorMessage,
       },
       { status: 500 }
     );

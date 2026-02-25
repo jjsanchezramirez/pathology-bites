@@ -428,7 +428,7 @@ export class QuizService {
       anki_deck_name: undefined,
       lesson: q.lesson || undefined,
       topic: q.topic || undefined,
-    })) as QuestionWithDetails[];
+    })) as unknown as QuestionWithDetails[];
 
     return questionsWithDetails;
   }

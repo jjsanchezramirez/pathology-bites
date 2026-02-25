@@ -33,6 +33,7 @@ import {
   ChevronDown,
   ChevronRight,
   Loader2,
+  Flag,
 } from "lucide-react";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { QuestionPreviewDialog } from "@/features/admin/questions/components/dialogs/question-preview-dialog";
@@ -40,7 +41,7 @@ import { SubmitForReviewDialog } from "@/features/admin/questions/components/dia
 import { BulkSubmitDialog } from "@/features/admin/questions/components/dialogs/bulk-submit-dialog";
 import { toast } from "@/shared/utils/ui/toast";
 import { formatDistanceToNow } from "date-fns";
-import { QuestionWithDetails, DIFFICULTY_CONFIG } from "@/shared/types/questions";
+import { QuestionWithDetails, DIFFICULTY_CONFIG, FLAG_TYPE_CONFIG } from "@/shared/types/questions";
 import { formatVersion } from "@/shared/utils/version";
 import { AccessDenied, AccessDeniedPresets } from "@/shared/components/common/access-denied";
 import {
@@ -55,6 +56,12 @@ interface MyQuestion extends QuestionWithDetails {
   creator_name?: string;
   resubmission_notes?: string;
   resubmission_date?: string;
+  flag_info?: {
+    flag_type: string;
+    description: string | null;
+    flagged_by_name: string;
+    created_at: string;
+  };
 }
 
 export default function MyQuestionsPage() {
@@ -130,7 +137,7 @@ export default function MyQuestionsPage() {
         `
           )
           .eq("created_by", user.id)
-          .in("status", ["draft", "rejected", "pending_review", "published"])
+          .in("status", ["draft", "rejected", "flagged", "pending_review", "published"])
           .order("updated_at", { ascending: false });
 
         if (error) {
@@ -139,8 +146,9 @@ export default function MyQuestionsPage() {
           return;
         }
 
-        // Fetch resubmission notes for rejected questions
-        const rejectedQuestions = data?.filter((q) => q.status === "rejected") || [];
+        // Fetch resubmission notes for rejected and flagged questions
+        const rejectedQuestions =
+          data?.filter((q) => q.status === "rejected" || q.status === "flagged") || [];
         const questionsWithNotes = await Promise.all(
           rejectedQuestions.map(async (question) => {
             const { data: reviewData } = await supabase
@@ -160,10 +168,57 @@ export default function MyQuestionsPage() {
           })
         );
 
-        // Merge resubmission notes back into data
+        // Fetch flag information for flagged questions
+        const flaggedQuestions = data?.filter((q) => q.status === "flagged") || [];
+        const questionsWithFlags = await Promise.all(
+          flaggedQuestions.map(async (question) => {
+            const { data: flagData } = await supabase
+              .from("question_flags")
+              .select(
+                `
+                flag_type,
+                description,
+                created_at,
+                flagged_by_user:users!question_flags_flagged_by_fkey(first_name, last_name)
+              `
+              )
+              .eq("question_id", question.id)
+              .eq("status", "open")
+              .order("created_at", { ascending: false })
+              .limit(1)
+              .single();
+
+            // Type assertion: flagged_by_user is a single object, not an array
+            // Cast through unknown first to satisfy TypeScript strict checking
+            const flaggedByUser = flagData?.flagged_by_user as unknown as
+              | { first_name: string; last_name: string }
+              | null
+              | undefined;
+
+            return {
+              ...question,
+              flag_info: flagData
+                ? {
+                    flag_type: flagData.flag_type,
+                    description: flagData.description,
+                    flagged_by_name: flaggedByUser
+                      ? `${flaggedByUser.first_name} ${flaggedByUser.last_name}`
+                      : "Unknown",
+                    created_at: flagData.created_at,
+                  }
+                : undefined,
+            };
+          })
+        );
+
+        // Merge resubmission notes and flag data back into data
         const questionsMap = new Map(data?.map((q) => [q.id, q]));
         questionsWithNotes.forEach((q) => {
           questionsMap.set(q.id, q);
+        });
+        questionsWithFlags.forEach((q) => {
+          const existing = questionsMap.get(q.id);
+          questionsMap.set(q.id, { ...existing, ...q });
         });
 
         const finalData = Array.from(questionsMap.values()) as unknown as MyQuestion[];
@@ -196,6 +251,8 @@ export default function MyQuestionsPage() {
     // Apply tab filter
     if (activeTab === "revision") {
       filtered = filtered.filter((q) => q.status === "rejected");
+    } else if (activeTab === "flagged") {
+      filtered = filtered.filter((q) => q.status === "flagged");
     } else if (activeTab === "drafts") {
       filtered = filtered.filter((q) => q.status === "draft");
     } else if (activeTab === "under-review") {
@@ -404,6 +461,7 @@ export default function MyQuestionsPage() {
 
   // Calculate stats
   const revisionCount = questions.filter((q) => q.status === "rejected").length;
+  const flaggedCount = questions.filter((q) => q.status === "flagged").length;
   const draftCount = questions.filter((q) => q.status === "draft").length;
   const underReviewCount = questions.filter((q) => q.status === "pending_review").length;
   const publishedCount = questions.filter((q) => q.status === "published").length;
@@ -442,6 +500,7 @@ export default function MyQuestionsPage() {
         <div className="space-y-4">
           <div className="flex gap-2 border-b">
             <Skeleton className="h-10 w-32" />
+            <Skeleton className="h-10 w-24" />
             <Skeleton className="h-10 w-24" />
             <Skeleton className="h-10 w-32" />
             <Skeleton className="h-10 w-28" />
@@ -520,13 +579,20 @@ export default function MyQuestionsPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-4">
+        <TabsList className="grid w-full grid-cols-5">
           <TabsTrigger
             value="revision"
             className="flex items-center gap-2 data-[state=active]:bg-destructive/10 data-[state=active]:text-destructive"
           >
             <AlertTriangle className="h-4 w-4" />
             Needs Revision ({revisionCount})
+          </TabsTrigger>
+          <TabsTrigger
+            value="flagged"
+            className="flex items-center gap-2 data-[state=active]:bg-orange-100 data-[state=active]:text-orange-700"
+          >
+            <Flag className="h-4 w-4" />
+            Flagged ({flaggedCount})
           </TabsTrigger>
           <TabsTrigger value="drafts" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
@@ -566,7 +632,13 @@ export default function MyQuestionsPage() {
                       ) : (
                         <>
                           <TableHead>Question</TableHead>
-                          <TableHead>{activeTab === "revision" ? "Rejected" : "Updated"}</TableHead>
+                          <TableHead>
+                            {activeTab === "revision"
+                              ? "Rejected"
+                              : activeTab === "flagged"
+                                ? "Flagged"
+                                : "Updated"}
+                          </TableHead>
                         </>
                       )}
                       <TableHead>Difficulty</TableHead>
@@ -588,6 +660,17 @@ export default function MyQuestionsPage() {
                                   {searchTerm || difficultyFilter !== "all"
                                     ? "No questions match your filters"
                                     : "Great work! You have no rejected questions to revise."}
+                                </p>
+                              </>
+                            )}
+                            {activeTab === "flagged" && (
+                              <>
+                                <Flag className="h-12 w-12 mx-auto mb-4 text-orange-500" />
+                                <h3 className="text-lg font-medium mb-2">No flagged questions</h3>
+                                <p className="text-muted-foreground">
+                                  {searchTerm || difficultyFilter !== "all"
+                                    ? "No questions match your filters"
+                                    : "Questions flagged by reviewers will appear here"}
                                 </p>
                               </>
                             )}
@@ -630,7 +713,9 @@ export default function MyQuestionsPage() {
                     ) : (
                       filteredQuestions.map((question) => {
                         const isCollapsed = collapsedFeedback.has(question.id);
-                        const showFeedback = activeTab === "revision" && question.reviewer_feedback;
+                        const showFeedback =
+                          (activeTab === "revision" || activeTab === "flagged") &&
+                          question.reviewer_feedback;
 
                         return (
                           <React.Fragment key={question.id}>
@@ -664,13 +749,14 @@ export default function MyQuestionsPage() {
                                         )}
                                       </button>
                                     )}
-                                    {!showFeedback && activeTab === "revision" && (
-                                      <div className="w-6 flex-shrink-0" />
-                                    )}
+                                    {!showFeedback &&
+                                      (activeTab === "revision" || activeTab === "flagged") && (
+                                        <div className="w-6 flex-shrink-0" />
+                                      )}
                                     <div className="flex-1">
                                       <div className="font-medium flex items-center">
                                         {question.title}
-                                        {activeTab === "revision" &&
+                                        {(activeTab === "revision" || activeTab === "flagged") &&
                                           getAgeIndicator(question.updated_at)}
                                       </div>
                                     </div>
@@ -678,7 +764,7 @@ export default function MyQuestionsPage() {
 
                                   {/* Question Stem */}
                                   <div className="flex gap-2">
-                                    {activeTab === "revision" && (
+                                    {(activeTab === "revision" || activeTab === "flagged") && (
                                       <div className="w-6 flex-shrink-0" />
                                     )}
                                     <div className="text-sm text-muted-foreground line-clamp-2 flex-1">
@@ -699,7 +785,7 @@ export default function MyQuestionsPage() {
                                   {/* Question Set Badge */}
                                   {question.set && (
                                     <div className="flex gap-2">
-                                      {activeTab === "revision" && (
+                                      {(activeTab === "revision" || activeTab === "flagged") && (
                                         <div className="w-6 flex-shrink-0" />
                                       )}
                                       <Badge variant="outline" className="text-xs">
@@ -709,26 +795,61 @@ export default function MyQuestionsPage() {
                                   )}
 
                                   {/* Resubmission Notes */}
-                                  {activeTab === "revision" && question.resubmission_notes && (
+                                  {(activeTab === "revision" || activeTab === "flagged") &&
+                                    question.resubmission_notes && (
+                                      <div className="flex gap-2">
+                                        <div className="w-6 flex-shrink-0" />
+                                        <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 dark:border-blue-600 rounded-md flex-1">
+                                          <div className="flex items-start gap-2">
+                                            <div className="flex-1 min-w-0">
+                                              <span className="text-xs font-medium text-blue-900 dark:text-blue-100 block mb-1">
+                                                Previous Changes Made
+                                              </span>
+                                              <p className="text-xs text-blue-800 dark:text-blue-300">
+                                                {question.resubmission_notes}
+                                              </p>
+                                              {question.resubmission_date && (
+                                                <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                                  {formatDistanceToNow(
+                                                    new Date(question.resubmission_date)
+                                                  )}{" "}
+                                                  ago
+                                                </p>
+                                              )}
+                                            </div>
+                                          </div>
+                                        </div>
+                                      </div>
+                                    )}
+
+                                  {/* Flag Information */}
+                                  {activeTab === "flagged" && question.flag_info && (
                                     <div className="flex gap-2">
                                       <div className="w-6 flex-shrink-0" />
-                                      <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 dark:border-blue-600 rounded-md flex-1">
+                                      <div className="p-3 bg-orange-50 dark:bg-orange-950/30 border-l-4 border-orange-500 dark:border-orange-600 rounded-md flex-1">
                                         <div className="flex items-start gap-2">
                                           <div className="flex-1 min-w-0">
-                                            <span className="text-xs font-medium text-blue-900 dark:text-blue-100 block mb-1">
-                                              Previous Changes Made
+                                            <span className="text-xs font-medium text-orange-900 dark:text-orange-100 block mb-1">
+                                              Flagged Issue:{" "}
+                                              {
+                                                FLAG_TYPE_CONFIG[
+                                                  question.flag_info
+                                                    .flag_type as keyof typeof FLAG_TYPE_CONFIG
+                                                ]?.label
+                                              }
                                             </span>
-                                            <p className="text-xs text-blue-800 dark:text-blue-300">
-                                              {question.resubmission_notes}
-                                            </p>
-                                            {question.resubmission_date && (
-                                              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                                {formatDistanceToNow(
-                                                  new Date(question.resubmission_date)
-                                                )}{" "}
-                                                ago
+                                            {question.flag_info.description && (
+                                              <p className="text-xs text-orange-800 dark:text-orange-300 mb-2">
+                                                {question.flag_info.description}
                                               </p>
                                             )}
+                                            <p className="text-xs text-orange-600 dark:text-orange-400">
+                                              Flagged by {question.flag_info.flagged_by_name}{" "}
+                                              {formatDistanceToNow(
+                                                new Date(question.flag_info.created_at)
+                                              )}{" "}
+                                              ago
+                                            </p>
                                           </div>
                                         </div>
                                       </div>
@@ -775,6 +896,15 @@ export default function MyQuestionsPage() {
                                     Preview
                                   </Button>
                                   {activeTab === "revision" && (
+                                    <Button
+                                      size="sm"
+                                      onClick={() => handleEditAndResubmit(question.id)}
+                                    >
+                                      <Edit3 className="h-4 w-4 mr-1" />
+                                      Edit & Resubmit
+                                    </Button>
+                                  )}
+                                  {activeTab === "flagged" && (
                                     <Button
                                       size="sm"
                                       onClick={() => handleEditAndResubmit(question.id)}

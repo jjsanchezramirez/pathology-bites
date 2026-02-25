@@ -32,18 +32,21 @@ export default function AdminDashboardPage() {
   // - Eliminates race conditions through proper enabled flags
   // - Provides proper error handling
   // - No manual useEffect needed
-  const { stats, activities, isLoading: dataLoading, error } = useDashboardData(
-    role,
-    user?.id,
-    roleLoading
-  );
+  const {
+    stats,
+    activities,
+    isLoading: dataLoading,
+    error,
+  } = useDashboardData(role, user?.id, roleLoading);
 
   // Compute effective role for UI (quick actions only)
   // This is NOT used for data fetching (eliminates stale closure issues)
   const effectiveRole = adminMode === "user" ? "user" : adminMode;
 
   // Get quick actions based on stats and effective role
-  const quickActions = stats ? clientDashboardService.getQuickActions(stats, effectiveRole as UserRole) : [];
+  const quickActions = stats
+    ? clientDashboardService.getQuickActions(stats, effectiveRole as UserRole)
+    : [];
 
   // Single loading state: transitioning OR data loading OR data not ready OR adminMode is "user"
   // Note: adminMode === "user" on the admin page means we're transitioning to student mode

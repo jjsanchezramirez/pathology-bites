@@ -57,6 +57,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   const [educationalContext, setEducationalContext] = useState<EducationalContent | null>(null);
   const [assignedReviewerId, setAssignedReviewerId] = useState<string | null>(null);
   const [selectedReviewerId, setSelectedReviewerId] = useState<string>("");
+  const [isSubmittingForReview, setIsSubmittingForReview] = useState(false);
   const [reviewers, setReviewers] = useState<
     Array<{ id: string; name: string; full_name: string; pending_count: number }>
   >([]);
@@ -362,6 +363,12 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
     setAssignedReviewerId(selectedReviewerId);
     setReviewerId(selectedReviewerId);
 
+    // If we're submitting for review, set status to pending_review
+    if (isSubmittingForReview) {
+      form.setValue("status", "pending_review");
+      setIsSubmittingForReview(false); // Reset flag
+    }
+
     // Set flag to delay navigation and allow sidebar to update
     skipNavigationRef.current = true;
 
@@ -378,6 +385,14 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   // Handle save and submit for review
   const handleSaveAndSubmit = async () => {
     try {
+      // Check if question has a reviewer assigned
+      if (!question?.reviewer_id && !assignedReviewerId) {
+        // No reviewer assigned - show reviewer selection dialog and mark as submitting
+        setIsSubmittingForReview(true);
+        setShowReviewerDialog(true);
+        return;
+      }
+
       // Set status to pending_review
       form.setValue("status", "pending_review");
 
@@ -475,6 +490,14 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
         variant: "default" as const,
         title: "Editing Draft",
         description: "This question has not been submitted for review yet.",
+      };
+    }
+    if (question.status === "flagged") {
+      return {
+        variant: "default" as const,
+        title: "Editing Flagged Question",
+        description:
+          "This question was flagged for review. Make necessary changes and resubmit for review.",
       };
     }
     if (question.status === "published") {
@@ -693,13 +716,23 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       )}
 
       {/* Reviewer Assignment Dialog */}
-      <Dialog open={showReviewerDialog} onOpenChange={setShowReviewerDialog}>
+      <Dialog
+        open={showReviewerDialog}
+        onOpenChange={(open) => {
+          setShowReviewerDialog(open);
+          if (!open) {
+            // Reset the submitting for review flag when dialog closes
+            setIsSubmittingForReview(false);
+          }
+        }}
+      >
         <DialogContent className="sm:max-w-[500px]">
           <DialogHeader>
             <DialogTitle>Assign Reviewer</DialogTitle>
             <DialogDescription>
-              This {form.getValues("updateType")} edit requires review. Please select a reviewer to
-              evaluate these changes.
+              {isSubmittingForReview
+                ? "Please select a reviewer to evaluate this question."
+                : `This ${form.getValues("updateType")} edit requires review. Please select a reviewer to evaluate these changes.`}
             </DialogDescription>
           </DialogHeader>
 

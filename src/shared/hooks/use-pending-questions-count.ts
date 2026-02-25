@@ -10,6 +10,8 @@ interface PendingCounts {
   revisionQueueCount: number; // rejected questions for creators
   reviewQueueCount: number; // pending_review questions for reviewers
   draftsCount: number; // draft questions for creators
+  flaggedCount: number; // flagged questions for creators
+  myQuestionsCount: number; // combined count: drafts + rejected + flagged
 }
 
 export function usePendingQuestionsCount() {
@@ -17,6 +19,8 @@ export function usePendingQuestionsCount() {
     revisionQueueCount: 0,
     reviewQueueCount: 0,
     draftsCount: 0,
+    flaggedCount: 0,
+    myQuestionsCount: 0,
   });
   const [loading, setLoading] = useState(true);
   const { user } = useAuthContext();
@@ -51,10 +55,22 @@ export function usePendingQuestionsCount() {
         .eq("created_by", user.id)
         .eq("status", "draft");
 
+      // Fetch flagged questions count (for creators)
+      const { count: flaggedCount } = await supabase
+        .from("questions")
+        .select("*", { count: "exact", head: true })
+        .eq("created_by", user.id)
+        .eq("status", "flagged");
+
+      // Calculate combined count for "My Questions" badge
+      const myQuestionsTotal = (draftsCount || 0) + (rejectedCount || 0) + (flaggedCount || 0);
+
       setCounts({
         revisionQueueCount: rejectedCount || 0,
         reviewQueueCount: pendingReviewCount || 0,
         draftsCount: draftsCount || 0,
+        flaggedCount: flaggedCount || 0,
+        myQuestionsCount: myQuestionsTotal,
       });
     } catch (error) {
       console.error("Error fetching pending questions count:", error);

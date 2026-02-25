@@ -91,14 +91,35 @@ export function PerformanceTimelineChart({
     const c = (1 - Math.abs(2 * l - 1)) * s;
     const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
     const m = l - c / 2;
-    let r = 0, g = 0, b = 0;
+    let r = 0,
+      g = 0,
+      b = 0;
 
-    if (h >= 0 && h < 60) { r = c; g = x; b = 0; }
-    else if (h >= 60 && h < 120) { r = x; g = c; b = 0; }
-    else if (h >= 120 && h < 180) { r = 0; g = c; b = x; }
-    else if (h >= 180 && h < 240) { r = 0; g = x; b = c; }
-    else if (h >= 240 && h < 300) { r = x; g = 0; b = c; }
-    else if (h >= 300 && h < 360) { r = c; g = 0; b = x; }
+    if (h >= 0 && h < 60) {
+      r = c;
+      g = x;
+      b = 0;
+    } else if (h >= 60 && h < 120) {
+      r = x;
+      g = c;
+      b = 0;
+    } else if (h >= 120 && h < 180) {
+      r = 0;
+      g = c;
+      b = x;
+    } else if (h >= 180 && h < 240) {
+      r = 0;
+      g = x;
+      b = c;
+    } else if (h >= 240 && h < 300) {
+      r = x;
+      g = 0;
+      b = c;
+    } else if (h >= 300 && h < 360) {
+      r = c;
+      g = 0;
+      b = x;
+    }
 
     const toHex = (n: number) => {
       const hex = Math.round((n + m) * 255).toString(16);
@@ -269,14 +290,35 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
     const c = (1 - Math.abs(2 * l - 1)) * s;
     const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
     const m = l - c / 2;
-    let r = 0, g = 0, b = 0;
+    let r = 0,
+      g = 0,
+      b = 0;
 
-    if (h >= 0 && h < 60) { r = c; g = x; b = 0; }
-    else if (h >= 60 && h < 120) { r = x; g = c; b = 0; }
-    else if (h >= 120 && h < 180) { r = 0; g = c; b = x; }
-    else if (h >= 180 && h < 240) { r = 0; g = x; b = c; }
-    else if (h >= 240 && h < 300) { r = x; g = 0; b = c; }
-    else if (h >= 300 && h < 360) { r = c; g = 0; b = x; }
+    if (h >= 0 && h < 60) {
+      r = c;
+      g = x;
+      b = 0;
+    } else if (h >= 60 && h < 120) {
+      r = x;
+      g = c;
+      b = 0;
+    } else if (h >= 120 && h < 180) {
+      r = 0;
+      g = c;
+      b = x;
+    } else if (h >= 180 && h < 240) {
+      r = 0;
+      g = x;
+      b = c;
+    } else if (h >= 240 && h < 300) {
+      r = x;
+      g = 0;
+      b = c;
+    } else if (h >= 300 && h < 360) {
+      r = c;
+      g = 0;
+      b = x;
+    }
 
     const toHex = (n: number) => {
       const hex = Math.round((n + m) * 255).toString(16);
@@ -681,27 +723,19 @@ export function ActivityHeatmap({
               stats.currentStreak > 0) && (
               <div className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-sm border-b pb-4">
                 <div className="text-center">
-                  <div className="font-semibold text-primary">
-                    {stats.avgQuestionsPerDay}
-                  </div>
+                  <div className="font-semibold text-primary">{stats.avgQuestionsPerDay}</div>
                   <div className="text-xs text-muted-foreground">Avg/day</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-primary">
-                    {stats.avgQuizzesPerDay}
-                  </div>
+                  <div className="font-semibold text-primary">{stats.avgQuizzesPerDay}</div>
                   <div className="text-xs text-muted-foreground">Quizzes/day</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-primary">
-                    {stats.longestStreak}
-                  </div>
+                  <div className="font-semibold text-primary">{stats.longestStreak}</div>
                   <div className="text-xs text-muted-foreground">Longest</div>
                 </div>
                 <div className="text-center">
-                  <div className="font-semibold text-primary">
-                    {stats.currentStreak}
-                  </div>
+                  <div className="font-semibold text-primary">{stats.currentStreak}</div>
                   <div className="text-xs text-muted-foreground">Current</div>
                 </div>
               </div>

@@ -70,6 +70,8 @@ const eslintConfig = [
       "build/**",
       "next-env.d.ts",
       "dev/scripts/**",
+      "public/ffmpeg/**",
+      "src/app/test/**",
       // Allow direct sonner imports only in utility wrapper, UI component, and root layout
       "src/shared/utils/toast.ts",
       "src/shared/components/ui/sonner.tsx",

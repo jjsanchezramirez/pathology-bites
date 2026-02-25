@@ -107,13 +107,15 @@ export async function GET() {
     const cachedMetrics = await getCachedStorageMetrics(undefined, supabaseAdmin);
 
     // Find metrics for each bucket
-    const imagesBucket = cachedMetrics.find(
-      (m) => m.bucketName === "pathology-bites-images"
-    ) || { totalSize: 0, objectCount: 0 };
+    const imagesBucket = cachedMetrics.find((m) => m.bucketName === "pathology-bites-images") || {
+      totalSize: 0,
+      objectCount: 0,
+    };
 
-    const dataBucket = cachedMetrics.find(
-      (m) => m.bucketName === "pathology-bites-data"
-    ) || { totalSize: 0, objectCount: 0 };
+    const dataBucket = cachedMetrics.find((m) => m.bucketName === "pathology-bites-data") || {
+      totalSize: 0,
+      objectCount: 0,
+    };
 
     const totalUsedBytes = imagesBucket.totalSize + dataBucket.totalSize;
     const totalR2LimitBytes = 10737418240; // 10GB in bytes

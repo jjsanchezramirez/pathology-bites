@@ -87,7 +87,8 @@ export function UnifiedSidebar({
   const { canAccess, isAdmin, isLoading } = useUserRole();
   const { adminMode, isTransitioning } = useDashboardTheme();
   const { count: pendingInquiriesCount } = usePendingInquiriesCount();
-  const { revisionQueueCount, reviewQueueCount, draftsCount } = usePendingQuestionsCount();
+  const { revisionQueueCount, reviewQueueCount, draftsCount, myQuestionsCount } =
+    usePendingQuestionsCount();
   // Always show navigation immediately, but filter based on loading state and admin mode
   const filteredSections = filterNavigationSections(
     navigationSections,
@@ -212,6 +213,14 @@ export function UnifiedSidebar({
                               draftsCount > 0 && (
                                 <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
                                   {draftsCount}
+                                </span>
+                              )}
+                            {isOpen &&
+                              item.showBadge &&
+                              item.badgeKey === "myQuestions" &&
+                              myQuestionsCount > 0 && (
+                                <span className="ml-auto text-xs bg-amber-500 text-white px-2 py-0.5 rounded-full font-semibold">
+                                  {myQuestionsCount}
                                 </span>
                               )}
                             {isOpen &&

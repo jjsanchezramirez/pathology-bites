@@ -76,7 +76,12 @@ export function useDashboardActivities(
   const { data, error, isLoading, mutate } = useSWR<RecentActivity[]>(
     cacheKey,
     async () => {
-      console.log("[useDashboardActivities] Fetching activities for role:", role, "userId:", userId);
+      console.log(
+        "[useDashboardActivities] Fetching activities for role:",
+        role,
+        "userId:",
+        userId
+      );
       const activities = await clientDashboardService.getRecentActivity(role, userId);
       console.log("[useDashboardActivities] ✅ Activities loaded:", activities.length);
       return activities;

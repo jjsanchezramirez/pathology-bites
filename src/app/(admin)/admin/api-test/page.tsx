@@ -97,9 +97,7 @@ export default function ApiTestPage() {
           <CardHeader>
             <CardTitle className="flex justify-between items-center">
               <span>Response</span>
-              <span className="text-sm font-normal text-muted-foreground">
-                {response.time}
-              </span>
+              <span className="text-sm font-normal text-muted-foreground">{response.time}</span>
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">

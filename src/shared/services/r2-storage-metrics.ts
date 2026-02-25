@@ -1,6 +1,7 @@
 // src/shared/services/r2-storage-metrics.ts
 
 import { createClient } from "@/shared/services/server";
+import type { SupabaseClient } from "@supabase/supabase-js";
 
 /**
  * Increment storage metrics after successful upload
@@ -13,7 +14,7 @@ export async function incrementStorageMetrics(
   sizeBytes: number
 ): Promise<void> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { error } = await supabase.rpc("increment_r2_metrics", {
       p_bucket_name: bucketName,
@@ -43,7 +44,7 @@ export async function decrementStorageMetrics(
   sizeBytes: number
 ): Promise<void> {
   try {
-    const supabase = createClient();
+    const supabase = await createClient();
 
     const { error } = await supabase.rpc("decrement_r2_metrics", {
       p_bucket_name: bucketName,
@@ -70,7 +71,7 @@ export async function decrementStorageMetrics(
  */
 export async function getCachedStorageMetrics(
   bucketName?: string,
-  supabaseClient?: ReturnType<typeof createClient>
+  supabaseClient?: SupabaseClient<any>
 ): Promise<
   Array<{
     bucketName: string;
@@ -79,7 +80,7 @@ export async function getCachedStorageMetrics(
     lastUpdated: string;
   }>
 > {
-  const supabase = supabaseClient || createClient();
+  const supabase = supabaseClient || (await createClient());
 
   let query = supabase
     .from("r2_storage_metrics")

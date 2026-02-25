@@ -33,7 +33,10 @@ class ClientDashboardService {
 
     // Log view error for debugging
     if (viewError) {
-      console.warn("[getDashboardStats] View query failed, falling back to individual queries:", viewError);
+      console.warn(
+        "[getDashboardStats] View query failed, falling back to individual queries:",
+        viewError
+      );
     }
 
     // Fallback to individual queries if view fails
@@ -69,7 +72,9 @@ class ClientDashboardService {
     if (allFailed) {
       const firstError = results[0].status === "rejected" ? results[0].reason : "Unknown error";
       console.error("[getDashboardStats] All stats queries failed:", firstError);
-      throw new Error("Failed to load dashboard statistics. Please check your connection and try again.");
+      throw new Error(
+        "Failed to load dashboard statistics. Please check your connection and try again."
+      );
     }
 
     // Log individual failures for debugging
@@ -82,9 +87,7 @@ class ClientDashboardService {
     // Extract counts, defaulting to 0 if query failed
     const getCounts = (index: number) => {
       const result = results[index];
-      return result.status === "fulfilled" && result.value.count !== null
-        ? result.value.count
-        : 0;
+      return result.status === "fulfilled" && result.value.count !== null ? result.value.count : 0;
     };
 
     return {
@@ -108,7 +111,12 @@ class ClientDashboardService {
     try {
       const activities: RecentActivity[] = [];
 
-      console.log("[DashboardService] getRecentActivity called with role:", userRole, "userId:", userId);
+      console.log(
+        "[DashboardService] getRecentActivity called with role:",
+        userRole,
+        "userId:",
+        userId
+      );
 
       // Role-based activity filtering
       if (userRole === "admin") {
@@ -125,7 +133,9 @@ class ClientDashboardService {
         await this.getReviewerActivities(activities, userId);
       } else {
         // Default: get general recent questions
-        console.log("[DashboardService] Fetching GENERAL activities (questions only - NO users/inquiries)");
+        console.log(
+          "[DashboardService] Fetching GENERAL activities (questions only - NO users/inquiries)"
+        );
         await this.getGeneralActivities(activities);
       }
 
@@ -134,8 +144,12 @@ class ClientDashboardService {
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 10);
 
-      console.log("[DashboardService] Returning", sortedActivities.length, "activities. Types:",
-        sortedActivities.map(a => a.type).join(", "));
+      console.log(
+        "[DashboardService] Returning",
+        sortedActivities.length,
+        "activities. Types:",
+        sortedActivities.map((a) => a.type).join(", ")
+      );
 
       return sortedActivities;
     } catch (error) {

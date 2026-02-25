@@ -22,7 +22,11 @@ interface SimpleImageCarouselProps {
 }
 
 // Internal component that can throw errors
-function SimpleImageCarouselInternal({ images, className = "", resetKey }: SimpleImageCarouselProps) {
+function SimpleImageCarouselInternal({
+  images,
+  className = "",
+  resetKey,
+}: SimpleImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [imageLoading, setImageLoading] = useState(true);
   const isMobile = useMobile();
@@ -157,7 +161,11 @@ function SimpleImageCarouselInternal({ images, className = "", resetKey }: Simpl
 }
 
 // Exported component with error boundary
-export function SimpleImageCarousel({ images, className = "", resetKey }: SimpleImageCarouselProps) {
+export function SimpleImageCarousel({
+  images,
+  className = "",
+  resetKey,
+}: SimpleImageCarouselProps) {
   return (
     <SilentErrorBoundary
       maxRetries={2}

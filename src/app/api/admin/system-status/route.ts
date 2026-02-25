@@ -247,7 +247,10 @@ export async function GET(request: Request) {
     if (monthlyActiveUsers.status === "fulfilled" && monthlyActiveUsers.value.data !== null) {
       activeUsersMonthly = Number(monthlyActiveUsers.value.data) || 0;
     } else if (monthlyActiveUsers.status === "rejected") {
-      console.error("[System Status] Monthly active users query failed:", monthlyActiveUsers.reason);
+      console.error(
+        "[System Status] Monthly active users query failed:",
+        monthlyActiveUsers.reason
+      );
     }
 
     const systemHealth: SystemHealth = {

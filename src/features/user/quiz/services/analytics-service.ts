@@ -32,10 +32,7 @@ export class QuizAnalyticsService {
    * Update analytics for all questions in a completed quiz session
    * Uses a SECURITY DEFINER database function to bypass RLS policies
    */
-  async updateQuizSessionAnalytics(
-    sessionId: string,
-    questionIds?: string[]
-  ): Promise<void> {
+  async updateQuizSessionAnalytics(sessionId: string, questionIds?: string[]): Promise<void> {
     try {
       console.log("[Analytics] Starting batch analytics update for session:", sessionId);
 
