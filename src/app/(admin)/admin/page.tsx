@@ -45,8 +45,9 @@ export default function AdminDashboardPage() {
   // Get quick actions based on stats and effective role
   const quickActions = stats ? clientDashboardService.getQuickActions(stats, effectiveRole as UserRole) : [];
 
-  // Single loading state: transitioning OR data loading OR data not ready
-  const isLoading = isTransitioning || dataLoading || !stats || !activities;
+  // Single loading state: transitioning OR data loading OR data not ready OR adminMode is "user"
+  // Note: adminMode === "user" on the admin page means we're transitioning to student mode
+  const isLoading = isTransitioning || dataLoading || !stats || !activities || adminMode === "user";
 
   // Clear transition flag when data is ready
   useEffect(() => {
@@ -61,8 +62,8 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-6">
-      {/* Hide content completely when transitioning to avoid title flickering */}
-      {isTransitioning ? (
+      {/* Hide content completely when transitioning OR when adminMode is "user" to avoid title flickering */}
+      {isTransitioning || adminMode === "user" ? (
         <>
           {/* Title skeleton */}
           <div className="space-y-2">
@@ -94,18 +95,14 @@ export default function AdminDashboardPage() {
                 ? "Creator Dashboard"
                 : adminMode === "reviewer"
                   ? "Reviewer Dashboard"
-                  : adminMode === "user"
-                    ? "Student Dashboard"
-                    : "Admin Dashboard"}
+                  : "Admin Dashboard"}
             </h1>
             <p className="text-muted-foreground" suppressHydrationWarning>
               {adminMode === "creator"
                 ? "Question creation and content management."
                 : adminMode === "reviewer"
                   ? "Review queue and question approval."
-                  : adminMode === "user"
-                    ? "Learning progress and quiz performance."
-                    : "Administrative overview and system management."}
+                  : "Administrative overview and system management."}
             </p>
           </div>
 
