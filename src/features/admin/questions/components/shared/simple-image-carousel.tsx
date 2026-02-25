@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useMobile } from "@/shared/hooks/use-mobile";
 import { SilentErrorBoundary } from "@/shared/components/error-boundaries/silent-error-boundary";
 
@@ -16,21 +16,32 @@ interface ImageProps {
 interface SimpleImageCarouselProps {
   images: ImageProps[];
   className?: string;
+  // Optional key to force reset when context changes (e.g., new question)
+  // Without this, carousel maintains state across different image sets
+  resetKey?: string;
 }
 
 // Internal component that can throw errors
-function SimpleImageCarouselInternal({ images, className = "" }: SimpleImageCarouselProps) {
+function SimpleImageCarouselInternal({ images, className = "", resetKey }: SimpleImageCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [imageLoading, setImageLoading] = useState(true);
   const isMobile = useMobile();
 
-  // Get the current image for hook usage
-  const currentImage = images && images.length > 0 ? images[currentIndex] : null;
+  // Ensure currentIndex is within bounds (defensive programming)
+  const safeIndex = Math.min(currentIndex, images.length - 1);
+  const currentImage = images && images.length > 0 ? images[safeIndex] : null;
   const handleImageLoad = useImageCacheHandler(currentImage?.url || "");
 
-  // Reset to first image when images array changes (e.g., new question)
+  // Reset to first image only when resetKey changes (e.g., new question)
+  // This prevents unwanted resets when the same images are re-rendered
   useEffect(() => {
     setCurrentIndex(0);
-  }, [images]);
+  }, [resetKey]);
+
+  // Set loading state when image changes
+  useEffect(() => {
+    setImageLoading(true);
+  }, [currentIndex, images]);
 
   if (!images || images.length === 0) return null;
 
@@ -51,6 +62,13 @@ function SimpleImageCarouselInternal({ images, className = "" }: SimpleImageCaro
         className="relative rounded-lg overflow-hidden bg-muted group cursor-default"
         style={{ aspectRatio: "16/10" }}
       >
+        {/* Loading spinner overlay */}
+        {imageLoading && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted z-10">
+            <Loader2 className="w-8 h-8 text-muted-foreground animate-spin" />
+          </div>
+        )}
+
         {currentImage?.url ? (
           <Image
             src={currentImage.url}
@@ -59,7 +77,10 @@ function SimpleImageCarouselInternal({ images, className = "" }: SimpleImageCaro
             className="object-contain"
             sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
             unoptimized={true}
-            onLoad={handleImageLoad}
+            onLoad={() => {
+              handleImageLoad();
+              setImageLoading(false);
+            }}
           />
         ) : (
           <div className="w-full h-full flex items-center justify-center bg-muted text-muted-foreground">
@@ -136,7 +157,7 @@ function SimpleImageCarouselInternal({ images, className = "" }: SimpleImageCaro
 }
 
 // Exported component with error boundary
-export function SimpleImageCarousel({ images, className = "" }: SimpleImageCarouselProps) {
+export function SimpleImageCarousel({ images, className = "", resetKey }: SimpleImageCarouselProps) {
   return (
     <SilentErrorBoundary
       maxRetries={2}
@@ -147,7 +168,7 @@ export function SimpleImageCarousel({ images, className = "" }: SimpleImageCarou
         console.warn(`SimpleImageCarousel error (attempt ${retryCount + 1}):`, error.message);
       }}
     >
-      <SimpleImageCarouselInternal images={images} className={className} />
+      <SimpleImageCarouselInternal images={images} className={className} resetKey={resetKey} />
     </SilentErrorBoundary>
   );
 }

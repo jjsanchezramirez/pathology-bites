@@ -59,6 +59,7 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                     caption: si.image?.description || undefined,
                   }))}
                 className="border rounded-lg"
+                resetKey={`stem-${question.id}`}
               />
             </div>
           )}
@@ -155,6 +156,7 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                         caption: ei.image?.description || undefined,
                       }))}
                     className="bg-white border rounded-lg"
+                    resetKey={`explanation-${question.id}`}
                   />
                 </div>
               )}
