@@ -56,15 +56,17 @@ $$;
 
 ### 2. fix-materialized-view-rls-policies.sql
 
-**Purpose**: Secures `user_stats_computed` materialized view with RLS
+**Purpose**: Secures `user_stats_computed` materialized view with access control
 
 **Changes**:
-1. Creates `user_stats_secure` view wrapper with RLS
+1. Creates `user_stats_secure` view wrapper with WHERE clause filtering
 2. Revokes direct access to materialized view
-3. Implements policies:
-   - Users can only see their own stats
-   - Service role can see all stats (admin operations)
+3. Implements access control via view filtering:
+   - Users can only see their own stats (`WHERE user_id = auth.uid()`)
+   - Service role can query materialized view directly (admin operations)
 4. Adds `refresh_user_stats()` function for admin refresh
+
+**Note**: PostgreSQL views don't support RLS policies. Access control is implemented via WHERE clause in the view definition.
 
 **Security Improvement**:
 ```sql
@@ -72,9 +74,9 @@ $$;
 SELECT * FROM user_stats_computed;
 -- Returns ALL users' statistics
 
--- After (SECURE - RLS enforced)
+-- After (SECURE - filtered by current user)
 SELECT * FROM user_stats_secure;
--- Returns only current user's statistics
+-- Returns only current user's statistics (WHERE user_id = auth.uid())
 ```
 
 **Risk Level**: High
@@ -142,17 +144,14 @@ AND p.proname IN (
 )
 ORDER BY p.proname;
 
--- Check materialized view access is restricted
+-- Check secure view exists and has WHERE clause filtering
 SELECT
-    tablename,
-    policyname,
-    permissive,
-    roles,
-    cmd,
-    qual
-FROM pg_policies
+    viewname,
+    definition
+FROM pg_views
 WHERE schemaname = 'public'
-AND tablename = 'user_stats_secure';
+AND viewname = 'user_stats_secure';
+-- Should show: WHERE (user_id = auth.uid())
 
 -- Verify direct materialized view access is revoked for authenticated users
 SELECT
@@ -184,9 +183,9 @@ This prevents users from setting passwords that have been compromised in data br
 
 ### After Fixes
 - ✅ All functions use immutable `search_path`
-- ✅ User statistics protected by RLS
+- ✅ User statistics protected by view filtering (WHERE user_id = auth.uid())
 - ✅ Only users can see their own data
-- ✅ Admins retain full access via service role
+- ✅ Admins retain full access via service role (direct materialized view access)
 - ⚠️ Leaked password protection still requires dashboard config
 
 ## Testing

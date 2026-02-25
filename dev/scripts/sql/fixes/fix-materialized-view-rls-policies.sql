@@ -20,7 +20,8 @@ ALTER MATERIALIZED VIEW IF EXISTS public.user_stats_computed
 -- Drop existing view if it exists
 DROP VIEW IF EXISTS public.user_stats_secure CASCADE;
 
--- Create a regular view that wraps the materialized view with RLS
+-- Create a regular view that wraps the materialized view with access control
+-- Note: Views don't support RLS policies in PostgreSQL, but we can filter directly
 CREATE OR REPLACE VIEW public.user_stats_secure
 WITH (security_invoker = true)
 AS
@@ -40,28 +41,21 @@ SELECT
     current_streak,
     longest_streak,
     last_updated
-FROM public.user_stats_computed;
+FROM public.user_stats_computed
+WHERE user_id = auth.uid();  -- Filter to current user only
 
--- Enable RLS on the view
+-- Enable security_invoker on the view
 ALTER VIEW public.user_stats_secure SET (security_invoker = true);
 
 -- ==============================================================================
--- RLS POLICIES FOR SECURE VIEW
+-- ACCESS CONTROL VIA VIEW FILTERING
 -- ==============================================================================
 
--- Policy 1: Users can only see their own stats
-CREATE POLICY "Users can view their own stats"
-    ON public.user_stats_secure
-    FOR SELECT
-    TO authenticated
-    USING (user_id = auth.uid());
-
--- Policy 2: Service role can see all stats (for admin operations)
-CREATE POLICY "Service role can view all stats"
-    ON public.user_stats_secure
-    FOR SELECT
-    TO service_role
-    USING (true);
+-- Note: Views don't support RLS policies directly in PostgreSQL
+-- Access control is implemented via WHERE clause in the view definition
+-- Users can only see their own stats (WHERE user_id = auth.uid())
+-- Service role bypasses this restriction and can query the underlying
+-- materialized view directly for admin operations
 
 -- ==============================================================================
 -- REVOKE DIRECT ACCESS TO MATERIALIZED VIEW
@@ -132,8 +126,8 @@ SELECT cron.schedule(
 
 COMMENT ON VIEW public.user_stats_secure IS
   'Secure view wrapper for user_stats_computed materialized view.
-   Provides RLS-protected access to user statistics.
-   Users can only see their own stats; service_role can see all.';
+   Filters data to current user via WHERE user_id = auth.uid().
+   Users can only see their own stats; service_role queries materialized view directly.';
 
 COMMENT ON MATERIALIZED VIEW public.user_stats_computed IS
   'Precomputed user statistics for performance.
@@ -147,7 +141,6 @@ COMMENT ON MATERIALIZED VIEW public.user_stats_computed IS
 DO $$
 DECLARE
     view_exists boolean;
-    policy_count integer;
 BEGIN
     -- Check if secure view exists
     SELECT EXISTS (
@@ -157,18 +150,11 @@ BEGIN
         AND viewname = 'user_stats_secure'
     ) INTO view_exists;
 
-    -- Count RLS policies (Note: Views don't have traditional RLS in PostgreSQL)
-    -- This is just for documentation
-    SELECT COUNT(*)
-    INTO policy_count
-    FROM pg_policies
-    WHERE schemaname = 'public'
-    AND tablename = 'user_stats_secure';
-
     IF view_exists THEN
         RAISE NOTICE 'Successfully created secure view wrapper for user_stats_computed';
+        RAISE NOTICE 'View filters data to current user via WHERE user_id = auth.uid()';
         RAISE NOTICE 'Direct access to materialized view restricted to service_role';
-        RAISE NOTICE 'Use user_stats_secure view for RLS-protected access';
+        RAISE NOTICE 'Use user_stats_secure view for filtered access';
     ELSE
         RAISE WARNING 'Failed to create secure view wrapper';
     END IF;
