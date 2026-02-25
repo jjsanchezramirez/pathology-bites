@@ -30,7 +30,14 @@ export function useImageUpload({
   }, []);
 
   const uploadFiles = useCallback(
-    async (files: File[], category: ImageCategory, sourceRef?: string, description?: string) => {
+    async (
+      files: File[],
+      category: ImageCategory,
+      sourceRef?: string,
+      description?: string,
+      magnification?: string,
+      pathologyCategory?: string
+    ) => {
       if (files.length === 0) return;
 
       // ✅ Removed the mandatory sourceRef check for 'figure' or 'table'.
@@ -100,6 +107,8 @@ export function useImageUpload({
             formData.append("category", category);
             if (sourceRef) formData.append("sourceRef", sourceRef);
             if (description) formData.append("description", description);
+            if (magnification) formData.append("magnification", magnification);
+            if (pathologyCategory) formData.append("pathologyCategory", pathologyCategory);
 
             updateFileProgress(file.name, { progress: 60 });
 

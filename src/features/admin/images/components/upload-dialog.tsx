@@ -1,8 +1,9 @@
 import { useState, useCallback, useEffect } from "react";
-import { Image as ImageIcon, Loader2 } from "lucide-react";
+import { Image as ImageIcon, Loader2, X } from "lucide-react";
 import { Progress } from "@/shared/components/ui/progress";
 import { Label } from "@/shared/components/ui/label";
 import { Input } from "@/shared/components/ui/input";
+import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -26,12 +27,17 @@ import {
 } from "@/shared/types/images";
 import { getCategoryDescription, formatSize } from "@/features/admin/images/services/image-upload";
 import { useImageUpload } from "@/features/admin/images/hooks/use-image-upload";
+import { CATEGORIES } from "@/shared/config/categories";
+
+const MAGNIFICATIONS = ["2x", "5x", "10x", "20x", "40x", "50x", "60x"] as const;
 
 export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps) {
   const [isDragging, setIsDragging] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<ImageCategory>("microscopic");
   const [sourceRef, setSourceRef] = useState("");
   const [description, setDescription] = useState("");
+  const [magnification, setMagnification] = useState<string>("");
+  const [pathologyCategory, setPathologyCategory] = useState<string>("");
 
   const { isUploading, fileProgress, uploadFiles, resetProgress } = useImageUpload({
     onUploadComplete: onUpload,
@@ -45,6 +51,8 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
       setSourceRef("");
       setDescription("");
       setSelectedCategory("microscopic");
+      setMagnification("");
+      setPathologyCategory("");
     }
   }, [open, resetProgress]);
 
@@ -52,9 +60,16 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
   const handleFileChange = useCallback(
     (event: React.ChangeEvent<HTMLInputElement>) => {
       const files = Array.from(event.target.files || []);
-      uploadFiles(files, selectedCategory, sourceRef, description);
+      uploadFiles(
+        files,
+        selectedCategory,
+        sourceRef,
+        description,
+        magnification,
+        pathologyCategory
+      );
     },
-    [uploadFiles, selectedCategory, sourceRef, description]
+    [uploadFiles, selectedCategory, sourceRef, description, magnification, pathologyCategory]
   );
 
   // Handle drag and drop events
@@ -82,14 +97,25 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
       setIsDragging(false);
 
       const files = Array.from(e.dataTransfer.files);
-      uploadFiles(files, selectedCategory, sourceRef, description);
+      uploadFiles(
+        files,
+        selectedCategory,
+        sourceRef,
+        description,
+        magnification,
+        pathologyCategory
+      );
     },
-    [uploadFiles, selectedCategory, sourceRef, description]
+    [uploadFiles, selectedCategory, sourceRef, description, magnification, pathologyCategory]
   );
 
   const handleCategoryChange = useCallback((value: string) => {
-    setSelectedCategory(value as ImageCategory);
-    // Keep source ref for all categories now
+    const newCategory = value as ImageCategory;
+    setSelectedCategory(newCategory);
+    // Reset magnification if switching to figure/table
+    if (newCategory === "figure" || newCategory === "table") {
+      setMagnification("");
+    }
   }, []);
 
   return (
@@ -109,25 +135,121 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
           </DialogHeader>
 
           <div className="space-y-4">
-            {/* Category Selection */}
-            <div className="space-y-2">
-              <Label>Image Category</Label>
-              <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-                <SelectTrigger className="w-full">
-                  <SelectValue placeholder="Select category" />
-                </SelectTrigger>
-                <SelectContent>
-                  {Object.entries(IMAGE_CATEGORIES).map(([value, label]) => (
-                    <SelectItem key={value} value={value}>
-                      {label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <p className="text-sm text-muted-foreground">
-                {getCategoryDescription(selectedCategory)}
-              </p>
+            {/* Two Column Layout for Image Category and Pathology Category */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Image Category Selection */}
+              <div className="space-y-2">
+                <Label>Image Category</Label>
+                <Select value={selectedCategory} onValueChange={handleCategoryChange}>
+                  <SelectTrigger className="w-full">
+                    <SelectValue placeholder="Select category" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {Object.entries(IMAGE_CATEGORIES).map(([value, label]) => (
+                      <SelectItem key={value} value={value}>
+                        {label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <p className="text-xs text-muted-foreground">
+                  {getCategoryDescription(selectedCategory)}
+                </p>
+              </div>
+
+              {/* Pathology Category Input */}
+              <div className="space-y-2">
+                <Label htmlFor="pathologyCategory">Pathology Category (Optional)</Label>
+                <div className="flex gap-2">
+                  <Select value={pathologyCategory} onValueChange={setPathologyCategory}>
+                    <SelectTrigger id="pathologyCategory" className="w-full">
+                      <SelectValue placeholder="Select pathology category" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {CATEGORIES.filter((cat) => cat.level === 2).map((category) => (
+                        <SelectItem key={category.id} value={category.id}>
+                          {category.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {pathologyCategory && (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      onClick={() => setPathologyCategory("")}
+                      className="shrink-0"
+                      title="Remove pathology category"
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  )}
+                </div>
+                <p className="text-xs text-muted-foreground">BST, GI, Heme, etc.</p>
+              </div>
             </div>
+
+            {/* Magnification and Source - Conditional Layout */}
+            {selectedCategory === "microscopic" ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {/* Magnification - Only for microscopic images */}
+                <div className="space-y-2">
+                  <Label htmlFor="magnification">Magnification (Optional)</Label>
+                  <div className="flex gap-2">
+                    <Select value={magnification} onValueChange={setMagnification}>
+                      <SelectTrigger id="magnification" className="w-full">
+                        <SelectValue placeholder="Select magnification" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {MAGNIFICATIONS.map((mag) => (
+                          <SelectItem key={mag} value={mag}>
+                            {mag}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    {magnification && (
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="icon"
+                        onClick={() => setMagnification("")}
+                        className="shrink-0"
+                        title="Remove magnification"
+                      >
+                        <X className="h-4 w-4" />
+                      </Button>
+                    )}
+                  </div>
+                  <p className="text-xs text-muted-foreground">Microscope magnification level</p>
+                </div>
+
+                {/* Source Reference Input */}
+                <div className="space-y-2">
+                  <Label htmlFor="sourceRef">Source (Optional)</Label>
+                  <Input
+                    id="sourceRef"
+                    value={sourceRef}
+                    onChange={(e) => setSourceRef(e.target.value)}
+                    placeholder="Source reference or attribution"
+                    className="w-full"
+                  />
+                </div>
+              </div>
+            ) : (
+              /* Source Reference - Full Width when no magnification */
+              <div className="space-y-2">
+                <Label htmlFor="sourceRef">Source (Optional)</Label>
+                <Input
+                  id="sourceRef"
+                  value={sourceRef}
+                  onChange={(e) => setSourceRef(e.target.value)}
+                  placeholder="Source reference or attribution"
+                  className="w-full"
+                />
+              </div>
+            )}
 
             {/* Image Description Input */}
             <div className="space-y-2">
@@ -141,18 +263,6 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
               />
             </div>
 
-            {/* Source Reference Input - Available for all image types */}
-            <div className="space-y-2">
-              <Label htmlFor="sourceRef">Source (Optional)</Label>
-              <Input
-                id="sourceRef"
-                value={sourceRef}
-                onChange={(e) => setSourceRef(e.target.value)}
-                placeholder="Source reference or attribution"
-                className="w-full"
-              />
-            </div>
-
             {/* Upload Area */}
             <div
               onDragEnter={handleDragEnter}
@@ -160,7 +270,7 @@ export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps
               onDragLeave={handleDragLeave}
               onDrop={handleDrop}
               className={`
-              relative flex flex-col items-center justify-center w-full h-40
+              relative flex flex-col items-center justify-center w-full h-64
               border-2 border-dashed rounded-lg cursor-pointer
               transition-colors duration-200
               ${isDragging ? "border-primary bg-primary/5" : "border-muted hover:bg-muted/50"}

@@ -170,6 +170,8 @@ export async function POST(request: NextRequest) {
     const category = formData.get("category") as string;
     const sourceRef = formData.get("sourceRef") as string | null;
     const description = formData.get("description") as string | null;
+    const magnificationOverride = formData.get("magnification") as string | null;
+    const pathologyCategoryOverride = formData.get("pathologyCategory") as string | null;
 
     // Validation: File presence
     if (!file) {
@@ -257,10 +259,18 @@ export async function POST(request: NextRequest) {
     const parsedFilename = parseImageFilename(file.name);
     console.log("Parsed filename:", parsedFilename);
 
-    // The parser now returns the category ID directly from static data
-    const pathologyCategoryId = parsedFilename.categoryId;
+    // Use form data overrides if provided, otherwise fall back to parsed values
+    const pathologyCategoryId = pathologyCategoryOverride || parsedFilename.categoryId;
+    const magnification = magnificationOverride || parsedFilename.magnification;
+
     if (pathologyCategoryId) {
-      console.log(`Mapped category "${parsedFilename.categoryName}" to ID: ${pathologyCategoryId}`);
+      const source = pathologyCategoryOverride ? "form data" : "filename";
+      console.log(`Pathology category ID (from ${source}): ${pathologyCategoryId}`);
+    }
+
+    if (magnification) {
+      const source = magnificationOverride ? "form data" : "filename";
+      console.log(`Magnification (from ${source}): ${magnification}`);
     }
 
     // Generate R2 storage path
@@ -306,8 +316,8 @@ export async function POST(request: NextRequest) {
         height: dimensions.height,
         source_ref: sourceRef?.trim() || null,
         created_by: userId,
-        pathology_category_id: pathologyCategoryId,
-        magnification: parsedFilename.magnification,
+        pathology_category_id: pathologyCategoryId || null,
+        magnification: magnification || null,
       })
       .select()
       .single();
