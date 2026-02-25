@@ -52,11 +52,11 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
             <div>
               <SimpleImageCarousel
                 images={stemImages
-                  .filter((si) => si.images?.url)
+                  .filter((si) => si.image?.url)
                   .map((si) => ({
-                    url: si.images?.url || "",
-                    alt: si.images?.alt_text || "Question image",
-                    caption: si.images?.description || undefined,
+                    url: si.image?.url || "",
+                    alt: si.image?.alt_text || "Question image",
+                    caption: si.image?.description || undefined,
                   }))}
                 className="border rounded-lg"
               />
@@ -148,11 +148,11 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                   <h4 className="font-medium text-xs uppercase mb-2">Reference Images</h4>
                   <SimpleImageCarousel
                     images={explanationImages
-                      .filter((ei) => ei.images?.url)
+                      .filter((ei) => ei.image?.url)
                       .map((ei) => ({
-                        url: ei.images?.url || "",
-                        alt: ei.images?.alt_text || "Reference image",
-                        caption: ei.images?.description || undefined,
+                        url: ei.image?.url || "",
+                        alt: ei.image?.alt_text || "Reference image",
+                        caption: ei.image?.description || undefined,
                       }))}
                     className="bg-white border rounded-lg"
                   />

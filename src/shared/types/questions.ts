@@ -89,7 +89,8 @@ export interface QuestionWithDetails extends Omit<
   category?: CategoryData; // Single category object (from API join)
   question_options?: QuestionOptionData[];
   question_images?: (QuestionImageData & {
-    images?: ImageData; // Actual Supabase response format
+    images?: ImageData; // Actual Supabase response format (some queries)
+    image?: ImageData; // Alternative format (from `image:images(*)` join)
   })[];
   tags?: TagData[];
   analytics?: QuestionAnalyticsData;
