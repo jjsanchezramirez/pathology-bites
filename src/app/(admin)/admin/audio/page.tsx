@@ -484,11 +484,28 @@ export default function AdminAudioPage() {
                                 }
                               }}
                               onError={(e) => {
+                                const error = e.currentTarget.error;
+                                const errorDetails = error
+                                  ? {
+                                      code: error.code,
+                                      message: error.message,
+                                      // MediaError codes: 1=ABORTED, 2=NETWORK, 3=DECODE, 4=SRC_NOT_SUPPORTED
+                                      type:
+                                        error.code === 1
+                                          ? "ABORTED"
+                                          : error.code === 2
+                                            ? "NETWORK"
+                                            : error.code === 3
+                                              ? "DECODE"
+                                              : error.code === 4
+                                                ? "SRC_NOT_SUPPORTED"
+                                                : "UNKNOWN",
+                                    }
+                                  : "No error details available";
                                 console.error(
-                                  "Audio loading error for",
-                                  item.title,
-                                  ":",
-                                  e.currentTarget.error
+                                  `Audio loading error for "${item.title}":`,
+                                  errorDetails,
+                                  `\nURL: ${item.url}`
                                 );
                               }}
                             />
