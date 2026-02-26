@@ -3,7 +3,8 @@ import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
 
-const AVAILABLE_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
+// Accept all available models for admin audio script generation
+const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
   (model) => model.id
 );
 
@@ -168,10 +169,7 @@ async function callMistralAPI(
   };
 }
 
-function buildTTSPrompt(
-  content: EducationalContent,
-  additionalInstructions: string
-): string {
+function buildTTSPrompt(content: EducationalContent, additionalInstructions: string): string {
   return `Topic: ${content.topic}
 
 Task: Write a script for an audio segment covering the following:
@@ -328,11 +326,11 @@ export async function POST(request: NextRequest) {
 
     const selectedModel = model || "gemini-2.5-flash";
 
-    if (!AVAILABLE_AI_MODELS.includes(selectedModel)) {
+    if (!ADMIN_AI_MODELS.includes(selectedModel)) {
       return NextResponse.json(
         {
           success: false,
-          error: `Unsupported model: ${selectedModel}. Supported: ${AVAILABLE_AI_MODELS.join(", ")}`,
+          error: `Unsupported model: ${selectedModel}. Supported: ${ADMIN_AI_MODELS.join(", ")}`,
         },
         { status: 400 }
       );
