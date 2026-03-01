@@ -11,7 +11,7 @@ import { revalidateImages } from "@/shared/utils/api/revalidation";
  * /api/admin/images/upload:
  *   post:
  *     summary: Upload a new image
- *     description: Upload a new image to R2 storage and create a database record. The image is automatically parsed for pathology metadata (category and magnification). Includes validation for file type, size, and dimensions. Requires admin role.
+ *     description: Upload a new image to R2 storage and create a database record. The image is automatically parsed for pathology metadata (category, magnification, title, description). Filename format "Title - Description [ImageCategory][PathologyCategory] magnification.ext". Includes validation for file type, size, and dimensions. Requires admin role.
  *     tags:
  *       - Admin - Images
  *     security:
@@ -29,14 +29,14 @@ import { revalidateImages } from "@/shared/utils/api/revalidation";
  *               file:
  *                 type: string
  *                 format: binary
- *                 description: The image file to upload (max 10MB, max 10000x10000 pixels)
+ *                 description: The image file to upload (max 10MB, max 10000x10000 pixels). Filename is parsed for metadata.
  *               category:
  *                 type: string
  *                 enum: [microscopic, gross, figure, table]
  *                 description: The image category
  *               description:
  *                 type: string
- *                 description: Optional description for the image (defaults to parsed filename)
+ *                 description: Optional description for the image. Priority - form value > parsed description (after " - ") > parsed title
  *               sourceRef:
  *                 type: string
  *                 description: Optional reference to the source of the image
@@ -255,13 +255,14 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid image dimensions." }, { status: 400 });
     }
 
-    // Parse filename to extract pathology category and magnification
+    // Parse filename to extract pathology category, magnification, and image category
     const parsedFilename = parseImageFilename(file.name);
     console.log("Parsed filename:", parsedFilename);
 
     // Use form data overrides if provided, otherwise fall back to parsed values
     const pathologyCategoryId = pathologyCategoryOverride || parsedFilename.categoryId;
     const magnification = magnificationOverride || parsedFilename.magnification;
+    const finalImageCategory = parsedFilename.imageCategory || category; // Use parsed category if available
 
     if (pathologyCategoryId) {
       const source = pathologyCategoryOverride ? "form data" : "filename";
@@ -273,8 +274,16 @@ export async function POST(request: NextRequest) {
       console.log(`Magnification (from ${source}): ${magnification}`);
     }
 
+    if (parsedFilename.imageCategory) {
+      console.log(`Image category (from filename): ${parsedFilename.imageCategory}`);
+    }
+
+    if (parsedFilename.description) {
+      console.log(`Description (from filename): ${parsedFilename.description}`);
+    }
+
     // Generate R2 storage path
-    const storagePath = generateImageStoragePath(file.name, category);
+    const storagePath = generateImageStoragePath(file.name, finalImageCategory);
     uploadedStoragePath = storagePath; // Track for cleanup
 
     // Step 1: Upload to R2
@@ -284,8 +293,9 @@ export async function POST(request: NextRequest) {
         contentType: file.type,
         cacheControl: "3600",
         metadata: {
-          originalName: file.name,
-          category,
+          // Sanitize filename for HTTP headers (only ASCII printable characters)
+          originalName: file.name.replace(/[^\x20-\x7E]/g, "_"),
+          category: finalImageCategory,
           uploadedBy: userId,
           uploadedAt: new Date().toISOString(),
         },
@@ -300,16 +310,21 @@ export async function POST(request: NextRequest) {
     }
 
     // Step 2: Insert database record with metadata
-    // Use parsed title instead of formatImageName
+    // Use parsed title and description from filename
     const imageTitle = parsedFilename.title;
+    const parsedDescription = parsedFilename.description;
+
+    // Priority: form description > parsed description > parsed title
+    const finalDescription = description?.trim() || parsedDescription || imageTitle;
+
     const { data: imageData, error: dbError } = await supabase
       .from("images")
       .insert({
         url: uploadResult.url,
         storage_path: storagePath,
-        description: description?.trim() || imageTitle,
+        description: finalDescription,
         alt_text: imageTitle,
-        category,
+        category: finalImageCategory,
         file_type: file.type,
         file_size_bytes: fileBuffer.length, // Use actual buffer size
         width: dimensions.width,

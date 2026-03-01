@@ -156,7 +156,7 @@ export async function GET(request: Request) {
       weeklyActiveUsers,
       monthlyActiveUsers,
     ] = await Promise.allSettled([
-      supabase.from("v_storage_stats").select("*").single(),
+      supabase.from("v_storage_stats_secure").select("*").single(),
       fetch("https://www.vercel-status.com/api/v2/status.json"),
       getCachedStorageMetrics(undefined, supabaseAdmin), // Use service role to bypass RLS
       // Count active users based on registration date (users who joined recently)

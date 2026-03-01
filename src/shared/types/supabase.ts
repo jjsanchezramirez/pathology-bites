@@ -1661,6 +1661,44 @@ export type Database = {
         };
         Relationships: [];
       };
+      v_storage_stats_secure: {
+        Row: {
+          figure_count: number | null;
+          figure_size_bytes: number | null;
+          gross_count: number | null;
+          gross_size_bytes: number | null;
+          microscopic_count: number | null;
+          microscopic_size_bytes: number | null;
+          orphaned_count: number | null;
+          orphaned_size_bytes: number | null;
+          table_count: number | null;
+          table_size_bytes: number | null;
+          total_images: number | null;
+          total_size_bytes: number | null;
+        };
+        Relationships: [];
+      };
+      v_audio_stats_secure: {
+        Row: {
+          total_audio: number | null;
+          total_size_bytes: number | null;
+          avg_duration_seconds: number | null;
+          min_duration_seconds: number | null;
+          max_duration_seconds: number | null;
+          total_duration_seconds: number | null;
+          uncategorized_count: number | null;
+          categorized_count: number | null;
+          unique_file_types: number | null;
+          generated_count: number | null;
+          uploaded_count: number | null;
+          files_under_1mb: number | null;
+          files_1mb_to_10mb: number | null;
+          files_over_10mb: number | null;
+          used_in_lessons: number | null;
+          orphaned_count: number | null;
+        };
+        Relationships: [];
+      };
       v_user_category_stats: {
         Row: {
           category_id: string | null;

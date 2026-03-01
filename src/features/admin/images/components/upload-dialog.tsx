@@ -29,7 +29,7 @@ import { getCategoryDescription, formatSize } from "@/features/admin/images/serv
 import { useImageUpload } from "@/features/admin/images/hooks/use-image-upload";
 import { CATEGORIES } from "@/shared/config/categories";
 
-const MAGNIFICATIONS = ["2x", "5x", "10x", "20x", "40x", "50x", "60x"] as const;
+const MAGNIFICATIONS = ["2x", "5x", "10x", "20x", "40x", "50x", "60x", "100x"] as const;
 
 export function UploadDialog({ open, onOpenChange, onUpload }: UploadDialogProps) {
   const [isDragging, setIsDragging] = useState(false);

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { uploadToR2, generateAudioStoragePath, deleteFromR2 } from "@/shared/services/r2-storage";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { parseAudioFilename } from "@/shared/utils/images/filename-parser";
 
 const ALLOWED_AUDIO_TYPES = [
   "audio/mpeg",
@@ -19,7 +20,7 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
  * /api/admin/audio/upload:
  *   post:
  *     summary: Upload audio file
- *     description: Upload an audio file to R2 storage and create a database record. Accepts all browser-supported audio formats (MP3, M4A, WAV, WebM, OGG) up to 50MB. Files are stored in their original format. Requires admin role.
+ *     description: Upload an audio file to R2 storage and create a database record. Accepts all browser-supported audio formats (MP3, M4A, WAV, WebM, OGG) up to 50MB. Files are stored in their original format. Filename is automatically parsed for metadata (title, description, pathology category). Format "Title - Description [PathologyCategory].ext". Requires admin role.
  *     tags:
  *       - Admin - Audio
  *     security:
@@ -36,19 +37,19 @@ const MAX_FILE_SIZE = 50 * 1024 * 1024; // 50MB
  *               file:
  *                 type: string
  *                 format: binary
- *                 description: Audio file in any browser-supported format (MP3, M4A, WAV, WebM, OGG - max 50MB, stored as-is)
+ *                 description: Audio file in any browser-supported format (MP3, M4A, WAV, WebM, OGG - max 50MB, stored as-is). Filename is parsed for metadata.
  *               title:
  *                 type: string
- *                 description: Title for the audio file (defaults to filename if not provided)
+ *                 description: Title for the audio file. Priority - form value > parsed title > filename
  *                 example: "Pulmonary Edema Explanation"
  *               description:
  *                 type: string
- *                 description: Description of the audio content
+ *                 description: Description of the audio content. Priority - form value > parsed description (after " - ") > null
  *                 example: "Audio explanation of pulmonary edema pathophysiology"
  *               pathology_category_id:
  *                 type: string
  *                 format: uuid
- *                 description: ID of the associated pathology category (optional)
+ *                 description: ID of the associated pathology category. Priority - form value > parsed category (from brackets) > null
  *                 example: "123e4567-e89b-12d3-a456-426614174000"
  *               generated_text:
  *                 type: string
@@ -175,7 +176,8 @@ export async function POST(request: NextRequest) {
         cacheControl: "3600",
         bucket: "pathology-bites-audio",
         metadata: {
-          originalName: file.name,
+          // Sanitize filename for HTTP headers (only ASCII printable characters)
+          originalName: file.name.replace(/[^\x20-\x7E]/g, "_"),
           uploadedBy: userId,
           uploadedAt: new Date().toISOString(),
         },
@@ -186,12 +188,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to upload audio to storage." }, { status: 500 });
     }
 
+    // Parse filename to extract title, description, and pathology category
+    const parsedFilename = parseAudioFilename(file.name);
+    console.log("Parsed audio filename:", parsedFilename);
+
     // Get metadata from form
-    const title = (formData.get("title") as string) || file.name;
-    const description = formData.get("description") as string | null;
-    const pathology_category_id = formData.get("pathology_category_id") as string | null;
+    const titleFromForm = formData.get("title") as string | null;
+    const descriptionFromForm = formData.get("description") as string | null;
+    const pathologyCategoryFromForm = formData.get("pathology_category_id") as string | null;
     const generated_text = formData.get("generated_text") as string | null;
     const duration_seconds = formData.get("duration_seconds") as string | null;
+
+    // Priority: form data > parsed data > defaults
+    const finalTitle = titleFromForm?.trim() || parsedFilename.title;
+    const finalDescription = descriptionFromForm?.trim() || parsedFilename.description || null;
+    const finalPathologyCategory =
+      pathologyCategoryFromForm?.trim() || parsedFilename.categoryId || null;
+
+    if (parsedFilename.categoryId && !pathologyCategoryFromForm) {
+      console.log(
+        `Pathology category (from filename): ${parsedFilename.categoryName} (${parsedFilename.categoryId})`
+      );
+    }
+
+    if (parsedFilename.description && !descriptionFromForm) {
+      console.log(`Description (from filename): ${parsedFilename.description}`);
+    }
 
     const parsedDuration = duration_seconds ? parseFloat(duration_seconds) : null;
 
@@ -201,9 +223,9 @@ export async function POST(request: NextRequest) {
       .insert({
         url: uploadResult.url,
         storage_path: storagePath,
-        title: title.trim(),
-        description: description?.trim() || null,
-        pathology_category_id: pathology_category_id?.trim() || null,
+        title: finalTitle,
+        description: finalDescription,
+        pathology_category_id: finalPathologyCategory,
         file_type: file.type,
         file_size_bytes: fileBuffer.length,
         duration_seconds: parsedDuration,

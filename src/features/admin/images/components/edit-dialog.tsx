@@ -37,7 +37,7 @@ interface EditImageDialogProps {
   onSave: () => void;
 }
 
-const MAGNIFICATIONS = ["2x", "5x", "10x", "20x", "40x", "50x", "60x"] as const;
+const MAGNIFICATIONS = ["2x", "5x", "10x", "20x", "40x", "50x", "60x", "100x"] as const;
 
 export function EditImageDialog({ image, open, onOpenChange, onSave }: EditImageDialogProps) {
   const [isSubmitting, setIsSubmitting] = useState(false);
