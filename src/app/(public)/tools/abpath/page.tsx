@@ -128,19 +128,18 @@ export default function ABPathContentPage() {
     actions.loadPage(page);
   };
 
-  // Get all available categories - now from all available sections
+  // Get all available categories - from ALL sections (not just paginated)
   const categories = useMemo(() => {
-    if (!data) return [];
+    if (!allSections.length) return [];
 
-    // For now, we'll need to build categories from what we can see
-    // This could be enhanced by adding a separate endpoint for all categories
-    const visibleSections = paginatedSections;
-    return visibleSections.map((section) => ({
+    // Build categories from ALL available sections, not just paginated ones
+    // This ensures the dropdown shows all possible categories
+    return allSections.map((section) => ({
       value: `${section.type.toUpperCase()}_${section.section}`,
       label: `${section.type.toUpperCase()} ${section.section}: ${section.title}`,
       title: section.title,
     }));
-  }, [data, paginatedSections]);
+  }, [allSections]);
 
   // Client-side filtering for designation filters only (C, AR, F)
   const filteredData = useMemo(() => {
@@ -367,6 +366,68 @@ export default function ABPathContentPage() {
     };
   }, [allSections, filteredSections, showC, showAR, showF, filterItems]);
 
+  // PDF-specific filtered data that includes ALL sections (not just current page)
+  const pdfFilteredData = useMemo(() => {
+    // Check if user has deselected all designations (C, AR, F)
+    if (!showC && !showAR && !showF) {
+      return [];
+    }
+
+    if (!filteredSections.length) {
+      return [];
+    }
+
+    // Apply only designation filtering to ALL filtered sections (not just paginated)
+    const sections = filteredSections
+      .map((section) => {
+        const filteredSection = { ...section };
+
+        if (section.items) {
+          filteredSection.items = filterItems(section.items, "");
+        }
+
+        if (section.subsections) {
+          filteredSection.subsections = section.subsections
+            .map((subsection) => {
+              const filteredSubsection = { ...subsection };
+
+              if (subsection.items) {
+                filteredSubsection.items = filterItems(subsection.items, "");
+              }
+
+              if (subsection.sections) {
+                filteredSubsection.sections = subsection.sections
+                  .map((subSection: ABPathSubSection) => ({
+                    ...subSection,
+                    items: subSection.items ? filterItems(subSection.items, "") : undefined,
+                  }))
+                  .filter(
+                    (subSection: ABPathSubSection) =>
+                      !subSection.items || subSection.items.length > 0
+                  );
+              }
+
+              return filteredSubsection;
+            })
+            .filter(
+              (subsection) =>
+                (subsection.items && subsection.items.length > 0) ||
+                (subsection.sections && subsection.sections.length > 0)
+            );
+        }
+
+        return filteredSection;
+      })
+      .filter(
+        (section) =>
+          (section.items && section.items.length > 0) ||
+          (section.subsections && section.subsections.length > 0) ||
+          (showC && showAR && showF) // Keep sections without items if all designations shown
+      );
+
+    return sections;
+  }, [filteredSections, showC, showAR, showF, filterItems]);
+
   // PDF generation function
   const generatePDF = async () => {
     if (!data) return;
@@ -397,7 +458,8 @@ export default function ABPathContentPage() {
     if (searchTerm) filterSuffix += (filterSuffix ? "_" : "") + "filtered";
 
     try {
-      const pdf = await generator.generatePDF(filteredData, {
+      // Use pdfFilteredData which includes ALL sections, not just current page
+      const pdf = await generator.generatePDF(pdfFilteredData, {
         searchTerm,
         selectedType: showAP && showCP ? "all" : showAP ? "ap" : "cp",
         selectedDesignation: designations.length === 3 ? "all" : designations.join(","),
@@ -948,7 +1010,7 @@ export default function ABPathContentPage() {
                   {/* Page numbers */}
                   <div className="flex items-center gap-1">
                     {Array.from({ length: Math.min(5, pagination.totalPages) }, (_, i) => {
-                      let pageNum;
+                      let pageNum: number;
                       if (pagination.totalPages <= 5) {
                         pageNum = i + 1;
                       } else {

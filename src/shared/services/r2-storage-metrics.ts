@@ -71,7 +71,7 @@ export async function decrementStorageMetrics(
  */
 export async function getCachedStorageMetrics(
   bucketName?: string,
-  supabaseClient?: SupabaseClient<any>
+  supabaseClient?: SupabaseClient
 ): Promise<
   Array<{
     bucketName: string;

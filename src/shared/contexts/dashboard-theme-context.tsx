@@ -162,7 +162,7 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
       setCurrentTheme(getDefaultTheme());
       setIsLoading(false);
     }
-  }, [settings, isAdmin, role]);
+  }, [settings, isAdmin, role, adminMode]);
 
   // Watch for admin mode changes via cookie
   useEffect(() => {

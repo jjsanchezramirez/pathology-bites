@@ -11,7 +11,11 @@ interface TimingSectionProps {
   selectedImage: SelectedImage;
   imageIndex: number;
   isLastImage: boolean;
-  onUpdateImage: (index: number, field: keyof SelectedImage, value: any) => void;
+  onUpdateImage: (
+    index: number,
+    field: keyof SelectedImage,
+    value: SelectedImage[keyof SelectedImage]
+  ) => void;
 }
 
 export function TimingSection({

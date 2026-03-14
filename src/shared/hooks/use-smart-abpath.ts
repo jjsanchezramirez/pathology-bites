@@ -271,10 +271,8 @@ export function useSmartABPath(options: UseSmartABPathOptions = {}): SmartABPath
 
   // Reset to page 1 when filters change
   useEffect(() => {
-    if (currentPage !== 1) {
-      setCurrentPage(1);
-    }
-  }, [options.search, options.category, typeFilter, currentPage]);
+    setCurrentPage(1);
+  }, [options.search, options.category, typeFilter]);
 
   // Build pagination object
   const pagination = useMemo(

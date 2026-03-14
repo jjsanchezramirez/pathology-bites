@@ -19,7 +19,13 @@ interface DashboardSettingsContextType {
 
 const DashboardSettingsContext = createContext<DashboardSettingsContextType | undefined>(undefined);
 
-export function DashboardSettingsProvider({ children }: { children: ReactNode }) {
+export function DashboardSettingsProvider({
+  children,
+  isGuest = false,
+}: {
+  children: ReactNode;
+  isGuest?: boolean;
+}) {
   const { isAdmin } = useUserRole();
   const { setTheme: setColorMode } = useTheme();
   const [textZoom, setTextZoomState] = useState(1.0);
@@ -28,7 +34,10 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
 
   // Use cached user settings hook (eliminates redundant API calls)
   // Note: refetchOnMount removed - cache handles freshness with 5-min TTL and 2-min stale time
-  const { data: settings, isLoading } = useUserSettings();
+  // For guest users, disable settings fetching entirely
+  const { data: settings, isLoading } = useUserSettings({
+    enabled: !isGuest,
+  });
 
   // Apply settings when loaded
   useEffect(() => {
@@ -61,6 +70,9 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
     setTextZoomState(validZoom);
     applyTextZoom(validZoom);
 
+    // Skip API call for guest users
+    if (isGuest) return;
+
     try {
       const updatedSettings = await userSettingsService.updateUISettings({ text_zoom: validZoom });
 
@@ -84,6 +96,9 @@ export function DashboardSettingsProvider({ children }: { children: ReactNode })
   // Update dashboard theme
   const setDashboardTheme = async (theme: string) => {
     setDashboardThemeState(theme);
+
+    // Skip API call for guest users
+    if (isGuest) return;
 
     try {
       const adminMode = getAdminModeFromCookie(isAdmin);

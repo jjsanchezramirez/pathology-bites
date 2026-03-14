@@ -183,18 +183,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
             ? `${(question.created_by_user as { first_name?: string }).first_name || ""} ${(question.created_by_user as { last_name?: string }).last_name || ""}`.trim()
             : "Unknown",
           image_count: question.question_images?.[0]?.count || 0,
-          category: questionCategory
-            ? {
-                ...questionCategory,
-                name: "",
-                description: null,
-                parent_id: undefined,
-                level: 0,
-                color: null,
-                short_form: null,
-                created_at: "",
-              }
-            : undefined,
+          category: questionCategory || undefined,
           categories: [], // Deprecated, use category instead
           tags:
             question.question_tags

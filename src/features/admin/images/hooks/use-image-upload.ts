@@ -12,7 +12,7 @@ interface UseImageUploadOptions {
 
 export function useImageUpload({
   onUploadComplete,
-  maxSizeBytes = 1024 * 1024, // 1MB
+  maxSizeBytes = 1024 * 1024, // Used for final size check after compression
 }: UseImageUploadOptions = {}) {
   const [isUploading, setIsUploading] = useState(false);
   const [fileProgress, setFileProgress] = useState<FileProgress[]>([]);
@@ -82,17 +82,15 @@ export function useImageUpload({
 
             let fileToUpload = file;
 
-            // Compress if needed
+            // Always compress images
             updateFileProgress(file.name, { status: "compressing", progress: 10 });
-            if (file.size > maxSizeBytes) {
-              updateFileProgress(file.name, { status: "compressing", progress: 20 });
-              fileToUpload = await compressImage(file, maxSizeBytes);
+            updateFileProgress(file.name, { status: "compressing", progress: 20 });
+            fileToUpload = await compressImage(file, maxSizeBytes);
 
-              if (fileToUpload.size > maxSizeBytes) {
-                throw new Error(
-                  `${file.name} is still too large after compression. Please try a smaller image.`
-                );
-              }
+            if (fileToUpload.size > maxSizeBytes) {
+              throw new Error(
+                `${file.name} is still too large after compression. Please try a smaller image.`
+              );
             }
 
             updateFileProgress(file.name, {

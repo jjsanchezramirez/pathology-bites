@@ -166,7 +166,13 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to read audio file." }, { status: 400 });
     }
 
-    const storagePath = generateAudioStoragePath(file.name);
+    // Parse filename to extract title, description, and pathology category
+    const parsedFilename = parseAudioFilename(file.name);
+    console.log("Parsed audio filename:", parsedFilename);
+
+    // Generate R2 storage path using only the title (no description or metadata)
+    const fileExtension = file.name.split(".").pop() || "mp3";
+    const storagePath = generateAudioStoragePath(parsedFilename.title, fileExtension);
     uploadedStoragePath = storagePath;
 
     let uploadResult;
@@ -187,10 +193,6 @@ export async function POST(request: NextRequest) {
       uploadedStoragePath = null;
       return NextResponse.json({ error: "Failed to upload audio to storage." }, { status: 500 });
     }
-
-    // Parse filename to extract title, description, and pathology category
-    const parsedFilename = parseAudioFilename(file.name);
-    console.log("Parsed audio filename:", parsedFilename);
 
     // Get metadata from form
     const titleFromForm = formData.get("title") as string | null;

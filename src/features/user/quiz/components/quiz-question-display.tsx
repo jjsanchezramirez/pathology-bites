@@ -72,7 +72,7 @@ export function QuizQuestionDisplay({
           caption: img.description || undefined,
         };
       });
-  }, [question.id, question.question_images]);
+  }, [question.question_images]);
 
   const explanationImages = useMemo(() => {
     if (!question.question_images || question.question_images.length === 0) return [];
@@ -87,7 +87,7 @@ export function QuizQuestionDisplay({
           caption: img.description || undefined,
         };
       });
-  }, [question.id, question.question_images]);
+  }, [question.question_images]);
 
   // Memoize reset keys to ensure stable references
   const stemResetKey = useMemo(() => `stem-${question.id}`, [question.id]);

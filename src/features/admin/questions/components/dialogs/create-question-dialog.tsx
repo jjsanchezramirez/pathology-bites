@@ -315,6 +315,11 @@ export function CreateQuestionDialog({ open, onOpenChange, onSave }: CreateQuest
   const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
   const [hasUnsavedChanges, setHasUnsavedChanges] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [duplicateData, setDuplicateData] = useState<{
+    existingQuestions: Array<{ id: string; title: string }>;
+    pendingQuestionData: unknown;
+  } | null>(null);
 
   // Enhanced form state - Default to 5 answer options
   const [answerOptions, setAnswerOptions] = useState<QuestionOptionFormData[]>([
@@ -543,7 +548,7 @@ export function CreateQuestionDialog({ open, onOpenChange, onSave }: CreateQuest
         status: data.status,
         question_set_id: data.question_set_id === "none" ? null : data.question_set_id,
         category_id: selectedCategoryId || null,
-        answer_options: answerOptions.map((option, index) => ({
+        question_options: answerOptions.map((option, index) => ({
           text: option.text,
           is_correct: option.is_correct,
           explanation: option.explanation || null,
@@ -576,6 +581,17 @@ export function CreateQuestionDialog({ open, onOpenChange, onSave }: CreateQuest
           console.error("❌ Raw response:", textResponse);
           throw new Error(`HTTP ${response.status}: ${textResponse.substring(0, 200)}...`);
         }
+
+        // Check if it's a duplicate topic error
+        if (response.status === 409 && errorData.error === "DUPLICATE_TOPIC") {
+          setDuplicateData({
+            existingQuestions: errorData.existingQuestions || [],
+            pendingQuestionData: questionData,
+          });
+          setShowDuplicateDialog(true);
+          return; // Don't show error toast, show dialog instead
+        }
+
         throw new Error(errorData.error || "Failed to create question");
       }
 
@@ -589,6 +605,47 @@ export function CreateQuestionDialog({ open, onOpenChange, onSave }: CreateQuest
 
       // Reset form state
       setHasUnsavedChanges(false);
+      onSave();
+      onOpenChange(false);
+    } catch (error) {
+      console.error("Failed to create question:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to create question");
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleConfirmDuplicate = async () => {
+    if (!duplicateData) return;
+
+    setShowDuplicateDialog(false);
+    setIsSubmitting(true);
+
+    try {
+      // Retry with allowDuplicate flag
+      const questionData = {
+        ...(duplicateData.pendingQuestionData as Record<string, unknown>),
+        allowDuplicate: true,
+      };
+
+      const response = await apiClient.post("/api/admin/questions/create", questionData);
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || "Failed to create question");
+      }
+
+      const result = await response.json();
+
+      if (!result.success) {
+        throw new Error(result.error || "Failed to create question");
+      }
+
+      toast.success("Question created successfully");
+
+      // Reset form state
+      setHasUnsavedChanges(false);
+      setDuplicateData(null);
       onSave();
       onOpenChange(false);
     } catch (error) {
@@ -1062,6 +1119,57 @@ export function CreateQuestionDialog({ open, onOpenChange, onSave }: CreateQuest
               </Button>
               <Button onClick={handleConfirmClose} variant="destructive">
                 Discard Changes
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </DialogPortal>
+      </Dialog>
+
+      {/* Duplicate Topic Confirmation Dialog */}
+      <Dialog open={showDuplicateDialog} onOpenChange={setShowDuplicateDialog}>
+        <DialogPortal>
+          <DialogOverlay className="backdrop-blur-md bg-black/20" />
+          <DialogContent className="max-w-lg">
+            <DialogHeader>
+              <DialogTitle>Duplicate Topic Detected</DialogTitle>
+              <DialogDescription>
+                A question with this topic combination already exists. Are you sure you want to
+                create another question with the same topic?
+              </DialogDescription>
+            </DialogHeader>
+
+            {duplicateData && duplicateData.existingQuestions.length > 0 && (
+              <div className="my-4">
+                <p className="text-sm font-medium mb-2">Existing questions:</p>
+                <div className="space-y-2 max-h-40 overflow-y-auto">
+                  {duplicateData.existingQuestions.map((q) => (
+                    <div key={q.id} className="text-sm p-2 bg-muted rounded border border-border">
+                      {q.title}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <DialogFooter>
+              <Button
+                variant="outline"
+                onClick={() => {
+                  setShowDuplicateDialog(false);
+                  setDuplicateData(null);
+                }}
+              >
+                Cancel
+              </Button>
+              <Button onClick={handleConfirmDuplicate} disabled={isSubmitting}>
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating...
+                  </>
+                ) : (
+                  "Create Anyway"
+                )}
               </Button>
             </DialogFooter>
           </DialogContent>

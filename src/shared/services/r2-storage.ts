@@ -410,17 +410,19 @@ export function extractR2KeyFromUrl(url: string): string | null {
 
 /**
  * Generate standardized storage path for images in library folder
- * Format: library/YYYYMMDDHHMMSS-{cleaned-filename}
+ * Format: library/YYYYMMDDHHMMSS-{cleaned-title}.{ext}
+ * Only includes timestamp and title, no description or metadata
  */
-export function generateImageStoragePath(filename: string, _category: string): string {
+export function generateImageStoragePath(
+  title: string,
+  extension: string,
+  _category: string
+): string {
   const now = new Date();
   const dateStr = now.toISOString().slice(0, 19).replace(/[-:T]/g, "").slice(0, 14); // YYYYMMDDHHMMSS (no hyphens)
 
-  // Clean filename with graceful special character handling, preserve extension
-  const nameParts = filename.split(".");
-  const extension = nameParts.pop()?.toLowerCase() || "jpg";
-  const baseName = nameParts
-    .join(".")
+  // Clean title with graceful special character handling
+  const cleanedTitle = title
     .toLowerCase()
     .trim()
     // Replace common special characters with meaningful equivalents
@@ -435,8 +437,8 @@ export function generateImageStoragePath(filename: string, _category: string): s
     .replace(/-+/g, "-") // Multiple consecutive hyphens → single hyphen
     .replace(/^-+|-+$/g, ""); // Remove leading/trailing hyphens
 
-  // Format: library/YYYYMMDDHHMMSS-{cleaned-name}.{ext}
-  return `library/${dateStr}-${baseName}.${extension}`;
+  // Format: library/YYYYMMDDHHMMSS-{cleaned-title}.{ext}
+  return `library/${dateStr}-${cleanedTitle}.${extension.toLowerCase()}`;
 }
 
 /**
@@ -495,24 +497,29 @@ export function generateDataStoragePath(filename: string): string {
 
 /**
  * Generate standardized storage path for audio files
- * Format: audio/YYYYMMDDHHMMSS-{cleaned-filename}
+ * Format: library/YYYYMMDDHHMMSS-{cleaned-title}.{ext}
+ * Only includes timestamp and title, no description or metadata
  */
-export function generateAudioStoragePath(filename: string): string {
+export function generateAudioStoragePath(title: string, extension: string): string {
   const now = new Date();
   const dateStr = now.toISOString().slice(0, 19).replace(/[-:T]/g, "").slice(0, 14);
 
-  const nameParts = filename.split(".");
-  const extension = nameParts.pop()?.toLowerCase() || "mp3";
-  const baseName = nameParts
-    .join(".")
+  const cleanedTitle = title
     .toLowerCase()
     .trim()
+    // Replace common special characters with meaningful equivalents
+    .replace(/&/g, "and")
+    .replace(/\+/g, "plus")
+    .replace(/%/g, "percent")
+    .replace(/@/g, "at")
+    .replace(/\$/g, "dollar")
+    // Replace whitespace and punctuation with single hyphens
     .replace(/[\s\-_]+/g, "-")
     .replace(/[^\w\-]/g, "-")
     .replace(/-+/g, "-")
     .replace(/^-+|-+$/g, "");
 
-  return `library/${dateStr}-${baseName}.${extension}`;
+  return `library/${dateStr}-${cleanedTitle}.${extension.toLowerCase()}`;
 }
 
 /**

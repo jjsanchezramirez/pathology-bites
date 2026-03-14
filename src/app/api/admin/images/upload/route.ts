@@ -11,7 +11,7 @@ import { revalidateImages } from "@/shared/utils/api/revalidation";
  * /api/admin/images/upload:
  *   post:
  *     summary: Upload a new image
- *     description: Upload a new image to R2 storage and create a database record. The image is automatically parsed for pathology metadata (category, magnification, title, description). Filename format "Title - Description [ImageCategory][PathologyCategory] magnification.ext". Includes validation for file type, size, and dimensions. Requires admin role.
+ *     description: Upload a new image to R2 storage and create a database record. The image is automatically parsed for pathology metadata (category, magnification, title, description, source). Filename format "Title - Description [40x][M][PathologyCategory][Src=xxx].ext" where all metadata is in square brackets. Includes validation for file type, size, and dimensions. Requires admin role.
  *     tags:
  *       - Admin - Images
  *     security:
@@ -255,7 +255,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid image dimensions." }, { status: 400 });
     }
 
-    // Parse filename to extract pathology category, magnification, and image category
+    // Parse filename to extract pathology category, magnification, image category, and source
     const parsedFilename = parseImageFilename(file.name);
     console.log("Parsed filename:", parsedFilename);
 
@@ -263,6 +263,7 @@ export async function POST(request: NextRequest) {
     const pathologyCategoryId = pathologyCategoryOverride || parsedFilename.categoryId;
     const magnification = magnificationOverride || parsedFilename.magnification;
     const finalImageCategory = parsedFilename.imageCategory || category; // Use parsed category if available
+    const finalSourceRef = sourceRef || parsedFilename.sourceRef; // Use parsed source if no form data
 
     if (pathologyCategoryId) {
       const source = pathologyCategoryOverride ? "form data" : "filename";
@@ -282,8 +283,18 @@ export async function POST(request: NextRequest) {
       console.log(`Description (from filename): ${parsedFilename.description}`);
     }
 
-    // Generate R2 storage path
-    const storagePath = generateImageStoragePath(file.name, finalImageCategory);
+    if (finalSourceRef) {
+      const source = sourceRef ? "form data" : "filename";
+      console.log(`Source reference (from ${source}): ${finalSourceRef}`);
+    }
+
+    // Generate R2 storage path using only the title (no description or metadata)
+    const fileExtension = file.name.split(".").pop() || "jpg";
+    const storagePath = generateImageStoragePath(
+      parsedFilename.title,
+      fileExtension,
+      finalImageCategory
+    );
     uploadedStoragePath = storagePath; // Track for cleanup
 
     // Step 1: Upload to R2
@@ -329,7 +340,7 @@ export async function POST(request: NextRequest) {
         file_size_bytes: fileBuffer.length, // Use actual buffer size
         width: dimensions.width,
         height: dimensions.height,
-        source_ref: sourceRef?.trim() || null,
+        source_ref: finalSourceRef?.trim() || null,
         created_by: userId,
         pathology_category_id: pathologyCategoryId || null,
         magnification: magnification || null,

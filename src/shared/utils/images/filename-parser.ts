@@ -1,8 +1,9 @@
 // Filename parser for extracting metadata from image filenames
-// Expected format: Title - Description [ImageCategory][PathologyCategory] magnification.ext
+// Expected format: Title - Description [40x][M][PathologyCategory][Src=xxx].ext
+// All metadata is in square brackets
 // Examples:
-// - "Aerococcus BSA - Small colonies on agar [G][Micro] 40x.jpg"
-// - "Osteoid osteoma - Bone tumor showing osteoid matrix [M][BST] 100x.jpg"
+// - "Aerococcus BSA - Small colonies on agar [40x][G][Micro][Src=Textbook].jpg"
+// - "Osteoid osteoma - Bone tumor showing osteoid matrix [100x][M][BST].jpg"
 // - "Cell diagram [F][Cyto].jpg"
 
 import { CATEGORIES, getCategoryByName } from "@/shared/config/categories";
@@ -14,6 +15,7 @@ export interface ParsedFilename {
   categoryName: string | null;
   magnification: string | null;
   imageCategory: "microscopic" | "gross" | "figure" | "table" | "external" | null;
+  sourceRef: string | null;
 }
 
 // Valid magnification values
@@ -62,14 +64,14 @@ export function extractImageCategory(
 
 /**
  * Extract magnification from filename
- * Looks for pattern: " ###x" (space followed by digits and 'x')
- * Examples: " 10x", " 40x", " 100x"
+ * Looks for pattern: [###x] (magnification in brackets)
+ * Examples: [10x], [40x], [100x]
  * @param filename - The filename to parse
  * @returns The magnification string or null if not found
  */
 export function extractMagnification(filename: string): Magnification | null {
-  // Look for pattern like " 10x", " 40x", " 100x" (space before digits)
-  const magnificationMatch = filename.match(/\s(\d+x)\b/i);
+  // Look for pattern like [10x], [40x], [100x] (magnification in brackets)
+  const magnificationMatch = filename.match(/\[(\d+x)\]/i);
   if (magnificationMatch) {
     const mag = magnificationMatch[1].toLowerCase() as string;
     // Validate it's a valid magnification
@@ -81,22 +83,55 @@ export function extractMagnification(filename: string): Magnification | null {
 }
 
 /**
+ * Extract source reference from filename
+ * Looks for pattern: [Src=xxx] where xxx is the source value
+ * Examples: [Src=Textbook], [Src=Journal], [Src=Web]
+ * @param filename - The filename to parse
+ * @returns The source reference string or null if not found
+ */
+export function extractSource(filename: string): string | null {
+  // Look for pattern like [Src=xxx]
+  const sourceMatch = filename.match(/\[Src=([^\]]+)\]/i);
+  if (sourceMatch) {
+    return sourceMatch[1].trim();
+  }
+  return null;
+}
+
+/**
  * Extract pathology category from bracketed notation
  * Only supports: [BST], [GI], [Micro], etc.
+ * Filters out image categories, magnification, and source brackets
  * @param filename - The filename to parse
  * @returns Object with category ID and name, or null if not found
  */
 export function extractCategory(filename: string): { id: string; name: string } | null {
   // Look for bracketed pathology categories
-  // We need to find brackets that are NOT image categories [M][F][T][G][E]
+  // We need to find brackets that are NOT image categories, magnification, or source
   const allBrackets = filename.match(/\[([^\]]+)\]/g);
 
   if (!allBrackets) return null;
 
-  // Filter out image category brackets
+  // Filter out image category brackets [M][F][T][G][E], magnification [###x], and source [Src=xxx]
   const pathologyBrackets = allBrackets.filter((bracket) => {
     const content = bracket.slice(1, -1); // Remove [ and ]
-    return !["M", "F", "T", "G", "E"].includes(content.toUpperCase());
+
+    // Filter out image categories
+    if (["M", "F", "T", "G", "E"].includes(content.toUpperCase())) {
+      return false;
+    }
+
+    // Filter out magnification (e.g., [10x], [40x])
+    if (/^\d+x$/i.test(content)) {
+      return false;
+    }
+
+    // Filter out source (e.g., [Src=xxx])
+    if (/^Src=/i.test(content)) {
+      return false;
+    }
+
+    return true;
   });
 
   if (pathologyBrackets.length === 0) return null;
@@ -126,6 +161,7 @@ export function extractCategory(filename: string): { id: string; name: string } 
  * Extract title and description from filename
  * Format: "Title - Description [metadata]"
  * The " - " (space-dash-space) separates title from description
+ * All metadata is in brackets: [40x][M][Micro][Src=xxx]
  * @param filename - The filename to parse
  * @returns Object with title and optional description
  */
@@ -136,10 +172,7 @@ export function extractTitleAndDescription(filename: string): {
   // Remove file extension
   let content = filename.replace(/\.[^/.]+$/, "");
 
-  // Remove magnification (e.g., " 10x", " 40x", " 100x")
-  content = content.replace(/\s\d+x\b/gi, "");
-
-  // Remove ALL bracketed content (image category [M], pathology category [BST], etc.)
+  // Remove ALL bracketed content (magnification, image category, pathology category, source, etc.)
   content = content.replace(/\[[^\]]+\]/g, "");
 
   // Clean up whitespace
@@ -168,8 +201,9 @@ export function extractTitleAndDescription(filename: string): {
 }
 
 /**
- * Parse filename to extract all components: title, description, categories, and magnification
- * Format: "Title - Description [ImageCategory][PathologyCategory] magnification.ext"
+ * Parse filename to extract all components: title, description, categories, magnification, and source
+ * Format: "Title - Description [40x][M][PathologyCategory][Src=xxx].ext"
+ * All metadata is in brackets
  * @param filename - The filename to parse
  * @returns ParsedFilename object with extracted components
  */
@@ -177,6 +211,7 @@ export function parseImageFilename(filename: string): ParsedFilename {
   const pathologyCategory = extractCategory(filename);
   const imageCategory = extractImageCategory(filename);
   const { title, description } = extractTitleAndDescription(filename);
+  const sourceRef = extractSource(filename);
 
   return {
     title,
@@ -185,6 +220,7 @@ export function parseImageFilename(filename: string): ParsedFilename {
     categoryName: pathologyCategory?.name || null,
     magnification: extractMagnification(filename),
     imageCategory: imageCategory,
+    sourceRef: sourceRef,
   };
 }
 

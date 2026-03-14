@@ -11,7 +11,11 @@ import type { SelectedImage, LibraryImage } from "../../../types";
 interface FramingSectionProps {
   selectedImage: SelectedImage;
   imageIndex: number;
-  onUpdateImage: (index: number, field: keyof SelectedImage, value: any) => void;
+  onUpdateImage: (
+    index: number,
+    field: keyof SelectedImage,
+    value: SelectedImage[keyof SelectedImage]
+  ) => void;
   onUpdateImageMultiple: (index: number, updates: Partial<SelectedImage>) => void;
   onCalculateCoverZoom: (image: LibraryImage) => number;
 }

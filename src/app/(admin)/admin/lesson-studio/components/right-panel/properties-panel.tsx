@@ -14,7 +14,11 @@ interface PropertiesPanelProps {
   selectedImage: SelectedImage | null;
   selectedImageIndex: number | null;
   isLastImage: boolean;
-  onUpdateImage: (index: number, field: keyof SelectedImage, value: any) => void;
+  onUpdateImage: (
+    index: number,
+    field: keyof SelectedImage,
+    value: SelectedImage[keyof SelectedImage]
+  ) => void;
   onUpdateImageMultiple: (index: number, updates: Partial<SelectedImage>) => void;
   onCalculateCoverZoom: (image: LibraryImage) => number;
   onAddAnimation: (imageIndex: number, type: Animation["type"]) => void;

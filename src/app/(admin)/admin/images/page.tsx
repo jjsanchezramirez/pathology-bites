@@ -40,9 +40,9 @@ export default function ImagesPage() {
         <CardHeader>
           <CardTitle>Image Management</CardTitle>
           <CardDescription>
-            Upload, edit, and organize your image collection. Images larger than 1MB will be
-            automatically compressed. Use the search to find images by name, description, or source
-            reference.
+            Upload, edit, and organize your image collection. All images will be automatically
+            compressed for optimal performance. Use the search to find images by name, description,
+            or source reference.
           </CardDescription>
         </CardHeader>
         <CardContent>

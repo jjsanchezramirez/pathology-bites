@@ -36,6 +36,7 @@ interface CreateQuestionRequest {
   question_options: QuestionOptionInput[];
   tag_ids?: string[];
   question_images?: QuestionImageInput[];
+  allowDuplicate?: boolean; // Allow creating question with duplicate topic combination
 }
 
 /**
@@ -181,6 +182,44 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
     }
 
+    // Check for duplicate topic combination if not explicitly allowed
+    if (
+      !questionData.allowDuplicate &&
+      questionData.category_id &&
+      questionData.lesson &&
+      questionData.topic
+    ) {
+      const { data: existingQuestions, error: checkError } = await supabase
+        .from("questions")
+        .select("id, title")
+        .eq("category_id", questionData.category_id)
+        .eq("lesson", questionData.lesson)
+        .eq("topic", questionData.topic)
+        .limit(5);
+
+      if (checkError) {
+        console.error("Error checking for duplicates:", checkError);
+        // Don't fail the request, just continue
+      } else if (existingQuestions && existingQuestions.length > 0) {
+        return NextResponse.json(
+          {
+            error: "DUPLICATE_TOPIC",
+            message: "A question with this topic combination already exists",
+            existingQuestions: existingQuestions.map((q) => ({
+              id: q.id,
+              title: q.title,
+            })),
+            details: {
+              category_id: questionData.category_id,
+              lesson: questionData.lesson,
+              topic: questionData.topic,
+            },
+          },
+          { status: 409 } // 409 Conflict
+        );
+      }
+    }
+
     // Start a transaction to create the question and related data
     const { data: question, error: questionError } = await supabase
       .from("questions")
@@ -206,6 +245,22 @@ export async function POST(request: NextRequest) {
 
     if (questionError) {
       console.error("Error creating question:", questionError);
+
+      // Check if it's a duplicate constraint error (in case our check missed it)
+      if (
+        questionError.code === "23505" &&
+        questionError.message.includes("idx_questions_unique_topic_combination")
+      ) {
+        return NextResponse.json(
+          {
+            error: "DUPLICATE_TOPIC",
+            message: "A question with this topic combination already exists",
+            details: questionError.message,
+          },
+          { status: 409 }
+        );
+      }
+
       return NextResponse.json(
         { error: "Failed to create question", details: questionError.message },
         { status: 500 }

@@ -25,7 +25,7 @@ export interface UseImageReuploadOptions {
 export function useImageReupload({
   onSuccess,
   onError,
-  maxSizeBytes = 1024 * 1024, // 1MB default, same as upload
+  maxSizeBytes = 1024 * 1024, // Used for final size check after compression
 }: UseImageReuploadOptions = {}) {
   const [isUploading, setIsUploading] = useState(false);
 
@@ -55,43 +55,33 @@ export function useImageReupload({
           updateMetadata,
         });
 
-        // Compress image if needed (same logic as upload)
+        // Always compress images
         let fileToUpload = file;
-        if (file.size > maxSizeBytes) {
-          console.log("🗜️ Compressing image...", {
+        console.log("🗜️ Compressing image...", {
+          originalSize: file.size,
+          maxSize: maxSizeBytes,
+        });
+
+        try {
+          fileToUpload = await compressImage(file, maxSizeBytes);
+          console.log("✅ Image compressed:", {
             originalSize: file.size,
-            maxSize: maxSizeBytes,
+            compressedSize: fileToUpload.size,
+            compressionRatio: Math.round((1 - fileToUpload.size / file.size) * 100),
           });
 
-          try {
-            fileToUpload = await compressImage(file, maxSizeBytes);
-            console.log("✅ Image compressed:", {
-              originalSize: file.size,
-              compressedSize: fileToUpload.size,
-              compressionRatio: Math.round((1 - fileToUpload.size / file.size) * 100),
-            });
-
-            if (fileToUpload.size > maxSizeBytes) {
-              const error =
-                "Image is still too large after compression. Please try a smaller image.";
-              console.error("❌ Compression insufficient:", error);
-              onError?.(error);
-              toast.error(error);
-              return null;
-            }
-          } catch (compressionError) {
-            console.error(
-              "❌ Compression failed, proceeding with original file:",
-              compressionError
-            );
-            // Fallback: proceed with original file if compression fails
-            fileToUpload = file;
-            toast.warning(
-              "Image compression failed, uploading original file. This may take longer."
-            );
+          if (fileToUpload.size > maxSizeBytes) {
+            const error = "Image is still too large after compression. Please try a smaller image.";
+            console.error("❌ Compression insufficient:", error);
+            onError?.(error);
+            toast.error(error);
+            return null;
           }
-        } else {
-          console.log("✅ Image size OK, no compression needed");
+        } catch (compressionError) {
+          console.error("❌ Compression failed, proceeding with original file:", compressionError);
+          // Fallback: proceed with original file if compression fails
+          fileToUpload = file;
+          toast.warning("Image compression failed, uploading original file. This may take longer.");
         }
 
         const formData = new FormData();
