@@ -57,7 +57,7 @@ export function MetadataTab({
     typeof question.category === "object" &&
     "name" in question.category
   );
-  const hasQuestionSet = !!question.set;
+  const hasQuestionSet = !!(question.question_set || question.set);
 
   // Get category name from preloaded data
   const categoryName = useMemo(() => {
@@ -69,9 +69,9 @@ export function MetadataTab({
 
   // Get question set name from preloaded data
   const questionSetName = useMemo(() => {
-    const questionSet = question.set;
+    const questionSet = question.question_set || question.set;
     return questionSet ? questionSet.name : "No Question Set";
-  }, [question.set]);
+  }, [question.question_set, question.set]);
 
   // Load categories and question sets if missing
   useEffect(() => {

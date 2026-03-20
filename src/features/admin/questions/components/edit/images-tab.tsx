@@ -54,6 +54,9 @@ function ImageSection({
     (imageId: string) => {
       // First try to find the image in the question's image data
       const questionImage = question?.question_images?.find((qi) => qi.image_id === imageId);
+      if (questionImage?.image) {
+        return questionImage.image;
+      }
       if (questionImage?.images) {
         return questionImage.images;
       }

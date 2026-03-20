@@ -420,10 +420,11 @@ REFINEMENT INSTRUCTIONS:
 ${instructions}
 ${additionalContext ? `\nADDITIONAL CONTEXT (IMPORTANT — follow these instructions closely):\n${additionalContext}\n` : ""}
 CRITICAL REQUIREMENTS:
-1. Maintain exactly 5 answer options (A, B, C, D, E) with one clearly correct answer
-2. Provide detailed explanations for ALL 5 answer options
-3. Keep the same clinical relevance and educational value
-4. Apply the refinement instructions while preserving the question structure
+1. ONLY modify the specific fields the user's instructions refer to. Leave all other fields EXACTLY as they are — do not rephrase, reword, or "improve" fields that were not mentioned in the instructions. For example, if the user asks to edit the teaching point, return the stem, title, answer option texts, and explanations unchanged word-for-word.
+2. Maintain exactly 5 answer options (A, B, C, D, E) with one clearly correct answer
+3. Provide detailed explanations for ALL 5 answer options (copy them verbatim unless the instructions ask you to change them)
+4. Keep the same clinical relevance and educational value
+5. Apply the refinement instructions while preserving the question structure
 
 Return your response in this EXACT JSON format:
 {

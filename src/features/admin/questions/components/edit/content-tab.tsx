@@ -77,7 +77,7 @@ export function ContentTab({
   // Determine which AI model to use for refinement
   const refinementModel = useMemo(() => {
     if (selectedModel) return selectedModel;
-    const questionSet = question.set;
+    const questionSet = question.question_set || question.set;
     if (questionSet?.source_type === "ai_generated") {
       const sourceDetails = questionSet.source_details as Record<string, unknown> | undefined;
       const modelId = sourceDetails?.primary_model || sourceDetails?.model;

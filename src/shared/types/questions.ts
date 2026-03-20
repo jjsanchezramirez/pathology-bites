@@ -85,7 +85,8 @@ export interface QuestionWithDetails extends Omit<
   QuestionData,
   "version_major" | "version_minor" | "version_patch"
 > {
-  set?: SetData; // Renamed from question_set to match actual Supabase join alias
+  set?: SetData; // Some queries use `set` alias
+  question_set?: SetData; // Supabase `question_set:question_sets(...)` alias
   category?: CategoryData; // Single category object (from API join)
   question_options?: QuestionOptionData[];
   question_images?: (QuestionImageData & {

@@ -72,7 +72,7 @@ export default function MyQuestionsPage() {
   const [loading, setLoading] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState<string>("all");
-  const [activeTab, setActiveTab] = useState<string>("revision");
+  const [activeTab, setActiveTab] = useState<string>("");
   const [selectedQuestion, setSelectedQuestion] = useState<MyQuestion | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [submitDialogOpen, setSubmitDialogOpen] = useState(false);
@@ -114,7 +114,7 @@ export default function MyQuestionsPage() {
           published_at,
           created_at,
           updated_at,
-          question_sets(id, name),
+          question_set:question_sets(id, name),
           question_options(id, text, is_correct, explanation, order_index),
           question_images(
             question_section,
@@ -225,9 +225,19 @@ export default function MyQuestionsPage() {
         setQuestions(finalData);
         setFilteredQuestions(finalData);
 
-        // Auto-select priority tab if there are rejected questions
-        if (rejectedQuestions.length > 0 && activeTab === "revision") {
-          setActiveTab("revision");
+        // Auto-select the first tab that has pending items (only on initial load)
+        if (!activeTab) {
+          const tabPriority: { tab: string; status: string }[] = [
+            { tab: "revision", status: "rejected" },
+            { tab: "flagged", status: "flagged" },
+            { tab: "drafts", status: "draft" },
+            { tab: "under-review", status: "pending_review" },
+            { tab: "published", status: "published" },
+          ];
+          const firstNonEmpty = tabPriority.find(({ status }) =>
+            finalData.some((q) => q.status === status)
+          );
+          setActiveTab(firstNonEmpty?.tab || "revision");
         }
       } catch (error) {
         console.error("Unexpected error fetching questions:", error);
@@ -302,7 +312,7 @@ export default function MyQuestionsPage() {
           question_options(*),
           question_images(*, image:images(*)),
           categories(*),
-          question_sets(id, name, source_type, short_form),
+          question_set:question_sets(id, name, source_type, short_form),
           created_by_user:users!questions_created_by_fkey(first_name, last_name),
           updated_by_user:users!questions_updated_by_fkey(first_name, last_name),
           reviewer_user:users!questions_reviewer_id_fkey(first_name, last_name)
@@ -783,13 +793,13 @@ export default function MyQuestionsPage() {
                                   )}
 
                                   {/* Question Set Badge */}
-                                  {question.set && (
+                                  {question.question_set && (
                                     <div className="flex gap-2">
                                       {(activeTab === "revision" || activeTab === "flagged") && (
                                         <div className="w-6 flex-shrink-0" />
                                       )}
                                       <Badge variant="outline" className="text-xs">
-                                        {question.set.name}
+                                        {question.question_set.name}
                                       </Badge>
                                     </div>
                                   )}

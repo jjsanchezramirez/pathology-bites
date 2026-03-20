@@ -61,7 +61,7 @@ export function SourceTab({
   // Initialize AI model name synchronously using useMemo for instant display
   const aiModelName = useMemo<string>(() => {
     // Use question_set data if available (it should be preloaded from the API)
-    const questionSet = question.set;
+    const questionSet = question.question_set || question.set;
 
     if (questionSet) {
       // Check if this is an AI-generated question set
@@ -85,7 +85,7 @@ export function SourceTab({
       // No question set associated
       return "No AI Model (manually created)";
     }
-  }, [question.set]);
+  }, [question.question_set, question.set]);
 
   // Get subject name from category (Category = Subject in the database)
   const subjectName = useMemo<string | null>(() => {
