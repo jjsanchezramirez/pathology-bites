@@ -112,21 +112,45 @@ interface AnswerOptionInput {
   explanation?: string;
 }
 
-// Helper function to find question set ID by name
-async function findQuestionSetIdByName(name: string): Promise<string | null> {
+// Helper function to find question set ID by name, or create it if it doesn't exist
+async function findOrCreateQuestionSet(name: string): Promise<string | null> {
   const supabase = createClient();
 
-  const { data } = await supabase
+  // Try exact match first
+  const { data: exact } = await supabase
+    .from("question_sets")
+    .select("id")
+    .eq("name", name)
+    .limit(1);
+
+  if (exact && exact.length > 0) {
+    return exact[0].id;
+  }
+
+  // Fallback to fuzzy match
+  const { data: fuzzy } = await supabase
     .from("question_sets")
     .select("id")
     .ilike("name", `%${name}%`)
     .limit(1);
 
-  if (data && data.length > 0) {
-    return data[0].id;
+  if (fuzzy && fuzzy.length > 0) {
+    return fuzzy[0].id;
   }
 
-  console.warn(`⚠️ Question set not found: "${name}"`);
+  // Create the question set if it doesn't exist
+  const { data: created, error } = await supabase
+    .from("question_sets")
+    .insert({ name, source_type: "AI-Generated" })
+    .select("id")
+    .single();
+
+  if (created && !error) {
+    console.log(`✅ Created new question set: "${name}"`);
+    return created.id;
+  }
+
+  console.warn(`⚠️ Failed to find or create question set: "${name}"`, error);
   return null;
 }
 
@@ -231,7 +255,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
       if (parsed.question_set_id) {
         questionData.question_set_id = parsed.question_set_id;
       } else if (parsed.question_set || parsed.questionSet) {
-        const setId = await findQuestionSetIdByName(parsed.question_set || parsed.questionSet);
+        const setId = await findOrCreateQuestionSet(parsed.question_set || parsed.questionSet);
         if (setId) questionData.question_set_id = setId;
       }
 
@@ -307,7 +331,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
           content: formState.selectedContent,
           additionalContext: additionalContent,
           instructions:
-            "Generate a comprehensive pathology question with 5 answer options (A, B, C, D, E) based on the provided educational content. IMPORTANT: Assume there is a histologic image attached and do NOT describe the image in the question stem. Include detailed explanations for all answer options.",
+            "Generate a comprehensive pathology question with 5 answer options (A, B, C, D, E) based on the provided educational content. Include detailed explanations for all answer options.",
           model: formState.selectedAIModel,
         }),
       });
@@ -379,7 +403,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
       if (formState.selectedAIModel) {
         const modelName = ACTIVE_AI_MODELS.find((m) => m.id === formState.selectedAIModel)?.name;
         if (modelName) {
-          const setId = await findQuestionSetIdByName(modelName);
+          const setId = await findOrCreateQuestionSet(modelName);
           if (setId) generatedData.question_set_id = setId;
         }
       }

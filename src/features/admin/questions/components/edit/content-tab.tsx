@@ -14,14 +14,31 @@ import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/shared/components/ui/card";
 import { BookOpen, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/shared/components/ui/select";
 
 import { QuestionWithDetails } from "@/shared/types/questions";
 import { EditQuestionFormData } from "@/features/admin/questions/hooks/use-edit-question-form";
 import { FetchReferencesDialog } from "@/features/admin/questions/components/dialogs/fetch-references-dialog";
-import { EducationalContent } from "@/features/admin/questions/components/create/content-selector";
+import {
+  ContentSelector,
+  EducationalContent,
+} from "@/features/admin/questions/components/create/content-selector";
+import { ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
 
 interface QuestionOptionFormData {
   id?: string;
@@ -51,9 +68,15 @@ export function ContentTab({
   const [fetchDialogOpen, setFetchDialogOpen] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [enhancementRequest, setEnhancementRequest] = useState("");
+  const [inlineContent, setInlineContent] = useState<EducationalContent | null>(null);
+  const [selectedModel, setSelectedModel] = useState<string>("");
+
+  // The effective educational context — either from the question or selected inline
+  const effectiveContext = educationalContext || inlineContent;
 
   // Determine which AI model to use for refinement
   const refinementModel = useMemo(() => {
+    if (selectedModel) return selectedModel;
     const questionSet = question.set;
     if (questionSet?.source_type === "ai_generated") {
       const sourceDetails = questionSet.source_details as Record<string, unknown> | undefined;
@@ -62,8 +85,8 @@ export function ContentTab({
         return String(modelId);
       }
     }
-    return "Llama-3.3-8B-Instruct"; // Default fast model
-  }, [question]);
+    return ACTIVE_AI_MODELS[0]?.id || "Llama-3.3-8B-Instruct";
+  }, [question, selectedModel]);
 
   // Handle AI enhancement
   const handleAIEnhancement = async () => {
@@ -374,58 +397,84 @@ export function ContentTab({
       />
 
       {/* AI Enhancement Section */}
-      {educationalContext && (
-        <div className="border-t pt-8 mt-8">
-          <Card className="bg-primary/5 border-primary/20">
-            <CardHeader className="pb-4">
-              <CardTitle className="flex items-center gap-2 text-base">
-                <Sparkles className="h-5 w-5 text-primary" />
-                Enhance with AI
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Let AI improve your question's clarity, accuracy, and pedagogical value. The AI will
-                use the context from your educational content to enhance the question.
-              </p>
-
-              <div className="space-y-2.5">
-                <Label htmlFor="enhancement-request" className="text-sm font-medium">
-                  Enhancement Request{" "}
-                  <span className="text-muted-foreground font-normal">(Optional)</span>
-                </Label>
-                <Textarea
-                  id="enhancement-request"
-                  placeholder="e.g., 'Make the question more challenging', 'Focus on differential diagnosis', 'Simplify the language'"
-                  value={enhancementRequest}
-                  onChange={(e) => setEnhancementRequest(e.target.value)}
-                  rows={2}
-                  className="resize-none text-sm"
-                />
+      <div className="border-t pt-8 mt-8">
+        <Card className="bg-primary/5 border-primary/20">
+          <CardHeader className="pb-4">
+            <CardTitle className="flex items-center gap-2 text-base">
+              <Sparkles className="h-5 w-5 text-primary" />
+              Enhance with AI
+            </CardTitle>
+            <CardDescription>
+              {effectiveContext
+                ? "Use AI to improve clarity, accuracy, and pedagogical value using the linked educational content."
+                : "Select educational content and an AI model to enable enhancement."}
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {/* Show inline selectors when no educational context exists */}
+            {!educationalContext && (
+              <div className="space-y-4 pb-2">
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">Educational Content</Label>
+                  <ContentSelector
+                    onContentSelect={setInlineContent}
+                    selectedContent={inlineContent}
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-sm font-medium">AI Model</Label>
+                  <Select value={selectedModel} onValueChange={setSelectedModel}>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select an AI model..." />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {ACTIVE_AI_MODELS.map((model) => (
+                        <SelectItem key={model.id} value={model.id}>
+                          {model.name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
               </div>
+            )}
 
-              <Button
-                onClick={handleAIEnhancement}
-                disabled={isEnhancing}
-                className="w-full"
-                variant="default"
-              >
-                {isEnhancing ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Enhancing...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Enhance Question
-                  </>
-                )}
-              </Button>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+            <div className="space-y-2.5">
+              <Label htmlFor="enhancement-request" className="text-sm font-medium">
+                Enhancement Request{" "}
+                <span className="text-muted-foreground font-normal">(Optional)</span>
+              </Label>
+              <Textarea
+                id="enhancement-request"
+                placeholder="e.g., 'Make the question more challenging', 'Focus on differential diagnosis', 'Simplify the language'"
+                value={enhancementRequest}
+                onChange={(e) => setEnhancementRequest(e.target.value)}
+                rows={2}
+                className="resize-none text-sm"
+              />
+            </div>
+
+            <Button
+              onClick={handleAIEnhancement}
+              disabled={isEnhancing || !effectiveContext}
+              className="w-full"
+              variant="default"
+            >
+              {isEnhancing ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Enhancing...
+                </>
+              ) : (
+                <>
+                  <Sparkles className="h-4 w-4 mr-2" />
+                  Enhance Question
+                </>
+              )}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
 
       <FetchReferencesDialog
         open={fetchDialogOpen}

@@ -27,12 +27,14 @@ const CONTENT_TO_CATEGORY_MAPPING: CategoryMapping = {
     Molecular: "d6d64892-2e17-4596-be2e-8ae27a41551e", // Molecular Pathology & Cytogenetics
     Neuropathology: "9779afa6-3773-49f6-8ca9-f112e4b59a9b", // Neuropathology
     "Pancreas Biliary Liver": "85adf114-3e76-4a4f-af3b-7c64e03576e3", // Pancreatobiliary
+    "Pancreas, Biliary, Liver": "85adf114-3e76-4a4f-af3b-7c64e03576e3", // Pancreatobiliary (alternate naming from R2 JSON)
     Pediatrics: "37443ebb-d4c0-4789-82be-6d9e02655af5", // Pediatric
     "Soft Tissue": "fdaf44b9-b8e7-4f33-ad04-0c005aaafe4d", // Bone & Soft Tissue
   },
   "Clinical Pathology": {
     "Clinical Chemistry": "fc9d881d-f0fb-4f53-91f3-1a2f145d9156", // Clinical Chemistry
     "Hematology Hemostasis and Thrombosis": "7c1c342a-3fba-474e-9a07-630d3cd09465", // Coagulation
+    "Hematology, Hemostasis, and Thrombosis": "7c1c342a-3fba-474e-9a07-630d3cd09465", // Coagulation (alternate naming from R2 JSON)
     Hematopathology: "ff6d727c-62b6-47b8-bbda-7f71b3111a3c", // Hematopathology
     Immunology: "58d5f402-3344-42da-b63e-610b0d05a7ca", // Immunology
     "Laboratory Management and Clinical Laboratory Informatics":
@@ -40,6 +42,7 @@ const CONTENT_TO_CATEGORY_MAPPING: CategoryMapping = {
     "Medical Microbiology": "b4aed7d4-e1ba-4450-addc-c0c8e353a465", // Medical Microbiology
     "Molecular Pathology and Cytogenetics": "d6d64892-2e17-4596-be2e-8ae27a41551e", // Molecular Pathology & Cytogenetics
     "Toxicology Body Fluids and Special Techniques": "b4aed7d4-e1ba-4450-addc-c0c8e353a465", // Medical Microbiology (closest match)
+    "Toxicology, Body Fluids, and Special Techniques": "b4aed7d4-e1ba-4450-addc-c0c8e353a465", // Medical Microbiology (alternate naming from R2 JSON)
     "Transfusion Medicine": "2f0c7425-5c0e-4c2d-a373-34d32021a362", // Blood Banking/Transfusion Medicine
   },
 };

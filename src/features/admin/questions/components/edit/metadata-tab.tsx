@@ -49,20 +49,55 @@ export function MetadataTab({
 }: MetadataTabProps) {
   // Initialize with selected tags immediately for instant display
   const [availableTags, setAvailableTags] = useState<Tag[]>((question.tags as Tag[]) || []);
+  const [categories, setCategories] = useState<{ id: string; name: string }[]>([]);
+  const [questionSets, setQuestionSets] = useState<{ id: string; name: string }[]>([]);
+
+  const hasCategory = !!(
+    question.category &&
+    typeof question.category === "object" &&
+    "name" in question.category
+  );
+  const hasQuestionSet = !!question.set;
 
   // Get category name from preloaded data
   const categoryName = useMemo(() => {
-    if (question.category && typeof question.category === "object" && "name" in question.category) {
-      return question.category.name;
+    if (hasCategory) {
+      return (question.category as { name: string }).name;
     }
     return "No Category";
-  }, [question.category]);
+  }, [question.category, hasCategory]);
 
   // Get question set name from preloaded data
   const questionSetName = useMemo(() => {
     const questionSet = question.set;
     return questionSet ? questionSet.name : "No Question Set";
   }, [question.set]);
+
+  // Load categories and question sets if missing
+  useEffect(() => {
+    if (hasCategory && hasQuestionSet) return;
+
+    const supabase = createClient();
+
+    if (!hasCategory) {
+      supabase
+        .from("categories")
+        .select("id, name")
+        .order("name")
+        .then(({ data }) => {
+          if (data) setCategories(data);
+        });
+    }
+    if (!hasQuestionSet) {
+      supabase
+        .from("question_sets")
+        .select("id, name")
+        .order("name")
+        .then(({ data }) => {
+          if (data) setQuestionSets(data);
+        });
+    }
+  }, [hasCategory, hasQuestionSet]);
 
   // Load all available tags in the background for the autocomplete dropdown
   useEffect(() => {
@@ -144,30 +179,88 @@ export function MetadataTab({
         )}
       />
 
-      {/* Category (Read-Only) */}
+      {/* Category */}
       <div className="space-y-3">
         <Label className="text-base font-semibold">Category</Label>
-        <Card className="bg-muted/50">
-          <CardContent className="p-3">
-            <p className="text-sm font-medium">{categoryName}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Category cannot be changed after creation
-            </p>
-          </CardContent>
-        </Card>
+        {hasCategory ? (
+          <Card className="bg-muted/50">
+            <CardContent className="p-3">
+              <p className="text-sm font-medium">{categoryName}</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <FormField
+            control={form.control}
+            name="category_id"
+            render={({ field }) => (
+              <FormItem>
+                <Select
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    onUnsavedChanges();
+                  }}
+                  value={field.value || ""}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a category..." />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {categories.map((cat) => (
+                      <SelectItem key={cat.id} value={cat.id}>
+                        {cat.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
       </div>
 
-      {/* Question Set (Read-Only) */}
+      {/* Question Set */}
       <div className="space-y-3">
         <Label className="text-base font-semibold">Question Set</Label>
-        <Card className="bg-muted/50">
-          <CardContent className="p-3">
-            <p className="text-sm font-medium">{questionSetName}</p>
-            <p className="text-xs text-muted-foreground mt-1">
-              Question set cannot be changed after creation
-            </p>
-          </CardContent>
-        </Card>
+        {hasQuestionSet ? (
+          <Card className="bg-muted/50">
+            <CardContent className="p-3">
+              <p className="text-sm font-medium">{questionSetName}</p>
+            </CardContent>
+          </Card>
+        ) : (
+          <FormField
+            control={form.control}
+            name="question_set_id"
+            render={({ field }) => (
+              <FormItem>
+                <Select
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    onUnsavedChanges();
+                  }}
+                  value={field.value || ""}
+                >
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a question set..." />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {questionSets.map((qs) => (
+                      <SelectItem key={qs.id} value={qs.id}>
+                        {qs.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
       </div>
 
       {/* Tags */}

@@ -238,6 +238,20 @@ async function callMistralAPI(
   };
 }
 
+// Categories that typically have histologic/microscopic images attached
+const IMAGE_CATEGORIES = new Set([
+  // All Anatomic Pathology subjects have images
+  "Anatomic Pathology",
+]);
+// CP subjects that also have images
+const IMAGE_CP_SUBJECTS = new Set(["Hematopathology"]);
+
+function hasImageByDefault(category: string, subject: string): boolean {
+  if (IMAGE_CATEGORIES.has(category)) return true;
+  if (category === "Clinical Pathology" && IMAGE_CP_SUBJECTS.has(subject)) return true;
+  return false;
+}
+
 function buildAdminQuestionPrompt(
   content: QuestionGenerationContent,
   instructions: string,
@@ -245,7 +259,13 @@ function buildAdminQuestionPrompt(
   mode: string = "educational_content"
 ): string {
   if (mode === "educational_content") {
-    return `Create a high-quality medical/pathology question based on the following educational content:
+    const hasImage = hasImageByDefault(content.category, content.subject);
+
+    const imageInstruction = hasImage
+      ? "This question will have a histologic/microscopic image attached. Do NOT describe the image in the question stem — instead reference that images are shown (e.g., 'histologic sections are shown'). Detailed histopathological descriptions belong in the answer explanations, not the question stem."
+      : "This question does NOT have an associated image. The question stem should be self-contained with all necessary clinical and laboratory information. Do not reference any images or histologic findings unless the additional context below specifies that an image will be provided.";
+
+    return `Create a high-quality medical/pathology question based on the following educational content.
 
 EDUCATIONAL CONTENT:
 Category: ${content.category}
@@ -253,35 +273,21 @@ Subject: ${content.subject}
 Lesson: ${content.lesson}
 Topic: ${content.topic}
 
-INSTRUCTIONS (AUDIO SCRIPT FORMAT):
-${instructions}
+${additionalContext ? `ADDITIONAL CONTEXT (IMPORTANT — follow these instructions closely):\n${additionalContext}\n` : ""}IMAGE CONTEXT:
+${imageInstruction}
 
-Write the question as a script for audio narration following this structure:
-
-1. DEFINITION AND CLASSIFICATION
-   - What is this entity or spectrum of entities?
-   - How is it classified within pathology?
-
-2. KEY MORPHOLOGIC FEATURES
-   - What does it look like microscopically/macroscopically?
-   - What distinguishes each entity from others?
-
-3. MOLECULAR/IMMUNOHISTOCHEMICAL PROFILE
-   - What drives it molecularly?
-   - What immunohistochemical markers are relevant?
-
-4. BROADER PATHOLOGIC CONTEXT
-   - Where does this fit in a broader pathway or continuum?
-   - What are the related entities?
+QUESTION STRUCTURE:
+Write the question following this four-beat framework:
+1. DEFINITION AND CLASSIFICATION — What is this entity? How is it classified?
+2. KEY MORPHOLOGIC FEATURES — What does it look like microscopically/macroscopically? What distinguishes it?
+3. MOLECULAR/IMMUNOHISTOCHEMICAL PROFILE — What drives it molecularly? What markers are relevant?
+4. BROADER PATHOLOGIC CONTEXT — Where does this fit in a broader pathway or continuum?
 
 CONSTRAINTS:
-- NO hyphens (text will be read aloud - use "to" instead of ranges like "5-10")
+- NO hyphens (text will be read aloud — use "to" instead of ranges like "5-10")
 - Use precise pathology terminology but keep sentence structure flowing for narration
-- Avoid vague clinical advice like "warrants follow up" - anchor concepts instead
-- Keep within ${additionalContext || "standard length"}
-
-ADDITIONAL CONTEXT:
-${additionalContext || "None provided"}
+- Avoid vague clinical advice like "warrants follow up" — anchor concepts instead
+- Write the question stem as SHORT, separate sentences — NOT one long run-on sentence. Present the clinical scenario in 2 to 4 crisp sentences, then ask the question as its own final sentence ending in a question mark. Bad: "A 45-year-old woman presents with X, and her labs show Y, and she has Z, what is the mechanism?" Good: "A 45-year-old woman presents with petechiae and ecchymoses following severe trauma and sepsis. Laboratory studies show a low platelet count, elevated D-dimer, and decreased fibrinogen. What is the most likely underlying mechanism?"
 
 CRITICAL REQUIREMENTS:
 1. Create a clinically relevant multiple-choice question
@@ -292,10 +298,8 @@ CRITICAL REQUIREMENTS:
 6. Make the question challenging but fair for medical students/residents
 7. Base the question on the provided educational content
 8. Focus on clinical correlation and diagnostic reasoning
-9. DO NOT describe histologic/microscopic findings in the question stem - instead reference that "histologic images are shown below" or similar
-10. The question stem should focus on clinical presentation, patient demographics, and clinical context
-11. Detailed histopathological descriptions belong in the answer explanations, not the question stem
-12. Follow the four-beat framework: what is it → what does it look like → what drives it molecularly → where does it sit in the bigger picture
+9. The question stem should focus on clinical presentation, patient demographics, and clinical context
+10. Follow the four-beat framework: what is it → what does it look like → what drives it molecularly → where does it sit in the bigger picture
 
 Return your response in this EXACT JSON format (no markdown, no code blocks, just pure JSON):
 
@@ -414,7 +418,7 @@ ${answerOptions
 
 REFINEMENT INSTRUCTIONS:
 ${instructions}
-
+${additionalContext ? `\nADDITIONAL CONTEXT (IMPORTANT — follow these instructions closely):\n${additionalContext}\n` : ""}
 CRITICAL REQUIREMENTS:
 1. Maintain exactly 5 answer options (A, B, C, D, E) with one clearly correct answer
 2. Provide detailed explanations for ALL 5 answer options
