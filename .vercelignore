@@ -32,11 +32,5 @@ coverage
 tmp
 temp
 
-# Data files not needed in deployment
-expertpath/
-/anki/
-/json/anki/
-console.log
-
-# FFmpeg WASM files (large binaries, download via postinstall)
+# FFmpeg WASM files (large binaries, downloaded via postinstall)
 public/ffmpeg/
