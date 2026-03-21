@@ -233,6 +233,62 @@ export function getUserNavigationSections(): NavigationSection[] {
   ];
 }
 
+// Guest/USCAP Navigation Sections Configuration
+export function getGuestNavigationSections(): NavigationSection[] {
+  return [
+    {
+      title: "Overview",
+      items: [
+        {
+          name: "Dashboard",
+          href: "/uscap",
+          icon: "LayoutDashboard",
+        },
+      ],
+    },
+    {
+      title: "Education",
+      items: [
+        {
+          name: "New Quiz",
+          href: "/uscap/quiz",
+          icon: "Plus",
+        },
+        {
+          name: "Slide-Based Questions",
+          href: "/uscap/wsi-questions",
+          icon: "Microscope",
+        },
+        {
+          name: "Ankoma Deck Viewer",
+          href: "/uscap/anki",
+          icon: "Library",
+        },
+      ],
+    },
+    {
+      title: "Tools",
+      items: [
+        {
+          name: "Browse Virtual Slides",
+          href: "/tools/virtual-slides",
+          icon: "Image",
+        },
+        {
+          name: "Hemapath Quiz",
+          href: "/tools/cell-quiz",
+          icon: "Target",
+        },
+        {
+          name: "ABPath Content Specs",
+          href: "/tools/abpath",
+          icon: "BookOpen",
+        },
+      ],
+    },
+  ];
+}
+
 // Navigation configuration factory
 export function getNavigationConfig(
   userRole: "admin" | "creator" | "reviewer" | "user"

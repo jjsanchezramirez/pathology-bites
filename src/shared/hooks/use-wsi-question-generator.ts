@@ -102,8 +102,15 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
           ? window.location.origin
           : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
+      // Use public endpoint for USCAP guests (no auth required)
+      const isUSCAP =
+        typeof window !== "undefined" && window.location.pathname.startsWith("/uscap");
+      const apiPath = isUSCAP
+        ? "/api/public/uscap/wsi-questions/generate"
+        : "/api/user/wsi-questions/generate";
+
       console.log("[WSI Generator] Using SINGLE /generate endpoint (no multi-step)");
-      const response = await fetch(`${baseUrl}/api/user/wsi-questions/generate?cb=${Date.now()}`, {
+      const response = await fetch(`${baseUrl}${apiPath}?cb=${Date.now()}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

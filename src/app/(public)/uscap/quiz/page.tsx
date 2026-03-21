@@ -9,7 +9,6 @@ import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
 
 import { toast } from "@/shared/utils/ui/toast";
-import { PublicHero } from "@/shared/components/common/public-hero";
 import { QuestionCountSelector, CategorySelector } from "@/features/user/quiz/components";
 import {
   QuestionType,
@@ -198,39 +197,27 @@ export default function GuestQuizPage() {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen flex-col">
-        <PublicHero title="Demo Quiz" description="Configure your quiz settings" />
-        <div className="container mx-auto py-8">
-          <div className="max-w-2xl mx-auto">
-            <Card>
-              <CardContent className="p-6 flex items-center justify-center min-h-[400px]">
-                <div className="text-center space-y-4">
-                  <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-                  <p className="text-muted-foreground">Loading quiz options...</p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+      <div className="max-w-2xl mx-auto">
+        <Card>
+          <CardContent className="p-6 flex items-center justify-center min-h-[400px]">
+            <div className="text-center space-y-4">
+              <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
+              <p className="text-muted-foreground">Loading quiz options...</p>
+            </div>
+          </CardContent>
+        </Card>
       </div>
     );
   }
 
   if (!quizOptions) {
     return (
-      <div className="flex min-h-screen flex-col">
-        <PublicHero title="Demo Quiz" description="Configure your quiz settings" />
-        <div className="container mx-auto py-8">
-          <div className="max-w-2xl mx-auto">
-            <Card>
-              <CardContent className="p-6">
-                <p className="text-red-600">
-                  Failed to load quiz options. Please refresh the page.
-                </p>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
+      <div className="max-w-2xl mx-auto">
+        <Card>
+          <CardContent className="p-6">
+            <p className="text-red-600">Failed to load quiz options. Please refresh the page.</p>
+          </CardContent>
+        </Card>
       </div>
     );
   }
@@ -247,109 +234,106 @@ export default function GuestQuizPage() {
   };
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <PublicHero
-        title="Demo Quiz - USCAP 2026"
-        description="Configure your quiz and experience real pathology questions - no account needed"
-      />
+    <div className="space-y-6">
+      {/* Header */}
+      <div>
+        <h1 className="text-3xl font-bold">New Quiz</h1>
+        <p className="text-muted-foreground">
+          Configure your quiz and experience real pathology questions - no account needed
+        </p>
+      </div>
 
-      <section className="flex-1 py-12">
-        <div className="container mx-auto px-4">
-          <div className="max-w-2xl mx-auto space-y-6">
-            {/* Info Banner */}
-            <Card className="bg-primary/5 border-primary/20">
-              <CardContent className="p-4">
-                <div className="flex items-start gap-3">
-                  <Sparkles className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
-                  <div className="text-sm">
-                    <p className="font-medium mb-1">Guest Mode - No Signup Required</p>
-                    <p className="text-muted-foreground">
-                      Configure and take a quiz with real questions. Your results will be shown but
-                      not saved. Create a free account to track your progress!
-                    </p>
+      <div className="max-w-2xl mx-auto space-y-6">
+        {/* Info Banner */}
+        <Card className="bg-primary/5 border-primary/20">
+          <CardContent className="p-4">
+            <div className="flex items-start gap-3">
+              <Sparkles className="h-5 w-5 text-primary flex-shrink-0 mt-0.5" />
+              <div className="text-sm">
+                <p className="font-medium mb-1">Guest Mode - No Signup Required</p>
+                <p className="text-muted-foreground">
+                  Configure and take a quiz with real questions. Your results will be shown but not
+                  saved. Create a free account to track your progress!
+                </p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Main Configuration Card */}
+        <Card>
+          <CardContent className="p-6 space-y-6">
+            {/* Question Count */}
+            <QuestionCountSelector
+              questionCount={effectiveFormData.questionCount}
+              availableQuestions={availableQuestions}
+              questionCountOptions={questionCountOptions}
+              onChange={(count) => setFormData((prev) => ({ ...prev, questionCount: count }))}
+            />
+
+            <Separator />
+
+            {/* Question Type - Simplified for guests (only "all") */}
+            <div className="space-y-4">
+              <div>
+                <Label className="text-sm font-medium">Question Type</Label>
+                <p className="text-xs text-muted-foreground">
+                  Guest mode uses all available questions
+                </p>
+              </div>
+              <div className="grid grid-cols-1 gap-2">
+                <Button variant="default" size="sm" disabled>
+                  <div className="text-center">
+                    <div className="font-medium text-xs">
+                      All Questions ({quizOptions.questionTypeStats.all.all})
+                    </div>
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+                </Button>
+              </div>
+            </div>
 
-            {/* Main Configuration Card */}
-            <Card>
-              <CardContent className="p-6 space-y-6">
-                {/* Question Count */}
-                <QuestionCountSelector
-                  questionCount={effectiveFormData.questionCount}
-                  availableQuestions={availableQuestions}
-                  questionCountOptions={questionCountOptions}
-                  onChange={(count) => setFormData((prev) => ({ ...prev, questionCount: count }))}
-                />
+            <Separator />
 
-                <Separator />
+            {/* Categories */}
+            <CategorySelector
+              categorySelection={formData.categorySelection}
+              selectedCategories={formData.selectedCategories}
+              questionType={formData.questionType}
+              categories={quizOptions.categories}
+              questionTypeStats={quizOptions.questionTypeStats}
+              onCategorySelectionChange={handleCategorySelectionChange}
+              onCategoryToggle={handleCategoryToggle}
+            />
 
-                {/* Question Type - Simplified for guests (only "all") */}
-                <div className="space-y-4">
-                  <div>
-                    <Label className="text-sm font-medium">Question Type</Label>
-                    <p className="text-xs text-muted-foreground">
-                      Guest mode uses all available questions
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-1 gap-2">
-                    <Button variant="default" size="sm" disabled>
-                      <div className="text-center">
-                        <div className="font-medium text-xs">
-                          All Questions ({quizOptions.questionTypeStats.all.all})
-                        </div>
-                      </div>
-                    </Button>
-                  </div>
-                </div>
+            <Separator />
 
-                <Separator />
-
-                {/* Categories */}
-                <CategorySelector
-                  categorySelection={formData.categorySelection}
-                  selectedCategories={formData.selectedCategories}
-                  questionType={formData.questionType}
-                  categories={quizOptions.categories}
-                  questionTypeStats={quizOptions.questionTypeStats}
-                  onCategorySelectionChange={handleCategorySelectionChange}
-                  onCategoryToggle={handleCategoryToggle}
-                />
-
-                <Separator />
-
-                {/* Start Button */}
-                <div className="space-y-4">
-                  <Button
-                    onClick={handleSubmit}
-                    disabled={creating || !validateQuizConfig().isValid}
-                    className="w-full"
-                    size="lg"
-                  >
-                    {creating ? (
-                      <>
-                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                        Creating Quiz...
-                      </>
-                    ) : (
-                      <>Start Demo Quiz ({effectiveFormData.questionCount} questions)</>
-                    )}
-                  </Button>
-                  {validateQuizConfig().error && (
-                    <p className="text-sm text-destructive text-center">
-                      {validateQuizConfig().error}
-                    </p>
-                  )}
-                  <p className="text-xs text-muted-foreground text-center">
-                    Available questions: {availableQuestions}
-                  </p>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+            {/* Start Button */}
+            <div className="space-y-4">
+              <Button
+                onClick={handleSubmit}
+                disabled={creating || !validateQuizConfig().isValid}
+                className="w-full"
+                size="lg"
+              >
+                {creating ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating Quiz...
+                  </>
+                ) : (
+                  <>Start Demo Quiz ({effectiveFormData.questionCount} questions)</>
+                )}
+              </Button>
+              {validateQuizConfig().error && (
+                <p className="text-sm text-destructive text-center">{validateQuizConfig().error}</p>
+              )}
+              <p className="text-xs text-muted-foreground text-center">
+                Available questions: {availableQuestions}
+              </p>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
     </div>
   );
 }

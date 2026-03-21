@@ -34,9 +34,10 @@ const DashboardThemeContext = createContext<DashboardThemeContextType | undefine
 
 interface DashboardThemeProviderProps {
   children: React.ReactNode;
+  isGuest?: boolean;
 }
 
-export function DashboardThemeProvider({ children }: DashboardThemeProviderProps) {
+export function DashboardThemeProvider({ children, isGuest = false }: DashboardThemeProviderProps) {
   const { isAdmin, role } = useUserRole();
 
   const [currentTheme, setCurrentTheme] = useState<DashboardTheme>(getDefaultTheme());
@@ -47,7 +48,7 @@ export function DashboardThemeProvider({ children }: DashboardThemeProviderProps
   const [isTransitioning, setIsTransitioning] = useState(false);
 
   // Use SWR cache instead of redundant localStorage
-  const { data: settings } = useUserSettings();
+  const { data: settings } = useUserSettings({ enabled: !isGuest });
 
   // Get available themes based on admin mode
   const getAvailableThemes = (mode: AdminMode): DashboardTheme[] => {

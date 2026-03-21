@@ -15,12 +15,11 @@ export function useQuizMode() {
   const isInQuizMode = useMemo(() => {
     if (!pathname) return false;
 
-    // Exclude /dashboard/quiz/new from quiz mode (sidebar should not collapse)
+    // Exclude quiz creation pages from quiz mode (sidebar should not collapse)
     if (pathname === "/dashboard/quiz/new") return false;
 
-    // Check if we're in any other quiz-related page
-    // This includes: /dashboard/quiz/[id], /dashboard/quiz/[id]/review, etc.
-    return pathname.startsWith("/dashboard/quiz/");
+    // Check if we're in any quiz-related page (dashboard or USCAP)
+    return pathname.startsWith("/dashboard/quiz/") || pathname.startsWith("/uscap/quiz/");
   }, [pathname]);
 
   return {
@@ -37,7 +36,8 @@ export function useAnkiMode() {
   const pathname = usePathname();
 
   const isInAnkiMode = useMemo(() => {
-    return pathname ? pathname.startsWith("/dashboard/anki") : false;
+    if (!pathname) return false;
+    return pathname.startsWith("/dashboard/anki") || pathname === "/uscap/anki";
   }, [pathname]);
 
   return {

@@ -53,7 +53,7 @@ export function CreateQuestionClient() {
       }
 
       toast.success("Question created successfully!");
-      router.push("/admin/questions");
+      router.push("/admin/my-questions");
       router.refresh();
     } catch (error) {
       console.error("Error creating question:", error);
@@ -78,7 +78,7 @@ export function CreateQuestionClient() {
   };
 
   const handleCancel = () => {
-    router.push("/admin/questions");
+    router.push("/admin/my-questions");
   };
 
   return (

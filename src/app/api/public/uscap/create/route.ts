@@ -12,7 +12,8 @@ function createSupabaseClient() {
 
 interface QuestionImage {
   order_index: number;
-  images: { id: string; url: string; description: string } | { id: string; url: string; description: string }[];
+  question_section: string;
+  images: { id: string; url: string; description: string; alt_text: string | null } | { id: string; url: string; description: string; alt_text: string | null }[];
 }
 
 interface QuestionOption {
@@ -20,11 +21,13 @@ interface QuestionOption {
   text: string;
   is_correct: boolean;
   explanation: string;
+  order_index: number;
 }
 
 interface QuestionCategory {
   id: string;
   name: string;
+  short_form: string | null;
 }
 
 interface QuestionRow {
@@ -32,6 +35,7 @@ interface QuestionRow {
   stem: string;
   teaching_point: string;
   difficulty: string;
+  question_references: string | null;
   categories: QuestionCategory | QuestionCategory[];
   question_options: QuestionOption[];
   question_images: QuestionImage[];
@@ -68,23 +72,28 @@ export async function POST(request: NextRequest) {
         stem,
         teaching_point,
         difficulty,
+        question_references,
         category_id,
         categories (
           id,
-          name
+          name,
+          short_form
         ),
         question_options (
           id,
           text,
           is_correct,
-          explanation
+          explanation,
+          order_index
         ),
         question_images (
           order_index,
+          question_section,
           images (
             id,
             url,
-            description
+            description,
+            alt_text
           )
         )
       `
@@ -168,17 +177,20 @@ export async function POST(request: NextRequest) {
         questionText: q.stem,
         explanation: q.teaching_point,
         difficulty: q.difficulty,
+        questionReferences: q.question_references || null,
         category: category ? {
           id: category.id,
           name: category.name,
-          shortName: category.name, // Use name as shortName
+          shortName: category.short_form || category.name,
         } : null,
-        answerOptions: (q.question_options || []).map((opt) => ({
-          id: opt.id,
-          optionText: opt.text,
-          isCorrect: opt.is_correct,
-          explanation: opt.explanation,
-        })),
+        answerOptions: [...(q.question_options || [])]
+          .sort((a, b) => a.order_index - b.order_index)
+          .map((opt) => ({
+            id: opt.id,
+            optionText: opt.text,
+            isCorrect: opt.is_correct,
+            explanation: opt.explanation,
+          })),
         images: (q.question_images || [])
           .sort((a, b) => a.order_index - b.order_index)
           .map((qi, idx: number) => {
@@ -187,10 +199,11 @@ export async function POST(request: NextRequest) {
               id: image?.id || '',
               url: image?.url || '',
               caption: image?.description || '',
+              alt: image?.alt_text || image?.description || '',
+              questionSection: qi.question_section || 'stem',
               orderIndex: idx,
             };
           }),
-        sources: [], // No sources table in current schema
       };
     });
 

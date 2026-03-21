@@ -61,8 +61,8 @@ import { DeleteQuestionDialog } from "../dialogs/delete-question-dialog";
 
 import { VersionHistoryDialog } from "../versioning/version-history-dialog";
 import { QuestionPreviewDialog } from "../dialogs/question-preview-dialog";
-import { EditCategoryDialog } from "../metadata/categories/edit-category-dialog";
-import { EditSetDialog } from "../metadata/sets/edit-set-dialog";
+import { ChangeCategoryDialog } from "../dialogs/change-category-dialog";
+import { ChangeSetDialog } from "../dialogs/change-set-dialog";
 
 import { createClient } from "@/shared/services/client";
 import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
@@ -397,16 +397,16 @@ function RowActions({
             Edit (Admin Only)
           </DropdownMenuItem>
         )}
-        {isAdmin && onEditCategory && question.category && (
+        {isAdmin && onEditCategory && (
           <DropdownMenuItem onClick={() => onEditCategory(question)}>
             <FolderEdit className="h-4 w-4 mr-2" />
-            Edit Category
+            Change Category
           </DropdownMenuItem>
         )}
-        {isAdmin && onEditSet && question.set && (
+        {isAdmin && onEditSet && (
           <DropdownMenuItem onClick={() => onEditSet(question)}>
             <BookOpen className="h-4 w-4 mr-2" />
-            Edit Question Set
+            Change Question Set
           </DropdownMenuItem>
         )}
         {question.status === "published" && onFlag && (
@@ -608,12 +608,11 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
   const [questionToFlag, setQuestionToFlag] = useState<QuestionWithDetails | null>(null);
   const [questionForHistory, setQuestionForHistory] = useState<QuestionWithDetails | null>(null);
   const [questionToPreview, setQuestionToPreview] = useState<QuestionWithDetails | null>(null);
-  const [showEditCategoryDialog, setShowEditCategoryDialog] = useState(false);
-  const [showEditSetDialog, setShowEditSetDialog] = useState(false);
-  const [categoryToEdit, setCategoryToEdit] = useState<QuestionWithDetails["category"] | null>(
-    null
-  );
-  const [setToEdit, setSetToEdit] = useState<QuestionWithDetails["set"] | null>(null);
+  const [showChangeCategoryDialog, setShowChangeCategoryDialog] = useState(false);
+  const [showChangeSetDialog, setShowChangeSetDialog] = useState(false);
+  const [questionToChangeCategory, setQuestionToChangeCategory] =
+    useState<QuestionWithDetails | null>(null);
+  const [questionToChangeSet, setQuestionToChangeSet] = useState<QuestionWithDetails | null>(null);
 
   // Fetch questions with current filters
   const { questions, total, loading, error, refetch, deleteQuestion } = useQuestions({
@@ -682,18 +681,13 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
   }, []);
 
   const handleEditCategory = useCallback((question: QuestionWithDetails) => {
-    if (question.category) {
-      setCategoryToEdit(question.category);
-      setShowEditCategoryDialog(true);
-    }
+    setQuestionToChangeCategory(question);
+    setShowChangeCategoryDialog(true);
   }, []);
 
   const handleEditSet = useCallback((question: QuestionWithDetails) => {
-    const set = question.set || question.question_set;
-    if (set) {
-      setSetToEdit(set);
-      setShowEditSetDialog(true);
-    }
+    setQuestionToChangeSet(question);
+    setShowChangeSetDialog(true);
   }, []);
 
   const handlePreview = useCallback(
@@ -1133,43 +1127,20 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
           onDelete={deleteQuestion}
         />
 
-        {/* Edit Category Dialog */}
-        <EditCategoryDialog
-          open={showEditCategoryDialog}
-          onOpenChange={setShowEditCategoryDialog}
+        {/* Change Category Dialog */}
+        <ChangeCategoryDialog
+          open={showChangeCategoryDialog}
+          onOpenChange={setShowChangeCategoryDialog}
           onSuccess={refetch}
-          category={
-            categoryToEdit
-              ? {
-                  id: categoryToEdit.id,
-                  name: categoryToEdit.name,
-                  parent_id: categoryToEdit.parent_id || undefined,
-                  level: categoryToEdit.level,
-                  color: categoryToEdit.color || undefined,
-                  short_form: categoryToEdit.short_form || undefined,
-                  created_at: categoryToEdit.created_at,
-                }
-              : null
-          }
+          question={questionToChangeCategory}
         />
 
-        {/* Edit Question Set Dialog */}
-        <EditSetDialog
-          open={showEditSetDialog}
-          onOpenChange={setShowEditSetDialog}
+        {/* Change Question Set Dialog */}
+        <ChangeSetDialog
+          open={showChangeSetDialog}
+          onOpenChange={setShowChangeSetDialog}
           onSuccess={refetch}
-          questionSet={
-            setToEdit
-              ? {
-                  id: setToEdit.id,
-                  name: setToEdit.name,
-                  description: setToEdit.description || undefined,
-                  source_type: setToEdit.source_type,
-                  is_active: setToEdit.is_active,
-                  created_at: setToEdit.created_at,
-                }
-              : null
-          }
+          question={questionToChangeSet}
         />
 
         {/* Bulk Delete Confirmation Dialog */}

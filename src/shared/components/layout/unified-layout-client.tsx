@@ -17,6 +17,8 @@ interface UnifiedLayoutClientProps {
   children: React.ReactNode;
   userType: "admin" | "user";
   headerConfig?: HeaderConfig;
+  navigationOverride?: import("@/shared/config/navigation").NavigationSection[];
+  hideAuthStatus?: boolean;
 }
 
 // Simplified sidebar state enum
@@ -26,19 +28,24 @@ export function UnifiedLayoutClient({
   children,
   userType,
   headerConfig,
+  navigationOverride,
+  hideAuthStatus,
 }: UnifiedLayoutClientProps) {
   // const { role, isLoading } = useUserRole() // Commented out - middleware already validates role server-side
   const pathname = usePathname();
   const { adminMode } = useDashboardTheme();
 
   // Check if we're on pages that have their own full-height layouts
-  const isAnkiPage = pathname === "/dashboard/anki";
+  const isAnkiPage = pathname === "/dashboard/anki" || pathname === "/uscap/anki";
   // Only quiz active session and review pages need full-height layout (they have their own scrolling areas)
   // Results page needs standard scrollable layout
   // Exclude /quiz/new - it needs scrollable layout
   const isQuizActivePage =
-    pathname?.match(/^\/dashboard\/quiz\/[^/]+$/) && pathname !== "/dashboard/quiz/new"; // Active quiz: /quiz/[id]
-  const isQuizReviewPage = pathname?.match(/^\/dashboard\/quiz\/[^/]+\/review$/); // Review page: /quiz/[id]/review
+    (pathname?.match(/^\/dashboard\/quiz\/[^/]+$/) && pathname !== "/dashboard/quiz/new") ||
+    pathname?.match(/^\/uscap\/quiz\/[^/]+$/); // Active quiz: /quiz/[id]
+  const isQuizReviewPage =
+    pathname?.match(/^\/dashboard\/quiz\/[^/]+\/review$/) ||
+    pathname?.match(/^\/uscap\/quiz\/[^/]+\/review$/); // Review page: /quiz/[id]/review
   const isLessonStudioPage = pathname === "/admin/lesson-studio"; // Lesson Studio needs full-width
   const isFullHeightPage = isAnkiPage || isQuizActivePage || isQuizReviewPage || isLessonStudioPage;
 
@@ -52,7 +59,7 @@ export function UnifiedLayoutClient({
   const navigationConfig = getNavigationConfig(
     isAdminTypeMode ? (effectiveMode as "admin" | "creator" | "reviewer") : "user"
   );
-  const navigationSections = navigationConfig.sections;
+  const navigationSections = navigationOverride ?? navigationConfig.sections;
   const { isInQuizMode } = useQuizMode();
   const { isInAnkiMode } = useAnkiMode();
   const isMobileRaw = useMobile();
@@ -181,6 +188,7 @@ export function UnifiedLayoutClient({
             isCollapsed={sidebarCollapsed}
             navigationSections={navigationSections}
             isMobileMode={true}
+            hideAuthStatus={hideAuthStatus}
           />
         </div>
       ) : (
@@ -195,6 +203,7 @@ export function UnifiedLayoutClient({
             isHovered={sidebarHovered}
             navigationSections={navigationSections}
             isMobileMode={false}
+            hideAuthStatus={hideAuthStatus}
           />
         </div>
       )}

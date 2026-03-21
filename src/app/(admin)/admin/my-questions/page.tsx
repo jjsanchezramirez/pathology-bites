@@ -26,6 +26,7 @@ import {
   Edit3,
   Send,
   RefreshCw,
+  Plus,
   FileText,
   AlertTriangle,
   Clock,
@@ -582,6 +583,10 @@ export default function MyQuestionsPage() {
         <Button variant="outline" size="sm" onClick={() => fetchMyQuestions()} disabled={loading}>
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           Refresh
+        </Button>
+        <Button size="sm" onClick={() => router.push("/admin/questions/create")}>
+          <Plus className="h-4 w-4 mr-2" />
+          Create Question
         </Button>
       </div>
 

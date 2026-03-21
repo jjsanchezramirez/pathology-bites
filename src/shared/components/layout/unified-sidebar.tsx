@@ -75,6 +75,7 @@ interface UnifiedSidebarProps {
   isHovered?: boolean;
   navigationSections: NavigationSection[];
   isMobileMode?: boolean;
+  hideAuthStatus?: boolean;
 }
 
 export function UnifiedSidebar({
@@ -82,6 +83,7 @@ export function UnifiedSidebar({
   isHovered = false,
   navigationSections,
   isMobileMode = false,
+  hideAuthStatus = false,
 }: UnifiedSidebarProps) {
   const pathname = usePathname();
   const { canAccess, isAdmin, isLoading } = useUserRole();
@@ -259,9 +261,11 @@ export function UnifiedSidebar({
       </nav>
 
       {/* Auth Status at Bottom */}
-      <div className="mt-auto border-t border-sidebar-border">
-        <SidebarAuthStatus isCollapsed={isOpen ? false : true} />
-      </div>
+      {!hideAuthStatus && (
+        <div className="mt-auto border-t border-sidebar-border">
+          <SidebarAuthStatus isCollapsed={isOpen ? false : true} />
+        </div>
+      )}
     </aside>
   );
 }

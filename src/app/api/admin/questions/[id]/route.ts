@@ -579,7 +579,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     try {
       // Update the main question data - only include valid question table fields
       // For published questions with minor/major edits, change status to pending_review
-      let statusToSet = questionData.status;
+      let statusToSet = questionData?.status;
       const reviewerToSet = reviewerId || currentQuestion.reviewer_id;
       if (
         currentQuestion.status === "published" &&
@@ -609,11 +609,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       // Validate status change to pending_review requires a reviewer
       // Allow updating questions that are ALREADY pending_review (they already have a reviewer)
       // But prevent NEW transitions to pending_review without a reviewer
-      const finalStatus = statusToSet || questionData.status;
+      const finalStatus = statusToSet || questionData?.status;
       const isChangingToPendingReview =
         finalStatus === "pending_review" && currentQuestion.status !== "pending_review";
 
-      if (isChangingToPendingReview && !reviewerToSet && !questionData.reviewer_id) {
+      if (isChangingToPendingReview && !reviewerToSet && !questionData?.reviewer_id) {
         throw new Error(
           "Cannot set status to pending_review without a reviewer. Please use the 'Submit for Review' button to assign a reviewer and change the status."
         );
@@ -627,21 +627,23 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         statusToSet === "published" && currentQuestion.status !== "published";
 
       const validQuestionFields = {
-        ...(questionData.title && { title: questionData.title }),
-        ...(questionData.stem && { stem: questionData.stem }),
-        ...(questionData.difficulty && { difficulty: questionData.difficulty }),
-        ...(questionData.teaching_point && { teaching_point: questionData.teaching_point }),
-        ...(questionData.question_references !== undefined && {
+        ...(questionData?.title && { title: questionData.title }),
+        ...(questionData?.stem && { stem: questionData.stem }),
+        ...(questionData?.difficulty && { difficulty: questionData.difficulty }),
+        ...(questionData?.teaching_point && { teaching_point: questionData.teaching_point }),
+        ...(questionData?.question_references !== undefined && {
           question_references: questionData.question_references,
         }),
-        ...(questionData.lesson !== undefined && { lesson: questionData.lesson }),
-        ...(questionData.topic !== undefined && { topic: questionData.topic }),
-        ...(questionData.anki_card_id !== undefined && { anki_card_id: questionData.anki_card_id }),
-        ...(questionData.anki_deck_name !== undefined && {
+        ...(questionData?.lesson !== undefined && { lesson: questionData.lesson }),
+        ...(questionData?.topic !== undefined && { topic: questionData.topic }),
+        ...(questionData?.anki_card_id !== undefined && {
+          anki_card_id: questionData.anki_card_id,
+        }),
+        ...(questionData?.anki_deck_name !== undefined && {
           anki_deck_name: questionData.anki_deck_name,
         }),
         ...(statusToSet && { status: statusToSet }),
-        ...(questionData.question_set_id !== undefined && {
+        ...(questionData?.question_set_id !== undefined && {
           question_set_id: questionData.question_set_id,
         }),
         // Initialize version to 1.0.0 when publishing for the first time
@@ -652,8 +654,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         }),
         // Ensure reviewer_id is always set when status is or will be pending_review (required by constraint)
         ...(willBePendingReview &&
-          (reviewerToSet || questionData.reviewer_id) && {
-            reviewer_id: reviewerToSet || questionData.reviewer_id,
+          (reviewerToSet || questionData?.reviewer_id) && {
+            reviewer_id: reviewerToSet || questionData?.reviewer_id,
           }),
         updated_by: userId,
         updated_at: new Date().toISOString(),

@@ -9,10 +9,14 @@ import { Footer } from "@/shared/components/layout/footer";
 export default function PublicLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isMaintenancePage = pathname === "/maintenance";
+  const isUSCAPPage = pathname?.startsWith("/uscap");
 
   // Enforce light mode and system theme on public pages (but NOT dashboard theme)
   // Dashboard theme should be loaded from database when user navigates to dashboard
+  // Skip for USCAP pages — they use the dashboard layout with its own theme handling
   useEffect(() => {
+    if (isUSCAPPage) return;
+
     const html = document.documentElement;
 
     // Force light color mode
@@ -24,7 +28,12 @@ export default function PublicLayout({ children }: { children: React.ReactNode }
 
     // Set data attribute to identify forced theme state
     html.setAttribute("data-public-layout-enforced", "true");
-  }, []);
+  }, [isUSCAPPage]);
+
+  // USCAP pages use their own full layout (sidebar + header), skip public navbar/footer
+  if (isUSCAPPage) {
+    return <>{children}</>;
+  }
 
   return (
     <>
