@@ -34,8 +34,8 @@ temp
 
 # Data files not needed in deployment
 expertpath/
-anki/
-json/anki/
+/anki/
+/json/anki/
 console.log
 
 # FFmpeg WASM files (large binaries, download via postinstall)
