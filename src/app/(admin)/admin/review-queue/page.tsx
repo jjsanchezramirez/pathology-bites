@@ -1,18 +1,12 @@
-import { Metadata } from "next";
+"use client";
+
 import { ReviewQueue } from "@/features/admin/questions/components/review/review-queue";
 import { RequirePermission } from "@/shared/components/auth/role-guard";
-
-export const metadata: Metadata = {
-  title: "My Review Queue | Pathology Bites Admin",
-  description: "Review questions assigned to you",
-};
 
 export default function ReviewQueuePage() {
   return (
     <RequirePermission permission="questions.review">
-      <div className="container mx-auto py-8 px-4">
-        <ReviewQueue />
-      </div>
+      <ReviewQueue />
     </RequirePermission>
   );
 }

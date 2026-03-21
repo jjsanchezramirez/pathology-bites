@@ -41,9 +41,10 @@ import { SubmitForReviewDialog } from "@/features/admin/questions/components/dia
 import { BulkSubmitDialog } from "@/features/admin/questions/components/dialogs/bulk-submit-dialog";
 import { toast } from "@/shared/utils/ui/toast";
 import { formatDistanceToNow } from "date-fns";
-import { QuestionWithDetails, DIFFICULTY_CONFIG, FLAG_TYPE_CONFIG } from "@/shared/types/questions";
+import { QuestionWithDetails, FLAG_TYPE_CONFIG } from "@/shared/types/questions";
 import { formatVersion } from "@/shared/utils/version";
 import { AccessDenied, AccessDeniedPresets } from "@/shared/components/common/access-denied";
+import { getCategoryColor } from "@/shared/utils/category-colors";
 import {
   Select,
   SelectContent,
@@ -121,7 +122,7 @@ export default function MyQuestionsPage() {
             order_index,
             images(id, url, alt_text, description)
           ),
-          categories(*),
+          category:categories(*),
           created_by_user:users!questions_created_by_fkey(
             first_name,
             last_name
@@ -311,7 +312,7 @@ export default function MyQuestionsPage() {
           *,
           question_options(*),
           question_images(*, image:images(*)),
-          categories(*),
+          category:categories(*),
           question_set:question_sets(id, name, source_type, short_form),
           created_by_user:users!questions_created_by_fkey(first_name, last_name),
           updated_by_user:users!questions_updated_by_fkey(first_name, last_name),
@@ -325,6 +326,16 @@ export default function MyQuestionsPage() {
         console.error("Error fetching question:", error);
         toast.error("Failed to load question preview");
         return;
+      }
+
+      // Fetch tags separately via the join table
+      const { data: tagRows } = await supabase
+        .from("question_tags")
+        .select("tags(id, name)")
+        .eq("question_id", questionId);
+
+      if (tagRows) {
+        fullQuestion.tags = tagRows.map((row: Record<string, unknown>) => row.tags).filter(Boolean);
       }
 
       setSelectedQuestion(fullQuestion);
@@ -651,7 +662,7 @@ export default function MyQuestionsPage() {
                           </TableHead>
                         </>
                       )}
-                      <TableHead>Difficulty</TableHead>
+                      <TableHead>Category</TableHead>
                       <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
@@ -888,12 +899,31 @@ export default function MyQuestionsPage() {
                                 </TableCell>
                               )}
                               <TableCell>
-                                <Badge
-                                  variant="outline"
-                                  className={`border ${DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.color || "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800"}`}
-                                >
-                                  {question.difficulty}
-                                </Badge>
+                                {question.category ? (
+                                  (() => {
+                                    const categoryColor = getCategoryColor({
+                                      id: question.category.id,
+                                      color: question.category.color ?? undefined,
+                                      short_form: question.category.short_form ?? undefined,
+                                      name: question.category.name,
+                                    });
+                                    return (
+                                      <Badge
+                                        variant="outline"
+                                        className="text-xs"
+                                        style={{
+                                          backgroundColor: `${categoryColor}15`,
+                                          borderColor: categoryColor,
+                                          color: categoryColor,
+                                        }}
+                                      >
+                                        {question.category.short_form || question.category.name}
+                                      </Badge>
+                                    );
+                                  })()
+                                ) : (
+                                  <span className="text-xs text-muted-foreground">-</span>
+                                )}
                               </TableCell>
                               <TableCell className="text-right">
                                 <div className="flex items-center justify-end gap-2">

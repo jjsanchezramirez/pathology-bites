@@ -28,6 +28,8 @@ import {
   X,
   Send,
   Plus,
+  FolderEdit,
+  BookOpen,
 } from "lucide-react";
 import {
   Select,
@@ -59,6 +61,8 @@ import { DeleteQuestionDialog } from "../dialogs/delete-question-dialog";
 
 import { VersionHistoryDialog } from "../versioning/version-history-dialog";
 import { QuestionPreviewDialog } from "../dialogs/question-preview-dialog";
+import { EditCategoryDialog } from "../metadata/categories/edit-category-dialog";
+import { EditSetDialog } from "../metadata/sets/edit-set-dialog";
 
 import { createClient } from "@/shared/services/client";
 import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
@@ -349,6 +353,8 @@ function RowActions({
   onViewHistory,
   onExport,
   onCopyJson,
+  onEditCategory,
+  onEditSet,
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
@@ -357,6 +363,8 @@ function RowActions({
   onViewHistory?: (question: QuestionWithDetails) => void;
   onExport?: (question: QuestionWithDetails) => void;
   onCopyJson?: (question: QuestionWithDetails) => void;
+  onEditCategory?: (question: QuestionWithDetails) => void;
+  onEditSet?: (question: QuestionWithDetails) => void;
 }) {
   const { isAdmin, role } = useUserRole();
   const { user } = useAuthContext();
@@ -387,6 +395,18 @@ function RowActions({
           <DropdownMenuItem disabled>
             <Edit className="h-4 w-4 mr-2" />
             Edit (Admin Only)
+          </DropdownMenuItem>
+        )}
+        {isAdmin && onEditCategory && question.category && (
+          <DropdownMenuItem onClick={() => onEditCategory(question)}>
+            <FolderEdit className="h-4 w-4 mr-2" />
+            Edit Category
+          </DropdownMenuItem>
+        )}
+        {isAdmin && onEditSet && question.set && (
+          <DropdownMenuItem onClick={() => onEditSet(question)}>
+            <BookOpen className="h-4 w-4 mr-2" />
+            Edit Question Set
           </DropdownMenuItem>
         )}
         {question.status === "published" && onFlag && (
@@ -441,6 +461,8 @@ function QuestionRow({
   onPreview,
   onExport,
   onCopyJson,
+  onEditCategory,
+  onEditSet,
   isSelected,
   onSelect,
   isAdmin,
@@ -453,6 +475,8 @@ function QuestionRow({
   onPreview?: (question: QuestionWithDetails) => void;
   onExport?: (question: QuestionWithDetails) => void;
   onCopyJson?: (question: QuestionWithDetails) => void;
+  onEditCategory?: (question: QuestionWithDetails) => void;
+  onEditSet?: (question: QuestionWithDetails) => void;
   isSelected: boolean;
   onSelect: (questionId: string, checked: boolean) => void;
   isAdmin: boolean;
@@ -543,6 +567,8 @@ function QuestionRow({
           onViewHistory={onViewHistory}
           onExport={onExport}
           onCopyJson={onCopyJson}
+          onEditCategory={onEditCategory}
+          onEditSet={onEditSet}
         />
       </TableCell>
     </TableRow>
@@ -582,6 +608,12 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
   const [questionToFlag, setQuestionToFlag] = useState<QuestionWithDetails | null>(null);
   const [questionForHistory, setQuestionForHistory] = useState<QuestionWithDetails | null>(null);
   const [questionToPreview, setQuestionToPreview] = useState<QuestionWithDetails | null>(null);
+  const [showEditCategoryDialog, setShowEditCategoryDialog] = useState(false);
+  const [showEditSetDialog, setShowEditSetDialog] = useState(false);
+  const [categoryToEdit, setCategoryToEdit] = useState<QuestionWithDetails["category"] | null>(
+    null
+  );
+  const [setToEdit, setSetToEdit] = useState<QuestionWithDetails["set"] | null>(null);
 
   // Fetch questions with current filters
   const { questions, total, loading, error, refetch, deleteQuestion } = useQuestions({
@@ -647,6 +679,21 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
   const handleViewHistory = useCallback((question: QuestionWithDetails) => {
     setQuestionForHistory(question);
     setShowVersionHistory(true);
+  }, []);
+
+  const handleEditCategory = useCallback((question: QuestionWithDetails) => {
+    if (question.category) {
+      setCategoryToEdit(question.category);
+      setShowEditCategoryDialog(true);
+    }
+  }, []);
+
+  const handleEditSet = useCallback((question: QuestionWithDetails) => {
+    const set = question.set || question.question_set;
+    if (set) {
+      setSetToEdit(set);
+      setShowEditSetDialog(true);
+    }
   }, []);
 
   const handlePreview = useCallback(
@@ -1019,6 +1066,8 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
                     onPreview={handlePreview}
                     onExport={handleExportQuestion}
                     onCopyJson={handleCopyJsonQuestion}
+                    onEditCategory={showAdminFeatures ? handleEditCategory : undefined}
+                    onEditSet={showAdminFeatures ? handleEditSet : undefined}
                     isSelected={selectedQuestions.includes(question.id)}
                     onSelect={handleSelectQuestion}
                     isAdmin={showAdminFeatures}
@@ -1082,6 +1131,45 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
             router.refresh();
           }}
           onDelete={deleteQuestion}
+        />
+
+        {/* Edit Category Dialog */}
+        <EditCategoryDialog
+          open={showEditCategoryDialog}
+          onOpenChange={setShowEditCategoryDialog}
+          onSuccess={refetch}
+          category={
+            categoryToEdit
+              ? {
+                  id: categoryToEdit.id,
+                  name: categoryToEdit.name,
+                  parent_id: categoryToEdit.parent_id || undefined,
+                  level: categoryToEdit.level,
+                  color: categoryToEdit.color || undefined,
+                  short_form: categoryToEdit.short_form || undefined,
+                  created_at: categoryToEdit.created_at,
+                }
+              : null
+          }
+        />
+
+        {/* Edit Question Set Dialog */}
+        <EditSetDialog
+          open={showEditSetDialog}
+          onOpenChange={setShowEditSetDialog}
+          onSuccess={refetch}
+          questionSet={
+            setToEdit
+              ? {
+                  id: setToEdit.id,
+                  name: setToEdit.name,
+                  description: setToEdit.description || undefined,
+                  source_type: setToEdit.source_type,
+                  is_active: setToEdit.is_active,
+                  created_at: setToEdit.created_at,
+                }
+              : null
+          }
         />
 
         {/* Bulk Delete Confirmation Dialog */}

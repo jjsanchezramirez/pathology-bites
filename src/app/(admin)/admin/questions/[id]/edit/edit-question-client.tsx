@@ -133,16 +133,15 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       }
 
       try {
-        // Import the loadContentFromR2 function
-        const { loadContentFromR2, CONTENT_FILES } =
+        const { getContentFileInfo } = await import("@/shared/config/content-index");
+        const { loadContentFromR2 } =
           await import("@/features/admin/questions/components/create/content-selector");
 
-        // Find the appropriate content file based on the question's subject
-        const subjectName = question.category?.name;
-        const contentFile = CONTENT_FILES.find((file) => file.subject === subjectName);
+        // Look up the content file by lesson+topic (reliable, avoids category name mismatches)
+        const fileInfo = getContentFileInfo(question.lesson, question.topic);
 
-        if (contentFile) {
-          const contextData = await loadContentFromR2(contentFile.filename);
+        if (fileInfo) {
+          const contextData = await loadContentFromR2(fileInfo.filename);
           if (contextData) {
             // Extract the specific topic content
             const lesson = contextData.subject.lessons[question.lesson];

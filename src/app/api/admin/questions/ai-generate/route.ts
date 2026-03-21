@@ -287,7 +287,12 @@ CONSTRAINTS:
 - NO hyphens (text will be read aloud — use "to" instead of ranges like "5-10")
 - Use precise pathology terminology but keep sentence structure flowing for narration
 - Avoid vague clinical advice like "warrants follow up" — anchor concepts instead
+- Teaching points must state a specific, testable fact related to the question topic and answer options — NOT a generic importance statement. Bad: "Understanding X is essential for Y." Good: "GBS is uniquely identified by its hippurate hydrolysis positivity and CAMP test positivity, distinguishing it from other beta-hemolytic streptococci."
 - Write the question stem as SHORT, separate sentences — NOT one long run-on sentence. Present the clinical scenario in 2 to 4 crisp sentences, then ask the question as its own final sentence ending in a question mark. Bad: "A 45-year-old woman presents with X, and her labs show Y, and she has Z, what is the mechanism?" Good: "A 45-year-old woman presents with petechiae and ecchymoses following severe trauma and sepsis. Laboratory studies show a low platelet count, elevated D-dimer, and decreased fibrinogen. What is the most likely underlying mechanism?"
+- Do NOT prefix option text with its own letter label (e.g., "A. Adenocarcinoma" is wrong — just write "Adenocarcinoma")
+- Explanations must NOT use AI reasoning language. Bad: "This is incorrect because the question states…", "Based on the clinical scenario…". Good: Write explanations as standalone medical facts, as if in a textbook.
+- The stem and image type must be consistent. If the question references a gross image, do not describe histologic/microscopic features in the stem (and vice versa).
+- The correct answer must directly and precisely match the clinical presentation, lab values, and history given in the stem. Do not choose a correct answer that only partially fits.
 
 CRITICAL REQUIREMENTS:
 1. Create a clinically relevant multiple-choice question
@@ -338,7 +343,7 @@ Return your response in this EXACT JSON format (no markdown, no code blocks, jus
       "order_index": 4
     }
   ],
-  "teaching_point": "Concise 1-2 sentence key learning point about the specific concept being tested",
+  "teaching_point": "A specific, testable fact about the topic — not a generic importance statement",
   "suggested_tags": ["Tag1", "Tag2", "Tag3"],
   "difficulty": "medium",
   "status": "draft"
@@ -425,6 +430,9 @@ CRITICAL REQUIREMENTS:
 3. Provide detailed explanations for ALL 5 answer options (copy them verbatim unless the instructions ask you to change them)
 4. Keep the same clinical relevance and educational value
 5. Apply the refinement instructions while preserving the question structure
+6. Do NOT prefix option text with its own letter label (e.g., "A. Adenocarcinoma" is wrong — just write "Adenocarcinoma")
+7. Explanations must NOT use AI reasoning language (e.g., "This is incorrect because the question states…"). Write explanations as standalone medical facts.
+8. The correct answer must directly and precisely match the clinical presentation, lab values, and history given in the stem.
 
 Return your response in this EXACT JSON format:
 {
@@ -457,7 +465,7 @@ Return your response in this EXACT JSON format:
       "explanation": "Detailed explanation for option E"
     }
   ],
-  "teaching_point": "Key learning objective or teaching point",
+  "teaching_point": "A specific, testable fact about the topic — not a generic importance statement",
   "question_references": "Relevant citations or references",
   "difficulty": "medium",
   "status": "draft"

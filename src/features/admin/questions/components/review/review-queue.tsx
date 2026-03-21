@@ -30,7 +30,7 @@ import { QuestionPreviewDialog } from "../dialogs/question-preview-dialog";
 import { ReviewActionDialog } from "./review-action-dialog";
 import { toast } from "@/shared/utils/ui/toast";
 import { formatDistanceToNow } from "date-fns";
-import { DIFFICULTY_CONFIG, QuestionWithDetails } from "@/shared/types/questions";
+import { QuestionWithDetails } from "@/shared/types/questions";
 
 // Category color mapping for better badge appearance - copied from questions-table.tsx
 const getCategoryBadgeClass = (category: {
@@ -300,7 +300,25 @@ export function ReviewQueue() {
         return;
       }
 
-      setSelectedQuestion(fullQuestion as unknown as ReviewQuestionData);
+      // Map categories -> category for QuestionWithDetails compatibility
+      const questionData = fullQuestion as Record<string, unknown>;
+      if (questionData.categories) {
+        questionData.category = questionData.categories;
+      }
+
+      // Fetch tags separately via the join table
+      const { data: tagRows } = await supabase
+        .from("question_tags")
+        .select("tags(id, name)")
+        .eq("question_id", question.id);
+
+      if (tagRows) {
+        questionData.tags = tagRows
+          .map((row) => (row as Record<string, unknown>).tags)
+          .filter(Boolean);
+      }
+
+      setSelectedQuestion(questionData as unknown as ReviewQuestionData);
       setPreviewOpen(true);
     } catch (error) {
       console.error("Error fetching question for preview:", error);
@@ -456,14 +474,13 @@ export function ReviewQueue() {
             <TableRow>
               <TableHead>Question</TableHead>
               <TableHead>Category</TableHead>
-              <TableHead>Difficulty</TableHead>
               <TableHead className="text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredQuestions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
                   {searchTerm
                     ? "No questions found matching your search"
                     : "No questions in your review queue"}
@@ -509,14 +526,6 @@ export function ReviewQueue() {
                     ) : (
                       <span className="text-muted-foreground text-sm">-</span>
                     )}
-                  </TableCell>
-                  <TableCell>
-                    <Badge
-                      variant="outline"
-                      className={`border ${DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.color || "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800"}`}
-                    >
-                      {question.difficulty}
-                    </Badge>
                   </TableCell>
                   <TableCell className="text-right">
                     <div className="flex items-center justify-end gap-2">

@@ -3,8 +3,15 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
-import { Check, ExternalLink } from "lucide-react";
-import { QuestionWithDetails } from "@/shared/types/questions";
+import { Check, ExternalLink, Copy, FileText, Braces } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/shared/components/ui/dropdown-menu";
+import { toast } from "@/shared/utils/ui/toast";
+import { DIFFICULTY_CONFIG, QuestionWithDetails } from "@/shared/types/questions";
 import { SimpleImageCarousel } from "./simple-image-carousel";
 import { getCategoryColor } from "@/shared/utils/category-colors";
 import { formatQuestionVersion } from "@/shared/utils/version";
@@ -37,11 +44,76 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
   const incorrectOptions =
     question.question_options?.filter((option) => !option.is_correct && option.explanation) || [];
 
+  const copyAsText = () => {
+    const options =
+      question.question_options
+        ?.map((opt, i) => {
+          const label = getOptionLabel(i);
+          const marker = opt.is_correct ? " [correct]" : "";
+          const explanation = opt.explanation ? `\n     Explanation: ${opt.explanation}` : "";
+          return `  ${label}. ${opt.text}${marker}${explanation}`;
+        })
+        .join("\n") || "";
+
+    const parts = [question.title, "", question.stem, "", "Options:", options];
+
+    if (question.teaching_point) {
+      parts.push("", "Teaching Point:", question.teaching_point);
+    }
+
+    if (question.question_references) {
+      parts.push("", "References:", question.question_references);
+    }
+
+    navigator.clipboard.writeText(parts.join("\n"));
+    toast.success("Question text copied");
+  };
+
+  const copyAsJson = () => {
+    const json = {
+      id: question.id,
+      title: question.title,
+      stem: question.stem,
+      difficulty: question.difficulty,
+      teaching_point: question.teaching_point,
+      question_references: question.question_references,
+      lesson: question.lesson,
+      topic: question.topic,
+      category: question.category?.name,
+      question_set: (question.set || question.question_set)?.name,
+      options: question.question_options?.map((opt, i) => ({
+        label: getOptionLabel(i),
+        text: opt.text,
+        is_correct: opt.is_correct,
+        explanation: opt.explanation || undefined,
+      })),
+    };
+    navigator.clipboard.writeText(JSON.stringify(json, null, 2));
+    toast.success("Question JSON copied");
+  };
+
   return (
     <div className="w-full mx-auto">
       <Card className="h-full">
-        <CardHeader className="py-2">
+        <CardHeader className="py-2 flex flex-row items-center justify-between">
           <CardTitle className="text-lg">{question.title}</CardTitle>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm" className="h-7 w-7 p-0 flex-shrink-0">
+                <Copy className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem onClick={copyAsText}>
+                <FileText className="h-4 w-4 mr-2" />
+                Copy as text
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={copyAsJson}>
+                <Braces className="h-4 w-4 mr-2" />
+                Copy as JSON
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Question Stem */}
@@ -205,10 +277,9 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
           )}
 
           {/* Question Metadata */}
-          <div className="pt-3 border-t space-y-2">
-            {/* Badges row */}
+          <div className="pt-3 border-t space-y-1.5">
+            {/* Row 1: All badges — Category, Difficulty, Question Set, Tags, Version */}
             <div className="flex items-center gap-2 flex-wrap text-xs">
-              {/* Category with color */}
               {question.category &&
                 (() => {
                   const categoryColor = getCategoryColor({
@@ -232,20 +303,48 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                   );
                 })()}
 
-              {/* Set */}
-              {question.set && (
-                <Badge variant="outline" className="text-xs">
-                  {question.set.name || "Unknown"}
+              {question.difficulty && (
+                <Badge
+                  variant="outline"
+                  className={`text-xs border ${DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.color || ""}`}
+                >
+                  {question.difficulty}
                 </Badge>
               )}
 
-              {/* Version */}
-              <span className="text-muted-foreground">{formatQuestionVersion(question)}</span>
+              {(question.set || question.question_set) && (
+                <Badge variant="outline" className="text-xs">
+                  {(question.set || question.question_set)?.name || "Unknown"}
+                </Badge>
+              )}
+
+              <Badge variant="outline" className="text-xs font-mono">
+                {formatQuestionVersion(question)}
+              </Badge>
+
+              {question.tags &&
+                question.tags.length > 0 &&
+                question.tags.map((tag) => (
+                  <Badge key={tag.id} variant="secondary" className="text-xs px-1.5 py-0">
+                    {tag.name}
+                  </Badge>
+                ))}
             </div>
 
-            {/* Attribution row */}
+            {/* Row 2: Lesson/Topic + Attribution */}
             <div className="flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
-              {/* Created */}
+              {question.lesson && (
+                <span>
+                  <span className="font-medium">Lesson:</span> {question.lesson}
+                </span>
+              )}
+              {question.lesson && question.topic && <span>•</span>}
+              {question.topic && (
+                <span>
+                  <span className="font-medium">Topic:</span> {question.topic}
+                </span>
+              )}
+              {(question.lesson || question.topic) && question.created_at && <span>•</span>}
               {question.created_at && (
                 <span>
                   Created
@@ -257,8 +356,6 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                   })}
                 </span>
               )}
-
-              {/* Last Modified */}
               {question.updated_at && question.updated_at !== question.created_at && (
                 <>
                   <span>•</span>
@@ -273,8 +370,6 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                   </span>
                 </>
               )}
-
-              {/* Reviewer info is available through the reviews relationship */}
             </div>
           </div>
         </CardContent>

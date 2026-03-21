@@ -38,7 +38,7 @@ export function UnifiedLayoutClient({
   // Exclude /quiz/new - it needs scrollable layout
   const isQuizActivePage =
     pathname?.match(/^\/dashboard\/quiz\/[^/]+$/) && pathname !== "/dashboard/quiz/new"; // Active quiz: /quiz/[id]
-  const isQuizReviewPage = pathname?.includes("/review"); // Review page: /quiz/[id]/review
+  const isQuizReviewPage = pathname?.match(/^\/dashboard\/quiz\/[^/]+\/review$/); // Review page: /quiz/[id]/review
   const isLessonStudioPage = pathname === "/admin/lesson-studio"; // Lesson Studio needs full-width
   const isFullHeightPage = isAnkiPage || isQuizActivePage || isQuizReviewPage || isLessonStudioPage;
 
