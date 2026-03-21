@@ -245,7 +245,7 @@ export function UnifiedLayoutClient({
               <div className="h-full">{children}</div>
             ) : (
               // Other pages: default padding with scroll
-              <div className="container mx-auto max-w-7xl p-6 pb-24">{children}</div>
+              <div className="mx-auto max-w-7xl px-4 py-4 pb-24 md:p-6 md:pb-24">{children}</div>
             )}
           </main>
         </div>

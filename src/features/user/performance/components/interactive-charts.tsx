@@ -28,6 +28,51 @@ import {
   AreaChart,
 } from "recharts";
 
+// Resolve CSS variable to hex for SVG/Recharts compatibility
+function resolveCssColor(varName: string): string | null {
+  const el = document.createElement("div");
+  el.style.color = `var(${varName})`;
+  el.style.display = "none";
+  document.body.appendChild(el);
+  const computed = getComputedStyle(el).color;
+  document.body.removeChild(el);
+
+  const rgbMatch = computed.match(/rgba?\((\d+),\s*(\d+),\s*(\d+)/);
+  if (rgbMatch) {
+    const toHex = (n: string) => parseInt(n).toString(16).padStart(2, "0");
+    return `#${toHex(rgbMatch[1])}${toHex(rgbMatch[2])}${toHex(rgbMatch[3])}`;
+  }
+  return null;
+}
+
+function useThemeColors() {
+  const [colors, setColors] = useState({
+    primary: "#2D9596",
+    foreground: "#1a1a1a",
+    mutedForeground: "#6b7280",
+    muted: "#e5e7eb",
+  });
+
+  useEffect(() => {
+    const update = () => {
+      setColors({
+        primary: resolveCssColor("--primary") || "#2D9596",
+        foreground: resolveCssColor("--foreground") || "#1a1a1a",
+        mutedForeground: resolveCssColor("--muted-foreground") || "#6b7280",
+        muted: resolveCssColor("--muted") || "#e5e7eb",
+      });
+    };
+    update();
+
+    // Re-compute when theme changes (class toggle on <html>)
+    const observer = new MutationObserver(update);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, []);
+
+  return colors;
+}
+
 interface TimelineData {
   date: string;
   accuracy: number;
@@ -68,66 +113,11 @@ export function PerformanceTimelineChart({
   loading = false,
 }: PerformanceTimelineChartProps) {
   const [error] = useState<string | null>(null);
-  const [primaryColor, setPrimaryColor] = useState("#2D9596");
+  const {
+    primary: primaryColor,
 
-  useEffect(() => {
-    // Get the computed primary color from CSS variables
-    const style = getComputedStyle(document.documentElement);
-    const primary = style.getPropertyValue("--primary").trim();
-    if (primary) {
-      // Convert hsl to hex for Recharts compatibility
-      const hslMatch = primary.match(/(\d+\.?\d*)\s+(\d+\.?\d*)%\s+(\d+\.?\d*)%/);
-      if (hslMatch) {
-        const h = parseFloat(hslMatch[1]);
-        const s = parseFloat(hslMatch[2]) / 100;
-        const l = parseFloat(hslMatch[3]) / 100;
-        const color = hslToHex(h, s, l);
-        setPrimaryColor(color);
-      }
-    }
-  }, []);
-
-  const hslToHex = (h: number, s: number, l: number) => {
-    const c = (1 - Math.abs(2 * l - 1)) * s;
-    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-    const m = l - c / 2;
-    let r = 0,
-      g = 0,
-      b = 0;
-
-    if (h >= 0 && h < 60) {
-      r = c;
-      g = x;
-      b = 0;
-    } else if (h >= 60 && h < 120) {
-      r = x;
-      g = c;
-      b = 0;
-    } else if (h >= 120 && h < 180) {
-      r = 0;
-      g = c;
-      b = x;
-    } else if (h >= 180 && h < 240) {
-      r = 0;
-      g = x;
-      b = c;
-    } else if (h >= 240 && h < 300) {
-      r = x;
-      g = 0;
-      b = c;
-    } else if (h >= 300 && h < 360) {
-      r = c;
-      g = 0;
-      b = x;
-    }
-
-    const toHex = (n: number) => {
-      const hex = Math.round((n + m) * 255).toString(16);
-      return hex.length === 1 ? "0" + hex : hex;
-    };
-
-    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-  };
+    mutedForeground: mutedFgColor,
+  } = useThemeColors();
 
   if (loading) {
     return (
@@ -208,17 +198,17 @@ export function PerformanceTimelineChart({
               tickFormatter={(value) =>
                 new Date(value).toLocaleDateString("en-US", { month: "short", day: "numeric" })
               }
-              tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }}
+              tick={{ fill: mutedFgColor, fontSize: 12 }}
             />
             <YAxis
               label={{
                 value: "Accuracy (%)",
                 angle: -90,
                 position: "insideLeft",
-                style: { fill: "hsl(var(--foreground))" },
+                style: { fill: mutedFgColor },
               }}
               domain={[0, 100]}
-              tick={{ fill: "hsl(var(--foreground))", fontSize: 12 }}
+              tick={{ fill: mutedFgColor, fontSize: 12 }}
             />
             <Tooltip
               content={({ active, payload }) => {
@@ -267,66 +257,11 @@ interface CategoryRadarChartProps {
 
 export function CategoryRadarChart({ data = [], loading = false }: CategoryRadarChartProps) {
   const [error] = useState<string | null>(null);
-  const [primaryColor, setPrimaryColor] = useState("#2D9596");
-
-  useEffect(() => {
-    // Get the computed primary color from CSS variables
-    const style = getComputedStyle(document.documentElement);
-    const primary = style.getPropertyValue("--primary").trim();
-    if (primary) {
-      // Convert hsl to hex for Recharts compatibility
-      const hslMatch = primary.match(/(\d+\.?\d*)\s+(\d+\.?\d*)%\s+(\d+\.?\d*)%/);
-      if (hslMatch) {
-        const h = parseFloat(hslMatch[1]);
-        const s = parseFloat(hslMatch[2]) / 100;
-        const l = parseFloat(hslMatch[3]) / 100;
-        const color = hslToHex(h, s, l);
-        setPrimaryColor(color);
-      }
-    }
-  }, []);
-
-  const hslToHex = (h: number, s: number, l: number) => {
-    const c = (1 - Math.abs(2 * l - 1)) * s;
-    const x = c * (1 - Math.abs(((h / 60) % 2) - 1));
-    const m = l - c / 2;
-    let r = 0,
-      g = 0,
-      b = 0;
-
-    if (h >= 0 && h < 60) {
-      r = c;
-      g = x;
-      b = 0;
-    } else if (h >= 60 && h < 120) {
-      r = x;
-      g = c;
-      b = 0;
-    } else if (h >= 120 && h < 180) {
-      r = 0;
-      g = c;
-      b = x;
-    } else if (h >= 180 && h < 240) {
-      r = 0;
-      g = x;
-      b = c;
-    } else if (h >= 240 && h < 300) {
-      r = x;
-      g = 0;
-      b = c;
-    } else if (h >= 300 && h < 360) {
-      r = c;
-      g = 0;
-      b = x;
-    }
-
-    const toHex = (n: number) => {
-      const hex = Math.round((n + m) * 255).toString(16);
-      return hex.length === 1 ? "0" + hex : hex;
-    };
-
-    return `#${toHex(r)}${toHex(g)}${toHex(b)}`;
-  };
+  const {
+    primary: primaryColor,
+    foreground: foregroundColor,
+    mutedForeground: mutedFgColor,
+  } = useThemeColors();
 
   if (loading) {
     return (
@@ -398,12 +333,12 @@ export function CategoryRadarChart({ data = [], loading = false }: CategoryRadar
             <PolarGrid stroke={primaryColor} opacity={0.2} />
             <PolarAngleAxis
               dataKey="category_name"
-              tick={{ fontSize: 12, fill: "hsl(var(--foreground))" }}
+              tick={{ fontSize: 12, fill: foregroundColor }}
             />
             <PolarRadiusAxis
               angle={90}
               domain={[0, 100]}
-              tick={{ fontSize: 10, fill: "hsl(var(--foreground))" }}
+              tick={{ fontSize: 10, fill: mutedFgColor }}
             />
             <Radar
               name="Accuracy"

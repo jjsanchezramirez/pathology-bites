@@ -87,7 +87,7 @@ export function AdminModeToggle() {
             onClick={() => switchToMode(key as "admin" | "user")}
             disabled={isLoading || isTransitioning}
             className={`
-              h-7 px-3 text-xs font-medium transition-all duration-200
+              h-7 px-2 md:px-3 text-xs font-medium transition-all duration-200
               ${
                 isActive
                   ? "bg-background shadow-sm text-foreground"
@@ -95,8 +95,8 @@ export function AdminModeToggle() {
               }
             `}
           >
-            <Icon className="h-3 w-3 mr-1.5" />
-            {label}
+            <Icon className="h-3 w-3 md:mr-1.5" />
+            <span className="hidden md:inline">{label}</span>
           </Button>
         );
       })}

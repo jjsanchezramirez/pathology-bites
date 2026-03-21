@@ -191,7 +191,7 @@ export default function DashboardPage() {
         {loading || !stats || isTransitioning ? (
           <>
             <StudentStatsCardsLoading />
-            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+            <div className="grid gap-4 lg:grid-cols-7">
               <StudentRecentActivityLoading />
               <StudentQuickActionsLoading />
             </div>
@@ -205,7 +205,7 @@ export default function DashboardPage() {
 
             {/* Recent Activity Section */}
             <ScrollReveal animation="fade-up">
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
+              <div className="grid gap-4 lg:grid-cols-7">
                 <StudentRecentActivity activities={stats.recentActivity} />
                 <StudentQuickActions />
               </div>

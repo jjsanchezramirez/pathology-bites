@@ -2,7 +2,8 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Progress } from "@/shared/components/ui/progress";
-import { TrendingUp, TrendingDown, Minus, BarChart3 } from "lucide-react";
+import { TrendingUp, TrendingDown, MoveRight, BarChart3 } from "lucide-react";
+import { getCategoryByName } from "@/shared/config/categories";
 
 interface CategoryDetail {
   category_id: string;
@@ -30,17 +31,17 @@ const getTrendInfo = (trend?: string) => {
       return {
         icon: <TrendingUp className="h-4 w-4" />,
         text: "Improving",
-        color: "text-green-600",
+        color: "text-green-600 dark:text-green-400",
       };
     case "down":
       return {
         icon: <TrendingDown className="h-4 w-4" />,
         text: "Declining",
-        color: "text-red-600",
+        color: "text-red-600 dark:text-red-400",
       };
     default:
       return {
-        icon: <Minus className="h-4 w-4" />,
+        icon: <MoveRight className="h-4 w-4" />,
         text: "Stable",
         color: "text-muted-foreground",
       };
@@ -48,9 +49,9 @@ const getTrendInfo = (trend?: string) => {
 };
 
 const getAccuracyColor = (accuracy: number) => {
-  if (accuracy >= 80) return "text-green-600";
-  if (accuracy >= 70) return "text-yellow-600";
-  return "text-red-600";
+  if (accuracy >= 80) return "text-green-600 dark:text-green-400";
+  if (accuracy >= 70) return "text-yellow-600 dark:text-yellow-400";
+  return "text-red-600 dark:text-red-400";
 };
 
 export function CategoryPerformanceCard({ categoryDetails }: CategoryPerformanceCardProps) {
@@ -91,51 +92,55 @@ export function CategoryPerformanceCard({ categoryDetails }: CategoryPerformance
             return (
               <div
                 key={category.category_id || index}
-                className="py-3 px-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
+                className="py-3 px-3 sm:px-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
               >
                 <div className="flex items-center justify-between mb-2">
-                  {/* Category Name */}
+                  {/* Category Name - short form on mobile, full on sm+ */}
                   <div className="flex-1 min-w-0">
-                    <h3 className="font-medium truncate">{category.category_name}</h3>
+                    <h3 className="font-medium text-sm sm:text-base truncate">
+                      <span className="sm:hidden">
+                        {getCategoryByName(category.category_name)?.shortForm ||
+                          category.category_name}
+                      </span>
+                      <span className="hidden sm:inline">{category.category_name}</span>
+                    </h3>
                   </div>
 
                   {/* Stats */}
-                  <div className="flex items-center gap-6 ml-4">
+                  <div className="flex items-center gap-3 sm:gap-6 ml-3 sm:ml-4">
                     {/* Score */}
                     <div className="text-right">
-                      <div className="text-sm text-muted-foreground">Score</div>
-                      <div className="flex items-baseline gap-1">
-                        <span
-                          className={`text-2xl font-bold tabular-nums ${getAccuracyColor(category.accuracy)}`}
-                        >
-                          {category.accuracy}%
-                        </span>
-                      </div>
+                      <div className="hidden sm:block text-sm text-muted-foreground">Score</div>
+                      <span
+                        className={`text-lg sm:text-2xl font-bold tabular-nums ${getAccuracyColor(category.accuracy)}`}
+                      >
+                        {category.accuracy}%
+                      </span>
                     </div>
 
-                    {/* Questions */}
-                    <div className="text-right">
+                    {/* Questions - hidden on mobile */}
+                    <div className="hidden sm:block text-right">
                       <div className="text-sm text-muted-foreground">Questions</div>
                       <div className="font-medium tabular-nums">
                         {category.correct_attempts} / {category.total_attempts}
                       </div>
                     </div>
 
-                    {/* Trend */}
-                    <div className="text-right min-w-[90px]">
-                      <div className="text-sm text-muted-foreground">Trend</div>
+                    {/* Trend - icon only on mobile, full on sm+ */}
+                    <div className="text-right">
+                      <div className="hidden sm:block text-sm text-muted-foreground">Trend</div>
                       <div
                         className={`flex items-center gap-1 justify-end font-medium ${trendInfo.color}`}
                       >
                         {trendInfo.icon}
-                        <span className="text-sm">{trendInfo.text}</span>
+                        <span className="hidden sm:inline text-sm">{trendInfo.text}</span>
                       </div>
                     </div>
                   </div>
                 </div>
 
                 {/* Progress Bar */}
-                <Progress value={category.accuracy} className="h-2" />
+                <Progress value={category.accuracy} className="h-1.5 sm:h-2" />
               </div>
             );
           })}

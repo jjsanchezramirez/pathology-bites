@@ -30,23 +30,23 @@ export function WelcomeMessage({ onDismiss }: WelcomeMessageProps) {
   };
 
   return (
-    <Card className="relative bg-card border border-gray-200 overflow-hidden">
-      <CardContent className="p-6">
-        {/* Close Button */}
-        <Button
-          variant="ghost"
-          size="sm"
-          className="absolute top-4 right-4 h-8 w-8 p-0 hover:bg-gray-100"
-          onClick={handleDismiss}
-          disabled={isLoading}
-        >
-          <X className="h-4 w-4" />
-        </Button>
-
-        <div className="pr-8">
-          <h3 className="text-lg font-semibold text-foreground mb-2">
-            🎓 Welcome to Pathology Bites!
-          </h3>
+    <Card className="bg-card border border-gray-200 overflow-hidden">
+      <CardContent className="p-4 md:p-6">
+        <div>
+          <div className="flex items-start justify-between gap-2 mb-2">
+            <h3 className="text-lg font-semibold text-foreground">
+              🎓 Welcome to Pathology Bites!
+            </h3>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 w-8 p-0 shrink-0 hover:bg-gray-100"
+              onClick={handleDismiss}
+              disabled={isLoading}
+            >
+              <X className="h-4 w-4" />
+            </Button>
+          </div>
 
           <div className="text-sm text-muted-foreground space-y-2 mb-4">
             <p>We're thrilled to have you join our pathology learning community! 🎉</p>

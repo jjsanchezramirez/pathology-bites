@@ -16,83 +16,83 @@ import Link from "next/link";
 
 export function StudentQuickActions() {
   return (
-    <Card className="md:col-span-3">
+    <Card className="lg:col-span-3">
       <CardHeader>
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-3">
         <Link href="/dashboard/quiz/new" className="block">
-          <Button className="w-full justify-between">
+          <Button className="w-full justify-between text-sm">
             Start New Quiz
-            <Plus className="h-4 w-4" />
+            <Plus className="h-4 w-4 shrink-0" />
           </Button>
         </Link>
 
         <Link href="/dashboard/performance" className="block">
-          <Button variant="outline" className="w-full justify-between">
+          <Button variant="outline" className="w-full justify-between text-sm">
             View Performance
-            <BarChart3 className="h-4 w-4" />
+            <BarChart3 className="h-4 w-4 shrink-0" />
           </Button>
         </Link>
 
         <Link href="/dashboard/quizzes" className="block">
-          <Button variant="outline" className="w-full justify-between">
+          <Button variant="outline" className="w-full justify-between text-sm">
             My Quizzes
-            <ClipboardList className="h-4 w-4" />
+            <ClipboardList className="h-4 w-4 shrink-0" />
           </Button>
         </Link>
 
-        <div className="relative">
-          <Link href="/dashboard/wsi-questions" className="block">
-            <Button variant="outline" className="w-full justify-between">
+        <Link href="/dashboard/wsi-questions" className="block">
+          <Button variant="outline" className="w-full justify-between text-sm">
+            <span className="flex items-center gap-2">
               Slide-Based Questions
-              <Microscope className="h-4 w-4" />
-            </Button>
-          </Link>
-          <span className="absolute -top-2 -right-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-            New
-          </span>
-        </div>
+              <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full leading-none">
+                New
+              </span>
+            </span>
+            <Microscope className="h-4 w-4 shrink-0" />
+          </Button>
+        </Link>
 
-        <div className="relative">
-          <Link href="/dashboard/anki" className="block">
-            <Button variant="outline" className="w-full justify-between">
+        <Link href="/dashboard/anki" className="block">
+          <Button variant="outline" className="w-full justify-between text-sm">
+            <span className="flex items-center gap-2">
               Ankoma Deck Viewer
-              <Library className="h-4 w-4" />
-            </Button>
-          </Link>
-          <span className="absolute -top-2 -right-2 text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full">
-            New
-          </span>
-        </div>
+              <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full leading-none">
+                New
+              </span>
+            </span>
+            <Library className="h-4 w-4 shrink-0" />
+          </Button>
+        </Link>
 
-        <div className="relative">
-          <Button
-            variant="outline"
-            className="w-full justify-between opacity-50 cursor-not-allowed"
-            disabled
-          >
+        <Button
+          variant="outline"
+          className="w-full justify-between text-sm opacity-50 cursor-not-allowed"
+          disabled
+        >
+          <span className="flex items-center gap-2">
             My Progress
-            <TrendingUp className="h-4 w-4" />
-          </Button>
-          <span className="absolute -top-2 -right-2 text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-            Soon
+            <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full leading-none">
+              Soon
+            </span>
           </span>
-        </div>
+          <TrendingUp className="h-4 w-4 shrink-0" />
+        </Button>
 
-        <div className="relative">
-          <Button
-            variant="outline"
-            className="w-full justify-between opacity-50 cursor-not-allowed"
-            disabled
-          >
+        <Button
+          variant="outline"
+          className="w-full justify-between text-sm opacity-50 cursor-not-allowed"
+          disabled
+        >
+          <span className="flex items-center gap-2">
             Learning Modules
-            <BookOpen className="h-4 w-4" />
-          </Button>
-          <span className="absolute -top-2 -right-2 text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full">
-            Soon
+            <span className="text-[10px] bg-orange-100 text-orange-700 px-1.5 py-0.5 rounded-full leading-none">
+              Soon
+            </span>
           </span>
-        </div>
+          <BookOpen className="h-4 w-4 shrink-0" />
+        </Button>
       </CardContent>
     </Card>
   );
@@ -100,7 +100,7 @@ export function StudentQuickActions() {
 
 export function StudentQuickActionsLoading() {
   return (
-    <Card className="md:col-span-3">
+    <Card className="lg:col-span-3">
       <CardHeader>
         <CardTitle>Quick Actions</CardTitle>
       </CardHeader>

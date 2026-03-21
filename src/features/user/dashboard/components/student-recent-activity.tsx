@@ -58,7 +58,7 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
   };
 
   return (
-    <Card className="md:col-span-4">
+    <Card className="lg:col-span-4">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5 text-[hsl(var(--chart-1))]" />
@@ -74,7 +74,7 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
 
               const activityContent = (
                 <div
-                  className={`flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 ${
+                  className={`flex items-start sm:items-center gap-3 rounded-lg border p-3 transition-all duration-200 ${
                     activity.type === "quiz_started" ? "bg-[hsl(var(--chart-2))]/5" : ""
                   } ${
                     navigationUrl
@@ -83,7 +83,7 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
                   }`}
                 >
                   {/* Activity Icons - using theme accent colors */}
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-[hsl(var(--muted))]">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-[hsl(var(--muted))] mt-0.5 sm:mt-0">
                     {activity.type === "quiz_completed" && (
                       <Award className="h-4 w-4 text-[hsl(var(--chart-1))]" />
                     )}
@@ -111,8 +111,10 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
                   </div>
 
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-0.5">
-                      <p className="text-sm font-medium leading-tight truncate">{activity.title}</p>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mb-0.5">
+                      <p className="text-sm font-medium leading-tight truncate max-w-full">
+                        {activity.title}
+                      </p>
                       {/* Score display - inline with title */}
                       {activity.score !== undefined && (
                         <span
@@ -124,16 +126,36 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
                                 : "text-[hsl(var(--chart-5))] bg-[hsl(var(--chart-5))]/10"
                           }`}
                         >
-                          Score {activity.score}%
+                          {activity.score}%
                         </span>
                       )}
                     </div>
-                    <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">
-                      {activity.description}
-                    </p>
+                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                      <p className="text-xs text-[hsl(var(--muted-foreground))] truncate max-w-full">
+                        {activity.description}
+                      </p>
+                      {/* Timestamp - inline on mobile, separate column on sm+ */}
+                      <span className="text-xs text-[hsl(var(--muted-foreground))] whitespace-nowrap sm:hidden">
+                        · {format(new Date(activity.timestamp), "MMM d")}
+                      </span>
+                    </div>
+                    {/* Quiz action button - below text on mobile */}
+                    {quizAction && navigationUrl && (
+                      <div className="mt-1.5 sm:hidden">
+                        <Link href={navigationUrl}>
+                          <Button
+                            size="sm"
+                            variant={quizAction.variant}
+                            className="h-7 px-3 text-xs border-0"
+                          >
+                            {quizAction.text}
+                          </Button>
+                        </Link>
+                      </div>
+                    )}
                   </div>
 
-                  <div className="flex items-center gap-2">
+                  <div className="hidden sm:flex items-center gap-2 shrink-0">
                     {/* Quiz action button */}
                     {quizAction && navigationUrl && (
                       <Link href={navigationUrl}>
@@ -194,7 +216,7 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
 
 export function StudentRecentActivityLoading() {
   return (
-    <Card className="md:col-span-4">
+    <Card className="lg:col-span-4">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <Clock className="h-5 w-5" />
