@@ -66,82 +66,104 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
+        <div className="divide-y sm:divide-y-0 sm:space-y-2">
           {activities && activities.length > 0 ? (
             activities.map((activity) => {
               const navigationUrl = getNavigationUrl(activity);
               const quizAction = getQuizAction(activity);
 
               const activityContent = (
-                <div
-                  className={`flex items-start sm:items-center gap-3 rounded-lg border p-3 transition-all duration-200 ${
-                    activity.type === "quiz_started" ? "bg-[hsl(var(--chart-2))]/5" : ""
-                  } ${
-                    navigationUrl
-                      ? "hover:bg-muted/50 hover:border-[hsl(var(--chart-1))]/30 cursor-pointer"
-                      : ""
-                  }`}
-                >
-                  {/* Activity Icons - using theme accent colors */}
-                  <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-[hsl(var(--muted))] mt-0.5 sm:mt-0">
-                    {activity.type === "quiz_completed" && (
-                      <Award className="h-4 w-4 text-[hsl(var(--chart-1))]" />
-                    )}
-                    {activity.type === "study_streak" && (
-                      <TrendingUp className="h-4 w-4 text-[hsl(var(--chart-3))]" />
-                    )}
-                    {activity.type === "quiz_started" && (
-                      <Play className="h-4 w-4 text-[hsl(var(--chart-2))]" />
-                    )}
-                    {activity.type === "achievement_unlocked" && (
-                      <Trophy className="h-4 w-4 text-[hsl(var(--chart-4))]" />
-                    )}
-                    {activity.type === "performance_milestone" && (
-                      <Target className="h-4 w-4 text-[hsl(var(--chart-5))]" />
-                    )}
-                    {![
-                      "quiz_completed",
-                      "study_streak",
-                      "quiz_started",
-                      "achievement_unlocked",
-                      "performance_milestone",
-                    ].includes(activity.type) && (
-                      <BookOpen className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
-                    )}
-                  </div>
-
-                  <div className="flex-1 min-w-0">
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 mb-0.5">
-                      <p className="text-sm font-medium leading-tight truncate max-w-full">
-                        {activity.title}
-                      </p>
-                      {/* Score display - inline with title */}
+                <>
+                  {/* Mobile: compact row */}
+                  <div
+                    className={`sm:hidden flex items-center gap-2 py-2 px-1 transition-colors ${
+                      navigationUrl ? "cursor-pointer" : ""
+                    }`}
+                  >
+                    <div className="flex-1 min-w-0 flex items-center gap-2">
+                      <p className="text-sm font-medium truncate">{activity.title}</p>
                       {activity.score !== undefined && (
                         <span
-                          className={`text-xs font-semibold px-1.5 py-0.5 rounded whitespace-nowrap ${
+                          className={`text-xs font-semibold tabular-nums shrink-0 ${
                             activity.score >= 80
-                              ? "text-[hsl(var(--chart-1))] bg-[hsl(var(--chart-1))]/10"
+                              ? "text-[hsl(var(--chart-1))]"
                               : activity.score >= 60
-                                ? "text-[hsl(var(--chart-4))] bg-[hsl(var(--chart-4))]/10"
-                                : "text-[hsl(var(--chart-5))] bg-[hsl(var(--chart-5))]/10"
+                                ? "text-[hsl(var(--chart-4))]"
+                                : "text-[hsl(var(--chart-5))]"
                           }`}
                         >
                           {activity.score}%
                         </span>
                       )}
                     </div>
-                    <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
-                      <p className="text-xs text-[hsl(var(--muted-foreground))] truncate max-w-full">
+                    <span className="text-xs text-muted-foreground whitespace-nowrap shrink-0">
+                      {format(new Date(activity.timestamp), "MMM d")}
+                    </span>
+                  </div>
+
+                  {/* Desktop: full card layout */}
+                  <div
+                    className={`hidden sm:flex items-center gap-3 rounded-lg border p-3 transition-all duration-200 ${
+                      activity.type === "quiz_started" ? "bg-[hsl(var(--chart-2))]/5" : ""
+                    } ${
+                      navigationUrl
+                        ? "hover:bg-muted/50 hover:border-[hsl(var(--chart-1))]/30 cursor-pointer"
+                        : ""
+                    }`}
+                  >
+                    <div className="flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center bg-[hsl(var(--muted))]">
+                      {activity.type === "quiz_completed" && (
+                        <Award className="h-4 w-4 text-[hsl(var(--chart-1))]" />
+                      )}
+                      {activity.type === "study_streak" && (
+                        <TrendingUp className="h-4 w-4 text-[hsl(var(--chart-3))]" />
+                      )}
+                      {activity.type === "quiz_started" && (
+                        <Play className="h-4 w-4 text-[hsl(var(--chart-2))]" />
+                      )}
+                      {activity.type === "achievement_unlocked" && (
+                        <Trophy className="h-4 w-4 text-[hsl(var(--chart-4))]" />
+                      )}
+                      {activity.type === "performance_milestone" && (
+                        <Target className="h-4 w-4 text-[hsl(var(--chart-5))]" />
+                      )}
+                      {![
+                        "quiz_completed",
+                        "study_streak",
+                        "quiz_started",
+                        "achievement_unlocked",
+                        "performance_milestone",
+                      ].includes(activity.type) && (
+                        <BookOpen className="h-4 w-4 text-[hsl(var(--muted-foreground))]" />
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="text-sm font-medium leading-tight truncate">
+                          {activity.title}
+                        </p>
+                        {activity.score !== undefined && (
+                          <span
+                            className={`text-xs font-semibold px-1.5 py-0.5 rounded whitespace-nowrap ${
+                              activity.score >= 80
+                                ? "text-[hsl(var(--chart-1))] bg-[hsl(var(--chart-1))]/10"
+                                : activity.score >= 60
+                                  ? "text-[hsl(var(--chart-4))] bg-[hsl(var(--chart-4))]/10"
+                                  : "text-[hsl(var(--chart-5))] bg-[hsl(var(--chart-5))]/10"
+                            }`}
+                          >
+                            {activity.score}%
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-xs text-[hsl(var(--muted-foreground))] truncate">
                         {activity.description}
                       </p>
-                      {/* Timestamp - inline on mobile, separate column on sm+ */}
-                      <span className="text-xs text-[hsl(var(--muted-foreground))] whitespace-nowrap sm:hidden">
-                        · {format(new Date(activity.timestamp), "MMM d")}
-                      </span>
                     </div>
-                    {/* Quiz action button - below text on mobile */}
-                    {quizAction && navigationUrl && (
-                      <div className="mt-1.5 sm:hidden">
+
+                    <div className="flex items-center gap-2 shrink-0">
+                      {quizAction && navigationUrl && (
                         <Link href={navigationUrl}>
                           <Button
                             size="sm"
@@ -151,30 +173,13 @@ export function StudentRecentActivity({ activities }: StudentRecentActivityProps
                             {quizAction.text}
                           </Button>
                         </Link>
+                      )}
+                      <div className="text-xs text-[hsl(var(--muted-foreground))] whitespace-nowrap">
+                        {format(new Date(activity.timestamp), "MMM d")}
                       </div>
-                    )}
-                  </div>
-
-                  <div className="hidden sm:flex items-center gap-2 shrink-0">
-                    {/* Quiz action button */}
-                    {quizAction && navigationUrl && (
-                      <Link href={navigationUrl}>
-                        <Button
-                          size="sm"
-                          variant={quizAction.variant}
-                          className="h-7 px-3 text-xs border-0"
-                        >
-                          {quizAction.text}
-                        </Button>
-                      </Link>
-                    )}
-
-                    {/* Timestamp */}
-                    <div className="text-xs text-[hsl(var(--muted-foreground))] whitespace-nowrap">
-                      {format(new Date(activity.timestamp), "MMM d")}
                     </div>
                   </div>
-                </div>
+                </>
               );
 
               // Return either a Link or div based on whether navigationUrl exists and if there's no quiz action button
