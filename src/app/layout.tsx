@@ -132,7 +132,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         <meta name="msapplication-TileColor" content="#ffffff" />
 
         {/* Viewport meta tag for responsive design */}
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
       </head>
       <body className={cn("min-h-screen bg-background font-sans antialiased overflow-x-hidden")}>
         {/* Structured Data */}

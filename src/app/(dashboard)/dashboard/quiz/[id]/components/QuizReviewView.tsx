@@ -269,7 +269,7 @@ export function QuizReviewView({
 
         {/* Scrollable content area with max-width constraint */}
         <div className="flex-1 overflow-auto">
-          <div className="flex justify-center p-2 md:p-3">
+          <div className="flex justify-center p-2 md:p-3 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] md:pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
             <div ref={contentAreaRef} className="w-full max-w-2xl space-y-3">
               <FeatureErrorBoundary>
                 <QuizQuestionDisplay
