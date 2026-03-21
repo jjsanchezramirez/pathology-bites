@@ -1,7 +1,8 @@
 {
+  "id": "/",
   "name": "Pathology Bites",
-  "short_name": "Pathology Bites",
-  "description": "Master pathology one bite at a time. Interactive learning platform with virtual slides, molecular tools, and bite-sized educational content for medical students and professionals.",
+  "short_name": "PathBites",
+  "description": "Master pathology one bite at a time. Free practice questions, interactive virtual slides, and bite-sized educational content for medical students and professionals.",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
@@ -50,9 +51,22 @@
   ],
   "shortcuts": [
     {
+      "name": "Take a Quiz",
+      "short_name": "Quiz",
+      "description": "Practice with real pathology board-style questions",
+      "url": "/uscap/quiz",
+      "icons": [
+        {
+          "src": "/icons/android-chrome-192x192.png",
+          "sizes": "192x192",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
       "name": "Virtual Slides",
       "short_name": "Slides",
-      "description": "Interactive whole slide imaging viewer for hands-on microscopic pathology learning",
+      "description": "Browse 10,000+ pathology slides from 8 major repositories",
       "url": "/tools/virtual-slides",
       "icons": [
         {
@@ -63,10 +77,10 @@
       ]
     },
     {
-      "name": "Genova",
-      "short_name": "Genova",
-      "description": "Genomic variant analysis and interpretation tool for molecular pathology",
-      "url": "/tools/genova",
+      "name": "Hemapath Cell Quiz",
+      "short_name": "Cell Quiz",
+      "description": "Test your cell identification skills with interactive quizzes",
+      "url": "/tools/cell-quiz",
       "icons": [
         {
           "src": "/icons/android-chrome-192x192.png",
@@ -76,10 +90,10 @@
       ]
     },
     {
-      "name": "MILAN",
-      "short_name": "MILAN",
-      "description": "Molecular information lookup and nomenclature for genes, proteins, and pathways",
-      "url": "/tools/milan",
+      "name": "ABPath Content Specs",
+      "short_name": "ABPath",
+      "description": "Interactive exam content specifications with filtering and PDF export",
+      "url": "/tools/abpath",
       "icons": [
         {
           "src": "/icons/android-chrome-192x192.png",
@@ -88,10 +102,5 @@
         }
       ]
     }
-  ],
-  "display_override": ["window-controls-overlay"],
-  "protocol_handlers": [],
-  "edge_side_panel": {
-    "preferred_width": 400
-  }
+  ]
 }

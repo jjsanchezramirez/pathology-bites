@@ -5,8 +5,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pathologybites.com";
   const currentDate = new Date();
 
-  // Static pages optimized for SEO
-  const staticPages: MetadataRoute.Sitemap = [
+  return [
     // Homepage - highest priority
     {
       url: baseUrl,
@@ -15,7 +14,33 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 1.0,
     },
 
-    // High-value tool pages (primary features)
+    // USCAP / Guest demo pages (public, no auth)
+    {
+      url: `${baseUrl}/uscap`,
+      lastModified: currentDate,
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: `${baseUrl}/uscap/quiz`,
+      lastModified: currentDate,
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/uscap/wsi-questions`,
+      lastModified: currentDate,
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+    {
+      url: `${baseUrl}/uscap/anki`,
+      lastModified: currentDate,
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+
+    // Primary tool pages
     {
       url: `${baseUrl}/tools/virtual-slides`,
       lastModified: currentDate,
@@ -34,8 +59,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.8,
     },
+    {
+      url: `${baseUrl}/tools/abpath`,
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.8,
+    },
 
-    // Utility tools (high value for users)
+    // Utility tools
     {
       url: `${baseUrl}/tools/citations`,
       lastModified: currentDate,
@@ -66,11 +97,19 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.7,
     },
+
+    // Auth pages (indexable so users can find login/signup via search)
     {
-      url: `${baseUrl}/tools/abpath`,
+      url: `${baseUrl}/login`,
       lastModified: currentDate,
       changeFrequency: "monthly",
-      priority: 0.7,
+      priority: 0.6,
+    },
+    {
+      url: `${baseUrl}/signup`,
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.6,
     },
 
     // Informational pages
@@ -93,7 +132,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.5,
     },
 
-    // Legal pages (low priority, but required)
+    // Legal pages
     {
       url: `${baseUrl}/privacy`,
       lastModified: currentDate,
@@ -107,6 +146,4 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.2,
     },
   ];
-
-  return staticPages;
 }
