@@ -161,9 +161,15 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Randomly shuffle and select the requested number of questions
-    const shuffled = questions.sort(() => Math.random() - 0.5);
-    const selectedQuestions = shuffled.slice(0, questionCount);
+    // Favor questions with images: shuffle each group separately, then pick from images-first
+    const withImages = questions
+      .filter((q) => q.question_images && q.question_images.length > 0)
+      .sort(() => Math.random() - 0.5);
+    const withoutImages = questions
+      .filter((q) => !q.question_images || q.question_images.length === 0)
+      .sort(() => Math.random() - 0.5);
+    const prioritized = [...withImages, ...withoutImages];
+    const selectedQuestions = prioritized.slice(0, questionCount);
 
     // Generate a guest session ID
     const guestSessionId = `guest-${uuidv4()}`;

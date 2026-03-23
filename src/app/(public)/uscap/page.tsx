@@ -4,7 +4,7 @@
 import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
-import { Plus, Microscope, BookText, Target, Layers } from "lucide-react";
+import { Plus, Microscope, BookOpen, Target, Layers } from "lucide-react";
 import Link from "next/link";
 import { PageErrorBoundary, ScrollReveal } from "@/shared/components/common";
 
@@ -29,29 +29,29 @@ const guestActivities = [
   },
   {
     id: "3",
+    type: "ankoma",
+    title: "Ankoma Deck Viewer",
+    description:
+      "Master pathology concepts with the most comprehensive Anki pathology deck ever built",
+    navigationUrl: "/uscap/anki",
+    icon: BookOpen,
+  },
+  {
+    id: "4",
     type: "slides",
     title: "Search Virtual Slides",
     description:
-      "Browse 10,000+ pathology slides from 8 major repositories with smart search and filtering",
+      "Browse 25,000+ pathology slides from 8 major repositories with smart search and filtering",
     navigationUrl: "/tools/virtual-slides",
     icon: Microscope,
   },
   {
-    id: "4",
+    id: "5",
     type: "hemapath",
     title: "Hematopathology Cell Quiz",
     description: "Test your cell identification skills with an interactive hematopathology quiz",
     navigationUrl: "/tools/cell-quiz",
     icon: Target,
-  },
-  {
-    id: "5",
-    type: "content",
-    title: "ABPath Content Specifications",
-    description:
-      "Interactive exam content specifications with filtering by Core/AR/Fellow and PDF export",
-    navigationUrl: "/tools/abpath",
-    icon: BookText,
   },
 ];
 

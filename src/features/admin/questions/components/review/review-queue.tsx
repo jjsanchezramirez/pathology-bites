@@ -25,7 +25,9 @@ import {
   Loader2,
   RefreshCw,
   AlertCircle,
+  CheckCheck,
 } from "lucide-react";
+import { Checkbox } from "@/shared/components/ui/checkbox";
 import { QuestionPreviewDialog } from "../dialogs/question-preview-dialog";
 import { ReviewActionDialog } from "./review-action-dialog";
 import { toast } from "@/shared/utils/ui/toast";
@@ -142,6 +144,8 @@ export function ReviewQueue() {
   const [selectedQuestion, setSelectedQuestion] = useState<ReviewQuestionData | null>(null);
   const [previewOpen, setPreviewOpen] = useState(false);
   const [reviewAction, setReviewAction] = useState<"approve" | "reject" | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
+  const [bulkApproving, setBulkApproving] = useState(false);
 
   const { user } = useAuthContext();
   const supabase = createClient();
@@ -228,6 +232,7 @@ export function ReviewQueue() {
 
       setQuestions(formattedData);
       setFilteredQuestions(formattedData);
+      setSelectedIds(new Set());
     } catch (error) {
       console.error("Unexpected error fetching review queue:", error);
       toast.error("Failed to load review queue");
@@ -346,6 +351,67 @@ export function ReviewQueue() {
     }
   };
 
+  const toggleSelection = (id: string) => {
+    setSelectedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedIds.size === filteredQuestions.length) {
+      setSelectedIds(new Set());
+    } else {
+      setSelectedIds(new Set(filteredQuestions.map((q) => q.id)));
+    }
+  };
+
+  const handleBulkApprove = async () => {
+    if (selectedIds.size === 0) return;
+
+    setBulkApproving(true);
+    try {
+      const response = await fetch("/api/admin/questions/bulk-approve", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ questionIds: Array.from(selectedIds) }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || "Failed to bulk approve questions");
+      }
+
+      const result = await response.json();
+      toast.success(
+        `${result.approved} question${result.approved !== 1 ? "s" : ""} approved and published`
+      );
+      if (result.failed > 0) {
+        toast.error(
+          `${result.failed} question${result.failed !== 1 ? "s" : ""} could not be approved`
+        );
+      }
+
+      setSelectedIds(new Set());
+      await fetchReviewQueue();
+      router.refresh();
+
+      if (typeof window !== "undefined") {
+        window.dispatchEvent(new CustomEvent("questionStatusChanged"));
+      }
+    } catch (error) {
+      console.error("Error bulk approving:", error);
+      toast.error(error instanceof Error ? error.message : "Failed to bulk approve questions");
+    } finally {
+      setBulkApproving(false);
+    }
+  };
+
   const getAgeIndicator = (createdAt: string) => {
     const daysOld = Math.floor(
       (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24)
@@ -442,16 +508,28 @@ export function ReviewQueue() {
         </Card>
       </div>
 
-      {/* Search and Refresh */}
+      {/* Search, Bulk Actions, and Refresh */}
       <div className="flex items-center justify-between gap-4">
-        <div className="relative w-64">
-          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search questions..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            className="pl-8"
-          />
+        <div className="flex items-center gap-3">
+          <div className="relative w-64">
+            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              placeholder="Search questions..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-8"
+            />
+          </div>
+          {selectedIds.size > 0 && (
+            <Button size="sm" onClick={handleBulkApprove} disabled={bulkApproving}>
+              {bulkApproving ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <CheckCheck className="h-4 w-4 mr-2" />
+              )}
+              Approve {selectedIds.size} selected
+            </Button>
+          )}
         </div>
         <Button
           variant="outline"
@@ -472,6 +550,15 @@ export function ReviewQueue() {
         <Table>
           <TableHeader className="bg-muted/50">
             <TableRow>
+              <TableHead className="w-10">
+                <Checkbox
+                  checked={
+                    filteredQuestions.length > 0 && selectedIds.size === filteredQuestions.length
+                  }
+                  onCheckedChange={toggleSelectAll}
+                  aria-label="Select all questions"
+                />
+              </TableHead>
               <TableHead>Question</TableHead>
               <TableHead>Category</TableHead>
               <TableHead className="text-right">Actions</TableHead>
@@ -480,7 +567,7 @@ export function ReviewQueue() {
           <TableBody>
             {filteredQuestions.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={3} className="h-24 text-center text-muted-foreground">
+                <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
                   {searchTerm
                     ? "No questions found matching your search"
                     : "No questions in your review queue"}
@@ -488,7 +575,17 @@ export function ReviewQueue() {
               </TableRow>
             ) : (
               filteredQuestions.map((question) => (
-                <TableRow key={question.id}>
+                <TableRow
+                  key={question.id}
+                  data-state={selectedIds.has(question.id) ? "selected" : undefined}
+                >
+                  <TableCell>
+                    <Checkbox
+                      checked={selectedIds.has(question.id)}
+                      onCheckedChange={() => toggleSelection(question.id)}
+                      aria-label={`Select ${question.title}`}
+                    />
+                  </TableCell>
                   <TableCell>
                     <div className="space-y-1">
                       <div className="font-medium flex items-center">

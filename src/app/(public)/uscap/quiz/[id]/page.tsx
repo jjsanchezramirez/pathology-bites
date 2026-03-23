@@ -355,7 +355,7 @@ export default function GuestQuizSessionPage() {
 
         {/* Scrollable content area */}
         <div ref={contentAreaRef} className="flex-1 overflow-auto">
-          <div className="flex justify-center p-2 md:p-3 pb-[calc(0.5rem+env(safe-area-inset-bottom,0px))] md:pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
+          <div className="flex justify-center p-2 md:p-3 pb-[calc(4.5rem+env(safe-area-inset-bottom,0px))] md:pb-[calc(0.75rem+env(safe-area-inset-bottom,0px))]">
             <div className="w-full max-w-2xl space-y-3">
               {/* Question Display */}
               <Card>
