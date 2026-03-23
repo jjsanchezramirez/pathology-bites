@@ -42,6 +42,25 @@ const getRandomElement = <T,>(arr: readonly T[]): T => arr[Math.floor(Math.rando
 
 export default function ErrorPage({ error }: { error: Error & { digest?: string } }) {
   useEffect(() => {
+    // Auto-recover from chunk loading errors (stale cache after deployment)
+    const isChunkError =
+      error.message?.includes("Loading chunk") ||
+      error.message?.includes("ChunkLoadError") ||
+      error.message?.includes("Failed to fetch dynamically imported module") ||
+      error.message?.includes("Importing a module script failed");
+
+    if (isChunkError) {
+      const reloadKey = "chunk-error-reload";
+      const lastReload = sessionStorage.getItem(reloadKey);
+      const now = Date.now();
+      // Only auto-reload once per 30 seconds to avoid reload loops
+      if (!lastReload || now - Number(lastReload) > 30000) {
+        sessionStorage.setItem(reloadKey, String(now));
+        window.location.reload();
+        return;
+      }
+    }
+
     // Enforce light mode and system theme on error pages (but NOT dashboard theme)
     const html = document.documentElement;
     html.classList.remove("dark");
