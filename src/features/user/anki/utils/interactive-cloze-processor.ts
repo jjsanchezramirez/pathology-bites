@@ -8,7 +8,8 @@ import { ClozeMatch } from "../types/anki-card";
 // - :: (delimiter after cloze number)
 // - Content: everything up to either }}  or ::hint}}
 // We use a greedy match for content but with negative lookahead to stop at ::hint}}
-const CLOZE_REGEX = /\{\{c(\d+)::(.+?)(?:::([^}]+))?\}\}/g;
+// Using RegExp constructor for the 's' (dotAll) flag since cloze content can contain newlines
+const CLOZE_REGEX = new RegExp("\\{\\{c(\\d+)::(.+?)(?:::([^}]+))?\\}\\}", "gs");
 
 export interface InteractiveCloze extends ClozeMatch {
   id: string;
