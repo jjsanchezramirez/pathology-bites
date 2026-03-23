@@ -48,7 +48,9 @@ export function ReferencesList({ references, className = "" }: ReferencesListPro
               )}
 
               {/* Reference text */}
-              <span className="break-words flex-1">{ref.text}</span>
+              <span className="break-all flex-1 line-clamp-2" title={ref.text}>
+                {ref.text}
+              </span>
 
               {/* PDF button if available */}
               {pdfLink && (

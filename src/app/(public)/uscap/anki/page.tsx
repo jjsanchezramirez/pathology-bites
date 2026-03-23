@@ -14,7 +14,10 @@ import {
   FileText,
   Info,
   ExternalLink,
+  X,
+  PanelLeft,
 } from "lucide-react";
+import { useMobile } from "@/shared/hooks/use-mobile";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -50,6 +53,8 @@ export default function AnkiPage() {
   const [isShuffled, setIsShuffled] = useState(false);
   const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
+  const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  const isMobileView = useMobile();
 
   // Detect mobile device once (useMemo ensures stable value)
   const isMobile = useMemo(() => {
@@ -394,12 +399,14 @@ export default function AnkiPage() {
       setExpandedCategoryId((prev) => (prev === categoryId ? null : categoryId));
     } else {
       setExpandedCategoryId(null);
+      setMobileSidebarOpen(false);
     }
   };
 
   const handleSubcategoryClick = (subcategory: string) => {
     setSelectedSubcategory(subcategory);
     setCurrentCardIndex(0);
+    setMobileSidebarOpen(false);
   };
 
   const handleNextCard = () => {
@@ -446,7 +453,7 @@ export default function AnkiPage() {
     <div className="h-full flex overflow-hidden">
       {/* Left Sidebar - DECKS */}
       <aside
-        className="h-full shrink-0 bg-secondary border-r border-border overflow-hidden"
+        className="hidden md:flex h-full shrink-0 bg-secondary border-r border-border overflow-hidden flex-col"
         style={{
           width: leftSidebarExpanded ? "240px" : "64px",
           transition: "width 300ms ease-in-out",
@@ -534,7 +541,7 @@ export default function AnkiPage() {
 
       {/* Right Sidebar - CATEGORIES */}
       <aside
-        className="h-full shrink-0 bg-card border-r border-border overflow-hidden"
+        className="hidden md:flex h-full shrink-0 bg-card border-r border-border overflow-hidden flex-col"
         style={{
           width: rightSidebarExpanded ? "300px" : "64px",
           transition: "width 300ms ease-in-out",
@@ -658,8 +665,17 @@ export default function AnkiPage() {
         <header className="anki-header shrink-0 border-b border-border bg-background p-3 md:p-5">
           <div className="flex items-center justify-between gap-2 md:gap-4">
             <div className="flex items-center gap-2 md:gap-3 min-w-0 flex-1">
+              <Button
+                variant="outline"
+                size="sm"
+                className="md:hidden h-8 shrink-0 gap-1.5 px-2.5"
+                onClick={() => setMobileSidebarOpen(true)}
+              >
+                <PanelLeft className="h-4 w-4" />
+                <span className="text-xs font-medium">Choose Deck</span>
+              </Button>
               <div className="min-w-0 flex-1">
-                <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
+                <div className="hidden md:block text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-1">
                   {selectedCategory ? (
                     <>
                       {selectedCategory.name}
@@ -669,7 +685,7 @@ export default function AnkiPage() {
                     "ANKOMA VIEWER"
                   )}
                 </div>
-                <div className="text-[13px] md:text-[14px] font-medium text-foreground truncate">
+                <div className="hidden md:block text-[13px] md:text-[14px] font-medium text-foreground truncate">
                   {selectedDeck?.name || "Select a deck to begin"}
                 </div>
               </div>
@@ -799,6 +815,167 @@ export default function AnkiPage() {
           </div>
         </div>
       </main>
+
+      {/* Mobile Sidebar Overlay */}
+      {isMobileView && (
+        <>
+          {/* Backdrop */}
+          <div
+            className={cn(
+              "fixed inset-0 bg-black/20 backdrop-blur-md z-40 transition-all duration-300 ease-in-out",
+              mobileSidebarOpen ? "opacity-100" : "opacity-0 pointer-events-none"
+            )}
+            onClick={() => setMobileSidebarOpen(false)}
+          />
+          {/* Sidebar Panel */}
+          <div
+            className={cn(
+              "fixed inset-y-0 left-0 z-50 w-80 max-w-[85vw] bg-background transition-transform duration-300 ease-in-out flex flex-col",
+              mobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+            )}
+          >
+            {/* Sidebar Header */}
+            <div className="flex items-center justify-between p-4 border-b border-border shrink-0">
+              <span className="text-sm font-semibold">Browse Decks</span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0"
+                onClick={() => setMobileSidebarOpen(false)}
+              >
+                <X className="h-5 w-5" />
+              </Button>
+            </div>
+
+            {/* Sidebar Content */}
+            <div className="flex-1 overflow-y-auto">
+              {/* Decks Section */}
+              <div className="p-3 border-b border-border">
+                <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-2 px-1">
+                  DECKS
+                </div>
+                <div className="space-y-1">
+                  {deckSidebarData.map((deck) => {
+                    const isActive = selectedDeckId === deck.id;
+                    return (
+                      <button
+                        key={deck.id}
+                        onClick={() => handleDeckSelect(deck.id)}
+                        className={cn(
+                          "w-full px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out flex items-center justify-between text-left cursor-pointer",
+                          isActive
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-transparent hover:bg-muted"
+                        )}
+                      >
+                        <span
+                          className={cn(
+                            "flex-1 text-[14px] font-medium truncate",
+                            isActive ? "text-primary-foreground" : "text-foreground"
+                          )}
+                        >
+                          {deck.name}
+                        </span>
+                        <span
+                          className={cn(
+                            "text-[13px] shrink-0 ml-2 font-mono",
+                            isActive ? "text-primary-foreground/90" : "text-muted-foreground"
+                          )}
+                        >
+                          {deck.totalCards}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* Categories Section */}
+              {categorySidebarData.length > 0 && (
+                <div className="p-3">
+                  <div className="text-[11px] font-semibold uppercase tracking-[0.8px] text-muted-foreground mb-2 px-1">
+                    CATEGORIES
+                  </div>
+                  <div className="space-y-1">
+                    {categorySidebarData.map((category) => {
+                      const isCategoryExpanded = expandedCategoryId === category.id;
+                      const hasSubcategories = category.subcategories.length > 0;
+
+                      return (
+                        <div key={category.id}>
+                          <button
+                            onClick={() => handleCategoryClick(category.id, hasSubcategories)}
+                            className={cn(
+                              "w-full px-3 py-2.5 rounded-lg transition-all duration-200 ease-in-out flex items-center text-left cursor-pointer gap-2 hover:bg-muted"
+                            )}
+                          >
+                            {hasSubcategories && (
+                              <ChevronRight
+                                className={cn(
+                                  "w-4 h-4 text-muted-foreground shrink-0 transition-transform duration-200 ease-in-out",
+                                  isCategoryExpanded && "rotate-90"
+                                )}
+                              />
+                            )}
+                            {!hasSubcategories && <div className="w-4" />}
+                            <span className="flex-1 text-[14px] font-medium text-foreground truncate">
+                              {category.name}
+                            </span>
+                            <span className="text-[13px] text-muted-foreground shrink-0 font-mono">
+                              {category.cardCount}
+                            </span>
+                          </button>
+
+                          {hasSubcategories && isCategoryExpanded && (
+                            <div className="ml-6 mt-1 space-y-0.5 animate-in slide-in-from-top-1 duration-200">
+                              {category.subcategories.map((subcategory) => {
+                                const isSubActive = selectedSubcategory === subcategory.name;
+                                return (
+                                  <button
+                                    key={subcategory.name}
+                                    onClick={() => handleSubcategoryClick(subcategory.name)}
+                                    className={cn(
+                                      "w-full py-2 px-3 rounded-lg transition-all duration-200 ease-in-out flex items-center justify-between cursor-pointer text-left",
+                                      isSubActive
+                                        ? "bg-primary text-primary-foreground"
+                                        : "bg-transparent hover:bg-muted"
+                                    )}
+                                  >
+                                    <span
+                                      className={cn(
+                                        "flex-1 text-[13px] truncate",
+                                        isSubActive
+                                          ? "text-primary-foreground font-medium"
+                                          : "text-foreground"
+                                      )}
+                                    >
+                                      {subcategory.name}
+                                    </span>
+                                    <span
+                                      className={cn(
+                                        "text-[12px] shrink-0 ml-2 font-mono",
+                                        isSubActive
+                                          ? "text-primary-foreground/90"
+                                          : "text-muted-foreground"
+                                      )}
+                                    >
+                                      {subcategory.cardCount}
+                                    </span>
+                                  </button>
+                                );
+                              })}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }
