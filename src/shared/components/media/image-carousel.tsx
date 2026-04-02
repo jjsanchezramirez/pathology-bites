@@ -35,10 +35,19 @@ function ImageCarouselInternal({ images, className = "", resetKey }: ImageCarous
     setCurrentIndex(0);
   }, [resetKey]);
 
-  // Set loading state when image changes
+  // Ensure currentIndex is within bounds (defensive programming)
+  const safeIndex = Math.min(currentIndex, images.length - 1);
+  const currentImage = images[safeIndex];
+  const currentUrl = currentImage?.url || "";
+  const handleImageLoad = useImageCacheHandler(currentUrl);
+
+  // Set loading state only when the actual displayed image URL changes.
+  // Using the URL string (not the images array reference) prevents the spinner
+  // from reappearing when the parent re-renders with a new array containing
+  // the same URLs — since onLoad won't fire again for an already-loaded image.
   useEffect(() => {
     setImageLoading(true);
-  }, [currentIndex, images]);
+  }, [currentUrl]);
 
   // Keyboard navigation for fullscreen
   useEffect(() => {
@@ -63,11 +72,6 @@ function ImageCarouselInternal({ images, className = "", resetKey }: ImageCarous
     document.addEventListener("keydown", handleKeyDown);
     return () => document.removeEventListener("keydown", handleKeyDown);
   }, [showModal, images.length]);
-
-  // Ensure currentIndex is within bounds (defensive programming)
-  const safeIndex = Math.min(currentIndex, images.length - 1);
-  const currentImage = images[safeIndex];
-  const handleImageLoad = useImageCacheHandler(currentImage?.url || "");
 
   // Early return if no images (after hooks to maintain hook call order)
   if (!images || images.length === 0) return null;
@@ -111,6 +115,7 @@ function ImageCarouselInternal({ images, className = "", resetKey }: ImageCarous
                 handleImageLoad();
                 setImageLoading(false);
               }}
+              onError={() => setImageLoading(false)}
             />
           ) : (
             <div className="w-full h-64 flex items-center justify-center bg-muted text-muted-foreground">
@@ -213,6 +218,7 @@ function ImageCarouselInternal({ images, className = "", resetKey }: ImageCarous
                       handleImageLoad();
                       setImageLoading(false);
                     }}
+                    onError={() => setImageLoading(false)}
                   />
 
                   {/* Navigation controls positioned at image borders (only if multiple images) */}
