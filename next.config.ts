@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  trailingSlash: false,
   eslint: {
     ignoreDuringBuilds: true, // Temporarily disable linting during builds to fix deployment
   },

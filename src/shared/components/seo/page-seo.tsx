@@ -149,7 +149,7 @@ export function generateVirtualSlidesPageMetadata(): Metadata {
       "pathology cases",
       "virtual slides",
     ],
-    url: "/virtual-slides",
+    url: "/tools/virtual-slides",
   });
 }
 

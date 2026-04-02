@@ -1,8 +1,17 @@
 // src/app/(auth)/login/page.tsx
+import { Metadata } from "next";
+import { generateMetadata } from "@/shared/utils/seo";
 import { login } from "@/features/auth/services/actions";
 import { AuthPageLayout } from "@/features/auth/components/ui/auth-page-layout";
 import { AuthCard } from "@/features/auth/components/ui/auth-card";
 import { LoginForm } from "@/features/auth/components/forms/login-form";
+
+export const metadata: Metadata = generateMetadata({
+  title: "Log In",
+  description:
+    "Log in to Pathology Bites to access practice questions, quizzes, and study materials.",
+  url: "/login",
+});
 
 interface LoginPageProps {
   searchParams: Promise<{

@@ -1,30 +1,15 @@
-// src/app/(public)/uscap/layout.tsx
-"use client";
+import { Metadata } from "next";
+import { generateMetadata } from "@/shared/utils/seo";
+import { USCAPLayoutClient } from "./uscap-layout-client";
 
-import { useMemo } from "react";
-import { UnifiedLayoutClient } from "@/shared/components/layout/unified-layout-client";
-import { DashboardSettingsProvider } from "@/shared/contexts/dashboard-settings-provider";
-import { DashboardThemeProvider } from "@/shared/contexts/dashboard-theme-context";
-import { getGuestNavigationSections } from "@/shared/config/navigation";
+export const metadata: Metadata = generateMetadata({
+  title: "USCAP Demo - Pathology Bites",
+  description:
+    "Try Pathology Bites for free. Take demo quizzes, explore virtual slides, and practice with AI-powered pathology questions.",
+  keywords: ["USCAP", "pathology demo", "free pathology quiz", "virtual slides demo"],
+  url: "/uscap",
+});
 
-export default function USCAPLayoutWrapper({ children }: { children: React.ReactNode }) {
-  const guestNav = useMemo(() => getGuestNavigationSections(), []);
-
-  return (
-    <DashboardSettingsProvider isGuest={true}>
-      <DashboardThemeProvider isGuest>
-        <UnifiedLayoutClient
-          userType="user"
-          headerConfig={{
-            showNotifications: false,
-            showFontSize: true,
-          }}
-          navigationOverride={guestNav}
-          hideAuthStatus
-        >
-          {children}
-        </UnifiedLayoutClient>
-      </DashboardThemeProvider>
-    </DashboardSettingsProvider>
-  );
+export default function USCAPLayout({ children }: { children: React.ReactNode }) {
+  return <USCAPLayoutClient>{children}</USCAPLayoutClient>;
 }
