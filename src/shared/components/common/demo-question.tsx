@@ -205,8 +205,8 @@ export default function DemoQuestion() {
                             const correctOptionId = currentQuestion.options.find(
                               (opt) => opt.correct
                             )?.id;
-                            // Filter out the selected option and the correct answer
-                            return selectedOption !== id && id !== correctOptionId;
+                            // Filter out the correct answer (its explanation is the teaching point)
+                            return id !== correctOptionId;
                           })
                           .map(([id, explanation]) => (
                             <div key={id} className="flex gap-2">

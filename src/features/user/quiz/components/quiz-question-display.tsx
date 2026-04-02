@@ -166,13 +166,15 @@ export function QuizQuestionDisplay({
               </div>
             )}
 
-            {/* Individual Option Explanations */}
-            {answerOptions?.some((opt) => opt.explanation) && (
+            {/* Individual Option Explanations (exclude correct answer — covered by teaching point) */}
+            {answerOptions?.some((opt) => opt.explanation && !opt.is_correct) && (
               <div>
-                <h4 className="font-medium text-xs uppercase mb-2">Answer Explanations</h4>
+                <h4 className="font-medium text-xs uppercase mb-2">
+                  Incorrect Answer Explanations
+                </h4>
                 <div className="space-y-2 text-muted-foreground">
                   {answerOptions
-                    ?.filter((opt) => opt.explanation)
+                    ?.filter((opt) => opt.explanation && !opt.is_correct)
                     .map((option, index) => (
                       <div key={option.id} className="flex gap-2">
                         <span className="font-medium">
