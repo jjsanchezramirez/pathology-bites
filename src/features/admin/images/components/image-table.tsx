@@ -43,9 +43,10 @@ import { UploadDialog } from "./upload-dialog";
 import { DeleteImageDialog } from "./delete-image-dialog";
 import { fetchImages } from "@/features/admin/images/services/images";
 import {
-  getImageUsageStats,
+  getImageUsageStatsForIds,
   ImageUsageStats,
 } from "@/features/admin/images/services/image-analytics";
+import { formatSize } from "@/features/admin/images/services/image-upload";
 import { getCategoryById } from "@/shared/config/category-color-map";
 import { CATEGORIES } from "@/shared/config/categories";
 
@@ -103,7 +104,7 @@ function TableControls({
         <div className="relative flex-1">
           <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search alt text..."
+            placeholder="Search by name, description, or source..."
             onChange={(e) => onSearch(e.target.value)}
             className="pl-8"
           />
@@ -352,42 +353,43 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
   }, [searchTerm]);
 
   const loadImages = useCallback(async () => {
-    console.log("loadImages function called");
     setLoading(true);
     setError(null);
     try {
-      // Load both regular images and analytics data
-      const [result, statsData] = await Promise.all([
-        fetchImages({
-          page,
-          pageSize: pageSize,
-          searchTerm: debouncedSearchTerm || undefined,
-          category:
-            categoryFilter === "all" || categoryFilter === "unused" ? undefined : categoryFilter,
-          showUnusedOnly: categoryFilter === "unused",
-          // Only apply pathology category filters when NOT showing unused images
-          // (v_orphaned_images view doesn't have pathology_category_id field)
-          showUncategorizedOnly:
-            categoryFilter !== "unused" && pathologyCategoryFilter === "uncategorized",
-          pathologyCategoryId:
-            categoryFilter !== "unused" &&
-            pathologyCategoryFilter &&
-            pathologyCategoryFilter !== "all" &&
-            pathologyCategoryFilter !== "uncategorized"
-              ? pathologyCategoryFilter
-              : undefined,
-        }),
-        getImageUsageStats(),
-      ]);
+      const result = await fetchImages({
+        page,
+        pageSize: pageSize,
+        searchTerm: debouncedSearchTerm || undefined,
+        category:
+          categoryFilter === "all" || categoryFilter === "unused" ? undefined : categoryFilter,
+        showUnusedOnly: categoryFilter === "unused",
+        showUncategorizedOnly:
+          categoryFilter !== "unused" && pathologyCategoryFilter === "uncategorized",
+        pathologyCategoryId:
+          categoryFilter !== "unused" &&
+          pathologyCategoryFilter &&
+          pathologyCategoryFilter !== "all" &&
+          pathologyCategoryFilter !== "uncategorized"
+            ? pathologyCategoryFilter
+            : undefined,
+      });
 
       if (result.error) {
         throw new Error(result.error);
       }
 
       setImages(result.data);
-      setImageStats(statsData);
       setTotalItems(result.total);
       setTotalPages(Math.ceil(result.total / pageSize));
+
+      // Fetch usage stats only for this page's images
+      if (result.data.length > 0) {
+        const ids = result.data.map((img) => img.id);
+        const statsData = await getImageUsageStatsForIds(ids);
+        setImageStats(statsData);
+      } else {
+        setImageStats([]);
+      }
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to load images";
       setError(message);
@@ -621,10 +623,10 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
                       )}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {stats?.formatted_size || "Unknown"}
+                      {image.file_size_bytes ? formatSize(image.file_size_bytes) : "Unknown"}
                     </TableCell>
                     <TableCell className="text-xs text-muted-foreground">
-                      {stats?.dimensions_text || "Unknown"}
+                      {image.width && image.height ? `${image.width} × ${image.height}` : "Unknown"}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">

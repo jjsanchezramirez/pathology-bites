@@ -33,6 +33,8 @@ import {
   MoreVertical,
   Edit,
   AudioLines,
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 import {
   Table,
@@ -123,11 +125,31 @@ async function getAudioDuration(file: File): Promise<number | null> {
   });
 }
 
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
+
+function getPageNumbers(currentPage: number, totalPages: number): (number | "ellipsis")[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i);
+  }
+  const pages: (number | "ellipsis")[] = [];
+  pages.push(0);
+  if (currentPage > 2) pages.push("ellipsis");
+  const start = Math.max(1, currentPage - 1);
+  const end = Math.min(totalPages - 2, currentPage + 1);
+  for (let i = start; i <= end; i++) pages.push(i);
+  if (currentPage < totalPages - 3) pages.push("ellipsis");
+  pages.push(totalPages - 1);
+  return pages;
+}
+
 export default function AdminAudioPage() {
   const [audio, setAudio] = useState<Audio[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filters, setFilters] = useState<AudioListFilters>({});
+  const [filters, setFilters] = useState<AudioListFilters>({ page: 0, pageSize: 10 });
   const [searchQuery, setSearchQuery] = useState("");
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(10);
+  const [totalItems, setTotalItems] = useState(0);
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [audioFileReady, setAudioFileReady] = useState<AudioFileReadyState | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -187,8 +209,13 @@ export default function AdminAudioPage() {
   const loadAudio = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await fetchAudio(filters);
-      setAudio(data);
+      const result = await fetchAudio(filters);
+      if (result.error) {
+        toast.error("Failed to load audio files");
+        return;
+      }
+      setAudio(result.data);
+      setTotalItems(result.total);
     } catch (error) {
       console.error("Error loading audio:", error);
       toast.error("Failed to load audio files");
@@ -218,18 +245,25 @@ export default function AdminAudioPage() {
 
   useEffect(() => {
     const delayDebounceFn = setTimeout(() => {
-      setFilters((prev) => ({
-        ...prev,
+      setPage(0);
+      setFilters({
         search: searchQuery,
         pathology_category_id:
           categoryFilter !== "all" && categoryFilter !== "uncategorized"
             ? categoryFilter
             : undefined,
-      }));
+        page: 0,
+        pageSize,
+      });
     }, 300);
 
     return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, categoryFilter]);
+  }, [searchQuery, categoryFilter, pageSize]);
+
+  // Sync page changes into filters (without resetting page)
+  useEffect(() => {
+    setFilters((prev) => ({ ...prev, page, pageSize }));
+  }, [page, pageSize]);
 
   const handleEdit = (audio: Audio) => {
     setSelectedAudio(audio);
@@ -520,6 +554,76 @@ export default function AdminAudioPage() {
                 </TableBody>
               </Table>
             </div>
+
+            {/* Pagination */}
+            {totalItems > 0 && (
+              <div className="flex items-center justify-between pt-2">
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <span>
+                    Showing {page * pageSize + 1} to {Math.min((page + 1) * pageSize, totalItems)}{" "}
+                    of {totalItems}
+                  </span>
+                  <Select
+                    value={String(pageSize)}
+                    onValueChange={(val) => {
+                      setPageSize(Number(val));
+                      setPage(0);
+                    }}
+                  >
+                    <SelectTrigger className="w-[110px] h-8">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {PAGE_SIZE_OPTIONS.map((size) => (
+                        <SelectItem key={size} value={String(size)}>
+                          {size} per page
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => Math.max(0, p - 1))}
+                    disabled={page === 0}
+                  >
+                    <ChevronLeft className="h-4 w-4" />
+                    Previous
+                  </Button>
+
+                  {getPageNumbers(page, Math.ceil(totalItems / pageSize)).map((p, i) =>
+                    p === "ellipsis" ? (
+                      <span key={`ellipsis-${i}`} className="px-2 text-muted-foreground">
+                        ...
+                      </span>
+                    ) : (
+                      <Button
+                        key={p}
+                        variant={p === page ? "default" : "outline"}
+                        size="sm"
+                        className="h-8 w-8 p-0"
+                        onClick={() => setPage(p)}
+                      >
+                        {p + 1}
+                      </Button>
+                    )
+                  )}
+
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPage((p) => p + 1)}
+                    disabled={page >= Math.ceil(totalItems / pageSize) - 1}
+                  >
+                    Next
+                    <ChevronRight className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

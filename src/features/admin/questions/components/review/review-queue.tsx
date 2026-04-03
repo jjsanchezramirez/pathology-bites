@@ -110,8 +110,6 @@ interface ReviewQuestionData {
   title: string;
   stem: string;
   difficulty: string;
-  teaching_point: string;
-  question_references: string | null;
   status: string;
   question_set_id: string | null;
   category_id: string | null;
@@ -165,8 +163,6 @@ export function ReviewQueue() {
           title,
           stem,
           difficulty,
-          teaching_point,
-          question_references,
           status,
           question_set_id,
           category_id,
@@ -190,24 +186,29 @@ export function ReviewQueue() {
         return;
       }
 
-      // Fetch resubmission notes from question_reviews for each question
-      const questionsWithNotes = await Promise.all(
-        (data || []).map(async (question) => {
-          const { data: reviewData } = await supabase
+      // Batch fetch resubmission notes for all questions in a single query
+      const questionIds = (data || []).map((q) => q.id);
+      const { data: allReviews } = questionIds.length
+        ? await supabase
             .from("question_reviews")
-            .select("changes_made, created_at")
-            .eq("question_id", question.id)
+            .select("question_id, changes_made, created_at")
+            .in("question_id", questionIds)
             .eq("action", "resubmitted")
             .order("created_at", { ascending: false })
-            .limit(1)
-            .single();
+        : { data: [] };
 
-          return {
-            ...question,
-            resubmission_notes: reviewData?.changes_made?.resubmission_notes || null,
-          };
-        })
-      );
+      // Build a map of question_id -> latest resubmission notes
+      const notesMap = new Map<string, string | null>();
+      for (const review of allReviews || []) {
+        if (!notesMap.has(review.question_id)) {
+          notesMap.set(review.question_id, review.changes_made?.resubmission_notes || null);
+        }
+      }
+
+      const questionsWithNotes = (data || []).map((question) => ({
+        ...question,
+        resubmission_notes: notesMap.get(question.id) || null,
+      }));
 
       // Format creator name and category info
       const formattedData = questionsWithNotes.map((q) => {

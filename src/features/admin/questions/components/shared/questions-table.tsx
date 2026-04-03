@@ -1,7 +1,7 @@
 // src/components/questions/questions-table.tsx
 "use client";
 
-import React, { useState, useCallback, useEffect } from "react";
+import React, { useState, useCallback, useEffect, useRef } from "react";
 import {
   Table,
   TableBody,
@@ -65,12 +65,13 @@ import { ChangeCategoryDialog } from "../dialogs/change-category-dialog";
 import { ChangeSetDialog } from "../dialogs/change-set-dialog";
 
 import { createClient } from "@/shared/services/client";
+import { CATEGORIES } from "@/shared/config/categories";
 import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
 import { apiClient } from "@/shared/utils/api/api-client";
 import { useRouter } from "next/navigation";
 
-const DEFAULT_PAGE_SIZE = 100;
-const PAGE_SIZE_OPTIONS = [25, 50, 100, 200];
+const DEFAULT_PAGE_SIZE = 10;
+const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 // Difficulty configuration
 const _DIFFICULTY_CONFIG = {
@@ -171,11 +172,13 @@ function TableControls({
   onDifficultyChange,
   onStatusChange,
   onQuestionSetChange,
+  onCategoryChange,
   onCreateNew,
   onExportAll,
   difficultyFilter,
   statusFilter,
   questionSetFilter,
+  categoryFilter,
   questionSets,
   selectedQuestions,
   onBulkOperation,
@@ -185,28 +188,47 @@ function TableControls({
   onDifficultyChange: (difficulty: string) => void;
   onStatusChange: (status: string) => void;
   onQuestionSetChange: (questionSetId: string) => void;
+  onCategoryChange: (categoryId: string) => void;
   onCreateNew: () => void;
   onExportAll: () => void;
   difficultyFilter: string;
   statusFilter: string;
   questionSetFilter: string;
+  categoryFilter: string;
   questionSets: unknown[];
   selectedQuestions: string[];
   onBulkOperation: (action: string) => void;
   isAdmin: boolean;
 }) {
+  const pathologyCategories = CATEGORIES.filter((cat) => cat.level === 2).sort((a, b) =>
+    a.name.localeCompare(b.name)
+  );
+
   return (
     <div className="space-y-4">
       {/* Search and Filters Row */}
-      <div className="flex gap-4 items-center">
-        <div className="relative flex-1">
+      <div className="flex gap-3 items-center flex-wrap">
+        <div className="relative flex-1 min-w-[200px]">
           <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search questions..."
+            placeholder="Search by title or stem..."
             onChange={(e) => onSearch(e.target.value)}
             className="pl-8"
           />
         </div>
+        <Select value={categoryFilter} onValueChange={onCategoryChange}>
+          <SelectTrigger className="w-[160px]">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent className="max-h-[300px]">
+            <SelectItem value="all">All Categories</SelectItem>
+            {pathologyCategories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.shortForm} — {cat.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
         <Select value={difficultyFilter} onValueChange={onDifficultyChange}>
           <SelectTrigger className="w-[140px]">
             <SelectValue placeholder="Difficulty" />
@@ -223,9 +245,9 @@ function TableControls({
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">All status</SelectItem>
+            <SelectItem value="all">All Status</SelectItem>
             <SelectItem value="draft">Draft</SelectItem>
-            <SelectItem value="pending_review">Pending review</SelectItem>
+            <SelectItem value="pending_review">Pending Review</SelectItem>
             <SelectItem value="approved">Approved</SelectItem>
             <SelectItem value="published">Published</SelectItem>
             <SelectItem value="rejected">Rejected</SelectItem>
@@ -286,6 +308,38 @@ function TableControls({
   );
 }
 
+// Build visible page numbers with ellipsis gaps
+function getPageNumbers(currentPage: number, totalPages: number): (number | "ellipsis")[] {
+  if (totalPages <= 7) {
+    return Array.from({ length: totalPages }, (_, i) => i);
+  }
+
+  const pages: (number | "ellipsis")[] = [];
+
+  // Always show first page
+  pages.push(0);
+
+  if (currentPage > 2) {
+    pages.push("ellipsis");
+  }
+
+  // Pages around current
+  const start = Math.max(1, currentPage - 1);
+  const end = Math.min(totalPages - 2, currentPage + 1);
+  for (let i = start; i <= end; i++) {
+    pages.push(i);
+  }
+
+  if (currentPage < totalPages - 3) {
+    pages.push("ellipsis");
+  }
+
+  // Always show last page
+  pages.push(totalPages - 1);
+
+  return pages;
+}
+
 // Pagination component
 function TablePagination({
   currentPage,
@@ -302,6 +356,8 @@ function TablePagination({
   pageSize: number;
   onPageSizeChange: (size: number) => void;
 }) {
+  const pageNumbers = getPageNumbers(currentPage, totalPages);
+
   return (
     <div className="flex justify-between items-center">
       <div className="flex items-center gap-4">
@@ -324,16 +380,35 @@ function TablePagination({
           </select>
         </div>
       </div>
-      <div className="flex gap-2">
+      <div className="flex items-center gap-1">
         <Button
           variant="outline"
+          size="sm"
           onClick={() => onPageChange(currentPage - 1)}
           disabled={currentPage === 0}
         >
           Previous
         </Button>
+        {pageNumbers.map((p, idx) =>
+          p === "ellipsis" ? (
+            <span key={`ellipsis-${idx}`} className="px-2 text-sm text-muted-foreground">
+              ...
+            </span>
+          ) : (
+            <Button
+              key={p}
+              variant={p === currentPage ? "default" : "outline"}
+              size="sm"
+              className="min-w-[36px]"
+              onClick={() => onPageChange(p)}
+            >
+              {p + 1}
+            </Button>
+          )
+        )}
         <Button
           variant="outline"
+          size="sm"
           onClick={() => onPageChange(currentPage + 1)}
           disabled={currentPage >= totalPages - 1}
         >
@@ -582,11 +657,24 @@ interface QuestionsTableProps {
 export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
   const router = useRouter();
   const [searchTerm, setSearchTerm] = useState("");
+  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
   const [difficultyFilter, setDifficultyFilter] = useState("all");
   const [statusFilter, setStatusFilter] = useState("all");
   const [questionSetFilter, setQuestionSetFilter] = useState("all");
+  const [categoryFilter, setCategoryFilter] = useState("all");
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+
+  // Debounce search term
+  const searchTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const handleSearchInput = useCallback((value: string) => {
+    setSearchTerm(value);
+    if (searchTimerRef.current) clearTimeout(searchTimerRef.current);
+    searchTimerRef.current = setTimeout(() => {
+      setDebouncedSearchTerm(value);
+      setPage(0);
+    }, 350);
+  }, []);
   const [selectedQuestions, setSelectedQuestions] = useState<string[]>([]);
   const [showBulkDeleteConfirm, setShowBulkDeleteConfirm] = useState(false);
   const [isBulkDeleting, setIsBulkDeleting] = useState(false);
@@ -618,10 +706,11 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
   const { questions, total, loading, error, refetch, deleteQuestion } = useQuestions({
     page,
     pageSize,
-    searchTerm: searchTerm || undefined,
+    searchTerm: debouncedSearchTerm || undefined,
     difficulty: difficultyFilter === "all" ? undefined : difficultyFilter,
     status: statusFilter === "all" ? undefined : statusFilter,
     questionSetId: questionSetFilter === "all" ? undefined : questionSetFilter,
+    categoryId: categoryFilter === "all" ? undefined : categoryFilter,
   });
 
   // Fetch question sets for filter dropdown
@@ -634,8 +723,10 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
     setPage(0); // Reset to first page when changing page size
   }, []);
 
-  const handleSearch = useCallback((value: string) => {
-    setSearchTerm(value);
+  const handleSearch = handleSearchInput;
+
+  const handleCategoryChange = useCallback((value: string) => {
+    setCategoryFilter(value);
     setPage(0);
   }, []);
 
@@ -969,7 +1060,16 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
   // Load questions when component mounts or filters change
   useEffect(() => {
     refetch();
-  }, [refetch]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- refetch identity changes with params, which is intentional
+  }, [
+    page,
+    pageSize,
+    debouncedSearchTerm,
+    categoryFilter,
+    difficultyFilter,
+    statusFilter,
+    questionSetFilter,
+  ]);
 
   if (error) {
     return (
@@ -987,11 +1087,13 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
       <div className="space-y-4">
         <TableControls
           onSearch={handleSearch}
+          onCategoryChange={handleCategoryChange}
           onDifficultyChange={handleDifficultyChange}
           onStatusChange={handleStatusChange}
           onQuestionSetChange={handleQuestionSetChange}
           onCreateNew={handleCreateNew}
           onExportAll={handleExportAll}
+          categoryFilter={categoryFilter}
           difficultyFilter={difficultyFilter}
           statusFilter={statusFilter}
           questionSetFilter={questionSetFilter}
@@ -1041,6 +1143,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
                     className="h-24 text-center text-muted-foreground"
                   >
                     {searchTerm ||
+                    categoryFilter !== "all" ||
                     difficultyFilter !== "all" ||
                     statusFilter !== "all" ||
                     questionSetFilter !== "all"
@@ -1072,16 +1175,14 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
           </Table>
         </div>
 
-        {totalPages > 1 && (
-          <TablePagination
-            currentPage={page}
-            totalPages={totalPages}
-            onPageChange={setPage}
-            totalItems={total}
-            pageSize={pageSize}
-            onPageSizeChange={handlePageSizeChange}
-          />
-        )}
+        <TablePagination
+          currentPage={page}
+          totalPages={totalPages}
+          onPageChange={setPage}
+          totalItems={total}
+          pageSize={pageSize}
+          onPageSizeChange={handlePageSizeChange}
+        />
 
         {/* Dialogs */}
         <CreateQuestionDialog

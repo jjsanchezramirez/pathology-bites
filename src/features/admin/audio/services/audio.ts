@@ -2,12 +2,23 @@ import { createClient } from "@/shared/services/client";
 import type { Audio, AudioListFilters } from "../types";
 
 /**
- * Fetch all audio files with optional filters
+ * Fetch audio files with optional filters and server-side pagination
  */
-export async function fetchAudio(filters?: AudioListFilters): Promise<Audio[]> {
+export async function fetchAudio(
+  filters?: AudioListFilters
+): Promise<{ data: Audio[]; total: number; error: string | null }> {
   const supabase = createClient();
 
-  let query = supabase.from("audio").select("*").order("created_at", { ascending: false });
+  const page = filters?.page ?? 0;
+  const pageSize = filters?.pageSize ?? 10;
+  const from = page * pageSize;
+  const to = from + pageSize - 1;
+
+  let query = supabase
+    .from("audio")
+    .select("*")
+    .order("created_at", { ascending: false })
+    .range(from, to);
 
   // Apply filters
   if (filters?.pathology_category_id) {
@@ -22,10 +33,29 @@ export async function fetchAudio(filters?: AudioListFilters): Promise<Audio[]> {
 
   if (error) {
     console.error("Error fetching audio:", error);
-    throw new Error(error.message);
+    return { data: [], total: 0, error: error.message };
   }
 
-  return data || [];
+  // Separate count query with same filters
+  let countQuery = supabase.from("audio").select("*", { count: "exact", head: true });
+
+  if (filters?.pathology_category_id) {
+    countQuery = countQuery.eq("pathology_category_id", filters.pathology_category_id);
+  }
+
+  if (filters?.search) {
+    countQuery = countQuery.or(
+      `title.ilike.%${filters.search}%,description.ilike.%${filters.search}%`
+    );
+  }
+
+  const { count, error: countError } = await countQuery;
+
+  if (countError) {
+    console.error("Error fetching audio count:", countError);
+  }
+
+  return { data: data || [], total: count ?? 0, error: null };
 }
 
 /**

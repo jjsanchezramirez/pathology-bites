@@ -75,6 +75,48 @@ export async function getImageUsageStats(): Promise<ImageUsageStats[]> {
   }
 }
 
+/**
+ * Fetch usage stats for a specific set of image IDs only.
+ * Much cheaper than fetching all stats when you only need a page's worth.
+ */
+export async function getImageUsageStatsForIds(imageIds: string[]): Promise<ImageUsageStats[]> {
+  if (imageIds.length === 0) return [];
+
+  const supabase = createClient();
+
+  try {
+    const { data, error } = await supabase
+      .from("v_image_usage_stats")
+      .select("id, usage_count, is_orphaned, question_ids")
+      .in("id", imageIds);
+
+    if (error) {
+      console.error("Supabase error fetching usage stats for IDs:", error);
+      throw error;
+    }
+
+    return (data || []).map((row) => ({
+      id: row.id,
+      url: "",
+      alt_text: null,
+      description: null,
+      category: "",
+      file_size_bytes: null,
+      width: null,
+      height: null,
+      created_at: "",
+      usage_count: row.usage_count,
+      used_in_questions: row.question_ids || [],
+      is_orphaned: row.is_orphaned,
+      formatted_size: "",
+      dimensions_text: "",
+    }));
+  } catch (error) {
+    console.error("Get image usage stats for IDs error:", error);
+    return [];
+  }
+}
+
 export async function getOrphanedImages(): Promise<ImageUsageStats[]> {
   try {
     const stats = await getImageUsageStats();

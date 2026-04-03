@@ -19,6 +19,7 @@ export interface UseQuestionsParams {
   difficulty?: string;
   status?: string;
   questionSetId?: string;
+  categoryId?: string;
 }
 
 export interface UseQuestionsReturn {
@@ -54,6 +55,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
     difficulty = "all",
     status = "all",
     questionSetId = "all",
+    categoryId = "all",
   } = params;
 
   const [questions, setQuestions] = useState<QuestionWithDetails[]>([]);
@@ -75,8 +77,6 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
           title,
           stem,
           difficulty,
-          teaching_point,
-          question_references,
           status,
           question_set_id,
           category_id,
@@ -99,13 +99,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
             last_name
           ),
           question_images(count),
-          question_options(
-            id,
-            text,
-            is_correct,
-            explanation,
-            order_index
-          ),
+          question_options(count),
           question_tags(
             tag:tags(
               id,
@@ -132,6 +126,10 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
 
       if (questionSetId !== "all") {
         query = query.eq("question_set_id", questionSetId);
+      }
+
+      if (categoryId !== "all") {
+        query = query.eq("category_id", categoryId);
       }
 
       // Apply pagination
@@ -207,7 +205,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
     } finally {
       setLoading(false);
     }
-  }, [page, pageSize, searchTerm, difficulty, status, questionSetId, supabase]);
+  }, [page, pageSize, searchTerm, difficulty, status, questionSetId, categoryId, supabase]);
 
   const deleteQuestion = useCallback(
     async (questionId: string) => {

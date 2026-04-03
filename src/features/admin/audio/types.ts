@@ -19,4 +19,6 @@ export interface Audio {
 export interface AudioListFilters {
   pathology_category_id?: string;
   search?: string;
+  page?: number;
+  pageSize?: number;
 }

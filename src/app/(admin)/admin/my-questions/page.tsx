@@ -105,8 +105,6 @@ export default function MyQuestionsPage() {
           title,
           stem,
           difficulty,
-          teaching_point,
-          question_references,
           status,
           question_set_id,
           category_id,
@@ -117,12 +115,8 @@ export default function MyQuestionsPage() {
           created_at,
           updated_at,
           question_set:question_sets(id, name),
-          question_options(id, text, is_correct, explanation, order_index),
-          question_images(
-            question_section,
-            order_index,
-            images(id, url, alt_text, description)
-          ),
+          question_options(count),
+          question_images(count),
           category:categories(*),
           created_by_user:users!questions_created_by_fkey(
             first_name,

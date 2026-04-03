@@ -159,8 +159,8 @@ export default function LessonStudioPage() {
   const loadAudioRecords = useCallback(async (search?: string) => {
     setAudioLoading(true);
     try {
-      const records = await fetchAudio(search ? { search } : undefined);
-      setAudioRecords(records);
+      const result = await fetchAudio(search ? { search } : undefined);
+      setAudioRecords(result.data);
     } catch (err) {
       console.error("Failed to fetch audio:", err);
     } finally {
