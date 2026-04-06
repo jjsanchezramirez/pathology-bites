@@ -41,7 +41,7 @@ export interface ArrowPointer {
   strokeWidth: number; // px
   opacity: number; // 0-1
   headSize?: number; // arrowhead size in px (default 12)
-  direction: "up" | "down" | "left" | "right" | "up-left" | "up-right" | "down-left" | "down-right";
+  direction?: "up" | "down" | "left" | "right" | "up-left" | "up-right" | "down-left" | "down-right"; // optional for backward compat
 }
 
 export interface TextOverlay {
@@ -59,6 +59,19 @@ export interface TextOverlay {
   computedOpacity?: number;
 }
 
+// ---- SVG Overlay ----
+
+export interface SvgOverlayElement {
+  id: string;
+  svgUrl: string;
+  position: Position;
+  size: Size;
+  rotation: number;
+  opacity: number;
+  computedOpacity?: number; // Runtime-only: computed opacity for fade animations (0–1)
+  color?: string;
+}
+
 // ---- Keyframe & Segment ----
 
 export interface Keyframe {
@@ -67,12 +80,14 @@ export interface Keyframe {
   highlights: HighlightRegion[];
   arrows: ArrowPointer[];
   textOverlays: TextOverlay[];
+  svgOverlays?: SvgOverlayElement[]; // Optional for backward compatibility
 }
 
 export interface Segment {
   id: string;
-  imageUrl: string; // Cloudflare R2 URL
+  imageUrl: string; // Cloudflare R2 URL (empty string for blank segments)
   imageAlt?: string;
+  backgroundColor?: string; // Background color for blank segments
   startTime: number; // seconds from sequence start
   endTime: number; // seconds from sequence start
   transition: "crossfade" | "cut" | "fade-to-black";
@@ -100,6 +115,8 @@ export interface ExplainerSequence {
   audioUrl?: string;
   /** Pre-computed caption chunks (uniform word timing) */
   captions?: CaptionChunk[];
+  /** Original editor state for lossless round-trip loading (optional, absent in old sequences) */
+  editorState?: { selectedImages: unknown[] };
 }
 
 // ---- Component Props ----

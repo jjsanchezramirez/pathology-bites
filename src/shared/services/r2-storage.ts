@@ -567,6 +567,30 @@ export function generateVideoThumbnailStoragePath(filename: string): string {
 }
 
 /**
+ * Generate standardized storage path for SVG asset files
+ * Format: svg/YYYYMMDDHHMMSS-{cleaned-title}.svg
+ */
+export function generateSvgStoragePath(title: string): string {
+  const now = new Date();
+  const dateStr = now.toISOString().slice(0, 19).replace(/[-:T]/g, "").slice(0, 14);
+
+  const cleanedTitle = title
+    .toLowerCase()
+    .trim()
+    .replace(/&/g, "and")
+    .replace(/\+/g, "plus")
+    .replace(/%/g, "percent")
+    .replace(/@/g, "at")
+    .replace(/\$/g, "dollar")
+    .replace(/[\s\-_]+/g, "-")
+    .replace(/[^\w\-]/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+  return `svg/${dateStr}-${cleanedTitle}.svg`;
+}
+
+/**
  * Copy an object within R2 storage
  */
 export async function copyR2Object(
@@ -711,6 +735,7 @@ const r2Storage = {
   generateAudioPath: generateAudioStoragePath,
   generateVideoPath: generateVideoStoragePath,
   generateVideoThumbnailPath: generateVideoThumbnailStoragePath,
+  generateSvgPath: generateSvgStoragePath,
   copyObject: copyR2Object,
   moveObject: moveR2Object,
   moveFolder: moveR2Folder,

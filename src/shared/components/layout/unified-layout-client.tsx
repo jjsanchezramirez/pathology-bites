@@ -36,16 +36,14 @@ export function UnifiedLayoutClient({
   const { adminMode } = useDashboardTheme();
 
   // Check if we're on pages that have their own full-height layouts
-  const isAnkiPage = pathname === "/dashboard/anki" || pathname === "/uscap/anki";
+  const isAnkiPage = pathname === "/dashboard/anki";
   // Only quiz active session and review pages need full-height layout (they have their own scrolling areas)
   // Results page needs standard scrollable layout
   // Exclude /quiz/new - it needs scrollable layout
   const isQuizActivePage =
-    (pathname?.match(/^\/dashboard\/quiz\/[^/]+$/) && pathname !== "/dashboard/quiz/new") ||
-    pathname?.match(/^\/uscap\/quiz\/[^/]+$/); // Active quiz: /quiz/[id]
+    pathname?.match(/^\/dashboard\/quiz\/[^/]+$/) && pathname !== "/dashboard/quiz/new";
   const isQuizReviewPage =
-    pathname?.match(/^\/dashboard\/quiz\/[^/]+\/review$/) ||
-    pathname?.match(/^\/uscap\/quiz\/[^/]+\/review$/); // Review page: /quiz/[id]/review
+    pathname?.match(/^\/dashboard\/quiz\/[^/]+\/review$/); // Review page: /quiz/[id]/review
   const isLessonStudioPage = pathname === "/admin/lesson-studio"; // Lesson Studio needs full-width
   const isFullHeightPage = isAnkiPage || isQuizActivePage || isQuizReviewPage || isLessonStudioPage;
 

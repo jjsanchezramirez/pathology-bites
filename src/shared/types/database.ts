@@ -39,6 +39,17 @@ export const TABLE_NAMES = {
 
   // Additional tables
   INQUIRIES: "inquiries",
+
+  // Board prep tables
+  BOARD_PREP_RESOURCES: "board_prep_resources",
+  BOARD_PREP_CONFIG: "board_prep_config",
+  BOARD_PREP_SCHEDULE: "board_prep_schedule",
+  BOARD_PREP_PROGRESS: "board_prep_progress",
+
+  // Learning module tables
+  LEARNING_SUBJECTS: "learning_subjects",
+  LESSONS: "lessons",
+  USER_LESSON_PROGRESS: "user_lesson_progress",
 } as const;
 
 // =============================================================================

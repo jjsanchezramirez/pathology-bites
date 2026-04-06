@@ -18,6 +18,46 @@ import { useUserSettings } from "@/shared/hooks/use-user-settings";
 import { PageErrorBoundary, FeatureErrorBoundary, ScrollReveal } from "@/shared/components/common";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
+import { SpotlightTour, type TutorialStep } from "@/shared/components/tutorial/tutorial-dialog";
+import { useTutorial } from "@/shared/hooks/use-tutorial";
+
+const DASHBOARD_TUTORIAL: TutorialStep[] = [
+  {
+    target: "nav-sidebar-toggle",
+    title: "Toggle Dashboard",
+    description:
+      "Collapse or expand the sidebar. On mobile, this opens the navigation drawer.",
+    side: "bottom",
+  },
+  {
+    target: "nav-font-size",
+    title: "Theme",
+    description:
+      "Adjust the text size for comfortable reading.",
+    side: "bottom",
+  },
+  {
+    target: "nav-theme-toggle",
+    title: "Dark / Light Mode",
+    description:
+      "Switch between light and dark themes. Your preference is saved automatically.",
+    side: "bottom",
+  },
+  {
+    target: "nav-notifications",
+    title: "Notifications",
+    description:
+      "System updates, achievement alerts, and important announcements appear here.",
+    side: "bottom",
+  },
+  {
+    target: "nav-profile",
+    title: "Your Profile",
+    description:
+      "Access your profile settings, account preferences, and sign out from here.",
+    side: "left",
+  },
+];
 
 interface DashboardStats {
   // New meaningful categories
@@ -72,6 +112,7 @@ export default function DashboardPage() {
   const [stats, setStats] = useState<DashboardStats | null>(null);
   const [loading, setLoading] = useState(true);
 
+  const { showTutorial, completeTutorial } = useTutorial("dashboard");
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   const [showV1ReleaseMessage, setShowV1ReleaseMessage] = useState(false);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
@@ -166,6 +207,11 @@ export default function DashboardPage() {
 
   return (
     <PageErrorBoundary pageName="Dashboard" showHomeButton={false} showBackButton={false}>
+      <SpotlightTour
+        open={showTutorial && !loading && !!stats && !isTransitioning}
+        onComplete={completeTutorial}
+        steps={DASHBOARD_TUTORIAL}
+      />
       <div className="space-y-6">
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>

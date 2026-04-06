@@ -1,22 +1,13 @@
 "use client";
 
 import { useState, useRef, useEffect, memo } from "react";
-import {
-  ArrowDown,
-  ArrowUp,
-  ArrowLeft,
-  ArrowRight,
-  ArrowDownLeft,
-  ArrowDownRight,
-  ArrowUpLeft,
-  ArrowUpRight,
-} from "lucide-react";
 import type {
   Segment,
   Transform,
   HighlightRegion,
   ArrowPointer,
   TextOverlay,
+  SvgOverlayElement,
 } from "@/shared/types/explainer";
 
 interface ExplainerViewportProps {
@@ -26,6 +17,7 @@ interface ExplainerViewportProps {
   highlights: HighlightRegion[];
   arrows: ArrowPointer[];
   textOverlays: TextOverlay[];
+  svgOverlays?: SvgOverlayElement[];
   transitionOpacity: number;
   incomingOpacity?: number;
   aspectRatio: string;
@@ -149,7 +141,7 @@ function HighlightOverlay({ highlight }: { highlight: HighlightRegion }) {
         border: `${highlight.borderWidth}px ${highlight.borderStyle || "solid"} ${highlight.borderColor}`,
         backgroundColor: highlight.fillColor || "transparent",
         opacity: highlight.opacity,
-        transition: "opacity 0.15s ease",
+        transition: "none",
         zIndex: 10,
       }}
     />
@@ -157,70 +149,78 @@ function HighlightOverlay({ highlight }: { highlight: HighlightRegion }) {
 }
 
 function ArrowOverlay({ arrow }: { arrow: ArrowPointer }) {
-  // Select the correct arrow icon based on direction
-  let ArrowIcon = ArrowDown;
-
-  switch (arrow.direction) {
-    case "up":
-      ArrowIcon = ArrowUp;
-      break;
-    case "down":
-      ArrowIcon = ArrowDown;
-      break;
-    case "left":
-      ArrowIcon = ArrowLeft;
-      break;
-    case "right":
-      ArrowIcon = ArrowRight;
-      break;
-    case "up-left":
-      ArrowIcon = ArrowUpLeft;
-      break;
-    case "up-right":
-      ArrowIcon = ArrowUpRight;
-      break;
-    case "down-left":
-      ArrowIcon = ArrowDownLeft;
-      break;
-    case "down-right":
-      ArrowIcon = ArrowDownRight;
-      break;
-  }
+  const markerId = `arrowhead-${arrow.id}`;
 
   return (
-    <div
-      className="absolute pointer-events-none"
-      style={{
-        left: `${arrow.endPosition.x}%`,
-        top: `${arrow.endPosition.y}%`,
-        transform: "translate(-50%, -50%)",
-        opacity: arrow.opacity,
-        transition: "opacity 0.15s ease",
-        zIndex: 15,
-      }}
+    <svg
+      className="absolute inset-0 w-full h-full pointer-events-none"
+      viewBox="0 0 100 100"
+      preserveAspectRatio="none"
+      style={{ zIndex: 15, opacity: arrow.opacity }}
     >
-      <ArrowIcon
-        size={48}
-        strokeWidth={2.5}
+      <defs>
+        <marker
+          id={markerId}
+          markerWidth="10"
+          markerHeight="7"
+          refX="9"
+          refY="3.5"
+          orient="auto"
+          markerUnits="strokeWidth"
+        >
+          <polygon points="0 0, 10 3.5, 0 7" fill={arrow.color} />
+        </marker>
+      </defs>
+      <line
+        x1={arrow.startPosition.x}
+        y1={arrow.startPosition.y}
+        x2={arrow.endPosition.x}
+        y2={arrow.endPosition.y}
+        stroke={arrow.color}
+        strokeWidth={arrow.strokeWidth}
+        strokeLinecap="round"
+        markerEnd={`url(#${markerId})`}
         style={{
-          color: arrow.color,
-          filter: "drop-shadow(0 1px 3px rgba(0,0,0,0.8)) drop-shadow(0 0 8px rgba(0,0,0,0.5))",
+          filter: "drop-shadow(0 0.5px 2px rgba(0,0,0,0.8))",
         }}
       />
-    </div>
+    </svg>
   );
 }
 
 function SpotlightOverlay({
   highlights,
   aspectRatio,
+  transform,
 }: {
   highlights: HighlightRegion[];
   aspectRatio: string;
+  transform: Transform;
 }) {
   const spotlightHighlights = highlights.filter((h) => h.spotlight && h.opacity > 0.01);
 
   if (spotlightHighlights.length === 0) return null;
+
+  // Transform spotlight coordinates from image-space to viewport-space so the
+  // cutout tracks the image as it pans/zooms.  The image CSS transform is
+  // `translate(tx%, ty%) scale(s)` with transformOrigin center center.
+  // CSS applies left-to-right in visual space: translate first, then scale
+  // around the element center.  A point at (imgX%, imgY%) in image-space maps
+  // to viewport-space as:
+  //   vpX = (imgX - 50) * scale + 50 + tx
+  //   vpY = (imgY - 50) * scale + 50 + ty
+  // Sizes simply scale:  vpW = imgW * scale
+  const transformedSpotlights = spotlightHighlights.map((h) => ({
+    ...h,
+    position: {
+      x: (h.position.x - 50) * transform.scale + 50 + transform.x,
+      y: (h.position.y - 50) * transform.scale + 50 + transform.y,
+    },
+    size: {
+      width: h.size.width * transform.scale,
+      height: h.size.height * transform.scale,
+    },
+  }));
 
   // Calculate the maximum opacity from all spotlights
   const maxOpacity = Math.max(...spotlightHighlights.map((h) => h.opacity));
@@ -243,7 +243,7 @@ function SpotlightOverlay({
     >
       <defs>
         {/* Blur filters for soft edges - create multiple with different strengths */}
-        {spotlightHighlights.map((highlight, idx) => {
+        {transformedSpotlights.map((highlight, idx) => {
           // Calculate blur based on size - smaller shapes get less blur
           const avgSize = (highlight.size.width + highlight.size.height) / 2;
           // Scale blur to match the viewBox coordinate system
@@ -258,7 +258,7 @@ function SpotlightOverlay({
 
         <mask id="spotlight-mask">
           <rect width={viewBoxWidth} height={viewBoxHeight} fill="white" />
-          {spotlightHighlights.map((highlight, idx) => {
+          {transformedSpotlights.map((highlight, idx) => {
             const isCircle = highlight.type === "circle";
             const isOval = highlight.type === "oval";
 
@@ -358,7 +358,7 @@ function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
         padding: overlay.backgroundColor ? "0.4cqw 0.8cqw" : undefined,
         borderRadius: overlay.backgroundColor ? "0.4cqw" : undefined,
         whiteSpace: "pre-wrap",
-        transition: "opacity 0.15s ease, transform 0.15s ease",
+        transition: "none",
         textShadow: !overlay.backgroundColor
           ? "0 0.1cqw 0.3cqw rgba(0,0,0,0.8), 0 0 0.8cqw rgba(0,0,0,0.5)"
           : undefined,
@@ -370,6 +370,34 @@ function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
   );
 }
 
+function SvgOverlayItem({ overlay }: { overlay: SvgOverlayElement }) {
+  const computedOpacity = overlay.computedOpacity ?? overlay.opacity;
+
+  return (
+    <div
+      className="absolute pointer-events-none"
+      style={{
+        left: `${overlay.position.x}%`,
+        top: `${overlay.position.y}%`,
+        width: `${overlay.size.width}%`,
+        height: `${overlay.size.height}%`,
+        transform: `translate(-50%, -50%) rotate(${overlay.rotation}deg)`,
+        opacity: computedOpacity,
+        transition: "none",
+        zIndex: 18,
+      }}
+    >
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img
+        src={overlay.svgUrl}
+        alt=""
+        className="w-full h-full"
+        draggable={false}
+      />
+    </div>
+  );
+}
+
 export function ExplainerViewport({
   currentSegment,
   incomingSegment,
@@ -377,6 +405,7 @@ export function ExplainerViewport({
   highlights,
   arrows,
   textOverlays,
+  svgOverlays = [],
   transitionOpacity,
   incomingOpacity = 0,
   aspectRatio,
@@ -404,37 +433,73 @@ export function ExplainerViewport({
       }}
       onClick={onClick}
     >
-      {/* Current image layer (bottom layer) */}
-      <ImageLayer
-        src={currentSegment.imageUrl}
-        alt={currentSegment.imageAlt}
-        transform={transform}
-        opacity={transitionOpacity}
-      />
-
-      {/* Incoming image layer (fades in on top of current) */}
-      {incomingSegment && incomingOpacity > 0 && (
+      {/* Current image layer (bottom layer) or blank segment background */}
+      {currentSegment.imageUrl ? (
         <ImageLayer
-          src={incomingSegment.imageUrl}
-          alt={incomingSegment.imageAlt}
-          transform={incomingSegment.keyframes[0]?.transform ?? { x: 0, y: 0, scale: 1 }}
-          opacity={incomingOpacity}
+          src={currentSegment.imageUrl}
+          alt={currentSegment.imageAlt}
+          transform={transform}
+          opacity={transitionOpacity}
+        />
+      ) : (
+        <div
+          className="absolute inset-0 w-full h-full"
+          style={{
+            backgroundColor: currentSegment.backgroundColor || "#000000",
+            opacity: transitionOpacity,
+          }}
         />
       )}
 
+      {/* Incoming image layer (fades in on top of current) */}
+      {incomingSegment && incomingOpacity > 0 && (
+        incomingSegment.imageUrl ? (
+          <ImageLayer
+            src={incomingSegment.imageUrl}
+            alt={incomingSegment.imageAlt}
+            transform={incomingSegment.keyframes[0]?.transform ?? { x: 0, y: 0, scale: 1 }}
+            opacity={incomingOpacity}
+          />
+        ) : (
+          <div
+            className="absolute inset-0 w-full h-full"
+            style={{
+              backgroundColor: incomingSegment.backgroundColor || "#000000",
+              opacity: incomingOpacity,
+            }}
+          />
+        )
+      )}
+
       {/* Spotlight overlay (dims everything except highlighted regions) */}
-      <SpotlightOverlay highlights={highlights} aspectRatio={aspectRatio} />
+      <SpotlightOverlay highlights={highlights} aspectRatio={aspectRatio} transform={transform} />
 
-      {/* Highlight overlays (skip rendering borders for spotlights) */}
-      {highlights
-        .filter((h) => !h.spotlight)
-        .map((h) => (
-          <HighlightOverlay key={h.id} highlight={h} />
+      {/* Image-tracking layer: annotations that follow the image as it pans/zooms */}
+      <div
+        className="absolute inset-0 w-full h-full pointer-events-none overflow-hidden"
+        style={{
+          transform: `translate(${transform.x}%, ${transform.y}%) scale(${transform.scale})`,
+          transformOrigin: "center center",
+          transition: "none",
+          zIndex: 3,
+        }}
+      >
+        {/* Highlight overlays (skip rendering borders for spotlights) */}
+        {highlights
+          .filter((h) => !h.spotlight)
+          .map((h) => (
+            <HighlightOverlay key={h.id} highlight={h} />
+          ))}
+
+        {/* Arrow overlays */}
+        {arrows.map((a) => (
+          <ArrowOverlay key={a.id} arrow={a} />
         ))}
+      </div>
 
-      {/* Arrow overlays */}
-      {arrows.map((a) => (
-        <ArrowOverlay key={a.id} arrow={a} />
+      {/* SVG overlays */}
+      {svgOverlays.map((s) => (
+        <SvgOverlayItem key={s.id} overlay={s} />
       ))}
 
       {/* Text overlays */}

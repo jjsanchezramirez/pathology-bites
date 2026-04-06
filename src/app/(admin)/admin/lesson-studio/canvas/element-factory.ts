@@ -1,0 +1,194 @@
+// Factory helpers that create new SlideElements from a drawn bounding rect.
+// Smart defaults vary by imageCategory (microscopy → bright spotlights + yellow
+// arrows; figures/tables → neutral colors + black text).
+
+import type {
+  SlideElement,
+  ShapeElement,
+  SpotlightElement,
+  ArrowElement,
+  TextElement,
+  ZoomElement,
+  PanElement,
+  ImageCategory,
+  Timing,
+} from "../model/types";
+import type { Tool } from "../model/store";
+import type { Point } from "./geometry";
+import { clamp } from "../utils/math";
+
+function uid(prefix: string) {
+  return `${prefix}-${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
+function normalizeRect(a: Point, b: Point) {
+  const x = clamp(Math.min(a.x, b.x), 0, 100);
+  const y = clamp(Math.min(a.y, b.y), 0, 100);
+  const w = clamp(Math.abs(b.x - a.x), 0.5, 100 - x);
+  const h = clamp(Math.abs(b.y - a.y), 0.5, 100 - y);
+  return { x, y, w, h, rotation: 0 };
+}
+
+/** Timing used for brand-new elements: appear immediately, held for default span. */
+function defaultTiming(slideDuration: number): Timing {
+  const hold = Math.max(1, Math.min(3, slideDuration - 1));
+  return { start: 0, fadeIn: 0.3, hold, fadeOut: 0.3 };
+}
+
+// ---- Per-category palettes ------------------------------------------------
+
+function palette(cat?: ImageCategory) {
+  switch (cat) {
+    case "microscopic":
+    case "gross":
+      return {
+        strokeColor: "#ff3b30",
+        arrowColor: "#ffcc00",
+        spotlightDim: 0.7,
+        textColor: "#ffffff",
+        textBg: "rgba(0,0,0,0.5)",
+      };
+    case "figure":
+    case "table":
+    case "diagram":
+      return {
+        strokeColor: "#1d4ed8",
+        arrowColor: "#dc2626",
+        spotlightDim: 0.4,
+        textColor: "#111827",
+        textBg: "transparent",
+      };
+    default:
+      return {
+        strokeColor: "#ef4444",
+        arrowColor: "#eab308",
+        spotlightDim: 0.6,
+        textColor: "#ffffff",
+        textBg: "rgba(0,0,0,0.5)",
+      };
+  }
+}
+
+// ---- Factory --------------------------------------------------------------
+
+export interface CreateArgs {
+  tool: Tool;
+  start: Point;
+  end: Point;
+  slideDuration: number;
+  imageCategory?: ImageCategory;
+}
+
+/**
+ * Create a new SlideElement from a click-drag rectangle.
+ * Returns null for tools that don't create canvas elements (select, zoom, pan, svg, image).
+ */
+export function createElementFromDrag(args: CreateArgs): SlideElement | null {
+  const { tool, start, end, slideDuration, imageCategory } = args;
+  const timing = defaultTiming(slideDuration);
+  const p = palette(imageCategory);
+
+  switch (tool) {
+    case "shape-rectangle": {
+      const el: ShapeElement = {
+        id: uid("shape"),
+        kind: "shape",
+        shape: "rectangle",
+        rect: normalizeRect(start, end),
+        stroke: { color: p.strokeColor, width: 3, style: "solid" },
+        timing,
+      };
+      return el;
+    }
+    case "shape-circle": {
+      const r = normalizeRect(start, end);
+      // Force square bounds so a "circle" renders round.
+      const side = Math.min(r.w, r.h);
+      const el: ShapeElement = {
+        id: uid("shape"),
+        kind: "shape",
+        shape: "circle",
+        rect: { ...r, w: side, h: side },
+        stroke: { color: p.strokeColor, width: 3, style: "solid" },
+        timing,
+      };
+      return el;
+    }
+    case "shape-oval": {
+      const el: ShapeElement = {
+        id: uid("shape"),
+        kind: "shape",
+        shape: "oval",
+        rect: normalizeRect(start, end),
+        stroke: { color: p.strokeColor, width: 3, style: "solid" },
+        timing,
+      };
+      return el;
+    }
+    case "spotlight": {
+      const el: SpotlightElement = {
+        id: uid("spotlight"),
+        kind: "spotlight",
+        shape: "oval",
+        rect: normalizeRect(start, end),
+        dimOpacity: p.spotlightDim,
+        timing,
+      };
+      return el;
+    }
+    case "arrow": {
+      const el: ArrowElement = {
+        id: uid("arrow"),
+        kind: "arrow",
+        from: start,
+        to: end,
+        color: p.arrowColor,
+        strokeWidth: 4,
+        headSize: 14,
+        timing,
+      };
+      return el;
+    }
+    case "text": {
+      // Minimum size so users don't end up with invisible text boxes.
+      const r = normalizeRect(start, end);
+      const el: TextElement = {
+        id: uid("text"),
+        kind: "text",
+        text: "",
+        rect: { ...r, w: Math.max(r.w, 20), h: Math.max(r.h, 8) },
+        fontSize: 3,
+        fontWeight: "bold",
+        color: p.textColor,
+        background: p.textBg === "transparent" ? undefined : p.textBg,
+        align: "center",
+        timing,
+      };
+      return el;
+    }
+    case "zoom": {
+      // Zoom-in on the click point, default 2×. Fade-in/hold/fade-out by default.
+      const el: ZoomElement = {
+        id: uid("zoom"),
+        kind: "zoom",
+        to: { x: start.x, y: start.y, scale: 2 },
+        timing: { start: 0, fadeIn: 1, hold: Math.max(1, slideDuration - 3), fadeOut: 1 },
+      };
+      return el;
+    }
+    case "pan": {
+      // Pan target at click point; preserves scale from currentFraming baseline.
+      // The target scale is intentionally 1 here — the inspector lets the user
+      // change scale if they also want to zoom-during-pan.
+      const el: PanElement = {
+        id: uid("pan"),
+        kind: "pan",
+        to: { x: start.x, y: start.y, scale: 1 },
+        timing: { start: 0, fadeIn: 2, hold: Math.max(0, slideDuration - 2), fadeOut: 0 },
+      };
+      return el;
+    }
+    default:
+      return null;
+  }
+}

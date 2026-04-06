@@ -8,6 +8,7 @@ import type {
   HighlightRegion,
   ArrowPointer,
   TextOverlay,
+  SvgOverlayElement,
   Keyframe,
 } from "@/shared/types/explainer";
 
@@ -23,6 +24,7 @@ interface EngineState {
   activeHighlights: HighlightRegion[];
   activeArrows: ArrowPointer[];
   activeTextOverlays: TextOverlay[];
+  activeSvgOverlays: SvgOverlayElement[];
   transitionOpacity: number; // Current image opacity (always 1.0 for crossfades)
   incomingOpacity: number; // Incoming image opacity (0.0 → 1.0)
 }
@@ -35,20 +37,10 @@ function lerp(a: number, b: number, t: number): number {
 
 /**
  * Smoothstep easing function (ease-in-out cubic)
- * Creates a smoother transition curve
+ * Applied globally to all keyframe interpolation for natural motion.
  */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
 function smoothstep(t: number): number {
   return t * t * (3 - 2 * t);
-}
-
-/**
- * Ease-in-out quartic (even smoother than smoothstep)
- * Better for fade-in transitions
- */
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function easeInOutQuart(t: number): number {
-  return t < 0.5 ? 8 * t * t * t * t : 1 - Math.pow(-2 * t + 2, 4) / 2;
 }
 
 function lerpTransform(a: Transform, b: Transform, t: number): Transform {
@@ -131,7 +123,7 @@ function findKeyframePair(
     const kf2 = keyframes[i + 1];
     if (elapsed >= kf1.time && elapsed <= kf2.time) {
       const span = kf2.time - kf1.time;
-      const t = span > 0 ? (elapsed - kf1.time) / span : 0;
+      const t = span > 0 ? smoothstep((elapsed - kf1.time) / span) : 0;
       return { kf1, kf2, t };
     }
   }
@@ -231,6 +223,46 @@ function interpolateTextOverlays(kf1: Keyframe, kf2: Keyframe, t: number): TextO
   return result;
 }
 
+function lerpSvgOverlay(a: SvgOverlayElement, b: SvgOverlayElement, t: number): SvgOverlayElement {
+  return {
+    ...b,
+    position: {
+      x: lerp(a.position.x, b.position.x, t),
+      y: lerp(a.position.y, b.position.y, t),
+    },
+    size: {
+      width: lerp(a.size.width, b.size.width, t),
+      height: lerp(a.size.height, b.size.height, t),
+    },
+    rotation: lerp(a.rotation, b.rotation, t),
+    computedOpacity: lerp(a.computedOpacity ?? a.opacity, b.computedOpacity ?? b.opacity, t),
+  };
+}
+
+function interpolateSvgOverlays(kf1: Keyframe, kf2: Keyframe, t: number): SvgOverlayElement[] {
+  const kf1Svgs = kf1.svgOverlays ?? [];
+  const kf2Svgs = kf2.svgOverlays ?? [];
+  const kf1Map = new Map(kf1Svgs.map((s) => [s.id, s]));
+  const result: SvgOverlayElement[] = [];
+
+  for (const s2 of kf2Svgs) {
+    const s1 = kf1Map.get(s2.id);
+    if (s1) {
+      result.push(lerpSvgOverlay(s1, s2, t));
+    } else {
+      result.push({ ...s2, computedOpacity: lerp(0, s2.computedOpacity ?? s2.opacity, t) });
+    }
+  }
+
+  for (const s1 of kf1Svgs) {
+    if (!kf2Svgs.find((s) => s.id === s1.id)) {
+      result.push({ ...s1, computedOpacity: lerp(s1.computedOpacity ?? s1.opacity, 0, t) });
+    }
+  }
+
+  return result;
+}
+
 export function useExplainerEngine({
   sequence,
   currentTime,
@@ -249,6 +281,7 @@ export function useExplainerEngine({
         activeHighlights: [],
         activeArrows: [],
         activeTextOverlays: [],
+        activeSvgOverlays: [],
         transitionOpacity: 1,
         incomingOpacity: 0,
       };
@@ -333,6 +366,7 @@ export function useExplainerEngine({
     const activeHighlights = interpolateHighlights(kf1, kf2, t);
     const activeArrows = interpolateArrows(kf1, kf2, t);
     const activeTextOverlays = interpolateTextOverlays(kf1, kf2, t);
+    const activeSvgOverlays = interpolateSvgOverlays(kf1, kf2, t);
 
     return {
       currentSegment,
@@ -341,6 +375,7 @@ export function useExplainerEngine({
       activeHighlights,
       activeArrows: activeArrows.filter((a) => a.opacity > 0.01),
       activeTextOverlays: activeTextOverlays.filter((o) => o.computedOpacity > 0.01),
+      activeSvgOverlays: activeSvgOverlays.filter((s) => (s.computedOpacity ?? s.opacity) > 0.01),
       transitionOpacity,
       incomingOpacity,
     };

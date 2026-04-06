@@ -31,6 +31,7 @@ export function UnifiedHeader({ onToggleSidebar, config = defaultConfig }: Unifi
     <header className="h-16 border-b bg-background/95 backdrop-blur-sm flex items-center px-4 gap-4 shrink-0 z-40">
       {/* Sidebar Toggle */}
       <Button
+        data-tutorial="nav-sidebar-toggle"
         variant="ghost"
         size="icon"
         onClick={onToggleSidebar}
@@ -48,16 +49,28 @@ export function UnifiedHeader({ onToggleSidebar, config = defaultConfig }: Unifi
       {/* Right side controls */}
       <div className="flex items-center gap-2">
         {/* Font Size Control - Only show if enabled */}
-        {finalConfig.showFontSize && <FontSizeControl />}
+        {finalConfig.showFontSize && (
+          <div data-tutorial="nav-font-size">
+            <FontSizeControl />
+          </div>
+        )}
 
         {/* Theme Toggle - Always show */}
-        <ThemeModeToggle />
+        <div data-tutorial="nav-theme-toggle">
+          <ThemeModeToggle />
+        </div>
 
         {/* Notifications - Only show if enabled */}
-        {finalConfig.showNotifications && <NotificationsHandler />}
+        {finalConfig.showNotifications && (
+          <div data-tutorial="nav-notifications">
+            <NotificationsHandler />
+          </div>
+        )}
 
         {/* Profile Dropdown - Always show */}
-        <ProfileDropdown />
+        <div data-tutorial="nav-profile">
+          <ProfileDropdown />
+        </div>
       </div>
     </header>
   );

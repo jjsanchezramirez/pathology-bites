@@ -197,6 +197,7 @@ export function ExplainerPlayer({
           highlights={engine.activeHighlights}
           arrows={engine.activeArrows}
           textOverlays={engine.activeTextOverlays}
+          svgOverlays={engine.activeSvgOverlays}
           transitionOpacity={engine.transitionOpacity}
           incomingOpacity={engine.incomingOpacity}
           aspectRatio={sequence.aspectRatio}

@@ -18,8 +18,7 @@ export function useQuizMode() {
     // Exclude quiz creation pages from quiz mode (sidebar should not collapse)
     if (pathname === "/dashboard/quiz/new") return false;
 
-    // Check if we're in any quiz-related page (dashboard or USCAP)
-    return pathname.startsWith("/dashboard/quiz/") || pathname.startsWith("/uscap/quiz/");
+    return pathname.startsWith("/dashboard/quiz/");
   }, [pathname]);
 
   return {
@@ -37,7 +36,7 @@ export function useAnkiMode() {
 
   const isInAnkiMode = useMemo(() => {
     if (!pathname) return false;
-    return pathname.startsWith("/dashboard/anki") || pathname === "/uscap/anki";
+    return pathname.startsWith("/dashboard/anki");
   }, [pathname]);
 
   return {

@@ -98,11 +98,26 @@ export const adminNavigationSections: NavigationSection[] = [
         showToRoles: ["admin"],
       },
       {
+        name: "SVG Assets",
+        href: "/admin/svg-library",
+        icon: "Shapes",
+        requiredPermission: "images.manage",
+        adminOnly: true,
+      },
+      {
         name: "Lesson Studio",
         href: "/admin/lesson-studio",
         icon: "Clapperboard",
         requiredPermission: "images.manage",
         adminOnly: true,
+      },
+      {
+        name: "Learning Modules",
+        href: "/admin/learn",
+        icon: "BookOpen",
+        requiredPermission: "images.manage",
+        adminOnly: true,
+        isNew: true,
       },
     ],
   },
@@ -192,6 +207,18 @@ export function getUserNavigationSections(): NavigationSection[] {
           icon: "Library",
           isNew: true,
         },
+        {
+          name: "Study Schedule",
+          href: "/dashboard/board-prep",
+          icon: "Target",
+          isNew: true,
+        },
+        {
+          name: "Learning Modules",
+          href: "/dashboard/learn",
+          icon: "BookOpen",
+          isNew: true,
+        },
       ],
     },
     {
@@ -234,60 +261,33 @@ export function getUserNavigationSections(): NavigationSection[] {
 }
 
 // Guest/USCAP Navigation Sections Configuration
-export function getGuestNavigationSections(): NavigationSection[] {
-  return [
-    {
-      title: "Overview",
-      items: [
-        {
-          name: "Dashboard",
-          href: "/uscap",
-          icon: "LayoutDashboard",
-        },
-      ],
-    },
-    {
-      title: "Education",
-      items: [
-        {
-          name: "New Quiz",
-          href: "/uscap/quiz",
-          icon: "Plus",
-        },
-        {
-          name: "Slide-Based Questions",
-          href: "/uscap/wsi-questions",
-          icon: "Microscope",
-        },
-        {
-          name: "Ankoma Deck Viewer",
-          href: "/uscap/anki",
-          icon: "Library",
-        },
-      ],
-    },
-    {
-      title: "Tools",
-      items: [
-        {
-          name: "Browse Virtual Slides",
-          href: "/tools/virtual-slides",
-          icon: "Image",
-        },
-        {
-          name: "Hemapath Quiz",
-          href: "/tools/cell-quiz",
-          icon: "Target",
-        },
-        {
-          name: "ABPath Content Specs",
-          href: "/tools/abpath",
-          icon: "BookOpen",
-        },
-      ],
-    },
-  ];
-}
+// RETIRED: USCAP pages moved to dev/wip/uscap/ (April 2026)
+// export function getGuestNavigationSections(): NavigationSection[] {
+//   return [
+//     {
+//       title: "Overview",
+//       items: [
+//         { name: "Dashboard", href: "/uscap", icon: "LayoutDashboard" },
+//       ],
+//     },
+//     {
+//       title: "Education",
+//       items: [
+//         { name: "New Quiz", href: "/uscap/quiz", icon: "Plus" },
+//         { name: "Slide-Based Questions", href: "/uscap/wsi-questions", icon: "Microscope" },
+//         { name: "Ankoma Deck Viewer", href: "/uscap/anki", icon: "Library" },
+//       ],
+//     },
+//     {
+//       title: "Tools",
+//       items: [
+//         { name: "Browse Virtual Slides", href: "/tools/virtual-slides", icon: "Image" },
+//         { name: "Hemapath Quiz", href: "/tools/cell-quiz", icon: "Target" },
+//         { name: "ABPath Content Specs", href: "/tools/abpath", icon: "BookOpen" },
+//       ],
+//     },
+//   ];
+// }
 
 // Navigation configuration factory
 export function getNavigationConfig(
