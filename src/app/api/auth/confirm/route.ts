@@ -1,5 +1,5 @@
 // src/app/api/auth/confirm/route.ts
-import { type EmailOtpType } from "@supabase/supabase-js";
+import { type EmailOtpType, type SupabaseClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import {
@@ -7,6 +7,90 @@ import {
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_UI_SETTINGS,
 } from "@/shared/config/user-settings-defaults";
+
+/**
+ * Ensures that public.users and user_settings records exist for the authenticated user.
+ * This is a fallback — the handle_new_user database trigger should have already created
+ * these records when auth.users was inserted during signup.
+ */
+async function ensureUserRecords(supabase: SupabaseClient): Promise<void> {
+  const {
+    data: { user: authUser },
+  } = await supabase.auth.getUser();
+
+  if (!authUser) return;
+
+  // Check if user exists in public.users
+  const { error: checkError } = await supabase
+    .from("users")
+    .select("id")
+    .eq("id", authUser.id)
+    .single();
+
+  // If user doesn't exist, create them
+  if (checkError && checkError.code === "PGRST116") {
+    const { error: createError } = await supabase.from("users").insert({
+      id: authUser.id,
+      email: authUser.email || "",
+      first_name: authUser.user_metadata?.first_name || "",
+      last_name: authUser.user_metadata?.last_name || "",
+      user_type: authUser.user_metadata?.user_type || "other",
+      role: "user",
+      status: "active",
+    });
+
+    if (createError) {
+      if (createError.code === "23505") {
+        console.log("User already exists (created by trigger):", authUser.id);
+      } else {
+        console.error("Error creating user:", createError);
+      }
+    } else {
+      console.log("User created successfully via email confirmation:", authUser.id);
+    }
+
+    // Create default user_settings for new user
+    const { error: settingsError } = await supabase.from("user_settings").insert({
+      user_id: authUser.id,
+      quiz_settings: DEFAULT_QUIZ_SETTINGS,
+      notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
+      ui_settings: DEFAULT_UI_SETTINGS,
+    });
+
+    if (settingsError) {
+      if (settingsError.code === "23505") {
+        console.log("User settings already exist (created by trigger):", authUser.id);
+      } else {
+        console.error("Error creating user settings for new user:", settingsError);
+      }
+    } else {
+      console.log("User settings created successfully for new user:", authUser.id);
+    }
+  }
+
+  // Final safeguard: Ensure user_settings exist for all users
+  const { data: existingSettings } = await supabase
+    .from("user_settings")
+    .select("user_id")
+    .eq("user_id", authUser.id)
+    .single();
+
+  if (!existingSettings) {
+    console.log("Creating missing user_settings as final safeguard:", authUser.id);
+    const { error: settingsError } = await supabase.from("user_settings").insert({
+      user_id: authUser.id,
+      quiz_settings: DEFAULT_QUIZ_SETTINGS,
+      notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
+      ui_settings: DEFAULT_UI_SETTINGS,
+    });
+
+    if (settingsError) {
+      console.error("Error creating user settings in final safeguard:", settingsError);
+    } else {
+      console.log("User settings created successfully in final safeguard:", authUser.id);
+    }
+  }
+}
 
 /**
  * @swagger
@@ -31,7 +115,7 @@ import {
  *         name: code
  *         schema:
  *           type: string
- *         description: Authorization code for password reset
+ *         description: Authorization code for PKCE flow (signup, password reset, email change)
  *       - in: query
  *         name: type
  *         schema:
@@ -75,28 +159,53 @@ export async function GET(request: NextRequest) {
     next,
   });
 
-  // Handle code parameter (for password reset)
-  if (code && type === "recovery") {
+  // Handle code parameter (PKCE flow — used for signup, recovery, and email change)
+  if (code) {
     const supabase = await createClient();
 
     // Exchange the code for a session
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      console.log("Code verification successful for password reset");
+      console.log("Code exchange successful, type:", type);
+
+      if (type === "signup" || type === "email" || !type) {
+        // Email verification — ensure user records exist, then redirect to success
+        try {
+          await ensureUserRecords(supabase);
+        } catch (userCreationError) {
+          console.error("Error during user creation process:", userCreationError);
+          // Continue to success redirect — verification was successful
+        }
+        console.log("Redirecting to email-verified page");
+        return NextResponse.redirect(`${origin}/email-verified`);
+      } else if (type === "recovery") {
+        console.log("Password recovery, redirecting to:", next);
+        return NextResponse.redirect(`${origin}${next}`);
+      } else if (type === "email_change") {
+        return NextResponse.redirect(`${origin}/dashboard?message=Email updated successfully`);
+      }
+
+      // Default redirect
       return NextResponse.redirect(`${origin}${next}`);
     } else {
-      console.error("Code verification failed:", error);
+      console.error("Code exchange failed:", error);
 
-      // Handle expired password reset codes
+      // Handle expired or invalid codes
       if (
         error.message.includes("expired") ||
         error.message.includes("invalid") ||
         error.message.includes("already been used") ||
         error.code === "otp_expired"
       ) {
-        console.log("Password reset code expired or invalid, redirecting to link-expired page");
-        return NextResponse.redirect(`${origin}/link-expired?type=recovery`);
+        if (type === "recovery") {
+          console.log("Password reset code expired or invalid, redirecting to link-expired page");
+          return NextResponse.redirect(`${origin}/link-expired?type=recovery`);
+        } else {
+          // For signup verification, redirect to link-expired so user can resend
+          console.log("Email verification code expired or already used");
+          return NextResponse.redirect(`${origin}/link-expired?type=signup`);
+        }
       }
 
       return NextResponse.redirect(
@@ -129,113 +238,12 @@ export async function GET(request: NextRequest) {
 
       // Handle different verification types
       if (type === "signup" || type === "email") {
-        // Accept both types
-        /**
-         * USER CREATION NOTE:
-         * User creation in public.users and user_settings is handled in APPLICATION CODE.
-         * This ensures all users have corresponding entries in both tables.
-         *
-         * Process:
-         * 1. Get the authenticated user from session
-         * 2. Check if user exists in public.users
-         * 3. If not, create user record with metadata from auth.users
-         * 4. Create default user_settings for the new user
-         *
-         * IMPORTANT: We ALWAYS redirect to success after OTP verification succeeds,
-         * even if user creation fails. The critical part is email verification.
-         * User creation failures are logged but don't block the flow.
-         */
-
+        // Ensure user records exist (fallback for trigger)
         try {
-          // Get the authenticated user
-          const {
-            data: { user: authUser },
-          } = await supabase.auth.getUser();
-
-          if (authUser) {
-            // Check if user exists in public.users
-            const { error: checkError } = await supabase
-              .from("users")
-              .select("id")
-              .eq("id", authUser.id)
-              .single();
-
-            // If user doesn't exist, create them
-            // NOTE: The handle_new_user database trigger should have already created this user
-            //       when the auth.users record was created during signup. This is a fallback.
-            if (checkError && checkError.code === "PGRST116") {
-              // Create user in public.users
-              const { error: createError } = await supabase.from("users").insert({
-                id: authUser.id,
-                email: authUser.email || "",
-                first_name: authUser.user_metadata?.first_name || "",
-                last_name: authUser.user_metadata?.last_name || "",
-                user_type: authUser.user_metadata?.user_type || "other",
-                role: "user",
-                status: "active",
-              });
-
-              if (createError) {
-                // Ignore duplicate key errors (trigger already created user)
-                if (createError.code === "23505") {
-                  console.log("User already exists (created by trigger):", authUser.id);
-                } else {
-                  console.error("Error creating user:", createError);
-                }
-                // Don't fail - user can still proceed
-              } else {
-                console.log("User created successfully via email confirmation:", authUser.id);
-              }
-
-              // Create default user_settings for new user
-              const { error: settingsError } = await supabase.from("user_settings").insert({
-                user_id: authUser.id,
-                quiz_settings: DEFAULT_QUIZ_SETTINGS,
-                notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
-                ui_settings: DEFAULT_UI_SETTINGS,
-              });
-
-              if (settingsError) {
-                // Ignore duplicate key errors (trigger already created settings)
-                if (settingsError.code === "23505") {
-                  console.log("User settings already exist (created by trigger):", authUser.id);
-                } else {
-                  console.error("Error creating user settings for new user:", settingsError);
-                }
-                // Don't fail - user can still proceed
-              } else {
-                console.log("User settings created successfully for new user:", authUser.id);
-              }
-            }
-
-            // Final safeguard: Ensure user_settings exist for all users
-            const { data: existingSettings } = await supabase
-              .from("user_settings")
-              .select("user_id")
-              .eq("user_id", authUser.id)
-              .single();
-
-            if (!existingSettings) {
-              console.log("Creating missing user_settings as final safeguard:", authUser.id);
-              const { error: settingsError } = await supabase.from("user_settings").insert({
-                user_id: authUser.id,
-                quiz_settings: DEFAULT_QUIZ_SETTINGS,
-                notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
-                ui_settings: DEFAULT_UI_SETTINGS,
-              });
-
-              if (settingsError) {
-                console.error("Error creating user settings in final safeguard:", settingsError);
-                // Don't fail - user can still proceed
-              } else {
-                console.log("User settings created successfully in final safeguard:", authUser.id);
-              }
-            }
-          }
+          await ensureUserRecords(supabase);
         } catch (userCreationError) {
-          // Log any errors during user creation but don't fail the verification
           console.error("Error during user creation process:", userCreationError);
-          // Continue to success redirect - verification was successful
+          // Continue to success redirect — verification was successful
         }
 
         // ALWAYS redirect to success after OTP verification succeeds
@@ -263,12 +271,9 @@ export async function GET(request: NextRequest) {
           // Note: We can't use getUser() here because there's no session yet
           // Instead, check if the email from the token is already verified in auth.users
 
-          // Extract email from token if possible, or check using admin client
-          // Since we can't verify without email, redirect to already-verified page
-          // which is safer than showing "expired" when they might be verified
+          // Redirect to link-expired so user can resend verification
           console.log("Email verification link expired or already used");
-          console.log("Redirecting to already-verified page (safer than link-expired)");
-          return NextResponse.redirect(`${origin}/email-already-verified`);
+          return NextResponse.redirect(`${origin}/link-expired?type=signup`);
         }
       }
 

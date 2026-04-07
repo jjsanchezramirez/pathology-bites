@@ -11,14 +11,8 @@
  * @returns boolean indicating whether CAPTCHA should be enabled
  */
 export function isCaptchaEnabled(): boolean {
-  // Disable CAPTCHA in test environment
-  if (process.env.NODE_ENV === "test") {
-    return false;
-  }
-
-  // CAPTCHA is enabled if a sitekey is configured
-  // This allows disabling CAPTCHA by not setting the sitekey
-  return !!process.env.NEXT_PUBLIC_TURNSTILE_SITEKEY;
+  // CAPTCHA temporarily disabled while investigating email verification issues
+  return false;
 }
 
 /**
