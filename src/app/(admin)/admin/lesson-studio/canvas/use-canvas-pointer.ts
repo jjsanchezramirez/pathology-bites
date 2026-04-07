@@ -21,6 +21,7 @@ import { hitElement, moveElement } from "./hit-testing";
 import { resizeRect, applyRotation, type HandleId } from "./geometry";
 import { createElementFromDrag } from "./element-factory";
 import { rectAt } from "../model/runtime";
+import { snapToFrame } from "../utils/math";
 
 /** Identifies where a rect-edit should write back. */
 type RectTarget = { kind: "rect" } | { kind: "waypoint"; index: number };
@@ -81,7 +82,7 @@ function prepareRectTarget(
   if (!wps || wps.length < 2) {
     return { target: { kind: "rect" }, originRect: el.rect };
   }
-  const localT = Math.max(0, viewTime - el.timing.start);
+  const localT = snapToFrame(Math.max(0, viewTime - el.timing.start));
   const existingIdx = wps.findIndex((w) => Math.abs(w.time - localT) < WAYPOINT_TIME_EPSILON);
   if (existingIdx >= 0) {
     return {

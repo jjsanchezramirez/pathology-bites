@@ -8,8 +8,8 @@
 import type { SlideElement, Waypoint, ArrowWaypoint, ArrowElement, Rect } from "../model/types";
 import { useEditorStore } from "../model/store";
 import { rectAt, arrowPointsAt } from "../model/runtime";
-import { Section, Row, NumberInput } from "./inputs";
-import { clamp } from "../utils/math";
+import { Section, Row, TimeInput } from "./inputs";
+import { clamp, snapToFrame, secsToTimecode } from "../utils/math";
 
 interface Props {
   element: SlideElement;
@@ -36,7 +36,7 @@ export function WaypointsSection({ element, slideId }: Props) {
 
   const waypoints = (element as { waypoints?: Waypoint[] | ArrowWaypoint[] }).waypoints ?? [];
 
-  const localNow = clamp(viewTime - t.start, 0, maxLocal);
+  const localNow = snapToFrame(clamp(viewTime - t.start, 0, maxLocal));
 
   function update(patch: { waypoints: Waypoint[] | ArrowWaypoint[] | undefined }) {
     useEditorStore.getState().updateElement(slideId, element.id, patch as Partial<SlideElement>);
@@ -63,7 +63,7 @@ export function WaypointsSection({ element, slideId }: Props) {
   }
 
   function setTimeAt(index: number, newTime: number) {
-    const clamped = clamp(newTime, 0, maxLocal);
+    const clamped = snapToFrame(clamp(newTime, 0, maxLocal));
     const next = waypoints
       .map((w, i) => (i === index ? { ...w, time: clamped } : w))
       .sort((a, b) => a.time - b.time);
@@ -89,7 +89,7 @@ export function WaypointsSection({ element, slideId }: Props) {
   return (
     <Section title={`Waypoints (${waypoints.length})`}>
       <div className="text-[10px] text-muted-foreground">
-        Playhead at {viewTime.toFixed(2)}s &middot; local {localNow.toFixed(2)}s
+        Playhead {secsToTimecode(viewTime)} &middot; local {secsToTimecode(localNow)}
       </div>
       <button
         type="button"
@@ -109,14 +109,7 @@ export function WaypointsSection({ element, slideId }: Props) {
           <span className="w-5 text-gray-500">#{i}</span>
           <div className="flex-1">
             <Row label="t">
-              <NumberInput
-                value={wp.time}
-                step={0.1}
-                min={0}
-                max={maxLocal}
-                suffix="s"
-                onChange={(v) => setTimeAt(i, v)}
-              />
+              <TimeInput value={wp.time} min={0} max={maxLocal} onChange={(v) => setTimeAt(i, v)} />
             </Row>
           </div>
           <button

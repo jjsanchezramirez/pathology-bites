@@ -63,6 +63,9 @@ export function AnimationTrack() {
     [slide]
   );
 
+  // Ruler scrub ref — must be before early return to satisfy hook ordering.
+  const rulerScrubbing = useRef(false);
+
   useEffect(() => {
     if (!reorderActive) return;
     function onMove(e: PointerEvent) {
@@ -110,18 +113,53 @@ export function AnimationTrack() {
   const rows: SlideElement[] = slide.elements;
   const bodyHeight = Math.min(rows.length, MAX_VISIBLE_ROWS) * ROW_HEIGHT;
 
-  function onRulerPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+  function seekFromPointer(e: React.PointerEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
     const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
     const t = (x / rect.width) * duration;
     useEditorStore.getState().setViewTime(t);
   }
 
+  function onRulerPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    rulerScrubbing.current = true;
+    (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    seekFromPointer(e);
+  }
+
+  function onRulerPointerMove(e: React.PointerEvent<HTMLDivElement>) {
+    if (!rulerScrubbing.current) return;
+    seekFromPointer(e);
+  }
+
+  function onRulerPointerUp(e: React.PointerEvent<HTMLDivElement>) {
+    rulerScrubbing.current = false;
+    (e.currentTarget as HTMLElement).releasePointerCapture?.(e.pointerId);
+  }
+
+  const playheadPct = duration > 0 ? (viewTime / duration) * 100 : 0;
+
   return (
     <div className="flex flex-col border-t bg-white">
-      {/* Ruler with click-to-seek */}
-      <div className="relative cursor-col-resize" onPointerDown={onRulerPointerDown}>
+      {/* Ruler with click-to-seek + drag-to-scrub */}
+      <div
+        className="relative cursor-col-resize"
+        onPointerDown={onRulerPointerDown}
+        onPointerMove={onRulerPointerMove}
+        onPointerUp={onRulerPointerUp}
+        onPointerCancel={onRulerPointerUp}
+      >
         <TimeRuler duration={duration} />
+        {/* Playhead indicator in ruler */}
+        <div
+          className="pointer-events-none absolute top-0 bottom-0"
+          style={{ left: `${playheadPct}%` }}
+        >
+          <div
+            className="absolute left-1/2 top-0 h-2 w-2 -translate-x-1/2 bg-red-500"
+            style={{ clipPath: "polygon(50% 100%, 0 0, 100% 0)" }}
+          />
+          <div className="absolute left-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-red-500/50" />
+        </div>
       </div>
 
       {/* Track body */}

@@ -82,6 +82,7 @@ export function EditorCanvas() {
           aspectRatio: "16 / 9",
           width: "100%",
           maxHeight: "100%",
+          containerType: "inline-size",
           cursor: tool === "select" ? "default" : "crosshair",
         }}
         onPointerDown={pointerHandlers.onPointerDown}

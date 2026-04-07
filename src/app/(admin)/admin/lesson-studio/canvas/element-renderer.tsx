@@ -285,12 +285,9 @@ function TextView({
         alignItems: "center",
         justifyContent:
           el.align === "left" ? "flex-start" : el.align === "right" ? "flex-end" : "center",
-        color: el.color,
-        background: el.background ?? "transparent",
-        fontSize: `${el.fontSize}cqw`,
+        fontSize: `${el.fontSize * 1.67}cqw`,
         fontWeight: el.fontWeight === "bold" ? 700 : el.fontWeight === "semibold" ? 600 : 400,
         textAlign: el.align,
-        padding: "0.25em 0.5em",
         outline: isEditing
           ? "2px solid rgba(59,130,246,0.9)"
           : selected
@@ -304,7 +301,20 @@ function TextView({
         userSelect: isEditing ? "text" : "none",
       }}
     >
-      {isEditing ? el.text : el.text || <span style={{ opacity: 0.4 }}>Text</span>}
+      <span
+        style={{
+          color: el.color,
+          backgroundColor: el.background ?? "transparent",
+          padding: el.background ? "0.4cqw 0.8cqw" : undefined,
+          borderRadius: el.background ? "0.4cqw" : undefined,
+          textShadow: !el.background
+            ? "0 0.1cqw 0.3cqw rgba(0,0,0,0.8), 0 0 0.8cqw rgba(0,0,0,0.5)"
+            : undefined,
+          whiteSpace: "pre-wrap",
+        }}
+      >
+        {isEditing ? el.text : el.text || <span style={{ opacity: 0.4 }}>Text</span>}
+      </span>
     </div>
   );
 }

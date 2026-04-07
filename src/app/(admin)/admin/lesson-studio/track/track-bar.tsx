@@ -6,6 +6,7 @@
 import { useCallback, useRef } from "react";
 import type { SlideElement, Timing } from "../model/types";
 import { useEditorStore } from "../model/store";
+import { snapToFrame, secsToTimecode } from "../utils/math";
 
 type Mode = "move" | "resize-left" | "resize-right" | "fade-in" | "fade-out";
 
@@ -160,14 +161,40 @@ export function TrackBar({
     [pxToSec, slideDuration, slideId, element.id, onReorderStart]
   );
 
-  const onPointerUp = useCallback((e: React.PointerEvent) => {
-    if (!modeRef.current) return;
-    modeRef.current = null;
-    originRef.current = null;
-    candidateReorderRef.current = false;
-    useEditorStore.getState().endDrag();
-    (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
-  }, []);
+  const onPointerUp = useCallback(
+    (e: React.PointerEvent) => {
+      if (!modeRef.current) return;
+      modeRef.current = null;
+      originRef.current = null;
+      candidateReorderRef.current = false;
+      // Snap timing to the frame grid before closing the drag session so
+      // the snap is part of the same undo entry as the drag itself.
+      const store = useEditorStore.getState();
+      const el = store.lesson.slides
+        .find((s) => s.id === slideId)
+        ?.elements.find((x) => x.id === element.id);
+      if (el) {
+        const cur = el.timing;
+        const snapped: Timing = {
+          start: snapToFrame(cur.start),
+          fadeIn: snapToFrame(cur.fadeIn),
+          hold: snapToFrame(cur.hold),
+          fadeOut: snapToFrame(cur.fadeOut),
+        };
+        if (
+          snapped.start !== cur.start ||
+          snapped.fadeIn !== cur.fadeIn ||
+          snapped.hold !== cur.hold ||
+          snapped.fadeOut !== cur.fadeOut
+        ) {
+          store.updateElement(slideId, element.id, { timing: snapped } as Partial<SlideElement>);
+        }
+      }
+      store.endDrag();
+      (e.currentTarget as HTMLElement).releasePointerCapture(e.pointerId);
+    },
+    [slideId, element.id]
+  );
 
   // Bar geometry
   const leftPct = t.start * pctPerSec;
@@ -294,7 +321,7 @@ export function TrackBar({
               transform: "rotate(45deg)",
               zIndex: 2,
             }}
-            title={`waypoint @ ${wpTime.toFixed(2)}s`}
+            title={`waypoint @ ${secsToTimecode(wpTime)}`}
           />
         );
       })}

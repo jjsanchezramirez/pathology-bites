@@ -2,7 +2,8 @@
 
 "use client";
 
-import type { ChangeEvent, ReactNode } from "react";
+import { useState, useCallback, type ChangeEvent, type ReactNode, type KeyboardEvent } from "react";
+import { secsToTimecode, timecodeToSecs, FRAME_DURATION, snapToFrame } from "../utils/math";
 
 export function Row({ label, children }: { label: string; children: ReactNode }) {
   return (
@@ -120,6 +121,80 @@ function toHex(color: string): string {
   // Accept only #rrggbb for the native picker; return #000000 if input doesn't match.
   if (/^#[0-9a-fA-F]{6}$/.test(color)) return color;
   return "#000000";
+}
+
+/**
+ * Timecode input — displays seconds as S:FF (24 fps display), steps by
+ * authoring frames (12 fps). Editable as free text; parses on blur / Enter.
+ */
+export function TimeInput({
+  value,
+  onChange,
+  min = 0,
+  max,
+}: {
+  value: number;
+  onChange: (secs: number) => void;
+  min?: number;
+  max?: number;
+}) {
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState("");
+
+  const commit = useCallback(
+    (raw: string) => {
+      const parsed = timecodeToSecs(raw);
+      if (parsed !== null) {
+        let v = snapToFrame(parsed);
+        if (min !== undefined) v = Math.max(min, v);
+        if (max !== undefined) v = Math.min(max, v);
+        onChange(v);
+      }
+      setEditing(false);
+    },
+    [onChange, min, max]
+  );
+
+  const step = useCallback(
+    (dir: 1 | -1) => {
+      let v = snapToFrame(value + dir * FRAME_DURATION);
+      if (min !== undefined) v = Math.max(min, v);
+      if (max !== undefined) v = Math.min(max, v);
+      onChange(v);
+    },
+    [value, onChange, min, max]
+  );
+
+  const onKeyDown = useCallback(
+    (e: KeyboardEvent<HTMLInputElement>) => {
+      if (e.key === "ArrowUp") {
+        e.preventDefault();
+        step(1);
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        step(-1);
+      } else if (e.key === "Enter") {
+        commit(draft);
+      }
+    },
+    [step, commit, draft]
+  );
+
+  return (
+    <input
+      type="text"
+      value={editing ? draft : secsToTimecode(value)}
+      onFocus={(e) => {
+        setDraft(secsToTimecode(value));
+        setEditing(true);
+        e.target.select();
+      }}
+      onChange={(e) => setDraft(e.target.value)}
+      onBlur={(e) => commit(e.target.value)}
+      onKeyDown={onKeyDown}
+      className="h-6 w-full rounded border border-gray-300 bg-white px-1.5 text-right text-[11px] outline-none focus:border-blue-500"
+    />
+  );
 }
 
 export function Select<T extends string>({

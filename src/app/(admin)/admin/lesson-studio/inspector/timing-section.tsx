@@ -3,7 +3,7 @@
 "use client";
 
 import type { Timing } from "../model/types";
-import { Section, Row, NumberInput } from "./inputs";
+import { Section, Row, TimeInput } from "./inputs";
 
 interface TimingSectionProps {
   timing: Timing;
@@ -13,39 +13,23 @@ interface TimingSectionProps {
 
 export function TimingSection({ timing, onChange, slideDuration }: TimingSectionProps) {
   return (
-    <Section title="Timing (sec)">
+    <Section title="Timing">
       <Row label="Start">
-        <NumberInput
+        <TimeInput
           value={timing.start}
-          step={0.1}
           min={0}
           max={slideDuration}
-          onChange={(v) => onChange({ start: Math.max(0, v) })}
+          onChange={(v) => onChange({ start: v })}
         />
       </Row>
       <Row label="Fade in">
-        <NumberInput
-          value={timing.fadeIn}
-          step={0.1}
-          min={0}
-          onChange={(v) => onChange({ fadeIn: Math.max(0, v) })}
-        />
+        <TimeInput value={timing.fadeIn} min={0} onChange={(v) => onChange({ fadeIn: v })} />
       </Row>
       <Row label="Hold">
-        <NumberInput
-          value={timing.hold}
-          step={0.1}
-          min={0}
-          onChange={(v) => onChange({ hold: Math.max(0, v) })}
-        />
+        <TimeInput value={timing.hold} min={0} onChange={(v) => onChange({ hold: v })} />
       </Row>
       <Row label="Fade out">
-        <NumberInput
-          value={timing.fadeOut}
-          step={0.1}
-          min={0}
-          onChange={(v) => onChange({ fadeOut: Math.max(0, v) })}
-        />
+        <TimeInput value={timing.fadeOut} min={0} onChange={(v) => onChange({ fadeOut: v })} />
       </Row>
     </Section>
   );

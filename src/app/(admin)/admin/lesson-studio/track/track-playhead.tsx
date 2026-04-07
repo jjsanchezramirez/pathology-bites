@@ -1,6 +1,4 @@
 // Vertical playhead line spanning the full track height. Drag to scrub viewTime.
-// Pointer events are also accepted on the track body (outer div) to allow
-// click-to-seek anywhere on the ruler.
 
 "use client";
 

@@ -4,7 +4,7 @@
 
 import type { Slide, SlideTransition, ImageCategory } from "../model/types";
 import { useEditorStore } from "../model/store";
-import { Section, Row, NumberInput, Select, ColorInput } from "./inputs";
+import { Section, Row, NumberInput, TimeInput, Select, ColorInput } from "./inputs";
 
 interface SlidePropertiesProps {
   slide: Slide;
@@ -17,11 +17,9 @@ export function SlideProperties({ slide }: SlidePropertiesProps) {
     <div>
       <Section title="Slide">
         <Row label="Duration">
-          <NumberInput
+          <TimeInput
             value={slide.duration}
-            step={0.5}
             min={1}
-            suffix="s"
             onChange={(v) => updateSlide(slide.id, { duration: Math.max(1, v) })}
           />
         </Row>
@@ -58,11 +56,9 @@ export function SlideProperties({ slide }: SlidePropertiesProps) {
           />
         </Row>
         <Row label="Duration">
-          <NumberInput
+          <TimeInput
             value={slide.transitionIn.duration}
-            step={0.1}
             min={0}
-            suffix="s"
             onChange={(v) =>
               updateSlide(slide.id, {
                 transitionIn: { ...slide.transitionIn, duration: Math.max(0, v) },
