@@ -81,7 +81,7 @@ export async function GET(request: NextRequest) {
     // Get user settings using correct schema with separate columns
     const { data, error } = await supabase
       .from("user_settings")
-      .select("quiz_settings, notification_settings, ui_settings, created_at, updated_at")
+      .select("quiz_settings, notification_settings, ui_settings, counter_settings, created_at, updated_at")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -95,6 +95,7 @@ export async function GET(request: NextRequest) {
         quiz_settings: DEFAULT_QUIZ_SETTINGS,
         notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
         ui_settings: DEFAULT_UI_SETTINGS,
+        counter_settings: null,
       };
 
       // Try to create default settings for the user
@@ -106,7 +107,7 @@ export async function GET(request: NextRequest) {
           notification_settings: defaultSettings.notification_settings,
           ui_settings: defaultSettings.ui_settings,
         })
-        .select("quiz_settings, notification_settings, ui_settings, created_at, updated_at")
+        .select("quiz_settings, notification_settings, ui_settings, counter_settings, created_at, updated_at")
         .single();
 
       if (createError) {
@@ -124,6 +125,7 @@ export async function GET(request: NextRequest) {
           quiz_settings: newData.quiz_settings,
           notification_settings: newData.notification_settings,
           ui_settings: newData.ui_settings,
+          counter_settings: newData.counter_settings ?? null,
           created_at: newData.created_at,
           updated_at: newData.updated_at,
         },
@@ -135,6 +137,7 @@ export async function GET(request: NextRequest) {
       quiz_settings: data.quiz_settings || DEFAULT_QUIZ_SETTINGS,
       notification_settings: data.notification_settings || DEFAULT_NOTIFICATION_SETTINGS,
       ui_settings: data.ui_settings || DEFAULT_UI_SETTINGS,
+      counter_settings: data.counter_settings ?? null,
       created_at: data.created_at,
       updated_at: data.updated_at,
     };
@@ -249,7 +252,7 @@ export async function PATCH(request: NextRequest) {
     console.log("[UserSettings PATCH] Request:", { section, settings });
 
     // Validate section
-    const validSections = ["quiz_settings", "notification_settings", "ui_settings"];
+    const validSections = ["quiz_settings", "notification_settings", "ui_settings", "counter_settings"];
     if (!section || !validSections.includes(section)) {
       console.error("[UserSettings PATCH] Invalid section:", section);
       return NextResponse.json(
@@ -297,7 +300,7 @@ export async function PATCH(request: NextRequest) {
     // Get current settings first using correct schema
     const { data: currentData, error: getCurrentError } = await supabase
       .from("user_settings")
-      .select("quiz_settings, notification_settings, ui_settings")
+      .select("quiz_settings, notification_settings, ui_settings, counter_settings")
       .eq("user_id", userId)
       .maybeSingle();
 
@@ -309,6 +312,7 @@ export async function PATCH(request: NextRequest) {
       quiz_settings?: Record<string, unknown>;
       notification_settings?: Record<string, unknown>;
       ui_settings?: Record<string, unknown>;
+      counter_settings?: Record<string, unknown>;
     } | null;
 
     // Prepare the update object based on the section
@@ -317,16 +321,16 @@ export async function PATCH(request: NextRequest) {
       updated_at: new Date().toISOString(),
     };
 
-    // Merge the new settings with existing settings for the section
-    // This is critical to avoid wiping out other fields in the JSONB object
-    if (currentSettings && currentSettings[section as keyof typeof currentSettings]) {
-      // Merge new settings with existing settings
+    // counter_settings uses full replacement (contains arrays that don't shallow-merge well).
+    // Other sections use shallow merge to avoid wiping out unrelated fields.
+    if (section === "counter_settings") {
+      updateData[section] = settings;
+    } else if (currentSettings && currentSettings[section as keyof typeof currentSettings]) {
       updateData[section] = {
         ...currentSettings[section as keyof typeof currentSettings],
         ...settings,
       };
     } else {
-      // No existing data for this section, use the new settings
       updateData[section] = settings;
     }
 
@@ -352,7 +356,7 @@ export async function PATCH(request: NextRequest) {
         onConflict: "user_id", // Use user_id for conflict resolution
         ignoreDuplicates: false, // Update on conflict instead of ignoring
       })
-      .select("quiz_settings, notification_settings, ui_settings, created_at, updated_at")
+      .select("quiz_settings, notification_settings, ui_settings, counter_settings, created_at, updated_at")
       .maybeSingle();
 
     if (error) {
@@ -381,6 +385,7 @@ export async function PATCH(request: NextRequest) {
       quiz_settings: data.quiz_settings || {},
       notification_settings: data.notification_settings || {},
       ui_settings: data.ui_settings || {},
+      counter_settings: data.counter_settings ?? null,
       created_at: data.created_at,
       updated_at: data.updated_at,
     };

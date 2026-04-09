@@ -8,19 +8,25 @@ import {
   type QuizSettings,
   type NotificationSettings,
   type UISettings,
+  type CounterConfig,
 } from "@/shared/config/user-settings-defaults";
 
-export type { QuizSettings, NotificationSettings, UISettings };
+export type { QuizSettings, NotificationSettings, UISettings, CounterConfig };
 
 export interface UserSettings {
   quiz_settings: QuizSettings;
   notification_settings: NotificationSettings;
   ui_settings: UISettings;
+  counter_settings: CounterConfig | null;
   created_at: string;
   updated_at: string;
 }
 
-export type SettingsSection = "quiz_settings" | "notification_settings" | "ui_settings";
+export type SettingsSection =
+  | "quiz_settings"
+  | "notification_settings"
+  | "ui_settings"
+  | "counter_settings";
 
 class UserSettingsService {
   private baseUrl = "/api/user/settings";
@@ -130,7 +136,9 @@ class UserSettingsService {
         ? Partial<NotificationSettings>
         : T extends "ui_settings"
           ? Partial<UISettings>
-          : never
+          : T extends "counter_settings"
+            ? CounterConfig
+            : never
   ): Promise<
     T extends "quiz_settings"
       ? QuizSettings
@@ -138,7 +146,9 @@ class UserSettingsService {
         ? NotificationSettings
         : T extends "ui_settings"
           ? UISettings
-          : never
+          : T extends "counter_settings"
+            ? CounterConfig
+            : never
   > {
     // Get CSRF token for the request
     const csrfToken = await this.getCSRFToken();
@@ -279,6 +289,26 @@ class UserSettingsService {
       console.error("Error checking v1.0 release announcement status:", error);
       // Default to false to show the message on error (better to inform users)
       return false;
+    }
+  }
+
+  /**
+   * Update counter settings (full replacement, not partial merge)
+   */
+  async updateCounterSettings(settings: CounterConfig): Promise<CounterConfig> {
+    return this.updateSettingsSection("counter_settings", settings);
+  }
+
+  /**
+   * Get counter settings (returns null if not yet saved)
+   */
+  async getCounterSettings(): Promise<CounterConfig | null> {
+    try {
+      const userSettings = await this.getUserSettings();
+      return userSettings.counter_settings;
+    } catch (error) {
+      console.error("Error fetching counter settings:", error);
+      return null;
     }
   }
 

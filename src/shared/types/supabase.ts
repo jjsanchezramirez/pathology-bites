@@ -1300,6 +1300,7 @@ export type Database = {
       };
       user_settings: {
         Row: {
+          counter_settings: Json | null;
           created_at: string | null;
           id: string;
           notification_settings: Json | null;
@@ -1309,6 +1310,7 @@ export type Database = {
           user_id: string;
         };
         Insert: {
+          counter_settings?: Json | null;
           created_at?: string | null;
           id?: string;
           notification_settings?: Json | null;
@@ -1318,6 +1320,7 @@ export type Database = {
           user_id: string;
         };
         Update: {
+          counter_settings?: Json | null;
           created_at?: string | null;
           id?: string;
           notification_settings?: Json | null;

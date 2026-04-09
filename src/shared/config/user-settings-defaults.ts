@@ -51,12 +51,63 @@ export const DEFAULT_UI_SETTINGS = {
 };
 
 /**
+ * Cell counter config types (server-persisted portion only — counts stay in localStorage)
+ */
+export interface CounterCellTypeConfig {
+  id: string;
+  name: string;
+  key: string;
+  color: string;
+}
+
+export interface CounterSettingsConfig {
+  countLimit: number;
+  enableLimit: boolean;
+  enableUndo: boolean;
+  maxUndoHistory: number;
+}
+
+export interface SavedPreset {
+  id: string;
+  name: string;
+  cellTypes: CounterCellTypeConfig[];
+  settings: CounterSettingsConfig;
+}
+
+export interface CounterConfig {
+  cellTypes: CounterCellTypeConfig[];
+  settings: CounterSettingsConfig;
+  presetType: "peripheral-blood" | "bone-marrow" | "custom";
+  savedPresets?: SavedPreset[];
+}
+
+export const DEFAULT_COUNTER_SETTINGS: CounterConfig = {
+  cellTypes: [
+    { id: "pb1", name: "Segmented neutrophil", key: "k", color: "bg-amber-600" },
+    { id: "pb2", name: "Band neutrophil", key: "j", color: "bg-rose-600" },
+    { id: "pb3", name: "Lymphocyte", key: "l", color: "bg-pink-600" },
+    { id: "pb4", name: "Monocyte", key: ";", color: "bg-indigo-600" },
+    { id: "pb5", name: "Eosinophil", key: "n", color: "bg-lime-600" },
+    { id: "pb6", name: "Basophil", key: "m", color: "bg-purple-600" },
+  ],
+  settings: {
+    countLimit: 100,
+    enableLimit: true,
+    enableUndo: true,
+    maxUndoHistory: 50,
+  },
+  presetType: "peripheral-blood",
+  savedPresets: [],
+};
+
+/**
  * Complete default user settings object
  */
 export const DEFAULT_USER_SETTINGS = {
   quiz_settings: DEFAULT_QUIZ_SETTINGS,
   notification_settings: DEFAULT_NOTIFICATION_SETTINGS,
   ui_settings: DEFAULT_UI_SETTINGS,
+  counter_settings: null as CounterConfig | null,
 };
 
 /**

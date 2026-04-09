@@ -19,11 +19,21 @@ import {
   Hash,
   FileText,
   Table,
+  Save,
 } from "lucide-react";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
 import { KeyboardVisualizer } from "@/shared/components/common/keyboard-visualizer";
 import { toast } from "@/shared/utils/ui/toast";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/shared/components/ui/dialog";
+import { useCounterSync } from "./use-counter-sync";
+import type { CounterConfig, SavedPreset } from "@/shared/config/user-settings-defaults";
 
 interface CellType {
   id: string;
@@ -47,6 +57,7 @@ interface CounterState {
   isComplete: boolean;
   totalCount: number;
   presetType: "peripheral-blood" | "bone-marrow" | "custom";
+  savedPresets: SavedPreset[];
 }
 
 // Peripheral Blood preset - no M:E ratio calculation
@@ -88,6 +99,15 @@ const DEFAULT_SETTINGS: CounterSettings = {
 
 const STORAGE_KEY = "pathology-bites-cell-counter";
 
+function extractConfig(state: CounterState): CounterConfig {
+  return {
+    cellTypes: state.cellTypes.map(({ id, name, key, color }) => ({ id, name, key, color })),
+    settings: state.settings,
+    presetType: state.presetType,
+    savedPresets: state.savedPresets,
+  };
+}
+
 export default function CellCounterPage() {
   const [state, setState] = useState<CounterState>({
     cellTypes: DEFAULT_CELL_TYPES,
@@ -96,12 +116,18 @@ export default function CellCounterPage() {
     isComplete: false,
     totalCount: 0,
     presetType: "peripheral-blood",
+    savedPresets: [],
   });
 
   const [newCellName, setNewCellName] = useState("");
   const [newCellKey, setNewCellKey] = useState("");
   const [isCountingActive, setIsCountingActive] = useState(false);
+  const [isSavePresetOpen, setIsSavePresetOpen] = useState(false);
+  const [presetName, setPresetName] = useState("");
   const containerRef = useRef<HTMLDivElement>(null);
+  const lastSavedConfigRef = useRef<string>("");
+
+  const { serverConfig, isLoadingServer, isAuthenticated, saveConfigToServer } = useCounterSync();
 
   // Calculate total count
   const totalCount = state.cellTypes.reduce((sum, cell) => sum + cell.count, 0);
@@ -155,6 +181,7 @@ export default function CellCounterPage() {
         setState((prevState) => ({
           ...prevState,
           ...parsedState,
+          savedPresets: parsedState.savedPresets ?? [],
           undoHistory: [], // Don't restore undo history
           isComplete: false,
         }));
@@ -164,18 +191,55 @@ export default function CellCounterPage() {
     }
   }, []);
 
-  // Save state to localStorage
-  const saveState = useCallback((newState: CounterState) => {
-    try {
-      const stateToSave = {
-        cellTypes: newState.cellTypes,
-        settings: newState.settings,
+  // When authenticated and server config loads, override local config but preserve counts
+  useEffect(() => {
+    if (isLoadingServer || !isAuthenticated || !serverConfig) return;
+
+    // Initialize the lastSavedConfigRef so the first save doesn't re-sync unchanged config
+    lastSavedConfigRef.current = JSON.stringify(serverConfig);
+
+    setState((prev) => {
+      const countMap = new Map(prev.cellTypes.map((ct) => [ct.id, ct.count]));
+      const cellTypesWithCounts = serverConfig.cellTypes.map((ct) => ({
+        ...ct,
+        count: countMap.get(ct.id) ?? 0,
+      }));
+
+      return {
+        ...prev,
+        cellTypes: cellTypesWithCounts,
+        settings: serverConfig.settings,
+        presetType: serverConfig.presetType,
+        savedPresets: serverConfig.savedPresets ?? [],
       };
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
-    } catch {
-      // Failed to save state - operation will continue
-    }
-  }, []);
+    });
+  }, [isLoadingServer, isAuthenticated, serverConfig]);
+
+  // Save state to localStorage and sync config to server when config changes
+  const saveState = useCallback(
+    (newState: CounterState) => {
+      try {
+        const stateToSave = {
+          cellTypes: newState.cellTypes,
+          settings: newState.settings,
+          presetType: newState.presetType,
+          savedPresets: newState.savedPresets,
+        };
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(stateToSave));
+      } catch {
+        // Failed to save state - operation will continue
+      }
+
+      // Only sync config to server when config changes (not on count increments)
+      const config = extractConfig(newState);
+      const configJson = JSON.stringify(config);
+      if (configJson !== lastSavedConfigRef.current) {
+        lastSavedConfigRef.current = configJson;
+        saveConfigToServer(config);
+      }
+    },
+    [saveConfigToServer]
+  );
 
   // Update state and save
   const updateState = useCallback(
@@ -187,6 +251,59 @@ export default function CellCounterPage() {
       });
     },
     [saveState]
+  );
+
+  // Save current config as a named preset
+  const saveCurrentPreset = useCallback(() => {
+    const name = presetName.trim();
+    if (!name) {
+      toast.error("Please enter a preset name");
+      return;
+    }
+    if (state.savedPresets.length >= 3) {
+      toast.error("Maximum 3 saved presets");
+      return;
+    }
+    const newPreset: SavedPreset = {
+      id: crypto.randomUUID(),
+      name,
+      cellTypes: extractConfig(state).cellTypes,
+      settings: state.settings,
+    };
+    updateState((prev) => ({
+      ...prev,
+      savedPresets: [...prev.savedPresets, newPreset],
+    }));
+    setPresetName("");
+    setIsSavePresetOpen(false);
+    toast.success(`Preset saved: ${name}`);
+  }, [presetName, state, updateState]);
+
+  // Load a saved preset
+  const loadPreset = useCallback(
+    (preset: SavedPreset) => {
+      updateState((prev) => ({
+        ...prev,
+        cellTypes: preset.cellTypes.map((ct) => ({ ...ct, count: 0 })),
+        settings: preset.settings,
+        presetType: "custom",
+        undoHistory: [],
+      }));
+      toast.success(`Preset loaded: ${preset.name}`);
+    },
+    [updateState]
+  );
+
+  // Delete a saved preset
+  const deletePreset = useCallback(
+    (id: string) => {
+      updateState((prev) => ({
+        ...prev,
+        savedPresets: prev.savedPresets.filter((p) => p.id !== id),
+      }));
+      toast.success("Preset removed");
+    },
+    [updateState]
   );
 
   // Add cell type
@@ -982,6 +1099,49 @@ ${
                     </div>
                   </div>
 
+                  {/* Saved Presets */}
+                  {(state.savedPresets.length > 0 || state.presetType === "custom") && (
+                    <div className="space-y-2">
+                      <Label>Saved Presets</Label>
+                      <div className="grid gap-1.5">
+                        {state.savedPresets.map((preset) => (
+                          <div key={preset.id} className="flex gap-1.5">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="flex-1 justify-start truncate"
+                              onClick={() => loadPreset(preset)}
+                              disabled={isCountingActive}
+                            >
+                              {preset.name}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 w-8 shrink-0 p-0 text-muted-foreground hover:text-destructive"
+                              onClick={() => deletePreset(preset.id)}
+                              disabled={isCountingActive}
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </Button>
+                          </div>
+                        ))}
+                        {state.savedPresets.length < 3 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="justify-center"
+                            onClick={() => setIsSavePresetOpen(true)}
+                            disabled={isCountingActive || state.cellTypes.length === 0}
+                          >
+                            <Save className="mr-1.5 h-3.5 w-3.5" />
+                            Save Current Config
+                          </Button>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
                   {/* Add Cell Type - Simplified */}
                   <div className="space-y-3">
                     <Label>Add Cell Type</Label>
@@ -1333,6 +1493,37 @@ ${
 
       {/* Join Community Section */}
       <JoinCommunitySection />
+
+      {/* Save Preset Dialog */}
+      <Dialog open={isSavePresetOpen} onOpenChange={setIsSavePresetOpen}>
+        <DialogContent className="sm:max-w-sm">
+          <DialogHeader>
+            <DialogTitle>Save Preset</DialogTitle>
+          </DialogHeader>
+          <div className="py-2">
+            <Label htmlFor="preset-name">Preset Name</Label>
+            <Input
+              id="preset-name"
+              placeholder="e.g. My PB Config"
+              value={presetName}
+              onChange={(e) => setPresetName(e.target.value)}
+              maxLength={30}
+              className="mt-1.5"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") saveCurrentPreset();
+              }}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" size="sm" onClick={() => setIsSavePresetOpen(false)}>
+              Cancel
+            </Button>
+            <Button size="sm" onClick={saveCurrentPreset} disabled={!presetName.trim()}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
