@@ -21,4 +21,15 @@ export interface AudioListFilters {
   search?: string;
   page?: number;
   pageSize?: number;
+  /**
+   * Skip the secondary count-exact query when the caller doesn't need `total`.
+   * Defaults to true to preserve existing behavior.
+   */
+  withCount?: boolean;
+  /**
+   * Column projection. Defaults to "*". When narrowed, the returned `data`
+   * is cast to `Audio[]` but only the selected columns will be populated —
+   * the caller is responsible for not accessing omitted fields.
+   */
+  columns?: string;
 }

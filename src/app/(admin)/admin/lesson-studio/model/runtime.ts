@@ -51,9 +51,8 @@ function lerpAngle(a: number, b: number, p: number): number {
   return a + diff * p;
 }
 
-/** Find the bracketing waypoint indices (i, i+1) for a given local time. */
+/** Find the bracketing waypoint indices (i, i+1) for a given local time. Expects sorted input. */
 function bracket<T extends { time: number }>(wps: T[], localTime: number): [T, T, number] {
-  // Caller guarantees wps.length >= 2 and wps are sorted by time.
   if (localTime <= wps[0].time) return [wps[0], wps[0], 0];
   const last = wps[wps.length - 1];
   if (localTime >= last.time) return [last, last, 0];

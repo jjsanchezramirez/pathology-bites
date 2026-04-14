@@ -1,7 +1,7 @@
 // Slide and element factory helpers for the library panel.
 
-import type { Slide, SvgElement, ImageElement } from "./types";
-import { DEFAULT_TRANSITION } from "./types";
+import type { Lesson, Slide, SvgElement, ImageElement, ImageCategory } from "./types";
+import { DEFAULT_TRANSITION, emptyLesson } from "./types";
 
 export interface LibraryImageLike {
   id: string;
@@ -18,9 +18,11 @@ function uid(prefix: string) {
 }
 
 /**
- * Build a new ImageElement from a library image, centered on the canvas.
- * Default size: ~60% canvas width, preserving the image's aspect ratio against
- * the 16:9 canvas. If the image's natural size is unknown, defaults to a square.
+ * Build a new ImageElement from a library image, centered and sized to cover
+ * the entire 16:9 canvas with no empty space. The image's aspect ratio is
+ * preserved; whichever axis doesn't match the canvas overflows past 100%
+ * (cropped by the canvas clip) so the full canvas is filled. If the image's
+ * natural size is unknown, falls back to a full-canvas square.
  */
 export function imageElementFromLibrary(
   img: LibraryImageLike,
@@ -28,13 +30,15 @@ export function imageElementFromLibrary(
 ): ImageElement {
   const canvasAspect = 16 / 9;
   const imgAspect = img.width && img.height ? img.width / img.height : 1;
-  // Convert percent-width to percent-height that yields a square pixel aspect:
-  // h_pct = w_pct * canvas_aspect / image_aspect.
-  // Start at 60% width and shrink if that would overflow the canvas vertically.
-  let w = 60;
+  // On a 16:9 canvas, a rect w_pct × h_pct has pixel aspect
+  //   (w_pct * 16) / (h_pct * 9) = (w/h) * canvasAspect
+  // For that to equal imgAspect: h_pct = w_pct * canvasAspect / imgAspect.
+  // Start at 100% width; if that leaves vertical gaps (h < 100), clamp h=100
+  // and let w overflow past 100% so the canvas is fully covered.
+  let w = 100;
   let h = (w * canvasAspect) / imgAspect;
-  if (h > 90) {
-    h = 90;
+  if (h < 100) {
+    h = 100;
     w = (h * imgAspect) / canvasAspect;
   }
   return {
@@ -51,24 +55,99 @@ export function imageElementFromLibrary(
     opacity: 1,
     timing: {
       start: 0,
-      fadeIn: 0.3,
-      hold: Math.max(1, slideDuration - 0.6),
-      fadeOut: 0.3,
+      fadeIn: 0,
+      hold: slideDuration,
+      fadeOut: 0,
     },
   };
 }
 
-/** Build a new blank Slide (no background image). */
-export function blankSlide(backgroundColor = "#000000"): Slide {
+const CANVAS_ASPECT = 16 / 9;
+
+/**
+ * Scale factor so the image covers the 16:9 canvas (no letterboxing).
+ * Returns ≥ 1 for images that don't match 16:9. Clamped to [0.5, 2].
+ * Returns 1 for bad dimensions.
+ */
+export function coverZoom(width: number, height: number): number {
+  if (width <= 0 || height <= 0) return 1;
+  const imgAspect = width / height;
+  const scale = Math.max(imgAspect / CANVAS_ASPECT, CANVAS_ASPECT / imgAspect);
+  return Math.max(0.5, Math.min(2, scale));
+}
+
+const CATEGORY_MAP: Record<string, ImageCategory> = {
+  microscopic: "microscopic",
+  gross: "gross",
+  figure: "figure",
+  table: "table",
+  diagram: "diagram",
+  blank: "blank",
+};
+
+/** Normalise a free-text category string to a known ImageCategory, or undefined. */
+function normalizeCategory(raw?: string | null): ImageCategory | undefined {
+  if (!raw) return undefined;
+  const lower = raw.toLowerCase();
+  for (const [key, value] of Object.entries(CATEGORY_MAP)) {
+    if (lower.includes(key)) return value;
+  }
+  return undefined;
+}
+
+/** Build a new Slide from a library image, with a full-canvas ImageElement as the background. */
+export function slideFromImage(img: {
+  id: string;
+  url: string;
+  description?: string | null;
+  category?: string | null;
+  width: number;
+  height: number;
+}): Slide {
+  const scale = coverZoom(img.width, img.height);
+  const slideId = uid("slide");
+  const bgElement: ImageElement = {
+    id: `image-bg-${slideId}`,
+    kind: "image",
+    imageUrl: img.url,
+    rect: { x: 0, y: 0, w: 100, h: 100, rotation: 0 },
+    opacity: 1,
+    timing: { start: 0, fadeIn: 0, hold: 10, fadeOut: 0 },
+  };
+  return {
+    id: slideId,
+    imageCategory: normalizeCategory(img.category),
+    imageWidth: img.width,
+    imageHeight: img.height,
+    duration: 10,
+    transitionIn: { ...DEFAULT_TRANSITION },
+    initialFraming: { x: 50, y: 50, scale },
+    elements: [bgElement],
+  };
+}
+
+/** Build a new blank Slide (no background image). Defaults to white. */
+export function blankSlide(backgroundColor = "#ffffff"): Slide {
   return {
     id: uid("slide"),
-    backgroundImageUrl: null,
     backgroundColor,
     imageCategory: "blank",
     duration: 10,
     transitionIn: { ...DEFAULT_TRANSITION },
     initialFraming: { x: 50, y: 50, scale: 1 },
     elements: [],
+  };
+}
+
+/**
+ * Build a new Lesson seeded with a single blank white slide — used when the
+ * user opens the studio fresh or chooses "New lesson" from the File menu so
+ * there is always a slide to edit on the canvas.
+ */
+export function newBlankLesson(): Lesson {
+  return {
+    ...emptyLesson(),
+    slides: [blankSlide()],
   };
 }
 

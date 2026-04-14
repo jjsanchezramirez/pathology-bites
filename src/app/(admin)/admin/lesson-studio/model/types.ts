@@ -163,10 +163,6 @@ export interface Framing {
 
 export interface Slide {
   id: string;
-  /** null = blank slide (solid background). */
-  backgroundImageUrl: string | null;
-  backgroundImageId?: string;
-  backgroundImageAlt?: string;
   backgroundColor?: string;
   /** Category drives smart-default tool emphasis and initial framing. */
   imageCategory?: ImageCategory;
@@ -223,4 +219,23 @@ export function timing(start: number, fadeIn: number, hold: number, fadeOut: num
 /** End time (seconds, segment-local) of a timing window. */
 export function timingEnd(t: Timing): number {
   return t.start + t.fadeIn + t.hold + t.fadeOut;
+}
+
+/** Check if two timing windows overlap. */
+function timingsOverlap(a: Timing, b: Timing): boolean {
+  return a.start < timingEnd(b) && b.start < timingEnd(a);
+}
+
+/**
+ * Returns true if any camera operations (zoom/pan) overlap in time on the given slide.
+ * Overlapping camera ops produce undefined behavior in the runtime.
+ */
+export function hasOverlappingCameraOps(slide: Slide): boolean {
+  const cameraEls = slide.elements.filter((e) => e.kind === "zoom" || e.kind === "pan");
+  for (let i = 0; i < cameraEls.length; i++) {
+    for (let j = i + 1; j < cameraEls.length; j++) {
+      if (timingsOverlap(cameraEls[i].timing, cameraEls[j].timing)) return true;
+    }
+  }
+  return false;
 }

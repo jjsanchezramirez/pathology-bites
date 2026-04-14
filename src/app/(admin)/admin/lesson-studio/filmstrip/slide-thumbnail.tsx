@@ -40,7 +40,6 @@ export function SlideThumbnail({
   const cameraCount = slide.elements.filter((e) => e.kind === "zoom" || e.kind === "pan").length;
   // If the bottom element is a full-canvas image, use it as the thumbnail background.
   const thumbBg = (() => {
-    if (slide.backgroundImageUrl) return slide.backgroundImageUrl;
     const first = slide.elements[0];
     if (
       first &&
@@ -72,7 +71,7 @@ export function SlideThumbnail({
           /* eslint-disable-next-line @next/next/no-img-element */
           <img src={thumbBg} alt="" className="h-full w-full object-cover" draggable={false} />
         ) : (
-          <div className="h-full w-full" style={{ background: slide.backgroundColor ?? "#000" }} />
+          <div className="h-full w-full" style={{ background: slide.backgroundColor ?? "#fff" }} />
         )}
         <div className="absolute bottom-0 left-0 right-0 flex items-center justify-between bg-black/60 px-1.5 py-0.5 text-[10px] text-white">
           <span>#{index + 1}</span>

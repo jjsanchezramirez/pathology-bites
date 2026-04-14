@@ -5,7 +5,7 @@ import { useState, useEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 
 import { useMobile } from "@/shared/hooks/use-mobile";
-import { useQuizMode, useAnkiMode } from "@/shared/hooks/use-quiz-mode";
+import { useQuizMode, useAnkiMode, useLessonStudioMode } from "@/shared/hooks/use-quiz-mode";
 import { UnifiedSidebar } from "./unified-sidebar";
 import { UnifiedHeader, HeaderConfig } from "./unified-header";
 import { getNavigationConfig } from "@/shared/config/navigation";
@@ -60,6 +60,7 @@ export function UnifiedLayoutClient({
   const navigationSections = navigationOverride ?? navigationConfig.sections;
   const { isInQuizMode } = useQuizMode();
   const { isInAnkiMode } = useAnkiMode();
+  const { isInLessonStudioMode } = useLessonStudioMode();
   const isMobileRaw = useMobile();
   // Treat undefined (pre-hydration) as false (desktop) so SSR and first client
   // render agree, eliminating the hydration mismatch.
@@ -82,7 +83,7 @@ export function UnifiedLayoutClient({
   // Handle quiz/anki mode changes on desktop only
   useEffect(() => {
     if (!isMobile && isHydrated) {
-      const isInSpecialMode = isInQuizMode || isInAnkiMode;
+      const isInSpecialMode = isInQuizMode || isInAnkiMode || isInLessonStudioMode;
 
       // Entering special mode (quiz or anki)
       if (isInSpecialMode && !wasInSpecialModeRef.current) {
@@ -103,7 +104,7 @@ export function UnifiedLayoutClient({
         );
       }
     }
-  }, [isInQuizMode, isInAnkiMode, isMobile, isHydrated, desktopCollapsed]);
+  }, [isInQuizMode, isInAnkiMode, isInLessonStudioMode, isMobile, isHydrated, desktopCollapsed]);
 
   // Handle click outside to close mobile sidebar
   useEffect(() => {
@@ -147,8 +148,8 @@ export function UnifiedLayoutClient({
       // On mobile: toggle visibility
       setMobileVisible(!mobileVisible);
     } else {
-      // On desktop: toggle between collapsed and expanded (only if not in quiz/anki mode)
-      if (!isInQuizMode && !isInAnkiMode) {
+      // On desktop: toggle between collapsed and expanded (only if not in quiz/anki/lesson-studio mode)
+      if (!isInQuizMode && !isInAnkiMode && !isInLessonStudioMode) {
         setDesktopCollapsed(!desktopCollapsed);
       }
     }

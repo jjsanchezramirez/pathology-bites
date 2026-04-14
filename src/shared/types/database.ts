@@ -25,8 +25,6 @@ export const TABLE_NAMES = {
   // User data tables
   USER_FAVORITES: "user_favorites",
   USER_ACHIEVEMENTS: "user_achievements",
-  PERFORMANCE_ANALYTICS: "performance_analytics",
-
   // System tables
   QUESTION_REPORTS: "question_reports",
   NOTIFICATION_STATES: "notification_states",

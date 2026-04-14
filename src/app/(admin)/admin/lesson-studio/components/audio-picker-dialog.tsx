@@ -8,7 +8,8 @@ import {
   DialogOverlay,
 } from "@/shared/components/ui/dialog";
 import { Input } from "@/shared/components/ui/input";
-import { Search, Music, Check, Clock } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import { Search, Music, Check, Clock, X, Loader2 } from "lucide-react";
 import type { Audio as AudioRecord } from "@/features/admin/audio/types";
 
 interface AudioPickerDialogProps {
@@ -20,6 +21,8 @@ interface AudioPickerDialogProps {
   audioLoading: boolean;
   selectedAudioUrl: string;
   onSelectAudio: (record: AudioRecord) => void;
+  /** Called when the user clicks "Remove audio". */
+  onRemoveAudio: () => void;
 }
 
 /**
@@ -41,7 +44,9 @@ export function AudioPickerDialog({
   audioLoading,
   selectedAudioUrl,
   onSelectAudio,
+  onRemoveAudio,
 }: AudioPickerDialogProps) {
+  const hasSelection = !!selectedAudioUrl;
   return (
     <Dialog
       open={open}
@@ -67,19 +72,23 @@ export function AudioPickerDialog({
               placeholder="Search by title or description…"
               value={audioSearch}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-9"
+              className="pl-9 pr-9"
               autoFocus
             />
+            {audioLoading && (
+              <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground animate-spin" />
+            )}
           </div>
 
-          {/* Results */}
+          {/* Results — stale results stay visible while a new search is in
+              flight so the list doesn't flicker on every keystroke. */}
           <div className="max-h-[400px] overflow-y-auto -mx-6 px-6 space-y-1">
-            {audioLoading ? (
+            {audioLoading && audioRecords.length === 0 ? (
               <div className="flex items-center justify-center py-12 text-sm text-muted-foreground">
-                <Search className="h-4 w-4 animate-pulse mr-2" />
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
                 Loading…
               </div>
-            ) : audioRecords.length === 0 ? (
+            ) : !audioLoading && audioRecords.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 gap-2 text-muted-foreground">
                 <Music className="h-8 w-8 opacity-30" />
                 <p className="text-sm">No audio files found</p>
@@ -118,6 +127,24 @@ export function AudioPickerDialog({
                 );
               })
             )}
+          </div>
+
+          <div className="flex items-center justify-between border-t pt-3">
+            <p className="text-xs text-muted-foreground">
+              {hasSelection ? "Audio is set for this lesson." : "No audio selected."}
+            </p>
+            <Button
+              variant="ghost"
+              size="sm"
+              disabled={!hasSelection}
+              onClick={() => {
+                onRemoveAudio();
+                onOpenChange(false);
+              }}
+            >
+              <X className="mr-1 h-3 w-3" />
+              Remove audio
+            </Button>
           </div>
         </DialogContent>
       </DialogPortal>

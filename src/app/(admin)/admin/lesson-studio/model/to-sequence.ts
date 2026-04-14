@@ -13,7 +13,7 @@ import type {
   SvgOverlayElement,
 } from "@/shared/types/explainer";
 import { buildCaptionChunks } from "../utils/caption-builder";
-import type { Lesson, Slide, SlideElement, PanElement, ZoomElement } from "./types";
+import type { Lesson, Slide, SlideElement, PanElement, ZoomElement, ImageElement } from "./types";
 import { timingEnd } from "./types";
 import { opacityAt, baseTransformAt, applyActiveCamera, rectAt, arrowPointsAt } from "./runtime";
 
@@ -41,7 +41,7 @@ function collectBreakpoints(slide: Slide): number[] {
 }
 
 /** Build a single keyframe at `time` from slide elements. */
-function buildKeyframe(slide: Slide, time: number): Keyframe {
+function buildKeyframe(slide: Slide, time: number, skipElementId?: string): Keyframe {
   const zooms = slide.elements.filter((e): e is ZoomElement => e.kind === "zoom");
   const pans = slide.elements.filter((e): e is PanElement => e.kind === "pan");
   const base = baseTransformAt(slide.initialFraming, pans, time);
@@ -54,6 +54,7 @@ function buildKeyframe(slide: Slide, time: number): Keyframe {
 
   for (const el of slide.elements) {
     if (el.kind === "zoom" || el.kind === "pan") continue;
+    if (el.id === skipElementId) continue;
 
     const opacity = clamp01((el.opacity ?? 1) * opacityAt(el.timing, time));
     if (opacity <= 0) continue;
@@ -61,8 +62,7 @@ function buildKeyframe(slide: Slide, time: number): Keyframe {
     switch (el.kind) {
       case "shape": {
         const r = rectAt(el, time) ?? el.rect;
-        const centerPos =
-          el.shape === "rectangle" ? { x: r.x, y: r.y } : { x: r.x + r.w / 2, y: r.y + r.h / 2 };
+        const centerPos = { x: r.x + r.w / 2, y: r.y + r.h / 2 };
         highlights.push({
           id: el.id,
           type: el.shape,
@@ -79,8 +79,7 @@ function buildKeyframe(slide: Slide, time: number): Keyframe {
       }
       case "spotlight": {
         const r = rectAt(el, time) ?? el.rect;
-        const centerPos =
-          el.shape === "rectangle" ? { x: r.x, y: r.y } : { x: r.x + r.w / 2, y: r.y + r.h / 2 };
+        const centerPos = { x: r.x + r.w / 2, y: r.y + r.h / 2 };
         highlights.push({
           id: el.id,
           type: el.shape,
@@ -129,10 +128,10 @@ function buildKeyframe(slide: Slide, time: number): Keyframe {
         svgOverlays.push({
           id: el.id,
           svgUrl: el.svgUrl,
-          position: { x: r.x, y: r.y },
+          position: { x: r.x + r.w / 2, y: r.y + r.h / 2 },
           size: { width: r.w, height: r.h },
           rotation: r.rotation,
-          opacity: el.opacity ?? 1,
+          opacity: opacity,
           computedOpacity: opacity,
           color: el.color,
         });
@@ -142,11 +141,12 @@ function buildKeyframe(slide: Slide, time: number): Keyframe {
         const r = rectAt(el, time) ?? el.rect;
         svgOverlays.push({
           id: el.id,
+          overlayKind: "image",
           svgUrl: el.imageUrl,
-          position: { x: r.x, y: r.y },
+          position: { x: r.x + r.w / 2, y: r.y + r.h / 2 },
           size: { width: r.w, height: r.h },
           rotation: r.rotation,
-          opacity: el.opacity ?? 1,
+          opacity: opacity,
           computedOpacity: opacity,
         });
         break;
@@ -180,21 +180,39 @@ export function lessonToSequence(lesson: Lesson): ExplainerSequence | null {
     const endTime = cursor + slide.duration;
     cursor = endTime;
 
+    // Detect the background ImageElement for the player's segment imageUrl.
+    // Prefer the well-known "image-bg-" prefix set by slideFromImage / migration,
+    // then fall back to any approximately-full-canvas image at index 0.
+    const bgEl = slide.elements.find(
+      (e): e is ImageElement => e.kind === "image" && e.id.startsWith("image-bg-")
+    ) ?? slide.elements.find(
+      (e): e is ImageElement =>
+        e.kind === "image" && e.rect.w >= 99 && e.rect.h >= 99
+    );
+    const bgImageUrl = bgEl?.imageUrl ?? "";
+
     const breakpoints = collectBreakpoints(slide);
-    const keyframes = breakpoints.map((time) => buildKeyframe(slide, time));
+    // Skip the bg element in keyframes — it's already the segment's imageUrl
+    // and rendering it as an overlay blocks crossfade transitions (z-index issue).
+    const keyframes = breakpoints.map((time) => buildKeyframe(slide, time, bgEl?.id));
 
     const isLast = index === lesson.slides.length - 1;
+    // A segment's transition controls what happens when it EXITS (at the
+    // boundary with the next segment). The slide model uses `transitionIn`
+    // (PPT convention — how a slide enters), so the exit transition for
+    // segment N is the next slide's entrance transition.
+    const nextSlide = isLast ? null : lesson.slides[index + 1];
     return {
       id: slide.id,
-      imageUrl: slide.backgroundImageUrl ?? "",
-      imageAlt: slide.backgroundImageAlt ?? "",
-      ...(slide.backgroundImageUrl === null && slide.backgroundColor
+      imageUrl: bgImageUrl,
+      imageAlt: "",
+      ...(!bgImageUrl && slide.backgroundColor
         ? { backgroundColor: slide.backgroundColor }
         : {}),
       startTime,
       endTime,
-      transition: isLast ? "cut" : slide.transitionIn.kind,
-      transitionDuration: isLast ? 0 : slide.transitionIn.duration,
+      transition: nextSlide ? nextSlide.transitionIn.kind : "cut",
+      transitionDuration: nextSlide ? nextSlide.transitionIn.duration : 0,
       keyframes,
     };
   });
@@ -207,7 +225,7 @@ export function lessonToSequence(lesson: Lesson): ExplainerSequence | null {
     aspectRatio: "16:9",
     segments,
     ...(lesson.audio?.url ? { audioUrl: lesson.audio.url } : {}),
-    editorState: { selectedImages: [lesson as unknown] },
+    editorState: { lesson: lesson as unknown, selectedImages: [lesson as unknown] },
   };
 
   if (lesson.audio?.transcript && lesson.audio.duration && lesson.audio.duration > 0) {

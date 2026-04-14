@@ -84,6 +84,7 @@ export function ExplainerPlayer({
     audioUrl,
     onEnded,
     onTimeUpdate,
+    fallbackDuration: sequence.duration,
   });
 
   const engine = useExplainerEngine({

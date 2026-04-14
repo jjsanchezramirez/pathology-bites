@@ -66,7 +66,6 @@ export async function deleteUser(
         "user_settings",
         "user_favorites",
         "user_achievements",
-        "performance_analytics",
         "notification_states",
         "quiz_sessions",
         "quiz_attempts",

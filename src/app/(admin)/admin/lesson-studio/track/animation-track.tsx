@@ -8,6 +8,7 @@ import { useEditorStore, selectCurrentSlide } from "../model/store";
 import { TimeRuler } from "./time-ruler";
 import { TrackBar } from "./track-bar";
 import { TrackPlayhead } from "./track-playhead";
+import { hasOverlappingCameraOps } from "../model/types";
 import type { SlideElement } from "../model/types";
 
 const ROW_HEIGHT = 22;
@@ -112,6 +113,7 @@ export function AnimationTrack() {
   const duration = Math.max(1, slide.duration);
   const rows: SlideElement[] = slide.elements;
   const bodyHeight = Math.min(rows.length, MAX_VISIBLE_ROWS) * ROW_HEIGHT;
+  const cameraOverlap = hasOverlappingCameraOps(slide);
 
   function seekFromPointer(e: React.PointerEvent<HTMLDivElement>) {
     const rect = e.currentTarget.getBoundingClientRect();
@@ -161,6 +163,13 @@ export function AnimationTrack() {
           <div className="absolute left-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-red-500/50" />
         </div>
       </div>
+
+      {/* Overlapping camera ops warning */}
+      {cameraOverlap && (
+        <div className="flex items-center gap-1.5 bg-amber-50 px-3 py-1 text-[11px] text-amber-700 border-b border-amber-200">
+          <span className="font-medium">Warning:</span> Zoom/pan elements overlap in time — playback may be unpredictable.
+        </div>
+      )}
 
       {/* Track body */}
       <div

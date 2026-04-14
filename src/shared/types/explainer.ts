@@ -63,6 +63,8 @@ export interface TextOverlay {
 
 export interface SvgOverlayElement {
   id: string;
+  /** "image" for raster images, "svg" (or omitted) for SVG assets. */
+  overlayKind?: "svg" | "image";
   svgUrl: string;
   position: Position;
   size: Size;
@@ -116,7 +118,7 @@ export interface ExplainerSequence {
   /** Pre-computed caption chunks (uniform word timing) */
   captions?: CaptionChunk[];
   /** Original editor state for lossless round-trip loading (optional, absent in old sequences) */
-  editorState?: { selectedImages: unknown[] };
+  editorState?: { selectedImages?: unknown[]; lesson?: unknown };
 }
 
 // ---- Component Props ----

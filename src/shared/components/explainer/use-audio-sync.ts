@@ -6,6 +6,8 @@ interface UseAudioSyncOptions {
   audioUrl: string;
   onEnded?: () => void;
   onTimeUpdate?: (currentTime: number) => void;
+  /** Total duration used when no audioUrl is provided (timer-driven playback). */
+  fallbackDuration?: number;
 }
 
 interface UseAudioSyncReturn {
@@ -28,6 +30,7 @@ export function useAudioSync({
   audioUrl,
   onEnded,
   onTimeUpdate,
+  fallbackDuration = 0,
 }: UseAudioSyncOptions): UseAudioSyncReturn {
   const audioRef = useRef<HTMLAudioElement | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -49,7 +52,50 @@ export function useAudioSync({
     onEndedRef.current = onEnded;
   }, [onEnded]);
 
-  // Stable rAF loop — no dependencies that change
+  // ---- Timer mode (no audio) ------------------------------------------------
+  // When there's no audioUrl, we drive currentTime with requestAnimationFrame
+  // using wall-clock elapsed time.
+
+  const hasAudio = !!audioUrl;
+  const timerStartRef = useRef<number | null>(null); // DOMHighResTimeStamp when play() was called
+  const timerOffsetRef = useRef(0); // accumulated time from previous play sessions (for pause/resume)
+  const playbackRateRef = useRef(1);
+
+  // Keep playbackRateRef in sync
+  useEffect(() => {
+    playbackRateRef.current = playbackRate;
+  }, [playbackRate]);
+
+  const timerTick = useCallback(() => {
+    if (timerStartRef.current === null) return;
+    const elapsed =
+      timerOffsetRef.current +
+      ((performance.now() - timerStartRef.current) / 1000) * playbackRateRef.current;
+    const totalDur = fallbackDuration;
+    if (elapsed >= totalDur) {
+      setCurrentTime(totalDur);
+      setIsPlaying(false);
+      timerStartRef.current = null;
+      timerOffsetRef.current = 0;
+      onTimeUpdateRef.current?.(totalDur);
+      onEndedRef.current?.();
+      return;
+    }
+    setCurrentTime(elapsed);
+    onTimeUpdateRef.current?.(elapsed);
+    rafRef.current = requestAnimationFrame(timerTick);
+  }, [fallbackDuration]);
+
+  // Initialise timer mode immediately so the player doesn't wait for audio
+  useEffect(() => {
+    if (!hasAudio && fallbackDuration > 0) {
+      setDuration(fallbackDuration);
+      setIsLoaded(true);
+    }
+  }, [hasAudio, fallbackDuration]);
+
+  // ---- Audio-driven rAF loop ------------------------------------------------
+
   const updateTime = useCallback(() => {
     const audio = audioRef.current;
     if (audio && !audio.paused) {
@@ -59,17 +105,39 @@ export function useAudioSync({
     }
   }, []);
 
+  // ---- Controls -------------------------------------------------------------
+
   const play = useCallback(() => {
+    if (!hasAudio) {
+      // Timer mode
+      timerStartRef.current = performance.now();
+      setIsPlaying(true);
+      rafRef.current = requestAnimationFrame(timerTick);
+      return;
+    }
     const audio = audioRef.current;
     if (!audio) return;
     audio.play().catch(() => {
       // Autoplay may be blocked by browser policy
     });
-  }, []);
+  }, [hasAudio, timerTick]);
 
   const pause = useCallback(() => {
+    if (!hasAudio) {
+      if (timerStartRef.current !== null) {
+        timerOffsetRef.current +=
+          ((performance.now() - timerStartRef.current) / 1000) * playbackRateRef.current;
+        timerStartRef.current = null;
+      }
+      setIsPlaying(false);
+      if (rafRef.current !== null) {
+        cancelAnimationFrame(rafRef.current);
+        rafRef.current = null;
+      }
+      return;
+    }
     audioRef.current?.pause();
-  }, []);
+  }, [hasAudio]);
 
   const togglePlay = useCallback(() => {
     if (isPlaying) {
@@ -79,13 +147,26 @@ export function useAudioSync({
     }
   }, [isPlaying, play, pause]);
 
-  const seek = useCallback((time: number) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.currentTime = Math.max(0, Math.min(time, audio.duration || 0));
-    setCurrentTime(audio.currentTime);
-    onTimeUpdateRef.current?.(audio.currentTime);
-  }, []);
+  const seek = useCallback(
+    (time: number) => {
+      const clamped = Math.max(0, Math.min(time, duration || 0));
+      if (!hasAudio) {
+        timerOffsetRef.current = clamped;
+        if (timerStartRef.current !== null) {
+          timerStartRef.current = performance.now();
+        }
+        setCurrentTime(clamped);
+        onTimeUpdateRef.current?.(clamped);
+        return;
+      }
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.currentTime = clamped;
+      setCurrentTime(audio.currentTime);
+      onTimeUpdateRef.current?.(audio.currentTime);
+    },
+    [hasAudio, duration]
+  );
 
   const setVolume = useCallback((v: number) => {
     const audio = audioRef.current;
@@ -95,12 +176,27 @@ export function useAudioSync({
     setVolumeState(clamped);
   }, []);
 
-  const setPlaybackRate = useCallback((rate: number) => {
-    const audio = audioRef.current;
-    if (!audio) return;
-    audio.playbackRate = rate;
-    setPlaybackRateState(rate);
-  }, []);
+  const setPlaybackRate = useCallback(
+    (rate: number) => {
+      if (!hasAudio) {
+        // Commit elapsed time at old rate, then switch
+        if (timerStartRef.current !== null) {
+          timerOffsetRef.current +=
+            ((performance.now() - timerStartRef.current) / 1000) * playbackRateRef.current;
+          timerStartRef.current = performance.now();
+        }
+        setPlaybackRateState(rate);
+        return;
+      }
+      const audio = audioRef.current;
+      if (!audio) return;
+      audio.playbackRate = rate;
+      setPlaybackRateState(rate);
+    },
+    [hasAudio]
+  );
+
+  // ---- Audio element event bindings -----------------------------------------
 
   useEffect(() => {
     const audio = audioRef.current;

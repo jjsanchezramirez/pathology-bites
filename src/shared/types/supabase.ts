@@ -330,13 +330,6 @@ export type Database = {
             referencedRelation: "questions"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "demo_questions_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: true
-            referencedRelation: "v_flagged_questions"
-            referencedColumns: ["question_id"]
-          },
         ]
       }
       images: {
@@ -656,63 +649,6 @@ export type Database = {
           },
         ]
       }
-      performance_analytics: {
-        Row: {
-          average_time: number
-          category_id: string | null
-          correct_answers: number
-          created_at: string | null
-          id: string
-          last_attempt_at: string | null
-          peer_rank: number | null
-          questions_answered: number
-          total_questions: number
-          updated_at: string | null
-          user_id: string
-        }
-        Insert: {
-          average_time?: number
-          category_id?: string | null
-          correct_answers?: number
-          created_at?: string | null
-          id?: string
-          last_attempt_at?: string | null
-          peer_rank?: number | null
-          questions_answered?: number
-          total_questions?: number
-          updated_at?: string | null
-          user_id: string
-        }
-        Update: {
-          average_time?: number
-          category_id?: string | null
-          correct_answers?: number
-          created_at?: string | null
-          id?: string
-          last_attempt_at?: string | null
-          peer_rank?: number | null
-          questions_answered?: number
-          total_questions?: number
-          updated_at?: string | null
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "performance_analytics_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "performance_analytics_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       question_analytics: {
         Row: {
           avg_time_spent: string | null
@@ -766,13 +702,6 @@ export type Database = {
             isOneToOne: true
             referencedRelation: "questions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_analytics_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: true
-            referencedRelation: "v_flagged_questions"
-            referencedColumns: ["question_id"]
           },
         ]
       }
@@ -835,13 +764,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "question_flags_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "v_flagged_questions"
-            referencedColumns: ["question_id"]
-          },
-          {
             foreignKeyName: "question_flags_resolved_by_fkey"
             columns: ["resolved_by"]
             isOneToOne: false
@@ -881,13 +803,6 @@ export type Database = {
             foreignKeyName: "question_images_image_id_fkey"
             columns: ["image_id"]
             isOneToOne: false
-            referencedRelation: "v_image_usage_stats"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_images_image_id_fkey"
-            columns: ["image_id"]
-            isOneToOne: false
             referencedRelation: "v_orphaned_images"
             referencedColumns: ["id"]
           },
@@ -897,13 +812,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "questions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_images_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "v_flagged_questions"
-            referencedColumns: ["question_id"]
           },
         ]
       }
@@ -946,13 +854,6 @@ export type Database = {
             referencedRelation: "questions"
             referencedColumns: ["id"]
           },
-          {
-            foreignKeyName: "question_options_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "v_flagged_questions"
-            referencedColumns: ["question_id"]
-          },
         ]
       }
       question_reports: {
@@ -993,13 +894,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "questions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_reports_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "v_flagged_questions"
-            referencedColumns: ["question_id"]
           },
           {
             foreignKeyName: "question_reports_reported_by_fkey"
@@ -1045,13 +939,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "questions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_reviews_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "v_flagged_questions"
-            referencedColumns: ["question_id"]
           },
           {
             foreignKeyName: "question_reviews_reviewer_id_fkey"
@@ -1131,13 +1018,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "question_tags_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "v_flagged_questions"
-            referencedColumns: ["question_id"]
-          },
-          {
             foreignKeyName: "question_tags_tag_id_fkey"
             columns: ["tag_id"]
             isOneToOne: false
@@ -1197,13 +1077,6 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "questions"
             referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "question_versions_new_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "v_flagged_questions"
-            referencedColumns: ["question_id"]
           },
         ]
       }
@@ -1390,13 +1263,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "quiz_attempts_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "v_flagged_questions"
-            referencedColumns: ["question_id"]
-          },
-          {
             foreignKeyName: "quiz_attempts_quiz_session_id_fkey"
             columns: ["quiz_session_id"]
             isOneToOne: false
@@ -1511,6 +1377,57 @@ export type Database = {
           last_updated?: string
           object_count?: number
           total_size_bytes?: number
+        }
+        Relationships: []
+      }
+      svg_assets: {
+        Row: {
+          category: string | null
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          file_size_bytes: number
+          height: number | null
+          id: string
+          name: string
+          search_vector: unknown
+          storage_path: string
+          tags: string[] | null
+          updated_at: string | null
+          url: string
+          width: number | null
+        }
+        Insert: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          file_size_bytes: number
+          height?: number | null
+          id?: string
+          name: string
+          search_vector?: unknown
+          storage_path: string
+          tags?: string[] | null
+          updated_at?: string | null
+          url: string
+          width?: number | null
+        }
+        Update: {
+          category?: string | null
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          file_size_bytes?: number
+          height?: number | null
+          id?: string
+          name?: string
+          search_vector?: unknown
+          storage_path?: string
+          tags?: string[] | null
+          updated_at?: string | null
+          url?: string
+          width?: number | null
         }
         Relationships: []
       }
@@ -1664,13 +1581,6 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
-            foreignKeyName: "user_favorites_question_id_fkey"
-            columns: ["question_id"]
-            isOneToOne: false
-            referencedRelation: "v_flagged_questions"
-            referencedColumns: ["question_id"]
-          },
-          {
             foreignKeyName: "user_favorites_user_id_fkey"
             columns: ["user_id"]
             isOneToOne: false
@@ -1719,6 +1629,7 @@ export type Database = {
       }
       user_settings: {
         Row: {
+          counter_settings: Json | null
           created_at: string | null
           id: string
           notification_settings: Json | null
@@ -1728,6 +1639,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          counter_settings?: Json | null
           created_at?: string | null
           id?: string
           notification_settings?: Json | null
@@ -1737,6 +1649,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          counter_settings?: Json | null
           created_at?: string | null
           id?: string
           notification_settings?: Json | null
@@ -1820,131 +1733,6 @@ export type Database = {
       }
     }
     Views: {
-      mv_user_category_stats: {
-        Row: {
-          category_id: string | null
-          correct_attempts: number | null
-          incorrect_attempts: number | null
-          last_attempt_at: string | null
-          total_attempts: number | null
-          unique_questions_attempted: number | null
-          user_id: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_attempts_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_stats_computed: {
-        Row: {
-          avg_score: number | null
-          avg_time_per_question: number | null
-          completed_quizzes: number | null
-          current_streak: number | null
-          highest_score: number | null
-          last_quiz_completed: string | null
-          last_quiz_created: string | null
-          last_updated: string | null
-          longest_streak: number | null
-          lowest_score: number | null
-          total_correct_answers: number | null
-          total_questions_attempted: number | null
-          total_quizzes: number | null
-          total_time_spent: number | null
-          user_id: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      user_stats_secure: {
-        Row: {
-          avg_score: number | null
-          avg_time_per_question: number | null
-          completed_quizzes: number | null
-          current_streak: number | null
-          highest_score: number | null
-          last_quiz_completed: string | null
-          last_quiz_created: string | null
-          last_updated: string | null
-          longest_streak: number | null
-          lowest_score: number | null
-          total_correct_answers: number | null
-          total_questions_attempted: number | null
-          total_quizzes: number | null
-          total_time_spent: number | null
-          user_id: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_sessions_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      v_audio_stats: {
-        Row: {
-          avg_duration_seconds: number | null
-          categorized_count: number | null
-          files_1mb_to_10mb: number | null
-          files_over_10mb: number | null
-          files_under_1mb: number | null
-          generated_count: number | null
-          max_duration_seconds: number | null
-          min_duration_seconds: number | null
-          orphaned_count: number | null
-          total_audio: number | null
-          total_duration_seconds: number | null
-          total_size_bytes: number | null
-          uncategorized_count: number | null
-          unique_file_types: number | null
-          uploaded_count: number | null
-          used_in_lessons: number | null
-        }
-        Relationships: []
-      }
-      v_audio_stats_secure: {
-        Row: {
-          avg_duration_seconds: number | null
-          categorized_count: number | null
-          files_1mb_to_10mb: number | null
-          files_over_10mb: number | null
-          files_under_1mb: number | null
-          generated_count: number | null
-          max_duration_seconds: number | null
-          min_duration_seconds: number | null
-          orphaned_count: number | null
-          total_audio: number | null
-          total_duration_seconds: number | null
-          total_size_bytes: number | null
-          uncategorized_count: number | null
-          unique_file_types: number | null
-          uploaded_count: number | null
-          used_in_lessons: number | null
-        }
-        Relationships: []
-      }
       v_dashboard_stats: {
         Row: {
           active_users: number | null
@@ -1968,27 +1756,6 @@ export type Database = {
         }
         Relationships: []
       }
-      v_flagged_questions: {
-        Row: {
-          created_by: string | null
-          creator_name: string | null
-          flag_count: number | null
-          flag_types: string[] | null
-          latest_flag_date: string | null
-          question_id: string | null
-          question_status: Database["public"]["Enums"]["question_status"] | null
-          question_title: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "questions_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       v_image_usage_stats: {
         Row: {
           alt_text: string | null
@@ -2005,45 +1772,7 @@ export type Database = {
           usage_count: number | null
           width: number | null
         }
-        Insert: {
-          alt_text?: string | null
-          category?: Database["public"]["Enums"]["image_category"] | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          file_size_bytes?: number | null
-          height?: number | null
-          id?: string | null
-          is_orphaned?: never
-          question_ids?: never
-          url?: string | null
-          usage_count?: never
-          width?: number | null
-        }
-        Update: {
-          alt_text?: string | null
-          category?: Database["public"]["Enums"]["image_category"] | null
-          created_at?: string | null
-          created_by?: string | null
-          description?: string | null
-          file_size_bytes?: number | null
-          height?: number | null
-          id?: string | null
-          is_orphaned?: never
-          question_ids?: never
-          url?: string | null
-          usage_count?: never
-          width?: number | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "images_created_by_fkey"
-            columns: ["created_by"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       v_orphaned_images: {
         Row: {
@@ -2078,15 +1807,6 @@ export type Database = {
         }
         Relationships: []
       }
-      v_public_stats: {
-        Row: {
-          last_refreshed: string | null
-          total_categories: number | null
-          total_images: number | null
-          total_questions: number | null
-        }
-        Relationships: []
-      }
       v_storage_stats: {
         Row: {
           figure_count: number | null
@@ -2104,98 +1824,8 @@ export type Database = {
         }
         Relationships: []
       }
-      v_storage_stats_secure: {
-        Row: {
-          figure_count: number | null
-          figure_size_bytes: number | null
-          gross_count: number | null
-          gross_size_bytes: number | null
-          microscopic_count: number | null
-          microscopic_size_bytes: number | null
-          orphaned_count: number | null
-          orphaned_size_bytes: number | null
-          table_count: number | null
-          table_size_bytes: number | null
-          total_images: number | null
-          total_size_bytes: number | null
-        }
-        Relationships: []
-      }
-      v_user_category_stats: {
-        Row: {
-          category_id: string | null
-          correct_attempts: number | null
-          incorrect_attempts: number | null
-          last_attempt_at: string | null
-          total_attempts: number | null
-          unique_questions_attempted: number | null
-          user_id: string | null
-        }
-        Relationships: [
-          {
-            foreignKeyName: "quiz_attempts_category_id_fkey"
-            columns: ["category_id"]
-            isOneToOne: false
-            referencedRelation: "categories"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "quiz_attempts_user_id_fkey"
-            columns: ["user_id"]
-            isOneToOne: false
-            referencedRelation: "users"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
-      v_user_stats: {
-        Row: {
-          active_admins: number | null
-          active_creators: number | null
-          active_end_users: number | null
-          active_internal_users: number | null
-          active_percentage: string | null
-          active_reviewers: number | null
-          active_users: number | null
-          end_users: number | null
-          end_users_percentage: string | null
-          inactive_percentage: string | null
-          inactive_users: number | null
-          internal_percentage: string | null
-          internal_users: number | null
-          last_updated: string | null
-          recent_users: number | null
-          suspended_percentage: string | null
-          suspended_users: number | null
-          total_admins: number | null
-          total_creators: number | null
-          total_reviewers: number | null
-          total_users: number | null
-        }
-        Relationships: []
-      }
     }
     Functions: {
-      analyze_user_login_activity: {
-        Args: never
-        Returns: {
-          avg_session_duration: string
-          first_login: string
-          last_login: string
-          total_logins: number
-          user_id: string
-        }[]
-      }
-      backfill_orphaned_users: {
-        Args: never
-        Returns: {
-          settings_created: number
-          users_created: number
-        }[]
-      }
-      calculate_question_analytics:
-        | { Args: never; Returns: undefined }
-        | { Args: { question_id_param?: string }; Returns: undefined }
       count_active_users_since: {
         Args: { since_date: string }
         Returns: number
@@ -2211,13 +1841,6 @@ export type Database = {
       decrement_r2_metrics: {
         Args: { p_bucket_name: string; p_size_bytes: number }
         Returns: undefined
-      }
-      get_all_user_scores: {
-        Args: never
-        Returns: {
-          score: number
-          user_id: string
-        }[]
       }
       get_audio_aggregate_stats: {
         Args: never
@@ -2237,32 +1860,6 @@ export type Database = {
           short_form: string
         }[]
       }
-      get_complete_database_schema: {
-        Args: never
-        Returns: {
-          character_maximum_length: number
-          column_default: string
-          column_name: string
-          data_type: string
-          is_nullable: string
-          table_name: string
-          table_schema: string
-        }[]
-      }
-      get_complete_quiz_dashboard:
-        | { Args: never; Returns: Json }
-        | {
-            Args: { p_recent_sessions_limit?: number; p_user_id: string }
-            Returns: {
-              cache_version: string
-              categories: Json
-              question_type_stats: Json
-              recent_sessions: Json
-              user_activity: Json
-              user_stats: Json
-            }[]
-          }
-      get_database_size_analysis: { Args: never; Returns: Json }
       get_most_recent_attempts: {
         Args: { p_question_ids: string[]; p_user_id: string }
         Returns: {
@@ -2270,15 +1867,6 @@ export type Database = {
           question_id: string
           second_recent_correct: boolean
           total_attempts: number
-        }[]
-      }
-      get_public_stats: {
-        Args: never
-        Returns: {
-          last_refreshed: string
-          total_categories: number
-          total_images: number
-          total_questions: number
         }[]
       }
       get_question_snapshot_data: {
@@ -2313,7 +1901,6 @@ export type Database = {
           unused_count: number
         }[]
       }
-      get_user_data_analysis: { Args: never; Returns: Json }
       get_user_percentile: {
         Args: { p_avg_score: number; p_user_id: string }
         Returns: {
@@ -2335,55 +1922,7 @@ export type Database = {
           user_id: string
         }[]
       }
-      get_user_question_stats_optimized:
-        | {
-            Args: { p_category_ids: string[]; p_user_id: string }
-            Returns: {
-              category_id: string
-              marked: number
-              mastered: number
-              needs_review: number
-              total_questions: number
-              unused: number
-            }[]
-          }
-        | {
-            Args: { user_uuid: string }
-            Returns: {
-              avg_time_per_question: number
-              correct_attempts: number
-              success_rate: number
-              total_attempts: number
-              unique_questions: number
-            }[]
-          }
       get_user_statistics: {
-        Args: never
-        Returns: {
-          active_admins: number
-          active_creators: number
-          active_end_users: number
-          active_internal_users: number
-          active_percentage: string
-          active_reviewers: number
-          active_users: number
-          end_users: number
-          end_users_percentage: string
-          inactive_percentage: string
-          inactive_users: number
-          internal_percentage: string
-          internal_users: number
-          last_updated: string
-          recent_users: number
-          suspended_percentage: string
-          suspended_users: number
-          total_admins: number
-          total_creators: number
-          total_reviewers: number
-          total_users: number
-        }[]
-      }
-      get_user_stats: {
         Args: never
         Returns: {
           active_admins: number
@@ -2414,24 +1953,6 @@ export type Database = {
         Returns: undefined
       }
       is_current_user_admin: { Args: never; Returns: boolean }
-      recalculate_all_question_analytics: { Args: never; Returns: undefined }
-      refresh_audio_stats: { Args: never; Returns: undefined }
-      refresh_materialized_views: { Args: never; Returns: undefined }
-      refresh_public_stats: { Args: never; Returns: undefined }
-      refresh_storage_stats: { Args: never; Returns: undefined }
-      refresh_user_category_stats: {
-        Args: { p_user_id?: string }
-        Returns: undefined
-      }
-      refresh_user_performance_analytics: {
-        Args: never
-        Returns: {
-          last_refresh: string
-          refresh_duration: string
-          rows_updated: number
-        }[]
-      }
-      refresh_user_stats: { Args: never; Returns: undefined }
       refresh_user_stats_incremental: {
         Args: { p_user_id: string }
         Returns: undefined
@@ -2451,15 +1972,6 @@ export type Database = {
       update_question_analytics_batch: {
         Args: { question_ids: string[] }
         Returns: undefined
-      }
-      update_question_version: {
-        Args: {
-          change_summary_param?: string
-          question_data_param?: Json
-          question_id_param: string
-          update_type_param: string
-        }
-        Returns: string
       }
     }
     Enums: {
@@ -2648,4 +2160,3 @@ export const Constants = {
     },
   },
 } as const
-

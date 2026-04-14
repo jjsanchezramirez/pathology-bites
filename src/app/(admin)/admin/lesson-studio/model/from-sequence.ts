@@ -102,15 +102,9 @@ function rebuildSlideElements(segment: ExplainerSequence["segments"][number]): S
       return match ? match.opacity : null;
     });
     const shape = sample.type as ShapeKind;
-    const rectTopLeft =
-      shape === "rectangle"
-        ? { x: sample.position.x, y: sample.position.y }
-        : {
-            x: sample.position.x - sample.size.width / 2,
-            y: sample.position.y - sample.size.height / 2,
-          };
     const rect = {
-      ...rectTopLeft,
+      x: sample.position.x - sample.size.width / 2,
+      y: sample.position.y - sample.size.height / 2,
       w: sample.size.width,
       h: sample.size.height,
       rotation: 0,
@@ -205,21 +199,18 @@ function rebuildSlideElements(segment: ExplainerSequence["segments"][number]): S
       const match = kf.svgOverlays?.find((s) => s.id === id);
       return match ? (match.computedOpacity ?? match.opacity) : null;
     });
-    elements.push({
-      id,
-      kind: "svg",
-      svgUrl: sample.svgUrl,
-      rect: {
-        x: sample.position.x,
-        y: sample.position.y,
-        w: sample.size.width,
-        h: sample.size.height,
-        rotation: sample.rotation,
-      },
-      opacity: sample.opacity,
-      color: sample.color,
-      timing,
-    });
+    const rect = {
+      x: sample.position.x - sample.size.width / 2,
+      y: sample.position.y - sample.size.height / 2,
+      w: sample.size.width,
+      h: sample.size.height,
+      rotation: sample.rotation,
+    };
+    if (sample.overlayKind === "image") {
+      elements.push({ id, kind: "image", imageUrl: sample.svgUrl, rect, opacity: sample.opacity, timing });
+    } else {
+      elements.push({ id, kind: "svg", svgUrl: sample.svgUrl, rect, opacity: sample.opacity, color: sample.color, timing });
+    }
   }
 
   // NOTE: camera operations (zoom/pan) are not reverse-engineered from raw keyframes
@@ -236,14 +227,14 @@ function rebuildSlideElements(segment: ExplainerSequence["segments"][number]): S
  * Prefers `sequence.editorState` (lossless). Falls back to keyframe reverse-engineering.
  */
 export function sequenceToLesson(sequence: ExplainerSequence): Lesson {
-  // Fast path: round-trip via editorState.
-  const saved = sequence.editorState?.selectedImages?.[0];
+  // Fast path: round-trip via editorState (prefer new `lesson` key, fall back to legacy).
+  const saved = sequence.editorState?.lesson ?? sequence.editorState?.selectedImages?.[0];
   if (isLessonShape(saved)) {
     return saved;
   }
 
   // Fallback: rebuild from keyframes (lossy — no element-level camera ops).
-  const slides: Slide[] = sequence.segments.map((seg) => {
+  const slides: Slide[] = sequence.segments.map((seg, index) => {
     const duration = seg.endTime - seg.startTime;
     const firstKf = seg.keyframes[0];
     const initialFraming = firstKf
@@ -253,18 +244,31 @@ export function sequenceToLesson(sequence: ExplainerSequence): Lesson {
           scale: firstKf.transform.scale,
         }
       : { x: 50, y: 50, scale: 1 };
+    const elements = rebuildSlideElements(seg);
+    // Insert a full-canvas ImageElement for the background if the segment has an image.
+    if (seg.imageUrl) {
+      elements.unshift({
+        id: `image-bg-${seg.id}`,
+        kind: "image",
+        imageUrl: seg.imageUrl,
+        rect: { x: 0, y: 0, w: 100, h: 100, rotation: 0 },
+        opacity: 1,
+        timing: { start: 0, fadeIn: 0, hold: duration, fadeOut: 0 },
+      });
+    }
+    // A segment's transition describes what happens when it EXITS. In the
+    // slide model, `transitionIn` describes how this slide enters — which
+    // is the previous segment's exit transition.
+    const prevSeg = index > 0 ? sequence.segments[index - 1] : null;
     return {
       id: seg.id,
-      backgroundImageUrl: seg.imageUrl === "" ? null : seg.imageUrl,
-      backgroundImageAlt: seg.imageAlt,
       backgroundColor: seg.backgroundColor,
       duration,
-      transitionIn: {
-        kind: seg.transition,
-        duration: seg.transitionDuration,
-      },
+      transitionIn: prevSeg
+        ? { kind: prevSeg.transition, duration: prevSeg.transitionDuration }
+        : { ...DEFAULT_TRANSITION },
       initialFraming,
-      elements: rebuildSlideElements(seg),
+      elements,
     };
   });
 

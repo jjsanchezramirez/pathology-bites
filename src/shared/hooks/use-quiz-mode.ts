@@ -44,3 +44,21 @@ export function useAnkiMode() {
     pathname,
   };
 }
+
+/**
+ * Hook to detect if the user is currently in Lesson Studio mode
+ * Returns true when on /admin/lesson-studio
+ */
+export function useLessonStudioMode() {
+  const pathname = usePathname();
+
+  const isInLessonStudioMode = useMemo(() => {
+    if (!pathname) return false;
+    return pathname === "/admin/lesson-studio";
+  }, [pathname]);
+
+  return {
+    isInLessonStudioMode,
+    pathname,
+  };
+}

@@ -13,10 +13,12 @@ export async function fetchAudio(
   const pageSize = filters?.pageSize ?? 10;
   const from = page * pageSize;
   const to = from + pageSize - 1;
+  const columns = filters?.columns ?? "*";
+  const withCount = filters?.withCount ?? true;
 
   let query = supabase
     .from("audio")
-    .select("*")
+    .select(columns)
     .order("created_at", { ascending: false })
     .range(from, to);
 
@@ -34,6 +36,14 @@ export async function fetchAudio(
   if (error) {
     console.error("Error fetching audio:", error);
     return { data: [], total: 0, error: error.message };
+  }
+
+  const rows = (data as unknown as Audio[]) || [];
+
+  // Callers that don't render a "X of N" counter can opt out of the second
+  // round-trip. Lesson Studio's audio picker takes this path.
+  if (!withCount) {
+    return { data: rows, total: rows.length, error: null };
   }
 
   // Separate count query with same filters
@@ -55,7 +65,7 @@ export async function fetchAudio(
     console.error("Error fetching audio count:", countError);
   }
 
-  return { data: data || [], total: count ?? 0, error: null };
+  return { data: rows, total: count ?? 0, error: null };
 }
 
 /**

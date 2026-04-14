@@ -133,10 +133,10 @@ export async function getStorageStats(): Promise<StorageStats> {
 
   try {
     // Use the secure view wrapper (security fix applied)
-    const { data, error } = await supabase.from("v_storage_stats_secure").select("*").single();
+    const { data, error } = await supabase.from("v_storage_stats").select("*").single();
 
     if (error) {
-      console.error("Supabase error fetching v_storage_stats_secure:", {
+      console.error("Supabase error fetching v_storage_stats:", {
         error,
         code: error.code,
         message: error.message,
@@ -147,7 +147,7 @@ export async function getStorageStats(): Promise<StorageStats> {
     }
 
     if (!data) {
-      console.error("No data returned from v_storage_stats_secure");
+      console.error("No data returned from v_storage_stats");
       throw new Error("No storage stats data available");
     }
 

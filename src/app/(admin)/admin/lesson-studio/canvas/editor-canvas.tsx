@@ -73,8 +73,19 @@ export function EditorCanvas() {
   const singleSelection: SlideElement | null =
     selectedElements.length === 1 ? selectedElements[0] : null;
 
+  // Clicking the gray gutter around the canvas clears the selection, the same
+  // as clicking empty canvas. Only fires when the pointer hits the gutter
+  // element itself, not when the event bubbles up from the canvas.
+  function onGutterPointerDown(e: React.PointerEvent<HTMLDivElement>) {
+    if (e.target !== e.currentTarget) return;
+    useEditorStore.getState().clearSelection();
+  }
+
   return (
-    <div className="flex h-full w-full items-center justify-center p-4">
+    <div
+      className="flex h-full w-full items-center justify-center p-4"
+      onPointerDown={onGutterPointerDown}
+    >
       <div
         ref={canvasRef}
         className="relative select-none overflow-hidden bg-black shadow-lg"
@@ -102,7 +113,7 @@ export function EditorCanvas() {
         >
           <div
             className="absolute inset-0"
-            style={{ background: slide.backgroundColor ?? "#000" }}
+            style={{ background: slide.backgroundColor ?? "#fff" }}
           />
 
           {slide.elements.map((el) => (

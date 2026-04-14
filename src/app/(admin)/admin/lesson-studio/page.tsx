@@ -5,16 +5,16 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { ExplainerPlayer } from "@/shared/components/explainer/explainer-player";
-import { fetchAudio } from "@/features/admin/audio/services/audio";
+import { fetchAudio, fetchAudioById } from "@/features/admin/audio/services/audio";
 import type { Audio as AudioRecord } from "@/features/admin/audio/types";
 import type { ExplainerSequence } from "@/shared/types/explainer";
 
 import { useEditorStore } from "./model/store";
 import { lessonToSequence } from "./model/to-sequence";
 import { sequenceToLesson } from "./model/from-sequence";
-import { emptyLesson } from "./model/types";
+import { newBlankLesson } from "./model/slide-factory";
 
 import { LibraryPanel } from "./library-panel";
 import { ToolPalette } from "./tool-palette";
@@ -37,7 +37,18 @@ export default function LessonStudioPage() {
   const setAudio = useEditorStore((s) => s.setAudio);
   const setLessonMeta = useEditorStore((s) => s.setLessonMeta);
 
-  useKeyboardShortcuts();
+  // ---- Warn about unsaved changes ----------------------------------------
+
+  const isDirty = useEditorStore((s) => s.isDirty);
+
+  useEffect(() => {
+    const handler = (e: BeforeUnloadEvent) => {
+      if (!isDirty) return;
+      e.preventDefault();
+    };
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isDirty]);
 
   // ---- Derived sequence (for preview, save, export) ----------------------
 
@@ -49,34 +60,64 @@ export default function LessonStudioPage() {
   const [audioRecords, setAudioRecords] = useState<AudioRecord[]>([]);
   const [audioSearch, setAudioSearch] = useState("");
   const [audioLoading, setAudioLoading] = useState(false);
+  // Monotonic request id — lets us ignore stale responses when the user
+  // types quickly and an older fetch resolves after a newer one.
+  const audioReqIdRef = useRef(0);
 
   const loadAudioRecords = useCallback(async (search?: string) => {
+    const reqId = ++audioReqIdRef.current;
     setAudioLoading(true);
     try {
-      const result = await fetchAudio(search ? { search } : undefined);
+      const result = await fetchAudio({
+        search: search || undefined,
+        pageSize: 25,
+        withCount: false,
+        // Narrow projection: skip `generated_text` (full transcripts can be
+        // huge) and other columns the picker doesn't render. The transcript
+        // is re-fetched lazily on selection in `onSelectAudio`.
+        columns: "id,title,description,url,duration_seconds",
+      });
+      if (reqId !== audioReqIdRef.current) return; // stale
       setAudioRecords(result.data);
     } catch (err) {
+      if (reqId !== audioReqIdRef.current) return;
       console.error("[lesson-studio] audio fetch failed:", err);
     } finally {
-      setAudioLoading(false);
+      if (reqId === audioReqIdRef.current) setAudioLoading(false);
     }
   }, []);
 
   useEffect(() => {
     if (!audioPickerOpen) return;
-    const timer = setTimeout(() => loadAudioRecords(audioSearch), 250);
+    const timer = setTimeout(() => loadAudioRecords(audioSearch), 150);
     return () => clearTimeout(timer);
   }, [audioSearch, audioPickerOpen, loadAudioRecords]);
 
   const onSelectAudio = useCallback(
-    (record: AudioRecord) => {
+    async (record: AudioRecord) => {
+      // Commit the basic metadata immediately so the UI responds instantly.
+      // The transcript is excluded from the list query for payload reasons,
+      // so re-fetch the full row here to pick it up.
       setAudio({
         url: record.url,
         title: record.title,
-        transcript: record.generated_text ?? undefined,
+        transcript: undefined,
         duration: record.duration_seconds ?? undefined,
       });
       setAudioPickerOpen(false);
+      try {
+        const full = await fetchAudioById(record.id);
+        if (full?.generated_text) {
+          setAudio({
+            url: record.url,
+            title: record.title,
+            transcript: full.generated_text,
+            duration: record.duration_seconds ?? undefined,
+          });
+        }
+      } catch (err) {
+        console.error("[lesson-studio] transcript fetch failed:", err);
+      }
     },
     [setAudio]
   );
@@ -87,12 +128,53 @@ export default function LessonStudioPage() {
   const [loadOpen, setLoadOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
 
+  const markClean = useEditorStore((s) => s.markClean);
+
+  const confirmDiscardIfDirty = useCallback((): boolean => {
+    if (!useEditorStore.getState().isDirty) return true;
+    return window.confirm("You have unsaved changes. Discard them and continue?");
+  }, []);
+
+  const onSaveOpen = useCallback(() => {
+    if (useEditorStore.getState().lesson.slides.length === 0) return;
+    setSaveOpen(true);
+  }, []);
+
+  const onLoadOpenGuarded = useCallback(() => {
+    if (!confirmDiscardIfDirty()) return;
+    setLoadOpen(true);
+  }, [confirmDiscardIfDirty]);
+
+  const onNewLesson = useCallback(() => {
+    if (!confirmDiscardIfDirty()) return;
+    setLesson(newBlankLesson());
+  }, [confirmDiscardIfDirty, setLesson]);
+
+  const onSaveAsNew = useCallback(() => {
+    if (useEditorStore.getState().lesson.slides.length === 0) return;
+    // Clear the id so SaveToDatabaseDialog treats this as a create.
+    setLessonMeta({ id: null });
+    setSaveOpen(true);
+  }, [setLessonMeta]);
+
+  const onClearAudio = useCallback(() => {
+    setAudio(null);
+  }, [setAudio]);
+
+  useKeyboardShortcuts({
+    onSave: onSaveOpen,
+    onNew: onNewLesson,
+    onOpen: onLoadOpenGuarded,
+    onChooseAudio: () => setAudioPickerOpen(true),
+  });
+
   const onSaveSuccess = useCallback(
     (sequenceId: string) => {
       setLessonMeta({ id: sequenceId });
+      markClean();
       setSaveOpen(false);
     },
-    [setLessonMeta]
+    [setLessonMeta, markClean]
   );
 
   const onLoadSequence = useCallback(
@@ -113,12 +195,16 @@ export default function LessonStudioPage() {
   const inPreview = mode === "preview" && sequence !== null;
 
   return (
-    <div className="flex h-screen flex-col bg-gray-50">
+    <div className="flex h-full flex-col bg-gray-50">
       <TopBar
         onAudioPickerOpen={() => setAudioPickerOpen(true)}
-        onSaveOpen={() => setSaveOpen(true)}
-        onLoadOpen={() => setLoadOpen(true)}
+        onSaveOpen={onSaveOpen}
+        onLoadOpen={onLoadOpenGuarded}
         onExportOpen={() => setExportOpen(true)}
+        onNewLesson={onNewLesson}
+        onSaveAsNew={onSaveAsNew}
+        onClearAudio={onClearAudio}
+        totalDuration={sequence?.duration ?? 0}
       />
 
       <div className="flex flex-1 overflow-hidden">
@@ -147,32 +233,6 @@ export default function LessonStudioPage() {
       {!inPreview && <AnimationTrack />}
       <Filmstrip />
 
-      {/* New Lesson button when starting from scratch */}
-      {lesson.slides.length === 0 && (
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
-          <div className="pointer-events-auto rounded-lg border bg-white p-6 shadow-lg">
-            <div className="mb-2 text-sm font-medium">Start a new lesson</div>
-            <div className="mb-4 text-xs text-muted-foreground">
-              Add images from the library, or load an existing lesson.
-            </div>
-            <div className="flex gap-2">
-              <button
-                onClick={() => setLoadOpen(true)}
-                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-              >
-                Load lesson
-              </button>
-              <button
-                onClick={() => setLesson(emptyLesson())}
-                className="rounded border px-3 py-1 text-sm hover:bg-gray-50"
-              >
-                Blank
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Dialogs */}
       <AudioPickerDialog
         open={audioPickerOpen}
@@ -183,6 +243,7 @@ export default function LessonStudioPage() {
         audioLoading={audioLoading}
         selectedAudioUrl={audioUrl}
         onSelectAudio={onSelectAudio}
+        onRemoveAudio={onClearAudio}
       />
       <SaveToDatabaseDialog
         open={saveOpen}

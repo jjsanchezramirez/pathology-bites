@@ -113,11 +113,13 @@ export function SlideProperties({ slide }: SlidePropertiesProps) {
         </Row>
       </Section>
 
-      {slide.backgroundImageUrl === null && (
+      {!slide.elements.some(
+        (e) => e.kind === "image" && e.rect.x === 0 && e.rect.y === 0 && e.rect.w === 100 && e.rect.h === 100
+      ) && (
         <Section title="Background">
           <Row label="Color">
             <ColorInput
-              value={slide.backgroundColor ?? "#000000"}
+              value={slide.backgroundColor ?? "#ffffff"}
               onChange={(v) => updateSlide(slide.id, { backgroundColor: v })}
             />
           </Row>

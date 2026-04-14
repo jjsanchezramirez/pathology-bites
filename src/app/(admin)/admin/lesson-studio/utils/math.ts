@@ -28,9 +28,17 @@ export function secsToTimecode(secs: number): string {
   return `${s}:${String(f).padStart(2, "0")}`;
 }
 
-/** Parse "S:FF" timecode back to seconds, or null if invalid. */
+/** Parse "S:FF" timecode back to seconds, or null if invalid.
+ *  Also accepts a bare integer (e.g. "10") which is treated as seconds. */
 export function timecodeToSecs(tc: string): number | null {
-  const m = tc.trim().match(/^(\d+):(\d{1,2})$/);
+  const trimmed = tc.trim();
+
+  // Bare integer → treat as whole seconds (e.g. "10" → 10:00 → 10 s)
+  if (/^\d+$/.test(trimmed)) {
+    return parseInt(trimmed, 10);
+  }
+
+  const m = trimmed.match(/^(\d+):(\d{1,2})$/);
   if (!m) return null;
   const s = parseInt(m[1], 10);
   const f = parseInt(m[2], 10);

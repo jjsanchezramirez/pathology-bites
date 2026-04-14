@@ -22,6 +22,7 @@ import { resizeRect, applyRotation, type HandleId } from "./geometry";
 import { createElementFromDrag } from "./element-factory";
 import { rectAt } from "../model/runtime";
 import { snapToFrame } from "../utils/math";
+import { snapMoveDelta, snapPoint } from "./snap";
 
 /** Identifies where a rect-edit should write back. */
 type RectTarget = { kind: "rect" } | { kind: "waypoint"; index: number };
@@ -154,6 +155,12 @@ export function useCanvasPointer({ canvasRef, slide, camera, viewTime }: UseCanv
   const onPointerDown = useCallback(
     (e: React.PointerEvent) => {
       if (!slide) return;
+      // Make sure no stray input (title, timecode field) keeps focus — the
+      // global keyboard shortcuts bail when an editable field is focused,
+      // which otherwise blocks arrow-key nudging of the selection.
+      if (document.activeElement instanceof HTMLElement) {
+        document.activeElement.blur();
+      }
       const store = useEditorStore.getState();
       const pt = toCanvasPercent(e.clientX, e.clientY);
       startPointerRef.current = pt;
@@ -289,16 +296,23 @@ export function useCanvasPointer({ canvasRef, slide, camera, viewTime }: UseCanv
         store.updateElement(slide.id, session.elementId, p);
 
       switch (session.kind) {
-        case "move":
-          patch(moveElement(session.origin, delta) as Partial<SlideElement>);
+        case "move": {
+          // Snap the translation delta so the element's edges/centers pull
+          // onto the canvas borders + center lines when close. For arrows
+          // and camera ops (no rect), pass the raw delta through.
+          const origin = session.origin;
+          const snapped = "rect" in origin ? snapMoveDelta(origin.rect, delta) : delta;
+          patch(moveElement(origin, snapped) as Partial<SlideElement>);
           return;
+        }
         case "move-waypoint": {
           const el = slide.elements.find((x) => x.id === session.elementId);
           if (!el || !("rect" in el)) return;
+          const snapped = snapMoveDelta(session.originRect, delta);
           const newRect: Rect = {
             ...session.originRect,
-            x: session.originRect.x + delta.x,
-            y: session.originRect.y + delta.y,
+            x: session.originRect.x + snapped.x,
+            y: session.originRect.y + snapped.y,
           };
           patch(
             rectPatchFor({ kind: "waypoint", index: session.targetIdx }, newRect, el.waypoints)
@@ -321,12 +335,16 @@ export function useCanvasPointer({ canvasRef, slide, camera, viewTime }: UseCanv
         }
         case "arrow-endpoint": {
           const arrow = session.origin;
+          // Snap the moving endpoint to the canvas border / center grid.
+          const raw =
+            session.which === "from"
+              ? { x: arrow.from.x + delta.x, y: arrow.from.y + delta.y }
+              : { x: arrow.to.x + delta.x, y: arrow.to.y + delta.y };
+          const snapped = snapPoint(raw);
           patch(
             (session.which === "from"
-              ? { from: { x: arrow.from.x + delta.x, y: arrow.from.y + delta.y } }
-              : {
-                  to: { x: arrow.to.x + delta.x, y: arrow.to.y + delta.y },
-                }) as Partial<SlideElement>
+              ? { from: snapped }
+              : { to: snapped }) as Partial<SlideElement>
           );
           return;
         }

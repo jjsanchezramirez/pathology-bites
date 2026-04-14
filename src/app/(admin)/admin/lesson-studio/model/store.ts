@@ -4,9 +4,17 @@
 
 import { create } from "zustand";
 import type { Lesson, Slide, SlideElement, Framing, ImageElement } from "./types";
-import { emptyLesson } from "./types";
+import { newBlankLesson } from "./slide-factory";
 
 const HISTORY_LIMIT = 50;
+
+/**
+ * History entry: a Lesson snapshot paired with the snapshot id that was
+ * current when the snapshot was taken. Carrying the id alongside the lesson
+ * lets undo/redo restore the correct `currentSnapshotId`, so comparing it to
+ * `savedSnapshotId` gives a correct `isDirty` even after undo-to-saved.
+ */
+type HistoryEntry = { lesson: Lesson; id: number };
 
 export type Selection = {
   slideId: string | null;
@@ -34,10 +42,24 @@ interface StoreState {
   viewTime: number;
   mode: EditorMode;
   tool: Tool;
-  history: { past: Lesson[]; future: Lesson[] };
+  history: { past: HistoryEntry[]; future: HistoryEntry[] };
   dragSnapshot: Lesson | null;
+  /** Snapshot id captured at the start of the current drag session. */
+  dragSnapshotId: number;
+  /** Whether any mutations occurred during the current drag session. */
+  dragMutated: boolean;
   /** Element currently in inline-edit mode (e.g., contentEditable text). */
   editingElementId: string | null;
+  /**
+   * Monotonic counter bumped on every committed mutation and on setLesson.
+   * Used with `savedSnapshotId` to derive `isDirty` in a way that correctly
+   * clears when the user undoes back to the last-saved state.
+   */
+  currentSnapshotId: number;
+  /** Snapshot id that was current at the time of the last markClean/setLesson. */
+  savedSnapshotId: number;
+  /** True when the lesson has unsaved changes (derived from snapshot ids). */
+  isDirty: boolean;
 }
 
 interface StoreActions {
@@ -75,6 +97,9 @@ interface StoreActions {
   undo: () => void;
   redo: () => void;
 
+  // Dirty tracking
+  markClean: () => void;
+
   // Internal
   _commit: (mutator: (lesson: Lesson) => Lesson) => void;
 }
@@ -82,23 +107,27 @@ interface StoreActions {
 export type EditorStore = StoreState & StoreActions;
 
 function cloneLesson(l: Lesson): Lesson {
-  return typeof structuredClone === "function" ? structuredClone(l) : JSON.parse(JSON.stringify(l));
+  return structuredClone(l);
 }
 
 /**
- * Convert legacy `backgroundImageUrl` slides to image-as-element slides.
- * Inserts a full-canvas ImageElement at index 0 and clears the background field.
- * Idempotent: slides without `backgroundImageUrl` pass through unchanged.
+ * Convert legacy `backgroundImageUrl` slides (from old DB records) to
+ * image-as-element slides. Inserts a full-canvas ImageElement at index 0
+ * and strips the legacy field. Idempotent for already-migrated slides.
  */
 function migrateLessonBackgrounds(lesson: Lesson): Lesson {
   let changed = false;
   const slides = lesson.slides.map((slide) => {
-    if (!slide.backgroundImageUrl) return slide;
+    // Legacy field may still exist on data loaded from DB.
+    const legacyUrl = (slide as unknown as Record<string, unknown>).backgroundImageUrl as
+      | string
+      | null;
+    if (!legacyUrl) return slide;
     changed = true;
     const bgElement: ImageElement = {
       id: `image-bg-${slide.id}`,
       kind: "image",
-      imageUrl: slide.backgroundImageUrl,
+      imageUrl: legacyUrl,
       rect: { x: 0, y: 0, w: 100, h: 100, rotation: 0 },
       opacity: 1,
       timing: {
@@ -108,30 +137,39 @@ function migrateLessonBackgrounds(lesson: Lesson): Lesson {
         fadeOut: 0,
       },
     };
+    // Strip legacy fields and insert the image element.
+    const { backgroundImageUrl: _, backgroundImageId: _2, backgroundImageAlt: _3, ...rest } =
+      slide as Record<string, unknown> & Slide;
     return {
-      ...slide,
-      backgroundImageUrl: null,
+      ...rest,
       elements: [bgElement, ...slide.elements],
-    };
+    } as Slide;
   });
   return changed ? { ...lesson, slides } : lesson;
 }
 
-function pushHistory(past: Lesson[], snapshot: Lesson): Lesson[] {
-  const next = [...past, snapshot];
+function pushHistory(past: HistoryEntry[], entry: HistoryEntry): HistoryEntry[] {
+  const next = [...past, entry];
   if (next.length > HISTORY_LIMIT) next.shift();
   return next;
 }
 
+const INITIAL_LESSON = newBlankLesson();
+
 export const useEditorStore = create<EditorStore>((set, get) => ({
-  lesson: emptyLesson(),
-  selection: { slideId: null, elementIds: [] },
+  lesson: INITIAL_LESSON,
+  selection: { slideId: INITIAL_LESSON.slides[0]?.id ?? null, elementIds: [] },
   viewTime: 0,
   mode: "edit",
   tool: "select",
   history: { past: [], future: [] },
   dragSnapshot: null,
+  dragSnapshotId: 0,
+  dragMutated: false,
   editingElementId: null,
+  currentSnapshotId: 0,
+  savedSnapshotId: 0,
+  isDirty: false,
 
   // ---- Internal commit helper ------------------------------------------------
 
@@ -140,14 +178,28 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       const prev = state.lesson;
       const next = mutator(prev);
       if (next === prev) return state;
+      const prevId = state.currentSnapshotId;
+      const nextId = prevId + 1;
       // If a drag session is active, don't push per-mutation snapshots.
+      // We still bump the snapshot id so isDirty tracks in-flight edits.
       if (state.dragSnapshot) {
-        return { ...state, lesson: next };
+        return {
+          ...state,
+          lesson: next,
+          currentSnapshotId: nextId,
+          isDirty: nextId !== state.savedSnapshotId,
+          dragMutated: true,
+        };
       }
       return {
         ...state,
         lesson: next,
-        history: { past: pushHistory(state.history.past, prev), future: [] },
+        currentSnapshotId: nextId,
+        isDirty: nextId !== state.savedSnapshotId,
+        history: {
+          past: pushHistory(state.history.past, { lesson: prev, id: prevId }),
+          future: [],
+        },
       };
     });
   },
@@ -156,15 +208,23 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
   setLesson: (lesson) => {
     const migrated = migrateLessonBackgrounds(lesson);
-    set((state) => ({
-      ...state,
-      lesson: migrated,
-      selection: { slideId: migrated.slides[0]?.id ?? null, elementIds: [] },
-      viewTime: 0,
-      history: { past: [], future: [] },
-      dragSnapshot: null,
-      editingElementId: null,
-    }));
+    set((state) => {
+      const nextId = state.currentSnapshotId + 1;
+      return {
+        ...state,
+        lesson: migrated,
+        selection: { slideId: migrated.slides[0]?.id ?? null, elementIds: [] },
+        viewTime: 0,
+        history: { past: [], future: [] },
+        dragSnapshot: null,
+        dragSnapshotId: 0,
+        dragMutated: false,
+        editingElementId: null,
+        currentSnapshotId: nextId,
+        savedSnapshotId: nextId,
+        isDirty: false,
+      };
+    });
   },
 
   setLessonMeta: (meta) => {
@@ -341,12 +401,27 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     set((state) => ({ ...state, editingElementId: null }));
   },
 
+  // ---- Dirty tracking --------------------------------------------------------
+
+  markClean: () => {
+    set((state) => ({
+      ...state,
+      savedSnapshotId: state.currentSnapshotId,
+      isDirty: false,
+    }));
+  },
+
   // ---- History ---------------------------------------------------------------
 
   beginDrag: () => {
     set((state) => {
       if (state.dragSnapshot) return state;
-      return { ...state, dragSnapshot: cloneLesson(state.lesson) };
+      return {
+        ...state,
+        dragSnapshot: cloneLesson(state.lesson),
+        dragSnapshotId: state.currentSnapshotId,
+        dragMutated: false,
+      };
     });
   },
 
@@ -354,12 +429,21 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
     set((state) => {
       const snap = state.dragSnapshot;
       if (!snap) return state;
-      const changed = JSON.stringify(snap) !== JSON.stringify(state.lesson);
-      if (!changed) return { ...state, dragSnapshot: null };
+      if (!state.dragMutated) {
+        return { ...state, dragSnapshot: null, dragSnapshotId: 0, dragMutated: false };
+      }
       return {
         ...state,
         dragSnapshot: null,
-        history: { past: pushHistory(state.history.past, snap), future: [] },
+        dragSnapshotId: 0,
+        dragMutated: false,
+        history: {
+          past: pushHistory(state.history.past, {
+            lesson: snap,
+            id: state.dragSnapshotId,
+          }),
+          future: [],
+        },
       };
     });
   },
@@ -369,12 +453,18 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       const past = state.history.past;
       if (past.length === 0) return state;
       const prev = past[past.length - 1];
+      const currentEntry: HistoryEntry = {
+        lesson: state.lesson,
+        id: state.currentSnapshotId,
+      };
       return {
         ...state,
-        lesson: prev,
+        lesson: prev.lesson,
+        currentSnapshotId: prev.id,
+        isDirty: prev.id !== state.savedSnapshotId,
         history: {
           past: past.slice(0, -1),
-          future: [state.lesson, ...state.history.future],
+          future: [currentEntry, ...state.history.future],
         },
       };
     });
@@ -385,11 +475,17 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
       const future = state.history.future;
       if (future.length === 0) return state;
       const next = future[0];
+      const currentEntry: HistoryEntry = {
+        lesson: state.lesson,
+        id: state.currentSnapshotId,
+      };
       return {
         ...state,
-        lesson: next,
+        lesson: next.lesson,
+        currentSnapshotId: next.id,
+        isDirty: next.id !== state.savedSnapshotId,
         history: {
-          past: pushHistory(state.history.past, state.lesson),
+          past: pushHistory(state.history.past, currentEntry),
           future: future.slice(1),
         },
       };

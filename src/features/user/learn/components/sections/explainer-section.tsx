@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { ExplainerSection as ExplainerSectionType } from "../../types";
 import { Loader2 } from "lucide-react";
+import type { ExplainerSequence } from "@/shared/types/explainer";
 
 // Lazy import the ExplainerPlayer since it has heavy dependencies
 import dynamic from "next/dynamic";
@@ -19,7 +20,10 @@ interface ExplainerSectionProps {
 }
 
 export function ExplainerSection({ section }: ExplainerSectionProps) {
-  const [sequence, setSequence] = useState<unknown>(null);
+  const [sequenceData, setSequenceData] = useState<{
+    sequence: ExplainerSequence;
+    audioUrl: string;
+  } | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -35,7 +39,10 @@ export function ExplainerSection({ section }: ExplainerSectionProps) {
         }
         if (!res.ok) throw new Error("Failed to load sequence");
         const { sequence } = await res.json();
-        setSequence(sequence.sequence_data);
+        setSequenceData({
+          sequence: sequence.sequence_data as ExplainerSequence,
+          audioUrl: sequence.audio_url || "",
+        });
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load");
       } finally {
@@ -63,9 +70,12 @@ export function ExplainerSection({ section }: ExplainerSectionProps) {
           {error}
         </div>
       )}
-      {sequence && (
+      {sequenceData && (
         <div className="rounded-lg overflow-hidden border">
-          <ExplainerPlayer sequence={sequence} />
+          <ExplainerPlayer
+            sequence={sequenceData.sequence}
+            audioUrl={sequenceData.audioUrl}
+          />
         </div>
       )}
     </div>
