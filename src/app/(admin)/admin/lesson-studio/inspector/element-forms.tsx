@@ -97,7 +97,6 @@ export function ShapeForm({ element, slideId }: Props<ShapeElement>) {
             onChange={(v) => update({ shape: v })}
             options={[
               { value: "rectangle", label: "Rectangle" },
-              { value: "circle", label: "Circle" },
               { value: "oval", label: "Oval" },
             ]}
           />
@@ -147,7 +146,6 @@ export function SpotlightForm({ element, slideId }: Props<SpotlightElement>) {
             value={element.shape}
             onChange={(v) => update({ shape: v })}
             options={[
-              { value: "circle", label: "Circle" },
               { value: "oval", label: "Oval" },
               { value: "rectangle", label: "Rectangle" },
             ]}

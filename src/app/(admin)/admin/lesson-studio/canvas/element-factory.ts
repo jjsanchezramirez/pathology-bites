@@ -100,20 +100,6 @@ export function createElementFromDrag(args: CreateArgs): SlideElement | null {
       };
       return el;
     }
-    case "shape-circle": {
-      const r = normalizeRect(start, end);
-      // Force square bounds so a "circle" renders round.
-      const side = Math.min(r.w, r.h);
-      const el: ShapeElement = {
-        id: uid("shape"),
-        kind: "shape",
-        shape: "circle",
-        rect: { ...r, w: side, h: side },
-        stroke: { color: p.strokeColor, width: 3, style: "solid" },
-        timing,
-      };
-      return el;
-    }
     case "shape-oval": {
       const el: ShapeElement = {
         id: uid("shape"),

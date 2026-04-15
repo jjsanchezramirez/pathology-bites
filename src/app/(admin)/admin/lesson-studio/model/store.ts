@@ -26,7 +26,6 @@ export type EditorMode = "edit" | "preview";
 export type Tool =
   | "select"
   | "shape-rectangle"
-  | "shape-circle"
   | "shape-oval"
   | "spotlight"
   | "arrow"
@@ -138,8 +137,12 @@ function migrateLessonBackgrounds(lesson: Lesson): Lesson {
       },
     };
     // Strip legacy fields and insert the image element.
-    const { backgroundImageUrl: _, backgroundImageId: _2, backgroundImageAlt: _3, ...rest } =
-      slide as Record<string, unknown> & Slide;
+    const {
+      backgroundImageUrl: _,
+      backgroundImageId: _2,
+      backgroundImageAlt: _3,
+      ...rest
+    } = slide as Record<string, unknown> & Slide;
     return {
       ...rest,
       elements: [bgElement, ...slide.elements],

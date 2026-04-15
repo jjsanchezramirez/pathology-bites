@@ -22,7 +22,7 @@ import { resizeRect, applyRotation, type HandleId } from "./geometry";
 import { createElementFromDrag } from "./element-factory";
 import { rectAt } from "../model/runtime";
 import { snapToFrame } from "../utils/math";
-import { snapMoveDelta, snapPoint } from "./snap";
+import { snapMoveDelta, snapResize, snapPoint, measureTextContent } from "./snap";
 
 /** Identifies where a rect-edit should write back. */
 type RectTarget = { kind: "rect" } | { kind: "waypoint"; index: number };
@@ -177,7 +177,7 @@ export function useCanvasPointer({ canvasRef, slide, camera, viewTime }: UseCanv
         if (handleId === "arrow-from" || handleId === "arrow-to") {
           if (el.kind !== "arrow") return;
           store.beginDrag();
-          (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+          (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
           sessionRef.current = {
             kind: "arrow-endpoint",
             elementId: el.id,
@@ -192,7 +192,7 @@ export function useCanvasPointer({ canvasRef, slide, camera, viewTime }: UseCanv
         });
         if (!prepared) return;
         store.beginDrag();
-        (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+        (e.currentTarget as HTMLElement).setPointerCapture?.(e.pointerId);
         if (handleId === "rotate") {
           sessionRef.current = {
             kind: "rotate",
@@ -320,9 +320,13 @@ export function useCanvasPointer({ canvasRef, slide, camera, viewTime }: UseCanv
           return;
         }
         case "resize": {
-          const newRect = resizeRect(session.originRect, session.handle, delta, e.shiftKey);
+          const isCorner = ["nw", "ne", "se", "sw"].includes(session.handle);
+          const raw = resizeRect(session.originRect, session.handle, delta, isCorner);
           const el = slide.elements.find((x) => x.id === session.elementId);
           if (!el || !("rect" in el)) return;
+          const contentSize =
+            el.kind === "text" ? measureTextContent(el.id, canvasRef.current) : null;
+          const newRect = snapResize(raw, session.handle, contentSize);
           patch(rectPatchFor(session.target, newRect, el.waypoints));
           return;
         }
@@ -364,7 +368,7 @@ export function useCanvasPointer({ canvasRef, slide, camera, viewTime }: UseCanv
         }
       }
     },
-    [slide, toCanvasPercent]
+    [slide, toCanvasPercent, canvasRef]
   );
 
   const onPointerUp = useCallback(

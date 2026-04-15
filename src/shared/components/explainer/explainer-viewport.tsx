@@ -90,7 +90,7 @@ const ImageLayer = memo(function ImageLayer({
       alt={alt || ""}
       onLoad={() => setLoaded(true)}
       onError={() => setError(true)}
-      className="absolute inset-0 w-full h-full object-contain"
+      className="absolute inset-0 w-full h-full object-cover"
       style={{
         // Use transform for both movement AND opacity (GPU accelerated)
         transform: `translate(${transform.x}%, ${transform.y}%) scale(${transform.scale})`,
@@ -388,12 +388,7 @@ function SvgOverlayItem({ overlay }: { overlay: SvgOverlayElement }) {
       }}
     >
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src={overlay.svgUrl}
-        alt=""
-        className="w-full h-full"
-        draggable={false}
-      />
+      <img src={overlay.svgUrl} alt="" className="w-full h-full" draggable={false} />
     </div>
   );
 }
@@ -452,8 +447,9 @@ export function ExplainerViewport({
       )}
 
       {/* Incoming image layer (fades in on top of current) */}
-      {incomingSegment && incomingOpacity > 0 && (
-        incomingSegment.imageUrl ? (
+      {incomingSegment &&
+        incomingOpacity > 0 &&
+        (incomingSegment.imageUrl ? (
           <ImageLayer
             src={incomingSegment.imageUrl}
             alt={incomingSegment.imageAlt}
@@ -468,8 +464,7 @@ export function ExplainerViewport({
               opacity: incomingOpacity,
             }}
           />
-        )
-      )}
+        ))}
 
       {/* Spotlight overlay (dims everything except highlighted regions) */}
       <SpotlightOverlay highlights={highlights} aspectRatio={aspectRatio} transform={transform} />

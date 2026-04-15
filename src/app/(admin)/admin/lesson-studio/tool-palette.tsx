@@ -7,7 +7,6 @@ import { useEffect } from "react";
 import {
   MousePointer2,
   Square,
-  Circle,
   Egg,
   Flashlight,
   ArrowUpRight,
@@ -29,7 +28,6 @@ interface ToolDef {
 const TOOLS: ToolDef[] = [
   { id: "select", label: "Select", shortcut: "V", Icon: MousePointer2 },
   { id: "shape-rectangle", label: "Rectangle", shortcut: "R", Icon: Square },
-  { id: "shape-circle", label: "Circle", shortcut: "C", Icon: Circle },
   { id: "shape-oval", label: "Oval", shortcut: "O", Icon: Egg },
   { id: "spotlight", label: "Spotlight", shortcut: "S", Icon: Flashlight },
   { id: "arrow", label: "Arrow", shortcut: "A", Icon: ArrowUpRight },
@@ -38,14 +36,7 @@ const TOOLS: ToolDef[] = [
   { id: "pan", label: "Pan (camera)", shortcut: "P", Icon: Hand },
 ];
 
-const MICROSCOPY_EMPHASIS: Tool[] = [
-  "spotlight",
-  "arrow",
-  "shape-circle",
-  "shape-oval",
-  "zoom",
-  "pan",
-];
+const MICROSCOPY_EMPHASIS: Tool[] = ["spotlight", "arrow", "shape-oval", "zoom", "pan"];
 const PRESENTATION_EMPHASIS: Tool[] = ["text", "shape-rectangle", "arrow"];
 
 function emphasisFor(cat?: ImageCategory): Tool[] {

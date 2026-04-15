@@ -10,6 +10,7 @@ import { useCallback, useRef } from "react";
 import type { ZoomElement, PanElement, SlideElement } from "../model/types";
 import { useEditorStore } from "../model/store";
 import { clamp } from "../utils/math";
+import { snapPoint } from "./snap";
 
 interface Props {
   element: ZoomElement | PanElement;
@@ -44,10 +45,13 @@ export function CameraTargetIndicator({ element, slideId }: Props) {
       const rect = parent.getBoundingClientRect();
       const dx = ((e.clientX - startRef.current.x) / rect.width) * 100;
       const dy = ((e.clientY - startRef.current.y) / rect.height) * 100;
-      const nx = clamp(startRef.current.tx + dx, 0, 100);
-      const ny = clamp(startRef.current.ty + dy, 0, 100);
+      const raw = {
+        x: clamp(startRef.current.tx + dx, 0, 100),
+        y: clamp(startRef.current.ty + dy, 0, 100),
+      };
+      const snapped = snapPoint(raw);
       useEditorStore.getState().updateElement(slideId, element.id, {
-        to: { ...element.to, x: nx, y: ny },
+        to: { ...element.to, x: snapped.x, y: snapped.y },
       } as Partial<SlideElement>);
     },
     [element.id, element.to, slideId]

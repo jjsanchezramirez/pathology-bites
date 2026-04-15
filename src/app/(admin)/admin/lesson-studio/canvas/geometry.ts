@@ -262,11 +262,19 @@ export function angleFromCenter(r: Rect, p: Point): number {
  * Update rect rotation given a pointer position and the initial pointer angle.
  * Returns new rotation clamped to 0–360.
  */
+const ROTATION_SNAP = 90;
+const ROTATION_SNAP_THRESHOLD = 5; // degrees
+
 export function applyRotation(original: Rect, pointerStart: Point, pointerCurrent: Point): Rect {
   const startAngle = angleFromCenter(original, pointerStart);
   const nowAngle = angleFromCenter(original, pointerCurrent);
   const delta = nowAngle - startAngle;
   let next = original.rotation + delta;
   next = ((next % 360) + 360) % 360;
+  // Snap to nearest 90° when within threshold.
+  const nearest = Math.round(next / ROTATION_SNAP) * ROTATION_SNAP;
+  if (Math.abs(next - nearest) <= ROTATION_SNAP_THRESHOLD) {
+    next = nearest % 360;
+  }
   return { ...original, rotation: next };
 }
