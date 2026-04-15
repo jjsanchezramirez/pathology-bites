@@ -62,6 +62,29 @@ export function imageElementFromLibrary(
   };
 }
 
+/**
+ * Build an overlay ImageElement from a library image, sized to ~60% canvas width
+ * and centered at a given drop position. Uses a 5s window with fade in/out.
+ */
+export function overlayImageFromLibrary(
+  img: LibraryImageLike,
+  dropX = 50,
+  dropY = 50
+): ImageElement {
+  const canvasAspect = 16 / 9;
+  const imgAspect = img.width && img.height ? img.width / img.height : 1;
+  const w = 60;
+  const h = (w * canvasAspect) / imgAspect;
+  return {
+    id: uid("img"),
+    kind: "image",
+    imageUrl: img.url,
+    rect: { x: dropX - w / 2, y: dropY - h / 2, w, h, rotation: 0 },
+    opacity: 1,
+    timing: { start: 0, fadeIn: 0.3, hold: 4.4, fadeOut: 0.3 },
+  };
+}
+
 const CANVAS_ASPECT = 16 / 9;
 
 /**

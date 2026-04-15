@@ -124,6 +124,11 @@ function ImagesTab() {
                 key={img.id}
                 type="button"
                 onClick={() => onAdd(img)}
+                draggable
+                onDragStart={(e) => {
+                  e.dataTransfer.setData("application/x-library-image", JSON.stringify(img));
+                  e.dataTransfer.effectAllowed = "copy";
+                }}
                 className="group relative overflow-hidden rounded border bg-black hover:border-blue-500"
                 title={img.description ?? ""}
               >

@@ -8,7 +8,7 @@
 
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useCallback, useMemo, useRef } from "react";
 import { useEditorStore, selectCurrentSlide } from "../model/store";
 import { ElementRenderer } from "./element-renderer";
 import { SelectionHandles } from "./selection-handles";
@@ -17,6 +17,7 @@ import { CameraTargetIndicator } from "./camera-target-indicator";
 import { useCanvasPointer } from "./use-canvas-pointer";
 import { computeSlideAt, cameraToCss, rectAt } from "../model/runtime";
 import { pointInRect } from "./geometry";
+import { overlayImageFromLibrary, type LibraryImageLike } from "../model/slide-factory";
 import type { SlideElement } from "../model/types";
 
 export function EditorCanvas() {
@@ -34,6 +35,30 @@ export function EditorCanvas() {
   const camera = runtime?.transform ?? { x: 0, y: 0, scale: 1 };
 
   const pointerHandlers = useCanvasPointer({ canvasRef, slide, camera, viewTime });
+
+  // Drop a library image onto the canvas to add it as an overlay element.
+  const onDragOver = useCallback((e: React.DragEvent) => {
+    if (e.dataTransfer.types.includes("application/x-library-image")) {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = "copy";
+    }
+  }, []);
+
+  const onDrop = useCallback(
+    (e: React.DragEvent) => {
+      const json = e.dataTransfer.getData("application/x-library-image");
+      if (!json || !slide) return;
+      e.preventDefault();
+      const img: LibraryImageLike = JSON.parse(json);
+      const rect = canvasRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const dropX = ((e.clientX - rect.left) / rect.width) * 100;
+      const dropY = ((e.clientY - rect.top) / rect.height) * 100;
+      const el = overlayImageFromLibrary(img, dropX, dropY);
+      useEditorStore.getState().addElement(slide.id, el);
+    },
+    [slide]
+  );
 
   // Double-click to inline-edit a text element (single click selects first).
   function onDoubleClick(e: React.MouseEvent) {
@@ -84,6 +109,7 @@ export function EditorCanvas() {
   return (
     <div
       className="flex h-full w-full items-center justify-center p-4"
+      style={{ containerType: "size" }}
       onPointerDown={onGutterPointerDown}
     >
       <div
@@ -91,8 +117,7 @@ export function EditorCanvas() {
         className="relative select-none overflow-hidden bg-black shadow-lg"
         style={{
           aspectRatio: "16 / 9",
-          width: "100%",
-          maxHeight: "100%",
+          width: "min(100cqi, calc(100cqb * 16 / 9))",
           containerType: "inline-size",
           cursor: tool === "select" ? "default" : "crosshair",
         }}
@@ -100,6 +125,8 @@ export function EditorCanvas() {
         onPointerMove={pointerHandlers.onPointerMove}
         onPointerUp={pointerHandlers.onPointerUp}
         onPointerCancel={pointerHandlers.onPointerUp}
+        onDragOver={onDragOver}
+        onDrop={onDrop}
         onDoubleClick={onDoubleClick}
       >
         {/* Camera-transformed content layer */}
