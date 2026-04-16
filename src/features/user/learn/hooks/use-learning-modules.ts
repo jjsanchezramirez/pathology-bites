@@ -29,7 +29,10 @@ export function useLearningModules() {
 
   // Group subjects by category
   const subjectsByCategory = subjects.reduce<
-    Record<string, { category: LearningSubjectWithCategory["category"]; subjects: LearningSubjectWithCategory[] }>
+    Record<
+      string,
+      { category: LearningSubjectWithCategory["category"]; subjects: LearningSubjectWithCategory[] }
+    >
   >((acc, subject) => {
     const catId = subject.category_id;
     if (!acc[catId]) {

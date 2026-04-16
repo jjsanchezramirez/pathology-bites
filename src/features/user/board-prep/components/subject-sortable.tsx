@@ -27,9 +27,9 @@ interface SubjectSortableProps {
 }
 
 function SortableItem({ id, label, rank }: { id: string; label: string; rank: number }) {
-  const {
-    attributes, listeners, setNodeRef, transform, transition, isDragging,
-  } = useSortable({ id });
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -86,11 +86,7 @@ export function SubjectSortable({ items, onChange, label, labelMap }: SubjectSor
   return (
     <div className="space-y-1.5">
       <span className="text-xs font-medium text-muted-foreground">{label}</span>
-      <DndContext
-        sensors={sensors}
-        collisionDetection={closestCenter}
-        onDragEnd={handleDragEnd}
-      >
+      <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
         <SortableContext items={items} strategy={verticalListSortingStrategy}>
           <div className="space-y-1">
             {items.map((item, i) => (

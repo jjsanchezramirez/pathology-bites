@@ -41,7 +41,15 @@ export interface ArrowPointer {
   strokeWidth: number; // px
   opacity: number; // 0-1
   headSize?: number; // arrowhead size in px (default 12)
-  direction?: "up" | "down" | "left" | "right" | "up-left" | "up-right" | "down-left" | "down-right"; // optional for backward compat
+  direction?:
+    | "up"
+    | "down"
+    | "left"
+    | "right"
+    | "up-left"
+    | "up-right"
+    | "down-left"
+    | "down-right"; // optional for backward compat
 }
 
 export interface TextOverlay {

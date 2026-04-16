@@ -15,11 +15,7 @@ interface SequencePickerDialogProps {
   onSelect: (sequenceId: string) => void;
 }
 
-export function SequencePickerDialog({
-  open,
-  onOpenChange,
-  onSelect,
-}: SequencePickerDialogProps) {
+export function SequencePickerDialog({ open, onOpenChange, onSelect }: SequencePickerDialogProps) {
   const [sequences, setSequences] = useState<InteractiveSequence[]>([]);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
@@ -30,9 +26,7 @@ export function SequencePickerDialog({
     async function load() {
       setLoading(true);
       try {
-        const data = await fetchInteractiveSequences(
-          search ? { search } : undefined
-        );
+        const data = await fetchInteractiveSequences(search ? { search } : undefined);
         setSequences(data);
       } catch (err) {
         console.error("Failed to load sequences:", err);
@@ -63,10 +57,7 @@ export function SequencePickerDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={handleCancel}
-          />
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={handleCancel} />
           <div className="relative bg-background border rounded-lg shadow-lg w-[700px] max-w-[95vw] h-[60vh] flex flex-col overflow-hidden">
             <div className="p-6 border-b flex-shrink-0">
               <h2 className="text-xl font-semibold">Select Explainer Sequence</h2>
@@ -83,10 +74,7 @@ export function SequencePickerDialog({
                 />
               </div>
 
-              <div
-                className="space-y-2 overflow-y-auto flex-1"
-                style={{ minHeight: 0 }}
-              >
+              <div className="space-y-2 overflow-y-auto flex-1" style={{ minHeight: 0 }}>
                 {loading ? (
                   <div className="flex justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />

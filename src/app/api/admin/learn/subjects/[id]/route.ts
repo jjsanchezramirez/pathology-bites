@@ -3,18 +3,11 @@ import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data, error } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", userId)
-    .single();
+  const { data, error } = await supabase.from("users").select("role").eq("id", userId).single();
   return !error && data?.role === "admin";
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
     const userId = getUserIdFromHeaders(request);
@@ -44,7 +37,10 @@ export async function PUT(
 
     if (error) {
       if (error.code === "23505") {
-        return NextResponse.json({ error: "A subject with this slug already exists" }, { status: 409 });
+        return NextResponse.json(
+          { error: "A subject with this slug already exists" },
+          { status: 409 }
+        );
       }
       throw error;
     }
@@ -69,10 +65,7 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const { error } = await supabase
-      .from("learning_subjects")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("learning_subjects").delete().eq("id", id);
 
     if (error) throw error;
 

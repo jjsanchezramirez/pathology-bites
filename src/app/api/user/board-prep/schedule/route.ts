@@ -32,7 +32,7 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json(tasks);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch schedule" }, { status: 500 });
   }
 }
@@ -46,10 +46,7 @@ export async function PUT(request: NextRequest) {
     const { tasks } = await request.json();
 
     // Delete all existing schedule for this user, then insert new
-    await supabase
-      .from(TABLE_NAMES.BOARD_PREP_SCHEDULE)
-      .delete()
-      .eq("user_id", userId);
+    await supabase.from(TABLE_NAMES.BOARD_PREP_SCHEDULE).delete().eq("user_id", userId);
 
     if (tasks && tasks.length > 0) {
       // Insert in batches of 500 to avoid payload limits
@@ -71,16 +68,14 @@ export async function PUT(request: NextRequest) {
           content_label: t.content_label || "",
         }));
 
-        const { error } = await supabase
-          .from(TABLE_NAMES.BOARD_PREP_SCHEDULE)
-          .insert(rows);
+        const { error } = await supabase.from(TABLE_NAMES.BOARD_PREP_SCHEDULE).insert(rows);
 
         if (error) throw error;
       }
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to save schedule" }, { status: 500 });
   }
 }

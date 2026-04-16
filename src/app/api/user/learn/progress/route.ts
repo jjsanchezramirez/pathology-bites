@@ -45,16 +45,14 @@ export async function POST(request: NextRequest) {
       updateData.quiz_score = quiz_score;
     }
 
-    const { error } = await supabase
-      .from("user_lesson_progress")
-      .upsert(
-        {
-          user_id: userId,
-          lesson_id,
-          ...updateData,
-        },
-        { onConflict: "user_id,lesson_id" }
-      );
+    const { error } = await supabase.from("user_lesson_progress").upsert(
+      {
+        user_id: userId,
+        lesson_id,
+        ...updateData,
+      },
+      { onConflict: "user_id,lesson_id" }
+    );
 
     if (error) throw error;
 

@@ -56,10 +56,7 @@ export function LearnPage() {
           <section key={category.id}>
             <div className="mb-4 flex items-center gap-2">
               {category.color && (
-                <div
-                  className="h-3 w-3 rounded-full"
-                  style={{ backgroundColor: category.color }}
-                />
+                <div className="h-3 w-3 rounded-full" style={{ backgroundColor: category.color }} />
               )}
               <h2 className="text-xl font-semibold">{category.name}</h2>
               <span className="text-sm text-muted-foreground">

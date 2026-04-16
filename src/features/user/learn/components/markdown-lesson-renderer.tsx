@@ -12,10 +12,7 @@ import type { ExplainerSequence } from "@/shared/types/explainer";
 import dynamic from "next/dynamic";
 
 const ExplainerPlayer = dynamic(
-  () =>
-    import("@/shared/components/explainer/explainer-player").then(
-      (mod) => mod.ExplainerPlayer
-    ),
+  () => import("@/shared/components/explainer/explainer-player").then((mod) => mod.ExplainerPlayer),
   {
     ssr: false,
     loading: () => (
@@ -52,8 +49,7 @@ function remarkCustomDirectives() {
           return children
             .map((c) => {
               if (c.type === "text") return c.value || "";
-              if (c.children)
-                return c.children.map((cc) => cc.value || "").join("");
+              if (c.children) return c.children.map((cc) => cc.value || "").join("");
               return "";
             })
             .join("");
@@ -106,14 +102,8 @@ interface MarkdownLessonRendererProps {
   images: { id: string; url: string; alt_text: string | null }[];
 }
 
-export function MarkdownLessonRenderer({
-  markdown,
-  images,
-}: MarkdownLessonRendererProps) {
-  const remarkPlugins = useMemo(
-    () => [remarkDirective, remarkCustomDirectives, remarkGfm],
-    []
-  );
+export function MarkdownLessonRenderer({ markdown, images }: MarkdownLessonRendererProps) {
+  const remarkPlugins = useMemo(() => [remarkDirective, remarkCustomDirectives, remarkGfm], []);
 
   return (
     <div className="lesson-markdown-content space-y-6">
@@ -121,36 +111,18 @@ export function MarkdownLessonRenderer({
         remarkPlugins={remarkPlugins}
         components={{
           h1: ({ children }) => (
-            <h1 className="text-3xl font-bold tracking-tight mb-4">
-              {children}
-            </h1>
+            <h1 className="text-3xl font-bold tracking-tight mb-4">{children}</h1>
           ),
           h2: ({ children }) => (
-            <h2 className="text-2xl font-bold tracking-tight mt-8 mb-4">
-              {children}
-            </h2>
+            <h2 className="text-2xl font-bold tracking-tight mt-8 mb-4">{children}</h2>
           ),
-          h3: ({ children }) => (
-            <h3 className="text-xl font-semibold mt-6 mb-3">{children}</h3>
-          ),
-          h4: ({ children }) => (
-            <h4 className="text-lg font-semibold mt-4 mb-2">{children}</h4>
-          ),
-          p: ({ children }) => (
-            <p className="text-base leading-relaxed mb-4">{children}</p>
-          ),
-          ul: ({ children }) => (
-            <ul className="list-disc pl-6 space-y-1 mb-4">{children}</ul>
-          ),
-          ol: ({ children }) => (
-            <ol className="list-decimal pl-6 space-y-1 mb-4">{children}</ol>
-          ),
-          li: ({ children }) => (
-            <li className="text-base leading-relaxed">{children}</li>
-          ),
-          strong: ({ children }) => (
-            <strong className="font-semibold">{children}</strong>
-          ),
+          h3: ({ children }) => <h3 className="text-xl font-semibold mt-6 mb-3">{children}</h3>,
+          h4: ({ children }) => <h4 className="text-lg font-semibold mt-4 mb-2">{children}</h4>,
+          p: ({ children }) => <p className="text-base leading-relaxed mb-4">{children}</p>,
+          ul: ({ children }) => <ul className="list-disc pl-6 space-y-1 mb-4">{children}</ul>,
+          ol: ({ children }) => <ol className="list-decimal pl-6 space-y-1 mb-4">{children}</ol>,
+          li: ({ children }) => <li className="text-base leading-relaxed">{children}</li>,
+          strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
           blockquote: ({ children }) => (
             <blockquote className="border-l-4 border-primary/30 pl-4 py-2 my-4 bg-muted/30 rounded-r-lg">
               {children}
@@ -163,18 +135,10 @@ export function MarkdownLessonRenderer({
               </div>
             </Card>
           ),
-          thead: ({ children }) => (
-            <thead className="border-b bg-muted/50">{children}</thead>
-          ),
-          th: ({ children }) => (
-            <th className="px-4 py-3 text-left font-semibold">{children}</th>
-          ),
-          td: ({ children }) => (
-            <td className="px-4 py-3 border-b last:border-0">{children}</td>
-          ),
-          tr: ({ children }) => (
-            <tr className="border-b last:border-0">{children}</tr>
-          ),
+          thead: ({ children }) => <thead className="border-b bg-muted/50">{children}</thead>,
+          th: ({ children }) => <th className="px-4 py-3 text-left font-semibold">{children}</th>,
+          td: ({ children }) => <td className="px-4 py-3 border-b last:border-0">{children}</td>,
+          tr: ({ children }) => <tr className="border-b last:border-0">{children}</tr>,
           code: ({ children, className }) => {
             const isBlock = className?.startsWith("language-");
             if (isBlock) {
@@ -185,22 +149,14 @@ export function MarkdownLessonRenderer({
               );
             }
             return (
-              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">
-                {children}
-              </code>
+              <code className="rounded bg-muted px-1.5 py-0.5 text-sm font-mono">{children}</code>
             );
           },
           hr: () => <hr className="my-8 border-border" />,
 
           // Custom directive components (mapped via data.hName in the plugin)
           // @ts-expect-error -- custom element from remark-directive
-          "image-directive": ({
-            imageIds,
-            caption,
-          }: {
-            imageIds: string;
-            caption: string;
-          }) => {
+          "image-directive": ({ imageIds, caption }: { imageIds: string; caption: string }) => {
             const ids = imageIds
               ? imageIds
                   .split(",")
@@ -237,11 +193,7 @@ export function MarkdownLessonRenderer({
           },
 
           // Custom element from remark-directive
-          "explainer-directive": ({
-            sequenceId,
-          }: {
-            sequenceId: string;
-          }) => {
+          "explainer-directive": ({ sequenceId }: { sequenceId: string }) => {
             return <ExplainerDirective sequenceId={sequenceId} />;
           },
 
@@ -258,9 +210,7 @@ export function MarkdownLessonRenderer({
                 <CardContent className="p-6">
                   <div className="flex items-center gap-2 mb-3">
                     <Lightbulb className="h-5 w-5 text-primary" />
-                    <h3 className="text-lg font-semibold">
-                      {heading || "Key Points"}
-                    </h3>
+                    <h3 className="text-lg font-semibold">{heading || "Key Points"}</h3>
                   </div>
                   <div className="[&>ul]:list-none [&>ul]:pl-0 [&>ul]:mb-0 [&>ul>li]:flex [&>ul>li]:items-start [&>ul>li]:gap-2 [&>ul>li]:mb-2 [&>ul>li:last-child]:mb-0 [&>ul>li]:before:content-[''] [&>ul>li]:before:mt-2 [&>ul>li]:before:h-1.5 [&>ul>li]:before:w-1.5 [&>ul>li]:before:shrink-0 [&>ul>li]:before:rounded-full [&>ul>li]:before:bg-primary">
                     {children}
@@ -316,16 +266,9 @@ function ExplainerDirective({ sequenceId }: { sequenceId: string }) {
             <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
           </div>
         )}
-        {error && (
-          <div className="p-4 text-center text-sm text-destructive">
-            {error}
-          </div>
-        )}
+        {error && <div className="p-4 text-center text-sm text-destructive">{error}</div>}
         {sequenceData && (
-          <ExplainerPlayer
-            sequence={sequenceData.sequence}
-            audioUrl={sequenceData.audioUrl}
-          />
+          <ExplainerPlayer sequence={sequenceData.sequence} audioUrl={sequenceData.audioUrl} />
         )}
       </CardContent>
     </Card>

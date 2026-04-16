@@ -1,14 +1,10 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { adminLearnService } from "../services/admin-learn-service";
 import { Lesson } from "@/features/user/learn/types/lesson";
-import {
-  LessonContent,
-  LessonQuiz,
-  LessonQuizQuestion,
-} from "@/features/user/learn/types";
+import { LessonContent, LessonQuiz, LessonQuizQuestion } from "@/features/user/learn/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
@@ -76,12 +72,8 @@ function insertAtCursor(
   // Schedule cursor positioning after React re-render
   requestAnimationFrame(() => {
     textarea.focus();
-    const cursorPos = selectStart !== undefined
-      ? start + selectStart
-      : start + text.length;
-    const cursorEnd = selectEnd !== undefined
-      ? start + selectEnd
-      : cursorPos;
+    const cursorPos = selectStart !== undefined ? start + selectStart : start + text.length;
+    const cursorEnd = selectEnd !== undefined ? start + selectEnd : cursorPos;
     textarea.setSelectionRange(cursorPos, cursorEnd);
   });
 
@@ -174,7 +166,10 @@ export function LessonEditor({ lessonId, subjectId, subjectTitle }: LessonEditor
   }, [showPreview, markdown]);
 
   const generateSlug = (text: string) =>
-    text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+    text
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-|-$/g, "");
 
   const handleSave = async () => {
     if (!title || !slug || !currentSubjectId) return;
@@ -279,8 +274,7 @@ export function LessonEditor({ lessonId, subjectId, subjectTitle }: LessonEditor
     {
       icon: Lightbulb,
       label: "Key Points",
-      action: () =>
-        insertText("\n:::key-points\n- Point one\n- Point two\n- Point three\n:::\n"),
+      action: () => insertText("\n:::key-points\n- Point one\n- Point two\n- Point three\n:::\n"),
     },
   ];
 
@@ -335,9 +329,7 @@ export function LessonEditor({ lessonId, subjectId, subjectTitle }: LessonEditor
           <h1 className="text-3xl font-bold tracking-tight">
             {isEditing ? "Edit Lesson" : "Create Lesson"}
           </h1>
-          {subjectTitle && (
-            <p className="text-muted-foreground">Subject: {subjectTitle}</p>
-          )}
+          {subjectTitle && <p className="text-muted-foreground">Subject: {subjectTitle}</p>}
         </div>
         <Button onClick={handleSave} disabled={saving || !title || !slug}>
           {saving ? (
@@ -416,11 +408,7 @@ export function LessonEditor({ lessonId, subjectId, subjectTitle }: LessonEditor
         <CardHeader>
           <div className="flex items-center justify-between">
             <CardTitle className="text-lg">Content</CardTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setShowPreview(!showPreview)}
-            >
+            <Button variant="outline" size="sm" onClick={() => setShowPreview(!showPreview)}>
               {showPreview ? (
                 <>
                   <Edit3 className="mr-1 h-3 w-3" /> Edit
@@ -437,10 +425,7 @@ export function LessonEditor({ lessonId, subjectId, subjectTitle }: LessonEditor
           {showPreview ? (
             <div className="min-h-[400px] rounded-lg border p-6">
               {markdown ? (
-                <MarkdownLessonRenderer
-                  markdown={markdown}
-                  images={previewImages}
-                />
+                <MarkdownLessonRenderer markdown={markdown} images={previewImages} />
               ) : (
                 <p className="text-muted-foreground text-center py-12">
                   No content yet. Switch to edit mode to start writing.
@@ -454,12 +439,7 @@ export function LessonEditor({ lessonId, subjectId, subjectTitle }: LessonEditor
                 <div className="flex flex-wrap items-center gap-0.5 rounded-lg border bg-muted/50 p-1">
                   {toolbarActions.map((action, i) => {
                     if ("type" in action && action.type === "separator") {
-                      return (
-                        <div
-                          key={i}
-                          className="mx-1 h-6 w-px bg-border"
-                        />
-                      );
+                      return <div key={i} className="mx-1 h-6 w-px bg-border" />;
                     }
                     const Icon = action.icon!;
                     return (
@@ -502,7 +482,8 @@ Use the toolbar to insert images, explainers, and key points.`}
                 className="min-h-[400px] font-mono text-sm leading-relaxed resize-y"
               />
               <p className="text-xs text-muted-foreground">
-                Supports Markdown with tables, lists, and custom directives for images, explainers, and key points.
+                Supports Markdown with tables, lists, and custom directives for images, explainers,
+                and key points.
               </p>
             </div>
           )}

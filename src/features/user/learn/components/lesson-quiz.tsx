@@ -35,8 +35,6 @@ export function LessonQuiz({ quiz, onComplete }: LessonQuizProps) {
 
   const handleNext = useCallback(() => {
     if (isLastQuestion) {
-      const finalCorrect = correctCount + (selectedOption === question.correctOptionId ? 0 : 0);
-      // correctCount already updated in handleSelect
       const score = Math.round((correctCount / quiz.questions.length) * 100);
       setIsComplete(true);
       onComplete(score);
@@ -45,7 +43,14 @@ export function LessonQuiz({ quiz, onComplete }: LessonQuizProps) {
       setSelectedOption(null);
       setIsAnswered(false);
     }
-  }, [isLastQuestion, correctCount, quiz.questions.length, onComplete, selectedOption, question.correctOptionId]);
+  }, [
+    isLastQuestion,
+    correctCount,
+    quiz.questions.length,
+    onComplete,
+    selectedOption,
+    question.correctOptionId,
+  ]);
 
   if (isComplete) {
     const score = Math.round((correctCount / quiz.questions.length) * 100);
@@ -65,9 +70,7 @@ export function LessonQuiz({ quiz, onComplete }: LessonQuizProps) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">
-          Knowledge Check
-        </h3>
+        <h3 className="text-lg font-semibold">Knowledge Check</h3>
         <span className="text-sm text-muted-foreground">
           Question {currentIndex + 1} of {quiz.questions.length}
         </span>
@@ -140,9 +143,7 @@ function QuestionCard({
                   {letters[i]}
                 </span>
                 <span className="flex-1 text-sm">{option.text}</span>
-                {isAnswered && isCorrect && (
-                  <Check className="h-5 w-5 shrink-0 text-green-500" />
-                )}
+                {isAnswered && isCorrect && <Check className="h-5 w-5 shrink-0 text-green-500" />}
                 {isAnswered && isSelected && !isCorrect && (
                   <X className="h-5 w-5 shrink-0 text-red-500" />
                 )}

@@ -15,10 +15,7 @@ export function useExplainerEngine({
 }: UseExplainerEngineOptions): EngineState {
   const preloadedRef = useRef<Set<string>>(new Set());
 
-  const state = useMemo(
-    () => computeEngineState(sequence, currentTime),
-    [sequence, currentTime]
-  );
+  const state = useMemo(() => computeEngineState(sequence, currentTime), [sequence, currentTime]);
 
   // Reset preload cache when sequence changes
   useEffect(() => {

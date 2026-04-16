@@ -3,11 +3,7 @@ import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data, error } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", userId)
-    .single();
+  const { data, error } = await supabase.from("users").select("role").eq("id", userId).single();
   return !error && data?.role === "admin";
 }
 
@@ -23,10 +19,12 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("lessons")
-      .select(`
+      .select(
+        `
         *,
         subject:learning_subjects!lessons_subject_id_fkey(id, title, slug)
-      `)
+      `
+      )
       .order("sort_order");
 
     if (subjectId) {
@@ -52,7 +50,20 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { subject_id, title, slug, description, content, content_markdown, quiz, anki_deck_ref, cover_image_url, sort_order, estimated_minutes, status } = body;
+    const {
+      subject_id,
+      title,
+      slug,
+      description,
+      content,
+      content_markdown,
+      quiz,
+      anki_deck_ref,
+      cover_image_url,
+      sort_order,
+      estimated_minutes,
+      status,
+    } = body;
 
     if (!subject_id) {
       return NextResponse.json({ error: "Subject is required" }, { status: 400 });
@@ -86,7 +97,10 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (error.code === "23505") {
-        return NextResponse.json({ error: "A lesson with this slug already exists in this subject" }, { status: 409 });
+        return NextResponse.json(
+          { error: "A lesson with this slug already exists in this subject" },
+          { status: 409 }
+        );
       }
       throw error;
     }

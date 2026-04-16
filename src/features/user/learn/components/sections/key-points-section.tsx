@@ -12,9 +12,7 @@ export function KeyPointsSection({ section }: KeyPointsSectionProps) {
     <div className="rounded-lg border bg-primary/5 p-6">
       <div className="flex items-center gap-2 mb-3">
         <Lightbulb className="h-5 w-5 text-primary" />
-        <h3 className="text-lg font-semibold">
-          {section.heading || "Key Points"}
-        </h3>
+        <h3 className="text-lg font-semibold">{section.heading || "Key Points"}</h3>
       </div>
       <ul className="space-y-2">
         {section.points.map((point, i) => (

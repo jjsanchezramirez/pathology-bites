@@ -34,11 +34,11 @@ export const CATEGORIES: Category[] = [
   { id: "ap-thoracic", name: "Thoracic", parent: "AP" },
 ];
 
-export const CP_CATEGORIES = CATEGORIES.filter(c => c.parent === "CP");
-export const AP_CATEGORIES = CATEGORIES.filter(c => c.parent === "AP");
+export const CP_CATEGORIES = CATEGORIES.filter((c) => c.parent === "CP");
+export const AP_CATEGORIES = CATEGORIES.filter((c) => c.parent === "AP");
 
 export function getCategoryById(id: string): Category | undefined {
-  return CATEGORIES.find(c => c.id === id);
+  return CATEGORIES.find((c) => c.id === id);
 }
 
 export function getCategoryParent(id: string): "CP" | "AP" | undefined {

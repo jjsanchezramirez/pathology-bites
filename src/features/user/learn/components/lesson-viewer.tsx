@@ -4,26 +4,17 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { learnService } from "../services/learn-service";
 import { LessonWithProgress } from "../types/lesson";
-import { LessonSection, LessonContent, LessonQuiz as LessonQuizType } from "../types";
+import { LessonSection, LessonContent } from "../types";
 import { TextSection } from "./sections/text-section";
 import { ImageSection } from "./sections/image-section";
 import { ExplainerSection } from "./sections/explainer-section";
 import { KeyPointsSection } from "./sections/key-points-section";
 import { ComparisonTableSection } from "./sections/comparison-table-section";
 import { LessonQuiz } from "./lesson-quiz";
-import {
-  MarkdownLessonRenderer,
-  extractImageIds,
-} from "./markdown-lesson-renderer";
+import { MarkdownLessonRenderer, extractImageIds } from "./markdown-lesson-renderer";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import {
-  ArrowLeft,
-  ArrowRight,
-  CheckCircle2,
-  Loader2,
-  Library,
-} from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Library } from "lucide-react";
 
 interface LessonViewerProps {
   subjectSlug: string;
@@ -62,16 +53,17 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
           const content = data.content as LessonContent;
           if (content?.sections) {
             imageIds = content.sections
-              .filter((s): s is { type: "image"; imageIds: string[] } & LessonSection => s.type === "image")
+              .filter(
+                (s): s is { type: "image"; imageIds: string[] } & LessonSection =>
+                  s.type === "image"
+              )
               .flatMap((s) => s.imageIds);
           }
         }
 
         if (imageIds.length > 0) {
           try {
-            const res = await fetch(
-              `/api/admin/library/images?ids=${imageIds.join(",")}`
-            );
+            const res = await fetch(`/api/admin/library/images?ids=${imageIds.join(",")}`);
             if (res.ok) {
               const imgData = await res.json();
               setImages(Array.isArray(imgData) ? imgData : imgData.images || []);
@@ -158,29 +150,18 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
           </Button>
         </Link>
         <h1 className="text-3xl font-bold tracking-tight">{lesson.title}</h1>
-        {lesson.description && (
-          <p className="mt-1 text-muted-foreground">{lesson.description}</p>
-        )}
+        {lesson.description && <p className="mt-1 text-muted-foreground">{lesson.description}</p>}
         {lesson.estimated_minutes && (
-          <p className="mt-1 text-sm text-muted-foreground">
-            ~{lesson.estimated_minutes} min read
-          </p>
+          <p className="mt-1 text-sm text-muted-foreground">~{lesson.estimated_minutes} min read</p>
         )}
       </div>
 
       {/* Content: markdown or legacy sections */}
       {isMarkdown ? (
-        <MarkdownLessonRenderer
-          markdown={lesson.content_markdown!}
-          images={images}
-        />
+        <MarkdownLessonRenderer markdown={lesson.content_markdown!} images={images} />
       ) : (
         content?.sections?.map((section) => (
-          <SectionRenderer
-            key={section.id}
-            section={section}
-            images={images}
-          />
+          <SectionRenderer key={section.id} section={section} images={images} />
         ))
       )}
 
@@ -198,9 +179,7 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
             <Library className="h-5 w-5 text-primary" />
             <div className="flex-1">
               <p className="text-sm font-medium">Review with Anki</p>
-              <p className="text-xs text-muted-foreground">
-                Deck: {ankiDeckRef}
-              </p>
+              <p className="text-xs text-muted-foreground">Deck: {ankiDeckRef}</p>
             </div>
             <Link href="/dashboard/anki">
               <Button variant="outline" size="sm">

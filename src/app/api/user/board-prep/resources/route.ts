@@ -33,7 +33,7 @@ export async function GET(request: NextRequest) {
     }));
 
     return NextResponse.json(resources);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch resources" }, { status: 500 });
   }
 }
@@ -47,10 +47,7 @@ export async function PUT(request: NextRequest) {
     const { resources } = await request.json();
 
     // Delete existing resources for user, then insert new ones
-    await supabase
-      .from(TABLE_NAMES.BOARD_PREP_RESOURCES)
-      .delete()
-      .eq("user_id", userId);
+    await supabase.from(TABLE_NAMES.BOARD_PREP_RESOURCES).delete().eq("user_id", userId);
 
     if (resources && resources.length > 0) {
       const rows = resources.map((r: Record<string, unknown>) => ({
@@ -69,15 +66,13 @@ export async function PUT(request: NextRequest) {
         phase_assignments: r.phase_assignments || null,
       }));
 
-      const { error } = await supabase
-        .from(TABLE_NAMES.BOARD_PREP_RESOURCES)
-        .insert(rows);
+      const { error } = await supabase.from(TABLE_NAMES.BOARD_PREP_RESOURCES).insert(rows);
 
       if (error) throw error;
     }
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to save resources" }, { status: 500 });
   }
 }

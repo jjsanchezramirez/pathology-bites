@@ -61,7 +61,7 @@ function resolveTooltipPosition(
   targetRect: Rect,
   tooltipWidth: number,
   tooltipHeight: number,
-  preferredSide: ResolvedSide,
+  preferredSide: ResolvedSide
 ): { top: number; left: number; side: ResolvedSide } {
   const vw = window.innerWidth;
   const vh = window.innerHeight + window.scrollY;
@@ -107,7 +107,7 @@ function getArrowStyle(
   tooltipLeft: number,
   tooltipTop: number,
   tooltipWidth: number,
-  tooltipHeight: number,
+  tooltipHeight: number
 ): React.CSSProperties {
   const base: React.CSSProperties = {
     position: "absolute",
@@ -163,7 +163,11 @@ export function SpotlightTour({
 }: SpotlightTourProps) {
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState<Rect | null>(null);
-  const [tooltipPos, setTooltipPos] = useState<{ top: number; left: number; side: ResolvedSide } | null>(null);
+  const [tooltipPos, setTooltipPos] = useState<{
+    top: number;
+    left: number;
+    side: ResolvedSide;
+  } | null>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const [mounted, setMounted] = useState(false);
   // Track whether we've completed at least one measurement cycle so we can fade in
@@ -301,7 +305,7 @@ export function SpotlightTour({
               tooltipPos.left,
               tooltipPos.top,
               tooltipRef.current?.offsetWidth || 288,
-              tooltipRef.current?.offsetHeight || 200,
+              tooltipRef.current?.offsetHeight || 200
             )}
           />
         )}
@@ -316,9 +320,7 @@ export function SpotlightTour({
 
         {/* Content */}
         <h3 className="text-sm font-semibold text-foreground pr-6">{step.title}</h3>
-        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">
-          {step.description}
-        </p>
+        <p className="mt-1.5 text-xs leading-relaxed text-muted-foreground">{step.description}</p>
 
         {/* Footer: dots + nav */}
         <div className="mt-3 flex items-center justify-between">
@@ -328,9 +330,7 @@ export function SpotlightTour({
               <div
                 key={i}
                 className={`rounded-full transition-all ${
-                  i === currentStep
-                    ? "h-1.5 w-4 bg-primary"
-                    : "size-1.5 bg-muted-foreground/20"
+                  i === currentStep ? "h-1.5 w-4 bg-primary" : "size-1.5 bg-muted-foreground/20"
                 }`}
               />
             ))}
@@ -344,7 +344,12 @@ export function SpotlightTour({
               </Button>
             )}
             {isFirst && (
-              <Button variant="ghost" size="sm" onClick={onComplete} className="h-7 px-2 text-xs text-muted-foreground">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onComplete}
+                className="h-7 px-2 text-xs text-muted-foreground"
+              >
                 Skip
               </Button>
             )}

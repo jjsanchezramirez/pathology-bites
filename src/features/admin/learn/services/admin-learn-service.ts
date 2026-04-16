@@ -19,7 +19,12 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
 
 export const adminLearnService = {
   // Subjects
-  async getSubjects(): Promise<(LearningSubject & { category: { id: string; name: string; color: string | null; short_form: string | null }; lesson_count: number })[]> {
+  async getSubjects(): Promise<
+    (LearningSubject & {
+      category: { id: string; name: string; color: string | null; short_form: string | null };
+      lesson_count: number;
+    })[]
+  > {
     return apiFetch("/subjects");
   },
 
@@ -50,12 +55,16 @@ export const adminLearnService = {
   },
 
   // Lessons
-  async getLessons(subjectId?: string): Promise<(Lesson & { subject: { id: string; title: string; slug: string } })[]> {
+  async getLessons(
+    subjectId?: string
+  ): Promise<(Lesson & { subject: { id: string; title: string; slug: string } })[]> {
     const params = subjectId ? `?subject_id=${subjectId}` : "";
     return apiFetch(`/lessons${params}`);
   },
 
-  async getLesson(id: string): Promise<Lesson & { subject: { id: string; title: string; slug: string } }> {
+  async getLesson(
+    id: string
+  ): Promise<Lesson & { subject: { id: string; title: string; slug: string } }> {
     return apiFetch(`/lessons/${id}`);
   },
 
@@ -79,11 +88,14 @@ export const adminLearnService = {
     });
   },
 
-  async updateLesson(id: string, data: Partial<Lesson> & {
-    content_markdown?: string | null;
-    quiz?: unknown;
-    anki_deck_ref?: string | null;
-  }): Promise<Lesson> {
+  async updateLesson(
+    id: string,
+    data: Partial<Lesson> & {
+      content_markdown?: string | null;
+      quiz?: unknown;
+      anki_deck_ref?: string | null;
+    }
+  ): Promise<Lesson> {
     return apiFetch(`/lessons/${id}`, {
       method: "PUT",
       body: JSON.stringify(data),

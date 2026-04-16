@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json(data || []);
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to fetch progress" }, { status: 500 });
   }
 }
@@ -29,18 +29,19 @@ export async function POST(request: NextRequest) {
 
     const { task_key, completed_at } = await request.json();
 
-    const { error } = await supabase
-      .from(TABLE_NAMES.BOARD_PREP_PROGRESS)
-      .upsert({
+    const { error } = await supabase.from(TABLE_NAMES.BOARD_PREP_PROGRESS).upsert(
+      {
         user_id: userId,
         task_key,
         completed_at: completed_at || new Date().toISOString(),
-      }, { onConflict: "user_id,task_key" });
+      },
+      { onConflict: "user_id,task_key" }
+    );
 
     if (error) throw error;
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to save progress" }, { status: 500 });
   }
 }
@@ -67,7 +68,7 @@ export async function DELETE(request: NextRequest) {
     if (error) throw error;
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: "Failed to delete progress" }, { status: 500 });
   }
 }

@@ -44,7 +44,6 @@ const SCHEDULE_TUTORIAL: TutorialStep[] = [
   },
 ];
 
-
 export function BoardPrepPage() {
   const [view, setView] = useState<"day" | "calendar" | "progress">("day");
   const [currentDate, setCurrentDate] = useState(() => new Date().toISOString().split("T")[0]);
@@ -53,15 +52,23 @@ export function BoardPrepPage() {
   );
 
   const {
-    loading, error, retry,
-    resources, setResources,
-    config, setConfig,
-    schedule, setSchedule,
-    completedTasks, setCompletedTasks,
-    colorMap, toggleTask,
+    loading,
+    error,
+    retry,
+    resources,
+    setResources,
+    config,
+    setConfig,
+    schedule,
+    setSchedule,
+    completedTasks,
+    setCompletedTasks,
+    colorMap,
+    toggleTask,
   } = useStudyPlan();
 
-  const { showTutorial: showScheduleTutorial, completeTutorial: completeScheduleTutorial } = useTutorial("study-schedule");
+  const { showTutorial: showScheduleTutorial, completeTutorial: completeScheduleTutorial } =
+    useTutorial("study-schedule");
 
   const navItems = [
     { key: "day" as const, icon: ListTodo, label: "Schedule" },
@@ -77,14 +84,20 @@ export function BoardPrepPage() {
           <Skeleton className="size-8 rounded-full" />
         </div>
         <div className="mb-6">
-          <div className="mb-3 flex justify-center"><Skeleton className="h-4 w-32" /></div>
+          <div className="mb-3 flex justify-center">
+            <Skeleton className="h-4 w-32" />
+          </div>
           <div className="grid grid-cols-7 gap-1 md:gap-2">
-            {Array.from({ length: 7 }).map((_, i) => (<Skeleton key={i} className="h-14 rounded-xl" />))}
+            {Array.from({ length: 7 }).map((_, i) => (
+              <Skeleton key={i} className="h-14 rounded-xl" />
+            ))}
           </div>
         </div>
         <Skeleton className="mb-6 h-1.5 w-full rounded-full" />
         <div className="space-y-2">
-          {Array.from({ length: 5 }).map((_, i) => (<Skeleton key={i} className="h-16 w-full rounded-2xl" />))}
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Skeleton key={i} className="h-16 w-full rounded-2xl" />
+          ))}
         </div>
       </div>
     );
@@ -95,7 +108,9 @@ export function BoardPrepPage() {
       <div className="flex flex-col items-center justify-center gap-4 py-20 text-center">
         <AlertCircle size={32} className="text-destructive" />
         <p className="text-sm text-muted-foreground">{error}</p>
-        <Button size="sm" onClick={retry}>Retry</Button>
+        <Button size="sm" onClick={retry}>
+          Retry
+        </Button>
       </div>
     );
   }
@@ -169,7 +184,10 @@ export function BoardPrepPage() {
               resources={resources}
               completedTasks={completedTasks}
               colorMap={colorMap}
-              onSelectDate={(date) => { setCurrentDate(date); setView("day"); }}
+              onSelectDate={(date) => {
+                setCurrentDate(date);
+                setView("day");
+              }}
             />
           )}
           {view === "progress" && (

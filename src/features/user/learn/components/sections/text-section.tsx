@@ -9,9 +9,7 @@ interface TextSectionProps {
 export function TextSection({ section }: TextSectionProps) {
   return (
     <div className="space-y-4">
-      {section.heading && (
-        <h2 className="text-2xl font-bold tracking-tight">{section.heading}</h2>
-      )}
+      {section.heading && <h2 className="text-2xl font-bold tracking-tight">{section.heading}</h2>}
       {section.blocks.map((block, i) => {
         const emphasisClass =
           block.emphasis === "highlight"

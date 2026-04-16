@@ -114,7 +114,12 @@ export function SlideProperties({ slide }: SlidePropertiesProps) {
       </Section>
 
       {!slide.elements.some(
-        (e) => e.kind === "image" && e.rect.x === 0 && e.rect.y === 0 && e.rect.w === 100 && e.rect.h === 100
+        (e) =>
+          e.kind === "image" &&
+          e.rect.x === 0 &&
+          e.rect.y === 0 &&
+          e.rect.w === 100 &&
+          e.rect.h === 100
       ) && (
         <Section title="Background">
           <Row label="Color">

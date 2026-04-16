@@ -23,14 +23,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Badge } from "@/shared/components/ui/badge";
-import {
-  Plus,
-  Loader2,
-  Pencil,
-  Trash2,
-  BookOpen,
-  ExternalLink,
-} from "lucide-react";
+import { Plus, Loader2, Pencil, Trash2, BookOpen, ExternalLink } from "lucide-react";
 
 interface SubjectWithMeta extends LearningSubject {
   category: { id: string; name: string; color: string | null; short_form: string | null };
@@ -167,9 +160,7 @@ export function SubjectManager() {
           </DialogTrigger>
           <DialogContent>
             <DialogHeader>
-              <DialogTitle>
-                {editingSubject ? "Edit Subject" : "Create Subject"}
-              </DialogTitle>
+              <DialogTitle>{editingSubject ? "Edit Subject" : "Create Subject"}</DialogTitle>
             </DialogHeader>
             <div className="space-y-4 pt-2">
               <div>
@@ -276,18 +267,10 @@ export function SubjectManager() {
                     </Badge>
                   </div>
                   <div className="flex items-center gap-1">
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => openEdit(subject)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => openEdit(subject)}>
                       <Pencil className="h-4 w-4" />
                     </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => handleDelete(subject.id)}
-                    >
+                    <Button variant="ghost" size="sm" onClick={() => handleDelete(subject.id)}>
                       <Trash2 className="h-4 w-4 text-destructive" />
                     </Button>
                   </div>
@@ -302,7 +285,9 @@ export function SubjectManager() {
                       <span className="truncate max-w-[300px]">{subject.description}</span>
                     )}
                   </div>
-                  <Link href={`/admin/learn/lessons/create?subject_id=${subject.id}&subject_title=${encodeURIComponent(subject.title)}`}>
+                  <Link
+                    href={`/admin/learn/lessons/create?subject_id=${subject.id}&subject_title=${encodeURIComponent(subject.title)}`}
+                  >
                     <Button variant="outline" size="sm">
                       <Plus className="mr-1 h-3 w-3" />
                       Add Lesson
@@ -310,9 +295,7 @@ export function SubjectManager() {
                   </Link>
                 </div>
                 {/* Lesson list */}
-                {subject.lesson_count > 0 && (
-                  <LessonList subjectId={subject.id} />
-                )}
+                {subject.lesson_count > 0 && <LessonList subjectId={subject.id} />}
               </CardContent>
             </Card>
           ))}
@@ -323,14 +306,24 @@ export function SubjectManager() {
 }
 
 function LessonList({ subjectId }: { subjectId: string }) {
-  const [lessons, setLessons] = useState<{ id: string; title: string; slug: string; status: string; sort_order: number }[]>([]);
+  const [lessons, setLessons] = useState<
+    { id: string; title: string; slug: string; status: string; sort_order: number }[]
+  >([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function load() {
       try {
         const data = await adminLearnService.getLessons(subjectId);
-        setLessons(data.map((l) => ({ id: l.id, title: l.title, slug: l.slug, status: l.status, sort_order: l.sort_order })));
+        setLessons(
+          data.map((l) => ({
+            id: l.id,
+            title: l.title,
+            slug: l.slug,
+            status: l.status,
+            sort_order: l.sort_order,
+          }))
+        );
       } catch {
         // Non-critical
       } finally {

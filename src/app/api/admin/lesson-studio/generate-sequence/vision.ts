@@ -290,7 +290,10 @@ This is a histologic/microscopic image. Answer each question on its own numbered
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
-export function parseVisionResponse(raw: string, image: ImageInput): Omit<VisionResult, "canSeeImage"> {
+export function parseVisionResponse(
+  raw: string,
+  image: ImageInput
+): Omit<VisionResult, "canSeeImage"> {
   const lines = raw
     .split("\n")
     .map((l) => l.trim())

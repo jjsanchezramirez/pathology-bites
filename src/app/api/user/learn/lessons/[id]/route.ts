@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
     const userId = request.headers.get("x-user-id");
@@ -15,10 +12,12 @@ export async function GET(
     // Get lesson with its subject
     const { data: lesson, error } = await supabase
       .from("lessons")
-      .select(`
+      .select(
+        `
         *,
         subject:learning_subjects!lessons_subject_id_fkey(id, title, slug, category_id, status)
-      `)
+      `
+      )
       .eq("id", id)
       .eq("status", "published")
       .single();
@@ -47,9 +46,7 @@ export async function GET(
         .update({ last_accessed_at: new Date().toISOString() })
         .eq("id", progress.id);
     } else {
-      await supabase
-        .from("user_lesson_progress")
-        .insert({ user_id: userId, lesson_id: id });
+      await supabase.from("user_lesson_progress").insert({ user_id: userId, lesson_id: id });
     }
 
     // Get prev/next lessons in same subject
@@ -62,8 +59,14 @@ export async function GET(
 
     const siblings = siblingLessons || [];
     const currentIdx = siblings.findIndex((l) => l.id === id);
-    const prevLesson = currentIdx > 0 ? { slug: siblings[currentIdx - 1].slug, title: siblings[currentIdx - 1].title } : null;
-    const nextLesson = currentIdx < siblings.length - 1 ? { slug: siblings[currentIdx + 1].slug, title: siblings[currentIdx + 1].title } : null;
+    const prevLesson =
+      currentIdx > 0
+        ? { slug: siblings[currentIdx - 1].slug, title: siblings[currentIdx - 1].title }
+        : null;
+    const nextLesson =
+      currentIdx < siblings.length - 1
+        ? { slug: siblings[currentIdx + 1].slug, title: siblings[currentIdx + 1].title }
+        : null;
 
     return NextResponse.json({
       ...lesson,

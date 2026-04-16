@@ -1,12 +1,18 @@
 import {
-  StudyResource, StudyConfig, ScheduleTask, PhaseConfig,
-  SubjectEntry, ContentType, PhaseTimeEstimate, ScheduleWarning,
-} from './types';
-import { getCategoryParent } from './categories';
+  StudyResource,
+  StudyConfig,
+  ScheduleTask,
+  PhaseConfig,
+  SubjectEntry,
+  ContentType,
+  PhaseTimeEstimate,
+  ScheduleWarning,
+} from "./types";
+import { getCategoryParent } from "./categories";
 
 // ===== Constants =====
 
-const DEFAULT_CONTENT_ORDER: ContentType[] = ['qbank', 'book', 'video', 'flashcards'];
+const DEFAULT_CONTENT_ORDER: ContentType[] = ["qbank", "book", "video", "flashcards"];
 const CHUNK_TARGET_MIN = 60;
 const VIDEO_ATOMIC_THRESHOLD_MIN = 90;
 const BOOK_MERGE_THRESHOLD = 1.3;
@@ -17,24 +23,28 @@ const BOOK_MERGE_THRESHOLD = 1.3;
 
 export interface CalendarDay {
   date: string;
-  type: 'study' | 'rest' | 'exam' | 'gone' | 'half' | 'off';
+  type: "study" | "rest" | "exam" | "gone" | "half" | "off";
   available_minutes: number;
   phase_idx: number;
   exam_name?: string;
 }
 
 /** Resolve the catchup_first field from legacy union or new typed fields */
-function resolveCatchupFirst(phase: PhaseConfig): { mode: 'date'; date: string } | { mode: 'day'; day: number } | null {
+function resolveCatchupFirst(
+  phase: PhaseConfig
+): { mode: "date"; date: string } | { mode: "day"; day: number } | null {
   // New fields take precedence
-  if (phase.catchup_first_date) return { mode: 'date', date: phase.catchup_first_date };
-  if (phase.catchup_first_day && phase.catchup_first_day > 0) return { mode: 'day', day: phase.catchup_first_day };
+  if (phase.catchup_first_date) return { mode: "date", date: phase.catchup_first_date };
+  if (phase.catchup_first_day && phase.catchup_first_day > 0)
+    return { mode: "day", day: phase.catchup_first_day };
   // Legacy union
   if (phase.catchup_first) {
-    if (typeof phase.catchup_first === 'string' && phase.catchup_first.includes('-')) {
-      return { mode: 'date', date: phase.catchup_first };
+    if (typeof phase.catchup_first === "string" && phase.catchup_first.includes("-")) {
+      return { mode: "date", date: phase.catchup_first };
     }
-    const num = typeof phase.catchup_first === 'number' ? phase.catchup_first : parseInt(phase.catchup_first);
-    if (num > 0) return { mode: 'day', day: num };
+    const num =
+      typeof phase.catchup_first === "number" ? phase.catchup_first : parseInt(phase.catchup_first);
+    if (num > 0) return { mode: "day", day: num };
   }
   return null;
 }
@@ -44,51 +54,82 @@ export function buildCalendar(config: StudyConfig): CalendarDay[] {
   const phases = [...config.phases].sort((a, b) => a.start_date.localeCompare(b.start_date));
   if (phases.length === 0) return days;
 
-  const startDate = new Date(phases[0].start_date + 'T12:00:00');
-  const lastExam = config.exam_dates.length > 0 ? config.exam_dates.reduce((m, e) => e.date > m ? e.date : m, '') : '';
+  const startDate = new Date(phases[0].start_date + "T12:00:00");
+  const lastExam =
+    config.exam_dates.length > 0
+      ? config.exam_dates.reduce((m, e) => (e.date > m ? e.date : m), "")
+      : "";
   const lastPhase = phases[phases.length - 1].end_date;
   const endStr = lastExam > lastPhase ? lastExam : lastPhase;
-  const endDate = new Date(endStr + 'T12:00:00');
+  const endDate = new Date(endStr + "T12:00:00");
   const counters: number[] = phases.map(() => 0);
   const current = new Date(startDate);
 
   // Pre-compute the day before each exam
   const preExamDates = new Set<string>();
   for (const exam of config.exam_dates) {
-    const d = new Date(exam.date + 'T12:00:00');
+    const d = new Date(exam.date + "T12:00:00");
     d.setDate(d.getDate() - 1);
-    preExamDates.add(d.toISOString().split('T')[0]);
+    preExamDates.add(d.toISOString().split("T")[0]);
   }
 
   while (current <= endDate) {
-    const ds = current.toISOString().split('T')[0];
+    const ds = current.toISOString().split("T")[0];
     const dow = current.getDay();
     const isWeekend = dow === 0 || dow === 6;
 
     let phaseIdx = -1;
     for (let i = 0; i < phases.length; i++) {
-      if (ds >= phases[i].start_date && ds <= phases[i].end_date) { phaseIdx = i; break; }
+      if (ds >= phases[i].start_date && ds <= phases[i].end_date) {
+        phaseIdx = i;
+        break;
+      }
     }
 
     // Exam day
-    const exam = config.exam_dates.find(e => e.date === ds);
-    if (exam) { days.push({ date: ds, type: 'exam', available_minutes: 0, phase_idx: phaseIdx, exam_name: exam.name }); current.setDate(current.getDate() + 1); continue; }
+    const exam = config.exam_dates.find((e) => e.date === ds);
+    if (exam) {
+      days.push({
+        date: ds,
+        type: "exam",
+        available_minutes: 0,
+        phase_idx: phaseIdx,
+        exam_name: exam.name,
+      });
+      current.setDate(current.getDate() + 1);
+      continue;
+    }
 
     // Day before exam: rest/review/relax
-    if (preExamDates.has(ds)) { days.push({ date: ds, type: 'rest', available_minutes: 0, phase_idx: phaseIdx }); current.setDate(current.getDate() + 1); continue; }
+    if (preExamDates.has(ds)) {
+      days.push({ date: ds, type: "rest", available_minutes: 0, phase_idx: phaseIdx });
+      current.setDate(current.getDate() + 1);
+      continue;
+    }
 
     // Full day off
-    if (config.days_off[ds] === 'full') { days.push({ date: ds, type: 'gone', available_minutes: 0, phase_idx: phaseIdx }); current.setDate(current.getDate() + 1); continue; }
+    if (config.days_off[ds] === "full") {
+      days.push({ date: ds, type: "gone", available_minutes: 0, phase_idx: phaseIdx });
+      current.setDate(current.getDate() + 1);
+      continue;
+    }
 
     // Recurring off
-    if (config.recurring_off?.includes(dow)) { days.push({ date: ds, type: 'off', available_minutes: 0, phase_idx: phaseIdx }); current.setDate(current.getDate() + 1); continue; }
+    if (config.recurring_off?.includes(dow)) {
+      days.push({ date: ds, type: "off", available_minutes: 0, phase_idx: phaseIdx });
+      current.setDate(current.getDate() + 1);
+      continue;
+    }
 
     // Not in any phase
-    if (phaseIdx === -1) { current.setDate(current.getDate() + 1); continue; }
+    if (phaseIdx === -1) {
+      current.setDate(current.getDate() + 1);
+      continue;
+    }
 
     const phase = phases[phaseIdx];
     const base = isWeekend ? phase.daily_minutes_weekend : phase.daily_minutes_weekday;
-    const isHalf = config.days_off[ds] === 'half';
+    const isHalf = config.days_off[ds] === "half";
     const avail = isHalf ? Math.floor(base / 2) : base;
 
     // Catch-up logic
@@ -97,25 +138,35 @@ export function buildCalendar(config: StudyConfig): CalendarDay[] {
     let isCatchup = false;
 
     if (phase.catchup_every > 0) {
-      if (catchupFirst?.mode === 'date') {
+      if (catchupFirst?.mode === "date") {
         if (ds >= catchupFirst.date) {
-          const diff = Math.round((new Date(ds + 'T12:00:00').getTime() - new Date(catchupFirst.date + 'T12:00:00').getTime()) / 86400000);
+          const diff = Math.round(
+            (new Date(ds + "T12:00:00").getTime() -
+              new Date(catchupFirst.date + "T12:00:00").getTime()) /
+              86400000
+          );
           isCatchup = diff >= 0 && diff % phase.catchup_every === 0;
         }
       } else {
         const firstDay = catchupFirst?.day ?? phase.catchup_every;
-        isCatchup = counter > 0 && counter >= firstDay && (counter - firstDay) % phase.catchup_every === 0;
+        isCatchup =
+          counter > 0 && counter >= firstDay && (counter - firstDay) % phase.catchup_every === 0;
       }
     }
 
     if (isCatchup) {
-      days.push({ date: ds, type: 'rest', available_minutes: 0, phase_idx: phaseIdx });
+      days.push({ date: ds, type: "rest", available_minutes: 0, phase_idx: phaseIdx });
       counters[phaseIdx]++;
       current.setDate(current.getDate() + 1);
       continue;
     }
 
-    days.push({ date: ds, type: isHalf ? 'half' : 'study', available_minutes: avail, phase_idx: phaseIdx });
+    days.push({
+      date: ds,
+      type: isHalf ? "half" : "study",
+      available_minutes: avail,
+      phase_idx: phaseIdx,
+    });
     counters[phaseIdx]++;
     current.setDate(current.getDate() + 1);
   }
@@ -129,48 +180,60 @@ export function buildCalendar(config: StudyConfig): CalendarDay[] {
 
 interface PhaseResourceInfo {
   resource: StudyResource;
-  mode: 'study' | 'review';
+  mode: "study" | "review";
   review_pct: number;
   study_fraction: number;
 }
 
 function getPhaseResources(
-  phase: PhaseConfig, phaseNum: number, allResources: StudyResource[],
-  allPhases: PhaseConfig[], calendar: CalendarDay[],
-  warnings: ScheduleWarning[],
+  phase: PhaseConfig,
+  phaseNum: number,
+  allResources: StudyResource[],
+  allPhases: PhaseConfig[],
+  calendar: CalendarDay[],
+  warnings: ScheduleWarning[]
 ): PhaseResourceInfo[] {
   // Legacy fallback
   if (!phase.resources || phase.resources.length === 0) {
     return allResources
-      .filter(r => r.active !== false && r.phases?.includes(phaseNum))
-      .map(r => ({ resource: r, mode: 'study' as const, review_pct: 0, study_fraction: 1 }));
+      .filter((r) => r.active !== false && r.phases?.includes(phaseNum))
+      .map((r) => ({ resource: r, mode: "study" as const, review_pct: 0, study_fraction: 1 }));
   }
 
   const results: PhaseResourceInfo[] = [];
 
   for (const pr of phase.resources) {
-    const r = allResources.find(res => res.id === pr.resource_id);
+    const r = allResources.find((res) => res.id === pr.resource_id);
     if (!r) {
-      warnings.push({ type: 'missing_resource', message: `${phase.name}: resource "${pr.resource_id}" not found` });
+      warnings.push({
+        type: "missing_resource",
+        message: `${phase.name}: resource "${pr.resource_id}" not found`,
+      });
       continue;
     }
 
-    const mode = pr.mode || 'study';
+    const mode = pr.mode || "study";
     const review_pct = pr.review_pct ?? 50;
 
     let study_fraction = 1;
-    if (mode === 'study') {
+    if (mode === "study") {
       // Find all phases where this resource is in study mode
       const studyPhaseIndices: number[] = [];
       for (let i = 0; i < allPhases.length; i++) {
-        if (allPhases[i].resources?.some(a => a.resource_id === r.id && (a.mode || 'study') === 'study')) {
+        if (
+          allPhases[i].resources?.some(
+            (a) => a.resource_id === r.id && (a.mode || "study") === "study"
+          )
+        ) {
           studyPhaseIndices.push(i);
         }
       }
 
       if (studyPhaseIndices.length > 1) {
-        const daysByPhase = studyPhaseIndices.map(pi =>
-          calendar.filter(d => d.phase_idx === pi && (d.type === 'study' || d.type === 'half')).length
+        const daysByPhase = studyPhaseIndices.map(
+          (pi) =>
+            calendar.filter((d) => d.phase_idx === pi && (d.type === "study" || d.type === "half"))
+              .length
         );
         const totalDays = daysByPhase.reduce((s, d) => s + d, 0);
         const thisIdx = studyPhaseIndices.indexOf(phaseNum - 1);
@@ -182,7 +245,10 @@ function getPhaseResources(
         // Validate fractions sum to ~1
         const totalFraction = daysByPhase.reduce((s, d) => s + d / totalDays, 0);
         if (Math.abs(totalFraction - 1) > 0.01) {
-          warnings.push({ type: 'fraction_mismatch', message: `${r.name}: study fractions sum to ${(totalFraction * 100).toFixed(0)}% across phases` });
+          warnings.push({
+            type: "fraction_mismatch",
+            message: `${r.name}: study fractions sum to ${(totalFraction * 100).toFixed(0)}% across phases`,
+          });
         }
       }
     }
@@ -197,22 +263,45 @@ function getPhaseResources(
 // SECTION 3: Validation
 // =====================================================================
 
-export interface ValidationError { field: string; message: string; }
+export interface ValidationError {
+  field: string;
+  message: string;
+}
 
 export function validateConfig(resources: StudyResource[], config: StudyConfig): ValidationError[] {
   const errors: ValidationError[] = [];
-  if (config.phases.length === 0) errors.push({ field: "phases", message: "Add at least one phase" });
+  if (config.phases.length === 0)
+    errors.push({ field: "phases", message: "Add at least one phase" });
 
   for (let i = 0; i < config.phases.length; i++) {
     const phase = config.phases[i];
-    if (!phase.start_date || !phase.end_date) { errors.push({ field: `phases[${i}]`, message: `${phase.name || `Phase ${i + 1}`}: missing dates` }); continue; }
-    if (phase.start_date > phase.end_date) errors.push({ field: `phases[${i}]`, message: `${phase.name}: start date is after end date` });
-    if (phase.daily_minutes_weekday <= 0 && phase.daily_minutes_weekend <= 0) errors.push({ field: `phases[${i}]`, message: `${phase.name}: no study hours configured` });
-    const hasRes = phase.resources?.length || resources.some(r => r.active !== false && r.phases?.includes(i + 1));
-    if (!hasRes) errors.push({ field: `phases[${i}]`, message: `${phase.name}: no resources assigned` });
+    if (!phase.start_date || !phase.end_date) {
+      errors.push({
+        field: `phases[${i}]`,
+        message: `${phase.name || `Phase ${i + 1}`}: missing dates`,
+      });
+      continue;
+    }
+    if (phase.start_date > phase.end_date)
+      errors.push({
+        field: `phases[${i}]`,
+        message: `${phase.name}: start date is after end date`,
+      });
+    if (phase.daily_minutes_weekday <= 0 && phase.daily_minutes_weekend <= 0)
+      errors.push({ field: `phases[${i}]`, message: `${phase.name}: no study hours configured` });
+    const hasRes =
+      phase.resources?.length ||
+      resources.some((r) => r.active !== false && r.phases?.includes(i + 1));
+    if (!hasRes)
+      errors.push({ field: `phases[${i}]`, message: `${phase.name}: no resources assigned` });
     for (let j = i + 1; j < config.phases.length; j++) {
       const o = config.phases[j];
-      if (o.start_date && o.end_date && phase.start_date <= o.end_date && phase.end_date >= o.start_date)
+      if (
+        o.start_date &&
+        o.end_date &&
+        phase.start_date <= o.end_date &&
+        phase.end_date >= o.start_date
+      )
         errors.push({ field: `phases[${i}]`, message: `${phase.name} overlaps with ${o.name}` });
     }
   }
@@ -224,12 +313,13 @@ export function validateConfig(resources: StudyResource[], config: StudyConfig):
 // =====================================================================
 
 function computeStudyMinutes(subject: SubjectEntry, resource: StudyResource): number {
-  if (resource.type === 'video') return subject.content_amount / resource.pace;
+  if (resource.type === "video") return subject.content_amount / resource.pace;
   return (subject.content_amount / resource.pace) * 60;
 }
 
 function computeResourceTotalMinutes(resource: StudyResource): number {
-  return resource.subjects.filter(s => s.active !== false)
+  return resource.subjects
+    .filter((s) => s.active !== false)
     .reduce((sum, s) => sum + computeStudyMinutes(s, resource), 0);
 }
 
@@ -237,40 +327,58 @@ function computeResourceTotalMinutes(resource: StudyResource): number {
 // SECTION 5: Time estimates
 // =====================================================================
 
-export function estimatePhaseHours(resources: StudyResource[], config: StudyConfig, prebuiltCalendar?: CalendarDay[]): PhaseTimeEstimate[] {
+export function estimatePhaseHours(
+  resources: StudyResource[],
+  config: StudyConfig,
+  prebuiltCalendar?: CalendarDay[]
+): PhaseTimeEstimate[] {
   const calendar = prebuiltCalendar || buildCalendar(config);
   const warnings: ScheduleWarning[] = [];
   const estimates: PhaseTimeEstimate[] = [];
 
   for (let phaseIdx = 0; phaseIdx < config.phases.length; phaseIdx++) {
     const phase = config.phases[phaseIdx];
-    const phaseDays = calendar.filter(d => d.phase_idx === phaseIdx && (d.type === 'study' || d.type === 'half'));
+    const phaseDays = calendar.filter(
+      (d) => d.phase_idx === phaseIdx && (d.type === "study" || d.type === "half")
+    );
     const totalAvailMin = phaseDays.reduce((s, d) => s + d.available_minutes, 0);
-    const studyDayCount = phaseDays.filter(d => d.available_minutes > 0).length;
-    const effectiveDayCount = phaseDays.reduce((s, d) => s + (d.type === 'half' ? 0.5 : d.available_minutes > 0 ? 1 : 0), 0);
-    const phaseResources = getPhaseResources(phase, phaseIdx + 1, resources, config.phases, calendar, warnings);
-    const resourceHours: PhaseTimeEstimate['resource_hours'] = [];
+    const studyDayCount = phaseDays.filter((d) => d.available_minutes > 0).length;
+    const effectiveDayCount = phaseDays.reduce(
+      (s, d) => s + (d.type === "half" ? 0.5 : d.available_minutes > 0 ? 1 : 0),
+      0
+    );
+    const phaseResources = getPhaseResources(
+      phase,
+      phaseIdx + 1,
+      resources,
+      config.phases,
+      calendar,
+      warnings
+    );
+    const resourceHours: PhaseTimeEstimate["resource_hours"] = [];
     let totalNeededMin = 0;
 
     for (const { resource, mode, review_pct, study_fraction } of phaseResources) {
       const fullMin = computeResourceTotalMinutes(resource);
-      const neededMin = mode === 'review' ? fullMin * (review_pct / 100) : fullMin * study_fraction;
+      const neededMin = mode === "review" ? fullMin * (review_pct / 100) : fullMin * study_fraction;
       totalNeededMin += neededMin;
       resourceHours.push({
         resource_name: resource.name,
-        total_hours: Math.round(neededMin / 60 * 10) / 10,
-        hours_per_day: studyDayCount > 0 ? Math.round(neededMin / 60 / studyDayCount * 100) / 100 : 0,
+        total_hours: Math.round((neededMin / 60) * 10) / 10,
+        hours_per_day:
+          studyDayCount > 0 ? Math.round((neededMin / 60 / studyDayCount) * 100) / 100 : 0,
       });
     }
 
     estimates.push({
-      phase_index: phaseIdx, phase_name: phase.name,
-      total_available_hours: Math.round(totalAvailMin / 60 * 10) / 10,
-      total_needed_hours: Math.round(totalNeededMin / 60 * 10) / 10,
+      phase_index: phaseIdx,
+      phase_name: phase.name,
+      total_available_hours: Math.round((totalAvailMin / 60) * 10) / 10,
+      total_needed_hours: Math.round((totalNeededMin / 60) * 10) / 10,
       study_day_count: studyDayCount,
       effective_day_count: effectiveDayCount,
       resource_hours: resourceHours,
-      surplus_hours: Math.round((totalAvailMin - totalNeededMin) / 60 * 10) / 10,
+      surplus_hours: Math.round(((totalAvailMin - totalNeededMin) / 60) * 10) / 10,
     });
   }
   return estimates;
@@ -293,7 +401,18 @@ interface WorkItem {
 }
 
 function verbForType(type: string): string {
-  switch (type) { case 'book': return 'Read'; case 'video': return 'Watch'; case 'qbank': return 'Do'; case 'flashcards': return 'Review'; default: return ''; }
+  switch (type) {
+    case "book":
+      return "Read";
+    case "video":
+      return "Watch";
+    case "qbank":
+      return "Do";
+    case "flashcards":
+      return "Review";
+    default:
+      return "";
+  }
 }
 
 function activityPrefix(resource: StudyResource, subject: SubjectEntry): string {
@@ -302,16 +421,31 @@ function activityPrefix(resource: StudyResource, subject: SubjectEntry): string 
   return subject.name ? `${verb} ${short}: ${subject.name}` : `${verb} ${short}`;
 }
 
-function chunkVideo(subject: SubjectEntry, resource: StudyResource, fraction: number, isReview: boolean): WorkItem[] {
+function chunkVideo(
+  subject: SubjectEntry,
+  resource: StudyResource,
+  fraction: number,
+  isReview: boolean
+): WorkItem[] {
   const total = Math.ceil(subject.content_amount * fraction);
   const studyMin = total / resource.pace;
   const prefix = activityPrefix(resource, subject);
-  const rl = isReview ? ' (review)' : '';
+  const rl = isReview ? " (review)" : "";
 
   if (studyMin <= VIDEO_ATOMIC_THRESHOLD_MIN) {
-    return [{ resource_name: resource.name, resource_type: 'video', subject: subject.name, category_id: subject.category_id,
-      activity: `${prefix} (${resource.pace}x, ${Math.ceil(studyMin)}m)${rl}`, minutes: Math.ceil(studyMin),
-      is_review: isReview, content_units: total, content_label: `${total} min video` }];
+    return [
+      {
+        resource_name: resource.name,
+        resource_type: "video",
+        subject: subject.name,
+        category_id: subject.category_id,
+        activity: `${prefix} (${resource.pace}x, ${Math.ceil(studyMin)}m)${rl}`,
+        minutes: Math.ceil(studyMin),
+        is_review: isReview,
+        content_units: total,
+        content_label: `${total} min video`,
+      },
+    ];
   }
 
   const parts = Math.ceil(studyMin / CHUNK_TARGET_MIN);
@@ -322,17 +456,30 @@ function chunkVideo(subject: SubjectEntry, resource: StudyResource, fraction: nu
     const last = i === parts - 1;
     const pm = last ? Math.ceil(studyMin - mpp * i) : mpp;
     const pd = last ? total - dpp * i : dpp;
-    items.push({ resource_name: resource.name, resource_type: 'video', subject: subject.name, category_id: subject.category_id,
-      activity: `${prefix} Pt ${i+1}/${parts} (${resource.pace}x, ${Math.max(1,pm)}m)${rl}`,
-      minutes: Math.max(1, pm), is_review: isReview, content_units: Math.max(1, pd), content_label: `${Math.max(1,pd)} min video` });
+    items.push({
+      resource_name: resource.name,
+      resource_type: "video",
+      subject: subject.name,
+      category_id: subject.category_id,
+      activity: `${prefix} Pt ${i + 1}/${parts} (${resource.pace}x, ${Math.max(1, pm)}m)${rl}`,
+      minutes: Math.max(1, pm),
+      is_review: isReview,
+      content_units: Math.max(1, pd),
+      content_label: `${Math.max(1, pd)} min video`,
+    });
   }
   return items;
 }
 
-function chunkBook(subject: SubjectEntry, resource: StudyResource, fraction: number, isReview: boolean): WorkItem[] {
+function chunkBook(
+  subject: SubjectEntry,
+  resource: StudyResource,
+  fraction: number,
+  isReview: boolean
+): WorkItem[] {
   const sp = subject.start_page || 1;
   const prefix = activityPrefix(resource, subject);
-  const rl = isReview ? ' (review)' : '';
+  const rl = isReview ? " (review)" : "";
 
   // Chunk into uniform ~CHUNK_TARGET_MIN sessions
   const fullPg = subject.content_amount;
@@ -372,20 +519,33 @@ function chunkBook(subject: SubjectEntry, resource: StudyResource, fraction: num
   for (let i = 0; i < total; i++) {
     const c = selectedChunks[i];
     const mins = Math.ceil((c.pg / resource.pace) * 60);
-    const pl = total > 1 ? ` ${i+1}/${total}` : '';
-    items.push({ resource_name: resource.name, resource_type: 'book', subject: subject.name, category_id: subject.category_id,
+    const pl = total > 1 ? ` ${i + 1}/${total}` : "";
+    items.push({
+      resource_name: resource.name,
+      resource_type: "book",
+      subject: subject.name,
+      category_id: subject.category_id,
       activity: `${prefix}${pl} (pp ${c.start}-${c.end}, ${c.pg} pg)${rl}`,
-      minutes: mins, is_review: isReview, content_units: c.pg, content_label: `pp ${c.start}-${c.end}` });
+      minutes: mins,
+      is_review: isReview,
+      content_units: c.pg,
+      content_label: `pp ${c.start}-${c.end}`,
+    });
   }
   return items;
 }
 
-function chunkCountable(subject: SubjectEntry, resource: StudyResource, fraction: number, isReview: boolean): WorkItem[] {
+function chunkCountable(
+  subject: SubjectEntry,
+  resource: StudyResource,
+  fraction: number,
+  isReview: boolean
+): WorkItem[] {
   const fullTotal = subject.content_amount;
   const upc = Math.max(1, Math.floor((CHUNK_TARGET_MIN / 60) * resource.pace));
-  const label = resource.type === 'qbank' ? 'Qs' : 'cards';
+  const label = resource.type === "qbank" ? "Qs" : "cards";
   const prefix = activityPrefix(resource, subject);
-  const rl = isReview ? ' (review)' : '';
+  const rl = isReview ? " (review)" : "";
 
   // Build all full-size chunks first
   const fullChunks = Math.max(1, Math.ceil(fullTotal / upc));
@@ -417,10 +577,17 @@ function chunkCountable(subject: SubjectEntry, resource: StudyResource, fraction
   const items: WorkItem[] = [];
   for (const c of selectedChunks) {
     const m = Math.ceil((c.units / resource.pace) * 60);
-    items.push({ resource_name: resource.name, resource_type: resource.type, subject: subject.name, category_id: subject.category_id,
+    items.push({
+      resource_name: resource.name,
+      resource_type: resource.type,
+      subject: subject.name,
+      category_id: subject.category_id,
       activity: `${prefix}: ${label} ${c.start}-${c.end} (${c.units} ${label})${rl}`,
-      minutes: m, is_review: isReview, content_units: c.units,
-      content_label: `${c.units} ${resource.type === 'qbank' ? 'questions' : 'cards'}` });
+      minutes: m,
+      is_review: isReview,
+      content_units: c.units,
+      content_label: `${c.units} ${resource.type === "qbank" ? "questions" : "cards"}`,
+    });
   }
   return items;
 }
@@ -431,14 +598,14 @@ function chunkCountable(subject: SubjectEntry, resource: StudyResource, fraction
 
 function buildWorkItems(
   phaseResources: PhaseResourceInfo[],
-  completedProgress?: Record<string, number>,
+  completedProgress?: Record<string, number>
 ): WorkItem[] {
   const items: WorkItem[] = [];
 
   for (const { resource, mode, review_pct, study_fraction } of phaseResources) {
-    const fraction = mode === 'review' ? (review_pct / 100) : study_fraction;
-    const isReview = mode === 'review';
-    const activeSubjects = resource.subjects.filter(s => s.active !== false);
+    const fraction = mode === "review" ? review_pct / 100 : study_fraction;
+    const isReview = mode === "review";
+    const activeSubjects = resource.subjects.filter((s) => s.active !== false);
 
     for (const subject of activeSubjects) {
       // For study mode, subtract completed progress so we don't re-schedule done work
@@ -451,14 +618,15 @@ function buildWorkItems(
           adj = {
             ...subject,
             content_amount: subject.content_amount - done,
-            start_page: resource.type === 'book' ? (subject.start_page || 1) + done : subject.start_page,
+            start_page:
+              resource.type === "book" ? (subject.start_page || 1) + done : subject.start_page,
           };
         }
       }
 
       let chunks: WorkItem[];
-      if (resource.type === 'video') chunks = chunkVideo(adj, resource, fraction, isReview);
-      else if (resource.type === 'book') chunks = chunkBook(adj, resource, fraction, isReview);
+      if (resource.type === "video") chunks = chunkVideo(adj, resource, fraction, isReview);
+      else if (resource.type === "book") chunks = chunkBook(adj, resource, fraction, isReview);
       else chunks = chunkCountable(adj, resource, fraction, isReview);
       items.push(...chunks);
     }
@@ -470,7 +638,6 @@ function buildWorkItems(
 // =====================================================================
 // SECTION 8: Distribution (even + interleaved)
 // =====================================================================
-
 
 /**
  * Order a pool of work items for maximum continuity:
@@ -484,12 +651,12 @@ function buildWorkItems(
 function orderPool(
   pool: WorkItem[],
   subjectOrder: string[],
-  typeRank: Record<string, number>,
+  typeRank: Record<string, number>
 ): WorkItem[] {
   // Group by category_id
   const byCat = new Map<string, WorkItem[]>();
   for (const item of pool) {
-    const cat = item.category_id || '__none__';
+    const cat = item.category_id || "__none__";
     if (!byCat.has(cat)) byCat.set(cat, []);
     byCat.get(cat)!.push(item);
   }
@@ -523,7 +690,7 @@ function orderPool(
     });
 
     for (const [, resItems] of resEntries) {
-      const hasReview = resItems.some(it => it.is_review);
+      const hasReview = resItems.some((it) => it.is_review);
       if (hasReview) {
         // Interleave subjects within review resource
         const bySubject = new Map<string, WorkItem[]>();
@@ -532,7 +699,7 @@ function orderPool(
           bySubject.get(item.subject)!.push(item);
         }
         const subjects = [...bySubject.values()];
-        const maxLen = Math.max(...subjects.map(s => s.length), 0);
+        const maxLen = Math.max(...subjects.map((s) => s.length), 0);
         for (let i = 0; i < maxLen; i++) {
           for (const subjectItems of subjects) {
             if (i < subjectItems.length) result.push(subjectItems[i]);
@@ -557,7 +724,7 @@ function fillFromQueue(
   queue: WorkItem[],
   cursor: number,
   budgetMin: number,
-  target: WorkItem[],
+  target: WorkItem[]
 ): number {
   if (cursor >= queue.length || budgetMin <= 0) return cursor;
 
@@ -574,14 +741,17 @@ function fillFromQueue(
 }
 
 function distributeEven(
-  studyDays: CalendarDay[], allWorkItems: WorkItem[],
-  phase: PhaseConfig,
+  studyDays: CalendarDay[],
+  allWorkItems: WorkItem[],
+  phase: PhaseConfig
 ): ScheduleTask[] {
   const contentOrder = phase.content_type_order || DEFAULT_CONTENT_ORDER;
   const typeRank: Record<string, number> = {};
-  contentOrder.forEach((t, i) => { typeRank[t] = i; });
+  contentOrder.forEach((t, i) => {
+    typeRank[t] = i;
+  });
 
-  const usableDays = studyDays.filter(d => d.available_minutes > 0);
+  const usableDays = studyDays.filter((d) => d.available_minutes > 0);
   const totalDays = usableDays.length;
   if (totalDays === 0) return [];
 
@@ -589,7 +759,7 @@ function distributeEven(
   const fixedItems: WorkItem[] = [];
   const variableItems: WorkItem[] = [];
   for (const item of allWorkItems) {
-    if (item.resource_type === 'qbank' || item.resource_type === 'flashcards') {
+    if (item.resource_type === "qbank" || item.resource_type === "flashcards") {
       fixedItems.push(item);
     } else {
       variableItems.push(item);
@@ -624,8 +794,8 @@ function distributeEven(
       uncatPool.push(item);
     } else {
       const parent = getCategoryParent(item.category_id);
-      if (parent === 'CP') cpPool.push(item);
-      else if (parent === 'AP') apPool.push(item);
+      if (parent === "CP") cpPool.push(item);
+      else if (parent === "AP") apPool.push(item);
       else uncatPool.push(item);
     }
   }
@@ -711,8 +881,8 @@ function distributeEven(
     // Sort: variable items first, then fixed (qbank/flashcards at end)
     // Within each group: subject (alphabetical), content type order, resource name
     dayItems.sort((a, b) => {
-      const aFixed = a.resource_type === 'qbank' || a.resource_type === 'flashcards' ? 1 : 0;
-      const bFixed = b.resource_type === 'qbank' || b.resource_type === 'flashcards' ? 1 : 0;
+      const aFixed = a.resource_type === "qbank" || a.resource_type === "flashcards" ? 1 : 0;
+      const bFixed = b.resource_type === "qbank" || b.resource_type === "flashcards" ? 1 : 0;
       if (aFixed !== bFixed) return aFixed - bFixed;
       const sc = a.subject.localeCompare(b.subject);
       if (sc !== 0) return sc;
@@ -724,11 +894,17 @@ function distributeEven(
     for (let i = 0; i < dayItems.length; i++) {
       const item = dayItems[i];
       result.push({
-        task_id: '', date: day.date, idx: i,
-        resource_name: item.resource_name, subject: item.subject,
-        activity: item.activity, minutes: item.minutes,
-        task_type: 'task', is_review: item.is_review,
-        content_units: item.content_units, content_label: item.content_label,
+        task_id: "",
+        date: day.date,
+        idx: i,
+        resource_name: item.resource_name,
+        subject: item.subject,
+        activity: item.activity,
+        minutes: item.minutes,
+        task_type: "task",
+        is_review: item.is_review,
+        content_units: item.content_units,
+        content_label: item.content_label,
       });
     }
   }
@@ -752,9 +928,12 @@ function mergeSameDayTasks(tasks: ScheduleTask[]): ScheduleTask[] {
   for (const [date, dayTasks] of grouped) {
     const mergeGroups = new Map<string, ScheduleTask[]>();
     for (const t of dayTasks) {
-      if (t.task_type !== 'task') { result.push(t); continue; }
+      if (t.task_type !== "task") {
+        result.push(t);
+        continue;
+      }
       // Use is_review boolean, not string matching
-      const key = `${t.resource_name}::${t.subject}::${t.is_review ? 'R' : 'S'}`;
+      const key = `${t.resource_name}::${t.subject}::${t.is_review ? "R" : "S"}`;
       if (!mergeGroups.has(key)) mergeGroups.set(key, []);
       mergeGroups.get(key)!.push(t);
     }
@@ -769,7 +948,7 @@ function mergeSameDayTasks(tasks: ScheduleTask[]): ScheduleTask[] {
       const last = group[group.length - 1];
       const totalMin = group.reduce((s, t) => s + t.minutes, 0);
       const totalUnits = group.reduce((s, t) => s + t.content_units, 0);
-      const verb = first.activity.split(' ')[0] || '';
+      const verb = first.activity.split(" ")[0] || "";
 
       // For books, merge page ranges: "pp 55-67" + "pp 68-80" → "pp 55-80"
       const firstPp = first.content_label?.match(/^pp (\d+)-/);
@@ -778,16 +957,22 @@ function mergeSameDayTasks(tasks: ScheduleTask[]): ScheduleTask[] {
       if (firstPp && lastPp) {
         mergedLabel = `pp ${firstPp[1]}-${lastPp[1]}`;
       } else {
-        const unitType = first.content_label?.replace(/^\d+\s*/, '') || '';
+        const unitType = first.content_label?.replace(/^\d+\s*/, "") || "";
         mergedLabel = `${totalUnits} ${unitType}`.trim();
       }
 
       result.push({
-        task_id: '', date, idx: idx++,
-        resource_name: first.resource_name, subject: first.subject,
-        activity: `${verb} ${first.resource_name}: ${first.subject} (${mergedLabel})${first.is_review ? ' (review)' : ''}`,
-        minutes: totalMin, task_type: 'task', is_review: first.is_review,
-        content_units: totalUnits, content_label: mergedLabel,
+        task_id: "",
+        date,
+        idx: idx++,
+        resource_name: first.resource_name,
+        subject: first.subject,
+        activity: `${verb} ${first.resource_name}: ${first.subject} (${mergedLabel})${first.is_review ? " (review)" : ""}`,
+        minutes: totalMin,
+        task_type: "task",
+        is_review: first.is_review,
+        content_units: totalUnits,
+        content_label: mergedLabel,
       });
     }
   }
@@ -802,7 +987,7 @@ function stableTaskId(task: ScheduleTask): string {
   const key = `${task.date}|${task.resource_name}|${task.subject}|${task.activity}`;
   let hash = 5381;
   for (let i = 0; i < key.length; i++) hash = ((hash << 5) + hash + key.charCodeAt(i)) & 0xffffffff;
-  return `${task.date}-${(hash >>> 0).toString(16).padStart(8, '0')}`;
+  return `${task.date}-${(hash >>> 0).toString(16).padStart(8, "0")}`;
 }
 
 function assignTaskIds(tasks: ScheduleTask[]): ScheduleTask[] {
@@ -819,7 +1004,9 @@ function assignTaskIds(tasks: ScheduleTask[]): ScheduleTask[] {
     dayTasks.forEach((t, i) => {
       let id = stableTaskId(t);
       let suffix = 1;
-      while (usedIds.has(id)) { id = `${stableTaskId(t)}_${suffix++}`; }
+      while (usedIds.has(id)) {
+        id = `${stableTaskId(t)}_${suffix++}`;
+      }
       usedIds.add(id);
       result.push({ ...t, idx: i, task_id: id });
     });
@@ -833,8 +1020,9 @@ function assignTaskIds(tasks: ScheduleTask[]): ScheduleTask[] {
 // =====================================================================
 
 export function generateSchedule(
-  resources: StudyResource[], config: StudyConfig,
-  completedProgress?: Record<string, number>,
+  resources: StudyResource[],
+  config: StudyConfig,
+  completedProgress?: Record<string, number>
 ): { tasks: ScheduleTask[]; warnings: ScheduleWarning[] } {
   const warnings: ScheduleWarning[] = [];
 
@@ -845,15 +1033,24 @@ export function generateSchedule(
 
   for (let phaseIdx = 0; phaseIdx < config.phases.length; phaseIdx++) {
     const phase = config.phases[phaseIdx];
-    const phaseDays = calendar.filter(d => d.phase_idx === phaseIdx && (d.type === 'study' || d.type === 'half'));
-    const phaseResources = getPhaseResources(phase, phaseIdx + 1, resources, config.phases, calendar, warnings);
+    const phaseDays = calendar.filter(
+      (d) => d.phase_idx === phaseIdx && (d.type === "study" || d.type === "half")
+    );
+    const phaseResources = getPhaseResources(
+      phase,
+      phaseIdx + 1,
+      resources,
+      config.phases,
+      calendar,
+      warnings
+    );
 
     if (phaseResources.length === 0) {
-      warnings.push({ type: 'empty_phase', message: `${phase.name}: no resources assigned` });
+      warnings.push({ type: "empty_phase", message: `${phase.name}: no resources assigned` });
       continue;
     }
     if (phaseDays.length === 0) {
-      warnings.push({ type: 'empty_phase', message: `${phase.name}: no study days available` });
+      warnings.push({ type: "empty_phase", message: `${phase.name}: no study days available` });
       continue;
     }
 
@@ -864,9 +1061,48 @@ export function generateSchedule(
 
   // Add special days
   for (const day of calendar) {
-    if (day.type === 'rest') allTasks.push({ task_id: '', date: day.date, idx: 0, resource_name: 'REST', subject: '', activity: 'Catch-up / Rest', minutes: 0, task_type: 'rest', is_review: false, content_units: 0, content_label: '' });
-    else if (day.type === 'exam') allTasks.push({ task_id: '', date: day.date, idx: 0, resource_name: 'EXAM', subject: day.exam_name || '', activity: day.exam_name || 'Exam Day', minutes: 0, task_type: 'exam', is_review: false, content_units: 0, content_label: '' });
-    else if (day.type === 'gone') allTasks.push({ task_id: '', date: day.date, idx: 0, resource_name: 'GONE', subject: '', activity: 'Day off', minutes: 0, task_type: 'gone', is_review: false, content_units: 0, content_label: '' });
+    if (day.type === "rest")
+      allTasks.push({
+        task_id: "",
+        date: day.date,
+        idx: 0,
+        resource_name: "REST",
+        subject: "",
+        activity: "Catch-up / Rest",
+        minutes: 0,
+        task_type: "rest",
+        is_review: false,
+        content_units: 0,
+        content_label: "",
+      });
+    else if (day.type === "exam")
+      allTasks.push({
+        task_id: "",
+        date: day.date,
+        idx: 0,
+        resource_name: "EXAM",
+        subject: day.exam_name || "",
+        activity: day.exam_name || "Exam Day",
+        minutes: 0,
+        task_type: "exam",
+        is_review: false,
+        content_units: 0,
+        content_label: "",
+      });
+    else if (day.type === "gone")
+      allTasks.push({
+        task_id: "",
+        date: day.date,
+        idx: 0,
+        resource_name: "GONE",
+        subject: "",
+        activity: "Day off",
+        minutes: 0,
+        task_type: "gone",
+        is_review: false,
+        content_units: 0,
+        content_label: "",
+      });
   }
 
   allTasks.sort((a, b) => a.date.localeCompare(b.date) || a.idx - b.idx);

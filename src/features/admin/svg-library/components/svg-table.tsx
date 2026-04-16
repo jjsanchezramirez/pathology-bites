@@ -242,9 +242,7 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
                     )}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
-                    {asset.width && asset.height
-                      ? `${asset.width} x ${asset.height}`
-                      : "-"}
+                    {asset.width && asset.height ? `${asset.width} x ${asset.height}` : "-"}
                   </TableCell>
                   <TableCell className="text-xs text-muted-foreground">
                     {formatBytes(asset.file_size_bytes)}

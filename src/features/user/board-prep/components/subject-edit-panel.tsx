@@ -26,11 +26,16 @@ import { CP_CATEGORIES, AP_CATEGORIES } from "../lib/categories";
 
 function contentLabel(type: string): string {
   switch (type) {
-    case "book": return "Pages";
-    case "qbank": return "Questions";
-    case "flashcards": return "Cards";
-    case "video": return "Duration (min)";
-    default: return "Amount";
+    case "book":
+      return "Pages";
+    case "qbank":
+      return "Questions";
+    case "flashcards":
+      return "Cards";
+    case "video":
+      return "Duration (min)";
+    default:
+      return "Amount";
   }
 }
 
@@ -42,7 +47,11 @@ interface SortableSubjectCardProps {
   isBook: boolean;
   update: (idx: number, updates: Partial<SubjectEntry>) => void;
   remove: (idx: number) => void;
-  numHandler: (idx: number, field: 'content_amount' | 'start_page' | 'end_page', integer?: boolean) => {
+  numHandler: (
+    idx: number,
+    field: "content_amount" | "start_page" | "end_page",
+    integer?: boolean
+  ) => {
     type: "text";
     inputMode: "numeric" | "decimal";
     value: number | string;
@@ -50,10 +59,19 @@ interface SortableSubjectCardProps {
   };
 }
 
-function SortableSubjectCard({ id, idx, subj, resourceType, isBook, update, remove, numHandler }: SortableSubjectCardProps) {
-  const {
-    attributes, listeners, setNodeRef, transform, transition, isDragging,
-  } = useSortable({ id });
+function SortableSubjectCard({
+  id,
+  idx,
+  subj,
+  resourceType,
+  isBook,
+  update,
+  remove,
+  numHandler,
+}: SortableSubjectCardProps) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
 
   const style = {
     transform: CSS.Transform.toString(transform),
@@ -97,13 +115,17 @@ function SortableSubjectCard({ id, idx, subj, resourceType, isBook, update, remo
         >
           <option value="">None</option>
           <optgroup label="Clinical Pathology">
-            {CP_CATEGORIES.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+            {CP_CATEGORIES.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
           </optgroup>
           <optgroup label="Anatomic Pathology">
-            {AP_CATEGORIES.map(c => (
-              <option key={c.id} value={c.id}>{c.name}</option>
+            {AP_CATEGORIES.map((c) => (
+              <option key={c.id} value={c.id}>
+                {c.name}
+              </option>
             ))}
           </optgroup>
         </select>
@@ -111,7 +133,9 @@ function SortableSubjectCard({ id, idx, subj, resourceType, isBook, update, remo
 
       <div className={`grid gap-2 ${isBook ? "grid-cols-3" : "grid-cols-1"}`}>
         <div>
-          <label className="mb-0.5 block text-[10px] text-muted-foreground">{contentLabel(resourceType)}</label>
+          <label className="mb-0.5 block text-[10px] text-muted-foreground">
+            {contentLabel(resourceType)}
+          </label>
           <Input {...numHandler(idx, "content_amount")} className="h-7 text-xs" />
         </div>
         {isBook && (
@@ -139,8 +163,14 @@ interface SubjectEditPanelProps {
   onBack: () => void;
 }
 
-export function SubjectEditPanel({ subjects: initial, resourceType, resourceName, onSave, onBack }: SubjectEditPanelProps) {
-  const [subjects, setSubjects] = useState<SubjectEntry[]>([...initial.map(s => ({ ...s }))]);
+export function SubjectEditPanel({
+  subjects: initial,
+  resourceType,
+  resourceName,
+  onSave,
+  onBack,
+}: SubjectEditPanelProps) {
+  const [subjects, setSubjects] = useState<SubjectEntry[]>([...initial.map((s) => ({ ...s }))]);
   const isBook = resourceType === "book";
   const [idCounter, setIdCounter] = useState(initial.length);
   const [itemIds, setItemIds] = useState<string[]>(() => initial.map((_, i) => `subj-${i}`));
@@ -157,13 +187,16 @@ export function SubjectEditPanel({ subjects: initial, resourceType, resourceName
   };
 
   const addSubject = () => {
-    setSubjects([...subjects, {
-      name: "",
-      content_amount: 0,
-      activity_prefix: "",
-      active: true,
-      ...(isBook ? { start_page: undefined, end_page: undefined } : {}),
-    }]);
+    setSubjects([
+      ...subjects,
+      {
+        name: "",
+        content_amount: 0,
+        activity_prefix: "",
+        active: true,
+        ...(isBook ? { start_page: undefined, end_page: undefined } : {}),
+      },
+    ]);
     setItemIds([...itemIds, `subj-${idCounter}`]);
     setIdCounter(idCounter + 1);
   };
@@ -183,15 +216,25 @@ export function SubjectEditPanel({ subjects: initial, resourceType, resourceName
     }
   };
 
-  const numHandler = (idx: number, field: 'content_amount' | 'start_page' | 'end_page', integer = true) => ({
+  const numHandler = (
+    idx: number,
+    field: "content_amount" | "start_page" | "end_page",
+    integer = true
+  ) => ({
     type: "text" as const,
     inputMode: (integer ? "numeric" : "decimal") as "numeric" | "decimal",
     value: subjects[idx][field] ?? "",
     onChange: (e: React.ChangeEvent<HTMLInputElement>) => {
       const v = e.target.value;
-      if (v === "") { update(idx, { [field]: 0 }); return; }
-      if (integer && /^\d+$/.test(v)) { update(idx, { [field]: parseInt(v) }); }
-      else if (!integer && /^\d*\.?\d*$/.test(v)) { update(idx, { [field]: parseFloat(v) || 0 }); }
+      if (v === "") {
+        update(idx, { [field]: 0 });
+        return;
+      }
+      if (integer && /^\d+$/.test(v)) {
+        update(idx, { [field]: parseInt(v) });
+      } else if (!integer && /^\d*\.?\d*$/.test(v)) {
+        update(idx, { [field]: parseFloat(v) || 0 });
+      }
     },
   });
 
@@ -211,11 +254,7 @@ export function SubjectEditPanel({ subjects: initial, resourceType, resourceName
       </div>
 
       <div className="flex-1 overflow-y-auto p-4">
-        <DndContext
-          sensors={sensors}
-          collisionDetection={closestCenter}
-          onDragEnd={handleDragEnd}
-        >
+        <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
           <SortableContext items={itemIds} strategy={verticalListSortingStrategy}>
             <div className="space-y-3">
               {subjects.map((subj, idx) => (

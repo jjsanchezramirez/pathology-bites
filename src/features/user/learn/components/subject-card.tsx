@@ -24,14 +24,10 @@ export function SubjectCard({ subject }: SubjectCardProps) {
             <CardTitle className="text-base font-semibold group-hover:text-primary transition-colors">
               {subject.title}
             </CardTitle>
-            {isComplete && (
-              <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />
-            )}
+            {isComplete && <CheckCircle2 className="h-5 w-5 shrink-0 text-green-500" />}
           </div>
           {subject.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">
-              {subject.description}
-            </p>
+            <p className="text-sm text-muted-foreground line-clamp-2">{subject.description}</p>
           )}
         </CardHeader>
         <CardContent>

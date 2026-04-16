@@ -12,7 +12,12 @@ interface DaysOffPickerProps {
 
 const DAY_NAMES = ["S", "M", "T", "W", "T", "F", "S"];
 
-export function DaysOffPicker({ daysOff, onChange, calendarMonth, setCalendarMonth }: DaysOffPickerProps) {
+export function DaysOffPicker({
+  daysOff,
+  onChange,
+  calendarMonth,
+  setCalendarMonth,
+}: DaysOffPickerProps) {
   const year = calendarMonth.getFullYear();
   const month = calendarMonth.getMonth();
   const firstDay = new Date(year, month, 1);
@@ -79,8 +84,12 @@ export function DaysOffPicker({ daysOff, onChange, calendarMonth, setCalendarMon
           const isOtherMonth = date.getMonth() !== month;
 
           let cellClass = "bg-card text-foreground";
-          if (status === "half") cellClass = "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 ring-1 ring-amber-200";
-          if (status === "full") cellClass = "bg-rose-100 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 ring-1 ring-rose-200";
+          if (status === "half")
+            cellClass =
+              "bg-amber-100 text-amber-700 dark:bg-amber-950/30 dark:text-amber-400 ring-1 ring-amber-200";
+          if (status === "full")
+            cellClass =
+              "bg-rose-100 text-rose-600 dark:bg-rose-950/30 dark:text-rose-400 ring-1 ring-rose-200";
 
           return (
             <button

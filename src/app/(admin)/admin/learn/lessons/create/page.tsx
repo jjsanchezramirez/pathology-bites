@@ -15,7 +15,13 @@ function CreateLessonContent() {
 
 export default function CreateLessonPage() {
   return (
-    <Suspense fallback={<div className="flex justify-center py-20"><Loader2 className="h-6 w-6 animate-spin" /></div>}>
+    <Suspense
+      fallback={
+        <div className="flex justify-center py-20">
+          <Loader2 className="h-6 w-6 animate-spin" />
+        </div>
+      }
+    >
       <CreateLessonContent />
     </Suspense>
   );

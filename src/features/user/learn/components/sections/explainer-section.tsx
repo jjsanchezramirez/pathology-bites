@@ -8,11 +8,15 @@ import type { ExplainerSequence } from "@/shared/types/explainer";
 // Lazy import the ExplainerPlayer since it has heavy dependencies
 import dynamic from "next/dynamic";
 const ExplainerPlayer = dynamic(
-  () =>
-    import("@/shared/components/explainer/explainer-player").then(
-      (mod) => mod.ExplainerPlayer
+  () => import("@/shared/components/explainer/explainer-player").then((mod) => mod.ExplainerPlayer),
+  {
+    ssr: false,
+    loading: () => (
+      <div className="flex justify-center py-8">
+        <Loader2 className="h-6 w-6 animate-spin" />
+      </div>
     ),
-  { ssr: false, loading: () => <div className="flex justify-center py-8"><Loader2 className="h-6 w-6 animate-spin" /></div> }
+  }
 );
 
 interface ExplainerSectionProps {
@@ -30,9 +34,7 @@ export function ExplainerSection({ section }: ExplainerSectionProps) {
   useEffect(() => {
     async function loadSequence() {
       try {
-        const res = await fetch(
-          `/api/interactive-sequences/${section.sequenceId}`
-        );
+        const res = await fetch(`/api/interactive-sequences/${section.sequenceId}`);
         if (res.status === 404) {
           setError("Interactive sequence not found");
           return;
@@ -54,12 +56,8 @@ export function ExplainerSection({ section }: ExplainerSectionProps) {
 
   return (
     <div className="space-y-2">
-      {section.heading && (
-        <h2 className="text-2xl font-bold tracking-tight">{section.heading}</h2>
-      )}
-      {section.description && (
-        <p className="text-muted-foreground">{section.description}</p>
-      )}
+      {section.heading && <h2 className="text-2xl font-bold tracking-tight">{section.heading}</h2>}
+      {section.description && <p className="text-muted-foreground">{section.description}</p>}
       {loading && (
         <div className="flex justify-center py-8">
           <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -72,10 +70,7 @@ export function ExplainerSection({ section }: ExplainerSectionProps) {
       )}
       {sequenceData && (
         <div className="rounded-lg overflow-hidden border">
-          <ExplainerPlayer
-            sequence={sequenceData.sequence}
-            audioUrl={sequenceData.audioUrl}
-          />
+          <ExplainerPlayer sequence={sequenceData.sequence} audioUrl={sequenceData.audioUrl} />
         </div>
       )}
     </div>

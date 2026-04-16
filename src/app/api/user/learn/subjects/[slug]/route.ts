@@ -1,10 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ slug: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const supabase = await createClient();
     const userId = request.headers.get("x-user-id");
@@ -15,11 +12,13 @@ export async function GET(
     // Get subject with its published lessons
     const { data: subject, error } = await supabase
       .from("learning_subjects")
-      .select(`
+      .select(
+        `
         *,
         category:categories!learning_subjects_category_id_fkey(id, name, color, short_form),
         lessons(id, title, slug, description, estimated_minutes, sort_order, status)
-      `)
+      `
+      )
       .eq("slug", slug)
       .eq("status", "published")
       .single();
@@ -41,20 +40,27 @@ export async function GET(
       .eq("user_id", userId)
       .in("lesson_id", lessonIds.length > 0 ? lessonIds : ["__none__"]);
 
-    const progressMap = new Map(
-      (progress || []).map((p) => [p.lesson_id, p])
-    );
+    const progressMap = new Map((progress || []).map((p) => [p.lesson_id, p]));
 
-    const lessons = publishedLessons.map((l: { id: string; title: string; slug: string; description: string | null; estimated_minutes: number | null; sort_order: number }) => ({
-      id: l.id,
-      title: l.title,
-      slug: l.slug,
-      description: l.description,
-      estimated_minutes: l.estimated_minutes,
-      sort_order: l.sort_order,
-      is_completed: !!progressMap.get(l.id)?.completed_at,
-      quiz_score: progressMap.get(l.id)?.quiz_score ?? null,
-    }));
+    const lessons = publishedLessons.map(
+      (l: {
+        id: string;
+        title: string;
+        slug: string;
+        description: string | null;
+        estimated_minutes: number | null;
+        sort_order: number;
+      }) => ({
+        id: l.id,
+        title: l.title,
+        slug: l.slug,
+        description: l.description,
+        estimated_minutes: l.estimated_minutes,
+        sort_order: l.sort_order,
+        is_completed: !!progressMap.get(l.id)?.completed_at,
+        quiz_score: progressMap.get(l.id)?.quiz_score ?? null,
+      })
+    );
 
     return NextResponse.json({
       ...subject,

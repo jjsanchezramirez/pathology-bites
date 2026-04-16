@@ -4,7 +4,11 @@ import { ScheduleTask, StudyConfig } from "../lib/types";
 import { PHASE_PALETTE } from "../lib/color-utils";
 
 function MiniCalendar({
-  currentDate, schedule, config, completedTasks, onSelectDate,
+  currentDate,
+  schedule,
+  config,
+  completedTasks: _completedTasks,
+  onSelectDate,
 }: {
   currentDate: string;
   schedule: ScheduleTask[];
@@ -28,8 +32,8 @@ function MiniCalendar({
     current.setDate(current.getDate() + 1);
   }
 
-  const taskDates = new Set(schedule.filter(t => t.task_type === "task").map(t => t.date));
-  const examDates = new Set((config?.exam_dates || []).map(e => e.date));
+  const taskDates = new Set(schedule.filter((t) => t.task_type === "task").map((t) => t.date));
+  const examDates = new Set((config?.exam_dates || []).map((e) => e.date));
 
   return (
     <div>
@@ -62,7 +66,9 @@ function MiniCalendar({
             >
               {date.getDate()}
               {hasTasks && !isSelected && (
-                <span className={`absolute bottom-0.5 size-1 rounded-full ${isExam ? "bg-purple-300" : "bg-primary/40"}`} />
+                <span
+                  className={`absolute bottom-0.5 size-1 rounded-full ${isExam ? "bg-purple-300" : "bg-primary/40"}`}
+                />
               )}
             </button>
           );
@@ -73,15 +79,17 @@ function MiniCalendar({
 }
 
 function ProgressWidget({
-  schedule, config, completedTasks,
+  schedule,
+  config,
+  completedTasks,
 }: {
   schedule: ScheduleTask[];
   config: StudyConfig | null;
   completedTasks: Record<string, string>;
 }) {
-  const taskSchedule = schedule.filter(t => t.task_type === "task");
+  const taskSchedule = schedule.filter((t) => t.task_type === "task");
   const totalTasks = taskSchedule.length;
-  const completedCount = taskSchedule.filter(t => !!completedTasks[t.task_id]).length;
+  const completedCount = taskSchedule.filter((t) => !!completedTasks[t.task_id]).length;
   const overallPct = totalTasks > 0 ? Math.round((completedCount / totalTasks) * 100) : 0;
   const phases = config?.phases || [];
 
@@ -104,8 +112,10 @@ function ProgressWidget({
       </div>
 
       {phases.map((phase, i) => {
-        const phaseTasks = taskSchedule.filter(t => t.date >= phase.start_date && t.date <= phase.end_date);
-        const done = phaseTasks.filter(t => completedTasks[t.task_id]).length;
+        const phaseTasks = taskSchedule.filter(
+          (t) => t.date >= phase.start_date && t.date <= phase.end_date
+        );
+        const done = phaseTasks.filter((t) => completedTasks[t.task_id]).length;
         const pct = phaseTasks.length > 0 ? Math.round((done / phaseTasks.length) * 100) : 0;
         const palette = PHASE_PALETTE[i % PHASE_PALETTE.length];
 
@@ -113,7 +123,10 @@ function ProgressWidget({
           <div key={phase.name}>
             <div className="flex items-center justify-between">
               <span className="text-[11px] text-foreground">{phase.name}</span>
-              <span className="text-[10px] font-medium tabular-nums" style={{ color: palette.accent }}>
+              <span
+                className="text-[10px] font-medium tabular-nums"
+                style={{ color: palette.accent }}
+              >
                 {pct}%
               </span>
             </div>
@@ -139,7 +152,11 @@ interface StudyScheduleSidebarProps {
 }
 
 export function StudyScheduleSidebar({
-  currentDate, schedule, config, completedTasks, onSelectDate,
+  currentDate,
+  schedule,
+  config,
+  completedTasks,
+  onSelectDate,
 }: StudyScheduleSidebarProps) {
   return (
     <div className="hidden xl:block w-56 shrink-0 space-y-5">
@@ -154,11 +171,7 @@ export function StudyScheduleSidebar({
       </div>
 
       <div className="rounded-xl border border-border bg-card p-4">
-        <ProgressWidget
-          schedule={schedule}
-          config={config}
-          completedTasks={completedTasks}
-        />
+        <ProgressWidget schedule={schedule} config={config} completedTasks={completedTasks} />
       </div>
     </div>
   );

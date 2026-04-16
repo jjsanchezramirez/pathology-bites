@@ -19,10 +19,7 @@ export async function DELETE(
     // Verify user is authenticated admin
     const userId = getUserIdFromHeaders(request);
     if (!userId) {
-      return NextResponse.json(
-        { error: "Authentication required." },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
 
     const { data: userData, error: roleError } = await supabase
@@ -32,10 +29,7 @@ export async function DELETE(
       .single();
 
     if (roleError || !userData || userData.role !== "admin") {
-      return NextResponse.json(
-        { error: "Administrator privileges required." },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Administrator privileges required." }, { status: 403 });
     }
 
     // Fetch asset details
@@ -46,10 +40,7 @@ export async function DELETE(
       .single();
 
     if (fetchError || !asset) {
-      return NextResponse.json(
-        { error: "SVG asset not found." },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: "SVG asset not found." }, { status: 404 });
     }
 
     // Delete from R2 storage
@@ -77,10 +68,7 @@ export async function DELETE(
     });
   } catch (error) {
     console.error("SVG asset deletion error:", error);
-    return NextResponse.json(
-      { error: "Failed to delete SVG asset." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to delete SVG asset." }, { status: 500 });
   }
 }
 
@@ -89,10 +77,7 @@ export async function DELETE(
  * Update SVG asset metadata (name, description, tags, category).
  * Requires admin role.
  */
-export async function PATCH(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id } = await params;
     const supabase = await createClient();
@@ -100,10 +85,7 @@ export async function PATCH(
     // Verify user is authenticated admin
     const userId = getUserIdFromHeaders(request);
     if (!userId) {
-      return NextResponse.json(
-        { error: "Authentication required." },
-        { status: 401 }
-      );
+      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
     }
 
     const { data: userData, error: roleError } = await supabase
@@ -113,10 +95,7 @@ export async function PATCH(
       .single();
 
     if (roleError || !userData || userData.role !== "admin") {
-      return NextResponse.json(
-        { error: "Administrator privileges required." },
-        { status: 403 }
-      );
+      return NextResponse.json({ error: "Administrator privileges required." }, { status: 403 });
     }
 
     const body = await request.json();
@@ -149,9 +128,6 @@ export async function PATCH(
     });
   } catch (error) {
     console.error("SVG asset update error:", error);
-    return NextResponse.json(
-      { error: "Failed to update SVG asset." },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: "Failed to update SVG asset." }, { status: 500 });
   }
 }

@@ -11,11 +11,13 @@ export async function GET(request: NextRequest) {
 
     let query = supabase
       .from("learning_subjects")
-      .select(`
+      .select(
+        `
         *,
         category:categories!learning_subjects_category_id_fkey(id, name, color, short_form),
         lessons!inner(id)
-      `)
+      `
+      )
       .eq("status", "published")
       .order("sort_order");
 

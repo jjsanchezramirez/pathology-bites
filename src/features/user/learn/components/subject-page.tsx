@@ -84,14 +84,10 @@ export function SubjectPage({ slug }: SubjectPageProps) {
               style={{ backgroundColor: subject.category.color }}
             />
           )}
-          <span className="text-sm font-medium text-muted-foreground">
-            {subject.category.name}
-          </span>
+          <span className="text-sm font-medium text-muted-foreground">{subject.category.name}</span>
         </div>
         <h1 className="mt-1 text-3xl font-bold tracking-tight">{subject.title}</h1>
-        {subject.description && (
-          <p className="mt-1 text-muted-foreground">{subject.description}</p>
-        )}
+        {subject.description && <p className="mt-1 text-muted-foreground">{subject.description}</p>}
         <p className="mt-2 text-sm text-muted-foreground">
           {completedCount} of {subject.lessons.length} lessons complete
         </p>
@@ -100,12 +96,7 @@ export function SubjectPage({ slug }: SubjectPageProps) {
       {/* Lesson list */}
       <div className="space-y-3">
         {subject.lessons.map((lesson, index) => (
-          <LessonCard
-            key={lesson.id}
-            lesson={lesson}
-            index={index + 1}
-            subjectSlug={slug}
-          />
+          <LessonCard key={lesson.id} lesson={lesson} index={index + 1} subjectSlug={slug} />
         ))}
       </div>
     </div>

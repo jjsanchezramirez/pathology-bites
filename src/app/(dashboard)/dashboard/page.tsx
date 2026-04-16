@@ -25,36 +25,31 @@ const DASHBOARD_TUTORIAL: TutorialStep[] = [
   {
     target: "nav-sidebar-toggle",
     title: "Toggle Dashboard",
-    description:
-      "Collapse or expand the sidebar. On mobile, this opens the navigation drawer.",
+    description: "Collapse or expand the sidebar. On mobile, this opens the navigation drawer.",
     side: "bottom",
   },
   {
     target: "nav-font-size",
     title: "Theme",
-    description:
-      "Adjust the text size for comfortable reading.",
+    description: "Adjust the text size for comfortable reading.",
     side: "bottom",
   },
   {
     target: "nav-theme-toggle",
     title: "Dark / Light Mode",
-    description:
-      "Switch between light and dark themes. Your preference is saved automatically.",
+    description: "Switch between light and dark themes. Your preference is saved automatically.",
     side: "bottom",
   },
   {
     target: "nav-notifications",
     title: "Notifications",
-    description:
-      "System updates, achievement alerts, and important announcements appear here.",
+    description: "System updates, achievement alerts, and important announcements appear here.",
     side: "bottom",
   },
   {
     target: "nav-profile",
     title: "Your Profile",
-    description:
-      "Access your profile settings, account preferences, and sign out from here.",
+    description: "Access your profile settings, account preferences, and sign out from here.",
     side: "left",
   },
 ];

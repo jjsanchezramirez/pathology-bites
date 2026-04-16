@@ -1,6 +1,17 @@
 "use client";
 
-import { Check, Clock, BookMarked, Play, FileQuestion, SwatchBook, Bird, Flower, Rabbit, GraduationCap } from "lucide-react";
+import {
+  Check,
+  Clock,
+  BookMarked,
+  Play,
+  FileQuestion,
+  SwatchBook,
+  Bird,
+  Flower,
+  Rabbit,
+  GraduationCap,
+} from "lucide-react";
 import { ScheduleTask } from "../lib/types";
 
 const TYPE_ICONS: Record<string, { icon: typeof BookMarked; label: string }> = {
@@ -30,20 +41,35 @@ function fmtTime(min: number): string {
 
 function getTypeFromVerb(verb: string): string | null {
   switch (verb) {
-    case "Read": return "book";
-    case "Watch": return "video";
-    case "Do": return "qbank";
-    case "Review": return "flashcards";
-    default: return null;
+    case "Read":
+      return "book";
+    case "Watch":
+      return "video";
+    case "Do":
+      return "qbank";
+    case "Review":
+      return "flashcards";
+    default:
+      return null;
   }
 }
 
-export function TaskCard({ task, completed, colorBg, colorText, onToggle, isPreExam, shortName }: TaskCardProps) {
+export function TaskCard({
+  task,
+  completed,
+  colorBg,
+  colorText,
+  onToggle,
+  isPreExam,
+  shortName,
+}: TaskCardProps) {
   if (task.task_type === "rest" && isPreExam) {
     return (
       <div className="flex items-center gap-3 rounded-2xl bg-blue-50 px-4 py-3.5 dark:bg-blue-950/30">
         <Flower size={18} className="shrink-0 text-blue-500" />
-        <div className="text-sm font-bold text-blue-600 dark:text-blue-300">Rest, review, relax</div>
+        <div className="text-sm font-bold text-blue-600 dark:text-blue-300">
+          Rest, review, relax
+        </div>
       </div>
     );
   }
@@ -62,7 +88,9 @@ export function TaskCard({ task, completed, colorBg, colorText, onToggle, isPreE
       <div className="flex items-center gap-3 rounded-2xl bg-purple-50 px-4 py-3.5 dark:bg-purple-950/30">
         <GraduationCap size={18} className="shrink-0 text-purple-600" />
         <div>
-          <div className="text-sm font-bold text-purple-700 dark:text-purple-300">{task.activity || "Exam Day"}</div>
+          <div className="text-sm font-bold text-purple-700 dark:text-purple-300">
+            {task.activity || "Exam Day"}
+          </div>
         </div>
       </div>
     );
@@ -102,7 +130,9 @@ export function TaskCard({ task, completed, colorBg, colorText, onToggle, isPreE
         </div>
 
         <div className="min-w-0 flex-1">
-          <div className={`text-sm font-medium leading-tight text-foreground ${completed ? "line-through decoration-muted-foreground/40" : ""}`}>
+          <div
+            className={`text-sm font-medium leading-tight text-foreground ${completed ? "line-through decoration-muted-foreground/40" : ""}`}
+          >
             {task.subject || task.resource_name}
           </div>
 
@@ -156,8 +186,7 @@ export function TaskCard({ task, completed, colorBg, colorText, onToggle, isPreE
               <Check size={14} className="text-white" strokeWidth={3} />
             </div>
           ) : (
-            <div className="flex size-6 items-center justify-center rounded-full border-2 border-muted-foreground/20 transition-colors group-hover:border-muted-foreground/40">
-            </div>
+            <div className="flex size-6 items-center justify-center rounded-full border-2 border-muted-foreground/20 transition-colors group-hover:border-muted-foreground/40"></div>
           )}
         </div>
       </div>

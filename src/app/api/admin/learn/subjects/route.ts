@@ -3,11 +3,7 @@ import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data, error } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", userId)
-    .single();
+  const { data, error } = await supabase.from("users").select("role").eq("id", userId).single();
   return !error && data?.role === "admin";
 }
 
@@ -21,11 +17,13 @@ export async function GET(request: NextRequest) {
 
     const { data, error } = await supabase
       .from("learning_subjects")
-      .select(`
+      .select(
+        `
         *,
         category:categories!learning_subjects_category_id_fkey(id, name, color, short_form),
         lessons(id)
-      `)
+      `
+      )
       .order("sort_order");
 
     if (error) throw error;
@@ -81,7 +79,10 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       if (error.code === "23505") {
-        return NextResponse.json({ error: "A subject with this slug already exists" }, { status: 409 });
+        return NextResponse.json(
+          { error: "A subject with this slug already exists" },
+          { status: 409 }
+        );
       }
       throw error;
     }

@@ -35,15 +35,23 @@ function fmtTime(min: number): string {
 }
 
 export function DayView({
-  currentDate, setCurrentDate, schedule, config, resources,
-  completedTasks, colorMap, onToggleTask,
+  currentDate,
+  setCurrentDate,
+  schedule,
+  config,
+  resources,
+  completedTasks,
+  colorMap,
+  onToggleTask,
 }: DayViewProps) {
   const today = new Date().toISOString().split("T")[0];
   const stripRef = useRef<HTMLDivElement>(null);
 
   const shortNameMap = useMemo(() => {
     const map: Record<string, string> = {};
-    (resources || []).forEach(r => { map[r.name] = r.short_name || r.name; });
+    (resources || []).forEach((r) => {
+      map[r.name] = r.short_name || r.name;
+    });
     return map;
   }, [resources]);
 
@@ -68,26 +76,34 @@ export function DayView({
   }, [schedule, days]);
 
   const dayTasks = tasksByDate.get(currentDate) || [];
-  const studyTasks = dayTasks.filter(t => t.task_type === "task");
-  const completedCount = studyTasks.filter(t => !!completedTasks[t.task_id]).length;
+  const studyTasks = dayTasks.filter((t) => t.task_type === "task");
+  const completedCount = studyTasks.filter((t) => !!completedTasks[t.task_id]).length;
   const totalMin = studyTasks.reduce((s, t) => s + t.minutes, 0);
-  const remainingMin = studyTasks.filter(t => !completedTasks[t.task_id]).reduce((s, t) => s + t.minutes, 0);
+  const remainingMin = studyTasks
+    .filter((t) => !completedTasks[t.task_id])
+    .reduce((s, t) => s + t.minutes, 0);
 
-  const navigateWeek = useCallback((offset: number) => {
-    const d = new Date(weekStart);
-    d.setDate(d.getDate() + offset * 7);
-    setCurrentDate(d.toISOString().split("T")[0]);
-  }, [weekStart, setCurrentDate]);
+  const navigateWeek = useCallback(
+    (offset: number) => {
+      const d = new Date(weekStart);
+      d.setDate(d.getDate() + offset * 7);
+      setCurrentDate(d.toISOString().split("T")[0]);
+    },
+    [weekStart, setCurrentDate]
+  );
 
-  const navigateDay = useCallback((offset: number) => {
-    const d = new Date(currentDate + "T12:00:00");
-    d.setDate(d.getDate() + offset);
-    setCurrentDate(d.toISOString().split("T")[0]);
-  }, [currentDate, setCurrentDate]);
+  const navigateDay = useCallback(
+    (offset: number) => {
+      const d = new Date(currentDate + "T12:00:00");
+      d.setDate(d.getDate() + offset);
+      setCurrentDate(d.toISOString().split("T")[0]);
+    },
+    [currentDate, setCurrentDate]
+  );
 
   const swipeHandlers = useSwipe(
     () => navigateDay(1),
-    () => navigateDay(-1),
+    () => navigateDay(-1)
   );
 
   const monthLabel = new Date(currentDate + "T12:00:00").toLocaleDateString("en-US", {
@@ -114,14 +130,17 @@ export function DayView({
         seen.add(task.resource_name);
         groups.push({ resource: task.resource_name, tasks: [] });
       }
-      groups.find(g => g.resource === task.resource_name)!.tasks.push(task);
+      groups.find((g) => g.resource === task.resource_name)!.tasks.push(task);
     }
     return groups;
   }, [dayTasks]);
 
-  const specialTasks = dayTasks.filter(t => t.task_type !== "task");
+  const specialTasks = dayTasks.filter((t) => t.task_type !== "task");
 
-  const examDateSet = useMemo(() => new Set((config?.exam_dates || []).map(e => e.date)), [config]);
+  const examDateSet = useMemo(
+    () => new Set((config?.exam_dates || []).map((e) => e.date)),
+    [config]
+  );
   const isPreExamDay = useMemo(() => {
     const d = new Date(currentDate + "T12:00:00");
     d.setDate(d.getDate() + 1);
@@ -152,37 +171,43 @@ export function DayView({
             const isSelected = dateStr === currentDate;
             const isDayToday = dateStr === today;
             const dt = tasksByDate.get(dateStr) || [];
-            const hasTasks = dt.some(t => t.task_type === "task");
-            const allDone = hasTasks && dt.filter(t => t.task_type === "task").every(t => !!completedTasks[t.task_id]);
+            const hasTasks = dt.some((t) => t.task_type === "task");
+            const allDone =
+              hasTasks &&
+              dt.filter((t) => t.task_type === "task").every((t) => !!completedTasks[t.task_id]);
 
             return (
               <button
                 key={dateStr}
                 onClick={() => setCurrentDate(dateStr)}
                 className={`group relative flex flex-col items-center rounded-xl py-2 transition-all ${
-                  isSelected
-                    ? "bg-primary text-primary-foreground shadow-sm"
-                    : "hover:bg-muted"
+                  isSelected ? "bg-primary text-primary-foreground shadow-sm" : "hover:bg-muted"
                 }`}
               >
-                <span className={`text-[10px] font-medium uppercase ${
-                  isSelected ? "text-primary-foreground/70" : "text-muted-foreground"
-                }`}>
+                <span
+                  className={`text-[10px] font-medium uppercase ${
+                    isSelected ? "text-primary-foreground/70" : "text-muted-foreground"
+                  }`}
+                >
                   {dateObj.toLocaleDateString("en-US", { weekday: "short" })}
                 </span>
-                <span className={`mt-0.5 text-lg font-semibold tabular-nums ${
-                  isSelected
-                    ? "text-primary-foreground"
-                    : isDayToday
-                      ? "text-primary"
-                      : "text-foreground"
-                }`}>
+                <span
+                  className={`mt-0.5 text-lg font-semibold tabular-nums ${
+                    isSelected
+                      ? "text-primary-foreground"
+                      : isDayToday
+                        ? "text-primary"
+                        : "text-foreground"
+                  }`}
+                >
                   {dateObj.getDate()}
                 </span>
                 {hasTasks && !isSelected && (
-                  <span className={`mt-0.5 size-1.5 rounded-full ${
-                    allDone ? "bg-emerald-300" : "bg-primary/40"
-                  }`} />
+                  <span
+                    className={`mt-0.5 size-1.5 rounded-full ${
+                      allDone ? "bg-emerald-300" : "bg-primary/40"
+                    }`}
+                  />
                 )}
                 {isSelected && hasTasks && (
                   <span className="mt-0.5 size-1.5 rounded-full bg-primary-foreground/50" />
@@ -195,7 +220,9 @@ export function DayView({
 
       <div className="mb-4 flex items-end justify-between">
         <div>
-          <h2 className={`text-2xl font-bold tracking-tight ${isToday ? "text-primary" : "text-foreground"}`}>
+          <h2
+            className={`text-2xl font-bold tracking-tight ${isToday ? "text-primary" : "text-foreground"}`}
+          >
             {dayTitle}
           </h2>
           <p className="text-sm text-muted-foreground">{daySubtitle}</p>
@@ -274,20 +301,22 @@ export function DayView({
           </div>
 
           <div className="lg:hidden space-y-2">
-            {dayTasks.filter(t => t.task_type === "task").map((task, idx) => {
-              const colors = colorMap[task.resource_name] || { bg: "#e5e5e5", text: "#000000" };
-              return (
-                <TaskCard
-                  key={task.task_id || idx}
-                  task={task}
-                  completed={!!completedTasks[task.task_id]}
-                  colorBg={colors.bg}
-                  colorText={colors.text}
-                  shortName={shortNameMap[task.resource_name]}
-                  onToggle={() => onToggleTask(task.task_id)}
-                />
-              );
-            })}
+            {dayTasks
+              .filter((t) => t.task_type === "task")
+              .map((task, idx) => {
+                const colors = colorMap[task.resource_name] || { bg: "#e5e5e5", text: "#000000" };
+                return (
+                  <TaskCard
+                    key={task.task_id || idx}
+                    task={task}
+                    completed={!!completedTasks[task.task_id]}
+                    colorBg={colors.bg}
+                    colorText={colors.text}
+                    shortName={shortNameMap[task.resource_name]}
+                    onToggle={() => onToggleTask(task.task_id)}
+                  />
+                );
+              })}
           </div>
         </div>
       )}

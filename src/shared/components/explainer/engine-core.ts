@@ -193,7 +193,9 @@ function interpolateSvgOverlays(kf1: Keyframe, kf2: Keyframe, t: number): SvgOve
   for (const s2 of kf2Svgs) {
     const s1 = kf1Map.get(s2.id);
     result.push(
-      s1 ? lerpSvgOverlay(s1, s2, t) : { ...s2, computedOpacity: lerp(0, s2.computedOpacity ?? s2.opacity, t) }
+      s1
+        ? lerpSvgOverlay(s1, s2, t)
+        : { ...s2, computedOpacity: lerp(0, s2.computedOpacity ?? s2.opacity, t) }
     );
   }
   for (const s1 of kf1Svgs) {
@@ -211,10 +213,7 @@ function interpolateSvgOverlays(kf1: Keyframe, kf2: Keyframe, t: number): SvgOve
  * no side effects, no React, no DOM. Both the player hook and the video
  * exporter call this.
  */
-export function computeEngineState(
-  sequence: ExplainerSequence,
-  currentTime: number
-): EngineState {
+export function computeEngineState(sequence: ExplainerSequence, currentTime: number): EngineState {
   const { segments } = sequence;
 
   if (segments.length === 0) {

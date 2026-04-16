@@ -28,9 +28,7 @@ export function LessonCard({ lesson, index, subjectSlug }: LessonCardProps) {
           {/* Lesson info */}
           <div className="min-w-0 flex-1">
             <div className="flex items-baseline gap-2">
-              <span className="text-sm font-medium text-muted-foreground">
-                {index}.
-              </span>
+              <span className="text-sm font-medium text-muted-foreground">{index}.</span>
               <h3 className="text-base font-medium group-hover:text-primary transition-colors truncate">
                 {lesson.title}
               </h3>
@@ -45,9 +43,7 @@ export function LessonCard({ lesson, index, subjectSlug }: LessonCardProps) {
           {/* Meta */}
           <div className="shrink-0 flex items-center gap-3 text-sm text-muted-foreground">
             {lesson.quiz_score !== undefined && lesson.quiz_score !== null && (
-              <span className="font-medium text-foreground">
-                {lesson.quiz_score}%
-              </span>
+              <span className="font-medium text-foreground">{lesson.quiz_score}%</span>
             )}
             {lesson.estimated_minutes && (
               <span className="flex items-center gap-1">

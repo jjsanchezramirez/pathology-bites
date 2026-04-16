@@ -87,10 +87,7 @@ export function ImagePickerDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogPortal>
         <div className="fixed inset-0 z-50 flex items-center justify-center">
-          <div
-            className="fixed inset-0 bg-black/50 backdrop-blur-sm"
-            onClick={handleCancel}
-          />
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={handleCancel} />
           <div className="relative bg-background border rounded-lg shadow-lg w-[1200px] max-w-[95vw] h-[75vh] flex flex-col overflow-hidden">
             <div className="p-6 border-b flex-shrink-0">
               <h2 className="text-xl font-semibold">Select Images</h2>
@@ -132,17 +129,13 @@ export function ImagePickerDialog({
                   <div className="col-span-6 flex flex-col items-center justify-center h-full text-muted-foreground">
                     <ImageIcon className="h-12 w-12 mb-2 opacity-50" />
                     <p>No images found</p>
-                    {searchTerm && (
-                      <p className="text-sm">Try a different search term</p>
-                    )}
+                    {searchTerm && <p className="text-sm">Try a different search term</p>}
                   </div>
                 ) : (
                   availableImages.map((image) => {
                     const isSelected = selectedIds.includes(image.id);
                     const canSelect = selectedIds.length < maxImages || isSelected;
-                    const orderNumber = isSelected
-                      ? selectedIds.indexOf(image.id) + 1
-                      : null;
+                    const orderNumber = isSelected ? selectedIds.indexOf(image.id) + 1 : null;
 
                     return (
                       <div key={image.id} className="relative group">
@@ -180,10 +173,7 @@ export function ImagePickerDialog({
                 <Button variant="outline" onClick={handleCancel}>
                   Cancel
                 </Button>
-                <Button
-                  onClick={handleConfirm}
-                  disabled={selectedIds.length === 0}
-                >
+                <Button onClick={handleConfirm} disabled={selectedIds.length === 0}>
                   Insert {selectedIds.length} Image
                   {selectedIds.length !== 1 ? "s" : ""}
                 </Button>

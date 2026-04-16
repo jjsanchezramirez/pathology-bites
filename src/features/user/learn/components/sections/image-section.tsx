@@ -17,9 +17,7 @@ export function ImageSection({ section, images }: ImageSectionProps) {
 
   return (
     <div className="space-y-2">
-      {section.heading && (
-        <h2 className="text-2xl font-bold tracking-tight">{section.heading}</h2>
-      )}
+      {section.heading && <h2 className="text-2xl font-bold tracking-tight">{section.heading}</h2>}
       <ImageCarousel
         images={sectionImages.map((img) => ({
           url: img.url,
@@ -27,9 +25,7 @@ export function ImageSection({ section, images }: ImageSectionProps) {
         }))}
       />
       {section.caption && (
-        <p className="text-sm text-muted-foreground italic text-center">
-          {section.caption}
-        </p>
+        <p className="text-sm text-muted-foreground italic text-center">{section.caption}</p>
       )}
     </div>
   );

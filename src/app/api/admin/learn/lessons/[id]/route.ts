@@ -3,18 +3,11 @@ import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data, error } = await supabase
-    .from("users")
-    .select("role")
-    .eq("id", userId)
-    .single();
+  const { data, error } = await supabase.from("users").select("role").eq("id", userId).single();
   return !error && data?.role === "admin";
 }
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
     const userId = getUserIdFromHeaders(request);
@@ -26,10 +19,12 @@ export async function GET(
 
     const { data, error } = await supabase
       .from("lessons")
-      .select(`
+      .select(
+        `
         *,
         subject:learning_subjects!lessons_subject_id_fkey(id, title, slug)
-      `)
+      `
+      )
       .eq("id", id)
       .single();
 
@@ -42,10 +37,7 @@ export async function GET(
   }
 }
 
-export async function PUT(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
-) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
     const userId = getUserIdFromHeaders(request);
@@ -55,7 +47,20 @@ export async function PUT(
 
     const { id } = await params;
     const body = await request.json();
-    const { title, slug, description, content, content_markdown, quiz, anki_deck_ref, cover_image_url, sort_order, estimated_minutes, status, subject_id } = body;
+    const {
+      title,
+      slug,
+      description,
+      content,
+      content_markdown,
+      quiz,
+      anki_deck_ref,
+      cover_image_url,
+      sort_order,
+      estimated_minutes,
+      status,
+      subject_id,
+    } = body;
 
     const updateData: Record<string, unknown> = {};
     if (title !== undefined) updateData.title = title.trim();
@@ -80,7 +85,10 @@ export async function PUT(
 
     if (error) {
       if (error.code === "23505") {
-        return NextResponse.json({ error: "A lesson with this slug already exists in this subject" }, { status: 409 });
+        return NextResponse.json(
+          { error: "A lesson with this slug already exists in this subject" },
+          { status: 409 }
+        );
       }
       throw error;
     }
@@ -105,10 +113,7 @@ export async function DELETE(
 
     const { id } = await params;
 
-    const { error } = await supabase
-      .from("lessons")
-      .delete()
-      .eq("id", id);
+    const { error } = await supabase.from("lessons").delete().eq("id", id);
 
     if (error) throw error;
 

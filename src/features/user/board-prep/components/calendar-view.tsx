@@ -1,7 +1,15 @@
 "use client";
 
 import { useMemo } from "react";
-import { ChevronLeft, ChevronRight, GraduationCap, CloudSun, Bird, Flower, Rabbit } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  GraduationCap,
+  CloudSun,
+  Bird,
+  Flower,
+  Rabbit,
+} from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { ScheduleTask, StudyConfig, StudyResource } from "../lib/types";
 import { useSwipe } from "../hooks/use-swipe";
@@ -20,8 +28,14 @@ interface CalendarViewProps {
 const DAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
 export function CalendarView({
-  calendarMonth, setCalendarMonth, schedule, config, resources,
-  completedTasks, colorMap, onSelectDate,
+  calendarMonth,
+  setCalendarMonth,
+  schedule,
+  config,
+  resources,
+  completedTasks,
+  colorMap,
+  onSelectDate,
 }: CalendarViewProps) {
   const year = calendarMonth.getFullYear();
   const month = calendarMonth.getMonth();
@@ -40,11 +54,16 @@ export function CalendarView({
 
   const shortNameMap = useMemo(() => {
     const map: Record<string, string> = {};
-    resources.forEach(r => { map[r.name] = r.short_name || r.name; });
+    resources.forEach((r) => {
+      map[r.name] = r.short_name || r.name;
+    });
     return map;
   }, [resources]);
 
-  const examDateSet = useMemo(() => new Set((config?.exam_dates || []).map(e => e.date)), [config]);
+  const examDateSet = useMemo(
+    () => new Set((config?.exam_dates || []).map((e) => e.date)),
+    [config]
+  );
 
   const getTasksForDate = (date: string) => schedule.filter((t) => t.date === date);
 
@@ -62,7 +81,7 @@ export function CalendarView({
 
   const swipeHandlers = useSwipe(
     () => navMonth(1),
-    () => navMonth(-1),
+    () => navMonth(-1)
   );
 
   const fmtTime = (min: number) => {
@@ -88,10 +107,16 @@ export function CalendarView({
         </Button>
       </div>
 
-      <div data-tutorial="calendar-grid" className="overflow-hidden rounded-2xl border border-border bg-card">
+      <div
+        data-tutorial="calendar-grid"
+        className="overflow-hidden rounded-2xl border border-border bg-card"
+      >
         <div className="grid grid-cols-7 border-b border-border bg-muted/30">
           {DAY_HEADERS.map((day) => (
-            <div key={day} className="py-2.5 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground">
+            <div
+              key={day}
+              className="py-2.5 text-center text-xs font-medium uppercase tracking-wider text-muted-foreground"
+            >
               {day}
             </div>
           ))}
@@ -110,10 +135,11 @@ export function CalendarView({
             const isRest = dayTasks.some((t) => t.task_type === "rest");
             const preExam = isRest && isPreExamDay(dateStr);
 
-            const taskItems = dayTasks.filter(t => t.task_type === "task");
+            const taskItems = dayTasks.filter((t) => t.task_type === "task");
             const totalMin = taskItems.reduce((s, t) => s + t.minutes, 0);
-            const resourceNames = [...new Set(taskItems.map(t => t.resource_name))];
-            const isDayComplete = taskItems.length > 0 && taskItems.every(t => !!completedTasks[t.task_id]);
+            const resourceNames = [...new Set(taskItems.map((t) => t.resource_name))];
+            const isDayComplete =
+              taskItems.length > 0 && taskItems.every((t) => !!completedTasks[t.task_id]);
 
             const maxPills = 3;
             const visibleResources = resourceNames.slice(0, maxPills);
@@ -127,7 +153,12 @@ export function CalendarView({
             else if (dayOffStatus === "full") cellBg = "bg-red-50/50 dark:bg-red-950/15";
             else if (dayOffStatus === "half") cellBg = "bg-amber-50/80 dark:bg-amber-950/15";
 
-            const isSpecialDay = !!exam || preExam || (isRest && !preExam) || dayOffStatus === "full" || dayOffStatus === "half";
+            const isSpecialDay =
+              !!exam ||
+              preExam ||
+              (isRest && !preExam) ||
+              dayOffStatus === "full" ||
+              dayOffStatus === "half";
             const hasResourcePills = visibleResources.length > 0;
 
             return (
@@ -137,15 +168,19 @@ export function CalendarView({
                 className={`flex min-h-[56px] flex-col border-b border-r border-border/50 p-1 text-left transition-colors hover:bg-muted/40 lg:min-h-[100px] lg:p-2 ${cellBg}`}
               >
                 <div className="flex w-full items-start justify-between">
-                  <span className={`text-xs font-medium ${
-                    isToday
-                      ? "flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground"
-                      : "text-foreground"
-                  }`}>
+                  <span
+                    className={`text-xs font-medium ${
+                      isToday
+                        ? "flex size-5 items-center justify-center rounded-full bg-primary text-primary-foreground"
+                        : "text-foreground"
+                    }`}
+                  >
                     {date.getDate()}
                   </span>
                   {totalMin > 0 && (
-                    <span className="hidden text-[10px] tabular-nums text-muted-foreground lg:inline">{fmtTime(totalMin)}</span>
+                    <span className="hidden text-[10px] tabular-nums text-muted-foreground lg:inline">
+                      {fmtTime(totalMin)}
+                    </span>
                   )}
                 </div>
 
@@ -154,31 +189,41 @@ export function CalendarView({
                     {exam && (
                       <div className="flex flex-col items-center gap-0.5">
                         <GraduationCap size={14} className="text-purple-600 lg:size-4" />
-                        <span className="hidden text-center text-[10px] font-bold leading-tight text-purple-600 lg:block">{exam.name || "Exam"}</span>
+                        <span className="hidden text-center text-[10px] font-bold leading-tight text-purple-600 lg:block">
+                          {exam.name || "Exam"}
+                        </span>
                       </div>
                     )}
                     {preExam && !exam && (
                       <div className="flex flex-col items-center gap-0.5">
                         <Flower size={14} className="text-blue-500 lg:size-4" />
-                        <span className="hidden text-center text-[10px] font-bold leading-tight text-blue-500 lg:block">Rest, review, relax</span>
+                        <span className="hidden text-center text-[10px] font-bold leading-tight text-blue-500 lg:block">
+                          Rest, review, relax
+                        </span>
                       </div>
                     )}
                     {isRest && !preExam && !exam && (
                       <div className="flex flex-col items-center gap-0.5">
                         <Rabbit size={14} className="text-green-600 lg:size-4" />
-                        <span className="hidden text-center text-[10px] font-bold leading-tight text-green-600 lg:block">Catch up day</span>
+                        <span className="hidden text-center text-[10px] font-bold leading-tight text-green-600 lg:block">
+                          Catch up day
+                        </span>
                       </div>
                     )}
                     {dayOffStatus === "full" && !exam && !isRest && (
                       <div className="flex flex-col items-center gap-0.5">
                         <Bird size={14} className="text-red-400 lg:size-4" />
-                        <span className="hidden text-center text-[10px] font-bold leading-tight text-red-400 lg:block">Enjoy your day off!</span>
+                        <span className="hidden text-center text-[10px] font-bold leading-tight text-red-400 lg:block">
+                          Enjoy your day off!
+                        </span>
                       </div>
                     )}
                     {dayOffStatus === "half" && !exam && !isRest && (
                       <div className="flex flex-col items-center gap-0.5">
                         <CloudSun size={14} className="text-amber-500 lg:size-4" />
-                        <span className="hidden text-center text-[10px] font-bold leading-tight text-amber-500 lg:block">Half Day</span>
+                        <span className="hidden text-center text-[10px] font-bold leading-tight text-amber-500 lg:block">
+                          Half Day
+                        </span>
                       </div>
                     )}
                   </div>
@@ -197,7 +242,9 @@ export function CalendarView({
                       );
                     })}
                     {resourceNames.length > 5 && (
-                      <span className="text-[8px] tabular-nums text-muted-foreground">+{resourceNames.length - 5}</span>
+                      <span className="text-[8px] tabular-nums text-muted-foreground">
+                        +{resourceNames.length - 5}
+                      </span>
                     )}
                   </div>
                 )}
@@ -207,7 +254,7 @@ export function CalendarView({
                     const colors = colorMap[name] || { bg: "#e5e5e5", text: "#000" };
                     const pillBg = isDayComplete ? "#D1FAE5" : colors.bg;
                     const pillText = isDayComplete ? "#065F46" : colors.text;
-                    const count = taskItems.filter(t => t.resource_name === name).length;
+                    const count = taskItems.filter((t) => t.resource_name === name).length;
                     const shortName = shortNameMap[name] || name;
                     return (
                       <div
@@ -221,24 +268,25 @@ export function CalendarView({
                     );
                   })}
 
-                  {overflowResources.length === 1 && (() => {
-                    const name = overflowResources[0];
-                    const colors = colorMap[name] || { bg: "#e5e5e5", text: "#000" };
-                    const pillBg = isDayComplete ? "#D1FAE5" : colors.bg;
-                    const pillText = isDayComplete ? "#065F46" : colors.text;
-                    const count = taskItems.filter(t => t.resource_name === name).length;
-                    const shortName = shortNameMap[name] || name;
-                    return (
-                      <div
-                        key={name}
-                        className="flex items-center justify-between overflow-hidden rounded px-1 py-px text-[10px] leading-tight"
-                        style={{ backgroundColor: pillBg, color: pillText }}
-                      >
-                        <span className="truncate">{shortName}</span>
-                        {count > 1 && <span className="ml-1 shrink-0 font-medium">{count}</span>}
-                      </div>
-                    );
-                  })()}
+                  {overflowResources.length === 1 &&
+                    (() => {
+                      const name = overflowResources[0];
+                      const colors = colorMap[name] || { bg: "#e5e5e5", text: "#000" };
+                      const pillBg = isDayComplete ? "#D1FAE5" : colors.bg;
+                      const pillText = isDayComplete ? "#065F46" : colors.text;
+                      const count = taskItems.filter((t) => t.resource_name === name).length;
+                      const shortName = shortNameMap[name] || name;
+                      return (
+                        <div
+                          key={name}
+                          className="flex items-center justify-between overflow-hidden rounded px-1 py-px text-[10px] leading-tight"
+                          style={{ backgroundColor: pillBg, color: pillText }}
+                        >
+                          <span className="truncate">{shortName}</span>
+                          {count > 1 && <span className="ml-1 shrink-0 font-medium">{count}</span>}
+                        </div>
+                      );
+                    })()}
 
                   {overflowResources.length > 1 && (
                     <div className="mt-0.5 flex items-center">
@@ -249,7 +297,10 @@ export function CalendarView({
                             <div
                               key={name}
                               className="size-4 rounded-full border border-card"
-                              style={{ backgroundColor: isDayComplete ? "#34D399" : colors.bg, zIndex: overflowResources.length - i }}
+                              style={{
+                                backgroundColor: isDayComplete ? "#34D399" : colors.bg,
+                                zIndex: overflowResources.length - i,
+                              }}
                             />
                           );
                         })}
@@ -266,14 +317,30 @@ export function CalendarView({
         </div>
       </div>
 
-      <div data-tutorial="calendar-legend" className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[10px] text-muted-foreground">
-        <span className="flex items-center gap-1"><GraduationCap size={10} className="text-purple-600" /> Exam</span>
-        <span className="flex items-center gap-1"><Flower size={10} className="text-blue-500" /> Pre-Exam</span>
-        <span className="flex items-center gap-1"><Rabbit size={10} className="text-green-600" /> Catch Up</span>
-        <span className="flex items-center gap-1"><Bird size={10} className="text-red-400" /> Day Off</span>
-        <span className="flex items-center gap-1"><CloudSun size={10} className="text-amber-500" /> Half Day</span>
+      <div
+        data-tutorial="calendar-legend"
+        className="mt-4 flex flex-wrap justify-center gap-x-4 gap-y-1 text-[10px] text-muted-foreground"
+      >
         <span className="flex items-center gap-1">
-          <span className="flex size-3 items-center justify-center rounded-full bg-primary text-[7px] text-primary-foreground">T</span> Today
+          <GraduationCap size={10} className="text-purple-600" /> Exam
+        </span>
+        <span className="flex items-center gap-1">
+          <Flower size={10} className="text-blue-500" /> Pre-Exam
+        </span>
+        <span className="flex items-center gap-1">
+          <Rabbit size={10} className="text-green-600" /> Catch Up
+        </span>
+        <span className="flex items-center gap-1">
+          <Bird size={10} className="text-red-400" /> Day Off
+        </span>
+        <span className="flex items-center gap-1">
+          <CloudSun size={10} className="text-amber-500" /> Half Day
+        </span>
+        <span className="flex items-center gap-1">
+          <span className="flex size-3 items-center justify-center rounded-full bg-primary text-[7px] text-primary-foreground">
+            T
+          </span>{" "}
+          Today
         </span>
       </div>
     </div>

@@ -8,7 +8,7 @@ interface SwipeHandlers {
 export function useSwipe(
   onSwipeLeft: () => void,
   onSwipeRight: () => void,
-  threshold = 50,
+  threshold = 50
 ): SwipeHandlers {
   const startX = useRef(0);
   const startY = useRef(0);
@@ -27,7 +27,7 @@ export function useSwipe(
         else onSwipeLeft();
       }
     },
-    [onSwipeLeft, onSwipeRight, threshold],
+    [onSwipeLeft, onSwipeRight, threshold]
   );
 
   return { onTouchStart, onTouchEnd };

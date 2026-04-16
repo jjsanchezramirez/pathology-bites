@@ -42,7 +42,9 @@ export function useStudyPlan() {
         }
 
         const completionMap: CompletionData = {};
-        progData.forEach((p) => { completionMap[p.task_key] = p.completed_at; });
+        progData.forEach((p) => {
+          completionMap[p.task_key] = p.completed_at;
+        });
         setCompletedTasks(completionMap);
         setSchedule(schedData);
       } catch (err) {
@@ -61,7 +63,9 @@ export function useStudyPlan() {
       try {
         const progData = await boardPrepService.getProgress();
         const completionMap: CompletionData = {};
-        progData.forEach((p) => { completionMap[p.task_key] = p.completed_at; });
+        progData.forEach((p) => {
+          completionMap[p.task_key] = p.completed_at;
+        });
         setCompletedTasks(completionMap);
       } catch {
         // Silent fail — stale data is acceptable until next sync
@@ -122,11 +126,18 @@ export function useStudyPlan() {
   }, []);
 
   return {
-    loading, error, retry,
-    resources, setResources,
-    config, setConfig,
-    schedule, setSchedule,
-    completedTasks, setCompletedTasks,
-    colorMap, toggleTask,
+    loading,
+    error,
+    retry,
+    resources,
+    setResources,
+    config,
+    setConfig,
+    schedule,
+    setSchedule,
+    completedTasks,
+    setCompletedTasks,
+    colorMap,
+    toggleTask,
   };
 }
