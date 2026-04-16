@@ -36,8 +36,8 @@ export function SlideThumbnail({
     width: THUMB_WIDTH_PX,
   };
 
-  const visibleCount = slide.elements.filter((e) => e.kind !== "zoom" && e.kind !== "pan").length;
-  const cameraCount = slide.elements.filter((e) => e.kind === "zoom" || e.kind === "pan").length;
+  const visibleCount = slide.elements.filter((e) => e.kind !== "camera").length;
+  const cameraCount = slide.elements.filter((e) => e.kind === "camera").length;
   // If the bottom element is a full-canvas image, use it as the thumbnail background.
   const thumbBg = (() => {
     const first = slide.elements[0];

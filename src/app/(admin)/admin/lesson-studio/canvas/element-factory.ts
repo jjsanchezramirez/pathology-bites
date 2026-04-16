@@ -8,8 +8,7 @@ import type {
   SpotlightElement,
   ArrowElement,
   TextElement,
-  ZoomElement,
-  PanElement,
+  CameraElement,
   ImageCategory,
   Timing,
 } from "../model/types";
@@ -89,22 +88,11 @@ export function createElementFromDrag(args: CreateArgs): SlideElement | null {
   const p = palette(imageCategory);
 
   switch (tool) {
-    case "shape-rectangle": {
+    case "shape": {
       const el: ShapeElement = {
         id: uid("shape"),
         kind: "shape",
         shape: "rectangle",
-        rect: normalizeRect(start, end),
-        stroke: { color: p.strokeColor, width: 3, style: "solid" },
-        timing,
-      };
-      return el;
-    }
-    case "shape-oval": {
-      const el: ShapeElement = {
-        id: uid("shape"),
-        kind: "shape",
-        shape: "oval",
         rect: normalizeRect(start, end),
         stroke: { color: p.strokeColor, width: 3, style: "solid" },
         timing,
@@ -152,25 +140,14 @@ export function createElementFromDrag(args: CreateArgs): SlideElement | null {
       };
       return el;
     }
-    case "zoom": {
-      // Zoom-in on the click point, default 2×. Fade-in/hold/fade-out by default.
-      const el: ZoomElement = {
-        id: uid("zoom"),
-        kind: "zoom",
+    case "camera": {
+      // Non-persistent (zoom) by default: 2× scale, fade-in/hold/fade-out.
+      const el: CameraElement = {
+        id: uid("camera"),
+        kind: "camera",
         to: { x: start.x, y: start.y, scale: 2 },
         timing: { start: 0, fadeIn: 1, hold: Math.max(1, slideDuration - 3), fadeOut: 1 },
-      };
-      return el;
-    }
-    case "pan": {
-      // Pan target at click point; preserves scale from currentFraming baseline.
-      // The target scale is intentionally 1 here — the inspector lets the user
-      // change scale if they also want to zoom-during-pan.
-      const el: PanElement = {
-        id: uid("pan"),
-        kind: "pan",
-        to: { x: start.x, y: start.y, scale: 1 },
-        timing: { start: 0, fadeIn: 2, hold: Math.max(0, slideDuration - 2), fadeOut: 0 },
+        persistent: false,
       };
       return el;
     }

@@ -4,16 +4,7 @@
 "use client";
 
 import { useEffect } from "react";
-import {
-  MousePointer2,
-  Square,
-  Egg,
-  Flashlight,
-  ArrowUpRight,
-  Type,
-  ZoomIn,
-  Hand,
-} from "lucide-react";
+import { MousePointer2, Shapes, Flashlight, ArrowUpRight, Type, Video } from "lucide-react";
 import { useEditorStore, type Tool } from "./model/store";
 import { selectCurrentSlide } from "./model/store";
 import type { ImageCategory } from "./model/types";
@@ -22,22 +13,20 @@ interface ToolDef {
   id: Tool;
   label: string;
   shortcut: string;
-  Icon: typeof Square;
+  Icon: typeof Shapes;
 }
 
 const TOOLS: ToolDef[] = [
   { id: "select", label: "Select", shortcut: "V", Icon: MousePointer2 },
-  { id: "shape-rectangle", label: "Rectangle", shortcut: "R", Icon: Square },
-  { id: "shape-oval", label: "Oval", shortcut: "O", Icon: Egg },
+  { id: "shape", label: "Shape", shortcut: "R", Icon: Shapes },
   { id: "spotlight", label: "Spotlight", shortcut: "S", Icon: Flashlight },
   { id: "arrow", label: "Arrow", shortcut: "A", Icon: ArrowUpRight },
   { id: "text", label: "Text", shortcut: "T", Icon: Type },
-  { id: "zoom", label: "Zoom (camera)", shortcut: "Z", Icon: ZoomIn },
-  { id: "pan", label: "Pan (camera)", shortcut: "P", Icon: Hand },
+  { id: "camera", label: "Camera", shortcut: "C", Icon: Video },
 ];
 
-const MICROSCOPY_EMPHASIS: Tool[] = ["spotlight", "arrow", "shape-oval", "zoom", "pan"];
-const PRESENTATION_EMPHASIS: Tool[] = ["text", "shape-rectangle", "arrow"];
+const MICROSCOPY_EMPHASIS: Tool[] = ["spotlight", "arrow", "shape", "camera"];
+const PRESENTATION_EMPHASIS: Tool[] = ["text", "shape", "arrow"];
 
 function emphasisFor(cat?: ImageCategory): Tool[] {
   switch (cat) {
@@ -82,8 +71,8 @@ export function ToolPalette() {
       {TOOLS.map((t) => {
         const active = tool === t.id;
         const emphasized = emphasis.includes(t.id);
-        // Divider before the camera tools (zoom is the first camera tool).
-        const showDivider = t.id === "zoom";
+        // Divider before the camera tool.
+        const showDivider = t.id === "camera";
         return (
           <div key={t.id} className="flex flex-col gap-1">
             {showDivider && <div className="mx-1 my-1 h-px bg-gray-200" />}

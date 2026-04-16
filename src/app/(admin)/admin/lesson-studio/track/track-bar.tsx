@@ -8,7 +8,7 @@ import type { SlideElement, Timing } from "../model/types";
 import { useEditorStore } from "../model/store";
 import { snapToFrame, secsToTimecode } from "../utils/math";
 
-type Mode = "move" | "resize-left" | "resize-right" | "fade-in" | "fade-out";
+type Mode = "move" | "resize-left" | "resize-right" | "fade-in" | "fade-out" | "waypoint";
 
 interface TrackBarProps {
   element: SlideElement;
@@ -24,6 +24,7 @@ interface TrackBarProps {
 const EDGE_PX = 6;
 const MIN_FADE = 0;
 const MIN_HOLD = 0;
+const MIN_WP_GAP = 0.5; // minimum seconds between waypoints and from edges
 
 function kindColor(kind: SlideElement["kind"]): { bg: string; fade: string } {
   switch (kind) {
@@ -36,8 +37,7 @@ function kindColor(kind: SlideElement["kind"]): { bg: string; fade: string } {
     case "svg":
     case "image":
       return { bg: "rgb(147,51,234)", fade: "rgba(147,51,234,0.4)" };
-    case "zoom":
-    case "pan":
+    case "camera":
       return { bg: "rgb(20,184,166)", fade: "rgba(20,184,166,0.4)" };
     default:
       return { bg: "rgb(220,38,38)", fade: "rgba(220,38,38,0.4)" };
@@ -60,21 +60,26 @@ export function TrackBar({
   const modeRef = useRef<Mode | null>(null);
   const originRef = useRef<{ timing: Timing; pointerX: number; pointerY: number } | null>(null);
   const candidateReorderRef = useRef(false);
+  const wpDragRef = useRef<{ index: number; originTime: number } | null>(null);
 
   const pxToSec = widthPx > 0 ? slideDuration / widthPx : 0;
 
   const onPointerDown = useCallback(
-    (mode: Mode) => (e: React.PointerEvent) => {
+    (mode: Mode, wpIndex?: number) => (e: React.PointerEvent) => {
       e.stopPropagation();
       modeRef.current = mode;
       originRef.current = { timing: { ...t }, pointerX: e.clientX, pointerY: e.clientY };
       candidateReorderRef.current = mode === "move" && !!onReorderStart;
+      if (mode === "waypoint" && wpIndex != null) {
+        const wps = getWaypointTimes(element);
+        wpDragRef.current = { index: wpIndex, originTime: wps[wpIndex] };
+      }
       const store = useEditorStore.getState();
       store.beginDrag();
       store.selectElements(slideId, [element.id]);
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     },
-    [t, slideId, element.id, onReorderStart]
+    [t, slideId, onReorderStart, element]
   );
 
   const onPointerMove = useCallback(
@@ -106,6 +111,25 @@ export function TrackBar({
         }
       }
       const dxSec = (e.clientX - origin.pointerX) * pxToSec;
+
+      // Waypoint drag — update waypoint time, don't touch element timing.
+      if (mode === "waypoint" && wpDragRef.current) {
+        const { index, originTime } = wpDragRef.current;
+        const wps = getWaypointTimes(element);
+        const maxLocal = origin.timing.fadeIn + origin.timing.hold + origin.timing.fadeOut;
+        const lo = index > 0 ? wps[index - 1] + MIN_WP_GAP : MIN_WP_GAP;
+        const hi = index < wps.length - 1 ? wps[index + 1] - MIN_WP_GAP : maxLocal - MIN_WP_GAP;
+        const clamped = Math.max(lo, Math.min(hi, originTime + dxSec));
+        const snapped = snapToFrame(clamped);
+        const nextWps = (element as { waypoints?: { time: number }[] }).waypoints!.map((w, i) =>
+          i === index ? { ...w, time: snapped } : w
+        );
+        useEditorStore.getState().updateElement(slideId, element.id, {
+          waypoints: nextWps,
+        } as Partial<SlideElement>);
+        return;
+      }
+
       const o = origin.timing;
       let next: Timing;
       switch (mode) {
@@ -153,12 +177,14 @@ export function TrackBar({
           next = { ...o, fadeOut: newFadeOut, hold: Math.max(MIN_HOLD, o.hold - delta) };
           break;
         }
+        default:
+          return;
       }
       useEditorStore.getState().updateElement(slideId, element.id, {
         timing: next,
       } as Partial<SlideElement>);
     },
-    [pxToSec, slideDuration, slideId, element.id, onReorderStart]
+    [pxToSec, slideDuration, slideId, element, onReorderStart]
   );
 
   const onPointerUp = useCallback(
@@ -167,6 +193,7 @@ export function TrackBar({
       modeRef.current = null;
       originRef.current = null;
       candidateReorderRef.current = false;
+      wpDragRef.current = null;
       // Snap timing to the frame grid before closing the drag session so
       // the snap is part of the same undo entry as the drag itself.
       const store = useEditorStore.getState();
@@ -301,28 +328,43 @@ export function TrackBar({
           <div className="mx-auto h-full w-0.5 bg-white/60" />
         </div>
       )}
-      {/* Waypoint markers */}
+      {/* Waypoint markers (draggable) */}
       {getWaypointTimes(element).map((wpTime, i) => {
         if (total <= 0) return null;
         const pct = Math.max(0, Math.min(100, (wpTime / total) * 100));
         return (
           <div
             key={`wp-${i}`}
-            className="pointer-events-none absolute"
+            onPointerDown={onPointerDown("waypoint", i)}
+            onPointerMove={onPointerMove}
+            onPointerUp={onPointerUp}
+            onPointerCancel={onPointerUp}
+            className="absolute"
             style={{
               left: `${pct}%`,
               top: "50%",
-              width: 8,
-              height: 8,
-              marginLeft: -4,
-              marginTop: -4,
-              background: "#fff",
-              border: "1px solid rgba(0,0,0,0.6)",
-              transform: "rotate(45deg)",
-              zIndex: 2,
+              width: 12,
+              height: 12,
+              marginLeft: -6,
+              marginTop: -6,
+              cursor: "ew-resize",
+              zIndex: 3,
             }}
             title={`waypoint @ ${secsToTimecode(wpTime)}`}
-          />
+          >
+            <div
+              style={{
+                position: "absolute",
+                left: 2,
+                top: 2,
+                width: 8,
+                height: 8,
+                background: "#fff",
+                border: "1px solid rgba(0,0,0,0.6)",
+                transform: "rotate(45deg)",
+              }}
+            />
+          </div>
         );
       })}
       {/* Label */}
@@ -353,9 +395,7 @@ function labelFor(el: SlideElement): string {
       return el.svgName ?? "svg";
     case "image":
       return "image";
-    case "zoom":
-      return `zoom ${el.to.scale}×`;
-    case "pan":
-      return "pan";
+    case "camera":
+      return `${el.persistent ? "hold" : "return"} ${el.to.scale}×`;
   }
 }

@@ -64,8 +64,7 @@ export function ElementRenderer({
       const r = rectAt(element, viewTime) ?? element.rect;
       return <ImageView el={element} selected={selected} opacity={o} rect={r} />;
     }
-    case "zoom":
-    case "pan":
+    case "camera":
       return null;
   }
 }

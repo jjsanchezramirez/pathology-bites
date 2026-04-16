@@ -28,8 +28,7 @@ function elementHit(el: SlideElement, p: Point, viewTime: number, arrowTolerance
       const pts = arrowPointsAt(el, viewTime);
       return pointOnSegment(p, pts.from, pts.to, arrowTolerance);
     }
-    case "zoom":
-    case "pan":
+    case "camera":
       // Camera ops are not interactable on canvas.
       return false;
     default: {
@@ -54,7 +53,7 @@ export function selectionBounds(
   let any = false;
 
   for (const el of elements) {
-    if (el.kind === "zoom" || el.kind === "pan") continue;
+    if (el.kind === "camera") continue;
     any = true;
     if (el.kind === "arrow") {
       minX = Math.min(minX, el.from.x, el.to.x);
@@ -110,7 +109,7 @@ export function moveElement(el: SlideElement, delta: Point): SlideElement {
       ...(wps ? { waypoints: wps } : {}),
     };
   }
-  if (el.kind === "zoom" || el.kind === "pan") return el;
+  if (el.kind === "camera") return el;
   const wps = el.waypoints?.map((wp) => ({
     ...wp,
     rect: { ...wp.rect, x: wp.rect.x + delta.x, y: wp.rect.y + delta.y },

@@ -120,8 +120,8 @@ function ImagesTab() {
                   e.dataTransfer.setData("application/x-library-image", JSON.stringify(img));
                   e.dataTransfer.effectAllowed = "copy";
                 }}
-                className="group relative overflow-hidden rounded border bg-black hover:border-blue-500"
-                title={img.description ?? ""}
+                className="group relative overflow-hidden rounded border bg-gray-50 hover:border-blue-500"
+                title={img.alt_text ?? img.description ?? ""}
               >
                 <div style={{ aspectRatio: "16 / 9" }}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -134,8 +134,8 @@ function ImagesTab() {
                     draggable={false}
                   />
                 </div>
-                <div className="truncate bg-black/40 px-1 py-0.5 text-[10px] font-medium text-white">
-                  {img.description ?? ""}
+                <div className="truncate bg-black/10 px-1 py-0.5 text-[10px] font-medium text-gray-800">
+                  {img.alt_text ?? img.description ?? ""}
                 </div>
               </button>
             ))}
@@ -224,10 +224,13 @@ function SvgsTab() {
                 key={asset.id}
                 type="button"
                 onClick={() => onAdd(asset)}
-                className="group relative overflow-hidden rounded border bg-white p-2 hover:border-blue-500"
+                className="group relative overflow-hidden rounded border bg-gray-50 hover:border-blue-500"
                 title={asset.name}
               >
-                <div className="flex h-16 items-center justify-center">
+                <div
+                  className="flex items-center justify-center p-2"
+                  style={{ aspectRatio: "16 / 9" }}
+                >
                   {/* eslint-disable-next-line @next/next/no-img-element */}
                   <img
                     src={asset.url}
@@ -238,7 +241,9 @@ function SvgsTab() {
                     draggable={false}
                   />
                 </div>
-                <div className="mt-1 truncate text-[9px] text-gray-600">{asset.name}</div>
+                <div className="truncate bg-black/10 px-1 py-0.5 text-[10px] font-medium text-gray-800">
+                  {asset.name}
+                </div>
               </button>
             ))}
           </div>

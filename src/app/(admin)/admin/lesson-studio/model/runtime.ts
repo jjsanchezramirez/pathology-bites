@@ -6,8 +6,7 @@ import type {
   Slide,
   Timing,
   SlideElement,
-  PanElement,
-  ZoomElement,
+  CameraElement,
   Framing,
   Rect,
   Point,
@@ -134,12 +133,12 @@ export function isVisibleAt(t: Timing, time: number): boolean {
 }
 
 /**
- * Base camera transform at `time`: initialFraming composed with every pan whose
- * fadeIn has completed by `time`. Returns player-space (-50..50) coords.
+ * Base camera transform at `time`: initialFraming composed with every persistent
+ * camera element whose fadeIn has completed by `time`. Returns player-space (-50..50) coords.
  */
 export function baseTransformAt(
   initialFraming: Framing,
-  pans: PanElement[],
+  cameras: CameraElement[],
   time: number
 ): CameraTransform {
   let base = {
@@ -147,7 +146,8 @@ export function baseTransformAt(
     y: uiToTransform(initialFraming.y),
     scale: initialFraming.scale,
   };
-  const sorted = pans.slice().sort((a, b) => a.timing.start - b.timing.start);
+  const persistent = cameras.filter((c) => c.persistent);
+  const sorted = persistent.slice().sort((a, b) => a.timing.start - b.timing.start);
   for (const p of sorted) {
     const panEnd = p.timing.start + p.timing.fadeIn;
     if (time >= panEnd) {
@@ -162,19 +162,53 @@ export function baseTransformAt(
 }
 
 /**
- * Apply active zoom/pan elements on top of the base transform.
- * Overlapping camera ops: last-iteration wins (matches legacy semantics).
+ * Apply active camera elements on top of the base transform.
+ * Persistent cameras (pans) form a moving base; non-persistent (zooms) compose on top.
  */
 export function applyActiveCamera(
   time: number,
   base: CameraTransform,
-  zooms: ZoomElement[],
-  pans: PanElement[],
+  cameras: CameraElement[],
   initialFraming: Framing
 ): CameraTransform {
-  const out = { ...base };
+  // 1. Compute the moving base from any in-progress persistent camera animation.
+  const movingBase = { ...base };
 
-  for (const z of zooms) {
+  const persistent = cameras.filter((c) => c.persistent);
+  const sortedPersistent = persistent.slice().sort((a, b) => a.timing.start - b.timing.start);
+  for (const p of sortedPersistent) {
+    const t = p.timing;
+    const fadeInEnd = t.start + t.fadeIn;
+    if (time < t.start || time >= fadeInEnd) continue;
+
+    let panBase = {
+      x: uiToTransform(initialFraming.x),
+      y: uiToTransform(initialFraming.y),
+      scale: initialFraming.scale,
+    };
+    for (const prior of sortedPersistent) {
+      if (prior === p) break;
+      if (prior.timing.start + prior.timing.fadeIn <= t.start) {
+        panBase = {
+          x: uiToTransform(prior.to.x),
+          y: uiToTransform(prior.to.y),
+          scale: prior.to.scale,
+        };
+      }
+    }
+    const progress = t.fadeIn > 0 ? (time - t.start) / t.fadeIn : 1;
+    const tx = uiToTransform(p.to.x);
+    const ty = uiToTransform(p.to.y);
+    movingBase.scale = panBase.scale + (p.to.scale - panBase.scale) * progress;
+    movingBase.x = panBase.x + (tx - panBase.x) * progress;
+    movingBase.y = panBase.y + (ty - panBase.y) * progress;
+  }
+
+  // 2. Apply non-persistent cameras (zooms) as deltas relative to the moving base.
+  const out = { ...movingBase };
+
+  const transient = cameras.filter((c) => !c.persistent);
+  for (const z of transient) {
     const t = z.timing;
     const fadeInEnd = t.start + t.fadeIn;
     const holdEnd = fadeInEnd + t.hold;
@@ -191,38 +225,9 @@ export function applyActiveCamera(
     }
     const tx = uiToTransform(z.to.x);
     const ty = uiToTransform(z.to.y);
-    out.scale = base.scale + (z.to.scale - base.scale) * progress;
-    out.x = base.x + (tx - base.x) * progress;
-    out.y = base.y + (ty - base.y) * progress;
-  }
-
-  const sortedPans = pans.slice().sort((a, b) => a.timing.start - b.timing.start);
-  for (const p of sortedPans) {
-    const t = p.timing;
-    const fadeInEnd = t.start + t.fadeIn;
-    if (time < t.start || time >= fadeInEnd) continue;
-
-    let panBase = {
-      x: uiToTransform(initialFraming.x),
-      y: uiToTransform(initialFraming.y),
-      scale: initialFraming.scale,
-    };
-    for (const prior of sortedPans) {
-      if (prior === p) break;
-      if (prior.timing.start + prior.timing.fadeIn <= t.start) {
-        panBase = {
-          x: uiToTransform(prior.to.x),
-          y: uiToTransform(prior.to.y),
-          scale: prior.to.scale,
-        };
-      }
-    }
-    const progress = t.fadeIn > 0 ? (time - t.start) / t.fadeIn : 1;
-    const tx = uiToTransform(p.to.x);
-    const ty = uiToTransform(p.to.y);
-    out.scale = panBase.scale + (p.to.scale - panBase.scale) * progress;
-    out.x = panBase.x + (tx - panBase.x) * progress;
-    out.y = panBase.y + (ty - panBase.y) * progress;
+    out.scale = movingBase.scale + (z.to.scale - movingBase.scale) * progress;
+    out.x = movingBase.x + (tx - movingBase.x) * progress;
+    out.y = movingBase.y + (ty - movingBase.y) * progress;
   }
 
   return out;
@@ -230,14 +235,13 @@ export function applyActiveCamera(
 
 /** Compute camera transform + per-element opacity for a slide at `time`. */
 export function computeSlideAt(slide: Slide, time: number): SlideRuntime {
-  const zooms = slide.elements.filter((e): e is ZoomElement => e.kind === "zoom");
-  const pans = slide.elements.filter((e): e is PanElement => e.kind === "pan");
-  const base = baseTransformAt(slide.initialFraming, pans, time);
-  const transform = applyActiveCamera(time, base, zooms, pans, slide.initialFraming);
+  const cameras = slide.elements.filter((e): e is CameraElement => e.kind === "camera");
+  const base = baseTransformAt(slide.initialFraming, cameras, time);
+  const transform = applyActiveCamera(time, base, cameras, slide.initialFraming);
 
   const elementOpacity: Record<string, number> = {};
   for (const el of slide.elements) {
-    if (el.kind === "zoom" || el.kind === "pan") continue;
+    if (el.kind === "camera") continue;
     const base = el.opacity ?? 1;
     elementOpacity[el.id] = clamp01(base * opacityAt(el.timing, time));
   }

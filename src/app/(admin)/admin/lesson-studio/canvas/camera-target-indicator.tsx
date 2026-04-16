@@ -7,13 +7,13 @@
 "use client";
 
 import { useCallback, useRef } from "react";
-import type { ZoomElement, PanElement, SlideElement } from "../model/types";
+import type { CameraElement, SlideElement } from "../model/types";
 import { useEditorStore } from "../model/store";
 import { clamp } from "../utils/math";
 import { snapPoint } from "./snap";
 
 interface Props {
-  element: ZoomElement | PanElement;
+  element: CameraElement;
   slideId: string;
 }
 
@@ -65,8 +65,20 @@ export function CameraTargetIndicator({ element, slideId }: Props) {
     useEditorStore.getState().endDrag();
   }, []);
 
-  const color = element.kind === "zoom" ? "#0ea5e9" : "#14b8a6";
-  const label = element.kind === "zoom" ? `Zoom ${element.to.scale.toFixed(2)}×` : "Pan target";
+  const onDoubleClick = useCallback(
+    (e: React.MouseEvent) => {
+      e.stopPropagation();
+      useEditorStore.getState().updateElement(slideId, element.id, {
+        persistent: !element.persistent,
+      } as Partial<SlideElement>);
+    },
+    [slideId, element.id, element.persistent]
+  );
+
+  const color = element.persistent ? "#14b8a6" : "#0ea5e9";
+  const label = element.persistent
+    ? `Hold ${element.to.scale.toFixed(2)}×`
+    : `Return ${element.to.scale.toFixed(2)}×`;
 
   return (
     <div
@@ -74,6 +86,7 @@ export function CameraTargetIndicator({ element, slideId }: Props) {
       onPointerMove={onPointerMove}
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
+      onDoubleClick={onDoubleClick}
       className="absolute z-30 flex flex-col items-center"
       style={{
         left: `${element.to.x}%`,

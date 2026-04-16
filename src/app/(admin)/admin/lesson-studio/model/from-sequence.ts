@@ -207,9 +207,24 @@ function rebuildSlideElements(segment: ExplainerSequence["segments"][number]): S
       rotation: sample.rotation,
     };
     if (sample.overlayKind === "image") {
-      elements.push({ id, kind: "image", imageUrl: sample.svgUrl, rect, opacity: sample.opacity, timing });
+      elements.push({
+        id,
+        kind: "image",
+        imageUrl: sample.svgUrl,
+        rect,
+        opacity: sample.opacity,
+        timing,
+      });
     } else {
-      elements.push({ id, kind: "svg", svgUrl: sample.svgUrl, rect, opacity: sample.opacity, color: sample.color, timing });
+      elements.push({
+        id,
+        kind: "svg",
+        svgUrl: sample.svgUrl,
+        rect,
+        opacity: sample.opacity,
+        color: sample.color,
+        timing,
+      });
     }
   }
 
@@ -226,11 +241,32 @@ function rebuildSlideElements(segment: ExplainerSequence["segments"][number]): S
  * Load an ExplainerSequence back into a Lesson.
  * Prefers `sequence.editorState` (lossless). Falls back to keyframe reverse-engineering.
  */
+/** Migrate legacy kind:"zoom"/kind:"pan" to unified kind:"camera". */
+function migrateCameraElements(lesson: Lesson): Lesson {
+  let changed = false;
+  const slides = lesson.slides.map((slide) => {
+    const elements = slide.elements.map((el) => {
+      const raw = el as unknown as Record<string, unknown>;
+      if (raw.kind === "zoom") {
+        changed = true;
+        return { ...el, kind: "camera" as const, persistent: false } as SlideElement;
+      }
+      if (raw.kind === "pan") {
+        changed = true;
+        return { ...el, kind: "camera" as const, persistent: true } as SlideElement;
+      }
+      return el;
+    });
+    return changed ? { ...slide, elements } : slide;
+  });
+  return changed ? { ...lesson, slides } : lesson;
+}
+
 export function sequenceToLesson(sequence: ExplainerSequence): Lesson {
   // Fast path: round-trip via editorState (prefer new `lesson` key, fall back to legacy).
   const saved = sequence.editorState?.lesson ?? sequence.editorState?.selectedImages?.[0];
   if (isLessonShape(saved)) {
-    return saved;
+    return migrateCameraElements(saved);
   }
 
   // Fallback: rebuild from keyframes (lossy — no element-level camera ops).

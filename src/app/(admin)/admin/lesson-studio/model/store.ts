@@ -23,17 +23,7 @@ export type Selection = {
 
 export type EditorMode = "edit" | "preview";
 
-export type Tool =
-  | "select"
-  | "shape-rectangle"
-  | "shape-oval"
-  | "spotlight"
-  | "arrow"
-  | "text"
-  | "svg"
-  | "image"
-  | "zoom"
-  | "pan";
+export type Tool = "select" | "shape" | "spotlight" | "arrow" | "text" | "svg" | "image" | "camera";
 
 interface StoreState {
   lesson: Lesson;
@@ -151,6 +141,30 @@ function migrateLessonBackgrounds(lesson: Lesson): Lesson {
   return changed ? { ...lesson, slides } : lesson;
 }
 
+/**
+ * Migrate legacy `kind: "zoom"` / `kind: "pan"` elements to the unified
+ * `kind: "camera"` with a `persistent` flag. Idempotent.
+ */
+function migrateLegacyCameraElements(lesson: Lesson): Lesson {
+  let changed = false;
+  const slides = lesson.slides.map((slide) => {
+    const elements = slide.elements.map((el): SlideElement => {
+      const raw = el as unknown as Record<string, unknown>;
+      if (raw.kind === "zoom") {
+        changed = true;
+        return { ...el, kind: "camera", persistent: false } as SlideElement;
+      }
+      if (raw.kind === "pan") {
+        changed = true;
+        return { ...el, kind: "camera", persistent: true } as SlideElement;
+      }
+      return el;
+    });
+    return changed ? { ...slide, elements } : slide;
+  });
+  return changed ? { ...lesson, slides } : lesson;
+}
+
 function pushHistory(past: HistoryEntry[], entry: HistoryEntry): HistoryEntry[] {
   const next = [...past, entry];
   if (next.length > HISTORY_LIMIT) next.shift();
@@ -210,7 +224,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   // ---- Document --------------------------------------------------------------
 
   setLesson: (lesson) => {
-    const migrated = migrateLessonBackgrounds(lesson);
+    const migrated = migrateLegacyCameraElements(migrateLessonBackgrounds(lesson));
     set((state) => {
       const nextId = state.currentSnapshotId + 1;
       return {

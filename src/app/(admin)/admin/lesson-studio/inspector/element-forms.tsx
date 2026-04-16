@@ -10,8 +10,7 @@ import type {
   TextElement,
   SvgElement,
   ImageElement,
-  ZoomElement,
-  PanElement,
+  CameraElement,
   Rect,
 } from "../model/types";
 import { useEditorStore } from "../model/store";
@@ -345,16 +344,21 @@ export function ImageForm({ element, slideId }: Props<ImageElement>) {
   );
 }
 
-// ---- Zoom / Pan (camera ops) ---------------------------------------------
+// ---- Camera (unified zoom/pan) --------------------------------------------
 
-function CameraForm({
-  element,
-  slideId,
-  title,
-}: Props<ZoomElement | PanElement> & { title: string }) {
-  const update = useUpdate<ZoomElement | PanElement>(slideId, element.id);
+export function CameraForm({ element, slideId }: Props<CameraElement>) {
+  const update = useUpdate<CameraElement>(slideId, element.id);
+  const title = element.persistent ? "Camera (hold)" : "Camera (return)";
   return (
     <Section title={title}>
+      <Row label="Hold">
+        <input
+          type="checkbox"
+          checked={element.persistent}
+          onChange={(e) => update({ persistent: e.target.checked })}
+          className="h-4 w-4 rounded border-gray-300"
+        />
+      </Row>
       <Row label="To X">
         <NumberInput
           value={element.to.x}
@@ -382,11 +386,4 @@ function CameraForm({
       </Row>
     </Section>
   );
-}
-
-export function ZoomForm(props: Props<ZoomElement>) {
-  return <CameraForm {...props} title="Zoom target" />;
-}
-export function PanForm(props: Props<PanElement>) {
-  return <CameraForm {...props} title="Pan target" />;
 }

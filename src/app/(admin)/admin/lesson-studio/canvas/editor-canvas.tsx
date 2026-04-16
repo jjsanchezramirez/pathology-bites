@@ -157,7 +157,7 @@ export function EditorCanvas() {
         </div>
 
         {/* Camera target overlay (camera elements don't live in content space) */}
-        {singleSelection && (singleSelection.kind === "zoom" || singleSelection.kind === "pan") && (
+        {singleSelection && singleSelection.kind === "camera" && (
           <CameraTargetIndicator element={singleSelection} slideId={slide.id} />
         )}
       </div>

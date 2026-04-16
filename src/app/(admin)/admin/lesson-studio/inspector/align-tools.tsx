@@ -20,7 +20,7 @@ import { Section } from "./inputs";
 type Edge = "left" | "centerX" | "right" | "top" | "centerY" | "bottom";
 
 function rectOf(el: SlideElement): { x: number; y: number; w: number; h: number } | null {
-  if (el.kind === "arrow" || el.kind === "zoom" || el.kind === "pan") return null;
+  if (el.kind === "arrow" || el.kind === "camera") return null;
   return { x: el.rect.x, y: el.rect.y, w: el.rect.w, h: el.rect.h };
 }
 

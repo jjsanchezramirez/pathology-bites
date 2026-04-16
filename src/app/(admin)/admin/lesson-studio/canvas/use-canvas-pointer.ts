@@ -224,7 +224,7 @@ export function useCanvasPointer({ canvasRef, slide, camera, viewTime }: UseCanv
         });
         if (created) {
           // Zoom/Pan are single-click placement (no drag sizing): commit + reset tool.
-          if (created.kind === "zoom" || created.kind === "pan") {
+          if (created.kind === "camera") {
             store.addElement(slide.id, created);
             store.setTool("select");
             sessionRef.current = null;

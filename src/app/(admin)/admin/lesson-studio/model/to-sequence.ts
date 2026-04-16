@@ -13,7 +13,7 @@ import type {
   SvgOverlayElement,
 } from "@/shared/types/explainer";
 import { buildCaptionChunks } from "../utils/caption-builder";
-import type { Lesson, Slide, SlideElement, PanElement, ZoomElement, ImageElement } from "./types";
+import type { Lesson, Slide, SlideElement, CameraElement, ImageElement } from "./types";
 import { timingEnd } from "./types";
 import { opacityAt, baseTransformAt, applyActiveCamera, rectAt, arrowPointsAt } from "./runtime";
 
@@ -42,10 +42,9 @@ function collectBreakpoints(slide: Slide): number[] {
 
 /** Build a single keyframe at `time` from slide elements. */
 function buildKeyframe(slide: Slide, time: number, skipElementId?: string): Keyframe {
-  const zooms = slide.elements.filter((e): e is ZoomElement => e.kind === "zoom");
-  const pans = slide.elements.filter((e): e is PanElement => e.kind === "pan");
-  const base = baseTransformAt(slide.initialFraming, pans, time);
-  const transform = applyActiveCamera(time, base, zooms, pans, slide.initialFraming);
+  const cameras = slide.elements.filter((e): e is CameraElement => e.kind === "camera");
+  const base = baseTransformAt(slide.initialFraming, cameras, time);
+  const transform = applyActiveCamera(time, base, cameras, slide.initialFraming);
 
   const highlights: HighlightRegion[] = [];
   const arrows: ArrowPointer[] = [];
@@ -53,7 +52,7 @@ function buildKeyframe(slide: Slide, time: number, skipElementId?: string): Keyf
   const svgOverlays: SvgOverlayElement[] = [];
 
   for (const el of slide.elements) {
-    if (el.kind === "zoom" || el.kind === "pan") continue;
+    if (el.kind === "camera") continue;
     if (el.id === skipElementId) continue;
 
     const opacity = clamp01((el.opacity ?? 1) * opacityAt(el.timing, time));
@@ -183,12 +182,13 @@ export function lessonToSequence(lesson: Lesson): ExplainerSequence | null {
     // Detect the background ImageElement for the player's segment imageUrl.
     // Prefer the well-known "image-bg-" prefix set by slideFromImage / migration,
     // then fall back to any approximately-full-canvas image at index 0.
-    const bgEl = slide.elements.find(
-      (e): e is ImageElement => e.kind === "image" && e.id.startsWith("image-bg-")
-    ) ?? slide.elements.find(
-      (e): e is ImageElement =>
-        e.kind === "image" && e.rect.w >= 99 && e.rect.h >= 99
-    );
+    const bgEl =
+      slide.elements.find(
+        (e): e is ImageElement => e.kind === "image" && e.id.startsWith("image-bg-")
+      ) ??
+      slide.elements.find(
+        (e): e is ImageElement => e.kind === "image" && e.rect.w >= 99 && e.rect.h >= 99
+      );
     const bgImageUrl = bgEl?.imageUrl ?? "";
 
     const breakpoints = collectBreakpoints(slide);
@@ -206,9 +206,7 @@ export function lessonToSequence(lesson: Lesson): ExplainerSequence | null {
       id: slide.id,
       imageUrl: bgImageUrl,
       imageAlt: "",
-      ...(!bgImageUrl && slide.backgroundColor
-        ? { backgroundColor: slide.backgroundColor }
-        : {}),
+      ...(!bgImageUrl && slide.backgroundColor ? { backgroundColor: slide.backgroundColor } : {}),
       startTime,
       endTime,
       transition: nextSlide ? nextSlide.transitionIn.kind : "cut",

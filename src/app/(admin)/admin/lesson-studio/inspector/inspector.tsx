@@ -18,8 +18,7 @@ import {
   TextForm,
   SvgForm,
   ImageForm,
-  ZoomForm,
-  PanForm,
+  CameraForm,
 } from "./element-forms";
 
 export function Inspector() {
@@ -104,10 +103,8 @@ function renderForm(element: SlideElement, slideId: string) {
       return <SvgForm element={element} slideId={slideId} />;
     case "image":
       return <ImageForm element={element} slideId={slideId} />;
-    case "zoom":
-      return <ZoomForm element={element} slideId={slideId} />;
-    case "pan":
-      return <PanForm element={element} slideId={slideId} />;
+    case "camera":
+      return <CameraForm element={element} slideId={slideId} />;
   }
 }
 
@@ -125,9 +122,7 @@ function kindLabel(el: SlideElement): string {
       return "SVG";
     case "image":
       return "Image";
-    case "zoom":
-      return "Zoom";
-    case "pan":
-      return "Pan";
+    case "camera":
+      return "Camera";
   }
 }

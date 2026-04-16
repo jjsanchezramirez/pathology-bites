@@ -36,6 +36,7 @@ export function WaypointsSection({ element, slideId }: Props) {
 
   const waypoints = (element as { waypoints?: Waypoint[] | ArrowWaypoint[] }).waypoints ?? [];
 
+  const MIN_GAP = 0.5;
   const localNow = snapToFrame(clamp(viewTime - t.start, 0, maxLocal));
 
   function update(patch: { waypoints: Waypoint[] | ArrowWaypoint[] | undefined }) {
@@ -43,6 +44,10 @@ export function WaypointsSection({ element, slideId }: Props) {
   }
 
   function addAtPlayhead() {
+    // Check that the new waypoint respects MIN_GAP from existing waypoints and edges.
+    const tooClose = waypoints.some((w) => Math.abs(w.time - localNow) < MIN_GAP);
+    if (tooClose || localNow < MIN_GAP || localNow > maxLocal - MIN_GAP) return;
+
     if (isArrow) {
       const arrow = element as ArrowElement;
       const pts = arrowPointsAt(arrow, viewTime);
@@ -63,10 +68,12 @@ export function WaypointsSection({ element, slideId }: Props) {
   }
 
   function setTimeAt(index: number, newTime: number) {
-    const clamped = snapToFrame(clamp(newTime, 0, maxLocal));
-    const next = waypoints
-      .map((w, i) => (i === index ? { ...w, time: clamped } : w))
-      .sort((a, b) => a.time - b.time);
+    const MIN_GAP = 0.5;
+    const lo = index > 0 ? waypoints[index - 1].time + MIN_GAP : MIN_GAP;
+    const hi =
+      index < waypoints.length - 1 ? waypoints[index + 1].time - MIN_GAP : maxLocal - MIN_GAP;
+    const clamped = snapToFrame(clamp(newTime, lo, hi));
+    const next = waypoints.map((w, i) => (i === index ? { ...w, time: clamped } : w));
     update({ waypoints: next as Waypoint[] | ArrowWaypoint[] });
   }
 
