@@ -198,6 +198,7 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
                 <TableRow key={asset.id}>
                   <TableCell>
                     <div className="w-10 h-10 rounded border bg-white flex items-center justify-center overflow-hidden">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={asset.url}
                         alt={asset.name}

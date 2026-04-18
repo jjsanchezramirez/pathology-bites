@@ -165,7 +165,7 @@ const nextConfig = {
         ],
       },
       {
-        source: "/test/audio-upload-test",
+        source: "/debug/audio-upload-test",
         headers: [
           { key: "Cross-Origin-Embedder-Policy", value: "require-corp" },
           { key: "Cross-Origin-Opener-Policy", value: "same-origin" },

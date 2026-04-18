@@ -75,7 +75,7 @@ export function DayView({
     return map;
   }, [schedule, days]);
 
-  const dayTasks = tasksByDate.get(currentDate) || [];
+  const dayTasks = useMemo(() => tasksByDate.get(currentDate) || [], [tasksByDate, currentDate]);
   const studyTasks = dayTasks.filter((t) => t.task_type === "task");
   const completedCount = studyTasks.filter((t) => !!completedTasks[t.task_id]).length;
   const totalMin = studyTasks.reduce((s, t) => s + t.minutes, 0);

@@ -259,21 +259,6 @@ export function SetupSheet({
     }
   };
 
-  if (!localConfig) return null;
-
-  const updatePhase = (idx: number, updates: Partial<PhaseConfig>) => {
-    const phases = [...localConfig.phases];
-    phases[idx] = { ...phases[idx], ...updates };
-    updateConfig({ phases });
-  };
-
-  const fmtRange = (s: string, e: string) => {
-    if (!s || !e) return "No dates";
-    const f = (d: string) =>
-      new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
-    return `${f(s)} – ${f(e)}`;
-  };
-
   const variants = useMemo(
     () => ({
       enter: (dir: "forward" | "back") => ({
@@ -288,6 +273,21 @@ export function SetupSheet({
     }),
     []
   );
+
+  if (!localConfig) return null;
+
+  const updatePhase = (idx: number, updates: Partial<PhaseConfig>) => {
+    const phases = [...localConfig.phases];
+    phases[idx] = { ...phases[idx], ...updates };
+    updateConfig({ phases });
+  };
+
+  const fmtRange = (s: string, e: string) => {
+    if (!s || !e) return "No dates";
+    const f = (d: string) =>
+      new Date(d + "T12:00:00").toLocaleDateString("en-US", { month: "short", day: "numeric" });
+    return `${f(s)} – ${f(e)}`;
+  };
 
   const renderPanel = () => {
     if (panel === "menu") {

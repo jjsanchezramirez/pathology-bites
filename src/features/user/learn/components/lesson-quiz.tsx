@@ -43,14 +43,7 @@ export function LessonQuiz({ quiz, onComplete }: LessonQuizProps) {
       setSelectedOption(null);
       setIsAnswered(false);
     }
-  }, [
-    isLastQuestion,
-    correctCount,
-    quiz.questions.length,
-    onComplete,
-    selectedOption,
-    question.correctOptionId,
-  ]);
+  }, [isLastQuestion, correctCount, quiz.questions.length, onComplete]);
 
   if (isComplete) {
     const score = Math.round((correctCount / quiz.questions.length) * 100);

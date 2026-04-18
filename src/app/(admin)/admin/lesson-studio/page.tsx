@@ -29,6 +29,7 @@ import { AudioPickerDialog } from "./components/audio-picker-dialog";
 import { SaveToDatabaseDialog } from "./components/save-to-database-dialog";
 import { LoadFromDatabaseDialog } from "./components/load-from-database-dialog";
 import { ExportDialog } from "./components/export-dialog";
+import { GenerateLessonDialog } from "./components/generate-lesson-dialog";
 
 export default function LessonStudioPage() {
   const lesson = useEditorStore((s) => s.lesson);
@@ -127,6 +128,7 @@ export default function LessonStudioPage() {
   const [saveOpen, setSaveOpen] = useState(false);
   const [loadOpen, setLoadOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
+  const [generateOpen, setGenerateOpen] = useState(false);
 
   const markClean = useEditorStore((s) => s.markClean);
 
@@ -160,6 +162,10 @@ export default function LessonStudioPage() {
   const onClearAudio = useCallback(() => {
     setAudio(null);
   }, [setAudio]);
+
+  const onGenerate = useCallback(() => {
+    setGenerateOpen(true);
+  }, []);
 
   useKeyboardShortcuts({
     onSave: onSaveOpen,
@@ -204,6 +210,7 @@ export default function LessonStudioPage() {
         onNewLesson={onNewLesson}
         onSaveAsNew={onSaveAsNew}
         onClearAudio={onClearAudio}
+        onGenerate={onGenerate}
         totalDuration={sequence?.duration ?? 0}
       />
 
@@ -265,6 +272,7 @@ export default function LessonStudioPage() {
         previewSequence={sequence}
         audioUrl={audioUrl}
       />
+      <GenerateLessonDialog open={generateOpen} onOpenChange={setGenerateOpen} />
     </div>
   );
 }

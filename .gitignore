@@ -63,8 +63,8 @@ SAMPLE_*.ts
 dev/
 
 # Local-only sandbox (never committed, never deployed)
-src/app/test/
-src/app/api/test/
+src/app/debug/
+src/app/api/debug/
 
 # FFmpeg WASM files (download via npm postinstall)
 public/ffmpeg/

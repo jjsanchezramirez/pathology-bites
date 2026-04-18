@@ -34,7 +34,7 @@ export function isPublicRoute(pathname: string): boolean {
   }
 
   // Pattern matches
-  if (pathname.startsWith("/tools/") || pathname.startsWith("/test/")) {
+  if (pathname.startsWith("/tools/") || pathname.startsWith("/debug/")) {
     return true;
   }
 

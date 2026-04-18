@@ -26,6 +26,7 @@ import {
   Music,
   Music2,
   ChevronDown,
+  Wand2,
 } from "lucide-react";
 import { useEditorStore, selectCanUndo, selectCanRedo } from "./model/store";
 
@@ -44,6 +45,8 @@ interface TopBarProps {
   onSaveAsNew: () => void;
   /** Remove the currently set audio track. */
   onClearAudio: () => void;
+  /** Open AI generation dialog. */
+  onGenerate: () => void;
   /** Total duration in seconds, used for the display chip. */
   totalDuration: number;
 }
@@ -63,6 +66,7 @@ export function TopBar({
   onNewLesson,
   onSaveAsNew,
   onClearAudio,
+  onGenerate,
   totalDuration,
 }: TopBarProps) {
   const title = useEditorStore((s) => s.lesson.title);
@@ -172,8 +176,18 @@ export function TopBar({
         </Button>
       </div>
 
-      {/* --- Right: Save status · Preview ------------------------------- */}
+      {/* --- Right: Generate · Save status · Preview --------------------- */}
       <div className="flex flex-shrink-0 items-center gap-1">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onGenerate}
+          disabled={!hasAudio || noSlides}
+          title="Generate lesson with AI"
+        >
+          <Wand2 className="mr-1 h-3 w-3" />
+          Generate
+        </Button>
         <button
           type="button"
           onClick={onSaveOpen}

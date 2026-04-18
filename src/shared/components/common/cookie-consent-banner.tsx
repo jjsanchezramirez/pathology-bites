@@ -25,6 +25,10 @@ export function CookieConsentBanner() {
     // Only run on client side
     if (typeof window === "undefined") return;
 
+    // Skip cookie consent on localhost/dev
+    const hostname = window.location.hostname;
+    if (hostname === "localhost" || hostname === "127.0.0.1") return;
+
     // Prevent double-checking in React Strict Mode
     if (hasCheckedConsent.current) return;
     hasCheckedConsent.current = true;

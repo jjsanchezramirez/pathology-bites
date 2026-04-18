@@ -10,7 +10,7 @@ node_modules
 
 # Development files
 dev/
-src/app/test/
+src/app/debug/
 
 # Local configuration
 .vercel

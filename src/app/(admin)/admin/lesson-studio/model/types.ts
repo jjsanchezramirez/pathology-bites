@@ -52,6 +52,8 @@ interface ElementBase {
   timing: Timing;
   /** Base opacity 0–1 (multiplied by computed fade opacity at render time). Default 1. */
   opacity?: number;
+  /** Whether to render a drop shadow. Default true for text/arrows, false for shapes. */
+  shadow?: boolean;
 }
 
 export type ShapeKind = "rectangle" | "circle" | "oval";

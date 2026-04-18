@@ -104,6 +104,7 @@ function ShapeView({
         border: `${el.stroke.width}px ${el.stroke.style} ${el.stroke.color}`,
         borderRadius,
         background: el.fill ?? "transparent",
+        boxShadow: el.shadow ? "0 1px 4px rgba(0,0,0,0.6)" : undefined,
         outline: selected ? "1px dashed rgba(59,130,246,0.9)" : undefined,
         outlineOffset: "2px",
         opacity,
@@ -202,6 +203,7 @@ function ArrowView({
         strokeWidth={el.strokeWidth}
         strokeLinecap="butt"
         markerEnd={`url(#${markerId})`}
+        filter={el.shadow !== false ? "drop-shadow(0 0.5px 2px rgba(0,0,0,0.8))" : undefined}
       />
       {selected && (
         <line
@@ -306,9 +308,10 @@ function TextView({
           backgroundColor: el.background ?? "transparent",
           padding: el.background ? "0.4cqw 0.8cqw" : undefined,
           borderRadius: el.background ? "0.4cqw" : undefined,
-          textShadow: !el.background
-            ? "0 0.1cqw 0.3cqw rgba(0,0,0,0.8), 0 0 0.8cqw rgba(0,0,0,0.5)"
-            : undefined,
+          textShadow:
+            el.shadow !== false && !el.background
+              ? "0 0.1cqw 0.3cqw rgba(0,0,0,0.8), 0 0 0.8cqw rgba(0,0,0,0.5)"
+              : undefined,
           whiteSpace: "pre-wrap",
         }}
       >

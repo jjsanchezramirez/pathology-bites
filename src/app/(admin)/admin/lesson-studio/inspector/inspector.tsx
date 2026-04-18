@@ -19,7 +19,9 @@ import {
   SvgForm,
   ImageForm,
   CameraForm,
+  MultiTextForm,
 } from "./element-forms";
+import type { TextElement } from "../model/types";
 
 export function Inspector() {
   const slide = useEditorStore(selectCurrentSlide);
@@ -53,7 +55,7 @@ export function Inspector() {
             slideDuration={slide.duration}
           />
         ) : (
-          <AlignTools slideId={slide.id} elements={selected} />
+          <MultiSelectionPanel slideId={slide.id} elements={selected} />
         )}
       </div>
     </div>
@@ -106,6 +108,26 @@ function renderForm(element: SlideElement, slideId: string) {
     case "camera":
       return <CameraForm element={element} slideId={slideId} />;
   }
+}
+
+function MultiSelectionPanel({ slideId, elements }: { slideId: string; elements: SlideElement[] }) {
+  const textElements = elements.filter((e): e is TextElement => e.kind === "text");
+  const allText = textElements.length === elements.length && textElements.length > 0;
+
+  return (
+    <div>
+      {allText ? (
+        <MultiTextForm elements={textElements} slideId={slideId} />
+      ) : textElements.length > 1 ? (
+        <>
+          <MultiTextForm elements={textElements} slideId={slideId} />
+          <AlignTools slideId={slideId} elements={elements} />
+        </>
+      ) : (
+        <AlignTools slideId={slideId} elements={elements} />
+      )}
+    </div>
+  );
 }
 
 function kindLabel(el: SlideElement): string {

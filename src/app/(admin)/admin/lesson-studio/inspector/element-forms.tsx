@@ -126,6 +126,14 @@ export function ShapeForm({ element, slideId }: Props<ShapeElement>) {
         <Row label="Fill">
           <ColorInput value={element.fill ?? "#ffffff"} onChange={(v) => update({ fill: v })} />
         </Row>
+        <Row label="Shadow">
+          <input
+            type="checkbox"
+            checked={element.shadow ?? false}
+            onChange={(e) => update({ shadow: e.target.checked })}
+            className="h-4 w-4 rounded border-gray-300"
+          />
+        </Row>
       </Section>
       <RectSection rect={element.rect} onChange={(rect) => update({ rect })} />
       <WaypointsSection element={element} slideId={slideId} />
@@ -192,6 +200,14 @@ export function ArrowForm({ element, slideId }: Props<ArrowElement>) {
             min={1}
             suffix="px"
             onChange={(v) => update({ headSize: Math.max(1, v) })}
+          />
+        </Row>
+        <Row label="Shadow">
+          <input
+            type="checkbox"
+            checked={element.shadow !== false}
+            onChange={(e) => update({ shadow: e.target.checked })}
+            className="h-4 w-4 rounded border-gray-300"
           />
         </Row>
       </Section>
@@ -285,10 +301,104 @@ export function TextForm({ element, slideId }: Props<TextElement>) {
             ]}
           />
         </Row>
+        <Row label="Shadow">
+          <input
+            type="checkbox"
+            checked={element.shadow !== false}
+            onChange={(e) => update({ shadow: e.target.checked })}
+            className="h-4 w-4 rounded border-gray-300"
+          />
+        </Row>
       </Section>
       <RectSection rect={element.rect} onChange={(rect) => update({ rect })} />
       <WaypointsSection element={element} slideId={slideId} />
     </>
+  );
+}
+
+// ---- Multi-select text editing --------------------------------------------
+
+/**
+ * Shared property editor shown when multiple text elements are selected.
+ * Applies changes to all selected text elements at once.
+ */
+export function MultiTextForm({ elements, slideId }: { elements: TextElement[]; slideId: string }) {
+  const store = useEditorStore.getState;
+
+  const applyToAll = (patch: Partial<TextElement>) => {
+    const s = store();
+    s.beginDrag();
+    for (const el of elements) {
+      s.updateElement(slideId, el.id, patch as Partial<SlideElement>);
+    }
+    s.endDrag();
+  };
+
+  // Use first element as reference for current values
+  const ref = elements[0];
+  // Check if values are mixed across selection
+  const mixedColor = elements.some((e) => e.color !== ref.color);
+  const mixedSize = elements.some((e) => e.fontSize !== ref.fontSize);
+  const mixedWeight = elements.some((e) => e.fontWeight !== ref.fontWeight);
+  const mixedAlign = elements.some((e) => e.align !== ref.align);
+  const mixedShadow = elements.some((e) => (e.shadow !== false) !== (ref.shadow !== false));
+  const mixedBg = elements.some((e) => (e.background ?? "") !== (ref.background ?? ""));
+
+  return (
+    <Section title={`${elements.length} text elements`}>
+      <Row label="Color">
+        <ColorInput
+          value={mixedColor ? "#ffffff" : ref.color}
+          onChange={(v) => applyToAll({ color: v })}
+        />
+      </Row>
+      <Row label="Size">
+        <NumberInput
+          value={mixedSize ? 1.4 : ref.fontSize}
+          step={0.25}
+          min={0.5}
+          suffix="cqw"
+          onChange={(v) => applyToAll({ fontSize: Math.max(0.5, v) })}
+        />
+      </Row>
+      <Row label="Weight">
+        <Select<TextElement["fontWeight"]>
+          value={mixedWeight ? "normal" : ref.fontWeight}
+          onChange={(v) => applyToAll({ fontWeight: v })}
+          options={[
+            { value: "normal", label: "Normal" },
+            { value: "semibold", label: "Semibold" },
+            { value: "bold", label: "Bold" },
+          ]}
+        />
+      </Row>
+      <Row label="Align">
+        <Select<TextElement["align"]>
+          value={mixedAlign ? "center" : ref.align}
+          onChange={(v) => applyToAll({ align: v })}
+          options={[
+            { value: "left", label: "Left" },
+            { value: "center", label: "Center" },
+            { value: "right", label: "Right" },
+          ]}
+        />
+      </Row>
+      <Row label="Bg">
+        <TextInput
+          value={mixedBg ? "" : (ref.background ?? "")}
+          placeholder={mixedBg ? "mixed" : "transparent"}
+          onChange={(v) => applyToAll({ background: v || undefined })}
+        />
+      </Row>
+      <Row label="Shadow">
+        <input
+          type="checkbox"
+          checked={mixedShadow ? false : ref.shadow !== false}
+          onChange={(e) => applyToAll({ shadow: e.target.checked })}
+          className="h-4 w-4 rounded border-gray-300"
+        />
+      </Row>
+    </Section>
   );
 }
 

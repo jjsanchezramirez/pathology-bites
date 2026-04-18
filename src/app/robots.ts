@@ -28,7 +28,7 @@ export default function robots(): MetadataRoute.Robots {
 
           // Technical paths
           "/_next/",
-          "/test/",
+          "/debug/",
           "/private/",
           "/temp/",
           "/draft/",

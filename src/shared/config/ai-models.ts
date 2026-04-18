@@ -233,6 +233,17 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     contextLength: "2M tokens",
     tpmLimit: 125000,
   },
+
+  // Anthropic Claude models
+  {
+    id: "claude-sonnet-4-20250514",
+    name: "Claude Sonnet 4",
+    provider: "claude",
+    available: true,
+    description: "Excellent vision, spatial reasoning, and structured output",
+    contextLength: "200K tokens",
+    tpmLimit: 200000,
+  },
 ];
 
 // Simple TPM-based fallback lists
@@ -248,6 +259,19 @@ export const LOW_TPM_MODELS = ACTIVE_AI_MODELS.filter(
 
 // Combined fallback list ordered by TPM (high to low)
 export const TPM_ORDERED_FALLBACK = [...HIGH_TPM_MODELS, ...MEDIUM_TPM_MODELS, ...LOW_TPM_MODELS];
+
+// Lesson generation fallback lists — prioritise Claude for vision + planning quality
+export const LESSON_GEN_VISION_MODELS = [
+  "claude-sonnet-4-20250514",
+  "Llama-4-Scout-17B-16E-Instruct-FP8",
+  "gemini-2.5-flash",
+];
+
+export const LESSON_GEN_TEXT_MODELS = [
+  "claude-sonnet-4-20250514",
+  "gemini-2.5-flash",
+  "Llama-4-Maverick-17B-128E-Instruct-FP8",
+];
 
 // Disabled models (show in UI but not selectable)
 export const DISABLED_AI_MODELS: AIModel[] = [
@@ -277,20 +301,14 @@ export const DISABLED_AI_MODELS: AIModel[] = [
     contextLength: "TBD",
   },
 
-  // Claude models (disabled due to API issues)
+  // Claude models (legacy — superseded by active claude-sonnet-4)
   {
     id: "claude-3-5-sonnet-20241022",
     name: "Claude 3.5 Sonnet",
     provider: "claude",
     available: false,
-    description: "Anthropic Claude 3.5 Sonnet (currently unavailable)",
-  },
-  {
-    id: "claude-3-5-haiku-20241022",
-    name: "Claude 3.5 Haiku",
-    provider: "claude",
-    available: false,
-    description: "Anthropic Claude 3.5 Haiku (currently unavailable)",
+    deprecated: true,
+    description: "Anthropic Claude 3.5 Sonnet (superseded by Claude Sonnet 4)",
   },
 
   // Mistral models (disabled due to issues)

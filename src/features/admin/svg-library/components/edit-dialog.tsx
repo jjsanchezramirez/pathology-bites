@@ -107,6 +107,7 @@ export function EditSvgDialog({ asset, open, onOpenChange, onSave }: EditSvgDial
           <div className="grid grid-cols-1 gap-4">
             {/* SVG Preview */}
             <div className="flex justify-center rounded-lg border bg-muted/10 p-4">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={asset.url}
                 alt={asset.name}
