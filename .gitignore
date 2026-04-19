@@ -65,6 +65,8 @@ dev/
 # Local-only sandbox (never committed, never deployed)
 src/app/debug/
 src/app/api/debug/
+src/app/docs/
+src/app/api/docs/
 
 # FFmpeg WASM files (download via npm postinstall)
 public/ffmpeg/

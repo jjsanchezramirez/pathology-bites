@@ -11,6 +11,9 @@ node_modules
 # Development files
 dev/
 src/app/debug/
+src/app/api/debug/
+src/app/docs/
+src/app/api/docs/
 
 # Local configuration
 .vercel
