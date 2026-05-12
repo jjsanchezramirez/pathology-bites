@@ -151,6 +151,25 @@ export class AutoSaveManager {
   }
 
   /**
+   * Wait for any in-flight save to settle. Used before quiz completion so the /complete
+   * POST doesn't race a still-in-flight autosave for the most recent answer. Resolves
+   * immediately if no save is in progress. Bounded by `timeoutMs` so a hung request
+   * can't block completion forever.
+   */
+  async waitForIdle(timeoutMs: number = 1500): Promise<void> {
+    if (!this.saveInProgress) return;
+    const start = Date.now();
+    return new Promise((resolve) => {
+      const tick = () => {
+        if (!this.saveInProgress) return resolve();
+        if (Date.now() - start >= timeoutMs) return resolve();
+        setTimeout(tick, 50);
+      };
+      tick();
+    });
+  }
+
+  /**
    * Check if periodic save should trigger
    */
   shouldPeriodicSave(currentAnswerCount: number): boolean {

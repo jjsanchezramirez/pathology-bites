@@ -15,14 +15,17 @@ interface FavoriteResponse {
   }>;
 }
 
-const FAVORITES_KEY = "/api/user/favorites";
+// SWR cache key (clean slug, not the URL path — keeps localStorage entries readable as
+// `pathology-bites-swr-user-favorites` instead of `pathology-bites-swr-/api/user/favorites`).
+const FAVORITES_CACHE_KEY = "user-favorites";
+const FAVORITES_URL = "/api/user/favorites";
 
 /**
  * Fetcher function for SWR
  * Returns an array of question IDs (easier to serialize than Set)
  */
 async function fetchFavorites(): Promise<string[]> {
-  const response = await fetch(FAVORITES_KEY);
+  const response = await fetch(FAVORITES_URL);
   if (!response.ok) {
     throw new Error("Failed to fetch favorites");
   }
@@ -45,7 +48,7 @@ export function useFavoritesGlobal() {
     error,
     isLoading,
     mutate: boundMutate,
-  } = useSWR<string[]>(FAVORITES_KEY, fetchFavorites);
+  } = useSWR<string[]>(FAVORITES_CACHE_KEY, fetchFavorites);
 
   /**
    * Check if a question is favorited
@@ -89,7 +92,7 @@ export function useFavoritesGlobal() {
         await boundMutate(optimisticFavorites, false);
 
         // Perform API call
-        const response = await fetch("/api/user/favorites", {
+        const response = await fetch(FAVORITES_URL, {
           method: wasFavorited ? "DELETE" : "POST",
           headers: {
             "Content-Type": "application/json",

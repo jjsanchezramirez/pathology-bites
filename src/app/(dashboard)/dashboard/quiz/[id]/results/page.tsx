@@ -2,13 +2,13 @@
 "use client";
 
 import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { QuizResultsSummary } from "@/features/user/quiz/components/quiz-results-summary";
 import { QuizResultsSkeleton } from "@/features/user/quiz/components/quiz-results-skeleton";
 import { QuizResult } from "@/features/user/quiz/types/quiz";
 import { toast } from "@/shared/utils/ui/toast";
 import Link from "next/link";
-import { useCachedData } from "@/shared/hooks/use-cached-data";
 import dynamic from "next/dynamic";
 import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
 import { AlertCircle } from "lucide-react";
@@ -16,114 +16,156 @@ import { AlertCircle } from "lucide-react";
 // Dynamically import Lottie to avoid SSR issues
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
+// 30 days — quiz results are immutable and small, so we keep them around for review.
+const CACHE_TTL_MS = 30 * 24 * 60 * 60 * 1000;
+
+/**
+ * Read cached results from the shared quiz-result key. This key is populated by
+ * `database-sync-manager.ts` on completion sync; we read from the same place to
+ * avoid the SWR cache layer that used to double-store the same data.
+ */
+function readCachedResults(sessionId: string): QuizResult | null {
+  try {
+    const raw = localStorage.getItem(`pathology-bites-quiz-result-${sessionId}`);
+    if (!raw) return null;
+    const parsed = JSON.parse(raw);
+    const sessionData = parsed?.data;
+    if (sessionData?.results) {
+      return sessionData.results as QuizResult;
+    }
+    return null;
+  } catch (err) {
+    console.warn("[Results Page] Failed to read cached results:", err);
+    return null;
+  }
+}
+
+/**
+ * Write fetched results back into the shared quiz-result key in the wrapped-cache
+ * format that database-sync-manager.ts uses. Preserves any existing session fields.
+ */
+function writeCachedResults(sessionId: string, results: QuizResult): void {
+  try {
+    const key = `pathology-bites-quiz-result-${sessionId}`;
+    const existingRaw = localStorage.getItem(key);
+    const existing = existingRaw ? JSON.parse(existingRaw) : null;
+    const existingData = existing?.data && typeof existing.data === "object" ? existing.data : {};
+    const wrapped = {
+      data: { ...existingData, status: "completed", results },
+      timestamp: Date.now(),
+      ttl: CACHE_TTL_MS,
+      key,
+    };
+    localStorage.setItem(key, JSON.stringify(wrapped));
+  } catch (err) {
+    console.warn("[Results Page] Failed to write results cache:", err);
+  }
+}
+
 export default function QuizResultsPage() {
   const params = useParams();
   const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const { animationData: errorAnimation, isLoading: errorAnimationLoading } =
     useLottieAnimation("error");
 
-  console.log("[Results Page] sessionId:", sessionId);
+  const [result, setResult] = useState<QuizResult | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  // Fetch results with caching and deduplication
-  const {
-    data: result,
-    isLoading: loading,
-    error: fetchError,
-  } = useCachedData<QuizResult>(
-    `quiz-session-${sessionId}`,
-    async () => {
-      // OPTIMIZATION: Check session cache first for results
-      try {
-        const sessionKey = `pathology-bites-quiz-session-${sessionId}`;
-        const cachedSession = localStorage.getItem(sessionKey);
+  useEffect(() => {
+    if (!sessionId) {
+      setLoading(false);
+      return;
+    }
 
-        if (cachedSession) {
-          const parsed = JSON.parse(cachedSession);
-          const sessionData = parsed.data;
+    let cancelled = false;
 
-          // Check if session has results (quiz completed)
-          if (sessionData?.results) {
-            console.log("[Results Page] ✅ Found results in session cache - 0 API calls");
-            return sessionData.results;
-          }
+    const fetchResults = async () => {
+      // 1) Fast path: read from the shared quiz-result cache. Populated by completion sync.
+      const cached = readCachedResults(sessionId);
+      if (cached) {
+        console.log("[Results Page] ✅ Loaded results from local cache");
+        if (!cancelled) {
+          setResult(cached);
+          setLoading(false);
         }
-      } catch (error) {
-        console.warn("[Results Page] Failed to read session cache:", error);
+        return;
       }
 
-      // Retry logic for race conditions where quiz completion hasn't fully propagated
+      // 2) Slow path: fetch from API. Retry handles the race where the user navigates
+      // to /results before the completion sync has finished writing the cache.
       const maxRetries = 3;
-      const retryDelays = [500, 1000, 2000]; // Exponential backoff: 0.5s, 1s, 2s
+      const retryDelays = [500, 1000, 2000];
 
       for (let attempt = 0; attempt <= maxRetries; attempt++) {
-        const resultsResponse = await fetch(`/api/user/quiz/sessions/${sessionId}/results`);
+        if (cancelled) return;
 
-        if (resultsResponse.ok) {
-          const resultsData = await resultsResponse.json();
+        let response: Response;
+        try {
+          response = await fetch(`/api/user/quiz/sessions/${sessionId}/results`);
+        } catch (err) {
+          // Network error — retry
+          if (attempt < maxRetries) {
+            await new Promise((resolve) => setTimeout(resolve, retryDelays[attempt]));
+            continue;
+          }
+          const msg = err instanceof Error ? err.message : "Network error";
+          if (!cancelled) {
+            setError(msg);
+            setLoading(false);
+            toast.error(msg);
+          }
+          return;
+        }
 
-          if (resultsData?.success && resultsData?.data) {
-            if (attempt > 0) {
-              console.log(
-                `[Results Page] ✅ Successfully fetched results after ${attempt} retry(ies)`
-              );
+        if (response.ok) {
+          const json = await response.json().catch(() => null);
+          if (json?.success && json?.data) {
+            writeCachedResults(sessionId, json.data);
+            if (!cancelled) {
+              setResult(json.data);
+              setLoading(false);
             }
-            return resultsData.data;
+            return;
           }
         }
 
-        // Check if quiz is incomplete (400 status)
-        if (resultsResponse.status === 400) {
-          const errorData = await resultsResponse.json();
+        // Quiz not completed yet — redirect to the quiz page
+        if (response.status === 400) {
+          const errorData = await response.json().catch(() => ({}));
           if (errorData.error?.includes("not completed yet")) {
-            // Quiz is legitimately incomplete - redirect to quiz page
-            throw new Error("INCOMPLETE_QUIZ");
+            if (!cancelled) {
+              setError("INCOMPLETE_QUIZ");
+              setLoading(false);
+            }
+            return;
           }
         }
 
-        // If this is not the last attempt, wait and retry
+        // Retryable failure
         if (attempt < maxRetries) {
-          const delay = retryDelays[attempt];
           console.log(
-            `[Results Page] Quiz not ready yet, retrying in ${delay}ms... (attempt ${attempt + 1}/${maxRetries})`
+            `[Results Page] Quiz not ready, retrying in ${retryDelays[attempt]}ms... (attempt ${attempt + 1}/${maxRetries})`
           );
-          await new Promise((resolve) => setTimeout(resolve, delay));
+          await new Promise((resolve) => setTimeout(resolve, retryDelays[attempt]));
         } else {
-          // Last attempt failed, throw error
-          const resultsError = await resultsResponse.text();
-          throw new Error(`Failed to fetch results after ${maxRetries} retries: ${resultsError}`);
+          const errorText = await response.text().catch(() => "");
+          const msg = `Failed to fetch results after ${maxRetries} retries${errorText ? `: ${errorText}` : ""}`;
+          if (!cancelled) {
+            setError(msg);
+            setLoading(false);
+            toast.error(msg);
+          }
+          return;
         }
       }
+    };
 
-      // Fallback error (should never reach here)
-      throw new Error("Quiz results not found - quiz may not be completed");
-    },
-    {
-      namespace: "swr",
-      enabled: !!sessionId,
-      ttl: 30 * 24 * 60 * 60 * 1000, // 30 days cache (results immutable, needed for review)
-      staleTime: 30 * 24 * 60 * 60 * 1000, // 30 days stale time
-      onError: (error) => {
-        console.error("Error fetching results:", error);
-        toast.error(error.message);
-      },
-    }
-  );
-
-  const error = fetchError?.message || null;
-
-  console.log("[Results Page] State:", {
-    loading,
-    hasResult: !!result,
-    error,
-    resultScore: result?.score,
-    resultCorrect: result?.correctAnswers,
-    resultTotal: result?.totalQuestions,
-    newAchievements: result?.newAchievements?.length,
-    hasQuestionDetails: !!result?.questionDetails,
-    questionDetailsLength: result?.questionDetails?.length,
-    hasCategoryBreakdown: !!result?.categoryBreakdown,
-    categoryBreakdownLength: result?.categoryBreakdown?.length,
-  });
+    fetchResults();
+    return () => {
+      cancelled = true;
+    };
+  }, [sessionId]);
 
   // Loading state
   if (loading) {
@@ -134,7 +176,7 @@ export default function QuizResultsPage() {
     );
   }
 
-  // Error state - keep within dashboard layout
+  // Error state — keep within dashboard layout
   if (error || !result) {
     // Check if quiz is incomplete
     const isIncomplete = error?.includes("INCOMPLETE_QUIZ");
@@ -150,7 +192,7 @@ export default function QuizResultsPage() {
             <div className="text-center py-12">
               <h1 className="text-2xl font-bold">Redirecting to Quiz...</h1>
               <p className="text-muted-foreground mt-2">
-                This quiz hasn't been completed yet. Taking you back to finish it.
+                This quiz hasn&apos;t been completed yet. Taking you back to finish it.
               </p>
             </div>
           </div>

@@ -4,7 +4,7 @@
  * Uses localStorage for persistence across sessions
  */
 
-const HISTORY_KEY = "wsi-question-history";
+const HISTORY_KEY = "pathology-bites-wsi-question-history";
 const MAX_HISTORY_SIZE = 100; // Track last 100 WSI IDs
 
 export interface WSIHistoryEntry {

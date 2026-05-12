@@ -57,6 +57,17 @@ export function ConditionalThemeProvider({ children, ...props }: ThemeProviderPr
     return () => observer.disconnect();
   }, []);
 
+  // Why both `pathology-bites-theme` (localStorage) AND `ui_settings.theme` (server) exist:
+  //
+  // - `ui_settings.theme` is the source of truth and provides cross-device sync.
+  // - `pathology-bites-theme` is the storageKey next-themes uses to inject an inline
+  //   <script> in <head> that applies `class="dark"` to <html> BEFORE React hydrates.
+  //   Without it we get a flash of the default theme on every page load (FOUC),
+  //   especially jarring for dark-mode users.
+  //
+  // The two are kept in sync by profile-dropdown.tsx and sidebar-auth-status.tsx.
+  // To eliminate the localStorage key entirely we'd need to move theme to a cookie
+  // read server-side in the root layout — a real refactor, not a one-line removal.
   return (
     <NextThemesProvider
       attribute="class"

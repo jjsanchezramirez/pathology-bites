@@ -17,6 +17,8 @@ import {
   QuizReviewView,
   ExitConfirmDialog,
   UnansweredWarningDialog,
+  AllAnsweredDialog,
+  CompletionFailureDialog,
   TimerExpiredDialog,
   PauseOverlay,
 } from "./components";
@@ -59,14 +61,24 @@ export default function QuizSessionPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showUnansweredWarning, setShowUnansweredWarning] = useState(false);
+  const [showAllAnsweredPrompt, setShowAllAnsweredPrompt] = useState(false);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [timerExpired, setTimerExpired] = useState(false);
+  const [completionError, setCompletionError] = useState<string | null>(null);
   const [, setIsExiting] = useState(false);
   const [isCompletingQuiz, setIsCompletingQuiz] = useState(false);
   const [pendingAnswerSelection, setPendingAnswerSelection] = useState<{
     questionId: string;
     answerId: string;
   } | null>(null);
+
+  // Ref mirror of pendingAnswerSelection so the hybrid quiz's onTimerExpired callback
+  // (which fires from inside the hook with a stale closure) can read the latest pending
+  // selection and commit it before the forced completion runs.
+  const pendingAnswerSelectionRef = useRef<{ questionId: string; answerId: string } | null>(null);
+  useEffect(() => {
+    pendingAnswerSelectionRef.current = pendingAnswerSelection;
+  }, [pendingAnswerSelection]);
 
   // Fetch session config
   useEffect(() => {
@@ -142,6 +154,22 @@ export default function QuizSessionPage() {
     onTimerExpired: () => {
       if (isReviewMode) return;
       console.log("[Quiz Page] Timer expired, showing dialog");
+
+      // Commit any pending answer selection (practice mode) before the hook proceeds to
+      // forced completion. Otherwise the user's last selected-but-not-submitted answer
+      // would be silently dropped on timer expiry.
+      const pending = pendingAnswerSelectionRef.current;
+      if (pending) {
+        try {
+          hybridActions.submitAnswer(pending.questionId, pending.answerId);
+          console.log("[Quiz Page] Committed pending selection on timer expiry:", pending);
+        } catch (err) {
+          console.warn("[Quiz Page] Failed to commit pending selection on timer expiry:", err);
+        }
+        setPendingAnswerSelection(null);
+        pendingAnswerSelectionRef.current = null;
+      }
+
       setTimerExpired(true);
       setIsCompletingQuiz(true);
     },
@@ -157,6 +185,83 @@ export default function QuizSessionPage() {
 
   // Track if we're intentionally navigating away (e.g., Save & Exit)
   const isNavigatingAwayRef = useRef(false);
+
+  // Detect transition to "all questions answered" and prompt the user to submit.
+  // Helpful for the common practice-mode flow where someone skips a middle question
+  // and only answers it later — the natural Submit button is far away. The prompt
+  // fires once per transition; if the user dismisses it and re-answers, the count
+  // doesn't transition again so we don't nag.
+  const previousAnsweredCountRef = useRef<number>(hybridState.progress.current);
+  useEffect(() => {
+    if (isReviewMode) return;
+    const prev = previousAnsweredCountRef.current;
+    const now = hybridState.progress.current;
+    const total = hybridState.totalQuestions;
+
+    if (
+      total > 0 &&
+      now === total &&
+      prev < total &&
+      !isCompletingQuiz &&
+      hybridState.status !== "completed"
+    ) {
+      setShowAllAnsweredPrompt(true);
+    }
+    previousAnsweredCountRef.current = now;
+  }, [
+    hybridState.progress,
+    hybridState.totalQuestions,
+    hybridState.status,
+    isCompletingQuiz,
+    isReviewMode,
+  ]);
+
+  // Centralized completion runner with retry. Called from every completion entry point
+  // (last-question submit, all-answered prompt, tutor complete button). On final failure
+  // surfaces a persistent CompletionFailureDialog instead of a fleeting toast.
+  const runCompletion = useCallback(async () => {
+    if (isCompletingQuiz) return;
+    setIsCompletingQuiz(true);
+    setCompletionError(null);
+
+    const maxAttempts = 3;
+    let lastError: string | undefined;
+
+    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        const result = await hybridActions.completeQuiz();
+        if (result.success) {
+          window.location.href = `/dashboard/quiz/${sessionId}/results`;
+          return;
+        }
+        lastError = result.error;
+        const isRetryable =
+          !!result.error &&
+          (result.error.includes("aborted") ||
+            result.error.includes("ECONNRESET") ||
+            result.error.includes("network") ||
+            result.error.includes("fetch"));
+        if (!isRetryable || attempt === maxAttempts) break;
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+      } catch (err) {
+        lastError = err instanceof Error ? err.message : "Unknown error";
+        if (attempt === maxAttempts) break;
+        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+      }
+    }
+
+    setIsCompletingQuiz(false);
+    setCompletionError(
+      lastError ||
+        "Couldn't reach the server. Your answers are saved locally — try again in a moment."
+    );
+  }, [hybridActions, isCompletingQuiz, sessionId]);
+
+  // Triggered from the all-answered prompt's "Submit Quiz" button.
+  const handleSubmitFromAllAnsweredPrompt = useCallback(async () => {
+    setShowAllAnsweredPrompt(false);
+    await runCompletion();
+  }, [runCompletion]);
 
   // Handle redirect after timer expiration and quiz completion
   useEffect(() => {
@@ -311,6 +416,16 @@ export default function QuizSessionPage() {
     const currentQuestion = hybridActions.getCurrentQuestion();
     if (!currentQuestion) return;
 
+    // Tutor mode: click = commit. The explanation appears immediately after, which is
+    // the whole point of tutor mode — instant feedback while learning.
+    //
+    // Practice mode: click = pending selection only. The answer is NOT committed until
+    // the user clicks "Submit Answer" — this is deliberate. Practice mode suppresses
+    // inline explanations so users can self-assess without feedback (similar to a real
+    // exam), and the explicit two-step submit reinforces that the answer is final.
+    // Strike-toggle gating mirrors this: strikes stay enabled longer in practice (until
+    // submit) but lock in tutor as soon as an answer is committed (since the explanation
+    // now reveals the correct answer).
     if (sessionConfig?.mode === "tutor") {
       hybridActions.submitAnswer(currentQuestion.id, answerId);
     } else {
@@ -325,9 +440,21 @@ export default function QuizSessionPage() {
     const currentQuestion = hybridActions.getCurrentQuestion();
     if (!currentQuestion) return;
 
-    // Practice/exam mode: two-step flow with pending selection
+    // Practice mode: two-step flow with pending selection.
     if (pendingAnswerSelection) {
-      if (pendingAnswerSelection.questionId !== currentQuestion.id) return;
+      // Commit the pending selection to ITS OWN questionId — not the currently-displayed
+      // question. If a fast nav happened between the answer click and this submit click,
+      // currentQuestion could be N+1 while the pending selection is still for N. The
+      // user's intent was to answer N; silently dropping that selection was a bug.
+      if (pendingAnswerSelection.questionId !== currentQuestion.id) {
+        console.warn(
+          "[Quiz Page] Pending selection question id differs from current question — committing to the pending id anyway",
+          {
+            pendingQuestionId: pendingAnswerSelection.questionId,
+            currentQuestionId: currentQuestion.id,
+          }
+        );
+      }
 
       hybridActions.submitAnswer(
         pendingAnswerSelection.questionId,
@@ -338,15 +465,11 @@ export default function QuizSessionPage() {
       const isLastQuestion = hybridState.currentQuestion === hybridState.totalQuestions;
 
       if (isLastQuestion) {
-        setIsCompletingQuiz(true);
-        setTimeout(async () => {
-          const result = await hybridActions.completeQuiz();
-          if (result.success) {
-            window.location.href = `/dashboard/quiz/${sessionId}/results`;
-          } else {
-            setIsCompletingQuiz(false);
-            toast.error(result.error || "Failed to complete quiz. Please try again.");
-          }
+        // Give React a beat to flush the SUBMIT_ANSWER dispatch before completion reads
+        // state via stateRef. Without this 100ms the in-flight render may not have
+        // propagated the just-submitted answer to the ref.
+        setTimeout(() => {
+          void runCompletion();
         }, 100);
       } else {
         setTimeout(() => hybridActions.nextQuestion(), 100);
@@ -365,56 +488,7 @@ export default function QuizSessionPage() {
         }
 
         console.log("[Quiz Page] User clicked 'Complete Quiz' button - starting completion");
-        setIsCompletingQuiz(true);
-
-        try {
-          // Retry logic for network failures
-          let result;
-          let attempts = 0;
-          const maxAttempts = 3;
-
-          while (attempts < maxAttempts) {
-            attempts++;
-            console.log(`[Quiz Page] Completion attempt ${attempts}/${maxAttempts}`);
-
-            result = await hybridActions.completeQuiz();
-
-            if (result.success) {
-              console.log("[Quiz Page] ✅ Quiz completed successfully, redirecting to results");
-              window.location.href = `/dashboard/quiz/${sessionId}/results`;
-              return;
-            }
-
-            // If error is due to network issue, retry
-            if (
-              result.error &&
-              (result.error.includes("aborted") ||
-                result.error.includes("ECONNRESET") ||
-                result.error.includes("network") ||
-                result.error.includes("fetch"))
-            ) {
-              console.warn(`[Quiz Page] Network error on attempt ${attempts}, retrying...`);
-              if (attempts < maxAttempts) {
-                await new Promise((resolve) => setTimeout(resolve, 1000 * attempts)); // Exponential backoff
-                continue;
-              }
-            }
-
-            // Non-network error or max retries reached
-            break;
-          }
-
-          // All attempts failed
-          console.error("[Quiz Page] ❌ Failed to complete quiz after", attempts, "attempts");
-          setIsCompletingQuiz(false);
-          toast.error(
-            result?.error || "Failed to complete quiz. Please check your connection and try again."
-          );
-        } catch (error) {
-          console.error("[Quiz Page] Exception during completion:", error);
-          setIsCompletingQuiz(false);
-          toast.error("Failed to complete quiz. Please try again.");
-        }
+        await runCompletion();
       }
     }
   };
@@ -496,6 +570,7 @@ export default function QuizSessionPage() {
         />
       ) : (
         <QuizActiveView
+          sessionId={sessionId || ""}
           currentQuestion={currentQuestion}
           currentQuestionNumber={hybridState.currentQuestion}
           totalQuestions={hybridState.totalQuestions}
@@ -556,6 +631,24 @@ export default function QuizSessionPage() {
             window.location.href = `/dashboard/quiz/${sessionId}/results`;
           }
         }}
+      />
+
+      <AllAnsweredDialog
+        open={showAllAnsweredPrompt}
+        onOpenChange={setShowAllAnsweredPrompt}
+        onSubmitQuiz={handleSubmitFromAllAnsweredPrompt}
+        onContinue={() => setShowAllAnsweredPrompt(false)}
+      />
+
+      <CompletionFailureDialog
+        open={!!completionError}
+        errorMessage={completionError}
+        isRetrying={isCompletingQuiz}
+        onRetry={() => {
+          setCompletionError(null);
+          void runCompletion();
+        }}
+        onDismiss={() => setCompletionError(null)}
       />
 
       <TimerExpiredDialog

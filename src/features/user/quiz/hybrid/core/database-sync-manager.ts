@@ -120,7 +120,7 @@ export class DatabaseSyncManager {
   async fetchQuizData(sessionId: string): Promise<{
     questions: QuizQuestion[];
     config: {
-      mode: "tutor" | "exam";
+      mode: "tutor" | "practice";
       timing: "timed" | "untimed";
       showExplanations: boolean;
       allowReview: boolean;
@@ -134,7 +134,7 @@ export class DatabaseSyncManager {
   }> {
     try {
       // OPTIMIZATION: Check localStorage cache first
-      const cacheKey = `pathology-bites-quiz-session-${sessionId}`;
+      const cacheKey = `pathology-bites-quiz-result-${sessionId}`;
       const cachedData = this.getFromCache(cacheKey);
 
       if (cachedData) {
@@ -142,7 +142,7 @@ export class DatabaseSyncManager {
         return cachedData as {
           questions: QuizQuestion[];
           config: {
-            mode: "tutor" | "exam";
+            mode: "tutor" | "practice";
             timing: "timed" | "untimed";
             showExplanations: boolean;
             allowReview: boolean;
@@ -181,7 +181,7 @@ export class DatabaseSyncManager {
 
       // Transform config to hybrid system format
       const transformedConfig = {
-        mode: (data.config?.mode as "tutor" | "exam") || "tutor",
+        mode: (data.config?.mode as "tutor" | "practice") || "tutor",
         timing: (data.config?.timing as "timed" | "untimed") || "untimed",
         showExplanations: data.config?.showExplanations ?? true,
         allowReview: data.config?.allowReview ?? true,
@@ -269,7 +269,7 @@ export class DatabaseSyncManager {
   clearSessionCache(sessionId: string): void {
     try {
       if (typeof window === "undefined") return;
-      localStorage.removeItem(`pathology-bites-quiz-session-${sessionId}`);
+      localStorage.removeItem(`pathology-bites-quiz-result-${sessionId}`);
     } catch (error) {
       console.warn("Failed to clear cache:", error);
     }
@@ -487,7 +487,7 @@ export class DatabaseSyncManager {
         // This eliminates the need for a separate API call to /results
         if (serverResponse.success && serverResponse.data) {
           try {
-            const sessionKey = `pathology-bites-quiz-session-${syncData.sessionId}`;
+            const sessionKey = `pathology-bites-quiz-result-${syncData.sessionId}`;
 
             // Get existing session data
             const existingSession = this.getFromCache(sessionKey);

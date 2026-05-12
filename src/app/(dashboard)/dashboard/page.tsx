@@ -5,6 +5,7 @@ import { toast } from "@/shared/utils/ui/toast";
 import {
   WelcomeMessage,
   V1ReleaseMessage,
+  QuizScoreBugMessage,
   PerformanceAnalytics,
   StudentStatsCards,
   StudentStatsCardsLoading,
@@ -110,6 +111,7 @@ export default function DashboardPage() {
   const { showTutorial, completeTutorial } = useTutorial("dashboard");
   const [showWelcomeMessage, setShowWelcomeMessage] = useState(false);
   const [showV1ReleaseMessage, setShowV1ReleaseMessage] = useState(false);
+  const [showQuizScoreBugMessage, setShowQuizScoreBugMessage] = useState(false);
   const [isFirstTimeUser, setIsFirstTimeUser] = useState(false);
   const [isReturningUser, setIsReturningUser] = useState(false);
 
@@ -122,6 +124,9 @@ export default function DashboardPage() {
 
     const hasDismissedV1 = userSettings.ui_settings?.v1_release_dismissed ?? false;
     setShowV1ReleaseMessage(!hasDismissedV1);
+
+    const hasDismissedQuizBug = userSettings.ui_settings?.quiz_score_bug_dismissed ?? false;
+    setShowQuizScoreBugMessage(!hasDismissedQuizBug);
   }, [user, userSettings]);
 
   // Fetch dashboard stats on component mount
@@ -225,6 +230,11 @@ export default function DashboardPage() {
         {/* V1.0 Release Announcement */}
         {showV1ReleaseMessage && (
           <V1ReleaseMessage onDismiss={() => setShowV1ReleaseMessage(false)} />
+        )}
+
+        {/* Apr 13 - May 12 Quiz Scoring Bug Apology */}
+        {showQuizScoreBugMessage && (
+          <QuizScoreBugMessage onDismiss={() => setShowQuizScoreBugMessage(false)} />
         )}
 
         {/* Show loading state for everything until data is ready or while transitioning */}

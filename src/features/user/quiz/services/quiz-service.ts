@@ -1374,9 +1374,6 @@ export class QuizService {
         authenticatedSupabase
       );
 
-      // Note: Stats refresh moved to completion route for better separation of concerns
-      // The completion route now calls refresh_user_stats_incremental() after quiz completion
-
       return {
         sessionId,
         score,

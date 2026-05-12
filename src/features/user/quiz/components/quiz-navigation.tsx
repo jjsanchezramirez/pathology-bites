@@ -11,7 +11,7 @@ interface QuizNavigationProps {
   onPrevious: () => void;
   onNext: () => void;
   onSubmit: () => void;
-  mode: "tutor" | "exam" | "practice";
+  mode: "tutor" | "practice";
   timing: "timed" | "untimed";
   canGoBack: boolean;
   isSubmitting: boolean;
@@ -32,9 +32,9 @@ export function QuizNavigation({
 }: QuizNavigationProps) {
   const isLastQuestion = currentQuestion === totalQuestions;
 
-  // In tutor mode: after answering, show Next/Complete button
-  // In tutor mode: before answering, user clicks an option which auto-submits, so no submit button needed
-  // In practice/exam mode: show Submit Answer button (two-step flow)
+  // In tutor mode: after answering, show Next/Complete button.
+  // In tutor mode: before answering, the option click auto-submits, so no submit button is needed.
+  // In practice mode: show Submit Answer button (two-step flow — explicit commit before advancing).
   const showNextButton = mode === "tutor" && isCurrentQuestionAnswered;
   const showSubmitButton = mode !== "tutor";
 

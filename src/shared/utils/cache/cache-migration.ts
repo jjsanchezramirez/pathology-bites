@@ -28,6 +28,9 @@ const OLD_CACHE_KEYS = [
   "pathology-bites-swr-data", // Renamed to pathology-bites-swr-user-data
   "pathology-bites-swr-/api/user/settings/", // Old duplicate SWR key (with trailing slash)
   "pathology-bites-swr-/api/user/settings", // Old duplicate SWR key (without trailing slash)
+  "pathology-bites-swr-/api/user/favorites", // Renamed to pathology-bites-swr-user-favorites
+  "wsi-question-history", // Renamed to pathology-bites-wsi-question-history
+  "pathology-bites-swr-wsi-question-history", // Intermediate rename; corrected to pathology-bites-wsi-question-history
   "quiz_offline_queue", // Old quiz offline queue (missing pathology-bites- prefix)
   "pathology-bites-citations-cache", // Migrated to unified cache (public-tools namespace)
   "pathology-bites-gene-cache", // Migrated to unified cache (public-tools namespace)
@@ -61,6 +64,7 @@ const OLD_CACHE_PATTERNS = [
   /^quiz-session-/, // Old format without pathology-bites- prefix
   /^quiz-state-/, // Old format without pathology-bites- prefix
   /^quiz_/, // Old format with underscore instead of dash
+  /^pathology-bites-swr-quiz-session-/, // Results page no longer caches separately; reads quiz-result-{id} directly
 
   // Typos and old API-based keys
   /pathology-bites-swer-/,

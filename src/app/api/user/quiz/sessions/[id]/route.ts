@@ -262,16 +262,23 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         (attempt) => !existingQuestionIds.has(attempt.question_id)
       );
 
-      // Insert new attempts
+      // Insert new attempts. Fail the request if this errors — silently swallowing the
+      // error caused score=0 quizzes for ~30 days when a downstream trigger broke.
       if (newAttemptData.length > 0) {
         const { error: insertError } = await supabase.from("quiz_attempts").insert(newAttemptData);
 
         if (insertError) {
           console.error("[Quiz PATCH] Error inserting answers:", insertError);
-          // Don't fail the update - continue with progress save
-        } else {
-          console.log(`[Quiz PATCH] Inserted ${newAttemptData.length} answers`);
+          return NextResponse.json(
+            {
+              error: "Failed to record quiz answers",
+              code: insertError.code,
+              details: insertError.message,
+            },
+            { status: 500 }
+          );
         }
+        console.log(`[Quiz PATCH] Inserted ${newAttemptData.length} answers`);
       }
 
       // If quiz was already completed and we just submitted answers, return success

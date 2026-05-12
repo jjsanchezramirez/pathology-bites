@@ -88,7 +88,7 @@ export interface QuizState {
 
   // Configuration
   config: {
-    mode: "tutor" | "exam";
+    mode: "tutor" | "practice";
     timing: "timed" | "untimed";
     showExplanations: boolean;
     allowReview: boolean;

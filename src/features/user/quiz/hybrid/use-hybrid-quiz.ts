@@ -242,7 +242,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   // Recover quiz state from localStorage
   const recoverLocalState = useCallback(() => {
     try {
-      const saved = localStorage.getItem(`pathology-bites-quiz-session-${sessionId}`);
+      const saved = localStorage.getItem(`pathology-bites-quiz-result-${sessionId}`);
       if (saved) {
         const data = JSON.parse(saved);
         // Check if data is recent (within 24 hours) and for the same session
@@ -404,13 +404,33 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
       hasCompletedRef.current = true;
 
+      // Read the LATEST quiz state via ref. The `quizState` captured in this useCallback's
+      // closure can be stale when called via setTimeout after a recent submitAnswer dispatch:
+      // the reducer has updated state but React hasn't re-rendered the hook yet, so the
+      // closure-captured `quizState` is one render behind. Without this, the just-submitted
+      // last answer in practice mode never lands in the /complete POST.
+      const latestState = stateRef.current;
+
+      // Wait for any in-flight autosave to settle so the /complete POST doesn't race
+      // a still-in-flight PATCH for the most recent answer. Server still de-dupes by
+      // (session_id, question_id), so this isn't required for correctness — but it
+      // avoids unnecessary duplicate INSERT attempts and clearer logs.
+      try {
+        await autoSaveManager.current?.waitForIdle(1500);
+      } catch (err) {
+        console.warn("[Hybrid] waitForIdle threw:", err);
+      }
+
       // Complete the quiz first
       stateActions.completeQuiz();
 
-      // Clear local storage and session cache on successful completion
-      // This ensures that if user navigates back, fresh data with 'completed' status will be fetched
+      // Clear local storage and session cache on successful completion. We remove BOTH
+      // the result cache AND the draft (state-machine) snapshot here — the state machine
+      // has its own self-cleanup effect, but it loses the race when the page navigates to
+      // /results before the effect fires, leaving orphan `quiz-draft-*` keys behind.
       try {
-        localStorage.removeItem(`pathology-bites-quiz-session-${sessionId}`);
+        localStorage.removeItem(`pathology-bites-quiz-result-${sessionId}`);
+        localStorage.removeItem(`pathology-bites-quiz-draft-${sessionId}`);
         syncManager.current?.clearSessionCache(sessionId);
         console.log("[Hybrid] Cleared quiz cache after completion");
       } catch (error) {
@@ -439,11 +459,11 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
           .filter((a) => a.isUnlocked)
           .map((a) => a.id);
 
-        // Build quiz result object for achievement calculation
+        // Build quiz result object for achievement calculation (using latest state)
         const quizResult = {
-          totalQuestions: quizState.totalQuestions,
-          totalTimeSpent: quizState.totalTimeSpent,
-          score: Math.round((quizState.progress.correct / quizState.totalQuestions) * 100),
+          totalQuestions: latestState.totalQuestions,
+          totalTimeSpent: latestState.totalTimeSpent,
+          score: Math.round((latestState.progress.correct / latestState.totalQuestions) * 100),
         };
 
         // Calculate which achievements should be unlocked
@@ -456,24 +476,24 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         console.log("[Hybrid] Calculated achievements to unlock:", achievementsToUnlock);
       }
 
-      // DEBUG: Log quiz state before syncing
+      // DEBUG: Log quiz state before syncing (uses latest state, not closure-captured)
       const answersArray =
-        quizState.answers instanceof Map ? Array.from(quizState.answers.entries()) : [];
+        latestState.answers instanceof Map ? Array.from(latestState.answers.entries()) : [];
 
       console.log("[Hybrid] Quiz state before sync:", {
-        sessionId: quizState.sessionId,
-        answersCount: quizState.answers instanceof Map ? quizState.answers.size : 0,
+        sessionId: latestState.sessionId,
+        answersCount: latestState.answers instanceof Map ? latestState.answers.size : 0,
         answersPreview: answersArray.slice(0, 3).map(([qId, ans]) => ({
           questionId: qId,
           selectedOptionId: ans.selectedOptionId,
           isCorrect: ans.isCorrect,
         })),
-        totalQuestions: quizState.totalQuestions,
-        progress: quizState.progress,
+        totalQuestions: latestState.totalQuestions,
+        progress: latestState.progress,
       });
 
-      // API Call #2: Batch sync all data with achievements
-      const result = await syncManager.current!.syncQuizData(quizState, achievementsToUnlock);
+      // API Call #2: Batch sync all data with achievements (pass latest state, not closure-captured)
+      const result = await syncManager.current!.syncQuizData(latestState, achievementsToUnlock);
 
       // Track API call metrics
       const responseTime = Date.now() - startTime;
@@ -518,7 +538,11 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       hasCompletedRef.current = false; // Reset on error so user can retry
       return { success: false, timestamp: Date.now(), error: errorMessage };
     }
-  }, [quizState, stateActions, onError, sessionId, unifiedData?.achievements]);
+    // Note: we deliberately omit `quizState` here. Inside the callback we read latest
+    // state via `stateRef.current` to avoid stale-closure bugs (e.g., the last-answer
+    // race in practice mode where the click triggered a setTimeout-completion before
+    // React re-rendered with the new state).
+  }, [stateActions, onError, sessionId, unifiedData?.achievements]);
 
   // Update ref whenever handleCompleteQuiz changes
   handleCompleteQuizRef.current = handleCompleteQuiz;
@@ -574,7 +598,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
             lastSaved: Date.now(),
           };
           localStorage.setItem(
-            `pathology-bites-quiz-session-${sessionId}`,
+            `pathology-bites-quiz-result-${sessionId}`,
             JSON.stringify(quizData)
           );
         } catch (error) {
@@ -869,7 +893,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
     clearCurrentQuizData: useCallback(() => {
       try {
-        localStorage.removeItem(`pathology-bites-quiz-session-${sessionId}`);
+        localStorage.removeItem(`pathology-bites-quiz-result-${sessionId}`);
       } catch (error) {
         console.warn("Failed to clear current quiz data:", error);
       }

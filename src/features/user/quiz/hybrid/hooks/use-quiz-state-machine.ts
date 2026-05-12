@@ -64,12 +64,12 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
     onQuizCompleted,
     onStateChange,
     enableLocalStorage = true,
-    localStorageKey = `pathology-bites-quiz-state-${sessionId}`,
+    localStorageKey = `pathology-bites-quiz-draft-${sessionId}`,
   } = options;
 
   // Initialize state from localStorage if available
   const getInitialState = useCallback((): QuizState => {
-    if (enableLocalStorage && typeof window !== "undefined") {
+    if (enableLocalStorage && typeof window !== "undefined" && sessionId) {
       try {
         const saved = localStorage.getItem(localStorageKey);
         if (saved) {
@@ -83,7 +83,7 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
       }
     }
     return createInitialQuizState();
-  }, [enableLocalStorage, localStorageKey]);
+  }, [enableLocalStorage, localStorageKey, sessionId]);
 
   const [state, dispatch] = useReducer(quizStateReducer, null, getInitialState);
 
@@ -98,6 +98,9 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
   // Save to localStorage on state changes
   useEffect(() => {
     if (enableLocalStorage && typeof window !== "undefined") {
+      // Skip persistence when there's no real session id — prevents the orphan
+      // "pathology-bites-quiz-state-" (empty suffix) key from accumulating.
+      if (!sessionId) return;
       try {
         // Don't save to localStorage if quiz is completed (will be cleared anyway)
         if (state.status === "completed") {
@@ -110,13 +113,16 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
           ...state,
           // Convert Map to array for JSON serialization
           answers: Array.from(state.answers.entries()),
+          // Timestamp so TTL cleanup (storage-cleanup.ts) can age this out as a backstop
+          // if the explicit removal on completion didn't run.
+          lastSaved: Date.now(),
         };
         localStorage.setItem(localStorageKey, JSON.stringify(stateToSave));
       } catch (error) {
         console.warn("Failed to save quiz state to localStorage:", error);
       }
     }
-  }, [state, enableLocalStorage, localStorageKey]);
+  }, [state, enableLocalStorage, localStorageKey, sessionId]);
 
   // Call onStateChange callback
   useEffect(() => {

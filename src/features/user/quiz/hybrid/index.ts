@@ -43,28 +43,14 @@ export const HybridPresets = {
   },
 
   /**
-   * Exam Mode: No explanations during quiz, timed, no review
-   * Optimized for assessment and testing
-   */
-  EXAM_MODE: {
-    mode: "exam" as const,
-    timing: "timed" as const,
-    showExplanations: false,
-    allowReview: false,
-    enableRealtime: true,
-    enableOfflineSupport: false,
-    autoSync: true,
-    syncOnComplete: true,
-  },
-
-  /**
-   * Practice Mode: Balanced settings for regular practice
-   * Good default for most use cases
+   * Practice Mode: No explanations during the quiz; user gets results only at completion.
+   * This deliberately differs from Tutor Mode — Practice is for self-assessment without
+   * inline feedback, more like a real exam.
    */
   PRACTICE_MODE: {
-    mode: "tutor" as const,
+    mode: "practice" as const,
     timing: "untimed" as const,
-    showExplanations: true,
+    showExplanations: false,
     allowReview: true,
     enableRealtime: false,
     enableOfflineSupport: true,

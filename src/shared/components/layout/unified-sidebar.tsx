@@ -183,12 +183,16 @@ export function UnifiedSidebar({
                         return (
                           <Link
                             key={item.href}
-                            href={item.href}
+                            href={item.isSoon ? "#" : item.href}
+                            onClick={item.isSoon ? (e) => e.preventDefault() : undefined}
+                            aria-disabled={item.isSoon || undefined}
+                            tabIndex={item.isSoon ? -1 : undefined}
                             className={cn(
                               "flex items-center h-10 rounded-md text-sidebar-foreground/90 hover:bg-sidebar-foreground/10 transition-colors",
                               isOpen ? "pl-2" : "justify-center px-0 w-10",
                               isActive && "bg-sidebar-foreground/20 text-sidebar-foreground",
-                              isLoading && "pointer-events-none opacity-60"
+                              isLoading && "pointer-events-none opacity-60",
+                              item.isSoon && "pointer-events-none opacity-60 cursor-not-allowed"
                             )}
                             title={!isOpen ? item.name : undefined}
                           >

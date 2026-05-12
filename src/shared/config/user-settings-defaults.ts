@@ -40,6 +40,9 @@ export const DEFAULT_NOTIFICATION_SETTINGS = {
  * - theme: Color mode preference ('light', 'dark', or 'system') - synced with next-themes
  * - welcome_message_seen: Whether user has seen the welcome message
  * - v1_release_dismissed: Whether user has dismissed the v1.0 release announcement
+ * - quiz_score_bug_dismissed: Whether user has dismissed the Apr 13 - May 12 quiz scoring bug notice
+ * - tutorial_dashboard_completed: Whether user has completed the dashboard tutorial
+ * - tutorial_study_schedule_completed: Whether user has completed the study schedule tutorial
  */
 export const DEFAULT_UI_SETTINGS = {
   text_zoom: 1.0,
@@ -48,6 +51,9 @@ export const DEFAULT_UI_SETTINGS = {
   theme: "system",
   welcome_message_seen: false,
   v1_release_dismissed: false,
+  quiz_score_bug_dismissed: false,
+  tutorial_dashboard_completed: false,
+  tutorial_study_schedule_completed: false,
 };
 
 /**

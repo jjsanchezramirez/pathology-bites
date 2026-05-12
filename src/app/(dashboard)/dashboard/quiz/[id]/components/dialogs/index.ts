@@ -2,5 +2,7 @@
 
 export { ExitConfirmDialog } from "./ExitConfirmDialog";
 export { UnansweredWarningDialog } from "./UnansweredWarningDialog";
+export { AllAnsweredDialog } from "./AllAnsweredDialog";
+export { CompletionFailureDialog } from "./CompletionFailureDialog";
 export { TimerExpiredDialog } from "./TimerExpiredDialog";
 export { PauseOverlay } from "./PauseOverlay";

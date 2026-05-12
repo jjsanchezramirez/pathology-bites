@@ -5,12 +5,18 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/shared/components/ui/tooltip";
+import {
   Play as _Play,
   Target,
   Calendar,
   Hash,
   Trophy,
-  Trash2 as _Trash2,
+  Trash2,
   Eye as _Eye,
   Timer,
   TimerOff,
@@ -68,7 +74,7 @@ const formatShortDate = (dateString: string) => {
   }
 };
 
-export function QuizCard({ quiz, formatDate, formatTimeSpent }: QuizCardProps) {
+export function QuizCard({ quiz, onDelete, formatDate, formatTimeSpent }: QuizCardProps) {
   // Real-time time remaining calculation for in-progress timed quizzes
   const [currentTimeRemaining, setCurrentTimeRemaining] = useState(quiz.timeRemaining);
 
@@ -115,6 +121,22 @@ export function QuizCard({ quiz, formatDate, formatTimeSpent }: QuizCardProps) {
         return <Badge variant="secondary">In Progress</Badge>;
       case "not_started":
         return <Badge variant="destructive">Not Started</Badge>;
+      case "abandoned":
+        return (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <Badge variant="outline" className="cursor-help">
+                  Data Lost
+                </Badge>
+              </TooltipTrigger>
+              <TooltipContent className="max-w-xs">
+                Your answers from this quiz weren&apos;t recorded due to a system issue between
+                April 13 and May 12, 2026. The score shown isn&apos;t real.
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        );
       default:
         return <Badge variant="outline">{status}</Badge>;
     }
@@ -284,6 +306,17 @@ export function QuizCard({ quiz, formatDate, formatTimeSpent }: QuizCardProps) {
                 </Link>
               </>
             )}
+            {quiz.status === "abandoned" && (
+              <Button
+                size="sm"
+                variant="destructive"
+                className="w-[180px]"
+                onClick={() => onDelete(quiz)}
+              >
+                <Trash2 className="h-4 w-4 mr-1.5" />
+                Delete
+              </Button>
+            )}
           </div>
         </div>
 
@@ -381,6 +414,17 @@ export function QuizCard({ quiz, formatDate, formatTimeSpent }: QuizCardProps) {
                 </Button>
               </Link>
             </div>
+          )}
+          {quiz.status === "abandoned" && (
+            <Button
+              size="sm"
+              variant="destructive"
+              className="w-full"
+              onClick={() => onDelete(quiz)}
+            >
+              <Trash2 className="h-4 w-4 mr-1.5" />
+              Delete
+            </Button>
           )}
         </div>
       </CardContent>

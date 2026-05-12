@@ -283,6 +283,18 @@ class UserSettingsService {
   }
 
   /**
+   * Mark the Apr 13 - May 12, 2026 quiz scoring bug apology as dismissed
+   */
+  async markQuizScoreBugDismissed(): Promise<void> {
+    try {
+      await this.updateUISettings({ quiz_score_bug_dismissed: true });
+    } catch (error) {
+      console.error("Error marking quiz scoring bug apology as dismissed:", error);
+      throw error;
+    }
+  }
+
+  /**
    * Get UI settings with fallback to defaults
    */
   async getUISettings(): Promise<UISettings> {

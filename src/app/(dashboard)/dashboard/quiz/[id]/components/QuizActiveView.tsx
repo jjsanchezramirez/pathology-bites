@@ -6,11 +6,14 @@ import { QuizSidebar } from "@/features/user/quiz/components/quiz-sidebar";
 import { FeatureErrorBoundary } from "@/shared/components/common";
 import { UIQuizQuestion } from "@/features/user/quiz/types/quiz-question";
 import { QuizAnswer } from "@/features/user/quiz/types/quiz-question";
-import { RefObject } from "react";
+import { RefObject, useCallback, useEffect, useMemo, useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { PanelLeftOpen, Flag, Pause, Play, Clock } from "lucide-react";
 
 interface QuizActiveViewProps {
+  // Session
+  sessionId: string;
+
   // Current question
   currentQuestion: UIQuizQuestion | null;
   currentQuestionNumber: number;
@@ -29,7 +32,7 @@ interface QuizActiveViewProps {
   isSubmitting?: boolean;
 
   // Quiz config
-  mode: "tutor" | "exam" | "practice";
+  mode: "tutor" | "practice";
   timing: "timed" | "untimed";
 
   // Sidebar
@@ -57,6 +60,7 @@ interface QuizActiveViewProps {
 }
 
 export function QuizActiveView({
+  sessionId,
   currentQuestion,
   currentQuestionNumber,
   totalQuestions,
@@ -87,6 +91,66 @@ export function QuizActiveView({
   onSaveAndExit,
   timeRemaining,
 }: QuizActiveViewProps) {
+  // Strike-out state: per-question, persisted in localStorage so it survives refresh,
+  // continue-quiz, AND the review page after completion (so users can see what they
+  // ruled out during the original attempt). Keyed by sessionId. No DB writes.
+  //
+  // Persisted shape: { strikes: Record<questionId, string[]>, lastSaved: number }.
+  // The lastSaved field lets storage-cleanup.ts age entries out after 30 days alongside
+  // quiz-result/quiz-draft keys, so they don't accumulate indefinitely. Empty payloads
+  // are removed eagerly.
+  const strikesStorageKey = sessionId ? `pathology-bites-quiz-strikes-${sessionId}` : null;
+  const [strikesByQuestion, setStrikesByQuestion] = useState<Record<string, string[]>>(() => {
+    if (typeof window === "undefined" || !strikesStorageKey) return {};
+    try {
+      const raw = window.localStorage.getItem(strikesStorageKey);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      // Tolerate both the wrapped shape ({ strikes, lastSaved }) and the legacy raw
+      // Record shape that previous deploys wrote without a timestamp.
+      if (parsed && typeof parsed === "object" && parsed.strikes && !Array.isArray(parsed)) {
+        return parsed.strikes as Record<string, string[]>;
+      }
+      return parsed as Record<string, string[]>;
+    } catch {
+      return {};
+    }
+  });
+
+  useEffect(() => {
+    if (typeof window === "undefined" || !strikesStorageKey) return;
+    try {
+      const hasAnyStrikes = Object.values(strikesByQuestion).some((arr) => arr.length > 0);
+      if (hasAnyStrikes) {
+        const wrapped = { strikes: strikesByQuestion, lastSaved: Date.now() };
+        window.localStorage.setItem(strikesStorageKey, JSON.stringify(wrapped));
+      } else {
+        window.localStorage.removeItem(strikesStorageKey);
+      }
+    } catch {
+      // localStorage may be unavailable (private mode / quota); strikes will just be in-memory.
+    }
+  }, [strikesByQuestion, strikesStorageKey]);
+
+  const currentStruckAnswerIds = useMemo(() => {
+    if (!currentQuestion) return new Set<string>();
+    return new Set(strikesByQuestion[currentQuestion.id] || []);
+  }, [strikesByQuestion, currentQuestion]);
+
+  const handleStrikeToggle = useCallback(
+    (answerId: string) => {
+      if (!currentQuestion) return;
+      const questionId = currentQuestion.id;
+      setStrikesByQuestion((prev) => {
+        const current = new Set(prev[questionId] || []);
+        if (current.has(answerId)) current.delete(answerId);
+        else current.add(answerId);
+        return { ...prev, [questionId]: Array.from(current) };
+      });
+    },
+    [currentQuestion]
+  );
+
   if (!currentQuestion) {
     return (
       <div className="flex items-center justify-center h-full">
@@ -218,6 +282,8 @@ export function QuizActiveView({
                   onAnswerSelect={onAnswerSelect}
                   showExplanation={mode === "tutor" && !!getAnswerForQuestion(currentQuestion.id)}
                   isReviewMode={false}
+                  struckAnswerIds={currentStruckAnswerIds}
+                  onStrikeToggle={handleStrikeToggle}
                 />
               </FeatureErrorBoundary>
 

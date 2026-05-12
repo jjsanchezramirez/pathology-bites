@@ -203,16 +203,25 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         (attempt) => !existingQuestionIds.has(attempt.question_id)
       );
 
-      // Insert new attempts
+      // Insert new attempts. Fail the request if this errors — silently swallowing the
+      // error caused score=0 quizzes for ~30 days when a downstream trigger broke. Better
+      // to surface the failure so the client retries (and so logs/alerts fire) than to mark
+      // the session completed with no recorded answers.
       if (newAttemptData.length > 0) {
         const { error: insertError } = await supabase.from("quiz_attempts").insert(newAttemptData);
 
         if (insertError) {
           console.error("[Quiz Complete] Error inserting final answers:", insertError);
-          // Don't fail completion - answers may have been submitted already
-        } else {
-          console.log(`[Quiz Complete] Inserted ${newAttemptData.length} final answers`);
+          return NextResponse.json(
+            {
+              error: "Failed to record quiz answers",
+              code: insertError.code,
+              details: insertError.message,
+            },
+            { status: 500 }
+          );
         }
+        console.log(`[Quiz Complete] Inserted ${newAttemptData.length} final answers`);
       }
     }
 
@@ -237,16 +246,6 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     } catch (analyticsError) {
       // Don't fail the quiz completion if analytics update fails
       console.error("[Quiz Complete] Failed to update analytics:", analyticsError);
-    }
-
-    // OPTIMIZATION: Refresh user stats incrementally (uses materialized view)
-    try {
-      console.log("[Quiz Complete] Refreshing user stats incrementally for user:", userId);
-      await supabase.rpc("refresh_user_stats_incremental", { p_user_id: userId });
-      console.log("[Quiz Complete] User stats refreshed successfully");
-    } catch (statsError) {
-      // Don't fail the quiz completion if stats refresh fails
-      console.warn("[Quiz Complete] Failed to refresh user stats:", statsError);
     }
 
     // Note: Activity generation removed - dashboard now gets activities directly

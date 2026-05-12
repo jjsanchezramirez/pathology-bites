@@ -183,7 +183,7 @@ export function getUserNavigationSections(): NavigationSection[] {
       ],
     },
     {
-      title: "Education",
+      title: "Practice",
       items: [
         {
           name: "New Quiz",
@@ -199,25 +199,34 @@ export function getUserNavigationSections(): NavigationSection[] {
           name: "Slide-Based Questions",
           href: "/dashboard/wsi-questions",
           icon: "Microscope",
-          isNew: true,
         },
+      ],
+    },
+    {
+      title: "Study",
+      items: [
         {
           name: "Ankoma Deck Viewer",
           href: "/dashboard/anki",
           icon: "Library",
-          isNew: true,
-        },
-        {
-          name: "Study Schedule",
-          href: "/dashboard/board-prep",
-          icon: "Target",
-          isNew: true,
         },
         {
           name: "Learning Modules",
           href: "/dashboard/learn",
           icon: "BookOpen",
-          isNew: true,
+          isSoon: true,
+        },
+        {
+          name: "Study Schedule",
+          href: "/dashboard/board-prep",
+          icon: "Target",
+          isSoon: true,
+        },
+        {
+          name: "My Progress",
+          href: "/dashboard/progress",
+          icon: "TrendingUp",
+          isSoon: true,
         },
       ],
     },
@@ -233,12 +242,6 @@ export function getUserNavigationSections(): NavigationSection[] {
           name: "Achievements",
           href: "/dashboard/achievements",
           icon: "Trophy",
-        },
-        {
-          name: "My Progress",
-          href: "/dashboard/progress",
-          icon: "TrendingUp",
-          isSoon: true,
         },
       ],
     },

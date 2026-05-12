@@ -22,7 +22,7 @@ export const AUTO_SAVE_CONFIG = {
    * Keeps status as 'in_progress' and syncs silently
    */
   enablePeriodicAutoSave: true,
-  periodicSaveInterval: 5, // Save every 5 answers
+  periodicSaveInterval: 1, // Save every answer (was 5)
 
   /**
    * Offline queue for failed syncs
