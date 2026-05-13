@@ -669,21 +669,34 @@ export async function GET(request: NextRequest) {
     needsImprovement.sort((a, b) => a.score - b.score);
     mastered.sort((a, b) => b.score - a.score);
 
-    // Calculate timeline (last 30 days)
-    const completedSessionsLast30Days = completedSessions.filter(
-      (s) => s.completed_at && new Date(s.completed_at) >= thirtyDaysAgo
-    );
+    // All-time daily timeline. Separate query so we don't reuse the 100-row
+    // `sessions` window — the timeline chart now offers a timeframe selector
+    // (1w/1m/3m/6m/1y/all) and needs the full history. We fetch just the two
+    // fields we need; the row is sparse (only days with completed sessions).
+    interface CompletedSessionTimelineRow {
+      completed_at: string | null;
+      score: number | null;
+    }
+    const { data: allCompletedSessionsForTimeline } = await supabase
+      .from("quiz_sessions")
+      .select("completed_at, score")
+      .eq("user_id", userId)
+      .eq("status", "completed")
+      .not("completed_at", "is", null)
+      .order("completed_at", { ascending: true });
 
     const dailyData: Record<string, { scores: number[]; count: number }> = {};
-    completedSessionsLast30Days.forEach((session) => {
-      if (!session.completed_at) return;
-      const date = new Date(session.completed_at).toISOString().split("T")[0];
-      if (!dailyData[date]) {
-        dailyData[date] = { scores: [], count: 0 };
+    ((allCompletedSessionsForTimeline as CompletedSessionTimelineRow[]) || []).forEach(
+      (session) => {
+        if (!session.completed_at) return;
+        const date = new Date(session.completed_at).toISOString().split("T")[0];
+        if (!dailyData[date]) {
+          dailyData[date] = { scores: [], count: 0 };
+        }
+        dailyData[date].scores.push(session.score || 0);
+        dailyData[date].count++;
       }
-      dailyData[date].scores.push(session.score || 0);
-      dailyData[date].count++;
-    });
+    );
 
     const timeline = Object.entries(dailyData)
       .map(([date, stats]) => ({
@@ -916,46 +929,16 @@ export async function GET(request: NextRequest) {
     });
 
     // ===== DASHBOARD DATA CALCULATION =====
-    // Calculate dashboard-specific stats
-
-    // Get total questions count from cached system_stats table (fast!)
-    // This avoids expensive full table scan (50-200ms) by using cached value
-    const { data: totalQuestionsData } = await supabase
-      .from("system_stats")
-      .select("value")
-      .eq("key", "total_questions")
-      .single();
-
-    const allQuestionsCount = Number(totalQuestionsData?.value || 0);
-
-    // Calculate mastered/needs review from attempts
-    const questionAttempts = new Map<string, { correct: number; incorrect: number }>();
-
-    allAttempts.forEach((attempt: AttemptItem) => {
-      const existing = questionAttempts.get(attempt.question_id) || { correct: 0, incorrect: 0 };
-      if (attempt.is_correct) {
-        existing.correct++;
-      } else {
-        existing.incorrect++;
-      }
-      questionAttempts.set(attempt.question_id, existing);
-    });
-
-    // Mastered: 2+ correct, no incorrect
-    // Needs review: any incorrect
-    let masteredCount = 0;
-    let needsReviewCount = 0;
-
-    questionAttempts.forEach((counts) => {
-      if (counts.correct >= 2 && counts.incorrect === 0) {
-        masteredCount++;
-      } else if (counts.incorrect > 0) {
-        needsReviewCount++;
-      }
-    });
-
-    const completedQuestionsCount = questionAttempts.size;
-    const unusedCount = Math.max(0, (allQuestionsCount || 0) - completedQuestionsCount);
+    // The bucket counts (all, unused, needsReview, mastered) are derived from
+    // `overallQuizStats` below, which sums per-category stats from
+    // `get_user_category_stats`. That RPC is the canonical source — used by the
+    // /dashboard/quiz/new page — and it (a) restricts the pool to published
+    // questions and (b) uses the canonical mastered/needs-review definitions:
+    //   Mastered     = last 2 consecutive attempts correct
+    //   Needs Review = most recent attempt incorrect
+    //   Unused       = never attempted
+    // Computed here only after the RPC call further down; see the response
+    // object below for the assignments.
 
     // Recent activity from sessions
     const recentActivity: Array<{
@@ -1263,12 +1246,17 @@ export async function GET(request: NextRequest) {
           progress: achievementProgress,
         },
         dashboard: {
-          allQuestions: allQuestionsCount || 0,
-          needsReview: needsReviewCount,
-          mastered: masteredCount,
-          unused: unusedCount,
-          totalQuestions: allQuestionsCount || 0,
-          completedQuestions: completedQuestionsCount,
+          // Canonical bucket counts from get_user_category_stats (published-only).
+          // Definitions match /dashboard/quiz/new:
+          //   Mastered     = last 2 consecutive attempts correct
+          //   Needs Review = most recent attempt incorrect
+          //   Unused       = never attempted (published pool)
+          allQuestions: overallQuizStats.all,
+          needsReview: overallQuizStats.needsReview,
+          mastered: overallQuizStats.mastered,
+          unused: overallQuizStats.unused,
+          totalQuestions: overallQuizStats.all,
+          completedQuestions: Math.max(0, overallQuizStats.all - overallQuizStats.unused),
           averageScore: overallScore,
           studyStreak: currentStreak,
           recentQuizzes: completedSessions.length,

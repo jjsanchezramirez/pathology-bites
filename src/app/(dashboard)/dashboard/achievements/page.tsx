@@ -8,9 +8,56 @@ import {
   AchievementCategory,
   AchievementProgress,
 } from "@/features/user/achievements/types/achievement";
-import { Loader2 } from "lucide-react";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 import { ScrollReveal } from "@/shared/components/common";
+
+// Mirrors the real layout — page header, then six category sections each with
+// a header + 2/3-col grid of cards. Keeping the structure identical avoids the
+// jarring spinner→full-page swap; the layout doesn't reflow when data lands.
+const SKELETON_CATEGORY_SIZES = [4, 3, 6, 4, 6, 4];
+
+function AchievementsLoadingSkeleton() {
+  return (
+    <div className="space-y-6">
+      <div>
+        <Skeleton className="h-9 w-48 mb-3" />
+        <Skeleton className="h-4 w-64" />
+      </div>
+      <div className="space-y-8">
+        {SKELETON_CATEGORY_SIZES.map((count, sectionIdx) => (
+          <div key={sectionIdx} className="space-y-4">
+            <div>
+              <Skeleton className="h-6 w-56 mb-2" />
+              <Skeleton className="h-4 w-72" />
+            </div>
+            <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+              {Array.from({ length: count }).map((_, cardIdx) => (
+                <Card key={cardIdx} className="text-center">
+                  <CardContent className="pt-6 pb-4 px-4">
+                    <div className="mb-4 flex justify-center">
+                      <Skeleton className="w-24 h-24 rounded-full" />
+                    </div>
+                    <Skeleton className="h-5 w-3/4 mx-auto mb-2" />
+                    <div className="mb-4 min-h-[40px] space-y-1.5">
+                      <Skeleton className="h-3 w-full" />
+                      <Skeleton className="h-3 w-5/6 mx-auto" />
+                    </div>
+                    <div className="space-y-2">
+                      <Skeleton className="h-2 w-full" />
+                      <Skeleton className="h-3 w-12 mx-auto" />
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
 
 export default function AchievementsPage() {
   const { data: unifiedData, isLoading } = useUnifiedData();
@@ -109,11 +156,7 @@ export default function AchievementsPage() {
   }, [processAchievementsData]);
 
   if (isLoading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
-      </div>
-    );
+    return <AchievementsLoadingSkeleton />;
   }
 
   // Calculate overall stats
