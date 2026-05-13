@@ -7,8 +7,9 @@ import { analyzeImagesV2 } from "./vision-v2";
 import { planLesson } from "./planner";
 import { assembleLesson } from "./assembler-v2";
 
-// Allow up to 2 minutes for the full pipeline
-export const maxDuration = 120;
+// Vercel hobby plan caps serverless functions at 60s. Pipeline must fit within
+// that ceiling — see planner / assembler for the per-pass budgets.
+export const maxDuration = 60;
 
 /**
  * @swagger
