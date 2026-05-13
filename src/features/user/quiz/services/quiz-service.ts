@@ -517,9 +517,7 @@ export class QuizService {
     supabaseClient: SupabaseClient
   ): Promise<void> {
     try {
-      // Use authenticated client if provided, otherwise fall back to default
-
-      const { error } = await supabaseClient
+      let query = supabaseClient
         .from("quiz_sessions")
         .update({
           current_question_index: updates.currentQuestionIndex,
@@ -534,6 +532,19 @@ export class QuizService {
           updated_at: new Date().toISOString(),
         })
         .eq("id", sessionId);
+
+      // Atomic guard against the timer-expiry TOCTOU race: when /complete
+      // marks a session 'completed', a still-in-flight progress PATCH from
+      // the auto-save effect can land afterwards and write status back to
+      // 'in_progress' / 'paused' (the PATCH route reads existingSession.status
+      // before the /complete commit lands, sees 'in_progress', and proceeds).
+      // Refuse the write at the DB level if the row is already terminal —
+      // unless this update is itself marking it completed.
+      if (updates.status !== "completed") {
+        query = query.neq("status", "completed");
+      }
+
+      const { error } = await query;
 
       if (error) throw error;
     } catch (error) {
