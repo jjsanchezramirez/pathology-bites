@@ -51,7 +51,7 @@ export function TimerExpiredDialog({ open, isOnline = true, score }: TimerExpire
   return (
     <Dialog open={open} onOpenChange={() => {}}>
       <DialogContent
-        className="max-w-lg border-none bg-transparent shadow-none p-8 overflow-visible"
+        className="max-w-sm border border-white/10 bg-neutral-950 shadow-2xl rounded-2xl p-8 overflow-visible focus:outline-none focus-visible:outline-none"
         showCloseButton={false}
       >
         <VisuallyHidden>
@@ -60,21 +60,20 @@ export function TimerExpiredDialog({ open, isOnline = true, score }: TimerExpire
 
         <div
           className={`
-            flex flex-col items-center gap-4
+            flex flex-col items-center gap-3
             transition-all duration-500 ease-out
             ${isVisible ? "opacity-100 scale-100" : "opacity-0 scale-105"}
           `}
         >
-          {/* Title. Explicit text-white (not theme `text-foreground`) because the
-              dialog sits over a dark scrim — theme foreground reads as dark text
-              in light mode, which is unreadable on the overlay. */}
+          {/* Title. Explicit white (not theme `text-foreground`) because the
+              dialog panel is fixed dark regardless of the user's color mode. */}
           <h2 className="text-2xl font-bold text-white text-center">Time&apos;s Up!</h2>
 
           {/* Lottie animation with amber radial spotlight behind it */}
-          <div className="relative w-48 h-48">
+          <div className="relative w-40 h-40">
             <div
               aria-hidden
-              className="pointer-events-none absolute inset-0 -m-10 rounded-full bg-amber-500/20 blur-3xl"
+              className="pointer-events-none absolute inset-0 -m-10 rounded-full bg-amber-500/25 blur-3xl"
             />
             <div className="relative w-full h-full">
               {isLoading || !animationData ? (
@@ -90,20 +89,17 @@ export function TimerExpiredDialog({ open, isOnline = true, score }: TimerExpire
             </div>
           </div>
 
-          {/* Score + accent + description block, mirroring the trophy modal's
-              title / category / description triple. All colors are explicit
-              white-on-dark variants so the contrast holds against the modal
-              scrim in both light and dark themes. */}
-          <div className="text-center space-y-1.5">
+          {/* Score readout + description. The redundant "TIME EXPIRED" label
+              was dropped — the heading and the alarm-clock animation already
+              communicate that. Score sits big and bold; description gives the
+              next-step context. */}
+          <div className="text-center space-y-2">
             {score && score.total > 0 && (
               <p className="text-3xl font-bold text-white tabular-nums">
-                {score.correct} <span className="text-white/40">/</span> {score.total}
+                {score.correct} <span className="text-white/30">/</span> {score.total}
               </p>
             )}
-            <p className="text-xs font-semibold uppercase tracking-wider text-amber-400">
-              Time Expired
-            </p>
-            <p className="text-sm text-white/80 max-w-sm">
+            <p className="text-sm text-white/70 max-w-xs mx-auto leading-relaxed">
               {isOnline
                 ? "Your answers are in. Pulling up your results…"
                 : "You're offline. Your answers are saved — we'll submit and show your results as soon as you're back online."}
