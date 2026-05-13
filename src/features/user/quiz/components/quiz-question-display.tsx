@@ -15,7 +15,7 @@ function StrikeIcon({ className }: { className?: string }) {
         x="14"
         y="17"
         textAnchor="middle"
-        fontSize="13"
+        fontSize="16"
         fontWeight="600"
         fontFamily="ui-sans-serif, system-ui, sans-serif"
         letterSpacing="-0.5"

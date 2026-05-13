@@ -10,6 +10,9 @@ import { useCSRFToken } from "@/features/auth/hooks/use-csrf-token";
 import { useFavoritesGlobal } from "@/features/user/questions/hooks/use-favorites-global";
 import { QuestionFlagDialog } from "@/features/admin/questions/components/dialogs/question-flag-dialog";
 import { useUserSettings } from "@/shared/hooks/use-user-settings";
+import { useOnlineStatus } from "@/shared/hooks/use-online-status";
+import { preloadLottieAnimation } from "@/shared/hooks/use-lottie-animation";
+import { preloadImages } from "@/shared/components/media/offline-aware-image";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { toast } from "@/shared/utils/ui/toast";
 import {
@@ -22,6 +25,22 @@ import {
   TimerExpiredDialog,
   PauseOverlay,
 } from "./components";
+import { preloadLottieReactChunk } from "./components/dialogs/TimerExpiredDialog";
+
+// Pattern-match on error messages that look like transient connectivity issues
+// (offline / DNS / connection reset). Used to drive the offline-wait branch in
+// runCompletion and to suppress noisy "Failed to fetch" toasts when we already
+// know we're going to retry on reconnect.
+function isNetworkErrorPattern(msg: string | undefined): boolean {
+  return (
+    !!msg &&
+    (msg.includes("aborted") ||
+      msg.includes("ECONNRESET") ||
+      msg.includes("network") ||
+      msg.includes("fetch") ||
+      msg.includes("Failed to fetch"))
+  );
+}
 
 export default function QuizSessionPage() {
   const params = useParams();
@@ -56,6 +75,10 @@ export default function QuizSessionPage() {
     return 0;
   });
 
+  // Reactive online status — used to gate the timer-expiry redirect and to
+  // soften offline failures on the question images.
+  const isOnline = useOnlineStatus();
+
   // UI state
   const [isPaused, setIsPaused] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
@@ -66,7 +89,6 @@ export default function QuizSessionPage() {
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [timerExpired, setTimerExpired] = useState(false);
   const [completionError, setCompletionError] = useState<string | null>(null);
-  const [, setIsExiting] = useState(false);
   const [isCompletingQuiz, setIsCompletingQuiz] = useState(false);
   const [pendingAnswerSelection, setPendingAnswerSelection] = useState<{
     questionId: string;
@@ -106,41 +128,14 @@ export default function QuizSessionPage() {
     fetchSessionConfig();
   }, [isReviewMode, sessionId]);
 
-  // Determine hybrid preset
+  // Determine hybrid preset. Only `enableOfflineSupport` is read by useHybridQuiz —
+  // disabled for timed sessions where reload-on-reconnect is the correct behavior,
+  // enabled for untimed sessions where loss recovery matters.
   const getHybridPreset = useCallback(() => {
     if (!sessionConfig) return HybridPresets.TUTOR_MODE;
-
     const { mode, timing } = sessionConfig;
-
-    if (mode === "practice") {
-      return {
-        mode: "practice" as const,
-        timing: timing as "timed" | "untimed",
-        showExplanations: false,
-        allowReview: true,
-        enableRealtime: timing === "timed",
-        enableOfflineSupport: timing === "untimed",
-        autoSync: timing === "timed",
-        syncOnComplete: true,
-      };
-    }
-
-    if (mode === "tutor") {
-      if (timing === "timed") {
-        return {
-          mode: "tutor" as const,
-          timing: "timed" as const,
-          showExplanations: true,
-          allowReview: true,
-          enableRealtime: true,
-          enableOfflineSupport: false,
-          autoSync: true,
-          syncOnComplete: true,
-        };
-      }
-      return HybridPresets.TUTOR_MODE;
-    }
-
+    if (mode === "practice") return { enableOfflineSupport: timing === "untimed" };
+    if (mode === "tutor") return { enableOfflineSupport: timing !== "timed" };
     return HybridPresets.TUTOR_MODE;
   }, [sessionConfig]);
 
@@ -157,9 +152,15 @@ export default function QuizSessionPage() {
       if (timerExpired) return; // Guard: the hook's setInterval can fire callback twice on tick=0 in some race conditions
       console.log("[Quiz Page] Timer expired, showing dialog");
 
-      // Commit any pending answer selection (practice mode) before the hook proceeds to
-      // forced completion. Otherwise the user's last selected-but-not-submitted answer
-      // would be silently dropped on timer expiry.
+      // Commit any pending answer selection (practice mode) before the hook
+      // proceeds to forced completion. The dispatch is queued; what actually
+      // lets it land in stateRef before handleCompleteQuiz reads it is the
+      // `await autoSaveManager.waitForIdle(1500)` inside handleCompleteQuiz —
+      // that await yields the microtask checkpoint, React commits the queued
+      // SUBMIT_ANSWER reducer update, stateRef gets the new value, and
+      // handleCompleteQuiz then reads it on the next line. Without that
+      // await chain (i.e. if completion were synchronous), this commit would
+      // race React's batching and silently drop the answer from the POST.
       const pending = pendingAnswerSelectionRef.current;
       if (pending) {
         try {
@@ -173,22 +174,31 @@ export default function QuizSessionPage() {
       }
 
       setTimerExpired(true);
-      // Note: don't set isCompletingQuiz here. handleCompleteQuiz (fired by the hook
-      // immediately after this callback) manages that flag itself, and setting it
-      // here too caused state desync that contributed to multi-redirect symptoms.
+      runCompletionRef.current?.();
     },
     onError: (error) => {
       if (isReviewMode) return;
       if (error.includes("already completed")) {
+        isNavigatingAwayRef.current = true;
         window.location.href = `/dashboard/quiz/${sessionId}/results`;
-      } else {
-        toast.error(error);
+        return;
       }
+      // Suppress network-error toasts that fire during the offline-timer-expiry
+      // flow. runCompletion's offline-wait branch already handles these — it
+      // registers an `online` listener and silently retries when the connection
+      // returns. Surfacing a "Failed to fetch" toast on top of the
+      // TimerExpiredDialog's own offline copy is just noise.
+      if (isNetworkErrorPattern(error)) return;
+      toast.error(error);
     },
   });
 
   // Track if we're intentionally navigating away (e.g., Save & Exit)
   const isNavigatingAwayRef = useRef(false);
+
+  // Ref-based re-entry guard for runCompletion. See runCompletion comment for
+  // the stale-closure / StrictMode-double-fire scenario this prevents.
+  const isCompletionRunningRef = useRef(false);
 
   // Detect transition to "all questions answered" and prompt the user to submit.
   // Helpful for the common practice-mode flow where someone skips a middle question
@@ -198,74 +208,123 @@ export default function QuizSessionPage() {
   //
   // Suppressed when the user is on the last question: they'll see "Submit & Complete
   // Quiz" right in front of them, so the dialog would just be intrusive.
-  const previousAnsweredCountRef = useRef<number>(hybridState.progress.current);
+  // Snapshot the count into a local primitive so we can use it as a stable dep.
+  // Depending on the whole `hybridState.progress` object made this effect re-run
+  // every reducer dispatch (including every timer tick), which broke the
+  // prev/now diff that triggers the all-answered dialog.
+  const answeredCount = hybridState.progress.current;
+  const totalQuestionsCount = hybridState.totalQuestions;
+  const currentQuestionNumber = hybridState.currentQuestion;
+  const quizStatus = hybridState.status;
+  const previousAnsweredCountRef = useRef<number>(answeredCount);
   useEffect(() => {
     if (isReviewMode) return;
     const prev = previousAnsweredCountRef.current;
-    const now = hybridState.progress.current;
-    const total = hybridState.totalQuestions;
-    const isOnLastQuestion = hybridState.currentQuestion === hybridState.totalQuestions;
+    const isOnLastQuestion = currentQuestionNumber === totalQuestionsCount;
 
     if (
-      total > 0 &&
-      now === total &&
-      prev < total &&
+      totalQuestionsCount > 0 &&
+      answeredCount === totalQuestionsCount &&
+      prev < totalQuestionsCount &&
       !isOnLastQuestion &&
       !isCompletingQuiz &&
-      hybridState.status !== "completed"
+      quizStatus !== "completed"
     ) {
       setShowAllAnsweredPrompt(true);
     }
-    previousAnsweredCountRef.current = now;
+    previousAnsweredCountRef.current = answeredCount;
   }, [
-    hybridState.progress,
-    hybridState.totalQuestions,
-    hybridState.currentQuestion,
-    hybridState.status,
+    answeredCount,
+    totalQuestionsCount,
+    currentQuestionNumber,
+    quizStatus,
     isCompletingQuiz,
     isReviewMode,
   ]);
 
-  // Centralized completion runner with retry. Called from every completion entry point
-  // (last-question submit, all-answered prompt, tutor complete button). On final failure
-  // surfaces a persistent CompletionFailureDialog instead of a fleeting toast.
+  // Centralized completion runner — the SINGLE entry point for every completion
+  // path (last-question submit, all-answered prompt, tutor complete button,
+  // timer expiry). On success, redirects to the results page. On failure with
+  // a network-looking error or while offline, registers a one-shot `online`
+  // listener and waits silently for the connection to come back — no failure
+  // dialog, the Time's Up / loading UI stays put. On other failures, surfaces
+  // the CompletionFailureDialog so the user can decide what to do.
   const runCompletion = useCallback(async () => {
-    if (isCompletingQuiz) return;
+    // Ref-based re-entry guard. The previous state-based `if (isCompletingQuiz)`
+    // guard had a stale-closure bug: when the timer's onTimerExpired callback
+    // double-fired (StrictMode in dev), both scheduled setTimeouts ran in the
+    // same tick — both saw the closure's pre-update isCompletingQuiz=false,
+    // both proceeded, and the second handleCompleteQuiz call short-circuited
+    // on hasCompletedRef and returned a fake { success: true } that triggered
+    // a premature offline redirect to /results.
+    if (isCompletionRunningRef.current) return;
+    isCompletionRunningRef.current = true;
     setIsCompletingQuiz(true);
     setCompletionError(null);
 
     const maxAttempts = 3;
     let lastError: string | undefined;
 
-    for (let attempt = 1; attempt <= maxAttempts; attempt++) {
-      try {
-        const result = await hybridActions.completeQuiz();
-        if (result.success) {
-          window.location.href = `/dashboard/quiz/${sessionId}/results`;
-          return;
+    try {
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        try {
+          const result = await hybridActions.completeQuiz();
+          if (result.success) {
+            // Timer-expired path shows a "Time's Up!" dialog — give the user a
+            // moment to register it before navigating. Manual-submit path
+            // redirects immediately.
+            const delay = timerExpired ? 2000 : 0;
+            isNavigatingAwayRef.current = true;
+            setTimeout(() => {
+              window.location.href = `/dashboard/quiz/${sessionId}/results`;
+            }, delay);
+            return;
+          }
+          lastError = result.error;
+          if (!isNetworkErrorPattern(result.error) || attempt === maxAttempts) break;
+          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+        } catch (err) {
+          lastError = err instanceof Error ? err.message : "Unknown error";
+          if (attempt === maxAttempts) break;
+          await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
         }
-        lastError = result.error;
-        const isRetryable =
-          !!result.error &&
-          (result.error.includes("aborted") ||
-            result.error.includes("ECONNRESET") ||
-            result.error.includes("network") ||
-            result.error.includes("fetch"));
-        if (!isRetryable || attempt === maxAttempts) break;
-        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
-      } catch (err) {
-        lastError = err instanceof Error ? err.message : "Unknown error";
-        if (attempt === maxAttempts) break;
-        await new Promise((resolve) => setTimeout(resolve, 1000 * attempt));
+      }
+
+      setIsCompletingQuiz(false);
+
+      // If we couldn't reach the server and it looks like a connectivity issue,
+      // don't show the persistent failure dialog. Wait for the browser to come
+      // back online and retry once. The TimerExpiredDialog (if open) keeps its
+      // "you're offline — will submit when reconnected" message in place.
+      if (!navigator.onLine || isNetworkErrorPattern(lastError)) {
+        const onOnline = () => {
+          window.removeEventListener("online", onOnline);
+          void runCompletionRef.current?.();
+        };
+        window.addEventListener("online", onOnline);
+        return;
+      }
+
+      setCompletionError(
+        lastError ||
+          "Couldn't reach the server. Your answers are saved locally — try again in a moment."
+      );
+    } finally {
+      // Release the re-entry guard on every exit path EXCEPT the success path,
+      // which has already set isNavigatingAwayRef and scheduled the redirect.
+      // Releasing on success would let a late online-listener fire trigger a
+      // second runCompletion racing the redirect.
+      if (!isNavigatingAwayRef.current) {
+        isCompletionRunningRef.current = false;
       }
     }
+  }, [hybridActions, sessionId, timerExpired]);
 
-    setIsCompletingQuiz(false);
-    setCompletionError(
-      lastError ||
-        "Couldn't reach the server. Your answers are saved locally — try again in a moment."
-    );
-  }, [hybridActions, isCompletingQuiz, sessionId]);
+  // The hook's onTimerExpired callback runs before runCompletion exists in
+  // scope (callback is defined inside useHybridQuiz's options object). Bridge
+  // through a ref so the callback can call into the latest runCompletion.
+  const runCompletionRef = useRef(runCompletion);
+  runCompletionRef.current = runCompletion;
 
   // Triggered from the all-answered prompt's "Submit Quiz" button.
   const handleSubmitFromAllAnsweredPrompt = useCallback(async () => {
@@ -273,23 +332,59 @@ export default function QuizSessionPage() {
     await runCompletion();
   }, [runCompletion]);
 
-  // Handle redirect after timer expiration and quiz completion.
-  // hasRedirectedRef guards against multiple redirects from re-firing effects: dev-mode HMR,
-  // status oscillation, and Strict Mode double-invocation can all cause the effect to run
-  // more than once. Without the guard, we end up scheduling several setTimeout → window.location.href
-  // calls and the user perceives "redirected to three pages".
-  const hasRedirectedRef = useRef(false);
+  // Preload all question images and the "Time's Up" Lottie animation as soon as
+  // the quiz initializes. Two reasons:
+  //   1. If the user goes offline mid-quiz, the not-yet-seen images are already
+  //      in the browser HTTP cache, so the OfflineAwareImage component renders
+  //      them instead of the placeholder.
+  //   2. The TimerExpiredDialog renders the alarm clock Lottie the instant the
+  //      timer hits 0; without a warm cache it loads off the network, which
+  //      fails (or just visibly flickers) when offline.
+  const hasPreloadedRef = useRef(false);
   useEffect(() => {
-    if (hasRedirectedRef.current) return;
-    if (timerExpired && hybridState.status === "completed") {
-      hasRedirectedRef.current = true;
-      console.log("[Quiz Page] Timer expired and quiz completed, redirecting to results...");
-      // Wait a moment to show the dialog before redirecting
-      setTimeout(() => {
-        window.location.href = `/dashboard/quiz/${sessionId}/results`;
-      }, 2000); // 2 second delay to show "Time's Up!" message
-    }
-  }, [timerExpired, hybridState.status, sessionId]);
+    if (hasPreloadedRef.current) return;
+    if (isReviewMode) return;
+    if (!hybridState.isInitialized) return;
+    const questions = hybridActions.getQuestions();
+    if (questions.length === 0) return;
+
+    hasPreloadedRef.current = true;
+    const urls = questions.flatMap(
+      (q) => q.question_images?.map((qi) => qi.image?.url).filter((u): u is string => !!u) ?? []
+    );
+    preloadImages(urls);
+    preloadLottieAnimation("alarm_clock");
+    // Warm the `lottie-react` JS chunk too. Without this, TimerExpiredDialog's
+    // dynamic import fails with ChunkLoadError when the timer expires offline
+    // — the chunk has never been loaded so the browser tries to fetch it cold
+    // and gets ERR_INTERNET_DISCONNECTED.
+    preloadLottieReactChunk().catch(() => {
+      /* best-effort */
+    });
+  }, [hybridState.isInitialized, hybridActions, isReviewMode]);
+
+  // Browser-level "Leave site?" warning while we're mid-completion or waiting for
+  // a reconnection after the timer expired offline. Without this, the user can
+  // close the tab during the offline-wait and lose their results submission. The
+  // intentional-redirect cases (successful completion → /results, Save & Exit)
+  // already set isNavigatingAwayRef before changing location.href, so they pass
+  // through silently.
+  useEffect(() => {
+    if (isReviewMode) return;
+    const shouldWarn = isCompletingQuiz || (timerExpired && !isOnline);
+    if (!shouldWarn) return;
+
+    const handler = (e: BeforeUnloadEvent) => {
+      if (isNavigatingAwayRef.current) return;
+      e.preventDefault();
+      // Required for the prompt to show in some browsers; modern Chrome/Firefox
+      // ignore the string and show a generic message.
+      e.returnValue = "";
+    };
+
+    window.addEventListener("beforeunload", handler);
+    return () => window.removeEventListener("beforeunload", handler);
+  }, [isReviewMode, isCompletingQuiz, timerExpired, isOnline]);
 
   // Prevent accidental navigation away from quiz
   useEffect(() => {
@@ -408,13 +503,11 @@ export default function QuizSessionPage() {
       return;
     }
 
-    setIsExiting(true);
     try {
       await hybridActions.saveAndExit();
       isNavigatingAwayRef.current = true;
       window.location.href = "/dashboard/quizzes";
     } catch {
-      setIsExiting(false);
       toast.error("Failed to save quiz");
     }
   };
@@ -453,12 +546,16 @@ export default function QuizSessionPage() {
     }
   };
 
-  // Count of questions still unanswered AFTER the current click is accounted for.
-  // Used to populate the UnansweredWarningDialog: filters out the currently-displayed
-  // question because the practice-mode submit handler is about to commit it (and the
-  // tutor-mode "Complete Quiz" button only fires when the current question is already
-  // answered). Reads through the stateRef-backed accessors so it sees fresh data even
-  // when called immediately after a dispatch.
+  // Helpers for the last-question completion paths. Both read through the
+  // stateRef-backed accessors so they see fresh data even when called
+  // immediately after a SUBMIT_ANSWER dispatch.
+  //
+  // `countUnansweredExcludingCurrent`: count of OTHER unanswered questions —
+  // used when a commit just happened (or is about to) and we want to know
+  // what's left.
+  // `countAllUnanswered`: count of every unanswered question — used when no
+  // commit is happening (e.g. user is on the last Q with an already-committed
+  // answer, clicking "Submit Quiz").
   const countUnansweredExcludingCurrent = useCallback((): number => {
     const allQuestions = hybridActions.getQuestions();
     const currentId = hybridActions.getCurrentQuestion()?.id;
@@ -466,10 +563,15 @@ export default function QuizSessionPage() {
       (q) => q.id !== currentId && !hybridActions.getAnswerForQuestion(q.id)
     ).length;
   }, [hybridActions]);
+  const countAllUnanswered = useCallback((): number => {
+    return hybridActions.getQuestions().filter((q) => !hybridActions.getAnswerForQuestion(q.id))
+      .length;
+  }, [hybridActions]);
 
   const handleSubmitAnswer = async () => {
     const currentQuestion = hybridActions.getCurrentQuestion();
     if (!currentQuestion) return;
+    const isLastQuestion = hybridState.currentQuestion === hybridState.totalQuestions;
 
     // Practice mode: two-step flow with pending selection.
     if (pendingAnswerSelection) {
@@ -493,21 +595,17 @@ export default function QuizSessionPage() {
       );
       setPendingAnswerSelection(null);
 
-      const isLastQuestion = hybridState.currentQuestion === hybridState.totalQuestions;
-
       if (isLastQuestion) {
         const stillUnanswered = countUnansweredExcludingCurrent();
         if (stillUnanswered > 0) {
-          // Show the warning dialog instead of silently completing or auto-navigating.
-          // The user has explicitly chosen to submit-and-complete from the last
-          // question; we surface the count and let them decide between "Review
-          // Questions" (stay) and "Complete Anyway" (runCompletion).
+          // Case A2: committed the final answer but other questions are still
+          // unanswered. Show the warning dialog so the user can review them
+          // or complete anyway.
           setUnansweredWarningCount(stillUnanswered);
           setShowUnansweredWarning(true);
         } else {
-          // Give React a beat to flush the SUBMIT_ANSWER dispatch before completion reads
-          // state via stateRef. Without this 100ms the in-flight render may not have
-          // propagated the just-submitted answer to the ref.
+          // Case A1: this commit completes the quiz. Give React a beat to flush
+          // the SUBMIT_ANSWER dispatch before completion reads state via stateRef.
           setTimeout(() => {
             void runCompletion();
           }, 100);
@@ -518,26 +616,29 @@ export default function QuizSessionPage() {
       return;
     }
 
-    // Tutor mode: answer already submitted, this is the "Complete Quiz" action on last question
-    if (sessionConfig?.mode === "tutor") {
-      const isLastQuestion = hybridState.currentQuestion === hybridState.totalQuestions;
-      if (isLastQuestion) {
-        // Prevent duplicate completion calls
-        if (isCompletingQuiz) {
-          console.log("[Quiz Page] Already completing quiz, ignoring duplicate click");
-          return;
-        }
-
-        const stillUnanswered = countUnansweredExcludingCurrent();
-        if (stillUnanswered > 0) {
-          setUnansweredWarningCount(stillUnanswered);
-          setShowUnansweredWarning(true);
-          return;
-        }
-
-        console.log("[Quiz Page] User clicked 'Complete Quiz' button - starting completion");
-        await runCompletion();
+    // No pending selection. Two callers reach here:
+    //   * Tutor mode: clicking "Complete Quiz" on the last question (answer was
+    //     committed when the option was clicked).
+    //   * Practice mode: clicking "Submit Quiz" / "Complete Quiz" on the last
+    //     question when the final answer is already committed (case B — user
+    //     navigated back, or the prior flow committed without completing).
+    // The dialog/runCompletion decision is the same for both.
+    if (isLastQuestion) {
+      if (isCompletingQuiz) {
+        console.log("[Quiz Page] Already completing quiz, ignoring duplicate click");
+        return;
       }
+
+      const stillUnanswered = countAllUnanswered();
+      if (stillUnanswered > 0) {
+        // Case B: final committed but other questions still unanswered.
+        setUnansweredWarningCount(stillUnanswered);
+        setShowUnansweredWarning(true);
+        return;
+      }
+
+      console.log("[Quiz Page] Completion path with no pending selection - starting completion");
+      await runCompletion();
     }
   };
 
@@ -622,6 +723,7 @@ export default function QuizSessionPage() {
           currentQuestion={currentQuestion}
           currentQuestionNumber={hybridState.currentQuestion}
           totalQuestions={hybridState.totalQuestions}
+          answeredCount={hybridState.progress.current}
           textZoom={settings?.ui_settings.text_zoom || 1}
           pendingAnswerSelection={pendingAnswerSelection}
           onAnswerSelect={handleAnswerSelect}
@@ -648,6 +750,7 @@ export default function QuizSessionPage() {
           onFlagQuestion={() => setShowFlagDialog(true)}
           onSaveAndExit={handleSaveAndExit}
           timeRemaining={hybridState.timeRemaining}
+          onDevSkipTimer={() => hybridActions.__devSetTimer(5)}
         />
       )}
 
@@ -660,7 +763,6 @@ export default function QuizSessionPage() {
         open={showExitDialog}
         onOpenChange={setShowExitDialog}
         onConfirmExit={() => {
-          setIsExiting(true);
           isNavigatingAwayRef.current = true;
           window.location.href = "/dashboard/quizzes";
         }}
@@ -700,7 +802,9 @@ export default function QuizSessionPage() {
 
       <TimerExpiredDialog
         open={timerExpired}
+        isOnline={isOnline}
         onViewResults={() => {
+          isNavigatingAwayRef.current = true;
           window.location.href = `/dashboard/quiz/${sessionId}/results`;
         }}
       />

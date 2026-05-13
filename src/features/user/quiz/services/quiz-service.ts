@@ -1,5 +1,4 @@
 // src/features/quiz/services/quiz-service.ts
-import { createClient } from "@/shared/services/client";
 import { createClient as createSupabaseAdminClient, SupabaseClient } from "@supabase/supabase-js";
 
 // quizService is only used from Next.js server route handlers
@@ -30,21 +29,6 @@ async function fetchQuestionSuccessRates(questionIds: string[]): Promise<Map<str
   return map;
 }
 
-async function fetchRecentAttempts(
-  questionIds: string[],
-  userId: string
-): Promise<RecentAttempt[]> {
-  if (questionIds.length === 0) return [];
-  const { data, error } = await makeServiceRoleClient().rpc("get_most_recent_attempts", {
-    p_user_id: userId,
-    p_question_ids: questionIds,
-  });
-  if (error) {
-    console.error("[quiz-service] get_most_recent_attempts RPC error:", error);
-    return [];
-  }
-  return (data as RecentAttempt[] | null) ?? [];
-}
 import {
   QuizSession,
   QuizAttempt,
@@ -58,13 +42,6 @@ import { QuestionWithDetails } from "@/shared/types/questions";
 import { unifiedCache } from "@/shared/services/unified-cache";
 
 // Database row type interfaces
-interface RecentAttempt {
-  question_id: string;
-  most_recent_correct: boolean | null;
-  second_recent_correct: boolean | null;
-  total_attempts: number;
-}
-
 interface QuizSessionRow {
   id: string;
   user_id: string;
@@ -150,15 +127,7 @@ interface CategoryIdRow {
   id: string;
 }
 
-interface UserFavoriteRow {
-  question_id: string;
-}
-
 export class QuizService {
-  private getSupabase(): SupabaseClient {
-    return createClient() as SupabaseClient;
-  }
-
   /**
    * Get parent category IDs with caching
    * Categories rarely change, so cache for 7 days
@@ -212,11 +181,10 @@ export class QuizService {
   async createQuizSession(
     userId: string,
     formData: QuizCreationForm,
-    authenticatedSupabase?: SupabaseClient
+    supabaseClient: SupabaseClient
   ): Promise<QuizSession> {
     try {
       // Use authenticated client if provided, otherwise fall back to default
-      const supabaseClient = authenticatedSupabase || this.getSupabase();
 
       console.log(`[Quiz Creation] Selecting questions for user ${userId}`, {
         questionType: formData.questionType,
@@ -343,216 +311,14 @@ export class QuizService {
   }
 
   /**
-   * Get questions for quiz based on criteria
-   * Now includes question type filtering (unused, needsReview, marked, mastered)
-   */
-  private async getQuestionsForQuiz(
-    userId: string,
-    formData: QuizCreationForm,
-    supabaseClient: SupabaseClient
-  ): Promise<QuestionWithDetails[]> {
-    const supabase = supabaseClient;
-
-    console.log(`[Quiz Creation] Starting question selection for user ${userId}`, {
-      questionType: formData.questionType,
-      categorySelection: formData.categorySelection,
-      requestedCount: formData.questionCount,
-    });
-
-    // Query with proper joins to load images and options - SELECT only needed fields
-    const query = supabase
-      .from("questions")
-      .select(
-        `
-        id,
-        title,
-        stem,
-        teaching_point,
-        question_references,
-        difficulty,
-        category_id,
-        question_set_id,
-        status,
-        created_by,
-        updated_by,
-        version_major,
-        version_minor,
-        version_patch,
-        created_at,
-        updated_at,
-        question_options(id, text, is_correct, explanation, order_index),
-        question_images(
-          question_section,
-          order_index,
-          image:images(id, url, alt_text, description)
-        ),
-        question_set:question_sets(id, name, source_type, short_form)
-      `
-      )
-      .eq("status", "published");
-
-    const { data: questions, error } = await query;
-
-    if (error) {
-      console.error("Error fetching questions:", error);
-      throw error;
-    }
-
-    // Deduplicate questions by ID (in case joins produce duplicates)
-    const uniqueQuestionsMap = new Map<string, QuestionRow>();
-    for (const question of (questions as unknown as QuestionRow[]) || []) {
-      if (!uniqueQuestionsMap.has(question.id)) {
-        uniqueQuestionsMap.set(question.id, question);
-      } else {
-        console.warn(`[Quiz Creation] Duplicate question detected and removed: ${question.id}`);
-      }
-    }
-    let filteredQuestions = Array.from(uniqueQuestionsMap.values());
-
-    console.log(`[Quiz Creation] Total published questions: ${filteredQuestions.length}`);
-
-    // Filter by category selection
-    if (formData.categorySelection === "ap_only") {
-      // Get AP subcategory IDs (cached)
-      const apCategoryIds = await this.getCachedCategoryParents("Anatomic Pathology", supabase);
-
-      if (apCategoryIds.length > 0) {
-        filteredQuestions = filteredQuestions.filter(
-          (q) => q.category_id && apCategoryIds.includes(q.category_id)
-        );
-      }
-    } else if (formData.categorySelection === "cp_only") {
-      // Get CP subcategory IDs (cached)
-      const cpCategoryIds = await this.getCachedCategoryParents("Clinical Pathology", supabase);
-
-      if (cpCategoryIds.length > 0) {
-        filteredQuestions = filteredQuestions.filter(
-          (q) => q.category_id && cpCategoryIds.includes(q.category_id)
-        );
-      }
-    } else if (formData.categorySelection === "custom" && formData.selectedCategories.length > 0) {
-      filteredQuestions = filteredQuestions.filter(
-        (q) => q.category_id && formData.selectedCategories.includes(q.category_id)
-      );
-    }
-
-    console.log(`[Quiz Creation] After category filter: ${filteredQuestions.length} questions`);
-
-    // Filter by question type (unused, needsReview, marked, mastered)
-    if (formData.questionType !== "all") {
-      filteredQuestions = await this.filterByQuestionType(
-        userId,
-        filteredQuestions,
-        formData.questionType,
-        supabase
-      );
-      console.log(
-        `[Quiz Creation] After ${formData.questionType} filter: ${filteredQuestions.length} questions`
-      );
-    }
-
-    // Convert to QuestionWithDetails format with loaded data
-    const questionsWithDetails = filteredQuestions.map((q) => ({
-      ...q,
-      question_options: q.question_options || [],
-      question_images: q.question_images || [],
-      question_set: Array.isArray(q.question_set) ? q.question_set[0] : q.question_set,
-      categories: undefined, // Not loaded in this query
-      tags: undefined, // Not loaded in this query
-      analytics: undefined,
-      created_by_name: undefined,
-      updated_by_name: undefined,
-      image_count: q.question_images?.length || 0,
-      latest_flag_date: undefined,
-      reviewer_id: undefined,
-      reviewer_feedback: undefined,
-      published_at: undefined,
-      anki_card_id: undefined,
-      anki_deck_name: undefined,
-      lesson: q.lesson || undefined,
-      topic: q.topic || undefined,
-    })) as unknown as QuestionWithDetails[];
-
-    return questionsWithDetails;
-  }
-
-  /**
-   * Filter questions by type (unused, needsReview, marked, mastered)
-   */
-  private async filterByQuestionType(
-    userId: string,
-    questions: QuestionRow[],
-    questionType: "unused" | "needsReview" | "marked" | "mastered",
-    supabase: SupabaseClient
-  ): Promise<QuestionRow[]> {
-    // Create a set of valid question IDs (only published questions in this category/selection)
-    const validQuestionIds = questions.map((q) => q.id);
-
-    // Get user's recent attempts (via API route on the browser; direct
-    // service-role RPC on the server — the underlying RPC is SECURITY DEFINER
-    // without `authenticated` EXECUTE) and favorites in parallel.
-    const [recentAttempts, { data: userFavorites }] = await Promise.all([
-      fetchRecentAttempts(validQuestionIds, userId),
-      supabase.from("user_favorites").select("question_id").eq("user_id", userId),
-    ]);
-
-    // Build sets for efficient lookup
-    const attemptedQuestionIds = new Set(recentAttempts.map((a) => a.question_id));
-    const favoriteQuestionIds = new Set(
-      (userFavorites as unknown as UserFavoriteRow[])?.map((f) => f.question_id) || []
-    );
-
-    // Track questions by status using the SQL function results
-    const incorrectQuestionIds = new Set<string>();
-    const masteredQuestionIds = new Set<string>();
-
-    // Process SQL function results - already aggregated per question
-    for (const attempt of recentAttempts) {
-      const { question_id, most_recent_correct, second_recent_correct, total_attempts } = attempt;
-
-      // Needs Review: most recent attempt is incorrect
-      if (most_recent_correct === false) {
-        incorrectQuestionIds.add(question_id);
-      }
-      // Mastered: last 2 consecutive attempts are correct
-      else if (
-        most_recent_correct === true &&
-        second_recent_correct === true &&
-        total_attempts >= 2
-      ) {
-        masteredQuestionIds.add(question_id);
-      }
-    }
-
-    // Apply filter based on question type
-    switch (questionType) {
-      case "unused":
-        return questions.filter((q) => !attemptedQuestionIds.has(q.id));
-
-      case "needsReview":
-        return questions.filter((q) => incorrectQuestionIds.has(q.id));
-
-      case "marked":
-        return questions.filter((q) => favoriteQuestionIds.has(q.id));
-
-      case "mastered":
-        return questions.filter((q) => masteredQuestionIds.has(q.id));
-
-      default:
-        return questions;
-    }
-  }
-
-  /**
    * Get quiz session by ID
    */
   async getQuizSession(
     sessionId: string,
-    authenticatedSupabase?: SupabaseClient
+    supabaseClient: SupabaseClient
   ): Promise<QuizSession | null> {
     try {
       // Use authenticated client if provided, otherwise fall back to default
-      const supabaseClient = authenticatedSupabase || this.getSupabase();
 
       const { data: session, error } = await supabaseClient
         .from("quiz_sessions")
@@ -629,13 +395,12 @@ export class QuizService {
    */
   private async getQuestionsForSession(
     questionIds: string[],
-    authenticatedSupabase?: SupabaseClient
+    supabaseClient: SupabaseClient
   ): Promise<QuestionWithDetails[]> {
     if (!questionIds || questionIds.length === 0) {
       return [];
     }
 
-    const supabaseClient = authenticatedSupabase || this.getSupabase();
     const { data: questions, error } = await supabaseClient
       .from("questions")
       .select(
@@ -694,12 +459,11 @@ export class QuizService {
     questionId: string,
     selectedAnswerId: string | null,
     timeSpent: number,
-    authenticatedSupabase?: SupabaseClient,
+    supabaseClient: SupabaseClient,
     firstAnswerId?: string | null
   ): Promise<QuizAttempt> {
     try {
       // Use authenticated client if provided, otherwise fall back to default
-      const supabaseClient = authenticatedSupabase || this.getSupabase();
 
       // Validate required parameters
       if (!selectedAnswerId) {
@@ -750,11 +514,10 @@ export class QuizService {
   async updateQuizSession(
     sessionId: string,
     updates: Partial<QuizSession>,
-    authenticatedSupabase?: SupabaseClient
+    supabaseClient: SupabaseClient
   ): Promise<void> {
     try {
       // Use authenticated client if provided, otherwise fall back to default
-      const supabaseClient = authenticatedSupabase || this.getSupabase();
 
       const { error } = await supabaseClient
         .from("quiz_sessions")
@@ -782,7 +545,7 @@ export class QuizService {
   /**
    * Start a quiz session
    */
-  async startQuizSession(sessionId: string, authenticatedSupabase?: SupabaseClient): Promise<void> {
+  async startQuizSession(sessionId: string, supabaseClient: SupabaseClient): Promise<void> {
     try {
       const now = new Date().toISOString();
       await this.updateQuizSession(
@@ -791,7 +554,7 @@ export class QuizService {
           status: "in_progress",
           startedAt: now,
         },
-        authenticatedSupabase
+        supabaseClient
       );
     } catch (error) {
       console.error("Error starting quiz session:", error);
@@ -806,7 +569,7 @@ export class QuizService {
   async pauseQuizSession(
     sessionId: string,
     timeRemaining: number,
-    authenticatedSupabase?: SupabaseClient
+    supabaseClient: SupabaseClient
   ): Promise<void> {
     try {
       await this.updateQuizSession(
@@ -814,7 +577,7 @@ export class QuizService {
         {
           timeRemaining, // Save current time remaining when pausing
         },
-        authenticatedSupabase
+        supabaseClient
       );
     } catch (error) {
       console.error("Error pausing quiz session:", error);
@@ -825,10 +588,7 @@ export class QuizService {
   /**
    * Resume a quiz session
    */
-  async resumeQuizSession(
-    sessionId: string,
-    authenticatedSupabase?: SupabaseClient
-  ): Promise<void> {
+  async resumeQuizSession(sessionId: string, supabaseClient: SupabaseClient): Promise<void> {
     try {
       await this.updateQuizSession(
         sessionId,
@@ -836,7 +596,7 @@ export class QuizService {
           status: "in_progress",
           startedAt: new Date().toISOString(), // Reset timer reference point for pause/resume
         },
-        authenticatedSupabase
+        supabaseClient
       );
     } catch (error) {
       console.error("Error resuming quiz session:", error);
@@ -850,7 +610,7 @@ export class QuizService {
   async updateTimeRemaining(
     sessionId: string,
     timeRemaining: number,
-    authenticatedSupabase?: SupabaseClient
+    supabaseClient: SupabaseClient
   ): Promise<void> {
     try {
       await this.updateQuizSession(
@@ -858,7 +618,7 @@ export class QuizService {
         {
           timeRemaining,
         },
-        authenticatedSupabase
+        supabaseClient
       );
     } catch (error) {
       console.error("Error updating time remaining:", error);
@@ -871,200 +631,29 @@ export class QuizService {
    */
   async getQuizResults(
     sessionId: string,
-    authenticatedSupabase?: SupabaseClient
+    supabaseClient: SupabaseClient
   ): Promise<QuizResult | null> {
     try {
-      // Get session details
-      const session = await this.getQuizSession(sessionId, authenticatedSupabase);
+      const session = await this.getQuizSession(sessionId, supabaseClient);
       if (!session) return null;
 
-      // Check if quiz is completed
       if (session.status !== "completed") {
         throw new Error("Quiz session is not completed yet");
       }
 
-      // Get all attempts for this session
-      const supabaseClient = authenticatedSupabase || this.getSupabase();
       const { data: attempts, error: attemptsError } = await supabaseClient
         .from("quiz_attempts")
         .select("*")
         .eq("quiz_session_id", sessionId);
-
       if (attemptsError) throw attemptsError;
 
-      const attemptsData = attempts as unknown as QuizAttemptRow[];
-      const correctAnswers = attemptsData?.filter((a) => a.is_correct).length || 0;
-      const totalQuestions = session.totalQuestions;
-      const score = Math.round((correctAnswers / totalQuestions) * 100);
-
-      // Calculate total time spent from individual attempts (more accurate than session.totalTimeSpent)
-      const totalTimeSpent =
-        attemptsData?.reduce((sum: number, a) => {
-          const timeSpent = a.time_spent || 0;
-          return sum + timeSpent;
-        }, 0) || 0;
-      const averageTimePerQuestion =
-        totalQuestions > 0 ? Math.round(totalTimeSpent / totalQuestions) : 0;
-
-      // Calculate difficulty breakdown
-      const difficultyBreakdown = {
-        easy: { correct: 0, total: 0 },
-        medium: { correct: 0, total: 0 },
-        hard: { correct: 0, total: 0 },
-      };
-
-      // Get unique category IDs from questions
-      const categoryIds = [...new Set(session.questions.map((q) => q.category_id).filter(Boolean))];
-
-      // Fetch categories with parent short_forms in single query (optimized)
-      const { data: categories, error: categoriesError } = await supabaseClient.rpc(
-        "get_categories_with_parents",
-        { category_ids: categoryIds }
-      );
-
-      if (categoriesError) {
-        console.error("[Quiz Results] Error fetching categories:", categoriesError);
-      }
-
-      const categoryInfoMap = new Map(
-        (
-          categories as unknown as Array<{
-            id: string;
-            name: string;
-            short_form: string | null;
-            color: string | null;
-            parent_id: string | null;
-            parent_short_form: string | null;
-          }>
-        )?.map((c) => [
-          c.id,
-          {
-            name: c.name,
-            shortForm: c.short_form,
-            color: c.color,
-            parentShortForm: c.parent_short_form,
-          },
-        ]) || []
-      );
-
-      session.questions.forEach((question) => {
-        const difficulty = question.difficulty as "easy" | "medium" | "hard";
-        const attempt = attemptsData?.find((a) => a.question_id === question.id);
-
-        // Only count if difficulty is valid
-        if (difficulty && difficultyBreakdown[difficulty]) {
-          difficultyBreakdown[difficulty].total++;
-          if (attempt?.is_correct) {
-            difficultyBreakdown[difficulty].correct++;
-          }
-        }
-      });
-
-      // Get all success rates via server-side endpoint. The underlying
-      // get_question_success_rates RPC is SECURITY DEFINER (must bypass RLS on
-      // quiz_attempts to aggregate across users) and is not callable by
-      // `authenticated` directly — the API route proxies it through a
-      // service-role client.
-      const questionIds = session.questions.map((q) => q.id);
-      const successRateMap = await fetchQuestionSuccessRates(questionIds);
-
-      // Get detailed question information for review
-      const questionDetails = session.questions.map((question) => {
-        const attempt = attemptsData?.find((a) => a.question_id === question.id);
-
-        const timeSpent = attempt?.time_spent || 0;
-
-        const categoryInfo = categoryInfoMap.get(question.category_id || "");
-
-        return {
-          id: question.id,
-          title: question.title,
-          stem: question.stem,
-          difficulty: question.difficulty,
-          category: categoryInfo?.name || "Unknown",
-          isCorrect: attempt?.is_correct || false,
-          selectedAnswerId: attempt?.selected_answer_id || null,
-          timeSpent: timeSpent,
-          successRate: successRateMap.get(question.id) || 0,
-        };
-      });
-
-      // Calculate category breakdown using the same approach as questionDetails
-      const categoryMap = new Map<
-        string,
-        {
-          name: string;
-          shortForm?: string;
-          color?: string;
-          parentShortForm?: string;
-          correct: number;
-          total: number;
-          totalTime: number;
-        }
-      >();
-
-      session.questions.forEach((question) => {
-        if (!question.category_id) return;
-
-        const questionDetail = questionDetails.find((qd) => qd.id === question.id);
-        if (!questionDetail) return;
-
-        if (!categoryMap.has(question.category_id)) {
-          const categoryInfo = categoryInfoMap.get(question.category_id);
-          categoryMap.set(question.category_id, {
-            name: categoryInfo?.name || "Unknown Category",
-            shortForm: categoryInfo?.shortForm,
-            color: categoryInfo?.color,
-            parentShortForm: categoryInfo?.parentShortForm,
-            correct: 0,
-            total: 0,
-            totalTime: 0,
-          });
-        }
-
-        const categoryStats = categoryMap.get(question.category_id)!;
-        categoryStats.total++;
-        if (questionDetail.isCorrect) {
-          categoryStats.correct++;
-        }
-        categoryStats.totalTime += questionDetail.timeSpent;
-      });
-
-      const categoryBreakdown = Array.from(categoryMap.entries()).map(([categoryId, stats]) => ({
-        categoryId,
-        categoryName: stats.name,
-        categoryShortForm: stats.shortForm,
-        categoryColor: stats.color,
-        parentShortForm: stats.parentShortForm,
-        correct: stats.correct,
-        total: stats.total,
-        totalTime: stats.totalTime,
-        averageTime: stats.total > 0 ? Math.round(stats.totalTime / stats.total) : 0,
-      }));
-
-      return {
+      return this.buildQuizResult(
         sessionId,
-        score,
-        correctAnswers,
-        totalQuestions,
-        totalTimeSpent,
-        averageTimePerQuestion,
-        difficultyBreakdown,
-        categoryBreakdown,
-        questionDetails,
-        attempts:
-          attemptsData?.map((a) => ({
-            id: a.id,
-            quizSessionId: a.quiz_session_id,
-            questionId: a.question_id,
-            selectedAnswerId: a.selected_answer_id,
-            isCorrect: a.is_correct ?? false,
-            timeSpent: a.time_spent,
-            attemptedAt: a.attempted_at,
-            reviewedAt: a.reviewed_at,
-          })) || [],
-        completedAt: session.completedAt || new Date().toISOString(),
-      };
+        session,
+        (attempts as unknown as QuizAttemptRow[]) || [],
+        supabaseClient,
+        session.completedAt || new Date().toISOString()
+      );
     } catch (error) {
       console.error("Error getting quiz results:", error);
       throw error;
@@ -1072,215 +661,41 @@ export class QuizService {
   }
 
   /**
-   * Complete a quiz and calculate results
+   * Complete a quiz: compute results and persist completion to the session row.
    */
-  async completeQuiz(
-    sessionId: string,
-    authenticatedSupabase?: SupabaseClient
-  ): Promise<QuizResult> {
+  async completeQuiz(sessionId: string, supabaseClient: SupabaseClient): Promise<QuizResult> {
     try {
-      // Use authenticated client if provided, otherwise fall back to default
-      const supabaseClient = authenticatedSupabase || this.getSupabase();
-
-      // Get all attempts for this session
-      const { data: attempts, error: attemptsError } = await supabaseClient
-        .from("quiz_attempts")
-        .select("*")
-        .eq("quiz_session_id", sessionId);
-
+      const [{ data: attempts, error: attemptsError }, session] = await Promise.all([
+        supabaseClient.from("quiz_attempts").select("*").eq("quiz_session_id", sessionId),
+        this.getQuizSession(sessionId, supabaseClient),
+      ]);
       if (attemptsError) throw attemptsError;
-
-      // Get session details
-      const session = await this.getQuizSession(sessionId, authenticatedSupabase);
       if (!session) throw new Error("Quiz session not found");
 
-      const attemptsData = attempts as unknown as QuizAttemptRow[];
+      const attemptsData = (attempts as unknown as QuizAttemptRow[]) || [];
+      const completedAt = new Date().toISOString();
 
-      // Calculate results
-      const correctAnswers = attemptsData?.filter((a) => a.is_correct).length || 0;
-      const totalQuestions = session.totalQuestions;
-      const score = Math.round((correctAnswers / totalQuestions) * 100);
-      // Calculate total time spent
-      const totalTimeSpent =
-        attemptsData?.reduce((sum: number, a) => {
-          const timeSpent = a.time_spent || 0;
-          return sum + timeSpent;
-        }, 0) || 0;
-      const averageTimePerQuestion = Math.round(totalTimeSpent / totalQuestions);
-
-      // Calculate difficulty breakdown
-      const difficultyBreakdown = {
-        easy: { correct: 0, total: 0 },
-        medium: { correct: 0, total: 0 },
-        hard: { correct: 0, total: 0 },
-      };
-
-      // Get unique category IDs from questions
-      const categoryIds = [...new Set(session.questions.map((q) => q.category_id).filter(Boolean))];
-
-      // Fetch categories with parent short_forms in single query (optimized)
-      const { data: categories, error: categoriesError } = await supabaseClient.rpc(
-        "get_categories_with_parents",
-        { category_ids: categoryIds }
+      const result = await this.buildQuizResult(
+        sessionId,
+        session,
+        attemptsData,
+        supabaseClient,
+        completedAt
       );
 
-      if (categoriesError) {
-        console.error("[Quiz Complete] Error fetching categories:", categoriesError);
-      }
-
-      const categoryInfoMap = new Map(
-        (
-          categories as unknown as Array<{
-            id: string;
-            name: string;
-            short_form: string | null;
-            color: string | null;
-            parent_id: string | null;
-            parent_short_form: string | null;
-          }>
-        )?.map((c) => [
-          c.id,
-          {
-            name: c.name,
-            shortForm: c.short_form,
-            color: c.color,
-            parentShortForm: c.parent_short_form,
-          },
-        ]) || []
-      );
-
-      session.questions.forEach((question) => {
-        // Ensure difficulty is one of the expected values, default to 'medium' if not
-        const difficulty =
-          question.difficulty === "easy" ||
-          question.difficulty === "medium" ||
-          question.difficulty === "hard"
-            ? question.difficulty
-            : "medium";
-
-        const attempt = attemptsData?.find((a) => a.question_id === question.id);
-
-        // Only count if difficulty is valid
-        if (difficulty && difficultyBreakdown[difficulty]) {
-          difficultyBreakdown[difficulty].total++;
-          if (attempt?.is_correct) {
-            difficultyBreakdown[difficulty].correct++;
-          }
-        }
-      });
-
-      // Get all success rates via server-side endpoint (see note above).
-      const questionIds = session.questions.map((q) => q.id);
-      const successRateMap = await fetchQuestionSuccessRates(questionIds);
-
-      // Get detailed question information for review
-      const questionDetails = session.questions.map((question) => {
-        const attempt = attemptsData?.find((a) => a.question_id === question.id);
-        const timeSpent = attempt?.time_spent || 0;
-        const categoryInfo = categoryInfoMap.get(question.category_id || "");
-
-        return {
-          id: question.id,
-          title: question.title,
-          stem: question.stem,
-          difficulty: question.difficulty,
-          category: categoryInfo?.name || "Unknown",
-          isCorrect: attempt?.is_correct || false,
-          selectedAnswerId: attempt?.selected_answer_id || null,
-          timeSpent: timeSpent,
-          successRate: successRateMap.get(question.id) || 0,
-        };
-      });
-
-      // Calculate category breakdown
-      const categoryMap = new Map<
-        string,
-        {
-          name: string;
-          shortForm?: string;
-          color?: string;
-          parentShortForm?: string;
-          correct: number;
-          total: number;
-          totalTime: number;
-        }
-      >();
-
-      session.questions.forEach((question) => {
-        if (!question.category_id) return;
-
-        const questionDetail = questionDetails.find((qd) => qd.id === question.id);
-        if (!questionDetail) return;
-
-        if (!categoryMap.has(question.category_id)) {
-          const categoryInfo = categoryInfoMap.get(question.category_id);
-          categoryMap.set(question.category_id, {
-            name: categoryInfo?.name || "Unknown Category",
-            shortForm: categoryInfo?.shortForm,
-            color: categoryInfo?.color,
-            parentShortForm: categoryInfo?.parentShortForm,
-            correct: 0,
-            total: 0,
-            totalTime: 0,
-          });
-        }
-
-        const categoryStats = categoryMap.get(question.category_id)!;
-        categoryStats.total++;
-        if (questionDetail.isCorrect) {
-          categoryStats.correct++;
-        }
-        categoryStats.totalTime += questionDetail.timeSpent;
-      });
-
-      const categoryBreakdown = Array.from(categoryMap.entries()).map(([categoryId, stats]) => ({
-        categoryId,
-        categoryName: stats.name,
-        categoryShortForm: stats.shortForm,
-        categoryColor: stats.color,
-        parentShortForm: stats.parentShortForm,
-        correct: stats.correct,
-        total: stats.total,
-        totalTime: stats.totalTime,
-        averageTime: stats.total > 0 ? Math.round(stats.totalTime / stats.total) : 0,
-      }));
-
-      // Update session as completed
       await this.updateQuizSession(
         sessionId,
         {
           status: "completed",
-          completedAt: new Date().toISOString(),
-          totalTimeSpent,
-          score,
-          correctAnswers,
+          completedAt,
+          totalTimeSpent: result.totalTimeSpent,
+          score: result.score,
+          correctAnswers: result.correctAnswers,
         },
-        authenticatedSupabase
+        supabaseClient
       );
 
-      return {
-        sessionId,
-        score,
-        correctAnswers,
-        totalQuestions,
-        totalTimeSpent,
-        averageTimePerQuestion,
-        difficultyBreakdown,
-        categoryBreakdown,
-        questionDetails,
-        attempts:
-          attemptsData?.map((a) => ({
-            id: a.id,
-            quizSessionId: a.quiz_session_id,
-            questionId: a.question_id,
-            selectedAnswerId: a.selected_answer_id,
-            isCorrect: a.is_correct ?? false,
-            timeSpent: a.time_spent,
-            attemptedAt: a.attempted_at,
-            reviewedAt: a.reviewed_at,
-          })) || [],
-        completedAt: new Date().toISOString(),
-      };
+      return result;
     } catch (error) {
       console.error("Error completing quiz:", error);
       throw error;
@@ -1288,15 +703,162 @@ export class QuizService {
   }
 
   /**
-   * Utility function to shuffle array
+   * Build a QuizResult from a session + its attempt rows. Shared between
+   * `getQuizResults` (which expects an already-completed session) and
+   * `completeQuiz` (which then persists the completion). Pulls categories,
+   * cross-user success rates, difficulty breakdown, and per-category stats.
    */
-  private shuffleArray<T>(array: T[]): T[] {
-    const shuffled = [...array];
-    for (let i = shuffled.length - 1; i > 0; i--) {
-      const j = Math.floor(Math.random() * (i + 1));
-      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+  private async buildQuizResult(
+    sessionId: string,
+    session: QuizSession,
+    attemptsData: QuizAttemptRow[],
+    supabaseClient: SupabaseClient,
+    completedAt: string
+  ): Promise<QuizResult> {
+    const correctAnswers = attemptsData.filter((a) => a.is_correct).length;
+    const totalQuestions = session.totalQuestions;
+    const score = totalQuestions > 0 ? Math.round((correctAnswers / totalQuestions) * 100) : 0;
+
+    const totalTimeSpent = attemptsData.reduce((sum, a) => sum + (a.time_spent || 0), 0);
+    const averageTimePerQuestion =
+      totalQuestions > 0 ? Math.round(totalTimeSpent / totalQuestions) : 0;
+
+    const difficultyBreakdown = {
+      easy: { correct: 0, total: 0 },
+      medium: { correct: 0, total: 0 },
+      hard: { correct: 0, total: 0 },
+    };
+
+    // Fetch category metadata (with parent short_forms) in one RPC.
+    const categoryIds = [...new Set(session.questions.map((q) => q.category_id).filter(Boolean))];
+    const { data: categories, error: categoriesError } = await supabaseClient.rpc(
+      "get_categories_with_parents",
+      { category_ids: categoryIds }
+    );
+    if (categoriesError) {
+      console.error("[Quiz Results] Error fetching categories:", categoriesError);
     }
-    return shuffled;
+    const categoryInfoMap = new Map(
+      (
+        categories as unknown as Array<{
+          id: string;
+          name: string;
+          short_form: string | null;
+          color: string | null;
+          parent_id: string | null;
+          parent_short_form: string | null;
+        }>
+      )?.map((c) => [
+        c.id,
+        {
+          name: c.name,
+          shortForm: c.short_form,
+          color: c.color,
+          parentShortForm: c.parent_short_form,
+        },
+      ]) || []
+    );
+
+    // Difficulty tally. Skip questions whose difficulty isn't one of the three
+    // canonical values rather than coercing them — the data should always be
+    // valid, and a forced default would silently distort the breakdown.
+    session.questions.forEach((question) => {
+      const d = question.difficulty;
+      if (d !== "easy" && d !== "medium" && d !== "hard") return;
+      const attempt = attemptsData.find((a) => a.question_id === question.id);
+      difficultyBreakdown[d].total++;
+      if (attempt?.is_correct) difficultyBreakdown[d].correct++;
+    });
+
+    // Per-question social-proof success rates (cross-user aggregate via service-role RPC).
+    const questionIds = session.questions.map((q) => q.id);
+    const successRateMap = await fetchQuestionSuccessRates(questionIds);
+
+    const questionDetails = session.questions.map((question) => {
+      const attempt = attemptsData.find((a) => a.question_id === question.id);
+      const categoryInfo = categoryInfoMap.get(question.category_id || "");
+      return {
+        id: question.id,
+        title: question.title,
+        stem: question.stem,
+        difficulty: question.difficulty,
+        category: categoryInfo?.name || "Unknown",
+        isCorrect: attempt?.is_correct || false,
+        selectedAnswerId: attempt?.selected_answer_id || null,
+        timeSpent: attempt?.time_spent || 0,
+        successRate: successRateMap.get(question.id) || 0,
+      };
+    });
+
+    // Per-category aggregate (built from questionDetails so isCorrect/timeSpent
+    // already align with the per-question view).
+    const categoryMap = new Map<
+      string,
+      {
+        name: string;
+        shortForm?: string;
+        color?: string;
+        parentShortForm?: string;
+        correct: number;
+        total: number;
+        totalTime: number;
+      }
+    >();
+    session.questions.forEach((question) => {
+      if (!question.category_id) return;
+      const detail = questionDetails.find((qd) => qd.id === question.id);
+      if (!detail) return;
+      if (!categoryMap.has(question.category_id)) {
+        const info = categoryInfoMap.get(question.category_id);
+        categoryMap.set(question.category_id, {
+          name: info?.name || "Unknown Category",
+          shortForm: info?.shortForm,
+          color: info?.color,
+          parentShortForm: info?.parentShortForm,
+          correct: 0,
+          total: 0,
+          totalTime: 0,
+        });
+      }
+      const stats = categoryMap.get(question.category_id)!;
+      stats.total++;
+      if (detail.isCorrect) stats.correct++;
+      stats.totalTime += detail.timeSpent;
+    });
+    const categoryBreakdown = Array.from(categoryMap.entries()).map(([categoryId, stats]) => ({
+      categoryId,
+      categoryName: stats.name,
+      categoryShortForm: stats.shortForm,
+      categoryColor: stats.color,
+      parentShortForm: stats.parentShortForm,
+      correct: stats.correct,
+      total: stats.total,
+      totalTime: stats.totalTime,
+      averageTime: stats.total > 0 ? Math.round(stats.totalTime / stats.total) : 0,
+    }));
+
+    return {
+      sessionId,
+      score,
+      correctAnswers,
+      totalQuestions,
+      totalTimeSpent,
+      averageTimePerQuestion,
+      difficultyBreakdown,
+      categoryBreakdown,
+      questionDetails,
+      attempts: attemptsData.map((a) => ({
+        id: a.id,
+        quizSessionId: a.quiz_session_id,
+        questionId: a.question_id,
+        selectedAnswerId: a.selected_answer_id,
+        isCorrect: a.is_correct ?? false,
+        timeSpent: a.time_spent,
+        attemptedAt: a.attempted_at,
+        reviewedAt: a.reviewed_at,
+      })),
+      completedAt,
+    };
   }
 }
 

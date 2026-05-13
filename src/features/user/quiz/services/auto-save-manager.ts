@@ -53,6 +53,30 @@ export class AutoSaveManager {
       };
     }
 
+    // If the browser thinks we're offline, skip the network attempt entirely
+    // and queue directly. Two reasons:
+    //   1. Avoids the CSRF-fetch + sync attempt that floods the console with
+    //      `TypeError: Failed to fetch` on every save trigger.
+    //   2. `navigator.onLine === false` is best-effort but reliable for the
+    //      common case (Wi-Fi disconnected). The queue processor retries every
+    //      10 s, so anything queued here will be replayed once we're back.
+    if (
+      typeof navigator !== "undefined" &&
+      !navigator.onLine &&
+      AUTO_SAVE_CONFIG.enableOfflineQueue
+    ) {
+      this.offlineQueue.addToQueue(sessionId, quizState, trigger);
+      this.updateSyncStatus({ state: "offline", message: "Offline - will sync when online" });
+      debugLog("Auto-save queued (offline)", { trigger });
+      return {
+        success: false,
+        trigger,
+        timestamp: Date.now(),
+        error: "Offline",
+        queued: true,
+      };
+    }
+
     this.saveInProgress = true;
     this.updateSyncStatus({ state: "syncing", message: "Syncing..." });
 
@@ -245,14 +269,30 @@ export class AutoSaveManager {
 
     // Process queue every 10 seconds
     setInterval(async () => {
+      // Skip the network round-trip when the browser knows we're offline. The
+      // queue items will stay in localStorage; the next online-tick (or the
+      // browser's `online` event handler elsewhere) will drain them.
+      if (typeof navigator !== "undefined" && !navigator.onLine) return;
+
       const status = this.offlineQueue.getQueueStatus();
 
       if (status.ready > 0) {
         debugLog("Processing offline queue", status);
 
-        await this.offlineQueue.processQueue(async (sessionId, data) => {
+        await this.offlineQueue.processQueue(async (_sessionId, data, trigger) => {
           try {
-            const result = await this.syncManager.syncQuizData(data as QuizState);
+            // Respect the queued item's original trigger. Replaying a periodic /
+            // manual / pause save as a completion call (`/complete` POST) is what
+            // used to cause a tight loop on reconnect: every queued progress save
+            // fired the completion endpoint, the server returned `success: true`,
+            // each response triggered a re-render, and the cycle repeated for the
+            // entire queue. Now only items that were originally completion calls
+            // hit the completion endpoint.
+            const state = data as QuizState;
+            const result =
+              trigger === "completion"
+                ? await this.syncManager.syncQuizData(state)
+                : await this.syncManager.saveProgress(state);
             return result.success;
           } catch {
             return false;

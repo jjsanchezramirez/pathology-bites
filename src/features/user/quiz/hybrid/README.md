@@ -9,7 +9,6 @@ A revolutionary quiz system that achieves **96.7% API call reduction** while mai
 - **Offline Capability**: Works without internet connection using local storage
 - **Vercel Optimized**: Designed for Vercel's free tier without Edge Functions
 - **Seamless Integration**: Drop-in replacement for existing quiz systems
-- **Real-time Metrics**: Built-in performance monitoring and analytics
 
 ## 📊 Performance Comparison
 
@@ -30,7 +29,7 @@ A revolutionary quiz system that achieves **96.7% API call reduction** while mai
    - Provides instant responses
    - Handles navigation and progress tracking
 
-2. **Database Sync Manager** (`database-sync-manager.ts`)
+2. **Database Sync Manager** (`core/database-sync-manager.ts`)
    - Batches all server operations
    - Handles offline scenarios
    - Optimizes payload compression
@@ -38,7 +37,7 @@ A revolutionary quiz system that achieves **96.7% API call reduction** while mai
 3. **Main Hybrid Hook** (`use-hybrid-quiz.ts`)
    - Combines state machine and sync manager
    - Provides React integration
-   - Manages performance metrics
+   - Handles timer, completion, and recovery
 
 ### API Call Strategy
 
@@ -61,7 +60,7 @@ PATCH / api / content / quiz / sessions / { sessionId } / sync;
 ### Basic Integration
 
 ```typescript
-import { useHybridQuiz, HybridPresets } from '@/features/quiz/hybrid';
+import { useHybridQuiz, HybridPresets } from '@/features/user/quiz/hybrid';
 
 function QuizComponent({ sessionId }: { sessionId: string }) {
   const [state, actions] = useHybridQuiz({
@@ -89,64 +88,26 @@ function QuizComponent({ sessionId }: { sessionId: string }) {
         </button>
       ))}
       <p>Progress: {state.progress.percentage}%</p>
-      <p>API Calls: {state.metrics.totalApiCalls}</p>
     </div>
   );
 }
 ```
 
-### Configuration Presets
+### Configuration
+
+The hook only reads `enableOfflineSupport` from its options. Mode/timing
+metadata lives on the session record itself and is consumed by the page
+component, not the hook.
 
 ```typescript
-// Tutor Mode: Full explanations, unlimited time
-const tutorConfig = HybridPresets.TUTOR_MODE;
-
-// Exam Mode: Timed, no explanations during quiz
-const examConfig = HybridPresets.EXAM_MODE;
-
-// Practice Mode: Balanced settings
-const practiceConfig = HybridPresets.PRACTICE_MODE;
-
-// Offline Mode: Maximum offline capability
-const offlineConfig = HybridPresets.OFFLINE_MODE;
-```
-
-### Custom Configuration
-
-```typescript
-const customConfig = HybridUtils.createConfig("tutor", {
-  enableRealtime: true,
+const [state, actions] = useHybridQuiz({
+  sessionId,
   enableOfflineSupport: true,
-  autoSync: false,
-  syncOnComplete: true,
 });
 ```
 
-## 📈 Performance Monitoring
-
-### Built-in Metrics
-
-```typescript
-const performanceMetrics = HybridUtils.getPerformanceSummary(state);
-
-console.log({
-  apiCallReduction: performanceMetrics.apiCallReduction, // 96.7%
-  totalApiCalls: performanceMetrics.totalApiCalls, // 2
-  averageResponseTime: performanceMetrics.averageResponseTime, // ~100ms
-  estimatedLegacyCalls: performanceMetrics.estimatedLegacyCalls, // ~25
-});
-```
-
-### Real-time Status
-
-```typescript
-console.log({
-  isOnline: state.realtimeStats.connected,
-  responseLatency: state.realtimeStats.latency, // 0ms for client-side
-  syncStatus: state.syncStatus,
-  needsSync: state.syncStatus.pendingChanges,
-});
-```
+`HybridPresets.TUTOR_MODE` is the conventional default and is exported for
+convenience.
 
 ## 🧪 Testing
 
@@ -163,51 +124,11 @@ npm test -- --testPathPattern="hybrid-integration.test.tsx"
 
 ### Test Coverage
 
-- ✅ Core state machine logic (11 tests)
-- ✅ React integration (6 tests)
+- ✅ Core state machine logic
+- ✅ React integration
 - ✅ Error handling and edge cases
 - ✅ Offline scenarios
-- ✅ Performance metrics
 - ✅ Navigation and state transitions
-
-## 🔄 Migration from Legacy System
-
-### Step 1: Install Hybrid System
-
-```typescript
-// Replace legacy quiz hook
-- import { useQuiz } from '@/features/quiz/legacy';
-+ import { useHybridQuiz, HybridPresets } from '@/features/quiz/hybrid';
-```
-
-### Step 2: Update Component
-
-```typescript
-// Update hook usage
-- const { state, actions } = useQuiz({ sessionId });
-+ const [state, actions] = useHybridQuiz({
-+   sessionId,
-+   ...HybridPresets.TUTOR_MODE
-+ });
-```
-
-### Step 3: Update State Access
-
-```typescript
-// State structure is similar but optimized
--state.currentQuestion +
-  actions.getCurrentQuestion() -
-  state.progress +
-  state.progress - // Same structure
-  state.isLoading +
-  state.isLoading; // Same
-```
-
-### Step 4: Enjoy the Performance
-
-- Monitor the dramatic reduction in API calls
-- Experience instant UI responses
-- Benefit from offline capability
 
 ## 🛠️ Advanced Features
 
@@ -222,35 +143,21 @@ const [state, actions] = useHybridQuiz({
 });
 ```
 
-### Custom Sync Strategy
+### Sync Status
 
 ```typescript
-// Manual sync control
-const result = await actions.forcSync();
-if (result.success) {
-  console.log("Sync completed successfully");
-}
-```
-
-### Performance Optimization
-
-```typescript
-// Check if hybrid system is beneficial
-const shouldUseHybrid = HybridUtils.shouldUseHybrid(questionCount);
-if (shouldUseHybrid) {
-  // Use hybrid system
-} else {
-  // Use legacy for very short quizzes
-}
+console.log({
+  syncStatus: state.syncStatus,
+  needsSync: state.syncStatus.pendingChanges,
+});
 ```
 
 ## 🎯 Best Practices
 
 1. **Use Appropriate Presets**: Choose the right preset for your use case
-2. **Monitor Performance**: Use built-in metrics to track improvements
-3. **Handle Offline Gracefully**: Design UI to work in offline scenarios
-4. **Test Thoroughly**: Use provided test utilities for your components
-5. **Optimize for Mobile**: Hybrid system works great on mobile devices
+2. **Handle Offline Gracefully**: Design UI to work in offline scenarios
+3. **Test Thoroughly**: Use provided test utilities for your components
+4. **Optimize for Mobile**: Hybrid system works great on mobile devices
 
 ## 🔍 Troubleshooting
 
@@ -261,9 +168,6 @@ A: Check that the sessionId is valid and the API endpoint is accessible.
 
 **Q: Answers not syncing?**
 A: Verify network connectivity and check browser console for sync errors.
-
-**Q: Performance not as expected?**
-A: Ensure you're using the hybrid system correctly and check the metrics.
 
 ### Debug Mode
 
@@ -284,7 +188,6 @@ See the TypeScript definitions in the source files for complete API documentatio
 - `HybridQuizActions` - Available actions
 - `UseHybridQuizOptions` - Configuration options
 - `HybridPresets` - Predefined configurations
-- `HybridUtils` - Utility functions
 
 ## 🚀 Future Enhancements
 

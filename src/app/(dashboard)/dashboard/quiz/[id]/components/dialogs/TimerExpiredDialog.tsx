@@ -7,15 +7,29 @@ import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialo
 import { VisuallyHidden } from "@/shared/components/ui/visually-hidden";
 import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
 
-// Dynamically import Lottie to avoid SSR issues
+// `lottie-react` is dynamically imported with `ssr: false` because `lottie-web`
+// (its transitive dep) touches `window` at module load time — bundling it for
+// SSR causes Next.js dev to misplace the vendor chunk and 500 every route in
+// the dependency graph. The trade-off is a code-split chunk that needs to
+// load on first render; if the user is offline when the timer expires, the
+// chunk fetch fails and React's error boundary unmounts the dialog. The quiz
+// page mitigates that by calling `preloadLottieReactChunk()` (below) on quiz
+// init, which resolves to the same chunk and warms the browser cache before
+// the timer ever has a chance to expire.
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
+
+export function preloadLottieReactChunk(): Promise<unknown> {
+  return import("lottie-react");
+}
 
 interface TimerExpiredDialogProps {
   open: boolean;
   onViewResults?: () => void;
+  /** When false, replaces "Redirecting…" with an offline waiting message. */
+  isOnline?: boolean;
 }
 
-export function TimerExpiredDialog({ open }: TimerExpiredDialogProps) {
+export function TimerExpiredDialog({ open, isOnline = true }: TimerExpiredDialogProps) {
   const [isVisible, setIsVisible] = useState(false);
   const { animationData, isLoading } = useLottieAnimation("alarm_clock");
 
@@ -70,7 +84,9 @@ export function TimerExpiredDialog({ open }: TimerExpiredDialogProps) {
           {/* Description */}
           <div className="text-center space-y-2">
             <p className="text-sm text-muted-foreground max-w-sm">
-              Redirecting to your quiz results...
+              {isOnline
+                ? "Redirecting to your quiz results..."
+                : "You're offline. Your answers are saved — we'll submit and show your results as soon as you're back online."}
             </p>
           </div>
         </div>

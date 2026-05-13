@@ -100,3 +100,37 @@ export function useLottieAnimation(animationName: string): UseLottieAnimationRes
 
   return { animationData, isLoading, error };
 }
+
+/**
+ * Eagerly fetch a Lottie animation and stash it in the module-level memory
+ * cache so a later `useLottieAnimation(name)` call resolves instantly.
+ *
+ * Useful for animations that need to appear without any loading flicker — e.g.
+ * the "Time's Up" alarm clock that's expected to render the moment the quiz
+ * timer hits 0, possibly while the user is offline. Errors are swallowed
+ * (preload is best-effort).
+ */
+export function preloadLottieAnimation(animationName: string): void {
+  if (typeof window === "undefined") return;
+  if (memoryCache.has(animationName) || pendingRequests.has(animationName)) return;
+
+  const fetchPromise = fetch(`${ANIMATION_BASE_URL}/${animationName}.json`, {
+    cache: "force-cache",
+  })
+    .then(async (response) => {
+      if (!response.ok) {
+        throw new Error(`Failed to preload animation: ${response.status}`);
+      }
+      const data = await response.json();
+      memoryCache.set(animationName, data);
+      pendingRequests.delete(animationName);
+      return data;
+    })
+    .catch((err) => {
+      pendingRequests.delete(animationName);
+      console.warn(`[Lottie] Preload failed for ${animationName}:`, err);
+      return null;
+    });
+
+  pendingRequests.set(animationName, fetchPromise);
+}

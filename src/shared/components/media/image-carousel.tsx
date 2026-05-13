@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
-import Image from "next/image";
+import { OfflineAwareImage } from "@/shared/components/media/offline-aware-image";
 import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
 import { ChevronLeft, ChevronRight, X, Loader2 } from "lucide-react";
 import { useMobile } from "@/shared/hooks/use-mobile";
@@ -103,12 +103,13 @@ function ImageCarouselInternal({ images, className = "", resetKey }: ImageCarous
           )}
 
           {currentImage?.url ? (
-            <Image
+            <OfflineAwareImage
               src={currentImage.url}
               alt={currentImage.alt}
               width={1200}
               height={750}
               className="w-full h-auto max-h-[70vh] object-contain hover:opacity-90 transition-opacity"
+              placeholderClassName="w-full aspect-[16/10] max-h-[70vh] rounded-md"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               unoptimized={true}
               onLoad={() => {
@@ -207,12 +208,13 @@ function ImageCarouselInternal({ images, className = "", resetKey }: ImageCarous
                     </div>
                   )}
 
-                  <Image
+                  <OfflineAwareImage
                     src={currentImage.url}
                     alt={currentImage.alt}
                     width={1200}
                     height={800}
                     className="max-w-[90vw] max-h-[90vh] w-auto h-auto object-contain rounded-2xl"
+                    placeholderClassName="w-[80vw] aspect-[16/10] max-w-[90vw] max-h-[90vh] rounded-2xl"
                     unoptimized={true}
                     onLoad={() => {
                       handleImageLoad();

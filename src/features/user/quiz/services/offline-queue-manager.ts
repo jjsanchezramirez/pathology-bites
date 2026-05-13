@@ -126,10 +126,14 @@ export class OfflineQueueManager {
   }
 
   /**
-   * Process queue - attempt to sync all ready items
+   * Process queue - attempt to sync all ready items.
+   * `syncFunction` receives the queued item's original `trigger` so the caller
+   * can choose between a progress save and a full completion sync; without
+   * this, every replayed item fires the /complete endpoint, which loops on
+   * reconnect when the queue contains stale progress saves.
    */
   async processQueue(
-    syncFunction: (sessionId: string, data: unknown) => Promise<boolean>
+    syncFunction: (sessionId: string, data: unknown, trigger: AutoSaveTrigger) => Promise<boolean>
   ): Promise<{ succeeded: number; failed: number; queued: number }> {
     const items = this.getItemsReadyForRetry();
     let succeeded = 0;
@@ -139,7 +143,7 @@ export class OfflineQueueManager {
 
     for (const item of items) {
       try {
-        const success = await syncFunction(item.sessionId, item.data);
+        const success = await syncFunction(item.sessionId, item.data, item.trigger);
 
         if (success) {
           this.removeFromQueue(item.id);

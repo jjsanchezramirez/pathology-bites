@@ -18,6 +18,8 @@ interface QuizActiveViewProps {
   currentQuestion: UIQuizQuestion | null;
   currentQuestionNumber: number;
   totalQuestions: number;
+  /** Number of committed answers across the whole quiz. */
+  answeredCount: number;
 
   // Question display
   textZoom: number;
@@ -55,6 +57,9 @@ interface QuizActiveViewProps {
   timeRemaining?: number | null;
   totalTimeLimit?: number | null;
 
+  // Dev-only fast-forward button
+  onDevSkipTimer?: () => void;
+
   // Scroll ref
   contentAreaRef: RefObject<HTMLDivElement>;
 }
@@ -64,6 +69,7 @@ export function QuizActiveView({
   currentQuestion,
   currentQuestionNumber,
   totalQuestions,
+  answeredCount,
   textZoom,
   pendingAnswerSelection,
   onAnswerSelect,
@@ -90,6 +96,7 @@ export function QuizActiveView({
   onFlagQuestion,
   onSaveAndExit,
   timeRemaining,
+  onDevSkipTimer,
 }: QuizActiveViewProps) {
   // Strike-out state: per-question, persisted in localStorage so it survives refresh,
   // continue-quiz, AND the review page after completion (so users can see what they
@@ -257,6 +264,18 @@ export function QuizActiveView({
                     {Math.floor(timeRemaining / 60)}:
                     {(timeRemaining % 60).toString().padStart(2, "0")}
                   </span>
+                  {/* Dev-only timer fast-forward. Stripped from prod by NODE_ENV check. */}
+                  {process.env.NODE_ENV === "development" && onDevSkipTimer && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={onDevSkipTimer}
+                      title="Dev: jump timer to 5s"
+                      className="h-6 px-2 ml-1 text-[11px] font-mono"
+                    >
+                      ⏩5s
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
@@ -291,6 +310,8 @@ export function QuizActiveView({
                 <QuizNavigation
                   currentQuestion={currentQuestionNumber}
                   totalQuestions={totalQuestions}
+                  answeredCount={answeredCount}
+                  hasPendingSelection={pendingAnswerSelection?.questionId === currentQuestion.id}
                   onPrevious={onPreviousQuestion}
                   onNext={onNextQuestion}
                   onSubmit={onSubmitAnswer}

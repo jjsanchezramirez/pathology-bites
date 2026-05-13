@@ -14,7 +14,6 @@
  */
 
 import { useEffect, useCallback, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
 import { useQuizStateMachine } from "./hooks/use-quiz-state-machine";
 import { DatabaseSyncManager, SyncResult } from "./core/database-sync-manager";
 import { AutoSaveManager } from "../services/auto-save-manager";
@@ -37,10 +36,7 @@ import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 
 export interface UseHybridQuizOptions {
   sessionId: string;
-  enableRealtime?: boolean;
   enableOfflineSupport?: boolean;
-  autoSync?: boolean;
-  syncOnComplete?: boolean;
   csrfTokenGetter?: () => Promise<string>;
   onAnswerSubmitted?: (
     questionId: string,
@@ -71,18 +67,6 @@ export interface HybridQuizState {
     percentage: number;
   };
 
-  // Performance Metrics
-  metrics: {
-    totalApiCalls: number;
-    averageResponseTime: number;
-  };
-
-  // Real-time Status
-  realtimeStats: {
-    connected: boolean;
-    latency: number;
-  };
-
   // Auto-save Status
   syncStatus: SyncStatus;
   lastSyncTime: number | null;
@@ -100,7 +84,6 @@ export interface HybridQuizState {
 
 export interface HybridQuizActions {
   // Quiz Control
-  startQuiz: () => Promise<boolean>;
   pauseQuiz: () => void;
   resumeQuiz: () => void;
   saveAndExit: () => Promise<void>;
@@ -118,28 +101,23 @@ export interface HybridQuizActions {
   navigateToQuestion: (index: number) => boolean;
 
   // Data Access
-  getCurrentQuestion: () => UIQuizQuestion | null; // Works with UI question format
-  getQuestions: () => UIQuizQuestion[]; // Works with UI question format
+  getCurrentQuestion: () => UIQuizQuestion | null;
+  getQuestions: () => UIQuizQuestion[];
   getAnswerForQuestion: (questionId: string) => QuizAnswer | null;
   getQuizConfig: () => QuizState["config"] | null;
 
-  // Sync Management
-  forceSync: () => Promise<SyncResult>;
-
   // Utilities
   getProgress: () => { answered: number; correct: number; total: number };
-  getTimeSpent: () => number;
-  cleanupOldQuizData: () => void;
-  clearCurrentQuizData: () => void;
+
+  // Dev-only: jump the timer to a small value (e.g. 5s) so we don't have to
+  // wait through a 60s timer to test the expiry path. No-op in production.
+  __devSetTimer: (seconds: number) => void;
 }
 
 export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, HybridQuizActions] {
   const {
     sessionId,
-    enableRealtime = false,
     enableOfflineSupport = true,
-    autoSync: _autoSync = true,
-    syncOnComplete = true,
     csrfTokenGetter,
     onAnswerSubmitted,
     onQuizCompleted,
@@ -147,9 +125,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     onError,
     onSyncStatusChange,
   } = options;
-
-  // Router for navigation detection
-  const _router = useRouter();
 
   // Get unified performance data (includes stats and unlocked achievements)
   const { data: unifiedData } = useUnifiedData();
@@ -195,10 +170,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   const {
     state: quizState,
     actions: stateActions,
-    currentQuestion: _currentQuestion,
     isInitialized,
-    isActive: _isActive,
-    isCompleted,
   } = useQuizStateMachine({
     sessionId,
     enableLocalStorage: enableOfflineSupport,
@@ -211,13 +183,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     onQuizCompleted: () => {
       // This will be handled in the completion handler where we have access to current state
     },
-  });
-
-  // Track performance metrics
-  const metricsRef = useRef({
-    totalApiCalls: 0,
-    responseTimeSum: 0,
-    responseCount: 0,
   });
 
   // Timer state for timed quizzes
@@ -233,9 +198,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
   const stateRef = useRef(quizState);
   stateRef.current = quizState;
-
-  // Keep ref to handleCompleteQuiz to avoid recreating timer interval
-  const handleCompleteQuizRef = useRef<(() => Promise<SyncResult>) | null>(null);
 
   // Track if we've already triggered completion to prevent infinite loop
   const hasCompletedRef = useRef(false);
@@ -271,7 +233,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
     try {
       isInitializingRef.current = true;
-      const startTime = Date.now();
 
       // API Call #1: Fetch quiz data
       const {
@@ -293,12 +254,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         return;
       }
 
-      // Track API call metrics
-      const responseTime = Date.now() - startTime;
-      metricsRef.current.totalApiCalls += 1;
-      metricsRef.current.responseTimeSum += responseTime;
-      metricsRef.current.responseCount += 1;
-
       // Try to recover from localStorage first (needed before initialization)
       const localData = recoverLocalState();
 
@@ -311,7 +266,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       // Convert answers array to Map
       if (answersToRestore && answersToRestore.length > 0) {
         existingAnswersMap = new Map();
-        answersToRestore.forEach((answer) => {
+        answersToRestore.forEach((answer: QuizAnswer | [string, QuizAnswer]) => {
           const questionId = Array.isArray(answer) ? answer[0] : answer.questionId;
           const answerData = Array.isArray(answer) ? answer[1] : answer;
           existingAnswersMap!.set(questionId, answerData);
@@ -400,10 +355,20 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   // Handle quiz completion with sync
   const handleCompleteQuiz = useCallback(async (): Promise<SyncResult> => {
     try {
-      // Prevent duplicate completion calls
+      // Defense-in-depth re-entry guard. The page's runCompletion owns the
+      // primary lock (isCompletionRunningRef) — this catches any future caller
+      // that bypasses it. CRITICAL: fail closed. Returning { success: true }
+      // here used to be a fake-success that triggered a premature redirect to
+      // /results when the timer's onTimerExpired callback double-fired and
+      // raced its way past the page-side lock. Now we return a non-network
+      // error so runCompletion treats it as a real failure.
       if (hasCompletedRef.current) {
-        console.log("[Hybrid] Quiz already completed, skipping duplicate completion");
-        return { success: true, timestamp: Date.now() };
+        console.log("[Hybrid] handleCompleteQuiz re-entered, refusing");
+        return {
+          success: false,
+          timestamp: Date.now(),
+          error: "Completion already in progress",
+        };
       }
 
       hasCompletedRef.current = true;
@@ -453,8 +418,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         });
       }, 0);
 
-      const startTime = Date.now();
-
       // Calculate achievements to unlock based on quiz result and current stats
       let achievementsToUnlock: string[] = [];
       if (unifiedData?.achievements) {
@@ -499,12 +462,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       // API Call #2: Batch sync all data with achievements (pass latest state, not closure-captured)
       const result = await syncManager.current!.syncQuizData(latestState, achievementsToUnlock);
 
-      // Track API call metrics
-      const responseTime = Date.now() - startTime;
-      metricsRef.current.totalApiCalls += 1;
-      metricsRef.current.responseTimeSum += responseTime;
-      metricsRef.current.responseCount += 1;
-
       if (result.success) {
         stateActions.markSyncSuccess(result.timestamp);
 
@@ -543,6 +500,12 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         }
       } else {
         stateActions.markSyncFailed();
+        // Reset the re-entry guard so callers (e.g. the page's online-resume
+        // effect) can retry the sync. Without this, every subsequent call to
+        // handleCompleteQuiz hits the `hasCompletedRef.current` short-circuit
+        // and returns a fake `{ success: true }` without ever talking to the
+        // server — exactly the offline-completion scenario.
+        hasCompletedRef.current = false;
       }
 
       return result;
@@ -557,9 +520,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     // race in practice mode where the click triggered a setTimeout-completion before
     // React re-rendered with the new state).
   }, [stateActions, onError, sessionId, unifiedData?.achievements]);
-
-  // Update ref whenever handleCompleteQuiz changes
-  handleCompleteQuizRef.current = handleCompleteQuiz;
 
   // Initialize quiz data (API Call #1)
   useEffect(() => {
@@ -579,18 +539,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       stateActions.startQuiz();
     }
   }, [isInitialized, quizState.status, stateActions]);
-
-  // Auto-sync on completion
-  useEffect(() => {
-    if (
-      isCompleted &&
-      syncOnComplete &&
-      quizState.syncStatus.pendingChanges &&
-      !hasCompletedRef.current
-    ) {
-      handleCompleteQuiz();
-    }
-  }, [isCompleted, syncOnComplete, quizState.syncStatus.pendingChanges, handleCompleteQuiz]);
 
   // Auto-save quiz state to localStorage
   useEffect(() => {
@@ -633,24 +581,25 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     timeRemaining,
   ]);
 
-  // Periodic auto-save (every 5 answers)
+  // Periodic auto-save — fires only when the answer count changes, but reads
+  // the freshest state via `stateRef` so we don't capture a stale `quizState`
+  // closure. Previously the dep array included the whole `quizState` object,
+  // which caused this effect to fire on every reducer dispatch (every timer
+  // tick).
+  const answersCount = quizState.answers.size;
   useEffect(() => {
     if (!AUTO_SAVE_CONFIG.enablePeriodicAutoSave || !autoSaveManager.current) return;
+    if (answersCount === 0) return;
+    if (!autoSaveManager.current.shouldPeriodicSave(answersCount)) return;
+    autoSaveManager.current
+      .autoSave(sessionId, stateRef.current, "periodic", timeRemaining)
+      .then(() => invalidateQuizSessions(false));
+  }, [answersCount, sessionId, timeRemaining]);
 
-    const answersCount = quizState.answers.size;
-    if (answersCount > 0 && autoSaveManager.current.shouldPeriodicSave(answersCount)) {
-      autoSaveManager.current.autoSave(sessionId, quizState, "periodic", timeRemaining).then(() => {
-        // Invalidate quiz sessions cache to show updated progress
-        invalidateQuizSessions(false);
-      });
-    }
-  }, [quizState.answers.size, sessionId, timeRemaining, quizState]);
-
-  // Timer countdown for timed quizzes
-  // Separate state to track if timer should be active (to trigger effect when timeRemaining is initialized)
-  const [timerActive, setTimerActive] = useState(false);
-
-  // Update timer active state when conditions change
+  // Timer countdown for timed quizzes. Computes `shouldBeActive` inline rather
+  // than mirroring it into a separate `timerActive` state — the intermediate
+  // state added a render pass and the timer being on/off is already fully
+  // derivable from its inputs.
   useEffect(() => {
     const shouldBeActive =
       quizState.config.timing === "timed" &&
@@ -658,21 +607,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       !isTimerPaused &&
       timeRemaining !== null;
 
-    console.log("[Hybrid Timer] Timer conditions check:", {
-      timing: quizState.config.timing,
-      status: quizState.status,
-      isTimerPaused,
-      timeRemaining,
-      shouldBeActive,
-    });
-
-    setTimerActive(shouldBeActive);
-  }, [quizState.config.timing, quizState.status, isTimerPaused, timeRemaining]);
-
-  // Manage timer interval based on active state
-  useEffect(() => {
-    if (!timerActive) {
-      // Clear timer if not active
+    if (!shouldBeActive) {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
@@ -680,40 +615,52 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       return;
     }
 
-    // Only create interval if one doesn't exist already
-    if (!timerIntervalRef.current) {
-      console.log("[Hybrid] Starting timer countdown");
+    if (timerIntervalRef.current) return; // already running
 
-      timerIntervalRef.current = setInterval(() => {
-        setTimeRemaining((prev) => {
-          if (prev === null || prev <= 0) {
-            // Time's up - complete the quiz
-            console.log("[Hybrid] Timer expired! Completing quiz...");
-            if (timerIntervalRef.current) {
-              clearInterval(timerIntervalRef.current);
-              timerIntervalRef.current = null;
-            }
-            // Set timer expired state
-            setTimerExpired(true);
-            // Notify parent component via ref to avoid dependency
-            callbacksRef.current.onTimerExpired?.();
-            // Complete the quiz
-            handleCompleteQuizRef.current?.();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
+    console.log("[Hybrid] Starting timer countdown");
+    timerIntervalRef.current = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev === null || prev <= 0) {
+          // Pure updater: never trigger side effects from inside setState. React
+          // 18 StrictMode in dev double-invokes updaters to detect impurity, so
+          // anything we fire here would run twice — historically that caused
+          // onTimerExpired to fire twice on tick=0, which in turn made
+          // runCompletion re-enter through its stale-closure isCompletingQuiz
+          // guard, hit handleCompleteQuiz's hasCompletedRef short-circuit, and
+          // return a fake { success: true } that redirected the user to
+          // /results while offline. The "timeRemaining hit 0" side effects now
+          // live in a useEffect that observes the committed state.
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-    // Cleanup on unmount or when timer becomes inactive
     return () => {
       if (timerIntervalRef.current) {
         clearInterval(timerIntervalRef.current);
         timerIntervalRef.current = null;
       }
     };
-  }, [timerActive]);
+  }, [quizState.config.timing, quizState.status, isTimerPaused, timeRemaining]);
+
+  // Fire the timer-expired side effects exactly once, after timeRemaining hits 0
+  // is committed to React state. Lives outside the setInterval updater because
+  // StrictMode would double-invoke the updater and double-fire these callbacks.
+  const timerExpiredFiredRef = useRef(false);
+  useEffect(() => {
+    if (timerExpiredFiredRef.current) return;
+    if (timeRemaining !== 0) return;
+    if (quizState.config.timing !== "timed") return;
+    timerExpiredFiredRef.current = true;
+    console.log("[Hybrid] Timer expired! Notifying page.");
+    if (timerIntervalRef.current) {
+      clearInterval(timerIntervalRef.current);
+      timerIntervalRef.current = null;
+    }
+    setTimerExpired(true);
+    callbacksRef.current.onTimerExpired?.();
+  }, [timeRemaining, quizState.config.timing]);
 
   // Note: beforeunload event handling is managed by the page component
   // to allow for custom exit dialogs and better UX control
@@ -731,17 +678,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       total: quizState.totalQuestions,
       percentage: quizState.progress.percentage,
     },
-    metrics: {
-      totalApiCalls: metricsRef.current.totalApiCalls,
-      averageResponseTime:
-        metricsRef.current.responseCount > 0
-          ? Math.round(metricsRef.current.responseTimeSum / metricsRef.current.responseCount)
-          : 0,
-    },
-    realtimeStats: {
-      connected: enableRealtime && quizState.syncStatus.isOnline,
-      latency: 0, // Client-side operations have 0ms latency
-    },
     syncStatus,
     lastSyncTime,
     queueStatus: autoSaveManager.current?.getQueueStatus() || { total: 0, ready: 0, waiting: 0 },
@@ -752,17 +688,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
   // Create hybrid actions
   const hybridActions: HybridQuizActions = {
-    startQuiz: useCallback(async () => {
-      stateActions.startQuiz();
-
-      // Save status to database when quiz starts
-      if (autoSaveManager.current) {
-        await autoSaveManager.current.autoSave(sessionId, quizState, "manual", timeRemaining);
-      }
-
-      return true;
-    }, [stateActions, sessionId, quizState, timeRemaining]),
-
     pauseQuiz: useCallback(async () => {
       stateActions.pauseQuiz();
       setIsTimerPaused(true);
@@ -866,10 +791,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       return quizState.config;
     }, [quizState.config]),
 
-    forceSync: useCallback(async () => {
-      return await syncManager.current!.syncQuizData(quizState);
-    }, [quizState]),
-
     getProgress: useCallback(
       () => ({
         answered: quizState.progress.answered,
@@ -879,39 +800,11 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       [quizState.progress, quizState.totalQuestions]
     ),
 
-    getTimeSpent: useCallback(() => {
-      return quizState.totalTimeSpent;
-    }, [quizState.totalTimeSpent]),
-
-    // Utility functions
-    cleanupOldQuizData: useCallback(() => {
-      try {
-        const oneWeekAgo = Date.now() - 7 * 24 * 60 * 60 * 1000;
-        Object.keys(localStorage)
-          .filter((key) => key.startsWith("pathology-bites-quiz-"))
-          .forEach((key) => {
-            try {
-              const data = JSON.parse(localStorage.getItem(key) || "{}");
-              if (data.lastSaved && data.lastSaved < oneWeekAgo) {
-                localStorage.removeItem(key);
-              }
-            } catch {
-              // Remove corrupted entries
-              localStorage.removeItem(key);
-            }
-          });
-      } catch (error) {
-        console.warn("Failed to cleanup old quiz data:", error);
-      }
+    __devSetTimer: useCallback((seconds: number) => {
+      if (process.env.NODE_ENV !== "development") return;
+      console.log(`[Hybrid] __devSetTimer: jumping timer to ${seconds}s`);
+      setTimeRemaining(seconds);
     }, []),
-
-    clearCurrentQuizData: useCallback(() => {
-      try {
-        localStorage.removeItem(`pathology-bites-quiz-result-${sessionId}`);
-      } catch (error) {
-        console.warn("Failed to clear current quiz data:", error);
-      }
-    }, [sessionId]),
   };
 
   return [hybridState, hybridActions];

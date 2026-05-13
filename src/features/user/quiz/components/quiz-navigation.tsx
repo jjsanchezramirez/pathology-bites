@@ -8,6 +8,10 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 interface QuizNavigationProps {
   currentQuestion: number;
   totalQuestions: number;
+  /** Count of already-committed answers (excludes any in-flight pending selection). */
+  answeredCount?: number;
+  /** True when the user has a pending answer selection for the current question. */
+  hasPendingSelection?: boolean;
   onPrevious: () => void;
   onNext: () => void;
   onSubmit: () => void;
@@ -21,6 +25,8 @@ interface QuizNavigationProps {
 export function QuizNavigation({
   currentQuestion,
   totalQuestions,
+  answeredCount = 0,
+  hasPendingSelection = false,
   onPrevious,
   onNext,
   onSubmit,
@@ -32,14 +38,35 @@ export function QuizNavigation({
 }: QuizNavigationProps) {
   const isLastQuestion = currentQuestion === totalQuestions;
 
+  // Last-question submit button label is state-driven so the user knows what will
+  // happen when they click. The page-level handler still owns the action; this
+  // just keeps the label in sync with the action.
+  //   pending                     → "Submit & Complete Quiz" (commits then completes,
+  //                                                          with or without dialog)
+  //   committed + all answered    → "Complete Quiz"
+  //   committed + others unans.   → "Submit Quiz"            (then dialog)
+  let lastQuestionLabel = "Submit Answer";
+  if (isLastQuestion) {
+    const allAnswered = answeredCount >= totalQuestions;
+    if (hasPendingSelection) {
+      lastQuestionLabel = "Submit & Complete Quiz";
+    } else if (isCurrentQuestionAnswered && allAnswered) {
+      lastQuestionLabel = "Complete Quiz";
+    } else if (isCurrentQuestionAnswered) {
+      lastQuestionLabel = "Submit Quiz";
+    }
+  }
+
   // In tutor mode: after answering, show Next/Complete button.
   // In tutor mode: before answering, the option click auto-submits, so no submit button is needed.
   // In practice mode: show Submit Answer button (two-step flow — explicit commit before advancing).
-  // The button reads "Submit & Complete Quiz" / "Complete Quiz" on the last question regardless
-  // of whether earlier questions are answered — `onSubmit`/the page-level handler will surface
-  // an UnansweredWarningDialog with the count if any are still unanswered.
   const showNextButton = mode === "tutor" && isCurrentQuestionAnswered;
   const showSubmitButton = mode !== "tutor";
+
+  // Tutor-mode last-question label: same state machine as practice, but without
+  // the pending branch (tutor commits on click, so isCurrentQuestionAnswered is
+  // always true here). The dialog handles the unanswered-others case.
+  const tutorLastLabel = answeredCount >= totalQuestions ? "Complete Quiz" : "Submit Quiz";
 
   return (
     <div className="flex justify-between">
@@ -51,17 +78,13 @@ export function QuizNavigation({
       <div className="flex gap-2">
         {showSubmitButton && (
           <Button onClick={onSubmit} disabled={isSubmitting}>
-            {isSubmitting
-              ? "Submitting..."
-              : isLastQuestion
-                ? "Submit & Complete Quiz"
-                : "Submit Answer"}
+            {isSubmitting ? "Submitting..." : isLastQuestion ? lastQuestionLabel : "Submit Answer"}
           </Button>
         )}
 
         {showNextButton && (
           <Button onClick={isLastQuestion ? onSubmit : onNext} disabled={isSubmitting}>
-            {isSubmitting ? "Completing Quiz..." : isLastQuestion ? "Complete Quiz" : "Next"}
+            {isSubmitting ? "Completing Quiz..." : isLastQuestion ? tutorLastLabel : "Next"}
             {!isSubmitting && <ChevronRight className="h-4 w-4 ml-2" />}
           </Button>
         )}

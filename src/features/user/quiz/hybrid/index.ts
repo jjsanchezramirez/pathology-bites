@@ -26,50 +26,11 @@
 export { useHybridQuiz } from "./use-hybrid-quiz";
 
 // Preset Configurations
+// Only `enableOfflineSupport` is read by `useHybridQuiz`; mode/timing come from
+// `sessionConfig` directly. This preset is the fallback before sessionConfig
+// loads and the default for untimed tutor sessions.
 export const HybridPresets = {
-  /**
-   * Tutor Mode: Full explanations, unlimited time, review allowed
-   * Optimized for learning and practice
-   */
   TUTOR_MODE: {
-    mode: "tutor" as const,
-    timing: "untimed" as const,
-    showExplanations: true,
-    allowReview: true,
-    enableRealtime: false,
     enableOfflineSupport: true,
-    autoSync: false,
-    syncOnComplete: true,
-  },
-
-  /**
-   * Practice Mode: No explanations during the quiz; user gets results only at completion.
-   * This deliberately differs from Tutor Mode — Practice is for self-assessment without
-   * inline feedback, more like a real exam.
-   */
-  PRACTICE_MODE: {
-    mode: "practice" as const,
-    timing: "untimed" as const,
-    showExplanations: false,
-    allowReview: true,
-    enableRealtime: false,
-    enableOfflineSupport: true,
-    autoSync: false,
-    syncOnComplete: true,
-  },
-
-  /**
-   * Offline Mode: Maximum offline capability
-   * For use in low-connectivity environments
-   */
-  OFFLINE_MODE: {
-    mode: "tutor" as const,
-    timing: "untimed" as const,
-    showExplanations: true,
-    allowReview: true,
-    enableRealtime: false,
-    enableOfflineSupport: true,
-    autoSync: false,
-    syncOnComplete: false,
   },
 } as const;

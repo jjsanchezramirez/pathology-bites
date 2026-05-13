@@ -74,10 +74,6 @@ export interface SyncResult {
 
 export interface DatabaseSyncManagerOptions {
   apiBaseUrl?: string;
-  enableCompression?: boolean;
-  enableRetry?: boolean;
-  maxRetries?: number;
-  retryDelay?: number;
   csrfTokenGetter?: () => Promise<string>;
   onSyncStart?: () => void;
   onSyncSuccess?: (result: SyncResult) => void;
@@ -90,16 +86,11 @@ export interface DatabaseSyncManagerOptions {
  */
 export class DatabaseSyncManager {
   private options: Required<DatabaseSyncManagerOptions>;
-  private syncQueue: QuizSyncData[] = [];
   private isSyncing = false;
 
   constructor(options: DatabaseSyncManagerOptions = {}) {
     this.options = {
       apiBaseUrl: "/api/user/quiz",
-      enableCompression: true,
-      enableRetry: true,
-      maxRetries: 3,
-      retryDelay: 1000,
       csrfTokenGetter: async () => "", // Default no-op, should be provided by caller
       onSyncStart: () => {},
       onSyncSuccess: () => {},
@@ -430,198 +421,89 @@ export class DatabaseSyncManager {
   }
 
   /**
-   * Perform the actual sync operation with retry logic
+   * Perform the actual sync operation. One attempt, no internal retry loop.
+   * Retries and offline-wait orchestration are owned by the page's
+   * runCompletion — stacking retry loops here made offline detection take
+   * ~12s instead of ~3s and obscured which layer was responsible for
+   * recovery.
    */
   private async performSync(syncData: QuizSyncData): Promise<SyncResult> {
-    let lastError: Error | null = null;
+    try {
+      const csrfToken = await this.options.csrfTokenGetter();
 
-    for (let attempt = 1; attempt <= this.options.maxRetries; attempt++) {
-      try {
-        // Get CSRF token for POST requests
-        const csrfToken = await this.options.csrfTokenGetter();
+      const completePayload = {
+        answers: syncData.answers.map((answer) => ({
+          questionId: answer.questionId,
+          selectedAnswerId: answer.selectedOptionId,
+          timeSpent: answer.timeSpent,
+          timestamp: answer.timestamp,
+        })),
+        achievementIds: syncData.achievementIds || [],
+      };
 
-        // OPTIMIZATION: Single API call - complete endpoint now accepts answers!
-        // This combines what used to be 2 calls (batch + complete) into 1
-        const completePayload = {
-          answers: syncData.answers.map((answer) => ({
-            questionId: answer.questionId,
-            selectedAnswerId: answer.selectedOptionId,
-            timeSpent: answer.timeSpent, // Already in seconds from state machine
-            timestamp: answer.timestamp,
-          })),
-          achievementIds: syncData.achievementIds || [], // Client-calculated achievements
-        };
-
-        console.log("[Hybrid] Completing quiz with single API call (answers + completion)");
-
-        const completeResponse = await fetch(
-          `${this.options.apiBaseUrl}/sessions/${syncData.sessionId}/complete`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              "x-csrf-token": csrfToken,
-            },
-            credentials: "include", // Include cookies for authentication
-            body: JSON.stringify(completePayload),
-          }
-        );
-
-        if (!completeResponse.ok) {
-          const errorText = await completeResponse.text();
-
-          // Check if the error is because quiz is already completed - this is not really an error
-          if (
-            errorText.includes("Quiz session is already completed") ||
-            errorText.includes("already completed")
-          ) {
-            return {
-              success: true,
-              timestamp: Date.now(),
-              serverResponse: { message: "Quiz was already completed" },
-            };
-          }
-
-          throw new Error(`Quiz completion failed: ${completeResponse.statusText} - ${errorText}`);
+      const completeResponse = await fetch(
+        `${this.options.apiBaseUrl}/sessions/${syncData.sessionId}/complete`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "x-csrf-token": csrfToken,
+          },
+          credentials: "include",
+          body: JSON.stringify(completePayload),
         }
+      );
 
-        const serverResponse = await completeResponse.json();
+      if (!completeResponse.ok) {
+        const errorText = await completeResponse.text();
 
-        console.log("=".repeat(80));
-        console.log("🎯 [HYBRID SYNC MANAGER] QUIZ COMPLETION RESPONSE:");
-        console.log("=".repeat(80));
-        console.log("[Hybrid] Complete response:", {
-          success: serverResponse.success,
-          hasData: !!serverResponse.data,
-          hasNewAchievements: !!serverResponse.newAchievements,
-          dataKeys: serverResponse.data ? Object.keys(serverResponse.data).slice(0, 5) : [],
-        });
-        console.log("=".repeat(80));
-
-        // OPTIMIZATION: Update session cache with results
-        // This eliminates the need for a separate API call to /results
-        if (serverResponse.success && serverResponse.data) {
-          try {
-            const sessionKey = `pathology-bites-quiz-result-${syncData.sessionId}`;
-
-            // Get existing session data
-            const existingSession = this.getFromCache(sessionKey);
-
-            // Merge newAchievements into data for display
-            const resultsWithAchievements = {
-              ...serverResponse.data,
-              newAchievements: serverResponse.newAchievements || [],
-            };
-
-            // Update session cache with results
-            const updatedSession = {
-              ...(existingSession && typeof existingSession === "object" ? existingSession : {}),
-              status: "completed",
-              results: resultsWithAchievements,
-            };
-
-            this.saveToCache(sessionKey, updatedSession);
-
-            console.log("💾 [HYBRID CACHE] Updated session cache with results:", {
-              key: sessionKey,
-              hasResults: !!resultsWithAchievements,
-              resultKeys: Object.keys(resultsWithAchievements).slice(0, 5),
-            });
-            console.log("[Hybrid] Cached quiz results in session - saves 1 API call");
-          } catch (error) {
-            console.warn("Failed to cache results:", error);
-          }
-        } else {
-          console.warn("[Hybrid] NOT caching - no data in response:", { serverResponse });
-        }
-
-        return {
-          success: true,
-          timestamp: Date.now(),
-          serverResponse,
-        };
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error("Unknown error");
-
-        if (attempt < this.options.maxRetries) {
-          // Wait before retrying
-          await new Promise((resolve) => setTimeout(resolve, this.options.retryDelay * attempt));
-        }
-      }
-    }
-
-    return {
-      success: false,
-      timestamp: Date.now(),
-      error: lastError?.message || "Sync failed after all retries",
-    };
-  }
-
-  /**
-   * Queue data for later sync (useful for offline scenarios)
-   */
-  queueForSync(quizState: QuizState): void {
-    const syncData = this.prepareSyncData(quizState);
-    this.syncQueue.push(syncData);
-  }
-
-  /**
-   * Process queued sync operations
-   */
-  async processQueue(): Promise<SyncResult[]> {
-    const results: SyncResult[] = [];
-
-    while (this.syncQueue.length > 0) {
-      const syncData = this.syncQueue.shift();
-      if (syncData) {
-        try {
-          const result = await this.performSync(syncData);
-          results.push(result);
-
-          if (!result.success) {
-            // Re-queue failed sync for later retry
-            this.syncQueue.unshift(syncData);
-            break;
-          }
-        } catch (error) {
-          results.push({
-            success: false,
+        if (
+          errorText.includes("Quiz session is already completed") ||
+          errorText.includes("already completed")
+        ) {
+          return {
+            success: true,
             timestamp: Date.now(),
-            error: error instanceof Error ? error.message : "Unknown error",
-          });
+            serverResponse: { message: "Quiz was already completed" },
+          };
+        }
+
+        throw new Error(`Quiz completion failed: ${completeResponse.statusText} - ${errorText}`);
+      }
+
+      const serverResponse = await completeResponse.json();
+
+      if (serverResponse.success && serverResponse.data) {
+        try {
+          const sessionKey = `pathology-bites-quiz-result-${syncData.sessionId}`;
+          const existingSession = this.getFromCache(sessionKey);
+          const resultsWithAchievements = {
+            ...serverResponse.data,
+            newAchievements: serverResponse.newAchievements || [],
+          };
+          const updatedSession = {
+            ...(existingSession && typeof existingSession === "object" ? existingSession : {}),
+            status: "completed",
+            results: resultsWithAchievements,
+          };
+          this.saveToCache(sessionKey, updatedSession);
+        } catch (error) {
+          console.warn("Failed to cache results:", error);
         }
       }
+
+      return {
+        success: true,
+        timestamp: Date.now(),
+        serverResponse,
+      };
+    } catch (error) {
+      const message = error instanceof Error ? error.message : "Unknown error";
+      return {
+        success: false,
+        timestamp: Date.now(),
+        error: message,
+      };
     }
-
-    return results;
-  }
-
-  /**
-   * Check if there are pending sync operations
-   */
-  hasPendingSync(): boolean {
-    return this.syncQueue.length > 0 || this.isSyncing;
-  }
-
-  /**
-   * Clear all queued sync operations
-   */
-  clearQueue(): void {
-    this.syncQueue = [];
-  }
-
-  /**
-   * Get sync statistics
-   */
-  getStats(): {
-    queueLength: number;
-    isSyncing: boolean;
-    options: DatabaseSyncManagerOptions;
-  } {
-    return {
-      queueLength: this.syncQueue.length,
-      isSyncing: this.isSyncing,
-      options: { ...this.options },
-    };
   }
 }
