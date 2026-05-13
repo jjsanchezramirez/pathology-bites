@@ -10,7 +10,7 @@ import {
   quizStateReducer,
   createInitialQuizState,
   QuizStateUtils,
-  QuizAction as _QuizAction,
+  QuizAction,
 } from "../core/quiz-state-machine";
 import { QuizState, QuizQuestion, QuizAnswer } from "../../types/quiz-question";
 
@@ -50,6 +50,14 @@ export interface QuizStateMachineActions {
   getCurrentQuestion: () => QuizQuestion | null;
   getAnswerForQuestion: (questionId: string) => QuizAnswer | null;
   isQuestionAnswered: (questionId: string) => boolean;
+  /**
+   * Returns the post-dispatch state synchronously. useReducer batches updates,
+   * so reading the rendered `state` (or a ref set on render) right after a
+   * dispatch still sees the pre-dispatch value. The state machine mirrors
+   * mutating dispatches into a ref synchronously; this getter exposes that ref.
+   * Use it whenever you need "the state including the answer I just submitted".
+   */
+  getCurrentState: () => QuizState;
 
   // Sync Management
   markSyncSuccess: (timestamp?: number) => void;
@@ -94,6 +102,18 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
   // Keep a ref to the current state for navigation functions
   const stateRef = useRef(state);
   stateRef.current = state;
+
+  // Dispatches that mutate `answers` (or any state field a caller might read
+  // synchronously after the call) are mirrored into stateRef by running the
+  // pure reducer right here. useReducer batches updates; without this mirror,
+  // code that reads stateRef.current immediately after `dispatch` (e.g. the
+  // timer-expiry path in use-hybrid-quiz handleCompleteQuiz) sees the
+  // pre-dispatch state. On next render, line 96 overwrites stateRef with the
+  // real reducer output — which by then matches what we mirrored.
+  const dispatchAndMirror = useCallback((action: QuizAction) => {
+    dispatch(action);
+    stateRef.current = quizStateReducer(stateRef.current, action);
+  }, []);
 
   // Save to localStorage on state changes
   useEffect(() => {
@@ -220,7 +240,11 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
         const timeSpentMs = Date.now() - questionStartTime.current;
         const timeSpent = Math.round(timeSpentMs / 1000); // Convert milliseconds to seconds
 
-        dispatch({
+        // dispatchAndMirror, not dispatch — the timer-expiry path dispatches a
+        // pending SUBMIT_ANSWER, then runs `runCompletion` which reads stateRef
+        // before the next React render. Plain dispatch leaves stateRef stale
+        // and drops the just-committed answer from the /complete POST.
+        dispatchAndMirror({
           type: "SUBMIT_ANSWER",
           payload: {
             questionId,
@@ -229,8 +253,12 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
           },
         });
 
-        // Get the answer result for callback
-        const question = state.questions.find((q) => q.id === questionId);
+        // Get the answer result for callback. Read from stateRef (which we
+        // just mirrored to) rather than the closure-captured `state`, since
+        // questions live on initial state and that won't differ here, but
+        // staying consistent with the post-dispatch view keeps the logic
+        // predictable as more state moves through this path.
+        const question = stateRef.current.questions.find((q) => q.id === questionId);
         if (question && question.question_options) {
           const selectedOption = question.question_options.find(
             (opt) => opt.id === selectedOptionId
@@ -251,7 +279,7 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
 
         return false;
       },
-      [state.questions, onAnswerSubmitted]
+      [dispatchAndMirror, onAnswerSubmitted]
     ),
 
     navigateToQuestion: useCallback(
@@ -308,6 +336,8 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
       },
       [state]
     ),
+
+    getCurrentState: useCallback((): QuizState => stateRef.current, []),
 
     markSyncSuccess: useCallback((timestamp?: number) => {
       dispatch({ type: "SYNC_SUCCESS", payload: { timestamp: timestamp || Date.now() } });

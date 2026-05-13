@@ -377,20 +377,20 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       // a still-in-flight PATCH for the most recent answer. Server still de-dupes by
       // (session_id, question_id), so this isn't required for correctness — but it
       // avoids unnecessary duplicate INSERT attempts and clearer logs.
-      //
-      // CRITICAL: this await also lets React process the SUBMIT_ANSWER dispatch the
-      // timer-expiry path queues right before calling completeQuiz. Read stateRef
-      // AFTER the await so `latestState` reflects the just-committed pending answer.
-      // Capturing it before the await drops the answer from the /complete POST and
-      // (in the worst case where it was the only answer) leaves the session with no
-      // completed-status update, breaking the review page.
       try {
         await autoSaveManager.current?.waitForIdle(1500);
       } catch (err) {
         console.warn("[Hybrid] waitForIdle threw:", err);
       }
 
-      const latestState = stateRef.current;
+      // Read state via the state machine's synchronously-mirrored ref, not the
+      // render-time `stateRef` defined in this hook. useReducer batches updates,
+      // so the SUBMIT_ANSWER the timer-expiry path queues right before runCompletion
+      // is NOT visible in any state derived from a render — neither the closure
+      // `quizState` nor the hook-level `stateRef.current`. The state machine
+      // mirrors the dispatch into its own ref synchronously; `getCurrentState()`
+      // reads from that mirror so the just-committed answer lands in the POST.
+      const latestState = stateActions.getCurrentState();
 
       // Complete the quiz first
       stateActions.completeQuiz();
