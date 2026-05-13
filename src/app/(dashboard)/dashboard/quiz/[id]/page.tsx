@@ -88,10 +88,6 @@ export default function QuizSessionPage() {
   const [showAllAnsweredPrompt, setShowAllAnsweredPrompt] = useState(false);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [timerExpired, setTimerExpired] = useState(false);
-  // True once `completeQuiz` returns success during the timer-expired path — at
-  // that point the results endpoint is ready and the dialog's "View results"
-  // CTA can navigate without showing a half-synced /results page.
-  const [readyForResults, setReadyForResults] = useState(false);
   const [completionError, setCompletionError] = useState<string | null>(null);
   const [isCompletingQuiz, setIsCompletingQuiz] = useState(false);
   const [pendingAnswerSelection, setPendingAnswerSelection] = useState<{
@@ -279,7 +275,6 @@ export default function QuizSessionPage() {
             // redirects immediately.
             const delay = timerExpired ? 2000 : 0;
             isNavigatingAwayRef.current = true;
-            setReadyForResults(true);
             setTimeout(() => {
               window.location.href = `/dashboard/quiz/${sessionId}/results`;
             }, delay);
@@ -812,14 +807,6 @@ export default function QuizSessionPage() {
           const p = hybridActions.getProgress();
           return { correct: p.correct, total: p.total };
         })()}
-        onViewResults={
-          readyForResults
-            ? () => {
-                isNavigatingAwayRef.current = true;
-                window.location.href = `/dashboard/quiz/${sessionId}/results`;
-              }
-            : undefined
-        }
       />
 
       <QuestionFlagDialog

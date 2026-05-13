@@ -4,7 +4,6 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialog";
-import { Button } from "@/shared/components/ui/button";
 import { VisuallyHidden } from "@/shared/components/ui/visually-hidden";
 import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
 
@@ -25,19 +24,13 @@ export function preloadLottieReactChunk(): Promise<unknown> {
 
 interface TimerExpiredDialogProps {
   open: boolean;
-  onViewResults?: () => void;
   /** When false, replaces "Redirecting…" with an offline waiting message. */
   isOnline?: boolean;
   /** Final progress at the moment the timer expired. Surfaced as the score readout. */
   score?: { correct: number; total: number };
 }
 
-export function TimerExpiredDialog({
-  open,
-  isOnline = true,
-  onViewResults,
-  score,
-}: TimerExpiredDialogProps) {
+export function TimerExpiredDialog({ open, isOnline = true, score }: TimerExpiredDialogProps) {
   const [isVisible, setIsVisible] = useState(false);
   const { animationData, isLoading } = useLottieAnimation("alarm_clock");
 
@@ -112,13 +105,6 @@ export function TimerExpiredDialog({
                 : "You're offline. Your answers are saved — we'll submit and show your results as soon as you're back online."}
             </p>
           </div>
-
-          {/* Primary CTA — only when online; offline state waits for reconnect. */}
-          {isOnline && onViewResults && (
-            <Button onClick={onViewResults} className="w-full">
-              View results
-            </Button>
-          )}
         </div>
       </DialogContent>
     </Dialog>
