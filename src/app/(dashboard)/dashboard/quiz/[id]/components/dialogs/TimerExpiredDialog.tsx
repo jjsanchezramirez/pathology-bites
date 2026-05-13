@@ -94,8 +94,8 @@ export function TimerExpiredDialog({ open, isOnline = true, score }: TimerExpire
               communicate that. */}
           <div className="text-center space-y-2">
             {score && score.total > 0 && (
-              <p className="text-3xl font-bold text-foreground tabular-nums">
-                {score.correct} <span className="text-foreground/40">/</span> {score.total}
+              <p className="text-3xl font-bold text-amber-500 tabular-nums">
+                {score.correct} <span className="text-amber-500/50">/</span> {score.total}
               </p>
             )}
             <p className="text-sm text-foreground/80 max-w-xs mx-auto leading-relaxed">
