@@ -149,3 +149,18 @@ export function useNotificationSettings(options: UseUserSettingsOptions = {}) {
     invalidate,
   };
 }
+
+/**
+ * Hook for counter settings only (subset of user settings)
+ */
+export function useCounterSettings(options: UseUserSettingsOptions = {}) {
+  const { data: settings, isLoading, error, refetch, invalidate } = useUserSettings(options);
+
+  return {
+    data: settings?.counter_settings ?? null,
+    isLoading,
+    error,
+    refetch,
+    invalidate,
+  };
+}
