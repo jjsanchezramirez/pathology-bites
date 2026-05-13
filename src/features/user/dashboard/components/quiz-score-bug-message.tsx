@@ -45,8 +45,9 @@ export function QuizScoreBugMessage({ onDismiss }: QuizScoreBugMessageProps) {
         <div className="text-sm text-muted-foreground space-y-2">
           <p>
             Between April 13 and May 12, a server issue prevented quiz answers from being recorded.
-            Affected quizzes are now labeled <strong>Data Lost</strong> in your history and excluded
-            from your stats.
+            This issue has since been resolved. Affected quizzes are now labeled{" "}
+            <strong>Data Lost</strong>
+            in your history and excluded from your stats.
           </p>
           <p>— Pathology Bites Admin</p>
         </div>
