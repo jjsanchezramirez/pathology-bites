@@ -7,35 +7,33 @@ This directory contains the main application source code for Pathology Bites, or
 ```
 src/
 ├── app/                    # Next.js App Router pages and API routes
-│   ├── (admin)/           # Admin-only pages (role-protected)
-│   ├── (auth)/            # Authentication pages
-│   ├── (dashboard)/       # User dashboard pages
-│   ├── (public)/          # Public pages (no auth required)
+│   ├── (admin)/           # Admin panel (role-protected)
+│   ├── (auth)/            # Login / signup / password reset
+│   ├── (dashboard)/       # Authenticated user dashboard
+│   ├── (public)/          # Public marketing pages
 │   ├── api/               # API route handlers
-
-│   ├── layout.tsx         # Root layout component
+│   ├── debug/             # Dev-only test pages (gitignored)
+│   ├── docs/              # Embedded docs routes
+│   ├── layout.tsx         # Root layout
 │   ├── error.tsx          # Global error boundary
-│   └── not-found.tsx      # 404 page
-├── features/              # Feature-based modules
-│   ├── admin/             # Admin management features
-│   ├── auth/              # Authentication features
-│   ├── cell-quiz/         # Cell identification quiz
-│   ├── dashboard/         # Dashboard components
-│   ├── images/            # Image management
-│   ├── inquiries/         # Contact/inquiry system
-│   ├── questions/         # Question management
-│   ├── quiz/              # Quiz functionality
-│   └── users/             # User management
-├── shared/                # Shared utilities and components
-│   ├── components/        # Reusable UI components
+│   ├── not-found.tsx      # 404 page
+│   ├── robots.ts          # robots.txt generator
+│   └── sitemap.ts         # sitemap.xml generator
+├── features/              # Domain modules
+│   ├── admin/             # Admin tooling (users, content moderation)
+│   ├── auth/              # Authentication flows and session hooks
+│   ├── public/            # Public-facing tools (cell quiz, virtual slides, etc.)
+│   └── user/              # Signed-in user features (quiz, dashboard, achievements)
+├── shared/                # Reusable utilities and components
+│   ├── components/        # UI components (shadcn/ui lives here)
+│   ├── config/            # Runtime config
+│   ├── contexts/          # React contexts
 │   ├── hooks/             # Custom React hooks
-│   ├── services/          # API and external services
-│   ├── types/             # TypeScript type definitions
+│   ├── services/          # Supabase clients and external service wrappers
+│   ├── types/             # Shared TypeScript types
 │   └── utils/             # Utility functions
-├── data/                  # Static data files
 ├── styles/                # Global styles and CSS
-├── __tests__/             # Test files
-└── middleware.ts          # Next.js middleware
+└── middleware.ts          # Next.js middleware (auth/role gating)
 ```
 
 ## 🏗️ Architecture Patterns
@@ -75,7 +73,7 @@ src/
 
 ### Testing
 
-- **Jest** - Unit testing framework
+- **Vitest** - Unit testing framework
 - **Testing Library** - Component testing utilities
 - **Playwright** - End-to-end testing
 
@@ -109,11 +107,11 @@ src/
 
 ### Adding New Features
 
-1. Create feature directory in `features/`
+1. Create feature directory under `features/{admin|auth|public|user}/`
 2. Implement components, hooks, and services
-3. Add routes in appropriate `app/` subdirectory
+3. Add routes in the appropriate `app/` subdirectory
 4. Update shared types and utilities as needed
-5. Add tests in `__tests__/`
+5. Co-locate tests next to the code being tested
 
 ### Code Organization
 
@@ -128,8 +126,7 @@ src/
 
 - ESLint configuration for consistent code style
 - TypeScript strict mode for type safety
-- Prettier for code formatting
-- Husky for pre-commit hooks
+- Prettier for code formatting (enforced via the `prettier/prettier` ESLint rule)
 
 ### Performance
 

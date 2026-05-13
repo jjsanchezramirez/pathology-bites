@@ -183,31 +183,36 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 
 **Problem**: Multiple components fetching the same data simultaneously caused duplicate API calls.
 
-**Solution**: Implemented global `pendingRequests` map in `CacheService`:
+**Solution**: Implemented global `pendingRequests` map in `UnifiedCacheService`:
 
 ```typescript
-// src/shared/services/cache-service.ts
-private pendingRequests: Map<string, Promise<any>> = new Map()
+// src/shared/services/unified-cache.ts
+private pendingRequests: Map<string, Promise<unknown>> = new Map();
 
 public async dedupe<T>(
+  namespace: CacheNamespace,
   key: string,
   fetcher: () => Promise<T>,
   options: CacheOptions = {}
 ): Promise<T> {
-  const fullKey = `${options.prefix || this.defaultPrefix}:${key}`
+  const cacheKey = this.getCacheKey(namespace, key);
 
-  // If there's already a pending request, return it
-  if (this.pendingRequests.has(fullKey)) {
-    return this.pendingRequests.get(fullKey)!
+  // If there's already a pending request for this key, return it
+  if (this.pendingRequests.has(cacheKey)) {
+    return this.pendingRequests.get(cacheKey) as Promise<T>;
   }
 
-  // Create new request and clean up when done
-  const promise = fetcher().finally(() => {
-    this.pendingRequests.delete(fullKey)
-  })
+  const promise = fetcher()
+    .then((data) => {
+      this.set(namespace, key, data, options);
+      return data;
+    })
+    .finally(() => {
+      this.pendingRequests.delete(cacheKey);
+    });
 
-  this.pendingRequests.set(fullKey, promise)
-  return promise
+  this.pendingRequests.set(cacheKey, promise);
+  return promise;
 }
 ```
 
@@ -230,28 +235,25 @@ public async dedupe<T>(
 **Implementation**:
 
 ```typescript
-// src/features/quiz/hybrid/use-hybrid-quiz.ts
+// src/features/user/quiz/hybrid/use-hybrid-quiz.ts
 const initializeQuiz = useCallback(async () => {
   // Prevent duplicate initialization (React 18 Strict Mode)
-  if (isInitializingRef.current) {
-    console.log("[Hybrid] Already initializing, skipping duplicate fetch");
-    return;
-  }
+  if (isInitializingRef.current) return;
 
   try {
     isInitializingRef.current = true;
 
-    // API Call #1: Fetch quiz data
-    const { questions, config, existingAnswers } =
+    // API Call #1: Fetch quiz data (questions, config, prior answers, timer)
+    const { questions, config, status, existingAnswers, timeRemaining, totalTimeLimit } =
       await syncManager.current!.fetchQuizData(sessionId);
 
-    // Store in local state for offline access
-    stateActions.setQuestions(questions);
-    stateActions.setConfig(config);
+    // Hand everything to the state machine in one call; the machine also
+    // restores anything more recent from localStorage on top.
+    stateActions.initializeQuiz(questions, config, status, existingAnswers);
   } finally {
     isInitializingRef.current = false;
   }
-}, [sessionId]);
+}, [sessionId, stateActions]);
 ```
 
 ### Analytics Batch Updates
@@ -352,7 +354,7 @@ const { data, isLoading, error } = useCachedData<QuizResult>(
     }
 
     // Fallback to API
-    const response = await fetch(`/api/quiz/sessions/${sessionId}/results`);
+    const response = await fetch(`/api/user/quiz/sessions/${sessionId}/results`);
     return response.json();
   },
   {
