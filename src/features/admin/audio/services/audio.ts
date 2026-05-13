@@ -124,28 +124,22 @@ export async function softDeleteAudio(id: string): Promise<void> {
 }
 
 /**
- * Get audio statistics
- * Uses database aggregate function for optimal performance (~10-50ms)
+ * Get audio statistics. Fetches from the admin API route which proxies the
+ * SECURITY DEFINER get_audio_aggregate_stats RPC via a service-role client.
  */
 export async function getAudioStats(): Promise<{
   total: number;
   totalSizeBytes: number;
 }> {
-  const supabase = createClient();
-
-  // Use database function for server-side aggregation
-  const { data, error } = await supabase.rpc("get_audio_aggregate_stats").single();
-
-  if (error) {
-    console.error("Error fetching audio stats:", error);
-    throw new Error(error.message);
+  const res = await fetch("/api/admin/audio/stats");
+  if (!res.ok) {
+    const message = `Failed to fetch audio stats (${res.status})`;
+    console.error("Error fetching audio stats:", message);
+    throw new Error(message);
   }
-
-  // Type assertion for RPC function return
-  const result = data as { total_count: number; total_size_bytes: number } | null;
-
+  const result = (await res.json()) as { total: number; totalSizeBytes: number };
   return {
-    total: Number(result?.total_count) || 0,
-    totalSizeBytes: Number(result?.total_size_bytes) || 0,
+    total: Number(result.total) || 0,
+    totalSizeBytes: Number(result.totalSizeBytes) || 0,
   };
 }

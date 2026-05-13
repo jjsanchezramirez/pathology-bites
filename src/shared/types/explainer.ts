@@ -31,6 +31,7 @@ export interface HighlightRegion {
   fillColor?: string;
   opacity: number; // 0-1
   spotlight?: boolean; // if true, dims everything except this region
+  shadow?: boolean; // if true, draws a drop shadow. Default false.
 }
 
 export interface ArrowPointer {
@@ -41,6 +42,7 @@ export interface ArrowPointer {
   strokeWidth: number; // px
   opacity: number; // 0-1
   headSize?: number; // arrowhead size in px (default 12)
+  shadow?: boolean; // if true, draws a drop shadow. Default true.
   direction?:
     | "up"
     | "down"
@@ -62,7 +64,8 @@ export interface TextOverlay {
   backgroundColor?: string;
   maxWidth?: number; // percentage of viewport width
   textAlign?: "left" | "center" | "right";
-  animation?: "fade" | "slide-up" | "none";
+  animation?: "fade" | "slide-up" | "letter-by-letter" | "none";
+  shadow?: boolean; // if true, draws a text shadow. Default true.
   /** Runtime-only: computed opacity for fade animations (0–1) */
   computedOpacity?: number;
 }

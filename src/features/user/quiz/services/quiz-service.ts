@@ -1,12 +1,55 @@
 // src/features/quiz/services/quiz-service.ts
 import { createClient } from "@/shared/services/client";
-import { SupabaseClient } from "@supabase/supabase-js";
+import { createClient as createSupabaseAdminClient, SupabaseClient } from "@supabase/supabase-js";
+
+// quizService is only used from Next.js server route handlers
+// (src/app/api/user/quiz/sessions/**). The two RPCs below are SECURITY DEFINER
+// with no `authenticated` EXECUTE grant, so they must be invoked via a
+// service-role client — which we can build directly here because we're always
+// on the server.
+function makeServiceRoleClient() {
+  return createSupabaseAdminClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
+
+async function fetchQuestionSuccessRates(questionIds: string[]): Promise<Map<string, number>> {
+  const map = new Map<string, number>();
+  if (questionIds.length === 0) return map;
+  const { data, error } = await makeServiceRoleClient().rpc("get_question_success_rates", {
+    question_ids: questionIds,
+  });
+  if (error) {
+    console.error("[quiz-service] get_question_success_rates RPC error:", error);
+    return map;
+  }
+  (data as Array<{ question_id: string; success_rate: number }> | null)?.forEach((row) =>
+    map.set(row.question_id, row.success_rate)
+  );
+  return map;
+}
+
+async function fetchRecentAttempts(
+  questionIds: string[],
+  userId: string
+): Promise<RecentAttempt[]> {
+  if (questionIds.length === 0) return [];
+  const { data, error } = await makeServiceRoleClient().rpc("get_most_recent_attempts", {
+    p_user_id: userId,
+    p_question_ids: questionIds,
+  });
+  if (error) {
+    console.error("[quiz-service] get_most_recent_attempts RPC error:", error);
+    return [];
+  }
+  return (data as RecentAttempt[] | null) ?? [];
+}
 import {
   QuizSession,
   QuizAttempt,
   QuizConfig,
   QuizResult,
-  QuizStats,
   QuizCreationForm,
   QuizStatus,
   QUIZ_TIMING_CONFIG,
@@ -445,26 +488,16 @@ export class QuizService {
     // Create a set of valid question IDs (only published questions in this category/selection)
     const validQuestionIds = questions.map((q) => q.id);
 
-    // Get user's recent attempts and favorites in parallel
-    // Use SQL function for efficiency - only fetches most recent 2 attempts per question
-    const [{ data: recentAttempts, error: attemptsError }, { data: userFavorites }] =
-      await Promise.all([
-        supabase.rpc("get_most_recent_attempts", {
-          p_user_id: userId,
-          p_question_ids: validQuestionIds,
-        }),
-        supabase.from("user_favorites").select("question_id").eq("user_id", userId),
-      ]);
-
-    if (attemptsError) {
-      console.error("[Quiz Creation] Error fetching recent attempts:", attemptsError);
-      throw attemptsError;
-    }
+    // Get user's recent attempts (via API route on the browser; direct
+    // service-role RPC on the server — the underlying RPC is SECURITY DEFINER
+    // without `authenticated` EXECUTE) and favorites in parallel.
+    const [recentAttempts, { data: userFavorites }] = await Promise.all([
+      fetchRecentAttempts(validQuestionIds, userId),
+      supabase.from("user_favorites").select("question_id").eq("user_id", userId),
+    ]);
 
     // Build sets for efficient lookup
-    const attemptedQuestionIds = new Set(
-      (recentAttempts as RecentAttempt[])?.map((a) => a.question_id) || []
-    );
+    const attemptedQuestionIds = new Set(recentAttempts.map((a) => a.question_id));
     const favoriteQuestionIds = new Set(
       (userFavorites as unknown as UserFavoriteRow[])?.map((f) => f.question_id) || []
     );
@@ -474,7 +507,7 @@ export class QuizService {
     const masteredQuestionIds = new Set<string>();
 
     // Process SQL function results - already aggregated per question
-    for (const attempt of (recentAttempts as RecentAttempt[]) || []) {
+    for (const attempt of recentAttempts) {
       const { question_id, most_recent_correct, second_recent_correct, total_attempts } = attempt;
 
       // Needs Review: most recent attempt is incorrect
@@ -834,128 +867,6 @@ export class QuizService {
   }
 
   /**
-   * Get user quiz statistics for performance analytics
-   */
-  async getUserQuizStats(userId: string): Promise<QuizStats> {
-    try {
-      // Get quiz session statistics - only select needed columns (80% data reduction)
-      const { data: sessions, error: sessionsError } = await this.getSupabase()
-        .from("quiz_sessions")
-        .select("status, score, total_time_spent, completed_at")
-        .eq("user_id", userId);
-
-      if (sessionsError) throw sessionsError;
-
-      const sessionsData = sessions as unknown as Pick<
-        QuizSessionRow,
-        "status" | "score" | "total_time_spent" | "completed_at"
-      >[];
-      const totalQuizzes = sessionsData?.length || 0;
-      const completedSessions = sessionsData?.filter((s) => s.status === "completed") || [];
-      const completedCount = completedSessions.length;
-
-      // Calculate average score
-      const completedWithScores = completedSessions.filter((s) => s.score !== null);
-      const averageScore =
-        completedWithScores.length > 0
-          ? Math.round(
-              completedWithScores.reduce((sum, s) => sum + (s.score || 0), 0) /
-                completedWithScores.length
-            )
-          : 0;
-
-      // Calculate total study time
-      const totalStudyTime = completedSessions.reduce(
-        (sum, s) => sum + (s.total_time_spent || 0),
-        0
-      );
-
-      // Calculate current streak (simplified - just count recent days with completed quizzes)
-      const today = new Date();
-      const recentDays = Array.from({ length: 7 }, (_, i) => {
-        const date = new Date(today);
-        date.setDate(date.getDate() - i);
-        return date.toDateString();
-      });
-
-      let currentStreak = 0;
-      for (const day of recentDays) {
-        const hasQuizOnDay = completedSessions.some(
-          (s) => new Date(s.completed_at || "").toDateString() === day
-        );
-        if (hasQuizOnDay) {
-          currentStreak++;
-        } else {
-          break;
-        }
-      }
-
-      // Get weekly stats (last 7 days)
-      const weekAgo = new Date();
-      weekAgo.setDate(weekAgo.getDate() - 7);
-
-      const weeklyQuizzes = completedSessions.filter(
-        (s) => new Date(s.completed_at || "") >= weekAgo
-      ).length;
-
-      const weeklyStudyTime = completedSessions
-        .filter((s) => new Date(s.completed_at || "") >= weekAgo)
-        .reduce((sum, s) => sum + (s.total_time_spent || 0), 0);
-
-      // Get recent performance (last 7 days)
-      const recentPerformance: Array<{ date: string; score: number; quizCount: number }> = [];
-      const dayNames = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
-      for (let i = 6; i >= 0; i--) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toISOString().split("T")[0];
-
-        const daySessions = completedSessions.filter((s) => {
-          const sessionDate = s.completed_at?.split("T")[0];
-          return sessionDate === dateStr;
-        });
-
-        if (daySessions.length > 0) {
-          const dayScore =
-            daySessions.reduce((sum, s) => sum + (s.score || 0), 0) / daySessions.length;
-          recentPerformance.push({
-            date: dayNames[date.getDay()],
-            score: Math.round(dayScore),
-            quizCount: daySessions.length,
-          });
-        }
-      }
-
-      // Get category performance (simplified - would need to join with questions and categories)
-      // For now, return empty array - this would require more complex queries
-      const categoryPerformance: Array<{ categoryName: string; correct: number; total: number }> =
-        [];
-
-      return {
-        totalQuizzes,
-        completedQuizzes: completedCount,
-        averageScore,
-        totalTimeSpent: totalStudyTime,
-        currentStreak,
-        longestStreak: 0, // TODO: Calculate longest streak
-        favoriteCategories: [], // TODO: Implement
-        recentPerformance,
-        weeklyQuizzes,
-        weeklyStudyTime,
-        difficultyStats: {
-          easy: { attempted: 0, correct: 0, averageScore: 0 },
-          medium: { attempted: 0, correct: 0, averageScore: 0 },
-          hard: { attempted: 0, correct: 0, averageScore: 0 },
-        },
-        categoryPerformance,
-      };
-    } catch (error) {
-      console.error("Error getting user quiz stats:", error);
-      throw error;
-    }
-  }
-
-  /**
    * Get quiz results for a completed session
    */
   async getQuizResults(
@@ -1049,25 +960,13 @@ export class QuizService {
         }
       });
 
-      // Get all success rates using optimized database function
-      // This reduces data transfer by ~99% and is ~50× faster than JavaScript filtering
+      // Get all success rates via server-side endpoint. The underlying
+      // get_question_success_rates RPC is SECURITY DEFINER (must bypass RLS on
+      // quiz_attempts to aggregate across users) and is not callable by
+      // `authenticated` directly — the API route proxies it through a
+      // service-role client.
       const questionIds = session.questions.map((q) => q.id);
-      const { data: successRates } = await supabaseClient.rpc("get_question_success_rates", {
-        question_ids: questionIds,
-      });
-
-      // Convert to Map for easy lookup (O(N) instead of O(N²))
-      const successRateMap = new Map<string, number>();
-      (
-        successRates as unknown as Array<{
-          question_id: string;
-          success_rate: number;
-          total_attempts: number;
-          correct_attempts: number;
-        }>
-      )?.forEach((row) => {
-        successRateMap.set(row.question_id, row.success_rate);
-      });
+      const successRateMap = await fetchQuestionSuccessRates(questionIds);
 
       // Get detailed question information for review
       const questionDetails = session.questions.map((question) => {
@@ -1270,24 +1169,9 @@ export class QuizService {
         }
       });
 
-      // Get all success rates using optimized database function
+      // Get all success rates via server-side endpoint (see note above).
       const questionIds = session.questions.map((q) => q.id);
-      const { data: successRates } = await supabaseClient.rpc("get_question_success_rates", {
-        question_ids: questionIds,
-      });
-
-      // Convert to Map for easy lookup
-      const successRateMap = new Map<string, number>();
-      (
-        successRates as unknown as Array<{
-          question_id: string;
-          success_rate: number;
-          total_attempts: number;
-          correct_attempts: number;
-        }>
-      )?.forEach((row) => {
-        successRateMap.set(row.question_id, row.success_rate);
-      });
+      const successRateMap = await fetchQuestionSuccessRates(questionIds);
 
       // Get detailed question information for review
       const questionDetails = session.questions.map((question) => {

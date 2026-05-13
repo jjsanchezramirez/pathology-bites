@@ -114,6 +114,29 @@ function CircleProgress({
   );
 }
 
+// Map subject-list length to outer card column span (in a 3-col dashboard grid) and
+// the inner grid column count. Cards grow to fit their content: 1 col for ≤3 items,
+// 2 cols for 4-6 items, 3 cols for 7+ items. The two subject cards live in the same
+// CSS grid, so if their combined spans exceed 3 the second wraps to its own row.
+function getSubjectCardLayout(count: number): { cardCols: string; innerCols: string } {
+  if (count >= 7) {
+    return {
+      cardCols: "md:col-span-2 lg:col-span-3",
+      innerCols: "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3",
+    };
+  }
+  if (count >= 4) {
+    return {
+      cardCols: "md:col-span-2 lg:col-span-2",
+      innerCols: "grid-cols-1 sm:grid-cols-2",
+    };
+  }
+  return {
+    cardCols: "md:col-span-2 lg:col-span-1",
+    innerCols: "grid-cols-1",
+  };
+}
+
 export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
   const getRankSuffix = (rank: number) => {
     if (rank % 100 >= 11 && rank % 100 <= 13) return "th";
@@ -253,72 +276,80 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
         </Card>
       )}
 
-      {/* Subjects for Improvement */}
-      <Card className="md:col-span-2 lg:col-span-1">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <TrendingDown className="h-4 w-4 text-red-500" />
-            Needs Improvement
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-3">
-            {data.subjectsForImprovement.length > 0 ? (
-              data.subjectsForImprovement.slice(0, 3).map((subject, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{subject.name}</p>
-                    <p className="text-xs text-muted-foreground">{subject.attempts} attempts</p>
-                  </div>
-                  <Badge variant="destructive" className="text-xs">
-                    {subject.score}%
-                  </Badge>
+      {/* Subjects for Improvement — card spans 1/2/3 cols based on item count */}
+      {(() => {
+        const layout = getSubjectCardLayout(data.subjectsForImprovement.length);
+        return (
+          <Card className={layout.cardCols}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <TrendingDown className="h-4 w-4 text-red-500" />
+                Needs Improvement
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {data.subjectsForImprovement.length > 0 ? (
+                <div className={`grid ${layout.innerCols} gap-x-4 gap-y-3`}>
+                  {data.subjectsForImprovement.map((subject, index) => (
+                    <div key={index} className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{subject.name}</p>
+                        <p className="text-xs text-muted-foreground">{subject.attempts} attempts</p>
+                      </div>
+                      <Badge variant="destructive" className="text-xs shrink-0">
+                        {subject.score}%
+                      </Badge>
+                    </div>
+                  ))}
                 </div>
-              ))
-            ) : (
-              <p className="text-sm text-muted-foreground text-center py-4">
-                Great job! No subjects need improvement.
-              </p>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">
+                  Great job! No subjects need improvement.
+                </p>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })()}
 
-      {/* Mastered Subjects */}
-      <Card className="md:col-span-2 lg:col-span-2">
-        <CardHeader className="pb-2">
-          <CardTitle className="text-sm font-medium flex items-center gap-2">
-            <Target className="h-4 w-4 text-green-500" />
-            Mastered Subjects
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {data.subjectsMastered.length > 0 ? (
-              data.subjectsMastered.slice(0, 6).map((subject, index) => (
-                <div key={index} className="flex items-center justify-between">
-                  <div className="flex-1">
-                    <p className="text-sm font-medium">{subject.name}</p>
-                    <p className="text-xs text-muted-foreground">{subject.attempts} attempts</p>
-                  </div>
-                  <Badge
-                    variant="default"
-                    className="text-xs bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
-                  >
-                    {subject.score}%
-                  </Badge>
+      {/* Mastered Subjects — same dynamic sizing */}
+      {(() => {
+        const layout = getSubjectCardLayout(data.subjectsMastered.length);
+        return (
+          <Card className={layout.cardCols}>
+            <CardHeader className="pb-2">
+              <CardTitle className="text-sm font-medium flex items-center gap-2">
+                <Target className="h-4 w-4 text-green-500" />
+                Mastered Subjects
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {data.subjectsMastered.length > 0 ? (
+                <div className={`grid ${layout.innerCols} gap-x-4 gap-y-3`}>
+                  {data.subjectsMastered.map((subject, index) => (
+                    <div key={index} className="flex items-center justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium truncate">{subject.name}</p>
+                        <p className="text-xs text-muted-foreground">{subject.attempts} attempts</p>
+                      </div>
+                      <Badge
+                        variant="default"
+                        className="text-xs shrink-0 bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
+                      >
+                        {subject.score}%
+                      </Badge>
+                    </div>
+                  ))}
                 </div>
-              ))
-            ) : (
-              <div className="col-span-2">
+              ) : (
                 <p className="text-sm text-muted-foreground text-center py-4">
                   Keep practicing to master subjects!
                 </p>
-              </div>
-            )}
-          </div>
-        </CardContent>
-      </Card>
+              )}
+            </CardContent>
+          </Card>
+        );
+      })()}
     </div>
   );
 }

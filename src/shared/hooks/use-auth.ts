@@ -25,8 +25,6 @@ import type { UserRole } from "@/shared/utils/auth/auth-helpers";
 interface UseAuthOptions {
   /** Enable security validation (session monitoring) */
   enableSecurity?: boolean;
-  /** Load user data and settings (for dashboards) */
-  loadUserData?: boolean;
   /** Skip auth entirely (for public pages) */
   minimal?: boolean;
 }
@@ -40,18 +38,9 @@ interface AuthState {
   error: string | null;
 }
 
-interface UserData {
-  stats: unknown;
-  settings: unknown;
-}
-
 interface UseAuthReturn extends AuthState {
-  // User data (only if loadUserData: true)
-  userData: UserData | null;
-
   // Actions
   refreshAuth: () => Promise<void>;
-  refreshUserData: () => Promise<void>;
 
   // Hydration state
   isHydrated: boolean;
@@ -66,9 +55,8 @@ interface UseAuthReturn extends AuthState {
  *
  * @example
  * // Full mode (dashboard pages)
- * const { user, role, userData, refreshUserData } = useAuth({
+ * const { user, role } = useAuth({
  *   enableSecurity: true,
- *   loadUserData: true
  * })
  *
  * @example
@@ -76,11 +64,7 @@ interface UseAuthReturn extends AuthState {
  * const { isLoading } = useAuth({ minimal: true })
  */
 export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
-  const {
-    enableSecurity: _enableSecurity = false,
-    loadUserData = false,
-    minimal = false,
-  } = options;
+  const { enableSecurity: _enableSecurity = false, minimal = false } = options;
 
   // Check if we're on a public page
   const isPublicPage = typeof window !== "undefined" && isPublicRoute(window.location.pathname);
@@ -127,7 +111,6 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
     };
   });
 
-  const [userData, setUserData] = useState<UserData | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
 
   const mounted = useRef(true);
@@ -237,11 +220,6 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
           } else {
             clearAuthState();
           }
-
-          // Load user data if requested and authenticated
-          if (loadUserData && session?.user) {
-            await loadUserDataFromAPI();
-          }
         }
       } catch (err) {
         console.error("Auth initialization error:", err);
@@ -295,39 +273,13 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
       } else {
         clearAuthState();
       }
-
-      // Reload user data on auth change if needed
-      if (loadUserData && session?.user) {
-        loadUserDataFromAPI();
-      } else if (event === "SIGNED_OUT") {
-        setUserData(null);
-      }
     });
 
     return () => {
       mounted.current = false;
       unsubscribe();
     };
-  }, [skipAuth, loadUserData, supabase.auth]);
-
-  // Load user data from API
-  const loadUserDataFromAPI = async () => {
-    try {
-      const response = await fetch("/api/user/init");
-      if (!response.ok) {
-        throw new Error("Failed to load user data");
-      }
-      const data = await response.json();
-      if (mounted.current) {
-        setUserData({
-          stats: data.userData,
-          settings: data.settings,
-        });
-      }
-    } catch (error) {
-      console.error("Error loading user data:", error);
-    }
-  };
+  }, [skipAuth, supabase.auth]);
 
   const refreshAuth = async () => {
     try {
@@ -366,17 +318,9 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
     }
   };
 
-  const refreshUserData = async () => {
-    if (loadUserData && authState.isAuthenticated) {
-      await loadUserDataFromAPI();
-    }
-  };
-
   return {
     ...authState,
-    userData,
     refreshAuth,
-    refreshUserData,
     isHydrated,
   };
 }

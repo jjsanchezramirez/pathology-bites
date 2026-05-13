@@ -1,5 +1,4 @@
 // User statistics service
-import { createClient } from "@/shared/services/client";
 
 export interface UserStats {
   // Overall user counts
@@ -80,16 +79,21 @@ export interface UserStatsFormatted {
 }
 
 export async function getUserStats(): Promise<UserStats> {
-  const supabase = createClient();
-
   try {
-    // Use optimized database function for minimal data transfer
-    const { data, error } = await supabase.rpc("get_user_statistics");
-
-    if (error) throw error;
-    if (!data || data.length === 0) throw new Error("No user statistics found");
-
-    const stats = data[0];
+    // Fetches via the admin API route which proxies the SECURITY DEFINER
+    // get_user_statistics RPC via a service-role client and gates access on
+    // admin/creator/reviewer role at the route boundary.
+    const res = await fetch("/api/admin/users/stats");
+    if (!res.ok) {
+      throw new Error(`Failed to fetch user statistics (${res.status})`);
+    }
+    const { data: stats, error } = (await res.json()) as {
+      data?: UserStats;
+      error?: string;
+    };
+    if (error || !stats) {
+      throw new Error(error || "No user statistics found");
+    }
 
     return {
       total_users: stats.total_users,

@@ -27,7 +27,11 @@ import {
 } from "../types/quiz-question";
 import type { QuizResult } from "../types/quiz";
 import { toast } from "@/shared/utils/ui/toast";
-import { updateCacheAfterQuiz, invalidateQuizSessions } from "@/shared/utils/cache/cache-helpers";
+import {
+  updateCacheAfterQuiz,
+  invalidateQuizSessions,
+  invalidateUnifiedData,
+} from "@/shared/utils/cache/cache-helpers";
 import { calculateAchievementsToUnlock } from "@/features/user/achievements/services/achievement-checker.client";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 
@@ -509,23 +513,33 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
           console.log("[Hybrid] Quiz was already completed on server, sync treated as success");
         }
 
-        // Update cache incrementally instead of refetching everything
-        // This provides instant UI updates and saves ~50KB of data transfer
-        if (result.serverResponse?.data && result.serverResponse?.newAchievements !== undefined) {
+        // Always invalidate the quiz list cache so the completed quiz shows up.
+        invalidateQuizSessions(false);
+
+        // Update dashboard / user-data cache incrementally if we have what we need;
+        // otherwise fall back to a full refetch so stats are NEVER stale after completion.
+        const data = result.serverResponse?.data;
+        if (data) {
+          const newAchievements = (result.serverResponse?.newAchievements ??
+            []) as QuizResult["newAchievements"];
           console.log("[Hybrid] Updating cache incrementally with quiz results");
           updateCacheAfterQuiz(
-            result.serverResponse.data as QuizResult,
-            result.serverResponse.newAchievements as QuizResult["newAchievements"],
-            result.serverResponse.metadata // Pass metadata for cache validation guards
+            data as QuizResult,
+            newAchievements,
+            result.serverResponse?.metadata // Pass metadata for cache validation guards
           ).catch((err) => {
             console.warn("[Hybrid] Failed to update cache after quiz completion:", err);
-            // Non-critical error, don't throw
+            // Fall back to a full refetch so the dashboard isn't stale even on failure
+            invalidateUnifiedData(true).catch(() => {});
           });
-
-          // Also invalidate quiz sessions cache to show quiz as completed
-          invalidateQuizSessions(false);
         } else {
-          console.warn("[Hybrid] Missing quiz result data, skipping cache update");
+          console.warn(
+            "[Hybrid] Missing quiz result data in serverResponse — falling back to full refetch",
+            { serverResponseKeys: Object.keys(result.serverResponse ?? {}) }
+          );
+          invalidateUnifiedData(true).catch((err) => {
+            console.warn("[Hybrid] Fallback invalidateUnifiedData failed:", err);
+          });
         }
       } else {
         stateActions.markSyncFailed();

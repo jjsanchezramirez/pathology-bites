@@ -109,10 +109,19 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
           return;
         }
 
+        // Guard: in rare edge cases (legacy localStorage rehydration, race during init)
+        // `state.answers` may briefly be an array rather than a Map. Coerce defensively
+        // so JSON.stringify doesn't throw and lose the entire save.
+        const answersEntries =
+          state.answers instanceof Map
+            ? Array.from(state.answers.entries())
+            : Array.isArray(state.answers)
+              ? state.answers
+              : [];
         const stateToSave = {
           ...state,
           // Convert Map to array for JSON serialization
-          answers: Array.from(state.answers.entries()),
+          answers: answersEntries,
           // Timestamp so TTL cleanup (storage-cleanup.ts) can age this out as a backstop
           // if the explicit removal on completion didn't run.
           lastSaved: Date.now(),

@@ -318,12 +318,20 @@ export class DatabaseSyncManager {
     try {
       this.options.onSyncStart();
 
+      // Guard: defensively handle the case where `answers` is briefly an array (e.g. raw
+      // legacy localStorage rehydration before the state machine coerces it to a Map).
+      const answersEntries: Array<[string, QuizAnswer]> =
+        quizState.answers instanceof Map
+          ? Array.from(quizState.answers.entries())
+          : Array.isArray(quizState.answers)
+            ? (quizState.answers as Array<[string, QuizAnswer]>)
+            : [];
       const progressData: QuizProgressData = {
         sessionId: quizState.sessionId,
         currentQuestionIndex: quizState.currentQuestionIndex,
         timeRemaining,
         totalTimeSpent: quizState.totalTimeSpent,
-        answers: Array.from(quizState.answers.entries()).map(([questionId, answer]) => ({
+        answers: answersEntries.map(([questionId, answer]) => ({
           questionId,
           selectedOptionId: answer.selectedOptionId,
           isCorrect: answer.isCorrect,
@@ -387,8 +395,15 @@ export class DatabaseSyncManager {
    * Prepare quiz state data for efficient transmission
    */
   private prepareSyncData(quizState: QuizState): QuizSyncData {
-    // Convert Map to Array for JSON serialization
-    const answers = Array.from(quizState.answers.entries()).map(([questionId, answer]) => ({
+    // Convert Map to Array for JSON serialization (with the same defensive guard
+    // used elsewhere — `answers` can briefly be an array during rehydration).
+    const answersEntries: Array<[string, QuizAnswer]> =
+      quizState.answers instanceof Map
+        ? Array.from(quizState.answers.entries())
+        : Array.isArray(quizState.answers)
+          ? (quizState.answers as Array<[string, QuizAnswer]>)
+          : [];
+    const answers = answersEntries.map(([questionId, answer]) => ({
       questionId,
       selectedOptionId: answer.selectedOptionId,
       isCorrect: answer.isCorrect,
@@ -543,37 +558,6 @@ export class DatabaseSyncManager {
   }
 
   /**
-   * Compress payload for efficient transmission
-   * This helps reduce bandwidth usage on Vercel's free tier
-   */
-  private compressPayload(data: QuizSyncData): unknown {
-    // Simple compression: remove redundant data and use shorter keys
-    return {
-      sid: data.sessionId,
-      ans: data.answers.map((a) => ({
-        qid: a.questionId,
-        oid: a.selectedOptionId,
-        cor: a.isCorrect,
-        ts: a.timestamp,
-        dur: a.timeSpent,
-      })),
-      prog: {
-        a: data.progress.answered,
-        c: data.progress.correct,
-        i: data.progress.incorrect,
-        p: data.progress.percentage,
-      },
-      time: {
-        s: data.timing.startTime,
-        e: data.timing.endTime,
-        t: data.timing.totalTimeSpent,
-      },
-      stat: data.status,
-      meta: data.metadata,
-    };
-  }
-
-  /**
    * Queue data for later sync (useful for offline scenarios)
    */
   queueForSync(quizState: QuizState): void {
@@ -641,35 +625,3 @@ export class DatabaseSyncManager {
     };
   }
 }
-
-/**
- * Utility functions for sync operations
- */
-const _SyncUtils = {
-  /**
-   * Calculate payload size for monitoring
-   */
-  calculatePayloadSize: (data: QuizSyncData): number => {
-    return new Blob([JSON.stringify(data)]).size;
-  },
-
-  /**
-   * Validate sync data before transmission
-   */
-  validateSyncData: (data: QuizSyncData): boolean => {
-    return !!(
-      data.sessionId &&
-      Array.isArray(data.answers) &&
-      data.progress &&
-      data.timing &&
-      data.status
-    );
-  },
-
-  /**
-   * Create a sync summary for logging
-   */
-  createSyncSummary: (data: QuizSyncData): string => {
-    return `Session: ${data.sessionId}, Answers: ${data.answers.length}, Status: ${data.status}, Score: ${data.progress.correct}/${data.progress.answered}`;
-  },
-};

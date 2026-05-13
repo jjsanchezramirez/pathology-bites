@@ -73,6 +73,7 @@ function buildKeyframe(slide: Slide, time: number, skipElementId?: string): Keyf
           fillColor: el.fill,
           opacity,
           spotlight: false,
+          shadow: el.shadow ?? false,
         });
         break;
       }
@@ -102,6 +103,7 @@ function buildKeyframe(slide: Slide, time: number, skipElementId?: string): Keyf
           strokeWidth: el.strokeWidth,
           headSize: el.headSize,
           opacity,
+          shadow: el.shadow !== false,
         });
         break;
       }
@@ -117,7 +119,8 @@ function buildKeyframe(slide: Slide, time: number, skipElementId?: string): Keyf
           backgroundColor: el.background,
           maxWidth: r.w,
           textAlign: el.align,
-          animation: "fade",
+          animation: el.animation ?? "fade",
+          shadow: el.shadow !== false,
           computedOpacity: opacity,
         });
         break;

@@ -309,6 +309,16 @@ export function TextForm({ element, slideId }: Props<TextElement>) {
             className="h-4 w-4 rounded border-gray-300"
           />
         </Row>
+        <Row label="Animation">
+          <Select<NonNullable<TextElement["animation"]>>
+            value={element.animation ?? "fade"}
+            onChange={(v) => update({ animation: v })}
+            options={[
+              { value: "fade", label: "Fade" },
+              { value: "letter-by-letter", label: "Letter by letter" },
+            ]}
+          />
+        </Row>
       </Section>
       <RectSection rect={element.rect} onChange={(rect) => update({ rect })} />
       <WaypointsSection element={element} slideId={slideId} />
@@ -343,6 +353,9 @@ export function MultiTextForm({ elements, slideId }: { elements: TextElement[]; 
   const mixedAlign = elements.some((e) => e.align !== ref.align);
   const mixedShadow = elements.some((e) => (e.shadow !== false) !== (ref.shadow !== false));
   const mixedBg = elements.some((e) => (e.background ?? "") !== (ref.background ?? ""));
+  const mixedAnimation = elements.some(
+    (e) => (e.animation ?? "fade") !== (ref.animation ?? "fade")
+  );
 
   return (
     <Section title={`${elements.length} text elements`}>
@@ -396,6 +409,16 @@ export function MultiTextForm({ elements, slideId }: { elements: TextElement[]; 
           checked={mixedShadow ? false : ref.shadow !== false}
           onChange={(e) => applyToAll({ shadow: e.target.checked })}
           className="h-4 w-4 rounded border-gray-300"
+        />
+      </Row>
+      <Row label="Animation">
+        <Select<NonNullable<TextElement["animation"]>>
+          value={mixedAnimation ? "fade" : (ref.animation ?? "fade")}
+          onChange={(v) => applyToAll({ animation: v })}
+          options={[
+            { value: "fade", label: "Fade" },
+            { value: "letter-by-letter", label: "Letter by letter" },
+          ]}
         />
       </Row>
     </Section>

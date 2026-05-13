@@ -2,6 +2,7 @@
 // Consolidates: timeline, category-details, activity-heatmap, dashboard stats, and achievements
 
 import { NextRequest, NextResponse } from "next/server";
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 import {
@@ -386,7 +387,10 @@ export async function GET(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    // Fetch user's quiz sessions (optimized with limit)
+    // Fetch user's quiz sessions (optimized with limit).
+    // NOTE: This `sessions` array is used for heavy per-session/per-attempt calculations
+    // and is intentionally capped at the 100 most recent rows. It is NOT the source of
+    // truth for the lifetime "completed quizzes" count — see lifetimeCompletedQuizzes below.
     const sessionsResult = await supabase
       .from("quiz_sessions")
       .select(
@@ -417,6 +421,17 @@ export async function GET(request: NextRequest) {
     }
 
     const sessions = sessionsResult.data || [];
+
+    // Unfiltered lifetime count of completed quizzes — separate cheap COUNT query so the
+    // dashboard's "completed quizzes" stat isn't capped at 100 or skewed by the inner join.
+    // This is the canonical value reported as both `summary.completedQuizzes` and
+    // `achievements.stats.totalQuizzes` below; matches what getUserStats() returns server-side.
+    const { count: lifetimeCompletedQuizzesRaw } = await supabase
+      .from("quiz_sessions")
+      .select("id", { count: "exact", head: true })
+      .eq("user_id", userId)
+      .eq("status", "completed");
+    const lifetimeCompletedQuizzes = lifetimeCompletedQuizzesRaw ?? 0;
 
     // Flatten all attempts with proper typing
     interface QuizAttemptItem {
@@ -486,16 +501,29 @@ export async function GET(request: NextRequest) {
           )
         : 0;
 
-    // Calculate percentile and peer ranking using optimized database function
-    // This replaces fetching all users' scores (entire database) with a single aggregation query
-    const { data: percentileData } = await supabase.rpc("get_user_percentile", {
+    // Calculate percentile and peer ranking using optimized database function.
+    // get_user_percentile is SECURITY DEFINER by necessity — it aggregates across
+    // all users' quiz_sessions, which RLS would otherwise scope to the caller alone.
+    // It is INTENTIONALLY not callable by the `authenticated` role (no /rest/v1/rpc/
+    // exposure to signed-in users); we invoke it here through a service-role client
+    // because the parameters are already trusted (userId from middleware JWT,
+    // avgScore computed server-side from the caller's own RLS-filtered sessions).
+    const adminSupabase = createSupabaseClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!
+    );
+    const { data: percentileData } = await adminSupabase.rpc("get_user_percentile", {
       p_user_id: userId,
       p_avg_score: avgScore,
     });
 
-    const userPercentile = percentileData?.[0]?.percentile || 50;
-    const peerRank = percentileData?.[0]?.rank || 50;
-    const totalUsers = Number(percentileData?.[0]?.total_users || 100);
+    // IMPORTANT: use ?? (nullish coalescing), NOT ||. The SQL function can legitimately
+    // return percentile=0 (bottom of the pool — PERCENT_RANK starts at 0) or rank=1 with
+    // total_users=1 (you're the only user in the pool). Both cases used to silently get
+    // overwritten by the || defaults, baking nonsense values into the cache forever.
+    const userPercentile = percentileData?.[0]?.percentile ?? 50;
+    const peerRank = percentileData?.[0]?.rank ?? 50;
+    const totalUsers = Number(percentileData?.[0]?.total_users ?? 100);
 
     // Group attempts by category
     const categoryStatsMap = new Map<
@@ -562,8 +590,11 @@ export async function GET(request: NextRequest) {
       const avgTime =
         stats.total_attempts > 0 ? Math.round(stats.total_time / stats.total_attempts) : 0;
 
-      // Add to needs improvement or mastered
-      if (accuracy < 70 && stats.total_attempts >= 3) {
+      // Add to needs improvement or mastered.
+      // Minimum 10 attempts in either bucket — fewer attempts produce noisy accuracy
+      // numbers (variance dominates signal) and surface subjects the user has barely
+      // engaged with.
+      if (accuracy < 70 && stats.total_attempts >= 10) {
         needsImprovement.push({
           name: categoryMap.get(categoryId) || "Unknown",
           score: accuracy,
@@ -571,7 +602,7 @@ export async function GET(request: NextRequest) {
         });
       }
 
-      if (accuracy >= 85 && stats.total_attempts >= 5) {
+      if (accuracy >= 85 && stats.total_attempts >= 10) {
         mastered.push({
           name: categoryMap.get(categoryId) || "Unknown",
           score: accuracy,
@@ -781,7 +812,7 @@ export async function GET(request: NextRequest) {
 
     // Build UserStats object
     const achievementStats: UserStats = {
-      totalQuizzes: completedSessions.length,
+      totalQuizzes: lifetimeCompletedQuizzes,
       perfectScores,
       currentStreak,
       longestStreak,
@@ -1192,7 +1223,7 @@ export async function GET(request: NextRequest) {
       data: {
         summary: {
           overallScore,
-          completedQuizzes: completedSessions.length,
+          completedQuizzes: lifetimeCompletedQuizzes,
           totalAttempts,
           correctAttempts,
           userPercentile,
@@ -1200,8 +1231,10 @@ export async function GET(request: NextRequest) {
           totalUsers,
         },
         subjects: {
-          needsImprovement: needsImprovement.slice(0, 5),
-          mastered: mastered.slice(0, 5),
+          // Up to 12 items each — the dashboard cards grow to up to 3 inner columns
+          // based on item count, so allow enough room without truncating prematurely.
+          needsImprovement: needsImprovement.slice(0, 12),
+          mastered: mastered.slice(0, 12),
         },
         timeline,
         categories: categoryDetails,

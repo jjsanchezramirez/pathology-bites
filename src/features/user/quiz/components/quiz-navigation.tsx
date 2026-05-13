@@ -35,6 +35,9 @@ export function QuizNavigation({
   // In tutor mode: after answering, show Next/Complete button.
   // In tutor mode: before answering, the option click auto-submits, so no submit button is needed.
   // In practice mode: show Submit Answer button (two-step flow — explicit commit before advancing).
+  // The button reads "Submit & Complete Quiz" / "Complete Quiz" on the last question regardless
+  // of whether earlier questions are answered — `onSubmit`/the page-level handler will surface
+  // an UnansweredWarningDialog with the count if any are still unanswered.
   const showNextButton = mode === "tutor" && isCurrentQuestionAnswered;
   const showSubmitButton = mode !== "tutor";
 

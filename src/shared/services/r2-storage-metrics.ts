@@ -1,7 +1,19 @@
 // src/shared/services/r2-storage-metrics.ts
 
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/shared/services/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
+
+// increment_r2_metrics / decrement_r2_metrics are SECURITY DEFINER and only
+// granted to service_role. The cookie-auth client used to silently 404 here,
+// leaving r2_storage_metrics out of sync. Build a one-off service-role client
+// for these fire-and-forget metric updates.
+function createServiceRoleClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 /**
  * Increment storage metrics after successful upload
@@ -14,7 +26,7 @@ export async function incrementStorageMetrics(
   sizeBytes: number
 ): Promise<void> {
   try {
-    const supabase = await createClient();
+    const supabase = createServiceRoleClient();
 
     const { error } = await supabase.rpc("increment_r2_metrics", {
       p_bucket_name: bucketName,
@@ -44,7 +56,7 @@ export async function decrementStorageMetrics(
   sizeBytes: number
 ): Promise<void> {
   try {
-    const supabase = await createClient();
+    const supabase = createServiceRoleClient();
 
     const { error } = await supabase.rpc("decrement_r2_metrics", {
       p_bucket_name: bucketName,

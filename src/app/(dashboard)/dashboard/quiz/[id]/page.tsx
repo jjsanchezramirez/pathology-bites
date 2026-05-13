@@ -61,6 +61,7 @@ export default function QuizSessionPage() {
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
   const [showExitDialog, setShowExitDialog] = useState(false);
   const [showUnansweredWarning, setShowUnansweredWarning] = useState(false);
+  const [unansweredWarningCount, setUnansweredWarningCount] = useState(0);
   const [showAllAnsweredPrompt, setShowAllAnsweredPrompt] = useState(false);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [timerExpired, setTimerExpired] = useState(false);
@@ -153,6 +154,7 @@ export default function QuizSessionPage() {
     },
     onTimerExpired: () => {
       if (isReviewMode) return;
+      if (timerExpired) return; // Guard: the hook's setInterval can fire callback twice on tick=0 in some race conditions
       console.log("[Quiz Page] Timer expired, showing dialog");
 
       // Commit any pending answer selection (practice mode) before the hook proceeds to
@@ -171,7 +173,9 @@ export default function QuizSessionPage() {
       }
 
       setTimerExpired(true);
-      setIsCompletingQuiz(true);
+      // Note: don't set isCompletingQuiz here. handleCompleteQuiz (fired by the hook
+      // immediately after this callback) manages that flag itself, and setting it
+      // here too caused state desync that contributed to multi-redirect symptoms.
     },
     onError: (error) => {
       if (isReviewMode) return;
@@ -191,17 +195,22 @@ export default function QuizSessionPage() {
   // and only answers it later — the natural Submit button is far away. The prompt
   // fires once per transition; if the user dismisses it and re-answers, the count
   // doesn't transition again so we don't nag.
+  //
+  // Suppressed when the user is on the last question: they'll see "Submit & Complete
+  // Quiz" right in front of them, so the dialog would just be intrusive.
   const previousAnsweredCountRef = useRef<number>(hybridState.progress.current);
   useEffect(() => {
     if (isReviewMode) return;
     const prev = previousAnsweredCountRef.current;
     const now = hybridState.progress.current;
     const total = hybridState.totalQuestions;
+    const isOnLastQuestion = hybridState.currentQuestion === hybridState.totalQuestions;
 
     if (
       total > 0 &&
       now === total &&
       prev < total &&
+      !isOnLastQuestion &&
       !isCompletingQuiz &&
       hybridState.status !== "completed"
     ) {
@@ -211,6 +220,7 @@ export default function QuizSessionPage() {
   }, [
     hybridState.progress,
     hybridState.totalQuestions,
+    hybridState.currentQuestion,
     hybridState.status,
     isCompletingQuiz,
     isReviewMode,
@@ -263,9 +273,16 @@ export default function QuizSessionPage() {
     await runCompletion();
   }, [runCompletion]);
 
-  // Handle redirect after timer expiration and quiz completion
+  // Handle redirect after timer expiration and quiz completion.
+  // hasRedirectedRef guards against multiple redirects from re-firing effects: dev-mode HMR,
+  // status oscillation, and Strict Mode double-invocation can all cause the effect to run
+  // more than once. Without the guard, we end up scheduling several setTimeout → window.location.href
+  // calls and the user perceives "redirected to three pages".
+  const hasRedirectedRef = useRef(false);
   useEffect(() => {
+    if (hasRedirectedRef.current) return;
     if (timerExpired && hybridState.status === "completed") {
+      hasRedirectedRef.current = true;
       console.log("[Quiz Page] Timer expired and quiz completed, redirecting to results...");
       // Wait a moment to show the dialog before redirecting
       setTimeout(() => {
@@ -436,6 +453,20 @@ export default function QuizSessionPage() {
     }
   };
 
+  // Count of questions still unanswered AFTER the current click is accounted for.
+  // Used to populate the UnansweredWarningDialog: filters out the currently-displayed
+  // question because the practice-mode submit handler is about to commit it (and the
+  // tutor-mode "Complete Quiz" button only fires when the current question is already
+  // answered). Reads through the stateRef-backed accessors so it sees fresh data even
+  // when called immediately after a dispatch.
+  const countUnansweredExcludingCurrent = useCallback((): number => {
+    const allQuestions = hybridActions.getQuestions();
+    const currentId = hybridActions.getCurrentQuestion()?.id;
+    return allQuestions.filter(
+      (q) => q.id !== currentId && !hybridActions.getAnswerForQuestion(q.id)
+    ).length;
+  }, [hybridActions]);
+
   const handleSubmitAnswer = async () => {
     const currentQuestion = hybridActions.getCurrentQuestion();
     if (!currentQuestion) return;
@@ -465,12 +496,22 @@ export default function QuizSessionPage() {
       const isLastQuestion = hybridState.currentQuestion === hybridState.totalQuestions;
 
       if (isLastQuestion) {
-        // Give React a beat to flush the SUBMIT_ANSWER dispatch before completion reads
-        // state via stateRef. Without this 100ms the in-flight render may not have
-        // propagated the just-submitted answer to the ref.
-        setTimeout(() => {
-          void runCompletion();
-        }, 100);
+        const stillUnanswered = countUnansweredExcludingCurrent();
+        if (stillUnanswered > 0) {
+          // Show the warning dialog instead of silently completing or auto-navigating.
+          // The user has explicitly chosen to submit-and-complete from the last
+          // question; we surface the count and let them decide between "Review
+          // Questions" (stay) and "Complete Anyway" (runCompletion).
+          setUnansweredWarningCount(stillUnanswered);
+          setShowUnansweredWarning(true);
+        } else {
+          // Give React a beat to flush the SUBMIT_ANSWER dispatch before completion reads
+          // state via stateRef. Without this 100ms the in-flight render may not have
+          // propagated the just-submitted answer to the ref.
+          setTimeout(() => {
+            void runCompletion();
+          }, 100);
+        }
       } else {
         setTimeout(() => hybridActions.nextQuestion(), 100);
       }
@@ -484,6 +525,13 @@ export default function QuizSessionPage() {
         // Prevent duplicate completion calls
         if (isCompletingQuiz) {
           console.log("[Quiz Page] Already completing quiz, ignoring duplicate click");
+          return;
+        }
+
+        const stillUnanswered = countUnansweredExcludingCurrent();
+        if (stillUnanswered > 0) {
+          setUnansweredWarningCount(stillUnanswered);
+          setShowUnansweredWarning(true);
           return;
         }
 
@@ -622,14 +670,13 @@ export default function QuizSessionPage() {
       <UnansweredWarningDialog
         open={showUnansweredWarning}
         onOpenChange={setShowUnansweredWarning}
-        unansweredCount={0}
+        unansweredCount={unansweredWarningCount}
         onContinue={() => setShowUnansweredWarning(false)}
         onCompleteAnyway={async () => {
           setShowUnansweredWarning(false);
-          const result = await hybridActions.completeQuiz();
-          if (result.success) {
-            window.location.href = `/dashboard/quiz/${sessionId}/results`;
-          }
+          // Route through runCompletion so the retry/error-dialog flow applies — same
+          // path as the all-answered prompt and the inline last-question completion.
+          await runCompletion();
         }}
       />
 

@@ -8,6 +8,36 @@ import type { UserStats } from "@/features/user/achievements/services/achievemen
 import { calculateAchievementProgress } from "@/features/user/achievements/services/achievement-checker.client";
 import type { QuizResult } from "@/features/user/quiz/types/quiz";
 
+// Loose shape used to read the cached user-data payload without dragging the full
+// UnifiedData type from use-unified-data.ts (where it isn't exported). All fields are
+// optional because we always optional-chain through them.
+type UnifiedDataShape = {
+  summary?: {
+    completedQuizzes?: number;
+    totalAttempts?: number;
+    correctAttempts?: number;
+    overallScore?: number;
+  };
+  achievements?: {
+    stats?: Partial<UserStats>;
+    progress?: Array<{ id: string; isUnlocked: boolean }>;
+  };
+  dashboard?: {
+    recentQuizzes?: number;
+    studyStreak?: number;
+    recentActivity?: Array<Record<string, unknown>>;
+  };
+  heatmap?: {
+    data?: Array<{ date: string; quizzes: number; questions: number }>;
+    stats?: {
+      currentStreak?: number;
+      longestStreak?: number;
+      totalQuizzes?: number;
+      totalQuestions?: number;
+    };
+  };
+};
+
 /**
  * Invalidate unified data cache (FALLBACK ONLY)
  * Use updateCacheAfterQuiz() instead for quiz completions
@@ -99,9 +129,9 @@ export async function refreshAllCaches() {
  * - After: 1 API call, ~4 DB queries, ~5KB transfer, 0ms wait (instant from cache)
  *
  * Multi-Session Safety:
- * - Guard #1: Validates quiz count matches expectations
- * - Guard #2: Validates timestamp to detect concurrent sessions
- * - Falls back to full refetch if staleness detected
+ * - Timestamp guard: detects when another session completed a quiz between our
+ *   last cache load and now (their lastQuizTimestamp on the server beats ours).
+ * - Falls back to full refetch if staleness detected.
  *
  * @param quizResult - The quiz result from /complete endpoint
  * @param newAchievements - New achievements unlocked (from /complete response)
@@ -124,8 +154,15 @@ export async function updateCacheAfterQuiz(
   });
 
   try {
-    // Get current cached data from SWR
-    const currentCache = await mutate("user-data");
+    // Read the cached user-data WITHOUT touching SWR at all. Two earlier attempts had
+    // semantic gotchas:
+    //   - `await mutate("user-data")` triggers a revalidation; the awaited value is
+    //     the in-flight post-fetch result, which is undefined until the fetch settles.
+    //   - `mutate("user-data", undefined, { revalidate: false })` actually WRITES
+    //     undefined to the cache (the second positional arg is the new value).
+    // We mirror every SWR write into `unifiedCache` under the SWR namespace (see
+    // swr-cache-provider.tsx), so reading from there is a pure side-effect-free lookup.
+    const currentCache = unifiedCache.get<UnifiedDataShape>(CACHE_NAMESPACES.SWR.name, "user-data");
 
     if (!currentCache) {
       console.log("[Cache] ⚠️ No cache found, falling back to full refetch");
@@ -135,36 +172,18 @@ export async function updateCacheAfterQuiz(
 
     console.log("[Cache] 📦 Current cache found, performing validation");
 
-    // GUARD #1: Quiz count mismatch detection (multi-session safety)
-    if (serverMetadata?.totalQuizzes !== undefined) {
-      const expectedCount = (currentCache.summary?.completedQuizzes || 0) + 1;
-      const actualCount = serverMetadata.totalQuizzes;
+    // GUARD #1 was removed: it compared `currentCache.summary.completedQuizzes` against
+    // `serverMetadata.totalQuizzes`, but these are semantically different counts.
+    // `summary.completedQuizzes` is built by /api/user/performance-data, which caps at
+    // .limit(100) and uses an INNER JOIN on quiz_attempts — so it's windowed and excludes
+    // sessions with zero attempts (e.g. our abandoned ones). `serverMetadata.totalQuizzes`
+    // is a full unfiltered lifetime count from getUserStats(). For any user with >100
+    // quizzes (or any abandoned sessions), the values diverge permanently and Guard #1
+    // fires every completion, defeating the purpose of incremental caching.
+    // The remaining timestamp Guard is the meaningful multi-session check anyway: if
+    // another session beat us to the server, the last-quiz timestamp diverges.
 
-      if (actualCount !== expectedCount) {
-        console.warn("[Cache] ⚠️ Quiz count mismatch detected!", {
-          expected: expectedCount,
-          actual: actualCount,
-          difference: actualCount - expectedCount,
-        });
-        console.warn("[Cache] 🔄 Multi-session activity detected. Syncing from server...");
-
-        // Show user-friendly notification
-        if (typeof window !== "undefined") {
-          const toastModule = await import("@/shared/utils/ui/toast");
-          toastModule.toast.warning("Stats updated from another session. Refreshing...", {
-            duration: 3000,
-          });
-        }
-
-        // Force fresh fetch from server
-        await invalidateUnifiedData(true);
-        return;
-      }
-
-      console.log("[Cache] ✅ Guard #1 passed: Quiz count matches", { count: actualCount });
-    }
-
-    // GUARD #2: Timestamp validation (detects concurrent quiz completions)
+    // GUARD: Timestamp validation (detects concurrent quiz completions)
     if (serverMetadata?.lastQuizTimestamp) {
       const expectedTime = new Date(quizResult.completedAt).getTime();
       const serverTime = new Date(serverMetadata.lastQuizTimestamp).getTime();
@@ -192,12 +211,12 @@ export async function updateCacheAfterQuiz(
         return;
       }
 
-      console.log("[Cache] ✅ Guard #2 passed: Timestamp valid", {
+      console.log("[Cache] ✅ Timestamp guard passed", {
         difference: `${timeDiff}ms`,
       });
     }
 
-    console.log("[Cache] 🛡️ All guards passed, safe to update cache locally");
+    console.log("[Cache] 🛡️ Safe to update cache locally");
 
     // Calculate updated stats
     const isPerfectScore = quizResult.score === 100;
@@ -306,7 +325,17 @@ export async function updateCacheAfterQuiz(
 
     console.log("[Cache] ✅ Cache updated incrementally - instant UI update!");
     console.log("[Cache] 💾 Saved API call: Would have refetched ~50KB, updated ~5KB instead");
-    console.log("[Cache] 🎯 No background sync needed - local calculations are 100% accurate");
+
+    // Background revalidation: the incremental patch above can't recompute fields that
+    // depend on the rest of the user pool (percentile, peerRank, totalUsers) because we
+    // don't have other users' scores locally. Fire a fire-and-forget refetch so those
+    // fields catch up shortly after the instant UI update lands. Failures are non-fatal
+    // — the user already sees the updated cache; the refetch is only for fields we
+    // can't compute client-side.
+    void mutate("user-data").catch((err) =>
+      console.warn("[Cache] Background revalidation failed (non-fatal):", err)
+    );
+    console.log("[Cache] 🔄 Background revalidation scheduled for percentile/rank fields");
   } catch (error) {
     console.error("[Cache] ❌ Error updating cache incrementally:", error);
     console.log("[Cache] ⚠️ Falling back to full refetch");

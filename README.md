@@ -1142,7 +1142,8 @@ The application provides a comprehensive REST API organized by feature area. All
 
 **Question Metadata Management**
 
-*Categories*
+_Categories_
+
 - `GET /api/admin/questions/metadata/categories` - List all categories with hierarchy
 - `POST /api/admin/questions/metadata/categories` - Create new category
 - `PATCH /api/admin/questions/metadata/categories` - Update category details
@@ -1150,7 +1151,8 @@ The application provides a comprehensive REST API organized by feature area. All
 - `POST /api/admin/questions/metadata/categories/bulk-assign-parent` - Bulk update parent categories
 - `POST /api/admin/questions/metadata/categories/bulk-delete` - Bulk delete unused categories
 
-*Question Sets*
+_Question Sets_
+
 - `GET /api/admin/questions/metadata/sets` - List all question sets
 - `POST /api/admin/questions/metadata/sets` - Create new question set
 - `PATCH /api/admin/questions/metadata/sets` - Update question set
@@ -1158,7 +1160,8 @@ The application provides a comprehensive REST API organized by feature area. All
 - `POST /api/admin/questions/metadata/sets/merge` - Merge multiple question sets
 - `POST /api/admin/questions/metadata/sets/bulk-delete` - Bulk delete question sets
 
-*Tags*
+_Tags_
+
 - `GET /api/admin/questions/metadata/tags` - List all tags with usage counts
 - `POST /api/admin/questions/metadata/tags` - Create new tag
 - `PATCH /api/admin/questions/metadata/tags` - Update tag name/color
@@ -1432,6 +1435,7 @@ The project uses a consistent 4-tier structure across all layers:
 4. **Public** - Public access (no auth required)
 
 This structure is mirrored across:
+
 - **App Routes** (`src/app/`) - Next.js pages
 - **Features** (`src/features/`) - Feature modules
 - **API Routes** (`src/app/api/`) - API endpoints
@@ -1888,6 +1892,7 @@ RESEND_API_KEY=email_service_key
 The following redirect URLs must be configured in your Supabase project dashboard under **Authentication → URL Configuration**:
 
 #### Development URLs
+
 ```
 http://localhost:3000/api/auth/callback
 http://localhost:3000/api/auth/callback/*
@@ -1896,6 +1901,7 @@ http://localhost:3000/api/auth/confirm/*
 ```
 
 #### Production URLs (Cloudflare CDN)
+
 ```
 https://www.pathologybites.com/api/auth/callback
 https://www.pathologybites.com/api/auth/callback/*
@@ -1904,6 +1910,7 @@ https://www.pathologybites.com/api/auth/confirm/*
 ```
 
 #### Vercel Deployment URLs (Main + Preview Branches)
+
 ```
 https://pathology-bites-qbank-*.vercel.app/api/auth/callback
 https://pathology-bites-qbank-*.vercel.app/api/auth/callback/*
@@ -1912,10 +1919,12 @@ https://pathology-bites-qbank-*.vercel.app/api/auth/confirm/*
 ```
 
 **Note**: The wildcard (`*`) in Vercel URLs enables OAuth to work on both:
+
 - Production deployments: `pathology-bites-qbank-pathology-bites.vercel.app`
 - Preview deployments: `pathology-bites-qbank-[unique-hash].vercel.app`
 
 **Deployment Flow**:
+
 1. Main branch (`main`) → Production Vercel → Cloudflare CDN → `www.pathologybites.com`
 2. Feature branches → Preview Vercel → `pathology-bites-qbank-[hash].vercel.app` (testing only)
 

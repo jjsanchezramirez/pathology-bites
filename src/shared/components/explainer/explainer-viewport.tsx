@@ -140,6 +140,7 @@ function HighlightOverlay({ highlight }: { highlight: HighlightRegion }) {
         borderRadius: isCircle || isOval ? "50%" : "4px",
         border: `${highlight.borderWidth}px ${highlight.borderStyle || "solid"} ${highlight.borderColor}`,
         backgroundColor: highlight.fillColor || "transparent",
+        boxShadow: highlight.shadow ? "0 0.15cqw 0.5cqw rgba(0,0,0,0.7)" : undefined,
         opacity: highlight.opacity,
         transition: "none",
         zIndex: 10,
@@ -181,7 +182,7 @@ function ArrowOverlay({ arrow }: { arrow: ArrowPointer }) {
         strokeLinecap="round"
         markerEnd={`url(#${markerId})`}
         style={{
-          filter: "drop-shadow(0 0.5px 2px rgba(0,0,0,0.8))",
+          filter: arrow.shadow !== false ? "drop-shadow(0 0.5px 2px rgba(0,0,0,0.8))" : undefined,
         }}
       />
     </svg>
@@ -324,6 +325,7 @@ function SpotlightOverlay({
 
 function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
   const computedOpacity = overlay.computedOpacity ?? 1;
+  const isLetterByLetter = overlay.animation === "letter-by-letter";
 
   // Build transform with centering and optional slide-up animation
   const buildTransform = () => {
@@ -340,6 +342,13 @@ function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
   // We use a scaling factor to maintain readability across sizes
   const fontSizeCqw = overlay.fontSize * 1.67; // Tuned for good appearance
 
+  // Letter-by-letter: reveal characters in sync with computedOpacity (0→1 on fade-in,
+  // 1→0 on fade-out). Container stays fully opaque while any character is visible.
+  const displayText = isLetterByLetter
+    ? overlay.text.slice(0, Math.ceil(overlay.text.length * computedOpacity))
+    : overlay.text;
+  const elementOpacity = isLetterByLetter ? (computedOpacity > 0 ? 1 : 0) : computedOpacity;
+
   return (
     <div
       className="absolute pointer-events-none"
@@ -354,18 +363,19 @@ function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
         backgroundColor: overlay.backgroundColor,
         maxWidth: overlay.maxWidth ? `${overlay.maxWidth}%` : undefined,
         textAlign: overlay.textAlign || "left",
-        opacity: computedOpacity,
+        opacity: elementOpacity,
         padding: overlay.backgroundColor ? "0.4cqw 0.8cqw" : undefined,
         borderRadius: overlay.backgroundColor ? "0.4cqw" : undefined,
         whiteSpace: "pre-wrap",
         transition: "none",
-        textShadow: !overlay.backgroundColor
-          ? "0 0.1cqw 0.3cqw rgba(0,0,0,0.8), 0 0 0.8cqw rgba(0,0,0,0.5)"
-          : undefined,
+        textShadow:
+          overlay.shadow !== false && !overlay.backgroundColor
+            ? "0 0.1cqw 0.3cqw rgba(0,0,0,0.8), 0 0 0.8cqw rgba(0,0,0,0.5)"
+            : undefined,
         zIndex: 20,
       }}
     >
-      {overlay.text}
+      {displayText}
     </div>
   );
 }

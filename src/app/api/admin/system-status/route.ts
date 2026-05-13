@@ -159,11 +159,13 @@ export async function GET(request: Request) {
       supabase.from("v_storage_stats").select("*").single(),
       fetch("https://www.vercel-status.com/api/v2/status.json"),
       getCachedStorageMetrics(undefined, supabaseAdmin), // Use service role to bypass RLS
-      // Count active users based on registration date (users who joined recently)
-      // This better represents user growth than quiz activity alone
-      supabase.rpc("count_active_users_since", { since_date: twentyFourHoursAgo }),
-      supabase.rpc("count_active_users_since", { since_date: sevenDaysAgo }),
-      supabase.rpc("count_active_users_since", { since_date: thirtyDaysAgo }),
+      // Count active users based on registration date (users who joined recently).
+      // count_active_users_since is SECURITY DEFINER with no `authenticated` EXECUTE
+      // grant, so it must be invoked via the service-role client — calling it via
+      // the cookie-auth `supabase` client used to silently 404.
+      supabaseAdmin.rpc("count_active_users_since", { since_date: twentyFourHoursAgo }),
+      supabaseAdmin.rpc("count_active_users_since", { since_date: sevenDaysAgo }),
+      supabaseAdmin.rpc("count_active_users_since", { since_date: thirtyDaysAgo }),
     ]);
 
     const parallelDuration = Math.round(performance.now() - parallelStart);

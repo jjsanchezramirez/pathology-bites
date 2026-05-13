@@ -1,8 +1,6 @@
 {
   "$schema": "https://unpkg.com/knip@5/schema.json",
-  "ignore": [
-    "dev/**"
-  ],
+  "ignore": ["dev/**"],
   "ignoreDependencies": [
     "@types/diff",
     "@typescript-eslint/eslint-plugin",
@@ -43,7 +41,5 @@
     "src/features/**/utils/**/*.ts",
     "src/features/public/tools/cell-quiz/data/**/*.ts"
   ],
-  "project": [
-    "src/**/*.{ts,tsx}"
-  ]
+  "project": ["src/**/*.{ts,tsx}"]
 }

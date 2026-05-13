@@ -99,6 +99,7 @@ export interface TextElement extends ElementBase {
   color: string;
   background?: string;
   align: "left" | "center" | "right";
+  animation?: "fade" | "letter-by-letter";
   waypoints?: Waypoint[];
 }
 

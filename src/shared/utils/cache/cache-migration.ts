@@ -10,7 +10,8 @@
  * (6 months after unified cache deployment - all users will have migrated by then)
  */
 
-import { unifiedCache } from "@/shared/services/unified-cache";
+import type { ScopedMutator } from "swr";
+import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 
 /**
  * List of old cache keys that should be removed
@@ -117,10 +118,59 @@ export function cleanupOldCaches(): void {
 }
 
 /**
+ * One-shot cache invalidations keyed by a version number.
+ *
+ * Unlike OLD_CACHE_KEYS (which is run every boot, for keys that should never exist
+ * again), this is for "blow away this cache exactly once after this deploy" cases
+ * — typically when a server-side change (DB function, API logic) makes the cached
+ * response shape or values no longer valid, but the SWR cache won't naturally
+ * revalidate within its deduping window.
+ *
+ * Bump CACHE_MIGRATION_VERSION when you add a new migration step below. Each user
+ * runs migrations once; subsequent boots short-circuit on the flag.
+ */
+const CACHE_MIGRATION_VERSION = "v3";
+const CACHE_MIGRATION_FLAG_KEY = "pathology-bites-cache-migrations-version";
+
+function runOneShotMigrations(mutate?: ScopedMutator): void {
+  if (typeof window === "undefined") return;
+  try {
+    const completed = localStorage.getItem(CACHE_MIGRATION_FLAG_KEY);
+    if (completed === CACHE_MIGRATION_VERSION) return;
+
+    // v2/v3: invalidate user-data so existing users pick up correct percentile/peerRank
+    // values. v2 was the threshold + pool semantics rewrite of get_user_percentile.
+    // v3 follows the GRANT EXECUTE fix on get_user_percentile to authenticated — without
+    // that grant the RPC silently returned nothing and the API baked the {50, 50, 100}
+    // fallback values into the cache for every user.
+    //
+    // Three layers need to be cleared because the app uses a custom SWR cache provider:
+    //   1. localStorage (persistence)
+    //   2. unifiedCache memory (mirror layer SWR hydrates from on init)
+    //   3. The provider-scoped SWR runtime Map (via the `mutate` passed in from
+    //      useSWRConfig()). The GLOBAL `mutate` imported from "swr" targets SWR's
+    //      default cache, not the provider-scoped instance — calling it here is a
+    //      silent no-op against the cache `useUnifiedData` actually reads from.
+    localStorage.removeItem("pathology-bites-swr-user-data");
+    unifiedCache.delete(CACHE_NAMESPACES.SWR.name, "user-data");
+    if (mutate) {
+      mutate("user-data", undefined, { revalidate: true });
+    }
+    console.log(
+      `[Cache Migration] ${CACHE_MIGRATION_VERSION}: cleared stale pathology-bites-swr-user-data (localStorage, unifiedCache, SWR runtime)`
+    );
+
+    localStorage.setItem(CACHE_MIGRATION_FLAG_KEY, CACHE_MIGRATION_VERSION);
+  } catch (err) {
+    console.warn("[Cache Migration] One-shot migrations failed:", err);
+  }
+}
+
+/**
  * Run full cache cleanup
  * Call this on app initialization
  */
-export function initializeCacheSystem(): void {
+export function initializeCacheSystem(mutate?: ScopedMutator): void {
   if (typeof window === "undefined") return;
 
   console.log("[Cache System] 🚀 Initializing cache system...");
@@ -128,7 +178,11 @@ export function initializeCacheSystem(): void {
   // Step 1: Clean up old/corrupted caches
   cleanupOldCaches();
 
-  // Step 2: Run unified cache cleanup
+  // Step 2: Run version-gated one-shot invalidations (uses provider-scoped mutate
+  // so SWR's runtime cache gets cleared too — not just the persistence layers).
+  runOneShotMigrations(mutate);
+
+  // Step 3: Run unified cache cleanup
   unifiedCache.cleanup();
 
   console.log("[Cache System] ✅ Cache system initialized");

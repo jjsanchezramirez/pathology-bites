@@ -5,12 +5,14 @@ A comprehensive React component system for displaying and interacting with Anki 
 ## Features
 
 ### Card Types Supported
+
 - **Basic Cards**: Traditional front/back flashcards
 - **Cloze Deletion Cards**: Cards with fill-in-the-blank style questions
 - **Image Cards**: Cards with embedded images
 - **Rich HTML Content**: Full HTML support for complex formatting
 
 ### Interactive Features
+
 - Show/hide answers with smooth transitions
 - Navigate between cards in a deck
 - Cloze navigation for multi-cloze cards
@@ -20,10 +22,11 @@ A comprehensive React component system for displaying and interacting with Anki 
 ## Components
 
 ### AnkiCardViewer
+
 Displays a single Anki card with full interactivity.
 
 ```tsx
-import { AnkiCardViewer } from '@/features/anki'
+import { AnkiCardViewer } from "@/features/anki";
 
 <AnkiCardViewer
   card={ankiCard}
@@ -31,10 +34,11 @@ import { AnkiCardViewer } from '@/features/anki'
   onAnswerToggle={() => setShowAnswer(!showAnswer)}
   onNext={() => goToNextCard()}
   onPrevious={() => goToPreviousCard()}
-/>
+/>;
 ```
 
 **Props:**
+
 - `card: AnkiCard` - The card data to display
 - `showAnswer?: boolean` - Whether to show the answer (controlled)
 - `onAnswerToggle?: () => void` - Callback when answer visibility toggles
@@ -43,20 +47,22 @@ import { AnkiCardViewer } from '@/features/anki'
 - `className?: string` - Additional CSS classes
 
 ### AnkiDeckViewer
+
 Displays an entire deck of cards with navigation and study features.
 
 ```tsx
-import { AnkiDeckViewer } from '@/features/anki'
+import { AnkiDeckViewer } from "@/features/anki";
 
 <AnkiDeckViewer
   deck={ankiDeck}
   currentCardIndex={0}
   onCardChange={(index) => setCurrentCard(index)}
   showAnswers={false}
-/>
+/>;
 ```
 
 **Props:**
+
 - `deck: AnkiDeck` - The deck containing multiple cards
 - `currentCardIndex?: number` - Current card index (controlled)
 - `onCardChange?: (index: number) => void` - Callback when card changes
@@ -68,16 +74,19 @@ import { AnkiDeckViewer } from '@/features/anki'
 The system fully supports Anki's cloze deletion format:
 
 ### Basic Cloze
+
 ```
 The {{c1::heart}} pumps blood through the body.
 ```
 
 ### Cloze with Hints
+
 ```
 The {{c1::mitochondria::powerhouse}} of the cell produces ATP.
 ```
 
 ### Multiple Clozes
+
 ```
 {{c1::DNA}} is transcribed to {{c2::RNA}}, which is translated to {{c3::proteins}}.
 ```
@@ -85,65 +94,68 @@ The {{c1::mitochondria::powerhouse}} of the cell produces ATP.
 ### Cloze Processing Utilities
 
 ```tsx
-import { 
-  processClozeText, 
-  hasClozes, 
+import {
+  processClozeText,
+  hasClozes,
   getClozeIndices,
   generateClozeQuestion,
-  generateClozeAnswer
-} from '@/features/anki/utils/cloze-processor'
+  generateClozeAnswer,
+} from "@/features/anki/utils/cloze-processor";
 
 // Check if text contains clozes
-const hasClozeDeletions = hasClozes(text)
+const hasClozeDeletions = hasClozes(text);
 
 // Get all cloze indices
-const indices = getClozeIndices(text) // [1, 2, 3]
+const indices = getClozeIndices(text); // [1, 2, 3]
 
 // Generate question for specific cloze
-const question = generateClozeQuestion(text, 1) // Shows cloze 1 as blank
+const question = generateClozeQuestion(text, 1); // Shows cloze 1 as blank
 
 // Generate answer showing all clozes
-const answer = generateClozeAnswer(text) // Shows all content
+const answer = generateClozeAnswer(text); // Shows all content
 ```
 
 ## Data Types
 
 ### AnkiCard
+
 ```tsx
 interface AnkiCard {
-  id: string
-  cardId: number
-  noteId: number
-  deckName: string
-  modelName: string
-  fields: Record<string, string>
-  tags: string[]
-  question: string
-  answer: string
-  css: string
-  interval: number
-  due: number
-  factor: number
-  reviews: number
-  lapses: number
+  id: string;
+  cardId: number;
+  noteId: number;
+  deckName: string;
+  modelName: string;
+  fields: Record<string, string>;
+  tags: string[];
+  question: string;
+  answer: string;
+  css: string;
+  interval: number;
+  due: number;
+  factor: number;
+  reviews: number;
+  lapses: number;
   // ... additional Anki metadata
 }
 ```
 
 ### AnkiDeck
+
 ```tsx
 interface AnkiDeck {
-  id: string
-  name: string
-  cards: AnkiCard[]
-  description?: string
-  options?: AnkiDeckOptions
+  id: string;
+  name: string;
+  cards: AnkiCard[];
+  description?: string;
+  options?: AnkiDeckOptions;
 }
 ```
 
 ## Usage Examples
 
 ### Basic Card Example
+
 ```tsx
 const basicCard: AnkiCard = {
   id: '1',
@@ -161,6 +173,7 @@ const basicCard: AnkiCard = {
 ```
 
 ### Cloze Card Example
+
 ```tsx
 const clozeCard: AnkiCard = {
   id: '2',
@@ -178,6 +191,7 @@ const clozeCard: AnkiCard = {
 ```
 
 ### Deck Example
+
 ```tsx
 const deck: AnkiDeck = {
   id: 'deck-1',
@@ -192,6 +206,7 @@ const deck: AnkiDeck = {
 ## Styling
 
 The components use Tailwind CSS and follow the project's design system:
+
 - Cards use the standard `Card` component styling
 - Buttons follow the project's button variants
 - Colors and spacing match the overall theme
@@ -200,26 +215,29 @@ The components use Tailwind CSS and follow the project's design system:
 ## Integration
 
 The Anki viewer integrates seamlessly with the existing codebase:
+
 - Uses the same UI components (`Card`, `Button`, `Badge`, etc.)
 - Follows the project's TypeScript patterns
 - Implements the feature-first organization structure
 - Uses Next.js Image component with `unoptimized={true}` for images
 
 ### AnkomaViewer
+
 Automatically loads and displays the complete Ankoma pathology deck with section navigation.
 
 ```tsx
-import { AnkomaViewer } from '@/features/anki'
+import { AnkomaViewer } from "@/features/anki";
 
 <AnkomaViewer
   autoLoad={true}
   defaultSection="ankoma---ap::basic-principles"
-  onSectionChange={(section) => console.log('Selected:', section.name)}
-  onError={(error) => console.error('Load error:', error)}
-/>
+  onSectionChange={(section) => console.log("Selected:", section.name)}
+  onError={(error) => console.error("Load error:", error)}
+/>;
 ```
 
 **Props:**
+
 - `autoLoad?: boolean` - Whether to automatically load ankoma.json on mount (default: true)
 - `defaultSection?: string` - Default section ID to select when data loads
 - `onSectionChange?: (section: AnkomaSection) => void` - Callback when section changes
@@ -227,6 +245,7 @@ import { AnkomaViewer } from '@/features/anki'
 - `className?: string` - Additional CSS classes
 
 **Features:**
+
 - **Auto-loading**: Automatically fetches and parses `ankoma.json` from R2 storage
 - **Section Navigation**: Hierarchical dropdown with search for AP/CP sections and subsections
 - **Card Browsing**: Navigate through cards within selected sections with "Card X of Y" counter

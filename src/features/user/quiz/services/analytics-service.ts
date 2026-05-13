@@ -1,7 +1,20 @@
 // Quiz Analytics Service
 // Handles batch analytics updates to reduce database load and improve reliability
 
+import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/shared/services/server";
+
+// Service-role client for invoking update_question_analytics_batch.
+// That RPC is SECURITY DEFINER (it writes to question_analytics, bypassing
+// RLS), and it is INTENTIONALLY not granted EXECUTE to `authenticated` — so
+// signed-in users cannot reach it via /rest/v1/rpc/. We call it here from the
+// server only, with a question-id list derived from the caller's own session.
+function createServiceRoleClient() {
+  return createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
+  );
+}
 
 // Database row interfaces
 interface QuizAttemptRow {
@@ -64,8 +77,10 @@ export class QuizAnalyticsService {
 
       console.log("[Analytics] Updating analytics for questions:", questionIdsToUpdate);
 
-      // Call database function to update analytics (bypasses RLS with SECURITY DEFINER)
-      const { error: updateError } = await supabase.rpc("update_question_analytics_batch", {
+      // Call database function to update analytics (bypasses RLS with SECURITY DEFINER).
+      // Use service-role client because EXECUTE is revoked from `authenticated`.
+      const adminSupabase = createServiceRoleClient();
+      const { error: updateError } = await adminSupabase.rpc("update_question_analytics_batch", {
         question_ids: questionIdsToUpdate,
       });
 
@@ -88,10 +103,10 @@ export class QuizAnalyticsService {
     try {
       console.log("[Analytics] Updating analytics for multiple questions:", questionIds.length);
 
-      const supabase = await this.getSupabase();
-
-      // Call database function to update analytics (bypasses RLS with SECURITY DEFINER)
-      const { error: updateError } = await supabase.rpc("update_question_analytics_batch", {
+      // Call database function to update analytics (bypasses RLS with SECURITY DEFINER).
+      // Use service-role client because EXECUTE is revoked from `authenticated`.
+      const adminSupabase = createServiceRoleClient();
+      const { error: updateError } = await adminSupabase.rpc("update_question_analytics_batch", {
         question_ids: questionIds,
       });
 
