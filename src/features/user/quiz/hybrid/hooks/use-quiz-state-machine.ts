@@ -110,6 +110,22 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
   // timer-expiry path in use-hybrid-quiz handleCompleteQuiz) sees the
   // pre-dispatch state. On next render, line 96 overwrites stateRef with the
   // real reducer output — which by then matches what we mirrored.
+  //
+  // FUTURE — proper fix when there's a reason to revisit:
+  // Replace the `useReducer` + ref-mirror combo with an external store read
+  // via `useSyncExternalStore`. A plain JS module/class holds the state,
+  // exposes `getState() / subscribe(listener) / dispatch(action)`, with
+  // dispatch running the pure reducer synchronously and notifying subscribers.
+  // Components read via `useSyncExternalStore(store.subscribe, store.getState)`.
+  // The mirror, `getCurrentState()` action, and the `stateRef = useRef(state);
+  // stateRef.current = state;` lines in both this file and use-hybrid-quiz all
+  // become unnecessary because reads are already synchronous against the store.
+  // Estimated ~half-day of work plus careful testing — the quiz hook has a
+  // lot of subtle behavior layered on top of the current state-management
+  // pattern (re-entry guards, autosave race fixes, StrictMode double-init
+  // handling) that must be preserved across the rewrite. Don't do it without
+  // an independent trigger (perf issue, second similar bug, etc.); the mirror
+  // is ugly but localized.
   const dispatchAndMirror = useCallback((action: QuizAction) => {
     dispatch(action);
     stateRef.current = quizStateReducer(stateRef.current, action);
