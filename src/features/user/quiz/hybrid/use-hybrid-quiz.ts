@@ -373,22 +373,24 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
       hasCompletedRef.current = true;
 
-      // Read the LATEST quiz state via ref. The `quizState` captured in this useCallback's
-      // closure can be stale when called via setTimeout after a recent submitAnswer dispatch:
-      // the reducer has updated state but React hasn't re-rendered the hook yet, so the
-      // closure-captured `quizState` is one render behind. Without this, the just-submitted
-      // last answer in practice mode never lands in the /complete POST.
-      const latestState = stateRef.current;
-
       // Wait for any in-flight autosave to settle so the /complete POST doesn't race
       // a still-in-flight PATCH for the most recent answer. Server still de-dupes by
       // (session_id, question_id), so this isn't required for correctness — but it
       // avoids unnecessary duplicate INSERT attempts and clearer logs.
+      //
+      // CRITICAL: this await also lets React process the SUBMIT_ANSWER dispatch the
+      // timer-expiry path queues right before calling completeQuiz. Read stateRef
+      // AFTER the await so `latestState` reflects the just-committed pending answer.
+      // Capturing it before the await drops the answer from the /complete POST and
+      // (in the worst case where it was the only answer) leaves the session with no
+      // completed-status update, breaking the review page.
       try {
         await autoSaveManager.current?.waitForIdle(1500);
       } catch (err) {
         console.warn("[Hybrid] waitForIdle threw:", err);
       }
+
+      const latestState = stateRef.current;
 
       // Complete the quiz first
       stateActions.completeQuiz();
