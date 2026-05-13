@@ -60,13 +60,15 @@ export function TimerExpiredDialog({ open, isOnline = true, score }: TimerExpire
 
         <div
           className={`
-            flex flex-col items-center gap-8
+            flex flex-col items-center gap-4
             transition-all duration-500 ease-out
             ${isVisible ? "opacity-100 scale-100" : "opacity-0 scale-105"}
           `}
         >
-          {/* Title */}
-          <h2 className="text-2xl font-bold text-foreground text-center">Time&apos;s Up!</h2>
+          {/* Title. Explicit text-white (not theme `text-foreground`) because the
+              dialog sits over a dark scrim — theme foreground reads as dark text
+              in light mode, which is unreadable on the overlay. */}
+          <h2 className="text-2xl font-bold text-white text-center">Time&apos;s Up!</h2>
 
           {/* Lottie animation with amber radial spotlight behind it */}
           <div className="relative w-48 h-48">
@@ -76,7 +78,7 @@ export function TimerExpiredDialog({ open, isOnline = true, score }: TimerExpire
             />
             <div className="relative w-full h-full">
               {isLoading || !animationData ? (
-                <div className="w-full h-full bg-muted/20 rounded-full animate-pulse" />
+                <div className="w-full h-full bg-white/10 rounded-full animate-pulse" />
               ) : (
                 <Lottie
                   animationData={animationData}
@@ -89,17 +91,19 @@ export function TimerExpiredDialog({ open, isOnline = true, score }: TimerExpire
           </div>
 
           {/* Score + accent + description block, mirroring the trophy modal's
-              title / category / description triple. */}
-          <div className="text-center space-y-2">
+              title / category / description triple. All colors are explicit
+              white-on-dark variants so the contrast holds against the modal
+              scrim in both light and dark themes. */}
+          <div className="text-center space-y-1.5">
             {score && score.total > 0 && (
-              <p className="text-3xl font-bold text-foreground tabular-nums">
-                {score.correct} <span className="text-muted-foreground">/</span> {score.total}
+              <p className="text-3xl font-bold text-white tabular-nums">
+                {score.correct} <span className="text-white/40">/</span> {score.total}
               </p>
             )}
-            <p className="text-xs font-semibold uppercase tracking-wider text-amber-500">
+            <p className="text-xs font-semibold uppercase tracking-wider text-amber-400">
               Time Expired
             </p>
-            <p className="text-sm text-muted-foreground max-w-sm">
+            <p className="text-sm text-white/80 max-w-sm">
               {isOnline
                 ? "Your answers are in. Pulling up your results…"
                 : "You're offline. Your answers are saved — we'll submit and show your results as soon as you're back online."}
