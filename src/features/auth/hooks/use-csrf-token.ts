@@ -54,7 +54,17 @@ export function useCSRFToken(): CSRFTokenHook {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : "Failed to get CSRF token";
       setError(errorMessage);
-      console.error("CSRF token fetch error:", err);
+      // Suppress console noise for connectivity-level fetch failures. The
+      // browser throws TypeError "Failed to fetch" when offline / DNS down /
+      // connection reset; callers (e.g. the quiz's offline-wait path) handle
+      // those by registering an `online` listener and retrying, so logging
+      // here just makes it look like something is broken when nothing is.
+      // Real errors (HTTP 4xx/5xx, invalid response shape) still get logged.
+      const isNetworkError =
+        err instanceof TypeError || /failed to fetch|networkerror|load failed/i.test(errorMessage);
+      if (!isNetworkError) {
+        console.error("CSRF token fetch error:", err);
+      }
       throw new Error(errorMessage);
     } finally {
       setIsLoading(false);
