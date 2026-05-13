@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialog";
+import { Button } from "@/shared/components/ui/button";
 import { VisuallyHidden } from "@/shared/components/ui/visually-hidden";
 import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
 
@@ -27,9 +28,16 @@ interface TimerExpiredDialogProps {
   onViewResults?: () => void;
   /** When false, replaces "Redirecting…" with an offline waiting message. */
   isOnline?: boolean;
+  /** Final progress at the moment the timer expired. Surfaced as the score readout. */
+  score?: { correct: number; total: number };
 }
 
-export function TimerExpiredDialog({ open, isOnline = true }: TimerExpiredDialogProps) {
+export function TimerExpiredDialog({
+  open,
+  isOnline = true,
+  onViewResults,
+  score,
+}: TimerExpiredDialogProps) {
   const [isVisible, setIsVisible] = useState(false);
   const { animationData, isLoading } = useLottieAnimation("alarm_clock");
 
@@ -61,34 +69,56 @@ export function TimerExpiredDialog({ open, isOnline = true }: TimerExpiredDialog
           className={`
             flex flex-col items-center gap-8
             transition-all duration-500 ease-out
-            ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
+            ${isVisible ? "opacity-100 scale-100" : "opacity-0 scale-105"}
           `}
         >
           {/* Title */}
           <h2 className="text-2xl font-bold text-foreground text-center">Time&apos;s Up!</h2>
 
-          {/* Lottie animation */}
-          <div className="w-48 h-48">
-            {isLoading || !animationData ? (
-              <div className="w-full h-full bg-muted/20 rounded-full animate-pulse" />
-            ) : (
-              <Lottie
-                animationData={animationData}
-                loop={true}
-                autoplay={true}
-                style={{ width: "100%", height: "100%" }}
-              />
-            )}
+          {/* Lottie animation with amber radial spotlight behind it */}
+          <div className="relative w-48 h-48">
+            <div
+              aria-hidden
+              className="pointer-events-none absolute inset-0 -m-10 rounded-full bg-amber-500/20 blur-3xl"
+            />
+            <div className="relative w-full h-full">
+              {isLoading || !animationData ? (
+                <div className="w-full h-full bg-muted/20 rounded-full animate-pulse" />
+              ) : (
+                <Lottie
+                  animationData={animationData}
+                  loop={true}
+                  autoplay={true}
+                  style={{ width: "100%", height: "100%" }}
+                />
+              )}
+            </div>
           </div>
 
-          {/* Description */}
+          {/* Score + accent + description block, mirroring the trophy modal's
+              title / category / description triple. */}
           <div className="text-center space-y-2">
+            {score && score.total > 0 && (
+              <p className="text-3xl font-bold text-foreground tabular-nums">
+                {score.correct} <span className="text-muted-foreground">/</span> {score.total}
+              </p>
+            )}
+            <p className="text-xs font-semibold uppercase tracking-wider text-amber-500">
+              Time Expired
+            </p>
             <p className="text-sm text-muted-foreground max-w-sm">
               {isOnline
-                ? "Redirecting to your quiz results..."
+                ? "Your answers are in. Pulling up your results…"
                 : "You're offline. Your answers are saved — we'll submit and show your results as soon as you're back online."}
             </p>
           </div>
+
+          {/* Primary CTA — only when online; offline state waits for reconnect. */}
+          {isOnline && onViewResults && (
+            <Button onClick={onViewResults} className="w-full">
+              View results
+            </Button>
+          )}
         </div>
       </DialogContent>
     </Dialog>
