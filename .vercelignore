@@ -37,3 +37,11 @@ temp
 
 # FFmpeg WASM files (large binaries, downloaded via postinstall)
 public/ffmpeg/
+
+# Caveman (defensive — installer may regenerate these)
+.agents
+AGENTS.md
+.cursor
+.windsurf
+.clinerules
+.opencode

@@ -70,3 +70,11 @@ src/app/api/docs/
 
 # FFmpeg WASM files (download via npm postinstall)
 public/ffmpeg/
+
+# Caveman (defensive — installer may regenerate these)
+.agents/
+AGENTS.md
+.cursor/
+.windsurf/
+.clinerules/
+.opencode/

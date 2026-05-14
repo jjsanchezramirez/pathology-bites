@@ -31,3 +31,11 @@ src/app/api/test
 
 # Lock files
 package-lock.json
+
+# Caveman (defensive — installer may regenerate these)
+.agents
+AGENTS.md
+.cursor
+.windsurf
+.clinerules
+.opencode
