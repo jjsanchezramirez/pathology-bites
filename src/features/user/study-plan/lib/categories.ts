@@ -12,7 +12,7 @@ export const CATEGORIES: Category[] = [
   { id: "cp-hematopathology", name: "Hematopathology", parent: "CP" },
   { id: "cp-immunology", name: "Immunology", parent: "CP" },
   { id: "cp-informatics", name: "Informatics", parent: "CP" },
-  { id: "cp-lab-management", name: "Laboratory Management & Medical Directorship", parent: "CP" },
+  { id: "cp-lab-management", name: "Lab Management & Medical Directorship", parent: "CP" },
   { id: "cp-microbiology", name: "Medical Microbiology", parent: "CP" },
   { id: "cp-molecular", name: "Molecular Pathology & Cytogenetics", parent: "CP" },
   // Anatomic Pathology

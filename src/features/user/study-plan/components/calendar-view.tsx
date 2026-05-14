@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { ScheduleTask, StudyConfig, StudyResource } from "../lib/types";
+import { buildCalendar, CalendarDay } from "../lib/scheduler";
 import { useSwipe } from "../hooks/use-swipe";
 
 interface CalendarViewProps {
@@ -65,7 +66,19 @@ export function CalendarView({
     [config]
   );
 
-  const getTasksForDate = (date: string) => schedule.filter((t) => t.date === date);
+  // Catch-up "rest" days are derived from config (the scheduler's calendar walk)
+  // rather than stored on the schedule.
+  const restDates = useMemo(() => {
+    if (!config) return new Set<string>();
+    const out = new Set<string>();
+    for (const d of buildCalendar(config) as CalendarDay[]) {
+      if (d.type === "rest") out.add(d.date);
+    }
+    return out;
+  }, [config]);
+
+  const getTasksForDate = (date: string) =>
+    schedule.filter((t) => t.date === date && t.task_type === "task");
 
   const isPreExamDay = (dateStr: string): boolean => {
     const d = new Date(dateStr + "T12:00:00");
@@ -132,10 +145,10 @@ export function CalendarView({
             const isWeekend = dow === 0 || dow === 6;
             const exam = config?.exam_dates?.find((e) => e.date === dateStr);
             const dayOffStatus = config?.days_off?.[dateStr];
-            const isRest = dayTasks.some((t) => t.task_type === "rest");
-            const preExam = isRest && isPreExamDay(dateStr);
+            const isRest = restDates.has(dateStr) || isPreExamDay(dateStr);
+            const preExam = isPreExamDay(dateStr);
 
-            const taskItems = dayTasks.filter((t) => t.task_type === "task");
+            const taskItems = dayTasks;
             const totalMin = taskItems.reduce((s, t) => s + t.minutes, 0);
             const resourceNames = [...new Set(taskItems.map((t) => t.resource_name))];
             const isDayComplete =

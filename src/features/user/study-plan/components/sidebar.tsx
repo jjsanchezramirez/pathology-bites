@@ -1,5 +1,7 @@
 "use client";
 
+import { useEffect, useState } from "react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import { ScheduleTask, StudyConfig } from "../lib/types";
 import { PHASE_PALETTE } from "../lib/color-utils";
 
@@ -18,10 +20,20 @@ function MiniCalendar({
 }) {
   const today = new Date().toISOString().split("T")[0];
   const dateObj = new Date(currentDate + "T12:00:00");
-  const year = dateObj.getFullYear();
-  const month = dateObj.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
+
+  // Local month state so the arrows can page through months without
+  // moving the selected day. Snaps back to follow currentDate when it
+  // changes externally (date strip, calendar view, etc.).
+  const [viewYear, setViewYear] = useState(dateObj.getFullYear());
+  const [viewMonth, setViewMonth] = useState(dateObj.getMonth());
+  useEffect(() => {
+    const d = new Date(currentDate + "T12:00:00");
+    setViewYear(d.getFullYear());
+    setViewMonth(d.getMonth());
+  }, [currentDate]);
+
+  const firstDay = new Date(viewYear, viewMonth, 1);
+  const lastDay = new Date(viewYear, viewMonth + 1, 0);
   const startDate = new Date(firstDay);
   startDate.setDate(startDate.getDate() - firstDay.getDay());
 
@@ -35,10 +47,32 @@ function MiniCalendar({
   const taskDates = new Set(schedule.filter((t) => t.task_type === "task").map((t) => t.date));
   const examDates = new Set((config?.exam_dates || []).map((e) => e.date));
 
+  const navMonth = (offset: number) => {
+    const d = new Date(viewYear, viewMonth + offset, 1);
+    setViewYear(d.getFullYear());
+    setViewMonth(d.getMonth());
+  };
+
   return (
     <div>
-      <div className="mb-2 text-xs font-semibold text-foreground">
-        {dateObj.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+      <div className="mb-2 flex items-center justify-between">
+        <button
+          onClick={() => navMonth(-1)}
+          className="flex size-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          aria-label="Previous month"
+        >
+          <ChevronLeft size={14} />
+        </button>
+        <div className="text-xs font-semibold text-foreground">
+          {firstDay.toLocaleDateString("en-US", { month: "long", year: "numeric" })}
+        </div>
+        <button
+          onClick={() => navMonth(1)}
+          className="flex size-5 items-center justify-center rounded text-muted-foreground transition-colors hover:bg-muted hover:text-foreground"
+          aria-label="Next month"
+        >
+          <ChevronRight size={14} />
+        </button>
       </div>
       <div className="grid grid-cols-7 gap-0">
         {["S", "M", "T", "W", "T", "F", "S"].map((d, i) => (
@@ -50,7 +84,7 @@ function MiniCalendar({
           const dateStr = date.toISOString().split("T")[0];
           const isToday = dateStr === today;
           const isSelected = dateStr === currentDate;
-          const isOtherMonth = date.getMonth() !== month;
+          const isOtherMonth = date.getMonth() !== viewMonth;
           const hasTasks = taskDates.has(dateStr);
           const isExam = examDates.has(dateStr);
 

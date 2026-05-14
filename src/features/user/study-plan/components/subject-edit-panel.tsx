@@ -49,7 +49,7 @@ interface SortableSubjectCardProps {
   remove: (idx: number) => void;
   numHandler: (
     idx: number,
-    field: "content_amount" | "start_page" | "end_page",
+    field: "content_amount" | "start_page",
     integer?: boolean
   ) => {
     type: "text";
@@ -131,7 +131,7 @@ function SortableSubjectCard({
         </select>
       </div>
 
-      <div className={`grid gap-2 ${isBook ? "grid-cols-3" : "grid-cols-1"}`}>
+      <div className={`grid gap-2 ${isBook ? "grid-cols-2" : "grid-cols-1"}`}>
         <div>
           <label className="mb-0.5 block text-[10px] text-muted-foreground">
             {contentLabel(resourceType)}
@@ -139,16 +139,10 @@ function SortableSubjectCard({
           <Input {...numHandler(idx, "content_amount")} className="h-7 text-xs" />
         </div>
         {isBook && (
-          <>
-            <div>
-              <label className="mb-0.5 block text-[10px] text-muted-foreground">Start pg</label>
-              <Input {...numHandler(idx, "start_page")} className="h-7 text-xs" />
-            </div>
-            <div>
-              <label className="mb-0.5 block text-[10px] text-muted-foreground">End pg</label>
-              <Input {...numHandler(idx, "end_page")} className="h-7 text-xs" />
-            </div>
-          </>
+          <div>
+            <label className="mb-0.5 block text-[10px] text-muted-foreground">Start pg</label>
+            <Input {...numHandler(idx, "start_page")} className="h-7 text-xs" />
+          </div>
         )}
       </div>
     </div>
@@ -170,7 +164,9 @@ export function SubjectEditPanel({
   onSave,
   onBack,
 }: SubjectEditPanelProps) {
-  const [subjects, setSubjects] = useState<SubjectEntry[]>([...initial.map((s) => ({ ...s }))]);
+  const [subjects, setSubjects] = useState<SubjectEntry[]>(() =>
+    initial.map((s) => ({ ...s, id: s.id || crypto.randomUUID() }))
+  );
   const isBook = resourceType === "book";
   const [idCounter, setIdCounter] = useState(initial.length);
   const [itemIds, setItemIds] = useState<string[]>(() => initial.map((_, i) => `subj-${i}`));
@@ -190,11 +186,11 @@ export function SubjectEditPanel({
     setSubjects([
       ...subjects,
       {
+        id: crypto.randomUUID(),
         name: "",
         content_amount: 0,
-        activity_prefix: "",
         active: true,
-        ...(isBook ? { start_page: undefined, end_page: undefined } : {}),
+        ...(isBook ? { start_page: undefined } : {}),
       },
     ]);
     setItemIds([...itemIds, `subj-${idCounter}`]);
@@ -216,11 +212,7 @@ export function SubjectEditPanel({
     }
   };
 
-  const numHandler = (
-    idx: number,
-    field: "content_amount" | "start_page" | "end_page",
-    integer = true
-  ) => ({
+  const numHandler = (idx: number, field: "content_amount" | "start_page", integer = true) => ({
     type: "text" as const,
     inputMode: (integer ? "numeric" : "decimal") as "numeric" | "decimal",
     value: subjects[idx][field] ?? "",

@@ -3,6 +3,14 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Sheet, SheetTrigger, SheetContent } from "@/shared/components/ui/sheet";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import {
@@ -19,9 +27,33 @@ import {
   X,
   ArrowLeft,
   ListOrdered,
-  ArrowUpDown,
+  GripVertical,
 } from "lucide-react";
-import { StudyResource, StudyConfig, ScheduleTask, PhaseConfig, ContentType } from "../lib/types";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
+import {
+  StudyResource,
+  StudyConfig,
+  ScheduleTask,
+  PhaseConfig,
+  PhaseResourceAssignment,
+  FixedDistribution,
+} from "../lib/types";
 import { PHASE_PALETTE, textColorFor } from "../lib/color-utils";
 import { generateSchedule, validateConfig, estimatePhaseHours } from "../lib/scheduler";
 import { SubjectSortable } from "./subject-sortable";
@@ -30,14 +62,38 @@ import { ResourceEditPanel } from "./resource-edit-panel";
 import { SubjectEditPanel } from "./subject-edit-panel";
 import { useDebounce } from "../hooks/use-debounce";
 import { CATEGORIES, CP_CATEGORIES, AP_CATEGORIES } from "../lib/categories";
-import { boardPrepService } from "../services/board-prep-service";
+import { studyPlanService } from "../services/study-plan-service";
 
-const DEFAULT_CONTENT_ORDER: ContentType[] = ["qbank", "book", "video", "flashcards"];
-
-function _chunk<T>(arr: T[], size: number): T[][] {
-  const result: T[][] = [];
-  for (let i = 0; i < arr.length; i += size) result.push(arr.slice(i, i + size));
-  return result;
+function SortableResourceRow({
+  id,
+  children,
+}: {
+  id: string;
+  children: (dragHandle: React.ReactNode) => React.ReactNode;
+}) {
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({
+    id,
+  });
+  const style = { transform: CSS.Transform.toString(transform), transition };
+  const handle = (
+    <button
+      type="button"
+      className="cursor-grab touch-none px-1 text-muted-foreground hover:text-foreground active:cursor-grabbing"
+      {...attributes}
+      {...listeners}
+    >
+      <GripVertical size={14} />
+    </button>
+  );
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      className={isDragging ? "z-50 opacity-80 shadow-lg ring-2 ring-ring/30" : ""}
+    >
+      {children(handle)}
+    </div>
+  );
 }
 
 function PanelHeader({ title, onBack }: { title: string; onBack: () => void }) {
@@ -110,7 +166,6 @@ export function SetupSheet({
     | "exams"
     | "phases"
     | "phase-detail"
-    | "phase-content-priority"
     | "phase-resources"
     | "subject-order"
     | "resources"
@@ -140,10 +195,24 @@ export function SetupSheet({
     if (json === lastSavedRef.current) return;
     lastSavedRef.current = json;
     setConfig(debouncedConfig);
-    boardPrepService
+    studyPlanService
       .saveConfig(debouncedConfig)
       .catch((err) => console.error("Failed to save config:", err));
   }, [debouncedConfig, setConfig]);
+
+  // Flush any pending config save synchronously — the debounced useEffect
+  // only fires on idle, so Generate/Rebalance clicked within 800ms of an edit
+  // would otherwise upsert a schedule against a config the DB hasn't seen.
+  const flushConfig = useCallback(
+    async (cfg: StudyConfig) => {
+      const json = JSON.stringify(cfg);
+      if (json === lastSavedRef.current) return;
+      lastSavedRef.current = json;
+      setConfig(cfg);
+      await studyPlanService.saveConfig(cfg);
+    },
+    [setConfig]
+  );
 
   const updateConfig = useCallback((updates: Partial<StudyConfig>) => {
     setLocalConfig((prev) => (prev ? { ...prev, ...updates } : prev));
@@ -171,6 +240,13 @@ export function SetupSheet({
 
   const [generating, setGenerating] = useState(false);
   const [errors, setErrors] = useState<string[]>([]);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [confirmAction, setConfirmAction] = useState<"generate" | "rebalance" | null>(null);
+  useEffect(() => {
+    if (!successMsg) return;
+    const t = setTimeout(() => setSuccessMsg(null), 4000);
+    return () => clearTimeout(t);
+  }, [successMsg]);
   const [calendarMonth, setCalendarMonth] = useState(
     () => new Date(new Date().getFullYear(), new Date().getMonth(), 1)
   );
@@ -181,7 +257,7 @@ export function SetupSheet({
         ? resources.map((r) => (r.id === resource.id ? resource : r))
         : [...resources, resource];
       setResources(updated);
-      await boardPrepService.saveResources(updated);
+      await studyPlanService.saveResources(updated);
     } catch (e) {
       console.error("Failed to save resource:", e);
     }
@@ -191,7 +267,7 @@ export function SetupSheet({
     try {
       const updated = resources.filter((r) => r.id !== id);
       setResources(updated);
-      await boardPrepService.saveResources(updated);
+      await studyPlanService.saveResources(updated);
     } catch (e) {
       console.error("Failed to delete resource:", e);
     }
@@ -205,15 +281,22 @@ export function SetupSheet({
       return;
     }
     setErrors([]);
+    setSuccessMsg(null);
     setGenerating(true);
     try {
+      await flushConfig(localConfig);
       const { tasks: newSched, warnings } = generateSchedule(resources, localConfig);
       if (warnings.length > 0) console.warn("Schedule warnings:", warnings);
-      await boardPrepService.saveSchedule(newSched);
+      await studyPlanService.saveSchedule(newSched);
+      // Generate is "wipe clean" — progress must be cleared in the DB too,
+      // not just in local state, or a reload will resurrect completions.
+      await studyPlanService.clearAllProgress();
       setSchedule(newSched);
       setCompletedTasks({});
+      setSuccessMsg("Schedule generated successfully");
     } catch (e) {
       console.error("Failed to generate:", e);
+      setErrors(["Something went wrong saving your schedule. Try again in a bit."]);
     } finally {
       setGenerating(false);
     }
@@ -231,29 +314,46 @@ export function SetupSheet({
       return;
     }
     setErrors([]);
+    setSuccessMsg(null);
     setGenerating(true);
     try {
-      const today = currentDate;
+      await flushConfig(localConfig);
 
+      // Aggregate completed units per resource_id::subject_id so the scheduler
+      // can skip work already done. Past dates are excluded from the new
+      // schedule by passing currentDate as effectiveStart. Pre-migration rows
+      // may be missing resource_id or subject_id; recover by looking up the
+      // current resource/subject by name.
       const progress: Record<string, number> = {};
       for (const task of schedule) {
-        if (completedTasks[task.task_id] && task.task_type === "task" && task.content_units > 0) {
-          const key = `${task.resource_name}::${task.subject}`;
-          progress[key] = (progress[key] || 0) + task.content_units;
-        }
+        if (!completedTasks[task.task_id] || task.task_type !== "task" || task.content_units <= 0)
+          continue;
+        const r = task.resource_id
+          ? resources.find((x) => x.id === task.resource_id)
+          : resources.find((x) => x.name === task.resource_name);
+        const rid = task.resource_id || r?.id;
+        if (!rid) continue;
+        const sid =
+          task.subject_id || r?.subjects.find((s) => s.name === task.subject)?.id || task.subject;
+        const key = `${rid}::${sid}`;
+        progress[key] = (progress[key] || 0) + task.content_units;
       }
 
-      const { tasks: newSched } = generateSchedule(resources, localConfig, progress);
-      const future = newSched.filter((t: ScheduleTask) => t.date >= today);
-      const completedPast = schedule.filter(
-        (t) => t.date < today && (t.task_type !== "task" || !!completedTasks[t.task_id])
-      );
-      const merged = [...completedPast, ...future];
+      const { tasks: newSched } = generateSchedule(resources, localConfig, progress, currentDate);
 
-      await boardPrepService.saveSchedule(merged);
+      // Local state: keep old rows that survive (completed tasks outside the
+      // new schedule's date range) plus everything new.
+      const newIds = new Set(newSched.map((t) => t.task_id));
+      const kept = schedule.filter(
+        (t) => t.task_type === "task" && !newIds.has(t.task_id) && !!completedTasks[t.task_id]
+      );
+      const merged = [...kept, ...newSched];
+      await studyPlanService.saveSchedule(merged);
       setSchedule(merged);
+      setSuccessMsg("Schedule rebalanced successfully");
     } catch (e) {
       console.error("Failed to rebalance:", e);
+      setErrors(["Something went wrong saving your schedule. Try again in a bit."]);
     } finally {
       setGenerating(false);
     }
@@ -272,6 +372,12 @@ export function SetupSheet({
       }),
     }),
     []
+  );
+
+  // Hoisted to top level so hook count is stable across panel switches (rules of hooks).
+  const resourceDragSensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
   );
 
   if (!localConfig) return null;
@@ -336,8 +442,8 @@ export function SetupSheet({
       return (
         <div className="flex h-full flex-col">
           <div className="px-4 pt-4 pb-2">
-            <h2 className="text-lg font-semibold text-foreground">Settings</h2>
-            <p className="text-xs text-muted-foreground">Configure your study schedule</p>
+            <h2 className="text-lg font-semibold text-foreground">Edit Plan</h2>
+            <p className="text-xs text-muted-foreground">Configure your study plan</p>
           </div>
 
           <div className="flex-1 overflow-y-auto">
@@ -367,6 +473,12 @@ export function SetupSheet({
                     {e}
                   </p>
                 ))}
+              </div>
+            )}
+
+            {successMsg && (
+              <div className="rounded-xl bg-emerald-500/10 p-2.5">
+                <p className="text-xs text-emerald-700 dark:text-emerald-400">{successMsg}</p>
               </div>
             )}
 
@@ -418,14 +530,18 @@ export function SetupSheet({
                       );
                     })}
 
-                    {schedule.length > 0 && (
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>{schedule.length} tasks</span>
-                        <span>
-                          {Math.round(schedule.reduce((s, t) => s + t.minutes, 0) / 60)}h total
-                        </span>
-                      </div>
-                    )}
+                    {schedule.length > 0 &&
+                      (() => {
+                        const totalMin = schedule.reduce((s, t) => s + t.minutes, 0);
+                        const h = Math.floor(totalMin / 60);
+                        const m = totalMin % 60;
+                        const time = h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h${m}m`;
+                        return (
+                          <div className="text-xs text-muted-foreground">
+                            {schedule.length} tasks · {time}
+                          </div>
+                        );
+                      })()}
 
                     {(() => {
                       const h = Math.ceil(maxAvgDaily);
@@ -467,10 +583,7 @@ export function SetupSheet({
               <Button
                 size="sm"
                 className="flex-1"
-                onClick={() => {
-                  if (confirm("Generate a new schedule? This will erase all existing progress."))
-                    generateFull();
-                }}
+                onClick={() => setConfirmAction("generate")}
                 disabled={generating}
               >
                 {generating ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}{" "}
@@ -480,9 +593,7 @@ export function SetupSheet({
                 variant="outline"
                 size="sm"
                 className="flex-1"
-                onClick={() => {
-                  if (confirm("Rebalance from today?")) rebalance();
-                }}
+                onClick={() => setConfirmAction("rebalance")}
                 disabled={generating}
               >
                 {generating ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}{" "}
@@ -597,10 +708,10 @@ export function SetupSheet({
                     daily_minutes_weekday: 480,
                     daily_minutes_weekend: 480,
                     catchup_every: 0,
-                    catchup_first: "",
-                    cp_share: 50,
-                    cp_subject_order: CP_CATEGORIES.map((c) => c.id),
-                    ap_subject_order: AP_CATEGORIES.map((c) => c.id),
+                    subject_order: [
+                      ...CP_CATEGORIES.map((c) => c.id),
+                      ...AP_CATEGORIES.map((c) => c.id),
+                    ],
                     resources: [],
                   };
                   updateConfig({ phases: [...phases, newPhase] });
@@ -811,19 +922,15 @@ export function SetupSheet({
         return null;
       }
 
-      const currentOrder = phase.content_type_order || DEFAULT_CONTENT_ORDER;
       const phaseResAssignments = phase.resources || [];
-      const cpShareVal = phase.cp_share ?? 50;
-
-      const canonicalCpIds = CP_CATEGORIES.map((c) => c.id);
-      const canonicalApIds = AP_CATEGORIES.map((c) => c.id);
-      const cpSubjects = [
-        ...(phase.cp_subject_order || []).filter((id) => canonicalCpIds.includes(id)),
-        ...canonicalCpIds.filter((id) => !(phase.cp_subject_order || []).includes(id)),
+      const canonicalAllIds = [
+        ...CP_CATEGORIES.map((c) => c.id),
+        ...AP_CATEGORIES.map((c) => c.id),
       ];
-      const apSubjects = [
-        ...(phase.ap_subject_order || []).filter((id) => canonicalApIds.includes(id)),
-        ...canonicalApIds.filter((id) => !(phase.ap_subject_order || []).includes(id)),
+      const savedOrder = phase.subject_order || [];
+      const subjectIds = [
+        ...savedOrder.filter((id) => canonicalAllIds.includes(id)),
+        ...canonicalAllIds.filter((id) => !savedOrder.includes(id)),
       ];
 
       const estimates = estimatePhaseHours(resources, localConfig);
@@ -915,52 +1022,15 @@ export function SetupSheet({
                 </label>
                 <Input
                   type="date"
-                  value={typeof phase.catchup_first === "string" ? phase.catchup_first : ""}
-                  onChange={(e) => updatePhase(activePhaseIdx, { catchup_first: e.target.value })}
+                  value={phase.catchup_first_date || ""}
+                  onChange={(e) =>
+                    updatePhase(activePhaseIdx, { catchup_first_date: e.target.value })
+                  }
                 />
               </div>
             </div>
-            <div>
-              <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-xs text-muted-foreground">CP {cpShareVal}%</span>
-                <span className="text-xs text-muted-foreground">AP {100 - cpShareVal}%</span>
-              </div>
-              <input
-                type="range"
-                min={0}
-                max={100}
-                step={5}
-                value={cpShareVal}
-                onChange={(e) =>
-                  updatePhase(activePhaseIdx, { cp_share: parseInt(e.target.value) })
-                }
-                className="h-2 w-full cursor-pointer appearance-none rounded-full bg-muted accent-primary"
-              />
-            </div>
+
             <div className="space-y-2">
-              <button
-                onClick={() => goTo("phase-content-priority")}
-                className="flex w-full items-center gap-3 rounded-xl border border-border px-3 py-3 text-left transition-colors hover:bg-muted/50"
-              >
-                <ArrowUpDown size={16} className="text-muted-foreground" />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-foreground">Content Priority</div>
-                  <div className="text-xs text-muted-foreground">
-                    {currentOrder
-                      .map((t) =>
-                        t === "qbank"
-                          ? "Qbanks"
-                          : t === "book"
-                            ? "Books"
-                            : t === "video"
-                              ? "Videos"
-                              : "Flashcards"
-                      )
-                      .join(" → ")}
-                  </div>
-                </div>
-                <ChevronRight size={16} className="text-muted-foreground" />
-              </button>
               <button
                 onClick={() => goTo("phase-resources")}
                 className="flex w-full items-center gap-3 rounded-xl border border-border px-3 py-3 text-left transition-colors hover:bg-muted/50"
@@ -977,11 +1047,8 @@ export function SetupSheet({
               </button>
               <button
                 onClick={() => {
-                  if (!phase.cp_subject_order?.length || !phase.ap_subject_order?.length) {
-                    updatePhase(activePhaseIdx, {
-                      cp_subject_order: cpSubjects,
-                      ap_subject_order: apSubjects,
-                    });
+                  if (!phase.subject_order?.length) {
+                    updatePhase(activePhaseIdx, { subject_order: subjectIds });
                   }
                   goTo("subject-order");
                 }}
@@ -991,12 +1058,13 @@ export function SetupSheet({
                 <div className="flex-1">
                   <div className="text-sm font-medium text-foreground">Subject Order</div>
                   <div className="text-xs text-muted-foreground">
-                    {cpSubjects.length} CP · {apSubjects.length} AP categories
+                    {subjectIds.length} categories
                   </div>
                 </div>
                 <ChevronRight size={16} className="text-muted-foreground" />
               </button>
             </div>
+
             {est &&
               (() => {
                 const avgDaily =
@@ -1093,49 +1161,19 @@ export function SetupSheet({
       );
     }
 
-    if (panel === "phase-content-priority") {
-      const phase = localConfig.phases[activePhaseIdx];
-      if (!phase) {
-        setPanel("phases");
-        return null;
-      }
-      const currentOrder = phase.content_type_order || DEFAULT_CONTENT_ORDER;
-      const contentLabelMap: Record<string, string> = {
-        qbank: "Question Banks",
-        book: "Books",
-        video: "Videos",
-        flashcards: "Flashcards",
-      };
-      return (
-        <div className="flex h-full flex-col">
-          <PanelHeader
-            title={`Content Priority — ${phase.name}`}
-            onBack={() => goBack("phase-detail")}
-          />
-          <div className="flex-1 overflow-y-auto p-4">
-            <SubjectSortable
-              label="Content Priority"
-              items={currentOrder as string[]}
-              labelMap={contentLabelMap}
-              onChange={(items) =>
-                updatePhase(activePhaseIdx, { content_type_order: items as ContentType[] })
-              }
-            />
-          </div>
-        </div>
-      );
-    }
-
     if (panel === "phase-resources") {
       const phase = localConfig.phases[activePhaseIdx];
       if (!phase) {
         setPanel("phases");
         return null;
       }
-      const phaseResAssignments = phase.resources || [];
+      const phaseResAssignments: PhaseResourceAssignment[] = phase.resources || [];
+      const assignedIds = new Set(phaseResAssignments.map((a) => a.resource_id));
+      const unassignedResources = resources.filter((r) => !assignedIds.has(r.id));
+
       const cycleResourceMode = (resId: string) => {
         const existing = phaseResAssignments.find((r) => r.resource_id === resId);
-        let updated;
+        let updated: PhaseResourceAssignment[];
         if (!existing) {
           updated = [...phaseResAssignments, { resource_id: resId, mode: "study" as const }];
         } else if (existing.mode === "study") {
@@ -1147,30 +1185,165 @@ export function SetupSheet({
         }
         updatePhase(activePhaseIdx, { resources: updated });
       };
-      const updateReviewPct = (resId: string, pct: number) => {
+
+      const updateAssignment = (resId: string, patch: Partial<PhaseResourceAssignment>) => {
         const updated = phaseResAssignments.map((r) =>
-          r.resource_id === resId ? { ...r, review_pct: pct } : r
+          r.resource_id === resId ? { ...r, ...patch } : r
         );
         updatePhase(activePhaseIdx, { resources: updated });
       };
+
+      const onDragEnd = (event: DragEndEvent) => {
+        const { active, over } = event;
+        if (!over || active.id === over.id) return;
+        const oldIdx = phaseResAssignments.findIndex((r) => r.resource_id === active.id);
+        const newIdx = phaseResAssignments.findIndex((r) => r.resource_id === over.id);
+        if (oldIdx < 0 || newIdx < 0) return;
+        updatePhase(activePhaseIdx, {
+          resources: arrayMove(phaseResAssignments, oldIdx, newIdx),
+        });
+      };
+
+      const SHAPES: { id: FixedDistribution; label: string }[] = [
+        { id: "flat", label: "Flat" },
+        { id: "front", label: "Front" },
+        { id: "middle", label: "Middle" },
+        { id: "end", label: "End" },
+      ];
+
       return (
         <div className="flex h-full flex-col">
           <PanelHeader title={`Resources — ${phase.name}`} onBack={() => goBack("phase-detail")} />
           <div className="flex-1 overflow-y-auto">
-            <div className="divide-y divide-border">
-              {resources.map((resource) => {
-                const assignment = phaseResAssignments.find((r) => r.resource_id === resource.id);
-                const mode = assignment?.mode;
-                return (
-                  <div key={resource.id}>
+            {phaseResAssignments.length > 0 && (
+              <div className="border-b border-border">
+                <div className="px-4 pt-3 pb-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Assigned · drag to reorder (top = highest priority)
+                </div>
+                <DndContext
+                  sensors={resourceDragSensors}
+                  collisionDetection={closestCenter}
+                  onDragEnd={onDragEnd}
+                >
+                  <SortableContext
+                    items={phaseResAssignments.map((a) => a.resource_id)}
+                    strategy={verticalListSortingStrategy}
+                  >
+                    <div className="divide-y divide-border">
+                      {phaseResAssignments.map((assignment, i) => {
+                        const resource = resources.find((r) => r.id === assignment.resource_id);
+                        if (!resource) return null;
+                        const mode = assignment.mode;
+                        const isFixed = resource.type === "qbank" || resource.type === "flashcards";
+                        const shape = assignment.distribution || "flat";
+                        return (
+                          <SortableResourceRow key={resource.id} id={resource.id}>
+                            {(handle) => (
+                              <div>
+                                <div className="flex items-center gap-1.5 px-2 py-2.5">
+                                  {handle}
+                                  <span className="w-5 shrink-0 text-center text-xs tabular-nums text-muted-foreground">
+                                    {i + 1}
+                                  </span>
+                                  <button
+                                    onClick={() => cycleResourceMode(resource.id)}
+                                    className="flex flex-1 items-center gap-2.5 text-left hover:bg-muted/30"
+                                  >
+                                    <div
+                                      className={`flex size-5 shrink-0 items-center justify-center rounded text-[10px] font-bold ${
+                                        mode === "study"
+                                          ? "bg-sky-200 text-sky-800"
+                                          : "bg-amber-200 text-amber-800"
+                                      }`}
+                                    >
+                                      {mode === "study" ? "S" : "R"}
+                                    </div>
+                                    <div
+                                      className="size-4 shrink-0 rounded border border-border"
+                                      style={{ backgroundColor: resource.color }}
+                                    />
+                                    <span className="flex-1 truncate text-sm text-foreground">
+                                      {resource.name}
+                                    </span>
+                                    <span className="text-xs text-muted-foreground">
+                                      {resource.type === "qbank"
+                                        ? "Qbank"
+                                        : resource.type === "book"
+                                          ? "Book"
+                                          : resource.type === "video"
+                                            ? "Video"
+                                            : "Cards"}
+                                    </span>
+                                  </button>
+                                </div>
+                                {mode === "review" && (
+                                  <div className="flex items-center gap-2 bg-muted/20 px-4 py-1.5 pl-12">
+                                    <span className="text-xs text-muted-foreground">Review</span>
+                                    <Input
+                                      type="text"
+                                      inputMode="numeric"
+                                      value={assignment.review_pct ?? 50}
+                                      onChange={(e) => {
+                                        const v = e.target.value;
+                                        if (v === "" || /^\d+$/.test(v))
+                                          updateAssignment(resource.id, {
+                                            review_pct: Math.min(100, parseInt(v) || 0),
+                                          });
+                                      }}
+                                      className="h-6 w-12 text-center text-xs"
+                                    />
+                                    <span className="text-xs text-muted-foreground">%</span>
+                                  </div>
+                                )}
+                                {isFixed && (
+                                  <div className="flex flex-wrap items-center gap-1.5 bg-muted/20 px-4 py-1.5 pl-12">
+                                    <span className="text-xs text-muted-foreground">
+                                      Distribution
+                                    </span>
+                                    <div className="flex overflow-hidden rounded-md border border-border">
+                                      {SHAPES.map((s) => (
+                                        <button
+                                          key={s.id}
+                                          onClick={() =>
+                                            updateAssignment(resource.id, { distribution: s.id })
+                                          }
+                                          className={`px-2 py-0.5 text-[11px] transition-colors ${
+                                            shape === s.id
+                                              ? "bg-primary text-primary-foreground"
+                                              : "hover:bg-muted"
+                                          }`}
+                                        >
+                                          {s.label}
+                                        </button>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+                              </div>
+                            )}
+                          </SortableResourceRow>
+                        );
+                      })}
+                    </div>
+                  </SortableContext>
+                </DndContext>
+              </div>
+            )}
+
+            {unassignedResources.length > 0 && (
+              <div>
+                <div className="px-4 pt-3 pb-1 text-[10px] font-medium uppercase tracking-wide text-muted-foreground">
+                  Available · tap to add
+                </div>
+                <div className="divide-y divide-border">
+                  {unassignedResources.map((resource) => (
                     <button
+                      key={resource.id}
                       onClick={() => cycleResourceMode(resource.id)}
-                      className={`flex w-full items-center gap-2.5 px-4 py-2.5 text-left transition-colors hover:bg-muted/30 ${!assignment ? "opacity-40" : ""}`}
+                      className="flex w-full items-center gap-2.5 px-4 py-2.5 text-left opacity-60 transition-colors hover:opacity-100 hover:bg-muted/30"
                     >
-                      <div
-                        className={`flex size-5 shrink-0 items-center justify-center rounded text-[10px] font-bold ${mode === "study" ? "bg-sky-200 text-sky-800" : mode === "review" ? "bg-amber-200 text-amber-800" : "border border-muted-foreground/30 text-muted-foreground"}`}
-                      >
-                        {mode === "study" ? "S" : mode === "review" ? "R" : "—"}
+                      <div className="flex size-5 shrink-0 items-center justify-center rounded border border-muted-foreground/30 text-[10px] font-bold text-muted-foreground">
+                        —
                       </div>
                       <div
                         className="size-4 shrink-0 rounded border border-border"
@@ -1189,28 +1362,12 @@ export function SetupSheet({
                               : "Cards"}
                       </span>
                     </button>
-                    {assignment?.mode === "review" && (
-                      <div className="flex items-center gap-2 bg-muted/20 px-4 py-1.5 pl-12">
-                        <span className="text-xs text-muted-foreground">Review</span>
-                        <Input
-                          type="text"
-                          inputMode="numeric"
-                          value={assignment.review_pct ?? 50}
-                          onChange={(e) => {
-                            const v = e.target.value;
-                            if (v === "" || /^\d+$/.test(v))
-                              updateReviewPct(resource.id, Math.min(100, parseInt(v) || 0));
-                          }}
-                          className="h-6 w-12 text-center text-xs"
-                        />
-                        <span className="text-xs text-muted-foreground">%</span>
-                      </div>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-            <div className="mt-3 flex justify-center gap-4 text-[10px] text-muted-foreground">
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <div className="mt-3 flex justify-center gap-4 px-4 py-2 text-[10px] text-muted-foreground">
               <span className="flex items-center gap-1">
                 <span className="inline-flex size-3.5 items-center justify-center rounded bg-sky-200 text-[8px] font-bold text-sky-800">
                   S
@@ -1223,12 +1380,7 @@ export function SetupSheet({
                 </span>{" "}
                 Review
               </span>
-              <span className="flex items-center gap-1">
-                <span className="inline-flex size-3.5 items-center justify-center rounded border border-muted-foreground/20 text-[8px] font-bold text-muted-foreground/40">
-                  —
-                </span>{" "}
-                Inactive
-              </span>
+              <span>Tap row to cycle study → review → remove</span>
             </div>
           </div>
         </div>
@@ -1241,15 +1393,14 @@ export function SetupSheet({
         setPanel("phases");
         return null;
       }
-      const canonicalCpIds = CP_CATEGORIES.map((c) => c.id);
-      const canonicalApIds = AP_CATEGORIES.map((c) => c.id);
-      const cpItems = [
-        ...(phase.cp_subject_order || []).filter((id) => canonicalCpIds.includes(id)),
-        ...canonicalCpIds.filter((id) => !(phase.cp_subject_order || []).includes(id)),
+      const canonicalAllIds = [
+        ...CP_CATEGORIES.map((c) => c.id),
+        ...AP_CATEGORIES.map((c) => c.id),
       ];
-      const apItems = [
-        ...(phase.ap_subject_order || []).filter((id) => canonicalApIds.includes(id)),
-        ...canonicalApIds.filter((id) => !(phase.ap_subject_order || []).includes(id)),
+      const savedOrder = phase.subject_order || [];
+      const items = [
+        ...savedOrder.filter((id) => canonicalAllIds.includes(id)),
+        ...canonicalAllIds.filter((id) => !savedOrder.includes(id)),
       ];
       const labelMap: Record<string, string> = {};
       for (const c of CATEGORIES) labelMap[c.id] = c.name;
@@ -1259,18 +1410,15 @@ export function SetupSheet({
             title={`Subject Order — ${phase.name}`}
             onBack={() => goBack("phase-detail")}
           />
-          <div className="flex-1 space-y-6 overflow-y-auto p-4">
+          <div className="flex-1 space-y-4 overflow-y-auto p-4">
+            <p className="text-xs text-muted-foreground">
+              Drag to reorder. The scheduler fully drains subject 1 before moving to subject 2.
+            </p>
             <SubjectSortable
-              label={`CP Subjects (${cpItems.length})`}
-              items={cpItems}
+              label={`Subjects (${items.length})`}
+              items={items}
               labelMap={labelMap}
-              onChange={(items) => updatePhase(activePhaseIdx, { cp_subject_order: items })}
-            />
-            <SubjectSortable
-              label={`AP Subjects (${apItems.length})`}
-              items={apItems}
-              labelMap={labelMap}
-              onChange={(items) => updatePhase(activePhaseIdx, { ap_subject_order: items })}
+              onChange={(next) => updatePhase(activePhaseIdx, { subject_order: next })}
             />
           </div>
         </div>
@@ -1307,7 +1455,6 @@ export function SetupSheet({
                     id: crypto.randomUUID(),
                     name: "",
                     short_name: "",
-                    activity_verb: "",
                     type: "book",
                     color: "#4A90D9",
                     subjects: [],
@@ -1388,37 +1535,77 @@ export function SetupSheet({
   };
 
   return (
-    <Sheet
-      onOpenChange={() => {
-        setPanel("menu");
-        setErrors([]);
-      }}
-    >
-      <SheetTrigger asChild>
-        <Button variant="ghost" size="icon">
-          <Settings size={20} />
-        </Button>
-      </SheetTrigger>
-      <SheetContent
-        side="right"
-        showCloseButton={panel === "menu"}
-        className="w-full overflow-hidden p-0 sm:max-w-md"
+    <>
+      <Sheet
+        onOpenChange={() => {
+          setPanel("menu");
+          setErrors([]);
+          setSuccessMsg(null);
+        }}
       >
-        <AnimatePresence mode="popLayout" custom={animDir}>
-          <motion.div
-            key={panel}
-            custom={animDir}
-            variants={variants}
-            initial="enter"
-            animate="center"
-            exit="exit"
-            transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
-            className="h-full"
-          >
-            {renderPanel()}
-          </motion.div>
-        </AnimatePresence>
-      </SheetContent>
-    </Sheet>
+        <SheetTrigger asChild>
+          <Button variant="outline" size="sm" className="gap-1.5">
+            <Settings size={16} />
+            <span className="hidden sm:inline text-xs">Edit Plan</span>
+          </Button>
+        </SheetTrigger>
+        <SheetContent
+          side="right"
+          showCloseButton={panel === "menu"}
+          className="w-[85%] max-w-[22rem] overflow-hidden bg-card p-0 sm:max-w-sm"
+        >
+          <AnimatePresence mode="popLayout" custom={animDir}>
+            <motion.div
+              key={panel}
+              custom={animDir}
+              variants={variants}
+              initial="enter"
+              animate="center"
+              exit="exit"
+              transition={{ type: "tween", duration: 0.2, ease: "easeOut" }}
+              className="h-full"
+            >
+              {renderPanel()}
+            </motion.div>
+          </AnimatePresence>
+        </SheetContent>
+      </Sheet>
+
+      <Dialog
+        open={confirmAction !== null}
+        onOpenChange={(open) => {
+          if (!open) setConfirmAction(null);
+        }}
+      >
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>
+              {confirmAction === "generate" ? "Generate a new schedule?" : "Rebalance from today?"}
+            </DialogTitle>
+            <DialogDescription>
+              {confirmAction === "generate"
+                ? "This will erase all existing progress and create a fresh schedule from your phases and resources."
+                : "Past completed work is kept; everything from today onward will be regenerated to reflect your current resources and phases."}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button variant="outline" onClick={() => setConfirmAction(null)}>
+              Cancel
+            </Button>
+            <Button
+              variant={confirmAction === "generate" ? "destructive" : "default"}
+              onClick={() => {
+                const action = confirmAction;
+                setConfirmAction(null);
+                if (action === "generate") generateFull();
+                else if (action === "rebalance") rebalance();
+              }}
+            >
+              {confirmAction === "generate" ? "Generate" : "Rebalance"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </>
   );
 }

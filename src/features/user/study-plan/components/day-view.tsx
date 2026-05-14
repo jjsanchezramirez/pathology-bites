@@ -1,10 +1,11 @@
 "use client";
 
 import { useMemo, useCallback, useRef } from "react";
-import { ChevronLeft, ChevronRight } from "lucide-react";
+import { ChevronLeft, ChevronRight, ChevronsLeft, ChevronsRight } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { TaskCard } from "./task-card";
 import { ScheduleTask, StudyConfig, StudyResource } from "../lib/types";
+import { buildCalendar, CalendarDay } from "../lib/scheduler";
 import { useSwipe } from "../hooks/use-swipe";
 
 interface DayViewProps {
@@ -66,17 +67,27 @@ export function DayView({
     return result;
   }, [weekStart]);
 
+  // Group only real study tasks by date — rest/exam/gone are derived from
+  // config below and never live in `schedule`.
   const tasksByDate = useMemo(() => {
     const map = new Map<string, ScheduleTask[]>();
     for (const d of days) map.set(d, []);
     for (const t of schedule) {
+      if (t.task_type !== "task") continue;
       if (map.has(t.date)) map.get(t.date)!.push(t);
     }
     return map;
   }, [schedule, days]);
 
+  const calendarByDate = useMemo(() => {
+    const map = new Map<string, CalendarDay>();
+    if (!config) return map;
+    for (const d of buildCalendar(config)) map.set(d.date, d);
+    return map;
+  }, [config]);
+
   const dayTasks = useMemo(() => tasksByDate.get(currentDate) || [], [tasksByDate, currentDate]);
-  const studyTasks = dayTasks.filter((t) => t.task_type === "task");
+  const studyTasks = dayTasks;
   const completedCount = studyTasks.filter((t) => !!completedTasks[t.task_id]).length;
   const totalMin = studyTasks.reduce((s, t) => s + t.minutes, 0);
   const remainingMin = studyTasks
@@ -125,7 +136,6 @@ export function DayView({
     const groups: { resource: string; tasks: ScheduleTask[] }[] = [];
     const seen = new Set<string>();
     for (const task of dayTasks) {
-      if (task.task_type !== "task") continue;
       if (!seen.has(task.resource_name)) {
         seen.add(task.resource_name);
         groups.push({ resource: task.resource_name, tasks: [] });
@@ -135,7 +145,33 @@ export function DayView({
     return groups;
   }, [dayTasks]);
 
-  const specialTasks = dayTasks.filter((t) => t.task_type !== "task");
+  // Synthesize a special-day pseudo-task from the calendar so TaskCard
+  // continues to handle the rendering branch for rest/exam/gone days.
+  const specialTasks: ScheduleTask[] = useMemo(() => {
+    const day = calendarByDate.get(currentDate);
+    if (!day) return [];
+    if (day.type !== "rest" && day.type !== "exam" && day.type !== "gone") return [];
+    return [
+      {
+        task_id: `special-${day.date}-${day.type}`,
+        date: day.date,
+        idx: 0,
+        resource_id: "",
+        resource_name: day.type.toUpperCase(),
+        resource_type: "",
+        subject_id: "",
+        subject: day.exam_name || "",
+        activity:
+          day.exam_name ||
+          (day.type === "exam" ? "Exam Day" : day.type === "rest" ? "Catch-up / Rest" : "Day off"),
+        minutes: 0,
+        task_type: day.type,
+        is_review: false,
+        content_units: 0,
+        content_label: "",
+      },
+    ];
+  }, [calendarByDate, currentDate]);
 
   const examDateSet = useMemo(
     () => new Set((config?.exam_dates || []).map((e) => e.date)),
@@ -151,18 +187,56 @@ export function DayView({
     <div {...swipeHandlers}>
       <div className="mb-6">
         <div className="mb-3 flex items-center justify-between">
-          <Button variant="ghost" size="icon" className="size-8" onClick={() => navigateWeek(-1)}>
-            <ChevronLeft size={16} />
-          </Button>
+          <div className="flex items-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-0.5 px-1.5"
+              onClick={() => navigateWeek(-1)}
+              aria-label="Previous week"
+            >
+              <ChevronsLeft size={16} />
+              <span className="hidden text-xs sm:inline">Week</span>
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-0.5 px-1.5"
+              onClick={() => navigateDay(-1)}
+              aria-label="Previous day"
+            >
+              <ChevronLeft size={16} />
+              <span className="hidden text-xs sm:inline">Day</span>
+            </Button>
+          </div>
           <button
             onClick={() => setCurrentDate(today)}
-            className="text-sm font-semibold text-foreground hover:text-primary transition-colors"
+            className="px-2 text-sm font-semibold text-foreground hover:text-primary transition-colors"
           >
             {monthLabel}
           </button>
-          <Button variant="ghost" size="icon" className="size-8" onClick={() => navigateWeek(1)}>
-            <ChevronRight size={16} />
-          </Button>
+          <div className="flex items-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-0.5 px-1.5"
+              onClick={() => navigateDay(1)}
+              aria-label="Next day"
+            >
+              <span className="hidden text-xs sm:inline">Day</span>
+              <ChevronRight size={16} />
+            </Button>
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-8 gap-0.5 px-1.5"
+              onClick={() => navigateWeek(1)}
+              aria-label="Next week"
+            >
+              <span className="hidden text-xs sm:inline">Week</span>
+              <ChevronsRight size={16} />
+            </Button>
+          </div>
         </div>
 
         <div ref={stripRef} data-tutorial="week-strip" className="grid grid-cols-7 gap-1 md:gap-2">
@@ -171,10 +245,8 @@ export function DayView({
             const isSelected = dateStr === currentDate;
             const isDayToday = dateStr === today;
             const dt = tasksByDate.get(dateStr) || [];
-            const hasTasks = dt.some((t) => t.task_type === "task");
-            const allDone =
-              hasTasks &&
-              dt.filter((t) => t.task_type === "task").every((t) => !!completedTasks[t.task_id]);
+            const hasTasks = dt.length > 0;
+            const allDone = hasTasks && dt.every((t) => !!completedTasks[t.task_id]);
 
             return (
               <button
@@ -218,7 +290,7 @@ export function DayView({
         </div>
       </div>
 
-      <div className="mb-4 flex items-end justify-between">
+      <div className="mb-4 flex items-end justify-between gap-2">
         <div>
           <h2
             className={`text-2xl font-bold tracking-tight ${isToday ? "text-primary" : "text-foreground"}`}
@@ -248,7 +320,7 @@ export function DayView({
         </div>
       )}
 
-      {dayTasks.length === 0 ? (
+      {dayTasks.length === 0 && specialTasks.length === 0 ? (
         <div data-tutorial="task-list" className="rounded-2xl bg-muted/30 py-12 text-center">
           <p className="text-sm font-medium text-muted-foreground">No tasks scheduled</p>
           <p className="mt-1 text-xs text-muted-foreground/60">Enjoy your free day</p>
@@ -273,13 +345,14 @@ export function DayView({
           <div className="hidden lg:block space-y-4">
             {tasksByResource.map(({ resource, tasks }) => {
               const colors = colorMap[resource] || { bg: "#e5e5e5", text: "#000000" };
+              const groupMin = tasks.reduce((s, t) => s + t.minutes, 0);
               return (
                 <div key={resource}>
                   <div className="mb-2 flex items-center gap-2">
                     <div className="size-2.5 rounded-sm" style={{ backgroundColor: colors.bg }} />
                     <span className="text-xs font-medium text-muted-foreground">{resource}</span>
                     <span className="text-[10px] text-muted-foreground/50">
-                      {tasks.length} {tasks.length === 1 ? "task" : "tasks"}
+                      {tasks.length} {tasks.length === 1 ? "task" : "tasks"} · {fmtTime(groupMin)}
                     </span>
                   </div>
                   <div className="space-y-1.5">
@@ -301,22 +374,20 @@ export function DayView({
           </div>
 
           <div className="lg:hidden space-y-2">
-            {dayTasks
-              .filter((t) => t.task_type === "task")
-              .map((task, idx) => {
-                const colors = colorMap[task.resource_name] || { bg: "#e5e5e5", text: "#000000" };
-                return (
-                  <TaskCard
-                    key={task.task_id || idx}
-                    task={task}
-                    completed={!!completedTasks[task.task_id]}
-                    colorBg={colors.bg}
-                    colorText={colors.text}
-                    shortName={shortNameMap[task.resource_name]}
-                    onToggle={() => onToggleTask(task.task_id)}
-                  />
-                );
-              })}
+            {dayTasks.map((task, idx) => {
+              const colors = colorMap[task.resource_name] || { bg: "#e5e5e5", text: "#000000" };
+              return (
+                <TaskCard
+                  key={task.task_id || idx}
+                  task={task}
+                  completed={!!completedTasks[task.task_id]}
+                  colorBg={colors.bg}
+                  colorText={colors.text}
+                  shortName={shortNameMap[task.resource_name]}
+                  onToggle={() => onToggleTask(task.task_id)}
+                />
+              );
+            })}
           </div>
         </div>
       )}

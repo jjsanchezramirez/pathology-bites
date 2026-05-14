@@ -36,6 +36,7 @@ src/
 - Imports: use `@/` alias (maps to `src/`).
 - Toasts: import from `@/shared/utils/toast`, never directly from `sonner` (ESLint enforced).
 - Components: shadcn/ui in `src/shared/components/ui/`. Prefer existing components over new ones.
+- Confirmation modals: always use `Dialog` (`shared/components/ui/dialog.tsx`) — never `AlertDialog`. The repo's `AlertDialog` ships with `slide-in-from-left-1/2` / `slide-in-from-top-[48%]` animations layered on top of a `translate-x-[-50%] translate-y-[-50%]` centering transform; the two stack and the panel ends up pinned to the upper-left instead of centered. The whole codebase uses `Dialog` for "are you sure?" flows (see `quiz/[id]/components/dialogs/*`); follow that pattern.
 
 ## Caching
 

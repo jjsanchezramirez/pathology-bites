@@ -3,7 +3,7 @@
 import { useState, useMemo, useEffect, useCallback } from "react";
 import { StudyResource, StudyConfig, ScheduleTask } from "../lib/types";
 import { buildColorMap } from "../lib/color-utils";
-import { boardPrepService } from "../services/board-prep-service";
+import { studyPlanService } from "../services/study-plan-service";
 
 export interface CompletionData {
   [taskKey: string]: string;
@@ -22,10 +22,10 @@ export function useStudyPlan() {
     const loadData = async () => {
       try {
         const [resData, cfgData, progData, schedData] = await Promise.all([
-          boardPrepService.getResources(),
-          boardPrepService.getConfig(),
-          boardPrepService.getProgress(),
-          boardPrepService.getSchedule(),
+          studyPlanService.getResources(),
+          studyPlanService.getConfig(),
+          studyPlanService.getProgress(),
+          studyPlanService.getSchedule(),
         ]);
 
         setResources(resData);
@@ -61,7 +61,7 @@ export function useStudyPlan() {
   useEffect(() => {
     const syncProgress = async () => {
       try {
-        const progData = await boardPrepService.getProgress();
+        const progData = await studyPlanService.getProgress();
         const completionMap: CompletionData = {};
         progData.forEach((p) => {
           completionMap[p.task_key] = p.completed_at;
@@ -98,9 +98,9 @@ export function useStudyPlan() {
 
       try {
         if (isNowCompleted) {
-          await boardPrepService.completeTask(taskId);
+          await studyPlanService.completeTask(taskId);
         } else {
-          await boardPrepService.uncompleteTask(taskId);
+          await studyPlanService.uncompleteTask(taskId);
         }
       } catch (err) {
         console.error("Failed to update task:", err);

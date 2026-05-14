@@ -4,8 +4,6 @@ import { useState } from "react";
 import { ListTodo, Calendar, BarChart3, AlertCircle } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { Skeleton } from "@/shared/components/ui/skeleton";
-import { SpotlightTour, type TutorialStep } from "@/shared/components/tutorial/tutorial-dialog";
-import { useTutorial } from "@/shared/hooks/use-tutorial";
 import { useStudyPlan } from "../hooks/use-study-plan";
 import { DayView } from "./day-view";
 import { CalendarView } from "./calendar-view";
@@ -13,38 +11,7 @@ import { ProgressView } from "./progress-view";
 import { SetupSheet } from "./setup-sheet";
 import { StudyScheduleSidebar } from "./sidebar";
 
-const SCHEDULE_TUTORIAL: TutorialStep[] = [
-  {
-    target: "view-tabs",
-    title: "Switch Between Views",
-    description:
-      "Use these tabs to switch between your daily schedule, a monthly calendar overview, and your overall progress.",
-    side: "bottom",
-  },
-  {
-    target: "settings-button",
-    title: "Configure Your Plan",
-    description:
-      "Open settings to add your exam dates, create study phases, set daily hours, and manage your study resources.",
-    side: "bottom",
-  },
-  {
-    target: "week-strip",
-    title: "Navigate Your Week",
-    description:
-      "Browse days by tapping the date strip. Swipe left/right on mobile or use the arrows to change weeks. Dots show which days have tasks.",
-    side: "bottom",
-  },
-  {
-    target: "task-list",
-    title: "Your Daily Tasks",
-    description:
-      "Tasks are organized by resource. Tap a task to mark it complete. Falling behind? Use Rebalance in settings to redistribute remaining work.",
-    side: "top",
-  },
-];
-
-export function BoardPrepPage() {
+export function StudyPlanPage() {
   const [view, setView] = useState<"day" | "calendar" | "progress">("day");
   const [currentDate, setCurrentDate] = useState(() => new Date().toISOString().split("T")[0]);
   const [calendarMonth, setCalendarMonth] = useState(
@@ -66,9 +33,6 @@ export function BoardPrepPage() {
     colorMap,
     toggleTask,
   } = useStudyPlan();
-
-  const { showTutorial: showScheduleTutorial, completeTutorial: completeScheduleTutorial } =
-    useTutorial("study-schedule");
 
   const navItems = [
     { key: "day" as const, icon: ListTodo, label: "Schedule" },
@@ -122,12 +86,6 @@ export function BoardPrepPage() {
 
   return (
     <div>
-      <SpotlightTour
-        open={showScheduleTutorial && view === "day"}
-        onComplete={completeScheduleTutorial}
-        steps={SCHEDULE_TUTORIAL}
-      />
-
       {/* Header bar with view tabs + settings */}
       <div className="mb-6 flex items-center justify-between">
         <div data-tutorial="view-tabs" className="flex items-center gap-1">

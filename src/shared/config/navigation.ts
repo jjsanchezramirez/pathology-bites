@@ -211,15 +211,15 @@ export function getUserNavigationSections(): NavigationSection[] {
           icon: "Library",
         },
         {
+          name: "Study Plan",
+          href: "/dashboard/study-plan",
+          icon: "Target",
+          isNew: true,
+        },
+        {
           name: "Learning Modules",
           href: "/dashboard/learn",
           icon: "BookOpen",
-          isSoon: true,
-        },
-        {
-          name: "Study Schedule",
-          href: "/dashboard/board-prep",
-          icon: "Target",
           isSoon: true,
         },
         {

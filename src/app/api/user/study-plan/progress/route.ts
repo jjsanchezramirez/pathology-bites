@@ -54,17 +54,16 @@ export async function DELETE(request: NextRequest) {
 
     const { searchParams } = new URL(request.url);
     const taskKey = searchParams.get("task_key");
+    const all = searchParams.get("all") === "1";
 
-    if (!taskKey) {
+    if (!taskKey && !all) {
       return NextResponse.json({ error: "task_key required" }, { status: 400 });
     }
 
-    const { error } = await supabase
-      .from(TABLE_NAMES.BOARD_PREP_PROGRESS)
-      .delete()
-      .eq("user_id", userId)
-      .eq("task_key", taskKey);
+    let query = supabase.from(TABLE_NAMES.BOARD_PREP_PROGRESS).delete().eq("user_id", userId);
+    if (!all) query = query.eq("task_key", taskKey!);
 
+    const { error } = await query;
     if (error) throw error;
 
     return NextResponse.json({ success: true });

@@ -1,6 +1,6 @@
 import { StudyResource, StudyConfig, ScheduleTask } from "../lib/types";
 
-const BASE = "/api/user/board-prep";
+const BASE = "/api/user/study-plan";
 
 async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   const res = await fetch(`${BASE}${path}`, {
@@ -17,7 +17,7 @@ async function apiFetch<T>(path: string, options?: RequestInit): Promise<T> {
   return res.json();
 }
 
-export const boardPrepService = {
+export const studyPlanService = {
   // Resources
   async getResources(): Promise<StudyResource[]> {
     return apiFetch("/resources");
@@ -70,5 +70,9 @@ export const boardPrepService = {
     await apiFetch(`/progress?task_key=${encodeURIComponent(taskKey)}`, {
       method: "DELETE",
     });
+  },
+
+  async clearAllProgress(): Promise<void> {
+    await apiFetch(`/progress?all=1`, { method: "DELETE" });
   },
 };
