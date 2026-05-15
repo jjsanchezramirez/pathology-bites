@@ -186,7 +186,10 @@ export function SetupSheet({
   const lastSavedRef = useRef("");
 
   useEffect(() => {
-    if (config) setLocalConfig(config);
+    if (config) {
+      setLocalConfig(config);
+      lastSavedRef.current = JSON.stringify(config);
+    }
   }, [config]);
 
   useEffect(() => {
