@@ -11,6 +11,7 @@ import {
   Microscope,
   Library,
   ClipboardList,
+  CalendarDays,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -44,12 +45,7 @@ export function StudentQuickActions() {
 
         <Link href="/dashboard/wsi-questions" className="block">
           <Button variant="outline" className="w-full justify-between text-sm">
-            <span className="flex items-center gap-2">
-              Slide-Based Questions
-              <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full leading-none">
-                New
-              </span>
-            </span>
+            Slide-Based Questions
             <Microscope className="h-4 w-4 shrink-0" />
           </Button>
         </Link>
@@ -63,6 +59,18 @@ export function StudentQuickActions() {
               </span>
             </span>
             <Library className="h-4 w-4 shrink-0" />
+          </Button>
+        </Link>
+
+        <Link href="/dashboard/study-plan" className="block">
+          <Button variant="outline" className="w-full justify-between text-sm">
+            <span className="flex items-center gap-2">
+              Study Plan
+              <span className="text-[10px] bg-green-100 text-green-700 px-1.5 py-0.5 rounded-full leading-none">
+                New
+              </span>
+            </span>
+            <CalendarDays className="h-4 w-4 shrink-0" />
           </Button>
         </Link>
 

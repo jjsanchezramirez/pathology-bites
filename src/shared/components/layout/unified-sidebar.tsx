@@ -30,6 +30,7 @@ import {
   Trophy,
   AudioLines,
   Clapperboard,
+  CalendarDays,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/shared/utils";
@@ -68,6 +69,7 @@ const iconMap: Record<string, LucideIcon> = {
   Trophy,
   AudioLines,
   Clapperboard,
+  CalendarDays,
 };
 
 interface UnifiedSidebarProps {

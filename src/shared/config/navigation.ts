@@ -213,7 +213,7 @@ export function getUserNavigationSections(): NavigationSection[] {
         {
           name: "Study Plan",
           href: "/dashboard/study-plan",
-          icon: "Target",
+          icon: "CalendarDays",
           isNew: true,
         },
         {
