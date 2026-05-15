@@ -20,6 +20,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import {
@@ -379,7 +381,7 @@ export function SetsManagement() {
               <TableHead>Source Type</TableHead>
               <TableHead>Questions</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
+              <TableHead className="w-[70px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -457,6 +459,8 @@ export function SetsManagement() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => {
                             setSelectedSet(set);

@@ -58,6 +58,7 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
@@ -970,6 +971,8 @@ export default function MyQuestionsPage() {
                                       </Button>
                                     </DropdownMenuTrigger>
                                     <DropdownMenuContent align="end">
+                                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                                      <DropdownMenuSeparator />
                                       <DropdownMenuItem onClick={() => handleEdit(question.id)}>
                                         <Edit3 className="h-4 w-4 mr-2" />
                                         Edit

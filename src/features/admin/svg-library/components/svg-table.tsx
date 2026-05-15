@@ -14,6 +14,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import {
@@ -61,6 +63,8 @@ function RowActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => onEdit(asset)}>
           <Edit className="h-4 w-4 mr-2" />
           Edit
@@ -175,7 +179,7 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
               <TableHead className="w-[120px]">Dimensions</TableHead>
               <TableHead className="w-[80px]">Size</TableHead>
               <TableHead className="w-[100px]">Created</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
+              <TableHead className="w-[70px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>

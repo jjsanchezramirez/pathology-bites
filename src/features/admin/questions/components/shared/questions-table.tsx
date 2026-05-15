@@ -958,7 +958,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
                 <TableHead className="w-[50px]"></TableHead>
                 <TableHead className="min-w-[320px]">Title</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
-                <TableHead className="w-[70px]"></TableHead>
+                <TableHead className="w-[70px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>

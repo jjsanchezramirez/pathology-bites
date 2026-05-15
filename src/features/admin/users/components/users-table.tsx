@@ -555,7 +555,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
               <TableHead>Type</TableHead>
               <TableHead>Status</TableHead>
               <TableHead>Joined</TableHead>
-              {isAdmin && <TableHead className="w-[70px]"></TableHead>}
+              {isAdmin && <TableHead className="w-[70px] text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>

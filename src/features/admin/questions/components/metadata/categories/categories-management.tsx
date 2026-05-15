@@ -19,6 +19,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import {
@@ -426,7 +428,7 @@ export function CategoriesManagement() {
               <TableHead>Short Form</TableHead>
               <TableHead>Parent</TableHead>
               <TableHead>Questions</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
+              <TableHead className="w-[70px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
@@ -508,6 +510,8 @@ export function CategoriesManagement() {
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent align="end">
+                        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+                        <DropdownMenuSeparator />
                         <DropdownMenuItem
                           onClick={() => {
                             setSelectedCategory(category);

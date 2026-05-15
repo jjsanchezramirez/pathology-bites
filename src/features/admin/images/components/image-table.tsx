@@ -35,6 +35,8 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { ImagePreview } from "./image-preview";
@@ -308,6 +310,8 @@ function RowActions({
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
+        <DropdownMenuLabel>Actions</DropdownMenuLabel>
+        <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => onEdit(image)}>
           <Edit className="h-4 w-4 mr-2" />
           Edit
@@ -509,7 +513,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
               <TableHead className="w-24">Size</TableHead>
               <TableHead className="w-28">Dimensions</TableHead>
               <TableHead className="w-20">Usage</TableHead>
-              <TableHead className="w-[70px]"></TableHead>
+              <TableHead className="w-[70px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
