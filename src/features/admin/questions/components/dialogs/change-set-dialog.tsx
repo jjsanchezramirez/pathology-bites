@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { toast } from "@/shared/utils/ui/toast";
 import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
 import { Button } from "@/shared/components/ui/button";
@@ -8,7 +8,9 @@ import { Label } from "@/shared/components/ui/label";
 import {
   Select,
   SelectContent,
+  SelectGroup,
   SelectItem,
+  SelectLabel,
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
@@ -20,6 +22,21 @@ interface QuestionSet {
   id: string;
   name: string;
   is_active: boolean;
+  source_type?: string | null;
+  source_details?: { provider?: string | null } | null;
+}
+
+// Group label for a set: for AI-Generated, derive the model family from
+// source_details.provider (capitalized) or fall back to the first word of the name.
+// For everything else, use source_type verbatim.
+function getSetGroupLabel(s: QuestionSet): string {
+  if (s.source_type === "AI-Generated") {
+    const provider = s.source_details?.provider?.trim().toLowerCase();
+    if (provider) return provider.charAt(0).toUpperCase() + provider.slice(1);
+    const firstWord = s.name.trim().split(/\s+/)[0];
+    return firstWord || "AI-Generated";
+  }
+  return s.source_type || "Other";
 }
 
 interface ChangeSetDialogProps {
@@ -41,7 +58,7 @@ export function ChangeSetDialog({ open, onOpenChange, onSuccess, question }: Cha
       const response = await fetch("/api/admin/questions/metadata/sets?page=0&pageSize=1000");
       if (!response.ok) throw new Error("Failed to load question sets");
       const data = await response.json();
-      setSets((data.sets || []).filter((s: QuestionSet) => s.is_active));
+      setSets((data.questionSets || []).filter((s: QuestionSet) => s.is_active));
     } catch (error) {
       console.error("Error loading question sets:", error);
       toast.error("Failed to load question sets");
@@ -56,6 +73,22 @@ export function ChangeSetDialog({ open, onOpenChange, onSuccess, question }: Cha
       loadSets();
     }
   }, [open, question, loadSets]);
+
+  // Group sets by family/source_type, sort headers alphabetically, items inside by name.
+  const groupedSets = useMemo(() => {
+    const map = new Map<string, QuestionSet[]>();
+    for (const s of sets) {
+      const label = getSetGroupLabel(s);
+      if (!map.has(label)) map.set(label, []);
+      map.get(label)!.push(s);
+    }
+    return Array.from(map.entries())
+      .map(([label, items]) => ({
+        label,
+        items: items.sort((a, b) => a.name.localeCompare(b.name)),
+      }))
+      .sort((a, b) => a.label.localeCompare(b.label));
+  }, [sets]);
 
   const handleSave = async () => {
     if (!question || !setId) return;
@@ -126,10 +159,15 @@ export function ChangeSetDialog({ open, onOpenChange, onSuccess, question }: Cha
             <SelectValue placeholder={loading ? "Loading..." : "Select a question set..."} />
           </SelectTrigger>
           <SelectContent>
-            {sets.map((s) => (
-              <SelectItem key={s.id} value={s.id}>
-                {s.name}
-              </SelectItem>
+            {groupedSets.map((group) => (
+              <SelectGroup key={group.label}>
+                <SelectLabel>{group.label}</SelectLabel>
+                {group.items.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>
+                    {s.name}
+                  </SelectItem>
+                ))}
+              </SelectGroup>
             ))}
           </SelectContent>
         </Select>

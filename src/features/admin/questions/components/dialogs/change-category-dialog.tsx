@@ -83,14 +83,15 @@ export function ChangeCategoryDialog({
       groups.push({
         label: parent.name,
         parentId: parent.id,
-        items: [parent, ...children],
+        items: children,
       });
     }
 
-    // Include any orphan categories (no parent and not a parent themselves)
-    const allGroupedIds = new Set(groups.flatMap((g) => g.items.map((c) => c.id)));
+    // Other bucket: only true orphans (no parent and not themselves a top-level group label).
+    const topLevelIds = new Set(topLevel.map((c) => c.id));
+    const groupedItemIds = new Set(groups.flatMap((g) => g.items.map((c) => c.id)));
     const ungrouped = categories
-      .filter((c) => !allGroupedIds.has(c.id))
+      .filter((c) => !topLevelIds.has(c.id) && !groupedItemIds.has(c.id))
       .sort((a, b) => a.name.localeCompare(b.name));
     if (ungrouped.length > 0) {
       groups.push({ label: "Other", parentId: null, items: ungrouped });
@@ -173,7 +174,7 @@ export function ChangeCategoryDialog({
                 <SelectLabel>{group.label}</SelectLabel>
                 {group.items.map((cat) => (
                   <SelectItem key={cat.id} value={cat.id}>
-                    {cat.parent_id ? `  ${cat.name}` : cat.name}
+                    {cat.name}
                   </SelectItem>
                 ))}
               </SelectGroup>

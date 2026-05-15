@@ -20,7 +20,7 @@ import {
   MoreVertical,
   Edit,
   Trash2,
-  Image as Flag,
+  Flag,
   History,
   Eye,
   Download,
@@ -54,7 +54,6 @@ import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { shouldShowDeleteButton } from "@/features/admin/questions/utils/deletion-helpers";
 import { ComponentErrorBoundary } from "@/shared/components/common";
-import { QuestionFlagDialog } from "../dialogs/question-flag-dialog";
 import { DeleteQuestionDialog } from "../dialogs/delete-question-dialog";
 
 import { VersionHistoryDialog } from "../versioning/version-history-dialog";
@@ -348,20 +347,16 @@ function RowActions({
   question,
   onEdit,
   onDelete,
-  onFlag,
   onViewHistory,
   onExport,
-  onCopyJson,
   onEditCategory,
   onEditSet,
 }: {
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
   onDelete: (question: QuestionWithDetails) => void;
-  onFlag?: (question: QuestionWithDetails) => void;
   onViewHistory?: (question: QuestionWithDetails) => void;
   onExport?: (question: QuestionWithDetails) => void;
-  onCopyJson?: (question: QuestionWithDetails) => void;
   onEditCategory?: (question: QuestionWithDetails) => void;
   onEditSet?: (question: QuestionWithDetails) => void;
 }) {
@@ -374,6 +369,12 @@ function RowActions({
   // Check if user can delete this question
   const canDelete = shouldShowDeleteButton(question, role, user?.id || null);
 
+  // Hide version history when question is at the initial v1.0.0 (nothing to show)
+  const hasVersionBeyondInitial =
+    (question.version_major || 1) > 1 ||
+    (question.version_minor || 0) > 0 ||
+    (question.version_patch || 0) > 0;
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild>
@@ -385,64 +386,53 @@ function RowActions({
       <DropdownMenuContent align="end">
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
-        {canEdit ? (
+        {canEdit && (
           <DropdownMenuItem onClick={() => onEdit(question)}>
             <Edit className="h-4 w-4 mr-2" />
             Edit
           </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem disabled>
-            <Edit className="h-4 w-4 mr-2" />
-            Edit (Admin Only)
-          </DropdownMenuItem>
         )}
         {isAdmin && onEditCategory && (
-          <DropdownMenuItem onClick={() => onEditCategory(question)}>
+          <DropdownMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              setTimeout(() => onEditCategory(question), 0);
+            }}
+          >
             <FolderEdit className="h-4 w-4 mr-2" />
             Change Category
           </DropdownMenuItem>
         )}
         {isAdmin && onEditSet && (
-          <DropdownMenuItem onClick={() => onEditSet(question)}>
+          <DropdownMenuItem
+            onSelect={(e) => {
+              e.preventDefault();
+              setTimeout(() => onEditSet(question), 0);
+            }}
+          >
             <BookOpen className="h-4 w-4 mr-2" />
             Change Question Set
           </DropdownMenuItem>
         )}
-        {question.status === "published" && onFlag && (
-          <DropdownMenuItem onClick={() => onFlag(question)}>
-            <Flag className="h-4 w-4 mr-2" />
-            Flag for Review
-          </DropdownMenuItem>
-        )}
-        {onViewHistory && (
+        {hasVersionBeyondInitial && onViewHistory && (
           <DropdownMenuItem onClick={() => onViewHistory(question)}>
             <History className="h-4 w-4 mr-2" />
             Version History
           </DropdownMenuItem>
         )}
-        <DropdownMenuSeparator />
-
         {onExport && (
-          <DropdownMenuItem onClick={() => onExport(question)}>
-            <Download className="h-4 w-4 mr-2" />
-            Export JSON
-          </DropdownMenuItem>
+          <>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={() => onExport(question)}>
+              <Download className="h-4 w-4 mr-2" />
+              Export JSON
+            </DropdownMenuItem>
+          </>
         )}
-        {onCopyJson && (
-          <DropdownMenuItem onClick={() => onCopyJson(question)}>
-            <Download className="h-4 w-4 mr-2" />
-            Copy JSON
-          </DropdownMenuItem>
-        )}
-        {canDelete ? (
+        {canDelete && (
           <DropdownMenuItem className="text-red-600" onClick={() => onDelete(question)}>
             <Trash2 className="h-4 w-4 mr-2" />
             Delete
-          </DropdownMenuItem>
-        ) : (
-          <DropdownMenuItem disabled className="text-muted-foreground">
-            <Trash2 className="h-4 w-4 mr-2" />
-            Delete (Draft Only)
           </DropdownMenuItem>
         )}
       </DropdownMenuContent>
@@ -455,11 +445,9 @@ function QuestionRow({
   question,
   onEdit,
   onDelete,
-  onFlag,
   onViewHistory,
   onPreview,
   onExport,
-  onCopyJson,
   onEditCategory,
   onEditSet,
   isSelected,
@@ -469,11 +457,9 @@ function QuestionRow({
   question: QuestionWithDetails;
   onEdit: (question: QuestionWithDetails) => void;
   onDelete: (question: QuestionWithDetails) => void;
-  onFlag?: (question: QuestionWithDetails) => void;
   onViewHistory?: (question: QuestionWithDetails) => void;
   onPreview?: (question: QuestionWithDetails) => void;
   onExport?: (question: QuestionWithDetails) => void;
-  onCopyJson?: (question: QuestionWithDetails) => void;
   onEditCategory?: (question: QuestionWithDetails) => void;
   onEditSet?: (question: QuestionWithDetails) => void;
   isSelected: boolean;
@@ -557,10 +543,8 @@ function QuestionRow({
           question={question}
           onEdit={onEdit}
           onDelete={onDelete}
-          onFlag={onFlag}
           onViewHistory={onViewHistory}
           onExport={onExport}
-          onCopyJson={onCopyJson}
           onEditCategory={onEditCategory}
           onEditSet={onEditSet}
         />
@@ -607,11 +591,9 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
 
   const supabase = createClient();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
   const [showPreviewDialog, setShowPreviewDialog] = useState(false);
   const [questionToDelete, setQuestionToDelete] = useState<QuestionWithDetails | null>(null);
-  const [questionToFlag, setQuestionToFlag] = useState<QuestionWithDetails | null>(null);
   const [questionForHistory, setQuestionForHistory] = useState<QuestionWithDetails | null>(null);
   const [questionToPreview, setQuestionToPreview] = useState<QuestionWithDetails | null>(null);
   const [showChangeCategoryDialog, setShowChangeCategoryDialog] = useState(false);
@@ -677,11 +659,6 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
   const handleDelete = useCallback((question: QuestionWithDetails) => {
     setQuestionToDelete(question);
     setShowDeleteDialog(true);
-  }, []);
-
-  const handleFlag = useCallback((question: QuestionWithDetails) => {
-    setQuestionToFlag(question);
-    setShowFlagDialog(true);
   }, []);
 
   const handleViewHistory = useCallback((question: QuestionWithDetails) => {
@@ -774,7 +751,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
 
   const handleExportQuestion = useCallback(async (question: QuestionWithDetails) => {
     try {
-      const response = await fetch(`/api/questions/${question.id}/export`);
+      const response = await fetch(`/api/admin/questions/${question.id}/export`);
       if (!response.ok) {
         throw new Error("Failed to export question");
       }
@@ -801,7 +778,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
 
   const handleExportAll = useCallback(async () => {
     try {
-      const response = await fetch("/api/questions/export");
+      const response = await fetch("/api/admin/questions/export-all");
       if (!response.ok) {
         throw new Error("Failed to export questions");
       }
@@ -823,25 +800,6 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
     } catch (error) {
       console.error("Error exporting questions:", error);
       toast.error("Failed to export questions");
-    }
-  }, []);
-
-  const handleCopyJsonQuestion = useCallback(async (question: QuestionWithDetails) => {
-    try {
-      const response = await fetch(`/api/questions/${question.id}/export`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch question data");
-      }
-
-      const questionData = await response.json();
-
-      // Copy to clipboard
-      await navigator.clipboard.writeText(JSON.stringify(questionData, null, 2));
-
-      toast.success("Question JSON copied to clipboard");
-    } catch (error) {
-      console.error("Error copying question JSON:", error);
-      toast.error("Failed to copy question JSON");
     }
   }, []);
 
@@ -958,12 +916,6 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
     }
   }, [selectedQuestions, refetch, router]);
 
-  const handleFlagSave = useCallback(() => {
-    setShowFlagDialog(false);
-    setQuestionToFlag(null);
-    refetch();
-  }, [refetch]);
-
   // Load questions when component mounts or filters change
   useEffect(() => {
     refetch();
@@ -1058,11 +1010,9 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
                     question={question}
                     onEdit={handleEdit}
                     onDelete={handleDelete}
-                    onFlag={handleFlag}
                     onViewHistory={handleViewHistory}
                     onPreview={handlePreview}
                     onExport={handleExportQuestion}
-                    onCopyJson={handleCopyJsonQuestion}
                     onEditCategory={showAdminFeatures ? handleEditCategory : undefined}
                     onEditSet={showAdminFeatures ? handleEditSet : undefined}
                     isSelected={selectedQuestions.includes(question.id)}
@@ -1089,14 +1039,6 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
           question={questionToPreview}
           open={showPreviewDialog}
           onOpenChange={setShowPreviewDialog}
-        />
-
-        {/* Flag Dialog */}
-        <QuestionFlagDialog
-          question={questionToFlag}
-          open={showFlagDialog}
-          onOpenChange={setShowFlagDialog}
-          onFlagComplete={handleFlagSave}
         />
 
         {/* Version History Dialog */}

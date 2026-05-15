@@ -1,7 +1,7 @@
 // src/app/(admin)/admin/page.tsx
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
@@ -63,10 +63,17 @@ export default function AdminDashboardPage() {
     }
   }, [dataLoading, stats, activities, isTransitioning, setTransitioning]);
 
+  // Defer client-only branching (cookie reads, role detection) until after hydration commit.
+  // Why: getAdminModeFromCookie reads document.cookie on the client but falls back to a role-derived
+  // default on the server. The two paths can disagree on the first render, producing a hydration mismatch
+  // when the SSR skeleton's parent structure differs from the populated client tree.
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
   return (
     <div className="space-y-6">
       {/* Hide content when transitioning OR when adminMode is "user" to prevent showing student content on admin page */}
-      {isTransitioning || adminMode === "user" ? (
+      {!mounted || isTransitioning || adminMode === "user" ? (
         <>
           {/* Title skeleton */}
           <div className="space-y-2">
