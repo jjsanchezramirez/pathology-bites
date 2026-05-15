@@ -37,6 +37,11 @@ src/
 - Toasts: import from `@/shared/utils/toast`, never direct from `sonner` (ESLint enforced).
 - Components: shadcn/ui in `src/shared/components/ui/`. Prefer existing over new.
 - Confirmation modals: always use `Dialog` (`shared/components/ui/dialog.tsx`) — never `AlertDialog`. Repo `AlertDialog` ships `slide-in-from-left-1/2` / `slide-in-from-top-[48%]` animations layered on `translate-x-[-50%] translate-y-[-50%]` centering transform; two stack, panel pinned upper-left not centered. Whole codebase uses `Dialog` for "are you sure?" flows (see `quiz/[id]/components/dialogs/*`); follow pattern.
+- **Badges.** Visual reference live at `/debug/badges` (gitignored). Three rules:
+  - **Status/type/category w/ text label** → canonical outline: `variant="outline"` + `border-X-300 bg-X-50 text-X-700`. Use existing wrappers when possible: `CategoryBadge`, `StatusBadge`, `DifficultyBadge`, `RoleBadge`, `UserStatusBadge`, `ImageTypeBadge`, `InquiryStatusBadge`. New domain badge → new wrapper in `shared/components/ui/`, not inline.
+  - **Single-number / counter chips** (tab counts, quick-action counts, sidebar nav counters) → solid Shadcn variant: `variant="secondary"` (neutral), `variant="destructive"` (alert). No border (cva sets `border-transparent`). Never apply canonical outline to a single-number badge.
+  - **Sidebar/dashboard nav pills** ("New", "Soon", count dots) → inline `<span>` w/ `rounded-full bg-X-100 text-X-700 px-2 py-0.5` (no border), not `Badge` component. See `unified-sidebar.tsx` + `student-quick-actions.tsx`.
+  - Sizes: tables use `text-[10px] px-1.5 py-0`. Cards/dialogs use Badge cva default (`text-xs px-2.5 py-0.5`). Tab counters use `h-5 px-1.5 text-xs`.
 
 ## Caching
 

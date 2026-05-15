@@ -18,41 +18,34 @@ export function InquiryStatusBadge({ status, createdAt, className }: InquiryStat
   const getStatusConfig = (status: string) => {
     const statusLower = status.toLowerCase();
 
-    // Resolved/Closed = Green
     if (statusLower === "resolved" || statusLower === "closed") {
       return {
         label: statusLower === "resolved" ? "Resolved" : "Closed",
-        variant: "default" as const,
         icon: CheckCircle,
-        className: "bg-green-100 text-green-800 hover:bg-green-100",
+        className: "border-emerald-300 bg-emerald-50 text-emerald-700",
       };
     }
 
-    // Pending = Yellow or Red (if delayed)
     if (statusLower === "pending") {
       const delayed = createdAt && isDelayed(createdAt);
       if (delayed) {
         return {
           label: "Delayed",
-          variant: "destructive" as const,
           icon: AlertCircle,
-          className: "bg-red-100 text-red-800 hover:bg-red-100",
+          className: "border-red-300 bg-red-50 text-red-700",
         };
       }
       return {
         label: "Pending",
-        variant: "secondary" as const,
         icon: Clock,
-        className: "bg-yellow-100 text-yellow-800 hover:bg-yellow-100",
+        className: "border-amber-300 bg-amber-50 text-amber-700",
       };
     }
 
-    // Default
     return {
       label: status,
-      variant: "outline" as const,
       icon: Clock,
-      className: "bg-gray-100 text-gray-800 hover:bg-gray-100",
+      className: "border-gray-300 bg-gray-50 text-gray-700",
     };
   };
 
@@ -60,7 +53,7 @@ export function InquiryStatusBadge({ status, createdAt, className }: InquiryStat
   const Icon = config.icon;
 
   return (
-    <Badge variant={config.variant} className={`${config.className} ${className}`}>
+    <Badge variant="outline" className={`${config.className} ${className ?? ""}`}>
       <Icon className="w-3 h-3 mr-1" />
       {config.label}
     </Badge>

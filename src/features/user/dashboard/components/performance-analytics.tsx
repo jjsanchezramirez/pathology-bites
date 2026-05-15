@@ -296,7 +296,10 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
                         <p className="text-sm font-medium truncate">{subject.name}</p>
                         <p className="text-xs text-muted-foreground">{subject.attempts} attempts</p>
                       </div>
-                      <Badge variant="destructive" className="text-xs shrink-0">
+                      <Badge
+                        variant="outline"
+                        className="text-xs shrink-0 border-red-300 bg-red-50 text-red-700"
+                      >
                         {subject.score}%
                       </Badge>
                     </div>
@@ -333,8 +336,8 @@ export function PerformanceAnalytics({ data }: PerformanceAnalyticsProps) {
                         <p className="text-xs text-muted-foreground">{subject.attempts} attempts</p>
                       </div>
                       <Badge
-                        variant="default"
-                        className="text-xs shrink-0 bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300"
+                        variant="outline"
+                        className="text-xs shrink-0 border-emerald-300 bg-emerald-50 text-emerald-700"
                       >
                         {subject.score}%
                       </Badge>

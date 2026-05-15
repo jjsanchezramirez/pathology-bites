@@ -535,13 +535,16 @@ export default function MyQuestionsPage() {
     );
     if (daysOld > 7) {
       return (
-        <Badge variant="destructive" className="ml-2 text-xs">
+        <Badge variant="outline" className="ml-2 text-xs border-red-300 bg-red-50 text-red-700">
           Urgent
         </Badge>
       );
     } else if (daysOld > 3) {
       return (
-        <Badge variant="secondary" className="ml-2 text-xs">
+        <Badge
+          variant="outline"
+          className="ml-2 text-xs border-amber-300 bg-amber-50 text-amber-700"
+        >
           Aging
         </Badge>
       );

@@ -159,17 +159,17 @@ export const DIFFICULTY_CONFIG = {
   easy: {
     label: "Easy",
     short: "E",
-    color: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
+    color: "border-green-300 bg-green-50 text-green-700",
   },
   medium: {
     label: "Medium",
     short: "M",
-    color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
+    color: "border-yellow-300 bg-yellow-50 text-yellow-700",
   },
   hard: {
     label: "Hard",
     short: "H",
-    color: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300",
+    color: "border-red-300 bg-red-50 text-red-700",
   },
 } as const;
 

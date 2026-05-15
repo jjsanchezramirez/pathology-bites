@@ -97,11 +97,11 @@ export function InquiryDetailsDialog({ inquiry, open, onOpenChange }: InquiryDet
   const getTypeColor = (type: string) => {
     switch (type) {
       case "general":
-        return "bg-blue-100 text-blue-800";
+        return "border-blue-300 bg-blue-50 text-blue-700";
       case "tech":
-        return "bg-orange-100 text-orange-800";
+        return "border-orange-300 bg-orange-50 text-orange-700";
       default:
-        return "bg-gray-100 text-gray-800";
+        return "border-gray-300 bg-gray-50 text-gray-700";
     }
   };
 
@@ -122,7 +122,7 @@ export function InquiryDetailsDialog({ inquiry, open, onOpenChange }: InquiryDet
           {/* Header with Type and Status */}
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <Badge className={getTypeColor(inquiry.request_type)} variant="secondary">
+              <Badge className={getTypeColor(inquiry.request_type)} variant="outline">
                 {inquiry.request_type === "general" ? "General Inquiry" : "Technical Support"}
               </Badge>
               <InquiryStatusBadge status={inquiry.status} />

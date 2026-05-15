@@ -14,7 +14,8 @@ import {
 } from "@/shared/components/ui/table";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
+import { RoleBadge } from "@/shared/components/ui/role-badge";
+import { UserStatusBadge } from "@/shared/components/ui/user-status-badge";
 import {
   Select,
   SelectContent,
@@ -69,40 +70,6 @@ interface User {
 
 const PAGE_SIZE = 10;
 
-const roleConfig = {
-  admin: {
-    label: "Admin",
-    color: "bg-blue-100 text-blue-800 dark:bg-blue-900/50 dark:text-blue-300",
-  },
-  creator: {
-    label: "Creator",
-    color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
-  },
-  reviewer: {
-    label: "Reviewer",
-    color: "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300",
-  },
-  user: {
-    label: "User",
-    color: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300",
-  },
-};
-
-const statusConfig = {
-  active: {
-    label: "Active",
-    color: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
-  },
-  inactive: {
-    label: "Inactive",
-    color: "bg-gray-100 text-gray-800 dark:bg-gray-900/50 dark:text-gray-300",
-  },
-  suspended: {
-    label: "Suspended",
-    color: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300",
-  },
-};
-
 const userTypeConfig = {
   student: "Student",
   resident: "Resident",
@@ -143,11 +110,7 @@ const UserRow = memo(function UserRow({
         </div>
       </TableCell>
       <TableCell>
-        <div
-          className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ${roleConfig[user.role as keyof typeof roleConfig]?.color || ""}`}
-        >
-          {roleConfig[user.role as keyof typeof roleConfig]?.label || user.role}
-        </div>
+        <RoleBadge role={user.role} className="text-[10px] px-1.5 py-0" />
       </TableCell>
       <TableCell>
         <span className="text-sm">
@@ -155,9 +118,7 @@ const UserRow = memo(function UserRow({
         </span>
       </TableCell>
       <TableCell>
-        <Badge className={statusConfig[user.status as keyof typeof statusConfig]?.color || ""}>
-          {statusConfig[user.status as keyof typeof statusConfig]?.label || user.status}
-        </Badge>
+        <UserStatusBadge status={user.status} className="text-[10px] px-1.5 py-0" />
       </TableCell>
       <TableCell className="text-sm text-muted-foreground">
         {format(new Date(user.created_at), "MMM d, yyyy")}

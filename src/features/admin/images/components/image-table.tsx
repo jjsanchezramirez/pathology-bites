@@ -13,6 +13,9 @@ import {
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
+import { Badge } from "@/shared/components/ui/badge";
+import { CategoryBadge } from "@/shared/components/ui/category-badge";
+import { ImageTypeBadge } from "@/shared/components/ui/image-type-badge";
 import { toast } from "@/shared/utils/ui/toast";
 import {
   Search,
@@ -49,35 +52,12 @@ import {
   ImageUsageStats,
 } from "@/features/admin/images/services/image-analytics";
 import { formatSize } from "@/features/admin/images/services/image-upload";
-import { getCategoryById } from "@/shared/config/category-color-map";
 import { CATEGORIES } from "@/shared/config/categories";
 
-import {
-  ImageData,
-  ImageCategory,
-  IMAGE_CATEGORIES,
-  PAGE_SIZE,
-  PAGE_SIZE_OPTIONS,
-} from "@/shared/types/images";
+import { ImageData, ImageCategory, PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/shared/types/images";
 
 // Define the valid category values type
 type CategoryFilterType = "all" | "unused" | "uncategorized" | ImageCategory;
-
-// Category color configurations
-const getCategoryColor = (category: ImageCategory): string => {
-  switch (category) {
-    case "microscopic":
-      return "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300";
-    case "gross":
-      return "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300";
-    case "figure":
-      return "bg-purple-100 text-purple-800 dark:bg-purple-900/50 dark:text-purple-300";
-    case "table":
-      return "bg-orange-100 text-orange-800 dark:bg-orange-900/50 dark:text-orange-300";
-    default:
-      return "bg-secondary text-secondary-foreground";
-  }
-};
 
 // Table Header component with search and filters
 function TableControls({
@@ -508,10 +488,6 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
             <TableRow>
               <TableHead className="w-24">Preview</TableHead>
               <TableHead>Image Details</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Category</TableHead>
-              <TableHead className="w-24">Size</TableHead>
-              <TableHead className="w-28">Dimensions</TableHead>
               <TableHead className="w-20">Usage</TableHead>
               <TableHead className="w-[70px] text-right">Actions</TableHead>
             </TableRow>
@@ -519,7 +495,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
           <TableBody>
             {loading ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center">
+                <TableCell colSpan={4} className="h-24 text-center">
                   <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                 </TableCell>
               </TableRow>
@@ -542,41 +518,9 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
 
                 // Get pathology category from the joined data
                 const pathologyCategory = (image as { pathology_category?: unknown })
-                  .pathology_category;
-
-                // Get category color if available
-                const categoryWithColor = image.pathology_category_id
-                  ? getCategoryById(image.pathology_category_id)
-                  : null;
-                const categoryColor = categoryWithColor?.color;
-
-                // Helper to convert HSL to light/dark variants
-                const getCategoryBadgeStyle = (hslColor: string | undefined) => {
-                  if (!hslColor) {
-                    return {
-                      light: "bg-gray-100 text-gray-800",
-                      dark: "dark:bg-gray-900/50 dark:text-gray-300",
-                    };
-                  }
-
-                  const hslMatch = hslColor.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
-                  if (!hslMatch) {
-                    return {
-                      light: "bg-gray-100 text-gray-800",
-                      dark: "dark:bg-gray-900/50 dark:text-gray-300",
-                    };
-                  }
-
-                  const [, h, s, _l] = hslMatch;
-                  return {
-                    backgroundColor: `hsl(${h} ${Math.min(parseInt(s), 50)}% 90%)`,
-                    color: `hsl(${h} ${s}% 20%)`,
-                    darkBackgroundColor: `hsl(${h} ${Math.min(parseInt(s), 50)}% 20%)`,
-                    darkColor: `hsl(${h} ${s}% 80%)`,
-                  };
-                };
-
-                const badgeStyle = getCategoryBadgeStyle(categoryColor);
+                  .pathology_category as
+                  | { id?: string; short_form?: string; name?: string; color?: string }
+                  | undefined;
 
                 return (
                   <TableRow key={image.id}>
@@ -584,53 +528,55 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
                       <ImagePreview src={image.url} alt={image.alt_text || "Image"} size="sm" />
                     </TableCell>
                     <TableCell className="max-w-md">
-                      <div className="space-y-1">
-                        <div className="flex items-center gap-2">
-                          <p className="text-sm font-medium line-clamp-1 flex-1">
-                            {image.alt_text || "Untitled Image"}
-                          </p>
-                          {image.magnification && (
-                            <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">
-                              · {image.magnification}
-                            </span>
-                          )}
-                        </div>
+                      <div className="space-y-1.5">
+                        <p className="text-sm font-medium line-clamp-1">
+                          {image.alt_text || "Untitled Image"}
+                        </p>
                         {image.description && (
                           <p className="line-clamp-2 text-xs text-muted-foreground">
                             {image.description}
                           </p>
                         )}
+                        <div className="flex items-center flex-wrap gap-1.5">
+                          <ImageTypeBadge
+                            category={image.category as ImageCategory}
+                            className="text-[10px] px-1.5 py-0"
+                          />
+                          {pathologyCategory && pathologyCategory.id ? (
+                            <CategoryBadge
+                              category={{
+                                id: pathologyCategory.id,
+                                color: pathologyCategory.color,
+                                short_form: pathologyCategory.short_form,
+                                name: pathologyCategory.name,
+                              }}
+                              className="text-[10px] px-1.5 py-0"
+                            />
+                          ) : (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                              Uncategorized
+                            </Badge>
+                          )}
+                          {image.file_size_bytes && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                              {formatSize(image.file_size_bytes)}
+                            </Badge>
+                          )}
+                          {image.width && image.height && (
+                            <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                              {image.width} × {image.height}
+                            </Badge>
+                          )}
+                          {image.magnification && (
+                            <Badge
+                              variant="outline"
+                              className="text-[10px] px-1.5 py-0 border-blue-300 bg-blue-50 text-blue-700"
+                            >
+                              {image.magnification}
+                            </Badge>
+                          )}
+                        </div>
                       </div>
-                    </TableCell>
-                    <TableCell>
-                      <span
-                        className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${getCategoryColor(image.category as ImageCategory)}`}
-                      >
-                        {IMAGE_CATEGORIES[image.category as ImageCategory] || image.category}
-                      </span>
-                    </TableCell>
-                    <TableCell>
-                      {pathologyCategory ? (
-                        <span
-                          className="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium"
-                          style={{
-                            backgroundColor: badgeStyle.backgroundColor,
-                            color: badgeStyle.color,
-                          }}
-                        >
-                          {(pathologyCategory as { short_form?: string; name?: string })
-                            .short_form ||
-                            (pathologyCategory as { short_form?: string; name?: string }).name}
-                        </span>
-                      ) : (
-                        <span className="text-xs text-muted-foreground">Uncategorized</span>
-                      )}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {image.file_size_bytes ? formatSize(image.file_size_bytes) : "Unknown"}
-                    </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
-                      {image.width && image.height ? `${image.width} × ${image.height}` : "Unknown"}
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center gap-1">

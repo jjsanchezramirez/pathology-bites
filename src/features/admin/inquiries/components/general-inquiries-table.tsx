@@ -210,7 +210,11 @@ export function GeneralInquiriesTable({
 
   const getStatusBadge = (inquiry: Inquiry) => {
     return (
-      <InquiryStatusBadge status={inquiry.status || "pending"} createdAt={inquiry.created_at} />
+      <InquiryStatusBadge
+        status={inquiry.status || "pending"}
+        createdAt={inquiry.created_at}
+        className="text-[10px] px-1.5 py-0"
+      />
     );
   };
 

@@ -116,17 +116,32 @@ export function QuizCard({ quiz, onDelete, formatDate, formatTimeSpent }: QuizCa
   const getStatusBadge = (status: string) => {
     switch (status) {
       case "completed":
-        return <Badge variant="default">Completed</Badge>;
+        return (
+          <Badge variant="outline" className="border-emerald-300 bg-emerald-50 text-emerald-700">
+            Completed
+          </Badge>
+        );
       case "in_progress":
-        return <Badge variant="secondary">In Progress</Badge>;
+        return (
+          <Badge variant="outline" className="border-amber-300 bg-amber-50 text-amber-700">
+            In Progress
+          </Badge>
+        );
       case "not_started":
-        return <Badge variant="destructive">Not Started</Badge>;
+        return (
+          <Badge variant="outline" className="border-slate-300 bg-slate-50 text-slate-700">
+            Not Started
+          </Badge>
+        );
       case "abandoned":
         return (
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger asChild>
-                <Badge variant="outline" className="cursor-help">
+                <Badge
+                  variant="outline"
+                  className="cursor-help border-red-300 bg-red-50 text-red-700"
+                >
                   Data Lost
                 </Badge>
               </TooltipTrigger>

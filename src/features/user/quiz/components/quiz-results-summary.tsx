@@ -332,19 +332,13 @@ export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSum
                         </div>
                         {/* Result badge - moved to top right on mobile */}
                         <Badge
-                          variant={
-                            question.isCorrect
-                              ? "outline"
-                              : question.selectedAnswerId === null
-                                ? "secondary"
-                                : "destructive"
-                          }
+                          variant="outline"
                           className={`flex-shrink-0 text-xs sm:hidden ${
                             question.isCorrect
-                              ? "bg-green-100 text-green-800 border-0 dark:bg-green-900/20 dark:text-green-300"
+                              ? "border-emerald-300 bg-emerald-50 text-emerald-700"
                               : question.selectedAnswerId === null
-                                ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                                : ""
+                                ? "border-gray-300 bg-gray-50 text-gray-700"
+                                : "border-red-300 bg-red-50 text-red-700"
                           }`}
                         >
                           {question.isCorrect
@@ -377,19 +371,13 @@ export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSum
 
                     {/* Result badge - desktop only */}
                     <Badge
-                      variant={
-                        question.isCorrect
-                          ? "outline"
-                          : question.selectedAnswerId === null
-                            ? "secondary"
-                            : "destructive"
-                      }
+                      variant="outline"
                       className={`hidden sm:flex flex-shrink-0 ${
                         question.isCorrect
-                          ? "bg-green-100 text-green-800 border-0 dark:bg-green-900/20 dark:text-green-300"
+                          ? "border-emerald-300 bg-emerald-50 text-emerald-700"
                           : question.selectedAnswerId === null
-                            ? "bg-gray-100 text-gray-600 dark:bg-gray-800 dark:text-gray-400"
-                            : ""
+                            ? "border-gray-300 bg-gray-50 text-gray-700"
+                            : "border-red-300 bg-red-50 text-red-700"
                       }`}
                     >
                       {question.isCorrect ? (
