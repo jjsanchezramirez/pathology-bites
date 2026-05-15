@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import useSWR from "swr";
 import { Button } from "@/shared/components/ui/button";
 import {
   Dialog,
@@ -32,6 +33,14 @@ interface Reviewer {
   pending_count: number;
 }
 
+const reviewersFetcher = async (url: string): Promise<{ reviewers: Reviewer[] }> => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    throw new Error("Failed to fetch reviewers");
+  }
+  return response.json();
+};
+
 interface BulkSubmitDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -45,35 +54,22 @@ export function BulkSubmitDialog({
   questionCount,
   onConfirm,
 }: BulkSubmitDialogProps) {
-  const [reviewers, setReviewers] = useState<Reviewer[]>([]);
   const [selectedReviewerId, setSelectedReviewerId] = useState<string>("");
-  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
-  // Fetch reviewers when dialog opens
-  useEffect(() => {
-    const fetchReviewers = async () => {
-      if (!open) return;
-
-      setLoading(true);
-      try {
-        const response = await fetch("/api/admin/questions/reviewers");
-        if (!response.ok) {
-          throw new Error("Failed to fetch reviewers");
-        }
-
-        const data = await response.json();
-        setReviewers(data.reviewers || []);
-      } catch (error) {
+  const { data, isLoading: loading } = useSWR(
+    open ? "/api/admin/questions/reviewers" : null,
+    reviewersFetcher,
+    {
+      dedupingInterval: 60_000,
+      revalidateOnFocus: false,
+      onError: (error: unknown) => {
         console.error("Error fetching reviewers:", error);
         toast.error("Failed to load reviewers");
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchReviewers();
-  }, [open]);
+      },
+    }
+  );
+  const reviewers = data?.reviewers ?? [];
 
   const handleSubmit = async () => {
     if (!selectedReviewerId) {

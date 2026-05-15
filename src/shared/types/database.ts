@@ -26,7 +26,6 @@ export const TABLE_NAMES = {
   USER_FAVORITES: "user_favorites",
   USER_ACHIEVEMENTS: "user_achievements",
   // System tables
-  QUESTION_REPORTS: "question_reports",
   NOTIFICATION_STATES: "notification_states",
   SYSTEM_UPDATES: "system_updates",
   TAGS: "tags",
@@ -105,14 +104,6 @@ export const IMAGE_CATEGORIES: Database["public"]["Enums"]["image_category"][] =
   "external",
 ] as const;
 
-export const REPORT_TYPES: Database["public"]["Enums"]["report_type"][] = [
-  "incorrect_answer",
-  "unclear_explanation",
-  "broken_image",
-  "inappropriate_content",
-  "other",
-] as const;
-
 // =============================================================================
 // TYPE GUARDS
 // =============================================================================
@@ -153,12 +144,6 @@ export const isImageCategory = (
   value: string
 ): value is Database["public"]["Enums"]["image_category"] => {
   return IMAGE_CATEGORIES.includes(value as Database["public"]["Enums"]["image_category"]);
-};
-
-export const isReportType = (
-  value: string
-): value is Database["public"]["Enums"]["report_type"] => {
-  return REPORT_TYPES.includes(value as Database["public"]["Enums"]["report_type"]);
 };
 
 // =============================================================================
@@ -236,7 +221,6 @@ export type UserType = Database["public"]["Enums"]["user_type"];
 export type DifficultyLevel = Database["public"]["Enums"]["difficulty_level"];
 export type SessionStatus = Database["public"]["Enums"]["session_status"];
 export type ImageCategory = Database["public"]["Enums"]["image_category"];
-export type ReportType = Database["public"]["Enums"]["report_type"];
 
 // Table row types
 export type UserRow = Database["public"]["Tables"]["users"]["Row"];

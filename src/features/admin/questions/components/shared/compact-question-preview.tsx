@@ -13,7 +13,7 @@ import {
 import { toast } from "@/shared/utils/ui/toast";
 import { DIFFICULTY_CONFIG, QuestionWithDetails } from "@/shared/types/questions";
 import { SimpleImageCarousel } from "./simple-image-carousel";
-import { getCategoryColor } from "@/shared/utils/category-colors";
+import { CategoryBadge } from "@/shared/components/ui/category-badge";
 import { formatQuestionVersion } from "@/shared/utils/version";
 
 interface CompactQuestionPreviewProps {
@@ -280,28 +280,16 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
           <div className="pt-3 border-t space-y-1.5">
             {/* Row 1: All badges — Category, Difficulty, Question Set, Tags, Version */}
             <div className="flex items-center gap-2 flex-wrap text-xs">
-              {question.category &&
-                (() => {
-                  const categoryColor = getCategoryColor({
+              {question.category && (
+                <CategoryBadge
+                  category={{
                     color: question.category.color ?? undefined,
                     short_form: question.category.short_form ?? undefined,
-                    parent_short_form: undefined,
-                  });
-
-                  return (
-                    <Badge
-                      variant="outline"
-                      className="text-xs"
-                      style={{
-                        backgroundColor: `${categoryColor}15`,
-                        borderColor: categoryColor,
-                        color: categoryColor,
-                      }}
-                    >
-                      {question.category.name}
-                    </Badge>
-                  );
-                })()}
+                    name: question.category.name,
+                  }}
+                  label={question.category.name}
+                />
+              )}
 
               {question.difficulty && (
                 <Badge

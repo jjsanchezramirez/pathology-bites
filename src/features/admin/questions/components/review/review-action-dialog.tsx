@@ -58,7 +58,7 @@ export function ReviewActionDialog({
           .eq("action", "resubmitted")
           .order("created_at", { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle();
 
         if (error && error.code !== "PGRST116") {
           // PGRST116 = no rows returned

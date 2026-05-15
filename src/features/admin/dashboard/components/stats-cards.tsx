@@ -96,8 +96,8 @@ export function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: "Flagged Questions",
-      value: stats.questionReports.toLocaleString(),
-      description: `${stats.pendingReports} need attention`,
+      value: stats.flaggedQuestions.toLocaleString(),
+      description: `${stats.flaggedQuestions} need attention`,
       icon: AlertCircle,
       trend: "critical", // Always critical styling for flagged questions
       permission: "questions.review",

@@ -27,7 +27,6 @@ import {
   Check,
   X,
   Send,
-  Plus,
   FolderEdit,
   BookOpen,
 } from "lucide-react";
@@ -55,7 +54,6 @@ import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { shouldShowDeleteButton } from "@/features/admin/questions/utils/deletion-helpers";
 import { ComponentErrorBoundary } from "@/shared/components/common";
-import { CreateQuestionDialog } from "../dialogs/create-question-dialog";
 import { QuestionFlagDialog } from "../dialogs/question-flag-dialog";
 import { DeleteQuestionDialog } from "../dialogs/delete-question-dialog";
 
@@ -88,75 +86,7 @@ const _DIFFICULTY_CONFIG = {
 
 // Import the status configuration from types
 import { STATUS_CONFIG } from "@/shared/types/questions";
-
-// Category color mapping for better badge appearance
-const getCategoryBadgeClass = (category: {
-  short_form?: string;
-  color?: string;
-  parent_short_form?: string;
-}) => {
-  // If custom color is set, return empty string to use inline styles
-  if (category.color) {
-    return "";
-  }
-
-  // Fallback to predefined colors based on short form
-  const shortForm = category.short_form || category.parent_short_form;
-
-  // Main categories
-  if (shortForm === "AP")
-    return "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/20 dark:text-blue-300 dark:border-blue-800";
-  if (shortForm === "CP")
-    return "bg-emerald-100 text-emerald-800 border-emerald-200 dark:bg-emerald-900/20 dark:text-emerald-300 dark:border-emerald-800";
-
-  // AP subspecialties - stronger colors
-  if (category.parent_short_form === "AP") {
-    const colors = [
-      "bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/20 dark:text-purple-300 dark:border-purple-800",
-      "bg-orange-100 text-orange-800 border-orange-200 dark:bg-orange-900/20 dark:text-orange-300 dark:border-orange-800",
-      "bg-red-100 text-red-800 border-red-200 dark:bg-red-900/20 dark:text-red-300 dark:border-red-800",
-      "bg-pink-100 text-pink-800 border-pink-200 dark:bg-pink-900/20 dark:text-pink-300 dark:border-pink-800",
-      "bg-indigo-100 text-indigo-800 border-indigo-200 dark:bg-indigo-900/20 dark:text-indigo-300 dark:border-indigo-800",
-      "bg-cyan-100 text-cyan-800 border-cyan-200 dark:bg-cyan-900/20 dark:text-cyan-300 dark:border-cyan-800",
-      "bg-teal-100 text-teal-800 border-teal-200 dark:bg-teal-900/20 dark:text-teal-300 dark:border-teal-800",
-      "bg-lime-100 text-lime-800 border-lime-200 dark:bg-lime-900/20 dark:text-lime-300 dark:border-lime-800",
-    ];
-    const hash = shortForm ? shortForm.split("").reduce((a, b) => a + b.charCodeAt(0), 0) : 0;
-    return colors[hash % colors.length];
-  }
-
-  // CP subspecialties - stronger colors
-  if (category.parent_short_form === "CP") {
-    const colors = [
-      "bg-sky-100 text-sky-800 border-sky-200 dark:bg-sky-900/20 dark:text-sky-300 dark:border-sky-800",
-      "bg-green-100 text-green-800 border-green-200 dark:bg-green-900/20 dark:text-green-300 dark:border-green-800",
-      "bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/20 dark:text-amber-300 dark:border-amber-800",
-      "bg-rose-100 text-rose-800 border-rose-200 dark:bg-rose-900/20 dark:text-rose-300 dark:border-rose-800",
-      "bg-violet-100 text-violet-800 border-violet-200 dark:bg-violet-900/20 dark:text-violet-300 dark:border-violet-800",
-    ];
-    const hash = shortForm ? shortForm.split("").reduce((a, b) => a + b.charCodeAt(0), 0) : 0;
-    return colors[hash % colors.length];
-  }
-
-  // Default fallback
-  return "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900/20 dark:text-gray-300 dark:border-gray-800";
-};
-
-// Helper function to create standardized custom color styles
-const getCustomColorStyle = (color: string) => {
-  // Convert HSL to a lighter background version for consistency
-  // Extract HSL values and create a light background with darker text
-  const hslMatch = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);
-  if (hslMatch) {
-    const [, h, s] = hslMatch;
-    return {
-      backgroundColor: `hsl(${h} ${Math.min(parseInt(s), 50)}% 90%)`, // Light background
-      color: `hsl(${h} ${s}% 20%)`, // Dark text
-      borderColor: `hsl(${h} ${Math.min(parseInt(s), 60)}% 70%)`, // Medium border
-    };
-  }
-  return undefined;
-};
+import { CategoryBadge } from "@/shared/components/ui/category-badge";
 
 // Helper function to format version string in semantic versioning format
 const getVersionString = (question: QuestionWithDetails): string => {
@@ -173,7 +103,6 @@ function TableControls({
   onStatusChange,
   onQuestionSetChange,
   onCategoryChange,
-  onCreateNew,
   onExportAll,
   difficultyFilter,
   statusFilter,
@@ -189,7 +118,6 @@ function TableControls({
   onStatusChange: (status: string) => void;
   onQuestionSetChange: (questionSetId: string) => void;
   onCategoryChange: (categoryId: string) => void;
-  onCreateNew: () => void;
   onExportAll: () => void;
   difficultyFilter: string;
   statusFilter: string;
@@ -268,13 +196,9 @@ function TableControls({
             ))}
           </SelectContent>
         </Select>
-        <Button variant="outline" onClick={onExportAll}>
+        <Button onClick={onExportAll}>
           <Download className="h-4 w-4 mr-2" />
           Export All
-        </Button>
-        <Button variant="default" onClick={onCreateNew}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create New Question
         </Button>
       </div>
 
@@ -569,57 +493,52 @@ function QuestionRow({
       <TableCell className="text-center">
         {(question.flag_count || 0) > 0 && <Flag className="h-4 w-4 text-red-500" />}
       </TableCell>
-      <TableCell className="min-w-[200px]">
-        <div className="flex-1 min-w-0">
+      <TableCell className="min-w-[320px]">
+        <div className="flex-1 min-w-0 space-y-1.5">
           <p className="line-clamp-2 text-sm font-medium">{question.title}</p>
-        </div>
-      </TableCell>
-      <TableCell className="w-[120px]">
-        <Badge
-          variant="outline"
-          className={`${STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.color || "border-gray-300 bg-gray-50 text-gray-700"} text-xs`}
-        >
-          {STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.label || question.status}
-        </Badge>
-      </TableCell>
-      <TableCell className="w-[140px]">
-        <div className="flex flex-wrap gap-1">
-          {question.category ? (
+          <div className="flex items-center flex-wrap gap-1.5">
             <Badge
               variant="outline"
-              className={`text-[10px] px-1.5 py-0 border ${getCategoryBadgeClass(question.category)}`}
-              style={
-                question.category.color ? getCustomColorStyle(question.category.color) : undefined
-              }
+              className={`${STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.color || "border-gray-300 bg-gray-50 text-gray-700"} text-[10px] px-1.5 py-0`}
             >
-              {question.category.short_form || question.category.name}
+              {STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.label ||
+                question.status}
             </Badge>
-          ) : (
-            <span className="text-xs text-muted-foreground">No category</span>
-          )}
+            {question.category && (
+              <CategoryBadge
+                category={{
+                  id: question.category.id,
+                  color: question.category.color ?? undefined,
+                  short_form: question.category.short_form ?? undefined,
+                  name: question.category.name,
+                }}
+                className="text-[10px] px-1.5 py-0"
+              />
+            )}
+            {question.question_set && (
+              <Badge variant="outline" className="text-[10px] px-1.5 py-0">
+                {question.question_set.short_form || question.question_set.name}
+              </Badge>
+            )}
+            <Badge variant="outline" className="text-[10px] px-1.5 py-0 font-mono">
+              {getVersionString(question)}
+            </Badge>
+          </div>
+          <div className="text-xs text-muted-foreground">
+            Created by {question.created_by_name || "Unknown"} on{" "}
+            {new Date(question.created_at).toLocaleDateString("en-US", {
+              month: "numeric",
+              day: "numeric",
+              year: "2-digit",
+            })}{" "}
+            · Last updated by {question.updated_by_name || "Unknown"} on{" "}
+            {new Date(question.updated_at).toLocaleDateString("en-US", {
+              month: "numeric",
+              day: "numeric",
+              year: "2-digit",
+            })}
+          </div>
         </div>
-      </TableCell>
-      <TableCell className="w-[120px]">
-        <p className="line-clamp-1 text-sm">
-          {question.set?.short_form || question.set?.name || "No set"}
-        </p>
-      </TableCell>
-      <TableCell className="w-[80px]">
-        <div className="text-sm font-mono">{getVersionString(question)}</div>
-      </TableCell>
-      <TableCell className="w-[100px] text-sm text-muted-foreground">
-        {new Date(question.created_at).toLocaleDateString("en-US", {
-          month: "numeric",
-          day: "numeric",
-          year: "2-digit",
-        })}
-      </TableCell>
-      <TableCell className="w-[100px] text-sm text-muted-foreground">
-        {new Date(question.updated_at).toLocaleDateString("en-US", {
-          month: "numeric",
-          day: "numeric",
-          year: "2-digit",
-        })}
       </TableCell>
       <TableCell className="text-center">
         {onPreview && (
@@ -687,7 +606,6 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
   const showAdminFeatures = adminMode === "admin" && isActualAdmin;
 
   const supabase = createClient();
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showFlagDialog, setShowFlagDialog] = useState(false);
   const [showVersionHistory, setShowVersionHistory] = useState(false);
@@ -908,10 +826,6 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
     }
   }, []);
 
-  const handleCreateNew = useCallback(() => {
-    router.push("/admin/questions/create");
-  }, [router]);
-
   const handleCopyJsonQuestion = useCallback(async (question: QuestionWithDetails) => {
     try {
       const response = await fetch(`/api/questions/${question.id}/export`);
@@ -1044,13 +958,6 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
     }
   }, [selectedQuestions, refetch, router]);
 
-  const handleCreateSave = useCallback(() => {
-    setShowCreateDialog(false);
-    refetch();
-    // Refresh to update sidebar counts
-    router.refresh();
-  }, [refetch, router]);
-
   const handleFlagSave = useCallback(() => {
     setShowFlagDialog(false);
     setQuestionToFlag(null);
@@ -1091,7 +998,6 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
           onDifficultyChange={handleDifficultyChange}
           onStatusChange={handleStatusChange}
           onQuestionSetChange={handleQuestionSetChange}
-          onCreateNew={handleCreateNew}
           onExportAll={handleExportAll}
           categoryFilter={categoryFilter}
           difficultyFilter={difficultyFilter}
@@ -1118,13 +1024,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
                   </TableHead>
                 )}
                 <TableHead className="w-[50px]"></TableHead>
-                <TableHead className="min-w-[200px]">Title</TableHead>
-                <TableHead className="w-[120px]">Status</TableHead>
-                <TableHead className="w-[140px]">Category</TableHead>
-                <TableHead className="w-[120px]">Set</TableHead>
-                <TableHead className="w-[80px]">Version</TableHead>
-                <TableHead className="w-[100px]">Created</TableHead>
-                <TableHead className="w-[100px]">Updated</TableHead>
+                <TableHead className="min-w-[320px]">Title</TableHead>
                 <TableHead className="w-[50px]"></TableHead>
                 <TableHead className="w-[70px]"></TableHead>
               </TableRow>
@@ -1132,14 +1032,14 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
             <TableBody>
               {loading ? (
                 <TableRow>
-                  <TableCell colSpan={showAdminFeatures ? 11 : 10} className="h-24 text-center">
+                  <TableCell colSpan={showAdminFeatures ? 5 : 4} className="h-24 text-center">
                     <Loader2 className="h-6 w-6 animate-spin mx-auto" />
                   </TableCell>
                 </TableRow>
               ) : questions.length === 0 ? (
                 <TableRow>
                   <TableCell
-                    colSpan={showAdminFeatures ? 11 : 10}
+                    colSpan={showAdminFeatures ? 5 : 4}
                     className="h-24 text-center text-muted-foreground"
                   >
                     {searchTerm ||
@@ -1182,13 +1082,6 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
           totalItems={total}
           pageSize={pageSize}
           onPageSizeChange={handlePageSizeChange}
-        />
-
-        {/* Dialogs */}
-        <CreateQuestionDialog
-          open={showCreateDialog}
-          onOpenChange={setShowCreateDialog}
-          onSave={handleCreateSave}
         />
 
         {/* Preview Dialog */}

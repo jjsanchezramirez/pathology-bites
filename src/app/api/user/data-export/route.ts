@@ -67,10 +67,6 @@ import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
  *                       type: array
  *                       items:
  *                         type: object
- *                     question_reports:
- *                       type: array
- *                       items:
- *                         type: object
  *                     statistics:
  *                       type: object
  *                       properties:
@@ -191,22 +187,6 @@ export async function POST(request: NextRequest) {
       console.error("Error fetching question flags:", flagsError);
     }
 
-    // Get question reports created by user
-    const { data: questionReports, error: reportsError } = await supabase
-      .from("question_reports")
-      .select(
-        `
-        *,
-        questions(title, category_id)
-      `
-      )
-      .eq("reported_by", userId)
-      .order("created_at", { ascending: false });
-
-    if (reportsError) {
-      console.error("Error fetching question reports:", reportsError);
-    }
-
     // Compile all user data
     const userData = {
       export_info: {
@@ -224,13 +204,11 @@ export async function POST(request: NextRequest) {
       },
       favorites: favorites || [],
       question_flags: questionFlags || [],
-      question_reports: questionReports || [],
       statistics: {
         total_quiz_sessions: quizSessions?.length || 0,
         total_quiz_attempts: quizAttempts?.length || 0,
         total_favorites: favorites?.length || 0,
         total_flags_created: questionFlags?.length || 0,
-        total_reports_created: questionReports?.length || 0,
         account_created: userProfile?.created_at,
         last_updated: userProfile?.updated_at,
       },
@@ -251,7 +229,6 @@ export async function POST(request: NextRequest) {
           "quiz_attempts",
           "favorites",
           "question_flags",
-          "question_reports",
         ],
       },
     });

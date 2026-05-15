@@ -10,8 +10,8 @@ import { AchievementCelebrationModal } from "@/features/user/achievements/compon
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import confetti from "canvas-confetti";
-import { getCategoryByName, getCategoryStyle } from "@/shared/config/categories";
-import { getCategoryColor } from "@/shared/utils/category-colors";
+import { getCategoryByName } from "@/shared/config/categories";
+import { CategoryBadge } from "@/shared/components/ui/category-badge";
 import { useFavoritesGlobal } from "@/features/user/questions/hooks/use-favorites-global";
 import { cn } from "@/shared/utils/utils";
 
@@ -253,26 +253,19 @@ export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSum
                         ? Math.round((category.correct / category.total) * 100)
                         : 0;
 
-                    // Get category color using utility
-                    const categoryColor = getCategoryColor({
-                      id: category.categoryId,
-                      color: category.categoryColor,
-                      short_form: category.categoryShortForm,
-                      parent_short_form: category.parentShortForm,
-                      name: category.categoryName,
-                    });
-                    const categoryStyle = getCategoryStyle(categoryColor);
-
                     return (
                       <tr key={category.categoryId}>
                         <td className="py-2 px-2">
-                          <Badge
-                            variant="outline"
-                            className="text-xs border [&]:dark:brightness-90"
-                            style={categoryStyle?.light}
-                          >
-                            {category.categoryName}
-                          </Badge>
+                          <CategoryBadge
+                            category={{
+                              id: category.categoryId,
+                              color: category.categoryColor,
+                              short_form: category.categoryShortForm,
+                              parent_short_form: category.parentShortForm,
+                              name: category.categoryName,
+                            }}
+                            label={category.categoryName}
+                          />
                         </td>
                         <td className="py-2 px-2 text-center">
                           <span
@@ -318,7 +311,6 @@ export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSum
               {result.questionDetails.map((question, index) => {
                 const category = getCategoryByName(question.category);
                 const categoryShort = category?.shortForm || question.category;
-                const categoryStyle = category ? getCategoryStyle(category.color) : null;
                 const successRatePercentage = Math.round(question.successRate);
 
                 return (
@@ -363,13 +355,14 @@ export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSum
                         </Badge>
                       </div>
                       <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap text-xs">
-                        <Badge
-                          variant="outline"
-                          className="border [&]:dark:brightness-90"
-                          style={categoryStyle?.light}
-                        >
-                          {categoryShort}
-                        </Badge>
+                        <CategoryBadge
+                          category={{
+                            color: category?.color,
+                            short_form: category?.shortForm,
+                            name: category?.name ?? question.category,
+                          }}
+                          label={categoryShort}
+                        />
                         <span className="text-muted-foreground hidden sm:inline">
                           {successRatePercentage}% of users got this correct
                         </span>

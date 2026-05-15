@@ -9,7 +9,7 @@ import {
   MilestonePayload as _MilestonePayload,
   ReminderPayload as _ReminderPayload,
 } from "@/shared/types/notifications";
-import { InquiryData, QuestionReportData } from "@/features/admin/inquiries/types/inquiries";
+import { InquiryData } from "@/features/admin/inquiries/types/inquiries";
 
 export class NotificationsService {
   private getSupabase() {
@@ -70,9 +70,8 @@ export class NotificationsService {
       );
 
       // Fetch source data for existing tables only
-      const [inquiries, reports, systemUpdates] = await Promise.all([
+      const [inquiries, systemUpdates] = await Promise.all([
         sourceIdsByType.inquiry?.length > 0 ? this.getInquiries(sourceIdsByType.inquiry) : [],
-        sourceIdsByType.report?.length > 0 ? this.getReports(sourceIdsByType.report) : [],
         sourceIdsByType.system_update?.length > 0
           ? this.getSystemUpdates(sourceIdsByType.system_update)
           : [],
@@ -80,7 +79,6 @@ export class NotificationsService {
 
       // Create lookup maps for existing source types
       const inquiryMap = new Map(inquiries.map((i) => [i.id, i] as const));
-      const reportMap = new Map(reports.map((r) => [r.id, r] as const));
       const systemUpdateMap = new Map(systemUpdates.map((s) => [s.id, s] as const));
 
       // Combine notification states with source data
@@ -100,22 +98,6 @@ export class NotificationsService {
                 organization: inquiry.organization,
                 request_type: inquiry.request_type,
                 inquiry_text: inquiry.inquiry,
-              },
-            };
-          } else if (state.source_type === "report") {
-            const report = reportMap.get(state.source_id);
-            if (!report) return null;
-
-            return {
-              ...state,
-              title: "Question Report",
-              description: `Question reported for ${report.report_type}`,
-              status: report.status,
-              metadata: {
-                question_id: report.question_id,
-                report_type: report.report_type,
-                description: report.description,
-                reported_by: report.reported_by,
               },
             };
           }
@@ -185,21 +167,6 @@ export class NotificationsService {
     if (ids.length === 0) return [];
 
     const { data, error } = await this.getSupabase().from("inquiries").select("*").in("id", ids);
-
-    if (error) {
-      throw error;
-    }
-
-    return data || [];
-  }
-
-  private async getReports(ids: string[]): Promise<QuestionReportData[]> {
-    if (ids.length === 0) return [];
-
-    const { data, error } = await this.getSupabase()
-      .from("question_reports")
-      .select("*")
-      .in("id", ids);
 
     if (error) {
       throw error;

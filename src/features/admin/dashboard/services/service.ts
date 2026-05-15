@@ -10,8 +10,6 @@ export interface DashboardStats {
   activeUsers: number;
   recentQuestions: number;
   unreadInquiries: number;
-  questionReports: number;
-  pendingReports: number;
   draftQuestions: number; // Add draft questions
   flaggedQuestions: number; // Add flagged questions
 }

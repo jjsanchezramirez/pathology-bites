@@ -88,13 +88,17 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
           version_major,
           version_minor,
           version_patch,
-          question_set:question_sets!questions_set_id_fkey(
+          question_set:question_sets(
             id,
             name,
             source_type,
             short_form
           ),
           created_by_user:users!questions_created_by_fkey(
+            first_name,
+            last_name
+          ),
+          updated_by_user:users!questions_updated_by_fkey(
             first_name,
             last_name
           ),
@@ -179,6 +183,9 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
           ...question,
           created_by_name: question.created_by_user
             ? `${(question.created_by_user as { first_name?: string }).first_name || ""} ${(question.created_by_user as { last_name?: string }).last_name || ""}`.trim()
+            : "Unknown",
+          updated_by_name: (question as { updated_by_user?: unknown }).updated_by_user
+            ? `${((question as { updated_by_user?: { first_name?: string } }).updated_by_user as { first_name?: string }).first_name || ""} ${((question as { updated_by_user?: { last_name?: string } }).updated_by_user as { last_name?: string }).last_name || ""}`.trim()
             : "Unknown",
           image_count: question.question_images?.[0]?.count || 0,
           category: questionCategory || undefined,

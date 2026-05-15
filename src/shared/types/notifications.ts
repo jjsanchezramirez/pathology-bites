@@ -53,15 +53,6 @@ export interface InquiryPayload {
   created_at: string;
 }
 
-export interface ReportPayload {
-  id: string;
-  question_id: string;
-  report_type: string;
-  reported_by: string;
-  status: string;
-  created_at: string;
-}
-
 export interface SystemUpdatePayload {
   id: string;
   title: string;

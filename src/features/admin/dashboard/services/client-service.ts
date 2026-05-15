@@ -24,8 +24,6 @@ class ClientDashboardService {
         activeUsers: viewData.active_users,
         recentQuestions: viewData.recent_questions,
         unreadInquiries: viewData.unread_inquiries,
-        questionReports: viewData.question_reports,
-        pendingReports: viewData.pending_reports,
         draftQuestions: viewData.draft_questions,
         flaggedQuestions: viewData.flagged_questions,
       };
@@ -60,11 +58,10 @@ class ClientDashboardService {
         .from("questions")
         .select("id", { count: "exact", head: true })
         .gte("created_at", new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString()),
-      this.supabase.from("question_reports").select("id", { count: "exact", head: true }),
       this.supabase
-        .from("question_reports")
+        .from("questions")
         .select("id", { count: "exact", head: true })
-        .eq("status", "pending"),
+        .eq("status", "flagged"),
     ]);
 
     // Check if ALL queries failed - this indicates a serious problem
@@ -98,12 +95,10 @@ class ClientDashboardService {
       pendingQuestions: getCounts(4),
       activeUsers: getCounts(5),
       recentQuestions: getCounts(6),
-      questionReports: getCounts(7),
-      pendingReports: getCounts(8),
       unreadInquiries: getCounts(3), // Use totalInquiries count (assuming all are unread)
       rejectedQuestions: 0,
       draftQuestions: 0,
-      flaggedQuestions: 0,
+      flaggedQuestions: getCounts(7),
     };
   }
 
@@ -194,11 +189,11 @@ class ClientDashboardService {
         permission: "users.manage",
       },
       {
-        title: "View Reports",
-        description: `${stats.pendingReports} flagged questions`,
-        count: stats.pendingReports,
+        title: "Flagged Questions",
+        description: `${stats.flaggedQuestions} flagged questions`,
+        count: stats.flaggedQuestions,
         href: "/admin/questions/flagged",
-        urgent: stats.pendingReports > 0,
+        urgent: stats.flaggedQuestions > 0,
         permission: "questions.review",
       },
       {
@@ -267,10 +262,10 @@ class ClientDashboardService {
       },
       {
         title: "Flagged Questions",
-        description: `${stats.pendingReports} need attention`,
-        count: stats.pendingReports,
+        description: `${stats.flaggedQuestions} need attention`,
+        count: stats.flaggedQuestions,
         href: "/admin/questions/flagged",
-        urgent: stats.pendingReports > 0,
+        urgent: stats.flaggedQuestions > 0,
         permission: "questions.review",
       },
     ];

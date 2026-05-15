@@ -243,13 +243,6 @@ export function getCategoryByName(name: string): CategoryConfig | undefined {
   );
 }
 
-// Helper function to convert HSL color to Tailwind v4 classes
-export function getCategoryBadgeClasses(_color: string): string {
-  // Parse HSL color and generate appropriate Tailwind classes
-  // For now, return a default class since we're using inline styles
-  return "border";
-}
-
 // Helper function to get category style from HSL color
 export function getCategoryStyle(color: string) {
   const hslMatch = color.match(/hsl\((\d+)\s+(\d+)%\s+(\d+)%\)/);

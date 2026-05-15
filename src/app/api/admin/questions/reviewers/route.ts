@@ -64,27 +64,26 @@ export async function GET(request: Request) {
       );
     }
 
-    // Get all users with admin or reviewer role
-    const { data: reviewers, error: reviewersError } = await supabase
-      .from("users")
-      .select("id, email, first_name, last_name, role")
-      .in("role", ["admin", "reviewer"])
-      .eq("status", "active")
-      .order("first_name", { ascending: true });
+    // Parallel: reviewers list + workload (all pending_review questions). Workload query
+    // intentionally doesn't filter on reviewer_ids — they aren't known yet, and the result
+    // set is small (pending_review count is bounded). Saves a round-trip vs sequential.
+    const [reviewersResult, workloadResult] = await Promise.all([
+      supabase
+        .from("users")
+        .select("id, email, first_name, last_name, role")
+        .in("role", ["admin", "reviewer"])
+        .eq("status", "active")
+        .order("first_name", { ascending: true }),
+      supabase.from("questions").select("reviewer_id").eq("status", "pending_review"),
+    ]);
+
+    const { data: reviewers, error: reviewersError } = reviewersResult;
+    const { data: workloadData, error: workloadError } = workloadResult;
 
     if (reviewersError) {
       console.error("Error fetching reviewers:", reviewersError);
       return NextResponse.json({ error: "Failed to fetch reviewers" }, { status: 500 });
     }
-
-    // Get workload for each reviewer (count of pending_review questions)
-    const reviewerIds = reviewers.map((r) => r.id);
-
-    const { data: workloadData, error: workloadError } = await supabase
-      .from("questions")
-      .select("reviewer_id")
-      .in("reviewer_id", reviewerIds)
-      .eq("status", "pending_review");
 
     if (workloadError) {
       console.error("Error fetching workload:", workloadError);

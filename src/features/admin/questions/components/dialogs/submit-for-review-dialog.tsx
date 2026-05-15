@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
+import useSWR from "swr";
 import {
   Dialog,
   DialogContent,
@@ -30,6 +31,15 @@ interface Reviewer {
   pending_count: number;
 }
 
+const reviewersFetcher = async (url: string): Promise<{ reviewers: Reviewer[] }> => {
+  const response = await fetch(url);
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.error || `Failed to fetch reviewers: ${response.status}`);
+  }
+  return response.json();
+};
+
 interface SubmitForReviewDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -47,51 +57,34 @@ export function SubmitForReviewDialog({
   questionStatus,
   onSuccess,
 }: SubmitForReviewDialogProps) {
-  const [reviewers, setReviewers] = useState<Reviewer[]>([]);
   const [selectedReviewerId, setSelectedReviewerId] = useState<string>("");
   const [resubmissionNotes, setResubmissionNotes] = useState<string>("");
-  const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const isResubmission = questionStatus === "rejected";
 
-  // Fetch reviewers when dialog opens
-  useEffect(() => {
-    if (open) {
-      fetchReviewers();
+  const { data, isLoading: loading } = useSWR(
+    open ? "/api/admin/questions/reviewers" : null,
+    reviewersFetcher,
+    {
+      dedupingInterval: 60_000,
+      revalidateOnFocus: false,
+      onError: (error: unknown) => {
+        console.error("Error fetching reviewers:", error);
+        const isNetworkError =
+          error instanceof TypeError &&
+          (error.message?.includes("fetch") || error.message?.includes("network"));
+        if (isNetworkError) {
+          toast.error("Network connection interrupted. Please refresh and try again.");
+        } else if (error instanceof Error && error.message?.includes("Timed out")) {
+          toast.error("Request timed out. Please check your network connection.");
+        } else {
+          toast.error(error instanceof Error ? error.message : "Failed to load reviewers");
+        }
+      },
     }
-  }, [open]);
-
-  const fetchReviewers = async () => {
-    setLoading(true);
-    try {
-      const response = await fetch("/api/admin/questions/reviewers");
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}));
-        throw new Error(errorData.error || `Failed to fetch reviewers: ${response.status}`);
-      }
-      const data = await response.json();
-      setReviewers(data.reviewers || []);
-    } catch (error) {
-      console.error("Error fetching reviewers:", error);
-
-      // Detect network errors (laptop sleep/wake, offline, etc.)
-      const isNetworkError =
-        error instanceof TypeError &&
-        (error.message?.includes("fetch") || error.message?.includes("network"));
-
-      if (isNetworkError) {
-        toast.error("Network connection interrupted. Please refresh and try again.");
-      } else if (error.message?.includes("Timed out")) {
-        toast.error("Request timed out. Please check your network connection.");
-      } else {
-        const errorMessage = error instanceof Error ? error.message : "Failed to load reviewers";
-        toast.error(errorMessage);
-      }
-    } finally {
-      setLoading(false);
-    }
-  };
+  );
+  const reviewers = data?.reviewers ?? [];
 
   const handleSubmit = async () => {
     if (!selectedReviewerId) {
