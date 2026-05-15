@@ -11,6 +11,7 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { Badge } from "@/shared/components/ui/badge";
+import { DifficultyBadge } from "@/shared/components/ui/difficulty-badge";
 import { History, User, Calendar, Check, ImagePlus, ImageMinus } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import { useProtectedDialog } from "@/shared/hooks/use-protected-dialog";
@@ -483,21 +484,15 @@ export function VersionHistoryDialog({
           </div>
           {difficultyChanged && compareWith ? (
             <div className="flex items-center gap-2">
-              <Badge variant="outline" className="opacity-60 line-through">
-                {compareData.difficulty?.charAt(0).toUpperCase() +
-                  compareData.difficulty?.slice(1) || "Medium"}
-              </Badge>
+              <DifficultyBadge
+                difficulty={compareData.difficulty || "medium"}
+                className="opacity-60 line-through"
+              />
               <span className="text-muted-foreground">→</span>
-              <Badge variant="default" className="bg-blue-500">
-                {versionData.difficulty?.charAt(0).toUpperCase() +
-                  versionData.difficulty?.slice(1) || "Medium"}
-              </Badge>
+              <DifficultyBadge difficulty={versionData.difficulty || "medium"} />
             </div>
           ) : (
-            <Badge variant="outline">
-              {versionData.difficulty?.charAt(0).toUpperCase() + versionData.difficulty?.slice(1) ||
-                "Medium"}
-            </Badge>
+            <DifficultyBadge difficulty={versionData.difficulty || "medium"} />
           )}
         </div>
       </div>

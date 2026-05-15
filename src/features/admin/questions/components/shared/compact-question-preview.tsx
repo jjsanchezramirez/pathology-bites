@@ -11,9 +11,10 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { toast } from "@/shared/utils/ui/toast";
-import { DIFFICULTY_CONFIG, QuestionWithDetails } from "@/shared/types/questions";
+import { QuestionWithDetails } from "@/shared/types/questions";
 import { SimpleImageCarousel } from "./simple-image-carousel";
 import { CategoryBadge } from "@/shared/components/ui/category-badge";
+import { DifficultyBadge } from "@/shared/components/ui/difficulty-badge";
 import { formatQuestionVersion } from "@/shared/utils/version";
 
 interface CompactQuestionPreviewProps {
@@ -291,14 +292,7 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                 />
               )}
 
-              {question.difficulty && (
-                <Badge
-                  variant="outline"
-                  className={`text-xs border ${DIFFICULTY_CONFIG[question.difficulty as keyof typeof DIFFICULTY_CONFIG]?.color || ""}`}
-                >
-                  {question.difficulty}
-                </Badge>
-              )}
+              {question.difficulty && <DifficultyBadge difficulty={question.difficulty} />}
 
               {(question.set || question.question_set) && (
                 <Badge variant="outline" className="text-xs">

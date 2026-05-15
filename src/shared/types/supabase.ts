@@ -1974,7 +1974,6 @@ export type Database = {
       question_status:
         | "draft"
         | "pending_review"
-        | "approved"
         | "flagged"
         | "archived"
         | "rejected"
@@ -2116,15 +2115,7 @@ export const Constants = {
     Enums: {
       difficulty_level: ["easy", "medium", "hard"],
       image_category: ["microscopic", "gross", "figure", "table", "external"],
-      question_status: [
-        "draft",
-        "pending_review",
-        "approved",
-        "flagged",
-        "archived",
-        "rejected",
-        "published",
-      ],
+      question_status: ["draft", "pending_review", "flagged", "archived", "rejected", "published"],
       report_type: [
         "incorrect_answer",
         "unclear_explanation",

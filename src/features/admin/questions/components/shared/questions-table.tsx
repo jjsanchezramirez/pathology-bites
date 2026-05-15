@@ -70,22 +70,8 @@ import { useRouter } from "next/navigation";
 const DEFAULT_PAGE_SIZE = 10;
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
-// Difficulty configuration
-const _DIFFICULTY_CONFIG = {
-  easy: {
-    label: "Easy",
-    color: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
-  },
-  medium: {
-    label: "Medium",
-    color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
-  },
-  hard: { label: "Hard", color: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300" },
-} as const;
-
-// Import the status configuration from types
-import { STATUS_CONFIG } from "@/shared/types/questions";
 import { CategoryBadge } from "@/shared/components/ui/category-badge";
+import { StatusBadge } from "@/shared/components/ui/status-badge";
 
 // Helper function to format version string in semantic versioning format
 const getVersionString = (question: QuestionWithDetails): string => {
@@ -483,13 +469,7 @@ function QuestionRow({
         <div className="flex-1 min-w-0 space-y-1.5">
           <p className="line-clamp-2 text-sm font-medium">{question.title}</p>
           <div className="flex items-center flex-wrap gap-1.5">
-            <Badge
-              variant="outline"
-              className={`${STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.color || "border-gray-300 bg-gray-50 text-gray-700"} text-[10px] px-1.5 py-0`}
-            >
-              {STATUS_CONFIG[question.status as keyof typeof STATUS_CONFIG]?.label ||
-                question.status}
-            </Badge>
+            <StatusBadge status={question.status} className="text-[10px] px-1.5 py-0" />
             {question.category && (
               <CategoryBadge
                 category={{

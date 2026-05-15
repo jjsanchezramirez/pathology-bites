@@ -64,7 +64,7 @@ export interface Image {
   alt_text: string;
 }
 
-export type QuestionDifficulty = "EASY" | "MEDIUM" | "HARD";
+export type QuestionDifficulty = Database["public"]["Enums"]["difficulty_level"];
 export type QuestionYield = "HIGH_YIELD" | "MEDIUM_YIELD" | "LOW_YIELD";
 
 export interface Question {
@@ -154,19 +154,22 @@ export interface QuestionFiltersData {
   pageSize?: number;
 }
 
-// Styling configurations
+// Styling configurations — keys match difficulty_level DB enum (lowercase).
 export const DIFFICULTY_CONFIG = {
-  EASY: {
-    color: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
+  easy: {
+    label: "Easy",
     short: "E",
+    color: "bg-green-100 text-green-800 dark:bg-green-900/50 dark:text-green-300",
   },
-  MEDIUM: {
-    color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
+  medium: {
+    label: "Medium",
     short: "M",
+    color: "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/50 dark:text-yellow-300",
   },
-  HARD: {
-    color: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300",
+  hard: {
+    label: "Hard",
     short: "H",
+    color: "bg-red-100 text-red-800 dark:bg-red-900/50 dark:text-red-300",
   },
 } as const;
 
