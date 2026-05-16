@@ -50,7 +50,9 @@ export function StatsCards({ stats }: StatsCardsProps) {
       // 'flagged' and 'archived', so the displayed number drifted from the
       // actual published count whenever non-zero questions sat in those
       // states.
-      value: stats.publishedQuestions.toLocaleString(),
+      // `?? 0` defends against stale SWR cache entries written by builds
+      // before `publishedQuestions` existed on DashboardStats.
+      value: (stats.publishedQuestions ?? 0).toLocaleString(),
       description: "Live and available",
       icon: FileQuestion,
       trend: "positive",
