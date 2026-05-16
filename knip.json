@@ -40,7 +40,8 @@
     "src/features/**/contexts/**/*.{ts,tsx}",
     "src/features/**/types/**/*.ts",
     "src/features/**/utils/**/*.ts",
-    "src/features/public/tools/cell-quiz/data/**/*.ts"
+    "src/features/public/tools/cell-quiz/data/**/*.ts",
+    "dev/testing/**/*.{ts,tsx}"
   ],
   "project": ["src/**/*.{ts,tsx}"]
 }

@@ -7,9 +7,9 @@ import { getApiKey, getModelProvider } from "@/shared/config/ai-models";
 // Error classification
 // ---------------------------------------------------------------------------
 
-type ErrorClass = "retryable" | "fallback" | "fatal";
+export type ErrorClass = "retryable" | "fallback" | "fatal";
 
-function classifyError(error: unknown): ErrorClass {
+export function classifyError(error: unknown): ErrorClass {
   const msg =
     typeof error === "string" ? error : error instanceof Error ? error.message : String(error);
   const lower = msg.toLowerCase();

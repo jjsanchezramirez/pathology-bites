@@ -74,14 +74,14 @@ const KEN_BURNS_MAX_PAN = 4; // Max pan at scale=1.1 (safe: (1.1−1)/1.1*50 ≈
  * Compute max safe pan offset for a given scale.
  * Formula: (scale - 1) / scale * 50
  */
-function maxSafePan(scale: number): number {
+export function maxSafePan(scale: number): number {
   return ((scale - 1) / scale) * 50;
 }
 
 /**
  * Clamp a value to [-limit, +limit].
  */
-function clamp(value: number, limit: number): number {
+export function clamp(value: number, limit: number): number {
   return Math.max(-limit, Math.min(limit, value));
 }
 
@@ -95,7 +95,7 @@ function clamp(value: number, limit: number): number {
  *
  * The result is clamped to the safe pan range so borders never appear.
  */
-function featureToCameraPan(featurePos: number, scale: number): number {
+export function featureToCameraPan(featurePos: number, scale: number): number {
   const raw = ((featurePos - 50) * (scale - 1)) / scale;
   return clamp(raw, maxSafePan(scale));
 }
@@ -120,7 +120,7 @@ const DRIFT_PRESETS: CameraAnchor[] = [
  * Pick a Ken Burns drift endpoint for segment index `segmentIndex`.
  * Uses the index to cycle through presets deterministically.
  */
-function kenBurnsDriftFor(segmentIndex: number): CameraAnchor {
+export function kenBurnsDriftFor(segmentIndex: number): CameraAnchor {
   return DRIFT_PRESETS[segmentIndex % DRIFT_PRESETS.length];
 }
 
@@ -265,6 +265,74 @@ export function computeCameraKeyframes(
     zoomOutDuration: ZOOM_OUT_DURATION,
     kenBurnsDrift: null,
   };
+}
+
+// ---------------------------------------------------------------------------
+// Prompt formatting
+// ---------------------------------------------------------------------------
+
+function fmtAnchor(a: CameraAnchor): string {
+  return `scale=${a.scale.toFixed(2)}, x=${a.x.toFixed(1)}, y=${a.y.toFixed(1)}`;
+}
+
+/**
+ * Format camera keyframes as a human-readable string for the LLM prompt.
+ * Describes the camera animation plan for one segment.
+ */
+export function formatCameraKeyframesForPrompt(kf: CameraKeyframes, duration: number): string {
+  // Figures/tables: no pre-computed camera, model decides
+  if (!kf.hasTarget && !kf.kenBurnsDrift) {
+    return "Camera: model discretion (figure/table — gentle Ken Burns at 1.1x scale suggested).";
+  }
+
+  // Ken Burns drift
+  if (!kf.hasTarget && kf.kenBurnsDrift) {
+    return [
+      "Camera: Ken Burns drift (no specific target).",
+      `  t=0: ${fmtAnchor(kf.wide)}`,
+      `  t=${duration.toFixed(2)}: ${fmtAnchor(kf.kenBurnsDrift)}`,
+    ].join("\n");
+  }
+
+  // Zoom-to-feature: 5 keyframes
+  const zoomInEnd = kf.zoomInStartTime + 2;
+  const holdEnd = duration - kf.zoomOutDuration;
+  return [
+    "Camera: zoom-to-feature.",
+    `  t=0: ${fmtAnchor(kf.wide)}`,
+    `  t=${kf.zoomInStartTime.toFixed(2)}: ${fmtAnchor(kf.wide)}`,
+    `  t=${zoomInEnd.toFixed(2)}: ${fmtAnchor(kf.zoomed)}`,
+    `  t=${holdEnd.toFixed(2)}: ${fmtAnchor(kf.zoomed)}`,
+    `  t=${duration.toFixed(2)}: ${fmtAnchor(kf.wide)}`,
+  ].join("\n");
+}
+
+/**
+ * Describe the annotation tool and position for the LLM prompt.
+ */
+export function describeAnnotationForPrompt(
+  tool: string,
+  position: { x: number; y: number } | null,
+  label: string
+): string {
+  if (tool === "none" || !position) {
+    return `Annotation: none — text overlay only. Label: "${label}".`;
+  }
+
+  const posStr = `x=${position.x}, y=${position.y}`;
+
+  switch (tool) {
+    case "spotlight":
+      return `Annotation: spotlight at ${posStr}, size=20x20. Label: "${label}".`;
+    case "circle":
+      return `Annotation: circle at ${posStr}, border=#FFFF00 2px solid. Label: "${label}".`;
+    case "ellipse":
+      return `Annotation: ellipse at ${posStr}. Label: "${label}".`;
+    case "arrow":
+      return `Annotation: arrow at ${posStr}, color=#FFFF00. Label: "${label}".`;
+    default:
+      return `Annotation: ${tool} at ${posStr}. Label: "${label}".`;
+  }
 }
 
 // ---------------------------------------------------------------------------

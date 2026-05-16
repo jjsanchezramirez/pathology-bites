@@ -10,7 +10,8 @@ import {
 
 // Re-export for callers that currently import from this module.
 export type { EngineState };
-export { computeEngineState as computeFrameState };
+export type FrameState = EngineState;
+export { computeEngineState as computeFrameState, DEFAULT_TRANSFORM };
 
 export function drawExportFrame(
   ctx: CanvasRenderingContext2D,

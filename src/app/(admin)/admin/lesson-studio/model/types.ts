@@ -44,7 +44,7 @@ export interface ArrowWaypoint {
   to: Point;
 }
 
-type ElementKind = "shape" | "spotlight" | "arrow" | "text" | "svg" | "image" | "camera";
+export type ElementKind = "shape" | "spotlight" | "arrow" | "text" | "svg" | "image" | "camera";
 
 interface ElementBase {
   id: string;
@@ -186,6 +186,8 @@ export interface Lesson {
 
 // ---- Constructors / defaults --------------------------------------------------
 
+export const DEFAULT_FRAMING: Framing = { x: 50, y: 50, scale: 1 };
+
 export const DEFAULT_TRANSITION: SlideTransition = {
   kind: "crossfade",
   duration: 1,
@@ -200,6 +202,11 @@ export function emptyLesson(): Lesson {
     audio: null,
     slides: [],
   };
+}
+
+/** Timing window where visible span = fadeIn + hold + fadeOut. */
+export function timing(start: number, fadeIn: number, hold: number, fadeOut: number): Timing {
+  return { start, fadeIn, hold, fadeOut };
 }
 
 /** End time (seconds, segment-local) of a timing window. */

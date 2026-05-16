@@ -1,6 +1,6 @@
 // Slide and element factory helpers for the library panel.
 
-import type { Lesson, Slide, SvgElement, ImageElement } from "./types";
+import type { Lesson, Slide, SvgElement, ImageElement, ImageCategory } from "./types";
 import { DEFAULT_TRANSITION, emptyLesson } from "./types";
 
 export interface LibraryImageLike {
@@ -97,6 +97,56 @@ export function coverZoom(width: number, height: number): number {
   const imgAspect = width / height;
   const scale = Math.max(imgAspect / CANVAS_ASPECT, CANVAS_ASPECT / imgAspect);
   return Math.max(0.5, Math.min(2, scale));
+}
+
+const CATEGORY_MAP: Record<string, ImageCategory> = {
+  microscopic: "microscopic",
+  gross: "gross",
+  figure: "figure",
+  table: "table",
+  diagram: "diagram",
+  blank: "blank",
+};
+
+/** Normalise a free-text category string to a known ImageCategory, or undefined. */
+function normalizeCategory(raw?: string | null): ImageCategory | undefined {
+  if (!raw) return undefined;
+  const lower = raw.toLowerCase();
+  for (const [key, value] of Object.entries(CATEGORY_MAP)) {
+    if (lower.includes(key)) return value;
+  }
+  return undefined;
+}
+
+/** Build a new Slide from a library image, with a full-canvas ImageElement as the background. */
+export function slideFromImage(img: {
+  id: string;
+  url: string;
+  description?: string | null;
+  category?: string | null;
+  width: number;
+  height: number;
+}): Slide {
+  const scale = coverZoom(img.width, img.height);
+  const slideId = uid("slide");
+  const bgElement: ImageElement = {
+    id: `image-bg-${slideId}`,
+    kind: "image",
+    imageUrl: img.url,
+    rect: { x: 0, y: 0, w: 100, h: 100, rotation: 0 },
+    opacity: 1,
+    timing: { start: 0, fadeIn: 0, hold: 10, fadeOut: 0 },
+  };
+  return {
+    id: slideId,
+    imageCategory: normalizeCategory(img.category),
+    imageWidth: img.width,
+    imageHeight: img.height,
+    duration: 10,
+    transitionIn: { ...DEFAULT_TRANSITION },
+    initialFraming: { x: 50, y: 50, scale },
+    elements: [bgElement],
+  };
 }
 
 /** Build a new blank Slide (no background image). Defaults to white. */
