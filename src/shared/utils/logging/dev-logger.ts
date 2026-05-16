@@ -103,11 +103,15 @@ export const devLog = {
    * Log info (development only, always uses secureLog in production)
    */
   info: (message: string, data?: unknown) => {
+    // In dev, use the prefixed console.log for readability. In prod, fall through to
+    // secureLog. We branch with else so a single call doesn't emit twice (secureLog
+    // itself writes to console.info, which produced the [Info]+plain duplicate pairs
+    // that used to fill the dev terminal on every API hit).
     if (isDevelopment) {
       console.log(`[Info] ${message}`, data || "");
+    } else {
+      secureLog.info(message, data);
     }
-    // Always use secure logging for info level
-    secureLog.info(message, data);
   },
 
   /**
@@ -116,8 +120,9 @@ export const devLog = {
   warn: (message: string, data?: unknown) => {
     if (isDevelopment) {
       console.warn(`[Warning] ${message}`, data || "");
+    } else {
+      secureLog.warn(message, data);
     }
-    secureLog.warn(message, data);
   },
 
   /**
@@ -126,8 +131,9 @@ export const devLog = {
   error: (message: string, error?: unknown) => {
     if (isDevelopment) {
       console.error(`[Error] ${message}`, error || "");
+    } else {
+      secureLog.error(message, error);
     }
-    secureLog.error(message, error);
   },
 
   /**

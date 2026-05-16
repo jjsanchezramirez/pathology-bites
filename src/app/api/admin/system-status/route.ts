@@ -104,7 +104,7 @@ export async function GET(request: Request) {
       );
     }
 
-    devLog.info("System status check started");
+    devLog.debug("System status check started");
 
     const supabase = await createClient();
 

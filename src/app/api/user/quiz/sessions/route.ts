@@ -82,7 +82,7 @@ export async function POST(request: NextRequest) {
   const requestId = request.headers.get("x-request-id") || "unknown";
 
   try {
-    devLog.info("Creating quiz session", { requestId });
+    devLog.debug("Creating quiz session", { requestId });
 
     const supabase = await createClient();
 
@@ -259,7 +259,7 @@ export async function GET(request: NextRequest) {
   const requestId = request.headers.get("x-request-id") || "unknown";
 
   try {
-    devLog.info("Fetching quiz sessions", { requestId });
+    devLog.debug("Fetching quiz sessions", { requestId });
 
     const supabase = await createClient();
 
