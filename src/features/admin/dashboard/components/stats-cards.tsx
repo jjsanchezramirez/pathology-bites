@@ -45,12 +45,12 @@ export function StatsCards({ stats }: StatsCardsProps) {
     },
     {
       title: "Published Questions",
-      value: (
-        stats.totalQuestions -
-        stats.draftQuestions -
-        stats.pendingQuestions -
-        stats.rejectedQuestions
-      ).toLocaleString(),
+      // Use the view's published_questions count directly. The previous
+      // total - draft - pending - rejected formula silently ignored
+      // 'flagged' and 'archived', so the displayed number drifted from the
+      // actual published count whenever non-zero questions sat in those
+      // states.
+      value: stats.publishedQuestions.toLocaleString(),
       description: "Live and available",
       icon: FileQuestion,
       trend: "positive",

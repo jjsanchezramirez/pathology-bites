@@ -16,6 +16,7 @@ class ClientDashboardService {
       // Map view data to our interface
       return {
         totalQuestions: viewData.total_questions,
+        publishedQuestions: viewData.published_questions,
         totalUsers: viewData.total_users,
         totalImages: viewData.total_images,
         totalInquiries: viewData.total_inquiries,
@@ -37,19 +38,18 @@ class ClientDashboardService {
       );
     }
 
-    // Fallback to individual queries if view fails
+    // Fallback to individual queries if view fails. Enum values must match
+    // the current `question_status` enum (see migration 863e1ae, which dropped
+    // 'approved' and renamed 'pending' to 'pending_review').
     const results = await Promise.allSettled([
-      this.supabase
-        .from("questions")
-        .select("id", { count: "exact", head: true })
-        .eq("status", "approved"),
+      this.supabase.from("questions").select("id", { count: "exact", head: true }),
       this.supabase.from("users").select("id", { count: "exact", head: true }),
       this.supabase.from("images").select("id", { count: "exact", head: true }),
       this.supabase.from("inquiries").select("id", { count: "exact", head: true }),
       this.supabase
         .from("questions")
         .select("id", { count: "exact", head: true })
-        .eq("status", "pending"),
+        .eq("status", "pending_review"),
       this.supabase
         .from("users")
         .select("id", { count: "exact", head: true })
@@ -62,6 +62,18 @@ class ClientDashboardService {
         .from("questions")
         .select("id", { count: "exact", head: true })
         .eq("status", "flagged"),
+      this.supabase
+        .from("questions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "published"),
+      this.supabase
+        .from("questions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "draft"),
+      this.supabase
+        .from("questions")
+        .select("id", { count: "exact", head: true })
+        .eq("status", "rejected"),
     ]);
 
     // Check if ALL queries failed - this indicates a serious problem
@@ -96,9 +108,10 @@ class ClientDashboardService {
       activeUsers: getCounts(5),
       recentQuestions: getCounts(6),
       unreadInquiries: getCounts(3), // Use totalInquiries count (assuming all are unread)
-      rejectedQuestions: 0,
-      draftQuestions: 0,
       flaggedQuestions: getCounts(7),
+      publishedQuestions: getCounts(8),
+      draftQuestions: getCounts(9),
+      rejectedQuestions: getCounts(10),
     };
   }
 

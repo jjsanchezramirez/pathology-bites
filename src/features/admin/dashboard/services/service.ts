@@ -2,6 +2,7 @@
 
 export interface DashboardStats {
   totalQuestions: number;
+  publishedQuestions: number;
   totalUsers: number;
   totalImages: number;
   totalInquiries: number;
