@@ -6,7 +6,6 @@ import { useParams, useSearchParams } from "next/navigation";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useHybridQuiz, HybridPresets } from "@/features/user/quiz/hybrid";
 import { QuizSession, QuizResult } from "@/features/user/quiz/types/quiz";
-import { useCSRFToken } from "@/features/auth/hooks/use-csrf-token";
 import { useFavoritesGlobal } from "@/features/user/questions/hooks/use-favorites-global";
 import { QuestionFlagDialog } from "@/features/admin/questions/components/dialogs/question-flag-dialog";
 import { useUserSettings } from "@/shared/hooks/use-user-settings";
@@ -50,7 +49,6 @@ export default function QuizSessionPage() {
   const questionParam = searchParams.get("question");
 
   // Hooks
-  const { getToken } = useCSRFToken();
   const { isFavorited, toggleFavorite } = useFavoritesGlobal();
   const { data: settings } = useUserSettings();
 
@@ -143,7 +141,6 @@ export default function QuizSessionPage() {
   const [hybridState, hybridActions] = useHybridQuiz({
     sessionId: isReviewMode ? "" : sessionId || "",
     ...getHybridPreset(),
-    csrfTokenGetter: getToken,
     onQuizCompleted: () => {
       if (isReviewMode) return;
     },

@@ -97,8 +97,7 @@ Respond with ONLY the JSON — no explanation.`;
 // Response parser
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function parsePlanResponse(raw: string, numImages: number): LessonPlan | null {
+function parsePlanResponse(raw: string, numImages: number): LessonPlan | null {
   const cleaned = raw
     .replace(/^```(?:json)?\s*/m, "")
     .replace(/\s*```\s*$/m, "")

@@ -67,11 +67,7 @@ Respond with ONLY the JSON — no explanation, no markdown fences.`;
 // Response parser
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function parseTranscriptResponse(
-  raw: string,
-  _numImages: number
-): TranscriptAnalysis | null {
+function parseTranscriptResponse(raw: string, _numImages: number): TranscriptAnalysis | null {
   const cleaned = raw
     .replace(/^```(?:json)?\s*/m, "")
     .replace(/\s*```\s*$/m, "")
@@ -123,8 +119,7 @@ export function parseTranscriptResponse(
 // Short title extraction
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function deriveShortTitle(text: string): string {
+function deriveShortTitle(text: string): string {
   if (!text) return "Pathology Bite";
   const words = text.trim().split(/\s+/);
   if (words.length <= 4) return text.trim();
@@ -138,8 +133,7 @@ export function deriveShortTitle(text: string): string {
 // Fallback: simple transcript split without AI
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function fallbackAnalysis(transcript: string, images: ImageInput[]): TranscriptAnalysis {
+function fallbackAnalysis(transcript: string, images: ImageInput[]): TranscriptAnalysis {
   const words = transcript.split(/\s+/).filter(Boolean);
   const wordsPerImage = Math.max(1, Math.floor(words.length / Math.max(1, images.length)));
 

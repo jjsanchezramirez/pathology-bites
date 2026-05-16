@@ -8,7 +8,6 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { Separator } from "@/shared/components/ui/separator";
 import { useQuizSettings } from "@/shared/hooks/use-user-settings";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
-import { useCSRFToken } from "@/features/auth/hooks/use-csrf-token";
 
 import {
   QuestionType,
@@ -56,9 +55,6 @@ export default function NewQuizPage() {
 
   // Use unified data hook (eliminates separate quiz init API call!)
   const { data: unifiedData, isLoading: unifiedLoading } = useUnifiedData();
-
-  // CSRF token for POST requests
-  const { getToken, addTokenToHeaders } = useCSRFToken();
 
   // Apply user settings when available
   useEffect(() => {
@@ -256,17 +252,11 @@ export default function NewQuizPage() {
         showExplanations: QUIZ_MODE_CONFIG[formData.mode].showExplanations,
       };
 
-      // Get CSRF token
-      const csrfToken = await getToken();
-
       const response = await fetch("/api/user/quiz/sessions", {
         method: "POST",
-        headers: addTokenToHeaders(
-          {
-            "Content-Type": "application/json",
-          },
-          csrfToken
-        ),
+        headers: {
+          "Content-Type": "application/json",
+        },
         body: JSON.stringify(quizPayload),
       });
 

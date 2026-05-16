@@ -612,6 +612,56 @@ When creators resubmit rejected questions, they can provide notes explaining wha
 └─────────────────┘    └──────────────────┘    └─────────────────┘
 ```
 
+#### Defense layers (in order of who actually does the work)
+
+1. **Cloudflare edge** — DDoS scrubbing, WAF, bot management, TLS termination. Front of Vercel. Zero code, max value. Strongest layer.
+2. **Supabase auth + RLS** — JWT session, refresh-token rotation w/ reuse detection, server-side rate limits on `/auth/v1/token`, `/auth/v1/signup`, `/auth/v1/recover` (default 30 req/5min/IP). Per-table RLS scopes reads to `auth.uid()`. Real brute-force defense lives here.
+3. **Middleware** (`src/middleware.ts`) — JWT check on `/admin/*`, `/dashboard/*`, `/docs/*`, non-public `/api/*`. Role gate on `/admin` (admin/creator/reviewer). Injects trusted `x-user-id` + `x-user-role` headers downstream so handlers don't re-verify.
+4. **Session cookies** — Supabase sets httpOnly, secure (prod), `sameSite: lax`. Browser blocks cross-site POST/PATCH/DELETE → automatic CSRF defense.
+5. **Honeypot** — hidden `referral_source` input on signup + contact forms. Bots auto-fill, humans don't. Server-side reject on signup form. Server action silent-success on contact.
+6. **App-layer rate limiters** (decorative on Vercel) — `loginRateLimiter` on login server action, `authRateLimiter` on `/api/auth/callback`. In-memory Map per lambda → effective only single-instance / dev. Supabase's server-side limits do the real work.
+7. **Framework defaults** — React JSX escaping (XSS), PostgREST parameterized queries (SQL injection), Next.js CSP headers.
+
+#### Features deliberately removed (Apr-May 2026 audit)
+
+Don't re-add without revisiting the threat model.
+
+- **Browser fingerprinting + `security_events` table** — Client-side fingerprint (browser/timezone/screen). Bots spoof in 5 lines. Real session hijack uses victim's cookie, not a different browser env. Supabase's refresh-token reuse detection is the actual defense. Removed ~450 LOC.
+- **Custom CSRF token machinery** — Double-submit cookie pattern that never validated server-side. Token roundtripped, header attached, server ignored. `sameSite: lax` on Supabase auth cookie + CORS preflight on JSON `fetch` already block real CSRF. Removed ~1000 LOC across 14 files.
+- **Per-action rate limiters** (signup, password-reset, email-verify, admin-API, quiz-API) — Declared but never wired. Supabase handles `/auth/v1/*` server-side anyway. Removed ~150 LOC.
+- **`generalAPIRateLimiter`** — Only consumer was `/api/public/csrf-token` (also removed). Dead after CSRF removal.
+- **`createRateLimitResponse`, two `getClientIP` helpers** — Dead exports, zero callers.
+
+#### Known gaps
+
+- **Turnstile (CAPTCHA) currently disabled** — `isCaptchaEnabled()` returns `false` in `src/features/auth/utils/captcha-config.ts`. Plumbing intact in login/signup/forgot-password forms. Disabled because it was breaking non-Gmail auth. Re-enable when investigated. While off, only email verification gates bot signups.
+- **App rate limiters non-functional on Vercel** — In-memory `Map` per lambda instance; doesn't shard. Not a security gap (Supabase + Cloudflare handle the real limits) but don't rely on them. If app-layer enforcement is ever needed cross-instance, migrate to Upstash KV / Vercel KV (~30 min, free-tier sufficient).
+- **No honeypot on forgot-password form** — Bots could spam reset emails to users. Low priority: Supabase rate-limits `/auth/v1/recover` per IP. Add if signup-spam pattern emerges from a single botnet.
+
+#### Future improvements (in priority order)
+
+1. Fix the Turnstile / non-Gmail-auth interaction and re-enable.
+2. Configure a Cloudflare WAF rate-limit rule on `/api/auth/*` + `/login` + `/signup` (one-line edge config, no code).
+3. If app-layer rate limiting ever becomes load-bearing, migrate to Upstash KV.
+4. If signup spam slips through, expand honeypot to forgot-password + add a second field to signup w/ a different name.
+5. Periodic audit of `app_metadata.role` propagation — admin role is JWT-set, but ensure new role grants always reach `app_metadata` (not just `user_metadata`), since middleware checks both but `app_metadata` is more tamper-resistant.
+
+#### Threat coverage
+
+| Attack | Defender |
+|---|---|
+| Credential stuffing | Supabase `/auth/v1/token` rate limit + Cloudflare |
+| Signup spam | Supabase signup limit + email verification + honeypot |
+| Password reset abuse | Supabase `/auth/v1/recover` limit |
+| Unauthorized read | RLS (`auth.uid()` filter) + middleware 401 |
+| Privilege escalation | JWT `app_metadata.role` (server-set, unforgeable) + middleware role check |
+| Session hijack | Supabase refresh-token rotation + reuse detection |
+| CSRF | `sameSite: lax` cookie + JSON CORS preflight |
+| DDoS / volumetric bot | Cloudflare edge |
+| SQL injection | PostgREST parameterized queries |
+| XSS | React JSX escaping |
+| Bot signup (current) | Email verification + honeypot (Turnstile OFF) |
+
 ### API Structure
 
 The application follows a feature-based API organization:

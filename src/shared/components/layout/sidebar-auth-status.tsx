@@ -13,7 +13,6 @@ import {
 } from "@/shared/components/ui/dropdown-menu";
 import { RefreshCw, LogOut, ChevronUp, Shield, ShieldAlert, ShieldCheck, User } from "lucide-react";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
-import { apiClient } from "@/shared/utils/api/api-client";
 
 interface UserProfile {
   id: string;
@@ -175,9 +174,6 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
         // Clear admin-mode cookie to prevent it from persisting across sessions
         document.cookie = "admin-mode=; path=/; max-age=0";
       }
-
-      // Clear cached CSRF token
-      apiClient.clearToken();
 
       // Force a hard refresh to clear all cached data and redirect to login
       window.location.href = "/login";

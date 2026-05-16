@@ -15,7 +15,7 @@ const DEG = Math.PI / 180;
 const CANVAS_ASPECT = 16 / 9;
 
 /** Center of a rect. */
-export function rectCenter(r: Rect): Point {
+function rectCenter(r: Rect): Point {
   return { x: r.x + r.w / 2, y: r.y + r.h / 2 };
 }
 
@@ -25,7 +25,7 @@ export function rectCenter(r: Rect): Point {
  * rotating and undoing after, so rotation preserves on-screen distances
  * despite the anisotropic percent coordinate system.
  */
-export function rotate(p: Point, origin: Point, deg: number): Point {
+function rotate(p: Point, origin: Point, deg: number): Point {
   const r = deg * DEG;
   const c = Math.cos(r);
   const s = Math.sin(r);
@@ -37,15 +37,9 @@ export function rotate(p: Point, origin: Point, deg: number): Point {
 }
 
 /** Transform `p` from world space into the rotated-rect's local space (center at origin). */
-export function toLocal(p: Point, r: Rect): Point {
+function toLocal(p: Point, r: Rect): Point {
   const center = rectCenter(r);
   return rotate(p, center, -r.rotation);
-}
-
-/** Transform local-space point back to world space. */
-export function fromLocal(localP: Point, r: Rect): Point {
-  const center = rectCenter(r);
-  return rotate({ x: center.x + localP.x, y: center.y + localP.y }, center, r.rotation);
 }
 
 /** Is world-space point `p` inside the (possibly rotated) rect? */
@@ -57,28 +51,8 @@ export function pointInRect(p: Point, r: Rect): boolean {
   return lx >= -r.w / 2 && lx <= r.w / 2 && ly >= -r.h / 2 && ly <= r.h / 2;
 }
 
-/**
- * Return the four corners of a (possibly rotated) rect in world space,
- * in order: top-left, top-right, bottom-right, bottom-left.
- */
-export function rectCorners(r: Rect): [Point, Point, Point, Point] {
-  const center = rectCenter(r);
-  const hw = r.w / 2;
-  const hh = r.h / 2;
-  const corners: Point[] = [
-    { x: -hw, y: -hh },
-    { x: hw, y: -hh },
-    { x: hw, y: hh },
-    { x: -hw, y: hh },
-  ].map((c) => {
-    const world = rotate({ x: center.x + c.x, y: center.y + c.y }, center, r.rotation);
-    return world;
-  });
-  return corners as [Point, Point, Point, Point];
-}
-
 /** Distance from world point `p` to the line segment `a`–`b`. */
-export function distanceToSegment(p: Point, a: Point, b: Point): number {
+function distanceToSegment(p: Point, a: Point, b: Point): number {
   const dx = b.x - a.x;
   const dy = b.y - a.y;
   const len2 = dx * dx + dy * dy;
@@ -130,20 +104,6 @@ export function computeHandles(r: Rect, rotHandleOffset = 5): Handle[] {
     id,
     pos: rotate({ x: center.x + local.x, y: center.y + local.y }, center, r.rotation),
   }));
-}
-
-/** Find the handle whose position is closest to `p` within `tolerance`. */
-export function hitHandle(handles: Handle[], p: Point, tolerance: number): Handle | null {
-  let best: Handle | null = null;
-  let bestDist = tolerance;
-  for (const h of handles) {
-    const d = Math.hypot(p.x - h.pos.x, p.y - h.pos.y);
-    if (d <= bestDist) {
-      bestDist = d;
-      best = h;
-    }
-  }
-  return best;
 }
 
 // ---- Resize math -----------------------------------------------------------
@@ -248,7 +208,7 @@ export function resizeRect(
 /** Compute rotation angle (degrees) from rect center to cursor.
  *  Accounts for the 16:9 canvas aspect so the angle reflects the user's
  *  perceived on-screen direction, not the anisotropic percent delta. */
-export function angleFromCenter(r: Rect, p: Point): number {
+function angleFromCenter(r: Rect, p: Point): number {
   const c = rectCenter(r);
   // Scale y by aspect so x and y share equivalent pixel units.
   const dxPx = p.x - c.x;

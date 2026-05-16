@@ -50,7 +50,7 @@ export interface VisionResult {
 // Parse helpers
 // ---------------------------------------------------------------------------
 
-export function parseXY(text: string): { x: number; y: number } | null {
+function parseXY(text: string): { x: number; y: number } | null {
   const m = text.match(/x\s*[=:]\s*(\d+(?:\.\d+)?)\s*%?,?\s*y\s*[=:]\s*(\d+(?:\.\d+)?)\s*%?/i);
   if (m) {
     const x = parseFloat(m[1]);
@@ -79,8 +79,7 @@ function parseAnnotationShape(lines: string[]): AnnotationShape | null {
   return null;
 }
 
-/** @internal exported for testing */
-export function parseObjectPresent(text: string): boolean | null {
+function parseObjectPresent(text: string): boolean | null {
   const lower = text.toLowerCase();
   // Look for explicit yes/no near Q0
   if (/\byes\b/.test(lower)) return true;
@@ -88,8 +87,7 @@ export function parseObjectPresent(text: string): boolean | null {
   return null;
 }
 
-/** @internal exported for testing */
-export function parseObjectShape(text: string): ObjectShape | null {
+function parseObjectShape(text: string): ObjectShape | null {
   const lower = text.toLowerCase();
   if (/\bcircular\b|\bround\b/.test(lower)) return "circular";
   if (/\bovoid\b|\boval\b|\belliptical\b/.test(lower)) return "ovoid";
@@ -97,8 +95,7 @@ export function parseObjectShape(text: string): ObjectShape | null {
   return null;
 }
 
-/** @internal exported for testing */
-export function parseObjectSize(text: string): ObjectSize | null {
+function parseObjectSize(text: string): ObjectSize | null {
   const lower = text.toLowerCase();
   if (/\blarge\b/.test(lower)) return "large";
   if (/\bmedium\b/.test(lower)) return "medium";
@@ -289,11 +286,7 @@ This is a histologic/microscopic image. Answer each question on its own numbered
 // Parse vision response — category-aware
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function parseVisionResponse(
-  raw: string,
-  image: ImageInput
-): Omit<VisionResult, "canSeeImage"> {
+function parseVisionResponse(raw: string, image: ImageInput): Omit<VisionResult, "canSeeImage"> {
   const lines = raw
     .split("\n")
     .map((l) => l.trim())

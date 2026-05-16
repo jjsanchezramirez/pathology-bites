@@ -20,6 +20,7 @@ type FormData = {
   organization: string;
   email: string;
   inquiry: string;
+  referral_source: string;
 };
 
 type FormErrors = {
@@ -54,6 +55,7 @@ export function ContactForm({
     organization: "",
     email: "",
     inquiry: "",
+    referral_source: "",
   });
 
   // Prefill form data when props change or user is loaded
@@ -76,6 +78,7 @@ export function ContactForm({
         prefillSubject && prefillMessage
           ? `Subject: ${prefillSubject}\n\n${prefillMessage}`
           : prefillMessage || prev.inquiry,
+      referral_source: "",
     }));
   }, [prefillType, prefillSubject, prefillMessage, user?.email, user?.user_metadata]);
 
@@ -100,6 +103,7 @@ export function ContactForm({
           organization: "",
           email: "",
           inquiry: "",
+          referral_source: "",
         });
       } else {
         if (result.details && Array.isArray(result.details)) {
@@ -155,6 +159,16 @@ export function ContactForm({
       <div className="container px-4 mx-auto">
         <Card className="max-w-2xl mx-auto p-8 shadow-lg">
           <form onSubmit={handleSubmit} className="space-y-8">
+            <input
+              type="text"
+              name="referral_source"
+              value={formData.referral_source}
+              onChange={handleChange}
+              tabIndex={-1}
+              autoComplete="off"
+              aria-hidden="true"
+              className="absolute -left-[9999px] h-0 w-0 overflow-hidden"
+            />
             {/* Request Type */}
             <div className="space-y-4">
               <Label>Request Type</Label>

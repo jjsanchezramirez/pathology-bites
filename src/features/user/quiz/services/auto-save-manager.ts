@@ -54,12 +54,10 @@ export class AutoSaveManager {
     }
 
     // If the browser thinks we're offline, skip the network attempt entirely
-    // and queue directly. Two reasons:
-    //   1. Avoids the CSRF-fetch + sync attempt that floods the console with
-    //      `TypeError: Failed to fetch` on every save trigger.
-    //   2. `navigator.onLine === false` is best-effort but reliable for the
-    //      common case (Wi-Fi disconnected). The queue processor retries every
-    //      10 s, so anything queued here will be replayed once we're back.
+    // and queue directly. `navigator.onLine === false` is best-effort but
+    // reliable for the common case (Wi-Fi disconnected). The queue processor
+    // retries every 10 s, so anything queued here will be replayed once we're
+    // back.
     if (
       typeof navigator !== "undefined" &&
       !navigator.onLine &&

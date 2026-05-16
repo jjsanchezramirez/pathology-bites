@@ -69,8 +69,7 @@ Position should point to the CENTER of the most important diagnostic feature.
 // Parse Claude's JSON response
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function parseVisionJSON(raw: string, _image: ImageInput): VisionResult | null {
+function parseVisionJSON(raw: string, _image: ImageInput): VisionResult | null {
   const cleaned = raw
     .replace(/^```(?:json)?\s*/m, "")
     .replace(/\s*```\s*$/m, "")
@@ -164,11 +163,7 @@ export function parseVisionJSON(raw: string, _image: ImageInput): VisionResult |
 // Uses v1's decision table + spotlight bias for consistency.
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function overrideToolDeterministically(
-  result: VisionResult,
-  image: ImageInput
-): VisionResult {
+function overrideToolDeterministically(result: VisionResult, image: ImageInput): VisionResult {
   const category = image.category?.toLowerCase() ?? "";
 
   // Only override for microscopic/gross — figures/tables/diagrams get "none"

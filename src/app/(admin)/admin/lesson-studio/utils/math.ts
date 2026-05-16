@@ -2,13 +2,11 @@
 
 export const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
-export const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
-
 // ---- Frame quantization ----------------------------------------------------
 // All authored time values snap to 30 fps so the exporter (24/30/60 fps) can
 // hit every authored keyframe exactly.
 
-export const EDITOR_FPS = 12;
+const EDITOR_FPS = 12;
 export const FRAME_DURATION = 1 / EDITOR_FPS;
 
 /** Snap a time value (seconds) to the nearest authoring frame. */
@@ -18,7 +16,7 @@ export const snapToFrame = (s: number): number => Math.round(s / FRAME_DURATION)
 // Display uses 24 fps so every authoring frame (12 fps) lands on an even
 // display frame (0, 2, 4, …). Format: S:FF  e.g. "2:05" = 2 sec + frame 5.
 
-export const DISPLAY_FPS = 24;
+const DISPLAY_FPS = 24;
 
 /** Convert seconds to "S:FF" timecode string at DISPLAY_FPS. */
 export function secsToTimecode(secs: number): string {

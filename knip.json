@@ -6,7 +6,8 @@
     "@typescript-eslint/eslint-plugin",
     "eslint-config-next",
     "eslint-config-prettier",
-    "eslint-plugin-prettier"
+    "eslint-plugin-prettier",
+    "@scalar/nextjs-api-reference"
   ],
   "entry": [
     "src/app/**/page.{ts,tsx}",

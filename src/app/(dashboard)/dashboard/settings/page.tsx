@@ -203,20 +203,10 @@ export default function SettingsPage() {
     try {
       setIsExporting(true);
 
-      // Get CSRF token
-      const csrfResponse = await fetch("/api/public/csrf-token", {
-        method: "GET",
-        credentials: "same-origin",
-        headers: { Accept: "application/json" },
-      });
-      const csrfData = await csrfResponse.json();
-      const csrfToken = csrfData.token;
-
       const response = await fetch("/api/user/data-export", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
-          "x-csrf-token": csrfToken,
         },
         credentials: "include",
       });

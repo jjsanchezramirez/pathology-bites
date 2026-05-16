@@ -30,10 +30,8 @@ import type { SvgInput, LessonPlan, PlannedTextSlide, TranscriptAnalysis } from 
 // Constants
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export const TITLE_DURATION = 3;
-/** @internal exported for testing */
-export const MIN_IMAGE_DURATION = 5;
+const TITLE_DURATION = 3;
+const MIN_IMAGE_DURATION = 5;
 const ZOOM_ANIMATION_DURATION = 2.0; // shared with camera.ts ZOOM_IN_HOLD timing
 
 const BRAND_TEAL = "#14B8A6";
@@ -43,8 +41,7 @@ const MASCOT_SVG_URL =
   "https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/svg/20260418024420-dr-albright.svg";
 
 // Annotation sizes by objectSize (width, height in % of canvas)
-/** @internal exported for testing */
-export const ANNOTATION_SIZES: Record<string, { w: number; h: number }> = {
+const ANNOTATION_SIZES: Record<string, { w: number; h: number }> = {
   large: { w: 40, h: 40 },
   medium: { w: 28, h: 28 },
   small: { w: 18, h: 18 },
@@ -67,8 +64,7 @@ function fullTiming(duration: number): Timing {
 // Duration computation (deterministic from word counts)
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function computeImageDurations(
+function computeImageDurations(
   segments: TranscriptAnalysis["segments"],
   imageOrder: number[],
   audioDuration: number,
@@ -99,8 +95,7 @@ export function computeImageDurations(
 // Annotation builder (from vision, not planner)
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function buildAnnotation(vision: VisionResult, timing: Timing): SlideElement | null {
+function buildAnnotation(vision: VisionResult, timing: Timing): SlideElement | null {
   if (!vision.canSeeImage || !vision.featurePosition || vision.annotationTool === "none") {
     return null;
   }
@@ -168,8 +163,7 @@ export function buildAnnotation(vision: VisionResult, timing: Timing): SlideElem
 // Timing helpers
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function annotationTiming(camera: CameraKeyframes, slideDuration: number): Timing {
+function annotationTiming(camera: CameraKeyframes, slideDuration: number): Timing {
   if (camera.hasTarget) {
     const zoomInEnd = camera.zoomInStartTime + ZOOM_ANIMATION_DURATION;
     const holdEnd = Math.max(zoomInEnd + 0.5, slideDuration - camera.zoomOutDuration);
@@ -181,8 +175,7 @@ export function annotationTiming(camera: CameraKeyframes, slideDuration: number)
   return { start, fadeIn: 0.4, hold, fadeOut: 0.4 };
 }
 
-/** @internal exported for testing */
-export function labelTiming(camera: CameraKeyframes, slideDuration: number): Timing {
+function labelTiming(camera: CameraKeyframes, slideDuration: number): Timing {
   const ann = annotationTiming(camera, slideDuration);
   return {
     start: ann.start + 0.3,
@@ -196,8 +189,7 @@ export function labelTiming(camera: CameraKeyframes, slideDuration: number): Tim
 // Background image element
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function buildBackground(
+function buildBackground(
   img: ImageInput,
   slideId: string,
   duration: number
@@ -227,8 +219,7 @@ export function buildBackground(
 // Camera element
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function buildCamera(camera: CameraKeyframes, slideDuration: number): CameraElement | null {
+function buildCamera(camera: CameraKeyframes, slideDuration: number): CameraElement | null {
   if (!camera.hasTarget) return null;
   const zoomed = camera.zoomed;
   return {
@@ -252,8 +243,7 @@ export function buildCamera(camera: CameraKeyframes, slideDuration: number): Cam
 // Text label
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function buildTextLabel(label: string, timing: Timing): TextElement {
+function buildTextLabel(label: string, timing: Timing): TextElement {
   return {
     id: uid("text"),
     kind: "text",
@@ -272,8 +262,7 @@ export function buildTextLabel(label: string, timing: Timing): TextElement {
 // Title slide (branded)
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function buildTitleSlide(episodeTitle: string, duration: number): Slide {
+function buildTitleSlide(episodeTitle: string, duration: number): Slide {
   const slideId = uid("slide");
   const elements: SlideElement[] = [
     {
@@ -350,8 +339,7 @@ export function buildTitleSlide(episodeTitle: string, duration: number): Slide {
 // Text-only slide
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function buildTextSlide(planned: PlannedTextSlide): Slide {
+function buildTextSlide(planned: PlannedTextSlide): Slide {
   const slideId = uid("slide");
   const isDark = planned.backgroundColor !== "#ffffff" && planned.backgroundColor !== "#f8fafc";
   const textColor = isDark ? "#ffffff" : "#1a1a2e";
@@ -408,8 +396,7 @@ export function buildTextSlide(planned: PlannedTextSlide): Slide {
 // Image slide (deterministic annotations from vision)
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function buildImageSlide(
+function buildImageSlide(
   image: ImageInput,
   vision: VisionResult | undefined,
   duration: number,

@@ -176,24 +176,6 @@ export const authRateLimiter = new APIRateLimiter({
   message: "Too many authentication attempts, please try again later.",
 });
 
-export const generalAPIRateLimiter = new APIRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  maxRequests: 100, // 100 requests per minute
-  message: "Too many API requests, please slow down.",
-});
-
-export const adminAPIRateLimiter = new APIRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  maxRequests: 200, // 200 admin requests per minute (higher limit)
-  message: "Too many admin API requests, please slow down.",
-});
-
-export const quizAPIRateLimiter = new APIRateLimiter({
-  windowMs: 60 * 1000, // 1 minute
-  maxRequests: 50, // 50 quiz requests per minute
-  message: "Too many quiz requests, please slow down.",
-});
-
 // Middleware function to apply rate limiting
 export function withRateLimit(
   rateLimiter: APIRateLimiter,
@@ -248,15 +230,4 @@ export function withRateLimit(
       return response;
     };
   };
-}
-
-// Helper to create user-based rate limiting (for authenticated routes)
-export function createUserRateLimiter(config: RateLimitConfig) {
-  return withRateLimit(new APIRateLimiter(config), {
-    keyGenerator: (request: NextRequest) => {
-      // Try to get user ID from headers or use IP as fallback
-      const userId = request.headers.get("x-user-id");
-      return userId || getClientIP(request);
-    },
-  });
 }

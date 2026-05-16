@@ -1,7 +1,7 @@
 // src/features/auth/components/forms/signup-form.tsx
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -53,6 +53,7 @@ export function SignupForm() {
   const supabase = createClient();
   const { captchaToken, setCaptchaToken } = useTurnstile();
   const siteKey = getCaptchaSiteKey();
+  const honeypotRef = useRef<HTMLInputElement>(null);
 
   const {
     register,
@@ -108,6 +109,12 @@ export function SignupForm() {
   async function onSubmit(values: FormData) {
     try {
       setLoading(true);
+
+      // Honeypot: bots fill hidden fields, humans don't
+      if (honeypotRef.current?.value) {
+        router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
+        return;
+      }
 
       // Check if email already exists (single source of truth via public.users)
       try {
@@ -200,6 +207,16 @@ export function SignupForm() {
       showPrivacyFooter
     >
       <form onSubmit={handleSubmit(onSubmit)} className="space-y-6" noValidate>
+        <input
+          ref={honeypotRef}
+          type="text"
+          name="referral_source"
+          tabIndex={-1}
+          autoComplete="off"
+          aria-hidden="true"
+          className="absolute -left-[9999px] h-0 w-0 overflow-hidden"
+          defaultValue=""
+        />
         {/* First Name and Last Name */}
         <div className="grid grid-cols-2 gap-4">
           <FormField

@@ -13,7 +13,8 @@ const formSchema = z.object({
   lastName: z.string().min(1, 'Last name is required'),
   organization: z.string().optional(),
   email: z.string().email('Invalid email address'),
-  inquiry: z.string().min(50, 'Inquiry must be at least 50 characters')
+  inquiry: z.string().min(50, 'Inquiry must be at least 50 characters'),
+  referral_source: z.string().optional(),
 })
 
 export type ContactFormData = z.infer<typeof formSchema>
@@ -22,6 +23,11 @@ export type ContactFormData = z.infer<typeof formSchema>
 
 export async function submitContactForm(formData: ContactFormData) {
   try {
+    // Honeypot: silently succeed if bot-filled field is non-empty
+    if (formData.referral_source) {
+      return { success: true, data: null, emailError: null }
+    }
+
     // Validate form data
     const validatedData = formSchema.parse(formData)
 

@@ -317,6 +317,3 @@ export function sequenceToLesson(sequence: ExplainerSequence): Lesson {
     slides,
   };
 }
-
-export const _internal = { recoverTiming, isLessonShape };
-export { DEFAULT_TRANSITION };

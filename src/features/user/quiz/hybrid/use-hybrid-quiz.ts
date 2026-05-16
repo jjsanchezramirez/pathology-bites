@@ -33,7 +33,6 @@ import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 export interface UseHybridQuizOptions {
   sessionId: string;
   enableOfflineSupport?: boolean;
-  csrfTokenGetter?: () => Promise<string>;
   onAnswerSubmitted?: (
     questionId: string,
     answerId: string,
@@ -114,7 +113,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   const {
     sessionId,
     enableOfflineSupport = true,
-    csrfTokenGetter,
     onAnswerSubmitted,
     onQuizCompleted,
     onTimerExpired,
@@ -137,7 +135,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   const syncManager = useRef<DatabaseSyncManager | null>(null);
   if (!syncManager.current) {
     syncManager.current = new DatabaseSyncManager({
-      csrfTokenGetter,
       onSyncStart: () => {
         setSyncStatus({ state: "syncing", message: "Syncing..." });
         onSyncStatusChange?.("syncing");

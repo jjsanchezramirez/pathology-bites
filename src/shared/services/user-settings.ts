@@ -30,43 +30,6 @@ export type SettingsSection =
 
 class UserSettingsService {
   private baseUrl = "/api/user/settings";
-  private csrfToken: string | null = null;
-
-  /**
-   * Get CSRF token for authenticated requests
-   */
-  private async getCSRFToken(): Promise<string> {
-    // Return cached token if available
-    if (this.csrfToken) {
-      return this.csrfToken;
-    }
-
-    try {
-      const response = await fetch("/api/public/csrf-token", {
-        method: "GET",
-        credentials: "same-origin",
-        headers: {
-          Accept: "application/json",
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Failed to fetch CSRF token: ${response.status}`);
-      }
-
-      const data = await response.json();
-
-      if (!data.success || !data.token) {
-        throw new Error("Invalid CSRF token response");
-      }
-
-      this.csrfToken = data.token;
-      return data.token;
-    } catch (error) {
-      console.error("CSRF token fetch error:", error);
-      throw new Error("Failed to get CSRF token");
-    }
-  }
 
   /**
    * Get all user settings
@@ -150,14 +113,10 @@ class UserSettingsService {
             ? CounterConfig
             : never
   > {
-    // Get CSRF token for the request
-    const csrfToken = await this.getCSRFToken();
-
     const response = await fetch(this.baseUrl, {
       method: "PATCH",
       headers: {
         "Content-Type": "application/json",
-        "x-csrf-token": csrfToken,
       },
       credentials: "include",
       body: JSON.stringify({

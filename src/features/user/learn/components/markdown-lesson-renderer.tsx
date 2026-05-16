@@ -91,12 +91,6 @@ export function extractImageIds(markdown: string): string[] {
   );
 }
 
-// Extract all sequence IDs from markdown content
-export function extractSequenceIds(markdown: string): string[] {
-  const matches = [...markdown.matchAll(/:::explainer\[([^\]]+)\]/g)];
-  return matches.map((m) => m[1].trim()).filter(Boolean);
-}
-
 interface MarkdownLessonRendererProps {
   markdown: string;
   images: { id: string; url: string; alt_text: string | null }[];

@@ -13,7 +13,6 @@ import { FormField } from "@/features/auth/components/ui/form-field";
 import { FormButton } from "@/features/auth/components/ui/form-button";
 import { GoogleSignInButton } from "@/features/auth/components/google-sign-in-button";
 import { AuthDivider } from "@/features/auth/components/ui/auth-divider";
-import { useCSRFToken } from "@/features/auth/hooks/use-csrf-token";
 import { useTurnstile } from "@/features/auth/hooks/use-turnstile";
 import { getCaptchaSiteKey } from "@/features/auth/utils/captcha-config";
 
@@ -43,7 +42,6 @@ export function LoginForm({
 }: LoginFormProps) {
   const [loading, setLoading] = useState(false);
   const [failedAttempts, setFailedAttempts] = useState(0);
-  const { getToken, addTokenToFormData } = useCSRFToken();
   const { captchaToken, setCaptchaToken } = useTurnstile();
   const turnstileRef = useRef<TurnstileInstance | null>(null);
   const siteKey = getCaptchaSiteKey();
@@ -127,10 +125,6 @@ export function LoginForm({
       if (captchaToken) {
         formData.append("captchaToken", captchaToken);
       }
-
-      // Add CSRF token
-      const csrfToken = await getToken();
-      addTokenToFormData(formData, csrfToken);
 
       // Call the server action
       await action(formData);

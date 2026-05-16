@@ -34,7 +34,7 @@ export interface TranscriptSegment {
   wordCount: number;
 }
 
-export type TextSlideInsertionPurpose = "title" | "summary" | "transition" | "definition";
+type TextSlideInsertionPurpose = "title" | "summary" | "transition" | "definition";
 
 export interface TextSlideInsertion {
   /** Insert after this transcript segment index */

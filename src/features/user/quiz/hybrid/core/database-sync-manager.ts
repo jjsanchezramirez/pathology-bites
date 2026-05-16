@@ -74,7 +74,6 @@ export interface SyncResult {
 
 export interface DatabaseSyncManagerOptions {
   apiBaseUrl?: string;
-  csrfTokenGetter?: () => Promise<string>;
   onSyncStart?: () => void;
   onSyncSuccess?: (result: SyncResult) => void;
   onSyncError?: (error: string) => void;
@@ -91,7 +90,6 @@ export class DatabaseSyncManager {
   constructor(options: DatabaseSyncManagerOptions = {}) {
     this.options = {
       apiBaseUrl: "/api/user/quiz",
-      csrfTokenGetter: async () => "", // Default no-op, should be provided by caller
       onSyncStart: () => {},
       onSyncSuccess: () => {},
       onSyncError: () => {},
@@ -331,9 +329,6 @@ export class DatabaseSyncManager {
         })),
       };
 
-      // Get CSRF token
-      const csrfToken = await this.options.csrfTokenGetter();
-
       // OPTIMIZATION: Single API call - PATCH endpoint now accepts answers!
       // This combines what used to be 2 calls (batch + PATCH) into 1
       console.log("[Hybrid] Saving progress with single API call (answers + progress)");
@@ -344,7 +339,6 @@ export class DatabaseSyncManager {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
-            "x-csrf-token": csrfToken,
           },
           credentials: "include",
           body: JSON.stringify({
@@ -429,8 +423,6 @@ export class DatabaseSyncManager {
    */
   private async performSync(syncData: QuizSyncData): Promise<SyncResult> {
     try {
-      const csrfToken = await this.options.csrfTokenGetter();
-
       const completePayload = {
         answers: syncData.answers.map((answer) => ({
           questionId: answer.questionId,
@@ -447,7 +439,6 @@ export class DatabaseSyncManager {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "x-csrf-token": csrfToken,
           },
           credentials: "include",
           body: JSON.stringify(completePayload),

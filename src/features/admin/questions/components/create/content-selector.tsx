@@ -50,7 +50,7 @@ export interface ContentData {
 }
 
 // Shared list of available educational content files
-export const CONTENT_FILES: ContentFile[] = [
+const CONTENT_FILES: ContentFile[] = [
   // Anatomic Pathology files
   { filename: "ap-bone.json", category: "Anatomic Pathology", subject: "Bone" },
   { filename: "ap-breast.json", category: "Anatomic Pathology", subject: "Breast" },

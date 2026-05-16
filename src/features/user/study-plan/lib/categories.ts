@@ -1,4 +1,4 @@
-export interface Category {
+interface Category {
   id: string;
   name: string;
   parent: "CP" | "AP";
@@ -36,11 +36,3 @@ export const CATEGORIES: Category[] = [
 
 export const CP_CATEGORIES = CATEGORIES.filter((c) => c.parent === "CP");
 export const AP_CATEGORIES = CATEGORIES.filter((c) => c.parent === "AP");
-
-export function getCategoryById(id: string): Category | undefined {
-  return CATEGORIES.find((c) => c.id === id);
-}
-
-export function getCategoryParent(id: string): "CP" | "AP" | undefined {
-  return getCategoryById(id)?.parent;
-}

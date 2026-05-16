@@ -94,7 +94,7 @@ const STOPWORDS = new Set([
  * - Stopwords removed
  * - Min length 3
  */
-export function tokenise(text: string): Set<string> {
+function tokenise(text: string): Set<string> {
   const tokens = text
     .toLowerCase()
     .split(/[^a-z0-9]+/)
@@ -106,7 +106,7 @@ export function tokenise(text: string): Set<string> {
  * Jaccard-like overlap score between two token sets.
  * Returns 0–1 (1 = identical, 0 = no overlap).
  */
-export function overlapScore(a: Set<string>, b: Set<string>): number {
+function overlapScore(a: Set<string>, b: Set<string>): number {
   if (a.size === 0 || b.size === 0) return 0;
   let hits = 0;
   for (const t of a) {
@@ -123,7 +123,7 @@ export function overlapScore(a: Set<string>, b: Set<string>): number {
 /**
  * Build keyword sets for each image from its title and description.
  */
-export function buildImageKeywordSets(images: ImageInput[]): Set<string>[] {
+function buildImageKeywordSets(images: ImageInput[]): Set<string>[] {
   return images.map((img) => tokenise(`${img.title} ${img.description}`));
 }
 
@@ -131,7 +131,7 @@ export function buildImageKeywordSets(images: ImageInput[]): Set<string>[] {
  * Score each caption chunk against each image's keyword set.
  * Returns a 2D array: scores[captionIndex][imageIndex]
  */
-export function scoreCaptionsAgainstImages(
+function scoreCaptionsAgainstImages(
   captions: CaptionChunk[],
   imageKeywords: Set<string>[]
 ): number[][] {
@@ -170,7 +170,7 @@ function smoothScores(scores: number[], windowSize: number): number[] {
  * For each image boundary (i → i+1), find the caption index that best marks
  * the transition point. Returns an array of caption indices (length = N-1).
  */
-export function findTransitionCaptionIndices(
+function findTransitionCaptionIndices(
   scores: number[][], // [captionIdx][imageIdx]
   numImages: number
 ): number[] {

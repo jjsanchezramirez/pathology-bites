@@ -47,6 +47,16 @@ src/
 
 Cloudflare CDN front of Vercel. Debug deploy/cache issues → purge BOTH caches. No custom Cache-Control headers for paths Next.js manages (`/_next/static/`).
 
+## Security
+
+Real defense = Cloudflare + Supabase auth/RLS + middleware. App-layer is thin on purpose. **Before re-adding any of these, read README.md "Security & Performance" first — they were removed deliberately in the Apr–May 2026 audit and have rationale documented there:**
+
+- Browser fingerprinting + `security_events` table — placebo against real session hijack; Supabase refresh-token reuse detection is the actual defense.
+- Custom CSRF token machinery — never validated server-side; `sameSite: lax` cookie + JSON CORS preflight already cover it.
+- Per-action rate limiters (signup / password-reset / email-verify / admin-API / quiz-API) — Supabase rate-limits `/auth/v1/*` server-side.
+
+Active app-layer protections worth knowing: honeypot field `referral_source` on signup-form.tsx + contact-form.tsx (silent reject if non-empty). Turnstile plumbing wired in 3 forms but currently disabled (`isCaptchaEnabled() === false`) due to non-Gmail-auth breakage.
+
 ## Lint rules
 
 - `prettier/prettier` enforced via ESLint plugin

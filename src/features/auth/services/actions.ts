@@ -36,13 +36,6 @@ export async function login(formData: FormData) {
     return;
   }
 
-  // Validate CSRF token
-  const csrfToken = formData.get("csrf-token") as string;
-  if (!csrfToken) {
-    redirect("/login?error=" + encodeURIComponent("Security validation failed. Please try again."));
-    return;
-  }
-
   const email = formData.get("email") as string;
   const password = formData.get("password") as string;
   const captchaToken = formData.get("captchaToken") as string | null;

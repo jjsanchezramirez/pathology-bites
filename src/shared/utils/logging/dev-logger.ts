@@ -198,18 +198,6 @@ export function generateRequestId(): string {
 }
 
 /**
- * Get client IP from request headers
- */
-export function getClientIP(headers: Headers): string {
-  return (
-    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    headers.get("x-real-ip") ||
-    headers.get("cf-connecting-ip") ||
-    "unknown"
-  );
-}
-
-/**
  * Measure execution time of async operations
  */
 export async function measureTime<T>(
