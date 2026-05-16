@@ -188,7 +188,12 @@ class UserSettingsService {
     }
 
     const result = await response.json();
-    return result.data;
+    // Route returns the full combined UserSettings; pick the section so the
+    // declared return type matches reality. Without this, callers that spread
+    // the response into a UserSettings shape (e.g. theme/settings contexts
+    // doing `{ ...settings, ui_settings: updatedSettings }`) end up nesting
+    // the full payload under the section key and corrupting the SWR cache.
+    return result.data[section];
   }
 
   /**

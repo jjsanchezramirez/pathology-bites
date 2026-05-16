@@ -2,6 +2,7 @@
 "use client";
 
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { useSWRConfig } from "swr";
 import {
   dashboardThemes,
   getThemeById,
@@ -39,6 +40,7 @@ interface DashboardThemeProviderProps {
 
 export function DashboardThemeProvider({ children, isGuest = false }: DashboardThemeProviderProps) {
   const { isAdmin, role } = useUserRole();
+  const { mutate } = useSWRConfig();
 
   const [currentTheme, setCurrentTheme] = useState<DashboardTheme>(getDefaultTheme());
   const [adminMode, setAdminModeState] = useState<AdminMode>(() =>
@@ -341,7 +343,6 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
 
         // Manually update SWR cache to keep it in sync
         if (settings) {
-          const { mutate } = await import("swr");
           mutate(
             "user-settings",
             {

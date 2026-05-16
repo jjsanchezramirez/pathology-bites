@@ -3,6 +3,7 @@
 
 import { createContext, useContext, useEffect, useState, ReactNode } from "react";
 import { useTheme } from "next-themes";
+import { useSWRConfig } from "swr";
 import { userSettingsService } from "@/shared/services/user-settings";
 import { useUserSettings } from "@/shared/hooks/use-user-settings";
 import { getTextZoomConfig, applyTextZoom, getValidZoomLevel } from "@/shared/utils/ui/text-zoom";
@@ -28,6 +29,7 @@ export function DashboardSettingsProvider({
 }) {
   const { isAdmin } = useUserRole();
   const { setTheme: setColorMode } = useTheme();
+  const { mutate } = useSWRConfig();
   const [textZoom, setTextZoomState] = useState(1.0);
   const [dashboardTheme, setDashboardThemeState] = useState("default");
   const config = getTextZoomConfig();
@@ -78,7 +80,6 @@ export function DashboardSettingsProvider({
 
       // Update SWR cache to keep it in sync
       if (settings) {
-        const { mutate } = await import("swr");
         mutate(
           "user-settings",
           {
@@ -108,7 +109,6 @@ export function DashboardSettingsProvider({
 
       // Update SWR cache to keep it in sync
       if (settings) {
-        const { mutate } = await import("swr");
         mutate(
           "user-settings",
           {

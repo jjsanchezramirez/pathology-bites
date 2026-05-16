@@ -15,7 +15,7 @@
 
 // Cache configuration
 const CACHE_PREFIX = "pathology-bites";
-const CACHE_VERSION = "v1";
+const CACHE_VERSION = "v2";
 
 // Namespace configurations with default TTLs
 // Simplified: Only store what can't be handled by HTTP browser cache
