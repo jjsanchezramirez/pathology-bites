@@ -1,7 +1,14 @@
 // Cache invalidation and management helpers
 // Centralized utilities for cache management across the app using unified cache
+//
+// IMPORTANT: every helper takes `mutate` as its first arg. Pass the
+// provider-scoped `mutate` from `useSWRConfig()` (or use the `useCacheHelpers()`
+// hook which binds it for you). The global `mutate` imported from "swr"
+// targets SWR's default cache, NOT the custom provider cache that
+// `swr-cache-provider.tsx` installs — calls against it are silent no-ops
+// against the cache `useSWR` hooks read from.
 
-import { mutate } from "swr";
+import type { ScopedMutator } from "swr";
 import { clearSWRCache } from "@/shared/contexts/swr-cache-provider";
 import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
 import type { UserStats } from "@/features/user/achievements/services/achievement-checker";
@@ -44,7 +51,7 @@ type UnifiedDataShape = {
  *
  * @param revalidate - Whether to immediately fetch fresh data (default: true)
  */
-export async function invalidateUnifiedData(revalidate = true) {
+export async function invalidateUnifiedData(mutate: ScopedMutator, revalidate = true) {
   console.log("[Cache] 🔄 Invalidating unified data cache");
 
   if (revalidate) {
@@ -62,7 +69,7 @@ export async function invalidateUnifiedData(revalidate = true) {
  *
  * @param revalidate - Whether to immediately fetch fresh data (default: true)
  */
-export async function invalidateUserSettings(revalidate = true) {
+export async function invalidateUserSettings(mutate: ScopedMutator, revalidate = true) {
   console.log("[Cache] 🔄 Invalidating user settings cache");
 
   if (revalidate) {
@@ -78,7 +85,7 @@ export async function invalidateUserSettings(revalidate = true) {
  *
  * @param revalidate - Whether to immediately fetch fresh data (default: true)
  */
-export async function invalidateQuizSessions(revalidate = true) {
+export async function invalidateQuizSessions(mutate: ScopedMutator, revalidate = true) {
   console.log("[Cache] 🔄 Invalidating quiz sessions cache");
 
   if (revalidate) {
@@ -92,7 +99,7 @@ export async function invalidateQuizSessions(revalidate = true) {
  * Invalidate all SWR caches
  * Useful for logout, critical errors, etc.
  */
-export async function invalidateAllCaches() {
+export async function invalidateAllCaches(mutate: ScopedMutator) {
   console.log("[Cache] 🗑️ Invalidating all caches");
 
   // Invalidate all SWR keys
@@ -110,14 +117,14 @@ export async function invalidateAllCaches() {
  * Refresh all caches (invalidate + refetch)
  * Useful when you want to ensure fresh data everywhere
  */
-export async function refreshAllCaches() {
+export async function refreshAllCaches(mutate: ScopedMutator) {
   console.log("[Cache] 🔄 Refreshing all caches");
 
   // Refresh unified data
-  await invalidateUnifiedData(true);
+  await invalidateUnifiedData(mutate, true);
 
   // Refresh settings
-  await invalidateUserSettings(true);
+  await invalidateUserSettings(mutate, true);
 }
 
 /**
@@ -138,6 +145,7 @@ export async function refreshAllCaches() {
  * @param serverMetadata - Server-side stats for validation (optional but recommended)
  */
 export async function updateCacheAfterQuiz(
+  mutate: ScopedMutator,
   quizResult: QuizResult,
   newAchievements: QuizResult["newAchievements"] = [],
   serverMetadata?: {
@@ -166,7 +174,7 @@ export async function updateCacheAfterQuiz(
 
     if (!currentCache) {
       console.log("[Cache] ⚠️ No cache found, falling back to full refetch");
-      await invalidateUnifiedData(true);
+      await invalidateUnifiedData(mutate, true);
       return;
     }
 
@@ -207,7 +215,7 @@ export async function updateCacheAfterQuiz(
         }
 
         // Force fresh fetch from server
-        await invalidateUnifiedData(true);
+        await invalidateUnifiedData(mutate, true);
         return;
       }
 
@@ -339,7 +347,7 @@ export async function updateCacheAfterQuiz(
   } catch (error) {
     console.error("[Cache] ❌ Error updating cache incrementally:", error);
     console.log("[Cache] ⚠️ Falling back to full refetch");
-    await invalidateUnifiedData(true);
+    await invalidateUnifiedData(mutate, true);
   }
 }
 
@@ -347,20 +355,20 @@ export async function updateCacheAfterQuiz(
  * Helper for quiz completion (DEPRECATED - use updateCacheAfterQuiz)
  * @deprecated Use updateCacheAfterQuiz() instead for better performance
  */
-export async function onQuizComplete() {
+export async function onQuizComplete(mutate: ScopedMutator) {
   console.warn("[Cache] ⚠️ onQuizComplete() is deprecated. Use updateCacheAfterQuiz() instead");
-  await invalidateUnifiedData(true);
+  await invalidateUnifiedData(mutate, true);
 }
 
 /**
  * Helper for settings update
  * Invalidates settings cache to reflect changes
  */
-export async function onSettingsUpdate() {
+export async function onSettingsUpdate(mutate: ScopedMutator) {
   console.log("[Cache] ⚙️ Settings updated, invalidating cache");
 
   // Invalidate settings cache
-  await invalidateUserSettings(true);
+  await invalidateUserSettings(mutate, true);
 
   // Unified data doesn't include settings, so no need to invalidate
 }
@@ -369,11 +377,11 @@ export async function onSettingsUpdate() {
  * Helper for logout
  * Clears all caches to prevent data leakage
  */
-export async function onLogout() {
+export async function onLogout(mutate: ScopedMutator) {
   console.log("[Cache] 👋 Logging out, clearing all caches");
 
   // Clear all caches
-  await invalidateAllCaches();
+  await invalidateAllCaches(mutate);
 }
 
 /**

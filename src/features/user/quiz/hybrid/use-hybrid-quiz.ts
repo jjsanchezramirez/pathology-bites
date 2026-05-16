@@ -26,11 +26,7 @@ import {
 } from "../types/quiz-question";
 import type { QuizResult } from "../types/quiz";
 import { toast } from "@/shared/utils/ui/toast";
-import {
-  updateCacheAfterQuiz,
-  invalidateQuizSessions,
-  invalidateUnifiedData,
-} from "@/shared/utils/cache/cache-helpers";
+import { useCacheHelpers } from "@/shared/hooks/use-cache-helpers";
 import { calculateAchievementsToUnlock } from "@/features/user/achievements/services/achievement-checker.client";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 
@@ -128,6 +124,10 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
   // Get unified performance data (includes stats and unlocked achievements)
   const { data: unifiedData } = useUnifiedData();
+
+  // Provider-scoped cache helpers (see CLAUDE.md: global mutate is a no-op
+  // against the custom SWR provider's cache).
+  const { updateCacheAfterQuiz, invalidateQuizSessions, invalidateUnifiedData } = useCacheHelpers();
 
   // Sync status state
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({ state: "idle", message: "" });
@@ -521,7 +521,15 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     // state via `stateRef.current` to avoid stale-closure bugs (e.g., the last-answer
     // race in practice mode where the click triggered a setTimeout-completion before
     // React re-rendered with the new state).
-  }, [stateActions, onError, sessionId, unifiedData?.achievements]);
+  }, [
+    stateActions,
+    onError,
+    sessionId,
+    unifiedData?.achievements,
+    invalidateQuizSessions,
+    updateCacheAfterQuiz,
+    invalidateUnifiedData,
+  ]);
 
   // Initialize quiz data (API Call #1)
   useEffect(() => {
@@ -596,7 +604,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     autoSaveManager.current
       .autoSave(sessionId, stateRef.current, "periodic", timeRemaining)
       .then(() => invalidateQuizSessions(false));
-  }, [answersCount, sessionId, timeRemaining]);
+  }, [answersCount, sessionId, timeRemaining, invalidateQuizSessions]);
 
   // Timer countdown for timed quizzes. Computes `shouldBeActive` inline rather
   // than mirroring it into a separate `timerActive` state — the intermediate
@@ -700,7 +708,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         // Invalidate quiz sessions cache to show updated progress
         invalidateQuizSessions(false);
       }
-    }, [stateActions, sessionId, quizState, timeRemaining]),
+    }, [stateActions, sessionId, quizState, timeRemaining, invalidateQuizSessions]),
 
     resumeQuiz: useCallback(() => {
       stateActions.resumeQuiz();
@@ -727,7 +735,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         toast.error("Failed to save quiz. Please try again.");
         throw error; // Re-throw so page component knows save failed
       }
-    }, [sessionId, quizState, timeRemaining]),
+    }, [sessionId, quizState, timeRemaining, invalidateQuizSessions]),
 
     completeQuiz: useCallback(async () => {
       return await handleCompleteQuiz();
