@@ -20,7 +20,6 @@ next-env.d.ts
 # Project directories
 dev
 public
-tests/e2e
 
 # IDEs & VCS
 .git

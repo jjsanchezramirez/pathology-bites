@@ -2,7 +2,7 @@
 
 ## Stack
 
-Next.js 15 (App Router) + React 19 + TypeScript + Supabase (auth/DB) + Cloudflare R2 (storage) + Tailwind + shadcn/ui + Vitest + Playwright
+Next.js 15 (App Router) + React 19 + TypeScript + Supabase (auth/DB) + Cloudflare R2 (storage) + Tailwind + shadcn/ui + Vitest
 
 ## Commands
 
@@ -11,7 +11,6 @@ Next.js 15 (App Router) + React 19 + TypeScript + Supabase (auth/DB) + Cloudflar
 - `npm run lint` — ESLint (uses `next lint`)
 - `npm run format` — prettier (debug/ files ignored by .gitignore; use `--ignore-path .prettierignore` to format them)
 - `npm run test` — Vitest unit tests
-- `npm run test:e2e` — Playwright
 
 ## Project layout
 

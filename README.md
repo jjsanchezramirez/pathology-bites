@@ -1758,7 +1758,6 @@ npm run lint             # ESLint checking
 npm run lint:fix         # Auto-fix linting issues
 npm run type-check       # TypeScript validation
 npm run test             # Unit test suite
-npm run test:e2e         # End-to-end testing
 
 # Production
 npm run build            # Production build
@@ -1838,19 +1837,11 @@ npm run start            # Production server
 ### Testing Strategy
 
 ```bash
-# Unit Testing (95%+ coverage)
-npm run test              # Jest + Testing Library
+# Unit Testing
+npm run test              # Vitest
 npm run test:watch        # Watch mode for development
 npm run test:coverage     # Coverage reports
-
-# E2E Testing
-npm run test:e2e          # Playwright automation
-npm run test:e2e:ui       # Interactive testing UI
-
-# Specific Test Suites
-npm run test:auth         # Authentication flows
-npm run test:tools        # Educational tools
-npm run test:performance  # Performance benchmarks
+npm run test:api          # API route tests only
 ```
 
 ### Comprehensive Authentication Testing Guide

@@ -75,7 +75,6 @@ src/
 
 - **Vitest** - Unit testing framework
 - **Testing Library** - Component testing utilities
-- **Playwright** - End-to-end testing
 
 ## 🎯 Key Features
 

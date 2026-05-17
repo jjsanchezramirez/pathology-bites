@@ -494,18 +494,6 @@ These tests are designed to run in CI/CD pipelines:
 
 See `dev/MANUAL_TESTING_PLAN.md` for comprehensive manual testing scenarios.
 
-### What You Should Test with E2E
-
-For true integration testing, use Playwright:
-
-```bash
-# Install Playwright browsers
-npx playwright install
-
-# Run E2E tests (when created)
-npm run test:e2e
-```
-
 ## Contributing
 
 When adding new API endpoints:
@@ -539,5 +527,4 @@ Your API testing infrastructure is production-ready with:
 
 **Next steps:**
 1. Run manual testing (see `dev/MANUAL_TESTING_PLAN.md`)
-2. Add E2E tests with Playwright
-3. Set up CI/CD pipeline to run tests automatically
+2. Set up CI/CD pipeline to run tests automatically

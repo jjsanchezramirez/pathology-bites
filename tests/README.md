@@ -49,24 +49,24 @@ npm test -- achievement-checker.test.ts
 ## Test Structure
 
 ```
-dev/test/
+tests/
 ├── README.md                          # This file
-├── vitest-config.test.ts             # Config verification tests
-├── achievement-checker.test.ts        # Achievement system tests
-├── quiz-state-machine.test.ts        # Quiz state machine tests
-├── utils/
-│   ├── test-helpers.ts               # Test utility functions
-│   └── mock-data.ts                  # Mock data generators
-└── e2e/                              # E2E tests (future)
-    ├── quiz/
-    └── api/
+├── api/                               # Vitest tests for API route handlers
+├── helpers/                           # Shared mock factories
+└── unit/                              # Vitest unit tests
+    ├── vitest-config.test.ts          # Config verification
+    ├── achievement-checker.test.ts    # Achievement system
+    ├── quiz-state-machine.test.ts     # Quiz state machine
+    ├── lesson-studio/                 # Lesson studio internals
+    └── utils/
+        └── test-helpers.ts            # Test utilities
 ```
 
 ## Running Tests
 
 ### Unit Tests (Vitest)
 
-Unit tests are located in `dev/test/` and test individual functions, classes, and modules in isolation.
+Unit tests are located in `tests/` and test individual functions, classes, and modules in isolation.
 
 **Key Features:**
 - Fast execution (< 1 second for most test suites)
@@ -98,28 +98,12 @@ npm test -- quiz-state-machine.test.ts
 npm run test:ui
 ```
 
-### E2E Tests (Playwright) - Coming Soon
-
-End-to-end tests will use Playwright to test the full application flow in a real browser.
-
-```bash
-# Run E2E tests (when available)
-npm run test:e2e
-
-# Run with UI
-npm run test:e2e:ui
-
-# Debug mode
-npm run test:e2e:debug
-```
-
 ## Writing Tests
 
 ### Test File Naming
 
 - Unit tests: `*.test.ts` or `*.test.tsx`
-- E2E tests: `*.spec.ts`
-- Place tests in `dev/test/` directory
+- Place tests in `tests/` directory
 
 ### Basic Test Structure
 
@@ -441,7 +425,6 @@ NODE_OPTIONS=--max_old_space_size=4096 npm test
 ## Resources
 
 - [Vitest Documentation](https://vitest.dev/)
-- [Playwright Documentation](https://playwright.dev/)
 - [Testing Library](https://testing-library.com/)
 - [Jest Matchers (Vitest compatible)](https://vitest.dev/api/expect.html)
 

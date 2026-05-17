@@ -29,13 +29,8 @@
     "test:watch": "vitest --watch",
     "test:coverage": "vitest run --coverage",
     "test:unit": "vitest run --reporter=verbose",
-    "test:e2e": "playwright test",
-    "test:e2e:ui": "playwright test --ui",
-    "test:e2e:debug": "playwright test --debug",
-    "test:e2e:headed": "playwright test --headed",
     "test:api": "vitest run tests/api",
-    "test:all": "npm run test:run && npm run test:e2e",
-    "test:ci": "vitest run --reporter=verbose && playwright test"
+    "test:ci": "vitest run --reporter=verbose"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.858.0",
@@ -103,7 +98,6 @@
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3.3.1",
-    "@playwright/test": "^1.58.2",
     "@tailwindcss/cli": "^4.1.18",
     "@types/canvas-confetti": "^1.9.0",
     "@types/diff": "^7.0.2",
