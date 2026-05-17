@@ -67,6 +67,7 @@ src/app/debug/
 src/app/api/debug/
 src/app/docs/
 src/app/api/docs/
+tests/e2e/
 
 # FFmpeg WASM files (download via npm postinstall)
 public/ffmpeg/

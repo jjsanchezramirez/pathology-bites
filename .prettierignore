@@ -20,8 +20,7 @@ next-env.d.ts
 # Project directories
 dev
 public
-src/app/test
-src/app/api/test
+tests/e2e
 
 # IDEs & VCS
 .git

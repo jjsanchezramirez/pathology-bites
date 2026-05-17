@@ -33,7 +33,7 @@
     "test:e2e:ui": "playwright test --ui",
     "test:e2e:debug": "playwright test --debug",
     "test:e2e:headed": "playwright test --headed",
-    "test:api": "vitest run dev/testing/api",
+    "test:api": "vitest run tests/api",
     "test:all": "npm run test:run && npm run test:e2e",
     "test:ci": "vitest run --reporter=verbose && playwright test"
   },
