@@ -14,28 +14,39 @@ We have **70 API tests** covering all quiz-related endpoints:
 ## Test Files
 
 ```
-dev/test/api/
-├── README.md                          # This file
-├── api-test-helpers.ts                # Shared test utilities
-├── quiz-sessions.test.ts              # Session creation & listing (22 tests)
-├── quiz-session-detail.test.ts        # Session CRUD operations (22 tests)
-└── quiz-completion-results.test.ts    # Completion & results (26 tests)
+tests/api/                                          # mirrors src/app/api/
+├── README.md                                       # This file
+├── admin/lesson-studio/                            # API tests for lesson generation
+│   ├── generate-lesson/
+│   │   ├── planner.test.ts
+│   │   ├── transcript-analysis.test.ts
+│   │   └── vision-v2.test.ts
+│   └── generate-sequence/
+│       ├── assembler.test.ts
+│       ├── camera.test.ts
+│       ├── segmenter.test.ts
+│       ├── timing.test.ts
+│       └── vision.test.ts
+└── user/quiz/sessions/
+    ├── route.test.ts                               # POST/GET /api/user/quiz/sessions
+    └── [id]/
+        ├── route.test.ts                           # GET/PATCH/DELETE /api/user/quiz/sessions/[id]
+        └── complete-results.test.ts                # POST /complete + GET /results
 ```
+
+Shared test utilities live at `tests/helpers/api-test-helpers.ts` and are imported via the `@tests/*` alias.
 
 ## Running API Tests
 
 ```bash
 # Run all API tests
-npm run test:run -- dev/test/api
+npm run test:api
 
 # Run specific test file
-npm run test:run -- dev/test/api/quiz-sessions.test.ts
+npm run test:run -- tests/api/user/quiz/sessions/route.test.ts
 
 # Run in watch mode
-npm test -- dev/test/api
-
-# Run with verbose output
-npm run test:unit -- dev/test/api
+npm test -- tests/api
 ```
 
 ## Test Coverage

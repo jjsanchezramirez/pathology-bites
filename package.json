@@ -30,6 +30,8 @@
     "test:coverage": "vitest run --coverage",
     "test:unit": "vitest run --reporter=verbose",
     "test:api": "vitest run tests/api",
+    "test:features": "vitest run tests/features",
+    "test:app": "vitest run tests/app",
     "test:ci": "vitest run --reporter=verbose"
   },
   "dependencies": {

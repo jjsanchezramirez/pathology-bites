@@ -48,18 +48,32 @@ npm test -- achievement-checker.test.ts
 
 ## Test Structure
 
+Tests mirror `src/`. Each test sits at the path matching its source module.
+
 ```
 tests/
 ├── README.md                          # This file
-├── api/                               # Vitest tests for API route handlers
+├── vitest-config.test.ts              # Framework sanity
 ├── helpers/                           # Shared mock factories
-└── unit/                              # Vitest unit tests
-    ├── vitest-config.test.ts          # Config verification
-    ├── achievement-checker.test.ts    # Achievement system
-    ├── quiz-state-machine.test.ts     # Quiz state machine
-    ├── lesson-studio/                 # Lesson studio internals
-    └── utils/
-        └── test-helpers.ts            # Test utilities
+│   ├── api-test-helpers.ts
+│   └── test-helpers.ts
+├── api/                               # mirrors src/app/api/
+│   ├── admin/lesson-studio/
+│   └── user/quiz/sessions/
+├── app/                               # mirrors src/app/ (non-API)
+│   └── admin/lesson-studio/
+│       ├── canvas/
+│       └── model/
+└── features/                          # mirrors src/features/
+    └── user/
+        ├── achievements/
+        └── quiz/
+```
+
+Helpers are imported via the `@tests/*` alias (configured in `tsconfig.json` + `vitest.config.ts`):
+
+```ts
+import { createMockConfig } from "@tests/helpers/test-helpers";
 ```
 
 ## Running Tests
