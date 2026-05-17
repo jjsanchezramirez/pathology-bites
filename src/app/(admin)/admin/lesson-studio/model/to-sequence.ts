@@ -13,7 +13,7 @@ import type {
   SvgOverlayElement,
 } from "@/shared/types/explainer";
 import { buildCaptionChunks } from "../utils/caption-builder";
-import type { Lesson, Slide, SlideElement, CameraElement, ImageElement } from "./types";
+import type { Lesson, Slide, CameraElement, ImageElement } from "./types";
 import { timingEnd } from "./types";
 import { opacityAt, baseTransformAt, applyActiveCamera, rectAt, arrowPointsAt } from "./runtime";
 
@@ -245,4 +245,3 @@ export const _internal = {
   applyActiveCamera,
   buildKeyframe,
 };
-export type { SlideElement };

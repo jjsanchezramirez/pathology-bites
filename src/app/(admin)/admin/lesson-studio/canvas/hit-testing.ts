@@ -5,7 +5,7 @@
 
 import type { SlideElement } from "../model/types";
 import type { Point } from "./geometry";
-import { pointInRect, pointOnSegment, rectCenter } from "./geometry";
+import { pointInRect, pointOnSegment } from "./geometry";
 import { rectAt, arrowPointsAt } from "../model/runtime";
 
 /** Returns the topmost element hit at `p`, or null. `p` is in 0–100% canvas coords. */
@@ -120,21 +120,3 @@ export function moveElement(el: SlideElement, delta: Point): SlideElement {
     ...(wps ? { waypoints: wps } : {}),
   };
 }
-
-/** Produce a synthetic Rect for arrows (from the two endpoints) for handle rendering. */
-export function arrowBbox(from: Point, to: Point) {
-  const minX = Math.min(from.x, to.x);
-  const minY = Math.min(from.y, to.y);
-  const maxX = Math.max(from.x, to.x);
-  const maxY = Math.max(from.y, to.y);
-  return {
-    x: minX,
-    y: minY,
-    w: maxX - minX,
-    h: maxY - minY,
-    center: { x: (minX + maxX) / 2, y: (minY + maxY) / 2 },
-  };
-}
-
-// re-export for convenience
-export { rectCenter };

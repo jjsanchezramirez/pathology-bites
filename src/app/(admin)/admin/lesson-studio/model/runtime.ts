@@ -71,7 +71,7 @@ function bracket<T extends { time: number }>(wps: T[], localTime: number): [T, T
  * Interpolated rect at `time` (absolute segment-local seconds) for an element
  * with waypoints. If fewer than 2 waypoints, returns `fallback` unchanged.
  */
-export function interpolateRect(
+function interpolateRect(
   waypoints: Waypoint[] | undefined,
   timingStart: number,
   time: number,
@@ -91,7 +91,7 @@ export function interpolateRect(
 }
 
 /** Interpolated from/to points at `time` for an arrow element. */
-export function interpolateArrow(
+function interpolateArrow(
   waypoints: ArrowWaypoint[] | undefined,
   timingStart: number,
   time: number,
@@ -252,5 +252,3 @@ export function computeSlideAt(slide: Slide, time: number): SlideRuntime {
 export function cameraToCss(t: CameraTransform): string {
   return `translate(${t.x}%, ${t.y}%) scale(${t.scale})`;
 }
-
-export { uiToTransform };

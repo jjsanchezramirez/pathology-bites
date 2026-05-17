@@ -1330,7 +1330,7 @@ _Tags_
 
 - `GET /api/public/tools/cell-quiz/images` - Cell quiz image dataset (24h cache)
 - `GET /api/public/tools/cell-quiz/references` - Cell quiz references (24h cache)
-- `GET /api/public/tools/virtual-slides` - Full virtual slides dataset (15MB)
+- `GET /api/public/tools/virtual-slides` - Full virtual slides dataset (~8MB, v7 optimized)
 - `GET /api/public/tools/virtual-slides/nci` - Expand NCI Thesaurus terms for virtual slides
 - `POST /api/public/tools/citations/extract-url-metadata` - Extract citation from URL
 - `POST /api/public/tools/citations/extract-journal-metadata` - Extract DOI metadata

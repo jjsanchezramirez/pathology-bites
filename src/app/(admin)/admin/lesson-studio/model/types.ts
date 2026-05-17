@@ -44,7 +44,7 @@ export interface ArrowWaypoint {
   to: Point;
 }
 
-export type ElementKind = "shape" | "spotlight" | "arrow" | "text" | "svg" | "image" | "camera";
+type ElementKind = "shape" | "spotlight" | "arrow" | "text" | "svg" | "image" | "camera";
 
 interface ElementBase {
   id: string;

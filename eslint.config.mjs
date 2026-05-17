@@ -69,7 +69,7 @@ const eslintConfig = [
       "out/**",
       "build/**",
       "next-env.d.ts",
-      "dev/scripts/**",
+      "dev/code/scripts/**",
       "public/ffmpeg/**",
       "src/app/test/**",
       // Allow direct sonner imports only in utility wrapper, UI component, and root layout

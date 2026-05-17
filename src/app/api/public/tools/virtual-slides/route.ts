@@ -8,7 +8,7 @@ export const revalidate = 86400 // 24h ISR-like caching
  * /api/public/tools/virtual-slides:
  *   get:
  *     summary: Get virtual slides dataset
- *     description: Retrieve the complete virtual slides dataset (v4 optimized format, 6.6MB) from Cloudflare R2 storage. Response is cached for 24 hours with ISR-like revalidation.
+ *     description: Retrieve the complete virtual slides dataset (v7 optimized format) from Cloudflare R2 storage. Response is cached for 24 hours with ISR-like revalidation.
  *     tags:
  *       - Public - Tools
  *     responses:
@@ -18,7 +18,7 @@ export const revalidate = 86400 // 24h ISR-like caching
  *           application/json:
  *             schema:
  *               type: object
- *               description: Virtual slides dataset in v4 optimized format (structure varies)
+ *               description: Virtual slides dataset in v7 optimized format (structure varies)
  *         headers:
  *           Cache-Control:
  *             schema:
@@ -51,13 +51,8 @@ export const revalidate = 86400 // 24h ISR-like caching
  */
 export async function GET() {
   const base = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
-  // Updated: Use the optimized v4 format (6.6MB, non-gzipped for API compatibility)
-  const url = `${base}/virtual-slides/virtual-slides-v4-min.json`
+  const url = `${base}/virtual-slides/virtual-slides-v7-min.json`
   try {
-    // Note: This endpoint returns the optimized v4 dataset (6.6MB)
-    // For large file handling, Next.js will show a caching warning during build
-    // This is expected and doesn't affect functionality - just means the response
-    // won't be cached by Next.js (but browser/CDN caching still works)
     const res = await fetch(url, { next: { revalidate: 86400 } })
     if (!res.ok) {
       return NextResponse.json({ error: 'Upstream fetch failed', status: res.status }, { status: 502 })

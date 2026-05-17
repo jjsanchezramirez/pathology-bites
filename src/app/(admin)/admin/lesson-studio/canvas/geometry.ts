@@ -36,16 +36,9 @@ export function rotate(p: Point, origin: Point, deg: number): Point {
   return { x: origin.x + rxIso, y: origin.y + ryIso * CANVAS_ASPECT };
 }
 
-/** Transform `p` from world space into the rotated-rect's local space (center at origin). */
-export function toLocal(p: Point, r: Rect): Point {
+function toLocal(p: Point, r: Rect): Point {
   const center = rectCenter(r);
   return rotate(p, center, -r.rotation);
-}
-
-/** Transform local-space point back to world space. */
-export function fromLocal(localP: Point, r: Rect): Point {
-  const center = rectCenter(r);
-  return rotate({ x: center.x + localP.x, y: center.y + localP.y }, center, r.rotation);
 }
 
 /** Is world-space point `p` inside the (possibly rotated) rect? */
@@ -55,26 +48,6 @@ export function pointInRect(p: Point, r: Rect): boolean {
   const lx = local.x - center.x;
   const ly = local.y - center.y;
   return lx >= -r.w / 2 && lx <= r.w / 2 && ly >= -r.h / 2 && ly <= r.h / 2;
-}
-
-/**
- * Return the four corners of a (possibly rotated) rect in world space,
- * in order: top-left, top-right, bottom-right, bottom-left.
- */
-export function rectCorners(r: Rect): [Point, Point, Point, Point] {
-  const center = rectCenter(r);
-  const hw = r.w / 2;
-  const hh = r.h / 2;
-  const corners: Point[] = [
-    { x: -hw, y: -hh },
-    { x: hw, y: -hh },
-    { x: hw, y: hh },
-    { x: -hw, y: hh },
-  ].map((c) => {
-    const world = rotate({ x: center.x + c.x, y: center.y + c.y }, center, r.rotation);
-    return world;
-  });
-  return corners as [Point, Point, Point, Point];
 }
 
 /** Distance from world point `p` to the line segment `a`–`b`. */
@@ -248,7 +221,7 @@ export function resizeRect(
 /** Compute rotation angle (degrees) from rect center to cursor.
  *  Accounts for the 16:9 canvas aspect so the angle reflects the user's
  *  perceived on-screen direction, not the anisotropic percent delta. */
-export function angleFromCenter(r: Rect, p: Point): number {
+function angleFromCenter(r: Rect, p: Point): number {
   const c = rectCenter(r);
   // Scale y by aspect so x and y share equivalent pixel units.
   const dxPx = p.x - c.x;

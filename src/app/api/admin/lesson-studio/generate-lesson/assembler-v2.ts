@@ -168,8 +168,7 @@ export function buildAnnotation(vision: VisionResult, timing: Timing): SlideElem
 // Timing helpers
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export function annotationTiming(camera: CameraKeyframes, slideDuration: number): Timing {
+function annotationTiming(camera: CameraKeyframes, slideDuration: number): Timing {
   if (camera.hasTarget) {
     const zoomInEnd = camera.zoomInStartTime + ZOOM_ANIMATION_DURATION;
     const holdEnd = Math.max(zoomInEnd + 0.5, slideDuration - camera.zoomOutDuration);
@@ -181,8 +180,7 @@ export function annotationTiming(camera: CameraKeyframes, slideDuration: number)
   return { start, fadeIn: 0.4, hold, fadeOut: 0.4 };
 }
 
-/** @internal exported for testing */
-export function labelTiming(camera: CameraKeyframes, slideDuration: number): Timing {
+function labelTiming(camera: CameraKeyframes, slideDuration: number): Timing {
   const ann = annotationTiming(camera, slideDuration);
   return {
     start: ann.start + 0.3,

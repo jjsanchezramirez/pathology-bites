@@ -21,7 +21,7 @@ export type Selection = {
   elementIds: string[];
 };
 
-export type EditorMode = "edit" | "preview";
+type EditorMode = "edit" | "preview";
 
 export type Tool = "select" | "shape" | "spotlight" | "arrow" | "text" | "svg" | "image" | "camera";
 
@@ -93,7 +93,7 @@ interface StoreActions {
   _commit: (mutator: (lesson: Lesson) => Lesson) => void;
 }
 
-export type EditorStore = StoreState & StoreActions;
+type EditorStore = StoreState & StoreActions;
 
 function cloneLesson(l: Lesson): Lesson {
   return structuredClone(l);
