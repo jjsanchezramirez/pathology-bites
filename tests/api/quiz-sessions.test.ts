@@ -13,7 +13,7 @@ import {
   getResponseJson,
   createMockQuizFormData,
   createMockQuizSessionData,
-} from "./api-test-helpers";
+} from "../helpers/api-test-helpers";
 
 // Mock dependencies
 vi.mock("@/shared/services/server", () => ({

@@ -2,7 +2,7 @@
 import { describe, it, expect, beforeEach } from "vitest";
 import { quizStateReducer } from "@/features/user/quiz/hybrid/core/quiz-state-machine";
 import type { QuizState, QuizQuestion } from "@/features/user/quiz/types/quiz-question";
-import { createMockConfig } from "./utils/test-helpers";
+import { createMockConfig } from "../helpers/test-helpers";
 
 describe("Quiz State Machine", () => {
   let initialState: QuizState;

@@ -13,7 +13,7 @@ import {
   createMockRequest,
   getResponseJson,
   createMockAnswerSubmission,
-} from "./api-test-helpers";
+} from "../helpers/api-test-helpers";
 
 // Mock dependencies
 vi.mock("@/shared/services/server", () => ({
