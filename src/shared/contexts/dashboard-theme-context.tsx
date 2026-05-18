@@ -1,7 +1,8 @@
 // src/shared/contexts/dashboard-theme-context.tsx
 "use client";
 
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useContext, useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { useSWRConfig } from "swr";
 import {
   dashboardThemes,
@@ -19,6 +20,24 @@ import {
   isAdminTypeMode,
 } from "@/shared/utils/auth/admin-mode";
 import { userSettingsService } from "@/shared/services/user-settings";
+
+/**
+ * Derive admin mode from the current URL pathname.
+ * /admin* → user's actual admin-type role (admin/creator/reviewer) if they have one
+ * everything else → "user"
+ * Manual URL nav (typing /admin or /dashboard) should switch the theme even
+ * without clicking the mode toggle — this is the source of truth, not the cookie.
+ */
+function deriveAdminModeFromPathname(
+  pathname: string | null,
+  role: "admin" | "creator" | "reviewer" | "user" | null
+): AdminMode {
+  const isAdminPath = !!pathname && pathname.startsWith("/admin");
+  if (isAdminPath && role && (role === "admin" || role === "creator" || role === "reviewer")) {
+    return role;
+  }
+  return "user";
+}
 
 interface DashboardThemeContextType {
   currentTheme: DashboardTheme;
@@ -41,6 +60,15 @@ interface DashboardThemeProviderProps {
 export function DashboardThemeProvider({ children, isGuest = false }: DashboardThemeProviderProps) {
   const { isAdmin, role } = useUserRole();
   const { mutate } = useSWRConfig();
+  const pathname = usePathname();
+
+  // Mode derived from URL — the toggle button still owns cookie writes, but
+  // pathname is now the source of truth. Manual URL nav between /admin and
+  // /dashboard now flips the theme correctly without needing the button.
+  const derivedMode = useMemo(
+    () => deriveAdminModeFromPathname(pathname, role ?? null),
+    [pathname, role]
+  );
 
   const [currentTheme, setCurrentTheme] = useState<DashboardTheme>(getDefaultTheme());
   const [adminMode, setAdminModeState] = useState<AdminMode>(() =>
@@ -48,6 +76,17 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
   );
   const [isLoading, setIsLoading] = useState(true);
   const [isTransitioning, setIsTransitioning] = useState(false);
+
+  // Sync cookie + state to derived mode whenever URL or role changes.
+  // Keeps the toggle button's "current mode" indicator in sync after manual
+  // URL nav, and ensures other components reading the cookie see the active mode.
+  useEffect(() => {
+    if (isGuest) return;
+    if (derivedMode !== adminMode) {
+      setAdminModeState(derivedMode);
+      setAdminModeCookie(derivedMode);
+    }
+  }, [derivedMode, adminMode, isGuest]);
 
   // Use SWR cache instead of redundant localStorage
   const { data: settings } = useUserSettings({ enabled: !isGuest });
@@ -117,17 +156,10 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
     try {
       console.log("[DashboardTheme] Loading theme from SWR cache...");
 
-      // Get admin mode using utility function
-      const defaultMode = getAdminModeFromCookie(isAdmin, role);
+      // Mode is derived from URL pathname (see derivedMode above). Cookie sync
+      // happens in the dedicated effect.
+      const defaultMode = derivedMode;
       console.log("[DashboardTheme] Admin mode:", defaultMode, "isAdmin:", isAdmin, "role:", role);
-
-      // CRITICAL FIX: Update adminMode when role loads
-      // On first load, role might be null/undefined, so adminMode defaults to "user"
-      // When role loads, we need to update adminMode to match the actual role
-      if (defaultMode !== adminMode) {
-        console.log("[DashboardTheme] Updating adminMode from", adminMode, "to", defaultMode);
-        setAdminModeState(defaultMode);
-      }
 
       // Load theme based on admin mode from SWR cache
       const availableThemes = getAvailableThemes(defaultMode);
@@ -165,61 +197,12 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
       setCurrentTheme(getDefaultTheme());
       setIsLoading(false);
     }
-  }, [settings, isAdmin, role, adminMode]);
+  }, [settings, isAdmin, role, derivedMode]);
 
-  // Watch for admin mode changes via cookie
-  useEffect(() => {
-    const handleCookieChange = () => {
-      const newMode = getAdminModeFromCookie(isAdmin, role);
-
-      if (newMode !== adminMode) {
-        setAdminModeState(newMode);
-
-        // Load saved theme for new mode from localStorage
-        const uiSettingsStr = localStorage.getItem("pathology-bites-ui-settings");
-        let newTheme: DashboardTheme;
-
-        if (uiSettingsStr) {
-          try {
-            const uiSettings = JSON.parse(uiSettingsStr);
-            const themeKey = getThemeKeyForMode(newMode);
-            const themeId = uiSettings[themeKey];
-
-            if (themeId) {
-              const theme = getThemeById(themeId);
-              const availableThemes = getAvailableThemes(newMode);
-              if (theme && availableThemes.some((t) => t.id === theme.id)) {
-                newTheme = theme;
-                console.log(`[DashboardTheme] Loaded saved theme for ${newMode} mode:`, themeId);
-              } else {
-                newTheme = getDefaultThemeForMode(newMode);
-                console.log(
-                  `[DashboardTheme] Theme not available for ${newMode} mode, using default`
-                );
-              }
-            } else {
-              newTheme = getDefaultThemeForMode(newMode);
-              console.log(`[DashboardTheme] No saved theme for ${newMode} mode, using default`);
-            }
-          } catch (error) {
-            console.warn("[DashboardTheme] Failed to load theme for mode change:", error);
-            newTheme = getDefaultThemeForMode(newMode);
-          }
-        } else {
-          newTheme = getDefaultThemeForMode(newMode);
-          console.log(
-            `[DashboardTheme] No ui_settings in localStorage for ${newMode} mode, using default`
-          );
-        }
-
-        setCurrentTheme(newTheme);
-      }
-    };
-
-    // Poll for cookie changes every 100ms (simple approach)
-    const interval = setInterval(handleCookieChange, 100);
-    return () => clearInterval(interval);
-  }, [adminMode, isAdmin, role]);
+  // (Removed: 100ms cookie polling. The derivedMode useMemo above reacts to
+  // pathname/role changes directly, and the sync effect updates state +
+  // cookie. The load-theme effect re-runs on derivedMode change to swap the
+  // theme — so polling is fully redundant.)
 
   // Watch for localStorage changes (when DashboardSettingsProvider syncs settings)
   useEffect(() => {
