@@ -32,8 +32,7 @@ import type { SvgInput, LessonPlan, PlannedTextSlide, TranscriptAnalysis } from 
 
 /** @internal exported for testing */
 export const TITLE_DURATION = 3;
-/** @internal exported for testing */
-export const MIN_IMAGE_DURATION = 5;
+const MIN_IMAGE_DURATION = 5;
 const ZOOM_ANIMATION_DURATION = 2.0; // shared with camera.ts ZOOM_IN_HOLD timing
 
 const BRAND_TEAL = "#14B8A6";

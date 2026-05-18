@@ -179,11 +179,11 @@ export function ProfileDropdown() {
     );
   }
 
-  // Show sign up button if not authenticated
+  // Show sign in link if not authenticated
   if (!isAuthenticated || !user) {
     return (
-      <Button size="sm" asChild>
-        <a href="/signup">Sign Up for Free</a>
+      <Button variant="ghost" size="sm" asChild>
+        <a href="/login">Sign In</a>
       </Button>
     );
   }

@@ -24,7 +24,6 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import {
-  Loader2,
   Plus,
   Search,
   Music,
@@ -44,6 +43,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import { fetchAudio, getAudioStats } from "@/features/admin/audio/services/audio";
 import type { Audio, AudioListFilters } from "@/features/admin/audio/types";
 import { toast } from "@/shared/utils/ui/toast";
@@ -422,11 +422,37 @@ export default function AdminAudioPage() {
                 </TableHeader>
                 <TableBody>
                   {loading ? (
-                    <TableRow>
-                      <TableCell colSpan={7} className="h-24 text-center">
-                        <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                      </TableCell>
-                    </TableRow>
+                    Array.from({ length: 8 }).map((_, i) => (
+                      <TableRow key={`skeleton-${i}`}>
+                        <TableCell>
+                          <div className="space-y-1">
+                            <div className="flex items-start justify-between gap-2">
+                              <Skeleton className="h-4 w-3/4" />
+                              <Skeleton className="h-3 w-10" />
+                            </div>
+                            <Skeleton className="h-3 w-1/2" />
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-16 rounded-full" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-3 w-12" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-3 w-16" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-3 w-6" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-6 w-full" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-8 w-8 ml-auto rounded" />
+                        </TableCell>
+                      </TableRow>
+                    ))
                   ) : audio.length === 0 ? (
                     <TableRow>
                       <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">

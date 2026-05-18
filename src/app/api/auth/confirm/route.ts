@@ -1,5 +1,9 @@
 // src/app/api/auth/confirm/route.ts
-import { type EmailOtpType, type SupabaseClient } from "@supabase/supabase-js";
+import {
+  type EmailOtpType,
+  type SupabaseClient,
+  createClient as createSupabaseClient,
+} from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import {
@@ -7,6 +11,29 @@ import {
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_UI_SETTINGS,
 } from "@/shared/config/user-settings-defaults";
+
+// Service-role client for is_email_confirmed RPC (SECURITY DEFINER, service_role-only EXECUTE)
+async function isEmailAlreadyVerified(email: string | null): Promise<boolean> {
+  if (!email) return false;
+  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
+  if (!url || !key) return false;
+  try {
+    const admin = createSupabaseClient(url, key);
+    const { data } = await admin.rpc("is_email_confirmed", { p_email: email });
+    return data === true;
+  } catch (err) {
+    console.error("is_email_confirmed RPC failed:", err);
+    return false;
+  }
+}
+
+function expiredSignupRedirect(origin: string, alreadyVerified: boolean): NextResponse {
+  if (alreadyVerified) {
+    return NextResponse.redirect(`${origin}/email-already-verified`);
+  }
+  return NextResponse.redirect(`${origin}/link-expired?type=signup`);
+}
 
 /**
  * Ensures that public.users and user_settings records exist for the authenticated user.
@@ -150,6 +177,7 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get("code");
   const type = searchParams.get("type") as EmailOtpType | null;
   const next = searchParams.get("next") ?? "/";
+  const email = searchParams.get("email");
 
   console.log("Auth confirm route called:", {
     token_hash: !!token_hash,
@@ -202,9 +230,10 @@ export async function GET(request: NextRequest) {
           console.log("Password reset code expired or invalid, redirecting to link-expired page");
           return NextResponse.redirect(`${origin}/link-expired?type=recovery`);
         } else {
-          // For signup verification, redirect to link-expired so user can resend
+          // For signup verification, distinguish already-verified from genuinely expired
           console.log("Email verification code expired or already used");
-          return NextResponse.redirect(`${origin}/link-expired?type=signup`);
+          const alreadyVerified = await isEmailAlreadyVerified(email);
+          return expiredSignupRedirect(origin, alreadyVerified);
         }
       }
 
@@ -267,13 +296,11 @@ export async function GET(request: NextRequest) {
           console.log("Password reset link expired, redirecting to link-expired page");
           return NextResponse.redirect(`${origin}/link-expired?type=recovery`);
         } else if (type === "signup" || type === "email") {
-          // For signup verification, check if user was already verified
-          // Note: We can't use getUser() here because there's no session yet
-          // Instead, check if the email from the token is already verified in auth.users
-
-          // Redirect to link-expired so user can resend verification
+          // No session at this point — look up email_confirmed_at via service-role RPC
+          // to distinguish "already verified" (re-click) from "genuinely expired".
           console.log("Email verification link expired or already used");
-          return NextResponse.redirect(`${origin}/link-expired?type=signup`);
+          const alreadyVerified = await isEmailAlreadyVerified(email);
+          return expiredSignupRedirect(origin, alreadyVerified);
         }
       }
 

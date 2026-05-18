@@ -16,7 +16,7 @@ const HISTORY_LIMIT = 50;
  */
 type HistoryEntry = { lesson: Lesson; id: number };
 
-export type Selection = {
+type Selection = {
   slideId: string | null;
   elementIds: string[];
 };

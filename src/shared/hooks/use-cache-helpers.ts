@@ -14,6 +14,7 @@ import {
   invalidateUnifiedData,
   invalidateUserSettings,
   invalidateQuizSessions,
+  patchCachedQuizSession,
   invalidateAllCaches,
   refreshAllCaches,
   updateCacheAfterQuiz,
@@ -31,6 +32,7 @@ export function useCacheHelpers() {
       invalidateUnifiedData: (revalidate = true) => invalidateUnifiedData(mutate, revalidate),
       invalidateUserSettings: (revalidate = true) => invalidateUserSettings(mutate, revalidate),
       invalidateQuizSessions: (revalidate = true) => invalidateQuizSessions(mutate, revalidate),
+      patchCachedQuizSession,
       invalidateAllCaches: () => invalidateAllCaches(mutate),
       refreshAllCaches: () => refreshAllCaches(mutate),
       updateCacheAfterQuiz: (

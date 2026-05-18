@@ -18,15 +18,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import {
-  Loader2,
-  Search,
-  Trash2,
-  MoreVertical,
-  Edit,
-  ChevronLeft,
-  ChevronRight,
-} from "lucide-react";
+import { Search, Trash2, MoreVertical, Edit, ChevronLeft, ChevronRight } from "lucide-react";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   Table,
   TableBody,
@@ -184,11 +177,34 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center">
-                  <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                </TableCell>
-              </TableRow>
+              Array.from({ length: 8 }).map((_, i) => (
+                <TableRow key={`skeleton-${i}`}>
+                  <TableCell>
+                    <Skeleton className="h-10 w-10 rounded" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-3 w-16" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-3 w-12" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-3 w-16" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-8 w-8 ml-auto rounded" />
+                  </TableCell>
+                </TableRow>
+              ))
             ) : assets.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">

@@ -16,6 +16,7 @@
 const AUTH_CACHE_VERSION = "v1";
 
 import { useState, useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
 import { realtimeService } from "@/shared/services/realtime-service";
 import { createClient } from "@/shared/services/client";
 import { isPublicRoute } from "@/shared/utils/route-helpers";
@@ -116,6 +117,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
   const mounted = useRef(true);
   const previousSessionRef = useRef<Session | null>(null);
   const supabase = createClient();
+  const pathname = usePathname();
 
   // Helper to save auth state to sessionStorage (skipped in dev)
   const saveAuthState = (state: AuthState) => {
@@ -280,6 +282,37 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
       unsubscribe();
     };
   }, [skipAuth, supabase.auth]);
+
+  // Re-read session on every route navigation. Server-action logins (Supabase's
+  // canonical pattern) mutate auth cookies, redirect, and never notify the client
+  // SDK — onAuthStateChange only fires when the SDK itself re-reads cookies.
+  // Nudging it via getSession() on pathname change makes the cookie change visible.
+  // Cheap: in-memory cache, no network unless token near expiry.
+  useEffect(() => {
+    if (skipAuth || !pathname) return;
+    let cancelled = false;
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (cancelled || !mounted.current) return;
+      // Skip if session unchanged (avoid pointless re-renders)
+      if (session?.access_token === previousSessionRef.current?.access_token) return;
+      previousSessionRef.current = session;
+      const role = session?.user?.app_metadata?.role || session?.user?.user_metadata?.role || null;
+      const newState = {
+        user: session?.user ?? null,
+        session,
+        role: role as UserRole | null,
+        isAuthenticated: !!session?.user,
+        isLoading: false,
+        error: null,
+      };
+      setAuthState(newState);
+      if (session?.user) saveAuthState(newState);
+      else clearAuthState();
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [pathname, skipAuth, supabase.auth]);
 
   const refreshAuth = async () => {
     try {

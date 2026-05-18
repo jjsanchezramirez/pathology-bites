@@ -1,7 +1,15 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/shared/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+  DialogFooter,
+} from "@/shared/components/ui/dialog";
 import { ChevronLeft, ChevronRight, Check, Loader2 } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import { createClient } from "@/shared/services/client";
@@ -197,9 +205,115 @@ export function MultiStepQuestionForm({
 
   const [formState, setFormState] = useState<FormState>(getInitialFormState());
 
+  // Snapshot of the initial state for unsaved-changes detection.
+  // Captured once on mount; never reassigned. Used to detect divergence.
+  const initialFormStateRef = useRef<FormState>(formState);
+
   // Update form state helper
   const updateFormState = (updates: Partial<FormState>) => {
     setFormState((prev) => ({ ...prev, ...updates }));
+  };
+
+  // Dirty detection considers only USER-AUTHORED content fields. Workflow staging
+  // fields (selectedAIModel, selectedContent, jsonData) don't count — picking a
+  // model on step 1 shouldn't trip an "unsaved changes" warning when no question
+  // content exists yet. Compare against the initial snapshot's same subset.
+  const pickContentFields = (s: FormState) => ({
+    title: s.title,
+    stem: s.stem,
+    answerOptions: s.answerOptions,
+    teaching_point: s.teaching_point,
+    question_references: s.question_references,
+    questionImages: s.questionImages,
+    category_id: s.category_id,
+    lesson: s.lesson,
+    topic: s.topic,
+    question_set_id: s.question_set_id,
+    tag_ids: s.tag_ids,
+    difficulty: s.difficulty,
+    status: s.status,
+  });
+  const isDirty =
+    JSON.stringify(pickContentFields(formState)) !==
+    JSON.stringify(pickContentFields(initialFormStateRef.current));
+
+  // Browser-native unsaved-changes warning on tab close / hard navigation.
+  // Suppressed during submit so the post-save redirect doesn't fire it.
+  // Soft client-side navigation (sidebar clicks) is NOT intercepted — Next.js
+  // App Router has no clean blocking API. This catches the common cases:
+  // close tab, reload, type new URL, browser back.
+  // Unsaved-changes blocking. Mirrors the pattern used by /dashboard/quiz/[id]:
+  //   1. beforeunload — hard nav (tab close, reload, URL bar, browser back outside SPA)
+  //   2. capture-phase click listener on document — intercepts any <a> nav to a different
+  //      pathname and shows the exit dialog instead.
+  //   3. popstate listener + history pushBack — intercepts browser back/forward within
+  //      SPA. The push-back keeps the user on the form until they confirm exit.
+  // Bypass via isNavigatingAwayRef when the user has confirmed exit.
+  const [showExitDialog, setShowExitDialog] = useState(false);
+  const pendingExitHrefRef = useRef<string | null>(null);
+  const isNavigatingAwayRef = useRef(false);
+
+  useEffect(() => {
+    if (!isDirty || isSubmitting) return;
+
+    const beforeunloadHandler = (e: BeforeUnloadEvent) => {
+      if (isNavigatingAwayRef.current) return;
+      e.preventDefault();
+      e.returnValue = "";
+    };
+
+    const linkClickHandler = (e: MouseEvent) => {
+      if (isNavigatingAwayRef.current) return;
+      const target = e.target as HTMLElement | null;
+      const link = target?.closest("a");
+      if (!link) return;
+      const href = link.getAttribute("href");
+      if (!href) return;
+      // Allow in-page anchors and same-pathname links
+      if (href.startsWith("#")) return;
+      if (link.href && link.href.includes(window.location.pathname)) return;
+      e.preventDefault();
+      e.stopPropagation();
+      pendingExitHrefRef.current = link.href || href;
+      setShowExitDialog(true);
+    };
+
+    const popStateHandler = () => {
+      if (isNavigatingAwayRef.current) return;
+      // Push state back so the user stays on the form until they confirm.
+      window.history.pushState(null, "", window.location.href);
+      pendingExitHrefRef.current = null; // back button has no explicit target
+      setShowExitDialog(true);
+    };
+
+    // Seed a history entry so the first back-press fires popstate instead of
+    // navigating away outright.
+    window.history.pushState(null, "", window.location.href);
+
+    window.addEventListener("beforeunload", beforeunloadHandler);
+    document.addEventListener("click", linkClickHandler, true);
+    window.addEventListener("popstate", popStateHandler);
+
+    return () => {
+      window.removeEventListener("beforeunload", beforeunloadHandler);
+      document.removeEventListener("click", linkClickHandler, true);
+      window.removeEventListener("popstate", popStateHandler);
+    };
+  }, [isDirty, isSubmitting]);
+
+  const handleConfirmExit = () => {
+    isNavigatingAwayRef.current = true;
+    setShowExitDialog(false);
+    if (pendingExitHrefRef.current) {
+      window.location.href = pendingExitHrefRef.current;
+    } else {
+      window.history.back();
+    }
+  };
+
+  const handleStayOnForm = () => {
+    pendingExitHrefRef.current = null;
+    setShowExitDialog(false);
   };
 
   // Navigation handlers with smooth transitions
@@ -451,6 +565,25 @@ export function MultiStepQuestionForm({
           </div>
         </div>
       </div>
+
+      <Dialog open={showExitDialog} onOpenChange={(open) => !open && handleStayOnForm()}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Discard unsaved changes?</DialogTitle>
+            <DialogDescription>
+              You have unsaved changes to this question. If you leave now, your work will be lost.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={handleStayOnForm}>
+              Stay
+            </Button>
+            <Button variant="destructive" onClick={handleConfirmExit}>
+              Discard & Leave
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

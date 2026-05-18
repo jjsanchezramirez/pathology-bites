@@ -4,9 +4,10 @@
 import { useState, useEffect } from "react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import { Button } from "@/shared/components/ui/button";
-import { Download, Loader2, Users } from "lucide-react";
+import { Download, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "@/shared/utils/ui/toast";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import { UsersTable } from "./users-table";
 
 interface WaitlistEntry {
@@ -143,8 +144,57 @@ export function UsersManagementTabs({ onUserChange }: UsersManagementTabsProps) 
         {/* Users Tab */}
         <TabsContent value="users" className="space-y-4">
           {loadingRegisteredUsers ? (
-            <div className="flex justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="space-y-4">
+              <div className="flex gap-3">
+                <Skeleton className="h-10 flex-1" />
+                <Skeleton className="h-10 w-32" />
+              </div>
+              <div className="rounded-md border">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b bg-muted/50">
+                        <th className="h-12 px-4 text-left">
+                          <Skeleton className="h-4 w-20" />
+                        </th>
+                        <th className="h-12 px-4 text-left">
+                          <Skeleton className="h-4 w-16" />
+                        </th>
+                        <th className="h-12 px-4 text-left">
+                          <Skeleton className="h-4 w-16" />
+                        </th>
+                        <th className="h-12 px-4 text-left">
+                          <Skeleton className="h-4 w-16" />
+                        </th>
+                        <th className="h-12 px-4 text-left">
+                          <Skeleton className="h-4 w-16" />
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {Array.from({ length: 6 }).map((_, i) => (
+                        <tr key={`skeleton-${i}`} className="border-b">
+                          <td className="p-4">
+                            <Skeleton className="h-4 w-3/4" />
+                          </td>
+                          <td className="p-4">
+                            <Skeleton className="h-5 w-20 rounded-full" />
+                          </td>
+                          <td className="p-4">
+                            <Skeleton className="h-5 w-16 rounded-full" />
+                          </td>
+                          <td className="p-4">
+                            <Skeleton className="h-4 w-20" />
+                          </td>
+                          <td className="p-4">
+                            <Skeleton className="h-8 w-8 rounded" />
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
           ) : (
             <UsersTable onUserChange={onUserChange} />
@@ -188,11 +238,22 @@ export function UsersManagementTabs({ onUserChange }: UsersManagementTabsProps) 
                   </thead>
                   <tbody>
                     {loadingWaitlist ? (
-                      <tr>
-                        <td colSpan={4} className="h-24 text-center">
-                          <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                        </td>
-                      </tr>
+                      Array.from({ length: 6 }).map((_, i) => (
+                        <tr key={`skeleton-${i}`} className="border-b">
+                          <td className="p-4">
+                            <Skeleton className="h-4 w-1/2" />
+                          </td>
+                          <td className="p-4">
+                            <Skeleton className="h-4 w-20" />
+                          </td>
+                          <td className="p-4">
+                            <Skeleton className="h-4 w-24" />
+                          </td>
+                          <td className="p-4">
+                            <Skeleton className="h-4 w-20" />
+                          </td>
+                        </tr>
+                      ))
                     ) : filteredWaitlistData.length === 0 ? (
                       <tr>
                         <td colSpan={4} className="h-24 text-center text-muted-foreground">

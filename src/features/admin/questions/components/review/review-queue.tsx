@@ -16,6 +16,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   Eye,
   Search,
@@ -366,10 +367,43 @@ export function ReviewQueue() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-          <p className="text-sm text-muted-foreground mt-2">Loading review queue...</p>
+      <div className="space-y-6">
+        <div>
+          <Skeleton className="h-8 w-64 mb-2" />
+          <Skeleton className="h-4 w-80" />
+        </div>
+        <div className="grid gap-4 md:grid-cols-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-4 rounded" />
+              </CardHeader>
+              <CardContent>
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-3 w-32" />
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="space-y-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <Card key={i}>
+              <CardContent className="p-4 space-y-2">
+                <div className="flex items-center justify-between">
+                  <Skeleton className="h-5 w-2/3" />
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-4 w-3/4" />
+                <div className="flex items-center gap-2">
+                  <Skeleton className="h-4 w-20 rounded-full" />
+                  <Skeleton className="h-4 w-24 rounded-full" />
+                </div>
+                <Skeleton className="h-3 w-1/3" />
+              </CardContent>
+            </Card>
+          ))}
         </div>
       </div>
     );

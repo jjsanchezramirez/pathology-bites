@@ -37,7 +37,11 @@ export default function SettingsPage() {
   } = useDashboardTheme();
 
   // Use cached user settings hook
-  const { data: userSettings, isLoading: settingsLoading } = useUserSettings({
+  const {
+    data: userSettings,
+    isLoading: settingsLoading,
+    invalidate: invalidateUserSettings,
+  } = useUserSettings({
     enabled: isAuthenticated && !!user,
   });
 
@@ -86,10 +90,10 @@ export default function SettingsPage() {
       const newPreferences = { ...preferences, [key]: value };
       setPreferences(newPreferences);
 
-      // Save to database
+      // Save to database, then invalidate SWR cache so other consumers
+      // (e.g. quiz/new page, sidebar) pick up the change immediately.
       await userSettingsService.updateNotificationSettings(newPreferences);
-      // Don't invalidate cache immediately - local state is already updated
-      // Cache will be refreshed on next page load
+      await invalidateUserSettings();
     } catch (error) {
       console.error("Error updating preference:", error);
       toast.error("Failed to update preference");
@@ -106,10 +110,10 @@ export default function SettingsPage() {
       const newSettings = { ...quizSettings, [key]: value };
       setQuizSettings(newSettings);
 
-      // Save to database
+      // Save to database, then invalidate SWR cache so quiz/new page
+      // and other consumers pick up the change immediately.
       await userSettingsService.updateQuizSettings(newSettings);
-      // Don't invalidate cache immediately - local state is already updated
-      // Cache will be refreshed on next page load
+      await invalidateUserSettings();
     } catch (error) {
       console.error("Error updating quiz setting:", error);
       toast.error("Failed to update quiz setting");
@@ -184,10 +188,11 @@ export default function SettingsPage() {
       // Reset dashboard theme using DashboardThemeProvider which handles admin mode
       setDashboardTheme("default");
 
-      // Save to database
+      // Save to database, then invalidate SWR cache
       await userSettingsService.updateNotificationSettings(defaultPreferences);
       await userSettingsService.updateQuizSettings(defaultQuizSettings);
       await userSettingsService.updateUISettings(defaultUISettings);
+      await invalidateUserSettings();
 
       toast.success("All settings have been reset to defaults");
       setShowResetDialog(false);

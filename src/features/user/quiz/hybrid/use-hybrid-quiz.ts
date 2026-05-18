@@ -125,7 +125,12 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
   // Provider-scoped cache helpers (see CLAUDE.md: global mutate is a no-op
   // against the custom SWR provider's cache).
-  const { updateCacheAfterQuiz, invalidateQuizSessions, invalidateUnifiedData } = useCacheHelpers();
+  const {
+    updateCacheAfterQuiz,
+    invalidateQuizSessions,
+    patchCachedQuizSession,
+    invalidateUnifiedData,
+  } = useCacheHelpers();
 
   // Sync status state
   const [syncStatus, setSyncStatus] = useState<SyncStatus>({ state: "idle", message: "" });
@@ -478,9 +483,24 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         if (data) {
           const newAchievements = (result.serverResponse?.newAchievements ??
             []) as QuizResult["newAchievements"];
+
+          // Optimistically patch the My Quizzes list in unifiedCache so the
+          // session flips to "completed" without a re-fetch. invalidateQuizSessions
+          // above only touches SWR's cache; My Quizzes uses useCachedData which
+          // reads unifiedCache directly, so it would otherwise stay stale until
+          // the 2-min TTL expires.
+          const quizResult = data as QuizResult;
+          patchCachedQuizSession(quizResult.sessionId, {
+            status: "completed",
+            score: quizResult.score,
+            correctAnswers: quizResult.correctAnswers,
+            completedAt: quizResult.completedAt,
+            totalTimeSpent: quizResult.totalTimeSpent,
+          });
+
           console.log("[Hybrid] Updating cache incrementally with quiz results");
           updateCacheAfterQuiz(
-            data as QuizResult,
+            quizResult,
             newAchievements,
             result.serverResponse?.metadata // Pass metadata for cache validation guards
           ).catch((err) => {
@@ -524,6 +544,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     sessionId,
     unifiedData?.achievements,
     invalidateQuizSessions,
+    patchCachedQuizSession,
     updateCacheAfterQuiz,
     invalidateUnifiedData,
   ]);

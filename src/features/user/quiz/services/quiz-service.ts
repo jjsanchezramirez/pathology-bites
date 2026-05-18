@@ -207,8 +207,12 @@ export class QuizService {
         categoryIds = await this.getCachedCategoryParents("Clinical Pathology", supabaseClient);
       }
 
-      // Call optimized SQL function (filters, randomizes, and limits in database)
-      const { data: questionIds, error: selectionError } = await supabaseClient.rpc(
+      // Call optimized SQL function (filters, randomizes, and limits in database).
+      // Must route through service-role client: select_quiz_questions is SECURITY INVOKER
+      // and internally calls get_most_recent_attempts (SECURITY DEFINER, no authenticated
+      // EXECUTE grant). Caller-as-authenticated → permission denied. user_id is passed as
+      // a param so scoping is enforced by the function body, not RLS.
+      const { data: questionIds, error: selectionError } = await makeServiceRoleClient().rpc(
         "select_quiz_questions",
         {
           p_user_id: userId,

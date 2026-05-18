@@ -16,10 +16,10 @@ import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
 import { CategoryBadge } from "@/shared/components/ui/category-badge";
 import { ImageTypeBadge } from "@/shared/components/ui/image-type-badge";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import { toast } from "@/shared/utils/ui/toast";
 import {
   Search,
-  Loader2,
   Upload,
   MoreVertical,
   Edit,
@@ -494,11 +494,33 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
           </TableHeader>
           <TableBody>
             {loading ? (
-              <TableRow>
-                <TableCell colSpan={4} className="h-24 text-center">
-                  <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                </TableCell>
-              </TableRow>
+              Array.from({ length: 8 }).map((_, i) => (
+                <TableRow key={`skeleton-${i}`}>
+                  <TableCell>
+                    <Skeleton className="h-12 w-12 rounded" />
+                  </TableCell>
+                  <TableCell className="max-w-md">
+                    <div className="space-y-1.5">
+                      <Skeleton className="h-4 w-1/2" />
+                      <Skeleton className="h-3 w-3/4" />
+                      <div className="flex items-center gap-1.5">
+                        <Skeleton className="h-4 w-16 rounded-full" />
+                        <Skeleton className="h-4 w-20 rounded-full" />
+                        <Skeleton className="h-4 w-12 rounded-full" />
+                      </div>
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      <Skeleton className="h-4 w-4 rounded" />
+                      <Skeleton className="h-3 w-6" />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-8 w-8 ml-auto rounded" />
+                  </TableCell>
+                </TableRow>
+              ))
             ) : images.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">

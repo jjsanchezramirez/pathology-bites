@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Badge } from "@/shared/components/ui/badge";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Plus, Loader2, Pencil, Trash2, BookOpen, ExternalLink } from "lucide-react";
 
 interface SubjectWithMeta extends LearningSubject {
@@ -233,8 +234,33 @@ export function SubjectManager() {
       </div>
 
       {loading ? (
-        <div className="flex justify-center py-12">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        <div className="space-y-3">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Card key={i}>
+              <CardHeader className="p-4 pb-2">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-5 w-48" />
+                    <Skeleton className="h-5 w-20 rounded-full" />
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <Skeleton className="h-8 w-8 rounded" />
+                    <Skeleton className="h-8 w-8 rounded" />
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent className="p-4 pt-0">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-4 w-20" />
+                    <Skeleton className="h-4 w-40" />
+                  </div>
+                  <Skeleton className="h-8 w-28 rounded" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
         </div>
       ) : subjects.length === 0 ? (
         <Card>

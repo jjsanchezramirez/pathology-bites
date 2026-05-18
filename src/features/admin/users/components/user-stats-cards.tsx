@@ -3,7 +3,8 @@
 // User statistics cards for user management dashboard
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Loader2, Users, UserCheck, UserX, UserMinus, UserCog } from "lucide-react";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { Users, UserCheck, UserX, UserMinus, UserCog } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import {
   getFormattedUserStats,
@@ -69,12 +70,12 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
         {[1, 2, 3, 4, 5].map((i) => (
           <Card key={i}>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Loading...</CardTitle>
-              <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+              <Skeleton className="h-4 w-24" />
+              <Skeleton className="h-4 w-4 rounded" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">--</div>
-              <p className="text-xs text-muted-foreground">Loading data...</p>
+              <Skeleton className="h-8 w-16 mb-2" />
+              <Skeleton className="h-3 w-32" />
             </CardContent>
           </Card>
         ))}

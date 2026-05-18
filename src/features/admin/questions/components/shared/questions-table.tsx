@@ -46,6 +46,7 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { Checkbox } from "@/shared/components/ui/checkbox";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 
 import { useQuestions } from "@/features/admin/questions/hooks/use-questions";
 import { QuestionWithDetails } from "@/shared/types/questions";
@@ -963,11 +964,36 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
             </TableHeader>
             <TableBody>
               {loading ? (
-                <TableRow>
-                  <TableCell colSpan={showAdminFeatures ? 5 : 4} className="h-24 text-center">
-                    <Loader2 className="h-6 w-6 animate-spin mx-auto" />
-                  </TableCell>
-                </TableRow>
+                Array.from({ length: 8 }).map((_, i) => (
+                  <TableRow key={`skeleton-${i}`}>
+                    {showAdminFeatures && (
+                      <TableCell className="text-center">
+                        <Skeleton className="h-4 w-4 mx-auto" />
+                      </TableCell>
+                    )}
+                    <TableCell className="text-center">
+                      <Skeleton className="h-4 w-4 mx-auto" />
+                    </TableCell>
+                    <TableCell className="min-w-[320px]">
+                      <div className="space-y-1.5">
+                        <Skeleton className="h-4 w-3/4" />
+                        <div className="flex items-center gap-1.5">
+                          <Skeleton className="h-4 w-16 rounded-full" />
+                          <Skeleton className="h-4 w-20 rounded-full" />
+                          <Skeleton className="h-4 w-14 rounded-full" />
+                          <Skeleton className="h-4 w-12 rounded-full" />
+                        </div>
+                        <Skeleton className="h-3 w-1/2" />
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-center">
+                      <Skeleton className="h-8 w-8 mx-auto rounded" />
+                    </TableCell>
+                    <TableCell>
+                      <Skeleton className="h-8 w-8 ml-auto rounded" />
+                    </TableCell>
+                  </TableRow>
+                ))
               ) : questions.length === 0 ? (
                 <TableRow>
                   <TableCell

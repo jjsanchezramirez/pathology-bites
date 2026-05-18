@@ -3,7 +3,8 @@
 // Simplified storage statistics cards for image management
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Loader2, Images, ImageOff, Trash2, Database } from "lucide-react";
+import { Skeleton } from "@/shared/components/ui/skeleton";
+import { Images, ImageOff, Trash2, Database } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { toast } from "@/shared/utils/ui/toast";
 import { getStorageStats, StorageStats } from "@/features/admin/images/services/image-analytics";
@@ -123,12 +124,12 @@ export const StorageStatsCards = forwardRef<StorageStatsRef>(
           {[1, 2, 3, 4].map((i) => (
             <Card key={i}>
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Loading...</CardTitle>
-                <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                <Skeleton className="h-4 w-24" />
+                <Skeleton className="h-4 w-4 rounded" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">--</div>
-                <p className="text-xs text-muted-foreground">Loading data...</p>
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-3 w-32" />
               </CardContent>
             </Card>
           ))}

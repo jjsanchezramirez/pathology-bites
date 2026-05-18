@@ -104,6 +104,11 @@ export const adminNavigationSections: NavigationSection[] = [
         requiredPermission: "images.manage",
         adminOnly: true,
       },
+    ],
+  },
+  {
+    title: "Learning",
+    items: [
       {
         name: "Lesson Studio",
         href: "/admin/lesson-studio",
@@ -117,7 +122,6 @@ export const adminNavigationSections: NavigationSection[] = [
         icon: "BookOpen",
         requiredPermission: "images.manage",
         adminOnly: true,
-        isNew: true,
       },
     ],
   },
@@ -156,6 +160,7 @@ export const adminNavigationSections: NavigationSection[] = [
         icon: "BarChart",
         requiredPermission: "analytics.view",
         adminOnly: true,
+        isSoon: true,
       },
       {
         name: "Settings",

@@ -163,6 +163,11 @@ export function StepMetadata({
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          // Forward the same model the user picked for educational_content generation.
+          // The metadata-suggestion default (`Llama-3.3-8B-Instruct`) is a single
+          // hardcoded fallback with no model-fallback chain — reusing the user's
+          // selection avoids the bug where a single-model outage kills metadata.
+          ...(formState.selectedAIModel ? { model: formState.selectedAIModel } : {}),
           mode: "metadata_suggestion",
           content: {
             title: formState.title,
@@ -176,7 +181,16 @@ export function StepMetadata({
       });
 
       if (!response.ok) {
-        throw new Error("Failed to generate metadata suggestions");
+        let serverError = "";
+        try {
+          const errBody = await response.json();
+          serverError = errBody?.error || JSON.stringify(errBody);
+        } catch {
+          serverError = await response.text().catch(() => "");
+        }
+        throw new Error(
+          `Failed to generate metadata suggestions (${response.status}): ${serverError || "no error body"}`
+        );
       }
 
       const result = await response.json();

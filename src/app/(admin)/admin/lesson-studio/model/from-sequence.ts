@@ -319,4 +319,3 @@ export function sequenceToLesson(sequence: ExplainerSequence): Lesson {
 }
 
 export const _internal = { recoverTiming, isLessonShape };
-export { DEFAULT_TRANSITION };

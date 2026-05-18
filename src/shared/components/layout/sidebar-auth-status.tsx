@@ -252,12 +252,12 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
     if (!isAuthenticated || !user) {
       return (
         <a
-          href="/signup"
-          title="Create Free Account"
+          href="/login"
+          title="Sign In"
           className="flex h-14 rounded-lg text-sm font-medium transition-colors duration-200 relative items-center text-slate-300 hover:bg-slate-800 hover:text-slate-100 dark:text-slate-200 dark:hover:bg-slate-700/50 dark:hover:text-white"
         >
           <div className="flex items-center justify-center w-16 shrink-0">
-            <User className="h-5 w-5 text-primary" />
+            <User className="h-5 w-5 text-slate-400" />
           </div>
         </a>
       );
@@ -326,11 +326,11 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
   if (!isAuthenticated || !user) {
     return (
       <a
-        href="/signup"
-        className="flex h-14 px-4 items-center justify-center text-sm font-medium transition-colors duration-200 rounded-lg bg-primary/10 text-primary hover:bg-primary/20 mx-2 my-2"
+        href="/login"
+        className="flex h-14 px-4 items-center justify-center text-sm font-medium transition-colors duration-200 rounded-lg text-slate-300 hover:bg-slate-800 hover:text-slate-100 dark:text-slate-200 dark:hover:bg-slate-700/50 dark:hover:text-white mx-2 my-2"
       >
         <User className="h-4 w-4 mr-2 shrink-0" />
-        <span className="truncate">Create Free Account</span>
+        <span className="truncate">Sign In</span>
       </a>
     );
   }

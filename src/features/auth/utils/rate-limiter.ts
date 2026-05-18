@@ -77,6 +77,15 @@ class RateLimiter {
       };
     }
 
+    // Block has been lifted — start fresh window so the user gets full maxAttempts again
+    // rather than re-blocking on the next failure.
+    if (entry.blockedUntil && Date.now() >= entry.blockedUntil) {
+      entry.attempts = 1;
+      entry.windowStart = Date.now();
+      entry.blockedUntil = undefined;
+      return { allowed: true };
+    }
+
     // Check if we need to reset the window
     if (!this.isWithinWindow(entry)) {
       entry.attempts = 1;

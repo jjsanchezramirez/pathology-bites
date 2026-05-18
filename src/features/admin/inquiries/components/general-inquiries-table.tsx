@@ -16,6 +16,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Search, MessageSquare, Trash2 } from "lucide-react";
 import { Checkbox } from "@/shared/components/ui/checkbox";
+import { Skeleton } from "@/shared/components/ui/skeleton";
 import { InquiryDetailsDialog } from "./inquiry-details-dialog";
 import { InquiryActionsDropdown } from "./inquiry-actions-dropdown";
 import { InquiryStatusBadge, getStatusSortOrder } from "./inquiry-status-badge";
@@ -252,10 +253,48 @@ export function GeneralInquiriesTable({
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center space-y-3">
-          <div className="h-8 w-8 mx-auto border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm text-muted-foreground">Loading inquiries...</p>
+      <div className="space-y-4">
+        <div className="flex gap-4">
+          <Skeleton className="h-10 flex-1" />
+        </div>
+        <div className="border rounded-lg">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[50px]">
+                  <Skeleton className="h-4 w-4" />
+                </TableHead>
+                <TableHead>Contact & Inquiry</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Created</TableHead>
+                <TableHead className="w-[100px]">Actions</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {Array.from({ length: 6 }).map((_, i) => (
+                <TableRow key={`skeleton-${i}`}>
+                  <TableCell>
+                    <Skeleton className="h-4 w-4" />
+                  </TableCell>
+                  <TableCell>
+                    <div className="space-y-1">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-full" />
+                    </div>
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-16 rounded-full" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-4 w-20" />
+                  </TableCell>
+                  <TableCell>
+                    <Skeleton className="h-8 w-8 rounded" />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       </div>
     );

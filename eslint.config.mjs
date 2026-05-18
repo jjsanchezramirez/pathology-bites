@@ -63,13 +63,20 @@ const eslintConfig = [
     },
   },
   {
+    // Test files legitimately use `any` for mocks. Relax the rule there only.
+    files: ["tests/**/*.{ts,tsx}", "**/*.test.{ts,tsx}", "vitest.setup.ts"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+  {
     ignores: [
       "node_modules/**",
       ".next/**",
       "out/**",
       "build/**",
       "next-env.d.ts",
-      "dev/code/scripts/**",
+      "dev/**",
       "public/ffmpeg/**",
       "src/app/test/**",
       // Allow direct sonner imports only in utility wrapper, UI component, and root layout

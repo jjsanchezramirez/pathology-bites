@@ -96,6 +96,32 @@ export async function invalidateQuizSessions(mutate: ScopedMutator, revalidate =
 }
 
 /**
+ * Patch a single session in the cached quiz-sessions-all list.
+ *
+ * Why this exists: My Quizzes uses useCachedData (reads unifiedCache directly,
+ * not SWR), so SWR `mutate("quiz-sessions-all", ...)` writes don't propagate
+ * to the consumer. After a quiz completes we already have the new field
+ * values — patch them in place to avoid a re-fetch and the "session shows as
+ * In Progress after completion" stale-UI bug.
+ *
+ * No-op if cache doesn't exist (cold cache will fetch fresh on next mount).
+ */
+type CachedQuizSession = Record<string, unknown> & { id: string };
+
+export function patchCachedQuizSession(sessionId: string, patch: Partial<CachedQuizSession>): void {
+  const existing = unifiedCache.get<CachedQuizSession[]>(
+    CACHE_NAMESPACES.SWR.name,
+    "quiz-sessions-all"
+  );
+  if (!existing || !Array.isArray(existing)) return;
+  const idx = existing.findIndex((s) => s.id === sessionId);
+  if (idx === -1) return;
+  const next = [...existing];
+  next[idx] = { ...existing[idx], ...patch };
+  unifiedCache.set(CACHE_NAMESPACES.SWR.name, "quiz-sessions-all", next);
+}
+
+/**
  * Invalidate all SWR caches
  * Useful for logout, critical errors, etc.
  */
@@ -508,6 +534,7 @@ const cacheHelpers = {
   invalidateUnifiedData,
   invalidateUserSettings,
   invalidateQuizSessions,
+  patchCachedQuizSession,
   invalidateAllCaches,
   refreshAllCaches,
   onSettingsUpdate,

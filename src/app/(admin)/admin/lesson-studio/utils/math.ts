@@ -2,8 +2,6 @@
 
 export const clamp = (v: number, lo: number, hi: number): number => Math.max(lo, Math.min(hi, v));
 
-export const lerp = (a: number, b: number, t: number): number => a + (b - a) * t;
-
 // ---- Frame quantization ----------------------------------------------------
 // All authored time values snap to 30 fps so the exporter (24/30/60 fps) can
 // hit every authored keyframe exactly.
