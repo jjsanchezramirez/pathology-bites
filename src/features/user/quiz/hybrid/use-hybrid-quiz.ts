@@ -376,9 +376,9 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       hasCompletedRef.current = true;
 
       // Wait for any in-flight autosave to settle so the /complete POST doesn't race
-      // a still-in-flight PATCH for the most recent answer. Server still de-dupes by
-      // (session_id, question_id), so this isn't required for correctness — but it
-      // avoids unnecessary duplicate INSERT attempts and clearer logs.
+      // a still-in-flight PATCH for the most recent answer. Server upserts with
+      // ignoreDuplicates on (session_id, question_id), so this isn't required for
+      // correctness — purely a latency-shave to avoid extra UPSERT round-trips.
       try {
         await autoSaveManager.current?.waitForIdle(1500);
       } catch (err) {

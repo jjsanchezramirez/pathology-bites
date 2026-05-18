@@ -189,40 +189,28 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         attempted_at: new Date(answer.timestamp).toISOString(),
       }));
 
-      // Check for existing attempts to prevent duplicates
-      const questionIds = requestBody.answers.map((a) => a.questionId);
-      const { data: existingAttempts } = await supabase
-        .from("quiz_attempts")
-        .select("question_id")
-        .eq("quiz_session_id", id)
-        .in("question_id", questionIds);
+      // Upsert with ignoreDuplicates so a still-in-flight PATCH for the same answer
+      // can't race this insert and trip the unique_session_question constraint. The
+      // previous SELECT-then-filter dedup was TOCTOU under concurrent requests.
+      // Fail the request if this errors — silently swallowing caused score=0 quizzes
+      // for ~30 days when a downstream trigger broke.
+      const { error: insertError } = await supabase.from("quiz_attempts").upsert(attemptData, {
+        onConflict: "quiz_session_id,question_id",
+        ignoreDuplicates: true,
+      });
 
-      // Filter out questions that already have attempts
-      const existingQuestionIds = new Set(existingAttempts?.map((a) => a.question_id) || []);
-      const newAttemptData = attemptData.filter(
-        (attempt) => !existingQuestionIds.has(attempt.question_id)
-      );
-
-      // Insert new attempts. Fail the request if this errors — silently swallowing the
-      // error caused score=0 quizzes for ~30 days when a downstream trigger broke. Better
-      // to surface the failure so the client retries (and so logs/alerts fire) than to mark
-      // the session completed with no recorded answers.
-      if (newAttemptData.length > 0) {
-        const { error: insertError } = await supabase.from("quiz_attempts").insert(newAttemptData);
-
-        if (insertError) {
-          console.error("[Quiz Complete] Error inserting final answers:", insertError);
-          return NextResponse.json(
-            {
-              error: "Failed to record quiz answers",
-              code: insertError.code,
-              details: insertError.message,
-            },
-            { status: 500 }
-          );
-        }
-        console.log(`[Quiz Complete] Inserted ${newAttemptData.length} final answers`);
+      if (insertError) {
+        console.error("[Quiz Complete] Error inserting final answers:", insertError);
+        return NextResponse.json(
+          {
+            error: "Failed to record quiz answers",
+            code: insertError.code,
+            details: insertError.message,
+          },
+          { status: 500 }
+        );
       }
+      console.log(`[Quiz Complete] Upserted ${attemptData.length} final answers`);
     }
 
     // Complete the quiz using the service
