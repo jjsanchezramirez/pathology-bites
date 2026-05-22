@@ -8,7 +8,7 @@ export interface PublicStats {
 
 // Hardcoded public stats - update these values manually when needed
 const PUBLIC_STATS: PublicStats = {
-  expertQuestions: 100, // "100+" expert-curated questions
+  expertQuestions: 300, // "300+" expert-curated questions (live: 321 published, floored to 50)
   categories: 25, // 25 pathology subspecialties
 };
 

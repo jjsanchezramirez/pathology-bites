@@ -246,10 +246,18 @@ export function VirtualSlideSearchTeaser() {
         return !invalidExtensions.some((ext) => urlLower.endsWith(ext));
       };
 
+      // Repos behind a login wall — exclude from Random Slide so the user
+      // doesn't land on a sign-in screen. Prefix map mirrors repository.ts.
+      const LOGIN_REQUIRED_PREFIXES = ["pathpresenter_", "toronto_", "recutclub_"];
+      const isOpenRepo = (id: string): boolean =>
+        !LOGIN_REQUIRED_PREFIXES.some((p) => (id || "").startsWith(p));
+
       if (slides.length > 0) {
-        // Filter slides to only those with valid WSI viewer URLs
+        // Filter slides to only those with valid WSI viewer URLs and from
+        // open (no-login) repos.
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const validSlides = slides.filter((slide: any) => {
+          if (!isOpenRepo(slide.x)) return false;
           if (!slide.u) return false;
 
           let slideUrl: string;
