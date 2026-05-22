@@ -219,16 +219,30 @@ function rankSlidesByTerm(
 
       // Check regular word matches in diagnosis text (CRITICAL for multi-word!)
       // Allow 2-letter words in multi-word queries (e.g., "t cell", "b cell")
-      if (word.length >= 2) {
-        const indices = reverseIndex.get(word);
-        if (indices) {
-          indices.forEach((idx) => wordSet.add(idx));
+      const indices = reverseIndex.get(word);
+      if (indices) {
+        indices.forEach((idx) => wordSet.add(idx));
+      }
+
+      // Prefix match (3+ char words): ADDITIVE, not a fallback. A truncated or
+      // mistyped word ("carcinom", "sarcom") would otherwise zero out the whole
+      // multi-word intersection. It must be additive because a truncation can
+      // coincidentally collide with one rare junk token (e.g. "sarcom" exists
+      // as a typo in a single diagnosis) — gating on wordSet being empty would
+      // then skip the prefix expansion and collapse the query to that 1 slide.
+      // The prefix index keys the first 3 chars of every token ≥4 chars long.
+      if (word.length >= 3) {
+        const prefixIndices = reverseIndex.get(`prefix:${word.substring(0, 3)}`);
+        if (prefixIndices) {
+          prefixIndices.forEach((idx) => wordSet.add(idx));
         }
       }
 
-      // If no matches for this word, no results possible
+      // Word matched nothing at all — DROP it from the intersection rather than
+      // returning zero results. One unmatched word no longer wipes the whole
+      // query — the remaining words still constrain the search.
       if (wordSet.size === 0) {
-        return new Map(); // Early exit - can't satisfy ALL terms
+        continue;
       }
 
       wordSets.push(wordSet);
@@ -456,6 +470,26 @@ function rankSlidesByTerm(
   return rankedSlides;
 }
 
+// Rank slides purely by organ-system relevance. Used for organ-only queries
+// ("breast", "kidney") where extracting the organ term leaves no diagnosis
+// text to search — returning the whole organ system beats returning nothing
+// (or only the few diagnoses that happen to contain the organ word literally).
+function rankSlidesByOrgan(
+  organs: OrganTerm[]
+): Map<string, { slide: VirtualSlide; score: number; frequency?: number }> {
+  const ranked = new Map<string, { slide: VirtualSlide; score: number; frequency?: number }>();
+  if (!searchIndex) return ranked;
+
+  for (const entry of searchIndex) {
+    const boost = getOrganBoostScore(entry.slide, organs);
+    if (boost <= 1.0) continue; // slide is not in this organ system
+    const slideKey = entry.slide.id || entry.slide.diagnosis || Math.random().toString();
+    ranked.set(slideKey, { slide: entry.slide, score: boost, frequency: entry.frequency });
+  }
+
+  return ranked;
+}
+
 // NCI fallback removed - using only WHO acronyms embedded in dataset
 // Simplified main ranking function
 export async function rankSlidesWithExpansion(
@@ -470,17 +504,34 @@ export async function rankSlidesWithExpansion(
   const term = (query || "").toLowerCase().trim();
   if (!term) return { slides, expandedTerms: [] };
 
-  // Extract organ/anatomical context from original query for boosting
-  const { organs } = extractOrganTerms(query);
+  // Extract organ/anatomical context, then rank in TWO passes:
+  //  1. Always rank the FULL query. This preserves exact-diagnosis and literal
+  //     multi-word matches even when the query contains an organ word — e.g.
+  //     "renal cell carcinoma" stays an exact (score 100) match.
+  //  2. When an organ term was found, ALSO rank with the organ words removed
+  //     (or, if nothing else remains, rank the whole organ system). This is
+  //     what surfaces diagnoses that name the organ differently — "kidney
+  //     carcinoma" → "Renal cell carcinoma". The two passes are merged by max
+  //     score, so pass 2 can only ADD recall, never demote a pass-1 match.
+  // WHO acronyms (embedded in dataset) are matched via reverse index.
+  const { organs, remainingQuery } = extractOrganTerms(query);
+  const organContext = organs.length > 0 ? organs : undefined;
+  const searchTerm = remainingQuery.trim();
 
-  // Search using the query term directly (searches ALL slides)
-  // WHO acronyms (7,584 embedded in dataset) are matched via reverse index
-  const termRankings = rankSlidesByTerm(
-    slides,
-    term,
-    organs.length > 0 ? organs : undefined,
-    150 // Limit per term for better performance
-  );
+  const termRankings = rankSlidesByTerm(slides, term, organContext, 150);
+
+  if (organContext) {
+    const organPass =
+      searchTerm && searchTerm !== term
+        ? rankSlidesByTerm(slides, searchTerm, organContext, 150)
+        : rankSlidesByOrgan(organContext);
+    for (const [key, val] of organPass) {
+      const existing = termRankings.get(key);
+      if (!existing || val.score > existing.score) {
+        termRankings.set(key, val);
+      }
+    }
+  }
 
   // Sort by score (highest first), then frequency, then length
   const sortedSlides = Array.from(termRankings.values())
