@@ -61,6 +61,12 @@
     { "id": "organonly-01", "type": "organ-only", "query": "kidney", "match": { "subcategory": "Kidney" } },
     { "id": "organonly-02", "type": "organ-only", "query": "thyroid", "match": { "subcategory": "Thyroid" } },
     { "id": "organonly-03", "type": "organ-only", "query": "liver", "match": { "subcategory": "Liver" } },
-    { "id": "organonly-04", "type": "organ-only", "query": "prostate", "match": { "subcategory": "Prostate" } }
+    { "id": "organonly-04", "type": "organ-only", "query": "prostate", "match": { "subcategory": "Prostate" } },
+
+    { "id": "fuzzy-01", "type": "fuzzy", "query": "neuroblastomx", "match": { "contains": "neuroblastoma" } },
+    { "id": "fuzzy-02", "type": "fuzzy", "query": "glioblastomx", "match": { "contains": "glioblastoma" } },
+    { "id": "fuzzy-03", "type": "fuzzy", "query": "schwannomx", "match": { "contains": "schwannoma" } },
+    { "id": "fuzzy-04", "type": "fuzzy", "query": "leiomyosarcomx", "match": { "contains": "leiomyosarcoma" } },
+    { "id": "fuzzy-05", "type": "fuzzy", "query": "osteosarcomx", "match": { "contains": "osteosarcoma" } }
   ]
 }

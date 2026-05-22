@@ -434,11 +434,16 @@ function rankSlidesByTerm(
         else if (words.length >= 2 && makeAcr(words) === diagnosisAcronym) {
           score = 60 + multiTermBonus;
         }
-        // Score 50: prefix match
-        else if (words.length === 1 && words[0].length >= 3) {
-          if (diagnosisTokens.some((w) => w.startsWith(words[0]))) {
-            score = 50;
-          }
+        // Score 50: prefix match. The startsWith test is part of the else-if
+        // CONDITION (not nested inside) so that a single-word query which
+        // fails the prefix check falls through to the fuzzy branch below —
+        // otherwise fuzzy is unreachable for every single-word query.
+        else if (
+          words.length === 1 &&
+          words[0].length >= 3 &&
+          diagnosisTokens.some((w) => w.startsWith(words[0]))
+        ) {
+          score = 50;
         }
         // Score 30: fuzzy match (≥8 chars, distance 1 only)
         // Only for long queries to be safe - avoids dangerous medical term confusion

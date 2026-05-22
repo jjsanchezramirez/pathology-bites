@@ -1,15 +1,15 @@
 {
   "meta": {
-    "dateRun": "2026-05-22T15:52:03.267Z",
+    "dateRun": "2026-05-22T19:23:33.042Z",
     "datasetUrl": "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/virtual-slides-v8-min.json.br?v=8",
     "slideCount": 27980,
-    "queryCount": 102
+    "queryCount": 107
   },
   "overall": {
-    "n": 102,
-    "hit10": 0.9803921568627451,
-    "hit20": 0.9901960784313726,
-    "mrr": 0.9574953913189207,
+    "n": 107,
+    "hit10": 0.9813084112149533,
+    "hit20": 0.9906542056074766,
+    "mrr": 0.9594815879862608,
     "zero": 0,
     "found": 1
   },
@@ -24,6 +24,14 @@
     },
     "exact": {
       "n": 10,
+      "hit10": 1,
+      "hit20": 1,
+      "mrr": 1,
+      "zero": 0,
+      "found": 1
+    },
+    "fuzzy": {
+      "n": 5,
       "hit10": 1,
       "hit20": 1,
       "mrr": 1,
@@ -117,7 +125,7 @@
       "type": "exact",
       "query": "schwannoma",
       "rank": 1,
-      "resultCount": 179,
+      "resultCount": 180,
       "top": "Schwannoma"
     },
     {
@@ -181,7 +189,7 @@
       "type": "single-word",
       "query": "leiomyosarcoma",
       "rank": 1,
-      "resultCount": 159,
+      "resultCount": 161,
       "top": "Leiomyosarcoma"
     },
     {
@@ -221,7 +229,7 @@
       "type": "multi-literal",
       "query": "clear cell sarcoma",
       "rank": 1,
-      "resultCount": 447,
+      "resultCount": 76,
       "top": "Clear cell sarcoma"
     },
     {
@@ -269,7 +277,7 @@
       "type": "organ-tumor",
       "query": "kidney carcinoma",
       "rank": 2,
-      "resultCount": 4089,
+      "resultCount": 4104,
       "top": "Adrenocortical Carcinoma"
     },
     {
@@ -301,7 +309,7 @@
       "type": "organ-tumor",
       "query": "liver carcinoma",
       "rank": 2,
-      "resultCount": 4123,
+      "resultCount": 4139,
       "top": "Adrenocortical Carcinoma"
     },
     {
@@ -317,7 +325,7 @@
       "type": "organ-tumor",
       "query": "breast carcinoma",
       "rank": 39,
-      "resultCount": 4101,
+      "resultCount": 4117,
       "top": "Breast carcinoma"
     },
     {
@@ -521,11 +529,51 @@
       "top": "Metastatic prostate carcinoma"
     },
     {
+      "id": "fuzzy-01",
+      "type": "fuzzy",
+      "query": "neuroblastomx",
+      "rank": 1,
+      "resultCount": 425,
+      "top": "Neuroblastoma"
+    },
+    {
+      "id": "fuzzy-02",
+      "type": "fuzzy",
+      "query": "glioblastomx",
+      "rank": 1,
+      "resultCount": 74,
+      "top": "Glioblastoma multiforme"
+    },
+    {
+      "id": "fuzzy-03",
+      "type": "fuzzy",
+      "query": "schwannomx",
+      "rank": 1,
+      "resultCount": 177,
+      "top": "Schwannoma"
+    },
+    {
+      "id": "fuzzy-04",
+      "type": "fuzzy",
+      "query": "leiomyosarcomx",
+      "rank": 1,
+      "resultCount": 158,
+      "top": "Leiomyosarcoma"
+    },
+    {
+      "id": "fuzzy-05",
+      "type": "fuzzy",
+      "query": "osteosarcomx",
+      "rank": 1,
+      "resultCount": 400,
+      "top": "Osteosarcoma"
+    },
+    {
       "id": "auto:Chromoblastomycosis",
       "type": "auto",
       "query": "Chromoblastomycosis",
       "rank": 1,
-      "resultCount": 9,
+      "resultCount": 10,
       "top": "Chromoblastomycosis"
     },
     {
@@ -605,7 +653,7 @@
       "type": "auto",
       "query": "Kaposi sarcoma",
       "rank": 1,
-      "resultCount": 68,
+      "resultCount": 61,
       "top": "Kaposi sarcoma"
     },
     {
@@ -645,7 +693,7 @@
       "type": "auto",
       "query": "Mucocele",
       "rank": 1,
-      "resultCount": 28,
+      "resultCount": 29,
       "top": "Mucocele"
     },
     {
@@ -669,7 +717,7 @@
       "type": "auto",
       "query": "Ganglioneuroma",
       "rank": 1,
-      "resultCount": 48,
+      "resultCount": 49,
       "top": "Ganglioneuroma"
     },
     {
@@ -725,7 +773,7 @@
       "type": "auto",
       "query": "Oncocytoma",
       "rank": 1,
-      "resultCount": 103,
+      "resultCount": 104,
       "top": "Oncocytoma"
     },
     {
@@ -853,7 +901,7 @@
       "type": "auto",
       "query": "Plasmacytoma",
       "rank": 1,
-      "resultCount": 45,
+      "resultCount": 50,
       "top": "Plasmacytoma"
     },
     {

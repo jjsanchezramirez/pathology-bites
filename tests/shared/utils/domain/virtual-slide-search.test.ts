@@ -172,4 +172,13 @@ describe("virtual-slide-search", () => {
       expect(slides.every((s) => s.subcategory === "Kidney" || s.category === GU)).toBe(true);
     });
   });
+
+  describe("fuzzy matching", () => {
+    it("a single-word query with a one-char typo still finds the diagnosis", async () => {
+      // Guards the structural bug where the prefix branch shadowed the fuzzy
+      // branch, making fuzzy matching unreachable for every single-word query.
+      expect(await topDiagnoses("neuroblastomx")).toContain("neuroblastoma");
+      expect(await topDiagnoses("leiomyosarcomx")).toContain("leiomyosarcoma");
+    });
+  });
 });
