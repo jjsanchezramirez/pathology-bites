@@ -16,54 +16,7 @@ let cachedSlides: VirtualSlide[] | null = null;
 // Search index + ranking logic lives in ./utils/domain/virtual-slide-search.
 // This hook owns loading/normalization/React state only.
 
-// ============================================================================
-// LEGACY FORMAT SUPPORT (DEPRECATED - Remove after July 2026)
-// ============================================================================
-// This interface supports the old virtual-slides.json format (11MB).
-// The optimized format (v2.0, 7.4MB) is now the default.
-// Legacy file is kept as backup but can be removed after July 2026.
-// TODO: Remove this interface and all legacy format code after July 2026
-// ============================================================================
-interface ClientEntry {
-  id: string;
-  diagnosis: string;
-  category: string;
-  subcategory: string;
-  acr?: string;
-  patient_info?: string;
-  age?: string | null;
-  gender?: string | null;
-  clinical_history?: string;
-  stain_type?: string;
-  preview_image_url?: string;
-  slide_url?: string;
-  case_url?: string;
-  other_urls?: string[];
-}
-
-// Optimized format (v3.0-v6 - DEPRECATED)
-interface OptimizedEntry {
-  i: string; // id
-  d: string; // diagnosis
-  c: string; // category
-  s?: string; // subcategory
-  a?: string; // acr
-  p?: string; // patient_info
-  ag?: string | null; // age
-  g?: string; // gender
-  h?: string; // clinical_history
-  st?: string; // stain_type
-  pb?: string; // preview_base (e.g., "b1")
-  ps?: string; // preview_suffix (path)
-  b?: number; // base_index (legacy v2.0)
-  u?: string; // url_path or full url
-  cb?: string; // case_url_base (e.g., "b4")
-  cs?: string; // case_url_suffix
-  cu?: string; // case_url (legacy)
-  o?: Array<{ b: string; s: string }>; // other_urls with base+suffix
-}
-
-// v7 Production format (current)
+// v7/v8 production dataset format — abbreviated field names.
 interface V7Entry {
   x: string; // id
   d: string; // diagnosis
@@ -86,14 +39,11 @@ type V7UrlRef = Record<string, string>;
 interface OptimizedData {
   version: string;
   bases: {
-    cu?: Record<string, string>; // case_url bases (v3-v6)
-    pv?: Record<string, string>; // preview_url bases (v3-v6)
-    o?: Record<string, string>; // other_url bases (v3-v6)
-    preview?: Record<string, string>; // v7 preview bases (p1, p2, etc.)
-    case?: Record<string, string>; // v7 case bases (c1, c2, etc.)
-    other?: Record<string, string>; // v7 other bases (o1, o2, etc.)
+    preview?: Record<string, string>; // preview bases (p1, p2, etc.)
+    case?: Record<string, string>; // case bases (c1, c2, etc.)
+    other?: Record<string, string>; // other bases (o1, o2, etc.)
   };
-  data: (OptimizedEntry | V7Entry)[];
+  data: V7Entry[];
 }
 
 // URL bases cache for optimized format
@@ -135,131 +85,36 @@ function reconstructV7Url(
   return baseUrl && path ? baseUrl + path : "";
 }
 
-function normalizeToVirtualSlide(
-  e: ClientEntry | OptimizedEntry | V7Entry,
-  format: "legacy" | "v4" | "v7" = "legacy"
-): VirtualSlide {
-  // v7 format (current production)
-  if (format === "v7") {
-    const v7 = e as V7Entry;
+function normalizeToVirtualSlide(v7: V7Entry): VirtualSlide {
+  // Reconstruct URLs from the {baseId: path} refs
+  const previewUrls = reconstructV7Url(v7.p, urlBases?.preview);
+  const caseUrls = reconstructV7Url(v7.u, urlBases?.case);
+  const otherUrls = reconstructV7Url(v7.w, urlBases?.other);
 
-    // Reconstruct URLs
-    const previewUrls = reconstructV7Url(v7.p, urlBases?.preview);
-    const caseUrls = reconstructV7Url(v7.u, urlBases?.case);
-    const otherUrls = reconstructV7Url(v7.w, urlBases?.other);
+  // Get primary URLs (first if array, string if single)
+  const primaryPreview = Array.isArray(previewUrls) ? previewUrls[0] || "" : previewUrls;
+  const primaryCase = Array.isArray(caseUrls) ? caseUrls[0] || "" : caseUrls;
+  const otherUrlsArray = Array.isArray(otherUrls) ? otherUrls : otherUrls ? [otherUrls] : [];
 
-    // Get primary URLs (first if array, string if single)
-    const primaryPreview = Array.isArray(previewUrls) ? previewUrls[0] || "" : previewUrls;
-    const primaryCase = Array.isArray(caseUrls) ? caseUrls[0] || "" : caseUrls;
-    const otherUrlsArray = Array.isArray(otherUrls) ? otherUrls : otherUrls ? [otherUrls] : [];
-
-    return {
-      id: v7.x,
-      repository: getRepositoryFromId(v7.x),
-      category: v7.c || "",
-      subcategory: v7.s || "",
-      diagnosis: v7.d || "",
-      acronym: v7.q, // Preserve WHO abbreviation(s)
-      patient_info: v7.i || "",
-      age: v7.a ?? null,
-      gender: v7.g ?? null,
-      clinical_history: v7.h || "",
-      stain_type: v7.t || "",
-      preview_image_url: primaryPreview,
-      image_url: undefined,
-      slide_url: primaryCase, // v7 uses case_url as primary viewer
-      case_url: primaryCase,
-      other_urls: otherUrlsArray,
-      source_metadata: {},
-    };
-  }
-
-  // v4-v6 format (deprecated)
-  if (format === "v4") {
-    const opt = e as OptimizedEntry;
-
-    // Reconstruct slide_url from base + path (v2.0 legacy support)
-    let slideUrl = opt.u || "";
-    if (opt.b !== undefined && urlBases && Array.isArray(urlBases) && urlBases[opt.b]) {
-      slideUrl = urlBases[opt.b] + (opt.u || "");
-    }
-
-    // Reconstruct preview_image_url from base + suffix (v3.0+)
-    let previewUrl = "";
-    if (opt.pb && opt.ps && urlBases?.pv?.[opt.pb]) {
-      previewUrl = urlBases.pv[opt.pb] + opt.ps;
-    } else if (opt.pb || opt.ps) {
-      // Debug: Log when we have partial data but can't reconstruct
-      console.warn(`[VirtualSlides] Missing preview data for ${opt.i}:`, {
-        hasBase: !!opt.pb,
-        hasSuffix: !!opt.ps,
-        baseExists: opt.pb ? !!urlBases?.pv?.[opt.pb] : false,
-      });
-    }
-
-    // Reconstruct case_url from base + suffix (v3.0+)
-    let caseUrl = opt.cu || ""; // Legacy fallback
-    if (opt.cb && opt.cs && urlBases?.cu?.[opt.cb]) {
-      caseUrl = urlBases.cu[opt.cb] + opt.cs;
-    } else if (opt.cb && urlBases?.cu?.[opt.cb] && !opt.cs) {
-      // Some entries only have base, no suffix
-      caseUrl = urlBases.cu[opt.cb];
-    }
-
-    // Reconstruct other_urls from base + suffix array (v3.0+)
-    let otherUrls: string[] = [];
-    if (opt.o && Array.isArray(opt.o)) {
-      otherUrls = opt.o
-        .map((item) => {
-          if (typeof item === "object" && item.b && item.s && urlBases?.o?.[item.b]) {
-            return urlBases.o[item.b] + item.s;
-          }
-          return typeof item === "string" ? item : ""; // Legacy string fallback
-        })
-        .filter(Boolean);
-    }
-
-    return {
-      id: opt.i,
-      repository: getRepositoryFromId(opt.i),
-      category: opt.c || "",
-      subcategory: opt.s || "",
-      diagnosis: opt.d || "",
-      patient_info: opt.p || "",
-      age: opt.ag ?? null,
-      gender: opt.g ?? null,
-      clinical_history: opt.h || "",
-      stain_type: opt.st || "",
-      preview_image_url: previewUrl,
-      image_url: undefined,
-      slide_url: slideUrl,
-      case_url: caseUrl,
-      other_urls: otherUrls,
-      source_metadata: {},
-    };
-  } else {
-    // DEPRECATED: Legacy format support (Remove after July 2026)
-    // This handles the old virtual-slides.json format for backward compatibility
-    const legacy = e as ClientEntry;
-    return {
-      id: legacy.id,
-      repository: getRepositoryFromId(legacy.id),
-      category: legacy.category || "",
-      subcategory: legacy.subcategory || "",
-      diagnosis: legacy.diagnosis || "",
-      patient_info: legacy.patient_info || "",
-      age: legacy.age ?? null,
-      gender: legacy.gender ?? null,
-      clinical_history: legacy.clinical_history || "",
-      stain_type: legacy.stain_type || "",
-      preview_image_url: legacy.preview_image_url || "",
-      image_url: undefined,
-      slide_url: legacy.slide_url || "",
-      case_url: legacy.case_url || "",
-      other_urls: legacy.other_urls || [],
-      source_metadata: {},
-    };
-  }
+  return {
+    id: v7.x,
+    repository: getRepositoryFromId(v7.x),
+    category: v7.c || "",
+    subcategory: v7.s || "",
+    diagnosis: v7.d || "",
+    acronym: v7.q, // Preserve WHO abbreviation(s)
+    patient_info: v7.i || "",
+    age: v7.a ?? null,
+    gender: v7.g ?? null,
+    clinical_history: v7.h || "",
+    stain_type: v7.t || "",
+    preview_image_url: primaryPreview,
+    image_url: undefined,
+    slide_url: primaryCase, // v7 uses case_url as primary viewer
+    case_url: primaryCase,
+    other_urls: otherUrlsArray,
+    source_metadata: {},
+  };
 }
 
 async function loadClientSlides(): Promise<VirtualSlide[]> {
@@ -342,7 +197,7 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
       if (!res.ok) throw new Error(`Failed to fetch client slides: ${res.status}`);
 
       // Handle gzipped responses (.json.gz files)
-      let json: OptimizedData | ClientEntry[];
+      let json: OptimizedData;
 
       if (isGzippedFile) {
         if (typeof DecompressionStream !== "undefined") {
@@ -401,48 +256,20 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
         json = await res.json();
       }
 
-      // Detect format: v7, v4-v6 (optimized), or legacy
-      const isOptimized =
-        (json as OptimizedData).version &&
-        (json as OptimizedData).bases &&
-        (json as OptimizedData).data;
-
-      let entries: (ClientEntry | OptimizedEntry | V7Entry)[];
-      let processedSlides: VirtualSlide[];
-
-      if (isOptimized) {
-        const optimized = json as OptimizedData;
-
-        // Reverse the bases mapping: v7 stores {url: id}, but we need {id: url}
-        urlBases = {
-          preview: reverseMapping(optimized.bases?.preview),
-          case: reverseMapping(optimized.bases?.case),
-          other: reverseMapping(optimized.bases?.other),
-        };
-
-        entries = optimized.data;
-
-        // Detect v7 format by checking first entry for 'x' field (id)
-        const isV7 = entries.length > 0 && "x" in entries[0];
-
-        if (isV7) {
-          // v7 Production format (current)
-          processedSlides = entries.map((e) => normalizeToVirtualSlide(e as V7Entry, "v7"));
-          console.log("[VirtualSlides] ✅ Loaded v7 production format (WHO abbreviations)");
-        } else {
-          // v4-v6 Optimized format (deprecated)
-          processedSlides = entries.map((e) => normalizeToVirtualSlide(e as OptimizedEntry, "v4"));
-          console.log("[VirtualSlides] ⚠️ Loaded v4-v6 format (deprecated, upgrade to v7)");
-        }
-      } else {
-        // DEPRECATED: Legacy format support (Remove after July 2026)
-        // This handles the old virtual-slides.json format for backward compatibility
-        // Users on old app versions can still access the legacy file
-        const dataArray = Array.isArray(json) ? json : ((json as { data?: unknown[] }).data ?? []);
-        entries = dataArray as (ClientEntry | OptimizedEntry | V7Entry)[];
-        processedSlides = entries.map((e) => normalizeToVirtualSlide(e as ClientEntry, "legacy"));
-        console.log("[VirtualSlides] ⚠️ Loaded legacy format (deprecated, remove after July 2026)");
+      // The production dataset is the optimized v7/v8 format.
+      if (!json.bases || !json.data) {
+        throw new Error("[VirtualSlides] Unexpected dataset format — expected optimized v7/v8");
       }
+
+      // Reverse the bases mapping: stored as {url: id}, we need {id: url}
+      urlBases = {
+        preview: reverseMapping(json.bases.preview),
+        case: reverseMapping(json.bases.case),
+        other: reverseMapping(json.bases.other),
+      };
+
+      const processedSlides: VirtualSlide[] = json.data.map((e) => normalizeToVirtualSlide(e));
+      console.log("[VirtualSlides] ✅ Loaded v7/v8 production format");
 
       // Store in memory for session (HTTP cache handles persistence)
       cachedSlides = processedSlides;
