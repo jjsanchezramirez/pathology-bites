@@ -245,7 +245,7 @@ export const ORGAN_TERMS: OrganTerm[] = [
   // Bone and Soft Tissue
   {
     term: "soft tissue",
-    aliases: ["sarcoma"],
+    aliases: [],
     category: "Bone and Soft Tissue",
     subcategory: "Soft Tissue",
   },
