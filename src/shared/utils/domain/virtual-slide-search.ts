@@ -34,6 +34,11 @@ let reverseIndex: Map<string, Set<number>> | null = null;
 // Used for ranking ambiguous WHO abbreviations
 let diagnosisFrequencies: Map<string, number> | null = null;
 
+// Abbreviation → full term(s), for query expansion. Tier 1 is built by
+// buildSearchIndex from the dataset's own diagnosis parentheticals
+// ("Angiomyolipoma (AML)"). Tier 2 (WHO scrape) merges in via a future setter.
+let expansionMap: Map<string, Set<string>> | null = null;
+
 // Simple helper functions for tokenization
 // CRITICAL: Normalize punctuation (hyphens, slashes) BEFORE tokenization
 // This ensures reverse index and scoring use the same tokens
@@ -166,8 +171,34 @@ export function buildSearchIndex(processedSlides: VirtualSlide[]): void {
     }
   }
 
+  // Tier 1: build the abbreviation expansion map from the dataset's own
+  // diagnosis parentheticals — "Angiomyolipoma (AML)" → aml → "Angiomyolipoma".
+  // A query that is an abbreviation is expanded to the full term by expandQuery.
+  expansionMap = new Map();
+  const abbrRe = /\(([A-Za-z][A-Za-z0-9'-]{2,11})\)/;
+  for (const slide of processedSlides) {
+    const d = (slide.diagnosis || "").replace(/<[^>]+>/g, "").trim();
+    if (!d) continue;
+    const m = d.match(abbrRe);
+    if (!m || m.index === undefined || !/[A-Z]/.test(m[1])) continue;
+    const before = d.slice(0, m.index).trim();
+    if (before.length < 2 || before.length > 50) continue; // abbr must follow a term name
+    const base = d
+      .replace(/\s*\([^)]*\)/g, "")
+      .replace(/\s+/g, " ")
+      .trim();
+    // reject malformed bases, and over-long ones (a canonical term is short;
+    // long qualified phrases like "Metastatic … to the thyroid" make noisy
+    // expansions that demote the real diagnosis)
+    if (!/^[A-Za-z][A-Za-z0-9 ,'/.-]{2,39}$/.test(base)) continue;
+    const key = m[1].toLowerCase();
+    if (key === base.toLowerCase()) continue;
+    if (!expansionMap.has(key)) expansionMap.set(key, new Set());
+    expansionMap.get(key)!.add(base);
+  }
+
   console.log(
-    `[VirtualSlides] 💾 Cached ${processedSlides.length} slides + reverse index (${reverseIndex.size} keys) in memory`
+    `[VirtualSlides] 💾 Cached ${processedSlides.length} slides + reverse index (${reverseIndex.size} keys) + ${expansionMap.size} abbreviations in memory`
   );
 }
 
@@ -496,6 +527,63 @@ function rankSlidesByOrgan(
 
 // NCI fallback removed - using only WHO acronyms embedded in dataset
 // Simplified main ranking function
+// Rank ONE query string — organ extraction + two-pass — returning the raw
+// ranking map (pre-sort). Extracted so each query-expansion variant can be
+// ranked and the results merged.
+//
+// Two passes: (1) the FULL query — preserves exact-diagnosis and literal
+// multi-word matches even when the query contains an organ word, e.g. "renal
+// cell carcinoma" stays an exact (score 100) match. (2) When an organ term was
+// found, ALSO rank with the organ words removed (or, if nothing else remains,
+// rank the whole organ system) — this surfaces diagnoses that name the organ
+// differently, "kidney carcinoma" → "Renal cell carcinoma". Merged by max
+// score, so pass 2 can only ADD recall, never demote a pass-1 match.
+function rankOneQuery(
+  query: string
+): Map<string, { slide: VirtualSlide; score: number; frequency?: number }> {
+  const term = query.toLowerCase().trim();
+  const { organs, remainingQuery } = extractOrganTerms(query);
+  const organContext = organs.length > 0 ? organs : undefined;
+  const searchTerm = remainingQuery.trim();
+
+  const ranked = rankSlidesByTerm(term, organContext);
+  if (organContext) {
+    const organPass =
+      searchTerm && searchTerm !== term
+        ? rankSlidesByTerm(searchTerm, organContext)
+        : rankSlidesByOrgan(organContext);
+    for (const [key, val] of organPass) {
+      const existing = ranked.get(key);
+      if (!existing || val.score > existing.score) ranked.set(key, val);
+    }
+  }
+  return ranked;
+}
+
+// Expand a query into variants: the original, plus one variant per known
+// abbreviation token replaced by its full term ("aml liver" → "angiomyolipoma
+// liver"). Bounded so cost stays predictable.
+const MAX_QUERY_VARIANTS = 6;
+const EXPANSIONS_PER_ABBREVIATION = 4;
+function expandQuery(term: string): string[] {
+  if (!expansionMap || expansionMap.size === 0) return [term];
+  const tokens = tokenize(term);
+  const variants = [term];
+  for (let i = 0; i < tokens.length && variants.length < MAX_QUERY_VARIANTS; i++) {
+    const fullTerms = expansionMap.get(tokens[i]);
+    if (!fullTerms) continue;
+    let used = 0;
+    for (const full of fullTerms) {
+      if (used >= EXPANSIONS_PER_ABBREVIATION || variants.length >= MAX_QUERY_VARIANTS) break;
+      variants.push([...tokens.slice(0, i), full, ...tokens.slice(i + 1)].join(" "));
+      used++;
+    }
+  }
+  return variants;
+}
+
+// Main ranking entry point. Expands WHO/clinical abbreviations, ranks every
+// variant, and merges by max score.
 export async function rankSlidesWithExpansion(
   slides: VirtualSlide[],
   query: string
@@ -508,57 +596,33 @@ export async function rankSlidesWithExpansion(
   const term = (query || "").toLowerCase().trim();
   if (!term) return { slides, expandedTerms: [] };
 
-  // Extract organ/anatomical context, then rank in TWO passes:
-  //  1. Always rank the FULL query. This preserves exact-diagnosis and literal
-  //     multi-word matches even when the query contains an organ word — e.g.
-  //     "renal cell carcinoma" stays an exact (score 100) match.
-  //  2. When an organ term was found, ALSO rank with the organ words removed
-  //     (or, if nothing else remains, rank the whole organ system). This is
-  //     what surfaces diagnoses that name the organ differently — "kidney
-  //     carcinoma" → "Renal cell carcinoma". The two passes are merged by max
-  //     score, so pass 2 can only ADD recall, never demote a pass-1 match.
-  // WHO acronyms (embedded in dataset) are matched via reverse index.
-  const { organs, remainingQuery } = extractOrganTerms(query);
-  const organContext = organs.length > 0 ? organs : undefined;
-  const searchTerm = remainingQuery.trim();
-
-  const termRankings = rankSlidesByTerm(term, organContext);
-
-  if (organContext) {
-    const organPass =
-      searchTerm && searchTerm !== term
-        ? rankSlidesByTerm(searchTerm, organContext)
-        : rankSlidesByOrgan(organContext);
-    for (const [key, val] of organPass) {
-      const existing = termRankings.get(key);
-      if (!existing || val.score > existing.score) {
-        termRankings.set(key, val);
-      }
+  const variants = expandQuery(term);
+  const merged = new Map<string, { slide: VirtualSlide; score: number; frequency?: number }>();
+  for (const variant of variants) {
+    for (const [key, val] of rankOneQuery(variant)) {
+      const existing = merged.get(key);
+      if (!existing || val.score > existing.score) merged.set(key, val);
     }
   }
 
   // Sort by score (highest first), then frequency, then length
-  const sortedSlides = Array.from(termRankings.values())
+  const sortedSlides = Array.from(merged.values())
     .sort((a, b) => {
-      // Primary: score descending (higher scores first)
       if (b.score !== a.score) return b.score - a.score;
-      // Secondary: frequency descending (more common diagnoses first)
       if ((a.frequency || 0) !== (b.frequency || 0)) {
         return (b.frequency || 0) - (a.frequency || 0);
       }
-      // Tertiary: diagnosis length ascending (shorter/more specific first)
       return a.slide.diagnosis.length - b.slide.diagnosis.length;
     })
     .map((item) => item.slide);
 
-  // APPLY FILTERS: Filter the search results to match the filtered slides list
-  // This is simpler and cleaner than filtering during search
+  // Filter results to the (possibly pre-filtered) input list
   const allowedSlideIds = new Set(slides.map((s) => s.id));
   const filteredSlides = sortedSlides.filter((slide) => allowedSlideIds.has(slide.id));
 
   return {
     slides: filteredSlides,
-    expandedTerms: [],
+    expandedTerms: variants.slice(1),
     method: "standard",
   };
 }

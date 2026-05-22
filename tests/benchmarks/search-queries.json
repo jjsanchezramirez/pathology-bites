@@ -67,6 +67,13 @@
     { "id": "fuzzy-02", "type": "fuzzy", "query": "glioblastomx", "match": { "contains": "glioblastoma" } },
     { "id": "fuzzy-03", "type": "fuzzy", "query": "schwannomx", "match": { "contains": "schwannoma" } },
     { "id": "fuzzy-04", "type": "fuzzy", "query": "leiomyosarcomx", "match": { "contains": "leiomyosarcoma" } },
-    { "id": "fuzzy-05", "type": "fuzzy", "query": "osteosarcomx", "match": { "contains": "osteosarcoma" } }
+    { "id": "fuzzy-05", "type": "fuzzy", "query": "osteosarcomx", "match": { "contains": "osteosarcoma" } },
+
+    { "id": "abbrev-01", "type": "abbrev", "query": "aml", "match": { "contains": "angiomyolipoma" } },
+    { "id": "abbrev-02", "type": "abbrev", "query": "gist", "match": { "contains": "gastrointestinal stromal" } },
+    { "id": "abbrev-03", "type": "abbrev", "query": "abc", "match": { "contains": "aneurysmal bone cyst" } },
+    { "id": "abbrev-04", "type": "abbrev", "query": "jxg", "match": { "contains": "juvenile xanthogranuloma" } },
+    { "id": "abbrev-05", "type": "abbrev", "query": "atrt", "match": { "contains": "teratoid" } },
+    { "id": "abbrev-06", "type": "abbrev", "query": "pnet", "match": { "contains": "primitive neuroectodermal" } }
   ]
 }

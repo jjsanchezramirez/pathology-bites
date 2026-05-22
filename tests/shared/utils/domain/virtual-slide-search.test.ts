@@ -91,6 +91,11 @@ const FIXTURE: VirtualSlide[] = [
   ...repeat(2, () => mk("Neuroblastoma", "Pediatric", "Adrenal")),
   ...repeat(2, () => mk("Osteosarcoma", "Bone and Soft Tissue", "Bone")),
   mk("Wilms tumor", "Pediatric", "Kidney"),
+  // Abbreviation expansion (Tier 1): the "(AML)" diagnosis teaches the dataset
+  // aml -> Angiomyolipoma; the plain "Angiomyolipoma" has no "aml" token, so
+  // it is reachable ONLY via query expansion.
+  mk("Angiomyolipoma (AML)", "Genitourinary", "Kidney"),
+  mk("Angiomyolipoma", "Genitourinary", "Kidney"),
 ];
 
 // --- helpers -----------------------------------------------------------------
@@ -179,6 +184,16 @@ describe("virtual-slide-search", () => {
       // branch, making fuzzy matching unreachable for every single-word query.
       expect(await topDiagnoses("neuroblastomx")).toContain("neuroblastoma");
       expect(await topDiagnoses("leiomyosarcomx")).toContain("leiomyosarcoma");
+    });
+  });
+
+  describe("abbreviation expansion (Tier 1)", () => {
+    it("an abbreviation query expands to the full term and finds un-tagged slides", async () => {
+      // "Angiomyolipoma (AML)" teaches the index aml -> Angiomyolipoma. The
+      // plain "Angiomyolipoma" slide carries no "aml" token — only query
+      // expansion can reach it. `toContain("angiomyolipoma")` matches the
+      // plain diagnosis exactly, not "angiomyolipoma (aml)".
+      expect(await topDiagnoses("aml")).toContain("angiomyolipoma");
     });
   });
 });

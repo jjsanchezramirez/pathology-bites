@@ -1,19 +1,27 @@
 {
   "meta": {
-    "dateRun": "2026-05-22T19:23:33.042Z",
+    "dateRun": "2026-05-22T20:46:35.128Z",
     "datasetUrl": "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/virtual-slides-v8-min.json.br?v=8",
     "slideCount": 27980,
-    "queryCount": 107
+    "queryCount": 113
   },
   "overall": {
-    "n": 107,
-    "hit10": 0.9813084112149533,
-    "hit20": 0.9906542056074766,
-    "mrr": 0.9594815879862608,
+    "n": 113,
+    "hit10": 0.9823008849557522,
+    "hit20": 0.9911504424778761,
+    "mrr": 0.9527834505710612,
     "zero": 0,
     "found": 1
   },
   "byType": {
+    "abbrev": {
+      "n": 6,
+      "hit10": 1,
+      "hit20": 1,
+      "mrr": 0.9166666666666666,
+      "zero": 0,
+      "found": 1
+    },
     "auto": {
       "n": 48,
       "hit10": 1,
@@ -90,7 +98,7 @@
       "n": 6,
       "hit10": 1,
       "hit20": 1,
-      "mrr": 1,
+      "mrr": 0.9166666666666666,
       "zero": 0,
       "found": 1
     }
@@ -125,7 +133,7 @@
       "type": "exact",
       "query": "schwannoma",
       "rank": 1,
-      "resultCount": 180,
+      "resultCount": 187,
       "top": "Schwannoma"
     },
     {
@@ -453,8 +461,8 @@
       "type": "who-abbrev",
       "query": "dlbcl",
       "rank": 1,
-      "resultCount": 56,
-      "top": "Diffuse large B cell lymphoma"
+      "resultCount": 206,
+      "top": "Diffuse large B-cell lymphoma"
     },
     {
       "id": "who-02",
@@ -484,9 +492,9 @@
       "id": "who-05",
       "type": "who-abbrev",
       "query": "scc",
-      "rank": 1,
-      "resultCount": 164,
-      "top": "Squamous cell carcinoma"
+      "rank": 2,
+      "resultCount": 169,
+      "top": "Anal Squamous Cell Carcinoma (SCC)"
     },
     {
       "id": "who-06",
@@ -567,6 +575,54 @@
       "rank": 1,
       "resultCount": 400,
       "top": "Osteosarcoma"
+    },
+    {
+      "id": "abbrev-01",
+      "type": "abbrev",
+      "query": "aml",
+      "rank": 1,
+      "resultCount": 121,
+      "top": "Angiomyolipoma"
+    },
+    {
+      "id": "abbrev-02",
+      "type": "abbrev",
+      "query": "gist",
+      "rank": 1,
+      "resultCount": 67,
+      "top": "Gastrointestinal stromal tumour"
+    },
+    {
+      "id": "abbrev-03",
+      "type": "abbrev",
+      "query": "abc",
+      "rank": 1,
+      "resultCount": 206,
+      "top": "Aneurysmal Bone Cyst"
+    },
+    {
+      "id": "abbrev-04",
+      "type": "abbrev",
+      "query": "jxg",
+      "rank": 1,
+      "resultCount": 23,
+      "top": "Juvenile Xanthogranuloma"
+    },
+    {
+      "id": "abbrev-05",
+      "type": "abbrev",
+      "query": "atrt",
+      "rank": 1,
+      "resultCount": 7,
+      "top": "Atypical teratoid rhabdoid tumor (ATRT)"
+    },
+    {
+      "id": "abbrev-06",
+      "type": "abbrev",
+      "query": "pnet",
+      "rank": 2,
+      "resultCount": 26,
+      "top": "PNET"
     },
     {
       "id": "auto:Chromoblastomycosis",
@@ -869,7 +925,7 @@
       "type": "auto",
       "query": "Gastrointestinal stromal tumour (GIST)",
       "rank": 1,
-      "resultCount": 16,
+      "resultCount": 44,
       "top": "Gastrointestinal stromal tumour (GIST)"
     },
     {
