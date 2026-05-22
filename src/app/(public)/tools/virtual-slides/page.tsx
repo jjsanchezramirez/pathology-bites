@@ -255,7 +255,6 @@ function VirtualSlidesContent() {
         repository: selectedRepository !== "all" ? selectedRepository : undefined,
         category: selectedCategory !== "all" ? selectedCategory : undefined,
         subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-        randomMode: isEmptySearch, // Use random mode when search is empty
         randomSeed: isEmptySearch ? Math.floor(Math.random() * 1e9) : undefined,
         page: 1, // Reset to first page when filters change
       });
@@ -282,7 +281,6 @@ function VirtualSlidesContent() {
         repository: selectedRepository !== "all" ? selectedRepository : undefined,
         category: selectedCategory !== "all" ? selectedCategory : undefined,
         subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-        randomMode: true,
         randomSeed: seed,
         limit: studyQuestionCount,
         page: 1,
@@ -312,7 +310,6 @@ function VirtualSlidesContent() {
       repository: undefined,
       category: undefined,
       subcategory: undefined,
-      randomMode: mode === "study", // Keep randomMode if in Study mode
       randomSeed: mode === "study" ? Math.floor(Math.random() * 1e9) : undefined,
       page: 1,
     });
@@ -436,7 +433,6 @@ function VirtualSlidesContent() {
                       repository: selectedRepository !== "all" ? selectedRepository : undefined,
                       category: selectedCategory !== "all" ? selectedCategory : undefined,
                       subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-                      randomMode: isEmptySearch,
                       randomSeed: isEmptySearch ? Math.floor(Math.random() * 1e9) : undefined,
                       page: 1,
                     });
@@ -520,7 +516,6 @@ function VirtualSlidesContent() {
                           category: selectedCategory !== "all" ? selectedCategory : undefined,
                           subcategory:
                             selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-                          randomMode: true,
                           randomSeed: seed,
                           limit: studyQuestionCount,
                           page: 1,
@@ -572,7 +567,6 @@ function VirtualSlidesContent() {
                             category: selectedCategory !== "all" ? selectedCategory : undefined,
                             subcategory:
                               selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-                            randomMode: isEmptySearch,
                             randomSeed: isEmptySearch ? Math.floor(Math.random() * 1e9) : undefined,
                             page: 1,
                           });
@@ -596,7 +590,6 @@ function VirtualSlidesContent() {
                           category: selectedCategory !== "all" ? selectedCategory : undefined,
                           subcategory:
                             selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-                          randomMode: isEmptySearch,
                           randomSeed: isEmptySearch ? Math.floor(Math.random() * 1e9) : undefined,
                           page: 1,
                         });

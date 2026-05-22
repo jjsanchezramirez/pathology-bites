@@ -171,12 +171,11 @@ export function buildSearchIndex(processedSlides: VirtualSlide[]): void {
   );
 }
 
-// HIGHLY OPTIMIZED: Uses reverse index to check ONLY relevant slides
+// HIGHLY OPTIMIZED: Uses reverse index to check ONLY relevant slides.
+// Operates on the module-level searchIndex; result filtering is the caller's job.
 function rankSlidesByTerm(
-  _slides: VirtualSlide[], // Not used - we use searchIndex instead (filters applied after)
   term: string,
-  organContext?: OrganTerm[],
-  _maxResults: number = 150 // Reduced from 200 for even better performance
+  organContext?: OrganTerm[]
 ): Map<string, { slide: VirtualSlide; score: number; frequency?: number }> {
   const termLower = term.toLowerCase().trim();
   const words = tokenize(termLower);
@@ -518,12 +517,12 @@ export async function rankSlidesWithExpansion(
   const organContext = organs.length > 0 ? organs : undefined;
   const searchTerm = remainingQuery.trim();
 
-  const termRankings = rankSlidesByTerm(slides, term, organContext, 150);
+  const termRankings = rankSlidesByTerm(term, organContext);
 
   if (organContext) {
     const organPass =
       searchTerm && searchTerm !== term
-        ? rankSlidesByTerm(slides, searchTerm, organContext, 150)
+        ? rankSlidesByTerm(searchTerm, organContext)
         : rankSlidesByOrgan(organContext);
     for (const [key, val] of organPass) {
       const existing = termRankings.get(key);

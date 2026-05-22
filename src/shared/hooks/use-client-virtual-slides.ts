@@ -466,7 +466,6 @@ export interface ClientSearchOptions {
   repository?: string;
   category?: string;
   subcategory?: string;
-  randomMode?: boolean;
   randomSeed?: number;
   page?: number;
   limit?: number;
@@ -633,8 +632,6 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
         if (Object.prototype.hasOwnProperty.call(opts, "subcategory"))
           next.subcategory = opts.subcategory;
 
-        if (Object.prototype.hasOwnProperty.call(opts, "randomMode"))
-          next.randomMode = opts.randomMode ?? false;
         if (Object.prototype.hasOwnProperty.call(opts, "randomSeed"))
           next.randomSeed = opts.randomSeed;
 
