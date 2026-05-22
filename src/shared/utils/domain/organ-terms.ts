@@ -17,25 +17,25 @@ export const ORGAN_TERMS: OrganTerm[] = [
     term: "liver",
     aliases: ["hepatic"],
     category: "Hepatobiliary and Pancreas",
-    subcategory: "hepatobiliary and pancreas",
+    subcategory: "Liver",
   },
   {
     term: "pancreas",
     aliases: ["pancreatic"],
     category: "Hepatobiliary and Pancreas",
-    subcategory: "hepatobiliary and pancreas",
+    subcategory: "Pancreas and Bile Ducts",
   },
   {
     term: "gallbladder",
     aliases: ["biliary"],
     category: "Hepatobiliary and Pancreas",
-    subcategory: "hepatobiliary and pancreas",
+    subcategory: "Gallbladder",
   },
   {
     term: "bile duct",
-    aliases: ["biliary", "cholangiocarcinoma"],
+    aliases: ["biliary"],
     category: "Hepatobiliary and Pancreas",
-    subcategory: "hepatobiliary and pancreas",
+    subcategory: "Pancreas and Bile Ducts",
   },
 
   // Gastrointestinal
@@ -43,37 +43,37 @@ export const ORGAN_TERMS: OrganTerm[] = [
     term: "stomach",
     aliases: ["gastric"],
     category: "Gastrointestinal",
-    subcategory: "gastrointestinal",
+    subcategory: "Stomach",
   },
   {
     term: "esophagus",
     aliases: ["esophageal"],
     category: "Gastrointestinal",
-    subcategory: "gastrointestinal",
+    subcategory: "Esophagus",
   },
   {
     term: "colon",
     aliases: ["colonic", "colorectal"],
     category: "Gastrointestinal",
-    subcategory: "gastrointestinal",
+    subcategory: "Colon",
   },
   {
     term: "rectum",
     aliases: ["rectal", "colorectal"],
     category: "Gastrointestinal",
-    subcategory: "gastrointestinal",
+    subcategory: "Rectum",
   },
   {
     term: "small bowel",
     aliases: ["small intestine", "duodenum", "jejunum", "ileum"],
     category: "Gastrointestinal",
-    subcategory: "gastrointestinal",
+    subcategory: "Small Bowel",
   },
   {
     term: "appendix",
     aliases: ["appendiceal"],
     category: "Gastrointestinal",
-    subcategory: "gastrointestinal",
+    subcategory: "Appendix",
   },
 
   // Cytology
@@ -84,102 +84,122 @@ export const ORGAN_TERMS: OrganTerm[] = [
     term: "lung",
     aliases: ["pulmonary", "bronchial"],
     category: "Thoracic",
-    subcategory: "lung and pleura",
+    subcategory: "Lung",
   },
-  { term: "pleura", aliases: ["pleural"], category: "Thoracic", subcategory: "lung and pleura" },
+  {
+    term: "pleura",
+    aliases: ["pleural"],
+    category: "Thoracic",
+    subcategory: "Pericardium and Pleura",
+  },
   {
     term: "bronchus",
     aliases: ["bronchial"],
     category: "Thoracic",
-    subcategory: "lung and pleura",
+    subcategory: "Lung",
   },
-  { term: "mediastinum", aliases: ["mediastinal"], category: "Thoracic", subcategory: "thoracic" },
+  {
+    term: "mediastinum",
+    aliases: ["mediastinal"],
+    category: "Thoracic",
+    subcategory: "Mediastinum",
+  },
 
   // Genitourinary
   {
     term: "kidney",
     aliases: ["renal"],
     category: "Genitourinary",
-    subcategory: "kidney and urinary tract",
+    subcategory: "Kidney",
   },
   {
     term: "bladder",
     aliases: ["urinary bladder", "vesical"],
     category: "Genitourinary",
-    subcategory: "kidney and urinary tract",
+    subcategory: "Bladder",
   },
   {
     term: "ureter",
     aliases: ["ureteral"],
     category: "Genitourinary",
-    subcategory: "kidney and urinary tract",
+    subcategory: "Ureter",
   },
   {
     term: "urethra",
     aliases: ["urethral"],
     category: "Genitourinary",
-    subcategory: "kidney and urinary tract",
+    subcategory: "Urethra",
   },
   {
     term: "prostate",
     aliases: ["prostatic"],
     category: "Genitourinary",
-    subcategory: "male genital",
+    subcategory: "Prostate",
   },
   {
     term: "testis",
     aliases: ["testicular", "testes"],
     category: "Genitourinary",
-    subcategory: "male genital",
+    subcategory: "Testis and Epididymis",
   },
-  { term: "penis", aliases: ["penile"], category: "Genitourinary", subcategory: "male genital" },
+  {
+    term: "penis",
+    aliases: ["penile"],
+    category: "Genitourinary",
+    subcategory: "Penis and Scrotum",
+  },
 
   // Gynecologic
-  { term: "ovary", aliases: ["ovarian"], category: "Gynecologic", subcategory: "female genital" },
-  { term: "uterus", aliases: ["uterine"], category: "Gynecologic", subcategory: "female genital" },
-  { term: "cervix", aliases: ["cervical"], category: "Gynecologic", subcategory: "female genital" },
+  { term: "ovary", aliases: ["ovarian"], category: "Gynecologic", subcategory: "Ovary" },
+  { term: "uterus", aliases: ["uterine"], category: "Gynecologic", subcategory: "Uterus" },
+  { term: "cervix", aliases: ["cervical"], category: "Gynecologic", subcategory: "Cervix" },
   {
     term: "endometrium",
     aliases: ["endometrial"],
     category: "Gynecologic",
-    subcategory: "female genital",
+    subcategory: "Uterus",
   },
   {
     term: "fallopian tube",
     aliases: ["tubal"],
     category: "Gynecologic",
-    subcategory: "female genital",
+    subcategory: "Fallopian Tubes",
   },
-  { term: "vulva", aliases: ["vulvar"], category: "Gynecologic", subcategory: "female genital" },
-  { term: "vagina", aliases: ["vaginal"], category: "Gynecologic", subcategory: "female genital" },
+  { term: "vulva", aliases: ["vulvar"], category: "Gynecologic", subcategory: "Vagina and Vulva" },
+  {
+    term: "vagina",
+    aliases: ["vaginal"],
+    category: "Gynecologic",
+    subcategory: "Vagina and Vulva",
+  },
 
   // Breast
-  { term: "breast", aliases: ["mammary"], category: "Breast", subcategory: "breast" },
+  { term: "breast", aliases: ["mammary"], category: "Breast", subcategory: "Breast" },
 
   // Endocrine and Neuroendocrine
   {
     term: "thyroid",
     aliases: ["thyroid gland"],
     category: "Endocrine and Neuroendocrine",
-    subcategory: "endocrine",
+    subcategory: "Thyroid",
   },
   {
     term: "parathyroid",
     aliases: ["parathyroid gland"],
     category: "Endocrine and Neuroendocrine",
-    subcategory: "endocrine",
+    subcategory: "Parathyroid",
   },
   {
     term: "adrenal",
     aliases: ["adrenal gland", "suprarenal"],
     category: "Endocrine and Neuroendocrine",
-    subcategory: "endocrine",
+    subcategory: "Adrenal",
   },
   {
     term: "pituitary",
     aliases: ["pituitary gland", "hypophysis"],
     category: "Endocrine and Neuroendocrine",
-    subcategory: "endocrine",
+    subcategory: "Pituitary",
   },
 
   // Head and Neck
@@ -187,31 +207,31 @@ export const ORGAN_TERMS: OrganTerm[] = [
     term: "salivary gland",
     aliases: ["parotid", "submandibular", "sublingual"],
     category: "Head and Neck",
-    subcategory: "head and neck",
+    subcategory: "Salivary Gland",
   },
   {
     term: "oral cavity",
     aliases: ["mouth", "tongue", "oral"],
     category: "Head and Neck",
-    subcategory: "head and neck",
+    subcategory: "Oral Cavity",
   },
   {
     term: "pharynx",
     aliases: ["pharyngeal", "nasopharynx", "oropharynx"],
     category: "Head and Neck",
-    subcategory: "head and neck",
+    subcategory: "Pharynx",
   },
   {
     term: "larynx",
     aliases: ["laryngeal"],
     category: "Head and Neck",
-    subcategory: "head and neck",
+    subcategory: "Larynx",
   },
   {
     term: "nasal",
     aliases: ["nose", "sinonasal"],
     category: "Head and Neck",
-    subcategory: "head and neck",
+    subcategory: "Nose and Sinuses",
   },
 
   // Dermatopathology
@@ -219,7 +239,7 @@ export const ORGAN_TERMS: OrganTerm[] = [
     term: "skin",
     aliases: ["cutaneous", "dermal", "derm", "dermatopathology", "dermpath"],
     category: "Dermatopathology",
-    subcategory: "skin",
+    subcategory: "Skin",
   },
 
   // Bone and Soft Tissue
@@ -227,13 +247,13 @@ export const ORGAN_TERMS: OrganTerm[] = [
     term: "soft tissue",
     aliases: ["sarcoma"],
     category: "Bone and Soft Tissue",
-    subcategory: "soft tissue",
+    subcategory: "Soft Tissue",
   },
   {
     term: "bone",
     aliases: ["osseous", "skeletal"],
     category: "Bone and Soft Tissue",
-    subcategory: "bone and joint",
+    subcategory: "Bone",
   },
 
   // Hematopathology
@@ -241,20 +261,20 @@ export const ORGAN_TERMS: OrganTerm[] = [
     term: "lymph node",
     aliases: ["lymphatic", "nodal"],
     category: "Hematopathology",
-    subcategory: "lymphoma",
+    subcategory: "Lymph Node",
   },
-  { term: "spleen", aliases: ["splenic"], category: "Hematopathology", subcategory: "lymphoma" },
+  { term: "spleen", aliases: ["splenic"], category: "Hematopathology", subcategory: "Spleen" },
   {
     term: "bone marrow",
     aliases: ["marrow"],
     category: "Hematopathology",
-    subcategory: "hematologic",
+    subcategory: "Bone Marrow",
   },
   {
     term: "blood",
     aliases: ["hematologic", "hematopoietic"],
     category: "Hematopathology",
-    subcategory: "hematologic",
+    subcategory: "Blood",
   },
 
   // Neuropathology
@@ -262,42 +282,42 @@ export const ORGAN_TERMS: OrganTerm[] = [
     term: "brain",
     aliases: ["cerebral", "cerebrum", "intracranial"],
     category: "Neuropathology",
-    subcategory: "central nervous system",
+    subcategory: "Brain",
   },
   {
     term: "spinal cord",
     aliases: ["spine", "spinal"],
     category: "Neuropathology",
-    subcategory: "central nervous system",
+    subcategory: "Spine",
   },
   {
     term: "meninges",
     aliases: ["meningeal"],
     category: "Neuropathology",
-    subcategory: "central nervous system",
+    subcategory: "Brain",
   },
 
-  // Eye (may fall under Head and Neck or its own)
-  { term: "eye", aliases: ["ocular", "ophthalmic"], subcategory: "eye" },
-  { term: "retina", aliases: ["retinal"], subcategory: "eye" },
+  // Eye
+  { term: "eye", aliases: ["ocular", "ophthalmic"], subcategory: "Eye and Orbit" },
+  { term: "retina", aliases: ["retinal"], subcategory: "Eye and Orbit" },
 
   // Cardiovascular
   {
     term: "heart",
     aliases: ["cardiac"],
     category: "Cardiovascular",
-    subcategory: "cardiovascular",
+    subcategory: "Heart",
   },
 
   // Placental
-  { term: "placenta", aliases: ["placental"], category: "Placental" },
+  { term: "placenta", aliases: ["placental"], category: "Placental", subcategory: "Placenta" },
 
   // Peritoneum
-  { term: "peritoneum", aliases: ["peritoneal"], subcategory: "peritoneum and retroperitoneum" },
+  { term: "peritoneum", aliases: ["peritoneal"], subcategory: "Peritoneum and Retroperitoneum" },
   {
     term: "retroperitoneum",
     aliases: ["retroperitoneal"],
-    subcategory: "peritoneum and retroperitoneum",
+    subcategory: "Peritoneum and Retroperitoneum",
   },
 ];
 
