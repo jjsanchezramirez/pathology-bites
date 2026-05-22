@@ -32,7 +32,8 @@
     "test:api": "vitest run tests/api",
     "test:features": "vitest run tests/features",
     "test:app": "vitest run tests/app",
-    "test:ci": "vitest run --reporter=verbose"
+    "test:ci": "vitest run --reporter=verbose",
+    "eval:search": "tsx tests/benchmarks/search-eval.ts"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.858.0",

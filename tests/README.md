@@ -6,6 +6,7 @@ This directory contains the comprehensive test suite for the Pathology Bites app
 
 - [Quick Start](#quick-start)
 - [Test Structure](#test-structure)
+- [Search Regression Benchmark](#search-regression-benchmark)
 - [Running Tests](#running-tests)
 - [Writing Tests](#writing-tests)
 - [Debugging Tests](#debugging-tests)
@@ -48,15 +49,26 @@ npm test -- achievement-checker.test.ts
 
 ## Test Structure
 
-Tests mirror `src/`. Each test sits at the path matching its source module.
+Two kinds of directory live under `tests/`:
+
+- **Mirror dirs** — `api/`, `app/`, `features/`, `shared/` — hold the actual
+  test files (`*.test.ts`). Each test sits at the path matching its source
+  module under `src/`.
+- **Support dirs** — `helpers/`, `benchmarks/` — hold test-support code that
+  does not correspond to any single `src/` file, so they do not mirror `src/`.
 
 ```
 tests/
 ├── README.md                          # This file
 ├── vitest-config.test.ts              # Framework sanity
-├── helpers/                           # Shared mock factories
+├── helpers/                           # Shared mock factories (support — not a mirror)
 │   ├── api-test-helpers.ts
 │   └── test-helpers.ts
+├── benchmarks/                        # Search-quality benchmark (support — not a mirror)
+│   ├── search-eval.ts                 #   run via: npm run eval:search
+│   ├── search-queries.json            #   54 curated labeled queries
+│   ├── baseline-metrics.json          #   committed quality bar
+│   └── SEARCH-EVAL-STUDY.md           #   the audit writeup
 ├── api/                               # mirrors src/app/api/
 │   ├── admin/lesson-studio/
 │   └── user/quiz/sessions/
@@ -64,10 +76,12 @@ tests/
 │   └── admin/lesson-studio/
 │       ├── canvas/
 │       └── model/
-└── features/                          # mirrors src/features/
-    └── user/
-        ├── achievements/
-        └── quiz/
+├── features/                          # mirrors src/features/
+│   └── user/
+│       ├── achievements/
+│       └── quiz/
+└── shared/                            # mirrors src/shared/
+    └── utils/domain/                  #   e.g. virtual-slide-search.test.ts
 ```
 
 Helpers are imported via the `@tests/*` alias (configured in `tsconfig.json` + `vitest.config.ts`):
@@ -75,6 +89,28 @@ Helpers are imported via the `@tests/*` alias (configured in `tsconfig.json` + `
 ```ts
 import { createMockConfig } from "@tests/helpers/test-helpers";
 ```
+
+## Search Regression Benchmark
+
+`tests/benchmarks/` holds a benchmark — **not** a Vitest test (Vitest ignores it;
+it is not a `*.test.ts` file). It measures search *quality*, where a unit test
+only checks pass/fail.
+
+- **Unit test** — `tests/shared/utils/domain/virtual-slide-search.test.ts` runs
+  on every `npm test`. Deterministic, offline. Answers: *is search broken?*
+- **Benchmark** — `npm run eval:search` runs 102 labeled queries against the
+  live dataset and diffs the result against `baseline-metrics.json`. Answers:
+  *did this change downgrade search?*
+
+```bash
+npm run eval:search                       # run, compare to baseline, exit 1 on regression
+npm run eval:search -- --update-baseline   # re-snapshot the baseline after an accepted change
+```
+
+Run the benchmark whenever the ranking algorithm changes or the dataset version
+is bumped in `src/shared/config/virtual-slides.ts`. It is suitable as a CI job
+gated on changes to the search files. See `tests/benchmarks/SEARCH-EVAL-STUDY.md`
+for the full methodology.
 
 ## Running Tests
 

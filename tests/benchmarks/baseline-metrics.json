@@ -1,0 +1,908 @@
+{
+  "meta": {
+    "dateRun": "2026-05-22T15:52:03.267Z",
+    "datasetUrl": "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/virtual-slides-v8-min.json.br?v=8",
+    "slideCount": 27980,
+    "queryCount": 102
+  },
+  "overall": {
+    "n": 102,
+    "hit10": 0.9803921568627451,
+    "hit20": 0.9901960784313726,
+    "mrr": 0.9574953913189207,
+    "zero": 0,
+    "found": 1
+  },
+  "byType": {
+    "auto": {
+      "n": 48,
+      "hit10": 1,
+      "hit20": 1,
+      "mrr": 1,
+      "zero": 0,
+      "found": 1
+    },
+    "exact": {
+      "n": 10,
+      "hit10": 1,
+      "hit20": 1,
+      "mrr": 1,
+      "zero": 0,
+      "found": 1
+    },
+    "multi-literal": {
+      "n": 6,
+      "hit10": 1,
+      "hit20": 1,
+      "mrr": 1,
+      "zero": 0,
+      "found": 1
+    },
+    "organ-only": {
+      "n": 4,
+      "hit10": 1,
+      "hit20": 1,
+      "mrr": 1,
+      "zero": 0,
+      "found": 1
+    },
+    "organ-tumor": {
+      "n": 8,
+      "hit10": 0.75,
+      "hit20": 0.875,
+      "mrr": 0.45806623931623924,
+      "zero": 0,
+      "found": 1
+    },
+    "single-word": {
+      "n": 6,
+      "hit10": 1,
+      "hit20": 1,
+      "mrr": 1,
+      "zero": 0,
+      "found": 1
+    },
+    "truncation": {
+      "n": 8,
+      "hit10": 1,
+      "hit20": 1,
+      "mrr": 1,
+      "zero": 0,
+      "found": 1
+    },
+    "typo": {
+      "n": 6,
+      "hit10": 1,
+      "hit20": 1,
+      "mrr": 1,
+      "zero": 0,
+      "found": 1
+    },
+    "who-abbrev": {
+      "n": 6,
+      "hit10": 1,
+      "hit20": 1,
+      "mrr": 1,
+      "zero": 0,
+      "found": 1
+    }
+  },
+  "perQuery": [
+    {
+      "id": "exact-01",
+      "type": "exact",
+      "query": "neuroblastoma",
+      "rank": 1,
+      "resultCount": 428,
+      "top": "Neuroblastoma"
+    },
+    {
+      "id": "exact-02",
+      "type": "exact",
+      "query": "osteosarcoma",
+      "rank": 1,
+      "resultCount": 402,
+      "top": "Osteosarcoma"
+    },
+    {
+      "id": "exact-03",
+      "type": "exact",
+      "query": "melanoma",
+      "rank": 1,
+      "resultCount": 463,
+      "top": "Melanoma"
+    },
+    {
+      "id": "exact-04",
+      "type": "exact",
+      "query": "schwannoma",
+      "rank": 1,
+      "resultCount": 179,
+      "top": "Schwannoma"
+    },
+    {
+      "id": "exact-05",
+      "type": "exact",
+      "query": "meningioma",
+      "rank": 1,
+      "resultCount": 128,
+      "top": "Meningioma"
+    },
+    {
+      "id": "exact-06",
+      "type": "exact",
+      "query": "renal cell carcinoma",
+      "rank": 1,
+      "resultCount": 1416,
+      "top": "renal cell carcinoma"
+    },
+    {
+      "id": "exact-07",
+      "type": "exact",
+      "query": "invasive ductal carcinoma",
+      "rank": 1,
+      "resultCount": 187,
+      "top": "Invasive ductal carcinoma"
+    },
+    {
+      "id": "exact-08",
+      "type": "exact",
+      "query": "papillary thyroid carcinoma",
+      "rank": 1,
+      "resultCount": 567,
+      "top": "Papillary thyroid carcinoma"
+    },
+    {
+      "id": "exact-09",
+      "type": "exact",
+      "query": "alveolar rhabdomyosarcoma",
+      "rank": 1,
+      "resultCount": 203,
+      "top": "Alveolar rhabdomyosarcoma"
+    },
+    {
+      "id": "exact-10",
+      "type": "exact",
+      "query": "squamous cell carcinoma",
+      "rank": 1,
+      "resultCount": 333,
+      "top": "Squamous cell carcinoma"
+    },
+    {
+      "id": "single-01",
+      "type": "single-word",
+      "query": "glioblastoma",
+      "rank": 1,
+      "resultCount": 75,
+      "top": "Glioblastoma"
+    },
+    {
+      "id": "single-02",
+      "type": "single-word",
+      "query": "leiomyosarcoma",
+      "rank": 1,
+      "resultCount": 159,
+      "top": "Leiomyosarcoma"
+    },
+    {
+      "id": "single-03",
+      "type": "single-word",
+      "query": "retinoblastoma",
+      "rank": 1,
+      "resultCount": 242,
+      "top": "Retinoblastoma"
+    },
+    {
+      "id": "single-04",
+      "type": "single-word",
+      "query": "cholangiocarcinoma",
+      "rank": 1,
+      "resultCount": 43,
+      "top": "Cholangiocarcinoma"
+    },
+    {
+      "id": "single-05",
+      "type": "single-word",
+      "query": "pheochromocytoma",
+      "rank": 1,
+      "resultCount": 45,
+      "top": "Pheochromocytoma"
+    },
+    {
+      "id": "single-06",
+      "type": "single-word",
+      "query": "oligodendroglioma",
+      "rank": 1,
+      "resultCount": 36,
+      "top": "Oligodendroglioma"
+    },
+    {
+      "id": "multi-01",
+      "type": "multi-literal",
+      "query": "clear cell sarcoma",
+      "rank": 1,
+      "resultCount": 447,
+      "top": "Clear cell sarcoma"
+    },
+    {
+      "id": "multi-02",
+      "type": "multi-literal",
+      "query": "basal cell carcinoma",
+      "rank": 1,
+      "resultCount": 92,
+      "top": "Basal cell carcinoma"
+    },
+    {
+      "id": "multi-03",
+      "type": "multi-literal",
+      "query": "papillary urothelial carcinoma",
+      "rank": 1,
+      "resultCount": 96,
+      "top": "Papillary urothelial carcinoma"
+    },
+    {
+      "id": "multi-04",
+      "type": "multi-literal",
+      "query": "embryonal rhabdomyosarcoma",
+      "rank": 1,
+      "resultCount": 294,
+      "top": "Embryonal rhabdomyosarcoma"
+    },
+    {
+      "id": "multi-05",
+      "type": "multi-literal",
+      "query": "metastatic renal cell carcinoma",
+      "rank": 1,
+      "resultCount": 192,
+      "top": "Metastatic renal cell carcinoma"
+    },
+    {
+      "id": "multi-06",
+      "type": "multi-literal",
+      "query": "high grade serous carcinoma",
+      "rank": 1,
+      "resultCount": 29,
+      "top": "High grade serous carcinoma"
+    },
+    {
+      "id": "organ-01",
+      "type": "organ-tumor",
+      "query": "kidney carcinoma",
+      "rank": 2,
+      "resultCount": 4089,
+      "top": "Adrenocortical Carcinoma"
+    },
+    {
+      "id": "organ-02",
+      "type": "organ-tumor",
+      "query": "kidney papillary carcinoma",
+      "rank": 3,
+      "resultCount": 560,
+      "top": "Papillary carcinoma with sarcomatoid transformation"
+    },
+    {
+      "id": "organ-03",
+      "type": "organ-tumor",
+      "query": "kidney chromophobe carcinoma",
+      "rank": 4,
+      "resultCount": 131,
+      "top": "Chromophobe carcinoma of kidney"
+    },
+    {
+      "id": "organ-04",
+      "type": "organ-tumor",
+      "query": "kidney metastatic carcinoma",
+      "rank": 1,
+      "resultCount": 624,
+      "top": "Metastatic renal cell carcinoma"
+    },
+    {
+      "id": "organ-05",
+      "type": "organ-tumor",
+      "query": "liver carcinoma",
+      "rank": 2,
+      "resultCount": 4123,
+      "top": "Adrenocortical Carcinoma"
+    },
+    {
+      "id": "organ-06",
+      "type": "organ-tumor",
+      "query": "liver adenoma",
+      "rank": 1,
+      "resultCount": 857,
+      "top": "Hepatocellular adenoma"
+    },
+    {
+      "id": "organ-07",
+      "type": "organ-tumor",
+      "query": "breast carcinoma",
+      "rank": 39,
+      "resultCount": 4101,
+      "top": "Breast carcinoma"
+    },
+    {
+      "id": "organ-08",
+      "type": "organ-tumor",
+      "query": "breast invasive carcinoma",
+      "rank": 18,
+      "resultCount": 553,
+      "top": "Epithelial-myoepithelial invasive carcinoma"
+    },
+    {
+      "id": "trunc-01",
+      "type": "truncation",
+      "query": "papillary thyroid carcinom",
+      "rank": 1,
+      "resultCount": 541,
+      "top": "Papillary thyroid carcinoma"
+    },
+    {
+      "id": "trunc-02",
+      "type": "truncation",
+      "query": "invasive ductal carcinom",
+      "rank": 1,
+      "resultCount": 168,
+      "top": "Invasive ductal carcinoma"
+    },
+    {
+      "id": "trunc-03",
+      "type": "truncation",
+      "query": "renal cell carcinom",
+      "rank": 1,
+      "resultCount": 1385,
+      "top": "Papillary renal cell carcinoma"
+    },
+    {
+      "id": "trunc-04",
+      "type": "truncation",
+      "query": "alveolar rhabdomyosarcom",
+      "rank": 1,
+      "resultCount": 203,
+      "top": "Alveolar rhabdomyosarcoma"
+    },
+    {
+      "id": "trunc-05",
+      "type": "truncation",
+      "query": "clear cell sarcom",
+      "rank": 1,
+      "resultCount": 76,
+      "top": "Clear cell sarcoma"
+    },
+    {
+      "id": "trunc-06",
+      "type": "truncation",
+      "query": "basal cell carcinom",
+      "rank": 1,
+      "resultCount": 92,
+      "top": "Basal cell carcinoma"
+    },
+    {
+      "id": "trunc-07",
+      "type": "truncation",
+      "query": "papillary urothelial carcinom",
+      "rank": 1,
+      "resultCount": 96,
+      "top": "High grade papillary Urothelial carcinoma with lamina propria invasion"
+    },
+    {
+      "id": "trunc-08",
+      "type": "truncation",
+      "query": "embryonal rhabdomyosarcom",
+      "rank": 1,
+      "resultCount": 294,
+      "top": "Embryonal rhabdomyosarcoma"
+    },
+    {
+      "id": "typo-01",
+      "type": "typo",
+      "query": "papillary thyroid carcinomma",
+      "rank": 1,
+      "resultCount": 541,
+      "top": "Papillary thyroid carcinoma"
+    },
+    {
+      "id": "typo-02",
+      "type": "typo",
+      "query": "renal cell carcinooma",
+      "rank": 1,
+      "resultCount": 1385,
+      "top": "Papillary renal cell carcinoma"
+    },
+    {
+      "id": "typo-03",
+      "type": "typo",
+      "query": "alveolar rhabdomyosacroma",
+      "rank": 1,
+      "resultCount": 203,
+      "top": "Alveolar rhabdomyosarcoma"
+    },
+    {
+      "id": "typo-04",
+      "type": "typo",
+      "query": "invasive ducal carcinoma",
+      "rank": 1,
+      "resultCount": 187,
+      "top": "Invasive ductal carcinoma"
+    },
+    {
+      "id": "typo-05",
+      "type": "typo",
+      "query": "diffuse large b cell lymphona",
+      "rank": 1,
+      "resultCount": 103,
+      "top": "Diffuse large B cell lymphoma"
+    },
+    {
+      "id": "typo-06",
+      "type": "typo",
+      "query": "squamous cell carcinomma",
+      "rank": 1,
+      "resultCount": 333,
+      "top": "Squamous cell carcinoma"
+    },
+    {
+      "id": "who-01",
+      "type": "who-abbrev",
+      "query": "dlbcl",
+      "rank": 1,
+      "resultCount": 56,
+      "top": "Diffuse large B cell lymphoma"
+    },
+    {
+      "id": "who-02",
+      "type": "who-abbrev",
+      "query": "rcc",
+      "rank": 1,
+      "resultCount": 79,
+      "top": "renal cell carcinoma"
+    },
+    {
+      "id": "who-03",
+      "type": "who-abbrev",
+      "query": "idc",
+      "rank": 1,
+      "resultCount": 109,
+      "top": "Invasive ductal carcinoma"
+    },
+    {
+      "id": "who-04",
+      "type": "who-abbrev",
+      "query": "ptc",
+      "rank": 1,
+      "resultCount": 70,
+      "top": "Papillary thyroid carcinoma"
+    },
+    {
+      "id": "who-05",
+      "type": "who-abbrev",
+      "query": "scc",
+      "rank": 1,
+      "resultCount": 164,
+      "top": "Squamous cell carcinoma"
+    },
+    {
+      "id": "who-06",
+      "type": "who-abbrev",
+      "query": "lms",
+      "rank": 1,
+      "resultCount": 89,
+      "top": "Leiomyosarcoma"
+    },
+    {
+      "id": "organonly-01",
+      "type": "organ-only",
+      "query": "kidney",
+      "rank": 1,
+      "resultCount": 2716,
+      "top": "Kidney"
+    },
+    {
+      "id": "organonly-02",
+      "type": "organ-only",
+      "query": "thyroid",
+      "rank": 1,
+      "resultCount": 890,
+      "top": "Papillary thyroid carcinoma"
+    },
+    {
+      "id": "organonly-03",
+      "type": "organ-only",
+      "query": "liver",
+      "rank": 1,
+      "resultCount": 1512,
+      "top": "Liver"
+    },
+    {
+      "id": "organonly-04",
+      "type": "organ-only",
+      "query": "prostate",
+      "rank": 1,
+      "resultCount": 2204,
+      "top": "Metastatic prostate carcinoma"
+    },
+    {
+      "id": "auto:Chromoblastomycosis",
+      "type": "auto",
+      "query": "Chromoblastomycosis",
+      "rank": 1,
+      "resultCount": 9,
+      "top": "Chromoblastomycosis"
+    },
+    {
+      "id": "auto:High grade serous carcinoma",
+      "type": "auto",
+      "query": "High grade serous carcinoma",
+      "rank": 1,
+      "resultCount": 29,
+      "top": "High grade serous carcinoma"
+    },
+    {
+      "id": "auto:IgG4-related disease",
+      "type": "auto",
+      "query": "IgG4-related disease",
+      "rank": 1,
+      "resultCount": 10,
+      "top": "IgG4-related disease"
+    },
+    {
+      "id": "auto:Tufted hemangioma",
+      "type": "auto",
+      "query": "Tufted hemangioma",
+      "rank": 1,
+      "resultCount": 8,
+      "top": "Tufted hemangioma"
+    },
+    {
+      "id": "auto:Germinoma (seminoma)",
+      "type": "auto",
+      "query": "Germinoma (seminoma)",
+      "rank": 1,
+      "resultCount": 28,
+      "top": "Germinoma (seminoma)"
+    },
+    {
+      "id": "auto:Parosteal osteosarcoma",
+      "type": "auto",
+      "query": "Parosteal osteosarcoma",
+      "rank": 1,
+      "resultCount": 27,
+      "top": "Parosteal Osteosarcoma"
+    },
+    {
+      "id": "auto:Burkitt lymphoma",
+      "type": "auto",
+      "query": "Burkitt lymphoma",
+      "rank": 1,
+      "resultCount": 28,
+      "top": "Burkitt lymphoma"
+    },
+    {
+      "id": "auto:Paget's disease",
+      "type": "auto",
+      "query": "Paget's disease",
+      "rank": 1,
+      "resultCount": 103,
+      "top": "Paget's disease"
+    },
+    {
+      "id": "auto:Duct ectasia",
+      "type": "auto",
+      "query": "Duct ectasia",
+      "rank": 1,
+      "resultCount": 15,
+      "top": "Duct ectasia"
+    },
+    {
+      "id": "auto:Infantile hemangioma",
+      "type": "auto",
+      "query": "Infantile hemangioma",
+      "rank": 1,
+      "resultCount": 23,
+      "top": "Infantile hemangioma"
+    },
+    {
+      "id": "auto:Kaposi sarcoma",
+      "type": "auto",
+      "query": "Kaposi sarcoma",
+      "rank": 1,
+      "resultCount": 68,
+      "top": "Kaposi sarcoma"
+    },
+    {
+      "id": "auto:Endometriosis",
+      "type": "auto",
+      "query": "Endometriosis",
+      "rank": 1,
+      "resultCount": 66,
+      "top": "Endometriosis"
+    },
+    {
+      "id": "auto:High grade urothelial cell carcinoma",
+      "type": "auto",
+      "query": "High grade urothelial cell carcinoma",
+      "rank": 1,
+      "resultCount": 25,
+      "top": "High grade urothelial cell carcinoma"
+    },
+    {
+      "id": "auto:Merkel cell carcinoma",
+      "type": "auto",
+      "query": "Merkel cell carcinoma",
+      "rank": 1,
+      "resultCount": 58,
+      "top": "Merkel cell carcinoma"
+    },
+    {
+      "id": "auto:Metastatic carcinoma",
+      "type": "auto",
+      "query": "Metastatic carcinoma",
+      "rank": 1,
+      "resultCount": 624,
+      "top": "Metastatic carcinoma"
+    },
+    {
+      "id": "auto:Mucocele",
+      "type": "auto",
+      "query": "Mucocele",
+      "rank": 1,
+      "resultCount": 28,
+      "top": "Mucocele"
+    },
+    {
+      "id": "auto:Reiters syndrome",
+      "type": "auto",
+      "query": "Reiters syndrome",
+      "rank": 1,
+      "resultCount": 18,
+      "top": "Reiters syndrome"
+    },
+    {
+      "id": "auto:Fibrous histiocytoma",
+      "type": "auto",
+      "query": "Fibrous histiocytoma",
+      "rank": 1,
+      "resultCount": 93,
+      "top": "Fibrous histiocytoma"
+    },
+    {
+      "id": "auto:Ganglioneuroma",
+      "type": "auto",
+      "query": "Ganglioneuroma",
+      "rank": 1,
+      "resultCount": 48,
+      "top": "Ganglioneuroma"
+    },
+    {
+      "id": "auto:Metastatic renal cell carcinoma",
+      "type": "auto",
+      "query": "Metastatic renal cell carcinoma",
+      "rank": 1,
+      "resultCount": 192,
+      "top": "Metastatic renal cell carcinoma"
+    },
+    {
+      "id": "auto:Medullary carcinoma of thyroid",
+      "type": "auto",
+      "query": "Medullary carcinoma of thyroid",
+      "rank": 1,
+      "resultCount": 11,
+      "top": "Medullary carcinoma of thyroid"
+    },
+    {
+      "id": "auto:Common variable immune deficiency",
+      "type": "auto",
+      "query": "Common variable immune deficiency",
+      "rank": 1,
+      "resultCount": 6,
+      "top": "Common variable immune deficiency"
+    },
+    {
+      "id": "auto:Peutz-Jeghers polyp",
+      "type": "auto",
+      "query": "Peutz-Jeghers polyp",
+      "rank": 1,
+      "resultCount": 20,
+      "top": "Peutz-Jeghers polyp"
+    },
+    {
+      "id": "auto:Inflammatory cap polyp",
+      "type": "auto",
+      "query": "Inflammatory cap polyp",
+      "rank": 1,
+      "resultCount": 8,
+      "top": "Inflammatory cap polyp"
+    },
+    {
+      "id": "auto:Adrenocortical adenoma",
+      "type": "auto",
+      "query": "Adrenocortical adenoma",
+      "rank": 1,
+      "resultCount": 102,
+      "top": "Adrenocortical adenoma"
+    },
+    {
+      "id": "auto:Oncocytoma",
+      "type": "auto",
+      "query": "Oncocytoma",
+      "rank": 1,
+      "resultCount": 103,
+      "top": "Oncocytoma"
+    },
+    {
+      "id": "auto:Wilms tumor",
+      "type": "auto",
+      "query": "Wilms tumor",
+      "rank": 1,
+      "resultCount": 60,
+      "top": "Wilms tumor"
+    },
+    {
+      "id": "auto:Metastatic colorectal adenocarcinoma",
+      "type": "auto",
+      "query": "Metastatic colorectal adenocarcinoma",
+      "rank": 1,
+      "resultCount": 220,
+      "top": "Metastatic colorectal adenocarcinoma"
+    },
+    {
+      "id": "auto:Adenoid cystic carcinoma",
+      "type": "auto",
+      "query": "Adenoid cystic carcinoma",
+      "rank": 1,
+      "resultCount": 212,
+      "top": "Adenoid cystic carcinoma"
+    },
+    {
+      "id": "auto:Malignant mixed mullerian tumor",
+      "type": "auto",
+      "query": "Malignant mixed mullerian tumor",
+      "rank": 1,
+      "resultCount": 17,
+      "top": "Malignant mixed mullerian tumor"
+    },
+    {
+      "id": "auto:Nonkeratinizing Squamous Cell Carcinoma with Maturation",
+      "type": "auto",
+      "query": "Nonkeratinizing Squamous Cell Carcinoma with Maturation",
+      "rank": 1,
+      "resultCount": 5,
+      "top": "Nonkeratinizing Squamous Cell Carcinoma with Maturation"
+    },
+    {
+      "id": "auto:Large cell neuroendocrine carcinoma",
+      "type": "auto",
+      "query": "Large cell neuroendocrine carcinoma",
+      "rank": 1,
+      "resultCount": 25,
+      "top": "Large cell neuroendocrine carcinoma"
+    },
+    {
+      "id": "auto:Verruca vulgaris",
+      "type": "auto",
+      "query": "Verruca vulgaris",
+      "rank": 1,
+      "resultCount": 15,
+      "top": "Verruca vulgaris"
+    },
+    {
+      "id": "auto:Systemic mastocytosis",
+      "type": "auto",
+      "query": "Systemic mastocytosis",
+      "rank": 1,
+      "resultCount": 62,
+      "top": "Systemic mastocytosis"
+    },
+    {
+      "id": "auto:Silicone lymphadenopathy",
+      "type": "auto",
+      "query": "Silicone lymphadenopathy",
+      "rank": 1,
+      "resultCount": 16,
+      "top": "Silicone lymphadenopathy"
+    },
+    {
+      "id": "auto:Acute myeloid leukaemia (AML), monoblastic, with t(9;11)(p21.3;q23.3)/<em>MLLT3</em>::<em>KMT2A</em>",
+      "type": "auto",
+      "query": "Acute myeloid leukaemia (AML), monoblastic, with t(9;11)(p21.3;q23.3)/<em>MLLT3</em>::<em>KMT2A</em>",
+      "rank": 1,
+      "resultCount": 3,
+      "top": "Acute myeloid leukaemia (AML), monoblastic, with t(9;11)(p21.3;q23.3)/<em>MLLT3</em>::<em>KMT2A</em>"
+    },
+    {
+      "id": "auto:Hepatic adenoma",
+      "type": "auto",
+      "query": "Hepatic adenoma",
+      "rank": 1,
+      "resultCount": 853,
+      "top": "Hepatic adenoma"
+    },
+    {
+      "id": "auto:Gastrointestinal stromal tumour (GIST)",
+      "type": "auto",
+      "query": "Gastrointestinal stromal tumour (GIST)",
+      "rank": 1,
+      "resultCount": 16,
+      "top": "Gastrointestinal stromal tumour (GIST)"
+    },
+    {
+      "id": "auto:Tubular intraductal carcinoma",
+      "type": "auto",
+      "query": "Tubular intraductal carcinoma",
+      "rank": 1,
+      "resultCount": 9,
+      "top": "Tubular intraductal carcinoma"
+    },
+    {
+      "id": "auto:Adamantinomatous craniopharyngioma",
+      "type": "auto",
+      "query": "Adamantinomatous craniopharyngioma",
+      "rank": 1,
+      "resultCount": 165,
+      "top": "Adamantinomatous craniopharyngioma"
+    },
+    {
+      "id": "auto:Anti-IgLON5-related disease",
+      "type": "auto",
+      "query": "Anti-IgLON5-related disease",
+      "rank": 1,
+      "resultCount": 4,
+      "top": "Anti-IgLON5-related disease"
+    },
+    {
+      "id": "auto:Plasmacytoma",
+      "type": "auto",
+      "query": "Plasmacytoma",
+      "rank": 1,
+      "resultCount": 45,
+      "top": "Plasmacytoma"
+    },
+    {
+      "id": "auto:Malignant (immature) teratoma",
+      "type": "auto",
+      "query": "Malignant (immature) teratoma",
+      "rank": 1,
+      "resultCount": 3,
+      "top": "Malignant (immature) teratoma"
+    },
+    {
+      "id": "auto:Fibrolamellar Carcinoma",
+      "type": "auto",
+      "query": "Fibrolamellar Carcinoma",
+      "rank": 1,
+      "resultCount": 74,
+      "top": "Fibrolamellar carcinoma"
+    },
+    {
+      "id": "auto:Pleomorphic adenoma",
+      "type": "auto",
+      "query": "Pleomorphic adenoma",
+      "rank": 1,
+      "resultCount": 225,
+      "top": "Pleomorphic adenoma"
+    },
+    {
+      "id": "auto:Inflammatory pseudotumor",
+      "type": "auto",
+      "query": "Inflammatory pseudotumor",
+      "rank": 1,
+      "resultCount": 108,
+      "top": "Inflammatory pseudotumor"
+    },
+    {
+      "id": "auto:Metastatic choriocarcinoma",
+      "type": "auto",
+      "query": "Metastatic choriocarcinoma",
+      "rank": 1,
+      "resultCount": 237,
+      "top": "Metastatic choriocarcinoma"
+    },
+    {
+      "id": "auto:Mucinous adenocarcinoma",
+      "type": "auto",
+      "query": "Mucinous adenocarcinoma",
+      "rank": 1,
+      "resultCount": 162,
+      "top": "Mucinous adenocarcinoma"
+    }
+  ]
+}

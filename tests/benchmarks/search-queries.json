@@ -1,0 +1,66 @@
+{
+  "_comment": "Curated labeled query set for the virtual-slide search eval. Grounded in real v8 dataset diagnoses (verified to exist). match: equals = case-insensitive full diagnosis equality; contains = case-insensitive substring; subcategory = result slide subcategory equality. A query 'hits' at rank r if the r-th ranked result satisfies match.",
+  "queries": [
+    { "id": "exact-01", "type": "exact", "query": "neuroblastoma", "match": { "equals": "Neuroblastoma" } },
+    { "id": "exact-02", "type": "exact", "query": "osteosarcoma", "match": { "equals": "Osteosarcoma" } },
+    { "id": "exact-03", "type": "exact", "query": "melanoma", "match": { "equals": "Melanoma" } },
+    { "id": "exact-04", "type": "exact", "query": "schwannoma", "match": { "equals": "Schwannoma" } },
+    { "id": "exact-05", "type": "exact", "query": "meningioma", "match": { "equals": "Meningioma" } },
+    { "id": "exact-06", "type": "exact", "query": "renal cell carcinoma", "match": { "equals": "Renal cell carcinoma" } },
+    { "id": "exact-07", "type": "exact", "query": "invasive ductal carcinoma", "match": { "equals": "Invasive ductal carcinoma" } },
+    { "id": "exact-08", "type": "exact", "query": "papillary thyroid carcinoma", "match": { "equals": "Papillary thyroid carcinoma" } },
+    { "id": "exact-09", "type": "exact", "query": "alveolar rhabdomyosarcoma", "match": { "equals": "Alveolar Rhabdomyosarcoma" } },
+    { "id": "exact-10", "type": "exact", "query": "squamous cell carcinoma", "match": { "equals": "Squamous cell carcinoma" } },
+
+    { "id": "single-01", "type": "single-word", "query": "glioblastoma", "match": { "contains": "glioblastoma" } },
+    { "id": "single-02", "type": "single-word", "query": "leiomyosarcoma", "match": { "equals": "Leiomyosarcoma" } },
+    { "id": "single-03", "type": "single-word", "query": "retinoblastoma", "match": { "contains": "retinoblastoma" } },
+    { "id": "single-04", "type": "single-word", "query": "cholangiocarcinoma", "match": { "contains": "cholangiocarcinoma" } },
+    { "id": "single-05", "type": "single-word", "query": "pheochromocytoma", "match": { "equals": "Pheochromocytoma" } },
+    { "id": "single-06", "type": "single-word", "query": "oligodendroglioma", "match": { "contains": "oligodendroglioma" } },
+
+    { "id": "multi-01", "type": "multi-literal", "query": "clear cell sarcoma", "match": { "contains": "clear cell sarcoma" } },
+    { "id": "multi-02", "type": "multi-literal", "query": "basal cell carcinoma", "match": { "equals": "Basal cell carcinoma" } },
+    { "id": "multi-03", "type": "multi-literal", "query": "papillary urothelial carcinoma", "match": { "equals": "Papillary urothelial carcinoma" } },
+    { "id": "multi-04", "type": "multi-literal", "query": "embryonal rhabdomyosarcoma", "match": { "equals": "Embryonal Rhabdomyosarcoma" } },
+    { "id": "multi-05", "type": "multi-literal", "query": "metastatic renal cell carcinoma", "match": { "equals": "Metastatic renal cell carcinoma" } },
+    { "id": "multi-06", "type": "multi-literal", "query": "high grade serous carcinoma", "match": { "contains": "high grade serous carcinoma" } },
+
+    { "id": "organ-01", "type": "organ-tumor", "query": "kidney carcinoma", "match": { "contains": "renal cell carcinoma" } },
+    { "id": "organ-02", "type": "organ-tumor", "query": "kidney papillary carcinoma", "match": { "contains": "papillary renal cell carcinoma" } },
+    { "id": "organ-03", "type": "organ-tumor", "query": "kidney chromophobe carcinoma", "match": { "contains": "chromophobe renal cell carcinoma" } },
+    { "id": "organ-04", "type": "organ-tumor", "query": "kidney metastatic carcinoma", "match": { "contains": "metastatic renal cell carcinoma" } },
+    { "id": "organ-05", "type": "organ-tumor", "query": "liver carcinoma", "match": { "contains": "hepatocellular carcinoma" } },
+    { "id": "organ-06", "type": "organ-tumor", "query": "liver adenoma", "match": { "contains": "hepatocellular adenoma" } },
+    { "id": "organ-07", "type": "organ-tumor", "query": "breast carcinoma", "match": { "contains": "invasive ductal carcinoma" } },
+    { "id": "organ-08", "type": "organ-tumor", "query": "breast invasive carcinoma", "match": { "contains": "invasive ductal carcinoma" } },
+
+    { "id": "trunc-01", "type": "truncation", "query": "papillary thyroid carcinom", "match": { "contains": "papillary thyroid carcinoma" } },
+    { "id": "trunc-02", "type": "truncation", "query": "invasive ductal carcinom", "match": { "contains": "invasive ductal carcinoma" } },
+    { "id": "trunc-03", "type": "truncation", "query": "renal cell carcinom", "match": { "contains": "renal cell carcinoma" } },
+    { "id": "trunc-04", "type": "truncation", "query": "alveolar rhabdomyosarcom", "match": { "contains": "alveolar rhabdomyosarcoma" } },
+    { "id": "trunc-05", "type": "truncation", "query": "clear cell sarcom", "match": { "contains": "clear cell sarcoma" } },
+    { "id": "trunc-06", "type": "truncation", "query": "basal cell carcinom", "match": { "contains": "basal cell carcinoma" } },
+    { "id": "trunc-07", "type": "truncation", "query": "papillary urothelial carcinom", "match": { "contains": "papillary urothelial carcinoma" } },
+    { "id": "trunc-08", "type": "truncation", "query": "embryonal rhabdomyosarcom", "match": { "contains": "embryonal rhabdomyosarcoma" } },
+
+    { "id": "typo-01", "type": "typo", "query": "papillary thyroid carcinomma", "match": { "contains": "papillary thyroid carcinoma" } },
+    { "id": "typo-02", "type": "typo", "query": "renal cell carcinooma", "match": { "contains": "renal cell carcinoma" } },
+    { "id": "typo-03", "type": "typo", "query": "alveolar rhabdomyosacroma", "match": { "contains": "alveolar rhabdomyosarcoma" } },
+    { "id": "typo-04", "type": "typo", "query": "invasive ducal carcinoma", "match": { "contains": "invasive ductal carcinoma" } },
+    { "id": "typo-05", "type": "typo", "query": "diffuse large b cell lymphona", "match": { "contains": "diffuse large b" } },
+    { "id": "typo-06", "type": "typo", "query": "squamous cell carcinomma", "match": { "contains": "squamous cell carcinoma" } },
+
+    { "id": "who-01", "type": "who-abbrev", "query": "dlbcl", "match": { "contains": "diffuse large b" } },
+    { "id": "who-02", "type": "who-abbrev", "query": "rcc", "match": { "equals": "Renal cell carcinoma" } },
+    { "id": "who-03", "type": "who-abbrev", "query": "idc", "match": { "equals": "Invasive ductal carcinoma" } },
+    { "id": "who-04", "type": "who-abbrev", "query": "ptc", "match": { "equals": "Papillary thyroid carcinoma" } },
+    { "id": "who-05", "type": "who-abbrev", "query": "scc", "match": { "equals": "Squamous cell carcinoma" } },
+    { "id": "who-06", "type": "who-abbrev", "query": "lms", "match": { "equals": "Leiomyosarcoma" } },
+
+    { "id": "organonly-01", "type": "organ-only", "query": "kidney", "match": { "subcategory": "Kidney" } },
+    { "id": "organonly-02", "type": "organ-only", "query": "thyroid", "match": { "subcategory": "Thyroid" } },
+    { "id": "organonly-03", "type": "organ-only", "query": "liver", "match": { "subcategory": "Liver" } },
+    { "id": "organonly-04", "type": "organ-only", "query": "prostate", "match": { "subcategory": "Prostate" } }
+  ]
+}
