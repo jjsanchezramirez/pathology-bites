@@ -536,7 +536,7 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
             title={title}
             onLoad={handleIframeLoad}
             onError={handleIframeError}
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads"
             allow="fullscreen"
             style={{
               pointerEvents: loaded ? "auto" : "none",
