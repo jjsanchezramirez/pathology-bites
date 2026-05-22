@@ -472,7 +472,7 @@ export interface ClientSearchOptions {
   limit?: number;
 }
 
-export function useClientVirtualSlidesEnhanced(defaultLimit: number = 20) {
+export function useClientVirtualSlides(defaultLimit: number = 20) {
   const [allSlides, setAllSlides] = useState<VirtualSlide[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isSearching, setIsSearching] = useState(false); // Separate state for search operations

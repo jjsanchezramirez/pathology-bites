@@ -20,6 +20,8 @@ const REPOSITORY_LOGOS: Record<string, string> = {
   "Rosai Collection": "logos/rosai-collection-logo.png",
   "Recut Club": "logos/recut-club-logo.png",
   "St. Jude Cloud": "logos/st-jude-logo.png",
+  "WHO Blue Books Online": "logos/who-logo.png",
+  "AANP Diagnostic Slide Session": "logos/aanp-logo.png",
 };
 
 interface SlideRowUnifiedProps {

@@ -4,7 +4,7 @@ import { useState, useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { useClientVirtualSlidesEnhanced } from "@/shared/hooks/use-client-virtual-slides-enhanced";
+import { useClientVirtualSlides } from "@/shared/hooks/use-client-virtual-slides";
 
 // Helper to reverse the bases mapping from v7 format
 function reverseMapping(map: Record<string, string> | undefined): Record<string, string> {
@@ -55,7 +55,7 @@ export function VirtualSlideSearchTeaser() {
   const router = useRouter();
 
   // Use the same search hook as the virtual-slides page
-  const searchClient = useClientVirtualSlidesEnhanced(1);
+  const searchClient = useClientVirtualSlides(1);
 
   // Cache the decompressed data
   const cachedDataRef = useRef<CachedVirtualSlidesData | null>(null);
@@ -91,25 +91,26 @@ export function VirtualSlideSearchTeaser() {
 
         if (!response.ok) throw new Error("Failed to prefetch slides");
 
-        // Decompress gzipped data
-        if (typeof DecompressionStream !== "undefined" && response.body) {
-          const decompressedStream = response.body.pipeThrough(new DecompressionStream("gzip"));
-          const decompressedResponse = new Response(decompressedStream);
-          const json = await decompressedResponse.json();
+        // Decompress only pre-gzipped (.json.gz) files; plain .json is served with
+        // transparent CDN Content-Encoding and parsed directly.
+        const isGzipped = VIRTUAL_SLIDES_JSON_URL.includes(".json.gz");
+        const json =
+          isGzipped && typeof DecompressionStream !== "undefined" && response.body
+            ? await new Response(response.body.pipeThrough(new DecompressionStream("gzip"))).json()
+            : await response.json();
 
-          // Cache the processed data
-          cachedDataRef.current = {
-            basesCase: reverseMapping(json.bases?.case),
-            slides: json.data ?? [],
-          };
+        // Cache the processed data
+        cachedDataRef.current = {
+          basesCase: reverseMapping(json.bases?.case),
+          slides: json.data ?? [],
+        };
 
-          console.log(
-            `[VirtualSlideSearchTeaser] ✅ Prefetched ${cachedDataRef.current.slides.length} slides`
-          );
+        console.log(
+          `[VirtualSlideSearchTeaser] ✅ Prefetched ${cachedDataRef.current.slides.length} slides`
+        );
 
-          // Mark data as ready
-          setIsDataReady(true);
-        }
+        // Mark data as ready
+        setIsDataReady(true);
       } catch (error) {
         console.error("[VirtualSlideSearchTeaser] Prefetch failed:", error);
         // Don't mark as ready if prefetch failed - buttons will stay disabled

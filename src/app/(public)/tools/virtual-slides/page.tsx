@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useRef, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { useClientVirtualSlidesEnhanced } from "@/shared/hooks/use-client-virtual-slides-enhanced";
+import { useClientVirtualSlides } from "@/shared/hooks/use-client-virtual-slides";
 import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
 import { VIRTUAL_SLIDES_JSON_URL } from "@/shared/config/virtual-slides";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -30,11 +30,11 @@ import {
   Info,
   GraduationCap,
 } from "lucide-react";
-import Image from "next/image";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
 import { ContentDisclaimer } from "@/shared/components/common/content-disclaimer";
-import { getR2PublicUrl } from "@/shared/services/r2-storage";
+import Image from "next/image";
+import { repositoryLogos } from "@/shared/components/common/repository-logos";
 
 // Dynamically import Lottie to avoid SSR issues
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
@@ -109,7 +109,7 @@ function VirtualSlidesContent() {
   const searchParams = useSearchParams();
 
   // ✅ Use enhanced search with organ-aware ranking and smart NCI fallback
-  const client = useClientVirtualSlidesEnhanced(50);
+  const client = useClientVirtualSlides(50);
 
   const {
     slides,
@@ -383,252 +383,35 @@ function VirtualSlidesContent() {
             </div>
             <div className="flex items-center gap-2 text-sm text-muted-foreground">
               <FileText className="h-4 w-4" />
-              <span>8 Repositories</span>
+              <span>10 Repositories</span>
             </div>
           </div>
         }
       />
 
-      {/* Repository Icons - Hidden on mobile, 2 rows (4+4) on small, 2 rows (6+2) on medium, 1 row on large */}
+      {/* Repository logos - static strip, all repositories crammed into one band */}
       <section className="py-4 md:py-6 hidden sm:block">
         <div className="container px-4 mx-auto max-w-6xl">
-          {/* Large screens (lg+): Single row */}
-          <div className="hidden lg:flex items-center justify-center gap-6">
-            {[
-              {
-                name: "Heme eTutorial",
-                url: "http://www.hematopathologyetutorial.com/",
-                logo: "logos/hematopathology-etutorial-logo.png",
-              },
-              {
-                name: "Leeds",
-                url: "https://www.virtualpathology.leeds.ac.uk/",
-                logo: "logos/university-of-leeds-logo.png",
-              },
-              {
-                name: "PathPresenter",
-                url: "https://pathpresenter.net/",
-                logo: "logos/path-presenter-logo.png",
-              },
-              {
-                name: "MGH",
-                url: "https://learn.mghpathology.org/",
-                logo: "logos/mgh-logo.png",
-              },
-              {
-                name: "Toronto",
-                url: "https://lmpimg.med.utoronto.ca/",
-                logo: "logos/university-of-toronto-logo.png",
-              },
-              {
-                name: "Rosai",
-                url: "https://rosai.secondslide.com/",
-                logo: "logos/rosai-collection-logo.png",
-              },
-              {
-                name: "Recut Club",
-                url: "https://recutclub.com/",
-                logo: "logos/recut-club-logo.png",
-              },
-              {
-                name: "St. Jude",
-                url: "https://pecan.stjude.cloud/",
-                logo: "logos/st-jude-logo.png",
-              },
-            ].map((repo) => (
+          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
+            {repositoryLogos.map((repo) => (
               <a
-                key={repo.name}
-                href={repo.url}
+                key={repo.id}
+                href={repo.href}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group relative h-16 w-32 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
+                aria-label={repo.alt}
+                className="group flex items-center justify-center"
               >
                 <Image
-                  src={getR2PublicUrl(repo.logo)}
-                  alt={repo.name}
-                  width={120}
-                  height={60}
+                  src={repo.src}
+                  alt={repo.alt}
+                  width={90}
+                  height={36}
                   unoptimized
-                  className="object-contain opacity-50 group-hover:opacity-100 transition-opacity"
+                  className="object-contain opacity-60 grayscale transition-all duration-200 hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0"
                 />
               </a>
             ))}
-          </div>
-
-          {/* Medium screens (md to lg): 2 rows (6 + 2) */}
-          <div className="hidden md:block lg:hidden space-y-4">
-            {/* First row - 6 logos */}
-            <div className="flex items-center justify-center gap-4">
-              {[
-                {
-                  name: "Heme eTutorial",
-                  url: "http://www.hematopathologyetutorial.com/",
-                  logo: "logos/hematopathology-etutorial-logo.png",
-                },
-                {
-                  name: "Leeds",
-                  url: "https://www.virtualpathology.leeds.ac.uk/",
-                  logo: "logos/university-of-leeds-logo.png",
-                },
-                {
-                  name: "PathPresenter",
-                  url: "https://pathpresenter.net/",
-                  logo: "logos/path-presenter-logo.png",
-                },
-                {
-                  name: "MGH",
-                  url: "https://learn.mghpathology.org/",
-                  logo: "logos/mgh-logo.png",
-                },
-                {
-                  name: "Toronto",
-                  url: "https://lmpimg.med.utoronto.ca/",
-                  logo: "logos/university-of-toronto-logo.png",
-                },
-                {
-                  name: "Rosai",
-                  url: "https://rosai.secondslide.com/",
-                  logo: "logos/rosai-collection-logo.png",
-                },
-              ].map((repo) => (
-                <a
-                  key={repo.name}
-                  href={repo.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative h-14 w-28 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
-                >
-                  <Image
-                    src={getR2PublicUrl(repo.logo)}
-                    alt={repo.name}
-                    width={105}
-                    height={52}
-                    unoptimized
-                    className="object-contain opacity-50 group-hover:opacity-100 transition-opacity"
-                  />
-                </a>
-              ))}
-            </div>
-            {/* Second row - 2 logos */}
-            <div className="flex items-center justify-center gap-4">
-              {[
-                {
-                  name: "Recut Club",
-                  url: "https://recutclub.com/",
-                  logo: "logos/recut-club-logo.png",
-                },
-                {
-                  name: "St. Jude",
-                  url: "https://pecan.stjude.cloud/",
-                  logo: "logos/st-jude-logo.png",
-                },
-              ].map((repo) => (
-                <a
-                  key={repo.name}
-                  href={repo.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative h-14 w-28 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
-                >
-                  <Image
-                    src={getR2PublicUrl(repo.logo)}
-                    alt={repo.name}
-                    width={105}
-                    height={52}
-                    unoptimized
-                    className="object-contain opacity-50 group-hover:opacity-100 transition-opacity"
-                  />
-                </a>
-              ))}
-            </div>
-          </div>
-
-          {/* Small screens (sm to md): 2 rows (4 + 4) */}
-          <div className="md:hidden space-y-4">
-            {/* First row - 4 logos */}
-            <div className="flex items-center justify-center gap-4">
-              {[
-                {
-                  name: "Heme eTutorial",
-                  url: "http://www.hematopathologyetutorial.com/",
-                  logo: "logos/hematopathology-etutorial-logo.png",
-                },
-                {
-                  name: "Leeds",
-                  url: "https://www.virtualpathology.leeds.ac.uk/",
-                  logo: "logos/university-of-leeds-logo.png",
-                },
-                {
-                  name: "PathPresenter",
-                  url: "https://pathpresenter.net/",
-                  logo: "logos/path-presenter-logo.png",
-                },
-                {
-                  name: "MGH",
-                  url: "https://learn.mghpathology.org/",
-                  logo: "logos/mgh-logo.png",
-                },
-              ].map((repo) => (
-                <a
-                  key={repo.name}
-                  href={repo.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative h-12 w-24 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
-                >
-                  <Image
-                    src={getR2PublicUrl(repo.logo)}
-                    alt={repo.name}
-                    width={90}
-                    height={45}
-                    unoptimized
-                    className="object-contain opacity-50 group-hover:opacity-100 transition-opacity"
-                  />
-                </a>
-              ))}
-            </div>
-            {/* Second row - 4 logos */}
-            <div className="flex items-center justify-center gap-4">
-              {[
-                {
-                  name: "Toronto",
-                  url: "https://lmpimg.med.utoronto.ca/",
-                  logo: "logos/university-of-toronto-logo.png",
-                },
-                {
-                  name: "Rosai",
-                  url: "https://rosai.secondslide.com/",
-                  logo: "logos/rosai-collection-logo.png",
-                },
-                {
-                  name: "Recut Club",
-                  url: "https://recutclub.com/",
-                  logo: "logos/recut-club-logo.png",
-                },
-                {
-                  name: "St. Jude",
-                  url: "https://pecan.stjude.cloud/",
-                  logo: "logos/st-jude-logo.png",
-                },
-              ].map((repo) => (
-                <a
-                  key={repo.name}
-                  href={repo.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="group relative h-12 w-24 hover:scale-105 transition-all duration-200 flex items-center justify-center p-2"
-                >
-                  <Image
-                    src={getR2PublicUrl(repo.logo)}
-                    alt={repo.name}
-                    width={90}
-                    height={45}
-                    unoptimized
-                    className="object-contain opacity-50 group-hover:opacity-100 transition-opacity"
-                  />
-                </a>
-              ))}
-            </div>
           </div>
         </div>
       </section>

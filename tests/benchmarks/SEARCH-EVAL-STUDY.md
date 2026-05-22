@@ -27,7 +27,7 @@ set run through the *real* production ranking code.
 ## 2. Background — the two P0 bugs
 
 A read-through audit of the search algorithm (then embedded in the
-`use-client-virtual-slides-enhanced` React hook) found two structural defects
+`use-client-virtual-slides` React hook) found two structural defects
 that silently destroyed recall:
 
 **P0 #1 — organ terms nuked results.** `rankSlidesWithExpansion` extracted

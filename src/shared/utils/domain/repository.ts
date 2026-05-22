@@ -10,6 +10,8 @@ export function getRepositoryFromId(id: string): string {
   if (id.startsWith("toronto_")) return "University of Toronto LMP";
   if (id.startsWith("rosai_")) return "Rosai Collection";
   if (id.startsWith("recutclub_")) return "Recut Club";
+  if (id.startsWith("who_")) return "WHO Blue Books Online";
+  if (id.startsWith("pittnp_")) return "AANP Diagnostic Slide Session";
   if (id.startsWith("SJ")) return "St. Jude Cloud";
   return "Unknown";
 }

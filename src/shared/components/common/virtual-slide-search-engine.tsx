@@ -1,14 +1,14 @@
 // src/shared/components/common/virtual-slide-search-engine.tsx
 import Link from "next/link";
 import { Button } from "@/shared/components/ui/button";
-import { MouseAvoidingLogos } from "./mouse-avoiding-logos";
+import { RepositoryLogos } from "./repository-logos";
 
 interface VirtualSlideSearchEngineProps {
   /** Optional ID for the section (useful for navigation) */
   id?: string;
   /** Additional CSS classes for the section */
   className?: string;
-  /** Whether to show the MouseAvoidingLogos component (default: true) */
+  /** Whether to show the RepositoryLogos component (default: true) */
   showLogos?: boolean;
 }
 
@@ -31,7 +31,7 @@ export function VirtualSlideSearchEngine({
                 <div className="flex items-start gap-3">
                   <div className="w-2 h-2 bg-primary rounded-full mt-2 flex-shrink-0"></div>
                   <p className="text-muted-foreground">
-                    Search across 8 prestigious institutions including Leeds, PathPresenter, MGH,
+                    Search across 10 prestigious institutions including Leeds, PathPresenter, MGH,
                     University of Toronto, and St. Jude Cloud
                   </p>
                 </div>
@@ -67,7 +67,7 @@ export function VirtualSlideSearchEngine({
 
             {showLogos && (
               <div className="relative hidden lg:block">
-                <MouseAvoidingLogos />
+                <RepositoryLogos />
               </div>
             )}
           </div>

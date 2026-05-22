@@ -1,7 +1,7 @@
 // Pure virtual-slide search core — no React, no network, no module side effects
 // at import time.
 //
-// Extracted verbatim from use-client-virtual-slides-enhanced.ts so the ranking
+// Extracted verbatim from use-client-virtual-slides.ts so the ranking
 // algorithm can be exercised IDENTICALLY by the production hook and the offline
 // eval harness (dev/code/scripts/eval/). Both import this module — there is no
 // second copy of the algorithm that can silently drift.
@@ -167,7 +167,7 @@ export function buildSearchIndex(processedSlides: VirtualSlide[]): void {
   }
 
   console.log(
-    `[VirtualSlides Enhanced] 💾 Cached ${processedSlides.length} slides + reverse index (${reverseIndex.size} keys) in memory`
+    `[VirtualSlides] 💾 Cached ${processedSlides.length} slides + reverse index (${reverseIndex.size} keys) in memory`
   );
 }
 

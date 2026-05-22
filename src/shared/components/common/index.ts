@@ -8,7 +8,7 @@ export * from "./dr-albright";
 export * from "./font-size-control";
 export * from "./icons";
 export * from "./join-community-section";
-export * from "./mouse-avoiding-logos";
+export * from "./repository-logos";
 export * from "./public-hero";
 export * from "./public-stats-section";
 // PublicThemeEnforcer removed - redundant with ConditionalThemeProvider
