@@ -12,6 +12,7 @@ import { AuthProvider } from "@/features/auth/components/auth-provider";
 import { AnalyticsProvider } from "@/shared/contexts/analytics-provider";
 import { OrganizationSchema, WebsiteSchema } from "@/shared/components/seo/structured-data";
 import { NotificationRefreshProvider } from "@/shared/contexts/notification-refresh-context";
+import { architectsDaughter } from "@/shared/fonts/dashboard-fonts";
 
 export const metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://pathologybites.com"),
@@ -108,7 +109,10 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // Don't try to initialize Supabase here at all since middleware handles auth
   // Just render the layout
   return (
-    <html lang="en" suppressHydrationWarning>
+    // architectsDaughter.variable must sit on <html> because the dashboard
+    // theme system writes `--font-sans: var(--font-architects-daughter)` onto
+    // document.documentElement — narrower scope leaves the var unresolved.
+    <html lang="en" className={architectsDaughter.variable} suppressHydrationWarning>
       <head>
         {/* DNS Prefetch for performance */}
         <link rel="dns-prefetch" href="//www.googletagmanager.com" />
