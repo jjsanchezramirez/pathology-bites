@@ -1,7 +1,6 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import Image from "next/image";
 
 interface OrganicImageGalleryProps {
   className?: string;
@@ -9,7 +8,12 @@ interface OrganicImageGalleryProps {
 
 interface GalleryImage {
   id: string;
+  /** AVIF (preferred — ~30–70 KiB, served from /hero with long cache). */
   url: string;
+  /** PNG fallback for browsers without AVIF decode (Safari < 16.1, etc.).
+   * Points at the full-resolution /library original so the gallery still works,
+   * at the cost of bytes. */
+  fallback: string;
   alt: string;
 }
 
@@ -32,59 +36,71 @@ const FADE_DURATION = 2000;
 
 // Dedicated, pre-optimized AVIF hero images (~600px wide, ~30–70 KiB each)
 // uploaded with Cache-Control: public, max-age=31536000, immutable.
-// Source PNGs in /library are the same images at full resolution and stay
-// untouched there — they're consumed by the question/image renderers.
+// Source PNGs in /library are kept as the <picture> fallback for browsers
+// without AVIF decode (Safari < 16.1, very old Android). Modern browsers fetch
+// only the AVIF; the fallback URL never resolves a network request for them.
 // Regeneration script: dev/code/scripts/r2/optimize-hero-images.ts
-const R2_BASE = "https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/hero";
+const AVIF_BASE = "https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/hero";
+const PNG_BASE = "https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/library";
 const HERO_IMAGES: GalleryImage[] = [
   {
     id: "1",
-    url: `${R2_BASE}/20251022143356-cervical-cytology-with-adenocarcinoma-in-situ-ais-feathering-high-power.avif`,
+    url: `${AVIF_BASE}/20251022143356-cervical-cytology-with-adenocarcinoma-in-situ-ais-feathering-high-power.avif`,
+    fallback: `${PNG_BASE}/20251022143356-cervical-cytology-with-adenocarcinoma-in-situ-ais-feathering-high-power.png`,
     alt: "Cervical cytology with adenocarcinoma in situ",
   },
   {
     id: "2",
-    url: `${R2_BASE}/20251012190948-foveolar-type-adenoma-low-power.avif`,
+    url: `${AVIF_BASE}/20251012190948-foveolar-type-adenoma-low-power.avif`,
+    fallback: `${PNG_BASE}/20251012190948-foveolar-type-adenoma-low-power.png`,
     alt: "Foveolar type adenoma low power",
   },
   {
     id: "3",
-    url: `${R2_BASE}/20251022143357-cervical-cytology-with-herpes-changes-multinucleation-margination-and-molding-very-high-power.avif`,
+    url: `${AVIF_BASE}/20251022143357-cervical-cytology-with-herpes-changes-multinucleation-margination-and-molding-very-high-power.avif`,
+    fallback: `${PNG_BASE}/20251022143357-cervical-cytology-with-herpes-changes-multinucleation-margination-and-molding-very-high-power.png`,
     alt: "Cervical cytology with herpes changes",
   },
   {
     id: "4",
-    url: `${R2_BASE}/20251012190947-foveolar-type-adenoma-apical-mucin-cap-high-power.avif`,
+    url: `${AVIF_BASE}/20251012190947-foveolar-type-adenoma-apical-mucin-cap-high-power.avif`,
+    fallback: `${PNG_BASE}/20251012190947-foveolar-type-adenoma-apical-mucin-cap-high-power.png`,
     alt: "Foveolar type adenoma high power",
   },
   {
     id: "5",
-    url: `${R2_BASE}/20251015012457-paget-disease-with-secondary-osteosarcoma-low-power.avif`,
+    url: `${AVIF_BASE}/20251015012457-paget-disease-with-secondary-osteosarcoma-low-power.avif`,
+    fallback: `${PNG_BASE}/20251015012457-paget-disease-with-secondary-osteosarcoma-low-power.png`,
     alt: "Paget disease with secondary osteosarcoma",
   },
   {
     id: "6",
-    url: `${R2_BASE}/20251015012431-paget-disease-low-power.avif`,
+    url: `${AVIF_BASE}/20251015012431-paget-disease-low-power.avif`,
+    fallback: `${PNG_BASE}/20251015012431-paget-disease-low-power.png`,
     alt: "Paget disease low power",
   },
   {
     id: "7",
-    url: `${R2_BASE}/20251015012432-paget-disease-thickened-trabeculae-osteoblastic-rimming-and-osteoclasts-high-power.avif`,
+    url: `${AVIF_BASE}/20251015012432-paget-disease-thickened-trabeculae-osteoblastic-rimming-and-osteoclasts-high-power.avif`,
+    fallback: `${PNG_BASE}/20251015012432-paget-disease-thickened-trabeculae-osteoblastic-rimming-and-osteoclasts-high-power.png`,
     alt: "Paget disease high power",
   },
   {
     id: "8",
-    url: `${R2_BASE}/20251011011234-cogenital-mesoblastic-nephroma-fat-infiltration-medium-power.avif`,
+    url: `${AVIF_BASE}/20251011011234-cogenital-mesoblastic-nephroma-fat-infiltration-medium-power.avif`,
+    fallback: `${PNG_BASE}/20251011011234-cogenital-mesoblastic-nephroma-fat-infiltration-medium-power.png`,
     alt: "Congenital mesoblastic nephroma",
   },
   {
     id: "9",
-    url: `${R2_BASE}/20251011011235-cogenital-mesoblastic-nephroma-cellular-type-high-power.avif`,
+    url: `${AVIF_BASE}/20251011011235-cogenital-mesoblastic-nephroma-cellular-type-high-power.avif`,
+    fallback: `${PNG_BASE}/20251011011235-cogenital-mesoblastic-nephroma-cellular-type-high-power.png`,
     alt: "Congenital mesoblastic nephroma cellular type",
   },
   {
     id: "10",
-    url: `${R2_BASE}/20251015012456-paget-disease-with-secondary-osteosarcoma-fat-infiltration-low-power.avif`,
+    url: `${AVIF_BASE}/20251015012456-paget-disease-with-secondary-osteosarcoma-fat-infiltration-low-power.avif`,
+    fallback: `${PNG_BASE}/20251015012456-paget-disease-with-secondary-osteosarcoma-fat-infiltration-low-power.png`,
     alt: "Paget disease with fat infiltration",
   },
 ];
@@ -246,15 +262,19 @@ export function OrganicImageGallery({ className = "" }: OrganicImageGalleryProps
                 height: "220px",
               }}
             >
-              <Image
-                src={img.url}
-                alt={img.alt}
-                fill
-                className="object-cover pointer-events-none"
-                sizes="280px"
-                unoptimized
-                priority={displayImages[0]?.id === img.id}
-              />
+              <picture>
+                <source srcSet={img.url} type="image/avif" />
+                <img
+                  src={img.fallback}
+                  alt={img.alt}
+                  width={280}
+                  height={220}
+                  className="absolute inset-0 w-full h-full object-cover pointer-events-none"
+                  loading={displayImages[0]?.id === img.id ? "eager" : "lazy"}
+                  decoding="async"
+                  fetchPriority={displayImages[0]?.id === img.id ? "high" : "auto"}
+                />
+              </picture>
             </div>
           </div>
         ))}
