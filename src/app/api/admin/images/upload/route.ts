@@ -302,7 +302,12 @@ export async function POST(request: NextRequest) {
     try {
       uploadResult = await uploadToR2(fileBuffer, storagePath, {
         contentType: file.type,
-        cacheControl: "3600",
+        // New uploads land at a unique timestamp-prefixed key (see
+        // `generateImageStoragePath`), so the URL itself is the cache key
+        // and immutable + 1-year is safe. Replacement uploads overwrite at
+        // the same key and use a much shorter TTL — see
+        // /api/admin/images/replace.
+        cacheControl: "public, max-age=31536000, immutable",
         metadata: {
           // Sanitize filename for HTTP headers (only ASCII printable characters)
           originalName: file.name.replace(/[^\x20-\x7E]/g, "_"),

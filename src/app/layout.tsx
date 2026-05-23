@@ -114,6 +114,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     // document.documentElement — narrower scope leaves the var unresolved.
     <html lang="en" className={architectsDaughter.variable} suppressHydrationWarning>
       <head>
+        {/* Preconnect to the R2 image origin. Homepage LCP is a hero gallery
+            image fetched client-side after hydration, so opening the TLS
+            connection up front shaves ~100 ms off Largest Contentful Paint
+            (Lighthouse "Preconnect candidates"). GA / GTM stay on
+            dns-prefetch — they're below-the-fold and rarely block LCP. */}
+        <link
+          rel="preconnect"
+          href="https://pub-a4bec7073d99465f99043c842be6318c.r2.dev"
+          crossOrigin=""
+        />
+
         {/* DNS Prefetch for performance */}
         <link rel="dns-prefetch" href="//www.googletagmanager.com" />
         <link rel="dns-prefetch" href="//www.google-analytics.com" />

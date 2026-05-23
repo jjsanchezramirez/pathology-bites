@@ -1,126 +1,49 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { useClientVirtualSlides } from "@/shared/hooks/use-client-virtual-slides";
+import { rankSlidesWithExpansion } from "@/shared/utils/domain/virtual-slide-search";
+import type { VirtualSlide } from "@/shared/types/virtual-slides";
 
-// Helper to reverse the bases mapping from v7 format
-function reverseMapping(map: Record<string, string> | undefined): Record<string, string> {
-  if (!map) return {};
-  const reversed: Record<string, string> = {};
-  for (const [url, id] of Object.entries(map)) {
-    reversed[id] = url;
-  }
-  return reversed;
+// Exclude raw image files — the homepage buttons should land users on an
+// interactive WSI viewer, not a downloadable image.
+const NON_VIEWER_EXTENSIONS = [".dzi", ".svs", ".tif", ".tiff", ".jpg", ".jpeg", ".png"];
+function isValidWSIUrl(url: string | undefined): url is string {
+  if (!url) return false;
+  const lower = url.toLowerCase();
+  return !NON_VIEWER_EXTENSIONS.some((ext) => lower.endsWith(ext));
 }
 
-// Helper to reconstruct URL from v7 format
-function reconstructV7Url(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  urlRef: any,
-  basesMap: Record<string, string> | undefined
-): string | string[] {
-  if (!urlRef || !basesMap) return "";
-
-  // Handle array of URL refs
-  if (Array.isArray(urlRef)) {
-    return urlRef
-      .map((ref) => {
-        const baseId = Object.keys(ref)[0];
-        const path = ref[baseId];
-        const baseUrl = basesMap[baseId];
-        return baseUrl && path ? baseUrl + path : "";
-      })
-      .filter(Boolean);
-  }
-
-  // Handle single URL ref (object with one key-value pair)
-  const baseId = Object.keys(urlRef)[0];
-  const path = urlRef[baseId];
-  const baseUrl = basesMap[baseId];
-  return baseUrl && path ? baseUrl + path : "";
+// Repos that gate access behind a login wall — exclude from Random Slide so
+// the user doesn't land on a sign-in screen. The slide.id prefixes mirror
+// the IDs minted in normalizeToVirtualSlide / repository.ts.
+const LOGIN_REQUIRED_PREFIXES = ["pathpresenter_", "toronto_", "recutclub_"];
+function isOpenRepo(slideId: string | undefined): boolean {
+  if (!slideId) return false;
+  return !LOGIN_REQUIRED_PREFIXES.some((p) => slideId.startsWith(p));
 }
 
-// Type for cached data
-interface CachedVirtualSlidesData {
-  basesCase: Record<string, string>;
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  slides: any[];
+function pickViewerUrl(slide: VirtualSlide): string | null {
+  if (isValidWSIUrl(slide.slide_url)) return slide.slide_url!;
+  if (isValidWSIUrl(slide.case_url)) return slide.case_url!;
+  for (const url of slide.other_urls ?? []) {
+    if (isValidWSIUrl(url)) return url;
+  }
+  return null;
 }
 
 export function VirtualSlideSearchTeaser() {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
-  // Use the same search hook as the virtual-slides page
+  // Single source of truth for the slides dataset. The hook itself fetches
+  // and decompresses the 750 KiB brotli JSON exactly once per session — both
+  // homepage buttons read from `allSlides`, no separate prefetch needed.
   const searchClient = useClientVirtualSlides(1);
-
-  // Cache the decompressed data
-  const cachedDataRef = useRef<CachedVirtualSlidesData | null>(null);
-  const prefetchingRef = useRef(false);
-
-  // Track if data is ready for use
-  const [isDataReady, setIsDataReady] = useState(false);
-
-  // Prefetch and decompress data after component mounts
-  useEffect(() => {
-    const prefetchData = async () => {
-      if (prefetchingRef.current || cachedDataRef.current) {
-        // If data already cached, mark as ready immediately
-        if (cachedDataRef.current) {
-          setIsDataReady(true);
-        }
-        return;
-      }
-      prefetchingRef.current = true;
-
-      try {
-        const { VIRTUAL_SLIDES_JSON_URL } = await import("@/shared/config/virtual-slides");
-
-        // Wait a bit for hero images to load first
-        await new Promise((resolve) => setTimeout(resolve, 2000));
-
-        console.log("[VirtualSlideSearchTeaser] Prefetching virtual slides data...");
-
-        const response = await fetch(VIRTUAL_SLIDES_JSON_URL, {
-          cache: "force-cache",
-          priority: "low",
-        } as RequestInit);
-
-        if (!response.ok) throw new Error("Failed to prefetch slides");
-
-        // Decompress only pre-gzipped (.json.gz) files; plain .json is served with
-        // transparent CDN Content-Encoding and parsed directly.
-        const isGzipped = VIRTUAL_SLIDES_JSON_URL.includes(".json.gz");
-        const json =
-          isGzipped && typeof DecompressionStream !== "undefined" && response.body
-            ? await new Response(response.body.pipeThrough(new DecompressionStream("gzip"))).json()
-            : await response.json();
-
-        // Cache the processed data
-        cachedDataRef.current = {
-          basesCase: reverseMapping(json.bases?.case),
-          slides: json.data ?? [],
-        };
-
-        console.log(
-          `[VirtualSlideSearchTeaser] ✅ Prefetched ${cachedDataRef.current.slides.length} slides`
-        );
-
-        // Mark data as ready
-        setIsDataReady(true);
-      } catch (error) {
-        console.error("[VirtualSlideSearchTeaser] Prefetch failed:", error);
-        // Don't mark as ready if prefetch failed - buttons will stay disabled
-      } finally {
-        prefetchingRef.current = false;
-      }
-    };
-
-    prefetchData();
-  }, []);
+  const isDataReady = !!searchClient.allSlides && searchClient.allSlides.length > 0;
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -132,80 +55,35 @@ export function VirtualSlideSearchTeaser() {
   };
 
   const handleFeelingLucky = async (e?: React.MouseEvent) => {
-    // Prevent form submission
     e?.preventDefault();
-
     const query = searchQuery.trim();
-    if (!query) {
-      return;
-    }
-
-    // Check if data is ready (button should be disabled, but double-check)
-    if (!isDataReady) {
-      return;
-    }
+    const all = searchClient.allSlides;
+    if (!query || !all || all.length === 0) return;
 
     try {
-      // Helper function to check if a URL is a valid WSI viewer (not a raw image file)
-      const isValidWSIUrl = (url: string): boolean => {
-        if (!url) return false;
-        // Exclude raw image formats that aren't interactive viewers
-        const invalidExtensions = [".dzi", ".svs", ".tif", ".tiff", ".jpg", ".jpeg", ".png"];
-        const urlLower = url.toLowerCase();
-        return !invalidExtensions.some((ext) => urlLower.endsWith(ext));
-      };
+      // Call the search engine directly instead of routing through the hook's
+      // setState-driven `searchWithFilters` API. The hook returns a snapshot
+      // of `slides` captured at the render the click handler closed over, so
+      // a subsequent `setOptions({ query })` + `await setTimeout` doesn't
+      // surface the new results inside this same handler — you'd read the
+      // pre-search slides ref and end up at whatever the first un-filtered
+      // result was. Calling `rankSlidesWithExpansion` here gives us the
+      // ranked alveolar-RMS-style result synchronously off the in-memory
+      // search index that `loadClientSlides()` already built.
+      const ranked = await rankSlidesWithExpansion(all, query);
 
-      // Perform search using the search hook - get multiple results to find valid URL
-      await searchClient.searchWithFilters({ query, page: 1, limit: 10 });
-
-      // IMPORTANT: Wait for the search to actually complete
-      // The hook uses React state updates which are async
-      await new Promise((resolve) => setTimeout(resolve, 300));
-
-      console.log(`[I'm Feeling Lucky] Search completed, slides:`, searchClient.slides.length);
-
-      // Find first slide with a valid WSI viewer URL
-      let validSlide = null;
-      let validUrl = null;
-
-      for (const slide of searchClient.slides) {
-        // Check slide_url first (primary viewer URL)
-        if (slide.slide_url && isValidWSIUrl(slide.slide_url)) {
-          validSlide = slide;
-          validUrl = slide.slide_url;
+      let target: { slide: VirtualSlide; url: string } | null = null;
+      for (const slide of ranked.slides) {
+        const url = pickViewerUrl(slide);
+        if (url) {
+          target = { slide, url };
           break;
-        }
-        // Check case_url as fallback
-        if (slide.case_url && isValidWSIUrl(slide.case_url)) {
-          validSlide = slide;
-          validUrl = slide.case_url;
-          break;
-        }
-        // Check other_urls if available
-        if (slide.other_urls && slide.other_urls.length > 0) {
-          for (const url of slide.other_urls) {
-            if (isValidWSIUrl(url)) {
-              validSlide = slide;
-              validUrl = url;
-              break;
-            }
-          }
-          if (validUrl) break;
         }
       }
 
-      if (validSlide && validUrl) {
-        console.log(`[I'm Feeling Lucky] First valid match:`, {
-          diagnosis: validSlide.diagnosis,
-          url: validUrl,
-        });
-
-        // Open in new window
-        console.log(`[I'm Feeling Lucky] Opening slide in new window:`, validUrl);
-        window.open(validUrl, "_blank", "noopener,noreferrer");
+      if (target) {
+        window.open(target.url, "_blank", "noopener,noreferrer");
       } else {
-        // No valid match found, open search page
-        console.log(`[I'm Feeling Lucky] No valid viewer URL found for: "${query}"`);
         window.open(
           `/tools/virtual-slides?search=${encodeURIComponent(query)}`,
           "_blank",
@@ -214,7 +92,6 @@ export function VirtualSlideSearchTeaser() {
       }
     } catch (error) {
       console.error("Feeling lucky failed:", error);
-      // On error, open search page in new tab
       window.open(
         `/tools/virtual-slides?search=${encodeURIComponent(query)}`,
         "_blank",
@@ -223,84 +100,25 @@ export function VirtualSlideSearchTeaser() {
     }
   };
 
-  const handleRandomSlide = async (e?: React.MouseEvent) => {
-    // Prevent form submission
+  const handleRandomSlide = (e?: React.MouseEvent) => {
     e?.preventDefault();
+    const all = searchClient.allSlides;
+    if (!all || all.length === 0) return;
 
-    // Check if data is ready (button should be disabled, but double-check)
-    if (!isDataReady || !cachedDataRef.current) {
+    const candidates: { slide: VirtualSlide; url: string }[] = [];
+    for (const slide of all) {
+      if (!isOpenRepo(slide.id)) continue;
+      const url = pickViewerUrl(slide);
+      if (url) candidates.push({ slide, url });
+    }
+
+    if (candidates.length === 0) {
+      console.warn("[Random Slide] No valid WSI viewer URLs found in open repos");
       return;
     }
 
-    try {
-      // Use prefetched cached data (instant!)
-      const basesCase = cachedDataRef.current.basesCase;
-      const slides = cachedDataRef.current.slides;
-
-      // Helper function to check if a URL is a valid WSI viewer (not a raw image file)
-      const isValidWSIUrl = (url: string): boolean => {
-        if (!url) return false;
-        // Exclude raw image formats that aren't interactive viewers
-        const invalidExtensions = [".dzi", ".svs", ".tif", ".tiff", ".jpg", ".jpeg", ".png"];
-        const urlLower = url.toLowerCase();
-        return !invalidExtensions.some((ext) => urlLower.endsWith(ext));
-      };
-
-      // Repos behind a login wall — exclude from Random Slide so the user
-      // doesn't land on a sign-in screen. Prefix map mirrors repository.ts.
-      const LOGIN_REQUIRED_PREFIXES = ["pathpresenter_", "toronto_", "recutclub_"];
-      const isOpenRepo = (id: string): boolean =>
-        !LOGIN_REQUIRED_PREFIXES.some((p) => (id || "").startsWith(p));
-
-      if (slides.length > 0) {
-        // Filter slides to only those with valid WSI viewer URLs and from
-        // open (no-login) repos.
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const validSlides = slides.filter((slide: any) => {
-          if (!isOpenRepo(slide.x)) return false;
-          if (!slide.u) return false;
-
-          let slideUrl: string;
-          if (Array.isArray(slide.u)) {
-            const reconstructed = reconstructV7Url(slide.u, basesCase);
-            slideUrl = Array.isArray(reconstructed) ? reconstructed[0] || "" : reconstructed;
-          } else {
-            slideUrl = reconstructV7Url(slide.u, basesCase) as string;
-          }
-
-          return isValidWSIUrl(slideUrl);
-        });
-
-        if (validSlides.length > 0) {
-          // Pick a random slide from valid slides
-          const randomSlide = validSlides[Math.floor(Math.random() * validSlides.length)];
-
-          if (randomSlide.u) {
-            // Reconstruct the slide URL
-            let slideUrl: string;
-
-            if (Array.isArray(randomSlide.u)) {
-              // If it's an array, get the first URL
-              const reconstructed = reconstructV7Url(randomSlide.u, basesCase);
-              slideUrl = Array.isArray(reconstructed) ? reconstructed[0] || "" : reconstructed;
-            } else {
-              // Single URL reference
-              slideUrl = reconstructV7Url(randomSlide.u, basesCase) as string;
-            }
-
-            if (slideUrl) {
-              // Open in new window
-              window.open(slideUrl, "_blank", "noopener,noreferrer");
-            }
-          }
-        } else {
-          console.warn("[Random Slide] No valid WSI viewer URLs found");
-        }
-      }
-    } catch (error) {
-      console.error("Random slide failed:", error);
-      // On error, do nothing
-    }
+    const picked = candidates[Math.floor(Math.random() * candidates.length)];
+    window.open(picked.url, "_blank", "noopener,noreferrer");
   };
 
   return (

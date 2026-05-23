@@ -33,8 +33,8 @@ import {
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
 import { ContentDisclaimer } from "@/shared/components/common/content-disclaimer";
-import Image from "next/image";
 import { repositoryLogos } from "@/shared/components/common/repository-logos";
+import { getR2PublicUrl } from "@/shared/services/r2-storage";
 
 // Dynamically import Lottie to avoid SSR issues
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
@@ -399,14 +399,24 @@ function VirtualSlidesContent() {
                 aria-label={repo.alt}
                 className="group flex items-center justify-center"
               >
-                <Image
-                  src={repo.src}
-                  alt={repo.alt}
-                  width={90}
-                  height={36}
-                  unoptimized
-                  className="object-contain opacity-60 grayscale transition-all duration-200 hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0"
-                />
+                <picture>
+                  <source
+                    srcSet={getR2PublicUrl(
+                      `logos/optimized/${repo.file.replace(/\.png$/, ".avif")}`
+                    )}
+                    type="image/avif"
+                  />
+                  {}
+                  <img
+                    src={getR2PublicUrl(`logos/optimized/${repo.file}`)}
+                    alt={repo.alt}
+                    width={90}
+                    height={36}
+                    loading="lazy"
+                    decoding="async"
+                    className="object-contain opacity-60 grayscale transition-all duration-200 hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0"
+                  />
+                </picture>
               </a>
             ))}
           </div>

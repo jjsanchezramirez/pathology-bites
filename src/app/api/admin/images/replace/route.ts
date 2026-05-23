@@ -213,7 +213,10 @@ export async function POST(request: NextRequest) {
     // Upload new file to same R2 path (this will overwrite the existing file)
     const uploadResult = await uploadToR2(fileBuffer, existingImage.storage_path, {
       contentType: file.type,
-      cacheControl: "3600",
+      // Replaces overwrite at the same key — keep a short TTL so the new
+      // image surfaces within an hour. Cache-bust via Cloudflare purge if
+      // you need it sooner.
+      cacheControl: "public, max-age=3600, must-revalidate",
       metadata: {
         originalName: file.name,
         category: existingImage.category,

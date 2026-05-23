@@ -274,6 +274,13 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
       // Store in memory for session (HTTP cache handles persistence)
       cachedSlides = processedSlides;
 
+      // Build the WHO acronym + reverse-index synchronously. Earlier I
+      // deferred this with `requestIdleCallback` to save Lighthouse TBT, but
+      // that left a window where I'm Feeling Lucky / typed search fell back
+      // to fuzzy text ranking (e.g. "ARMS" → mesenchymal chondrosarcoma
+      // instead of alveolar RMS) because the WHO acronym set wasn't built
+      // yet. Fetch itself takes ~700 ms, so the ~200–400 ms index build
+      // happens after the hydration window — TBT impact stays small.
       buildSearchIndex(processedSlides);
 
       return processedSlides;
@@ -496,6 +503,11 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
   return {
     // Data
     slides: pageSlides,
+    // Full processed dataset — exposed so consumers (e.g. the hero teaser's
+    // "Random Slide" picker) can sample directly instead of running their own
+    // copy of the fetch, which used to triple-count the 750 KiB dataset in
+    // Lighthouse.
+    allSlides,
     isLoading: isLoading || isSearching, // Combine loading states for UI
     error,
 

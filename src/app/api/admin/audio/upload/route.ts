@@ -179,7 +179,8 @@ export async function POST(request: NextRequest) {
     try {
       uploadResult = await uploadToR2(fileBuffer, storagePath, {
         contentType: file.type,
-        cacheControl: "3600",
+        // Path includes a timestamp prefix — URL is the cache key.
+        cacheControl: "public, max-age=31536000, immutable",
         bucket: "pathology-bites-audio",
         metadata: {
           // Sanitize filename for HTTP headers (only ASCII printable characters)

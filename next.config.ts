@@ -88,8 +88,52 @@ const nextConfig = {
     serverActions: {
       enabled: true,
     },
+    // Per-package tree-shaking. Without this, importing `lucide-react` or
+    // `date-fns` by named export still pulls the package's entire index.
+    // Tells Next.js to rewrite those barrel imports into the underlying
+    // ESM submodule paths at build time. Safe for any package that ships
+    // a barrel `index.js` with re-exports.
+    optimizePackageImports: [
+      "lucide-react",
+      "date-fns",
+      "@radix-ui/react-accordion",
+      "@radix-ui/react-alert-dialog",
+      "@radix-ui/react-avatar",
+      "@radix-ui/react-checkbox",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-popover",
+      "@radix-ui/react-radio-group",
+      "@radix-ui/react-scroll-area",
+      "@radix-ui/react-select",
+      "@radix-ui/react-tabs",
+      "@radix-ui/react-tooltip",
+    ],
   },
   serverExternalPackages: [],
+
+  // Stub Next.js's bundled "modern" polyfill module. Our browserslist
+  // already excludes every browser that lacks the features it patches
+  // (Array.at, Array.flat[Map], Object.fromEntries, Object.hasOwn,
+  // String.prototype.trim{Start,End}, Promise.finally), so the shim is dead
+  // weight — Lighthouse "Legacy JavaScript" flagged it as ~12 KiB savings.
+  // See webpack/empty-polyfill.js for the rationale + revert path.
+  webpack: (config, { webpack }) => {
+    // The Next.js runtime imports the polyfill via a relative path inside
+    // its own package (`require("../build/polyfills/polyfill-module")`), so
+    // a string alias here would miss it. NormalModuleReplacementPlugin
+    // matches the fully-resolved file path instead, regardless of how it's
+    // imported.
+    const emptyStub = require.resolve("./webpack/empty-polyfill.js");
+    config.plugins = config.plugins || [];
+    config.plugins.push(
+      new webpack.NormalModuleReplacementPlugin(
+        /[\\/]next[\\/]dist[\\/](esm[\\/])?build[\\/]polyfills[\\/]polyfill-module(\.js)?$/,
+        emptyStub
+      )
+    );
+    return config;
+  },
   async headers() {
     // Aggressive caching for performance
     const cacheHeaders = [
@@ -218,7 +262,13 @@ const nextConfig = {
             key: "Content-Security-Policy",
             value: [
               "default-src 'self'",
-              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://vercel.live https://va.vercel-scripts.com https://www.googletagmanager.com https://challenges.cloudflare.com https://cdn.jsdelivr.net https://unpkg.com",
+              // static.cloudflareinsights.com hosts the beacon Cloudflare Web
+              // Analytics auto-injects. The dashboard toggle adds the
+              // <script> tag at proxy time, so the only way to silence the
+              // CSP violation in the console is to allow the origin here.
+              // Disable Web Analytics in the Cloudflare dashboard if you want
+              // to drop this entry instead.
+              "script-src 'self' 'unsafe-inline' 'unsafe-eval' blob: https://vercel.live https://va.vercel-scripts.com https://www.googletagmanager.com https://challenges.cloudflare.com https://static.cloudflareinsights.com https://cdn.jsdelivr.net https://unpkg.com",
               "worker-src 'self' blob: https://cdn.jsdelivr.net",
               "child-src 'self' blob:",
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",

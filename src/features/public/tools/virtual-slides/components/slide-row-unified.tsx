@@ -10,18 +10,19 @@ import Image from "next/image";
 import { getR2PublicUrl } from "@/shared/services/r2-storage";
 import { getVirtualSlideCategoryInfo } from "../utils/virtual-slides-category-map";
 
-// Repository logo mapping
+// Repository logo mapping. Points at the optimized 240×176 assets
+// (logos/optimized/*) — see `optimize-repo-logos.ts` for the pipeline.
 const REPOSITORY_LOGOS: Record<string, string> = {
-  "Hematopathology eTutorial": "logos/hematopathology-etutorial-logo.png",
-  "Leeds University": "logos/university-of-leeds-logo.png",
-  PathPresenter: "logos/path-presenter-logo.png",
-  "MGH Pathology": "logos/mgh-logo.png",
-  "University of Toronto LMP": "logos/university-of-toronto-logo.png",
-  "Rosai Collection": "logos/rosai-collection-logo.png",
-  "Recut Club": "logos/recut-club-logo.png",
-  "St. Jude Cloud": "logos/st-jude-logo.png",
-  "WHO Blue Books Online": "logos/who-logo.png",
-  "AANP Diagnostic Slide Session": "logos/aanp-logo.png",
+  "Hematopathology eTutorial": "logos/optimized/hematopathology-etutorial-logo.png",
+  "Leeds University": "logos/optimized/university-of-leeds-logo.png",
+  PathPresenter: "logos/optimized/path-presenter-logo.png",
+  "MGH Pathology": "logos/optimized/mgh-logo.png",
+  "University of Toronto LMP": "logos/optimized/university-of-toronto-logo.png",
+  "Rosai Collection": "logos/optimized/rosai-collection-logo.png",
+  "Recut Club": "logos/optimized/recut-club-logo.png",
+  "St. Jude Cloud": "logos/optimized/st-jude-logo.png",
+  "WHO Blue Books Online": "logos/optimized/who-logo.png",
+  "AANP Diagnostic Slide Session": "logos/optimized/aanp-logo.png",
 };
 
 interface SlideRowUnifiedProps {

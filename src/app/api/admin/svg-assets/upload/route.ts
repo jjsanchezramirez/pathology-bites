@@ -152,7 +152,8 @@ export async function POST(request: NextRequest) {
     try {
       uploadResult = await uploadToR2(fileBuffer, storagePath, {
         contentType: "image/svg+xml",
-        cacheControl: "3600",
+        // Path includes a timestamp prefix — URL is the cache key.
+        cacheControl: "public, max-age=31536000, immutable",
         metadata: {
           originalName: file.name.replace(/[^\x20-\x7E]/g, "_"),
           uploadedBy: userId,

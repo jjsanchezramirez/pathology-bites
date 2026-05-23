@@ -1,9 +1,21 @@
 "use client";
 
-import Image from "next/image";
 import { getR2PublicUrl } from "@/shared/services/r2-storage";
 
-type Logo = { id: string; src: string; alt: string; href: string };
+// Logos served from `logos/optimized/` — downsized to 240×176 (2× of the
+// ~120×88 display box). AVIF is the primary source; PNG is the legacy
+// fallback. Originals in `logos/` remain at 912×672 for any other use.
+type Logo = { id: string; file: string; alt: string; href: string };
+
+const LOGOS_PREFIX = "logos/optimized";
+
+function avifSrc(file: string): string {
+  return getR2PublicUrl(`${LOGOS_PREFIX}/${file.replace(/\.png$/, ".avif")}`);
+}
+
+function pngSrc(file: string): string {
+  return getR2PublicUrl(`${LOGOS_PREFIX}/${file}`);
+}
 
 // Repository logos. hrefs point at each repository's home domain
 // (derived from the dataset base URLs). Exported for reuse (e.g. the static
@@ -11,61 +23,61 @@ type Logo = { id: string; src: string; alt: string; href: string };
 export const repositoryLogos: Logo[] = [
   {
     id: "leeds",
-    src: getR2PublicUrl("logos/university-of-leeds-logo.png"),
+    file: "university-of-leeds-logo.png",
     alt: "University of Leeds",
     href: "https://www.virtualpathology.leeds.ac.uk/",
   },
   {
     id: "pathpresenter",
-    src: getR2PublicUrl("logos/path-presenter-logo.png"),
+    file: "path-presenter-logo.png",
     alt: "PathPresenter",
     href: "https://pathpresenter.net/",
   },
   {
     id: "mgh",
-    src: getR2PublicUrl("logos/mgh-logo.png"),
+    file: "mgh-logo.png",
     alt: "MGH Pathology",
     href: "https://learn.mghpathology.org/",
   },
   {
     id: "toronto",
-    src: getR2PublicUrl("logos/university-of-toronto-logo.png"),
+    file: "university-of-toronto-logo.png",
     alt: "University of Toronto LMP",
     href: "https://dlm.lmp.utoronto.ca/",
   },
   {
     id: "rosai",
-    src: getR2PublicUrl("logos/rosai-collection-logo.png"),
+    file: "rosai-collection-logo.png",
     alt: "Rosai Collection",
     href: "https://rosaicollection.net/",
   },
   {
     id: "hematopathology",
-    src: getR2PublicUrl("logos/hematopathology-etutorial-logo.png"),
+    file: "hematopathology-etutorial-logo.png",
     alt: "Hematopathology eTutorial",
     href: "https://www.hematopathologyetutorial.com/",
   },
   {
     id: "recut",
-    src: getR2PublicUrl("logos/recut-club-logo.png"),
+    file: "recut-club-logo.png",
     alt: "Recut Club",
     href: "https://recutclub.com/",
   },
   {
     id: "stjude",
-    src: getR2PublicUrl("logos/st-jude-logo.png"),
+    file: "st-jude-logo.png",
     alt: "St. Jude Cloud",
     href: "https://pecan.stjude.cloud/",
   },
   {
     id: "who",
-    src: getR2PublicUrl("logos/who-logo.png"),
+    file: "who-logo.png",
     alt: "WHO Blue Books Online",
     href: "https://tumourclassification.iarc.who.int/",
   },
   {
     id: "aanp",
-    src: getR2PublicUrl("logos/aanp-logo.png"),
+    file: "aanp-logo.png",
     alt: "AANP Diagnostic Slide Session",
     href: "https://neuro2.pathology.pitt.edu/",
   },
@@ -120,14 +132,19 @@ export function RepositoryLogos({ rows = DEFAULT_ROWS }: { rows?: number }) {
                     tabIndex={copy > 0 ? -1 : undefined}
                     className="group mr-4 flex h-20 w-40 flex-shrink-0 items-center justify-center rounded-xl border bg-white p-4 shadow-sm transition-shadow duration-200 hover:shadow-lg"
                   >
-                    <Image
-                      src={logo.src}
-                      alt={logo.alt}
-                      width={120}
-                      height={48}
-                      unoptimized
-                      className="object-contain opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0"
-                    />
+                    <picture>
+                      <source srcSet={avifSrc(logo.file)} type="image/avif" />
+                      {}
+                      <img
+                        src={pngSrc(logo.file)}
+                        alt={logo.alt}
+                        width={120}
+                        height={48}
+                        loading="lazy"
+                        decoding="async"
+                        className="object-contain opacity-60 grayscale transition-all duration-300 group-hover:opacity-100 group-hover:grayscale-0"
+                      />
+                    </picture>
                   </a>
                 ))
               )}

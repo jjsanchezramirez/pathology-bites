@@ -115,7 +115,7 @@ export async function uploadToR2(
       Key: key,
       Body: fileBuffer,
       ContentType: contentType,
-      CacheControl: options.cacheControl || "3600",
+      CacheControl: options.cacheControl || "public, max-age=31536000, immutable",
       Metadata: options.metadata || {},
     });
 
