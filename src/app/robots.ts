@@ -2,7 +2,10 @@
 import { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pathologybites.com";
+  const rawBaseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pathologybites.com";
+  // Trim whitespace + trailing slash so `${baseUrl}/sitemap.xml` cannot produce
+  // a wrapped or doubled URL (Vercel env vars sometimes carry trailing newlines).
+  const baseUrl = rawBaseUrl.trim().replace(/\/+$/, "");
 
   return {
     rules: [
@@ -56,6 +59,5 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "AdsBot-Google", disallow: "/" },
     ],
     sitemap: `${baseUrl}/sitemap.xml`,
-    host: baseUrl,
   };
 }

@@ -148,6 +148,7 @@ export function CookieConsentBanner() {
                   size="icon"
                   onClick={handleReject}
                   className="shrink-0 h-6 w-6"
+                  aria-label="Reject cookies and close banner"
                 >
                   <X className="h-3 w-3" />
                 </Button>

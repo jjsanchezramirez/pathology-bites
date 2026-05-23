@@ -111,20 +111,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html lang="en" suppressHydrationWarning>
       <head>
         {/* DNS Prefetch for performance */}
-        <link rel="dns-prefetch" href="//fonts.googleapis.com" />
-        <link rel="dns-prefetch" href="//fonts.gstatic.com" />
         <link rel="dns-prefetch" href="//www.googletagmanager.com" />
         <link rel="dns-prefetch" href="//www.google-analytics.com" />
-
-        {/* Preconnect for critical resources */}
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-
-        {/* Font loading with display=swap for better performance */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Architects+Daughter&display=swap"
-          rel="stylesheet"
-        />
 
         {/* Theme color for mobile browsers - matches app background */}
         <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />

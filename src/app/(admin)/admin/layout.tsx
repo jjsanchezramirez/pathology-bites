@@ -4,6 +4,7 @@
 import { UnifiedLayoutClient } from "@/shared/components/layout/unified-layout-client";
 import { DashboardSettingsProvider } from "@/shared/contexts/dashboard-settings-provider";
 import { DashboardThemeProvider } from "@/shared/contexts/dashboard-theme-context";
+import { architectsDaughter } from "@/shared/fonts/dashboard-fonts";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   return (
@@ -16,7 +17,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             showFontSize: true,
           }}
         >
-          {children}
+          <div className={architectsDaughter.variable}>{children}</div>
         </UnifiedLayoutClient>
       </DashboardThemeProvider>
     </DashboardSettingsProvider>
