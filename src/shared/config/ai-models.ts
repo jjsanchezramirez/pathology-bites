@@ -4,7 +4,7 @@
 export interface AIModel {
   id: string;
   name: string;
-  provider: "llama" | "gemini" | "mistral" | "deepseek" | "claude" | "chatgpt";
+  provider: "llama" | "gemini" | "mistral" | "claude";
   available: boolean;
   deprecated?: boolean;
   description?: string;
@@ -16,10 +16,7 @@ export interface AIModel {
 
 // Helper function to determine provider from model ID
 export function getModelProvider(model: string): string {
-  // LLAMA models use Meta's direct API
   if (model.startsWith("llama-") || model.startsWith("Llama-")) return "llama";
-  if (model.startsWith("Cerebras-") || model.startsWith("cerebras-")) return "groq";
-  if (model.startsWith("Groq-") || model.startsWith("groq-")) return "groq";
   if (model.startsWith("gemini-")) return "google";
   if (
     model.startsWith("mistral-") ||
@@ -29,10 +26,8 @@ export function getModelProvider(model: string): string {
     model.startsWith("ministral-")
   )
     return "mistral";
-  if (model.startsWith("deepseek-")) return "deepseek";
   if (model.startsWith("claude-")) return "claude";
-  if (model.startsWith("gpt-")) return "chatgpt";
-  return "google"; // default to google instead of gemini
+  return "google";
 }
 
 // Active models (available for selection) - Prioritized for WSI Question Generator
@@ -75,34 +70,16 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     tpmLimit: 1000000,
   },
   {
-    id: "gemini-2.0-flash",
-    name: "Gemini 2.0 Flash",
+    id: "gemini-2.5-flash-lite",
+    name: "Gemini 2.5 Flash Lite",
     provider: "gemini",
     available: true,
-    description: "Gemini 2.0 Flash model",
-    contextLength: "1M tokens",
-    tpmLimit: 1000000,
-  },
-  {
-    id: "gemini-2.0-flash-lite",
-    name: "Gemini 2.0 Flash Lite",
-    provider: "gemini",
-    available: true,
-    description: "Lightweight Gemini 2.0 Flash model",
+    description: "Most cost-effective Gemini, highest free-tier RPD",
     contextLength: "1M tokens",
     tpmLimit: 1000000,
   },
 
   // Medium rate limit models (500K TPM)
-  {
-    id: "mistral-large-2411",
-    name: "Mistral Large 2.1",
-    provider: "mistral",
-    available: true,
-    description: "Latest Mistral Large 2.1 model - most capable",
-    contextLength: "128K tokens",
-    tpmLimit: 500000,
-  },
   {
     id: "mistral-large-latest",
     name: "Mistral Large",
@@ -122,47 +99,11 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     tpmLimit: 500000,
   },
   {
-    id: "magistral-medium-2507",
-    name: "Magistral Medium 1.1",
-    provider: "mistral",
-    available: true,
-    description: "Magistral Medium 1.1 model - optimized performance",
-    contextLength: "128K tokens",
-    tpmLimit: 500000,
-  },
-  {
-    id: "magistral-medium-2506",
-    name: "Magistral Medium 1",
-    provider: "mistral",
-    available: true,
-    description: "Magistral Medium 1 model - reliable performance",
-    contextLength: "128K tokens",
-    tpmLimit: 500000,
-  },
-  {
     id: "mistral-small-2506",
     name: "Mistral Small 3.2",
     provider: "mistral",
     available: true,
     description: "Mistral Small 3.2 model - balanced performance",
-    contextLength: "32K tokens",
-    tpmLimit: 500000,
-  },
-  {
-    id: "magistral-small-2507",
-    name: "Magistral Small 1.1",
-    provider: "mistral",
-    available: true,
-    description: "Magistral Small 1.1 model - optimized efficiency",
-    contextLength: "32K tokens",
-    tpmLimit: 500000,
-  },
-  {
-    id: "magistral-small-2506",
-    name: "Magistral Small 1",
-    provider: "mistral",
-    available: true,
-    description: "Magistral Small 1 model - reliable efficiency",
     contextLength: "32K tokens",
     tpmLimit: 500000,
   },
@@ -184,55 +125,6 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     contextLength: "32K tokens",
     tpmLimit: 500000,
   },
-  {
-    id: "ministral-3b-2410",
-    name: "Ministral 3B",
-    provider: "mistral",
-    available: true,
-    description: "Ministral 3B model - ultra-efficient lightweight model",
-    contextLength: "32K tokens",
-    tpmLimit: 500000,
-  },
-  {
-    id: "ministral-8b-2410",
-    name: "Ministral 8B",
-    provider: "mistral",
-    available: true,
-    description: "Ministral 8B model - efficient mid-size model",
-    contextLength: "32K tokens",
-    tpmLimit: 500000,
-  },
-
-  // Low rate limit models (250K TPM)
-  {
-    id: "gemini-2.5-flash",
-    name: "Gemini 2.5 Flash",
-    provider: "gemini",
-    available: true,
-    description: "Best price-performance balance",
-    contextLength: "1M tokens",
-    tpmLimit: 250000,
-  },
-  {
-    id: "gemini-2.5-flash-lite",
-    name: "Gemini 2.5 Flash Lite",
-    provider: "gemini",
-    available: true,
-    description: "Most cost-effective, high throughput",
-    contextLength: "1M tokens",
-    tpmLimit: 250000,
-  },
-
-  // Very low rate limit models (125K TPM)
-  {
-    id: "gemini-2.5-pro",
-    name: "Gemini 2.5 Pro",
-    provider: "gemini",
-    available: true,
-    description: "Most powerful thinking model",
-    contextLength: "2M tokens",
-    tpmLimit: 125000,
-  },
 
   // Anthropic Claude models
   {
@@ -246,61 +138,44 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
   },
 ];
 
-// Simple TPM-based fallback lists
-export const HIGH_TPM_MODELS = ACTIVE_AI_MODELS.filter(
-  (model) => (model.tpmLimit || 0) >= 1000000
-).map((model) => model.id);
-export const MEDIUM_TPM_MODELS = ACTIVE_AI_MODELS.filter(
-  (model) => (model.tpmLimit || 0) >= 500000 && (model.tpmLimit || 0) < 1000000
-).map((model) => model.id);
-export const LOW_TPM_MODELS = ACTIVE_AI_MODELS.filter(
-  (model) => (model.tpmLimit || 0) < 500000
-).map((model) => model.id);
+// ---------------------------------------------------------------------------
+// Unified fallback chains
+// ---------------------------------------------------------------------------
+// Free-tier only. Quota-first ordering: Llama → Mistral → Gemini.
+//
+// Claude is INTENTIONALLY EXCLUDED — it's paid, and we never want production
+// traffic to silently cascade into paid models. Claude is still callable via
+// `modelOverride` from the debug page or by explicit caller request; it just
+// won't be selected by automatic fallback.
 
-// Combined fallback list ordered by TPM (high to low)
-export const TPM_ORDERED_FALLBACK = [...HIGH_TPM_MODELS, ...MEDIUM_TPM_MODELS, ...LOW_TPM_MODELS];
-
-// Lesson generation fallback lists — prioritise Claude for vision + planning quality
-export const LESSON_GEN_VISION_MODELS = [
-  "claude-sonnet-4-20250514",
-  "Llama-4-Scout-17B-16E-Instruct-FP8",
-  "gemini-2.5-flash",
+// Provider rotation: alternate between Llama/Mistral/Gemini so a single
+// provider outage falls through to a different provider in one hop, not 3.
+// Quota-first within each provider tier.
+export const TEXT_FALLBACK_CHAIN: string[] = [
+  "Llama-4-Maverick-17B-128E-Instruct-FP8", // Meta
+  "mistral-large-latest", // Mistral
+  "Llama-3.3-70B-Instruct", // Meta
+  "gemini-2.5-flash-lite", // Google
+  "Llama-3.3-8B-Instruct", // Meta
+  "mistral-medium-2505", // Mistral
+  "mistral-small-2506", // Mistral
 ];
 
-export const LESSON_GEN_TEXT_MODELS = [
-  "claude-sonnet-4-20250514",
-  "gemini-2.5-flash",
-  "Llama-4-Maverick-17B-128E-Instruct-FP8",
+export const VISION_FALLBACK_CHAIN: string[] = [
+  "Llama-4-Scout-17B-16E-Instruct-FP8", // Meta
+  "gemini-2.5-flash-lite", // Google
+  "Llama-4-Maverick-17B-128E-Instruct-FP8", // Meta
 ];
+
+// Vision-capable model IDs (includes Claude for modelOverride even though
+// Claude is excluded from VISION_FALLBACK_CHAIN's automatic ordering).
+export const VISION_CAPABLE_MODELS = new Set<string>([
+  ...VISION_FALLBACK_CHAIN,
+  "claude-sonnet-4-20250514",
+]);
 
 // Disabled models (show in UI but not selectable)
 export const DISABLED_AI_MODELS: AIModel[] = [
-  // ChatGPT models (disabled due to API issues)
-  {
-    id: "gpt-4o",
-    name: "GPT-4o",
-    provider: "chatgpt",
-    available: false,
-    description: "OpenAI GPT-4o model (currently unavailable)",
-  },
-  {
-    id: "gpt-4o-mini",
-    name: "GPT-4o Mini",
-    provider: "chatgpt",
-    available: false,
-    description: "OpenAI GPT-4o Mini model (currently unavailable)",
-  },
-
-  // GPT-5 model (disabled - not yet available)
-  {
-    id: "gpt-5",
-    name: "GPT-5",
-    provider: "chatgpt",
-    available: false,
-    description: "OpenAI GPT-5 (not yet available)",
-    contextLength: "TBD",
-  },
-
   // Claude models (legacy — superseded by active claude-sonnet-4)
   {
     id: "claude-3-5-sonnet-20241022",
@@ -318,29 +193,6 @@ export const DISABLED_AI_MODELS: AIModel[] = [
     provider: "mistral",
     available: false,
     description: "Mistral Small 2 model (disabled - API issues)",
-  },
-
-  // Groq and Cerebras models (disabled - excluded from configuration)
-  {
-    id: "Cerebras-Llama-4-Maverick-17B-128E-Instruct",
-    name: "Cerebras LLAMA 4 Maverick 17B",
-    provider: "llama",
-    available: false,
-    description: "LLAMA 4 Maverick optimized for Cerebras hardware (unavailable)",
-  },
-  {
-    id: "Cerebras-Llama-4-Scout-17B-16E-Instruct",
-    name: "Cerebras LLAMA 4 Scout 17B",
-    provider: "llama",
-    available: false,
-    description: "LLAMA 4 Scout optimized for Cerebras hardware (unavailable)",
-  },
-  {
-    id: "Groq-Llama-4-Maverick-17B-128E-Instruct",
-    name: "Groq LLAMA 4 Maverick 17B",
-    provider: "llama",
-    available: false,
-    description: "LLAMA 4 Maverick optimized for Groq hardware (unavailable)",
   },
 ];
 
@@ -373,18 +225,18 @@ export function isModelAvailable(modelId: string): boolean {
   return model?.available ?? false;
 }
 
-// Default model selection - prioritize Gemini 1.5 for WSI question generation
-export const DEFAULT_MODEL = "gemini-2.5-flash";
+// Default model selection
+export const DEFAULT_MODEL = "gemini-2.5-flash-lite";
 
 // API key configuration - All keys must be provided via environment variables
 export const API_KEYS = {
-  llama: process.env.NEXT_PUBLIC_LLAMA_API_KEY || process.env.LLAMA_API_KEY || "", // LLAMA models use Meta's direct API ONLY
-  groq: process.env.NEXT_PUBLIC_GROQ_API_KEY || "", // Groq API key (separate from LLAMA)
-  google: process.env.NEXT_PUBLIC_GEMINI_API_KEY || "",
+  llama: process.env.NEXT_PUBLIC_LLAMA_API_KEY || process.env.LLAMA_API_KEY || "",
+  google:
+    process.env.NEXT_PUBLIC_GOOGLE_AI_STUDIO_API_KEY ||
+    process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
+    "",
   claude: process.env.NEXT_PUBLIC_CLAUDE_API_KEY || "",
-  chatgpt: process.env.NEXT_PUBLIC_OPENAI_API_KEY || "",
   mistral: process.env.NEXT_PUBLIC_MISTRAL_API_KEY || "",
-  deepseek: process.env.NEXT_PUBLIC_DEEPSEEK_API_KEY || "",
 };
 
 // Get API key for provider

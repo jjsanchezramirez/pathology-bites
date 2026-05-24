@@ -41,7 +41,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body: GenerateLessonRequest = await request.json();
-    const { images, svgs, transcript, audioDuration, audioUrl, audioTitle } = body;
+    const { images, svgs, transcript, audioDuration, audioUrl, audioTitle, modelOverride } = body;
 
     // Validate inputs
     if (!images || images.length === 0) {
@@ -80,8 +80,8 @@ export async function POST(request: NextRequest) {
     // Passes 1-2: run in parallel (transcript analysis + vision)
     // -----------------------------------------------------------------------
     const [transcriptAnalysis, visionResults] = await Promise.all([
-      analyzeTranscript(transcript, enrichedImages, audioDuration),
-      analyzeImagesV2(enrichedImages),
+      analyzeTranscript(transcript, enrichedImages, audioDuration, modelOverride),
+      analyzeImagesV2(enrichedImages, modelOverride),
     ]);
 
     const parallelElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
@@ -101,7 +101,13 @@ export async function POST(request: NextRequest) {
     // -----------------------------------------------------------------------
     // Pass 3: Lesson planning (ordering + text slides + SVG placement)
     // -----------------------------------------------------------------------
-    const plan = await planLesson(transcriptAnalysis, enrichedImages, audioDuration, userSvgs);
+    const plan = await planLesson(
+      transcriptAnalysis,
+      enrichedImages,
+      audioDuration,
+      userSvgs,
+      modelOverride
+    );
 
     const planElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
     console.log(

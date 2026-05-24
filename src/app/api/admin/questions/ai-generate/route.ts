@@ -1,5 +1,12 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
+import { callClaudeText } from "@/shared/services/claude-api";
+
+const QUESTION_GEN_SYSTEM =
+  "You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.";
+
+// Vercel Hobby caps at 60s; Claude calls observed up to 17-80s.
+export const maxDuration = 60;
 
 // Accept all available models for admin question generation
 const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
@@ -56,6 +63,14 @@ async function callAIService(
       return await callGoogleAPI(prompt, modelId, apiKey);
     case "mistral":
       return await callMistralAPI(prompt, modelId, apiKey);
+    case "claude": {
+      const res = await callClaudeText(prompt, modelId, apiKey, {
+        system: QUESTION_GEN_SYSTEM,
+        maxTokens: 2048,
+        temperature: 0.3,
+      });
+      return { content: res.content, tokenUsage: res.tokenUsage };
+    }
     default:
       throw new Error(`Unsupported model provider: ${provider}`);
   }
@@ -208,8 +223,7 @@ async function callMistralAPI(
       messages: [
         {
           role: "system",
-          content:
-            "You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.",
+          content: QUESTION_GEN_SYSTEM,
         },
         {
           role: "user",
@@ -218,6 +232,8 @@ async function callMistralAPI(
       ],
       max_tokens: 4000,
       temperature: 0.7,
+      // Force valid JSON — fixes small-model malformed output (e.g. Ministral 8B)
+      response_format: { type: "json_object" },
     }),
   });
 
@@ -715,13 +731,14 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const body: QuestionGenerationRequest = await request.json();
+    const body: QuestionGenerationRequest & { modelOverride?: string } = await request.json();
     const {
       mode = "educational_content",
       content,
       instructions,
       additionalContext = "",
       model,
+      modelOverride,
     } = body;
 
     // Validate inputs based on mode
@@ -759,7 +776,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use default model for educational content mode if not specified
-    const selectedModel = model || "Llama-3.3-8B-Instruct";
+    const selectedModel = modelOverride || model || "Llama-3.3-8B-Instruct";
 
     // Validate model
     if (!ADMIN_AI_MODELS.includes(selectedModel)) {

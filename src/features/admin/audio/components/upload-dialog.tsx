@@ -65,7 +65,7 @@ export function AudioUploadDialog({
 
   // AI text generation state
   const [selectedContent, setSelectedContent] = useState<EducationalContent | null>(null);
-  const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash");
+  const [selectedModel, setSelectedModel] = useState("gemini-2.5-flash-lite");
   const [additionalInstructions, setAdditionalInstructions] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
 

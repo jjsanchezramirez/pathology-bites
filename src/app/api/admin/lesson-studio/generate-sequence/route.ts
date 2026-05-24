@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiKey } from "@/shared/config/ai-models";
 import type { CaptionChunk } from "@/shared/types/explainer";
 import type { ImageInput } from "./prompt";
 import { analyzeImages } from "./vision";
@@ -19,6 +18,8 @@ interface GenerateSequenceRequest {
   captions: CaptionChunk[];
   audioDuration: number;
   audioUrl: string;
+  /** Optional: force a specific model for vision + segmenter (debug/test only). */
+  modelOverride?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -190,7 +191,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body: GenerateSequenceRequest = await request.json();
-    const { images, captions, audioDuration, audioUrl } = body;
+    const { images, captions, audioDuration, audioUrl, modelOverride } = body;
 
     // Validate inputs
     if (!images || images.length === 0) {
@@ -209,11 +210,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "audioUrl is required" }, { status: 400 });
     }
 
-    // Get API key
-    const apiKey = getApiKey("llama");
-    if (!apiKey) {
-      return NextResponse.json({ error: "Llama API key not configured" }, { status: 500 });
-    }
+    // Provider keys resolved per-model inside vision.ts / segmenter.ts via callWithFallback.
+    // Pass empty string for legacy compat.
+    const apiKey = "";
 
     const startTime = Date.now();
 
@@ -235,8 +234,8 @@ export async function POST(request: NextRequest) {
       `[generate-sequence] AI pass — vision analysis + segmentation for ${images.length} images`
     );
     const [visionResults, segmentTimings] = await Promise.all([
-      analyzeImages(images, apiKey),
-      segmentByAI(images, captions, audioDuration, apiKey),
+      analyzeImages(images, apiKey, modelOverride),
+      segmentByAI(images, captions, audioDuration, apiKey, modelOverride),
     ]);
 
     const aiElapsed = ((Date.now() - startTime) / 1000).toFixed(1);

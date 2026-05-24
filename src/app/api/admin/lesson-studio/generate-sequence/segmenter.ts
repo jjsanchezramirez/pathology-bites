@@ -1,6 +1,97 @@
 import type { CaptionChunk } from "@/shared/types/explainer";
 import type { ImageInput } from "./prompt";
 import { computeSegmentTimings, type SegmentTiming } from "./timing";
+import { TEXT_FALLBACK_CHAIN } from "@/shared/config/ai-models";
+import { callWithFallback } from "@/shared/services/ai-fallback";
+import { callClaudeText } from "@/shared/services/claude-api";
+
+const SEGMENTER_TIMEOUT_MS = 20_000;
+const MIN_SEGMENT_DURATION = 3.0;
+
+const SEGMENTER_SYSTEM =
+  "You are a precise transcript analyser. Return only the JSON array requested — no explanation.";
+
+/** @internal exported for debug routes */
+export async function callTextProvider(
+  prompt: string,
+  model: string,
+  apiKey: string,
+  provider: string,
+  signal: AbortSignal
+): Promise<string> {
+  if (provider === "claude") {
+    const res = await callClaudeText(prompt, model, apiKey, {
+      system: SEGMENTER_SYSTEM,
+      maxTokens: 200,
+      temperature: 0.1,
+      timeoutMs: SEGMENTER_TIMEOUT_MS,
+    });
+    return res.content;
+  }
+
+  if (provider === "llama") {
+    const r = await fetch("https://api.llama.com/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      signal,
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: SEGMENTER_SYSTEM },
+          { role: "user", content: prompt },
+        ],
+        max_completion_tokens: 200,
+        temperature: 0.1,
+      }),
+    });
+    if (!r.ok)
+      throw new Error(`Llama API ${r.status} ${await r.text().then((t) => t.slice(0, 100))}`);
+    const data = await r.json();
+    return data.completion_message?.content?.text ?? data.choices?.[0]?.message?.content ?? "";
+  }
+
+  if (provider === "mistral") {
+    const r = await fetch("https://api.mistral.ai/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      signal,
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: SEGMENTER_SYSTEM },
+          { role: "user", content: prompt },
+        ],
+        max_tokens: 200,
+        temperature: 0.1,
+      }),
+    });
+    if (!r.ok)
+      throw new Error(`Mistral API ${r.status} ${await r.text().then((t) => t.slice(0, 100))}`);
+    const data = await r.json();
+    return data.choices?.[0]?.message?.content ?? "";
+  }
+
+  if (provider === "google") {
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal,
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: `${SEGMENTER_SYSTEM}\n\n${prompt}` }] }],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 200 },
+        }),
+      }
+    );
+    if (!r.ok)
+      throw new Error(`Gemini API ${r.status} ${await r.text().then((t) => t.slice(0, 100))}`);
+    const data = await r.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
+  }
+
+  throw new Error(`Unsupported provider: ${provider}`);
+}
 
 // ---------------------------------------------------------------------------
 // AI-based segment timing
@@ -18,9 +109,6 @@ import { computeSegmentTimings, type SegmentTiming } from "./timing";
 // On any failure (timeout, parse error, implausible output) we fall back to
 // the keyword-overlap computeSegmentTimings().
 // ---------------------------------------------------------------------------
-
-const SEGMENTER_TIMEOUT_MS = 20_000;
-const MIN_SEGMENT_DURATION = 3.0;
 
 // ---------------------------------------------------------------------------
 // Prompt builders
@@ -165,8 +253,12 @@ export async function segmentByAI(
   images: ImageInput[],
   captions: CaptionChunk[],
   totalDuration: number,
-  apiKey: string
+  _legacyApiKey: string,
+  modelOverride?: string
 ): Promise<SegmentTiming[]> {
+  // _legacyApiKey kept for caller compat — provider keys now looked up per-model
+  void _legacyApiKey;
+
   if (images.length <= 1 || captions.length === 0) {
     return computeSegmentTimings(images, captions, totalDuration);
   }
@@ -183,38 +275,14 @@ export async function segmentByAI(
   const timeoutId = setTimeout(() => controller.abort(), SEGMENTER_TIMEOUT_MS);
 
   try {
-    const response = await fetch("https://api.llama.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: "Llama-4-Scout-17B-16E-Instruct-FP8",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are a precise transcript analyser. Return only the JSON array requested — no explanation.",
-          },
-          { role: "user", content: prompt },
-        ],
-        max_completion_tokens: 200,
-        temperature: 0.1,
-      }),
-    });
-
+    const raw = await callWithFallback(
+      TEXT_FALLBACK_CHAIN,
+      (model, apiKey, provider) =>
+        callTextProvider(prompt, model, apiKey, provider, controller.signal),
+      "segmenter",
+      { modelOverride }
+    );
     clearTimeout(timeoutId);
-
-    if (!response.ok) {
-      console.warn(`[segmenter] API error ${response.status} — falling back to keyword scorer`);
-      return computeSegmentTimings(images, captions, totalDuration);
-    }
-
-    const data = await response.json();
-    const raw: string =
-      data.completion_message?.content?.text ?? data.choices?.[0]?.message?.content ?? "";
 
     const indices = parseSegmenterResponse(raw, images.length, captions.length);
     if (!indices) {
@@ -227,7 +295,7 @@ export async function segmentByAI(
   } catch (err) {
     clearTimeout(timeoutId);
     const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[segmenter] Error: ${msg} — falling back to keyword scorer`);
+    console.warn(`[segmenter] All models failed: ${msg} — falling back to keyword scorer`);
     return computeSegmentTimings(images, captions, totalDuration);
   }
 }

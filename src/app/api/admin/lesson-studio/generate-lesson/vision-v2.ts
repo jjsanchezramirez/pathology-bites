@@ -2,7 +2,8 @@
 // Falls back to the existing Llama-based vision.ts on failure.
 
 import { callClaudeVision } from "@/shared/services/claude-api";
-import { LESSON_GEN_VISION_MODELS } from "@/shared/config/ai-models";
+import { VISION_FALLBACK_CHAIN } from "@/shared/config/ai-models";
+import { callWithFallback } from "@/shared/services/ai-fallback";
 import type { VisionResult, AnnotationTool } from "../generate-sequence/vision";
 import {
   normaliseMagnification,
@@ -10,7 +11,6 @@ import {
   deriveMicroscopicTool,
 } from "../generate-sequence/vision";
 import type { ImageInput } from "../generate-sequence/prompt";
-import { callWithFallback } from "./fallback";
 
 // ---------------------------------------------------------------------------
 // Prompt — simplified for Claude's better spatial reasoning
@@ -216,7 +216,7 @@ export function overrideToolDeterministically(
 // Single image analysis with fallback chain
 // ---------------------------------------------------------------------------
 
-async function analyzeOneImage(image: ImageInput): Promise<VisionResult> {
+async function analyzeOneImage(image: ImageInput, modelOverride?: string): Promise<VisionResult> {
   const FALLBACK: VisionResult = {
     canSeeImage: false,
     featurePosition: null,
@@ -237,7 +237,7 @@ async function analyzeOneImage(image: ImageInput): Promise<VisionResult> {
 
   try {
     const result = await callWithFallback(
-      LESSON_GEN_VISION_MODELS,
+      VISION_FALLBACK_CHAIN,
       async (model, apiKey, provider) => {
         if (provider === "claude") {
           const res = await callClaudeVision(prompt, image.url, model, apiKey, {
@@ -285,7 +285,8 @@ async function analyzeOneImage(image: ImageInput): Promise<VisionResult> {
         }
         throw new Error(`Unsupported vision provider: ${provider}`);
       },
-      `vision-v2[${image.title.slice(0, 30)}]`
+      `vision-v2[${image.title.slice(0, 30)}]`,
+      { modelOverride }
     );
     // Override Claude's tool suggestion with deterministic decision table
     return overrideToolDeterministically(result, imageWithMag);
@@ -299,9 +300,12 @@ async function analyzeOneImage(image: ImageInput): Promise<VisionResult> {
 // Public API: analyse all images in parallel
 // ---------------------------------------------------------------------------
 
-export async function analyzeImagesV2(images: ImageInput[]): Promise<VisionResult[]> {
+export async function analyzeImagesV2(
+  images: ImageInput[],
+  modelOverride?: string
+): Promise<VisionResult[]> {
   console.log(`[vision-v2] Analysing ${images.length} images...`);
-  const results = await Promise.all(images.map((img) => analyzeOneImage(img)));
+  const results = await Promise.all(images.map((img) => analyzeOneImage(img, modelOverride)));
   const seen = results.filter((r) => r.canSeeImage).length;
   console.log(`[vision-v2] Done — ${seen}/${images.length} analysed successfully`);
   return results;

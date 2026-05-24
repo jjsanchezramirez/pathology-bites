@@ -408,13 +408,110 @@ export interface VisionDebug {
   promptSent: string;
 }
 
+const VISION_SYSTEM_PROMPT =
+  "You are an expert pathologist with strong visual analysis skills. Be concise and precise. Answer each numbered question on its own line. If you cannot see the image, say so on line 1.";
+
+const VISION_TIMEOUT_MS = 20000;
+
+// Fetch image, return base64 + mime type (used by Gemini, which doesn't accept URLs)
+async function fetchImageAsBase64(
+  url: string,
+  signal: AbortSignal
+): Promise<{ data: string; mediaType: string }> {
+  const r = await fetch(url, { signal });
+  if (!r.ok) throw new Error(`Image fetch ${r.status} for ${url.slice(-40)}`);
+  const buf = await r.arrayBuffer();
+  const mediaType = r.headers.get("content-type") || "image/jpeg";
+  const data = Buffer.from(buf).toString("base64");
+  return { data, mediaType };
+}
+
+// Provider-agnostic vision call returning raw text content
+async function callVisionProvider(
+  imageUrl: string,
+  promptText: string,
+  model: string,
+  apiKey: string,
+  provider: string,
+  signal: AbortSignal
+): Promise<string> {
+  if (provider === "llama") {
+    const r = await fetch("https://api.llama.com/v1/chat/completions", {
+      method: "POST",
+      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      signal,
+      body: JSON.stringify({
+        model,
+        messages: [
+          { role: "system", content: VISION_SYSTEM_PROMPT },
+          {
+            role: "user",
+            content: [
+              { type: "image_url", image_url: { url: imageUrl } },
+              { type: "text", text: promptText },
+            ],
+          },
+        ],
+        max_completion_tokens: 600,
+        temperature: 0.1,
+      }),
+    });
+    if (!r.ok) throw new Error(`Llama API ${r.status}`);
+    const data = await r.json();
+    return data.completion_message?.content?.text || data.choices?.[0]?.message?.content || "";
+  }
+
+  if (provider === "claude") {
+    const { callClaudeVision } = await import("@/shared/services/claude-api");
+    const res = await callClaudeVision(promptText, imageUrl, model, apiKey, {
+      system: VISION_SYSTEM_PROMPT,
+      maxTokens: 600,
+      temperature: 0.1,
+      timeoutMs: VISION_TIMEOUT_MS,
+    });
+    return res.content;
+  }
+
+  if (provider === "google") {
+    const img = await fetchImageAsBase64(imageUrl, signal);
+    const r = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal,
+        body: JSON.stringify({
+          contents: [
+            {
+              parts: [
+                { inline_data: { mime_type: img.mediaType, data: img.data } },
+                { text: `${VISION_SYSTEM_PROMPT}\n\n${promptText}` },
+              ],
+            },
+          ],
+          generationConfig: { temperature: 0.1, maxOutputTokens: 600 },
+        }),
+      }
+    );
+    if (!r.ok) throw new Error(`Gemini API ${r.status}`);
+    const data = await r.json();
+    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
+  }
+
+  throw new Error(`Unsupported vision provider: ${provider}`);
+}
+
 async function analyzeOneImage(
   image: ImageInput,
-  apiKey: string,
-  debug?: VisionDebug
+  _legacyApiKey: string,
+  debug?: VisionDebug,
+  modelOverride?: string
 ): Promise<VisionResult> {
+  // _legacyApiKey kept for caller compat — provider keys looked up per-model via callWithFallback
+  void _legacyApiKey;
+
   const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 20000);
+  const timeoutId = setTimeout(() => controller.abort(), VISION_TIMEOUT_MS);
 
   const FALLBACK: VisionResult = {
     canSeeImage: false,
@@ -453,50 +550,23 @@ async function analyzeOneImage(
   const promptText = buildMicroscopicPrompt(imageWithMag);
   if (debug) debug.promptSent = promptText;
 
-  let response: Response;
+  let content: string;
   try {
-    response = await fetch("https://api.llama.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: "Llama-4-Scout-17B-16E-Instruct-FP8",
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an expert pathologist with strong visual analysis skills. Be concise and precise. Answer each numbered question on its own line. If you cannot see the image, say so on line 1.",
-          },
-          {
-            role: "user",
-            content: [
-              { type: "image_url", image_url: { url: image.url } },
-              { type: "text", text: promptText },
-            ],
-          },
-        ],
-        max_completion_tokens: 600,
-        temperature: 0.1,
-      }),
-    });
+    const { callWithFallback } = await import("@/shared/services/ai-fallback");
+    const { VISION_FALLBACK_CHAIN } = await import("@/shared/config/ai-models");
+    content = await callWithFallback(
+      VISION_FALLBACK_CHAIN,
+      (model, apiKey, provider) =>
+        callVisionProvider(image.url, promptText, model, apiKey, provider, controller.signal),
+      `vision[${image.title.slice(0, 30)}]`,
+      { modelOverride }
+    );
     clearTimeout(timeoutId);
-  } catch (error) {
+  } catch (err) {
     clearTimeout(timeoutId);
-    console.warn(`[vision] Failed for ${image.url.slice(-40)}: ${error}`);
+    console.warn(`[vision] All models failed for ${image.url.slice(-40)}: ${err}`);
     return FALLBACK;
   }
-
-  if (!response.ok) {
-    console.warn(`[vision] API error ${response.status} for ${image.url.slice(-40)}`);
-    return FALLBACK;
-  }
-
-  const data = await response.json();
-  const content: string =
-    data.completion_message?.content?.text || data.choices?.[0]?.message?.content || "";
 
   if (debug) debug.rawModelResponse = content;
 
@@ -531,10 +601,11 @@ async function analyzeOneImage(
 
 export async function analyzeSingleImageWithDebug(
   image: ImageInput,
-  apiKey: string
+  apiKey: string,
+  modelOverride?: string
 ): Promise<{ result: VisionResult; debug: VisionDebug }> {
   const debugObj: VisionDebug = { rawModelResponse: "", promptSent: "" };
-  const result = await analyzeOneImage(image, apiKey, debugObj);
+  const result = await analyzeOneImage(image, apiKey, debugObj, modelOverride);
   return { result, debug: debugObj };
 }
 
@@ -542,9 +613,15 @@ export async function analyzeSingleImageWithDebug(
 // Public: analyse all images in parallel
 // ---------------------------------------------------------------------------
 
-export async function analyzeImages(images: ImageInput[], apiKey: string): Promise<VisionResult[]> {
+export async function analyzeImages(
+  images: ImageInput[],
+  apiKey: string,
+  modelOverride?: string
+): Promise<VisionResult[]> {
   console.log(`[vision] Analysing ${images.length} images in parallel…`);
-  const results = await Promise.all(images.map((img) => analyzeOneImage(img, apiKey)));
+  const results = await Promise.all(
+    images.map((img) => analyzeOneImage(img, apiKey, undefined, modelOverride))
+  );
   const seen = results.filter((r) => r.canSeeImage).length;
   const toolCounts = results.reduce(
     (acc, r) => {

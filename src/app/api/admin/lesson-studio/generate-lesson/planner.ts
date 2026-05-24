@@ -3,7 +3,8 @@
 // Annotations, camera, durations are all handled deterministically by the assembler.
 
 import { callClaudeText } from "@/shared/services/claude-api";
-import { LESSON_GEN_TEXT_MODELS } from "@/shared/config/ai-models";
+import { TEXT_FALLBACK_CHAIN } from "@/shared/config/ai-models";
+import { callWithFallback } from "@/shared/services/ai-fallback";
 import type { ImageInput } from "../generate-sequence/prompt";
 import type {
   SvgInput,
@@ -12,7 +13,6 @@ import type {
   PlannedTextSlide,
   PlannedSvgPlacement,
 } from "./types";
-import { callWithFallback } from "./fallback";
 
 // ---------------------------------------------------------------------------
 // Prompt
@@ -192,13 +192,14 @@ export async function planLesson(
   transcriptAnalysis: TranscriptAnalysis,
   images: ImageInput[],
   audioDuration: number,
-  svgs: SvgInput[] = []
+  svgs: SvgInput[] = [],
+  modelOverride?: string
 ): Promise<LessonPlan> {
   const prompt = buildPlannerPrompt(transcriptAnalysis, images, audioDuration, svgs);
 
   try {
     const raw = await callWithFallback(
-      LESSON_GEN_TEXT_MODELS,
+      TEXT_FALLBACK_CHAIN,
       async (model, apiKey, provider) => {
         if (provider === "claude") {
           const res = await callClaudeText(prompt, model, apiKey, {
@@ -250,7 +251,8 @@ export async function planLesson(
         }
         throw new Error(`Unsupported provider: ${provider}`);
       },
-      "planner"
+      "planner",
+      { modelOverride }
     );
 
     const parsed = parsePlanResponse(raw, images.length);

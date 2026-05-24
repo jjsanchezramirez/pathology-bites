@@ -2,6 +2,13 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
+import { callClaudeText } from "@/shared/services/claude-api";
+
+// Vercel Hobby caps at 60s; Claude calls observed ~10s, chain walk worst case ~15s.
+export const maxDuration = 30;
+
+const AUDIO_SCRIPT_SYSTEM =
+  "You are an expert medical educator creating concise, engaging educational audio scripts for students. Your scripts should be clear, accurate, and suitable for text-to-speech conversion.";
 
 // Accept all available models for admin audio script generation
 const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
@@ -35,6 +42,14 @@ async function callAIService(
       return await callGoogleAPI(prompt, modelId, apiKey);
     case "mistral":
       return await callMistralAPI(prompt, modelId, apiKey);
+    case "claude": {
+      const res = await callClaudeText(prompt, modelId, apiKey, {
+        system: AUDIO_SCRIPT_SYSTEM,
+        maxTokens: 500,
+        temperature: 0.7,
+      });
+      return { content: res.content };
+    }
     default:
       throw new Error(`Unsupported model provider: ${provider}`);
   }
@@ -246,8 +261,8 @@ Return ONLY the script text with no additional commentary, metadata, titles, or 
  *               model:
  *                 type: string
  *                 description: AI model to use
- *                 default: "gemini-2.5-flash"
- *                 enum: ["gemini-2.5-flash", "llama-3.1-405b", "mistral-large"]
+ *                 default: "gemini-2.5-flash-lite"
+ *                 enum: ["gemini-2.5-flash-lite", "llama-3.1-405b", "mistral-large"]
  *     responses:
  *       200:
  *         description: Script generated successfully
@@ -304,8 +319,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Administrator privileges required." }, { status: 403 });
     }
 
-    const body: TextGenerationRequest = await request.json();
-    const { content, additionalInstructions = "", model } = body;
+    const body: TextGenerationRequest & { modelOverride?: string } = await request.json();
+    const { content, additionalInstructions = "", model, modelOverride } = body;
 
     if (!content) {
       return NextResponse.json(
@@ -324,7 +339,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const selectedModel = model || "gemini-2.5-flash";
+    const selectedModel = modelOverride || model || "gemini-2.5-flash-lite";
 
     if (!ADMIN_AI_MODELS.includes(selectedModel)) {
       return NextResponse.json(

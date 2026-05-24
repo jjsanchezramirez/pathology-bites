@@ -19,6 +19,8 @@ export interface GenerateLessonRequest {
   audioDuration: number;
   audioUrl: string;
   audioTitle?: string;
+  /** Optional: force a specific model across all 3 passes (debug/test only). */
+  modelOverride?: string;
 }
 
 // ---------------------------------------------------------------------------

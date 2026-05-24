@@ -1,31 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiKey, getModelProvider } from "@/shared/config/ai-models";
+import { getApiKey, getModelProvider, TEXT_FALLBACK_CHAIN } from "@/shared/config/ai-models";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
+import { callClaudeText } from "@/shared/services/claude-api";
 
-// Unified WSI Question Generator - optimized for free token usage (Updated August 2025)
-// Ordered by rate limits and free token availability
-const WSI_FALLBACK_MODELS = [
-  // Tier 1: BEST Free Limits - Meta LLAMA Models (3,000 RPM + 1M TPM)
-  "Llama-4-Scout-17B-16E-Instruct-FP8", // 3,000 RPM, 1M TPM - BEST: Latest multimodal + medical reasoning
-  "Llama-4-Maverick-17B-128E-Instruct-FP8", // 3,000 RPM, 1M TPM - Complex reasoning powerhouse
-  "Llama-3.3-70B-Instruct", // 3,000 RPM, 1M TPM - Proven large model performance
-  "Llama-3.3-8B-Instruct", // 3,000 RPM, 1M TPM - Fast + efficient
+const WSI_SYSTEM_PROMPT =
+  "You are an expert pathologist creating educational multiple-choice questions for medical students and residents. Focus on clinical correlation, diagnosis, and educational value.";
 
-  // Tier 2: High Volume - Mistral Models (500K TPM + 1B monthly tokens)
-  "mistral-medium-2505", // 500K TPM, 1B/month - Best balance of capability/volume
-  "mistral-small-2501", // 500K TPM, 1B/month - Latest small model
-  "ministral-8b-2410", // 500K TPM, 1B/month - Efficient processing
-  "mistral-large-latest", // 500K TPM, 1B/month - Most capable Mistral
-
-  // Tier 3: Google High-Throughput Models (1M TPM but limited daily)
-  "gemini-2.0-flash", // 15 RPM, 1M TPM, 200 RPD - Good balance
-  "gemini-2.0-flash-lite", // 30 RPM, 1M TPM, 200 RPD - Higher RPM
-
-  // Tier 4: Google Quality Models (Lower TPM but good for complex tasks)
-  "gemini-2.5-flash-lite", // 15 RPM, 250K TPM, 1,000 RPD - Highest daily limit
-  "gemini-2.5-flash", // 10 RPM, 250K TPM, 250 RPD - Best quality
-  "gemini-2.5-pro", // 5 RPM, 250K TPM, 100 RPD - Premium reasoning
-];
+// WSI question generation uses TEXT_FALLBACK_CHAIN — image_url is referenced
+// in the prompt as metadata, not sent to vision API.
+const WSI_FALLBACK_MODELS = TEXT_FALLBACK_CHAIN;
 
 // Retry configuration for transient errors
 const RETRY_CONFIG = {
@@ -353,6 +336,14 @@ async function callAIService(
       return await callGoogleAPI(prompt, modelId, apiKey);
     case "mistral":
       return await callMistralAPI(prompt, modelId, apiKey);
+    case "claude": {
+      const res = await callClaudeText(prompt, modelId, apiKey, {
+        system: WSI_SYSTEM_PROMPT,
+        maxTokens: 2048,
+        temperature: 0.3,
+      });
+      return { content: res.content, tokenUsage: res.tokenUsage };
+    }
     default:
       throw new Error(`Unsupported model provider: ${provider}`);
   }
@@ -985,7 +976,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { wsi, context, modelIndex = 0, customPrompt } = body;
+    const { wsi, context, modelIndex = 0, customPrompt, modelOverride } = body;
 
     if (!wsi) {
       return NextResponse.json(
@@ -994,6 +985,41 @@ export async function POST(request: NextRequest) {
           error: "Missing required parameter: wsi",
         },
         { status: 400 }
+      );
+    }
+
+    // modelOverride bypasses the chain — single-model mode for debug testing
+    if (modelOverride) {
+      const selectedModel = modelOverride as string;
+      console.log(`[Question Gen] modelOverride mode: ${selectedModel}`);
+      const questionResult = await generateQuestionWithRetries(
+        wsi,
+        selectedModel,
+        context,
+        customPrompt
+      );
+      return NextResponse.json(
+        {
+          success: true,
+          question: questionResult.questionData,
+          metadata: {
+            generated_at: new Date().toISOString(),
+            generation_time_ms: Date.now() - startTime,
+            model: questionResult.modelUsed,
+            modelIndex: -1,
+            diagnosis: wsi.diagnosis,
+            token_usage: questionResult.tokenUsage,
+            retry_info: questionResult.retryInfo,
+            modelOverride: true,
+          },
+          debug: questionResult.debug,
+        },
+        {
+          status: 200,
+          headers: {
+            "Cache-Control": "no-cache, no-store, must-revalidate",
+          },
+        }
       );
     }
 

@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getApiKey } from "@/shared/config/ai-models";
 import { analyzeSingleImageWithDebug } from "../generate-sequence/vision";
 import type { ImageInput } from "../generate-sequence/prompt";
 
@@ -87,18 +86,16 @@ export const maxDuration = 30;
  */
 export async function POST(request: NextRequest) {
   try {
-    const { image } = (await request.json()) as { image: ImageInput };
+    const body = (await request.json()) as { image: ImageInput; modelOverride?: string };
+    const { image, modelOverride } = body;
 
     if (!image?.url) {
       return NextResponse.json({ error: "image.url is required" }, { status: 400 });
     }
 
-    const apiKey = getApiKey("llama");
-    if (!apiKey) {
-      return NextResponse.json({ error: "Llama API key not configured" }, { status: 500 });
-    }
-
-    const { result, debug } = await analyzeSingleImageWithDebug(image, apiKey);
+    // vision.ts now resolves provider keys per-model via callWithFallback.
+    // Pass an empty string for legacy compat; the actual key is looked up internally.
+    const { result, debug } = await analyzeSingleImageWithDebug(image, "", modelOverride);
 
     return NextResponse.json({ success: true, result, debug });
   } catch (error) {

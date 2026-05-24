@@ -1176,7 +1176,7 @@ The application provides a comprehensive REST API organized by feature area. All
 
 **Question Management**
 
-- `POST /api/admin/questions/ai-generate` - AI-powered question generation and refinement (Llama, Google, Mistral)
+- `POST /api/admin/questions/ai-generate` - AI-powered question generation and refinement (Llama, Mistral, Gemini, Claude)
 - `POST /api/admin/questions/create` - Create new question with full validation
 - `GET /api/admin/questions/[id]` - Get question details with all relationships
 - `PATCH /api/admin/questions/[id]` - Update question (admin override)

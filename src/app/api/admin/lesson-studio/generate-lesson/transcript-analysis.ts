@@ -6,10 +6,10 @@
 // Word counts are computed deterministically — NOT by AI.
 
 import { callClaudeText } from "@/shared/services/claude-api";
-import { LESSON_GEN_TEXT_MODELS } from "@/shared/config/ai-models";
+import { TEXT_FALLBACK_CHAIN } from "@/shared/config/ai-models";
+import { callWithFallback } from "@/shared/services/ai-fallback";
 import type { ImageInput } from "../generate-sequence/prompt";
 import type { TranscriptAnalysis } from "./types";
-import { callWithFallback } from "./fallback";
 
 // ---------------------------------------------------------------------------
 // Prompt
@@ -169,7 +169,8 @@ export function fallbackAnalysis(transcript: string, images: ImageInput[]): Tran
 export async function analyzeTranscript(
   transcript: string,
   images: ImageInput[],
-  audioDuration: number
+  audioDuration: number,
+  modelOverride?: string
 ): Promise<TranscriptAnalysis> {
   if (!transcript.trim()) {
     return fallbackAnalysis(transcript, images);
@@ -179,7 +180,7 @@ export async function analyzeTranscript(
 
   try {
     const result = await callWithFallback(
-      LESSON_GEN_TEXT_MODELS,
+      TEXT_FALLBACK_CHAIN,
       async (model, apiKey, provider) => {
         if (provider === "claude") {
           const res = await callClaudeText(prompt, model, apiKey, {
@@ -228,7 +229,8 @@ export async function analyzeTranscript(
         }
         throw new Error(`Unsupported provider: ${provider}`);
       },
-      "transcript-analysis"
+      "transcript-analysis",
+      { modelOverride }
     );
 
     const parsed = parseTranscriptResponse(result, images.length);
