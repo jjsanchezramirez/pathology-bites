@@ -936,25 +936,35 @@ function validateAndNormalizeQuestionFast(questionObj: Record<string, unknown>):
     throw new Error("Invalid or insufficient answer options in AI response");
   }
 
-  normalizedQuestion.options = optionsArray.map((opt: unknown, index: number) => {
+  // Strip AI-supplied positional metadata (id, order_index) before shuffling.
+  // The prompt template hardcodes the correct answer at index 1, so the AI
+  // tends to emit the correct option as B unless we randomize position here.
+  const rebuilt = optionsArray.map((opt: unknown): QuestionOption => {
     if (typeof opt === "object" && opt !== null) {
       const optObj = opt as Record<string, unknown>;
       return {
-        id: typeof optObj.id === "string" ? optObj.id : String.fromCharCode(65 + index),
+        id: "",
         text: String(optObj.text || ""),
         is_correct: Boolean(optObj.is_correct),
         explanation: String(optObj.explanation || ""),
-        order_index: typeof optObj.order_index === "number" ? optObj.order_index : index,
       };
     }
     return {
-      id: String.fromCharCode(65 + index),
+      id: "",
       text: String(opt),
       is_correct: false,
       explanation: "",
-      order_index: index,
     };
   });
+  for (let i = rebuilt.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [rebuilt[i], rebuilt[j]] = [rebuilt[j], rebuilt[i]];
+  }
+  normalizedQuestion.options = rebuilt.map((opt, index) => ({
+    ...opt,
+    id: String.fromCharCode(65 + index),
+    order_index: index,
+  }));
 
   // Fast correctness validation
   const correctCount = normalizedQuestion.options.filter((opt) => opt.is_correct).length;
@@ -976,7 +986,7 @@ export async function POST(request: NextRequest) {
 
     // Parse request body
     const body = await request.json();
-    const { wsi, context, modelIndex = 0, customPrompt, modelOverride } = body;
+    const { wsi, context, modelIndex = 0, customPrompt, modelOverride, responseMode } = body;
 
     if (!wsi) {
       return NextResponse.json(
@@ -986,6 +996,63 @@ export async function POST(request: NextRequest) {
         },
         { status: 400 }
       );
+    }
+
+    // responseMode === "raw" → skip the strict stem/answer_options validator.
+    // Caller ships its own prompt with a non-standard JSON shape (e.g. the
+    // wsi-walker combined multi-question schema). We return the model's raw
+    // text verbatim and let the caller parse client-side.
+    if (responseMode === "raw") {
+      if (!customPrompt) {
+        return NextResponse.json(
+          { success: false, error: "responseMode 'raw' requires customPrompt" },
+          { status: 400 }
+        );
+      }
+      const idx =
+        typeof modelIndex === "number" && modelIndex >= 0 && modelIndex < WSI_FALLBACK_MODELS.length
+          ? modelIndex
+          : 0;
+      const selectedModel = (modelOverride as string) || WSI_FALLBACK_MODELS[idx];
+      const { provider, apiKey } = getAPIConfig(selectedModel);
+      try {
+        const apiResponse = await callAIService(provider, customPrompt, selectedModel, apiKey);
+        return NextResponse.json(
+          {
+            success: true,
+            rawContent: apiResponse.content,
+            metadata: {
+              generated_at: new Date().toISOString(),
+              generation_time_ms: Date.now() - startTime,
+              model: selectedModel,
+              modelIndex: modelOverride ? -1 : idx,
+              diagnosis: wsi.diagnosis,
+              token_usage: apiResponse.tokenUsage,
+            },
+          },
+          {
+            status: 200,
+            headers: { "Cache-Control": "no-cache, no-store, must-revalidate" },
+          }
+        );
+      } catch (rawError) {
+        const errorType = classifyError(rawError);
+        const nextModelIndex = idx + 1;
+        const hasMoreModels = !modelOverride && nextModelIndex < WSI_FALLBACK_MODELS.length;
+        return NextResponse.json(
+          {
+            success: false,
+            error: `Model ${selectedModel} failed`,
+            details: rawError instanceof Error ? rawError.message : "Unknown error",
+            errorType,
+            nextModelIndex: hasMoreModels ? nextModelIndex : null,
+            nextModel: hasMoreModels ? WSI_FALLBACK_MODELS[nextModelIndex] : null,
+            currentModelIndex: idx,
+            availableModels: WSI_FALLBACK_MODELS.length,
+          },
+          { status: 500 }
+        );
+      }
     }
 
     // modelOverride bypasses the chain — single-model mode for debug testing
