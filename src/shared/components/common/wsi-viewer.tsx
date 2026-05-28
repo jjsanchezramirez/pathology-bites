@@ -39,6 +39,8 @@ interface WSIViewerProps {
   slide: VirtualSlide;
   showMetadata?: boolean;
   className?: string;
+  // When true, viewer fills the height of its parent (parent must have a bounded height).
+  fillHeight?: boolean;
 }
 
 // Configuration for different WSI types and repositories
@@ -365,9 +367,10 @@ interface IframeViewerProps {
   onLoad?: () => void;
   onError?: () => void;
   loaded: boolean;
+  fillHeight?: boolean;
 }
 
-function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps) {
+function IframeViewer({ url, title, onLoad, onError, loaded, fillHeight }: IframeViewerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -475,7 +478,7 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
   }, [loaded, isMobile]);
 
   return (
-    <div ref={containerRef} className="relative">
+    <div ref={containerRef} className={`relative ${fillHeight ? "h-full" : ""}`}>
       {/* Loading overlay */}
       {!loaded && (
         <div className="absolute inset-0 bg-muted/50 flex items-center justify-center z-10">
@@ -488,7 +491,9 @@ function IframeViewer({ url, title, onLoad, onError, loaded }: IframeViewerProps
 
       {/* Iframe viewer with mobile touch isolation */}
       <div
-        className={`relative w-full overflow-hidden ${isMobile ? "h-[350px]" : "h-[600px]"}`}
+        className={`relative w-full overflow-hidden ${
+          fillHeight ? "h-full" : isMobile ? "h-[350px]" : "h-[600px]"
+        }`}
         onTouchStart={(e) => {
           // On mobile, prevent page scrolling when touching the WSI viewer
           if (isMobile && loaded) {
@@ -650,7 +655,12 @@ function FallbackViewer({ slide, onOpenExternal }: FallbackViewerProps) {
 }
 
 // Main WSI Viewer component
-export function WSIViewer({ slide, showMetadata = true, className = "" }: WSIViewerProps) {
+export function WSIViewer({
+  slide,
+  showMetadata = true,
+  className = "",
+  fillHeight = false,
+}: WSIViewerProps) {
   const [viewerLoaded, setViewerLoaded] = useState(false);
   const [config, setConfig] = useState<WSIConfig | null>(null);
 
@@ -686,10 +696,16 @@ export function WSIViewer({ slide, showMetadata = true, className = "" }: WSIVie
   }
 
   return (
-    <div className={`space-y-4 ${className}`}>
+    <div
+      className={
+        fillHeight ? `flex flex-col h-full min-h-0 ${className}` : `space-y-4 ${className}`
+      }
+    >
       {/* WSI Viewer */}
-      <Card className="overflow-hidden">
-        <CardContent className="p-0">
+      <Card
+        className={`overflow-hidden ${fillHeight ? "flex-1 min-h-0 flex flex-col" : ""}`.trim()}
+      >
+        <CardContent className={`p-0 ${fillHeight ? "flex-1 min-h-0" : ""}`.trim()}>
           {config.embeddingStrategy === "openseadragon" ? (
             <InternalOpenSeadragonViewer
               url={slide.slide_url}
@@ -705,6 +721,7 @@ export function WSIViewer({ slide, showMetadata = true, className = "" }: WSIVie
               onLoad={handleViewerLoad}
               onError={handleViewerError}
               loaded={viewerLoaded}
+              fillHeight={fillHeight}
             />
           ) : (
             <FallbackViewer slide={slide} onOpenExternal={openInNewTab} />
