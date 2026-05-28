@@ -50,6 +50,12 @@ interface QuizQuestionDisplayProps {
   isReviewMode: boolean;
   struckAnswerIds?: Set<string>;
   onStrikeToggle?: (answerId: string) => void;
+  /**
+   * Optional renderer for the teaching point. When provided, replaces the
+   * default plain-text rendering — used by the debug "Explanation Playground"
+   * to inject a markdown + custom-directive renderer.
+   */
+  teachingPointRenderer?: (text: string) => React.ReactNode;
 }
 
 const LONG_PRESS_MS = 500;
@@ -66,6 +72,7 @@ export function QuizQuestionDisplay({
   isReviewMode,
   struckAnswerIds,
   onStrikeToggle,
+  teachingPointRenderer,
 }: QuizQuestionDisplayProps) {
   const longPressTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const longPressFiredRef = useRef(false);
@@ -290,7 +297,11 @@ export function QuizQuestionDisplay({
             {question.teaching_point && (
               <div>
                 <h4 className="font-medium text-xs uppercase mb-2">Teaching Point</h4>
-                <div className="text-muted-foreground">{question.teaching_point}</div>
+                {teachingPointRenderer ? (
+                  teachingPointRenderer(question.teaching_point)
+                ) : (
+                  <div className="text-muted-foreground">{question.teaching_point}</div>
+                )}
               </div>
             )}
 
