@@ -8,7 +8,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
     const { data, error } = await supabase
       .from("interactive_sequences")
-      .select("id, title, description, sequence_data, audio_url, status")
+      .select("id, title, description, sequence_data, status")
       .eq("id", id)
       .eq("status", "published")
       .maybeSingle();
