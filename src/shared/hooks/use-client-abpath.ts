@@ -3,9 +3,12 @@
 import { useEffect, useState } from "react";
 import type { ABPathData } from "@/shared/types/abpath";
 
-// Direct R2 access - CORS is configured on bucket
+// Direct R2 access - CORS is configured on bucket.
+// `.json.br` object on R2 stored w/ HTTP `Content-Encoding: br` — browser
+// auto-decompresses, so the fetch sees plain JSON. Same pattern as
+// virtual-slides v8 / ankoma / cell-quiz.
 const ABPATH_API_URL =
-  "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/ab-path/content-specs.json";
+  "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/ab-path/content-specs.json.br?v=1";
 
 // Module-scope cache so we only fetch once per session
 let cachedABPathPromise: Promise<ABPathData> | null = null;

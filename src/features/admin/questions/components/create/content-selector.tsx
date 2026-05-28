@@ -165,16 +165,21 @@ const CONTENT_FILES: ContentFile[] = [
 // Cache for loaded content to avoid redundant fetches
 const contentCache = new Map<string, ContentData>();
 
-// Shared utility to load educational content from R2
+// Shared utility to load educational content from R2.
+// Files are stored as `<name>.json.br` w/ HTTP `Content-Encoding: br` —
+// browser auto-decompresses. Caller passes the legacy `<name>.json` filename
+// (from getContentFileInfo); we append `.br` here so the rest of the codebase
+// doesn't need to know about the encoding swap.
 export async function loadContentFromR2(filename: string): Promise<ContentData | null> {
   // Check cache first
   if (contentCache.has(filename)) {
     return contentCache.get(filename)!;
   }
 
+  const compressedName = filename.endsWith(".br") ? filename : `${filename}.br`;
   try {
     const response = await fetch(
-      `https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/context/${filename}`,
+      `https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/context/${compressedName}?v=1`,
       {
         method: "GET",
         headers: { Accept: "application/json" },

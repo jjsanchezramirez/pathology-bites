@@ -47,9 +47,11 @@ import { NextResponse } from 'next/server'
  *                   type: number
  */
 export async function GET() {
-  // Hard-coded R2 data URL - this is a public, static URL that doesn't change
+  // Hard-coded R2 data URL - this is a public, static URL that doesn't change.
+  // Source object is `.json.br` w/ Content-Encoding: br — Node fetch (undici)
+  // auto-decompresses, we still call .json() on the response normally.
   const base = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
-  const url = `${base}/cell-quiz/cell-quiz-references.json`
+  const url = `${base}/cell-quiz/cell-quiz-references.json.br?v=1`
   try {
     const res = await fetch(url, { next: { revalidate: 86400 } })
     if (!res.ok) {
