@@ -584,6 +584,12 @@ function expandQuery(term: string): string[] {
 
 // Main ranking entry point. Expands WHO/clinical abbreviations, ranks every
 // variant, and merges by max score.
+export interface ScoredSlide {
+  slide: VirtualSlide;
+  score: number;
+  frequency?: number;
+}
+
 export async function rankSlidesWithExpansion(
   slides: VirtualSlide[],
   query: string
@@ -592,12 +598,14 @@ export async function rankSlidesWithExpansion(
   expandedTerms: string[];
   method?: string;
   confidence?: number;
+  topScore?: number;
+  scoredSlides?: ScoredSlide[];
 }> {
   const term = (query || "").toLowerCase().trim();
   if (!term) return { slides, expandedTerms: [] };
 
   const variants = expandQuery(term);
-  const merged = new Map<string, { slide: VirtualSlide; score: number; frequency?: number }>();
+  const merged = new Map<string, ScoredSlide>();
   for (const variant of variants) {
     for (const [key, val] of rankOneQuery(variant)) {
       const existing = merged.get(key);
@@ -606,23 +614,30 @@ export async function rankSlidesWithExpansion(
   }
 
   // Sort by score (highest first), then frequency, then length
-  const sortedSlides = Array.from(merged.values())
-    .sort((a, b) => {
-      if (b.score !== a.score) return b.score - a.score;
-      if ((a.frequency || 0) !== (b.frequency || 0)) {
-        return (b.frequency || 0) - (a.frequency || 0);
-      }
-      return a.slide.diagnosis.length - b.slide.diagnosis.length;
-    })
-    .map((item) => item.slide);
+  const sorted = Array.from(merged.values()).sort((a, b) => {
+    if (b.score !== a.score) return b.score - a.score;
+    if ((a.frequency || 0) !== (b.frequency || 0)) {
+      return (b.frequency || 0) - (a.frequency || 0);
+    }
+    return a.slide.diagnosis.length - b.slide.diagnosis.length;
+  });
+  const sortedSlides = sorted.map((item) => item.slide);
 
   // Filter results to the (possibly pre-filtered) input list
   const allowedSlideIds = new Set(slides.map((s) => s.id));
   const filteredSlides = sortedSlides.filter((slide) => allowedSlideIds.has(slide.id));
+  const scoredSlides = sorted.filter((item) => allowedSlideIds.has(item.slide.id));
+
+  // Top score reflects the highest-scoring slide present in the filtered output
+  // (so callers gating on confidence see the score of the slide they'd actually
+  // get back). Falls back to the unfiltered top score if filtering removed it.
+  const topScore = scoredSlides[0]?.score ?? sorted[0]?.score;
 
   return {
     slides: filteredSlides,
     expandedTerms: variants.slice(1),
     method: "standard",
+    topScore,
+    scoredSlides,
   };
 }
