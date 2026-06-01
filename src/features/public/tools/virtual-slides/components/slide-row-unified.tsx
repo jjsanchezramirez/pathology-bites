@@ -26,6 +26,41 @@ const REPOSITORY_LOGOS: Record<string, string> = {
   "Wirtualny Mikroskop": "logos/optimized/mostwiedzy-logo.png",
 };
 
+// Preview thumbnail with a graceful fallback: a missing URL — or a source server that's
+// down (broken image) — renders the microscope placeholder instead of the browser's
+// broken-image glyph. Fills its (relative) parent.
+function Thumb({
+  src,
+  alt,
+  iconClass,
+  unoptimized,
+}: {
+  src?: string;
+  alt: string;
+  iconClass: string;
+  unoptimized?: boolean;
+}) {
+  const [failed, setFailed] = useState(false);
+  if (!src || failed) {
+    return (
+      <div className="flex h-full w-full items-center justify-center">
+        <Microscope className={`${iconClass} text-gray-400`} />
+      </div>
+    );
+  }
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      fill
+      className="object-cover"
+      loading="lazy"
+      unoptimized={unoptimized}
+      onError={() => setFailed(true)}
+    />
+  );
+}
+
 // Clinical info block — dedupes patient_info against the age/sex line (the corpus
 // sometimes carries the same "56, F" in both) and clamps each field independently.
 function ClinicalInfo({ slide }: { slide: VirtualSlide }) {
@@ -84,19 +119,7 @@ export const SlideRowUnified = memo(function SlideRowUnified({
       {/* Preview */}
       <td className="p-2 md:p-4 w-20 md:w-24">
         <div className="relative w-12 h-12 md:w-16 md:h-16 bg-gray-100 rounded overflow-hidden">
-          {slide.preview_image_url ? (
-            <Image
-              src={slide.preview_image_url}
-              alt={slide.diagnosis}
-              fill
-              className="object-cover"
-              loading="lazy"
-            />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center">
-              <Microscope className="w-6 h-6 text-gray-400" />
-            </div>
-          )}
+          <Thumb src={slide.preview_image_url} alt={slide.diagnosis} iconClass="w-6 h-6" />
         </div>
       </td>
 
@@ -265,20 +288,7 @@ export const SlideRowUnified = memo(function SlideRowUnified({
                 className="group flex w-40 flex-col overflow-hidden rounded-md border border-gray-200 bg-white hover:border-primary hover:shadow-sm transition"
               >
                 <div className="relative h-20 w-full bg-gray-100">
-                  {r.preview_image_url ? (
-                    <Image
-                      src={r.preview_image_url}
-                      alt={r.diagnosis}
-                      fill
-                      className="object-cover"
-                      loading="lazy"
-                      unoptimized
-                    />
-                  ) : (
-                    <div className="flex h-full w-full items-center justify-center">
-                      <Microscope className="h-5 w-5 text-gray-400" />
-                    </div>
-                  )}
+                  <Thumb src={r.preview_image_url} alt={r.diagnosis} iconClass="h-5 w-5" unoptimized />
                 </div>
                 <div className="p-1.5">
                   <p className="truncate text-xs font-medium text-gray-800 group-hover:text-primary">

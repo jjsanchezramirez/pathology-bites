@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { Loader2, Microscope } from "lucide-react";
+import { ImageOff, Loader2, Microscope } from "lucide-react";
 
 import { cn } from "@/shared/utils/index";
 import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialog";
@@ -45,6 +45,7 @@ export function SlideViewerModal({
   // Tiles showing? Drives the small-card → full-window expand. Stays true across in-case
   // slide switches (the viewer handles those with its own blur transition).
   const [ready, setReady] = useState(false);
+  const [loadError, setLoadError] = useState<string | null>(null);
   const [lineIdx, setLineIdx] = useState(0);
   // Bumped after the small→full expand finishes so the viewer refits to the big container.
   const [fitToken, setFitToken] = useState(0);
@@ -62,16 +63,17 @@ export function SlideViewerModal({
   useEffect(() => {
     if (slide) {
       setReady(false);
+      setLoadError(null);
       setLineIdx(Math.floor(Math.random() * LOADING_LINES.length));
     }
   }, [slide]);
 
-  // Cycle the loading lines until tiles are up.
+  // Cycle the loading lines until tiles are up (or it errors out).
   useEffect(() => {
-    if (ready || !slide) return;
+    if (ready || loadError || !slide) return;
     const t = setInterval(() => setLineIdx((i) => (i + 1) % LOADING_LINES.length), 2200);
     return () => clearInterval(t);
-  }, [ready, slide]);
+  }, [ready, loadError, slide]);
 
   const members = useMemo(() => {
     if (!current) return [];
@@ -132,30 +134,55 @@ export function SlideViewerModal({
               onSelectRelated={onSelectRelated}
               fitToken={fitToken}
               onReady={() => {
-                if (!readyRef.current) setReady(true);
+                if (!readyRef.current && !loadError) setReady(true);
               }}
+              onError={(msg) => setLoadError(msg)}
             />
           </div>
         )}
 
-        {/* Loading card — microscope + spinner + rotating line. Fades out as we expand. */}
+        {/* Loading / error card. Covers the viewer until tiles are up; on a load failure it
+            switches to a graceful message instead of leaving a blank (or blurred) window. */}
         <div
-          aria-hidden={ready}
+          aria-hidden={ready && !loadError}
           className={cn(
-            "pointer-events-none absolute inset-0 flex flex-col items-center justify-center gap-4 bg-white px-6 text-center transition-opacity duration-500 ease-out",
-            ready ? "opacity-0" : "opacity-100"
+            "absolute inset-0 flex flex-col items-center justify-center gap-4 bg-white px-6 text-center transition-opacity duration-500 ease-out",
+            ready && !loadError ? "opacity-0" : "opacity-100",
+            loadError ? "pointer-events-auto" : "pointer-events-none"
           )}
         >
-          <div className="relative">
-            <Microscope className="h-12 w-12 text-primary" />
-            <Loader2 className="absolute -bottom-1 -right-1 h-5 w-5 animate-spin text-primary" />
-          </div>
-          <div className="space-y-1">
-            <p className="text-sm font-semibold text-gray-800">Opening slide…</p>
-            <p className="min-h-[2.5rem] max-w-xs text-xs italic leading-relaxed text-gray-500 transition-opacity duration-300">
-              {LOADING_LINES[lineIdx]}
-            </p>
-          </div>
+          {loadError ? (
+            <>
+              <ImageOff className="h-12 w-12 text-gray-300" />
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-gray-800">Couldn&apos;t open this slide</p>
+                <p className="max-w-xs text-xs leading-relaxed text-gray-500">{loadError}</p>
+                {(current?.slide_url || current?.case_url) && !current?.loginWalled && (
+                  <a
+                    href={current.slide_url || current.case_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-1 inline-block text-xs font-medium text-primary hover:underline"
+                  >
+                    Try it on the source site →
+                  </a>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="relative">
+                <Microscope className="h-12 w-12 text-primary" />
+                <Loader2 className="absolute -bottom-1 -right-1 h-5 w-5 animate-spin text-primary" />
+              </div>
+              <div className="space-y-1">
+                <p className="text-sm font-semibold text-gray-800">Opening slide…</p>
+                <p className="min-h-[2.5rem] max-w-xs text-xs italic leading-relaxed text-gray-500 transition-opacity duration-300">
+                  {LOADING_LINES[lineIdx]}
+                </p>
+              </div>
+            </>
+          )}
         </div>
       </DialogContent>
     </Dialog>

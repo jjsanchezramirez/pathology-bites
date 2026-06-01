@@ -80,6 +80,9 @@ interface Props {
   // Fired the first time the viewer finishes loading a slide (status → ready). Lets a
   // host (e.g. the modal) reveal/expand its chrome only once tiles are actually showing.
   onReady?: () => void;
+  // Fired when a slide fails to load (unsupported, or the source tile server is down).
+  // Lets the host show a graceful message instead of hanging on its loading state.
+  onError?: (message: string) => void;
   // Bump to re-fit the slide to the container (goHome). The modal opens small (so OSD
   // initializes against a small element) then expands — without a refit the image would
   // stay at its small-window size, marooned in the big one.
@@ -103,6 +106,7 @@ export function SelfHostedOSDViewer({
   relatedSlides,
   onSelectRelated,
   onReady,
+  onError,
   fitToken,
 }: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -110,6 +114,8 @@ export function SelfHostedOSDViewer({
   // Kept in a ref so the init effect doesn't re-run when the host passes a new inline fn.
   const onReadyRef = useRef(onReady);
   onReadyRef.current = onReady;
+  const onErrorRef = useRef(onError);
+  onErrorRef.current = onError;
   const viewerRef = useRef<OsdViewer | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const osdLibRef = useRef<any>(null);
@@ -309,6 +315,7 @@ export function SelfHostedOSDViewer({
         if (ts.kind === "unsupported") {
           setError(ts.reason);
           setStatus("error");
+          onErrorRef.current?.(ts.reason);
           return;
         }
         setDims({ w: ts.width, h: ts.height });
@@ -376,6 +383,32 @@ export function SelfHostedOSDViewer({
         viewer.addHandler("animation", updateMag);
         viewer.addHandler("open", onSettle);
         viewer.addHandler("animation-finish", onSettle);
+
+        // Source server down / slide gone. Custom tilesources (Aperio/Leeds/IIIF) "open"
+        // immediately off their metadata, so a dead tile host never fires open-failed — the
+        // tiles just 404 silently and the canvas stays blank. Watch for that: if no tile has
+        // loaded a short while after the first failure, surface a graceful error.
+        let gotTile = false;
+        let failTimer: ReturnType<typeof setTimeout> | null = null;
+        const fail = (msg: string) => {
+          if (cancelled || gotTile) return;
+          setError(msg);
+          setStatus("error");
+          onErrorRef.current?.(msg);
+        };
+        viewer.addHandler("tile-loaded", () => {
+          gotTile = true;
+        });
+        viewer.addHandler("tile-load-failed", () => {
+          if (gotTile || cancelled || failTimer) return;
+          failTimer = setTimeout(
+            () => fail("The source server isn't responding for this slide — it may be down."),
+            2500
+          );
+        });
+        viewer.addHandler("open-failed", () =>
+          fail("Couldn't open this slide from its source repository.")
+        );
         // On open: re-apply the saved view (same position/zoom/rotation as the previous
         // slide) under the freeze cover, then fade the freeze once the region has loaded.
         viewer.addOnceHandler("open", () => {
@@ -411,8 +444,10 @@ export function SelfHostedOSDViewer({
         onReadyRef.current?.();
       } catch (e) {
         if (cancelled) return;
-        setError(e instanceof Error ? e.message : "Failed to initialize viewer");
+        const msg = e instanceof Error ? e.message : "Failed to initialize viewer";
+        setError(msg);
         setStatus("error");
+        onErrorRef.current?.(msg);
       }
     }
 
