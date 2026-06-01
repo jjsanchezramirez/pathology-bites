@@ -869,6 +869,15 @@ export function SelfHostedOSDViewer({
         </div>
       )}
 
+      {/* Stain chip — top-center, between the toolbar (left) and logo (right). Updates per
+          slide on a related-slide switch. Violet to match the stain badge in the search rows. */}
+      {showChrome && info?.stain && (
+        <div className="pointer-events-none absolute left-1/2 top-2 z-20 flex -translate-x-1/2 items-center gap-1.5 rounded-lg bg-white/95 px-2.5 py-1 text-xs font-medium text-violet-700 shadow-md ring-1 ring-black/5 backdrop-blur">
+          <span className="h-1.5 w-1.5 rounded-full bg-violet-500" />
+          {info.stain}
+        </div>
+      )}
+
       {/* Repository logo — top-right; click opens the slide on its source site. */}
       {showChrome && logo && (
         <a
