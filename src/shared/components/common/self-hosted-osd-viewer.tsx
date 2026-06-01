@@ -972,13 +972,20 @@ export function SelfHostedOSDViewer({
                       s.active ? "bg-primary/5 ring-2 ring-primary" : "hover:bg-gray-100"
                     }`}
                   >
-                    <div className="mb-1 flex items-center gap-1 text-xs font-medium text-gray-700">
+                    {/* Label wraps to two lines + tooltip — a single-line truncate could hide
+                        what the slide is when there's no preview to go on. */}
+                    <div className="mb-1 flex items-start gap-1 text-xs font-medium text-gray-700">
                       <span className="text-gray-400">{i + 1}.</span>
-                      <span className="truncate">{s.label}</span>
+                      <span className="line-clamp-2 leading-snug" title={s.label}>
+                        {s.label}
+                      </span>
                     </div>
-                    {s.thumbUrl && (
-                      <div className="relative">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                    {/* Always render the image box: a real thumbnail, or a microscope
+                        placeholder when the slide has no preview — keeps cards uniform and
+                        avoids the off-looking empty gap. Stain chip shows in either case. */}
+                    <div className="relative">
+                      {s.thumbUrl ? (
+                        // eslint-disable-next-line @next/next/no-img-element
                         <img
                           src={s.thumbUrl}
                           alt={s.label}
@@ -987,15 +994,21 @@ export function SelfHostedOSDViewer({
                             isFullscreen ? "h-24" : "h-16"
                           }`}
                         />
-                        {/* Stain overlaid on the thumbnail — same uppercase/tracked treatment
-                            as the viewer's stain chip + the RELATED SLIDES label. */}
-                        {s.stain && (
-                          <span className="pointer-events-none absolute left-1 top-1 max-w-[calc(100%-0.5rem)] truncate rounded bg-white/90 px-1.5 py-0.5 text-[9px] font-medium uppercase leading-none tracking-[0.1em] text-slate-500 shadow-sm ring-1 ring-black/5 backdrop-blur">
-                            {s.stain}
-                          </span>
-                        )}
-                      </div>
-                    )}
+                      ) : (
+                        <div
+                          className={`flex w-full items-center justify-center rounded bg-gray-50 text-gray-300 ${
+                            isFullscreen ? "h-24" : "h-16"
+                          }`}
+                        >
+                          <Microscope className="h-6 w-6" />
+                        </div>
+                      )}
+                      {s.stain && (
+                        <span className="pointer-events-none absolute left-1 top-1 max-w-[calc(100%-0.5rem)] truncate rounded bg-white/90 px-1.5 py-0.5 text-[9px] font-medium uppercase leading-none tracking-[0.1em] text-slate-500 shadow-sm ring-1 ring-black/5 backdrop-blur">
+                          {s.stain}
+                        </span>
+                      )}
+                    </div>
                   </button>
                 ))}
               </div>
