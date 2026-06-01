@@ -110,6 +110,8 @@ interface SlideRowUnifiedProps {
   onOpenViewer?: () => void;
   // Open the in-house viewer focused on a specific within-case slide (MGH /list name hash).
   onOpenViewerAt?: (slideName: string) => void;
+  // Open a related (corpus case-group) slide in the in-house viewer. Provided by the page.
+  onOpenRelated?: (related: VirtualSlide) => void;
 }
 
 // One within-case MGH slide from /pv-http/.../list — a stain/level of the same specimen.
@@ -136,6 +138,7 @@ export const SlideRowUnified = memo(function SlideRowUnified({
   related = [],
   onOpenViewer,
   onOpenViewerAt,
+  onOpenRelated,
 }: SlideRowUnifiedProps) {
   const logoPath = REPOSITORY_LOGOS[slide.repository];
   const categoryInfo = getVirtualSlideCategoryInfo(slide.category);
@@ -148,6 +151,9 @@ export const SlideRowUnified = memo(function SlideRowUnified({
   const [mghSlides, setMghSlides] = useState<MghCaseSlide[] | null>(null);
   const [mghLoading, setMghLoading] = useState(false);
   const hasRelatedPanel = related.length > 0 || isMghCase;
+  // Related cards open the in-house viewer when this repo is renderable; otherwise (PathPresenter
+  // SAS-token, Recut login) they keep the external link-out.
+  const relatedOpensViewer = isViewerSupported(slide.repository) && !!onOpenRelated;
 
   const toggleRelated = () => {
     setRelatedOpen((open) => {
@@ -374,27 +380,45 @@ export const SlideRowUnified = memo(function SlideRowUnified({
       <tr className="bg-gray-50/70 border-b border-gray-200">
         <td colSpan={4} className="p-2 md:p-4">
           <div className="flex flex-wrap gap-2">
-            {related.map((r) => (
-              <a
-                key={r.id}
-                href={r.slide_url || r.case_url}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="group flex w-40 flex-col overflow-hidden rounded-md border border-gray-200 bg-white hover:border-primary hover:shadow-sm transition"
-              >
-                <div className="relative h-20 w-full bg-gray-100">
-                  <Thumb src={r.preview_image_url} alt={r.diagnosis} iconClass="h-5 w-5" unoptimized />
-                </div>
-                <div className="p-1.5">
-                  <p className="truncate text-xs font-medium text-gray-800 group-hover:text-primary">
-                    {showDiagnoses || isRevealed ? r.diagnosis : "Slide"}
-                  </p>
-                  {r.stain_type && (
-                    <p className="truncate text-[10px] text-gray-500">{r.stain_type}</p>
-                  )}
-                </div>
-              </a>
-            ))}
+            {related.map((r) => {
+              const cardClass =
+                "group flex w-40 flex-col overflow-hidden rounded-md border border-gray-200 bg-white text-left transition hover:border-primary hover:shadow-sm";
+              const inner = (
+                <>
+                  <div className="relative h-20 w-full bg-gray-100">
+                    <Thumb src={r.preview_image_url} alt={r.diagnosis} iconClass="h-5 w-5" unoptimized />
+                  </div>
+                  <div className="p-1.5">
+                    <p className="truncate text-xs font-medium text-gray-800 group-hover:text-primary">
+                      {showDiagnoses || isRevealed ? r.diagnosis : "Slide"}
+                    </p>
+                    {r.stain_type && (
+                      <p className="truncate text-[10px] text-gray-500">{r.stain_type}</p>
+                    )}
+                  </div>
+                </>
+              );
+              return relatedOpensViewer ? (
+                <button
+                  key={r.id}
+                  type="button"
+                  onClick={() => onOpenRelated?.(r)}
+                  className={cardClass}
+                >
+                  {inner}
+                </button>
+              ) : (
+                <a
+                  key={r.id}
+                  href={r.slide_url || r.case_url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={cardClass}
+                >
+                  {inner}
+                </a>
+              );
+            })}
           </div>
         </td>
       </tr>

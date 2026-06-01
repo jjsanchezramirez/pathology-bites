@@ -861,6 +861,10 @@ function VirtualSlidesContent() {
                               setViewerInitialSlide(slideName);
                               setViewerSlide(slide);
                             }}
+                            onOpenRelated={(r) => {
+                              setViewerInitialSlide(undefined);
+                              setViewerSlide(r);
+                            }}
                           />
                         ))}
                       </tbody>
