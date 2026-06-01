@@ -32,7 +32,7 @@ type OsdViewer = {
   destroy: () => void;
   viewport: {
     zoomBy: (f: number) => void;
-    goHome: () => void;
+    goHome: (immediately?: boolean) => void;
     setRotation: (deg: number, immediately?: boolean) => void;
     getRotation: () => number;
     setFlip: (b: boolean) => void;
@@ -77,6 +77,13 @@ interface Props {
   // When omitted, the panel falls back to the MGH within-case prototype (/api/debug/wsi-related).
   relatedSlides?: { label: string; thumbUrl?: string; slideUrl: string }[];
   onSelectRelated?: (slideUrl: string) => void;
+  // Fired the first time the viewer finishes loading a slide (status → ready). Lets a
+  // host (e.g. the modal) reveal/expand its chrome only once tiles are actually showing.
+  onReady?: () => void;
+  // Bump to re-fit the slide to the container (goHome). The modal opens small (so OSD
+  // initializes against a small element) then expands — without a refit the image would
+  // stay at its small-window size, marooned in the big one.
+  fitToken?: number;
 }
 
 // Snap to 0/90/180/270 when within this many degrees.
@@ -95,9 +102,14 @@ export function SelfHostedOSDViewer({
   info,
   relatedSlides,
   onSelectRelated,
+  onReady,
+  fitToken,
 }: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Kept in a ref so the init effect doesn't re-run when the host passes a new inline fn.
+  const onReadyRef = useRef(onReady);
+  onReadyRef.current = onReady;
   const viewerRef = useRef<OsdViewer | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const osdLibRef = useRef<any>(null);
@@ -120,10 +132,11 @@ export function SelfHostedOSDViewer({
   const [magKnown, setMagKnown] = useState(false);
   const [brightness, setBrightness] = useState(100);
   const [contrast, setContrast] = useState(100);
+  const [saturation, setSaturation] = useState(100);
   const filterStr =
-    brightness === 100 && contrast === 100
+    brightness === 100 && contrast === 100 && saturation === 100
       ? ""
-      : `brightness(${brightness}%) contrast(${contrast}%)`;
+      : `brightness(${brightness}%) contrast(${contrast}%) saturate(${saturation}%)`;
   const [dims, setDims] = useState<{ w: number; h: number } | null>(null);
   const [isTainted, setIsTainted] = useState(false); // DZI repo — proxied so canvas stays clean
   const [busy, setBusy] = useState(false);
@@ -229,11 +242,17 @@ export function SelfHostedOSDViewer({
     else wrapperRef.current?.requestFullscreen();
   }, []);
 
-  // Live brightness/contrast via a CSS filter on the OSD canvas (cheap, GPU).
+  // Live brightness/contrast/saturation via a CSS filter on the OSD canvas (cheap, GPU).
   useEffect(() => {
     const c = viewerRef.current?.drawer?.canvas;
     if (c) c.style.filter = filterStr;
   }, [filterStr, status]);
+
+  // Host asked for a refit (e.g. the modal finished expanding from its small loading size).
+  useEffect(() => {
+    if (fitToken === undefined) return;
+    viewerRef.current?.viewport.goHome(true);
+  }, [fitToken]);
 
   // Fetch the case's related slides (MGH only; [] otherwise) for the left panel.
   useEffect(() => {
@@ -389,6 +408,7 @@ export function SelfHostedOSDViewer({
         });
         setStatus("ready");
         setEverReady(true);
+        onReadyRef.current?.();
       } catch (e) {
         if (cancelled) return;
         setError(e instanceof Error ? e.message : "Failed to initialize viewer");
@@ -766,10 +786,12 @@ export function SelfHostedOSDViewer({
               <Popover className="w-52 p-3">
                 <AdjustRow label="Brightness" value={brightness} onChange={setBrightness} />
                 <AdjustRow label="Contrast" value={contrast} onChange={setContrast} />
+                <AdjustRow label="Saturation" value={saturation} onChange={setSaturation} />
                 <button
                   onClick={() => {
                     setBrightness(100);
                     setContrast(100);
+                    setSaturation(100);
                   }}
                   className="mt-1 w-full rounded-md py-1 text-[11px] font-medium text-gray-600 hover:bg-gray-100"
                 >
@@ -805,7 +827,6 @@ export function SelfHostedOSDViewer({
         >
           <picture>
             <source srcSet={logo.avif} type="image/avif" />
-            {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={logo.png} alt={logo.alt} className="h-10 w-auto object-contain" />
           </picture>
         </a>
