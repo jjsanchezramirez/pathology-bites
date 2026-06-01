@@ -41,9 +41,13 @@ const LOADING_LINES = [
 // (same case_group) populate the viewer's left panel and navigate in place.
 export function SlideViewerModal({
   slide,
+  initialSlide,
   onClose,
 }: {
   slide: VirtualSlide | null;
+  // MGH only: a specific within-case slide (/list name hash) to open on, instead of the
+  // case's H&E representative. Seeded once when the viewer mounts for this case.
+  initialSlide?: string;
   onClose: () => void;
 }) {
   const [current, setCurrent] = useState<VirtualSlide | null>(slide);
@@ -160,6 +164,7 @@ export function SlideViewerModal({
             <SelfHostedOSDViewer
               slideUrl={current.slide_url || current.case_url}
               tileSourceUrl={current.tileSourceUrl}
+              initialSlide={initialSlide}
               repository={current.repository}
               heightClass="h-full"
               info={{

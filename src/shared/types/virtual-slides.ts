@@ -27,6 +27,10 @@ export interface VirtualSlide {
   // Direct tile-source (DZI) URL for repos whose slide_url is a course page, not the slide
   // itself (LearnHaem). The viewer resolves tiles from this; slide_url stays the source link.
   tileSourceUrl?: string;
+  // MGH only: number of hosted slides in the case (present iff >1). MGH has no corpus
+  // case-group; its within-case stains live behind /pv-http/.../list, fetched lazily when
+  // the row's related-slides panel is expanded. Lets the row show the count without that hit.
+  mghSlideCount?: number;
 }
 
 export interface SearchIndex {

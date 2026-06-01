@@ -5,7 +5,15 @@
 
 import { memo, useState } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
-import { ExternalLink, Eye, Microscope, Layers, ChevronDown, ChevronRight } from "lucide-react";
+import {
+  ExternalLink,
+  Eye,
+  Microscope,
+  Layers,
+  ChevronDown,
+  ChevronRight,
+  Loader2,
+} from "lucide-react";
 import Image from "next/image";
 import { getR2PublicUrl } from "@/shared/services/r2-storage";
 import { isViewerSupported } from "@/shared/utils/domain/repository";
@@ -100,6 +108,15 @@ interface SlideRowUnifiedProps {
   related?: VirtualSlide[];
   // Open this slide in the in-house OSD viewer (prototype). Provided by the page.
   onOpenViewer?: () => void;
+  // Open the in-house viewer focused on a specific within-case slide (MGH /list name hash).
+  onOpenViewerAt?: (slideName: string) => void;
+}
+
+// One within-case MGH slide from /pv-http/.../list — a stain/level of the same specimen.
+interface MghCaseSlide {
+  name: string; // tile-root hash (selects the slide in the viewer)
+  label: string; // displayName, carries the stain (e.g. "Slide 2 - (HE Surf. Recut 5u)")
+  thumbUrl: string;
 }
 
 export const SlideRowUnified = memo(function SlideRowUnified({
@@ -109,10 +126,36 @@ export const SlideRowUnified = memo(function SlideRowUnified({
   onToggleReveal,
   related = [],
   onOpenViewer,
+  onOpenViewerAt,
 }: SlideRowUnifiedProps) {
   const logoPath = REPOSITORY_LOGOS[slide.repository];
   const categoryInfo = getVirtualSlideCategoryInfo(slide.category);
   const [relatedOpen, setRelatedOpen] = useState(false);
+
+  // MGH cases have no corpus case-group — their within-case stain set lives behind /list and is
+  // fetched lazily on first expand. mghSlideCount (>1) is baked into the corpus so the row can
+  // offer the expander without a per-row network hit.
+  const isMghCase = slide.repository === "MGH Pathology" && (slide.mghSlideCount ?? 0) > 1;
+  const [mghSlides, setMghSlides] = useState<MghCaseSlide[] | null>(null);
+  const [mghLoading, setMghLoading] = useState(false);
+  const hasRelatedPanel = related.length > 0 || isMghCase;
+
+  const toggleRelated = () => {
+    setRelatedOpen((open) => {
+      const next = !open;
+      if (next && isMghCase && mghSlides === null && !mghLoading) {
+        setMghLoading(true);
+        fetch(
+          `/api/debug/wsi-related?slideUrl=${encodeURIComponent(slide.case_url || slide.slide_url)}`
+        )
+          .then((r) => r.json())
+          .then((d) => setMghSlides(d.slides ?? []))
+          .catch(() => setMghSlides([]))
+          .finally(() => setMghLoading(false));
+      }
+      return next;
+    });
+  };
 
   return (
     <>
@@ -179,10 +222,10 @@ export const SlideRowUnified = memo(function SlideRowUnified({
             )}
           </div>
 
-          {/* Related slides (same case — pair/panel) */}
-          {related.length > 0 && (
+          {/* Related slides — same case (corpus pair/panel), or MGH's within-case stain set. */}
+          {hasRelatedPanel && (
             <button
-              onClick={() => setRelatedOpen((o) => !o)}
+              onClick={toggleRelated}
               className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
             >
               {relatedOpen ? (
@@ -191,7 +234,9 @@ export const SlideRowUnified = memo(function SlideRowUnified({
                 <ChevronRight className="w-3.5 h-3.5" />
               )}
               <Layers className="w-3.5 h-3.5" />
-              {relatedLabel(slide.repository, related.length)}
+              {isMghCase
+                ? `${slide.mghSlideCount} slides in this case`
+                : relatedLabel(slide.repository, related.length)}
             </button>
           )}
         </div>
@@ -275,8 +320,44 @@ export const SlideRowUnified = memo(function SlideRowUnified({
       </td>
     </tr>
 
-    {/* Expanded related-slides panel — siblings of the same case (pair/panel). */}
-    {relatedOpen && related.length > 0 && (
+    {/* Expanded related-slides panel — siblings of the same case (pair/panel), or for MGH the
+        within-case stain set fetched from /list (no external link — opens the in-house viewer). */}
+    {relatedOpen && isMghCase && (
+      <tr className="bg-gray-50/70 border-b border-gray-200">
+        <td colSpan={4} className="p-2 md:p-4">
+          {mghLoading ? (
+            <div className="flex items-center gap-2 py-2 text-xs text-gray-500">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Loading slides…
+            </div>
+          ) : mghSlides && mghSlides.length > 0 ? (
+            <div className="flex flex-wrap gap-2">
+              {mghSlides.map((s) => (
+                <button
+                  key={s.name}
+                  type="button"
+                  onClick={() => onOpenViewerAt?.(s.name)}
+                  className="group flex w-40 flex-col overflow-hidden rounded-md border border-gray-200 bg-white text-left transition hover:border-primary hover:shadow-sm"
+                >
+                  <div className="relative h-20 w-full bg-gray-100">
+                    <Thumb src={s.thumbUrl || undefined} alt={s.label} iconClass="h-5 w-5" unoptimized />
+                  </div>
+                  <div className="p-1.5">
+                    <p className="truncate text-xs font-medium text-gray-800 group-hover:text-primary">
+                      {s.label}
+                    </p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="py-2 text-xs text-gray-500">Couldn&apos;t load this case&apos;s slides.</p>
+          )}
+        </td>
+      </tr>
+    )}
+
+    {relatedOpen && !isMghCase && related.length > 0 && (
       <tr className="bg-gray-50/70 border-b border-gray-200">
         <td colSpan={4} className="p-2 md:p-4">
           <div className="flex flex-wrap gap-2">

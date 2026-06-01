@@ -69,6 +69,9 @@ interface Props {
   // Tile source to resolve from, when it differs from slideUrl (e.g. LearnHaem: slideUrl is the
   // course page shown as the source link, while tiles come from a derived DZI URL). Defaults to slideUrl.
   tileSourceUrl?: string;
+  // MGH only: a within-case slide name (/list hash) to open on, instead of the case's H&E
+  // representative. Seeds activeSlide once at mount; later within-case nav uses the panel.
+  initialSlide?: string;
   repository?: string;
   className?: string;
   heightClass?: string;
@@ -102,6 +105,7 @@ function snap(deg: number): number {
 export function SelfHostedOSDViewer({
   slideUrl,
   tileSourceUrl,
+  initialSlide,
   repository,
   className = "",
   heightClass = "h-[600px]",
@@ -152,7 +156,11 @@ export function SelfHostedOSDViewer({
   const [busy, setBusy] = useState(false);
   // Related slides (MGH prototype): the case's H&E / special stains / levels.
   const [related, setRelated] = useState<RelatedSlide[]>([]);
-  const [activeSlide, setActiveSlide] = useState<string | null>(null); // selected slide name
+  // Selected slide name. Seeded from initialSlide (MGH open-at-slide) so the first load resolves
+  // that slide directly — no flash through the H&E representative first. Consumed (→ null on the
+  // next case) by the related-fetch effect via initialSlideRef.
+  const [activeSlide, setActiveSlide] = useState<string | null>(initialSlide ?? null);
+  const initialSlideRef = useRef(initialSlide);
   const [slidesOpen, setSlidesOpen] = useState(false); // hover expands
   // Snapshot of the outgoing canvas, shown over the reload so the switch never flashes to
   // black (OSD destroys the live canvas immediately). `freezeVisible` drives the cover→fade.
@@ -295,7 +303,11 @@ export function SelfHostedOSDViewer({
         cancelled = true;
       };
     }
-    setActiveSlide(null);
+    // Keep the seeded initialSlide on the first run for this case (consume it so a later
+    // slideUrl change resets to the H&E representative). useState already set it, so on the
+    // first run this re-sets the same value (no-op); only later runs flip it to null.
+    setActiveSlide(initialSlideRef.current ?? null);
+    initialSlideRef.current = undefined;
     setRelated([]);
     setEverReady(false); // new case → allow the full loading overlay
     setFreezeUrl(null);

@@ -162,6 +162,9 @@ function VirtualSlidesContent() {
 
   // Enhanced features
   const [viewerSlide, setViewerSlide] = useState<VirtualSlide | null>(null);
+  // MGH: open the viewer focused on a specific within-case slide (/list name hash). Cleared
+  // for normal opens so the viewer defaults to the case's H&E representative.
+  const [viewerInitialSlide, setViewerInitialSlide] = useState<string | undefined>(undefined);
   const [showDiagnoses, setShowDiagnoses] = useState(true);
   const [revealedDiagnoses, setRevealedDiagnoses] = useState<Set<string>>(new Set());
 
@@ -850,7 +853,14 @@ function VirtualSlidesContent() {
                             isRevealed={revealedDiagnoses.has(slide.id)}
                             onToggleReveal={() => toggleDiagnosisReveal(slide.id)}
                             related={getRelatedSlides(slide)}
-                            onOpenViewer={() => setViewerSlide(slide)}
+                            onOpenViewer={() => {
+                              setViewerInitialSlide(undefined);
+                              setViewerSlide(slide);
+                            }}
+                            onOpenViewerAt={(slideName) => {
+                              setViewerInitialSlide(slideName);
+                              setViewerSlide(slide);
+                            }}
                           />
                         ))}
                       </tbody>
@@ -911,7 +921,11 @@ function VirtualSlidesContent() {
       <JoinCommunitySection />
 
       {/* In-house OSD viewer (prototype) — opens a supported slide in place. */}
-      <SlideViewerModal slide={viewerSlide} onClose={() => setViewerSlide(null)} />
+      <SlideViewerModal
+        slide={viewerSlide}
+        initialSlide={viewerInitialSlide}
+        onClose={() => setViewerSlide(null)}
+      />
     </div>
   );
 }
