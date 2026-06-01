@@ -24,12 +24,13 @@ export function buildOsdTileSource(ts: WsiTileSource, opts?: { proxy?: boolean }
   }
   if (ts.kind === "aperio") {
     // Aperio ImageServer region-crop: ?<left>+<top>+<outW>+<outH>+<factor>[+<quality>].
-    // left/top are LEVEL-0 (base) pixel coords; outW/outH are the OUTPUT tile size; the
-    // server reads the base region [left, left+outW*factor) and downsamples to outW. So a
-    // tile (x,y) at downsample `factor` = 2^(maxLevel-level) maps to base origin
-    // x*tileSize*factor. (Verified empirically against rosai.secondslide.com — the old
-    // rosai branch used unscaled coords + an exponent, which mis-placed every non-native
-    // level, panning the image per zoom.) aanp keeps its literal "0" coord prefix.
+    // left/top are in the DOWNSAMPLED level's pixel space (x*tileSize, NOT scaled by factor);
+    // outW/outH are the OUTPUT tile size; the 5th param is the downsample FACTOR
+    // = 2^(maxLevel-level), selecting which pyramid level to read. The server returns an
+    // outW×outH crop of that level. (Verified empirically against rosai.secondslide.com:
+    // ?256+0+256+256+2 == native base[512,1024) downscaled; the earlier x*tileSize*factor
+    // coords mis-placed every non-native level, leaving only the native level — factor 1 —
+    // aligned.) aanp keeps its literal "0" coord prefix (numerically a no-op).
     const { flavor, tileSize, maxLevel, baseUrl, quality } = ts;
     return {
       width: ts.width,
@@ -39,8 +40,8 @@ export function buildOsdTileSource(ts: WsiTileSource, opts?: { proxy?: boolean }
       maxLevel,
       getTileUrl: (level: number, x: number, y: number) => {
         const factor = Math.pow(2, maxLevel - level);
-        const left = x * tileSize * factor;
-        const top = y * tileSize * factor;
+        const left = x * tileSize;
+        const top = y * tileSize;
         if (flavor === "rosai") {
           return `${baseUrl}?${left}+${top}+${tileSize}+${tileSize}+${factor}+${quality}`;
         }
