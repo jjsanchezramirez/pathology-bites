@@ -693,7 +693,7 @@ export function SelfHostedOSDViewer({
             onTransitionEnd={() => {
               if (!freezeVisible) setFreezeUrl(null);
             }}
-            className={`pointer-events-none absolute inset-0 z-0 h-full w-full object-cover blur-[2px] transition-opacity duration-500 ease-out ${
+            className={`pointer-events-none absolute inset-0 z-0 h-full w-full object-cover blur-[2px] transition-opacity duration-[1100ms] ease-in-out ${
               freezeVisible ? "opacity-100" : "opacity-0"
             }`}
           />
