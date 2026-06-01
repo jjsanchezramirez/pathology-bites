@@ -150,6 +150,9 @@ export const SlideRowUnified = memo(function SlideRowUnified({
   const isMghCase = slide.repository === "MGH Pathology" && (slide.mghSlideCount ?? 0) > 1;
   const [mghSlides, setMghSlides] = useState<MghCaseSlide[] | null>(null);
   const [mghLoading, setMghLoading] = useState(false);
+  // /list comes back H&E-first, so item 0 is the case's representative — the slide already shown
+  // as this row. Drop it so the panel lists only the *other* slides (matches non-MGH siblings).
+  const mghRelated = mghSlides ? mghSlides.slice(1) : null;
   const hasRelatedPanel = related.length > 0 || isMghCase;
   // Related cards open the in-house viewer when this repo is renderable; otherwise (PathPresenter
   // SAS-token, Recut login) they keep the external link-out.
@@ -250,7 +253,9 @@ export const SlideRowUnified = memo(function SlideRowUnified({
               )}
               <Layers className="w-3.5 h-3.5" />
               {isMghCase
-                ? `${slide.mghSlideCount} slides in this case`
+                ? `${(slide.mghSlideCount ?? 1) - 1} related slide${
+                    (slide.mghSlideCount ?? 1) - 1 === 1 ? "" : "s"
+                  }`
                 : relatedLabel(slide.repository, related.length)}
             </button>
           )}
@@ -345,9 +350,9 @@ export const SlideRowUnified = memo(function SlideRowUnified({
               <Loader2 className="h-4 w-4 animate-spin" />
               Loading slides…
             </div>
-          ) : mghSlides && mghSlides.length > 0 ? (
+          ) : mghRelated && mghRelated.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {mghSlides.map((s) => {
+              {mghRelated.map((s) => {
                 const stain = mghStainFromLabel(s.label);
                 return (
                   <button
