@@ -205,7 +205,9 @@ export const SlideRowUnified = memo(function SlideRowUnified({
               <span className="hidden md:inline">Open viewer</span>
             </button>
           )}
-          {slide.slide_url && (
+          {/* MGH's index.php page is login-walled for many cases (tiles are public though),
+              so we don't link out — the in-house viewer renders it directly. */}
+          {slide.slide_url && slide.repository !== "MGH Pathology" && (
             <a
               href={slide.slide_url}
               target="_blank"
