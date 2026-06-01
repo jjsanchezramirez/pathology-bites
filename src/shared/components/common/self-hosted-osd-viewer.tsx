@@ -718,10 +718,10 @@ export function SelfHostedOSDViewer({
             }}
             style={{
               opacity: freezeVisible ? 1 : 0,
-              filter: freezeBlur ? "blur(3px)" : "blur(0px)",
-              // Blur ramps in quickly (650ms) so the image visibly softens; opacity fades out
-              // slowly (1100ms) for a gentle dissolve into the newly loaded slide.
-              transition: "opacity 1100ms ease-in-out, filter 650ms ease-out",
+              filter: freezeBlur ? "blur(6px)" : "blur(0px)",
+              // Blur ramps in slowly (1100ms) so the image visibly softens; opacity fades out
+              // quickly (650ms) for a snappier dissolve into the newly loaded slide.
+              transition: "opacity 650ms ease-in-out, filter 1100ms ease-out",
             }}
             className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
           />

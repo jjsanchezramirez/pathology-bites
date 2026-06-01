@@ -113,6 +113,22 @@ export function SlideViewerModal({
   readyRef.current = ready;
 
   const { animationData: errorAnim, isLoading: errorAnimLoading } = useLottieAnimation("error");
+  // The "error" Lottie is a one-shot — without this it plays once then freezes on its last
+  // frame (looks like it never played). Ping-pong it forward/reverse, same as the tools page.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const errorLottieRef = useRef<any>(null);
+  useEffect(() => {
+    if (!loadError || !errorAnim || !errorLottieRef.current) return;
+    const anim = errorLottieRef.current;
+    const onComplete = () => {
+      if (anim.animationItem) {
+        anim.animationItem.setDirection(anim.animationItem.playDirection * -1);
+        anim.animationItem.play();
+      }
+    };
+    anim.animationItem?.addEventListener("complete", onComplete);
+    return () => anim.animationItem?.removeEventListener("complete", onComplete);
+  }, [loadError, errorAnim]);
 
   return (
     <Dialog
@@ -177,6 +193,7 @@ export function SlideViewerModal({
                   <div className="h-full w-full animate-pulse rounded-full bg-muted/20" />
                 ) : (
                   <Lottie
+                    lottieRef={errorLottieRef}
                     animationData={errorAnim}
                     loop={false}
                     autoplay
