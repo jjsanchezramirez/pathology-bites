@@ -23,11 +23,13 @@ export function buildOsdTileSource(ts: WsiTileSource, opts?: { proxy?: boolean }
     };
   }
   if (ts.kind === "aperio") {
-    // Aperio ImageServer region-crop. The two servers differ in coordinate convention
-    // (verified empirically — do not "simplify" to one branch):
-    //   - rosai (v14): left/top in DOWNSAMPLED coords (x*tileSize), 5th param = exponent.
-    //   - aanp  (v12): left/top in LEVEL-0 coords (x*tileSize*factor), 5th param = factor,
-    //                  with a literal "0" prefix on the coords (matches their viewer JS).
+    // Aperio ImageServer region-crop: ?<left>+<top>+<outW>+<outH>+<factor>[+<quality>].
+    // left/top are LEVEL-0 (base) pixel coords; outW/outH are the OUTPUT tile size; the
+    // server reads the base region [left, left+outW*factor) and downsamples to outW. So a
+    // tile (x,y) at downsample `factor` = 2^(maxLevel-level) maps to base origin
+    // x*tileSize*factor. (Verified empirically against rosai.secondslide.com — the old
+    // rosai branch used unscaled coords + an exponent, which mis-placed every non-native
+    // level, panning the image per zoom.) aanp keeps its literal "0" coord prefix.
     const { flavor, tileSize, maxLevel, baseUrl, quality } = ts;
     return {
       width: ts.width,
@@ -36,12 +38,13 @@ export function buildOsdTileSource(ts: WsiTileSource, opts?: { proxy?: boolean }
       minLevel: 0,
       maxLevel,
       getTileUrl: (level: number, x: number, y: number) => {
-        const exp = maxLevel - level;
+        const factor = Math.pow(2, maxLevel - level);
+        const left = x * tileSize * factor;
+        const top = y * tileSize * factor;
         if (flavor === "rosai") {
-          return `${baseUrl}?${x * tileSize}+${y * tileSize}+${tileSize}+${tileSize}+${exp}+${quality}`;
+          return `${baseUrl}?${left}+${top}+${tileSize}+${tileSize}+${factor}+${quality}`;
         }
-        const factor = Math.pow(2, exp);
-        return `${baseUrl}?0${x * tileSize * factor}+0${y * tileSize * factor}+${tileSize}+${tileSize}+${factor}`;
+        return `${baseUrl}?0${left}+0${top}+${tileSize}+${tileSize}+${factor}`;
       },
     };
   }
