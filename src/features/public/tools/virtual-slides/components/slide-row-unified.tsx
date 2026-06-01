@@ -45,8 +45,12 @@ function ClinicalInfo({ slide }: { slide: VirtualSlide }) {
 // Related-slides label. Conference/seminar repositories group by event, not by a single
 // case, so they read as "from this conference" rather than "related slides".
 function relatedLabel(repository: string, n: number): string {
+  // Session/conference sources group DISTINCT cases (not same-case stains) — label them so
+  // they don't read as "related slides". MGH groups by teaching session (e.g. WSI21-111 →
+  // Case-1/2/3 are different cases). Rosai = seminar, Recut = conference.
   if (repository === "Rosai Collection") return `${n} from this seminar`;
   if (repository === "Recut Club") return `${n} from this conference`;
+  if (repository === "MGH Pathology") return `${n} from this session`;
   return `${n} related slide${n > 1 ? "s" : ""}`;
 }
 
@@ -127,11 +131,10 @@ export const SlideRowUnified = memo(function SlideRowUnified({
             </>
           )}
 
-          {/* Site badges (Category + Organ) - visible on mobile/tablet only (inline in diagnosis column) */}
-          <div className="flex flex-wrap items-center gap-2 pt-1 lg:hidden">
-            {/* Category - Color-coded */}
+          {/* Badges: category (color) · organ (gray) · stain (violet) — replaces the Site column */}
+          <div className="flex flex-wrap items-center gap-1.5 pt-1">
             <span
-              className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border"
+              className="inline-flex items-center rounded border px-1.5 py-0 text-[11px] font-medium"
               style={{
                 backgroundColor: `color-mix(in srgb, ${categoryInfo.color} 20%, white)`,
                 color: `color-mix(in srgb, ${categoryInfo.color} 90%, black)`,
@@ -140,11 +143,14 @@ export const SlideRowUnified = memo(function SlideRowUnified({
             >
               {categoryInfo.shortForm}
             </span>
-
-            {/* Subcategory (Organ System) - Light gray */}
             {slide.subcategory && (
-              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700">
+              <span className="inline-flex items-center rounded border border-gray-200 bg-gray-50 px-1.5 py-0 text-[11px] font-medium text-gray-700">
                 {slide.subcategory}
+              </span>
+            )}
+            {slide.stain_type && (
+              <span className="inline-flex items-center rounded border border-violet-200 bg-violet-50 px-1.5 py-0 text-[11px] font-medium text-violet-700">
+                {slide.stain_type}
               </span>
             )}
           </div>
@@ -167,29 +173,6 @@ export const SlideRowUnified = memo(function SlideRowUnified({
         </div>
       </td>
 
-      {/* Site column (Category + Organ) - visible on desktop (lg+) */}
-      <td className="p-2 md:p-4 w-32 md:w-40 hidden lg:table-cell">
-        <div className="flex flex-col gap-1.5">
-          {/* Category - Color-coded */}
-          <span
-            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border w-fit"
-            style={{
-              backgroundColor: `color-mix(in srgb, ${categoryInfo.color} 20%, white)`,
-              color: `color-mix(in srgb, ${categoryInfo.color} 90%, black)`,
-              borderColor: `color-mix(in srgb, ${categoryInfo.color} 30%, white)`,
-            }}
-          >
-            {categoryInfo.shortForm}
-          </span>
-
-          {/* Subcategory (Organ System) - Light gray */}
-          {slide.subcategory && (
-            <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:border-gray-700 w-fit">
-              {slide.subcategory}
-            </span>
-          )}
-        </div>
-      </td>
 
       {/* Repository - hidden on mobile, visible on tablet+ */}
       <td className="p-2 md:p-4 w-20 md:w-32 hidden md:table-cell">
@@ -269,7 +252,7 @@ export const SlideRowUnified = memo(function SlideRowUnified({
     {/* Expanded related-slides panel — siblings of the same case (pair/panel). */}
     {relatedOpen && related.length > 0 && (
       <tr className="bg-gray-50/70 border-b border-gray-200">
-        <td colSpan={5} className="p-2 md:p-4">
+        <td colSpan={4} className="p-2 md:p-4">
           <div className="flex flex-wrap gap-2">
             {related.map((r) => (
               <a

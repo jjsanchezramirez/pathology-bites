@@ -817,10 +817,6 @@ function VirtualSlidesContent() {
                             Preview
                           </th>
                           <th className="text-left p-2 md:p-4 font-semibold">Slide Info</th>
-                          {/* Site column (Category + Organ) - visible on desktop (lg+) */}
-                          <th className="text-left p-2 md:p-4 font-semibold w-32 md:w-40 hidden lg:table-cell">
-                            Site
-                          </th>
                           <th className="text-left p-2 md:p-4 font-semibold w-20 md:w-32 hidden md:table-cell">
                             Repository
                           </th>

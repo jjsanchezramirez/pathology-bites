@@ -3,18 +3,16 @@
 // Hard-coded R2 data URL - this is a public, static URL that doesn't change
 const DATA_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev";
 
-// UPDATED: v11 production dataset (66,300 WSIs). v10 + MGH enrichment: dropped 2,470
-// login-walled/dead MGH cases (no hosted slide) and derived previews for ~7.7k live MGH
-// slides. v10 added Wirtualny stains (~19k) + additional-content links (Hemepath/Rosai/AANP).
-// Full rebuild from the scraped corpus; requires a diagnosis. Toronto filtered client-side.
-// - New source: Wirtualny Mikroskop (Gdańsk Tech). Canonical taxonomies: 61 organs, 16
-//   categories, 249 stains. Adds `groups` (pair/panel case-groups) + per-entry `k` for the
-//   related-slides panel; the loader ignores these until that UI lands.
-// - Abbreviated field names (x, d, c, s, q, etc.); WHO Classification of Tumours abbreviations.
-// - Brotli-compressed object (26MB → 2.05MB, lgwin 24). Stored with HTTP metadata
-//   Content-Encoding: br — browser auto-decompresses; fetch() sees plain JSON,
-//   no DecompressionStream needed (only .json.gz triggers manual decompress).
-export const VIRTUAL_SLIDES_JSON_URL = `${DATA_BASE}/virtual-slides/virtual-slides-v11-min.json.br?v=11`;
+// UPDATED: v12 production dataset (66,300 WSIs, 11 sources). Cumulative over v9–v11:
+// - Wirtualny stains recovered (~19k) + new source Wirtualny Mikroskop (Gdańsk Tech, IIIF).
+// - Additional-content links (Hemepath/Rosai/AANP PDFs); requires a diagnosis.
+// - MGH enrichment: dropped 2,470 login-walled/dead cases, derived ~7.7k previews.
+// - Category made strict (16 canonical; junk free-text + long Leeds terms like
+//   "Eye, ear, nose and throat (ENT)" → null/Head and Neck). Toronto filtered client-side.
+// - `groups` (pair/panel/session case-groups) + per-entry `k` drive the related-slides panel.
+// - Abbreviated field names (x, d, c, s, q, etc.). Brotli (lgwin 24) ~2.15MB; stored with
+//   Content-Encoding: br — browser auto-decompresses, fetch() sees plain JSON.
+export const VIRTUAL_SLIDES_JSON_URL = `${DATA_BASE}/virtual-slides/virtual-slides-v12-min.json.br?v=12`;
 
 // Fallback URL (same object) retained for the loader's fallback path.
-export const VIRTUAL_SLIDES_JSON_URL_FALLBACK = `${DATA_BASE}/virtual-slides/virtual-slides-v11-min.json.br?v=11`;
+export const VIRTUAL_SLIDES_JSON_URL_FALLBACK = `${DATA_BASE}/virtual-slides/virtual-slides-v12-min.json.br?v=12`;

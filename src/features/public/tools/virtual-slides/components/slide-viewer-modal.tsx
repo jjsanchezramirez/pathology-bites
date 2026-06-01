@@ -61,13 +61,13 @@ export function SlideViewerModal({
         if (!open) onClose();
       }}
     >
-      <DialogContent className="grid-rows-[auto_1fr] h-[95vh] w-[97vw] max-w-[97vw] gap-0 overflow-hidden border-0 bg-black p-0 sm:max-w-[97vw]">
+      <DialogContent className="h-[95vh] w-[97vw] max-w-[97vw] gap-0 overflow-hidden border-0 bg-black p-0 sm:max-w-[97vw]">
         <DialogTitle className="sr-only">{current?.diagnosis || "Slide viewer"}</DialogTitle>
         {current && (
           <SelfHostedOSDViewer
             slideUrl={current.slide_url || current.case_url}
             repository={current.repository}
-            heightClass="h-full"
+            heightClass="h-[95vh]"
             info={{
               diagnosis: current.diagnosis,
               category: current.category,
