@@ -86,6 +86,45 @@ export function getCaseGroup(slide: VirtualSlide): VirtualSlide[] {
   return out;
 }
 
+// H&E detection on a slide's stain label. Mirrors isHeStain in wsi-tilesource.ts (kept inline
+// to avoid pulling the server-side resolver module into the client bundle).
+const HE_STAIN_RE = /\bh\s*&\s*e\b|\bh\s*\+\s*e\b|\bhe\b|hematoxylin/i;
+
+// The representative slide for a case-group: the H&E member if the case has one (the natural
+// "front door" — same rule the MGH viewer uses), else the first member in group order.
+function representativeForGroup(groupId: string): VirtualSlide | null {
+  const ids = groupMembers[groupId];
+  if (!ids) return null;
+  let first: VirtualSlide | null = null;
+  for (const id of ids) {
+    const s = slideById.get(id);
+    if (!s) continue;
+    if (!first) first = s;
+    if (HE_STAIN_RE.test(s.stain_type || "")) return s;
+  }
+  return first;
+}
+
+// Collapse a result list so each case-group shows ONE row (its H&E-first representative)
+// instead of one row per stain. A group's representative keeps the rank slot of the group's
+// best-ranked member, so e.g. searching "CD20" still surfaces the case at that rank — just
+// displayed as the H&E, with the matched stain moved into the related-slides panel.
+// Slides with no groupId pass through untouched.
+export function collapseCaseGroups(list: VirtualSlide[]): VirtualSlide[] {
+  const seen = new Set<string>();
+  const out: VirtualSlide[] = [];
+  for (const s of list) {
+    if (!s.groupId) {
+      out.push(s);
+      continue;
+    }
+    if (seen.has(s.groupId)) continue;
+    seen.add(s.groupId);
+    out.push(representativeForGroup(s.groupId) ?? s);
+  }
+  return out;
+}
+
 // Helper to reverse URL mapping: {url: id} → {id: url}
 function reverseMapping(mapping: Record<string, string> | undefined): Record<string, string> {
   if (!mapping) return {};
@@ -456,7 +495,8 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
             confidence,
           } = await rankSlidesWithExpansion(list, options.query);
           if (mounted) {
-            setFilteredAndRanked(rankedSlides);
+            // One row per case (H&E-first representative); siblings move to the related panel.
+            setFilteredAndRanked(collapseCaseGroups(rankedSlides));
             setExpandedSearchTerms(expandedTerms);
             setSearchMethod(method);
             setSearchConfidence(confidence);
@@ -476,6 +516,9 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
             [arr[i], arr[j]] = [arr[j], arr[i]];
           }
           // Use the limit from options, or default to showing all
+          // Collapse case-groups BEFORE the limit so the shown count is cases, not stains,
+          // and a group never burns several of the random slots with its own stains.
+          arr = collapseCaseGroups(arr);
           const randomLimit = options.limit ?? arr.length;
           if (arr.length > randomLimit) arr = arr.slice(0, randomLimit);
           if (mounted) {
