@@ -32,6 +32,7 @@ interface V7Entry {
   u?: V7UrlRef | V7UrlRef[]; // case_url
   w?: V7UrlRef | V7UrlRef[]; // other_urls
   k?: string; // case-group id (pair/panel) — member of a related-slides set
+  lw?: number; // 1 = external page is login-walled (MGH) — hide the link, use the viewer
 }
 
 // v7 URL reference: {baseId: path} e.g., {"p2": "path/to/slide.svs"}
@@ -136,6 +137,7 @@ function normalizeToVirtualSlide(v7: V7Entry): VirtualSlide {
     other_urls: otherUrlsArray,
     source_metadata: {},
     groupId: v7.k,
+    loginWalled: v7.lw === 1,
   };
 }
 

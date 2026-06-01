@@ -23,6 +23,7 @@ export interface VirtualSlide {
   other_urls: string[];
   source_metadata: Record<string, unknown>;
   groupId?: string; // case-group id (pair/panel) — siblings resolvable via getRelatedSlides
+  loginWalled?: boolean; // external page requires login (MGH) — hide the link, use the viewer
 }
 
 export interface SearchIndex {
