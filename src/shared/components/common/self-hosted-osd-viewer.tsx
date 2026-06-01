@@ -948,10 +948,11 @@ export function SelfHostedOSDViewer({
               : isFullscreen
                 ? "2.75rem"
                 : "2.5rem",
-            // Fit the height to the slide count (no empty space, no hover jump). maxHeight
-            // caps it to the band between the toolbar (top) and the minimap (bottom-left) so
-            // it never overruns either; longer cases scroll within that band.
-            height: 44 + panelItems.length * (isFullscreen ? 140 : 104),
+            // Expanded: auto-fit the actual card content (card height varies with 1-/2-line
+            // labels + placeholder vs thumbnail, so a per-item constant mis-sizes it). Collapsed:
+            // a tall rail sized by slide count. maxHeight caps both to the band between the
+            // toolbar (top) and minimap (bottom-left); longer cases scroll within it.
+            height: slidesOpen ? undefined : 44 + panelItems.length * (isFullscreen ? 140 : 104),
             maxHeight: "calc(100% - 5rem - 9rem)",
           }}
           className="absolute left-2 top-20 z-10 flex flex-col overflow-hidden rounded-lg bg-white/95 shadow-lg ring-1 ring-black/5 backdrop-blur transition-all duration-200 ease-out"

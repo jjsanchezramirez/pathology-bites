@@ -7,7 +7,7 @@ import { Loader2, Microscope } from "lucide-react";
 import { cn } from "@/shared/utils/index";
 import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialog";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
-import { getRelatedSlides } from "@/shared/hooks/use-client-virtual-slides";
+import { getCaseGroup } from "@/shared/hooks/use-client-virtual-slides";
 import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
 
 // Animated error mark (same "error" Lottie used by the demo-question + other load-failure
@@ -80,10 +80,12 @@ export function SlideViewerModal({
     return () => clearInterval(t);
   }, [ready, loadError, slide]);
 
+  // Full case group in canonical order (stable regardless of which slide is selected) — the
+  // active one is just highlighted in place, so picking a sibling doesn't reshuffle the list.
   const members = useMemo(() => {
     if (!current) return [];
-    const siblings = getRelatedSlides(current);
-    return siblings.length ? [current, ...siblings] : [];
+    const group = getCaseGroup(current);
+    return group.length > 1 ? group : [];
   }, [current]);
 
   // Memoized so its identity is stable across re-renders — the viewer keys an effect on this

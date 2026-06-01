@@ -71,6 +71,21 @@ export function getRelatedSlides(slide: VirtualSlide): VirtualSlide[] {
   return out;
 }
 
+// Full case-group in its canonical order (the slide itself INCLUDED, in place). Used by the
+// viewer's related panel so the list order is stable no matter which member is selected —
+// selecting a sibling re-highlights in place instead of jumping it to the top.
+export function getCaseGroup(slide: VirtualSlide): VirtualSlide[] {
+  if (!slide.groupId) return [];
+  const ids = groupMembers[slide.groupId];
+  if (!ids) return [];
+  const out: VirtualSlide[] = [];
+  for (const id of ids) {
+    const s = slideById.get(id);
+    if (s) out.push(s);
+  }
+  return out;
+}
+
 // Helper to reverse URL mapping: {url: id} → {id: url}
 function reverseMapping(mapping: Record<string, string> | undefined): Record<string, string> {
   if (!mapping) return {};
