@@ -119,6 +119,15 @@ interface MghCaseSlide {
   thumbUrl: string;
 }
 
+// Pull the stain descriptor out of an MGH /list displayName ("Slide 2 - (HE Surf. Recut 5u)"
+// → "HE Surf. Recut 5u"). Drops the "Slide N -" prefix + outer parens so the card shows just
+// the stain (the diagnosis is reused as the title) — visually identical to non-MGH cards.
+function mghStainFromLabel(label: string): string {
+  const stripped = label.replace(/^slide\s*\d+\s*[-–:]\s*/i, "").trim();
+  const m = stripped.match(/^\((.*)\)$/);
+  return (m ? m[1] : stripped).trim();
+}
+
 export const SlideRowUnified = memo(function SlideRowUnified({
   slide,
   showDiagnoses,
@@ -332,23 +341,27 @@ export const SlideRowUnified = memo(function SlideRowUnified({
             </div>
           ) : mghSlides && mghSlides.length > 0 ? (
             <div className="flex flex-wrap gap-2">
-              {mghSlides.map((s) => (
-                <button
-                  key={s.name}
-                  type="button"
-                  onClick={() => onOpenViewerAt?.(s.name)}
-                  className="group flex w-40 flex-col overflow-hidden rounded-md border border-gray-200 bg-white text-left transition hover:border-primary hover:shadow-sm"
-                >
-                  <div className="relative h-20 w-full bg-gray-100">
-                    <Thumb src={s.thumbUrl || undefined} alt={s.label} iconClass="h-5 w-5" unoptimized />
-                  </div>
-                  <div className="p-1.5">
-                    <p className="truncate text-xs font-medium text-gray-800 group-hover:text-primary">
-                      {s.label}
-                    </p>
-                  </div>
-                </button>
-              ))}
+              {mghSlides.map((s) => {
+                const stain = mghStainFromLabel(s.label);
+                return (
+                  <button
+                    key={s.name}
+                    type="button"
+                    onClick={() => onOpenViewerAt?.(s.name)}
+                    className="group flex w-40 flex-col overflow-hidden rounded-md border border-gray-200 bg-white text-left transition hover:border-primary hover:shadow-sm"
+                  >
+                    <div className="relative h-20 w-full bg-gray-100">
+                      <Thumb src={s.thumbUrl || undefined} alt={s.label} iconClass="h-5 w-5" unoptimized />
+                    </div>
+                    <div className="p-1.5">
+                      <p className="truncate text-xs font-medium text-gray-800 group-hover:text-primary">
+                        {showDiagnoses || isRevealed ? slide.diagnosis : "Slide"}
+                      </p>
+                      {stain && <p className="truncate text-[10px] text-gray-500">{stain}</p>}
+                    </div>
+                  </button>
+                );
+              })}
             </div>
           ) : (
             <p className="py-2 text-xs text-gray-500">Couldn&apos;t load this case&apos;s slides.</p>
