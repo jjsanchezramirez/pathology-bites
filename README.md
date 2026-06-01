@@ -648,19 +648,19 @@ Don't re-add without revisiting the threat model.
 
 #### Threat coverage
 
-| Attack | Defender |
-|---|---|
-| Credential stuffing | Supabase `/auth/v1/token` rate limit + Cloudflare |
-| Signup spam | Supabase signup limit + email verification + honeypot |
-| Password reset abuse | Supabase `/auth/v1/recover` limit |
-| Unauthorized read | RLS (`auth.uid()` filter) + middleware 401 |
-| Privilege escalation | JWT `app_metadata.role` (server-set, unforgeable) + middleware role check |
-| Session hijack | Supabase refresh-token rotation + reuse detection |
-| CSRF | `sameSite: lax` cookie + JSON CORS preflight |
-| DDoS / volumetric bot | Cloudflare edge |
-| SQL injection | PostgREST parameterized queries |
-| XSS | React JSX escaping |
-| Bot signup (current) | Email verification + honeypot (Turnstile OFF) |
+| Attack                | Defender                                                                  |
+| --------------------- | ------------------------------------------------------------------------- |
+| Credential stuffing   | Supabase `/auth/v1/token` rate limit + Cloudflare                         |
+| Signup spam           | Supabase signup limit + email verification + honeypot                     |
+| Password reset abuse  | Supabase `/auth/v1/recover` limit                                         |
+| Unauthorized read     | RLS (`auth.uid()` filter) + middleware 401                                |
+| Privilege escalation  | JWT `app_metadata.role` (server-set, unforgeable) + middleware role check |
+| Session hijack        | Supabase refresh-token rotation + reuse detection                         |
+| CSRF                  | `sameSite: lax` cookie + JSON CORS preflight                              |
+| DDoS / volumetric bot | Cloudflare edge                                                           |
+| SQL injection         | PostgREST parameterized queries                                           |
+| XSS                   | React JSX escaping                                                        |
+| Bot signup (current)  | Email verification + honeypot (Turnstile OFF)                             |
 
 ### API Structure
 

@@ -388,7 +388,15 @@ interface IframeViewerProps {
   crop?: { top: number; bottom: number };
 }
 
-function IframeViewer({ url, title, onLoad, onError, loaded, fillHeight, crop }: IframeViewerProps) {
+function IframeViewer({
+  url,
+  title,
+  onLoad,
+  onError,
+  loaded,
+  fillHeight,
+  crop,
+}: IframeViewerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -566,21 +574,21 @@ function IframeViewer({ url, title, onLoad, onError, loaded, fillHeight, crop }:
                 } as React.CSSProperties
               }
             >
-          <iframe
-            ref={iframeRef}
-            src={url}
-            className="w-full h-full border-0"
-            title={title}
-            onLoad={handleIframeLoad}
-            onError={handleIframeError}
-            sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads"
-            allow="fullscreen"
-            style={{
-              pointerEvents: loaded ? "auto" : "none",
-              // On mobile, let the iframe handle all touch events
-              touchAction: isMobile ? "manipulation" : "auto",
-            }}
-          />
+              <iframe
+                ref={iframeRef}
+                src={url}
+                className="w-full h-full border-0"
+                title={title}
+                onLoad={handleIframeLoad}
+                onError={handleIframeError}
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-downloads"
+                allow="fullscreen"
+                style={{
+                  pointerEvents: loaded ? "auto" : "none",
+                  // On mobile, let the iframe handle all touch events
+                  touchAction: isMobile ? "manipulation" : "auto",
+                }}
+              />
             </div>
           );
         })()}

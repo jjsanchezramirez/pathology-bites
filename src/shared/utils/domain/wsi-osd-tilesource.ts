@@ -72,7 +72,10 @@ export function buildOsdTileSource(ts: WsiTileSource, opts?: { proxy?: boolean }
         const h = Math.min(tileSize * s, height - y0);
         if (w <= 0 || h <= 0) return ""; // out of bounds — OSD treats as a missing tile
         const tw = Math.ceil(w / s);
-        return `${id}/${x0},${y0},${w},${h}/${tw},/0/default.jpg`;
+        const url = `${id}/${x0},${y0},${w},${h}/${tw},/0/default.jpg`;
+        // Through our CORS proxy → canvas-clean (WebGL + screenshot + cross-fade snapshot).
+        // We build the full absolute URL ourselves, so encode it as the ?url= value.
+        return opts?.proxy ? `${TILE_PROXY}${encodeURIComponent(url)}` : url;
       },
     };
   }

@@ -5,6 +5,7 @@ This directory contains comprehensive API tests for the Pathology Bites quiz end
 ## Overview
 
 We have **70 API tests** covering all quiz-related endpoints:
+
 - Quiz session creation (POST /api/user/quiz/sessions)
 - Quiz session listing (GET /api/user/quiz/sessions)
 - Individual session operations (GET, PATCH, DELETE /api/user/quiz/sessions/[id])
@@ -54,6 +55,7 @@ npm test -- tests/api
 ### POST /api/user/quiz/sessions (Create Quiz Session)
 
 **Tests covered:**
+
 - ✅ Authentication (401 when unauthorized)
 - ✅ Validation (missing title, mode, questionCount)
 - ✅ Question count bounds (1-100)
@@ -62,6 +64,7 @@ npm test -- tests/api
 - ✅ Error handling (service errors)
 
 **Example:**
+
 ```typescript
 it("should create quiz session with valid data", async () => {
   const mockSession = { id: "session-123", title: "Test Quiz", totalQuestions: 10 };
@@ -84,6 +87,7 @@ it("should create quiz session with valid data", async () => {
 ### GET /api/user/quiz/sessions (List Sessions)
 
 **Tests covered:**
+
 - ✅ Authentication (401 when unauthorized)
 - ✅ Default pagination (limit=10, offset=0)
 - ✅ Custom limit/offset parameters
@@ -95,6 +99,7 @@ it("should create quiz session with valid data", async () => {
 ### GET /api/user/quiz/sessions/[id] (Get Session)
 
 **Tests covered:**
+
 - ✅ Authentication & authorization
 - ✅ Session not found (404)
 - ✅ Forbidden access (403)
@@ -104,6 +109,7 @@ it("should create quiz session with valid data", async () => {
 ### PATCH /api/user/quiz/sessions/[id] (Update Session)
 
 **Tests covered:**
+
 - ✅ Authentication & authorization
 - ✅ Session not found/forbidden
 - ✅ Completed quiz protection
@@ -114,6 +120,7 @@ it("should create quiz session with valid data", async () => {
 - ✅ Error handling
 
 **Key Features Tested:**
+
 ```typescript
 // Prevents updating completed quizzes
 if (existingSession.status === "completed") {
@@ -130,6 +137,7 @@ if (updates.answers && updates.answers.length > 0) {
 ### DELETE /api/user/quiz/sessions/[id] (Delete Session)
 
 **Tests covered:**
+
 - ✅ Authentication & authorization
 - ✅ Session not found/forbidden
 - ✅ Successful deletion (cascades to quiz_attempts)
@@ -138,6 +146,7 @@ if (updates.answers && updates.answers.length > 0) {
 ### POST /api/user/quiz/sessions/[id]/complete (Complete Quiz)
 
 **Tests covered:**
+
 - ✅ Authentication & authorization
 - ✅ Session not found/forbidden
 - ✅ Idempotency (already completed)
@@ -150,6 +159,7 @@ if (updates.answers && updates.answers.length > 0) {
 - ✅ Error handling
 
 **Key Features Tested:**
+
 ```typescript
 // Idempotent completion
 if (session.status === "completed") {
@@ -170,6 +180,7 @@ const achievementResult = await awardAchievements(userId, clientAchievementIds);
 ### GET /api/user/quiz/sessions/[id]/results (Get Results)
 
 **Tests covered:**
+
 - ✅ Authentication & authorization
 - ✅ Session not found/forbidden
 - ✅ Results not available (quiz not completed)
@@ -290,6 +301,7 @@ it("should do something", async () => {
 ### 2. Test What Matters
 
 **✅ Good - Test behavior:**
+
 ```typescript
 it("should return 403 when user tries to access another user's quiz", async () => {
   // Test the authorization logic, not implementation details
@@ -303,6 +315,7 @@ it("should return 403 when user tries to access another user's quiz", async () =
 ```
 
 **❌ Bad - Test implementation:**
+
 ```typescript
 it("should call getUserIdFromHeaders", async () => {
   // Don't test that internal functions are called
@@ -317,14 +330,14 @@ Use descriptive names that explain the scenario and expected outcome:
 
 ```typescript
 // ✅ Good
-it("should return 400 when questionCount is greater than 100")
-it("should prevent duplicate answer submissions")
-it("should not fail completion if analytics update fails")
+it("should return 400 when questionCount is greater than 100");
+it("should prevent duplicate answer submissions");
+it("should not fail completion if analytics update fails");
 
 // ❌ Bad
-it("works")
-it("test validation")
-it("handles errors")
+it("works");
+it("test validation");
+it("handles errors");
 ```
 
 ### 4. Mock Reset
@@ -399,7 +412,9 @@ it("should return 400 when required field is missing", async () => {
   const request = createAuthenticatedRequest(mockUserId, {
     method: "POST",
     url: "http://localhost:3000/api/endpoint",
-    body: { /* missing required field */ },
+    body: {
+      /* missing required field */
+    },
   });
 
   const response = await POST(request);
@@ -488,15 +503,18 @@ These tests are designed to run in CI/CD pipelines:
 ### What These Tests DON'T Cover
 
 ❌ **Real Database Operations**
+
 - Tests use mocked Supabase clients
 - Actual SQL queries are not executed
 - Database constraints are not tested
 
 ❌ **Real Network Calls**
+
 - No actual HTTP requests are made
 - External API integrations are mocked
 
 ❌ **End-to-End Flows**
+
 - UI interactions are not tested
 - Browser behavior is not tested
 - Multi-step user journeys are not tested
@@ -528,6 +546,7 @@ When adding new API endpoints:
 ## Summary
 
 Your API testing infrastructure is production-ready with:
+
 - ✅ **70 API tests** covering all quiz endpoints
 - ✅ **100% pass rate** (160/160 total tests including unit tests)
 - ✅ **Fast execution** (< 300ms for API tests)
@@ -537,5 +556,6 @@ Your API testing infrastructure is production-ready with:
 - ✅ **CI/CD ready** (no external dependencies)
 
 **Next steps:**
+
 1. Run manual testing (see `dev/MANUAL_TESTING_PLAN.md`)
 2. Set up CI/CD pipeline to run tests automatically

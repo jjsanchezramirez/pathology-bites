@@ -2,12 +2,17 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { ImageOff, Loader2, Microscope } from "lucide-react";
+import { Loader2, Microscope } from "lucide-react";
 
 import { cn } from "@/shared/utils/index";
 import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialog";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { getRelatedSlides } from "@/shared/hooks/use-client-virtual-slides";
+import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
+
+// Animated error mark (same "error" Lottie used by the demo-question + other load-failure
+// states) — keeps the slide-failure card consistent with the rest of the app.
+const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 // Heavy (bundles OpenSeadragon) — keep it out of the initial tool bundle. The loading
 // fallback is transparent: the modal's own microscope/joke card sits on top until ready.
@@ -87,10 +92,12 @@ export function SlideViewerModal({
     () =>
       members.length > 1
         ? members.map((s) => ({
-            label:
-              [s.diagnosis, s.stain_type].filter(Boolean).join(" · ") || s.diagnosis || "Slide",
+            // Stain rendered as its own chip on the thumbnail (below), so the label is just
+            // the diagnosis — avoids "diagnosis · stain" duplicating the chip.
+            label: s.diagnosis || "Slide",
             thumbUrl: s.preview_image_url || undefined,
             slideUrl: s.slide_url || s.case_url,
+            stain: s.stain_type || undefined,
           }))
         : undefined,
     [members]
@@ -104,6 +111,8 @@ export function SlideViewerModal({
   // Once ready never reverts within a session — guard so repeated readies are cheap.
   const readyRef = useRef(false);
   readyRef.current = ready;
+
+  const { animationData: errorAnim, isLoading: errorAnimLoading } = useLottieAnimation("error");
 
   return (
     <Dialog
@@ -163,7 +172,18 @@ export function SlideViewerModal({
         >
           {loadError ? (
             <>
-              <ImageOff className="h-12 w-12 text-gray-300" />
+              <div className="flex h-24 w-24 items-center justify-center">
+                {errorAnimLoading || !errorAnim ? (
+                  <div className="h-full w-full animate-pulse rounded-full bg-muted/20" />
+                ) : (
+                  <Lottie
+                    animationData={errorAnim}
+                    loop={false}
+                    autoplay
+                    style={{ width: "100%", height: "100%" }}
+                  />
+                )}
+              </div>
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-gray-800">Couldn&apos;t open this slide</p>
                 <p className="max-w-xs text-xs leading-relaxed text-gray-500">{loadError}</p>

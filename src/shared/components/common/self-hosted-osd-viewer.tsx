@@ -75,7 +75,7 @@ interface Props {
   // Corpus-driven related slides (case_groups). When provided, the left panel shows
   // these cross-WSI siblings and clicking calls onSelectRelated(slideUrl) to navigate.
   // When omitted, the panel falls back to the MGH within-case prototype (/api/debug/wsi-related).
-  relatedSlides?: { label: string; thumbUrl?: string; slideUrl: string }[];
+  relatedSlides?: { label: string; thumbUrl?: string; slideUrl: string; stain?: string }[];
   onSelectRelated?: (slideUrl: string) => void;
   // Fired the first time the viewer finishes loading a slide (status → ready). Lets a
   // host (e.g. the modal) reveal/expand its chrome only once tiles are actually showing.
@@ -154,6 +154,10 @@ export function SelfHostedOSDViewer({
   // black (OSD destroys the live canvas immediately). `freezeVisible` drives the cover→fade.
   const [freezeUrl, setFreezeUrl] = useState<string | null>(null);
   const [freezeVisible, setFreezeVisible] = useState(false);
+  // Drives the blur RAMP: the freeze cover mounts sharp (identical to the outgoing live
+  // canvas, so the cover is seamless) then animates blur in — instead of popping to a
+  // pre-blurred snapshot, which read as "blur appears out of nowhere".
+  const [freezeBlur, setFreezeBlur] = useState(false);
   const freezeUrlRef = useRef<string | null>(null);
   freezeUrlRef.current = freezeUrl;
   // View (rotation/flip/image-space bounds) to re-apply on the next slide so it opens at
@@ -187,6 +191,10 @@ export function SelfHostedOSDViewer({
       if (c) {
         setFreezeUrl(c.toDataURL("image/jpeg", 0.7));
         setFreezeVisible(true); // cover instantly so there's no black frame
+        setFreezeBlur(false); // mount sharp…
+        // …then ramp blur in next frame so the CSS filter transition runs (a value set in
+        // the same paint as mount wouldn't animate). Two rAFs to clear the mount paint.
+        requestAnimationFrame(() => requestAnimationFrame(() => setFreezeBlur(true)));
       }
     } catch {
       /* tainted canvas → no freeze, falls back to a plain reload */
@@ -288,6 +296,7 @@ export function SelfHostedOSDViewer({
     setEverReady(false); // new case → allow the full loading overlay
     setFreezeUrl(null);
     setFreezeVisible(false);
+    setFreezeBlur(false);
     pendingViewRef.current = null;
     // Corpus-driven mode supplies siblings via props — skip the MGH directory fetch.
     if (relatedSlides) {
@@ -330,6 +339,15 @@ export function SelfHostedOSDViewer({
             repository ? `&repository=${encodeURIComponent(repository)}` : ""
           }${activeSlide ? `&slide=${encodeURIComponent(activeSlide)}` : ""}`
         );
+        // A 5xx returns an HTML/text error page, not JSON — guard so res.json() doesn't throw
+        // a raw "Unexpected token …is not valid JSON" into the user-facing error card.
+        if (!res.ok) {
+          const msg = "Couldn't reach this slide's source repository — it may be down.";
+          setError(msg);
+          setStatus("error");
+          onErrorRef.current?.(msg);
+          return;
+        }
         const ts = (await res.json()) as WsiTileSourceResult;
         if (cancelled) return;
         if (ts.kind === "unsupported") {
@@ -352,12 +370,13 @@ export function SelfHostedOSDViewer({
         osdLibRef.current = OpenSeadragon;
         if (cancelled || !containerRef.current) return;
 
-        // DZI tiles routed through our CORS proxy for the whole session (proxy-live),
-        // which un-taints the canvas → WebGL + direct screenshot like a clean repo.
-        const proxy = tainted;
-        // IIIF (Wirtualny) tiles carry no CORS header — requesting "Anonymous" would fail
-        // the tile load outright, so render tainted on the canvas drawer (no screenshot).
-        const corsClean = !iiif;
+        // DZI and IIIF (Wirtualny) tiles carry no CORS header. Route BOTH through our
+        // CORS-adding proxy for the session → canvas stays clean, which enables WebGL,
+        // direct screenshots, AND the snapshot-based cross-fade between related slides
+        // (toDataURL on a tainted canvas throws → previously Wirtualny got a hard cut).
+        const proxy = tainted || iiif;
+        // Proxied tiles are same-origin (our route emits ACAO:*) → always canvas-clean.
+        const corsClean = true;
         // WebGL drawer rejects tainted textures → only valid on CORS-clean hosts.
         const drawer =
           (forceDrawer ?? (corsClean ? "webgl" : "canvas")) === "webgl" && corsClean
@@ -654,12 +673,14 @@ export function SelfHostedOSDViewer({
         key: r.slideUrl,
         label: r.label,
         thumbUrl: r.thumbUrl,
+        stain: r.stain,
         active: r.slideUrl === slideUrl,
       }))
     : related.map((r) => ({
         key: r.name,
         label: r.label,
         thumbUrl: r.thumbUrl,
+        stain: undefined as string | undefined,
         active: (activeSlide ?? related[0]?.name) === r.name,
       }));
   const onPickItem = (key: string) => {
@@ -690,12 +711,19 @@ export function SelfHostedOSDViewer({
             src={freezeUrl}
             alt=""
             aria-hidden
-            onTransitionEnd={() => {
-              if (!freezeVisible) setFreezeUrl(null);
+            onTransitionEnd={(e) => {
+              // Only retire the cover when the OPACITY fade-out finishes (the blur ramp also
+              // fires transitionEnd, but mid-switch the cover must stay).
+              if (e.propertyName === "opacity" && !freezeVisible) setFreezeUrl(null);
             }}
-            className={`pointer-events-none absolute inset-0 z-0 h-full w-full object-cover blur-[2px] transition-opacity duration-[1100ms] ease-in-out ${
-              freezeVisible ? "opacity-100" : "opacity-0"
-            }`}
+            style={{
+              opacity: freezeVisible ? 1 : 0,
+              filter: freezeBlur ? "blur(3px)" : "blur(0px)",
+              // Blur ramps in quickly (650ms) so the image visibly softens; opacity fades out
+              // slowly (1100ms) for a gentle dissolve into the newly loaded slide.
+              transition: "opacity 1100ms ease-in-out, filter 650ms ease-out",
+            }}
+            className="pointer-events-none absolute inset-0 z-0 h-full w-full object-cover"
           />
           {freezeVisible && (
             <div className="pointer-events-none absolute inset-0 z-0 flex items-center justify-center">
@@ -945,15 +973,24 @@ export function SelfHostedOSDViewer({
                       <span className="truncate">{s.label}</span>
                     </div>
                     {s.thumbUrl && (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={s.thumbUrl}
-                        alt={s.label}
-                        loading="lazy"
-                        className={`w-full rounded bg-gray-50 object-contain ${
-                          isFullscreen ? "h-24" : "h-16"
-                        }`}
-                      />
+                      <div className="relative">
+                        {/* eslint-disable-next-line @next/next/no-img-element */}
+                        <img
+                          src={s.thumbUrl}
+                          alt={s.label}
+                          loading="lazy"
+                          className={`w-full rounded bg-gray-50 object-contain ${
+                            isFullscreen ? "h-24" : "h-16"
+                          }`}
+                        />
+                        {/* Stain overlaid on the thumbnail — same uppercase/tracked treatment
+                            as the viewer's stain chip + the RELATED SLIDES label. */}
+                        {s.stain && (
+                          <span className="pointer-events-none absolute left-1 top-1 max-w-[calc(100%-0.5rem)] truncate rounded bg-white/90 px-1.5 py-0.5 text-[9px] font-medium uppercase leading-none tracking-[0.1em] text-slate-500 shadow-sm ring-1 ring-black/5 backdrop-blur">
+                            {s.stain}
+                          </span>
+                        )}
+                      </div>
                     )}
                   </button>
                 ))}

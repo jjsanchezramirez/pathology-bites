@@ -11,14 +11,14 @@
 
 An audit of the virtual-slide search algorithm identified two priority-zero (P0)
 defects. Both were fixed and the change was measured A/B against a labeled query
-set run through the *real* production ranking code.
+set run through the _real_ production ranking code.
 
-| Metric | Baseline | Final | Δ |
-|---|---|---|---|
-| hit@10 | 83.3% | 98.0% | +14.7 |
-| hit@20 | 83.3% | 99.0% | +15.7 |
-| MRR | 0.809 | 0.957 | +0.148 |
-| zero-result rate | 13.7% | 0.0% | −13.7 |
+| Metric           | Baseline | Final | Δ      |
+| ---------------- | -------- | ----- | ------ |
+| hit@10           | 83.3%    | 98.0% | +14.7  |
+| hit@20           | 83.3%    | 99.0% | +15.7  |
+| MRR              | 0.809    | 0.957 | +0.148 |
+| zero-result rate | 13.7%    | 0.0%  | −13.7  |
 
 102 labeled queries, 27,980-slide live dataset. **16 queries gained, 0 regressed.**
 
@@ -31,10 +31,10 @@ A read-through audit of the search algorithm (then embedded in the
 that silently destroyed recall:
 
 **P0 #1 — organ terms nuked results.** `rankSlidesWithExpansion` extracted
-anatomical terms ("kidney", "liver") to use as a ranking *boost*, but still sent
+anatomical terms ("kidney", "liver") to use as a ranking _boost_, but still sent
 the **full** query to the matcher. The multi-word matcher requires every query
 word to appear as a literal diagnosis token, so `"kidney carcinoma"` missed
-every *"Renal cell carcinoma"* — the diagnosis text says "renal", not "kidney".
+every _"Renal cell carcinoma"_ — the diagnosis text says "renal", not "kidney".
 The organ boost only ever multiplied slides that had already matched textually,
 so the feature was effectively dead.
 
@@ -73,16 +73,16 @@ dataset.
 - **54 curated queries** (`search-queries.json`), hand-built to cover both
   normal behavior and the bug-prone cases:
 
-  | type | n | purpose |
-  |---|---|---|
-  | exact | 10 | full diagnosis string — control |
-  | single-word | 6 | one-token queries |
-  | multi-literal | 6 | multi-word, all tokens literally present — control |
-  | who-abbrev | 6 | WHO Classification abbreviations (dlbcl, rcc, idc…) |
-  | organ-only | 4 | a bare organ word |
-  | **organ-tumor** | 8 | organ word + tumor word — **targets P0 #1** |
-  | **truncation** | 8 | last word cut short — **targets P0 #2** |
-  | **typo** | 6 | a misspelled word — **targets P0 #2** |
+  | type            | n   | purpose                                             |
+  | --------------- | --- | --------------------------------------------------- |
+  | exact           | 10  | full diagnosis string — control                     |
+  | single-word     | 6   | one-token queries                                   |
+  | multi-literal   | 6   | multi-word, all tokens literally present — control  |
+  | who-abbrev      | 6   | WHO Classification abbreviations (dlbcl, rcc, idc…) |
+  | organ-only      | 4   | a bare organ word                                   |
+  | **organ-tumor** | 8   | organ word + tumor word — **targets P0 #1**         |
+  | **truncation**  | 8   | last word cut short — **targets P0 #2**             |
+  | **typo**        | 6   | a misspelled word — **targets P0 #2**               |
 
 - **48 auto-sampled queries** — 3 real diagnoses per category (deterministic
   seed), query = the diagnosis verbatim. These are a **regression guard**: both
@@ -91,12 +91,12 @@ dataset.
 
 ### 3.4 Metrics
 
-A query *hits* at rank *r* if the *r*-th ranked result satisfies the query's
+A query _hits_ at rank _r_ if the _r_-th ranked result satisfies the query's
 match spec (exact diagnosis equality, substring, or subcategory).
 
 - **hit@10 / hit@20** — fraction of queries whose target appears in the top 10 / 20.
 - **MRR** — mean reciprocal rank (1/rank of first hit; 0 if not found). Captures
-  *how high* the target ranks, not just whether it is found.
+  _how high_ the target ranks, not just whether it is found.
 - **zero-result rate** — fraction of queries returning no results at all.
 
 ### 3.5 Harness
@@ -113,18 +113,18 @@ how it is wired into ongoing testing.
 
 ### 4.1 Per-type — baseline → final
 
-| query type | n | hit@10 | hit@20 | MRR |
-|---|---|---|---|---|
-| auto (regression guard) | 48 | 100% → 100% | 100% → 100% | 1.000 → 1.000 |
-| exact | 10 | 100% → 100% | 100% → 100% | 1.000 → 1.000 |
-| multi-literal | 6 | 100% → 100% | 100% → 100% | 1.000 → 1.000 |
-| single-word | 6 | 100% → 100% | 100% → 100% | 1.000 → 1.000 |
-| who-abbrev | 6 | 100% → 100% | 100% → 100% | 1.000 → 1.000 |
-| organ-only | 4 | 100% → 100% | 100% → 100% | 1.000 → 1.000 |
-| **organ-tumor** | 8 | 62.5% → 75.0% | 62.5% → **87.5%** | 0.309 → **0.458** |
-| **truncation** | 8 | 0% → **100%** | 0% → **100%** | 0.000 → **1.000** |
-| **typo** | 6 | 0% → **100%** | 0% → **100%** | 0.000 → **1.000** |
-| **OVERALL** | **102** | **83.3% → 98.0%** | **83.3% → 99.0%** | **0.809 → 0.957** |
+| query type              | n       | hit@10            | hit@20            | MRR               |
+| ----------------------- | ------- | ----------------- | ----------------- | ----------------- |
+| auto (regression guard) | 48      | 100% → 100%       | 100% → 100%       | 1.000 → 1.000     |
+| exact                   | 10      | 100% → 100%       | 100% → 100%       | 1.000 → 1.000     |
+| multi-literal           | 6       | 100% → 100%       | 100% → 100%       | 1.000 → 1.000     |
+| single-word             | 6       | 100% → 100%       | 100% → 100%       | 1.000 → 1.000     |
+| who-abbrev              | 6       | 100% → 100%       | 100% → 100%       | 1.000 → 1.000     |
+| organ-only              | 4       | 100% → 100%       | 100% → 100%       | 1.000 → 1.000     |
+| **organ-tumor**         | 8       | 62.5% → 75.0%     | 62.5% → **87.5%** | 0.309 → **0.458** |
+| **truncation**          | 8       | 0% → **100%**     | 0% → **100%**     | 0.000 → **1.000** |
+| **typo**                | 6       | 0% → **100%**     | 0% → **100%**     | 0.000 → **1.000** |
+| **OVERALL**             | **102** | **83.3% → 98.0%** | **83.3% → 99.0%** | **0.809 → 0.957** |
 
 zero-result rate: **13.7% → 0.0%**.
 
@@ -148,7 +148,7 @@ zero-result rate: **13.7% → 0.0%**.
 ### 5.1 P0 #2 — additive prefix matching (`bd3a2e9`)
 
 In the multi-word matcher, each query word is now also **prefix-matched** (its
-first 3 characters) against the index, *in addition to* exact matching. A
+first 3 characters) against the index, _in addition to_ exact matching. A
 truncated word like `"carcinom"` resolves via the `car` prefix to `"carcinoma"`.
 
 This had to be **additive**, not a fallback gated on "no exact match found": the
@@ -168,9 +168,9 @@ query.
    removed (`"kidney carcinoma"` → search `"carcinoma"`, boosted by the kidney
    organ context) — or, if nothing else remains, rank the whole organ system.
 
-The two passes are merged by **max score per slide**, so pass 2 can only *add*
+The two passes are merged by **max score per slide**, so pass 2 can only _add_
 recall — it can never demote a pass-1 match. (A first single-pass attempt that
-*replaced* the query with the organ-stripped version scored +10.8 overall but
+_replaced_ the query with the organ-stripped version scored +10.8 overall but
 introduced 4 regressions — see §6.)
 
 ### 5.3 organ-terms subcategory alignment (`6f97e14`)
@@ -194,7 +194,7 @@ Measurement caught two defects that would otherwise have shipped silently:
 
 - The **first P0 #1 fix** scored +10.8% overall but the A/B's flipped-query list
   showed **4 regressions** — `"renal cell carcinoma"` fell from rank 1 to 57,
-  because stripping the organ word destroyed exact diagnoses that *contain* an
+  because stripping the organ word destroyed exact diagnoses that _contain_ an
   organ word. The two-pass max-merge design (§5.2) was the response.
 - After the first P0 #2 fix, `truncation` was at 87.5% — the harness flagged
   `"clear cell sarcom"` still returning **zero results**. Root cause: a
@@ -208,7 +208,7 @@ Without an eval, both would have looked like wins.
 ## 7. Residual finding (not fixed — not a P0)
 
 `organ-tumor` finishes at 87.5%, not 100%. The one miss is `"breast carcinoma"`
-→ *"Invasive ductal carcinoma"* at rank 39. Cause: the score model gives a
+→ _"Invasive ductal carcinoma"_ at rank 39. Cause: the score model gives a
 phrase match 90 points and a word match 80, so literal `"…breast carcinoma"`
 diagnoses out-rank IDC regardless of organ boost. This is score-model tuning,
 not a structural bug — the query still returns breast carcinomas, just not IDC
@@ -224,15 +224,15 @@ The study became two permanent, complementary mechanisms.
 
 `tests/shared/utils/domain/virtual-slide-search.test.ts` — a Vitest suite over a
 small synthetic in-repo fixture. Deterministic, offline, <50 ms. It asserts the
-algorithm's *mechanisms* (truncated query finds its slide, organ+alias resolves,
+algorithm's _mechanisms_ (truncated query finds its slide, organ+alias resolves,
 exact match still ranks first, …). Reverting either P0 fix turns a test red.
-This is the per-compile guard — it answers *"is search broken?"*
+This is the per-compile guard — it answers _"is search broken?"_
 
 ### 8.2 Regression benchmark — run on search / dataset changes
 
 `tests/benchmarks/search-eval.ts` — runs the 102-query set against the **current**
-live dataset and compares to a committed baseline. It answers *"did this change
-make search worse?"*
+live dataset and compares to a committed baseline. It answers _"did this change
+make search worse?"_
 
 ```bash
 npm run eval:search                      # run, compare to baseline, exit 1 on regression

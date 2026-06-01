@@ -93,14 +93,14 @@ import { createMockConfig } from "@tests/helpers/test-helpers";
 ## Search Regression Benchmark
 
 `tests/benchmarks/` holds a benchmark — **not** a Vitest test (Vitest ignores it;
-it is not a `*.test.ts` file). It measures search *quality*, where a unit test
+it is not a `*.test.ts` file). It measures search _quality_, where a unit test
 only checks pass/fail.
 
 - **Unit test** — `tests/shared/utils/domain/virtual-slide-search.test.ts` runs
-  on every `npm test`. Deterministic, offline. Answers: *is search broken?*
+  on every `npm test`. Deterministic, offline. Answers: _is search broken?_
 - **Benchmark** — `npm run eval:search` runs 102 labeled queries against the
   live dataset and diffs the result against `baseline-metrics.json`. Answers:
-  *did this change downgrade search?*
+  _did this change downgrade search?_
 
 ```bash
 npm run eval:search                       # run, compare to baseline, exit 1 on regression
@@ -119,12 +119,14 @@ for the full methodology.
 Unit tests are located in `tests/` and test individual functions, classes, and modules in isolation.
 
 **Key Features:**
+
 - Fast execution (< 1 second for most test suites)
 - Uses Happy DOM for browser environment simulation
 - Includes mocking utilities for external dependencies
 - Code coverage reporting available
 
 **Configuration:**
+
 - Config file: `/vitest.config.ts`
 - Setup file: `/vitest.setup.ts`
 - Environment: happy-dom
@@ -268,6 +270,7 @@ npm run test:ui
 ```
 
 This opens a browser with:
+
 - Visual test explorer
 - Real-time test execution
 - Detailed error messages
@@ -311,6 +314,7 @@ npm run test:coverage
 ```
 
 This generates:
+
 - Terminal summary
 - HTML report in `coverage/` directory
 - JSON report for CI/CD integration
@@ -318,6 +322,7 @@ This generates:
 ### Viewing Coverage
 
 Open `coverage/index.html` in your browser to see:
+
 - Line coverage
 - Branch coverage
 - Function coverage
@@ -334,6 +339,7 @@ Open `coverage/index.html` in your browser to see:
 ### 1. Test Behavior, Not Implementation
 
 ❌ **Bad:**
+
 ```typescript
 it("should call internal method", () => {
   const instance = new MyClass();
@@ -344,6 +350,7 @@ it("should call internal method", () => {
 ```
 
 ✅ **Good:**
+
 ```typescript
 it("should return correct result", () => {
   const instance = new MyClass();
@@ -355,15 +362,25 @@ it("should return correct result", () => {
 ### 2. Use Descriptive Test Names
 
 ❌ **Bad:**
+
 ```typescript
-it("works", () => { /* ... */ });
-it("test 1", () => { /* ... */ });
+it("works", () => {
+  /* ... */
+});
+it("test 1", () => {
+  /* ... */
+});
 ```
 
 ✅ **Good:**
+
 ```typescript
-it("should calculate correct score when all answers are correct", () => { /* ... */ });
-it("should navigate to next question after submitting answer", () => { /* ... */ });
+it("should calculate correct score when all answers are correct", () => {
+  /* ... */
+});
+it("should navigate to next question after submitting answer", () => {
+  /* ... */
+});
 ```
 
 ### 3. Follow the AAA Pattern
@@ -404,11 +421,21 @@ beforeEach(() => {
 
 ```typescript
 describe("Answer submission", () => {
-  it("should handle correct answer", () => { /* ... */ });
-  it("should handle incorrect answer", () => { /* ... */ });
-  it("should handle invalid question ID", () => { /* ... */ });
-  it("should handle null answer", () => { /* ... */ });
-  it("should handle already answered question", () => { /* ... */ });
+  it("should handle correct answer", () => {
+    /* ... */
+  });
+  it("should handle incorrect answer", () => {
+    /* ... */
+  });
+  it("should handle invalid question ID", () => {
+    /* ... */
+  });
+  it("should handle null answer", () => {
+    /* ... */
+  });
+  it("should handle already answered question", () => {
+    /* ... */
+  });
 });
 ```
 
@@ -428,6 +455,7 @@ expect(array.length > 0).toBe(true); // ❌ Unclear intention
 ## Continuous Integration
 
 Tests run automatically on:
+
 - Every push to `main` or `develop` branches
 - Every pull request
 
@@ -447,6 +475,7 @@ See `.github/workflows/test.yml` for GitHub Actions configuration (to be created
 ### Tests Failing Locally But Passing in CI
 
 1. Clear node_modules and reinstall:
+
    ```bash
    rm -rf node_modules
    npm install
@@ -491,6 +520,7 @@ When adding new features:
 ## Questions?
 
 If you have questions about testing or need help:
+
 1. Check this README first
 2. Look at existing test files for examples
 3. Review Vitest documentation
