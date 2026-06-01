@@ -41,6 +41,8 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 // Import components
 import { SlideRowUnified } from "@/features/public/tools/virtual-slides/components/slide-row-unified";
+import { SlideViewerModal } from "@/features/public/tools/virtual-slides/components/slide-viewer-modal";
+import type { VirtualSlide } from "@/shared/types/virtual-slides";
 import { Pagination } from "@/features/public/tools/virtual-slides/components/pagination";
 import { LoadingSkeleton } from "@/features/public/tools/virtual-slides/components/loading-skeleton";
 
@@ -159,6 +161,7 @@ function VirtualSlidesContent() {
   const [mode, setMode] = useState<"search" | "study">("search");
 
   // Enhanced features
+  const [viewerSlide, setViewerSlide] = useState<VirtualSlide | null>(null);
   const [showDiagnoses, setShowDiagnoses] = useState(true);
   const [revealedDiagnoses, setRevealedDiagnoses] = useState<Set<string>>(new Set());
 
@@ -836,6 +839,7 @@ function VirtualSlidesContent() {
                             isRevealed={revealedDiagnoses.has(slide.id)}
                             onToggleReveal={() => toggleDiagnosisReveal(slide.id)}
                             related={getRelatedSlides(slide)}
+                            onOpenViewer={() => setViewerSlide(slide)}
                           />
                         ))}
                       </tbody>
@@ -894,6 +898,9 @@ function VirtualSlidesContent() {
 
       {/* Join Our Learning Community Section */}
       <JoinCommunitySection />
+
+      {/* In-house OSD viewer (prototype) — opens a supported slide in place. */}
+      <SlideViewerModal slide={viewerSlide} onClose={() => setViewerSlide(null)} />
     </div>
   );
 }

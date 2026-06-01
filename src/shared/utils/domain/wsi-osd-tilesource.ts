@@ -46,6 +46,11 @@ export function buildOsdTileSource(ts: WsiTileSource, opts?: { proxy?: boolean }
     };
   }
 
+  if (ts.kind === "iiif") {
+    // IIIF info.json object — OSD's IIIFTileSource consumes it directly; tiles load as <img>.
+    return ts.info;
+  }
+
   // leeds: custom tile endpoint, public + CORS '*'
   return {
     width: ts.width,

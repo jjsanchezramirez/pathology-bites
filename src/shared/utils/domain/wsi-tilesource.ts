@@ -49,6 +49,15 @@ export type WsiTileSource =
       baseUrl: string;
       quality: number;
       mpp?: number;
+    }
+  | {
+      // IIIF Image API (Wirtualny Mikroskop). The info.json object is passed straight
+      // to OSD's IIIFTileSource; tiles load as <img>.
+      kind: "iiif";
+      width: number;
+      height: number;
+      info: unknown;
+      mpp?: number;
     };
 
 export type WsiTileSourceResult = WsiTileSource | { kind: "unsupported"; reason: string };
@@ -227,6 +236,22 @@ async function resolveAanp(slideUrl: string): Promise<WsiTileSourceResult> {
   };
 }
 
+// Wirtualny Mikroskop (MOST Wiedzy): standard IIIF Image API. info.json has no CORS
+// header, so we fetch it here (server-side) and hand OSD the object directly.
+async function resolveWirtualny(slideUrl: string): Promise<WsiTileSourceResult> {
+  const m = slideUrl.match(/\/(?:show-image|iiif)\/([0-9a-fA-F-]+)/);
+  if (!m) return { kind: "unsupported", reason: "Wirtualny: no image id in URL" };
+  const origin = new URL(slideUrl).origin;
+  const info = (await fetchJson(`${origin}/image/iiif/${m[1]}/info.json`)) as {
+    width?: number;
+    height?: number;
+  };
+  if (!info.width || !info.height) {
+    return { kind: "unsupported", reason: "Wirtualny: bad IIIF info.json" };
+  }
+  return { kind: "iiif", width: info.width, height: info.height, info };
+}
+
 export async function resolveTileSource(
   slideUrl: string,
   _repository?: string,
@@ -246,6 +271,7 @@ export async function resolveTileSource(
     if (host.includes("learn.mghpathology.org")) return await resolveMgh(slideUrl, slide);
     if (host.includes("rosai.secondslide.com")) return await resolveRosai(slideUrl);
     if (host.includes("neuro2.pathology.pitt.edu")) return await resolveAanp(slideUrl);
+    if (host.includes("wirtualnymikroskop.mostwiedzy.pl")) return await resolveWirtualny(slideUrl);
     return { kind: "unsupported", reason: `No self-hosted tile-source resolver for ${host}` };
   } catch (e) {
     return { kind: "unsupported", reason: e instanceof Error ? e.message : "resolver error" };

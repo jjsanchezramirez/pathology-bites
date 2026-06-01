@@ -295,7 +295,8 @@ export function SelfHostedOSDViewer({
         setDims({ w: ts.width, h: ts.height });
         tsRef.current = ts;
         const tainted = ts.kind === "dzi";
-        setIsTainted(tainted);
+        const iiif = ts.kind === "iiif";
+        setIsTainted(tainted || iiif);
         // MPP → native objective mag (0.25µm/px ≈ 40x). Default 40x when unknown.
         const nativeMag = ts.mpp ? 10 / ts.mpp : 40;
         magRef.current = { nativeMag, imageW: ts.width };
@@ -308,7 +309,9 @@ export function SelfHostedOSDViewer({
         // DZI tiles routed through our CORS proxy for the whole session (proxy-live),
         // which un-taints the canvas → WebGL + direct screenshot like a clean repo.
         const proxy = tainted;
-        const corsClean = true;
+        // IIIF (Wirtualny) tiles carry no CORS header — requesting "Anonymous" would fail
+        // the tile load outright, so render tainted on the canvas drawer (no screenshot).
+        const corsClean = !iiif;
         // WebGL drawer rejects tainted textures → only valid on CORS-clean hosts.
         const drawer =
           (forceDrawer ?? (corsClean ? "webgl" : "canvas")) === "webgl" && corsClean

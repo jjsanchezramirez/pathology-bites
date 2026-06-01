@@ -16,3 +16,21 @@ export function getRepositoryFromId(id: string): string {
   if (id.startsWith("SJ")) return "St. Jude Cloud";
   return "Unknown";
 }
+
+// Repositories our in-house OSD viewer can render (tilesource resolver handles DZI / Leeds
+// / Aperio). Others (PathPresenter SAS-token, Recut login, Wirtualny IIIF-not-wired) keep
+// the external link-out.
+const VIEWER_SUPPORTED_REPOS = new Set([
+  "Hematopathology eTutorial",
+  "Leeds University",
+  "MGH Pathology",
+  "Rosai Collection",
+  "WHO Blue Books Online",
+  "AANP Diagnostic Slide Session",
+  "St. Jude Cloud",
+  "Wirtualny Mikroskop",
+]);
+
+export function isViewerSupported(repository: string): boolean {
+  return VIEWER_SUPPORTED_REPOS.has(repository);
+}

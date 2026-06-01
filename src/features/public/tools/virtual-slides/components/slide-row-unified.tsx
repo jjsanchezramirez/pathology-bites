@@ -8,6 +8,7 @@ import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { ExternalLink, Eye, Microscope, Layers, ChevronDown, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { getR2PublicUrl } from "@/shared/services/r2-storage";
+import { isViewerSupported } from "@/shared/utils/domain/repository";
 import { getVirtualSlideCategoryInfo } from "../utils/virtual-slides-category-map";
 
 // Repository logo mapping. Points at the optimized 240×176 assets
@@ -17,13 +18,37 @@ const REPOSITORY_LOGOS: Record<string, string> = {
   "Leeds University": "logos/optimized/university-of-leeds-logo.png",
   PathPresenter: "logos/optimized/path-presenter-logo.png",
   "MGH Pathology": "logos/optimized/mgh-logo.png",
-  "University of Toronto LMP": "logos/optimized/university-of-toronto-logo.png",
   "Rosai Collection": "logos/optimized/rosai-collection-logo.png",
   "Recut Club": "logos/optimized/recut-club-logo.png",
   "St. Jude Cloud": "logos/optimized/st-jude-logo.png",
   "WHO Blue Books Online": "logos/optimized/who-logo.png",
   "AANP Diagnostic Slide Session": "logos/optimized/aanp-logo.png",
+  "Wirtualny Mikroskop": "logos/optimized/mostwiedzy-logo.png",
 };
+
+// Clinical info block — dedupes patient_info against the age/sex line (the corpus
+// sometimes carries the same "56, F" in both) and clamps each field independently.
+function ClinicalInfo({ slide }: { slide: VirtualSlide }) {
+  const ageSex = [slide.age, slide.gender].filter(Boolean).join(", ");
+  const showPatientInfo = slide.patient_info && slide.patient_info.trim() !== ageSex;
+  return (
+    <div className="space-y-1">
+      {ageSex && <p className="text-xs text-gray-600">{ageSex}</p>}
+      {showPatientInfo && <p className="text-xs text-gray-600 line-clamp-1">{slide.patient_info}</p>}
+      {slide.clinical_history && (
+        <p className="text-xs text-gray-600 italic line-clamp-3">{slide.clinical_history}</p>
+      )}
+    </div>
+  );
+}
+
+// Related-slides label. Conference/seminar repositories group by event, not by a single
+// case, so they read as "from this conference" rather than "related slides".
+function relatedLabel(repository: string, n: number): string {
+  if (repository === "Rosai Collection") return `${n} from this seminar`;
+  if (repository === "Recut Club") return `${n} from this conference`;
+  return `${n} related slide${n > 1 ? "s" : ""}`;
+}
 
 interface SlideRowUnifiedProps {
   slide: VirtualSlide;
@@ -33,6 +58,8 @@ interface SlideRowUnifiedProps {
   index?: number;
   // Related slides (same pair/panel case-group), resolved by the page.
   related?: VirtualSlide[];
+  // Open this slide in the in-house OSD viewer (prototype). Provided by the page.
+  onOpenViewer?: () => void;
 }
 
 export const SlideRowUnified = memo(function SlideRowUnified({
@@ -41,6 +68,7 @@ export const SlideRowUnified = memo(function SlideRowUnified({
   isRevealed = false,
   onToggleReveal,
   related = [],
+  onOpenViewer,
 }: SlideRowUnifiedProps) {
   const logoPath = REPOSITORY_LOGOS[slide.repository];
   const categoryInfo = getVirtualSlideCategoryInfo(slide.category);
@@ -73,45 +101,19 @@ export const SlideRowUnified = memo(function SlideRowUnified({
         <div className="space-y-2">
           {showDiagnoses ? (
             <>
-              <h3 className="font-medium text-gray-900 leading-tight text-sm md:text-base">
+              <h3 className="font-medium text-gray-900 leading-tight text-sm md:text-base line-clamp-2">
                 {slide.diagnosis}
               </h3>
-              {/* Clinical information */}
-              <div className="space-y-1">
-                {(slide.age || slide.gender) && (
-                  <p className="text-xs text-gray-600">
-                    {[slide.age, slide.gender].filter(Boolean).join(", ")}
-                  </p>
-                )}
-                {slide.patient_info && (
-                  <p className="text-xs text-gray-600">{slide.patient_info}</p>
-                )}
-                {slide.clinical_history && (
-                  <p className="text-xs text-gray-600 italic">{slide.clinical_history}</p>
-                )}
-              </div>
+              <ClinicalInfo slide={slide} />
             </>
           ) : (
             <>
               {isRevealed ? (
                 <>
-                  <h3 className="font-medium text-gray-900 leading-tight text-sm md:text-base">
+                  <h3 className="font-medium text-gray-900 leading-tight text-sm md:text-base line-clamp-2">
                     {slide.diagnosis}
                   </h3>
-                  {/* Clinical information when revealed */}
-                  <div className="space-y-1">
-                    {(slide.age || slide.gender) && (
-                      <p className="text-xs text-gray-600">
-                        {[slide.age, slide.gender].filter(Boolean).join(", ")}
-                      </p>
-                    )}
-                    {slide.patient_info && (
-                      <p className="text-xs text-gray-600">{slide.patient_info}</p>
-                    )}
-                    {slide.clinical_history && (
-                      <p className="text-xs text-gray-600 italic">{slide.clinical_history}</p>
-                    )}
-                  </div>
+                  <ClinicalInfo slide={slide} />
                 </>
               ) : (
                 <button
@@ -159,7 +161,7 @@ export const SlideRowUnified = memo(function SlideRowUnified({
                 <ChevronRight className="w-3.5 h-3.5" />
               )}
               <Layers className="w-3.5 h-3.5" />
-              {related.length} related slide{related.length > 1 ? "s" : ""}
+              {relatedLabel(slide.repository, related.length)}
             </button>
           )}
         </div>
@@ -210,6 +212,16 @@ export const SlideRowUnified = memo(function SlideRowUnified({
       {/* Actions */}
       <td className="p-2 md:p-4 w-16 md:w-40">
         <div className="flex flex-col gap-2">
+          {onOpenViewer && isViewerSupported(slide.repository) && (
+            <button
+              onClick={onOpenViewer}
+              aria-label="Open in our viewer"
+              className="inline-flex items-center justify-center rounded-md text-primary-foreground bg-primary hover:bg-primary/90 transition-colors p-2 md:px-3 md:py-1.5 text-xs font-medium"
+            >
+              <Microscope className="w-4 h-4 md:mr-1.5" />
+              <span className="hidden md:inline">Open viewer</span>
+            </button>
+          )}
           {slide.slide_url && (
             <a
               href={slide.slide_url}

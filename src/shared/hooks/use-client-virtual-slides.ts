@@ -290,7 +290,11 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
         other: reverseMapping(json.bases.other),
       };
 
-      const processedSlides: VirtualSlide[] = json.data.map((e) => normalizeToVirtualSlide(e));
+      // Toronto LMP is excluded from the search engine (kept in the raw corpus): its
+      // viewer links are Shibboleth-walled and don't open reliably.
+      const processedSlides: VirtualSlide[] = json.data
+        .map((e) => normalizeToVirtualSlide(e))
+        .filter((s) => s.repository !== "University of Toronto LMP");
       console.log("[VirtualSlides] ✅ Loaded v7/v8 production format");
 
       // Build the case-group sibling index (related slides). `groups` is absent on
