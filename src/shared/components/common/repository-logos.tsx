@@ -83,6 +83,31 @@ export const repositoryLogos: Logo[] = [
   },
 ];
 
+// Map a dataset repository label (e.g. "Leeds University", "St. Jude Cloud") to its
+// logo. Keyword-matched since dataset names don't exactly equal the logo `alt`.
+const LOGO_MATCHERS: [RegExp, string][] = [
+  [/leeds/i, "leeds"],
+  [/hemato|hemepath/i, "hematopathology"],
+  [/mgh/i, "mgh"],
+  [/toronto/i, "toronto"],
+  [/rosai/i, "rosai"],
+  [/recut/i, "recut"],
+  [/st\.?\s*jude|pecan|stjude/i, "stjude"],
+  [/who|blue\s*book|iarc/i, "who"],
+  [/aanp|pitt|neuro/i, "aanp"],
+  [/pathpresenter/i, "pathpresenter"],
+];
+
+export function getRepositoryLogo(
+  repository?: string
+): { avif: string; png: string; alt: string } | null {
+  if (!repository) return null;
+  const match = LOGO_MATCHERS.find(([re]) => re.test(repository));
+  const logo = match && repositoryLogos.find((l) => l.id === match[1]);
+  if (!logo) return null;
+  return { avif: avifSrc(logo.file), png: pngSrc(logo.file), alt: logo.alt };
+}
+
 const DEFAULT_ROWS = 3;
 // Copies of each row laid end-to-end. The track scrolls by exactly one copy
 // (-100% / REPEAT) so the loop is seamless regardless of how many logos a row

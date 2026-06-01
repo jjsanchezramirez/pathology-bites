@@ -34,7 +34,9 @@ export async function middleware(request: NextRequest) {
   const isPublicApi =
     pathname.startsWith("/api/public/") ||
     pathname.startsWith("/api/auth/") ||
-    pathname.startsWith("/api/content/");
+    pathname.startsWith("/api/content/") ||
+    // Dev-only debug API (gitignored, never ships to prod) — used by /debug tools.
+    (process.env.NODE_ENV !== "production" && pathname.startsWith("/api/debug/"));
 
   // Public routes that don't need auth
   const publicRoutes = [

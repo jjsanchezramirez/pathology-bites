@@ -50,6 +50,10 @@ interface WSIConfig {
   embeddingStrategy: "iframe" | "openseadragon" | "fallback";
   viewerUrl?: string;
   reason?: string;
+  // Optional viewport crop (fractions 0-1) to hide a repo's own page chrome
+  // (top nav / footer) that surrounds the embedded slide viewer. Distortion-free:
+  // the kept band is uniformly scaled up to fill the window. Eyeball-tunable.
+  crop?: { top: number; bottom: number };
 }
 
 // Helper function to try alternative URLs for blocked repositories
@@ -90,7 +94,7 @@ function _tryAlternativeURL(originalUrl: string, slide?: VirtualSlide): string |
 }
 
 // Step 1: Dragon (OpenSeadragon) initialization and configuration
-function getWSIConfig(url: string, _repository?: string, _slide?: VirtualSlide): WSIConfig {
+export function getWSIConfig(url: string, _repository?: string, _slide?: VirtualSlide): WSIConfig {
   try {
     const urlObj = new URL(url);
     const hostname = urlObj.hostname.toLowerCase();
@@ -162,6 +166,8 @@ function getWSIConfig(url: string, _repository?: string, _slide?: VirtualSlide):
         useOpenSeadragon: false,
         embeddingStrategy: "iframe",
         reason: "HematopathologyeTutorial supports embedding",
+        // Page wraps the OSD viewer in a blue top-nav + tall blue footer; crop both.
+        crop: { top: 0.07, bottom: 0.3 },
       };
     }
 
@@ -171,6 +177,17 @@ function getWSIConfig(url: string, _repository?: string, _slide?: VirtualSlide):
         useOpenSeadragon: false,
         embeddingStrategy: "iframe",
         reason: "Rosai Collection supports embedding",
+      };
+    }
+
+    // AANP / Pitt: viewer URLs end in `.svs` (e.g. /dss/view/<id>/1959-1.svs) but are
+    // web viewer pages, not raw files — must iframe, NOT route to OpenSeadragon.
+    if (hostname.includes("neuro2.pathology.pitt.edu")) {
+      return {
+        canEmbed: true,
+        useOpenSeadragon: false,
+        embeddingStrategy: "iframe",
+        reason: "AANP Diagnostic Slide Session supports embedding",
       };
     }
 
@@ -368,9 +385,10 @@ interface IframeViewerProps {
   onError?: () => void;
   loaded: boolean;
   fillHeight?: boolean;
+  crop?: { top: number; bottom: number };
 }
 
-function IframeViewer({ url, title, onLoad, onError, loaded, fillHeight }: IframeViewerProps) {
+function IframeViewer({ url, title, onLoad, onError, loaded, fillHeight, crop }: IframeViewerProps) {
   const iframeRef = useRef<HTMLIFrameElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -520,20 +538,34 @@ function IframeViewer({ url, title, onLoad, onError, loaded, fillHeight }: Ifram
           touchAction: isMobile ? "none" : "auto",
         }}
       >
-        {/* Scaled iframe wrapper - 50% scale */}
-        <div
-          style={
-            {
-              width: "200%",
-              height: "200%",
-              transformOrigin: "0 0",
-              WebkitTransform: "scale(0.5)",
-              MozTransform: "scale(0.5)",
-              OTransform: "scale(0.5)",
-              transform: "scale(0.5)",
-            } as React.CSSProperties
-          }
-        >
+        {/* Scaled iframe wrapper. Base: render page at 200% into the window then
+            scale 0.5 (zoom-out, shows full page small). When `crop` is set and the
+            window is fixed-height, uniformly scale the kept band up to fill the
+            window and translate to hide the repo's top/bottom page chrome. */}
+        {(() => {
+          const cropApplies = !!crop && !fillHeight;
+          const keep = cropApplies ? Math.max(0.05, 1 - crop!.top - crop!.bottom) : 1;
+          const scale = 0.5 / keep;
+          const windowH = isMobile ? 350 : 600;
+          // With origin top-left + 200%-wide box: shift up to drop the top chrome band,
+          // shift left to re-center the horizontally-zoomed page in the window.
+          const translateY = cropApplies ? -(crop!.top * 2 * windowH * scale) : 0;
+          const translateXPct = ((1 - 2 * scale) / 4) * 100;
+          const transform = `translate(${translateXPct}%, ${translateY}px) scale(${scale})`;
+          return (
+            <div
+              style={
+                {
+                  width: "200%",
+                  height: "200%",
+                  transformOrigin: "0 0",
+                  WebkitTransform: transform,
+                  MozTransform: transform,
+                  OTransform: transform,
+                  transform,
+                } as React.CSSProperties
+              }
+            >
           <iframe
             ref={iframeRef}
             src={url}
@@ -549,7 +581,9 @@ function IframeViewer({ url, title, onLoad, onError, loaded, fillHeight }: Ifram
               touchAction: isMobile ? "manipulation" : "auto",
             }}
           />
-        </div>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Scroll hint overlay for loaded iframes */}
@@ -722,6 +756,7 @@ export function WSIViewer({
               onError={handleViewerError}
               loaded={viewerLoaded}
               fillHeight={fillHeight}
+              crop={config.crop}
             />
           ) : (
             <FallbackViewer slide={slide} onOpenExternal={openInNewTab} />
