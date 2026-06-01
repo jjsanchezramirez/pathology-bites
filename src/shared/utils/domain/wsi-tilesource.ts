@@ -51,12 +51,17 @@ export type WsiTileSource =
       mpp?: number;
     }
   | {
-      // IIIF Image API (Wirtualny Mikroskop). The info.json object is passed straight
-      // to OSD's IIIFTileSource; tiles load as <img>.
+      // IIIF Image API (Wirtualny Mikroskop). We DON'T hand the info.json to OSD's
+      // IIIFTileSource — it assumes a power-of-2 pyramid, but this server's coarsest
+      // scaleFactor is 509 (≈512), so OSD requests a 512 level the server lacks and the
+      // region runs off the image (y past height → negative h → "Image load aborted").
+      // Instead we build a custom tilesource (below) against the server's real pyramid.
       kind: "iiif";
       width: number;
       height: number;
-      info: unknown;
+      tileSize: number;
+      scaleFactors: number[]; // ascending, e.g. [1,2,4,…,256,509]
+      id: string; // IIIF image id; tiles at `${id}/{region}/{size}/0/default.jpg`
       mpp?: number;
     };
 
@@ -245,11 +250,25 @@ async function resolveWirtualny(slideUrl: string): Promise<WsiTileSourceResult> 
   const info = (await fetchJson(`${origin}/image/iiif/${m[1]}/info.json`)) as {
     width?: number;
     height?: number;
+    "@id"?: string;
+    id?: string;
+    tiles?: { width?: number; height?: number; scaleFactors?: number[] }[];
   };
   if (!info.width || !info.height) {
     return { kind: "unsupported", reason: "Wirtualny: bad IIIF info.json" };
   }
-  return { kind: "iiif", width: info.width, height: info.height, info };
+  const tile = info.tiles?.[0];
+  const tileSize = tile?.width || 256;
+  // Server-declared pyramid; fall back to a power-of-2 ladder if absent.
+  let scaleFactors = (tile?.scaleFactors || []).filter((s) => s > 0).sort((a, b) => a - b);
+  if (scaleFactors.length === 0) {
+    scaleFactors = [1];
+    while (Math.max(info.width, info.height) / scaleFactors[scaleFactors.length - 1] > tileSize) {
+      scaleFactors.push(scaleFactors[scaleFactors.length - 1] * 2);
+    }
+  }
+  const id = info["@id"] || info.id || `${origin}/image/iiif/${m[1]}`;
+  return { kind: "iiif", width: info.width, height: info.height, tileSize, scaleFactors, id };
 }
 
 export async function resolveTileSource(
