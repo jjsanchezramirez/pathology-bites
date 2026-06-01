@@ -12,7 +12,7 @@ const DATA_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev";
 // - `groups` (pair/panel/session case-groups) + per-entry `k` drive the related-slides panel.
 // - Abbreviated field names (x, d, c, s, q, etc.). Brotli (lgwin 24) ~2.15MB; stored with
 //   Content-Encoding: br — browser auto-decompresses, fetch() sees plain JSON.
-export const VIRTUAL_SLIDES_JSON_URL = `${DATA_BASE}/virtual-slides/virtual-slides-v12-min.json.br?v=12`;
+export const VIRTUAL_SLIDES_JSON_URL = `${DATA_BASE}/virtual-slides/virtual-slides-v13-min.json.br?v=13`;
 
 // Fallback URL (same object) retained for the loader's fallback path.
-export const VIRTUAL_SLIDES_JSON_URL_FALLBACK = `${DATA_BASE}/virtual-slides/virtual-slides-v12-min.json.br?v=12`;
+export const VIRTUAL_SLIDES_JSON_URL_FALLBACK = `${DATA_BASE}/virtual-slides/virtual-slides-v13-min.json.br?v=13`;
