@@ -72,6 +72,11 @@ interface Props {
   forceDrawer?: "webgl" | "canvas";
   // Optional metadata for the Info panel prototype.
   info?: { diagnosis?: string; category?: string; subcategory?: string; stain?: string };
+  // Corpus-driven related slides (case_groups). When provided, the left panel shows
+  // these cross-WSI siblings and clicking calls onSelectRelated(slideUrl) to navigate.
+  // When omitted, the panel falls back to the MGH within-case prototype (/api/debug/wsi-related).
+  relatedSlides?: { label: string; thumbUrl?: string; slideUrl: string }[];
+  onSelectRelated?: (slideUrl: string) => void;
 }
 
 // Snap to 0/90/180/270 when within this many degrees.
@@ -88,6 +93,8 @@ export function SelfHostedOSDViewer({
   heightClass = "h-[600px]",
   forceDrawer,
   info,
+  relatedSlides,
+  onSelectRelated,
 }: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -237,6 +244,12 @@ export function SelfHostedOSDViewer({
     setFreezeUrl(null);
     setFreezeVisible(false);
     pendingViewRef.current = null;
+    // Corpus-driven mode supplies siblings via props — skip the MGH directory fetch.
+    if (relatedSlides) {
+      return () => {
+        cancelled = true;
+      };
+    }
     fetch(`/api/debug/wsi-related?slideUrl=${encodeURIComponent(slideUrl)}`)
       .then((r) => r.json())
       .then((d) => {
@@ -246,7 +259,7 @@ export function SelfHostedOSDViewer({
     return () => {
       cancelled = true;
     };
-  }, [slideUrl]);
+  }, [slideUrl, relatedSlides]);
 
   // Auto-close the open popover on any click outside the toolbar or a panel.
   useEffect(() => {
@@ -555,6 +568,24 @@ export function SelfHostedOSDViewer({
   // blink away; only a brand-new case (status loading, never ready) hides the chrome.
   const showChrome = status === "ready" || everReady;
 
+  // Related-slides panel items. Corpus mode (relatedSlides prop) navigates across WSIs;
+  // otherwise the MGH within-case prototype (`related` + pickSlide/activeSlide).
+  const corpusMode = relatedSlides !== undefined;
+  const panelItems = corpusMode
+    ? (relatedSlides ?? []).map((r) => ({
+        key: r.slideUrl,
+        label: r.label,
+        thumbUrl: r.thumbUrl,
+        active: r.slideUrl === slideUrl,
+      }))
+    : related.map((r) => ({
+        key: r.name,
+        label: r.label,
+        thumbUrl: r.thumbUrl,
+        active: (activeSlide ?? related[0]?.name) === r.name,
+      }));
+  const onPickItem = (key: string) => (corpusMode ? onSelectRelated?.(key) : pickSlide(key));
+
   return (
     <div
       ref={wrapperRef}
@@ -788,7 +819,7 @@ export function SelfHostedOSDViewer({
       {/* Related slides panel (MGH prototype) — left edge, vertically centered. Fixed full
           height; only the WIDTH animates on hover (collapsed = a tall rail hinting "more").
           Height clears the toolbar (top) + minimap (bottom-left); list scrolls if needed. */}
-      {showChrome && related.length > 1 && (
+      {showChrome && panelItems.length > 1 && (
         <div
           onMouseEnter={() => setSlidesOpen(true)}
           onMouseLeave={() => setSlidesOpen(false)}
@@ -802,7 +833,7 @@ export function SelfHostedOSDViewer({
                 : "2.5rem",
             // Fit the height to the slide count (no empty space, no hover jump). max-h caps it
             // so very long cases scroll instead of overrunning the toolbar/minimap.
-            height: 44 + related.length * (isFullscreen ? 140 : 104),
+            height: 44 + panelItems.length * (isFullscreen ? 140 : 104),
           }}
           className="absolute left-2 top-[44%] z-10 flex max-h-[80%] -translate-y-1/2 flex-col overflow-hidden rounded-lg bg-white/95 shadow-lg ring-1 ring-black/5 backdrop-blur transition-all duration-200 ease-out"
         >
@@ -811,44 +842,41 @@ export function SelfHostedOSDViewer({
               <div className="flex h-9 shrink-0 items-center gap-1.5 px-2.5 text-xs font-medium text-slate-500">
                 <Layers className="h-4 w-4 shrink-0" />
                 <span className="whitespace-nowrap">Related slides</span>
-                <span className="ml-auto tabular-nums text-slate-400">{related.length}</span>
+                <span className="ml-auto tabular-nums text-slate-400">{panelItems.length}</span>
               </div>
               <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2">
-                {related.map((s, i) => {
-                  const isActive = (activeSlide ?? related[0]?.name) === s.name;
-                  return (
-                    <button
-                      key={s.name}
-                      onClick={() => pickSlide(s.name)}
-                      className={`block w-full rounded-md p-1.5 text-left ${
-                        isActive ? "bg-primary/5 ring-2 ring-primary" : "hover:bg-gray-100"
-                      }`}
-                    >
-                      <div className="mb-1 flex items-center gap-1 text-xs font-medium text-gray-700">
-                        <span className="text-gray-400">{i + 1}.</span>
-                        <span className="truncate">{s.label}</span>
-                      </div>
-                      {s.thumbUrl && (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
-                          src={s.thumbUrl}
-                          alt={s.label}
-                          loading="lazy"
-                          className={`w-full rounded bg-gray-50 object-contain ${
-                            isFullscreen ? "h-24" : "h-16"
-                          }`}
-                        />
-                      )}
-                    </button>
-                  );
-                })}
+                {panelItems.map((s, i) => (
+                  <button
+                    key={s.key}
+                    onClick={() => onPickItem(s.key)}
+                    className={`block w-full rounded-md p-1.5 text-left ${
+                      s.active ? "bg-primary/5 ring-2 ring-primary" : "hover:bg-gray-100"
+                    }`}
+                  >
+                    <div className="mb-1 flex items-center gap-1 text-xs font-medium text-gray-700">
+                      <span className="text-gray-400">{i + 1}.</span>
+                      <span className="truncate">{s.label}</span>
+                    </div>
+                    {s.thumbUrl && (
+                      // eslint-disable-next-line @next/next/no-img-element
+                      <img
+                        src={s.thumbUrl}
+                        alt={s.label}
+                        loading="lazy"
+                        className={`w-full rounded bg-gray-50 object-contain ${
+                          isFullscreen ? "h-24" : "h-16"
+                        }`}
+                      />
+                    )}
+                  </button>
+                ))}
               </div>
             </>
           ) : (
             // Collapsed rail: icon + count pinned top; uppercase label centered down the spine.
             <div className="flex h-full w-10 flex-col items-center gap-1.5 py-3 text-slate-500">
               <Layers className="h-4 w-4 shrink-0" />
-              <span className="text-[10px] font-semibold tabular-nums">{related.length}</span>
+              <span className="text-[10px] font-semibold tabular-nums">{panelItems.length}</span>
               <div className="flex flex-1 items-center justify-center">
                 <span
                   style={{ writingMode: "vertical-rl" }}

@@ -31,6 +31,7 @@ interface V7Entry {
   p?: V7UrlRef | V7UrlRef[]; // preview_image_url
   u?: V7UrlRef | V7UrlRef[]; // case_url
   w?: V7UrlRef | V7UrlRef[]; // other_urls
+  k?: string; // case-group id (pair/panel) — member of a related-slides set
 }
 
 // v7 URL reference: {baseId: path} e.g., {"p2": "path/to/slide.svs"}
@@ -44,10 +45,30 @@ interface OptimizedData {
     other?: Record<string, string>; // other bases (o1, o2, etc.)
   };
   data: V7Entry[];
+  groups?: Record<string, string[]>; // case-group id -> member slide ids (pair/panel)
 }
 
 // URL bases cache for optimized format
 let urlBases: OptimizedData["bases"] | null = null;
+
+// Case-group lookup (related slides). Populated once the dataset loads.
+let groupMembers: Record<string, string[]> = {};
+const slideById = new Map<string, VirtualSlide>();
+
+// Resolve a slide's related siblings (same pair/panel case-group), excluding itself.
+// Returns [] for slides not in a group, or whose siblings were dropped (e.g. no diagnosis).
+export function getRelatedSlides(slide: VirtualSlide): VirtualSlide[] {
+  if (!slide.groupId) return [];
+  const ids = groupMembers[slide.groupId];
+  if (!ids) return [];
+  const out: VirtualSlide[] = [];
+  for (const id of ids) {
+    if (id === slide.id) continue;
+    const s = slideById.get(id);
+    if (s) out.push(s);
+  }
+  return out;
+}
 
 // Helper to reverse URL mapping: {url: id} → {id: url}
 function reverseMapping(mapping: Record<string, string> | undefined): Record<string, string> {
@@ -114,6 +135,7 @@ function normalizeToVirtualSlide(v7: V7Entry): VirtualSlide {
     case_url: primaryCase,
     other_urls: otherUrlsArray,
     source_metadata: {},
+    groupId: v7.k,
   };
 }
 
@@ -270,6 +292,12 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
 
       const processedSlides: VirtualSlide[] = json.data.map((e) => normalizeToVirtualSlide(e));
       console.log("[VirtualSlides] ✅ Loaded v7/v8 production format");
+
+      // Build the case-group sibling index (related slides). `groups` is absent on
+      // pre-v9 datasets — getRelatedSlides then returns [] for everything.
+      slideById.clear();
+      for (const s of processedSlides) slideById.set(s.id, s);
+      groupMembers = json.groups || {};
 
       // Store in memory for session (HTTP cache handles persistence)
       cachedSlides = processedSlides;

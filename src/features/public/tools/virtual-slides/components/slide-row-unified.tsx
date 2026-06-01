@@ -3,9 +3,9 @@
  * Works with full slide data from unified search API
  */
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
-import { ExternalLink, Eye, Microscope } from "lucide-react";
+import { ExternalLink, Eye, Microscope, Layers, ChevronDown, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { getR2PublicUrl } from "@/shared/services/r2-storage";
 import { getVirtualSlideCategoryInfo } from "../utils/virtual-slides-category-map";
@@ -31,6 +31,8 @@ interface SlideRowUnifiedProps {
   isRevealed?: boolean;
   onToggleReveal?: () => void;
   index?: number;
+  // Related slides (same pair/panel case-group), resolved by the page.
+  related?: VirtualSlide[];
 }
 
 export const SlideRowUnified = memo(function SlideRowUnified({
@@ -38,11 +40,14 @@ export const SlideRowUnified = memo(function SlideRowUnified({
   showDiagnoses,
   isRevealed = false,
   onToggleReveal,
+  related = [],
 }: SlideRowUnifiedProps) {
   const logoPath = REPOSITORY_LOGOS[slide.repository];
   const categoryInfo = getVirtualSlideCategoryInfo(slide.category);
+  const [relatedOpen, setRelatedOpen] = useState(false);
 
   return (
+    <>
     <tr className="border-b border-gray-200 hover:bg-gray-50">
       {/* Preview */}
       <td className="p-2 md:p-4 w-20 md:w-24">
@@ -141,6 +146,22 @@ export const SlideRowUnified = memo(function SlideRowUnified({
               </span>
             )}
           </div>
+
+          {/* Related slides (same case — pair/panel) */}
+          {related.length > 0 && (
+            <button
+              onClick={() => setRelatedOpen((o) => !o)}
+              className="inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+            >
+              {relatedOpen ? (
+                <ChevronDown className="w-3.5 h-3.5" />
+              ) : (
+                <ChevronRight className="w-3.5 h-3.5" />
+              )}
+              <Layers className="w-3.5 h-3.5" />
+              {related.length} related slide{related.length > 1 ? "s" : ""}
+            </button>
+          )}
         </div>
       </td>
 
@@ -232,5 +253,50 @@ export const SlideRowUnified = memo(function SlideRowUnified({
         </div>
       </td>
     </tr>
+
+    {/* Expanded related-slides panel — siblings of the same case (pair/panel). */}
+    {relatedOpen && related.length > 0 && (
+      <tr className="bg-gray-50/70 border-b border-gray-200">
+        <td colSpan={5} className="p-2 md:p-4">
+          <div className="flex flex-wrap gap-2">
+            {related.map((r) => (
+              <a
+                key={r.id}
+                href={r.slide_url || r.case_url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group flex w-40 flex-col overflow-hidden rounded-md border border-gray-200 bg-white hover:border-primary hover:shadow-sm transition"
+              >
+                <div className="relative h-20 w-full bg-gray-100">
+                  {r.preview_image_url ? (
+                    <Image
+                      src={r.preview_image_url}
+                      alt={r.diagnosis}
+                      fill
+                      className="object-cover"
+                      loading="lazy"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="flex h-full w-full items-center justify-center">
+                      <Microscope className="h-5 w-5 text-gray-400" />
+                    </div>
+                  )}
+                </div>
+                <div className="p-1.5">
+                  <p className="truncate text-xs font-medium text-gray-800 group-hover:text-primary">
+                    {showDiagnoses || isRevealed ? r.diagnosis : "Slide"}
+                  </p>
+                  {r.stain_type && (
+                    <p className="truncate text-[10px] text-gray-500">{r.stain_type}</p>
+                  )}
+                </div>
+              </a>
+            ))}
+          </div>
+        </td>
+      </tr>
+    )}
+    </>
   );
 });

@@ -22,6 +22,7 @@ export interface VirtualSlide {
   case_url: string;
   other_urls: string[];
   source_metadata: Record<string, unknown>;
+  groupId?: string; // case-group id (pair/panel) — siblings resolvable via getRelatedSlides
 }
 
 export interface SearchIndex {

@@ -3,7 +3,7 @@
 import { useState, useEffect, Suspense, useRef, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
 import dynamic from "next/dynamic";
-import { useClientVirtualSlides } from "@/shared/hooks/use-client-virtual-slides";
+import { useClientVirtualSlides, getRelatedSlides } from "@/shared/hooks/use-client-virtual-slides";
 import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
 import { VIRTUAL_SLIDES_JSON_URL } from "@/shared/config/virtual-slides";
 import { Card, CardContent } from "@/shared/components/ui/card";
@@ -835,6 +835,7 @@ function VirtualSlidesContent() {
                             showDiagnoses={showDiagnoses}
                             isRevealed={revealedDiagnoses.has(slide.id)}
                             onToggleReveal={() => toggleDiagnosisReveal(slide.id)}
+                            related={getRelatedSlides(slide)}
                           />
                         ))}
                       </tbody>
