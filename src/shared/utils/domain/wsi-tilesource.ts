@@ -129,6 +129,14 @@ async function resolveHemepath(slideUrl: string): Promise<WsiTileSourceResult> {
   return parseDzi(`${root}.dzi`, `${root}_files/`);
 }
 
+// LearnHaem: the slideUrl passed here is the DZI itself ("<root>.dzi.dzi", derived from the
+// preview path client-side — see use-client-virtual-slides). Tiles live under "<root>.dzi_files/".
+async function resolveLearnhaem(dziUrl: string): Promise<WsiTileSourceResult> {
+  // "<root>.dzi.dzi" → tiles base "<root>.dzi_files/". Strip the trailing ".dzi" only.
+  const tiles = dziUrl.replace(/\.dzi$/, "_files/");
+  return parseDzi(dziUrl, tiles);
+}
+
 // WHO/IARC: static DZI keyed by ?fid=, at /static/dzi/<fid>.dzi
 async function resolveWho(slideUrl: string): Promise<WsiTileSourceResult> {
   const u = new URL(slideUrl);
@@ -161,18 +169,30 @@ async function resolveStJude(slideUrl: string): Promise<WsiTileSourceResult> {
   return parseDzi(dziUrl, tiles.endsWith("/") ? tiles : `${tiles}/`, mpp);
 }
 
+// Whether an MGH /list slide is an H&E. The stain sits in the displayName parenthetical
+// (e.g. "Slide 2 - (HE Surf. Recut 5u)" → H&E; "Slide 1 - (H3K27me3 (TC) B1)" → not).
+// Keep this regex identical to the JS copy in dev/resources/scrapers/enrich_mgh.mjs.
+export function isHeStain(displayName?: string | null): boolean {
+  if (!displayName) return false;
+  return /\bh\s*&\s*e\b|\bh\s*\+\s*e\b|\bhe\b|hematoxylin/i.test(displayName);
+}
+
 // MGH: page name is the specimen id; resolve a slide file via /list, then DZI.
 // `slide` selects a specific slide within the case (for related-slide navigation);
-// defaults to the first slide.
+// with no explicit pick, default to the H&E slide (the natural "front door") if the case
+// has one, else the first slide.
 async function resolveMgh(slideUrl: string, slide?: string): Promise<WsiTileSourceResult> {
   const u = new URL(slideUrl);
   const specimen = u.pathname.split("/").pop();
   if (!specimen) return { kind: "unsupported", reason: "MGH slide URL missing specimen id" };
   const list = (await fetchJson(`${u.origin}/pv-http/wsi/case/${specimen}/list`)) as {
-    names?: { name?: string }[];
+    names?: { name?: string; displayName?: string }[];
   };
   const names = list.names ?? [];
-  const name = (slide && names.find((n) => n.name === slide)?.name) || names[0]?.name;
+  const name =
+    (slide && names.find((n) => n.name === slide)?.name) ||
+    names.find((n) => isHeStain(n.displayName))?.name ||
+    names[0]?.name;
   if (!name) return { kind: "unsupported", reason: "MGH /list returned no slide name" };
   const root = `${u.origin}/pv-http/${name}`;
   return parseDzi(`${root}.dzi`, `${root}_files/`);
@@ -291,6 +311,7 @@ export async function resolveTileSource(
     if (host.includes("rosai.secondslide.com")) return await resolveRosai(slideUrl);
     if (host.includes("neuro2.pathology.pitt.edu")) return await resolveAanp(slideUrl);
     if (host.includes("wirtualnymikroskop.mostwiedzy.pl")) return await resolveWirtualny(slideUrl);
+    if (host.includes("slides.learnhaem.com")) return await resolveLearnhaem(slideUrl);
     return { kind: "unsupported", reason: `No self-hosted tile-source resolver for ${host}` };
   } catch (e) {
     return { kind: "unsupported", reason: e instanceof Error ? e.message : "resolver error" };
@@ -337,7 +358,11 @@ export async function listRelatedSlides(slideUrl: string): Promise<RelatedSlide[
       };
     })
   );
-  return slides;
+  // H&E first (matches the representative slide the viewer opens on); otherwise keep /list order.
+  return slides
+    .map((s, i) => ({ s, i }))
+    .sort((a, b) => Number(isHeStain(b.s.label)) - Number(isHeStain(a.s.label)) || a.i - b.i)
+    .map((x) => x.s);
 }
 
 // Leeds: view.php injects per-slide dims into inline JS; tile host is public + CORS.

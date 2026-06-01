@@ -7,12 +7,12 @@ export function getRepositoryFromId(id: string): string {
   if (id.startsWith("leeds_")) return "Leeds University";
   if (id.startsWith("pathpresenter_")) return "PathPresenter";
   if (id.startsWith("mgh_")) return "MGH Pathology";
-  if (id.startsWith("toronto_")) return "University of Toronto LMP";
   if (id.startsWith("rosai_")) return "Rosai Collection";
   if (id.startsWith("recutclub_")) return "Recut Club";
   if (id.startsWith("who_")) return "WHO Blue Books Online";
   if (id.startsWith("pittnp_")) return "AANP Diagnostic Slide Session";
   if (id.startsWith("wirtualny_")) return "Wirtualny Mikroskop";
+  if (id.startsWith("learnhaem_")) return "LearnHaem";
   if (id.startsWith("SJ")) return "St. Jude Cloud";
   return "Unknown";
 }
@@ -29,6 +29,7 @@ const VIEWER_SUPPORTED_REPOS = new Set([
   "AANP Diagnostic Slide Session",
   "St. Jude Cloud",
   "Wirtualny Mikroskop",
+  "LearnHaem",
 ]);
 
 export function isViewerSupported(repository: string): boolean {

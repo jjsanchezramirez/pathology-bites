@@ -66,6 +66,9 @@ const HIRES_OPTIONS = [
 
 interface Props {
   slideUrl: string;
+  // Tile source to resolve from, when it differs from slideUrl (e.g. LearnHaem: slideUrl is the
+  // course page shown as the source link, while tiles come from a derived DZI URL). Defaults to slideUrl.
+  tileSourceUrl?: string;
   repository?: string;
   className?: string;
   heightClass?: string;
@@ -98,6 +101,7 @@ function snap(deg: number): number {
 
 export function SelfHostedOSDViewer({
   slideUrl,
+  tileSourceUrl,
   repository,
   className = "",
   heightClass = "h-[600px]",
@@ -335,7 +339,7 @@ export function SelfHostedOSDViewer({
       setRotation(0);
       try {
         const res = await fetch(
-          `/api/debug/wsi-tilesource?slideUrl=${encodeURIComponent(slideUrl)}${
+          `/api/debug/wsi-tilesource?slideUrl=${encodeURIComponent(tileSourceUrl ?? slideUrl)}${
             repository ? `&repository=${encodeURIComponent(repository)}` : ""
           }${activeSlide ? `&slide=${encodeURIComponent(activeSlide)}` : ""}`
         );
@@ -496,7 +500,7 @@ export function SelfHostedOSDViewer({
       viewer?.destroy();
       viewerRef.current = null;
     };
-  }, [slideUrl, repository, forceDrawer, activeSlide, updateMag, onSettle]);
+  }, [slideUrl, tileSourceUrl, repository, forceDrawer, activeSlide, updateMag, onSettle]);
 
   const applyRotation = useCallback((deg: number) => {
     const v = viewerRef.current;

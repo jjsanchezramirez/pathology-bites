@@ -157,6 +157,7 @@ export function SlideViewerModal({
           <div className="absolute inset-0">
             <SelfHostedOSDViewer
               slideUrl={current.slide_url || current.case_url}
+              tileSourceUrl={current.tileSourceUrl}
               repository={current.repository}
               heightClass="h-full"
               info={{

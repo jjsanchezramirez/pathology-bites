@@ -389,39 +389,54 @@ function VirtualSlidesContent() {
         }
       />
 
-      {/* Repository logos - static strip, all repositories crammed into one band */}
+      {/* Repository logos — static strip. Split into balanced rows (instead of one wrapped
+          band with a lopsided trailing row): ≤6 → 1 row, ≤12 → 2, else 3, evenly chunked. */}
       <section className="py-4 md:py-6 hidden sm:block">
         <div className="container px-4 mx-auto max-w-6xl">
-          <div className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3">
-            {repositoryLogos.map((repo) => (
-              <a
-                key={repo.id}
-                href={repo.href}
-                target="_blank"
-                rel="noopener noreferrer"
-                aria-label={repo.alt}
-                className="group flex items-center justify-center"
-              >
-                <picture>
-                  <source
-                    srcSet={getR2PublicUrl(
-                      `logos/optimized/${repo.file.replace(/\.png$/, ".avif")}`
-                    )}
-                    type="image/avif"
-                  />
-                  {}
-                  <img
-                    src={getR2PublicUrl(`logos/optimized/${repo.file}`)}
-                    alt={repo.alt}
-                    width={90}
-                    height={36}
-                    loading="lazy"
-                    decoding="async"
-                    className="object-contain opacity-60 grayscale transition-all duration-200 hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0"
-                  />
-                </picture>
-              </a>
-            ))}
+          <div className="flex flex-col items-center gap-y-3">
+            {(() => {
+              const total = repositoryLogos.length;
+              const rows = total <= 6 ? 1 : total <= 12 ? 2 : 3;
+              const perRow = Math.ceil(total / rows);
+              return Array.from({ length: rows }, (_, ri) =>
+                repositoryLogos.slice(ri * perRow, (ri + 1) * perRow)
+              ).map((rowLogos, ri) => (
+                <div
+                  key={ri}
+                  className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
+                >
+                  {rowLogos.map((repo) => (
+                    <a
+                      key={repo.id}
+                      href={repo.href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      aria-label={repo.alt}
+                      className="group flex items-center justify-center"
+                    >
+                      <picture>
+                        <source
+                          srcSet={getR2PublicUrl(
+                            `logos/optimized/${repo.file.replace(/\.png$/, ".avif")}`
+                          )}
+                          type="image/avif"
+                        />
+                        {}
+                        <img
+                          src={getR2PublicUrl(`logos/optimized/${repo.file}`)}
+                          alt={repo.alt}
+                          width={90}
+                          height={36}
+                          loading="lazy"
+                          decoding="async"
+                          className="object-contain opacity-60 grayscale transition-all duration-200 hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0"
+                        />
+                      </picture>
+                    </a>
+                  ))}
+                </div>
+              ));
+            })()}
           </div>
         </div>
       </section>

@@ -40,12 +40,6 @@ export const repositoryLogos: Logo[] = [
     href: "https://learn.mghpathology.org/",
   },
   {
-    id: "toronto",
-    file: "university-of-toronto-logo.png",
-    alt: "University of Toronto LMP",
-    href: "https://dlm.lmp.utoronto.ca/",
-  },
-  {
     id: "rosai",
     file: "rosai-collection-logo.png",
     alt: "Rosai Collection",
@@ -81,6 +75,18 @@ export const repositoryLogos: Logo[] = [
     alt: "AANP Diagnostic Slide Session",
     href: "https://neuro2.pathology.pitt.edu/",
   },
+  {
+    id: "wirtualny",
+    file: "mostwiedzy-logo.png",
+    alt: "Wirtualny Mikroskop",
+    href: "https://wirtualnymikroskop.mostwiedzy.pl/",
+  },
+  {
+    id: "learnhaem",
+    file: "learn-haem-logo.png",
+    alt: "LearnHaem",
+    href: "https://www.learnhaem.com/",
+  },
 ];
 
 // Map a dataset repository label (e.g. "Leeds University", "St. Jude Cloud") to its
@@ -89,13 +95,14 @@ const LOGO_MATCHERS: [RegExp, string][] = [
   [/leeds/i, "leeds"],
   [/hemato|hemepath/i, "hematopathology"],
   [/mgh/i, "mgh"],
-  [/toronto/i, "toronto"],
   [/rosai/i, "rosai"],
   [/recut/i, "recut"],
   [/st\.?\s*jude|pecan|stjude/i, "stjude"],
   [/who|blue\s*book|iarc/i, "who"],
   [/aanp|pitt|neuro/i, "aanp"],
   [/pathpresenter/i, "pathpresenter"],
+  [/wirtualny|mostwiedzy|mikroskop/i, "wirtualny"],
+  [/learn\s*haem|learnhaem/i, "learnhaem"],
 ];
 
 export function getRepositoryLogo(

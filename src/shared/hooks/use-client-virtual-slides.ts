@@ -118,6 +118,14 @@ function normalizeToVirtualSlide(v7: V7Entry): VirtualSlide {
   const primaryCase = Array.isArray(caseUrls) ? caseUrls[0] || "" : caseUrls;
   const otherUrlsArray = Array.isArray(otherUrls) ? otherUrls : otherUrls ? [otherUrls] : [];
 
+  // LearnHaem's slide_url is a course page (no DZI in it); the tile source is derivable from
+  // the preview thumbnail path: "<root>.dzi_files/0/0_0.jpg" → DZI at "<root>.dzi.dzi".
+  // Lets the viewer resolve tiles while slide_url stays the human-facing course-page link.
+  const tileSourceUrl =
+    v7.x.startsWith("learnhaem_") && primaryPreview
+      ? `${primaryPreview.split(".dzi_files")[0]}.dzi.dzi`
+      : undefined;
+
   return {
     id: v7.x,
     repository: getRepositoryFromId(v7.x),
@@ -138,6 +146,7 @@ function normalizeToVirtualSlide(v7: V7Entry): VirtualSlide {
     source_metadata: {},
     groupId: v7.k,
     loginWalled: v7.lw === 1,
+    tileSourceUrl,
   };
 }
 

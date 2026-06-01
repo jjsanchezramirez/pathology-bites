@@ -24,6 +24,7 @@ const REPOSITORY_LOGOS: Record<string, string> = {
   "WHO Blue Books Online": "logos/optimized/who-logo.png",
   "AANP Diagnostic Slide Session": "logos/optimized/aanp-logo.png",
   "Wirtualny Mikroskop": "logos/optimized/mostwiedzy-logo.png",
+  LearnHaem: "logos/optimized/learn-haem-logo.png",
 };
 
 // Preview thumbnail with a graceful fallback: a missing URL — or a source server that's
