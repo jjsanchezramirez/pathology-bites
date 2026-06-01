@@ -81,14 +81,20 @@ export function SlideViewerModal({
     return siblings.length ? [current, ...siblings] : [];
   }, [current]);
 
-  const relatedSlides =
-    members.length > 1
-      ? members.map((s) => ({
-          label: [s.diagnosis, s.stain_type].filter(Boolean).join(" · ") || s.diagnosis || "Slide",
-          thumbUrl: s.preview_image_url || undefined,
-          slideUrl: s.slide_url || s.case_url,
-        }))
-      : undefined;
+  // Memoized so its identity is stable across re-renders — the viewer keys an effect on this
+  // prop, and a fresh array each render would re-run it and clobber the cross-fade on nav.
+  const relatedSlides = useMemo(
+    () =>
+      members.length > 1
+        ? members.map((s) => ({
+            label:
+              [s.diagnosis, s.stain_type].filter(Boolean).join(" · ") || s.diagnosis || "Slide",
+            thumbUrl: s.preview_image_url || undefined,
+            slideUrl: s.slide_url || s.case_url,
+          }))
+        : undefined,
+    [members]
+  );
 
   const onSelectRelated = (url: string) => {
     const s = members.find((m) => (m.slide_url || m.case_url) === url);
@@ -175,9 +181,9 @@ export function SlideViewerModal({
             </>
           ) : (
             <>
-              <div className="relative">
-                <Microscope className="h-12 w-12 text-primary" />
-                <Loader2 className="absolute -bottom-1 -right-1 h-5 w-5 animate-spin text-primary" />
+              <div className="relative flex items-center justify-center">
+                <Loader2 className="h-20 w-20 animate-spin text-primary/25" />
+                <Microscope className="absolute h-8 w-8 text-primary" />
               </div>
               <div className="space-y-1">
                 <p className="text-sm font-semibold text-gray-800">Opening slide…</p>

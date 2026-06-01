@@ -165,31 +165,42 @@ export function SelfHostedOSDViewer({
     flip: boolean;
   } | null>(null);
 
-  // Switch slides: snapshot the current canvas + view first, then reload the new slide.
+  // Set when a corpus related-slide switch is in flight, so the slideUrl-change effect keeps
+  // the freeze + pending view (cross-fade) instead of resetting them like a fresh open.
+  const corpusSwitchRef = useRef(false);
+
+  // Snapshot the current canvas + view so the next slide can open under a blurred cover at
+  // the same position/zoom/rotation. Shared by MGH within-case nav (pickSlide) and corpus
+  // related-slide nav (onPickItem). Tainted canvas (IIIF) can't snapshot → no freeze, plain reload.
+  const captureForSwitch = useCallback(() => {
+    const v = viewerRef.current;
+    const c = v?.drawer?.canvas;
+    if (v) {
+      pendingViewRef.current = {
+        center: v.viewport.getCenter(true),
+        zoom: v.viewport.getZoom(true),
+        rotation: v.viewport.getRotation(),
+        flip: v.viewport.getFlip(),
+      };
+    }
+    try {
+      if (c) {
+        setFreezeUrl(c.toDataURL("image/jpeg", 0.7));
+        setFreezeVisible(true); // cover instantly so there's no black frame
+      }
+    } catch {
+      /* tainted canvas → no freeze, falls back to a plain reload */
+    }
+  }, []);
+
+  // MGH within-case slide switch: snapshot, then reload via activeSlide.
   const pickSlide = useCallback(
     (name: string) => {
       if (name === (activeSlide ?? related[0]?.name)) return;
-      const v = viewerRef.current;
-      const c = v?.drawer?.canvas;
-      if (v) {
-        pendingViewRef.current = {
-          center: v.viewport.getCenter(true),
-          zoom: v.viewport.getZoom(true),
-          rotation: v.viewport.getRotation(),
-          flip: v.viewport.getFlip(),
-        };
-      }
-      try {
-        if (c) {
-          setFreezeUrl(c.toDataURL("image/jpeg", 0.7));
-          setFreezeVisible(true); // cover instantly so there's no black frame
-        }
-      } catch {
-        /* tainted (shouldn't happen — DZI is proxied) → no freeze, falls back to black */
-      }
+      captureForSwitch();
       setActiveSlide(name);
     },
-    [activeSlide, related]
+    [activeSlide, related, captureForSwitch]
   );
   const logo = getRepositoryLogo(repository);
 
@@ -263,6 +274,15 @@ export function SelfHostedOSDViewer({
   // Fetch the case's related slides (MGH only; [] otherwise) for the left panel.
   useEffect(() => {
     let cancelled = false;
+    // Corpus related-slide nav (onPickItem captured a freeze first): keep the freeze +
+    // pending view so the slideUrl change cross-fades like the MGH path, instead of
+    // resetting to a fresh full-overlay load.
+    if (corpusSwitchRef.current) {
+      corpusSwitchRef.current = false;
+      return () => {
+        cancelled = true;
+      };
+    }
     setActiveSlide(null);
     setRelated([]);
     setEverReady(false); // new case → allow the full loading overlay
@@ -642,7 +662,15 @@ export function SelfHostedOSDViewer({
         thumbUrl: r.thumbUrl,
         active: (activeSlide ?? related[0]?.name) === r.name,
       }));
-  const onPickItem = (key: string) => (corpusMode ? onSelectRelated?.(key) : pickSlide(key));
+  const onPickItem = (key: string) => {
+    if (!corpusMode) return pickSlide(key);
+    if (key === slideUrl) return;
+    // Snapshot before the parent swaps slideUrl, then flag the upcoming slideUrl effect to
+    // keep the freeze for a cross-fade (same feel as the MGH within-case path).
+    captureForSwitch();
+    corpusSwitchRef.current = true;
+    onSelectRelated?.(key);
+  };
 
   return (
     <div
@@ -822,16 +850,6 @@ export function SelfHostedOSDViewer({
                 <AdjustRow label="Brightness" value={brightness} onChange={setBrightness} />
                 <AdjustRow label="Contrast" value={contrast} onChange={setContrast} />
                 <AdjustRow label="Saturation" value={saturation} onChange={setSaturation} />
-                <button
-                  onClick={() => {
-                    setBrightness(100);
-                    setContrast(100);
-                    setSaturation(100);
-                  }}
-                  className="mt-1 w-full rounded-md py-1 text-[11px] font-medium text-gray-600 hover:bg-gray-100"
-                >
-                  Reset
-                </button>
               </Popover>
             )}
           </div>
@@ -890,11 +908,13 @@ export function SelfHostedOSDViewer({
               : isFullscreen
                 ? "2.75rem"
                 : "2.5rem",
-            // Fit the height to the slide count (no empty space, no hover jump). max-h caps it
-            // so very long cases scroll instead of overrunning the toolbar/minimap.
+            // Fit the height to the slide count (no empty space, no hover jump). maxHeight
+            // caps it to the band between the toolbar (top) and the minimap (bottom-left) so
+            // it never overruns either; longer cases scroll within that band.
             height: 44 + panelItems.length * (isFullscreen ? 140 : 104),
+            maxHeight: "calc(100% - 5rem - 9rem)",
           }}
-          className="absolute left-2 top-[44%] z-10 flex max-h-[80%] -translate-y-1/2 flex-col overflow-hidden rounded-lg bg-white/95 shadow-lg ring-1 ring-black/5 backdrop-blur transition-all duration-200 ease-out"
+          className="absolute left-2 top-20 z-10 flex flex-col overflow-hidden rounded-lg bg-white/95 shadow-lg ring-1 ring-black/5 backdrop-blur transition-all duration-200 ease-out"
         >
           {slidesOpen ? (
             <>
