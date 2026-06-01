@@ -108,7 +108,11 @@ export function SlideViewerModal({
     >
       <DialogContent
         className={cn(
-          "relative gap-0 overflow-hidden border-0 bg-black p-0 transition-all duration-500 ease-out",
+          // NB: no `position` utility here — the base DialogContent is `fixed` (which also
+          // serves as the containing block for the absolute children below). Adding
+          // `relative` would win the twMerge conflict and drop the fixed centering, kicking
+          // the whole dialog into document flow off-screen.
+          "gap-0 overflow-hidden border-0 bg-black p-0 transition-all duration-500 ease-out",
           ready
             ? "h-[95vh] w-[97vw] max-w-[97vw] sm:max-w-[97vw]"
             : "h-[320px] w-[90vw] max-w-sm sm:max-w-sm"
