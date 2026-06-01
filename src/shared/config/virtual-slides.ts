@@ -14,7 +14,7 @@ const DATA_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev";
 // taxonomy; pair/panel/session `groups` + `k` for related slides; PathPresenter "Slide Type:
 // Image" (2,711, mostly gross derm) labeled stain="Gross photo". Abbreviated field names;
 // brotli lgwin 24 ~2.14MB stored with Content-Encoding: br (browser auto-decompresses).
-export const VIRTUAL_SLIDES_JSON_URL = `${DATA_BASE}/virtual-slides/virtual-slides-min.json.br?v=c4b98d2b`;
+export const VIRTUAL_SLIDES_JSON_URL = `${DATA_BASE}/virtual-slides/virtual-slides-min.json.br?v=f35cffa3`;
 
 // Fallback URL (same object) retained for the loader's fallback path.
-export const VIRTUAL_SLIDES_JSON_URL_FALLBACK = `${DATA_BASE}/virtual-slides/virtual-slides-min.json.br?v=c4b98d2b`;
+export const VIRTUAL_SLIDES_JSON_URL_FALLBACK = `${DATA_BASE}/virtual-slides/virtual-slides-min.json.br?v=f35cffa3`;
