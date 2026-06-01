@@ -163,8 +163,6 @@ export function SelfHostedOSDViewer({
     zoom: number;
     rotation: number;
     flip: boolean;
-    w: number; // outgoing image dims — restore the exact view only if the next slide matches
-    h: number; // (same-case stains share dims; different scans don't, so we fit instead)
   } | null>(null);
 
   // Set when a corpus related-slide switch is in flight, so the slideUrl-change effect keeps
@@ -177,15 +175,12 @@ export function SelfHostedOSDViewer({
   const captureForSwitch = useCallback(() => {
     const v = viewerRef.current;
     const c = v?.drawer?.canvas;
-    const ts = tsRef.current;
-    if (v && ts && ts.kind !== "unsupported") {
+    if (v) {
       pendingViewRef.current = {
         center: v.viewport.getCenter(true),
         zoom: v.viewport.getZoom(true),
         rotation: v.viewport.getRotation(),
         flip: v.viewport.getFlip(),
-        w: ts.width,
-        h: ts.height,
       };
     }
     try {
@@ -440,26 +435,17 @@ export function SelfHostedOSDViewer({
           const v = viewer!;
           const pv = pendingViewRef.current;
           if (pv) {
-            const t = tsRef.current;
-            // Only carry the view over when the new slide has the SAME dimensions (same-case
-            // stains/levels) — OSD's coords are normalized to image width, so restoring onto a
-            // differently-sized scan would land at a different region/scale and the crossfade
-            // would visibly jump. Different dims → fit cleanly (still a smooth blur→unblur).
-            const sameDims =
-              !!t && t.kind !== "unsupported" && t.width === pv.w && t.height === pv.h;
-            if (sameDims) {
-              try {
-                v.viewport.setRotation(pv.rotation, true);
-                if (pv.flip) v.viewport.setFlip(true);
-                // Restore exact zoom + center (rotation-agnostic) — fitBounds would re-derive
-                // zoom from the rotated bbox and shrink it on each rotated switch.
-                v.viewport.zoomTo(pv.zoom, undefined, true);
-                v.viewport.panTo(pv.center, true);
-                v.viewport.applyConstraints();
-                setRotation(((pv.rotation % 360) + 360) % 360);
-              } catch {
-                /* fall back to default open view */
-              }
+            try {
+              v.viewport.setRotation(pv.rotation, true);
+              if (pv.flip) v.viewport.setFlip(true);
+              // Restore exact zoom + center (rotation-agnostic) — fitBounds would re-derive
+              // zoom from the rotated bbox and shrink it on each rotated switch.
+              v.viewport.zoomTo(pv.zoom, undefined, true);
+              v.viewport.panTo(pv.center, true);
+              v.viewport.applyConstraints();
+              setRotation(((pv.rotation % 360) + 360) % 360);
+            } catch {
+              /* dimensions mismatch — fall back to default open view */
             }
             pendingViewRef.current = null;
           }
@@ -467,7 +453,7 @@ export function SelfHostedOSDViewer({
             const t0 = Date.now();
             const poll = () => {
               const loaded = v.world?.getItemAt?.(0)?.getFullyLoaded?.();
-              if (loaded || Date.now() - t0 > 2200) setFreezeVisible(false);
+              if (loaded || Date.now() - t0 > 1500) setFreezeVisible(false);
               else setTimeout(poll, 120);
             };
             setTimeout(poll, 80);
