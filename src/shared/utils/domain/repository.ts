@@ -7,6 +7,10 @@ export function getRepositoryFromId(id: string): string {
   if (id.startsWith("leeds_")) return "Leeds University";
   if (id.startsWith("pathpresenter_")) return "PathPresenter";
   if (id.startsWith("mgh_")) return "MGH Pathology";
+  // Toronto is dropped from the corpus at build time, but keep this mapping: the live corpus
+  // still carries toronto_ records until the next publish, and the client-side hide-filter
+  // keys on this exact name (without it they leak in as "Unknown"). Harmless once republished.
+  if (id.startsWith("toronto_")) return "University of Toronto LMP";
   if (id.startsWith("rosai_")) return "Rosai Collection";
   if (id.startsWith("recutclub_")) return "Recut Club";
   if (id.startsWith("who_")) return "WHO Blue Books Online";
