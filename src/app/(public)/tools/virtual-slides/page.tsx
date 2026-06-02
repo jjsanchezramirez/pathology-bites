@@ -123,6 +123,7 @@ function VirtualSlidesContent() {
     searchWithFilters,
     goToPage,
     totalSlides,
+    filteredTotal,
     expandedSearchTerms,
   } = {
     slides: client.slides,
@@ -134,6 +135,7 @@ function VirtualSlidesContent() {
     searchWithFilters: client.searchWithFilters,
     goToPage: client.goToPage,
     totalSlides: client.totalSlides,
+    filteredTotal: client.filteredTotal,
     expandedSearchTerms: client.expandedSearchTerms,
   };
 
@@ -714,8 +716,8 @@ function VirtualSlidesContent() {
                       <>
                         <Filter className="h-4 w-4" />
                         <span>
-                          Showing {totalResults.toLocaleString()} of {totalSlides.toLocaleString()}{" "}
-                          slides
+                          Showing {totalResults.toLocaleString()} of{" "}
+                          {filteredTotal.toLocaleString()} slides
                         </span>
                       </>
                     )}
@@ -779,8 +781,8 @@ function VirtualSlidesContent() {
                       <>
                         <Filter className="h-4 w-4" />
                         <span>
-                          Showing {totalResults.toLocaleString()} of {totalSlides.toLocaleString()}{" "}
-                          slides
+                          Showing {totalResults.toLocaleString()} of{" "}
+                          {filteredTotal.toLocaleString()} slides
                         </span>
                       </>
                     )}

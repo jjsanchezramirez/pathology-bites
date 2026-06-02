@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 import dynamic from "next/dynamic";
-import { Loader2, Microscope } from "lucide-react";
+import { Loader2, Microscope, X } from "lucide-react";
 
 import { cn } from "@/shared/utils/index";
 import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialog";
@@ -144,6 +144,15 @@ export function SlideViewerModal({
       }}
     >
       <DialogContent
+        // The default bare close icon is invisible over a black letterbox (dark on black) and
+        // we can't flip it white (most slides are white). Render our own with a backing chip
+        // so it contrasts with the chip, not the slide — visible on any background.
+        showCloseButton={false}
+        // Don't dismiss the viewer on outside interaction. OpenSeadragon's pointer handling on
+        // the canvas + our menu open/close toggles trip Radix's outside-pointer/focus detection,
+        // so a second button press or a tap outside an open menu was closing the whole viewer.
+        // Close is explicit (the X) or Escape. Menus still close via their own outside handler.
+        onInteractOutside={(e) => e.preventDefault()}
         className={cn(
           // NB: no `position` utility here — the base DialogContent is `fixed` (which also
           // serves as the containing block for the absolute children below). Adding
@@ -156,6 +165,16 @@ export function SlideViewerModal({
         )}
       >
         <DialogTitle className="sr-only">{current?.diagnosis || "Slide viewer"}</DialogTitle>
+
+        {/* Close — backing chip keeps the X visible over black letterbox or white slide alike. */}
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="absolute right-3 top-3 z-50 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md ring-1 ring-black/10 backdrop-blur transition-colors hover:bg-white md:h-8 md:w-8"
+        >
+          <X className="h-5 w-5 md:h-4 md:w-4" />
+        </button>
 
         {/* Viewer fills the box (absolute → bypasses the dialog's grid). It loads tiles even
             while the card covers it, so by the time we expand the slide is already showing. */}

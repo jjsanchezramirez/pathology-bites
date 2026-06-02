@@ -183,7 +183,7 @@ export const SlideRowUnified = memo(function SlideRowUnified({
       if (next && isMghCase && mghSlides === null && !mghLoading) {
         setMghLoading(true);
         fetch(
-          `/api/debug/wsi-related?slideUrl=${encodeURIComponent(slide.case_url || slide.slide_url)}`
+          `/api/public/tools/virtual-slides/wsi-related?slideUrl=${encodeURIComponent(slide.case_url || slide.slide_url)}`
         )
           .then((r) => r.json())
           .then((d) => setMghSlides(d.slides ?? []))
@@ -370,7 +370,7 @@ export const SlideRowUnified = memo(function SlideRowUnified({
               Loading slides…
             </div>
           ) : mghRelated && mghRelated.length > 0 ? (
-            <div className="flex flex-wrap gap-2">
+            <div className="grid grid-cols-2 gap-2 max-md:landscape:grid-cols-4 md:flex md:flex-wrap">
               {mghRelated.map((s) => {
                 const stain = mghStainFromLabel(s.label);
                 return (
@@ -378,7 +378,7 @@ export const SlideRowUnified = memo(function SlideRowUnified({
                     key={s.name}
                     type="button"
                     onClick={() => onOpenViewerAt?.(s.name)}
-                    className="group flex w-40 flex-col overflow-hidden rounded-md border border-gray-200 bg-white text-left transition hover:border-primary hover:shadow-sm"
+                    className="group flex w-full flex-col overflow-hidden rounded-md border border-gray-200 bg-white text-left transition hover:border-primary hover:shadow-sm md:w-40"
                   >
                     <div className="relative h-20 w-full bg-gray-100">
                       <Thumb src={s.thumbUrl || undefined} alt={s.label} iconClass="h-5 w-5" unoptimized />
@@ -403,10 +403,10 @@ export const SlideRowUnified = memo(function SlideRowUnified({
     {relatedOpen && !isMghCase && related.length > 0 && (
       <tr className="bg-gray-50/70 border-b border-gray-200">
         <td colSpan={4} className="p-2 md:p-4">
-          <div className="flex flex-wrap gap-2">
+          <div className="grid grid-cols-2 gap-2 max-md:landscape:grid-cols-4 md:flex md:flex-wrap">
             {related.map((r) => {
               const cardClass =
-                "group flex w-40 flex-col overflow-hidden rounded-md border border-gray-200 bg-white text-left transition hover:border-primary hover:shadow-sm";
+                "group flex w-full flex-col overflow-hidden rounded-md border border-gray-200 bg-white text-left transition hover:border-primary hover:shadow-sm md:w-40";
               const inner = (
                 <>
                   <div className="relative h-20 w-full bg-gray-100">

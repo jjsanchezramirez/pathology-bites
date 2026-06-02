@@ -20,9 +20,10 @@ import {
 import { buildOsdTileSource } from "@/shared/utils/domain/wsi-osd-tilesource";
 import type { WsiTileSourceResult, RelatedSlide } from "@/shared/utils/domain/wsi-tilesource";
 import { getRepositoryLogo } from "@/shared/components/common/repository-logos";
+import { useMobile } from "@/shared/hooks/use-mobile";
 
 // Approach 2: render a repo's slide in OUR OWN bundled OpenSeadragon against the repo's
-// tile pyramid (resolved server-side via /api/debug/wsi-tilesource). Bypasses the repo
+// tile pyramid (resolved server-side via /api/public/tools/virtual-slides/wsi-tilesource). Bypasses the repo
 // page's X-Frame-Options (no iframe) and shows just the viewer — no chrome — with a
 // branded control bar + precise rotation dial instead of OSD's default buttons.
 
@@ -52,8 +53,12 @@ type OsdViewer = {
   drawer?: { canvas?: HTMLCanvasElement };
 };
 
-// Standard objective magnifications offered by the loupe control.
+// Standard objective magnifications offered by the loupe control. 2× and 60× are dropped only
+// in the cramped mobile-portrait grid (see TIGHT_PRESETS) where they'd spill to a second row;
+// landscape + desktop have room for all eight.
 const MAG_PRESETS = [1, 2, 5, 10, 20, 40, 60, 100];
+// Presets hidden in the mobile-portrait grid so the rest fit on one line.
+const TIGHT_PRESETS = new Set([2, 60]);
 // Confirm before exporting hi-res images larger than this (rough estimate).
 const HIRES_WARN_MB = 25;
 // Hi-res export resolutions (longer side, px).
@@ -80,7 +85,7 @@ interface Props {
   info?: { diagnosis?: string; category?: string; subcategory?: string; stain?: string };
   // Corpus-driven related slides (case_groups). When provided, the left panel shows
   // these cross-WSI siblings and clicking calls onSelectRelated(slideUrl) to navigate.
-  // When omitted, the panel falls back to the MGH within-case prototype (/api/debug/wsi-related).
+  // When omitted, the panel falls back to the MGH within-case prototype (/api/public/tools/virtual-slides/wsi-related).
   relatedSlides?: { label: string; thumbUrl?: string; slideUrl: string; stain?: string }[];
   onSelectRelated?: (slideUrl: string) => void;
   // Fired the first time the viewer finishes loading a slide (status → ready). Lets a
@@ -138,8 +143,12 @@ export function SelfHostedOSDViewer({
   const [error, setError] = useState<string>("");
   const [rotation, setRotation] = useState(0);
   const [isFullscreen, setIsFullscreen] = useState(false);
-  const [panel, setPanel] = useState<null | "mag" | "info" | "hires" | "adjust">(null);
-  const togglePanel = (p: "mag" | "info" | "hires" | "adjust") =>
+  // <768px (md): drives the mobile layout — bottom-sheet menus, bigger touch targets,
+  // hidden minimap/zoom/photo controls. Undefined until measured (treat as desktop).
+  const isMobile = useMobile();
+  const mobile = isMobile === true;
+  const [panel, setPanel] = useState<null | "mag" | "info" | "hires" | "adjust" | "related">(null);
+  const togglePanel = (p: "mag" | "info" | "hires" | "adjust" | "related") =>
     setPanel((cur) => (cur === p ? null : p));
   const [currentMag, setCurrentMag] = useState(1); // live (animating) — for the readout
   const [hiliteMag, setHiliteMag] = useState(1); // target/settled — for button highlight
@@ -320,7 +329,7 @@ export function SelfHostedOSDViewer({
         cancelled = true;
       };
     }
-    fetch(`/api/debug/wsi-related?slideUrl=${encodeURIComponent(slideUrl)}`)
+    fetch(`/api/public/tools/virtual-slides/wsi-related?slideUrl=${encodeURIComponent(slideUrl)}`)
       .then((r) => r.json())
       .then((d) => {
         if (!cancelled) setRelated(d.slides ?? []);
@@ -351,7 +360,7 @@ export function SelfHostedOSDViewer({
       setRotation(0);
       try {
         const res = await fetch(
-          `/api/debug/wsi-tilesource?slideUrl=${encodeURIComponent(tileSourceUrl ?? slideUrl)}${
+          `/api/public/tools/virtual-slides/wsi-tilesource?slideUrl=${encodeURIComponent(tileSourceUrl ?? slideUrl)}${
             repository ? `&repository=${encodeURIComponent(repository)}` : ""
           }${activeSlide ? `&slide=${encodeURIComponent(activeSlide)}` : ""}`
         );
@@ -411,8 +420,11 @@ export function SelfHostedOSDViewer({
           showRotationControl: false,
           showFlipControl: false,
           showFullPageControl: false,
-          // Minimap bottom-left.
-          showNavigator: true,
+          // Minimap bottom-left — but not on mobile (OSD sets an inline display on the
+          // navigator that beats a CSS hide, so we skip creating it entirely below md).
+          // Read the media query live at init (the useMobile state is undefined first paint).
+          showNavigator:
+            typeof window === "undefined" || !window.matchMedia("(max-width: 767px)").matches,
           navigatorPosition: "BOTTOM_LEFT",
           // Slower, finer zoom (smaller per-scroll step + longer glide).
           animationTime: 1.0,
@@ -699,6 +711,9 @@ export function SelfHostedOSDViewer({
         stain: undefined as string | undefined,
         active: (activeSlide ?? related[0]?.name) === r.name,
       }));
+  // "Related" count = siblings of the current slide, i.e. excluding the one on screen. Matches
+  // the search-row count outside the viewer (panelItems includes the current slide itself).
+  const relatedCount = Math.max(0, panelItems.length - 1);
   const onPickItem = (key: string) => {
     if (!corpusMode) return pickSlide(key);
     if (key === slideUrl) return;
@@ -708,6 +723,108 @@ export function SelfHostedOSDViewer({
     corpusSwitchRef.current = true;
     onSelectRelated?.(key);
   };
+
+  // Menu bodies — shared verbatim between the desktop anchored popovers and the mobile
+  // bottom sheets so each control reads identically in both. Sizing is responsive (bigger
+  // touch targets on mobile via md: breakpoints; desktop keeps the compact dimensions).
+  const magBody = (
+    <>
+      {/* Mobile portrait: a 6-col grid forces presets onto one row (2× / 60× hidden so six fit).
+          Mobile landscape: a horizontally-scrolling row with all eight. Desktop: the popover row. */}
+      <div className="grid grid-cols-6 gap-1 max-md:landscape:flex max-md:landscape:overflow-x-auto md:flex md:justify-between md:gap-0.5">
+        {MAG_PRESETS.map((m) => {
+          const active = Math.abs(hiliteMag - m) / m < 0.15;
+          return (
+            <button
+              key={m}
+              onClick={() => setMagnification(m)}
+              className={`rounded px-1 py-2 text-center text-sm font-medium tabular-nums max-md:landscape:shrink-0 max-md:landscape:px-3 md:px-1 md:py-0.5 md:text-[11px] ${
+                TIGHT_PRESETS.has(m) ? "max-md:portrait:hidden" : ""
+              } ${active ? "bg-primary text-primary-foreground" : "text-gray-700 hover:bg-gray-100"}`}
+            >
+              {m}×
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-4 px-1 md:mt-3">
+        <MagSlider
+          frac={magToSlider(currentMag)}
+          onLive={(f) => setMagnification(sliderToMag(f), true)}
+          onCommit={(f) => setMagnification(sliderToMag(f), true)}
+        />
+      </div>
+    </>
+  );
+
+  const infoBody = (
+    <dl className="space-y-1 text-xs text-gray-600">
+      <InfoRow label="Diagnosis" value={info?.diagnosis} />
+      <InfoRow label="Repository" value={repository} />
+      <InfoRow label="Category" value={info?.category} />
+      <InfoRow label="Organ system" value={info?.subcategory} />
+      <InfoRow label="Stain" value={info?.stain} />
+      <InfoRow
+        label="Dimensions"
+        value={dims ? `${dims.w.toLocaleString()} × ${dims.h.toLocaleString()} px` : undefined}
+      />
+    </dl>
+  );
+
+  const adjustBody = (
+    <>
+      <AdjustRow label="Brightness" value={brightness} onChange={setBrightness} />
+      <AdjustRow label="Contrast" value={contrast} onChange={setContrast} />
+      <AdjustRow label="Saturation" value={saturation} onChange={setSaturation} />
+    </>
+  );
+
+  // Related slides for the mobile bottom sheet (the desktop side rail is a separate hover
+  // element). Portrait → 2-col grid that scrolls vertically; landscape → a single row that
+  // scrolls horizontally (the sheet is short in landscape). Picking one navigates + dismisses.
+  const relatedBody = (
+    <div className="gap-3 portrait:grid portrait:grid-cols-2 landscape:flex landscape:overflow-x-auto landscape:pb-1">
+      {panelItems.map((s, i) => (
+        <button
+          key={s.key}
+          onClick={() => {
+            onPickItem(s.key);
+            setPanel(null);
+          }}
+          className={`block rounded-lg p-2 text-left landscape:w-44 landscape:shrink-0 ${
+            s.active ? "bg-primary/5 ring-2 ring-primary" : "bg-gray-50 active:bg-gray-100"
+          }`}
+        >
+          <div className="mb-1.5 flex items-start gap-1 text-xs font-medium text-gray-700">
+            <span className="text-gray-400">{i + 1}.</span>
+            <span className="line-clamp-2 leading-snug" title={s.label}>
+              {s.label}
+            </span>
+          </div>
+          <div className="relative">
+            {s.thumbUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={s.thumbUrl}
+                alt={s.label}
+                loading="lazy"
+                className="h-24 w-full rounded bg-white object-contain"
+              />
+            ) : (
+              <div className="flex h-24 w-full items-center justify-center rounded bg-white text-gray-300">
+                <Microscope className="h-6 w-6" />
+              </div>
+            )}
+            {s.stain && (
+              <span className="pointer-events-none absolute left-1 top-1 max-w-[calc(100%-0.5rem)] truncate rounded bg-white/90 px-1.5 py-0.5 text-[9px] font-medium uppercase leading-none tracking-[0.1em] text-slate-500 shadow-sm ring-1 ring-black/5 backdrop-blur">
+                {s.stain}
+              </span>
+            )}
+          </div>
+        </button>
+      ))}
+    </div>
+  );
 
   return (
     <div
@@ -749,23 +866,28 @@ export function SelfHostedOSDViewer({
         </>
       )}
 
-      {/* Branded control bar */}
+      {/* Branded control bar — compact, left-aligned pill (same look in both orientations). */}
       {showChrome && (
         <div
           data-pb-popover
           className="absolute top-2 left-2 z-30 flex items-center gap-1 rounded-lg bg-white/95 px-2 py-1 shadow-md ring-1 ring-black/5 backdrop-blur"
         >
-          <span className="flex items-center gap-1.5 pr-1 text-primary select-none">
-            <Microscope className="h-4 w-4" />
-            <span className="text-sm font-semibold whitespace-nowrap">Pathology Bites</span>
+          <span className="flex items-center gap-1.5 pr-1 text-primary select-none [&_svg]:size-5 md:[&_svg]:size-4">
+            <Microscope />
+            <span className="hidden text-sm font-semibold whitespace-nowrap md:inline">
+              Pathology Bites
+            </span>
           </span>
           <Sep />
-          <BarBtn title="Zoom in" onClick={() => zoom(1.4)}>
-            <Plus className="h-4 w-4" />
-          </BarBtn>
-          <BarBtn title="Zoom out" onClick={() => zoom(1 / 1.4)}>
-            <Minus className="h-4 w-4" />
-          </BarBtn>
+          {/* Zoom buttons are pinch-to-zoom on touch → desktop only. */}
+          <span className="hidden md:contents">
+            <BarBtn title="Zoom in" onClick={() => zoom(1.4)}>
+              <Plus className="h-4 w-4" />
+            </BarBtn>
+            <BarBtn title="Zoom out" onClick={() => zoom(1 / 1.4)}>
+              <Minus className="h-4 w-4" />
+            </BarBtn>
+          </span>
           <BarBtn
             title="Fit to view (resets rotation)"
             onClick={() => {
@@ -789,67 +911,44 @@ export function SelfHostedOSDViewer({
             >
               <Search className="h-4 w-4" />
             </BarBtn>
-            {panel === "mag" && (
-              <Popover className="w-64 p-2">
-                <div className="flex justify-between gap-0.5">
-                  {MAG_PRESETS.map((m) => {
-                    const active = Math.abs(hiliteMag - m) / m < 0.15;
-                    return (
-                      <button
-                        key={m}
-                        onClick={() => setMagnification(m)}
-                        className={`rounded px-1 py-0.5 text-[11px] font-medium tabular-nums ${
-                          active
-                            ? "bg-primary text-primary-foreground"
-                            : "text-gray-700 hover:bg-gray-100"
-                        }`}
-                      >
-                        {m}×
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="mt-3 px-1">
-                  <MagSlider
-                    frac={magToSlider(currentMag)}
-                    onLive={(f) => setMagnification(sliderToMag(f), true)}
-                    onCommit={(f) => setMagnification(sliderToMag(f), true)}
-                  />
-                </div>
-              </Popover>
-            )}
+            {!mobile && panel === "mag" && <Popover className="w-64 p-2">{magBody}</Popover>}
           </div>
-          <BarBtn title="Photo — current view (PNG)" onClick={capture}>
-            <Camera className="h-4 w-4" />
-          </BarBtn>
-          {/* Hi-res export — resolution menu anchored under the picture icon */}
-          <div className="relative">
-            <BarBtn
-              title="Photo — high resolution"
-              active={panel === "hires"}
-              onClick={() => togglePanel("hires")}
-            >
-              {busy ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <ImageDown className="h-4 w-4" />
-              )}
+          {/* Photo + hi-res export are desktop workflows → hidden on mobile. */}
+          <span className="hidden md:contents">
+            <BarBtn title="Photo — current view (PNG)" onClick={capture}>
+              <Camera className="h-4 w-4" />
             </BarBtn>
-            {panel === "hires" && (
-              <Popover className="w-36 p-1">
-                {HIRES_OPTIONS.map((o) => (
-                  <button
-                    key={o.label}
-                    onClick={() => captureHiRes(o.px)}
-                    className="flex w-full items-center justify-between gap-3 rounded-md px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100"
-                  >
-                    <span>{o.label}</span>
-                    <span className="text-[10px] text-gray-400">~{Math.round(estMB(o.px))} MB</span>
-                  </button>
-                ))}
-              </Popover>
-            )}
-          </div>
+            {/* Hi-res export — resolution menu anchored under the picture icon */}
+            <div className="relative">
+              <BarBtn
+                title="Photo — high resolution"
+                active={panel === "hires"}
+                onClick={() => togglePanel("hires")}
+              >
+                {busy ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <ImageDown className="h-4 w-4" />
+                )}
+              </BarBtn>
+              {!mobile && panel === "hires" && (
+                <Popover className="w-36 p-1">
+                  {HIRES_OPTIONS.map((o) => (
+                    <button
+                      key={o.label}
+                      onClick={() => captureHiRes(o.px)}
+                      className="flex w-full items-center justify-between gap-3 rounded-md px-2.5 py-1 text-xs font-medium text-gray-700 hover:bg-gray-100"
+                    >
+                      <span>{o.label}</span>
+                      <span className="text-[10px] text-gray-400">
+                        ~{Math.round(estMB(o.px))} MB
+                      </span>
+                    </button>
+                  ))}
+                </Popover>
+              )}
+            </div>
+          </span>
           {/* Slide info — panel anchored under the info icon */}
           <div className="relative">
             <BarBtn
@@ -859,24 +958,10 @@ export function SelfHostedOSDViewer({
             >
               <Info className="h-4 w-4" />
             </BarBtn>
-            {panel === "info" && (
+            {!mobile && panel === "info" && (
               <Popover className="right-0 w-64 p-3 text-sm">
                 <div className="mb-2 font-semibold text-gray-800">Slide info</div>
-                <dl className="space-y-1 text-xs text-gray-600">
-                  <InfoRow label="Diagnosis" value={info?.diagnosis} />
-                  <InfoRow label="Repository" value={repository} />
-                  <InfoRow label="Category" value={info?.category} />
-                  <InfoRow label="Organ system" value={info?.subcategory} />
-                  <InfoRow label="Stain" value={info?.stain} />
-                  <InfoRow
-                    label="Dimensions"
-                    value={
-                      dims
-                        ? `${dims.w.toLocaleString()} × ${dims.h.toLocaleString()} px`
-                        : undefined
-                    }
-                  />
-                </dl>
+                {infoBody}
               </Popover>
             )}
           </div>
@@ -889,13 +974,7 @@ export function SelfHostedOSDViewer({
             >
               <SlidersHorizontal className="h-4 w-4" />
             </BarBtn>
-            {panel === "adjust" && (
-              <Popover className="w-52 p-3">
-                <AdjustRow label="Brightness" value={brightness} onChange={setBrightness} />
-                <AdjustRow label="Contrast" value={contrast} onChange={setContrast} />
-                <AdjustRow label="Saturation" value={saturation} onChange={setSaturation} />
-              </Popover>
-            )}
+            {!mobile && panel === "adjust" && <Popover className="w-52 p-3">{adjustBody}</Popover>}
           </div>
           <BarBtn
             title={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
@@ -906,49 +985,89 @@ export function SelfHostedOSDViewer({
         </div>
       )}
 
-      {/* Attribution disclaimer — under the toolbar; z below the menus so they cover it. */}
+      {/* Attribution disclaimer — under the toolbar; z below the menus so they cover it.
+          Sits lower on mobile to clear the taller (bigger-button) bar. */}
       {showChrome && (
-        <div className="pointer-events-none absolute left-2 top-[3.4rem] z-0 max-w-[55%] truncate rounded bg-black/45 px-1.5 py-0.5 text-[10px] text-white/80">
+        <div className="pointer-events-none absolute left-2 top-14 z-0 max-w-[55%] truncate rounded bg-black/45 px-1.5 py-0.5 text-[10px] text-white/80 md:top-[3.4rem]">
           Slide © {logo?.alt ?? repository ?? "source repository"} · Educational use only
         </div>
       )}
 
-      {/* Stain chip — top-center, between the toolbar (left) and logo (right). Updates per
-          slide on a related-slide switch. Violet to match the stain badge in the search rows. */}
+      {/* Related slides — mobile: a standalone, minimalist pill BELOW the attribution line so
+          it's easy to spot (opens the bottom sheet). Desktop uses the hover side rail instead. */}
+      {showChrome && mobile && panelItems.length > 1 && (
+        <button
+          onClick={() => togglePanel("related")}
+          className={`absolute left-2 top-20 z-20 flex items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-medium shadow-md ring-1 ring-black/5 backdrop-blur transition-colors ${
+            panel === "related"
+              ? "bg-primary text-primary-foreground"
+              : "bg-white/95 text-slate-600"
+          }`}
+        >
+          <Layers className="h-4 w-4" />
+          <span>Related slides</span>
+          <span className="tabular-nums opacity-70">{relatedCount}</span>
+        </button>
+      )}
+
+      {/* Stain chip — desktop only: top-center, between the toolbar (left) and logo (right).
+          On mobile the stain lives in the top-right stack below the Close X (see below). */}
       {showChrome && info?.stain && (
-        <div className="pointer-events-none absolute left-1/2 top-2 z-20 flex h-9 -translate-x-1/2 items-center rounded-lg bg-white/95 px-3 text-xs font-medium uppercase tracking-[0.13em] text-slate-500 shadow-md ring-1 ring-black/5 backdrop-blur">
+        <div className="pointer-events-none absolute top-2 left-1/2 z-20 hidden h-9 -translate-x-1/2 items-center rounded-lg bg-white/95 px-3 text-xs font-medium uppercase tracking-[0.13em] text-slate-500 shadow-md ring-1 ring-black/5 backdrop-blur md:flex">
           {info.stain}
         </div>
       )}
 
-      {/* Repository logo — top-right; click opens the slide on its source site. */}
+      {/* Repository logo — desktop: top-right, to the LEFT of the Close (X) so they don't
+          overlap. Mobile: bottom-left corner (freed by hiding the minimap). Click opens the
+          slide on its source site. */}
       {showChrome && logo && (
         <a
           href={slideUrl}
           target="_blank"
           rel="noopener noreferrer"
           title={`Open on ${logo.alt}`}
-          className="absolute top-2 right-2 flex h-14 items-center rounded-lg bg-white/95 px-3.5 shadow-md ring-1 ring-black/5 backdrop-blur transition-shadow hover:shadow-lg"
+          className="absolute bottom-3 left-2 flex h-20 items-center rounded-lg bg-white/95 px-4 shadow-md ring-1 ring-black/5 backdrop-blur transition-shadow hover:shadow-lg md:bottom-auto md:left-auto md:right-14 md:top-2 md:h-16 md:px-4"
         >
           <picture>
             <source srcSet={logo.avif} type="image/avif" />
-            <img src={logo.png} alt={logo.alt} className="h-10 w-auto object-contain" />
+            <img src={logo.png} alt={logo.alt} className="h-14 w-auto object-contain md:h-12" />
           </picture>
         </a>
       )}
 
-      {/* Magnification readout — bottom-center, out of the toolbar. */}
+      {/* Magnification readout — desktop only: bottom-center, out of the toolbar. On mobile it
+          moves into the top-right stack below the Close X (see below). */}
       {showChrome && (
-        <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 rounded-md bg-black/55 px-2 py-0.5 text-xs font-medium tabular-nums text-white">
+        <div className="pointer-events-none absolute bottom-3 left-1/2 hidden -translate-x-1/2 rounded-md bg-black/55 px-2 py-0.5 text-xs font-medium tabular-nums text-white md:block">
           {magKnown ? "" : "~"}
           {fmtMag(currentMag)}
         </div>
       )}
 
-      {/* Related slides panel (MGH prototype) — left edge, vertically centered. Fixed full
-          height; only the WIDTH animates on hover (collapsed = a tall rail hinting "more").
-          Height clears the toolbar (top) + minimap (bottom-left); list scrolls if needed. */}
-      {showChrome && panelItems.length > 1 && (
+      {/* Mobile: magnification + stain stacked in the top-right, just below the Close X.
+          Styled like the attribution / "Related slides" pills (text-xs white chips) for a
+          cohesive set of small labels. Right-aligned; the stain truncates if long. */}
+      {showChrome && mobile && (
+        <div className="absolute top-14 right-3 z-20 flex flex-col items-end gap-1.5">
+          {/* Magnification — styled exactly like the attribution line: black translucent bg,
+              white text, no chip/shadow. */}
+          <div className="pointer-events-none rounded bg-black/45 px-1.5 py-0.5 text-[10px] tabular-nums text-white/80">
+            {magKnown ? "" : "~"}
+            {fmtMag(currentMag)}
+          </div>
+          {info?.stain && (
+            <div className="pointer-events-none flex max-w-[55vw] items-center rounded-lg bg-white/95 px-2.5 py-1 text-xs font-medium uppercase tracking-[0.13em] text-slate-500 shadow-md ring-1 ring-black/5 backdrop-blur">
+              <span className="min-w-0 truncate">{info.stain}</span>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Related slides panel (desktop) — left edge, vertically centered. Hover expands the
+          WIDTH (collapsed = a tall rail hinting "more"). On mobile this is replaced by the
+          bottom sheet (the Layers toolbar button) since hover-to-expand is dead on touch. */}
+      {showChrome && !mobile && panelItems.length > 1 && (
         <div
           onMouseEnter={() => setSlidesOpen(true)}
           onMouseLeave={() => setSlidesOpen(false)}
@@ -974,7 +1093,7 @@ export function SelfHostedOSDViewer({
               <div className="flex h-9 shrink-0 items-center gap-1.5 px-2.5 text-xs font-medium text-slate-500">
                 <Layers className="h-4 w-4 shrink-0" />
                 <span className="whitespace-nowrap">Related slides</span>
-                <span className="ml-auto tabular-nums text-slate-400">{panelItems.length}</span>
+                <span className="ml-auto tabular-nums text-slate-400">{relatedCount}</span>
               </div>
               <div className="min-h-0 flex-1 space-y-2 overflow-y-auto p-2">
                 {panelItems.map((s, i) => (
@@ -1030,7 +1149,7 @@ export function SelfHostedOSDViewer({
             // Collapsed rail: icon + count pinned top; uppercase label centered down the spine.
             <div className="flex h-full w-10 flex-col items-center gap-1.5 py-3 text-slate-500">
               <Layers className="h-4 w-4 shrink-0" />
-              <span className="text-[10px] font-semibold tabular-nums">{panelItems.length}</span>
+              <span className="text-[10px] font-semibold tabular-nums">{relatedCount}</span>
               <div className="flex flex-1 items-center justify-center">
                 <span
                   style={{ writingMode: "vertical-rl" }}
@@ -1044,8 +1163,40 @@ export function SelfHostedOSDViewer({
         </div>
       )}
 
-      {/* Rotation dial — lower-right ring (minimap is lower-left) */}
-      {showChrome && <RotationDial degrees={rotation} onChange={applyRotation} />}
+      {/* Rotation dial — lower-right ring (minimap is lower-left). Larger on touch. */}
+      {showChrome && (
+        <RotationDial degrees={rotation} onChange={applyRotation} size={mobile ? 104 : 76} />
+      )}
+
+      {/* Mobile menus render as a bottom sheet (never clipped, big touch targets) instead of
+          the desktop anchored popovers. A scrim dims the slide; tapping it (outside the
+          sheet's data-pb-popover) closes via the global outside-click handler. */}
+      {mobile && panel && (
+        <>
+          <div className="absolute inset-0 z-30 bg-black/25" aria-hidden />
+          <div
+            data-pb-popover
+            className="absolute inset-x-0 bottom-0 z-40 max-h-[72%] animate-in slide-in-from-bottom overflow-y-auto rounded-t-2xl bg-white/98 p-4 pb-6 shadow-2xl ring-1 ring-black/5 backdrop-blur duration-200"
+          >
+            <div className="mx-auto mb-3 h-1.5 w-10 rounded-full bg-gray-300" />
+            <div className="mb-3 text-sm font-semibold text-gray-800">
+              {panel === "mag"
+                ? "Magnification"
+                : panel === "info"
+                  ? "Slide info"
+                  : panel === "adjust"
+                    ? "Image adjustments"
+                    : panel === "related"
+                      ? "Related slides"
+                      : ""}
+            </div>
+            {panel === "mag" && magBody}
+            {panel === "info" && infoBody}
+            {panel === "adjust" && adjustBody}
+            {panel === "related" && relatedBody}
+          </div>
+        </>
+      )}
 
       {/* First load of a brand-new case → full overlay (in-case reloads use the blur above). */}
       {status === "loading" && !everReady && (
@@ -1231,7 +1382,9 @@ function BarBtn({
       type="button"
       title={title}
       onClick={onClick}
-      className={`flex h-7 w-7 items-center justify-center rounded-md text-gray-700 hover:bg-gray-100 ${
+      // Bigger touch target + icon on mobile (h-9/size-5), compact on desktop (h-7/size-4).
+      // The [&_svg] rule scales the icon children regardless of their own h-4/w-4 classes.
+      className={`flex h-9 w-9 items-center justify-center rounded-md text-gray-700 hover:bg-gray-100 [&_svg]:size-5 md:h-7 md:w-7 md:[&_svg]:size-4 ${
         active ? "bg-primary/10 text-primary" : ""
       }`}
     >
@@ -1243,11 +1396,19 @@ function BarBtn({
 // Precise rotation dial (à la PathPresenter): a ring in the lower-right corner.
 // Drag the knob anywhere on the ring to set the angle, scroll for 1° steps, double-
 // click to reset. Center shows the current angle.
-function RotationDial({ degrees, onChange }: { degrees: number; onChange: (deg: number) => void }) {
+function RotationDial({
+  degrees,
+  onChange,
+  size = 76,
+}: {
+  degrees: number;
+  onChange: (deg: number) => void;
+  size?: number;
+}) {
   const ref = useRef<HTMLDivElement>(null);
-  const SIZE = 76;
+  const SIZE = size;
   const C = SIZE / 2;
-  const R = 31;
+  const R = SIZE / 2 - 7;
 
   const angleFromEvent = useCallback((clientX: number, clientY: number) => {
     const el = ref.current;
@@ -1298,14 +1459,21 @@ function RotationDial({ degrees, onChange }: { degrees: number; onChange: (deg: 
           className="text-primary/40"
         />
         {/* knob */}
-        <circle cx={hx} cy={hy} r="5.5" className="fill-primary" stroke="white" strokeWidth="2" />
+        <circle
+          cx={hx}
+          cy={hy}
+          r={(SIZE * 0.072).toFixed(1)}
+          className="fill-primary"
+          stroke="white"
+          strokeWidth="2"
+        />
         <text
           x={C}
           y={C}
           textAnchor="middle"
           dominantBaseline="central"
           className="fill-gray-700"
-          style={{ fontSize: 12, fontWeight: 600 }}
+          style={{ fontSize: SIZE * 0.158, fontWeight: 600 }}
         >
           {Math.round(degrees)}°
         </text>

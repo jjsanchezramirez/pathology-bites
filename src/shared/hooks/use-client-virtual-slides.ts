@@ -457,6 +457,28 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
       .sort();
   }, [allSlides]);
 
+  // Slides matching the active facet filters (repository / category / organ), ignoring the
+  // search text. Drives the "of N" denominator so it reflects the filtered universe rather
+  // than the whole corpus. Counts raw slides (not case-collapsed) so the unfiltered value
+  // equals totalSlides and matches the "Virtual Slides" wording.
+  const filteredTotal = useMemo(() => {
+    if (!allSlides) return 0;
+    const repo = options.repository;
+    const cat = options.category;
+    const sub = options.subcategory;
+    const noFacets =
+      (!repo || repo === "all") && (!cat || cat === "all") && (!sub || sub === "all");
+    if (noFacets) return allSlides.length;
+    let n = 0;
+    for (const s of allSlides) {
+      if (repo && repo !== "all" && s.repository !== repo) continue;
+      if (cat && cat !== "all" && s.category !== cat) continue;
+      if (sub && sub !== "all" && s.subcategory !== sub) continue;
+      n++;
+    }
+    return n;
+  }, [allSlides, options.repository, options.category, options.subcategory]);
+
   const [filteredAndRanked, setFilteredAndRanked] = useState<VirtualSlide[]>([]);
 
   // Handle filtering and ranking with configurable search mode
@@ -628,6 +650,7 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
 
     // Metadata
     totalSlides: allSlides?.length || 0,
+    filteredTotal,
     repositories,
     categories,
     organSystems,

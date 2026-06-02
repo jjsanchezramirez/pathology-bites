@@ -5,7 +5,7 @@ import type { WsiTileSource } from "./wsi-tilesource";
 
 // Route a DZI tile base through our CORS-adding proxy. OSD appends "<level>/<x>_<y>.fmt"
 // to Url by string concat, so it lands inside the ?url= value — proxy reads it raw.
-const TILE_PROXY = "/api/debug/wsi-tile-proxy?url=";
+const TILE_PROXY = "/api/public/tools/virtual-slides/wsi-tile-proxy?url=";
 
 export function buildOsdTileSource(ts: WsiTileSource, opts?: { proxy?: boolean }): unknown {
   if (ts.kind === "dzi") {
