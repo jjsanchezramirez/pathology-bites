@@ -380,8 +380,10 @@ export function QuizQuestionDisplay({
             </div>
           )}
 
-          {/* Feature hint — highlight any term to look it up / open an example slide. */}
-          <div data-fake-selection-skip className="flex justify-center pt-1">
+          {/* Feature hint — highlight any term to look it up / open an example slide. Hidden on
+              touch devices, where the highlight/selection feature is disabled (see
+              FakeSelectionHighlight's coarse-pointer gate). */}
+          <div data-fake-selection-skip className="flex justify-center pt-1 pointer-coarse:hidden">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-gradient-to-r from-primary/15 to-primary/5 px-3.5 py-1.5 text-xs text-primary shadow-sm">
               <Highlighter className="h-4 w-4 shrink-0" />
               <span>

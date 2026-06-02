@@ -55,18 +55,20 @@ function VirtualSlidesErrorState({ error }: { error: string }) {
   useEffect(() => {
     if (lottieRef.current && animationData) {
       const anim = lottieRef.current;
+      let active = true;
 
-      // Play forward-reverse loop
+      // Play forward-reverse loop. `active` guard prevents a queued `complete` from calling
+      // play() after unmount/destroy, which would resurrect (and thus leak) the animation.
       const handleComplete = () => {
-        if (anim.animationItem) {
-          anim.animationItem.setDirection(anim.animationItem.playDirection * -1);
-          anim.animationItem.play();
-        }
+        if (!active || !anim.animationItem) return;
+        anim.animationItem.setDirection(anim.animationItem.playDirection * -1);
+        anim.animationItem.play();
       };
 
       anim.animationItem?.addEventListener("complete", handleComplete);
 
       return () => {
+        active = false;
         anim.animationItem?.removeEventListener("complete", handleComplete);
       };
     }

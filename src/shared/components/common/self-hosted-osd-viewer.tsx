@@ -94,6 +94,10 @@ interface Props {
   // Fired when a slide fails to load (unsupported, or the source tile server is down).
   // Lets the host show a graceful message instead of hanging on its loading state.
   onError?: (message: string) => void;
+  // Fired when the viewer enters/leaves the CSS fullscreen fallback (used on browsers without
+  // the element Fullscreen API, e.g. iOS Safari). The host expands its own container to the
+  // full viewport — the wrapper can't escape a transformed ancestor (the dialog) on its own.
+  onCssFullscreenChange?: (active: boolean) => void;
   // Bump to re-fit the slide to the container (goHome). The modal opens small (so OSD
   // initializes against a small element) then expands — without a refit the image would
   // stay at its small-window size, marooned in the big one.
@@ -120,6 +124,7 @@ export function SelfHostedOSDViewer({
   onSelectRelated,
   onReady,
   onError,
+  onCssFullscreenChange,
   fitToken,
 }: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
@@ -129,6 +134,8 @@ export function SelfHostedOSDViewer({
   onReadyRef.current = onReady;
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
+  const onCssFullscreenChangeRef = useRef(onCssFullscreenChange);
+  onCssFullscreenChangeRef.current = onCssFullscreenChange;
   const viewerRef = useRef<OsdViewer | null>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const osdLibRef = useRef<any>(null);
@@ -276,17 +283,61 @@ export function SelfHostedOSDViewer({
   }, []);
 
   // Fullscreen the WHOLE wrapper (not OSD's inner element) so the branded toolbar,
-  // minimap, and rotation dial stay present and positioned in fullscreen.
+  // minimap, and rotation dial stay present and positioned in fullscreen. Listen for the
+  // webkit-prefixed event too (Safari) so the icon state tracks native enter/exit.
   useEffect(() => {
-    const onChange = () => setIsFullscreen(document.fullscreenElement === wrapperRef.current);
+    const d = document as Document & { webkitFullscreenElement?: Element };
+    const onChange = () =>
+      setIsFullscreen((d.fullscreenElement ?? d.webkitFullscreenElement) === wrapperRef.current);
     document.addEventListener("fullscreenchange", onChange);
-    return () => document.removeEventListener("fullscreenchange", onChange);
+    document.addEventListener("webkitfullscreenchange", onChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", onChange);
+      document.removeEventListener("webkitfullscreenchange", onChange);
+    };
   }, []);
 
   const toggleFullscreen = useCallback(() => {
-    if (document.fullscreenElement) document.exitFullscreen();
-    else wrapperRef.current?.requestFullscreen();
-  }, []);
+    const el = wrapperRef.current as
+      | (HTMLDivElement & { webkitRequestFullscreen?: () => Promise<void> | void })
+      | null;
+    if (!el) return;
+    const d = document as Document & {
+      webkitFullscreenElement?: Element;
+      webkitExitFullscreen?: () => Promise<void> | void;
+    };
+    // Native fullscreen currently active → exit it (covers webkit). onChange resets the icon.
+    if (d.fullscreenElement ?? d.webkitFullscreenElement) {
+      (d.exitFullscreen ?? d.webkitExitFullscreen)?.call(d);
+      return;
+    }
+    // Already in the CSS fallback → leave it.
+    if (isFullscreen) {
+      setIsFullscreen(false);
+      onCssFullscreenChangeRef.current?.(false);
+      return;
+    }
+    const request = el.requestFullscreen ?? el.webkitRequestFullscreen;
+    if (request) {
+      try {
+        const p = request.call(el);
+        // Some browsers reject (e.g. permissions / unsupported on element) → CSS fallback.
+        if (p && typeof (p as Promise<void>).catch === "function") {
+          (p as Promise<void>).catch(() => {
+            setIsFullscreen(true);
+            onCssFullscreenChangeRef.current?.(true);
+          });
+        }
+      } catch {
+        setIsFullscreen(true);
+        onCssFullscreenChangeRef.current?.(true);
+      }
+    } else {
+      // No element Fullscreen API at all (iOS Safari) → CSS pseudo-fullscreen via the host.
+      setIsFullscreen(true);
+      onCssFullscreenChangeRef.current?.(true);
+    }
+  }, [isFullscreen]);
 
   // Live brightness/contrast/saturation via a CSS filter on the OSD canvas (cheap, GPU).
   useEffect(() => {
@@ -353,6 +404,9 @@ export function SelfHostedOSDViewer({
   useEffect(() => {
     let cancelled = false;
     let viewer: OsdViewer | null = null;
+    // Hoisted so the effect cleanup can clear a pending failure timer (set on the
+    // tile-load-failed path) — otherwise it could fire setState after teardown.
+    let failTimer: ReturnType<typeof setTimeout> | null = null;
 
     async function init() {
       setStatus("loading");
@@ -456,7 +510,6 @@ export function SelfHostedOSDViewer({
         // tiles just 404 silently and the canvas stays blank. Watch for that: if no tile has
         // loaded a short while after the first failure, surface a graceful error.
         let gotTile = false;
-        let failTimer: ReturnType<typeof setTimeout> | null = null;
         const fail = (msg: string) => {
           if (cancelled || gotTile) return;
           setError(msg);
@@ -521,6 +574,7 @@ export function SelfHostedOSDViewer({
     init();
     return () => {
       cancelled = true;
+      if (failTimer) clearTimeout(failTimer);
       viewer?.destroy();
       viewerRef.current = null;
     };
@@ -911,7 +965,7 @@ export function SelfHostedOSDViewer({
             >
               <Search className="h-4 w-4" />
             </BarBtn>
-            {!mobile && panel === "mag" && <Popover className="w-72 p-2">{magBody}</Popover>}
+            {!mobile && panel === "mag" && <Popover className="w-80 p-2">{magBody}</Popover>}
           </div>
           {/* Photo + hi-res export are desktop workflows → hidden on mobile. */}
           <span className="hidden md:contents">

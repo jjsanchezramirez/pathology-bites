@@ -28,9 +28,14 @@ export async function GET(req: NextRequest) {
   }
   if (!ALLOWED.test(host)) return new Response(`host not allowed: ${host}`, { status: 403 });
 
+  // Bound the upstream wait. A dead/slow tile host would otherwise hang this fetch until
+  // Node's ~120s default, holding a SAME-ORIGIN connection open the whole time (tiles are
+  // proxied same-origin). Repeated failed slide opens stranded those connections + their
+  // buffers and progressively starved the browser's per-origin pool → eventual freeze.
   const upstream = await fetch(target, {
     headers: { "User-Agent": "Mozilla/5.0 (compatible; PathologyBitesWSI/1.0)" },
     redirect: "follow",
+    signal: AbortSignal.timeout(8000),
   }).catch(() => null);
   if (!upstream || !upstream.ok) {
     return new Response("upstream error", { status: 502 });

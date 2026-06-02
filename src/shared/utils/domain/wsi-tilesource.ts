@@ -69,14 +69,24 @@ export type WsiTileSourceResult = WsiTileSource | { kind: "unsupported"; reason:
 
 const UA = "Mozilla/5.0 (compatible; PathologyBitesWSI/1.0)";
 
+// Bound metadata fetches so a dead/slow repo returns a prompt error instead of hanging the
+// route (and the same-origin connection behind it) for Node's ~120s default.
 async function fetchText(url: string): Promise<string> {
-  const res = await fetch(url, { headers: { "User-Agent": UA }, redirect: "follow" });
+  const res = await fetch(url, {
+    headers: { "User-Agent": UA },
+    redirect: "follow",
+    signal: AbortSignal.timeout(8000),
+  });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`);
   return res.text();
 }
 
 async function fetchJson(url: string): Promise<unknown> {
-  const res = await fetch(url, { headers: { "User-Agent": UA }, redirect: "follow" });
+  const res = await fetch(url, {
+    headers: { "User-Agent": UA },
+    redirect: "follow",
+    signal: AbortSignal.timeout(8000),
+  });
   if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`);
   return res.json();
 }

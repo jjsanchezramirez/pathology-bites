@@ -19,6 +19,49 @@ import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
 // states) — keeps the slide-failure card consistent with the rest of the app.
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
+// Self-contained error mark. The "error" Lottie is a one-shot; ping-pong it forward/reverse
+// so it doesn't freeze on its last frame.
+//
+// MEMORY LEAK FIX: lottie-web MUTATES the animationData object in place — configAnimation does
+// `this.animationData = animData; animData.assets = []` and completeData stamps `_render` /
+// `_processed` / `__complete` onto every shape (see node_modules/lottie-web .../lottie.js:1648).
+// `useLottieAnimation` returns a MODULE-CACHED, shared object, so every dialog open piled more
+// parsed/rendered state onto that one cached object, which the cache then pinned forever —
+// destroy()-on-unmount couldn't reclaim it. Repeatedly opening a failing slide leaked a full
+// parsed animation (~180k objects) per open and froze the tab within a few tries. Fix: hand each
+// instance a fresh `structuredClone`, so lottie-web mutates a throwaway copy that's GC'd with the
+// instance on unmount and the shared cache stays clean. (Kept as its own component so the
+// `complete` listener is tied to the error card's mount/unmount; `active` guards a late event.)
+function ErrorLottie({ animationData }: { animationData: unknown }) {
+  const data = useMemo(() => structuredClone(animationData), [animationData]);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const ref = useRef<any>(null);
+  useEffect(() => {
+    const anim = ref.current?.animationItem;
+    if (!anim) return;
+    let active = true;
+    const onComplete = () => {
+      if (!active) return;
+      anim.setDirection(anim.playDirection * -1);
+      anim.play();
+    };
+    anim.addEventListener("complete", onComplete);
+    return () => {
+      active = false;
+      anim.removeEventListener("complete", onComplete);
+    };
+  }, []);
+  return (
+    <Lottie
+      lottieRef={ref}
+      animationData={data}
+      loop={false}
+      autoplay
+      style={{ width: "100%", height: "100%" }}
+    />
+  );
+}
+
 // Heavy (bundles OpenSeadragon) — keep it out of the initial tool bundle. The loading
 // fallback is transparent: the modal's own microscope/joke card sits on top until ready.
 const SelfHostedOSDViewer = dynamic(
@@ -63,6 +106,10 @@ export function SlideViewerModal({
   const [lineIdx, setLineIdx] = useState(0);
   // Bumped after the small→full expand finishes so the viewer refits to the big container.
   const [fitToken, setFitToken] = useState(0);
+  // CSS pseudo-fullscreen, set by the viewer on browsers without the element Fullscreen API
+  // (iOS Safari). The viewer can't escape this dialog's centering transform on its own, so we
+  // expand the whole DialogContent to the viewport instead.
+  const [cssFullscreen, setCssFullscreen] = useState(false);
 
   useEffect(() => setCurrent(slide), [slide]);
 
@@ -79,6 +126,7 @@ export function SlideViewerModal({
       setReady(false);
       setLoadError(null);
       setLineIdx(Math.floor(Math.random() * LOADING_LINES.length));
+      setCssFullscreen(false);
     }
   }, [slide]);
 
@@ -124,22 +172,6 @@ export function SlideViewerModal({
   readyRef.current = ready;
 
   const { animationData: errorAnim, isLoading: errorAnimLoading } = useLottieAnimation("error");
-  // The "error" Lottie is a one-shot — without this it plays once then freezes on its last
-  // frame (looks like it never played). Ping-pong it forward/reverse, same as the tools page.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const errorLottieRef = useRef<any>(null);
-  useEffect(() => {
-    if (!loadError || !errorAnim || !errorLottieRef.current) return;
-    const anim = errorLottieRef.current;
-    const onComplete = () => {
-      if (anim.animationItem) {
-        anim.animationItem.setDirection(anim.animationItem.playDirection * -1);
-        anim.animationItem.play();
-      }
-    };
-    anim.animationItem?.addEventListener("complete", onComplete);
-    return () => anim.animationItem?.removeEventListener("complete", onComplete);
-  }, [loadError, errorAnim]);
 
   return (
     <Dialog
@@ -153,11 +185,15 @@ export function SlideViewerModal({
         // we can't flip it white (most slides are white). Render our own with a backing chip
         // so it contrasts with the chip, not the slide — visible on any background.
         showCloseButton={false}
-        // Don't dismiss the viewer on outside interaction. OpenSeadragon's pointer handling on
-        // the canvas + our menu open/close toggles trip Radix's outside-pointer/focus detection,
-        // so a second button press or a tap outside an open menu was closing the whole viewer.
-        // Close is explicit (the X) or Escape. Menus still close via their own outside handler.
-        onInteractOutside={(e) => e.preventDefault()}
+        // Close only on a genuine pointer-down on the blurred backdrop (the overlay). OSD's
+        // canvas pointer handling and our in-viewer menu open/close toggles otherwise trip
+        // Radix's outside-pointer/focus detection (a second button press or a tap to close a
+        // menu was closing the whole viewer), so anything whose target is inside the content is
+        // ignored — only the overlay itself dismisses. Escape + the X still close explicitly.
+        onInteractOutside={(e) => {
+          const target = e.detail.originalEvent.target as HTMLElement | null;
+          if (!target?.closest('[data-slot="dialog-overlay"]')) e.preventDefault();
+        }}
         className={cn(
           // NB: no `position` utility here — the base DialogContent is `fixed` (which also
           // serves as the containing block for the absolute children below). Adding
@@ -166,7 +202,11 @@ export function SlideViewerModal({
           "gap-0 overflow-hidden border-0 bg-black p-0 transition-all duration-500 ease-out",
           ready
             ? "h-[95vh] w-[97vw] max-w-[97vw] sm:max-w-[97vw]"
-            : "h-[320px] w-[90vw] max-w-sm sm:max-w-sm"
+            : "h-[320px] w-[90vw] max-w-sm sm:max-w-sm",
+          // CSS fullscreen (iOS Safari fallback): fill the viewport, overriding the centering
+          // transform + size above. Last in the list so twMerge resolves the conflicts here.
+          cssFullscreen &&
+            "h-[100dvh] w-screen max-w-none sm:max-w-none top-0 left-0 translate-x-0 translate-y-0 rounded-none"
         )}
       >
         <DialogTitle className="sr-only">{current?.diagnosis || "Slide viewer"}</DialogTitle>
@@ -175,20 +215,35 @@ export function SlideViewerModal({
           {current?.repository ? ` — ${current.repository}` : ""}
         </DialogDescription>
 
-        {/* Close — backing chip keeps the X visible over black letterbox or white slide alike. */}
+        {/* Close — backing chip keeps the X visible over black letterbox or white slide alike.
+            Offset by the safe-area insets so a landscape notch (viewport-fit=cover) can't sit on
+            top of the close button. */}
         <button
           type="button"
           onClick={onClose}
           aria-label="Close"
-          className="absolute right-3 top-3 z-50 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md ring-1 ring-black/10 backdrop-blur transition-colors hover:bg-white md:h-8 md:w-8"
+          style={{
+            top: "calc(0.75rem + env(safe-area-inset-top, 0px))",
+            right: "calc(0.75rem + env(safe-area-inset-right, 0px))",
+          }}
+          className="absolute z-50 flex h-9 w-9 items-center justify-center rounded-full bg-white/90 text-gray-700 shadow-md ring-1 ring-black/10 backdrop-blur transition-colors hover:bg-white md:h-8 md:w-8"
         >
           <X className="h-5 w-5 md:h-4 md:w-4" />
         </button>
 
         {/* Viewer fills the box (absolute → bypasses the dialog's grid). It loads tiles even
-            while the card covers it, so by the time we expand the slide is already showing. */}
+            while the card covers it, so by the time we expand the slide is already showing.
+            Inset left/right by the safe-area insets so in mobile landscape (viewport-fit=cover)
+            the slide + controls stay within the visible viewport instead of rendering under the
+            notch; the notch strip just shows the dialog's black. env() is 0 with no notch. */}
         {current && (
-          <div className="absolute inset-0">
+          <div
+            className="absolute bottom-0 top-0"
+            style={{
+              left: "env(safe-area-inset-left, 0px)",
+              right: "env(safe-area-inset-right, 0px)",
+            }}
+          >
             <SelfHostedOSDViewer
               slideUrl={current.slide_url || current.case_url}
               tileSourceUrl={current.tileSourceUrl}
@@ -208,6 +263,7 @@ export function SlideViewerModal({
                 if (!readyRef.current && !loadError) setReady(true);
               }}
               onError={(msg) => setLoadError(msg)}
+              onCssFullscreenChange={setCssFullscreen}
             />
           </div>
         )}
@@ -228,13 +284,7 @@ export function SlideViewerModal({
                 {errorAnimLoading || !errorAnim ? (
                   <div className="h-full w-full animate-pulse rounded-full bg-muted/20" />
                 ) : (
-                  <Lottie
-                    lottieRef={errorLottieRef}
-                    animationData={errorAnim}
-                    loop={false}
-                    autoplay
-                    style={{ width: "100%", height: "100%" }}
-                  />
+                  <ErrorLottie animationData={errorAnim} />
                 )}
               </div>
               <div className="space-y-1">

@@ -1257,13 +1257,24 @@ function targetMatchesSkip(target: EventTarget | null): boolean {
   return !!(target as HTMLElement | null)?.closest?.(SKIP_SELECTOR);
 }
 
-export function FakeSelectionHighlight({
-  allSlides,
-  children,
-  className,
-  style,
-  onViewSlide,
-}: {
+// Touch devices: the custom pointer-driven selection (long-press, drag, caret-from-point)
+// fights native text selection and scrolling and "doesn't work well on mobile", so on
+// coarse-pointer devices we skip it entirely and render children plainly — native selection
+// works and the search/highlight bubble is simply unavailable there for now. A touch-friendly
+// variant is a TODO. Gating here (rather than at each call site) disables it everywhere at once.
+function useCoarsePointer(): boolean {
+  const [coarse, setCoarse] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(pointer: coarse)");
+    const update = () => setCoarse(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+  return coarse;
+}
+
+type FakeSelectionHighlightProps = {
   allSlides: VirtualSlide[] | null;
   children: ReactNode;
   className?: string;
@@ -1271,7 +1282,27 @@ export function FakeSelectionHighlight({
   // When provided, the WSI match action opens the slide in the in-house viewer (inline)
   // instead of linking out — for repos the viewer can render. The host renders the modal.
   onViewSlide?: (slide: VirtualSlide) => void;
-}) {
+};
+
+export function FakeSelectionHighlight(props: FakeSelectionHighlightProps) {
+  const coarsePointer = useCoarsePointer();
+  if (coarsePointer) {
+    return (
+      <div className={props.className} style={props.style}>
+        {props.children}
+      </div>
+    );
+  }
+  return <FakeSelectionHighlightImpl {...props} />;
+}
+
+function FakeSelectionHighlightImpl({
+  allSlides,
+  children,
+  className,
+  style,
+  onViewSlide,
+}: FakeSelectionHighlightProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [selection, setSelection] = useState<FakeSelection | null>(null);
   const selectionRef = useRef<FakeSelection | null>(null);
