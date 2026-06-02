@@ -911,7 +911,7 @@ export function SelfHostedOSDViewer({
             >
               <Search className="h-4 w-4" />
             </BarBtn>
-            {!mobile && panel === "mag" && <Popover className="w-64 p-2">{magBody}</Popover>}
+            {!mobile && panel === "mag" && <Popover className="w-72 p-2">{magBody}</Popover>}
           </div>
           {/* Photo + hi-res export are desktop workflows → hidden on mobile. */}
           <span className="hidden md:contents">

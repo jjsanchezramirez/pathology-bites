@@ -11,8 +11,20 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { Check, X, Loader2, AlertCircle, ExternalLink, RefreshCw, Info } from "lucide-react";
+import {
+  Check,
+  X,
+  Loader2,
+  AlertCircle,
+  ExternalLink,
+  RefreshCw,
+  Info,
+  Highlighter,
+} from "lucide-react";
 import { WSIViewer } from "@/shared/components/common/wsi-viewer";
+import { FakeSelectionHighlight } from "@/shared/components/common/fake-selection-highlight";
+import { SlideViewerModal } from "@/shared/components/common/slide-viewer-modal";
+import { useAllVirtualSlides } from "@/shared/hooks/use-client-virtual-slides";
 
 // Import client-side hook for WSI question generation
 import {
@@ -74,6 +86,10 @@ export function WSIQuestionGenerator({
 
   const [currentQuestion, setCurrentQuestion] = useState<GeneratedQuestion | null>(null);
   const [selectedOption, setSelectedOption] = useState<string | null>(null);
+  // Highlight → look-up: select a term in the stem/explanation to open Google Images, the Slide
+  // Search, or the in-house WSI viewer inline. Corpus loads lazily (module + HTTP cached).
+  const allSlides = useAllVirtualSlides();
+  const [lookupSlide, setLookupSlide] = useState<VirtualSlide | null>(null);
   const [isAnswered, setIsAnswered] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
@@ -507,12 +523,15 @@ export function WSIQuestionGenerator({
 
       <Card className="h-full">
         <CardContent className="space-y-3 sm:space-y-4 pt-4 sm:pt-6 px-3 sm:px-6">
-          {/* Question Text */}
-          <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed">
-            {currentQuestion.question.stem}
-          </div>
+          {/* Question stem — its own selection container so a drag can't extend down into the
+              WSI viewer or the answer options (those stay non-selectable). */}
+          <FakeSelectionHighlight allSlides={allSlides} onViewSlide={setLookupSlide}>
+            <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed">
+              {currentQuestion.question.stem}
+            </div>
+          </FakeSelectionHighlight>
 
-          {/* WSI Viewer */}
+          {/* WSI Viewer — not selectable */}
           <div className="w-full">
             <WSIViewer slide={currentQuestion.wsi} showMetadata={false} />
 
@@ -569,50 +588,61 @@ export function WSIQuestionGenerator({
             </div>
           </div>
 
-          {/* Answer Options */}
-          <div className="grid gap-2" role="listbox" aria-label="Answer options">
-            {currentQuestion.question.options
-              ?.sort((a, b) => a.id.localeCompare(b.id)) // Sort by option ID to ensure consistent A, B, C, D, E order
-              ?.map((option, index) => {
-                const isSelected = selectedOption === option.id;
-                const showCorrect = isAnswered && option.is_correct;
-                const showIncorrect = isAnswered && isSelected && !option.is_correct;
-                const optionLabel = getOptionLabel(option.id, index);
+          {/* Answer Options — their own selection container: a drag stays within the options
+                and can't span the stem/WSI, and selecting one option highlights only its text,
+                not the whole box. Option text is selectable in review; buttons skip selection
+                while answering so tap-to-answer still works. */}
+          <FakeSelectionHighlight allSlides={allSlides} onViewSlide={setLookupSlide}>
+            <div className="grid gap-2" role="listbox" aria-label="Answer options">
+              {currentQuestion.question.options
+                ?.sort((a, b) => a.id.localeCompare(b.id)) // Sort by option ID to ensure consistent A, B, C, D, E order
+                ?.map((option, index) => {
+                  const isSelected = selectedOption === option.id;
+                  const showCorrect = isAnswered && option.is_correct;
+                  const showIncorrect = isAnswered && isSelected && !option.is_correct;
+                  const optionLabel = getOptionLabel(option.id, index);
 
-                return (
-                  <button
-                    key={option.id}
-                    onClick={() => handleOptionClick(option.id)}
-                    className={`
+                  return (
+                    <button
+                      key={option.id}
+                      onClick={() => handleOptionClick(option.id)}
+                      {...(isAnswered ? {} : { "data-fake-selection-skip": "" })}
+                      className={`
                     p-2 sm:p-3 rounded-md text-left border text-xs sm:text-sm transition-colors duration-200
+                    ${isAnswered ? "" : "select-none"}
                     ${!isAnswered ? "hover:border-muted-foreground/50 hover:bg-muted/30" : ""}
                     ${isSelected && !showCorrect && !showIncorrect ? "border-muted-foreground/70" : "border-muted-foreground/30"}
                     ${showCorrect ? "bg-green-50 border-green-600 dark:bg-green-950/30" : ""}
                     ${showIncorrect ? "bg-red-50 border-red-600 dark:bg-red-950/30" : ""}
                   `}
-                    disabled={isAnswered}
-                    role="option"
-                    aria-selected={isSelected}
-                  >
-                    <div className="flex items-center gap-2">
-                      <span
-                        className={`
+                      // aria-disabled (not `disabled`) once answered: handleOptionClick already
+                      // no-ops when answered, and a real disabled button blocks text selection —
+                      // this keeps the option's diagnosis selectable for look-up in review.
+                      aria-disabled={isAnswered}
+                      role="option"
+                      aria-selected={isSelected}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span
+                          data-fake-selection-skip=""
+                          className={`
                       flex items-center justify-center w-5 h-5 rounded-full border text-xs
                       ${isSelected && !showCorrect && !showIncorrect ? "border-muted-foreground/70" : "border-muted-foreground/30"}
                       ${showCorrect ? "border-green-600" : ""}
                       ${showIncorrect ? "border-red-600" : ""}
                     `}
-                      >
-                        {optionLabel}
-                      </span>
-                      <span className="flex-1">{option.text}</span>
-                      {showCorrect && <Check className="w-4 h-4 text-green-600" />}
-                      {showIncorrect && <X className="w-4 h-4 text-red-600" />}
-                    </div>
-                  </button>
-                );
-              })}
-          </div>
+                        >
+                          {optionLabel}
+                        </span>
+                        <span className="flex-1">{option.text}</span>
+                        {showCorrect && <Check className="w-4 h-4 text-green-600" />}
+                        {showIncorrect && <X className="w-4 h-4 text-red-600" />}
+                      </div>
+                    </button>
+                  );
+                })}
+            </div>
+          </FakeSelectionHighlight>
 
           {/* Answer Explanations */}
           {isAnswered && (
@@ -621,98 +651,119 @@ export function WSIQuestionGenerator({
                 showExplanation ? "translate-y-0 opacity-100" : "translate-y-4 opacity-0"
               }`}
             >
-              <div className="p-2 sm:p-3 rounded-lg bg-muted/50 text-xs sm:text-sm space-y-3 sm:space-y-4">
-                {/* Teaching Point */}
-                <div>
-                  <h4 className="font-medium text-xs uppercase mb-1">Teaching Point</h4>
-                  <div className="text-muted-foreground leading-relaxed">
-                    {currentQuestion.question.options?.find((option) => option.is_correct)
-                      ?.explanation || "No explanation available."}
-                  </div>
-                </div>
-
-                {/* Option Explanations */}
-                {currentQuestion.question.options?.some((opt) => opt.explanation) && (
+              <div className="p-2 sm:p-3 rounded-lg bg-muted/50 text-xs sm:text-sm">
+                <FakeSelectionHighlight
+                  allSlides={allSlides}
+                  onViewSlide={setLookupSlide}
+                  className="space-y-3 sm:space-y-4"
+                >
+                  {/* Teaching Point */}
                   <div>
-                    <h4 className="font-medium text-xs uppercase mb-1">Answer Explanations</h4>
-                    <div className="space-y-2 text-muted-foreground">
-                      {currentQuestion.question.options
-                        ?.sort((a, b) => a.id.localeCompare(b.id)) // Ensure consistent ordering
-                        ?.filter((option) => option.explanation && !option.is_correct)
-                        .map((option) => {
-                          const sortedOptions =
-                            currentQuestion.question.options?.sort((a, b) =>
-                              a.id.localeCompare(b.id)
-                            ) ?? [];
-                          const optionIndex = sortedOptions.findIndex(
-                            (opt) => opt.id === option.id
-                          );
-                          const optionLabel = getOptionLabel(option.id, optionIndex);
-
-                          return (
-                            <div key={option.id} className="leading-relaxed">
-                              <span className="font-medium">{optionLabel}.</span>{" "}
-                              {option.explanation}
-                            </div>
-                          );
-                        })}
+                    <h4 className="font-medium text-xs uppercase mb-1">Teaching Point</h4>
+                    <div className="text-muted-foreground leading-relaxed">
+                      {currentQuestion.question.options?.find((option) => option.is_correct)
+                        ?.explanation || "No explanation available."}
                     </div>
                   </div>
-                )}
 
-                {/* AI Disclaimer */}
-                <div className="pt-2 border-t">
-                  <div className="flex items-start gap-2 text-xs text-amber-700">
-                    <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
-                    <span>
-                      AI-generated content. May contain inaccuracies. Verify with authoritative
-                      sources.
-                    </span>
+                  {/* Option Explanations */}
+                  {currentQuestion.question.options?.some((opt) => opt.explanation) && (
+                    <div>
+                      <h4 className="font-medium text-xs uppercase mb-1">Answer Explanations</h4>
+                      <div className="space-y-2 text-muted-foreground">
+                        {currentQuestion.question.options
+                          ?.sort((a, b) => a.id.localeCompare(b.id)) // Ensure consistent ordering
+                          ?.filter((option) => option.explanation && !option.is_correct)
+                          .map((option) => {
+                            const sortedOptions =
+                              currentQuestion.question.options?.sort((a, b) =>
+                                a.id.localeCompare(b.id)
+                              ) ?? [];
+                            const optionIndex = sortedOptions.findIndex(
+                              (opt) => opt.id === option.id
+                            );
+                            const optionLabel = getOptionLabel(option.id, optionIndex);
+
+                            return (
+                              <div key={option.id} className="leading-relaxed">
+                                <span className="font-medium">{optionLabel}.</span>{" "}
+                                {option.explanation}
+                              </div>
+                            );
+                          })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* AI Disclaimer */}
+                  <div className="pt-2 border-t">
+                    <div className="flex items-start gap-2 text-xs text-amber-700">
+                      <Info className="h-3 w-3 mt-0.5 flex-shrink-0" />
+                      <span>
+                        AI-generated content. May contain inaccuracies. Verify with authoritative
+                        sources.
+                      </span>
+                    </div>
                   </div>
-                </div>
 
-                {/* Generation Metadata - Single Line */}
-                <div className="pt-2 border-t">
-                  <div className="text-xs text-muted-foreground text-center mb-3 leading-relaxed">
-                    <div className="break-words">
-                      {currentQuestion.metadata.successful_model || currentQuestion.metadata.model}{" "}
-                      •{" "}
-                      {(() => {
-                        const tokenUsage = currentQuestion.metadata.token_usage;
-                        if (tokenUsage) {
-                          if (
-                            tokenUsage.total_tokens &&
-                            typeof tokenUsage.total_tokens === "number"
-                          ) {
-                            return `${tokenUsage.total_tokens.toLocaleString()} tokens`;
+                  {/* Generation Metadata - Single Line */}
+                  <div className="pt-2 border-t">
+                    <div className="text-xs text-muted-foreground text-center mb-3 leading-relaxed">
+                      <div className="break-words">
+                        {currentQuestion.metadata.successful_model ||
+                          currentQuestion.metadata.model}{" "}
+                        •{" "}
+                        {(() => {
+                          const tokenUsage = currentQuestion.metadata.token_usage;
+                          if (tokenUsage) {
+                            if (
+                              tokenUsage.total_tokens &&
+                              typeof tokenUsage.total_tokens === "number"
+                            ) {
+                              return `${tokenUsage.total_tokens.toLocaleString()} tokens`;
+                            }
                           }
-                        }
-                        return "Tokens: N/A";
-                      })()}{" "}
-                      • {currentQuestion.metadata.generation_time_ms}ms
-                      {(currentQuestion.metadata.fallback_attempts || 0) > 1 && (
-                        <span className="text-amber-600"> • Backup system used</span>
-                      )}
+                          return "Tokens: N/A";
+                        })()}{" "}
+                        • {currentQuestion.metadata.generation_time_ms}ms
+                        {(currentQuestion.metadata.fallback_attempts || 0) > 1 && (
+                          <span className="text-amber-600"> • Backup system used</span>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Try Another Button */}
+                    <div className="flex justify-center sm:justify-end">
+                      <Button
+                        onClick={generateNewQuestion}
+                        disabled={isGenerating}
+                        variant="outline"
+                        size="sm"
+                        className="w-full sm:w-auto"
+                        data-fake-selection-skip=""
+                      >
+                        <RefreshCw className="h-4 w-4 mr-2" />
+                        Try Another
+                      </Button>
                     </div>
                   </div>
-
-                  {/* Try Another Button */}
-                  <div className="flex justify-center sm:justify-end">
-                    <Button
-                      onClick={generateNewQuestion}
-                      disabled={isGenerating}
-                      variant="outline"
-                      size="sm"
-                      className="w-full sm:w-auto"
-                    >
-                      <RefreshCw className="h-4 w-4 mr-2" />
-                      Try Another
-                    </Button>
-                  </div>
-                </div>
+                </FakeSelectionHighlight>
               </div>
             </div>
           )}
+
+          {/* Feature hint — highlight any term to look it up / open an example slide. */}
+          <div data-fake-selection-skip className="flex justify-center pt-1">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-gradient-to-r from-primary/15 to-primary/5 px-3.5 py-1.5 text-xs text-primary shadow-sm">
+              <Highlighter className="h-4 w-4 shrink-0" />
+              <span>
+                <strong className="font-semibold">Highlight</strong> any term to{" "}
+                <strong className="font-semibold">search images</strong> or{" "}
+                <strong className="font-semibold">view an example slide</strong>
+              </span>
+            </span>
+          </div>
+          <SlideViewerModal slide={lookupSlide} onClose={() => setLookupSlide(null)} />
         </CardContent>
       </Card>
     </div>

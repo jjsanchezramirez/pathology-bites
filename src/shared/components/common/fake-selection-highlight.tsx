@@ -19,8 +19,10 @@ import {
   Search,
   Highlighter,
   ExternalLink,
+  Eye,
 } from "lucide-react";
 import { rankSlidesWithExpansion } from "@/shared/utils/domain/virtual-slide-search";
+import { isViewerSupported } from "@/shared/utils/domain/repository";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
 
 const SEARCH_SUFFIX = "pathology";
@@ -28,9 +30,33 @@ const MIN_CHARS = 2;
 const VIRTUAL_SLIDES_SEARCH_PATH = "/tools/virtual-slides";
 
 const TOP_MATCH_MIN_SCORE_WHO = 85;
-const TOP_MATCH_MIN_SCORE_OTHER = 95;
+// 90 = the selected phrase appears verbatim inside a real diagnosis ("contains exact phrase").
+// Was 95 (exact diagnosis / WHO-acronym only), which suppressed the WSI button for basic terms
+// that exist only as a substring of a longer diagnosis (e.g. "Chronic Hepatitis B" → corpus
+// "Mild chronic hepatitis B and steatosis"). 90 keeps it confident without demanding an exact row.
+const TOP_MATCH_MIN_SCORE_OTHER = 90;
 const PATHPRESENTER_TIE_DELTA = 5;
 const PATHPRESENTER_REPOSITORY = "PathPresenter";
+const WHO_REPOSITORY = "WHO Blue Books Online";
+
+// Choose which slide the inline-viewer action opens. The top WSI match is often a PathPresenter
+// slide (preferred for external deep-links) our viewer can't render, so we may need a substitute.
+// Priority:
+//   1. The #1-ranked match if the viewer can render it — highest confidence wins, any repo.
+//   2. Otherwise a WHO Blue Books slide (curated reference).
+//   3. Otherwise just the highest-ranked renderable match (natural search order — no repo bias).
+// Returns null when nothing among the matches is renderable (caller falls back to the link).
+// topMatches is ranked (and deduped by diagnosis), so index 0 is the strongest match.
+function pickViewableSlide(
+  topMatch: TopMatch | null,
+  topMatches: VirtualSlide[]
+): VirtualSlide | null {
+  if (!topMatch || topMatches.length === 0) return null;
+  if (isViewerSupported(topMatches[0].repository)) return topMatches[0];
+  const supported = topMatches.filter((s) => isViewerSupported(s.repository));
+  if (supported.length === 0) return null;
+  return supported.find((s) => s.repository === WHO_REPOSITORY) ?? supported[0];
+}
 
 function queryTokens(text: string): string[] {
   return (
@@ -530,6 +556,7 @@ function SearchActionsBar({
   enabled = true,
   onHighlight,
   onDismiss,
+  onViewSlide,
   className = "",
   style,
 }: {
@@ -539,6 +566,9 @@ function SearchActionsBar({
   enabled?: boolean;
   onHighlight?: () => void;
   onDismiss?: () => void;
+  // When set, the WSI action opens the matched slide in the in-house viewer (inline, no
+  // page leave) instead of the external link — but only for repos the viewer can render.
+  onViewSlide?: (slide: VirtualSlide) => void;
   className?: string;
   style?: React.CSSProperties;
 }) {
@@ -546,6 +576,8 @@ function SearchActionsBar({
   const [searchOpen, setSearchOpen] = useState(false);
   const wsiUrl = topMatch?.slide.case_url || topMatch?.slide.slide_url || "";
   const showWsi = enabled && !!wsiUrl && !!topMatch?.slide.diagnosis;
+  // Renderable slide for the inline viewer (null → fall back to the external link).
+  const viewable = onViewSlide ? pickViewableSlide(topMatch, topMatches) : null;
   const wordCount = countWords(text);
   const showSearchActions = enabled && wordCount > 0 && wordCount <= SEARCH_WORD_LIMIT;
 
@@ -625,12 +657,12 @@ function SearchActionsBar({
             {showWsi && (
               <BubbleButton
                 icon={Microscope}
-                label="Whole Slide Image"
+                label={viewable ? "View Whole Slide Image" : "Whole Slide Image"}
                 shortcut="⌘⬆W"
                 accent="blue"
-                badge={topMatch!.isWho ? "WHO" : undefined}
                 onClick={() => {
-                  openWsi(wsiUrl);
+                  if (viewable) onViewSlide!(viewable);
+                  else openWsi(wsiUrl);
                   onDismiss?.();
                 }}
               />
@@ -671,9 +703,14 @@ function SearchActionsBar({
             barElement={barRef.current}
             text={text}
             matches={topMatches}
+            inlineViewer={!!onViewSlide}
             onPick={(slide) => {
-              const url = slide.case_url || slide.slide_url || "";
-              if (url) openWsi(url);
+              if (onViewSlide && isViewerSupported(slide.repository)) {
+                onViewSlide(slide);
+              } else {
+                const url = slide.case_url || slide.slide_url || "";
+                if (url) openWsi(url);
+              }
               setSearchOpen(false);
               onDismiss?.();
             }}
@@ -693,12 +730,16 @@ function SearchDropdown({
   barElement,
   text,
   matches,
+  inlineViewer = false,
   onPick,
   onSeeAll,
 }: {
   barElement: HTMLElement | null;
   text: string;
   matches: VirtualSlide[];
+  // When true, rows whose repo the viewer can render open in-house (eye icon) rather than
+  // linking out (external-link icon).
+  inlineViewer?: boolean;
   onPick: (slide: VirtualSlide) => void;
   onSeeAll: () => void;
 }) {
@@ -745,7 +786,8 @@ function SearchDropdown({
       </div>
       {matches.map((slide) => {
         const url = slide.case_url || slide.slide_url || "";
-        const disabled = !url;
+        const opensInline = inlineViewer && isViewerSupported(slide.repository);
+        const disabled = !url && !opensInline;
         const cleanDx = (slide.diagnosis || "").replace(/<[^>]+>/g, "").trim();
         return (
           <button
@@ -776,11 +818,19 @@ function SearchDropdown({
                 </span>
               )}
             </span>
-            <ExternalLink
-              className="shrink-0 text-slate-300 group-hover/row:text-slate-500"
-              style={{ width: 11, height: 11, marginTop: 2 }}
-              strokeWidth={2.25}
-            />
+            {opensInline ? (
+              <Eye
+                className="shrink-0 text-slate-300 group-hover/row:text-blue-600"
+                style={{ width: 12, height: 12, marginTop: 2 }}
+                strokeWidth={2.25}
+              />
+            ) : (
+              <ExternalLink
+                className="shrink-0 text-slate-300 group-hover/row:text-slate-500"
+                style={{ width: 11, height: 11, marginTop: 2 }}
+                strokeWidth={2.25}
+              />
+            )}
           </button>
         );
       })}
@@ -808,19 +858,24 @@ function ContextSelectionMenu({
   y,
   text,
   topMatch,
+  topMatches,
   onHighlight,
+  onViewSlide,
   onClose,
 }: {
   x: number;
   y: number;
   text: string;
   topMatch: TopMatch | null;
+  topMatches: VirtualSlide[];
   onHighlight: () => void;
+  onViewSlide?: (slide: VirtualSlide) => void;
   onClose: () => void;
 }) {
   const [copied, setCopied] = useState(false);
   const wsiUrl = topMatch?.slide.case_url || topMatch?.slide.slide_url || "";
   const showWsi = !!wsiUrl && !!topMatch?.slide.diagnosis;
+  const viewable = onViewSlide ? pickViewableSlide(topMatch, topMatches) : null;
   const wordCount = countWords(text);
   const showSearch = wordCount > 0 && wordCount <= SEARCH_WORD_LIMIT;
 
@@ -887,18 +942,18 @@ function ContextSelectionMenu({
               type="button"
               className={itemBase}
               onClick={() => {
-                openWsi(wsiUrl);
+                if (viewable) onViewSlide!(viewable);
+                else openWsi(wsiUrl);
                 onClose();
               }}
             >
-              <Microscope className="h-4 w-4 text-slate-500" strokeWidth={2} />
+              {viewable ? (
+                <Eye className="h-4 w-4 text-slate-500" strokeWidth={2} />
+              ) : (
+                <Microscope className="h-4 w-4 text-slate-500" strokeWidth={2} />
+              )}
               <span className="flex flex-1 items-center gap-1.5">
-                Whole Slide Image
-                {topMatch!.isWho && (
-                  <span className="rounded bg-blue-100 px-1.5 py-0.5 text-[9px] font-semibold text-blue-700">
-                    WHO
-                  </span>
-                )}
+                {viewable ? "View Whole Slide Image" : "Whole Slide Image"}
               </span>
             </button>
           )}
@@ -938,16 +993,62 @@ type FakeSelection = {
   granularity: Granularity;
 };
 
+// Sub-ranges of `range` covering only text that is NOT inside a [data-fake-selection-skip]
+// element (each clamped to the range bounds). This is what lets a selection span an answer
+// option's diagnosis while excluding chrome like the option letter ("C") or icons — otherwise
+// selecting option C's "Colonic adenocarcinoma" would query "CColonic adenocarcinoma".
+function selectableSegments(range: Range): Range[] {
+  const anchor =
+    range.commonAncestorContainer.nodeType === Node.TEXT_NODE
+      ? range.commonAncestorContainer.parentNode
+      : range.commonAncestorContainer;
+  if (!anchor) return [range.cloneRange()];
+  const walker = document.createTreeWalker(
+    (anchor as Node) ?? range.commonAncestorContainer,
+    NodeFilter.SHOW_TEXT,
+    {
+      acceptNode(n) {
+        if (!n.textContent) return NodeFilter.FILTER_REJECT;
+        if (!range.intersectsNode(n)) return NodeFilter.FILTER_REJECT;
+        const el = (n as Text).parentElement;
+        if (el && el.closest(SKIP_SELECTOR)) return NodeFilter.FILTER_REJECT;
+        return NodeFilter.FILTER_ACCEPT;
+      },
+    }
+  );
+  const segs: Range[] = [];
+  let node: Node | null;
+  while ((node = walker.nextNode())) {
+    const len = node.textContent ? node.textContent.length : 0;
+    const start = node === range.startContainer ? range.startOffset : 0;
+    const end = node === range.endContainer ? range.endOffset : len;
+    if (end <= start) continue;
+    const r = document.createRange();
+    r.setStart(node, start);
+    r.setEnd(node, end);
+    segs.push(r);
+  }
+  // Fall back to the raw range if nothing matched (e.g. selection wholly inside skip chrome).
+  return segs.length ? segs : [range.cloneRange()];
+}
+
+// Selected text with [data-fake-selection-skip] chrome (option letters, icons) removed.
+function rangeCleanText(range: Range): string {
+  return selectableSegments(range)
+    .map((r) => r.toString())
+    .join("");
+}
+
 function rangeToLocalRects(range: Range, container: HTMLElement): LocalRect[] {
   const c = container.getBoundingClientRect();
-  return Array.from(range.getClientRects())
-    .filter((r) => r.width > 0 && r.height > 0)
-    .map((r) => ({
-      top: r.top - c.top,
-      left: r.left - c.left,
-      width: r.width,
-      height: r.height,
-    }));
+  const rects: LocalRect[] = [];
+  for (const seg of selectableSegments(range)) {
+    for (const r of Array.from(seg.getClientRects())) {
+      if (r.width <= 0 || r.height <= 0) continue;
+      rects.push({ top: r.top - c.top, left: r.left - c.left, width: r.width, height: r.height });
+    }
+  }
+  return rects;
 }
 
 type CaretPos = { node: Node; offset: number };
@@ -1161,11 +1262,15 @@ export function FakeSelectionHighlight({
   children,
   className,
   style,
+  onViewSlide,
 }: {
   allSlides: VirtualSlide[] | null;
   children: ReactNode;
   className?: string;
   style?: React.CSSProperties;
+  // When provided, the WSI match action opens the slide in the in-house viewer (inline)
+  // instead of linking out — for repos the viewer can render. The host renders the modal.
+  onViewSlide?: (slide: VirtualSlide) => void;
 }) {
   const containerRef = useRef<HTMLDivElement | null>(null);
   const [selection, setSelection] = useState<FakeSelection | null>(null);
@@ -1213,7 +1318,7 @@ export function FakeSelectionHighlight({
   }, []);
 
   const commitRange = useCallback((range: Range, granularity: Granularity) => {
-    const text = range.toString().replace(/\s+/g, " ").trim();
+    const text = rangeCleanText(range).replace(/\s+/g, " ").trim();
     if (text.length < MIN_CHARS) {
       setSelection(null);
       return;
@@ -1685,9 +1790,7 @@ export function FakeSelectionHighlight({
       onPointerUp={onPointerUp}
       onPointerCancel={onPointerUp}
       onContextMenu={onContextMenu}
-      className={className}
       style={{
-        ...style,
         userSelect: "none",
         WebkitUserSelect: "none",
         WebkitTouchCallout: "none",
@@ -1696,7 +1799,12 @@ export function FakeSelectionHighlight({
         touchAction: active ? "none" : "pan-y",
       }}
     >
-      {children}
+      {/* Content layer carries the caller's spacing/styling. The overlays below are positioned
+          against this relative root but kept OUT of the content's flow, so a live selection's
+          rects/menu can never nudge the card's height (the reported "grows a few px" glitch). */}
+      <div className={className} style={style}>
+        {children}
+      </div>
       {highlights.map((h) =>
         h.rects.map((rect, i) => (
           <div
@@ -1752,6 +1860,7 @@ export function FakeSelectionHighlight({
             topMatches={topMatches}
             onHighlight={toggleHighlight}
             onDismiss={clearSelection}
+            onViewSlide={onViewSlide}
           />
         </div>
       )}
@@ -1761,10 +1870,19 @@ export function FakeSelectionHighlight({
           y={contextMenu.y}
           text={selection.text}
           topMatch={topMatch}
+          topMatches={topMatches}
           onHighlight={() => {
             toggleHighlight();
             setContextMenu(null);
           }}
+          onViewSlide={
+            onViewSlide
+              ? (slide) => {
+                  onViewSlide(slide);
+                  setContextMenu(null);
+                }
+              : undefined
+          }
           onClose={() => setContextMenu(null)}
         />
       )}

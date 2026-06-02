@@ -404,6 +404,32 @@ export interface ClientSearchOptions {
   limit?: number;
 }
 
+// Lightweight corpus loader: just returns the full slide list (cached at module + HTTP level),
+// without the search/ranking/browse machinery of useClientVirtualSlides. For consumers that
+// only need allSlides to power the highlight → WSI look-up (quizzes, WSI questions) and must not
+// pay for browse-mode processing on mount. Returns the cached corpus synchronously when present.
+export function useAllVirtualSlides(): VirtualSlide[] | null {
+  const [slides, setSlides] = useState<VirtualSlide[] | null>(cachedSlides);
+  useEffect(() => {
+    if (cachedSlides) {
+      setSlides(cachedSlides);
+      return;
+    }
+    let mounted = true;
+    loadClientSlides()
+      .then((s) => {
+        if (mounted) setSlides(s);
+      })
+      .catch(() => {
+        /* look-up just stays unavailable if the corpus can't load */
+      });
+    return () => {
+      mounted = false;
+    };
+  }, []);
+  return slides;
+}
+
 export function useClientVirtualSlides(defaultLimit: number = 20) {
   const [allSlides, setAllSlides] = useState<VirtualSlide[] | null>(null);
   const [isLoading, setIsLoading] = useState(true);

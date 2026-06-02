@@ -41,7 +41,7 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 // Import components
 import { SlideRowUnified } from "@/features/public/tools/virtual-slides/components/slide-row-unified";
-import { SlideViewerModal } from "@/features/public/tools/virtual-slides/components/slide-viewer-modal";
+import { SlideViewerModal } from "@/shared/components/common/slide-viewer-modal";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
 import { Pagination } from "@/features/public/tools/virtual-slides/components/pagination";
 import { LoadingSkeleton } from "@/features/public/tools/virtual-slides/components/loading-skeleton";

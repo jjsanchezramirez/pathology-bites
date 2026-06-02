@@ -2,11 +2,15 @@
 
 "use client";
 
-import { useMemo, useRef } from "react";
+import { useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { ImageCarousel } from "@/shared/components/media/image-carousel";
 import { ReferencesList } from "@/shared/components/common/references-list";
-import { Check, X, AlertTriangle } from "lucide-react";
+import { FakeSelectionHighlight } from "@/shared/components/common/fake-selection-highlight";
+import { SlideViewerModal } from "@/shared/components/common/slide-viewer-modal";
+import { useAllVirtualSlides } from "@/shared/hooks/use-client-virtual-slides";
+import type { VirtualSlide } from "@/shared/types/virtual-slides";
+import { Check, X, AlertTriangle, Highlighter } from "lucide-react";
 
 function StrikeIcon({ className }: { className?: string }) {
   return (
@@ -147,208 +151,249 @@ export function QuizQuestionDisplay({
   const questionStatus = (question as { status?: string }).status;
   const isFlaggedQuestion = !!questionStatus && questionStatus !== "published";
 
+  // Highlight → look-up: select any term in the question/explanation to open Google Images,
+  // the Slide Search, or — when it matches a known slide — the in-house WSI viewer inline.
+  // Corpus loads lazily (module + HTTP cached). Answer buttons are skipped while answering so
+  // tap-to-answer / strike keep working; their text becomes selectable once answered.
+  const allSlides = useAllVirtualSlides();
+  const [viewerSlide, setViewerSlide] = useState<VirtualSlide | null>(null);
+
   return (
-    <Card>
-      <CardContent className="space-y-6 pt-6">
-        {/* Status banner: question was flagged/archived/etc. after this user answered it.
+    <>
+      <Card>
+        <CardContent className="space-y-6 pt-6">
+          {/* Status banner: question was flagged/archived/etc. after this user answered it.
             Shown so the user doesn't see misleading "right answer" content as authoritative. */}
-        {isFlaggedQuestion && (
-          <div
-            role="alert"
-            className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 p-3 text-sm"
-          >
-            <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
-            <span className="text-foreground">
-              This question has been flagged for review. The content or correct answer may be
-              revised.
-            </span>
-          </div>
-        )}
+          {isFlaggedQuestion && (
+            <div
+              role="alert"
+              className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 p-3 text-sm"
+            >
+              <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+              <span className="text-foreground">
+                This question has been flagged for review. The content or correct answer may be
+                revised.
+              </span>
+            </div>
+          )}
 
-        {/* Question Stem */}
-        <div>
-          <p className="text-muted-foreground">{question.stem}</p>
-        </div>
+          {/* Question Stem — own selection container so a drag stays within the stem. */}
+          <FakeSelectionHighlight allSlides={allSlides} onViewSlide={setViewerSlide}>
+            <div>
+              <p className="text-muted-foreground">{question.stem}</p>
+            </div>
+          </FakeSelectionHighlight>
 
-        {/* Question Stem Images */}
-        {stemImages.length > 0 && (
-          <div>
-            <ImageCarousel
-              images={stemImages}
-              className="border rounded-lg"
-              resetKey={stemResetKey}
-            />
-          </div>
-        )}
+          {/* Question Stem Images — not selectable */}
+          {stemImages.length > 0 && (
+            <div>
+              <ImageCarousel
+                images={stemImages}
+                className="border rounded-lg"
+                resetKey={stemResetKey}
+              />
+            </div>
+          )}
 
-        {/* Answer Options */}
-        <div className="grid gap-2" role="listbox" aria-label="Answer options">
-          {answerOptions?.map((option, index) => {
-            const isSelected = selectedAnswerId === option.id;
-            const showCorrect = showExplanation && option.is_correct;
-            const showIncorrect = showExplanation && isSelected && !option.is_correct;
-            const isStruck = struckAnswerIds?.has(option.id) ?? false;
-            const optionLabel = getOptionLabel(option.id, index);
+          {/* Answer Options — own selection container: drag stays within options, selecting
+                one highlights only its text (not the box), never the stem/explanation/WSI. */}
+          <FakeSelectionHighlight allSlides={allSlides} onViewSlide={setViewerSlide}>
+            <div className="grid gap-2" role="listbox" aria-label="Answer options">
+              {answerOptions?.map((option, index) => {
+                const isSelected = selectedAnswerId === option.id;
+                const showCorrect = showExplanation && option.is_correct;
+                const showIncorrect = showExplanation && isSelected && !option.is_correct;
+                const isStruck = struckAnswerIds?.has(option.id) ?? false;
+                const optionLabel = getOptionLabel(option.id, index);
 
-            const handleClick = () => {
-              if (showExplanation) return;
-              if (longPressFiredRef.current) {
-                longPressFiredRef.current = false;
-                return;
-              }
-              onAnswerSelect(option.id);
-            };
+                const handleClick = () => {
+                  if (showExplanation) return;
+                  if (longPressFiredRef.current) {
+                    longPressFiredRef.current = false;
+                    return;
+                  }
+                  onAnswerSelect(option.id);
+                };
 
-            const handleContextMenu = (e: React.MouseEvent) => {
-              if (!strikesEnabled) return;
-              e.preventDefault();
-              onStrikeToggle!(option.id);
-            };
+                const handleContextMenu = (e: React.MouseEvent) => {
+                  if (!strikesEnabled) return;
+                  e.preventDefault();
+                  onStrikeToggle!(option.id);
+                };
 
-            const handleTouchStart = () => {
-              if (!strikesEnabled) return;
-              longPressFiredRef.current = false;
-              longPressTimerRef.current = setTimeout(() => {
-                longPressFiredRef.current = true;
-                onStrikeToggle!(option.id);
-              }, LONG_PRESS_MS);
-            };
+                const handleTouchStart = () => {
+                  if (!strikesEnabled) return;
+                  longPressFiredRef.current = false;
+                  longPressTimerRef.current = setTimeout(() => {
+                    longPressFiredRef.current = true;
+                    onStrikeToggle!(option.id);
+                  }, LONG_PRESS_MS);
+                };
 
-            const showStrikeForOption = isStruck && !showCorrect && !showIncorrect;
+                const showStrikeForOption = isStruck && !showCorrect && !showIncorrect;
 
-            return (
-              <button
-                key={option.id}
-                onClick={handleClick}
-                onContextMenu={handleContextMenu}
-                onTouchStart={handleTouchStart}
-                onTouchEnd={cancelLongPress}
-                onTouchMove={cancelLongPress}
-                onTouchCancel={cancelLongPress}
-                disabled={showExplanation}
-                className={`
-                  w-full p-3 text-left border rounded-lg transition-colors select-none
+                return (
+                  <button
+                    key={option.id}
+                    onClick={handleClick}
+                    onContextMenu={handleContextMenu}
+                    onTouchStart={handleTouchStart}
+                    onTouchEnd={cancelLongPress}
+                    onTouchMove={cancelLongPress}
+                    onTouchCancel={cancelLongPress}
+                    // aria-disabled (not `disabled`) once answered: clicks are already no-ops
+                    // via handleClick's guard, and a real disabled button blocks text selection,
+                    // so this keeps the option's diagnosis selectable for look-up in review.
+                    aria-disabled={showExplanation}
+                    {...(showExplanation ? {} : { "data-fake-selection-skip": "" })}
+                    className={`
+                  w-full p-3 text-left border rounded-lg transition-colors ${showExplanation ? "" : "select-none"}
                   ${isSelected && !showExplanation ? "border-blue-500 bg-blue-500/10" : "border-gray-200"}
                   ${showCorrect ? "border-green-500 bg-green-500/5" : ""}
                   ${showIncorrect ? "border-red-500 bg-red-500/5" : ""}
                   ${!showExplanation ? "hover:border-gray-300 cursor-pointer" : "cursor-default"}
                 `}
-                role="option"
-                aria-selected={isSelected}
-              >
-                <div className="flex items-center gap-3">
-                  <div
-                    className={`flex items-center gap-3 flex-1 min-w-0 ${showStrikeForOption ? "opacity-50 line-through" : ""}`}
+                    role="option"
+                    aria-selected={isSelected}
                   >
-                    <span
-                      className={`
+                    <div className="flex items-center gap-3">
+                      <div
+                        className={`flex items-center gap-3 flex-1 min-w-0 ${showStrikeForOption ? "opacity-50 line-through" : ""}`}
+                      >
+                        <span
+                          data-fake-selection-skip=""
+                          className={`
                       flex-shrink-0 w-6 h-6 rounded-full border flex items-center justify-center text-xs font-medium no-underline
                       ${isSelected && !showExplanation ? "border-blue-500 bg-blue-500 text-white" : "border-gray-300"}
                       ${showCorrect ? "border-green-600 bg-green-600 text-white" : ""}
                       ${showIncorrect ? "border-red-600 bg-red-600 text-white" : ""}
                     `}
-                    >
-                      {optionLabel}
-                    </span>
-                    <span className="flex-1">{option.text}</span>
-                  </div>
-                  {showCorrect && <Check className="w-4 h-4 text-green-600 flex-shrink-0" />}
-                  {showIncorrect && <X className="w-4 h-4 text-red-600 flex-shrink-0" />}
-                  {strikesEnabled && (
-                    <span
-                      role="button"
-                      tabIndex={0}
-                      aria-label={isStruck ? "Remove strike from option" : "Strike out option"}
-                      aria-pressed={isStruck}
-                      title={
-                        isStruck
-                          ? "Remove strike (right-click or long-press)"
-                          : "Strike out (right-click or long-press)"
-                      }
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        onStrikeToggle!(option.id);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter" || e.key === " ") {
-                          e.preventDefault();
-                          e.stopPropagation();
-                          onStrikeToggle!(option.id);
-                        }
-                      }}
-                      className={`
+                        >
+                          {optionLabel}
+                        </span>
+                        <span className="flex-1">{option.text}</span>
+                      </div>
+                      {showCorrect && <Check className="w-4 h-4 text-green-600 flex-shrink-0" />}
+                      {showIncorrect && <X className="w-4 h-4 text-red-600 flex-shrink-0" />}
+                      {strikesEnabled && (
+                        <span
+                          role="button"
+                          tabIndex={0}
+                          data-fake-selection-skip=""
+                          aria-label={isStruck ? "Remove strike from option" : "Strike out option"}
+                          aria-pressed={isStruck}
+                          title={
+                            isStruck
+                              ? "Remove strike (right-click or long-press)"
+                              : "Strike out (right-click or long-press)"
+                          }
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            onStrikeToggle!(option.id);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              e.stopPropagation();
+                              onStrikeToggle!(option.id);
+                            }
+                          }}
+                          className={`
                         flex-shrink-0 inline-flex items-center justify-center w-9 h-9 rounded-md transition-colors cursor-pointer
                         ${isStruck ? "text-accent-foreground bg-accent hover:bg-accent/80" : "text-muted-foreground/60 hover:text-muted-foreground hover:bg-muted"}
                       `}
-                    >
-                      <StrikeIcon className="w-6 h-6" />
-                    </span>
-                  )}
-                </div>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Explanation Section */}
-        {showExplanation && (
-          <div className="p-4 rounded-lg bg-muted/50 text-sm space-y-4">
-            {/* Teaching Point */}
-            {question.teaching_point && (
-              <div>
-                <h4 className="font-medium text-xs uppercase mb-2">Teaching Point</h4>
-                {teachingPointRenderer ? (
-                  teachingPointRenderer(question.teaching_point)
-                ) : (
-                  <div className="text-muted-foreground">{question.teaching_point}</div>
-                )}
-              </div>
-            )}
-
-            {/* Individual Option Explanations (exclude correct answer — covered by teaching point) */}
-            {answerOptions?.some((opt) => opt.explanation && !opt.is_correct) && (
-              <div>
-                <h4 className="font-medium text-xs uppercase mb-2">
-                  Incorrect Answer Explanations
-                </h4>
-                <div className="space-y-2 text-muted-foreground">
-                  {answerOptions
-                    ?.filter((opt) => opt.explanation && !opt.is_correct)
-                    .map((option, index) => (
-                      <div key={option.id} className="flex gap-2">
-                        <span className="font-medium">
-                          {getOptionLabel(
-                            option.id,
-                            answerOptions?.findIndex((opt) => opt.id === option.id) || index
-                          )}
-                          .
+                        >
+                          <StrikeIcon className="w-6 h-6" />
                         </span>
-                        <span>{option.explanation}</span>
-                      </div>
-                    ))}
-                </div>
-              </div>
-            )}
+                      )}
+                    </div>
+                  </button>
+                );
+              })}
+            </div>
+          </FakeSelectionHighlight>
 
-            {/* Explanation Images */}
-            {explanationImages.length > 0 && (
-              <div>
-                <h4 className="font-medium text-xs uppercase mb-2">Reference Images</h4>
-                <ImageCarousel
-                  images={explanationImages}
-                  className="bg-white border rounded-lg"
-                  resetKey={explanationResetKey}
-                />
-              </div>
-            )}
+          {/* Explanation Section — own selection container */}
+          {showExplanation && (
+            <div className="p-4 rounded-lg bg-muted/50 text-sm">
+              <FakeSelectionHighlight
+                allSlides={allSlides}
+                onViewSlide={setViewerSlide}
+                className="space-y-4"
+              >
+                {/* Teaching Point */}
+                {question.teaching_point && (
+                  <div>
+                    <h4 className="font-medium text-xs uppercase mb-2">Teaching Point</h4>
+                    {teachingPointRenderer ? (
+                      teachingPointRenderer(question.teaching_point)
+                    ) : (
+                      <div className="text-muted-foreground">{question.teaching_point}</div>
+                    )}
+                  </div>
+                )}
 
-            {/* References */}
-            {question.question_references && (
-              <ReferencesList references={question.question_references} />
-            )}
+                {/* Individual Option Explanations (exclude correct answer — covered by teaching point) */}
+                {answerOptions?.some((opt) => opt.explanation && !opt.is_correct) && (
+                  <div>
+                    <h4 className="font-medium text-xs uppercase mb-2">
+                      Incorrect Answer Explanations
+                    </h4>
+                    <div className="space-y-2 text-muted-foreground">
+                      {answerOptions
+                        ?.filter((opt) => opt.explanation && !opt.is_correct)
+                        .map((option, index) => (
+                          <div key={option.id} className="flex gap-2">
+                            <span className="font-medium">
+                              {getOptionLabel(
+                                option.id,
+                                answerOptions?.findIndex((opt) => opt.id === option.id) || index
+                              )}
+                              .
+                            </span>
+                            <span>{option.explanation}</span>
+                          </div>
+                        ))}
+                    </div>
+                  </div>
+                )}
+
+                {/* Explanation Images */}
+                {explanationImages.length > 0 && (
+                  <div>
+                    <h4 className="font-medium text-xs uppercase mb-2">Reference Images</h4>
+                    <div data-fake-selection-skip>
+                      <ImageCarousel
+                        images={explanationImages}
+                        className="bg-white border rounded-lg"
+                        resetKey={explanationResetKey}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* References */}
+                {question.question_references && (
+                  <ReferencesList references={question.question_references} />
+                )}
+              </FakeSelectionHighlight>
+            </div>
+          )}
+
+          {/* Feature hint — highlight any term to look it up / open an example slide. */}
+          <div data-fake-selection-skip className="flex justify-center pt-1">
+            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-gradient-to-r from-primary/15 to-primary/5 px-3.5 py-1.5 text-xs text-primary shadow-sm">
+              <Highlighter className="h-4 w-4 shrink-0" />
+              <span>
+                <strong className="font-semibold">Highlight</strong> any term to{" "}
+                <strong className="font-semibold">search images</strong> or{" "}
+                <strong className="font-semibold">view an example slide</strong>
+              </span>
+            </span>
           </div>
-        )}
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+      <SlideViewerModal slide={viewerSlide} onClose={() => setViewerSlide(null)} />
+    </>
   );
 }
