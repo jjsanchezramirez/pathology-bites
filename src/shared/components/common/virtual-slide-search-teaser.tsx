@@ -6,6 +6,8 @@ import { Search } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { useClientVirtualSlides } from "@/shared/hooks/use-client-virtual-slides";
 import { rankSlidesWithExpansion } from "@/shared/utils/domain/virtual-slide-search";
+import { isViewerSupported } from "@/shared/utils/domain/repository";
+import { SlideViewerModal } from "@/shared/components/common/slide-viewer-modal";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
 
 // Exclude raw image files — the homepage buttons should land users on an
@@ -44,6 +46,19 @@ export function VirtualSlideSearchTeaser() {
   // homepage buttons read from `allSlides`, no separate prefetch needed.
   const searchClient = useClientVirtualSlides(1);
   const isDataReady = !!searchClient.allSlides && searchClient.allSlides.length > 0;
+  const [viewerSlide, setViewerSlide] = useState<VirtualSlide | null>(null);
+
+  // Open a slide in the in-house viewer when its repo is renderable; otherwise fall back to the
+  // source site (login-walled / non-embeddable repos) so the homepage buttons never dead-end.
+  const openSlide = (slide: VirtualSlide) => {
+    if (isViewerSupported(slide.repository)) {
+      setViewerSlide(slide);
+      return;
+    }
+    const url = pickViewerUrl(slide);
+    if (url) window.open(url, "_blank", "noopener,noreferrer");
+    else router.push(`/tools/virtual-slides?search=${encodeURIComponent(slide.diagnosis || "")}`);
+  };
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -72,17 +87,14 @@ export function VirtualSlideSearchTeaser() {
       // search index that `loadClientSlides()` already built.
       const ranked = await rankSlidesWithExpansion(all, query);
 
-      let target: { slide: VirtualSlide; url: string } | null = null;
-      for (const slide of ranked.slides) {
-        const url = pickViewerUrl(slide);
-        if (url) {
-          target = { slide, url };
-          break;
-        }
-      }
+      // Prefer the top viewer-renderable match (opens in-house); else the best match with a
+      // usable URL (link-out); else the full search page.
+      const target =
+        ranked.slides.find((s) => isViewerSupported(s.repository) && pickViewerUrl(s)) ??
+        ranked.slides.find((s) => pickViewerUrl(s));
 
       if (target) {
-        window.open(target.url, "_blank", "noopener,noreferrer");
+        openSlide(target);
       } else {
         window.open(
           `/tools/virtual-slides?search=${encodeURIComponent(query)}`,
@@ -105,11 +117,10 @@ export function VirtualSlideSearchTeaser() {
     const all = searchClient.allSlides;
     if (!all || all.length === 0) return;
 
-    const candidates: { slide: VirtualSlide; url: string }[] = [];
+    const candidates: VirtualSlide[] = [];
     for (const slide of all) {
       if (!isOpenRepo(slide.id)) continue;
-      const url = pickViewerUrl(slide);
-      if (url) candidates.push({ slide, url });
+      if (pickViewerUrl(slide)) candidates.push(slide);
     }
 
     if (candidates.length === 0) {
@@ -117,8 +128,10 @@ export function VirtualSlideSearchTeaser() {
       return;
     }
 
-    const picked = candidates[Math.floor(Math.random() * candidates.length)];
-    window.open(picked.url, "_blank", "noopener,noreferrer");
+    // Prefer a viewer-renderable slide so Random Slide opens in the in-house viewer.
+    const supported = candidates.filter((s) => isViewerSupported(s.repository));
+    const pool = supported.length > 0 ? supported : candidates;
+    openSlide(pool[Math.floor(Math.random() * pool.length)]);
   };
 
   return (
@@ -166,6 +179,7 @@ export function VirtualSlideSearchTeaser() {
           </Button>
         </div>
       </form>
+      <SlideViewerModal slide={viewerSlide} onClose={() => setViewerSlide(null)} />
     </div>
   );
 }
