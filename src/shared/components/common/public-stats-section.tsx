@@ -20,13 +20,13 @@ export function PublicStatsSection({
         return {
           aiQuestions: { title: "AI-Generated Questions", subtitle: "Unlimited practice material" },
           expertQuestions: { title: "Expert-Curated Questions", subtitle: "High-quality content" },
-          categories: { title: "Pathology Subspecialties", subtitle: "Complete coverage" },
+          images: { title: "Pathology Images", subtitle: "Across our question bank" },
         };
       default: // landing
         return {
           aiQuestions: { title: "AI-Generated Questions", subtitle: "Unlimited practice material" },
           expertQuestions: { title: "Expert-Curated Questions", subtitle: "High-quality content" },
-          categories: { title: "Pathology Subspecialties", subtitle: "Complete coverage" },
+          images: { title: "Pathology Images", subtitle: "Across our question bank" },
         };
     }
   };
@@ -65,18 +65,16 @@ export function PublicStatsSection({
             <div className="text-sm text-muted-foreground">{labels.expertQuestions.subtitle}</div>
           </div>
 
-          {/* Categories */}
+          {/* Images */}
           <div className="text-center group">
             <div className="relative">
               <div className="text-5xl md:text-6xl font-bold text-primary mb-2 group-hover:scale-110 transition-transform duration-300">
-                {statsLoading ? "..." : stats.categories}
+                {statsLoading ? "..." : `${stats.images.toLocaleString()}+`}
               </div>
               <div className="absolute -inset-4 bg-primary/5 rounded-full blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
             </div>
-            <div className="text-lg font-semibold text-foreground mb-1">
-              {labels.categories.title}
-            </div>
-            <div className="text-sm text-muted-foreground">{labels.categories.subtitle}</div>
+            <div className="text-lg font-semibold text-foreground mb-1">{labels.images.title}</div>
+            <div className="text-sm text-muted-foreground">{labels.images.subtitle}</div>
           </div>
         </div>
       </div>

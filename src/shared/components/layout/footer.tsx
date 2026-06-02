@@ -112,7 +112,7 @@ export function Footer() {
           <div className="flex items-center justify-center lg:justify-start gap-2 order-2 lg:order-1">
             <MicroscopeIcon className="h-4 w-4 text-primary flex-shrink-0" />
             <p className="text-muted-foreground text-sm lg:text-xs text-center lg:text-left">
-              © 2026 Pathology Bites. All rights reserved.
+              © {new Date().getFullYear()} Pathology Bites. All rights reserved.
             </p>
           </div>
 

@@ -3,13 +3,14 @@
 
 export interface PublicStats {
   expertQuestions: number;
-  categories: number;
+  images: number;
 }
 
-// Hardcoded public stats - update these values manually when needed
+// Hardcoded public stats — refreshed at build time (see commit-workflow). Each is a floored
+// "N+" figure so the displayed number never overstates the live database.
 const PUBLIC_STATS: PublicStats = {
-  expertQuestions: 300, // "300+" expert-curated questions (live: 321 published, floored to 50)
-  categories: 25, // 25 pathology subspecialties
+  expertQuestions: 300, // "300+" — live: 320 published questions, floored to nearest 50
+  images: 1300, // "1,300+" — live: 1,349 images, floored to nearest 100
 };
 
 export function usePublicStats() {
