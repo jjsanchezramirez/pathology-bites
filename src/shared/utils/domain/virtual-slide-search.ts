@@ -582,6 +582,27 @@ function expandQuery(term: string): string[] {
   return variants;
 }
 
+// Repository tiebreak for slides of EQUAL relevance (same score + frequency). Relevance always
+// wins first; this only decides the order within a genuine tie (e.g. the dozens of repos that
+// each have an exact "Follicular lymphoma" slide). Lower number = surfaced earlier:
+//   0  WHO Blue Books — curated reference; should lead a perfect match.
+//   1  Wirtualny / Leeds — tend to carry full cases (H&E + multiple IHCs).
+//   2  MGH — full cases too (more cyto-heavy, so just below Wirtualny/Leeds).
+//   3  everyone else — natural search/corpus order.
+//   4  PathPresenter / Recut Club — not embeddable in the in-house viewer, so they trail.
+const REPOSITORY_RANK_PRIORITY: Record<string, number> = {
+  "WHO Blue Books Online": 0,
+  "Wirtualny Mikroskop": 1,
+  "Leeds University": 1,
+  "MGH Pathology": 2,
+  PathPresenter: 4,
+  "Recut Club": 4,
+};
+const DEFAULT_REPOSITORY_RANK_PRIORITY = 3;
+function repositoryRankPriority(repository: string | undefined): number {
+  return REPOSITORY_RANK_PRIORITY[repository ?? ""] ?? DEFAULT_REPOSITORY_RANK_PRIORITY;
+}
+
 // Main ranking entry point. Expands WHO/clinical abbreviations, ranks every
 // variant, and merges by max score.
 export interface ScoredSlide {
@@ -613,12 +634,17 @@ export async function rankSlidesWithExpansion(
     }
   }
 
-  // Sort by score (highest first), then frequency, then length
+  // Sort by score (highest first), then frequency, then repository priority, then length.
+  // Repository priority only breaks ties between equally-relevant slides — it never lets a
+  // preferred repo outrank a better match (see REPOSITORY_RANK_PRIORITY).
   const sorted = Array.from(merged.values()).sort((a, b) => {
     if (b.score !== a.score) return b.score - a.score;
     if ((a.frequency || 0) !== (b.frequency || 0)) {
       return (b.frequency || 0) - (a.frequency || 0);
     }
+    const pa = repositoryRankPriority(a.slide.repository);
+    const pb = repositoryRankPriority(b.slide.repository);
+    if (pa !== pb) return pa - pb;
     return a.slide.diagnosis.length - b.slide.diagnosis.length;
   });
   const sortedSlides = sorted.map((item) => item.slide);
