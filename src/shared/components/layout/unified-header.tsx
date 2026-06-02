@@ -3,6 +3,7 @@
 
 import { Button } from "@/shared/components/ui/button";
 import { Menu } from "lucide-react";
+import { HeaderWsiSearch } from "@/shared/components/layout/header-wsi-search";
 import { FontSizeControl } from "@/shared/components/common/font-size-control";
 import { ThemeModeToggle } from "@/shared/components/common/theme-mode-toggle";
 import { AdminModeToggle } from "@/shared/components/common/admin-mode-toggle";
@@ -40,14 +41,17 @@ export function UnifiedHeader({ onToggleSidebar, config = defaultConfig }: Unifi
         <Menu className="h-5 w-5" />
       </Button>
 
-      {/* Admin Mode Toggle - Only show for admin users */}
-      <AdminModeToggle />
+      {/* Virtual-slide search — left, next to the sidebar toggle */}
+      <HeaderWsiSearch />
 
       {/* Spacer */}
       <div className="flex-1" />
 
       {/* Right side controls */}
       <div className="flex items-center gap-2">
+        {/* Admin Mode Toggle - Only show for admin users */}
+        <AdminModeToggle />
+
         {/* Font Size Control - Only show if enabled */}
         {finalConfig.showFontSize && (
           <div data-tutorial="nav-font-size">

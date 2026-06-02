@@ -408,9 +408,12 @@ export interface ClientSearchOptions {
 // without the search/ranking/browse machinery of useClientVirtualSlides. For consumers that
 // only need allSlides to power the highlight → WSI look-up (quizzes, WSI questions) and must not
 // pay for browse-mode processing on mount. Returns the cached corpus synchronously when present.
-export function useAllVirtualSlides(): VirtualSlide[] | null {
+// `enabled=false` defers the fetch entirely (e.g. the header search loads only on first focus,
+// so the ~2 MB corpus doesn't download on every dashboard page for users who never search).
+export function useAllVirtualSlides(enabled: boolean = true): VirtualSlide[] | null {
   const [slides, setSlides] = useState<VirtualSlide[] | null>(cachedSlides);
   useEffect(() => {
+    if (!enabled) return;
     if (cachedSlides) {
       setSlides(cachedSlides);
       return;
@@ -426,7 +429,7 @@ export function useAllVirtualSlides(): VirtualSlide[] | null {
     return () => {
       mounted = false;
     };
-  }, []);
+  }, [enabled]);
   return slides;
 }
 
