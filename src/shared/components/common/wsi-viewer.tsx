@@ -94,7 +94,8 @@ function _tryAlternativeURL(originalUrl: string, slide?: VirtualSlide): string |
 }
 
 // Step 1: Dragon (OpenSeadragon) initialization and configuration
-export function getWSIConfig(url: string, _repository?: string, _slide?: VirtualSlide): WSIConfig {
+// Only used within this file — not exported (keeps knip's unused-exports check clean).
+function getWSIConfig(url: string, _repository?: string, _slide?: VirtualSlide): WSIConfig {
   try {
     const urlObj = new URL(url);
     const hostname = urlObj.hostname.toLowerCase();
