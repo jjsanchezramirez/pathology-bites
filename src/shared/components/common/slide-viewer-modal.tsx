@@ -5,7 +5,12 @@ import dynamic from "next/dynamic";
 import { Loader2, Microscope, X } from "lucide-react";
 
 import { cn } from "@/shared/utils/index";
-import { Dialog, DialogContent, DialogTitle } from "@/shared/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogTitle,
+} from "@/shared/components/ui/dialog";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { getCaseGroup } from "@/shared/hooks/use-client-virtual-slides";
 import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
@@ -165,6 +170,10 @@ export function SlideViewerModal({
         )}
       >
         <DialogTitle className="sr-only">{current?.diagnosis || "Slide viewer"}</DialogTitle>
+        <DialogDescription className="sr-only">
+          Interactive whole-slide image viewer
+          {current?.repository ? ` — ${current.repository}` : ""}
+        </DialogDescription>
 
         {/* Close — backing chip keeps the X visible over black letterbox or white slide alike. */}
         <button
