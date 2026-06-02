@@ -70,11 +70,30 @@ function Thumb({
   );
 }
 
+// "59"+"F" → "59 year old female" (months: "6mo" → "6 month old"). Gender other than M/F
+// passes through lowercased.
+function formatAgeSex(age?: string | null, gender?: string | null): string {
+  const parts: string[] = [];
+  if (age) {
+    const mo = /^(\d+)\s*mo$/i.exec(age);
+    parts.push(mo ? `${mo[1]} month old` : `${age} year old`);
+  }
+  if (gender) {
+    const g = gender.toUpperCase();
+    parts.push(g === "F" ? "female" : g === "M" ? "male" : gender.toLowerCase());
+  }
+  return parts.join(" ");
+}
+
 // Clinical info block — dedupes patient_info against the age/sex line (the corpus
 // sometimes carries the same "56, F" in both) and clamps each field independently.
 function ClinicalInfo({ slide }: { slide: VirtualSlide }) {
-  const ageSex = [slide.age, slide.gender].filter(Boolean).join(", ");
-  const showPatientInfo = slide.patient_info && slide.patient_info.trim() !== ageSex;
+  // Raw "59, F" for the dedupe (corpus patient_info is synthesized in this form); the pretty
+  // "59 year old female" is what we display.
+  const rawAgeSex = [slide.age, slide.gender].filter(Boolean).join(", ");
+  const ageSex = formatAgeSex(slide.age, slide.gender);
+  const pi = slide.patient_info?.trim();
+  const showPatientInfo = !!pi && pi !== rawAgeSex && pi !== ageSex;
   return (
     <div className="space-y-1">
       {ageSex && <p className="text-xs text-gray-600">{ageSex}</p>}
