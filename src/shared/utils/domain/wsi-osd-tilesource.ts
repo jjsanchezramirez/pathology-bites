@@ -9,16 +9,27 @@ const TILE_PROXY = "/api/public/tools/virtual-slides/wsi-tile-proxy?url=";
 
 export function buildOsdTileSource(ts: WsiTileSource, opts?: { proxy?: boolean }): unknown {
   if (ts.kind === "dzi") {
-    // Legacy DZI descriptor — avoids OSD's XHR read of the .dzi (which would be
-    // CORS-blocked); tiles load as <img> from the absolute Url base.
+    // Build the DZI tile URL ourselves instead of handing OSD a Microsoft
+    // {Image} descriptor. OSD's native DziTileSource appends `this.queryParams`
+    // to every tile (`...<fmt>` + queryParams); since we construct the descriptor
+    // in memory there's no source URL for OSD to derive query params from, so the
+    // value is `undefined` and stringifies onto the URL → "0_0.jpegundefined".
+    // Strict static tile hosts (WHO, LearnHaem) 404 on that → proxy 502. A custom
+    // getTileUrl gives full control; `tileOverlap` preserves DZI's edge overlap and
+    // `maxLevel = ceil(log2(max(w,h)))` reproduces OSD's native DZI level math, so
+    // tile requests are identical to the previously working path minus the suffix.
+    const { tilesUrl, format, tileSize, overlap, width, height } = ts;
+    const maxLevel = Math.ceil(Math.log2(Math.max(width, height)));
     return {
-      Image: {
-        xmlns: "http://schemas.microsoft.com/deepzoom/2008",
-        Url: opts?.proxy ? `${TILE_PROXY}${ts.tilesUrl}` : ts.tilesUrl,
-        Format: ts.format,
-        Overlap: String(ts.overlap),
-        TileSize: String(ts.tileSize),
-        Size: { Width: ts.width, Height: ts.height },
+      width,
+      height,
+      tileSize,
+      tileOverlap: overlap,
+      minLevel: 0,
+      maxLevel,
+      getTileUrl: (level: number, x: number, y: number) => {
+        const tile = `${tilesUrl}${level}/${x}_${y}.${format}`;
+        return opts?.proxy ? `${TILE_PROXY}${tile}` : tile;
       },
     };
   }
