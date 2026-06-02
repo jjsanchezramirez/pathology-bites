@@ -215,12 +215,35 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
   // If already fetching, return the existing promise (deduplication)
   if (cachedSlidesPromise) return cachedSlidesPromise;
 
-  const { VIRTUAL_SLIDES_JSON_URL, VIRTUAL_SLIDES_JSON_URL_FALLBACK } =
+  const { VIRTUAL_SLIDES_JSON_URL, VIRTUAL_SLIDES_JSON_URL_FALLBACK, VIRTUAL_SLIDES_MANIFEST_URL } =
     await import("@/shared/config/virtual-slides");
+
+  // Resolve the live corpus URL from the manifest so a republished corpus is picked up
+  // WITHOUT an app redeploy. The manifest is tiny + short-TTL; the corpus it names is
+  // content-addressed + immutable. Fall back to the compiled URL if the manifest is
+  // unreachable or malformed (degraded mode, never blocks the page).
+  let corpusUrl = VIRTUAL_SLIDES_JSON_URL;
+  try {
+    const mController = new AbortController();
+    const mTimeout = setTimeout(() => mController.abort(), 4000);
+    const mres = await fetch(VIRTUAL_SLIDES_MANIFEST_URL, {
+      cache: "no-cache",
+      signal: mController.signal,
+    }).finally(() => clearTimeout(mTimeout));
+    if (mres.ok) {
+      const manifest = await mres.json();
+      if (manifest?.url) {
+        corpusUrl = manifest.url as string;
+        console.log("[VirtualSlides] manifest →", manifest.hash, `(${manifest.total} slides)`);
+      }
+    }
+  } catch (manifestError) {
+    console.warn("[VirtualSlides] manifest fetch failed, using compiled URL", manifestError);
+  }
 
   // Check if URL is gzipped at the top level (before promise chain)
   // Need to check before query params (e.g., .gz?v=4)
-  const isGzippedFile = VIRTUAL_SLIDES_JSON_URL.includes(".json.gz");
+  const isGzippedFile = corpusUrl.includes(".json.gz");
 
   async function fetchWithFallback() {
     const fetchWithTimeout = async (
@@ -237,7 +260,7 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
     };
 
     try {
-      const res = await fetchWithTimeout(VIRTUAL_SLIDES_JSON_URL, {
+      const res = await fetchWithTimeout(corpusUrl, {
         cache: "force-cache",
         timeoutMs: 8000,
       });
