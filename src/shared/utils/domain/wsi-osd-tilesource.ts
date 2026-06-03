@@ -35,13 +35,20 @@ export function buildOsdTileSource(ts: WsiTileSource, opts?: { proxy?: boolean }
   }
   if (ts.kind === "aperio") {
     // Aperio ImageServer region-crop: ?<left>+<top>+<outW>+<outH>+<factor>[+<quality>].
-    // left/top are in the DOWNSAMPLED level's pixel space (x*tileSize, NOT scaled by factor);
     // outW/outH are the OUTPUT tile size; the 5th param is the downsample FACTOR
     // = 2^(maxLevel-level), selecting which pyramid level to read. The server returns an
-    // outW×outH crop of that level. (Verified empirically against rosai.secondslide.com:
-    // ?256+0+256+256+2 == native base[512,1024) downscaled; the earlier x*tileSize*factor
-    // coords mis-placed every non-native level, leaving only the native level — factor 1 —
-    // aligned.) aanp keeps its literal "0" coord prefix (numerically a no-op).
+    // outW×outH crop of that level. **left/top coordinate space differs per server:**
+    //  - rosai (secondslide): DOWNSAMPLED level pixel space → x*tileSize. Verified:
+    //    ?256+0+256+256+2 == native base[512,1024) downscaled (mean-abs-diff 3.56).
+    //  - aanp (image.upmc.edu): LEVEL-0 (base) pixel space → x*tileSize*factor. Verified
+    //    against image.upmc.edu: a factor-4 tile at left=16000 (out of bounds in level-4
+    //    space, valid in base space) returns the base-16000 region, matching the native
+    //    factor-1 tile at base 16000 (mean-abs-diff 8.5). Using level-space coords here
+    //    mis-placed every non-native level, leaving only the native level — factor 1 —
+    //    aligned (the scattered-fragments bug). aanp keeps its literal "0" coord prefix
+    //    (numerically a no-op).
+    // These conventions are genuinely different per host — do NOT unify them. A prior fix
+    // (4a2425b) flattened both onto rosai's level-space scheme and broke aanp.
     const { flavor, tileSize, maxLevel, baseUrl, quality } = ts;
     return {
       width: ts.width,
@@ -51,11 +58,13 @@ export function buildOsdTileSource(ts: WsiTileSource, opts?: { proxy?: boolean }
       maxLevel,
       getTileUrl: (level: number, x: number, y: number) => {
         const factor = Math.pow(2, maxLevel - level);
-        const left = x * tileSize;
-        const top = y * tileSize;
         if (flavor === "rosai") {
+          const left = x * tileSize;
+          const top = y * tileSize;
           return `${baseUrl}?${left}+${top}+${tileSize}+${tileSize}+${factor}+${quality}`;
         }
+        const left = x * tileSize * factor;
+        const top = y * tileSize * factor;
         return `${baseUrl}?0${left}+0${top}+${tileSize}+${tileSize}+${factor}`;
       },
     };
