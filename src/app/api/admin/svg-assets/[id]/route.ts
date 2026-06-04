@@ -4,6 +4,47 @@ import { deleteFromR2 } from "@/shared/services/r2-storage";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
 /**
+ * @swagger
+ * /api/admin/svg-assets/{id}:
+ *   delete:
+ *     summary: Delete an SVG asset
+ *     description: >
+ *       Deletes an SVG asset from both R2 storage and the `svg_assets` table.
+ *       R2 deletion failures are logged but do not abort the DB delete.
+ *       Admin-only; gated by middleware via `x-user-id` plus a `users.role === "admin"` check.
+ *     tags:
+ *       - Admin - Images
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: SVG asset ID.
+ *     responses:
+ *       200:
+ *         description: Asset deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Administrator privileges required
+ *       404:
+ *         description: SVG asset not found
+ *       500:
+ *         description: Database deletion failed
+ */
+/**
  * DELETE /api/admin/svg-assets/[id]
  * Delete an SVG asset from both R2 storage and the database.
  * Requires admin role.
@@ -72,6 +113,63 @@ export async function DELETE(
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/svg-assets/{id}:
+ *   patch:
+ *     summary: Update SVG asset metadata
+ *     description: >
+ *       Updates editable metadata (name, description, tags, category) for an SVG asset.
+ *       Only fields present in the body are updated; `updated_at` is set automatically.
+ *       Admin-only; gated by middleware via `x-user-id` plus a `users.role === "admin"` check.
+ *     tags:
+ *       - Admin - Images
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: SVG asset ID.
+ *     requestBody:
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               name:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *               tags:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *               category:
+ *                 type: string
+ *                 nullable: true
+ *     responses:
+ *       200:
+ *         description: Asset updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 asset:
+ *                   type: object
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Administrator privileges required
+ *       500:
+ *         description: Database update failed
+ */
 /**
  * PATCH /api/admin/svg-assets/[id]
  * Update SVG asset metadata (name, description, tags, category).

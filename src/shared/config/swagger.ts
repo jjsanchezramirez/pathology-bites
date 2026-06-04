@@ -7,8 +7,9 @@ export const getApiDocs = async () => {
       openapi: "3.0.0",
       info: {
         title: "Pathology Bites API",
-        version: "1.0.0",
-        description: "API documentation for Pathology Bites application",
+        version: "2026.06",
+        description:
+          "Internal API for the Pathology Bites platform. Auto-generated from `@swagger` JSDoc blocks on each route handler (next-swagger-doc). Most admin/user endpoints are gated by middleware that injects `x-user-id` / `x-user-role` headers from the Supabase session.",
       },
       servers: [
         {

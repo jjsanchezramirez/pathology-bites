@@ -6,6 +6,69 @@ import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 export const runtime = "nodejs";
 
 /**
+ * @swagger
+ * /api/admin/svg-assets/upload:
+ *   post:
+ *     summary: Upload an SVG asset
+ *     description: >
+ *       Uploads an SVG file to R2 storage and creates an `svg_assets` database record.
+ *       SVG content is sanitized (scripts, event handlers, javascript:/data: URIs, iframe/object/embed
+ *       are rejected) and dimensions are extracted from viewBox or width/height attributes.
+ *       Admin-only; gated by middleware via `x-user-id` plus a `users.role === "admin"` check.
+ *     tags:
+ *       - Admin - Images
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - file
+ *               - name
+ *             properties:
+ *               file:
+ *                 type: string
+ *                 format: binary
+ *                 description: The SVG file (image/svg+xml or .svg extension).
+ *               name:
+ *                 type: string
+ *                 description: Display name for the asset (required, non-empty).
+ *               description:
+ *                 type: string
+ *                 description: Optional description.
+ *               tags:
+ *                 type: string
+ *                 description: JSON array string, or comma-separated list of tags.
+ *               category:
+ *                 type: string
+ *                 description: Optional category.
+ *     responses:
+ *       200:
+ *         description: Asset uploaded and record created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 asset:
+ *                   type: object
+ *                 uploadResult:
+ *                   type: object
+ *       400:
+ *         description: Missing/invalid file or name, or SVG rejected by sanitization
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Administrator privileges required
+ *       500:
+ *         description: R2 upload or database insert failed
+ */
+/**
  * POST /api/admin/svg-assets/upload
  * Upload a new SVG asset to R2 storage and create a database record.
  * Includes SVG sanitization to prevent XSS attacks.

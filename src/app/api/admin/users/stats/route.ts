@@ -12,6 +12,38 @@ export const dynamic = "force-dynamic";
 
 const ALLOWED_ROLES = new Set(["admin", "creator", "reviewer"]);
 
+/**
+ * @swagger
+ * /api/admin/users/stats:
+ *   get:
+ *     summary: Get aggregate user statistics
+ *     description: >
+ *       Returns aggregate user statistics by proxying the SECURITY DEFINER `get_user_statistics`
+ *       RPC through a service-role client. Gated via the middleware-injected `x-user-role` header
+ *       to admin, creator, or reviewer roles.
+ *     tags:
+ *       - Admin - Users
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Aggregate user statistics.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *       401:
+ *         description: Missing user identity (no x-user-id header).
+ *       403:
+ *         description: Caller lacks an allowed role (admin/creator/reviewer).
+ *       404:
+ *         description: No user statistics found.
+ *       500:
+ *         description: RPC failure fetching user statistics.
+ */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const userId = request.headers.get("x-user-id");
   const userRole = request.headers.get("x-user-role");

@@ -7,6 +7,35 @@ async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, u
   return !error && data?.role === "admin";
 }
 
+/**
+ * @swagger
+ * /api/admin/learn/lessons/{id}:
+ *   get:
+ *     summary: Get lesson by ID
+ *     description: Fetch a single lesson with its embedded subject (id, title, slug). Admin-only (x-user-id from middleware must resolve to role "admin").
+ *     tags:
+ *       - Admin - Learn
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Lesson ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: The lesson (with embedded subject)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       403:
+ *         description: Unauthorized (missing user or non-admin role)
+ *       500:
+ *         description: Failed to fetch lesson (includes not-found)
+ */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
@@ -37,6 +66,68 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/learn/lessons/{id}:
+ *   put:
+ *     summary: Update lesson
+ *     description: Partially update a lesson. Only provided fields are applied (title/slug are trimmed, slug lowercased). Admin-only (x-user-id from middleware must resolve to role "admin").
+ *     tags:
+ *       - Admin - Learn
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Lesson ID
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               slug:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               content:
+ *                 type: object
+ *               content_markdown:
+ *                 type: string
+ *               quiz:
+ *                 type: object
+ *               anki_deck_ref:
+ *                 type: string
+ *               cover_image_url:
+ *                 type: string
+ *               sort_order:
+ *                 type: integer
+ *               estimated_minutes:
+ *                 type: integer
+ *               status:
+ *                 type: string
+ *               subject_id:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Updated lesson
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       403:
+ *         description: Unauthorized (missing user or non-admin role)
+ *       409:
+ *         description: A lesson with this slug already exists in this subject
+ *       500:
+ *         description: Failed to update lesson
+ */
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
@@ -100,6 +191,38 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/learn/lessons/{id}:
+ *   delete:
+ *     summary: Delete lesson
+ *     description: Delete a lesson by ID. Admin-only (x-user-id from middleware must resolve to role "admin").
+ *     tags:
+ *       - Admin - Learn
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Lesson ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Deletion succeeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       403:
+ *         description: Unauthorized (missing user or non-admin role)
+ *       500:
+ *         description: Failed to delete lesson
+ */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

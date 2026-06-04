@@ -3,6 +3,67 @@ import { NextRequest, NextResponse } from "next/server";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 
+/**
+ * @swagger
+ * /api/admin/questions/bulk-approve:
+ *   post:
+ *     summary: Bulk-approve questions
+ *     description: >
+ *       Approves multiple questions, transitioning each from `pending_review` to `published`,
+ *       recording a `question_reviews` "approved" action and notifying authors.
+ *       Each question must be `pending_review`; non-admins may only approve questions they are
+ *       assigned to review. Ineligible IDs are skipped and reported in `errors`.
+ *       Gated by middleware via `x-user-id`; admin/reviewer role enforced per-question.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - questionIds
+ *             properties:
+ *               questionIds:
+ *                 type: array
+ *                 items:
+ *                   type: string
+ *                 description: Non-empty array of question IDs to approve.
+ *     responses:
+ *       200:
+ *         description: Approval result
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 approved:
+ *                   type: integer
+ *                 failed:
+ *                   type: integer
+ *                 errors:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       id:
+ *                         type: string
+ *                       error:
+ *                         type: string
+ *       400:
+ *         description: questionIds missing/empty, or no eligible questions
+ *       401:
+ *         description: Unauthorized (missing user)
+ *       404:
+ *         description: No questions found for the given IDs
+ *       500:
+ *         description: Failed to fetch or update questions
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();

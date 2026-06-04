@@ -7,6 +7,36 @@ async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, u
   return !error && data?.role === "admin";
 }
 
+/**
+ * @swagger
+ * /api/admin/learn/lessons:
+ *   get:
+ *     summary: List lessons
+ *     description: List lessons ordered by sort_order, each joined with its parent subject (id, title, slug). Optionally filter by subject. Admin-only (x-user-id from middleware must resolve to a user with role "admin").
+ *     tags:
+ *       - Admin - Learn
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: subject_id
+ *         description: Filter lessons to a single subject
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Array of lessons (each with embedded subject)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       403:
+ *         description: Unauthorized (missing user or non-admin role)
+ *       500:
+ *         description: Failed to fetch lessons
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -41,6 +71,68 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/learn/lessons:
+ *   post:
+ *     summary: Create lesson
+ *     description: Create a new lesson under a subject. Requires subject_id, title, and slug (slug is lowercased). Admin-only (x-user-id from middleware must resolve to role "admin"). created_by is set to the caller.
+ *     tags:
+ *       - Admin - Learn
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - subject_id
+ *               - title
+ *               - slug
+ *             properties:
+ *               subject_id:
+ *                 type: string
+ *               title:
+ *                 type: string
+ *               slug:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               content:
+ *                 type: object
+ *               content_markdown:
+ *                 type: string
+ *               quiz:
+ *                 type: object
+ *               anki_deck_ref:
+ *                 type: string
+ *               cover_image_url:
+ *                 type: string
+ *               sort_order:
+ *                 type: integer
+ *               estimated_minutes:
+ *                 type: integer
+ *               status:
+ *                 type: string
+ *                 default: draft
+ *     responses:
+ *       201:
+ *         description: Lesson created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       400:
+ *         description: Missing required field (subject_id, title, or slug)
+ *       403:
+ *         description: Unauthorized (missing user or non-admin role)
+ *       409:
+ *         description: A lesson with this slug already exists in this subject
+ *       500:
+ *         description: Failed to create lesson
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();

@@ -2,6 +2,50 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
+/**
+ * @swagger
+ * /api/admin/interactive-sequences/delete:
+ *   post:
+ *     summary: Delete an interactive sequence
+ *     description: >-
+ *       Delete an interactive sequence by ID. Requires an authenticated user
+ *       (via the `x-user-id` header injected by middleware) whose `role` is `admin`.
+ *     tags:
+ *       - Admin - Interactive Sequences
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - id
+ *             properties:
+ *               id:
+ *                 type: string
+ *                 format: uuid
+ *                 description: ID of the sequence to delete
+ *     responses:
+ *       200:
+ *         description: Sequence deleted
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       400:
+ *         description: Sequence ID is required
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Administrator privileges required
+ *       500:
+ *         description: Deletion failed
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();

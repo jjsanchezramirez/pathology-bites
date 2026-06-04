@@ -1,6 +1,36 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 
+/**
+ * @swagger
+ * /api/user/learn/subjects:
+ *   get:
+ *     summary: List published learning subjects
+ *     description: Returns published learning subjects (each having at least one lesson), enriched with the authenticated user's per-subject lesson and completion counts. Requires the x-user-id header injected by middleware.
+ *     tags:
+ *       - User - Learn
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: category_id
+ *         description: Optional filter to subjects belonging to a specific category.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Array of subjects with lesson_count and completed_count for the user.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       401:
+ *         description: Missing x-user-id header.
+ *       500:
+ *         description: Failed to fetch subjects.
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();

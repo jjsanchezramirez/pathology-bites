@@ -7,6 +7,58 @@ async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, u
   return !error && data?.role === "admin";
 }
 
+/**
+ * @swagger
+ * /api/admin/learn/subjects/{id}:
+ *   put:
+ *     summary: Update learning subject
+ *     description: Partially update a learning subject. Only provided fields are applied (title/slug trimmed, slug lowercased). Admin-only (x-user-id from middleware must resolve to role "admin").
+ *     tags:
+ *       - Admin - Learn
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Subject ID
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               slug:
+ *                 type: string
+ *               category_id:
+ *                 type: string
+ *               cover_image_url:
+ *                 type: string
+ *               sort_order:
+ *                 type: integer
+ *               status:
+ *                 type: string
+ *     responses:
+ *       200:
+ *         description: Updated subject
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       403:
+ *         description: Unauthorized (missing user or non-admin role)
+ *       409:
+ *         description: A subject with this slug already exists
+ *       500:
+ *         description: Failed to update subject
+ */
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
@@ -52,6 +104,38 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/learn/subjects/{id}:
+ *   delete:
+ *     summary: Delete learning subject
+ *     description: Delete a learning subject by ID. Admin-only (x-user-id from middleware must resolve to role "admin").
+ *     tags:
+ *       - Admin - Learn
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Subject ID
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Deletion succeeded
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       403:
+ *         description: Unauthorized (missing user or non-admin role)
+ *       500:
+ *         description: Failed to delete subject
+ */
 export async function DELETE(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }

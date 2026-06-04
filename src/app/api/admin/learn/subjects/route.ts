@@ -7,6 +7,30 @@ async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, u
   return !error && data?.role === "admin";
 }
 
+/**
+ * @swagger
+ * /api/admin/learn/subjects:
+ *   get:
+ *     summary: List learning subjects
+ *     description: List learning subjects ordered by sort_order, each joined with its category (id, name, color, short_form) and a computed lesson_count. Admin-only (x-user-id from middleware must resolve to role "admin").
+ *     tags:
+ *       - Admin - Learn
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of subjects (each with embedded category and lesson_count)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *       403:
+ *         description: Unauthorized (missing user or non-admin role)
+ *       500:
+ *         description: Failed to fetch subjects
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -41,6 +65,58 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/admin/learn/subjects:
+ *   post:
+ *     summary: Create learning subject
+ *     description: Create a new learning subject. Requires title, slug (lowercased), and category_id. Admin-only (x-user-id from middleware must resolve to role "admin"). created_by is set to the caller.
+ *     tags:
+ *       - Admin - Learn
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - slug
+ *               - category_id
+ *             properties:
+ *               title:
+ *                 type: string
+ *               description:
+ *                 type: string
+ *               slug:
+ *                 type: string
+ *               category_id:
+ *                 type: string
+ *               cover_image_url:
+ *                 type: string
+ *               sort_order:
+ *                 type: integer
+ *               status:
+ *                 type: string
+ *                 default: draft
+ *     responses:
+ *       201:
+ *         description: Subject created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       400:
+ *         description: Missing required field (title, slug, or category_id)
+ *       403:
+ *         description: Unauthorized (missing user or non-admin role)
+ *       409:
+ *         description: A subject with this slug already exists
+ *       500:
+ *         description: Failed to create subject
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();

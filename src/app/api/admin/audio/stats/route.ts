@@ -9,6 +9,38 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 
 export const dynamic = "force-dynamic";
 
+/**
+ * @swagger
+ * /api/admin/audio/stats:
+ *   get:
+ *     summary: Get aggregate audio statistics
+ *     description: >
+ *       Returns aggregate audio stats (total count and total size in bytes) by proxying the
+ *       SECURITY DEFINER `get_audio_aggregate_stats` RPC through a service-role client. Gated to
+ *       admin role via the `x-user-role` header injected by middleware.
+ *     tags:
+ *       - Admin - Audio
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Aggregate audio statistics.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 total:
+ *                   type: integer
+ *                 totalSizeBytes:
+ *                   type: integer
+ *       401:
+ *         description: Missing user identity (no x-user-id header).
+ *       403:
+ *         description: Caller is not an admin.
+ *       500:
+ *         description: RPC failure fetching audio stats.
+ */
 export async function GET(request: NextRequest): Promise<NextResponse> {
   const userId = request.headers.get("x-user-id");
   const userRole = request.headers.get("x-user-role");

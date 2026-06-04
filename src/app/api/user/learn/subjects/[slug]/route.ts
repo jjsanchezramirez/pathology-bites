@@ -1,6 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 
+/**
+ * @swagger
+ * /api/user/learn/subjects/{slug}:
+ *   get:
+ *     summary: Get a published subject by slug with its lessons
+ *     description: Returns a single published learning subject identified by slug, including its published lessons sorted by sort_order, each annotated with the authenticated user's completion status (is_completed) and quiz_score. Requires the x-user-id header injected by middleware.
+ *     tags:
+ *       - User - Learn
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: slug
+ *         required: true
+ *         description: Slug of the learning subject.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Subject object with an embedded lessons array (including per-user progress).
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       401:
+ *         description: Missing x-user-id header.
+ *       404:
+ *         description: Subject not found or not published.
+ *       500:
+ *         description: Failed to fetch subject.
+ */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ slug: string }> }) {
   try {
     const supabase = await createClient();

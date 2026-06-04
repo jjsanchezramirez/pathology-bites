@@ -2,6 +2,47 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { TABLE_NAMES } from "@/shared/types/database";
 
+/**
+ * @swagger
+ * /api/user/study-plan/resources:
+ *   get:
+ *     summary: List board-prep resources
+ *     description: Returns the authenticated user's board-prep study resources (books, question banks, etc.), ordered by creation time. Requires authentication via the middleware-injected x-user-id header.
+ *     tags:
+ *       - User - Study Plan
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of resources
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   id:
+ *                     type: string
+ *                   name:
+ *                     type: string
+ *                   short_name:
+ *                     type: string
+ *                   type:
+ *                     type: string
+ *                   color:
+ *                     type: string
+ *                   subjects:
+ *                     type: array
+ *                   pace:
+ *                     type: number
+ *                   active:
+ *                     type: boolean
+ *       401:
+ *         description: Missing x-user-id (unauthorized)
+ *       500:
+ *         description: Failed to fetch resources
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -33,6 +74,59 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/user/study-plan/resources:
+ *   put:
+ *     summary: Replace board-prep resources
+ *     description: Replaces the authenticated user's entire resource set (deletes all existing rows, then inserts the provided list). Requires authentication via the middleware-injected x-user-id header. Per-resource fields fall back to defaults (color #DBEAFE, pace 10, active true) when omitted.
+ *     tags:
+ *       - User - Study Plan
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               resources:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     id:
+ *                       type: string
+ *                     name:
+ *                       type: string
+ *                     short_name:
+ *                       type: string
+ *                     type:
+ *                       type: string
+ *                     color:
+ *                       type: string
+ *                     subjects:
+ *                       type: array
+ *                     pace:
+ *                       type: number
+ *                     active:
+ *                       type: boolean
+ *     responses:
+ *       200:
+ *         description: Resources saved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       401:
+ *         description: Missing x-user-id (unauthorized)
+ *       500:
+ *         description: Failed to save resources
+ */
 export async function PUT(request: NextRequest) {
   try {
     const supabase = await createClient();

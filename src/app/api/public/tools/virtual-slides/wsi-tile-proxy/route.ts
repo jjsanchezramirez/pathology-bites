@@ -7,6 +7,43 @@ import { NextRequest } from "next/server";
 const ALLOWED =
   /^([a-z0-9-]+\.)*(hematopathologyetutorial\.com|virtualpathology\.leeds\.ac\.uk|tumourclassification\.iarc\.who\.int|stjudecloudslides\.blob\.core\.windows\.net|learn\.mghpathology\.org|rosai\.secondslide\.com|image\.upmc\.edu|wirtualnymikroskop\.mostwiedzy\.pl|slides\.learnhaem\.com)$/i;
 
+/**
+ * @swagger
+ * /api/public/tools/virtual-slides/wsi-tile-proxy:
+ *   get:
+ *     summary: Proxy a WSI tile with CORS headers
+ *     description: >
+ *       Fetches a single WSI tile image from an allow-listed upstream tile host server-side and
+ *       re-emits it with `Access-Control-Allow-Origin: *`, making DZI tiles (often served without
+ *       CORS) canvas-clean to enable WebGL rendering and screenshots. Upstream hosts are restricted
+ *       by an SSRF allowlist. The upstream fetch is bounded to an 8s timeout. Responses are cached
+ *       for 24h.
+ *     tags:
+ *       - Public - Tools
+ *     parameters:
+ *       - in: query
+ *         name: url
+ *         required: true
+ *         description: >
+ *           Absolute upstream tile URL (parsed manually so `+` in paths is preserved). Host must
+ *           match the WSI SSRF allowlist.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: The proxied tile image (content-type forwarded from upstream, defaults to image/jpeg).
+ *         content:
+ *           image/jpeg:
+ *             schema:
+ *               type: string
+ *               format: binary
+ *       400:
+ *         description: Missing, malformed, or unparseable url parameter.
+ *       403:
+ *         description: Host is not in the WSI SSRF allowlist.
+ *       502:
+ *         description: Upstream tile host unreachable, timed out, or returned a non-OK status.
+ */
 export async function GET(req: NextRequest) {
   // Parse the target manually so "+" in paths (e.g. Hemepath filenames) is NOT
   // turned into a space the way URLSearchParams would.

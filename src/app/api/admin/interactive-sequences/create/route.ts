@@ -2,6 +2,73 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
+/**
+ * @swagger
+ * /api/admin/interactive-sequences/create:
+ *   post:
+ *     summary: Create an interactive sequence
+ *     description: >-
+ *       Create a new interactive sequence record. Requires an authenticated user
+ *       (via the `x-user-id` header injected by middleware) whose `role` is `admin`.
+ *     tags:
+ *       - Admin - Interactive Sequences
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - title
+ *               - sequence_data
+ *             properties:
+ *               title:
+ *                 type: string
+ *                 description: Sequence title (required, non-empty)
+ *               description:
+ *                 type: string
+ *                 nullable: true
+ *               sequence_data:
+ *                 type: object
+ *                 description: ExplainerSequence object; must include `version` and a `segments` array
+ *                 properties:
+ *                   version:
+ *                     type: string
+ *                   segments:
+ *                     type: array
+ *                     items:
+ *                       type: object
+ *               category_id:
+ *                 type: string
+ *                 format: uuid
+ *                 nullable: true
+ *               status:
+ *                 type: string
+ *                 enum: [draft, published, archived]
+ *                 default: draft
+ *     responses:
+ *       200:
+ *         description: Sequence created
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 sequence:
+ *                   type: object
+ *       400:
+ *         description: Missing/invalid title or sequence_data
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Administrator privileges required
+ *       500:
+ *         description: Creation failed
+ */
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();

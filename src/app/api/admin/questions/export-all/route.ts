@@ -7,6 +7,46 @@ function createAdminClient() {
   return createSupabaseClient(supabaseUrl, supabaseServiceKey);
 }
 
+/**
+ * @swagger
+ * /api/admin/questions/export-all:
+ *   get:
+ *     summary: Export all questions
+ *     description: >
+ *       Returns every question with its options, images, tags, question set, and category as JSON,
+ *       along with a count and export timestamp.
+ *       Gated by middleware via `x-user-id`; requires an `admin`, `creator`, or `reviewer` role
+ *       (`x-user-role`). Data is read through a service-role Supabase client.
+ *     tags:
+ *       - Admin - Questions
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: All questions exported
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 data:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 count:
+ *                   type: integer
+ *                 exported_at:
+ *                   type: string
+ *                   format: date-time
+ *       401:
+ *         description: Unauthorized (missing user)
+ *       403:
+ *         description: Forbidden (insufficient role)
+ *       500:
+ *         description: Failed to export questions
+ */
 export async function GET(request: NextRequest) {
   try {
     const userId = request.headers.get("x-user-id");

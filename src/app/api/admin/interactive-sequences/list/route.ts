@@ -2,6 +2,58 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 
+/**
+ * @swagger
+ * /api/admin/interactive-sequences/list:
+ *   get:
+ *     summary: List interactive sequences
+ *     description: >-
+ *       List interactive sequences ordered by creation date (newest first), with
+ *       optional filtering. Requires an authenticated user (via the `x-user-id`
+ *       header injected by middleware) whose `role` is `admin`.
+ *     tags:
+ *       - Admin - Interactive Sequences
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: category_id
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *         description: Filter by category ID
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [draft, published, archived]
+ *         description: Filter by status (other values ignored)
+ *       - in: query
+ *         name: search
+ *         schema:
+ *           type: string
+ *         description: Full-text search against the sequence search_vector
+ *     responses:
+ *       200:
+ *         description: Sequences retrieved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 sequences:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *       401:
+ *         description: Authentication required
+ *       403:
+ *         description: Administrator privileges required
+ *       500:
+ *         description: Fetch failed
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();

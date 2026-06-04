@@ -2,6 +2,59 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { TABLE_NAMES } from "@/shared/types/database";
 
+/**
+ * @swagger
+ * /api/user/study-plan/schedule:
+ *   get:
+ *     summary: Get board-prep schedule
+ *     description: Returns the authenticated user's full board-prep schedule (per-day study tasks), ordered by date then idx. Requires authentication via the middleware-injected x-user-id header.
+ *     tags:
+ *       - User - Study Plan
+ *     security:
+ *       - BearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Array of scheduled tasks
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 type: object
+ *                 properties:
+ *                   task_id:
+ *                     type: string
+ *                   date:
+ *                     type: string
+ *                   idx:
+ *                     type: integer
+ *                   resource_id:
+ *                     type: string
+ *                   resource_name:
+ *                     type: string
+ *                   resource_type:
+ *                     type: string
+ *                   subject_id:
+ *                     type: string
+ *                   subject:
+ *                     type: string
+ *                   activity:
+ *                     type: string
+ *                   minutes:
+ *                     type: number
+ *                   task_type:
+ *                     type: string
+ *                   is_review:
+ *                     type: boolean
+ *                   content_units:
+ *                     type: number
+ *                   content_label:
+ *                     type: string
+ *       401:
+ *         description: Missing x-user-id (unauthorized)
+ *       500:
+ *         description: Failed to fetch schedule
+ */
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
@@ -40,6 +93,71 @@ export async function GET(request: NextRequest) {
   }
 }
 
+/**
+ * @swagger
+ * /api/user/study-plan/schedule:
+ *   put:
+ *     summary: Replace board-prep schedule
+ *     description: Replaces the authenticated user's entire schedule (deletes all existing rows, then inserts the provided tasks in batches of 500). Requires authentication via the middleware-injected x-user-id header. Omitted per-task fields fall back to defaults.
+ *     tags:
+ *       - User - Study Plan
+ *     security:
+ *       - BearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               tasks:
+ *                 type: array
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     task_id:
+ *                       type: string
+ *                     date:
+ *                       type: string
+ *                     idx:
+ *                       type: integer
+ *                     resource_id:
+ *                       type: string
+ *                     resource_name:
+ *                       type: string
+ *                     resource_type:
+ *                       type: string
+ *                     subject_id:
+ *                       type: string
+ *                     subject:
+ *                       type: string
+ *                     activity:
+ *                       type: string
+ *                     minutes:
+ *                       type: number
+ *                     task_type:
+ *                       type: string
+ *                     is_review:
+ *                       type: boolean
+ *                     content_units:
+ *                       type: number
+ *                     content_label:
+ *                       type: string
+ *     responses:
+ *       200:
+ *         description: Schedule saved
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *       401:
+ *         description: Missing x-user-id (unauthorized)
+ *       500:
+ *         description: Failed to save schedule
+ */
 export async function PUT(request: NextRequest) {
   try {
     const supabase = await createClient();

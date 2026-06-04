@@ -1,6 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 
+/**
+ * @swagger
+ * /api/user/learn/lessons/{id}:
+ *   get:
+ *     summary: Get a published lesson by id
+ *     description: Returns a single published lesson (within a published subject) along with the authenticated user's progress and the prev/next sibling lessons in the same subject. As a side effect, upserts the user's lesson progress to record last_accessed_at. Requires the x-user-id header injected by middleware.
+ *     tags:
+ *       - User - Learn
+ *     security:
+ *       - BearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: ID of the lesson.
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Lesson object with embedded subject, user progress, and prev_lesson/next_lesson navigation.
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *       401:
+ *         description: Missing x-user-id header.
+ *       404:
+ *         description: Lesson not found, not published, or its subject is not published.
+ *       500:
+ *         description: Failed to fetch lesson.
+ */
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
