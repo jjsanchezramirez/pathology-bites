@@ -147,6 +147,51 @@ async function resolveLearnhaem(dziUrl: string): Promise<WsiTileSourceResult> {
   return parseDzi(dziUrl, tiles);
 }
 
+// KiKoXP (kikoxp.com) dynamic tiler. slides.kikoxp.com lazily tiles each slide on demand: a cold
+// slide's .dzi 404s ("Slide not available") until a GET to "<dzi-url>.status" triggers tiling. The
+// status endpoint transitions "Starting to Fetch Slide" → "Fetching Slide..." → "Slide Active", at
+// which point the .dzi + tiles return 200 (~2s). Public — no auth/cookies/CSRF needed. We poll
+// .status (cheap JSON) rather than hammering the .dzi, exiting on "Slide Active".
+// NOTE: capability only — KiKoXP is intentionally NOT in the live virtual-slides corpus (crowd-
+// sourced, per-contributor rights / consent unclear). This resolver stays dormant unless a KiKoXP
+// slide URL is explicitly passed in (e.g. the /debug/kikoxp-viewer dev page).
+async function warmKikoxpSlide(dziUrl: string): Promise<void> {
+  for (let i = 0; i < 10; i++) {
+    let msg = "";
+    try {
+      const r = await fetch(`${dziUrl}.status`, {
+        headers: { "User-Agent": UA, Accept: "application/json" },
+        signal: AbortSignal.timeout(8000),
+      });
+      msg = ((await r.json().catch(() => null)) as { message?: string } | null)?.message ?? "";
+    } catch {
+      /* network blip — retry */
+    }
+    if (msg === "Slide Active") return;
+    await new Promise((res) => setTimeout(res, 700));
+  }
+  // Fall through even if unconfirmed: parseDzi surfaces a clear error if the slide is still cold.
+}
+
+// KiKoXP: the slideUrl IS the DZI. Two hosts: the objektyv-production S3 bucket (static, always
+// available) and slides.kikoxp.com (dynamic — warm via .status first). Tiles sit at
+// "<dzi - .dzi>_files/" (standard DZI), same as LearnHaem.
+async function resolveKikoxp(slideUrl: string): Promise<WsiTileSourceResult> {
+  const u = new URL(slideUrl);
+  let dziUrl = slideUrl;
+  // Normalize path-style S3 → virtual-hosted so the tile-proxy SSRF allowlist can stay
+  // bucket-scoped (objektyv-production.s3.amazonaws.com) instead of blanket-allowing s3.amazonaws.com.
+  if (u.hostname === "s3.amazonaws.com" && u.pathname.startsWith("/objektyv-production/")) {
+    dziUrl = `https://objektyv-production.s3.amazonaws.com${u.pathname.slice(
+      "/objektyv-production".length
+    )}`;
+  }
+  if (new URL(dziUrl).hostname === "slides.kikoxp.com") {
+    await warmKikoxpSlide(dziUrl);
+  }
+  return parseDzi(dziUrl, dziUrl.replace(/\.dzi$/, "_files/"));
+}
+
 // WHO/IARC: static DZI keyed by ?fid=, at /static/dzi/<fid>.dzi
 async function resolveWho(slideUrl: string): Promise<WsiTileSourceResult> {
   const u = new URL(slideUrl);
@@ -322,6 +367,14 @@ export async function resolveTileSource(
     if (host.includes("neuro2.pathology.pitt.edu")) return await resolveAanp(slideUrl);
     if (host.includes("wirtualnymikroskop.mostwiedzy.pl")) return await resolveWirtualny(slideUrl);
     if (host.includes("slides.learnhaem.com")) return await resolveLearnhaem(slideUrl);
+    // KiKoXP — capability only; not in the live corpus (see resolveKikoxp note).
+    if (host === "slides.kikoxp.com" || host === "objektyv-production.s3.amazonaws.com")
+      return await resolveKikoxp(slideUrl);
+    if (
+      host === "s3.amazonaws.com" &&
+      new URL(slideUrl).pathname.startsWith("/objektyv-production/")
+    )
+      return await resolveKikoxp(slideUrl);
     return { kind: "unsupported", reason: `No self-hosted tile-source resolver for ${host}` };
   } catch (e) {
     return { kind: "unsupported", reason: e instanceof Error ? e.message : "resolver error" };
