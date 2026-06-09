@@ -993,7 +993,7 @@ type FakeSelection = {
   granularity: Granularity;
 };
 
-// Sub-ranges of `range` covering only text that is NOT inside a [data-fake-selection-skip]
+// Sub-ranges of `range` covering only text that is NOT inside a [data-no-highlight]
 // element (each clamped to the range bounds). This is what lets a selection span an answer
 // option's diagnosis while excluding chrome like the option letter ("C") or icons — otherwise
 // selecting option C's "Colonic adenocarcinoma" would query "CColonic adenocarcinoma".
@@ -1011,7 +1011,7 @@ function selectableSegments(range: Range): Range[] {
         if (!n.textContent) return NodeFilter.FILTER_REJECT;
         if (!range.intersectsNode(n)) return NodeFilter.FILTER_REJECT;
         const el = (n as Text).parentElement;
-        if (el && el.closest(SKIP_SELECTOR)) return NodeFilter.FILTER_REJECT;
+        if (el && el.closest(NO_HIGHLIGHT_SELECTOR)) return NodeFilter.FILTER_REJECT;
         return NodeFilter.FILTER_ACCEPT;
       },
     }
@@ -1032,7 +1032,7 @@ function selectableSegments(range: Range): Range[] {
   return segs.length ? segs : [range.cloneRange()];
 }
 
-// Selected text with [data-fake-selection-skip] chrome (option letters, icons) removed.
+// Selected text with [data-no-highlight] chrome (option letters, icons) removed.
 function rangeCleanText(range: Range): string {
   return selectableSegments(range)
     .map((r) => r.toString())
@@ -1251,10 +1251,10 @@ type DragState = {
 // Used by callers that nest interactive widgets (answer buttons, etc.) inside
 // the selection surface — without this, the wrapper hijacks right-click for its
 // context menu, breaking strike-out toggles and other inner UX.
-const SKIP_SELECTOR = "[data-fake-selection-skip]";
+const NO_HIGHLIGHT_SELECTOR = "[data-no-highlight]";
 
 function targetMatchesSkip(target: EventTarget | null): boolean {
-  return !!(target as HTMLElement | null)?.closest?.(SKIP_SELECTOR);
+  return !!(target as HTMLElement | null)?.closest?.(NO_HIGHLIGHT_SELECTOR);
 }
 
 // Touch devices: the custom pointer-driven selection (long-press, drag, caret-from-point)

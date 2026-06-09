@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { ImageCarousel } from "@/shared/components/media/image-carousel";
 import { ReferencesList } from "@/shared/components/common/references-list";
 import { FakeSelectionHighlight } from "@/shared/components/common/fake-selection-highlight";
+import { QuestionMarkdown } from "@/shared/components/common/question-markdown";
 import { SlideViewerModal } from "@/shared/components/common/slide-viewer-modal";
 import { useAllVirtualSlides } from "@/shared/hooks/use-client-virtual-slides";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
@@ -177,10 +178,16 @@ export function QuizQuestionDisplay({
             </div>
           )}
 
-          {/* Question Stem — own selection container so a drag stays within the stem. */}
-          <FakeSelectionHighlight allSlides={allSlides} onViewSlide={setViewerSlide}>
+          {/* Question Stem — own selection container so a drag stays within the stem.
+              Keyed by question.id so per-question highlights/selection reset on navigation
+              instead of bleeding onto the next question's text. */}
+          <FakeSelectionHighlight
+            key={`fsh-stem-${question.id}`}
+            allSlides={allSlides}
+            onViewSlide={setViewerSlide}
+          >
             <div>
-              <p className="text-muted-foreground">{question.stem}</p>
+              <QuestionMarkdown className="text-muted-foreground">{question.stem}</QuestionMarkdown>
             </div>
           </FakeSelectionHighlight>
 
@@ -197,7 +204,11 @@ export function QuizQuestionDisplay({
 
           {/* Answer Options — own selection container: drag stays within options, selecting
                 one highlights only its text (not the box), never the stem/explanation/WSI. */}
-          <FakeSelectionHighlight allSlides={allSlides} onViewSlide={setViewerSlide}>
+          <FakeSelectionHighlight
+            key={`fsh-options-${question.id}`}
+            allSlides={allSlides}
+            onViewSlide={setViewerSlide}
+          >
             <div className="grid gap-2" role="listbox" aria-label="Answer options">
               {answerOptions?.map((option, index) => {
                 const isSelected = selectedAnswerId === option.id;
@@ -245,7 +256,7 @@ export function QuizQuestionDisplay({
                     // via handleClick's guard, and a real disabled button blocks text selection,
                     // so this keeps the option's diagnosis selectable for look-up in review.
                     aria-disabled={showExplanation}
-                    {...(showExplanation ? {} : { "data-fake-selection-skip": "" })}
+                    {...(showExplanation ? {} : { "data-no-highlight": "" })}
                     className={`
                   w-full p-3 text-left border rounded-lg transition-colors ${showExplanation ? "" : "select-none"}
                   ${isSelected && !showExplanation ? "border-blue-500 bg-blue-500/10" : "border-gray-200"}
@@ -261,7 +272,7 @@ export function QuizQuestionDisplay({
                         className={`flex items-center gap-3 flex-1 min-w-0 ${showStrikeForOption ? "opacity-50 line-through" : ""}`}
                       >
                         <span
-                          data-fake-selection-skip=""
+                          data-no-highlight=""
                           className={`
                       flex-shrink-0 w-6 h-6 rounded-full border flex items-center justify-center text-xs font-medium no-underline
                       ${isSelected && !showExplanation ? "border-blue-500 bg-blue-500 text-white" : "border-gray-300"}
@@ -271,7 +282,9 @@ export function QuizQuestionDisplay({
                         >
                           {optionLabel}
                         </span>
-                        <span className="flex-1">{option.text}</span>
+                        <span className="flex-1">
+                          <QuestionMarkdown inline>{option.text}</QuestionMarkdown>
+                        </span>
                       </div>
                       {showCorrect && <Check className="w-4 h-4 text-green-600 flex-shrink-0" />}
                       {showIncorrect && <X className="w-4 h-4 text-red-600 flex-shrink-0" />}
@@ -279,7 +292,7 @@ export function QuizQuestionDisplay({
                         <span
                           role="button"
                           tabIndex={0}
-                          data-fake-selection-skip=""
+                          data-no-highlight=""
                           aria-label={isStruck ? "Remove strike from option" : "Strike out option"}
                           aria-pressed={isStruck}
                           title={
@@ -317,6 +330,7 @@ export function QuizQuestionDisplay({
           {showExplanation && (
             <div className="p-4 rounded-lg bg-muted/50 text-sm">
               <FakeSelectionHighlight
+                key={`fsh-expl-${question.id}`}
                 allSlides={allSlides}
                 onViewSlide={setViewerSlide}
                 className="space-y-4"
@@ -326,9 +340,17 @@ export function QuizQuestionDisplay({
                   <div>
                     <h4 className="font-medium text-xs uppercase mb-2">Teaching Point</h4>
                     {teachingPointRenderer ? (
-                      teachingPointRenderer(question.teaching_point)
+                      // A custom renderer injects interactive widgets (markdown editor, Anki
+                      // embeds, explainer player, Ask-AI). They must opt out of the fake-selection
+                      // surface above — it sets userSelect:none and hijacks pointer/contextmenu,
+                      // so without this every click/scrub/keystroke is swallowed (this is what
+                      // broke the Explanation Playground). Plain-text teaching points have no
+                      // interactive children, so they stay inside the selectable surface.
+                      <div data-no-highlight>{teachingPointRenderer(question.teaching_point)}</div>
                     ) : (
-                      <div className="text-muted-foreground">{question.teaching_point}</div>
+                      <QuestionMarkdown className="text-muted-foreground">
+                        {question.teaching_point}
+                      </QuestionMarkdown>
                     )}
                   </div>
                 )}
@@ -351,7 +373,9 @@ export function QuizQuestionDisplay({
                               )}
                               .
                             </span>
-                            <span>{option.explanation}</span>
+                            <span>
+                              <QuestionMarkdown inline>{option.explanation}</QuestionMarkdown>
+                            </span>
                           </div>
                         ))}
                     </div>
@@ -362,7 +386,7 @@ export function QuizQuestionDisplay({
                 {explanationImages.length > 0 && (
                   <div>
                     <h4 className="font-medium text-xs uppercase mb-2">Reference Images</h4>
-                    <div data-fake-selection-skip>
+                    <div data-no-highlight>
                       <ImageCarousel
                         images={explanationImages}
                         className="bg-white border rounded-lg"
@@ -383,7 +407,7 @@ export function QuizQuestionDisplay({
           {/* Feature hint — highlight any term to look it up / open an example slide. Hidden on
               touch devices, where the highlight/selection feature is disabled (see
               FakeSelectionHighlight's coarse-pointer gate). */}
-          <div data-fake-selection-skip className="flex justify-center pt-1 pointer-coarse:hidden">
+          <div data-no-highlight className="flex justify-center pt-1 pointer-coarse:hidden">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-gradient-to-r from-primary/15 to-primary/5 px-3.5 py-1.5 text-xs text-primary shadow-sm">
               <Highlighter className="h-4 w-4 shrink-0" />
               <span>
