@@ -5,6 +5,10 @@ import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { useClientVirtualSlides } from "@/shared/hooks/use-client-virtual-slides";
+import {
+  useVirtualSlideCount,
+  formatSlideCountApprox,
+} from "@/shared/hooks/use-virtual-slide-count";
 import { rankSlidesWithExpansion } from "@/shared/utils/domain/virtual-slide-search";
 import { isViewerSupported } from "@/shared/utils/domain/repository";
 import { SlideViewerModal } from "@/shared/components/common/slide-viewer-modal";
@@ -47,6 +51,11 @@ export function VirtualSlideSearchTeaser() {
   const searchClient = useClientVirtualSlides(1);
   const isDataReady = !!searchClient.allSlides && searchClient.allSlides.length > 0;
   const [viewerSlide, setViewerSlide] = useState<VirtualSlide | null>(null);
+
+  // Live slide count from the corpus manifest (auto-updates with each rebuild). Falls
+  // back to a floored figure until the tiny manifest resolves.
+  const slideCount = useVirtualSlideCount();
+  const slideCountLabel = slideCount ? formatSlideCountApprox(slideCount) : "65,000+";
 
   // Open a slide in the in-house viewer when its repo is renderable; otherwise fall back to the
   // source site (login-walled / non-embeddable repos) so the homepage buttons never dead-end.
@@ -143,7 +152,7 @@ export function VirtualSlideSearchTeaser() {
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search 65,000+ virtual slides..."
+            placeholder={`Search ${slideCountLabel} virtual slides...`}
             className="w-full pl-14 pr-28 py-5 rounded-xl border-2 border-input bg-background/50 backdrop-blur-sm text-base sm:text-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-primary transition-all hover:bg-background shadow-lg hover:shadow-xl"
           />
           <Button
