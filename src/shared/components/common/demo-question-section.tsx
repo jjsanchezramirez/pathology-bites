@@ -1,4 +1,17 @@
-import DemoQuestion from "@/shared/components/common/demo-question";
+"use client";
+
+import dynamic from "next/dynamic";
+
+// DemoQuestion is the homepage's heaviest interactive widget — 8 hooks + ImageCarousel +
+// Lottie + a client-side fetch to /api/public/demo-questions. It sits well below the fold
+// and renders nothing real server-side (its question is fetched on mount), so we code-split
+// it into its own chunk and hydrate it AFTER the page. That keeps it out of the single
+// up-front React hydration pass that dominates homepage TBT. The min-height placeholder
+// reserves space so a late mount can't shift layout (CLS stays 0).
+const DemoQuestion = dynamic(() => import("@/shared/components/common/demo-question"), {
+  ssr: false,
+  loading: () => <div className="min-h-[600px]" aria-hidden />,
+});
 
 export function DemoQuestionSection() {
   return (

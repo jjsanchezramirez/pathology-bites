@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
@@ -48,36 +48,17 @@ export function VirtualSlideSearchTeaser() {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
-  // The slides corpus is ~2 MB brotli / ~27 MB decompressed and only powers the two
-  // buttons below — so we keep it OFF the initial-load critical path (loading it eagerly
-  // was tanking homepage LCP/TBT). `slidesEnabled` gates the fetch: it flips true once the
-  // browser goes idle after first paint, or on first hero interaction, whichever lands
-  // first. Buttons stay clickable meanwhile; a cold click awaits the corpus directly.
+  // The slides corpus is ~2 MB brotli / ~27 MB decompressed and only powers the two buttons
+  // below, so it stays OFF the initial-load path entirely. (Eager load tanked LCP; an idle
+  // `requestIdleCallback` prefetch then tanked TBT — it parsed/indexed 66k slides inside the
+  // Lighthouse window for every visitor, even passive ones.) `slidesEnabled` now flips true
+  // only on the FIRST hero interaction — hover / focus / tap, via the form's onPointerEnter
+  // + onFocus — so the corpus downloads solely for visitors who actually reach for search.
+  // A cold button click awaits the corpus directly through ensureSlides().
   const [slidesEnabled, setSlidesEnabled] = useState(false);
   const allSlides = useAllVirtualSlides(slidesEnabled);
   const [pendingAction, setPendingAction] = useState<"random" | "lucky" | null>(null);
   const [viewerSlide, setViewerSlide] = useState<VirtualSlide | null>(null);
-
-  // Warm the corpus once the browser is idle after first paint (falls back to a short
-  // timer where requestIdleCallback is unavailable). Cancelled if an interaction enables
-  // it first.
-  useEffect(() => {
-    if (slidesEnabled) return;
-    let cancelled = false;
-    const enable = () => {
-      if (!cancelled) setSlidesEnabled(true);
-    };
-    const w = window as Window & typeof globalThis;
-    const id =
-      typeof w.requestIdleCallback === "function"
-        ? w.requestIdleCallback(enable, { timeout: 2500 })
-        : w.setTimeout(enable, 1500);
-    return () => {
-      cancelled = true;
-      if (typeof w.cancelIdleCallback === "function") w.cancelIdleCallback(id as number);
-      else w.clearTimeout(id as number);
-    };
-  }, [slidesEnabled]);
 
   // Live slide count from the corpus manifest (auto-updates with each rebuild). Falls
   // back to a floored figure until the tiny manifest resolves.
