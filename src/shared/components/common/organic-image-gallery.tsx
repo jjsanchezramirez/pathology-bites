@@ -107,6 +107,7 @@ const HERO_IMAGES: GalleryImage[] = [
 
 export function OrganicImageGallery({ className = "" }: OrganicImageGalleryProps) {
   const [mounted, setMounted] = useState(false);
+  const [isLargeScreen, setIsLargeScreen] = useState(false);
   const [displayImages, setDisplayImages] = useState<DisplayImage[]>([]);
   const displayImagesRef = useRef<DisplayImage[]>([]);
 
@@ -163,9 +164,27 @@ export function OrganicImageGallery({ className = "" }: OrganicImageGalleryProps
     }));
   };
 
-  // Initialize gallery - no API calls, uses hardcoded images
+  // Mounted flag + viewport tracking. The gallery lives in a `hidden lg:block` column,
+  // so below the lg breakpoint it's display:none — building it there just downloads an
+  // eager hero AVIF nobody sees. Track the breakpoint so images only ever mount on lg+
+  // (and (re)build if the viewport later crosses into it).
   useEffect(() => {
     setMounted(true);
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const update = () => setIsLargeScreen(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
+
+  // Initialize + cycle the gallery — only while on a large screen. No API calls; uses
+  // the hardcoded HERO_IMAGES.
+  useEffect(() => {
+    if (!isLargeScreen) {
+      setDisplayImages([]);
+      displayImagesRef.current = [];
+      return;
+    }
     if (HERO_IMAGES.length < MIN_IMAGES) return;
 
     const timers: NodeJS.Timeout[] = [];
@@ -221,10 +240,12 @@ export function OrganicImageGallery({ className = "" }: OrganicImageGalleryProps
       timers.forEach((timer) => clearTimeout(timer));
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [isLargeScreen]);
 
-  // Don't render images until mounted on client to avoid hydration mismatch from Math.random()
-  if (!mounted) {
+  // Don't render until mounted on client (avoids hydration mismatch from Math.random()),
+  // and never render below lg — the column is display:none there, so skipping it keeps the
+  // eager hero AVIF off mobile entirely.
+  if (!mounted || !isLargeScreen) {
     return <div className={`relative w-full h-full ${className}`} />;
   }
 

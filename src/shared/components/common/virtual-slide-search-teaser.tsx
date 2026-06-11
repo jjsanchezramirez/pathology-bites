@@ -1,10 +1,13 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Search } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { useClientVirtualSlides } from "@/shared/hooks/use-client-virtual-slides";
+import {
+  useAllVirtualSlides,
+  loadAllVirtualSlides,
+} from "@/shared/hooks/use-client-virtual-slides";
 import {
   useVirtualSlideCount,
   formatSlideCountApprox,
@@ -45,12 +48,36 @@ export function VirtualSlideSearchTeaser() {
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
 
-  // Single source of truth for the slides dataset. The hook itself fetches
-  // and decompresses the 750 KiB brotli JSON exactly once per session — both
-  // homepage buttons read from `allSlides`, no separate prefetch needed.
-  const searchClient = useClientVirtualSlides(1);
-  const isDataReady = !!searchClient.allSlides && searchClient.allSlides.length > 0;
+  // The slides corpus is ~2 MB brotli / ~27 MB decompressed and only powers the two
+  // buttons below — so we keep it OFF the initial-load critical path (loading it eagerly
+  // was tanking homepage LCP/TBT). `slidesEnabled` gates the fetch: it flips true once the
+  // browser goes idle after first paint, or on first hero interaction, whichever lands
+  // first. Buttons stay clickable meanwhile; a cold click awaits the corpus directly.
+  const [slidesEnabled, setSlidesEnabled] = useState(false);
+  const allSlides = useAllVirtualSlides(slidesEnabled);
+  const [pendingAction, setPendingAction] = useState<"random" | "lucky" | null>(null);
   const [viewerSlide, setViewerSlide] = useState<VirtualSlide | null>(null);
+
+  // Warm the corpus once the browser is idle after first paint (falls back to a short
+  // timer where requestIdleCallback is unavailable). Cancelled if an interaction enables
+  // it first.
+  useEffect(() => {
+    if (slidesEnabled) return;
+    let cancelled = false;
+    const enable = () => {
+      if (!cancelled) setSlidesEnabled(true);
+    };
+    const w = window as Window & typeof globalThis;
+    const id =
+      typeof w.requestIdleCallback === "function"
+        ? w.requestIdleCallback(enable, { timeout: 2500 })
+        : w.setTimeout(enable, 1500);
+    return () => {
+      cancelled = true;
+      if (typeof w.cancelIdleCallback === "function") w.cancelIdleCallback(id as number);
+      else w.clearTimeout(id as number);
+    };
+  }, [slidesEnabled]);
 
   // Live slide count from the corpus manifest (auto-updates with each rebuild). Falls
   // back to a floored figure until the tiny manifest resolves.
@@ -69,6 +96,19 @@ export function VirtualSlideSearchTeaser() {
     else router.push(`/tools/virtual-slides?search=${encodeURIComponent(slide.diagnosis || "")}`);
   };
 
+  // Return the corpus, loading it on demand if a cold click beat the idle prefetch.
+  // Marks the clicked button as pending only while a real fetch is in flight (warm
+  // clicks resolve synchronously and never flash "Loading…").
+  const ensureSlides = async (action: "random" | "lucky"): Promise<VirtualSlide[] | null> => {
+    if (allSlides && allSlides.length > 0) return allSlides;
+    setPendingAction(action);
+    try {
+      return await loadAllVirtualSlides();
+    } catch {
+      return null;
+    }
+  };
+
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
@@ -81,10 +121,19 @@ export function VirtualSlideSearchTeaser() {
   const handleFeelingLucky = async (e?: React.MouseEvent) => {
     e?.preventDefault();
     const query = searchQuery.trim();
-    const all = searchClient.allSlides;
-    if (!query || !all || all.length === 0) return;
+    if (!query) return;
+    setSlidesEnabled(true);
 
     try {
+      const all = await ensureSlides("lucky");
+      if (!all || all.length === 0) {
+        window.open(
+          `/tools/virtual-slides?search=${encodeURIComponent(query)}`,
+          "_blank",
+          "noopener,noreferrer"
+        );
+        return;
+      }
       // Call the search engine directly instead of routing through the hook's
       // setState-driven `searchWithFilters` API. The hook returns a snapshot
       // of `slides` captured at the render the click handler closed over, so
@@ -118,34 +167,46 @@ export function VirtualSlideSearchTeaser() {
         "_blank",
         "noopener,noreferrer"
       );
+    } finally {
+      setPendingAction(null);
     }
   };
 
-  const handleRandomSlide = (e?: React.MouseEvent) => {
+  const handleRandomSlide = async (e?: React.MouseEvent) => {
     e?.preventDefault();
-    const all = searchClient.allSlides;
-    if (!all || all.length === 0) return;
+    setSlidesEnabled(true);
+    try {
+      const all = await ensureSlides("random");
+      if (!all || all.length === 0) return;
 
-    const candidates: VirtualSlide[] = [];
-    for (const slide of all) {
-      if (!isOpenRepo(slide.id)) continue;
-      if (pickViewerUrl(slide)) candidates.push(slide);
+      const candidates: VirtualSlide[] = [];
+      for (const slide of all) {
+        if (!isOpenRepo(slide.id)) continue;
+        if (pickViewerUrl(slide)) candidates.push(slide);
+      }
+
+      if (candidates.length === 0) {
+        console.warn("[Random Slide] No valid WSI viewer URLs found in open repos");
+        return;
+      }
+
+      // Prefer a viewer-renderable slide so Random Slide opens in the in-house viewer.
+      const supported = candidates.filter((s) => isViewerSupported(s.repository));
+      const pool = supported.length > 0 ? supported : candidates;
+      openSlide(pool[Math.floor(Math.random() * pool.length)]);
+    } finally {
+      setPendingAction(null);
     }
-
-    if (candidates.length === 0) {
-      console.warn("[Random Slide] No valid WSI viewer URLs found in open repos");
-      return;
-    }
-
-    // Prefer a viewer-renderable slide so Random Slide opens in the in-house viewer.
-    const supported = candidates.filter((s) => isViewerSupported(s.repository));
-    const pool = supported.length > 0 ? supported : candidates;
-    openSlide(pool[Math.floor(Math.random() * pool.length)]);
   };
 
   return (
     <div className="max-w-2xl mx-auto lg:mx-0">
-      <form onSubmit={handleSearch} className="space-y-4">
+      <form
+        onSubmit={handleSearch}
+        onPointerEnter={() => setSlidesEnabled(true)}
+        onFocus={() => setSlidesEnabled(true)}
+        className="space-y-4"
+      >
         <div className="relative">
           <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 h-6 w-6 text-muted-foreground" />
           <input
@@ -171,20 +232,20 @@ export function VirtualSlideSearchTeaser() {
             variant="secondary"
             size="lg"
             onClick={handleRandomSlide}
-            disabled={!isDataReady}
+            disabled={pendingAction === "random"}
             className="px-6 transition-all hover:scale-105 hover:shadow-md"
           >
-            {isDataReady ? "Visit Random Slide" : "Loading..."}
+            {pendingAction === "random" ? "Loading..." : "Visit Random Slide"}
           </Button>
           <Button
             type="button"
             variant="secondary"
             size="lg"
             onClick={handleFeelingLucky}
-            disabled={!isDataReady || !searchQuery.trim()}
+            disabled={pendingAction === "lucky" || !searchQuery.trim()}
             className="px-6 transition-all hover:scale-105 hover:shadow-md"
           >
-            {isDataReady ? "I'm Feeling Lucky" : "Loading..."}
+            {pendingAction === "lucky" ? "Loading..." : "I'm Feeling Lucky"}
           </Button>
         </div>
       </form>
