@@ -417,6 +417,13 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
   return cachedSlidesPromise;
 }
 
+// On-demand corpus loader for click handlers that must `await` the dataset when it
+// hasn't been warmed yet (e.g. the homepage hero buttons clicked before the idle
+// prefetch lands). Shares the module + HTTP cache with the hooks — no extra fetch.
+export function loadAllVirtualSlides(): Promise<VirtualSlide[]> {
+  return loadClientSlides();
+}
+
 export interface ClientSearchOptions {
   query?: string;
   repository?: string;
@@ -680,10 +687,9 @@ export function useClientVirtualSlides(defaultLimit: number = 20) {
   return {
     // Data
     slides: pageSlides,
-    // Full processed dataset — exposed so consumers (e.g. the hero teaser's
-    // "Random Slide" picker) can sample directly instead of running their own
-    // copy of the fetch, which used to triple-count the 750 KiB dataset in
-    // Lighthouse.
+    // Full processed dataset — exposed so consumers (e.g. the search page) can
+    // sample directly instead of running their own copy of the fetch, which used
+    // to multi-count the (now ~2 MB brotli) dataset in Lighthouse.
     allSlides,
     isLoading: isLoading || isSearching, // Combine loading states for UI
     error,

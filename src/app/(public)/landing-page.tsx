@@ -9,10 +9,10 @@ import { DemoQuestionSection } from "@/shared/components/common/demo-question-se
 import { FinalCTASection } from "@/shared/components/common/final-cta-section";
 import { ScrollReveal } from "@/shared/components/common/scroll-reveal";
 
-// Virtual-slides dataset is already prefetched by `useClientVirtualSlides`
-// (the search hook the hero teaser mounts at the top of this page). Adding
-// a second fetch here would just race the hook and triple-count the file
-// in Lighthouse's "enormous network payloads" — see commit history.
+// The virtual-slides corpus (~2 MB brotli / ~27 MB decompressed) is loaded LAZILY by
+// the hero teaser — deferred to browser-idle / first hero interaction so it stays off
+// the homepage's initial-load critical path (it was tanking LCP/TBT). Don't add an
+// eager prefetch here — see virtual-slide-search-teaser.tsx and commit history.
 
 export function LandingPage() {
   return (

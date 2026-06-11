@@ -5,7 +5,7 @@ import { NextRequest } from "next/server";
 
 // SSRF guard: only the known WSI tile hosts.
 const ALLOWED =
-  /^([a-z0-9-]+\.)*(hematopathologyetutorial\.com|virtualpathology\.leeds\.ac\.uk|tumourclassification\.iarc\.who\.int|stjudecloudslides\.blob\.core\.windows\.net|learn\.mghpathology\.org|rosai\.secondslide\.com|image\.upmc\.edu|wirtualnymikroskop\.mostwiedzy\.pl|slides\.learnhaem\.com)$/i;
+  /^([a-z0-9-]+\.)*(hematopathologyetutorial\.com|virtualpathology\.leeds\.ac\.uk|tumourclassification\.iarc\.who\.int|stjudecloudslides\.blob\.core\.windows\.net|learn\.mghpathology\.org|rosai\.secondslide\.com|image\.upmc\.edu|wirtualnymikroskop\.mostwiedzy\.pl|slides\.learnhaem\.com|slides\.kikoxp\.com|objektyv-production\.s3\.amazonaws\.com)$/i;
 
 /**
  * @swagger

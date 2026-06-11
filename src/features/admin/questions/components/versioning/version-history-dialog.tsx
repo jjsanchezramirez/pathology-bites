@@ -17,6 +17,8 @@ import { toast } from "@/shared/utils/ui/toast";
 import { useProtectedDialog } from "@/shared/hooks/use-protected-dialog";
 import { diffWords } from "diff";
 import { formatVersion } from "@/shared/utils/version";
+import { QuestionMarkdown } from "@/shared/components/common/question-markdown";
+import { SimpleImageCarousel } from "../shared/simple-image-carousel";
 
 // Types
 interface QuestionOption {
@@ -319,8 +321,12 @@ export function VersionHistoryDialog({
           <div className="text-xs font-medium text-muted-foreground mb-1.5 uppercase">Question</div>
           {stemChanged && compareWith ? (
             <DiffText oldText={compareData.stem || ""} newText={versionData.stem || ""} />
+          ) : versionData.stem ? (
+            <QuestionMarkdown className="leading-relaxed" imageCarousel={SimpleImageCarousel}>
+              {versionData.stem}
+            </QuestionMarkdown>
           ) : (
-            <div className="leading-relaxed">{versionData.stem || "No question stem"}</div>
+            <div className="leading-relaxed">No question stem</div>
           )}
         </div>
 
@@ -394,7 +400,9 @@ export function VersionHistoryDialog({
                     <span className="flex items-center justify-center w-4 h-4 rounded-full border text-xs shrink-0">
                       {optionLabel}
                     </span>
-                    <span className="flex-1">{option.text}</span>
+                    <span className="flex-1">
+                      <QuestionMarkdown inline>{option.text}</QuestionMarkdown>
+                    </span>
                     {option.is_correct && <Check className="w-3 h-3 text-green-500 shrink-0" />}
                   </div>
                 </div>
@@ -415,7 +423,9 @@ export function VersionHistoryDialog({
                 newText={versionData.teaching_point || ""}
               />
             ) : (
-              <div className="leading-relaxed">{versionData.teaching_point}</div>
+              <QuestionMarkdown className="leading-relaxed" imageCarousel={SimpleImageCarousel}>
+                {versionData.teaching_point}
+              </QuestionMarkdown>
             )}
           </div>
         )}

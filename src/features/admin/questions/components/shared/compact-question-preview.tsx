@@ -13,6 +13,7 @@ import {
 import { toast } from "@/shared/utils/ui/toast";
 import { QuestionWithDetails } from "@/shared/types/questions";
 import { SimpleImageCarousel } from "./simple-image-carousel";
+import { QuestionMarkdown } from "@/shared/components/common/question-markdown";
 import { CategoryBadge } from "@/shared/components/ui/category-badge";
 import { DifficultyBadge } from "@/shared/components/ui/difficulty-badge";
 import { formatQuestionVersion } from "@/shared/utils/version";
@@ -118,7 +119,12 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
         </CardHeader>
         <CardContent className="space-y-4">
           {/* Question Stem */}
-          <div className="text-sm text-foreground/90">{question.stem}</div>
+          <QuestionMarkdown
+            className="text-sm text-foreground/90"
+            imageCarousel={SimpleImageCarousel}
+          >
+            {question.stem}
+          </QuestionMarkdown>
 
           {/* Stem Images */}
           {stemImages.length > 0 && (
@@ -163,7 +169,9 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                       >
                         {optionLabel}
                       </span>
-                      <span className="flex-1">{option.text}</span>
+                      <span className="flex-1">
+                        <QuestionMarkdown inline>{option.text}</QuestionMarkdown>
+                      </span>
                       {isCorrect && <Check className="w-4 h-4 text-green-500" />}
                     </div>
                   </div>
@@ -186,7 +194,12 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
               {question.teaching_point && (
                 <div>
                   <h4 className="font-medium text-xs uppercase mb-1">Teaching Point</h4>
-                  <div className="text-muted-foreground">{question.teaching_point}</div>
+                  <QuestionMarkdown
+                    className="text-muted-foreground"
+                    imageCarousel={SimpleImageCarousel}
+                  >
+                    {question.teaching_point}
+                  </QuestionMarkdown>
                 </div>
               )}
 
@@ -208,7 +221,7 @@ export function CompactQuestionPreview({ question }: CompactQuestionPreviewProps
                           className="text-xs p-2 rounded border-l-2 bg-muted/30 border-l-muted-foreground/30 text-muted-foreground"
                         >
                           <span className="font-medium">{optionLabel}. </span>
-                          {option.explanation}
+                          <QuestionMarkdown inline>{option.explanation}</QuestionMarkdown>
                         </div>
                       );
                     })}

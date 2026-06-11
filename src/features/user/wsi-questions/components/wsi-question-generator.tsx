@@ -606,7 +606,7 @@ export function WSIQuestionGenerator({
                     <button
                       key={option.id}
                       onClick={() => handleOptionClick(option.id)}
-                      {...(isAnswered ? {} : { "data-fake-selection-skip": "" })}
+                      {...(isAnswered ? {} : { "data-no-highlight": "" })}
                       className={`
                     p-2 sm:p-3 rounded-md text-left border text-xs sm:text-sm transition-colors duration-200
                     ${isAnswered ? "" : "select-none"}
@@ -624,7 +624,7 @@ export function WSIQuestionGenerator({
                     >
                       <div className="flex items-center gap-2">
                         <span
-                          data-fake-selection-skip=""
+                          data-no-highlight=""
                           className={`
                       flex items-center justify-center w-5 h-5 rounded-full border text-xs
                       ${isSelected && !showCorrect && !showIncorrect ? "border-muted-foreground/70" : "border-muted-foreground/30"}
@@ -740,7 +740,7 @@ export function WSIQuestionGenerator({
                         variant="outline"
                         size="sm"
                         className="w-full sm:w-auto"
-                        data-fake-selection-skip=""
+                        data-no-highlight=""
                       >
                         <RefreshCw className="h-4 w-4 mr-2" />
                         Try Another
@@ -755,7 +755,7 @@ export function WSIQuestionGenerator({
           {/* Feature hint — highlight any term to look it up / open an example slide. Hidden on
               touch devices, where the highlight/selection feature is disabled (see
               FakeSelectionHighlight's coarse-pointer gate). */}
-          <div data-fake-selection-skip className="flex justify-center pt-1 pointer-coarse:hidden">
+          <div data-no-highlight className="flex justify-center pt-1 pointer-coarse:hidden">
             <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-gradient-to-r from-primary/15 to-primary/5 px-3.5 py-1.5 text-xs text-primary shadow-sm">
               <Highlighter className="h-4 w-4 shrink-0" />
               <span>

@@ -5,6 +5,7 @@ import { LessonQuiz as LessonQuizType, LessonQuizQuestion } from "../types";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { Check, X, ChevronRight, Trophy } from "lucide-react";
+import { QuestionMarkdown } from "@/shared/components/common/question-markdown";
 
 interface LessonQuizProps {
   quiz: LessonQuizType;
@@ -104,7 +105,7 @@ function QuestionCard({
   return (
     <Card>
       <CardContent className="p-6 space-y-4">
-        <p className="text-base font-medium leading-relaxed">{question.stem}</p>
+        <QuestionMarkdown className="text-base font-medium">{question.stem}</QuestionMarkdown>
 
         <div className="space-y-2">
           {question.options.map((option, i) => {
@@ -135,7 +136,9 @@ function QuestionCard({
                 <span className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full border text-sm font-medium">
                   {letters[i]}
                 </span>
-                <span className="flex-1 text-sm">{option.text}</span>
+                <span className="flex-1 text-sm">
+                  <QuestionMarkdown inline>{option.text}</QuestionMarkdown>
+                </span>
                 {isAnswered && isCorrect && <Check className="h-5 w-5 shrink-0 text-green-500" />}
                 {isAnswered && isSelected && !isCorrect && (
                   <X className="h-5 w-5 shrink-0 text-red-500" />
@@ -148,7 +151,7 @@ function QuestionCard({
         {isAnswered && (
           <div className="rounded-lg bg-muted/50 p-4 text-sm leading-relaxed">
             <span className="font-semibold">Explanation: </span>
-            {question.explanation}
+            <QuestionMarkdown inline>{question.explanation}</QuestionMarkdown>
           </div>
         )}
       </CardContent>
