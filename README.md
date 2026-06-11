@@ -202,6 +202,7 @@ Don't re-add without revisiting the threat model.
 ### Performance notes
 
 - R2 zero-egress enables aggressive caching of images and datasets without bandwidth penalties; all images are served `unoptimized` to avoid Vercel transformation costs.
+- **WSI tiles are served by a Cloudflare Worker (`wsi-tiles.pathologybites.com`), not the Vercel route.** This was moved off Vercel to escape origin-transfer (egress) overage — Vercel bills by the **gigabyte** (the ~20 GB/day of tile traffic blew the quota), Cloudflare Workers bill by the **request** with bandwidth free. On the $5/mo Workers Paid plan: **10M requests/month** included (~333K/day), then $0.30 per extra million; **30M CPU-ms/month** included; **egress is $0**. Recent peak was ~50K tiles/day (~1.5M/month ≈ 15% of the included 10M), so ~6–7× headroom before any overage. 10M tiles ≈ 30K–100K slide-view sessions/month (a deep-zoom session pulls a few hundred tiles); re-viewed slides hit `cf-cache-status: HIT` and cost ~nothing. Even at 3× growth (30M tiles) the bill is ~$11/mo. Bandwidth never re-enters the cost equation.
 - Quiz flows are deduplicated and batched (settings/analytics calls collapsed); results cache with a short TTL + stale-while-revalidate.
 - Don't set custom `Cache-Control` on paths Next.js manages (`/_next/static/`). Debugging deploy/cache issues means purging **both** Cloudflare and Vercel caches.
 
