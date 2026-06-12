@@ -553,7 +553,7 @@
     --card-foreground: hsl(0 0% 14.902%);
     --popover: hsl(0 0% 100%);
     --popover-foreground: hsl(0 0% 14.902%);
-    --primary: hsl(186 66% 40%); /* Teal primary color */
+    --primary: hsl(186 66% 32%); /* Teal primary — 32% L gives white-on-teal 4.85:1 (WCAG AA); 40% was 3.28:1 and failed color-contrast */
     --primary-foreground: hsl(0 0% 100%);
     --secondary: hsl(210 40% 96.1%);
     --secondary-foreground: hsl(222.2 47.4% 11.2%);
@@ -573,7 +573,7 @@
     --chart-5: hsl(354 78% 56%);
     --sidebar: hsl(222.2 47.4% 11.2%);
     --sidebar-foreground: hsl(214.3 31.8% 91.4%);
-    --sidebar-primary: hsl(186 66% 40%);
+    --sidebar-primary: hsl(186 66% 32%); /* 32% L → white-on-teal 4.85:1 (WCAG AA), matches --primary; foreground is white */
     --sidebar-primary-foreground: hsl(0 0% 100%);
     --sidebar-accent: hsl(217.2 32.6% 17.5%);
     --sidebar-accent-foreground: hsl(0 0% 100%);
