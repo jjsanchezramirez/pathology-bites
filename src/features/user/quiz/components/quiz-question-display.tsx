@@ -162,53 +162,52 @@ export function QuizQuestionDisplay({
   return (
     <>
       <Card>
-        <CardContent className="space-y-6 pt-6">
-          {/* Status banner: question was flagged/archived/etc. after this user answered it.
-            Shown so the user doesn't see misleading "right answer" content as authoritative. */}
-          {isFlaggedQuestion && (
-            <div
-              role="alert"
-              className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 p-3 text-sm"
-            >
-              <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
-              <span className="text-foreground">
-                This question has been flagged for review. The content or correct answer may be
-                revised.
-              </span>
-            </div>
-          )}
-
-          {/* Question Stem — own selection container so a drag stays within the stem.
-              Keyed by question.id so per-question highlights/selection reset on navigation
-              instead of bleeding onto the next question's text. */}
+        <CardContent className="pt-6">
+          {/* One selection surface for the whole question — stem, options, and explanation —
+              so a drag crosses sections naturally and the grabbable area spans the card.
+              Non-text chrome (carousels, strike buttons, option letters, hint) opts out via
+              data-no-highlight. Keyed by question.id so live selection state resets on
+              navigation; highlights themselves persist across navigation via persistKey
+              (re-anchored by text when the component remounts). */}
           <FakeSelectionHighlight
-            key={`fsh-stem-${question.id}`}
+            key={`fsh-${question.id}`}
+            persistKey={`quiz-q-${question.id}`}
             allSlides={allSlides}
             onViewSlide={setViewerSlide}
+            className="space-y-6"
           >
+            {/* Status banner: question was flagged/archived/etc. after this user answered it.
+              Shown so the user doesn't see misleading "right answer" content as authoritative. */}
+            {isFlaggedQuestion && (
+              <div
+                role="alert"
+                className="flex items-start gap-2 rounded-md border border-amber-200 bg-amber-50 dark:bg-amber-950/20 dark:border-amber-900 p-3 text-sm"
+              >
+                <AlertTriangle className="h-4 w-4 mt-0.5 shrink-0 text-amber-600 dark:text-amber-400" />
+                <span className="text-foreground">
+                  This question has been flagged for review. The content or correct answer may be
+                  revised.
+                </span>
+              </div>
+            )}
+
+            {/* Question Stem */}
             <div>
               <QuestionMarkdown className="text-muted-foreground">{question.stem}</QuestionMarkdown>
             </div>
-          </FakeSelectionHighlight>
 
-          {/* Question Stem Images — not selectable */}
-          {stemImages.length > 0 && (
-            <div>
-              <ImageCarousel
-                images={stemImages}
-                className="border rounded-lg"
-                resetKey={stemResetKey}
-              />
-            </div>
-          )}
+            {/* Question Stem Images — not selectable */}
+            {stemImages.length > 0 && (
+              <div data-no-highlight>
+                <ImageCarousel
+                  images={stemImages}
+                  className="border rounded-lg"
+                  resetKey={stemResetKey}
+                />
+              </div>
+            )}
 
-          {/* Answer Options — own selection container: drag stays within options, selecting
-                one highlights only its text (not the box), never the stem/explanation/WSI. */}
-          <FakeSelectionHighlight
-            key={`fsh-options-${question.id}`}
-            allSlides={allSlides}
-            onViewSlide={setViewerSlide}
-          >
+            {/* Answer Options */}
             <div className="grid gap-2" role="listbox" aria-label="Answer options">
               {answerOptions?.map((option, index) => {
                 const isSelected = selectedAnswerId === option.id;
@@ -324,17 +323,10 @@ export function QuizQuestionDisplay({
                 );
               })}
             </div>
-          </FakeSelectionHighlight>
 
-          {/* Explanation Section — own selection container */}
-          {showExplanation && (
-            <div className="p-4 rounded-lg bg-muted/50 text-sm">
-              <FakeSelectionHighlight
-                key={`fsh-expl-${question.id}`}
-                allSlides={allSlides}
-                onViewSlide={setViewerSlide}
-                className="space-y-4"
-              >
+            {/* Explanation Section */}
+            {showExplanation && (
+              <div className="p-4 rounded-lg bg-muted/50 text-sm space-y-4">
                 {/* Teaching Point */}
                 {question.teaching_point && (
                   <div>
@@ -400,23 +392,23 @@ export function QuizQuestionDisplay({
                 {question.question_references && (
                   <ReferencesList references={question.question_references} />
                 )}
-              </FakeSelectionHighlight>
-            </div>
-          )}
+              </div>
+            )}
 
-          {/* Feature hint — highlight any term to look it up / open an example slide. Hidden on
+            {/* Feature hint — highlight any term to look it up / open an example slide. Hidden on
               touch devices, where the highlight/selection feature is disabled (see
               FakeSelectionHighlight's coarse-pointer gate). */}
-          <div data-no-highlight className="flex justify-center pt-1 pointer-coarse:hidden">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-gradient-to-r from-primary/15 to-primary/5 px-3.5 py-1.5 text-xs text-primary shadow-sm">
-              <Highlighter className="h-4 w-4 shrink-0" />
-              <span>
-                <strong className="font-semibold">Highlight</strong> any term to{" "}
-                <strong className="font-semibold">search images</strong> or{" "}
-                <strong className="font-semibold">view an example slide</strong>
+            <div data-no-highlight className="flex justify-center pt-1 pointer-coarse:hidden">
+              <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-gradient-to-r from-primary/15 to-primary/5 px-3.5 py-1.5 text-xs text-primary shadow-sm">
+                <Highlighter className="h-4 w-4 shrink-0" />
+                <span>
+                  <strong className="font-semibold">Highlight</strong> any term to{" "}
+                  <strong className="font-semibold">search images</strong> or{" "}
+                  <strong className="font-semibold">view an example slide</strong>
+                </span>
               </span>
-            </span>
-          </div>
+            </div>
+          </FakeSelectionHighlight>
         </CardContent>
       </Card>
       <SlideViewerModal slide={viewerSlide} onClose={() => setViewerSlide(null)} />

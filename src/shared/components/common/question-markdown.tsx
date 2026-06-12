@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo } from "react";
+import { memo, useMemo } from "react";
 import ReactMarkdown, { type Components } from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { visit } from "unist-util-visit";
@@ -158,7 +158,11 @@ const STATIC_COMPONENTS: Components = {
   ),
 };
 
-export function QuestionMarkdown({
+// Memoized: ReactMarkdown re-parses `children` on every render. The markdown lives inside
+// FakeSelectionHighlight, which re-renders on every pointer-move frame during a text-selection
+// drag; without memo each frame re-parsed the whole teaching point / stem (visible lag). Props
+// are primitives + a stable component, so the default shallow compare is correct.
+function QuestionMarkdownImpl({
   children,
   inline = false,
   className,
@@ -208,3 +212,5 @@ export function QuestionMarkdown({
     <div className={className}>{content}</div>
   );
 }
+
+export const QuestionMarkdown = memo(QuestionMarkdownImpl);

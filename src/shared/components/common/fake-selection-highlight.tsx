@@ -4,6 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
+  useLayoutEffect,
   useMemo,
   useRef,
   useState,
@@ -100,6 +101,15 @@ function openVirtualSlides(text: string) {
 
 function openWsi(url: string) {
   openInTab(url);
+}
+
+function useDebouncedValue<T>(value: T, delayMs: number): T {
+  const [debounced, setDebounced] = useState(value);
+  useEffect(() => {
+    const id = window.setTimeout(() => setDebounced(value), delayMs);
+    return () => window.clearTimeout(id);
+  }, [value, delayMs]);
+  return debounced;
 }
 
 function useDelayedPresence<T>(
@@ -251,6 +261,11 @@ const TOOLTIP_OPEN_DELAY_MS = 180;
 const TOOLTIP_CLOSE_DELAY_MS = 80;
 const TOOLTIP_FADE_MS = 110;
 const TOOLTIP_LIFT_PX = 4;
+const TOOLTIP_GAP_PX = 8;
+// The fixed site navbar (z-50, same as the bubble menu) owns the top of the viewport;
+// anything opening upward into that band slides UNDER it and gets cut off. When there
+// isn't this much clearance above, the tooltip / bubble bar flips downward instead.
+const VIEWPORT_TOP_SAFE_PX = 72;
 const TOOLTIP_BG = "#0f172a";
 const TOOLTIP_FG = "#ffffff";
 const TOOLTIP_FG_DIM = "#cbd5e1";
@@ -279,19 +294,34 @@ function SharedTooltip({
   barElement: HTMLElement | null;
 }) {
   const { element, content } = active;
+  const tipRef = useRef<HTMLDivElement | null>(null);
+  const [flipBelow, setFlipBelow] = useState(false);
+
+  // Measure after render (before paint) so the flip accounts for the real tooltip
+  // height, including the optional description line.
+  useLayoutEffect(() => {
+    const tipHeight = tipRef.current?.offsetHeight ?? 0;
+    const btnTop = element.getBoundingClientRect().top;
+    setFlipBelow(btnTop - TOOLTIP_GAP_PX - tipHeight < VIEWPORT_TOP_SAFE_PX);
+  }, [element, content]);
+
   if (!barElement) return null;
   const barRect = barElement.getBoundingClientRect();
   const btnRect = element.getBoundingClientRect();
   const leftRel = btnRect.left - barRect.left + btnRect.width / 2;
   const topRel = btnRect.top - barRect.top;
+  const lift = shown ? 0 : flipBelow ? TOOLTIP_LIFT_PX : -TOOLTIP_LIFT_PX;
   return (
     <div
+      ref={tipRef}
       role="tooltip"
       style={{
         position: "absolute",
-        top: topRel - 8,
+        top: flipBelow ? topRel + btnRect.height + TOOLTIP_GAP_PX : topRel - TOOLTIP_GAP_PX,
         left: leftRel,
-        transform: `translate(-50%, calc(-100% + ${shown ? 0 : -TOOLTIP_LIFT_PX}px))`,
+        transform: flipBelow
+          ? `translate(-50%, ${lift}px)`
+          : `translate(-50%, calc(-100% + ${lift}px))`,
         opacity: shown ? 1 : 0,
         transition: `opacity ${TOOLTIP_FADE_MS}ms ease-out, transform ${TOOLTIP_FADE_MS}ms ease-out`,
         pointerEvents: "none",
@@ -356,15 +386,17 @@ function SharedTooltip({
         aria-hidden="true"
         style={{
           position: "absolute",
-          top: "100%",
+          ...(flipBelow ? { bottom: "100%" } : { top: "100%" }),
           left: "50%",
           transform: "translateX(-50%)",
           width: 0,
           height: 0,
           borderLeft: "5px solid transparent",
           borderRight: "5px solid transparent",
-          borderTop: `5px solid ${TOOLTIP_BG}`,
-          filter: "drop-shadow(0 2px 2px rgba(0,0,0,0.08))",
+          ...(flipBelow
+            ? { borderBottom: `5px solid ${TOOLTIP_BG}` }
+            : { borderTop: `5px solid ${TOOLTIP_BG}` }),
+          filter: flipBelow ? undefined : "drop-shadow(0 2px 2px rgba(0,0,0,0.08))",
         }}
       />
     </div>
@@ -1003,6 +1035,24 @@ function selectableSegments(range: Range): Range[] {
       ? range.commonAncestorContainer.parentNode
       : range.commonAncestorContainer;
   if (!anchor) return [range.cloneRange()];
+  // Fast path (the common case — selecting within a single prose block like the stem or one
+  // teaching-point paragraph): if the range contains no [data-no-highlight] chrome AND both
+  // ends sit in the SAME block element, the raw range's `getClientRects()` yields tight line
+  // rects in one call — skipping the per-text-node TreeWalker that otherwise runs every drag
+  // frame over markdown's many <strong>/<em> nodes.
+  // The same-block guard matters: `Range.getClientRects()` on a range spanning multiple blocks
+  // also returns each fully-contained block's full-width border box, which paints the whole box
+  // around the text (the reported glitch). Multi-block selections fall through to the walker,
+  // which clips to one text node per segment and never produces those block boxes.
+  const startBlock = getBlockAncestor(range.startContainer);
+  if (
+    anchor.nodeType === Node.ELEMENT_NODE &&
+    startBlock !== null &&
+    startBlock === getBlockAncestor(range.endContainer) &&
+    !(anchor as Element).querySelector(NO_HIGHLIGHT_SELECTOR)
+  ) {
+    return [range.cloneRange()];
+  }
   const walker = document.createTreeWalker(
     (anchor as Node) ?? range.commonAncestorContainer,
     NodeFilter.SHOW_TEXT,
@@ -1028,27 +1078,46 @@ function selectableSegments(range: Range): Range[] {
     r.setEnd(node, end);
     segs.push(r);
   }
-  // Fall back to the raw range if nothing matched (e.g. selection wholly inside skip chrome).
-  return segs.length ? segs : [range.cloneRange()];
+  // Nothing matched ⇒ the selection lies wholly inside [data-no-highlight] chrome (the feature
+  // hint, option letters, strike buttons). Return no segments so it contributes no text/rects
+  // and the selection clears — chrome must not be selectable or searchable.
+  return segs;
 }
 
-// Selected text with [data-no-highlight] chrome (option letters, icons) removed.
-function rangeCleanText(range: Range): string {
-  return selectableSegments(range)
-    .map((r) => r.toString())
-    .join("");
-}
-
-function rangeToLocalRects(range: Range, container: HTMLElement): LocalRect[] {
+function segmentsToLocalRects(segments: Range[], container: HTMLElement): LocalRect[] {
   const c = container.getBoundingClientRect();
   const rects: LocalRect[] = [];
-  for (const seg of selectableSegments(range)) {
+  const seen = new Set<string>();
+  for (const seg of segments) {
     for (const r of Array.from(seg.getClientRects())) {
       if (r.width <= 0 || r.height <= 0) continue;
-      rects.push({ top: r.top - c.top, left: r.left - c.left, width: r.width, height: r.height });
+      const top = r.top - c.top;
+      const left = r.left - c.left;
+      // Dedupe identical rects. Adjacent segments (and -webkit-box / line-clamp content like
+      // the References row) can each report the same line box, which would stack overlays and
+      // make the geometry look unstable frame-to-frame.
+      const key = `${Math.round(top)}:${Math.round(left)}:${Math.round(r.width)}:${Math.round(r.height)}`;
+      if (seen.has(key)) continue;
+      seen.add(key);
+      rects.push({ top, left, width: r.width, height: r.height });
     }
   }
   return rects;
+}
+
+function rangeToLocalRects(range: Range, container: HTMLElement): LocalRect[] {
+  return segmentsToLocalRects(selectableSegments(range), container);
+}
+
+// Text + rects from a SINGLE chrome-aware segment walk. The per-frame drag path needs
+// both; computing them separately walked the range's text nodes twice each frame.
+function rangeCleanTextAndRects(
+  range: Range,
+  container: HTMLElement
+): { text: string; rects: LocalRect[] } {
+  const segments = selectableSegments(range);
+  const text = segments.map((r) => r.toString()).join("");
+  return { text, rects: segmentsToLocalRects(segments, container) };
 }
 
 type CaretPos = { node: Node; offset: number };
@@ -1103,7 +1172,12 @@ export const TOP_MATCH_MIN_SCORE_OTHER_EXPORT = TOP_MATCH_MIN_SCORE_OTHER;
 
 const MENU_APPEAR_DELAY_MS = 220;
 const MENU_FADE_DURATION_MS = 120;
-const HIGHLIGHT_COLOR = "rgba(250, 204, 21, 0.38)";
+// Slide-corpus ranking sweeps tens of thousands of slides; debounce the selection text
+// that feeds it so a drag (text changes every pointer-move frame) re-ranks only once the
+// selection settles. Tuned just under the menu-appear delay so matches are ready as the
+// bubble shows.
+const MATCH_QUERY_DEBOUNCE_MS = 180;
+const HIGHLIGHT_COLOR = "rgba(250, 204, 21, 0.5)";
 
 function countWords(s: string): number {
   return s.trim().split(/\s+/).filter(Boolean).length;
@@ -1209,14 +1283,29 @@ function paragraphRange(pos: CaretPos): Range | null {
   return r;
 }
 
+// TreeWalker over the selectable text only — skips whitespace-only nodes and anything inside
+// [data-no-highlight] chrome (the feature hint, option letters, strike buttons). Used by the
+// drag-past-edge clamps so dragging below the card anchors on the last real content (e.g. a
+// reference), never on the hint pill.
+function selectableTextWalker(root: Node): TreeWalker {
+  return document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(n) {
+      if (!n.textContent || !n.textContent.trim()) return NodeFilter.FILTER_REJECT;
+      const el = (n as Text).parentElement;
+      if (el && el.closest(NO_HIGHLIGHT_SELECTOR)) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+}
+
 function firstTextPos(root: Node): CaretPos | null {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const walker = selectableTextWalker(root);
   const node = walker.nextNode() as Text | null;
   return node ? { node, offset: 0 } : null;
 }
 
 function lastTextPos(root: Node): CaretPos | null {
-  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+  const walker = selectableTextWalker(root);
   let last: Text | null = null;
   let n: Node | null;
   while ((n = walker.nextNode())) last = n as Text;
@@ -1274,6 +1363,147 @@ function useCoarsePointer(): boolean {
   return coarse;
 }
 
+// =============================================================================
+// Highlight persistence — highlights survive unmount/remount (question navigation)
+// and DOM changes under them (explanation appearing, chrome toggling).
+// =============================================================================
+
+// A highlight serialized independently of live DOM nodes: its normalized text plus
+// which occurrence of that text (within the container's chrome-free text) it covers.
+// Re-resolution searches the same eligible-text space used for highlighting, so
+// chrome appearing/disappearing (strike buttons, option letters) can't shift anchors.
+type SerializedHighlight = { cleanText: string; occurrence: number };
+
+// Module-level, keyed by `persistKey`: highlights survive component unmount for the
+// lifetime of the page. Intentionally not localStorage — highlights are study-session
+// scratch, not durable data.
+const persistedHighlightsStore = new Map<string, SerializedHighlight[]>();
+
+type TextIndex = { text: string; positions: Array<{ node: Text; offset: number }> };
+
+// Concatenated whitespace-normalized text of all non-chrome text nodes, with a
+// per-character map back to (node, offset). Mirrors the `.replace(/\s+/g, " ").trim()`
+// normalization applied to selection text, so stored highlight text matches exactly.
+function buildTextIndex(root: HTMLElement): TextIndex {
+  const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT, {
+    acceptNode(n) {
+      if (!n.textContent) return NodeFilter.FILTER_REJECT;
+      const el = (n as Text).parentElement;
+      if (el && el.closest(NO_HIGHLIGHT_SELECTOR)) return NodeFilter.FILTER_REJECT;
+      return NodeFilter.FILTER_ACCEPT;
+    },
+  });
+  let text = "";
+  const positions: TextIndex["positions"] = [];
+  let pendingSpace: { node: Text; offset: number } | null = null;
+  let n: Node | null;
+  while ((n = walker.nextNode())) {
+    const t = n as Text;
+    for (let i = 0; i < t.data.length; i++) {
+      if (/\s/.test(t.data[i])) {
+        if (text.length > 0 && !pendingSpace) pendingSpace = { node: t, offset: i };
+      } else {
+        if (pendingSpace) {
+          text += " ";
+          positions.push(pendingSpace);
+          pendingSpace = null;
+        }
+        text += t.data[i];
+        positions.push({ node: t, offset: i });
+      }
+    }
+  }
+  return { text, positions };
+}
+
+function findAllMatches(haystack: string, needle: string): number[] {
+  if (!needle) return [];
+  const out: number[] = [];
+  let idx = haystack.indexOf(needle);
+  while (idx !== -1) {
+    out.push(idx);
+    idx = haystack.indexOf(needle, idx + 1);
+  }
+  return out;
+}
+
+function matchToRange(index: TextIndex, start: number, length: number): Range | null {
+  const startPos = index.positions[start];
+  const endPos = index.positions[start + length - 1];
+  if (!startPos || !endPos) return null;
+  try {
+    const r = document.createRange();
+    r.setStart(startPos.node, startPos.offset);
+    r.setEnd(endPos.node, endPos.offset + 1);
+    return r;
+  } catch {
+    return null;
+  }
+}
+
+function serializeHighlight(
+  container: HTMLElement,
+  range: Range,
+  cleanText: string
+): SerializedHighlight {
+  const index = buildTextIndex(container);
+  const matches = findAllMatches(index.text, cleanText);
+  if (matches.length <= 1) return { cleanText, occurrence: 0 };
+  // Normalized index of the range start = first indexed character at/after it.
+  let startIdx = index.positions.length;
+  for (let i = 0; i < index.positions.length; i++) {
+    const p = index.positions[i];
+    try {
+      if (range.comparePoint(p.node, p.offset) >= 0) {
+        startIdx = i;
+        break;
+      }
+    } catch {
+      // node detached mid-walk — skip
+    }
+  }
+  let occurrence = 0;
+  let best = Infinity;
+  matches.forEach((m, i) => {
+    const d = Math.abs(m - startIdx);
+    if (d < best) {
+      best = d;
+      occurrence = i;
+    }
+  });
+  return { cleanText, occurrence };
+}
+
+function resolveSerializedHighlight(
+  container: HTMLElement,
+  s: SerializedHighlight
+): { range: Range; rects: LocalRect[] } | null {
+  const index = buildTextIndex(container);
+  const matches = findAllMatches(index.text, s.cleanText);
+  if (matches.length === 0) return null;
+  const start = matches[Math.min(s.occurrence, matches.length - 1)];
+  const range = matchToRange(index, start, s.cleanText.length);
+  if (!range) return null;
+  const rects = rangeToLocalRects(range, container);
+  if (rects.length === 0) return null;
+  return { range, rects };
+}
+
+function rectsEqual(a: LocalRect[], b: LocalRect[]): boolean {
+  if (a.length !== b.length) return false;
+  for (let i = 0; i < a.length; i++) {
+    if (
+      a[i].top !== b[i].top ||
+      a[i].left !== b[i].left ||
+      a[i].width !== b[i].width ||
+      a[i].height !== b[i].height
+    ) {
+      return false;
+    }
+  }
+  return true;
+}
+
 type FakeSelectionHighlightProps = {
   allSlides: VirtualSlide[] | null;
   children: ReactNode;
@@ -1282,6 +1512,10 @@ type FakeSelectionHighlightProps = {
   // When provided, the WSI match action opens the slide in the in-house viewer (inline)
   // instead of linking out — for repos the viewer can render. The host renders the modal.
   onViewSlide?: (slide: VirtualSlide) => void;
+  // When provided, highlights are kept in a module-level store under this key and
+  // re-anchored (by text + occurrence) when the component remounts — e.g. navigating
+  // away from a quiz question and back.
+  persistKey?: string;
 };
 
 export function FakeSelectionHighlight(props: FakeSelectionHighlightProps) {
@@ -1302,17 +1536,29 @@ function FakeSelectionHighlightImpl({
   className,
   style,
   onViewSlide,
+  persistKey,
 }: FakeSelectionHighlightProps) {
   const containerRef = useRef<HTMLDivElement | null>(null);
+  const contentRef = useRef<HTMLDivElement | null>(null);
   const [selection, setSelection] = useState<FakeSelection | null>(null);
   const selectionRef = useRef<FakeSelection | null>(null);
   selectionRef.current = selection;
   const [active, setActive] = useState(false);
   const [contextMenu, setContextMenu] = useState<{ x: number; y: number } | null>(null);
+  // `range` is null while a restored highlight can't be re-anchored yet (its text not in
+  // the DOM, e.g. an explanation highlight while the explanation is hidden); the sync
+  // pass re-resolves it from `serialized` once the text reappears.
   const [highlights, setHighlights] = useState<
-    Array<{ id: number; range: Range; text: string; rects: LocalRect[] }>
+    Array<{
+      id: number;
+      range: Range | null;
+      text: string;
+      rects: LocalRect[];
+      serialized: SerializedHighlight;
+    }>
   >([]);
   const highlightIdRef = useRef(0);
+  const restoredRef = useRef(false);
   const dragRef = useRef<DragState | null>(null);
   const longPressRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
@@ -1323,7 +1569,8 @@ function FakeSelectionHighlightImpl({
     MENU_APPEAR_DELAY_MS,
     MENU_FADE_DURATION_MS
   );
-  const queryText = selection?.text ?? stableSelection?.text;
+  const liveQueryText = selection?.text ?? stableSelection?.text;
+  const queryText = useDebouncedValue(liveQueryText, MATCH_QUERY_DEBOUNCE_MS);
   const topMatch = useTopWsiMatch(queryText, allSlides);
   const topMatches = useTopMatches(queryText, allSlides, 8);
 
@@ -1333,32 +1580,44 @@ function FakeSelectionHighlightImpl({
     setHighlights((prev) => {
       const overlapIds = new Set<number>();
       for (const h of prev) {
-        const aEndVsBStart = sel.range.compareBoundaryPoints(Range.START_TO_END, h.range);
-        const aStartVsBEnd = sel.range.compareBoundaryPoints(Range.END_TO_START, h.range);
-        if (aEndVsBStart > 0 && aStartVsBEnd < 0) overlapIds.add(h.id);
+        if (!h.range || !h.range.startContainer.isConnected) continue;
+        try {
+          const aEndVsBStart = sel.range.compareBoundaryPoints(Range.START_TO_END, h.range);
+          const aStartVsBEnd = sel.range.compareBoundaryPoints(Range.END_TO_START, h.range);
+          if (aEndVsBStart > 0 && aStartVsBEnd < 0) overlapIds.add(h.id);
+        } catch {
+          // ranges no longer share a root — can't overlap
+        }
       }
       if (overlapIds.size > 0) {
         return prev.filter((h) => !overlapIds.has(h.id));
       }
       const id = ++highlightIdRef.current;
+      const serialized = containerRef.current
+        ? serializeHighlight(containerRef.current, sel.range, sel.text)
+        : { cleanText: sel.text, occurrence: 0 };
       return [
         ...prev,
-        { id, range: sel.range.cloneRange(), text: sel.text, rects: [...sel.rects] },
+        { id, range: sel.range.cloneRange(), text: sel.text, rects: [...sel.rects], serialized },
       ];
     });
   }, []);
 
   const commitRange = useCallback((range: Range, granularity: Granularity) => {
-    const text = rangeCleanText(range).replace(/\s+/g, " ").trim();
+    const container = containerRef.current;
+    if (!container) return;
+    const { text: rawText, rects } = rangeCleanTextAndRects(range, container);
+    const text = rawText.replace(/\s+/g, " ").trim();
     if (text.length < MIN_CHARS) {
       setSelection(null);
       return;
     }
-    const container = containerRef.current;
-    if (!container) return;
-    const rects = rangeToLocalRects(range, container);
     if (rects.length === 0) {
-      setSelection(null);
+      // Valid text but no paintable rects this frame — a drag frame whose range momentarily
+      // lands wholly in clipped/zero-area content (the References row uses line-clamp /
+      // -webkit-box). Don't blink the selection out; advance range/text but keep the last good
+      // rects until a frame with real geometry replaces them.
+      setSelection((cur) => (cur ? { ...cur, range, text, granularity } : cur));
       return;
     }
     setSelection({ range, text, rects, granularity });
@@ -1736,25 +1995,127 @@ function FakeSelectionHighlightImpl({
     return () => window.removeEventListener("mousedown", onDocDown);
   }, [selection, clearSelection]);
 
+  // Restore persisted highlights on mount (after children have rendered), re-anchoring
+  // each one by its text. Must run before the persist effect below ever writes, or the
+  // initial empty state would wipe the store.
   useEffect(() => {
-    if (!selection && highlights.length === 0) return;
-    const update = () => {
+    if (persistKey) {
+      const saved = persistedHighlightsStore.get(persistKey);
       const container = containerRef.current;
-      if (!container) return;
-      if (selectionRef.current) {
-        const rects = rangeToLocalRects(selectionRef.current.range, container);
-        if (rects.length === 0) clearSelection();
-        else setSelection((cur) => (cur ? { ...cur, rects } : cur));
+      if (saved && saved.length > 0 && container) {
+        setHighlights(
+          saved.map((s) => {
+            const resolved = resolveSerializedHighlight(container, s);
+            return {
+              id: ++highlightIdRef.current,
+              range: resolved?.range ?? null,
+              text: s.cleanText,
+              rects: resolved?.rects ?? [],
+              serialized: s,
+            };
+          })
+        );
       }
-      setHighlights((prev) =>
-        prev.length === 0
-          ? prev
-          : prev.map((h) => ({ ...h, rects: rangeToLocalRects(h.range, container) }))
-      );
+    }
+    restoredRef.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    if (!persistKey || !restoredRef.current) return;
+    persistedHighlightsStore.set(
+      persistKey,
+      highlights.map((h) => h.serialized)
+    );
+  }, [highlights, persistKey]);
+
+  // Re-sync overlay rects with reality whenever layout or content changes: window
+  // resize, content resize (images loading), or DOM mutations (explanation appearing,
+  // chrome toggling). Highlights whose ranges died are re-anchored from their
+  // serialized form; ones whose text left the DOM stay stored but render nothing.
+  const syncOverlays = useCallback(() => {
+    const container = containerRef.current;
+    if (!container) return;
+    // Never reconcile mid-drag. A cross-section drag triggers edge auto-scroll and lazy
+    // image loads, which fire the Resize/Mutation observers; if syncOverlays runs while the
+    // drag is live, `rangeToLocalRects` can transiently return [] during a layout flush and
+    // `clearSelection()` fires — the selection visibly blinks out and back. The drag's own
+    // commitFromPointer keeps the live selection rects current every frame, and highlights
+    // don't change during a selection drag, so there is nothing to sync until pointer-up.
+    if (dragRef.current) return;
+    if (selectionRef.current) {
+      const sel = selectionRef.current;
+      const connected = sel.range.startContainer.isConnected && sel.range.endContainer.isConnected;
+      if (!connected) {
+        // Range's nodes left the DOM (content swapped out) — the selection is genuinely gone.
+        clearSelection();
+      } else {
+        const rects = rangeToLocalRects(sel.range, container);
+        // rects empty while still connected = clipped/zero-area content (References line-clamp);
+        // keep the prior rects rather than clearing, so the selection doesn't blink.
+        if (rects.length > 0 && !rectsEqual(rects, sel.rects)) {
+          setSelection((cur) => (cur ? { ...cur, rects } : cur));
+        }
+      }
+    }
+    setHighlights((prev) => {
+      if (prev.length === 0) return prev;
+      let changed = false;
+      const next = prev.map((h) => {
+        const alive = h.range && h.range.startContainer.isConnected && !h.range.collapsed;
+        const rects = alive ? rangeToLocalRects(h.range!, container) : [];
+        if (rects.length > 0) {
+          if (rectsEqual(rects, h.rects)) return h;
+          changed = true;
+          return { ...h, rects };
+        }
+        const resolved = resolveSerializedHighlight(container, h.serialized);
+        if (resolved) {
+          changed = true;
+          return { ...h, range: resolved.range, rects: resolved.rects };
+        }
+        if (h.rects.length === 0 && h.range === null) return h;
+        changed = true;
+        return { ...h, range: null, rects: [] };
+      });
+      return changed ? next : prev;
+    });
+  }, [clearSelection]);
+
+  useEffect(() => {
+    const content = contentRef.current;
+    if (!content) return;
+    let raf: number | null = null;
+    const schedule = () => {
+      if (raf != null) return;
+      raf = window.requestAnimationFrame(() => {
+        raf = null;
+        syncOverlays();
+      });
     };
-    window.addEventListener("resize", update);
-    return () => window.removeEventListener("resize", update);
-  }, [selection, highlights.length, clearSelection]);
+    // Observe the content layer only — the overlay rects are siblings, so our own
+    // setState never re-triggers the observers (and rectsEqual bails regardless).
+    const ro = new ResizeObserver(schedule);
+    ro.observe(content);
+    const mo = new MutationObserver(schedule);
+    mo.observe(content, { childList: true, subtree: true, characterData: true });
+    window.addEventListener("resize", schedule);
+    return () => {
+      ro.disconnect();
+      mo.disconnect();
+      window.removeEventListener("resize", schedule);
+      if (raf != null) window.cancelAnimationFrame(raf);
+    };
+  }, [syncOverlays]);
+
+  // syncOverlays no-ops while a drag is live (see guard there), so reconcile once when the
+  // drag ends — picks up any layout shift (lazy image, auto-scroll) that fired the observers
+  // mid-drag and was skipped.
+  useEffect(() => {
+    if (active) return;
+    const raf = window.requestAnimationFrame(syncOverlays);
+    return () => window.cancelAnimationFrame(raf);
+  }, [active, syncOverlays]);
 
   const onContextMenu = (e: React.MouseEvent<HTMLDivElement>) => {
     if (isInsideMenu(e.target)) {
@@ -1804,11 +2165,26 @@ function FakeSelectionHighlightImpl({
     stableSelection && menuRects && menuRects.length > 0
       ? (() => {
           const first = menuRects[0];
+          // Approximate bar height + gap; if the bar would open into the fixed-navbar
+          // band at the top of the viewport (it shares z-50 and loses), anchor it
+          // below the selection's last line instead.
+          const BAR_CLEARANCE_PX = 40;
+          const containerTop = containerRef.current?.getBoundingClientRect().top ?? 0;
+          const fitsAbove = containerTop + first.top - BAR_CLEARANCE_PX >= VIEWPORT_TOP_SAFE_PX;
+          if (fitsAbove) {
+            return {
+              position: "absolute" as const,
+              top: first.top - 8,
+              left: first.left + first.width / 2,
+              transform: "translate(-50%, -100%)",
+            };
+          }
+          const last = menuRects[menuRects.length - 1];
           return {
             position: "absolute" as const,
-            top: first.top - 8,
-            left: first.left + first.width / 2,
-            transform: "translate(-50%, -100%)",
+            top: last.top + last.height + 8,
+            left: last.left + last.width / 2,
+            transform: "translate(-50%, 0)",
           };
         })()
       : undefined;
@@ -1833,7 +2209,7 @@ function FakeSelectionHighlightImpl({
       {/* Content layer carries the caller's spacing/styling. The overlays below are positioned
           against this relative root but kept OUT of the content's flow, so a live selection's
           rects/menu can never nudge the card's height (the reported "grows a few px" glitch). */}
-      <div className={className} style={style}>
+      <div ref={contentRef} className={className} style={style}>
         {children}
       </div>
       {highlights.map((h) =>
@@ -1855,25 +2231,34 @@ function FakeSelectionHighlightImpl({
           />
         ))
       )}
-      {selection &&
-        selection.rects.map((rect, i) => (
-          <div
-            key={i}
-            aria-hidden="true"
-            className="fake-selection-rect"
-            style={{
-              position: "absolute",
-              top: rect.top,
-              left: rect.left,
-              width: rect.width,
-              height: rect.height,
-              background: "rgba(99, 102, 241, 0.18)",
-              pointerEvents: "none",
-              zIndex: 30,
-              borderRadius: 2,
-            }}
-          />
-        ))}
+      {/* One layer that fades in ONCE when the selection first appears. The individual rect
+          divs inside carry no animation: during a drag the rect set changes shape/count every
+          frame, and a per-rect mount animation replayed its 90ms fade on every remount —
+          visible flicker, worst where rect counts churn (block boundaries, line wraps, the
+          References row). Animating the stable wrapper instead keeps the one-time fade without
+          the churn. */}
+      {selection && (
+        <div
+          aria-hidden="true"
+          className="fake-selection-layer"
+          style={{ position: "absolute", inset: 0, pointerEvents: "none", zIndex: 30 }}
+        >
+          {selection.rects.map((rect, i) => (
+            <div
+              key={i}
+              style={{
+                position: "absolute",
+                top: rect.top,
+                left: rect.left,
+                width: rect.width,
+                height: rect.height,
+                background: "rgba(99, 102, 241, 0.18)",
+                borderRadius: 2,
+              }}
+            />
+          ))}
+        </div>
+      )}
       {stableSelection && menuStyle && (
         <div
           data-fake-selection-menu
@@ -1918,7 +2303,7 @@ function FakeSelectionHighlightImpl({
         />
       )}
       <style jsx>{`
-        .fake-selection-rect {
+        .fake-selection-layer {
           animation: fake-selection-fade-in 90ms ease-out;
         }
         @keyframes fake-selection-fade-in {
