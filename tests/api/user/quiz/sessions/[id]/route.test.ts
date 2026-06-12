@@ -168,6 +168,7 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
     mockQuery = {
       select: vi.fn().mockReturnThis(),
       insert: vi.fn().mockReturnThis(),
+      upsert: vi.fn().mockResolvedValue({ error: null }),
       delete: vi.fn().mockReturnThis(),
       eq: vi.fn().mockReturnThis(),
       in: vi.fn().mockResolvedValue({ data: [], error: null }),
@@ -423,17 +424,9 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
     });
 
     it("should prevent duplicate answer submissions", async () => {
-      // Mock existing attempts
-      mockQuery.in.mockResolvedValue({
-        data: [{ question_id: "q-1" }],
-        error: null,
-      });
-
-      mockQuery.insert = vi.fn().mockReturnThis();
-
       const answers = [
-        createMockAnswerSubmission({ questionId: "q-1" }), // Already exists
-        createMockAnswerSubmission({ questionId: "q-2" }), // New
+        createMockAnswerSubmission({ questionId: "q-1" }),
+        createMockAnswerSubmission({ questionId: "q-2" }),
       ];
 
       const request = createAuthenticatedRequest(mockUserId, {
@@ -445,14 +438,34 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
       const response = await PATCH(request, { params: mockParams });
 
       expect(response.status).toBe(200);
-      // Should only insert q-2, not q-1
-      expect(mockQuery.insert).toHaveBeenCalledWith(
+      // Dedup happens at the DB layer: upsert on the unique_session_question
+      // constraint with ignoreDuplicates, not SELECT-then-filter (TOCTOU).
+      expect(mockQuery.upsert).toHaveBeenCalledWith(
         expect.arrayContaining([
-          expect.objectContaining({
-            question_id: "q-2",
-          }),
-        ])
+          expect.objectContaining({ question_id: "q-1" }),
+          expect.objectContaining({ question_id: "q-2" }),
+        ]),
+        { onConflict: "quiz_session_id,question_id", ignoreDuplicates: true }
       );
+    });
+
+    it("should return 500 when answer upsert fails", async () => {
+      mockQuery.upsert.mockResolvedValue({
+        error: { code: "XX000", message: "Database error" },
+      });
+
+      const request = createAuthenticatedRequest(mockUserId, {
+        method: "PATCH",
+        url: `http://localhost:3000/api/user/quiz/sessions/${mockSessionId}`,
+        body: { answers: [createMockAnswerSubmission()] },
+      });
+
+      const response = await PATCH(request, { params: mockParams });
+      const json = await getResponseJson(response);
+
+      expect(response.status).toBe(500);
+      expect(json.error).toBe("Failed to record quiz answers");
+      expect(quizService.updateQuizSession).not.toHaveBeenCalled();
     });
   });
 

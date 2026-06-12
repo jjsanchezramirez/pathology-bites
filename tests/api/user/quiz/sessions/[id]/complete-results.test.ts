@@ -61,6 +61,7 @@ describe("POST /api/user/quiz/sessions/[id]/complete (Complete Quiz)", () => {
     mockQuery = {
       select: vi.fn().mockReturnThis(),
       insert: vi.fn().mockReturnThis(),
+      upsert: vi.fn().mockResolvedValue({ error: null }),
       eq: vi.fn().mockReturnThis(),
       in: vi.fn().mockResolvedValue({ data: [], error: null }),
       single: vi.fn().mockResolvedValue({
@@ -220,17 +221,9 @@ describe("POST /api/user/quiz/sessions/[id]/complete (Complete Quiz)", () => {
     });
 
     it("should prevent duplicate answer submissions during completion", async () => {
-      // Mock existing attempts
-      mockQuery.in.mockResolvedValue({
-        data: [{ question_id: "q-9" }],
-        error: null,
-      });
-
-      mockQuery.insert = vi.fn().mockReturnThis();
-
       const answers = [
-        createMockAnswerSubmission({ questionId: "q-9" }), // Already exists
-        createMockAnswerSubmission({ questionId: "q-10" }), // New
+        createMockAnswerSubmission({ questionId: "q-9" }),
+        createMockAnswerSubmission({ questionId: "q-10" }),
       ];
 
       const mockResults = createMockQuizResultData();
@@ -245,14 +238,34 @@ describe("POST /api/user/quiz/sessions/[id]/complete (Complete Quiz)", () => {
       const response = await POST(request, { params: mockParams });
 
       expect(response.status).toBe(200);
-      // Should only insert q-10, not q-9
-      expect(mockQuery.insert).toHaveBeenCalledWith(
+      // Dedup happens at the DB layer: upsert on the unique_session_question
+      // constraint with ignoreDuplicates, not SELECT-then-filter (TOCTOU).
+      expect(mockQuery.upsert).toHaveBeenCalledWith(
         expect.arrayContaining([
-          expect.objectContaining({
-            question_id: "q-10",
-          }),
-        ])
+          expect.objectContaining({ question_id: "q-9" }),
+          expect.objectContaining({ question_id: "q-10" }),
+        ]),
+        { onConflict: "quiz_session_id,question_id", ignoreDuplicates: true }
       );
+    });
+
+    it("should return 500 and not complete the quiz when answer upsert fails", async () => {
+      mockQuery.upsert.mockResolvedValue({
+        error: { code: "XX000", message: "Database error" },
+      });
+
+      const request = createAuthenticatedRequest(mockUserId, {
+        method: "POST",
+        url: `http://localhost:3000/api/user/quiz/sessions/${mockSessionId}/complete`,
+        body: { answers: [createMockAnswerSubmission()] },
+      });
+
+      const response = await POST(request, { params: mockParams });
+      const json = await getResponseJson(response);
+
+      expect(response.status).toBe(500);
+      expect(json.error).toBe("Failed to record quiz answers");
+      expect(quizService.completeQuiz).not.toHaveBeenCalled();
     });
   });
 
