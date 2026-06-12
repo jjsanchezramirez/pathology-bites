@@ -139,9 +139,16 @@ export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
       {/* Google Analytics 4 */}
       {GA_MEASUREMENT_ID && (
         <>
+          {/* Load the heavy gtag.js library (~162 KB) on `lazyOnload` — i.e. after
+              the window load event, when the browser is idle — NOT `afterInteractive`.
+              afterInteractive makes Next emit a <link rel=preload> that fetches it at
+              High priority during initial load, where it competes with the critical CSS
+              + font for bandwidth and drags simulated LCP. The inline config Script below
+              stays afterInteractive so dataLayer + consent default are set early; gtag()
+              calls just queue into dataLayer and replay once the library lands. */}
           <Script
             src={`https://www.googletagmanager.com/gtag/js?id=${GA_MEASUREMENT_ID}`}
-            strategy="afterInteractive"
+            strategy="lazyOnload"
           />
           <Script id="google-analytics" strategy="afterInteractive">
             {`
