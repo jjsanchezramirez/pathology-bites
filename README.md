@@ -58,6 +58,18 @@ Deeper references:
 - [`dev/docs/system/api/unified-architecture.md`](./dev/docs/system/api/unified-architecture.md) — unified data API & `useUnifiedData`
 - `CLAUDE.md` — conventions, lint rules, and hard-won gotchas
 
+## Companion services & repos
+
+The Vercel app is the core, but a few pieces run as standalone **Cloudflare Workers** in their own private repos. The main repo is public, so anything carrying scraping credentials or that's pure infrastructure lives outside it. Each Worker is deployed independently with `wrangler deploy` — no CI, by design (low change frequency, single maintainer).
+
+| Service | Domain | Repo (private) | What it does |
+| --- | --- | --- | --- |
+| **R2 Explorer** | `r2.pathologybites.com` | `pathology-bites-r2-explorer` | Admin file browser for the three R2 buckets. Hono worker (buckets bound directly) + React/Vite/Tailwind/shadcn SPA in the PB design system, cookie session auth. Replaced an abandoned `g4brym/R2-Explorer` fork. |
+| **WSI tile proxy** | `wsi-tiles.pathologybites.com` | `pathology-bites-wsi-proxy` | CORS-cleans + edge-caches whole-slide-image tiles for the in-house OpenSeadragon viewer. Moved off the Vercel route to escape egress overage — see [Performance notes](#performance-notes). |
+| **Search corpus / scrapers** | — (publishes to R2) | `pathology-bites-corpus` | Scraper pipeline + brotli-compressed search-corpus build, published to the `pathology-bites-data` bucket. Symlinked into `dev/resources/scrapers`. |
+
+**R2 buckets:** `pathology-bites-data`, `pathology-bites-images`, `pathology-bites-audio` (zero-egress; fronted by the explorer above and consumed directly by the app).
+
 ## Project Structure
 
 ```
@@ -220,6 +232,8 @@ See [`tests/README.md`](./tests/README.md) for structure and conventions.
 ## Deployment
 
 Deployed on **Vercel** behind **Cloudflare**. Set the environment variables from `.env.example` in the Vercel project, configure Supabase OAuth redirect URLs, and point the Cloudflare zone at the Vercel deployment. Production builds run `npm run build`; `setup-ffmpeg` runs on install to fetch the FFmpeg WASM assets.
+
+The companion Cloudflare Workers ([Companion services & repos](#companion-services--repos)) deploy independently from their own repos via `wrangler deploy` — they are not part of the Vercel build.
 
 ## License
 
