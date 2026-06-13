@@ -46,11 +46,20 @@ async function loadClientAnkoma(): Promise<AnkomaData> {
     }
   }
 
-  cachedAnkomaPromise = fetchWithFallback().then(async (res) => {
-    if (!res.ok) throw new Error(`Failed to fetch Ankoma data: ${res.status}`);
-    const rawData: AnkomaDeck = await res.json();
-    return parseAnkomaData(rawData);
-  });
+  cachedAnkomaPromise = fetchWithFallback()
+    .then(async (res) => {
+      if (!res.ok) throw new Error(`Failed to fetch Ankoma data: ${res.status}`);
+      const rawData: AnkomaDeck = await res.json();
+      return parseAnkomaData(rawData);
+    })
+    .catch((err) => {
+      // Don't cache a rejected promise — otherwise a transient failure
+      // (sleep/wake, offline blip, R2 hiccup) would permanently break the
+      // viewer until a full page reload, since in-SPA navigation reuses this
+      // module-scope cache. Clearing it lets the next mount retry.
+      cachedAnkomaPromise = null;
+      throw err;
+    });
 
   return cachedAnkomaPromise;
 }
