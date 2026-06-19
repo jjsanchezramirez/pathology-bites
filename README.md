@@ -66,6 +66,7 @@ The Vercel app is the core, but a few pieces run as standalone **Cloudflare Work
 | --- | --- | --- | --- |
 | **R2 Explorer** | `r2.pathologybites.com` | `pathology-bites-r2-explorer` | Admin file browser for the three R2 buckets. Hono worker (buckets bound directly) + React/Vite/Tailwind/shadcn SPA in the PB design system, cookie session auth. Replaced an abandoned `g4brym/R2-Explorer` fork. |
 | **WSI tile proxy** | `wsi.pathologybites.com` | `pathology-bites-wsi-proxy` | CORS-cleans + edge-caches whole-slide-image tiles for the in-house OpenSeadragon viewer. Moved off the Vercel route to escape egress overage — see [Performance notes](#performance-notes). (`wsi-tiles.pathologybites.com` is a transitional alias, slated for removal.) |
+| **Docs** | `docs.pathologybites.com` | `pathology-bites-docs` | Password-gated internal docs. VitePress static site (architecture/infra) + an embedded Scalar API reference rendering the bundled OpenAPI spec. Cloudflare Worker gates it with the same cookie auth as R2 Explorer. |
 | **Search corpus / scrapers** | — (publishes to R2) | `pathology-bites-corpus` | Scraper pipeline + brotli-compressed search-corpus build, published to the `pathology-bites-data` bucket. Symlinked into `dev/resources/scrapers`. |
 
 **R2 buckets:** `pathology-bites-data`, `pathology-bites-images`, `pathology-bites-audio` (zero-egress; fronted by the explorer above and consumed directly by the app).
