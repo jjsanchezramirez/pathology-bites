@@ -154,7 +154,6 @@ export default function robots(): MetadataRoute.Robots {
           "/api/",
           "/admin/",
           "/dashboard/",
-          "/docs/",
 
           // Auth flow pages (no SEO value)
           "/auth-error",
