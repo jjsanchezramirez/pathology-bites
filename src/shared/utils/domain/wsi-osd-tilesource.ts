@@ -5,11 +5,11 @@ import type { WsiTileSource } from "./wsi-tilesource";
 
 // Route a DZI tile base through our CORS-adding proxy. OSD appends "<level>/<x>_<y>.fmt"
 // to Url by string concat, so it lands inside the ?url= value — proxy reads it raw.
-// Served by a Cloudflare Worker (wsi-tiles.pathologybites.com) rather than a Vercel
+// Served by a Cloudflare Worker (wsi.pathologybites.com) rather than a Vercel
 // route: Cloudflare bills per-request not per-GB and edge-caches immutable tiles, so
 // tile traffic no longer burns Vercel origin transfer. Cross-origin now, so the host is
 // allow-listed in next.config.ts connect-src (img-src already permits https:).
-const TILE_PROXY = "https://wsi-tiles.pathologybites.com/?url=";
+const TILE_PROXY = "https://wsi.pathologybites.com/?url=";
 
 export function buildOsdTileSource(ts: WsiTileSource, opts?: { proxy?: boolean }): unknown {
   if (ts.kind === "dzi") {
