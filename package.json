@@ -18,6 +18,7 @@
     "cleanup": "npm dedupe && npm prune && eslint --fix .",
     "dev:turbo": "next dev --turbo",
     "type-check": "tsc --noEmit",
+    "gen:openapi": "tsx src/shared/utils/gen-openapi.ts",
     "find-unused": "npx knip --no-exit-code",
     "find-unused:custom": "npx tsx dev/code/scripts/utils/find-unused-code.ts",
     "test": "vitest",
