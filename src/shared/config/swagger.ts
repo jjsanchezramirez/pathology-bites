@@ -1,3 +1,7 @@
+// OpenAPI spec definition for the platform API, built from the `@swagger` JSDoc on each route
+// handler. Since the in-app /docs + /api/docs routes were removed, the only consumer is the
+// docs-site spec generator (`dev/gen-openapi.mts`), which bundles the output into
+// docs.pathologybites.com on each deploy. Kept here (tracked) so the API metadata is versioned.
 import { createSwaggerSpec } from "next-swagger-doc";
 
 export const getApiDocs = async () => {
