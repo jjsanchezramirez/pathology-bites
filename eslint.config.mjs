@@ -74,9 +74,14 @@ const eslintConfig = [
     },
   },
   {
-    // The logger module wraps console; standalone scripts and test/benchmark
-    // harnesses legitimately log results to stdout.
-    files: ["src/shared/utils/logging/**/*.ts", "scripts/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
+    // console is legitimate in: the logger module (it wraps console), the gitignored dev-only
+    // debug pages, and test/benchmark harnesses that log results to stdout.
+    files: [
+      "src/shared/utils/logging/**/*.ts",
+      "src/app/debug/**/*.{ts,tsx}",
+      "src/app/api/debug/**/*.{ts,tsx}",
+      "tests/**/*.{ts,tsx}",
+    ],
     rules: {
       "no-console": "off",
     },

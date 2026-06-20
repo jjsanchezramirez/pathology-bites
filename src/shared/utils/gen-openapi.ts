@@ -12,7 +12,7 @@ async function main() {
   const spec = (await getApiDocs()) as { paths?: Record<string, unknown> };
   const out = "/tmp/pb-openapi.json";
   writeFileSync(out, JSON.stringify(spec, null, 2));
-  log.debug(`wrote ${out} — ${Object.keys(spec.paths ?? {}).length} paths`);
+  log.info(`wrote ${out} — ${Object.keys(spec.paths ?? {}).length} paths`);
 }
 
 main().catch((err) => {
