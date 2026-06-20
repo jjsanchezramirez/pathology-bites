@@ -26,6 +26,7 @@ import {
   ResetSettingsDialog,
   SettingsLoading,
 } from "@/features/user/settings/components";
+import { log } from "@/shared/utils/logging";
 
 export default function SettingsPage() {
   const { user, isAuthenticated, isLoading } = useAuthContext();
@@ -95,7 +96,7 @@ export default function SettingsPage() {
       await userSettingsService.updateNotificationSettings(newPreferences);
       await invalidateUserSettings();
     } catch (error) {
-      console.error("Error updating preference:", error);
+      log.error("Error updating preference:", error);
       toast.error("Failed to update preference");
       // Revert the change
       setPreferences((prev) => ({ ...prev, [key]: !value }));
@@ -115,7 +116,7 @@ export default function SettingsPage() {
       await userSettingsService.updateQuizSettings(newSettings);
       await invalidateUserSettings();
     } catch (error) {
-      console.error("Error updating quiz setting:", error);
+      log.error("Error updating quiz setting:", error);
       toast.error("Failed to update quiz setting");
       // Revert the change
       setQuizSettings((prev) => ({ ...prev, [key]: quizSettings[key] }));
@@ -135,7 +136,7 @@ export default function SettingsPage() {
       // UI feedback is immediate - no API call needed!
       // Settings will sync when user leaves the page or closes the popover
     } catch (error) {
-      console.error("Error updating text size:", error);
+      log.error("Error updating text size:", error);
       toast.error("Failed to update text size");
     } finally {
       setSaving(false);
@@ -150,7 +151,7 @@ export default function SettingsPage() {
       setDashboardTheme(newTheme);
       toast.success("Dashboard theme updated");
     } catch (error) {
-      console.error("Error updating dashboard theme:", error);
+      log.error("Error updating dashboard theme:", error);
       toast.error("Failed to update dashboard theme");
     } finally {
       setSaving(false);
@@ -197,7 +198,7 @@ export default function SettingsPage() {
       toast.success("All settings have been reset to defaults");
       setShowResetDialog(false);
     } catch (error) {
-      console.error("Error resetting settings:", error);
+      log.error("Error resetting settings:", error);
       toast.error("Failed to reset settings");
     } finally {
       setIsResetting(false);
@@ -236,7 +237,7 @@ export default function SettingsPage() {
 
       toast.success("Data export completed successfully");
     } catch (error) {
-      console.error("Error exporting data:", error);
+      log.error("Error exporting data:", error);
       toast.error("Failed to export data");
     } finally {
       setIsExporting(false);
@@ -269,7 +270,7 @@ export default function SettingsPage() {
       // Force a hard redirect to clear all cached data and session
       window.location.href = "/";
     } catch (error) {
-      console.error("Error deleting account:", error);
+      log.error("Error deleting account:", error);
       toast.error(error instanceof Error ? error.message : "Failed to delete account");
     } finally {
       setIsDeleting(false);

@@ -3,6 +3,7 @@ import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
 import { callClaudeText } from "@/shared/services/claude-api";
+import { log } from "@/shared/utils/logging";
 
 // Vercel Hobby caps at 60s; Claude calls observed ~10s, chain walk worst case ~15s.
 export const maxDuration = 30;
@@ -361,7 +362,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(
+    log.debug(
       `[TTS Text Gen] Generating text using ${selectedModel} (${provider}) for ${content.subject} > ${content.lesson} > ${content.topic}`
     );
 
@@ -370,7 +371,7 @@ export async function POST(request: NextRequest) {
     const aiResponse = await callAIService(provider, prompt, selectedModel, apiKey);
     const generationTime = Date.now() - startTime;
 
-    console.log(
+    log.debug(
       `[TTS Text Gen] Generated text in ${generationTime}ms (${aiResponse.content.length} chars, ${aiResponse.content.trim().split(/\s+/).length} words)`
     );
 
@@ -392,7 +393,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("[TTS Text Gen] Error:", error);
+    log.error("[TTS Text Gen] Error:", error);
     return NextResponse.json(
       {
         success: false,

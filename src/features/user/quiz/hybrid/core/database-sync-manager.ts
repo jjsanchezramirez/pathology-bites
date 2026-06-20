@@ -16,6 +16,7 @@ import {
   QuizQuestionTransformer,
   ApiQuestionResponse,
 } from "../../types/quiz-question";
+import { log } from "@/shared/utils/logging";
 
 export interface QuizSyncData {
   sessionId: string;
@@ -127,7 +128,7 @@ export class DatabaseSyncManager {
       const cachedData = this.getFromCache(cacheKey);
 
       if (cachedData) {
-        console.log("[Hybrid] Using cached quiz session data - 0 API calls");
+        log.debug("[Hybrid] Using cached quiz session data - 0 API calls");
         return cachedData as {
           questions: QuizQuestion[];
           config: {
@@ -145,7 +146,7 @@ export class DatabaseSyncManager {
         };
       }
 
-      console.log("[Hybrid] No cache found, fetching from server");
+      log.debug("[Hybrid] No cache found, fetching from server");
       const response = await fetch(`${this.options.apiBaseUrl}/sessions/${sessionId}`, {
         method: "GET",
         headers: {
@@ -178,9 +179,9 @@ export class DatabaseSyncManager {
       };
 
       // Enhanced logging to debug quiz continuation issue
-      console.log("[Hybrid] Server response data.answers:", data.answers);
-      console.log("[Hybrid] Server response data.status:", data.status);
-      console.log("[Hybrid] Server response data.currentQuestionIndex:", data.currentQuestionIndex);
+      log.debug("[Hybrid] Server response data.answers:", data.answers);
+      log.debug("[Hybrid] Server response data.status:", data.status);
+      log.debug("[Hybrid] Server response data.currentQuestionIndex:", data.currentQuestionIndex);
 
       const result = {
         questions: transformedQuestions,
@@ -196,7 +197,7 @@ export class DatabaseSyncManager {
 
       return result;
     } catch (error) {
-      console.error("Failed to fetch quiz data:", error);
+      log.error("Failed to fetch quiz data:", error);
       throw error;
     }
   }
@@ -225,7 +226,7 @@ export class DatabaseSyncManager {
       localStorage.removeItem(key);
       return null;
     } catch (error) {
-      console.warn("Failed to read from cache:", error);
+      log.warn("Failed to read from cache:", error);
       return null;
     }
   }
@@ -248,7 +249,7 @@ export class DatabaseSyncManager {
 
       localStorage.setItem(key, JSON.stringify(cacheData));
     } catch (error) {
-      console.warn("Failed to save to cache:", error);
+      log.warn("Failed to save to cache:", error);
     }
   }
 
@@ -260,7 +261,7 @@ export class DatabaseSyncManager {
       if (typeof window === "undefined") return;
       localStorage.removeItem(`pathology-bites-quiz-result-${sessionId}`);
     } catch (error) {
-      console.warn("Failed to clear cache:", error);
+      log.warn("Failed to clear cache:", error);
     }
   }
 
@@ -331,7 +332,7 @@ export class DatabaseSyncManager {
 
       // OPTIMIZATION: Single API call - PATCH endpoint now accepts answers!
       // This combines what used to be 2 calls (batch + PATCH) into 1
-      console.log("[Hybrid] Saving progress with single API call (answers + progress)");
+      log.debug("[Hybrid] Saving progress with single API call (answers + progress)");
 
       const updateResponse = await fetch(
         `${this.options.apiBaseUrl}/sessions/${progressData.sessionId}`,
@@ -479,7 +480,7 @@ export class DatabaseSyncManager {
           };
           this.saveToCache(sessionKey, updatedSession);
         } catch (error) {
-          console.warn("Failed to cache results:", error);
+          log.warn("Failed to cache results:", error);
         }
       }
 

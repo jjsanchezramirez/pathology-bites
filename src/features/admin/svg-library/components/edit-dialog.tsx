@@ -16,6 +16,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Loader2 } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import type { SvgAsset } from "../types";
+import { log } from "@/shared/utils/logging";
 
 interface EditSvgDialogProps {
   asset: SvgAsset | null;
@@ -86,7 +87,7 @@ export function EditSvgDialog({ asset, open, onOpenChange, onSave }: EditSvgDial
         onSave();
       }, 100);
     } catch (error) {
-      console.error("Failed to update SVG asset:", error);
+      log.error("Failed to update SVG asset:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update SVG asset");
     } finally {
       setIsSubmitting(false);

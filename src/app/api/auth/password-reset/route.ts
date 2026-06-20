@@ -4,6 +4,7 @@ import { createClient } from "@/shared/services/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 const passwordResetSchema = z.object({
   email: z.string().email("Please enter a valid email address"),
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (userError && userError.code !== "PGRST116") {
-      console.error("Error checking user:", userError);
+      log.error("Error checking user:", userError);
       return NextResponse.json({ error: "Failed to process request" }, { status: 500 });
     }
 
@@ -151,13 +152,13 @@ export async function POST(request: NextRequest) {
     });
 
     if (resetError) {
-      console.error("[Password Reset] Error:", resetError);
+      log.error("[Password Reset] Error:", resetError);
       return NextResponse.json({ error: "Failed to send password reset email" }, { status: 500 });
     }
 
-    console.log("[Password Reset] Email sent successfully via Supabase to:", email);
-    console.log("[Password Reset] Type:", type);
-    console.log("[Password Reset] Redirect URL:", redirectTo);
+    log.debug("[Password Reset] Email sent successfully via Supabase to:", email);
+    log.debug("[Password Reset] Type:", type);
+    log.debug("[Password Reset] Redirect URL:", redirectTo);
 
     // Create audit log
     await supabase.from("audit_logs").insert({
@@ -181,7 +182,7 @@ export async function POST(request: NextRequest) {
           : "Password reset link sent! Check your email to reset your password.",
     });
   } catch (error) {
-    console.error("Error in password reset:", error);
+    log.error("Error in password reset:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -289,7 +290,7 @@ export async function PATCH(request: NextRequest) {
     });
 
     if (updateError) {
-      console.error("Password update error:", updateError);
+      log.error("Password update error:", updateError);
       return NextResponse.json({ error: updateError.message }, { status: 400 });
     }
 
@@ -310,7 +311,7 @@ export async function PATCH(request: NextRequest) {
       message: "Password updated successfully",
     });
   } catch (error) {
-    console.error("Error updating password:", error);
+    log.error("Error updating password:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -98,7 +99,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       lessons,
     });
   } catch (error) {
-    console.error("[Learn API] Failed to fetch subject:", error);
+    log.error("[Learn API] Failed to fetch subject:", error);
     return NextResponse.json({ error: "Failed to fetch subject" }, { status: 500 });
   }
 }

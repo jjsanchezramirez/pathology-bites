@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { uploadToR2, generateSvgStoragePath, deleteFromR2 } from "@/shared/services/r2-storage";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 export const runtime = "nodejs";
 
@@ -140,7 +141,7 @@ export async function POST(request: NextRequest) {
       fileBuffer = Buffer.from(await file.arrayBuffer());
       svgText = fileBuffer.toString("utf-8");
     } catch (error) {
-      console.error("Failed to read SVG file:", error);
+      log.error("Failed to read SVG file:", error);
       return NextResponse.json(
         { error: "Failed to read SVG file. The file may be corrupted." },
         { status: 400 }
@@ -224,7 +225,7 @@ export async function POST(request: NextRequest) {
         },
       });
     } catch (error) {
-      console.error("R2 upload failed:", error);
+      log.error("R2 upload failed:", error);
       uploadedStoragePath = null;
       return NextResponse.json(
         { error: "Failed to upload SVG to storage. Please try again." },
@@ -251,16 +252,16 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (dbError) {
-      console.error("Database insert failed:", dbError);
+      log.error("Database insert failed:", dbError);
 
       // Clean up R2 storage on database error
       try {
-        console.log("Cleaning up R2 file after database error:", storagePath);
+        log.debug("Cleaning up R2 file after database error:", storagePath);
         await deleteFromR2(storagePath);
-        console.log("R2 cleanup successful");
+        log.debug("R2 cleanup successful");
       } catch (cleanupError) {
-        console.error("CRITICAL: Failed to cleanup R2 file after database error:", cleanupError);
-        console.error("Orphaned file at:", storagePath);
+        log.error("CRITICAL: Failed to cleanup R2 file after database error:", cleanupError);
+        log.error("Orphaned file at:", storagePath);
       }
 
       uploadedStoragePath = null;
@@ -285,17 +286,17 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("SVG upload error:", error);
+    log.error("SVG upload error:", error);
 
     // Clean up orphaned R2 file
     if (uploadedStoragePath) {
       try {
-        console.log("Cleaning up orphaned R2 file after unexpected error:", uploadedStoragePath);
+        log.debug("Cleaning up orphaned R2 file after unexpected error:", uploadedStoragePath);
         await deleteFromR2(uploadedStoragePath);
-        console.log("Emergency R2 cleanup successful");
+        log.debug("Emergency R2 cleanup successful");
       } catch (cleanupError) {
-        console.error("CRITICAL: Failed emergency cleanup of R2 file:", cleanupError);
-        console.error("Orphaned file at:", uploadedStoragePath);
+        log.error("CRITICAL: Failed emergency cleanup of R2 file:", cleanupError);
+        log.error("Orphaned file at:", uploadedStoragePath);
       }
     }
 

@@ -5,6 +5,7 @@ import useSWR from "swr";
 import { UserRole } from "@/shared/utils/auth/auth-helpers";
 import { clientDashboardService } from "@/features/admin/dashboard/services/client-service";
 import { DashboardStats, RecentActivity } from "@/features/admin/dashboard/services/service";
+import { log } from "@/shared/utils/logging";
 
 /**
  * Hook for fetching dashboard statistics
@@ -22,9 +23,9 @@ export function useDashboardStats(enabled = true) {
     // Key: only fetch when enabled
     enabled ? "dashboard-stats" : null,
     async () => {
-      console.log("[useDashboardStats] Fetching stats...");
+      log.debug("[useDashboardStats] Fetching stats...");
       const stats = await clientDashboardService.getDashboardStats();
-      console.log("[useDashboardStats] ✅ Stats loaded");
+      log.debug("[useDashboardStats] ✅ Stats loaded");
       return stats;
     },
     {
@@ -76,14 +77,9 @@ export function useDashboardActivities(
   const { data, error, isLoading, mutate } = useSWR<RecentActivity[]>(
     cacheKey,
     async () => {
-      console.log(
-        "[useDashboardActivities] Fetching activities for role:",
-        role,
-        "userId:",
-        userId
-      );
+      log.debug("[useDashboardActivities] Fetching activities for role:", role, "userId:", userId);
       const activities = await clientDashboardService.getRecentActivity(role, userId);
-      console.log("[useDashboardActivities] ✅ Activities loaded:", activities.length);
+      log.debug("[useDashboardActivities] ✅ Activities loaded:", activities.length);
       return activities;
     },
     {

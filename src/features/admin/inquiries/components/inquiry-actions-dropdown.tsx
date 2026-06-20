@@ -14,6 +14,7 @@ import {
 import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
 import { toast } from "@/shared/utils/ui/toast";
 import { useNotificationRefresh } from "@/shared/contexts/notification-refresh-context";
+import { log } from "@/shared/utils/logging";
 
 interface Inquiry {
   id: string;
@@ -70,7 +71,7 @@ export function InquiryActionsDropdown({
       onStatusUpdate(inquiry.id, "resolved");
       refreshNotifications();
     } catch (error) {
-      console.error("Error updating status:", error);
+      log.error("Error updating status:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update status");
     } finally {
       setIsUpdating(false);
@@ -92,7 +93,7 @@ export function InquiryActionsDropdown({
       onDelete(inquiry.id);
       refreshNotifications();
     } catch (error) {
-      console.error("Error deleting inquiry:", error);
+      log.error("Error deleting inquiry:", error);
       toast.error(error instanceof Error ? error.message : "Failed to delete inquiry");
     } finally {
       setDeleteDialogOpen(false);

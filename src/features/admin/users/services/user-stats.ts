@@ -1,3 +1,5 @@
+import { log } from "@/shared/utils/logging";
+
 // User statistics service
 
 export interface UserStats {
@@ -119,7 +121,7 @@ export async function getUserStats(): Promise<UserStats> {
       last_updated: stats.last_updated,
     };
   } catch (error) {
-    console.error("Get user stats error:", error);
+    log.error("Get user stats error:", error);
     throw error;
   }
 }

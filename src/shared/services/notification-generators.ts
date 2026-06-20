@@ -2,6 +2,7 @@
 // Generator functions for creating user notifications
 
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 export const notificationGenerators = {
   async createPerfectScoreNotification(
@@ -11,23 +12,23 @@ export const notificationGenerators = {
   ): Promise<void> {
     const _supabase = await createClient();
     // Implementation would create a notification in the database
-    console.log("Creating perfect score notification for user:", _userId);
+    log.debug("Creating perfect score notification for user:", _userId);
   },
 
   async createInquiryNotification(_inquiryId: string): Promise<void> {
     const _supabase = await createClient();
-    console.log("Creating inquiry notification for inquiry:", _inquiryId);
+    log.debug("Creating inquiry notification for inquiry:", _inquiryId);
   },
 
   async checkQuestionsAnsweredMilestone(
     _userId: string,
     _totalQuestionsAnswered: number
   ): Promise<void> {
-    console.log("Checking questions answered milestone for user:", _userId);
+    log.debug("Checking questions answered milestone for user:", _userId);
   },
 
   async checkQuizStreakMilestone(_userId: string, _currentStreak: number): Promise<void> {
-    console.log("Checking quiz streak milestone for user:", _userId);
+    log.debug("Checking quiz streak milestone for user:", _userId);
   },
 
   async checkCategoryMasteryMilestone(
@@ -35,11 +36,11 @@ export const notificationGenerators = {
     _category: string,
     _accuracy: number
   ): Promise<void> {
-    console.log("Checking category mastery milestone for user:", _userId);
+    log.debug("Checking category mastery milestone for user:", _userId);
   },
 
   async checkLoginStreakMilestone(_userId: string, _loginStreak: number): Promise<void> {
-    console.log("Checking login streak milestone for user:", _userId);
+    log.debug("Checking login streak milestone for user:", _userId);
   },
 
   async createAchievementNotification(
@@ -50,11 +51,11 @@ export const notificationGenerators = {
     _metadata: Record<string, unknown>
   ): Promise<void> {
     const _supabase = await createClient();
-    console.log("Creating achievement notification for user:", _userId);
+    log.debug("Creating achievement notification for user:", _userId);
   },
 
   async checkStudyTimeMilestone(_userId: string, _totalHours: number): Promise<void> {
-    console.log("Checking study time milestone for user:", _userId);
+    log.debug("Checking study time milestone for user:", _userId);
   },
 
   async createReminderNotification(
@@ -64,7 +65,7 @@ export const notificationGenerators = {
     _message: string
   ): Promise<void> {
     const _supabase = await createClient();
-    console.log("Creating reminder notification for user:", _userId);
+    log.debug("Creating reminder notification for user:", _userId);
   },
 
   async broadcastSystemUpdate(
@@ -97,11 +98,11 @@ export const notificationGenerators = {
         .single();
 
       if (systemUpdateError) {
-        console.error("Error creating system update:", systemUpdateError);
+        log.error("Error creating system update:", systemUpdateError);
         throw new Error(`Failed to create system update: ${systemUpdateError.message}`);
       }
 
-      console.log("System update created:", systemUpdate.id);
+      log.debug("System update created:", systemUpdate.id);
 
       // Get target users based on audience
       let targetUserIds: string[] = [];
@@ -114,7 +115,7 @@ export const notificationGenerators = {
           .eq("status", "active");
 
         if (usersError) {
-          console.error("Error fetching users:", usersError);
+          log.error("Error fetching users:", usersError);
           throw new Error(`Failed to fetch users: ${usersError.message}`);
         }
 
@@ -128,7 +129,7 @@ export const notificationGenerators = {
           .eq("status", "active");
 
         if (usersError) {
-          console.error("Error fetching users by role:", usersError);
+          log.error("Error fetching users by role:", usersError);
           throw new Error(`Failed to fetch users by role: ${usersError.message}`);
         }
 
@@ -149,16 +150,16 @@ export const notificationGenerators = {
           .insert(notificationStates);
 
         if (notificationError) {
-          console.error("Error creating notification states:", notificationError);
+          log.error("Error creating notification states:", notificationError);
           throw new Error(`Failed to create notification states: ${notificationError.message}`);
         }
 
-        console.log(`Broadcast complete: ${targetUserIds.length} users notified`);
+        log.debug(`Broadcast complete: ${targetUserIds.length} users notified`);
       } else {
-        console.warn("No target users found for notification");
+        log.warn("No target users found for notification");
       }
     } catch (error) {
-      console.error("Error in broadcastSystemUpdate:", error);
+      log.error("Error in broadcastSystemUpdate:", error);
       throw error;
     }
   },

@@ -5,6 +5,7 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { getCachedStorageMetrics } from "@/shared/services/r2-storage-metrics";
 import { formatSize } from "@/features/admin/images/services/image-upload";
 import { devLog } from "@/shared/utils/logging/dev-logger";
+import { log } from "@/shared/utils/logging";
 
 interface SystemHealth {
   vercelStatus: "operational" | "error";
@@ -195,7 +196,7 @@ export async function GET(request: Request) {
           vercelStatus = "error";
         }
       } catch (error) {
-        console.error("Failed to check Vercel status:", error);
+        log.error("Failed to check Vercel status:", error);
         vercelStatus = "error";
       }
     } else {
@@ -220,11 +221,11 @@ export async function GET(request: Request) {
         r2StorageUsage = Math.round(totalUsedBytes / (1024 * 1024)); // Convert to MB
         r2StorageFormatted = formatSize(totalUsedBytes);
       } catch (error) {
-        console.error("Failed to calculate R2 stats from cached metrics:", error);
+        log.error("Failed to calculate R2 stats from cached metrics:", error);
         cloudflareR2Status = "error";
       }
     } else {
-      console.error("Failed to fetch R2 storage metrics:", r2StorageMetrics.reason);
+      log.error("Failed to fetch R2 storage metrics:", r2StorageMetrics.reason);
       cloudflareR2Status = "error";
     }
 
@@ -236,23 +237,20 @@ export async function GET(request: Request) {
     if (dailyActiveUsers.status === "fulfilled" && dailyActiveUsers.value.data !== null) {
       activeUsers = Number(dailyActiveUsers.value.data) || 0;
     } else if (dailyActiveUsers.status === "rejected") {
-      console.error("[System Status] Daily active users query failed:", dailyActiveUsers.reason);
-      console.warn("[System Status] Is count_active_users_since() function created in database?");
+      log.error("[System Status] Daily active users query failed:", dailyActiveUsers.reason);
+      log.warn("[System Status] Is count_active_users_since() function created in database?");
     }
 
     if (weeklyActiveUsers.status === "fulfilled" && weeklyActiveUsers.value.data !== null) {
       activeUsersWeekly = Number(weeklyActiveUsers.value.data) || 0;
     } else if (weeklyActiveUsers.status === "rejected") {
-      console.error("[System Status] Weekly active users query failed:", weeklyActiveUsers.reason);
+      log.error("[System Status] Weekly active users query failed:", weeklyActiveUsers.reason);
     }
 
     if (monthlyActiveUsers.status === "fulfilled" && monthlyActiveUsers.value.data !== null) {
       activeUsersMonthly = Number(monthlyActiveUsers.value.data) || 0;
     } else if (monthlyActiveUsers.status === "rejected") {
-      console.error(
-        "[System Status] Monthly active users query failed:",
-        monthlyActiveUsers.reason
-      );
+      log.error("[System Status] Monthly active users query failed:", monthlyActiveUsers.reason);
     }
 
     const systemHealth: SystemHealth = {

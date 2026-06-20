@@ -29,6 +29,7 @@ import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 
 import { Loader2, Upload, X } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 interface EditImageDialogProps {
   image: ImageData | null;
@@ -120,7 +121,7 @@ export function EditImageDialog({ image, open, onOpenChange, onSave }: EditImage
         onSave();
       }, 100);
     } catch (error) {
-      console.error("Failed to update image:", error);
+      log.error("Failed to update image:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update image");
     } finally {
       setIsSubmitting(false);

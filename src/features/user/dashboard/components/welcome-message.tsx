@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { userSettingsService } from "@/shared/services/user-settings";
 import Link from "next/link";
+import { log } from "@/shared/utils/logging";
 
 interface WelcomeMessageProps {
   onDismiss: () => void;
@@ -21,7 +22,7 @@ export function WelcomeMessage({ onDismiss }: WelcomeMessageProps) {
       await userSettingsService.markWelcomeMessageSeen();
       onDismiss();
     } catch (error) {
-      console.error("Error dismissing welcome message:", error);
+      log.error("Error dismissing welcome message:", error);
       // Still dismiss the message locally even if the API call fails
       onDismiss();
     } finally {

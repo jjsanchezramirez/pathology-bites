@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { deleteFromR2 } from "@/shared/services/r2-storage";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -89,7 +90,7 @@ export async function DELETE(
       try {
         await deleteFromR2(asset.storage_path);
       } catch (storageError) {
-        console.warn("R2 deletion error (continuing with database deletion):", storageError);
+        log.warn("R2 deletion error (continuing with database deletion):", storageError);
       }
     }
 
@@ -108,7 +109,7 @@ export async function DELETE(
       message: "SVG asset deleted successfully.",
     });
   } catch (error) {
-    console.error("SVG asset deletion error:", error);
+    log.error("SVG asset deletion error:", error);
     return NextResponse.json({ error: "Failed to delete SVG asset." }, { status: 500 });
   }
 }
@@ -225,7 +226,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       asset: data,
     });
   } catch (error) {
-    console.error("SVG asset update error:", error);
+    log.error("SVG asset update error:", error);
     return NextResponse.json({ error: "Failed to update SVG asset." }, { status: 500 });
   }
 }

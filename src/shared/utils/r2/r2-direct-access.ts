@@ -1,3 +1,5 @@
+import { log } from "@/shared/utils/logging";
+
 // src/shared/utils/r2-direct-access.ts
 /**
  * Direct R2 access utilities to minimize Vercel API usage
@@ -54,7 +56,7 @@ class R2Cache {
     // Return stale data while revalidating in background
     if (cached && now - cached.timestamp < ttl + staleWhileRevalidate) {
       // Revalidate in background
-      this.fetchAndCache(url, cacheKey).catch(console.error);
+      this.fetchAndCache(url, cacheKey).catch(log.error);
       return cached.data as T;
     }
 
@@ -86,12 +88,12 @@ class R2Cache {
 
       return data;
     } catch (error) {
-      console.error("R2 direct fetch error:", error);
+      log.error("R2 direct fetch error:", error);
 
       // Return stale data if available during errors
       const cached = this.cache.get(cacheKey);
       if (cached) {
-        console.warn("Returning stale data due to fetch error");
+        log.warn("Returning stale data due to fetch error");
         return cached.data as T;
       }
 
@@ -176,9 +178,9 @@ export const r2DirectAccess = {
    */
   async preloadCriticalData() {
     try {
-      console.log("R2 critical data preloading initiated");
+      log.debug("R2 critical data preloading initiated");
     } catch (error) {
-      console.error("R2 preload failed:", error);
+      log.error("R2 preload failed:", error);
     }
   },
 };

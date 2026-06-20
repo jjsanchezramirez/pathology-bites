@@ -7,6 +7,7 @@ import {
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_UI_SETTINGS,
 } from "@/shared/config/user-settings-defaults";
+import { log } from "@/shared/utils/logging";
 
 const rateLimitedHandler = withRateLimit(authRateLimiter);
 
@@ -96,7 +97,7 @@ export const GET = rateLimitedHandler(async function (request: NextRequest) {
         if (createError) {
           // Check if error is due to duplicate key (trigger already created user)
           if (createError.code === "23505") {
-            console.log(
+            log.debug(
               "User already exists (likely created by trigger), fetching existing user:",
               data.user.id
             );
@@ -108,14 +109,14 @@ export const GET = rateLimitedHandler(async function (request: NextRequest) {
               .single();
 
             if (fetchError) {
-              console.error("Error fetching existing user:", fetchError);
+              log.error("Error fetching existing user:", fetchError);
               return NextResponse.redirect(
                 `${origin}/auth-error?error=user_fetch_failed&description=Failed to retrieve user account`
               );
             }
             userData = fetchedUser;
           } else {
-            console.error("Error creating user:", createError);
+            log.error("Error creating user:", createError);
             return NextResponse.redirect(
               `${origin}/auth-error?error=user_creation_failed&description=Failed to create user account`
             );
@@ -136,19 +137,19 @@ export const GET = rateLimitedHandler(async function (request: NextRequest) {
           if (settingsError) {
             // Ignore duplicate key errors (trigger already created settings)
             if (settingsError.code !== "23505") {
-              console.error("Error creating user settings:", settingsError);
+              log.error("Error creating user settings:", settingsError);
             }
             // Don't fail the redirect if settings creation fails - user can still log in
           }
         }
       } else if (profileError) {
-        console.error("Error checking user:", profileError);
+        log.error("Error checking user:", profileError);
         return NextResponse.redirect(
           `${origin}/auth-error?error=user_check_failed&description=Failed to check user account`
         );
       } else if (existingUser?.status === "deleted") {
         // User exists but is soft-deleted - restore them
-        console.log("Restoring soft-deleted user:", {
+        log.debug("Restoring soft-deleted user:", {
           userId: data.user.id,
           email: data.user.email,
         });
@@ -165,7 +166,7 @@ export const GET = rateLimitedHandler(async function (request: NextRequest) {
           .single();
 
         if (restoreError) {
-          console.error("Error restoring user:", restoreError);
+          log.error("Error restoring user:", restoreError);
           return NextResponse.redirect(
             `${origin}/auth-error?error=user_restore_failed&description=Failed to restore user account`
           );
@@ -179,7 +180,7 @@ export const GET = rateLimitedHandler(async function (request: NextRequest) {
           .single();
 
         if (!existingSettings) {
-          console.log("Creating missing user_settings for restored user:", data.user.id);
+          log.debug("Creating missing user_settings for restored user:", data.user.id);
           const { error: settingsError } = await supabase.from("user_settings").insert({
             user_id: data.user.id,
             quiz_settings: DEFAULT_QUIZ_SETTINGS,
@@ -188,13 +189,13 @@ export const GET = rateLimitedHandler(async function (request: NextRequest) {
           });
 
           if (settingsError) {
-            console.error("Error creating user settings for restored user:", settingsError);
+            log.error("Error creating user settings for restored user:", settingsError);
             // Don't fail - user can still log in
           }
         }
 
         userData = restoredUser;
-        console.log("User restored successfully:", {
+        log.debug("User restored successfully:", {
           userId: data.user.id,
           role: restoredUser.role,
         });
@@ -211,7 +212,7 @@ export const GET = rateLimitedHandler(async function (request: NextRequest) {
           .single();
 
         if (!existingSettings) {
-          console.log("Creating missing user_settings as final safeguard:", data.user.id);
+          log.debug("Creating missing user_settings as final safeguard:", data.user.id);
           const { error: settingsError } = await supabase.from("user_settings").insert({
             user_id: data.user.id,
             quiz_settings: DEFAULT_QUIZ_SETTINGS,
@@ -220,10 +221,10 @@ export const GET = rateLimitedHandler(async function (request: NextRequest) {
           });
 
           if (settingsError) {
-            console.error("Error creating user settings in final safeguard:", settingsError);
+            log.error("Error creating user settings in final safeguard:", settingsError);
             // Don't fail - user can still log in
           } else {
-            console.log("User settings created successfully in final safeguard:", data.user.id);
+            log.debug("User settings created successfully in final safeguard:", data.user.id);
           }
         }
       }
@@ -235,9 +236,9 @@ export const GET = rateLimitedHandler(async function (request: NextRequest) {
           await supabase.auth.updateUser({
             data: { role: userData.role },
           });
-          console.log("[Auth Callback] Updated user_metadata with role:", userData.role);
+          log.debug("[Auth Callback] Updated user_metadata with role:", userData.role);
         } catch (metadataError) {
-          console.error("[Auth Callback] Failed to update user_metadata:", metadataError);
+          log.error("[Auth Callback] Failed to update user_metadata:", metadataError);
           // Non-critical error, continue with redirect
         }
       }

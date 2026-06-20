@@ -1,3 +1,5 @@
+import { log } from "@/shared/utils/logging";
+
 // Centralized AI model configuration
 // This file defines all available AI models and their status across the application
 
@@ -243,7 +245,7 @@ export const API_KEYS = {
 export function getApiKey(provider: string): string {
   const key = API_KEYS[provider as keyof typeof API_KEYS];
   if (!key) {
-    console.warn(
+    log.warn(
       `⚠️ No API key found for provider: ${provider}. Please set NEXT_PUBLIC_${provider.toUpperCase()}_API_KEY in your environment variables.`
     );
   }

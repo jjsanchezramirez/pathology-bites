@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { log } from "@/shared/utils/logging";
 
 const statusUpdateSchema = z.object({
   status: z.enum(["pending", "resolved", "closed"]),
@@ -95,7 +96,7 @@ function createAdminClient() {
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const resolvedParams = await params;
-    console.log("Updating inquiry status for ID:", resolvedParams.id);
+    log.debug("Updating inquiry status for ID:", resolvedParams.id);
 
     // Auth check - require admin role only
     const userId = request.headers.get("x-user-id");
@@ -137,7 +138,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       .single();
 
     if (updateError) {
-      console.error("Failed to update inquiry status:", updateError);
+      log.error("Failed to update inquiry status:", updateError);
       return NextResponse.json({ error: "Failed to update inquiry status" }, { status: 500 });
     }
 
@@ -145,7 +146,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: "Inquiry not found" }, { status: 404 });
     }
 
-    console.log("Inquiry status updated successfully:", updatedInquiry.id, "to", status);
+    log.debug("Inquiry status updated successfully:", updatedInquiry.id, "to", status);
 
     return NextResponse.json({
       success: true,
@@ -153,7 +154,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       inquiry: updatedInquiry,
     });
   } catch (error) {
-    console.error("Error updating inquiry status:", error);
+    log.error("Error updating inquiry status:", error);
     return NextResponse.json(
       { error: "Internal server error", details: error.message },
       { status: 500 }

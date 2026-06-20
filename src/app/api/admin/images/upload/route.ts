@@ -5,6 +5,7 @@ import { getImageDimensionsFromFile } from "@/shared/utils/images/server-image-u
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 import { parseImageFilename } from "@/shared/utils/images/filename-parser";
 import { revalidateImages } from "@/shared/utils/api/revalidation";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -225,7 +226,7 @@ export async function POST(request: NextRequest) {
     try {
       fileBuffer = Buffer.from(await file.arrayBuffer());
     } catch (error) {
-      console.error("Failed to read file buffer:", error);
+      log.error("Failed to read file buffer:", error);
       return NextResponse.json(
         { error: "Failed to read image file. The file may be corrupted." },
         { status: 400 }
@@ -235,7 +236,7 @@ export async function POST(request: NextRequest) {
     try {
       dimensions = await getImageDimensionsFromFile(file);
     } catch (error) {
-      console.error("Failed to get image dimensions:", error);
+      log.error("Failed to get image dimensions:", error);
       return NextResponse.json(
         { error: "Failed to read image dimensions. The file may not be a valid image." },
         { status: 400 }
@@ -257,7 +258,7 @@ export async function POST(request: NextRequest) {
 
     // Parse filename to extract pathology category, magnification, image category, and source
     const parsedFilename = parseImageFilename(file.name);
-    console.log("Parsed filename:", parsedFilename);
+    log.debug("Parsed filename:", parsedFilename);
 
     // Use form data overrides if provided, otherwise fall back to parsed values
     const pathologyCategoryId = pathologyCategoryOverride || parsedFilename.categoryId;
@@ -267,25 +268,25 @@ export async function POST(request: NextRequest) {
 
     if (pathologyCategoryId) {
       const source = pathologyCategoryOverride ? "form data" : "filename";
-      console.log(`Pathology category ID (from ${source}): ${pathologyCategoryId}`);
+      log.debug(`Pathology category ID (from ${source}): ${pathologyCategoryId}`);
     }
 
     if (magnification) {
       const source = magnificationOverride ? "form data" : "filename";
-      console.log(`Magnification (from ${source}): ${magnification}`);
+      log.debug(`Magnification (from ${source}): ${magnification}`);
     }
 
     if (parsedFilename.imageCategory) {
-      console.log(`Image category (from filename): ${parsedFilename.imageCategory}`);
+      log.debug(`Image category (from filename): ${parsedFilename.imageCategory}`);
     }
 
     if (parsedFilename.description) {
-      console.log(`Description (from filename): ${parsedFilename.description}`);
+      log.debug(`Description (from filename): ${parsedFilename.description}`);
     }
 
     if (finalSourceRef) {
       const source = sourceRef ? "form data" : "filename";
-      console.log(`Source reference (from ${source}): ${finalSourceRef}`);
+      log.debug(`Source reference (from ${source}): ${finalSourceRef}`);
     }
 
     // Generate R2 storage path using only the title (no description or metadata)
@@ -317,7 +318,7 @@ export async function POST(request: NextRequest) {
         },
       });
     } catch (error) {
-      console.error("R2 upload failed:", error);
+      log.error("R2 upload failed:", error);
       uploadedStoragePath = null; // Reset since upload failed
       return NextResponse.json(
         { error: "Failed to upload image to storage. Please try again." },
@@ -354,16 +355,16 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (dbError) {
-      console.error("Database insert failed:", dbError);
+      log.error("Database insert failed:", dbError);
 
       // CRITICAL: Clean up R2 storage on database error to prevent orphaned files
       try {
-        console.log("Cleaning up R2 file after database error:", storagePath);
+        log.debug("Cleaning up R2 file after database error:", storagePath);
         await deleteFromR2(storagePath);
-        console.log("R2 cleanup successful");
+        log.debug("R2 cleanup successful");
       } catch (cleanupError) {
-        console.error("CRITICAL: Failed to cleanup R2 file after database error:", cleanupError);
-        console.error("Orphaned file at:", storagePath);
+        log.error("CRITICAL: Failed to cleanup R2 file after database error:", cleanupError);
+        log.error("Orphaned file at:", storagePath);
       }
 
       uploadedStoragePath = null; // Reset since we cleaned up
@@ -391,17 +392,17 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Image upload error:", error);
+    log.error("Image upload error:", error);
 
     // If we have an uploaded file that wasn't saved to database, clean it up
     if (uploadedStoragePath) {
       try {
-        console.log("Cleaning up orphaned R2 file after unexpected error:", uploadedStoragePath);
+        log.debug("Cleaning up orphaned R2 file after unexpected error:", uploadedStoragePath);
         await deleteFromR2(uploadedStoragePath);
-        console.log("Emergency R2 cleanup successful");
+        log.debug("Emergency R2 cleanup successful");
       } catch (cleanupError) {
-        console.error("CRITICAL: Failed emergency cleanup of R2 file:", cleanupError);
-        console.error("Orphaned file at:", uploadedStoragePath);
+        log.error("CRITICAL: Failed emergency cleanup of R2 file:", cleanupError);
+        log.error("Orphaned file at:", uploadedStoragePath);
       }
     }
 

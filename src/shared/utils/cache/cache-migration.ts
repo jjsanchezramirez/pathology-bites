@@ -12,6 +12,7 @@
 
 import type { ScopedMutator } from "swr";
 import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
+import { log } from "@/shared/utils/logging";
 
 /**
  * List of old cache keys that should be removed
@@ -88,7 +89,7 @@ export function cleanupOldCaches(): void {
       if (localStorage.getItem(key) !== null) {
         localStorage.removeItem(key);
         cleanedCount++;
-        console.log(`[Cache Cleanup] Removed old cache key: ${key}`);
+        log.debug(`[Cache Cleanup] Removed old cache key: ${key}`);
       }
     });
 
@@ -105,15 +106,15 @@ export function cleanupOldCaches(): void {
       if (isOldFormat) {
         localStorage.removeItem(key);
         cleanedCount++;
-        console.log(`[Cache Cleanup] Removed old format key: ${key}`);
+        log.debug(`[Cache Cleanup] Removed old format key: ${key}`);
       }
     });
 
     if (cleanedCount > 0) {
-      console.log(`[Cache Cleanup] ✅ Cleaned up ${cleanedCount} old/corrupted cache entries`);
+      log.debug(`[Cache Cleanup] ✅ Cleaned up ${cleanedCount} old/corrupted cache entries`);
     }
   } catch (error) {
-    console.warn("[Cache Cleanup] Failed to clean up old caches:", error);
+    log.warn("[Cache Cleanup] Failed to clean up old caches:", error);
   }
 }
 
@@ -156,13 +157,13 @@ function runOneShotMigrations(mutate?: ScopedMutator): void {
     if (mutate) {
       mutate("user-data", undefined, { revalidate: true });
     }
-    console.log(
+    log.debug(
       `[Cache Migration] ${CACHE_MIGRATION_VERSION}: cleared stale pathology-bites-swr-user-data (localStorage, unifiedCache, SWR runtime)`
     );
 
     localStorage.setItem(CACHE_MIGRATION_FLAG_KEY, CACHE_MIGRATION_VERSION);
   } catch (err) {
-    console.warn("[Cache Migration] One-shot migrations failed:", err);
+    log.warn("[Cache Migration] One-shot migrations failed:", err);
   }
 }
 
@@ -173,7 +174,7 @@ function runOneShotMigrations(mutate?: ScopedMutator): void {
 export function initializeCacheSystem(mutate?: ScopedMutator): void {
   if (typeof window === "undefined") return;
 
-  console.log("[Cache System] 🚀 Initializing cache system...");
+  log.debug("[Cache System] 🚀 Initializing cache system...");
 
   // Step 1: Clean up old/corrupted caches
   cleanupOldCaches();
@@ -185,7 +186,7 @@ export function initializeCacheSystem(mutate?: ScopedMutator): void {
   // Step 3: Run unified cache cleanup
   unifiedCache.cleanup();
 
-  console.log("[Cache System] ✅ Cache system initialized");
+  log.debug("[Cache System] ✅ Cache system initialized");
 }
 
 /**

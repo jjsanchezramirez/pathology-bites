@@ -31,6 +31,7 @@ import {
   formatNLM,
   forceReloadJournalAbbreviations,
 } from "@/shared/utils/citations/citation-formatters";
+import { log } from "@/shared/utils/logging";
 
 export default function CitationGeneratorPage() {
   const [input, setInput] = useState("");
@@ -129,7 +130,7 @@ export default function CitationGeneratorPage() {
       setCopiedFormat(format);
       setTimeout(() => setCopiedFormat(null), 2000);
     } catch (err) {
-      console.error("Failed to copy to clipboard:", err);
+      log.error("Failed to copy to clipboard:", err);
     }
   };
 

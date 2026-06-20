@@ -8,6 +8,7 @@ import { Button } from "@/shared/components/ui/button";
 import { useEffect, useState } from "react";
 import { useSWRConfig } from "swr";
 import { userSettingsService } from "@/shared/services/user-settings";
+import { log } from "@/shared/utils/logging";
 
 export function ThemeModeToggle() {
   const { theme, setTheme, forcedTheme } = useTheme();
@@ -61,7 +62,7 @@ export function ThemeModeToggle() {
         mutate("user-settings");
       })
       .catch((error) => {
-        console.error("[ThemeModeToggle] Failed to save theme:", error);
+        log.error("[ThemeModeToggle] Failed to save theme:", error);
         // Theme already changed in UI, so we don't need to revert
       });
   };

@@ -12,6 +12,7 @@
  */
 
 import { SupabaseClient } from "@supabase/supabase-js";
+import { log } from "@/shared/utils/logging";
 
 export interface UserDeletionResult {
   success: boolean;
@@ -53,7 +54,7 @@ export async function deleteUser(
         throw new Error(`Failed to soft delete user: ${updateError.message}`);
       }
 
-      console.log("User soft deleted successfully:", { userId, role: userRole });
+      log.debug("User soft deleted successfully:", { userId, role: userRole });
       return {
         success: true,
         deletionType: "soft_delete",
@@ -75,7 +76,7 @@ export async function deleteUser(
         const { error: deleteError } = await adminClient.from(table).delete().eq("user_id", userId);
 
         if (deleteError) {
-          console.error(`Error deleting from ${table}:`, deleteError);
+          log.error(`Error deleting from ${table}:`, deleteError);
           // Continue with other tables even if one fails
         }
       }
@@ -87,7 +88,7 @@ export async function deleteUser(
         throw new Error(`Failed to delete user record: ${userDeleteError.message}`);
       }
 
-      console.log("User hard deleted successfully:", { userId, role: userRole });
+      log.debug("User hard deleted successfully:", { userId, role: userRole });
       return {
         success: true,
         deletionType: "hard_delete",
@@ -95,7 +96,7 @@ export async function deleteUser(
       };
     }
   } catch (error) {
-    console.error("Error during user deletion:", {
+    log.error("Error during user deletion:", {
       userId,
       userRole,
       deletionType,
@@ -122,9 +123,9 @@ export async function deleteUserFromAuth(
       throw new Error(`Failed to delete user from auth: ${authDeleteError.message}`);
     }
 
-    console.log("User deleted from auth successfully:", { userId });
+    log.debug("User deleted from auth successfully:", { userId });
   } catch (error) {
-    console.error("Error deleting user from auth:", {
+    log.error("Error deleting user from auth:", {
       userId,
       error,
     });

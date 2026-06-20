@@ -6,6 +6,7 @@ import dynamic from "next/dynamic";
 import { Button } from "@/shared/components/ui/button";
 import { AlertTriangle, RefreshCw, Home } from "lucide-react";
 import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
+import { log } from "@/shared/utils/logging";
 
 // Dynamically import Lottie to avoid SSR issues
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
@@ -100,7 +101,7 @@ export class BaseErrorBoundary extends React.Component<BaseErrorBoundaryProps, E
   }
 
   componentDidCatch(error: Error, errorInfo: React.ErrorInfo) {
-    console.error(
+    log.error(
       `ErrorBoundary (${this.props.level || "unknown"}) caught an error:`,
       error,
       errorInfo

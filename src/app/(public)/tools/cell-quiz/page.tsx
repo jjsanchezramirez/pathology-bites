@@ -26,6 +26,7 @@ import {
   generateLookAlikeOptions,
   generateBiologicalOptions,
 } from "@/features/public/tools/cell-quiz/data/cell-pathways";
+import { log } from "@/shared/utils/logging";
 
 interface Question {
   cellType: string;
@@ -41,7 +42,7 @@ function findReferenceCellInfo(
   bloodCellsReference: BloodCellsReferenceData | null
 ): BloodCellReference | null {
   if (!bloodCellsReference?.cells) {
-    console.warn("⚠️ No reference cells available for matching");
+    log.warn("⚠️ No reference cells available for matching");
     return null;
   }
 
@@ -52,7 +53,7 @@ function findReferenceCellInfo(
 
     // Debug logging for troubleshooting
     if (process.env.NODE_ENV === "development") {
-      console.log(
+      log.debug(
         `🔍 Matching "${cellDataKey}" with "${refCell.name}" (normalized: "${normalizedRefName}") = ${isMatch}`
       );
     }
@@ -61,8 +62,8 @@ function findReferenceCellInfo(
   });
 
   if (!match && process.env.NODE_ENV === "development") {
-    console.warn(`⚠️ No reference match found for cell key: "${cellDataKey}"`);
-    console.log(
+    log.warn(`⚠️ No reference match found for cell key: "${cellDataKey}"`);
+    log.debug(
       "Available reference cell names:",
       bloodCellsReference.cells.map((c: BloodCellReference) => c.name)
     );
@@ -93,9 +94,9 @@ function generateRandomQuestion(
   });
 
   if (validCells.length === 0) {
-    console.error("❌ No cells found with both image and reference data");
-    console.log("Available cell keys:", allCells);
-    console.log(
+    log.error("❌ No cells found with both image and reference data");
+    log.debug("Available cell keys:", allCells);
+    log.debug(
       "Available reference names:",
       bloodCellsReference?.cells?.map((c: BloodCellReference) => c.name) || []
     );
@@ -732,7 +733,7 @@ function CellTutorial({
   const handleTutorialImageLoad = useImageCacheHandler(currentImageSrc, true);
 
   // Debug logging
-  console.log("🔍 Tutorial Debug Info:", {
+  log.debug("🔍 Tutorial Debug Info:", {
     bloodCellsReference: {
       exists: !!bloodCellsReference,
       hasCells: !!bloodCellsReference?.cells,
@@ -784,7 +785,7 @@ function CellTutorial({
   }, [currentCellIndex, bloodCellsReference?.cells]);
 
   if (!bloodCellsReference?.cells) {
-    console.error("❌ No reference cells data available in tutorial");
+    log.error("❌ No reference cells data available in tutorial");
     return (
       <div className="flex min-h-screen flex-col">
         <section className="relative py-8">
@@ -807,7 +808,7 @@ function CellTutorial({
   const referenceCells = bloodCellsReference.cells;
   // currentReferenceCell is already declared above for image cache handler
 
-  console.log("📋 Current cell data:", {
+  log.debug("📋 Current cell data:", {
     index: currentCellIndex,
     cell: currentReferenceCell,
     hasDetailedFields: !!(
@@ -831,13 +832,13 @@ function CellTutorial({
 
     // Debug logging for tutorial image matching
     if (process.env.NODE_ENV === "development") {
-      console.log(`🖼️ Tutorial image matching "${currentReferenceCell.name}":`);
-      console.log(`   - Looking for key: "${normalizedRefName}" in cellData`);
-      console.log(`   - Checking cellKey: "${cellKey}" = ${keyMatch}`);
-      console.log(
+      log.debug(`🖼️ Tutorial image matching "${currentReferenceCell.name}":`);
+      log.debug(`   - Looking for key: "${normalizedRefName}" in cellData`);
+      log.debug(`   - Checking cellKey: "${cellKey}" = ${keyMatch}`);
+      log.debug(
         `   - Checking cellValue.name: "${cellValueName}" vs "${refCellName}" = ${nameMatch}`
       );
-      console.log(`   - Final match: ${isMatch}`);
+      log.debug(`   - Final match: ${isMatch}`);
     }
 
     return isMatch;
@@ -845,8 +846,8 @@ function CellTutorial({
 
   // Debug log if no matching cell data found
   if (!matchingCellData && process.env.NODE_ENV === "development") {
-    console.warn(`⚠️ No image data found for tutorial cell: "${currentReferenceCell.name}"`);
-    console.log("Available cellData keys:", Object.keys(cellData || {}));
+    log.warn(`⚠️ No image data found for tutorial cell: "${currentReferenceCell.name}"`);
+    log.debug("Available cellData keys:", Object.keys(cellData || {}));
   }
 
   const handleNext = () => {

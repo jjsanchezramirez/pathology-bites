@@ -29,6 +29,7 @@ import { toast } from "@/shared/utils/ui/toast";
 import { useCacheHelpers } from "@/shared/hooks/use-cache-helpers";
 import { calculateAchievementsToUnlock } from "@/features/user/achievements/services/achievement-checker.client";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
+import { log } from "@/shared/utils/logging";
 
 export interface UseHybridQuizOptions {
   sessionId: string;
@@ -220,7 +221,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         }
       }
     } catch (error) {
-      console.warn("Failed to recover local quiz state:", error);
+      log.warn("Failed to recover local quiz state:", error);
     }
     return null;
   }, [sessionId]);
@@ -229,7 +230,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   const initializeQuiz = useCallback(async () => {
     // Prevent duplicate initialization
     if (isInitializingRef.current) {
-      console.log("[Hybrid] Already initializing, skipping duplicate fetch");
+      log.debug("[Hybrid] Already initializing, skipping duplicate fetch");
       return;
     }
 
@@ -246,11 +247,11 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         totalTimeLimit: savedTotalTimeLimit,
       } = await syncManager.current!.fetchQuizData(sessionId);
 
-      console.log("[Hybrid] Fetched quiz data - status:", status);
+      log.debug("[Hybrid] Fetched quiz data - status:", status);
 
       // EARLY EXIT: If quiz is already completed, trigger redirect immediately
       if (status === "completed") {
-        console.log("[Hybrid] Quiz already completed - triggering early redirect");
+        log.debug("[Hybrid] Quiz already completed - triggering early redirect");
         onError?.("Quiz session is already completed");
         isInitializingRef.current = false;
         return;
@@ -289,7 +290,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         totalTimeSpentToRestore = localData?.totalTimeSpent || 0;
       }
 
-      console.log("[Hybrid] Initializing quiz with:", {
+      log.debug("[Hybrid] Initializing quiz with:", {
         status,
         answersCount: existingAnswersMap?.size || 0,
         currentIndex: currentIndex ?? 0,
@@ -313,7 +314,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         totalTimeSpentToRestore
       );
 
-      console.log("[Hybrid] Quiz initialized with config:", {
+      log.debug("[Hybrid] Quiz initialized with config:", {
         mode: config.mode,
         timing: config.timing,
         status: status,
@@ -334,7 +335,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
             ? savedTimeRemaining
             : limit);
 
-        console.log("[Hybrid] Restoring timer:", {
+        log.debug("[Hybrid] Restoring timer:", {
           fromLocalStorage: localData?.timeRemaining,
           fromServer: savedTimeRemaining,
           using: restoredTime,
@@ -344,7 +345,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         setTimeRemaining(restoredTime);
       }
 
-      console.log("[Hybrid] Initialization complete, quiz status:", status);
+      log.debug("[Hybrid] Initialization complete, quiz status:", status);
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "Unknown error";
       const fullErrorMessage = `Failed to initialize quiz: ${errorMessage}`;
@@ -365,7 +366,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       // raced its way past the page-side lock. Now we return a non-network
       // error so runCompletion treats it as a real failure.
       if (hasCompletedRef.current) {
-        console.log("[Hybrid] handleCompleteQuiz re-entered, refusing");
+        log.debug("[Hybrid] handleCompleteQuiz re-entered, refusing");
         return {
           success: false,
           timestamp: Date.now(),
@@ -382,7 +383,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
       try {
         await autoSaveManager.current?.waitForIdle(1500);
       } catch (err) {
-        console.warn("[Hybrid] waitForIdle threw:", err);
+        log.warn("[Hybrid] waitForIdle threw:", err);
       }
 
       // Read state via the state machine's synchronously-mirrored ref, not the
@@ -405,9 +406,9 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         localStorage.removeItem(`pathology-bites-quiz-result-${sessionId}`);
         localStorage.removeItem(`pathology-bites-quiz-draft-${sessionId}`);
         syncManager.current?.clearSessionCache(sessionId);
-        console.log("[Hybrid] Cleared quiz cache after completion");
+        log.debug("[Hybrid] Cleared quiz cache after completion");
       } catch (error) {
-        console.warn("Failed to clear quiz data after completion:", error);
+        log.warn("Failed to clear quiz data after completion:", error);
       }
 
       // Call the completion callback with current state
@@ -444,14 +445,14 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
           unlockedAchievementIds
         );
 
-        console.log("[Hybrid] Calculated achievements to unlock:", achievementsToUnlock);
+        log.debug("[Hybrid] Calculated achievements to unlock:", achievementsToUnlock);
       }
 
       // DEBUG: Log quiz state before syncing (uses latest state, not closure-captured)
       const answersArray =
         latestState.answers instanceof Map ? Array.from(latestState.answers.entries()) : [];
 
-      console.log("[Hybrid] Quiz state before sync:", {
+      log.debug("[Hybrid] Quiz state before sync:", {
         sessionId: latestState.sessionId,
         answersCount: latestState.answers instanceof Map ? latestState.answers.size : 0,
         answersPreview: answersArray.slice(0, 3).map(([qId, ans]) => ({
@@ -471,7 +472,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
         // If the quiz was already completed, log this for debugging
         if (result.serverResponse?.message?.includes("already completed")) {
-          console.log("[Hybrid] Quiz was already completed on server, sync treated as success");
+          log.debug("[Hybrid] Quiz was already completed on server, sync treated as success");
         }
 
         // Always invalidate the quiz list cache so the completed quiz shows up.
@@ -498,23 +499,23 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
             totalTimeSpent: quizResult.totalTimeSpent,
           });
 
-          console.log("[Hybrid] Updating cache incrementally with quiz results");
+          log.debug("[Hybrid] Updating cache incrementally with quiz results");
           updateCacheAfterQuiz(
             quizResult,
             newAchievements,
             result.serverResponse?.metadata // Pass metadata for cache validation guards
           ).catch((err) => {
-            console.warn("[Hybrid] Failed to update cache after quiz completion:", err);
+            log.warn("[Hybrid] Failed to update cache after quiz completion:", err);
             // Fall back to a full refetch so the dashboard isn't stale even on failure
             invalidateUnifiedData(true).catch(() => {});
           });
         } else {
-          console.warn(
+          log.warn(
             "[Hybrid] Missing quiz result data in serverResponse — falling back to full refetch",
             { serverResponseKeys: Object.keys(result.serverResponse ?? {}) }
           );
           invalidateUnifiedData(true).catch((err) => {
-            console.warn("[Hybrid] Fallback invalidateUnifiedData failed:", err);
+            log.warn("[Hybrid] Fallback invalidateUnifiedData failed:", err);
           });
         }
       } else {
@@ -562,7 +563,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
   useEffect(() => {
     // Only auto-start once and only if status is "not_started"
     if (isInitialized && quizState.status === "not_started" && !hasAutoStartedRef.current) {
-      console.log("[Hybrid] Auto-starting quiz from 'not_started' status");
+      log.debug("[Hybrid] Auto-starting quiz from 'not_started' status");
       hasAutoStartedRef.current = true;
       stateActions.startQuiz();
     }
@@ -592,7 +593,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
             JSON.stringify(quizData)
           );
         } catch (error) {
-          console.warn("Failed to save quiz state to localStorage:", error);
+          log.warn("Failed to save quiz state to localStorage:", error);
         }
       };
 
@@ -645,7 +646,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
     if (timerIntervalRef.current) return; // already running
 
-    console.log("[Hybrid] Starting timer countdown");
+    log.debug("[Hybrid] Starting timer countdown");
     timerIntervalRef.current = setInterval(() => {
       setTimeRemaining((prev) => {
         if (prev === null || prev <= 0) {
@@ -681,7 +682,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     if (timeRemaining !== 0) return;
     if (quizState.config.timing !== "timed") return;
     timerExpiredFiredRef.current = true;
-    console.log("[Hybrid] Timer expired! Notifying page.");
+    log.debug("[Hybrid] Timer expired! Notifying page.");
     if (timerIntervalRef.current) {
       clearInterval(timerIntervalRef.current);
       timerIntervalRef.current = null;
@@ -749,7 +750,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
         // Note: Navigation is handled by the page component
         // to properly manage beforeunload event cleanup
       } catch (error) {
-        console.error("Failed to save and exit:", error);
+        log.error("Failed to save and exit:", error);
         toast.error("Failed to save quiz. Please try again.");
         throw error; // Re-throw so page component knows save failed
       }
@@ -761,9 +762,9 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
     submitAnswer: useCallback(
       (questionId: string, answerId: string) => {
-        console.log("[Hybrid] submitAnswer called:", { questionId, answerId });
+        log.debug("[Hybrid] submitAnswer called:", { questionId, answerId });
         const isCorrect = stateActions.submitAnswer(questionId, answerId);
-        console.log(
+        log.debug(
           "[Hybrid] Answer submitted, isCorrect:",
           isCorrect,
           "Total answers now:",
@@ -830,7 +831,7 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
     __devSetTimer: useCallback((seconds: number) => {
       if (process.env.NODE_ENV !== "development") return;
-      console.log(`[Hybrid] __devSetTimer: jumping timer to ${seconds}s`);
+      log.debug(`[Hybrid] __devSetTimer: jumping timer to ${seconds}s`);
       setTimeRemaining(seconds);
     }, []),
   };

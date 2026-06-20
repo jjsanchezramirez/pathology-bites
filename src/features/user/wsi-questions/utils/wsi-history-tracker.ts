@@ -1,3 +1,5 @@
+import { log } from "@/shared/utils/logging";
+
 /**
  * WSI History Tracker
  * Tracks recently shown WSI slides to prevent repetition
@@ -32,10 +34,10 @@ export class WSIHistoryTracker {
       const stored = localStorage.getItem(HISTORY_KEY);
       if (stored) {
         this.history = JSON.parse(stored);
-        console.log(`[WSI History] Loaded ${this.history.length} entries from storage`);
+        log.debug(`[WSI History] Loaded ${this.history.length} entries from storage`);
       }
     } catch (error) {
-      console.error("[WSI History] Failed to load history:", error);
+      log.error("[WSI History] Failed to load history:", error);
       this.history = [];
     }
   }
@@ -49,7 +51,7 @@ export class WSIHistoryTracker {
     try {
       localStorage.setItem(HISTORY_KEY, JSON.stringify(this.history));
     } catch (error) {
-      console.error("[WSI History] Failed to save history:", error);
+      log.error("[WSI History] Failed to save history:", error);
     }
   }
 
@@ -75,7 +77,7 @@ export class WSIHistoryTracker {
     }
 
     this.saveHistory();
-    console.log(`[WSI History] Added ${wsiId} (${category}). Total: ${this.history.length}`);
+    log.debug(`[WSI History] Added ${wsiId} (${category}). Total: ${this.history.length}`);
   }
 
   /**
@@ -102,7 +104,7 @@ export class WSIHistoryTracker {
       this.history = this.history.filter((e) => e.category !== category);
     }
     this.saveHistory();
-    console.log(`[WSI History] Cleared history for category: ${category}`);
+    log.debug(`[WSI History] Cleared history for category: ${category}`);
   }
 
   /**
@@ -111,7 +113,7 @@ export class WSIHistoryTracker {
   clearAll(): void {
     this.history = [];
     this.saveHistory();
-    console.log("[WSI History] Cleared all history");
+    log.debug("[WSI History] Cleared all history");
   }
 
   /**

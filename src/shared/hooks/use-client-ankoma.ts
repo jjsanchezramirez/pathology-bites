@@ -5,6 +5,7 @@ import { AnkomaData, AnkomaDeck } from "@/features/user/anki/types/anki-card";
 import { parseAnkomaData } from "@/features/user/anki/utils/ankoma-parser";
 import { ANKOMA_JSON_URL } from "@/shared/config/ankoma";
 import { toast } from "@/shared/utils/ui/toast";
+import { log } from "@/shared/utils/logging";
 
 // Module-scope cache so we only fetch once per session
 let cachedAnkomaPromise: Promise<AnkomaData> | null = null;
@@ -41,7 +42,7 @@ async function loadClientAnkoma(): Promise<AnkomaData> {
           : e?.message || "Failed to fetch Ankoma dataset.";
 
       // In production, do NOT fall back to Vercel proxy to avoid bandwidth/invocations.
-      console.error("[Ankoma] R2 fetch failed. Check R2 CORS and network.", e);
+      log.error("[Ankoma] R2 fetch failed. Check R2 CORS and network.", e);
       throw new Error(msg);
     }
   }

@@ -14,6 +14,7 @@ import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache"
 import type { UserStats } from "@/features/user/achievements/services/achievement-checker";
 import { calculateAchievementProgress } from "@/features/user/achievements/services/achievement-checker.client";
 import type { QuizResult } from "@/features/user/quiz/types/quiz";
+import { log } from "@/shared/utils/logging";
 
 // Loose shape used to read the cached user-data payload without dragging the full
 // UnifiedData type from use-unified-data.ts (where it isn't exported). All fields are
@@ -52,7 +53,7 @@ type UnifiedDataShape = {
  * @param revalidate - Whether to immediately fetch fresh data (default: true)
  */
 export async function invalidateUnifiedData(mutate: ScopedMutator, revalidate = true) {
-  console.log("[Cache] 🔄 Invalidating unified data cache");
+  log.debug("[Cache] 🔄 Invalidating unified data cache");
 
   if (revalidate) {
     // Invalidate and immediately refetch
@@ -70,7 +71,7 @@ export async function invalidateUnifiedData(mutate: ScopedMutator, revalidate = 
  * @param revalidate - Whether to immediately fetch fresh data (default: true)
  */
 export async function invalidateUserSettings(mutate: ScopedMutator, revalidate = true) {
-  console.log("[Cache] 🔄 Invalidating user settings cache");
+  log.debug("[Cache] 🔄 Invalidating user settings cache");
 
   if (revalidate) {
     await mutate("settings");
@@ -86,7 +87,7 @@ export async function invalidateUserSettings(mutate: ScopedMutator, revalidate =
  * @param revalidate - Whether to immediately fetch fresh data (default: true)
  */
 export async function invalidateQuizSessions(mutate: ScopedMutator, revalidate = true) {
-  console.log("[Cache] 🔄 Invalidating quiz sessions cache");
+  log.debug("[Cache] 🔄 Invalidating quiz sessions cache");
 
   if (revalidate) {
     await mutate("quiz-sessions-all");
@@ -126,7 +127,7 @@ export function patchCachedQuizSession(sessionId: string, patch: Partial<CachedQ
  * Useful for logout, critical errors, etc.
  */
 export async function invalidateAllCaches(mutate: ScopedMutator) {
-  console.log("[Cache] 🗑️ Invalidating all caches");
+  log.debug("[Cache] 🗑️ Invalidating all caches");
 
   // Invalidate all SWR keys
   await mutate(
@@ -144,7 +145,7 @@ export async function invalidateAllCaches(mutate: ScopedMutator) {
  * Useful when you want to ensure fresh data everywhere
  */
 export async function refreshAllCaches(mutate: ScopedMutator) {
-  console.log("[Cache] 🔄 Refreshing all caches");
+  log.debug("[Cache] 🔄 Refreshing all caches");
 
   // Refresh unified data
   await invalidateUnifiedData(mutate, true);
@@ -179,8 +180,8 @@ export async function updateCacheAfterQuiz(
     lastQuizTimestamp: string;
   }
 ) {
-  console.log("[Cache] 🎯 Quiz completed, updating cache incrementally");
-  console.log("[Cache] Quiz result:", {
+  log.debug("[Cache] 🎯 Quiz completed, updating cache incrementally");
+  log.debug("[Cache] Quiz result:", {
     score: quizResult.score,
     totalQuestions: quizResult.totalQuestions,
     newAchievements: newAchievements?.length || 0,
@@ -199,12 +200,12 @@ export async function updateCacheAfterQuiz(
     const currentCache = unifiedCache.get<UnifiedDataShape>(CACHE_NAMESPACES.SWR.name, "user-data");
 
     if (!currentCache) {
-      console.log("[Cache] ⚠️ No cache found, falling back to full refetch");
+      log.debug("[Cache] ⚠️ No cache found, falling back to full refetch");
       await invalidateUnifiedData(mutate, true);
       return;
     }
 
-    console.log("[Cache] 📦 Current cache found, performing validation");
+    log.debug("[Cache] 📦 Current cache found, performing validation");
 
     // GUARD #1 was removed: it compared `currentCache.summary.completedQuizzes` against
     // `serverMetadata.totalQuizzes`, but these are semantically different counts.
@@ -225,12 +226,12 @@ export async function updateCacheAfterQuiz(
 
       // Allow 5-second tolerance for clock skew and processing time
       if (timeDiff > 5000) {
-        console.warn("[Cache] ⚠️ Timestamp mismatch detected!", {
+        log.warn("[Cache] ⚠️ Timestamp mismatch detected!", {
           expectedTime: new Date(expectedTime).toISOString(),
           serverTime: new Date(serverTime).toISOString(),
           differenceMs: timeDiff,
         });
-        console.warn("[Cache] 🔄 Quiz completed elsewhere. Syncing from server...");
+        log.warn("[Cache] 🔄 Quiz completed elsewhere. Syncing from server...");
 
         // Show user-friendly notification
         if (typeof window !== "undefined") {
@@ -245,12 +246,12 @@ export async function updateCacheAfterQuiz(
         return;
       }
 
-      console.log("[Cache] ✅ Timestamp guard passed", {
+      log.debug("[Cache] ✅ Timestamp guard passed", {
         difference: `${timeDiff}ms`,
       });
     }
 
-    console.log("[Cache] 🛡️ Safe to update cache locally");
+    log.debug("[Cache] 🛡️ Safe to update cache locally");
 
     // Calculate updated stats
     const isPerfectScore = quizResult.score === 100;
@@ -357,8 +358,8 @@ export async function updateCacheAfterQuiz(
     // Update SWR cache immediately (instant UI update, no loading spinner!)
     await mutate("user-data", updatedData, { revalidate: false });
 
-    console.log("[Cache] ✅ Cache updated incrementally - instant UI update!");
-    console.log("[Cache] 💾 Saved API call: Would have refetched ~50KB, updated ~5KB instead");
+    log.debug("[Cache] ✅ Cache updated incrementally - instant UI update!");
+    log.debug("[Cache] 💾 Saved API call: Would have refetched ~50KB, updated ~5KB instead");
 
     // Background revalidation: the incremental patch above can't recompute fields that
     // depend on the rest of the user pool (percentile, peerRank, totalUsers) because we
@@ -367,12 +368,12 @@ export async function updateCacheAfterQuiz(
     // — the user already sees the updated cache; the refetch is only for fields we
     // can't compute client-side.
     void mutate("user-data").catch((err) =>
-      console.warn("[Cache] Background revalidation failed (non-fatal):", err)
+      log.warn("[Cache] Background revalidation failed (non-fatal):", err)
     );
-    console.log("[Cache] 🔄 Background revalidation scheduled for percentile/rank fields");
+    log.debug("[Cache] 🔄 Background revalidation scheduled for percentile/rank fields");
   } catch (error) {
-    console.error("[Cache] ❌ Error updating cache incrementally:", error);
-    console.log("[Cache] ⚠️ Falling back to full refetch");
+    log.error("[Cache] ❌ Error updating cache incrementally:", error);
+    log.debug("[Cache] ⚠️ Falling back to full refetch");
     await invalidateUnifiedData(mutate, true);
   }
 }
@@ -382,7 +383,7 @@ export async function updateCacheAfterQuiz(
  * @deprecated Use updateCacheAfterQuiz() instead for better performance
  */
 export async function onQuizComplete(mutate: ScopedMutator) {
-  console.warn("[Cache] ⚠️ onQuizComplete() is deprecated. Use updateCacheAfterQuiz() instead");
+  log.warn("[Cache] ⚠️ onQuizComplete() is deprecated. Use updateCacheAfterQuiz() instead");
   await invalidateUnifiedData(mutate, true);
 }
 
@@ -391,7 +392,7 @@ export async function onQuizComplete(mutate: ScopedMutator) {
  * Invalidates settings cache to reflect changes
  */
 export async function onSettingsUpdate(mutate: ScopedMutator) {
-  console.log("[Cache] ⚙️ Settings updated, invalidating cache");
+  log.debug("[Cache] ⚙️ Settings updated, invalidating cache");
 
   // Invalidate settings cache
   await invalidateUserSettings(mutate, true);
@@ -404,7 +405,7 @@ export async function onSettingsUpdate(mutate: ScopedMutator) {
  * Clears all caches to prevent data leakage
  */
 export async function onLogout(mutate: ScopedMutator) {
-  console.log("[Cache] 👋 Logging out, clearing all caches");
+  log.debug("[Cache] 👋 Logging out, clearing all caches");
 
   // Clear all caches
   await invalidateAllCaches(mutate);
@@ -415,18 +416,18 @@ export async function onLogout(mutate: ScopedMutator) {
  * Useful for warming up cache before navigation
  */
 export async function prefetchUnifiedData() {
-  console.log("[Cache] 🔮 Pre-fetching unified data");
+  log.debug("[Cache] 🔮 Pre-fetching unified data");
 
   try {
     const res = await fetch("/api/user/performance-data");
     if (res.ok) {
       const data = await res.json();
       // Cache will be populated automatically by SWR
-      console.log("[Cache] ✅ Pre-fetch successful");
+      log.debug("[Cache] ✅ Pre-fetch successful");
       return data;
     }
   } catch (error) {
-    console.error("[Cache] ❌ Pre-fetch failed:", error);
+    log.error("[Cache] ❌ Pre-fetch failed:", error);
   }
 }
 
@@ -447,7 +448,7 @@ export function isCacheStale(_cacheKey: string, _maxAge: number): boolean {
 export function clearNamespaceCache(
   namespace: (typeof CACHE_NAMESPACES)[keyof typeof CACHE_NAMESPACES]["name"]
 ): void {
-  console.log(`[Cache] 🗑️ Clearing ${namespace} namespace`);
+  log.debug(`[Cache] 🗑️ Clearing ${namespace} namespace`);
   unifiedCache.clearNamespace(namespace);
 }
 
@@ -455,7 +456,7 @@ export function clearNamespaceCache(
  * Clear all unified cache (both SWR and direct cache)
  */
 export function clearUnifiedCache(): void {
-  console.log("[Cache] 🗑️ Clearing all unified cache");
+  log.debug("[Cache] 🗑️ Clearing all unified cache");
   unifiedCache.clearAll();
 }
 
@@ -524,7 +525,7 @@ function updateHeatmapData(
 export function cleanupExpiredCache(
   namespace?: (typeof CACHE_NAMESPACES)[keyof typeof CACHE_NAMESPACES]["name"]
 ): void {
-  console.log(`[Cache] 🧹 Cleaning up expired entries${namespace ? ` in ${namespace}` : ""}`);
+  log.debug(`[Cache] 🧹 Cleaning up expired entries${namespace ? ` in ${namespace}` : ""}`);
   unifiedCache.cleanup(namespace);
 }
 

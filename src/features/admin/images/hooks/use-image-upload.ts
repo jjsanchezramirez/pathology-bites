@@ -4,6 +4,7 @@ import { toast } from "@/shared/utils/ui/toast";
 import { FileProgress, ImageCategory } from "@/shared/types/images";
 import { compressImage } from "@/features/admin/images/services/image-upload";
 import { invalidateImageCache } from "@/features/admin/images/services/images";
+import { log } from "@/shared/utils/logging";
 
 interface UseImageUploadOptions {
   onUploadComplete?: () => void;
@@ -148,7 +149,7 @@ export function useImageUpload({
 
         onUploadComplete?.();
       } catch (error) {
-        console.error("Upload error:", error);
+        log.error("Upload error:", error);
         toast.error(error instanceof Error ? error.message : "Failed to upload images");
       } finally {
         setIsUploading(false);

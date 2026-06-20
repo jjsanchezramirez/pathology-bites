@@ -13,6 +13,7 @@ import {
 } from "@/shared/components/ui/card";
 import { RefreshCw, Mail, Key } from "lucide-react";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
+import { log } from "@/shared/utils/logging";
 
 interface PasswordChangeFormProps {
   className?: string;
@@ -74,7 +75,7 @@ export function PasswordChangeForm({ className, onSuccess }: PasswordChangeFormP
       setLastResetTime(new Date());
       onSuccess?.();
     } catch (error) {
-      console.error("Password reset error:", error);
+      log.error("Password reset error:", error);
       toast.error(error instanceof Error ? error.message : "Failed to send password reset email");
     } finally {
       setLoading(false);

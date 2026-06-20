@@ -25,6 +25,7 @@ import {
 import { toast } from "@/shared/utils/ui/toast";
 import { Megaphone, Send, Loader2 } from "lucide-react";
 import { apiClient } from "@/shared/utils/api/api-client";
+import { log } from "@/shared/utils/logging";
 
 interface SystemUpdateForm {
   title: string;
@@ -74,9 +75,9 @@ export function SystemUpdateBroadcaster() {
         targetAudience: "all",
       });
 
-      console.log("System update broadcasted:", result);
+      log.debug("System update broadcasted:", result);
     } catch (error) {
-      console.error("Error broadcasting system update:", error);
+      log.error("Error broadcasting system update:", error);
       toast.error(error instanceof Error ? error.message : "Failed to broadcast system update");
     } finally {
       setIsSubmitting(false);

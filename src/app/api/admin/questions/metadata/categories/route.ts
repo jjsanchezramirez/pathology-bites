@@ -1,6 +1,7 @@
 // src/app/api/admin/questions/metadata/categories/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -160,7 +161,7 @@ export async function GET(request: NextRequest) {
       currentPage: page,
     });
   } catch (error) {
-    console.error("Error in admin categories API:", error);
+    log.error("Error in admin categories API:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -280,7 +281,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ category: data });
   } catch (error) {
-    console.error("Error creating category:", error);
+    log.error("Error creating category:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -402,7 +403,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ category: data });
   } catch (error) {
-    console.error("Error updating category:", error);
+    log.error("Error updating category:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -504,7 +505,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting category:", error);
+    log.error("Error deleting category:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

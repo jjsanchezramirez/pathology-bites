@@ -14,6 +14,7 @@ import {
   type LibraryImageLike,
   type SvgAssetLike,
 } from "./model/slide-factory";
+import { log } from "@/shared/utils/logging";
 
 const DEBOUNCE_MS = 300;
 const PAGE_SIZE = 20;
@@ -79,7 +80,7 @@ function ImagesTab() {
         const data = await res.json();
         if (!cancelled) setItems(data.images ?? []);
       } catch (err) {
-        console.error("[library] images load failed:", err);
+        log.error("[library] images load failed:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }
@@ -182,7 +183,7 @@ function SvgsTab() {
         const { data } = await q;
         if (!cancelled) setItems(data ?? []);
       } catch (err) {
-        console.error("[library] svgs load failed:", err);
+        log.error("[library] svgs load failed:", err);
       } finally {
         if (!cancelled) setLoading(false);
       }

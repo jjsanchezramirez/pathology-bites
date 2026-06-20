@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { notificationGenerators } from "@/shared/services/notification-generators";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -150,7 +151,7 @@ export async function POST(request: NextRequest) {
       { status: 201 }
     );
   } catch (error) {
-    console.error("Error broadcasting system update:", error);
+    log.error("Error broadcasting system update:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -252,7 +253,7 @@ export async function GET(request: NextRequest) {
       .range(offset, offset + limit - 1);
 
     if (updatesError) {
-      console.error("Error fetching system updates:", updatesError);
+      log.error("Error fetching system updates:", updatesError);
       return NextResponse.json({ error: "Failed to fetch system updates" }, { status: 500 });
     }
 
@@ -262,7 +263,7 @@ export async function GET(request: NextRequest) {
       .select("*", { count: "exact", head: true });
 
     if (countError) {
-      console.error("Error getting system updates count:", countError);
+      log.error("Error getting system updates count:", countError);
       return NextResponse.json({ error: "Failed to get system updates count" }, { status: 500 });
     }
 
@@ -276,7 +277,7 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error fetching system updates:", error);
+    log.error("Error fetching system updates:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

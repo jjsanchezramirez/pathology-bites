@@ -17,6 +17,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { strongColors, lightColors } from "@/shared/utils/category-colors";
 import { apiClient } from "@/shared/utils/api/api-client";
+import { log } from "@/shared/utils/logging";
 
 interface Category {
   id: string;
@@ -72,7 +73,7 @@ export function EditCategoryDialog({
       });
       setCategories(filteredCategories);
     } catch (error) {
-      console.error("Error loading categories:", error);
+      log.error("Error loading categories:", error);
     } finally {
       setLoadingCategories(false);
     }
@@ -125,7 +126,7 @@ export function EditCategoryDialog({
         onSuccess();
       }, 100);
     } catch (error) {
-      console.error("Error updating category:", error);
+      log.error("Error updating category:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update category");
     } finally {
       setIsUpdating(false);

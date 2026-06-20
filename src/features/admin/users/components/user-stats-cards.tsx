@@ -11,6 +11,7 @@ import {
   UserStatsFormatted,
 } from "@/features/admin/users/services/user-stats";
 import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
+import { log } from "@/shared/utils/logging";
 
 export interface UserStatsRef {
   refresh: () => void;
@@ -48,7 +49,7 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
         ttl: 30 * 60 * 1000, // 30 minutes
       });
     } catch (error) {
-      console.error("Failed to load user stats:", error);
+      log.error("Failed to load user stats:", error);
       toast.error("Failed to load user statistics");
     } finally {
       setLoading(false);

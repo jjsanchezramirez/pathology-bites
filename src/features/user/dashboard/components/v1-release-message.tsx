@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { userSettingsService } from "@/shared/services/user-settings";
 import Link from "next/link";
+import { log } from "@/shared/utils/logging";
 
 interface V1ReleaseMessageProps {
   onDismiss: () => void;
@@ -21,7 +22,7 @@ export function V1ReleaseMessage({ onDismiss }: V1ReleaseMessageProps) {
       await userSettingsService.markV1ReleaseDismissed();
       onDismiss();
     } catch (error) {
-      console.error("Error dismissing v1.0 release message:", error);
+      log.error("Error dismissing v1.0 release message:", error);
       // Still dismiss the message locally even if the API call fails
       onDismiss();
     } finally {

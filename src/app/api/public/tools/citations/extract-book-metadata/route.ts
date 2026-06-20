@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -114,7 +115,7 @@ export async function GET(request: NextRequest) {
     // Check server-side cache first
     const cached = isbnCache.get(cleanIsbn)
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      console.log(`[ISBN Cache] Hit: ${cleanIsbn}`)
+      log.debug(`[ISBN Cache] Hit: ${cleanIsbn}`)
       return NextResponse.json(cached.data)
     }
 
@@ -164,13 +165,13 @@ export async function GET(request: NextRequest) {
             data: result,
             timestamp: Date.now()
           })
-          console.log(`[ISBN Cache] Stored: ${cleanIsbn}`)
+          log.debug(`[ISBN Cache] Stored: ${cleanIsbn}`)
 
           return NextResponse.json(result)
         }
       }
     } catch (error) {
-      console.error('OpenLibrary API error:', error)
+      log.error('OpenLibrary API error:', error)
     }
 
     // Fallback to Google Books API
@@ -208,13 +209,13 @@ export async function GET(request: NextRequest) {
             data: result,
             timestamp: Date.now()
           })
-          console.log(`[ISBN Cache] Stored (Google Books): ${cleanIsbn}`)
+          log.debug(`[ISBN Cache] Stored (Google Books): ${cleanIsbn}`)
 
           return NextResponse.json(result)
         }
       }
     } catch (error) {
-      console.error('Google Books API error:', error)
+      log.error('Google Books API error:', error)
     }
     
     // If both APIs fail, return a fallback response
@@ -227,7 +228,7 @@ export async function GET(request: NextRequest) {
     })
     
   } catch (error) {
-    console.error('Error extracting book metadata:', error)
+    log.error('Error extracting book metadata:', error)
     
     return NextResponse.json(
       { error: 'Failed to extract book metadata' },

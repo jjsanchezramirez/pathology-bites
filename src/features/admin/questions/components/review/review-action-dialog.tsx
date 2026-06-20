@@ -16,6 +16,7 @@ import { Loader2, CheckCircle, XCircle, AlertCircle, MessageSquare } from "lucid
 import { toast } from "@/shared/utils/ui/toast";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { createClient } from "@/shared/services/client";
+import { log } from "@/shared/utils/logging";
 
 interface ReviewActionDialogProps {
   open: boolean;
@@ -62,7 +63,7 @@ export function ReviewActionDialog({
 
         if (error && error.code !== "PGRST116") {
           // PGRST116 = no rows returned
-          console.error("Error fetching resubmission notes:", error);
+          log.error("Error fetching resubmission notes:", error);
 
           // Detect network errors
           const isNetworkError =
@@ -78,7 +79,7 @@ export function ReviewActionDialog({
           setResubmissionNotes(null);
         }
       } catch (error) {
-        console.error("Unexpected error fetching resubmission notes:", error);
+        log.error("Unexpected error fetching resubmission notes:", error);
 
         // Detect network errors
         const isNetworkError =
@@ -130,7 +131,7 @@ export function ReviewActionDialog({
       onOpenChange(false);
       setFeedback("");
     } catch (error) {
-      console.error(`Error ${action}ing question:`, error);
+      log.error(`Error ${action}ing question:`, error);
       toast.error(error instanceof Error ? error.message : `Failed to ${action} question`);
     } finally {
       setSubmitting(false);

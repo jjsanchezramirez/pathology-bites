@@ -8,6 +8,7 @@ import {
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_UI_SETTINGS,
 } from "@/shared/config/user-settings-defaults";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -146,7 +147,7 @@ export async function GET(request: NextRequest) {
       updated_at: data.updated_at,
     };
 
-    console.log(
+    log.debug(
       "[UserSettings API] Returning settings for user:",
       userId,
       "text_zoom:",
@@ -158,11 +159,11 @@ export async function GET(request: NextRequest) {
       data: combinedSettings,
     });
   } catch (error) {
-    console.error(
+    log.error(
       "[UserSettings GET] Unexpected error:",
       error instanceof Error ? error.message : String(error)
     );
-    console.error(
+    log.error(
       "[UserSettings GET] Error stack:",
       error instanceof Error ? error.stack : "No stack trace"
     );
@@ -242,10 +243,10 @@ export async function PATCH(request: NextRequest) {
     // Auth is handled by middleware
     const userId = request.headers.get("x-user-id");
 
-    console.log("[UserSettings PATCH] userId:", userId);
+    log.debug("[UserSettings PATCH] userId:", userId);
 
     if (!userId) {
-      console.error("[UserSettings PATCH] No userId in headers");
+      log.error("[UserSettings PATCH] No userId in headers");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
@@ -253,7 +254,7 @@ export async function PATCH(request: NextRequest) {
     const body = await request.json();
     const { section, settings } = body;
 
-    console.log("[UserSettings PATCH] Request:", { section, settings });
+    log.debug("[UserSettings PATCH] Request:", { section, settings });
 
     // Validate section
     const validSections = [
@@ -263,7 +264,7 @@ export async function PATCH(request: NextRequest) {
       "counter_settings",
     ];
     if (!section || !validSections.includes(section)) {
-      console.error("[UserSettings PATCH] Invalid section:", section);
+      log.error("[UserSettings PATCH] Invalid section:", section);
       return NextResponse.json(
         { error: "Invalid section. Must be one of: " + validSections.join(", ") },
         { status: 400 }
@@ -272,7 +273,7 @@ export async function PATCH(request: NextRequest) {
 
     // Validate settings
     if (!settings || typeof settings !== "object") {
-      console.error("[UserSettings PATCH] Invalid settings:", settings);
+      log.error("[UserSettings PATCH] Invalid settings:", settings);
       return NextResponse.json({ error: "Settings must be a valid object" }, { status: 400 });
     }
 
@@ -357,7 +358,7 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Update settings using upsert with correct schema
-    console.log("[UserSettings PATCH] Upserting data:", JSON.stringify(updateData, null, 2));
+    log.debug("[UserSettings PATCH] Upserting data:", JSON.stringify(updateData, null, 2));
 
     const { data, error } = await supabase
       .from("user_settings")
@@ -371,7 +372,7 @@ export async function PATCH(request: NextRequest) {
       .maybeSingle();
 
     if (error) {
-      console.error("[UserSettings PATCH] Database error:", error);
+      log.error("[UserSettings PATCH] Database error:", error);
       return NextResponse.json(
         { error: "Failed to update user settings", details: error.message },
         { status: 500 }
@@ -380,7 +381,7 @@ export async function PATCH(request: NextRequest) {
 
     // Check if upsert returned no data (RLS policy might have blocked it)
     if (!data) {
-      console.warn(
+      log.warn(
         "[UserSettings PATCH] Upsert returned no data - RLS policy may have blocked the operation"
       );
       return NextResponse.json(
@@ -389,7 +390,7 @@ export async function PATCH(request: NextRequest) {
       );
     }
 
-    console.log("[UserSettings PATCH] Update successful");
+    log.debug("[UserSettings PATCH] Update successful");
 
     // Return the combined settings in the expected format
     const combinedSettings = {
@@ -406,11 +407,11 @@ export async function PATCH(request: NextRequest) {
       data: combinedSettings,
     });
   } catch (error) {
-    console.error(
+    log.error(
       "[UserSettings PATCH] Unexpected error:",
       error instanceof Error ? error.message : String(error)
     );
-    console.error(
+    log.error(
       "[UserSettings PATCH] Error stack:",
       error instanceof Error ? error.stack : "No stack trace"
     );

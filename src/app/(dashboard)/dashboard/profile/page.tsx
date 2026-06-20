@@ -13,6 +13,7 @@ import {
   AccountDetailsCard,
 } from "@/features/user/profile/components";
 import { toast } from "@/shared/utils/ui/toast";
+import { log } from "@/shared/utils/logging";
 
 interface UserProfile {
   id: string;
@@ -84,7 +85,7 @@ function ProfilePageContent() {
       setFormData(profileData);
       setOriginalFormData(profileData);
     } catch (error) {
-      console.error("Error fetching profile:", error);
+      log.error("Error fetching profile:", error);
       toast.error("Failed to load profile");
     } finally {
       setProfileLoading(false);
@@ -117,7 +118,7 @@ function ProfilePageContent() {
       await fetchUserProfile();
       setIsEditMode(false);
     } catch (error) {
-      console.error("Error updating profile:", error);
+      log.error("Error updating profile:", error);
       toast.error("Failed to update profile");
     } finally {
       setSaving(false);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
+import { log } from "@/shared/utils/logging";
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
@@ -318,7 +319,7 @@ export async function POST(request: NextRequest) {
     }
 
     if (result?.error) {
-      console.error(`Bulk ${action} error:`, result.error);
+      log.error(`Bulk ${action} error:`, result.error);
       return NextResponse.json({ error: `Failed to ${action} questions` }, { status: 500 });
     }
 
@@ -334,7 +335,7 @@ export async function POST(request: NextRequest) {
       message: `Successfully ${action.replace("_", " ")}ed ${affectedCount} question(s)`,
     });
   } catch (error) {
-    console.error("Bulk questions operation error:", error);
+    log.error("Bulk questions operation error:", error);
     return NextResponse.json(
       {
         error: "Bulk operation failed",

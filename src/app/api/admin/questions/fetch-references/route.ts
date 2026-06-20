@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PATHOLOGY_JOURNALS } from "@/shared/utils/domain/pathology-journals";
+import { log } from "@/shared/utils/logging";
 
 /**
  * Semantic Scholar API route for fetching academic references
@@ -271,7 +272,7 @@ export async function POST(request: NextRequest) {
       cached: false,
     });
   } catch (error) {
-    console.error("Semantic Scholar API error:", error);
+    log.error("Semantic Scholar API error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       {
@@ -360,7 +361,7 @@ export async function GET(request: NextRequest) {
           { status: 429 }
         );
       }
-      console.error(`Semantic Scholar API error: ${response.status} ${response.statusText}`);
+      log.error(`Semantic Scholar API error: ${response.status} ${response.statusText}`);
       throw new Error(`Semantic Scholar API error: ${response.status}`);
     }
 
@@ -454,7 +455,7 @@ export async function GET(request: NextRequest) {
       })),
     });
   } catch (error) {
-    console.error("Semantic Scholar API error:", error);
+    log.error("Semantic Scholar API error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       {

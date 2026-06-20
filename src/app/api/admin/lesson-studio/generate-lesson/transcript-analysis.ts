@@ -10,6 +10,7 @@ import { TEXT_FALLBACK_CHAIN } from "@/shared/config/ai-models";
 import { callWithFallback } from "@/shared/services/ai-fallback";
 import type { ImageInput } from "../generate-sequence/prompt";
 import type { TranscriptAnalysis } from "./types";
+import { log } from "@/shared/utils/logging";
 
 // ---------------------------------------------------------------------------
 // Prompt
@@ -236,10 +237,10 @@ export async function analyzeTranscript(
     const parsed = parseTranscriptResponse(result, images.length);
     if (parsed) return parsed;
 
-    console.warn("[transcript-analysis] Could not parse AI response, using fallback");
+    log.warn("[transcript-analysis] Could not parse AI response, using fallback");
     return fallbackAnalysis(transcript, images);
   } catch (err) {
-    console.warn("[transcript-analysis] All models failed:", err);
+    log.warn("[transcript-analysis] All models failed:", err);
     return fallbackAnalysis(transcript, images);
   }
 }

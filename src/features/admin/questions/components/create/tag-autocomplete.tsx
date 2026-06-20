@@ -7,6 +7,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Plus, X, Loader2 } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import { TagData } from "@/shared/types/questions";
+import { log } from "@/shared/utils/logging";
 
 // Local type alias for convenience
 type Tag = TagData;
@@ -161,7 +162,7 @@ export function TagAutocomplete({
         toast.error(`Failed to create tag: ${errorData.error || "Unknown error"}`);
       }
     } catch (error) {
-      console.error("Error creating tag:", error);
+      log.error("Error creating tag:", error);
       toast.error("Failed to create tag");
     } finally {
       setIsCreating(false);

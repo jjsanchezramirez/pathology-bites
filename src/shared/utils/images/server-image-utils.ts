@@ -1,4 +1,5 @@
 import sharp from "sharp";
+import { log } from "@/shared/utils/logging";
 
 export interface ImageDimensions {
   width: number;
@@ -21,7 +22,7 @@ export async function getImageDimensionsFromBuffer(buffer: Buffer): Promise<Imag
       height: metadata.height,
     };
   } catch (error) {
-    console.error("Error getting image dimensions:", error);
+    log.error("Error getting image dimensions:", error);
     throw new Error("Failed to process image dimensions");
   }
 }
@@ -34,7 +35,7 @@ export async function getImageDimensionsFromFile(file: File): Promise<ImageDimen
     const buffer = Buffer.from(await file.arrayBuffer());
     return await getImageDimensionsFromBuffer(buffer);
   } catch (error) {
-    console.error("Error getting image dimensions from file:", error);
+    log.error("Error getting image dimensions from file:", error);
     throw new Error("Failed to process image dimensions");
   }
 }
@@ -59,7 +60,7 @@ export async function getImageFormat(buffer: Buffer): Promise<string | undefined
     const metadata = await sharp(buffer).metadata();
     return metadata.format;
   } catch (error) {
-    console.error("Error getting image format:", error);
+    log.error("Error getting image format:", error);
     return undefined;
   }
 }

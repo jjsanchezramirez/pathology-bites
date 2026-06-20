@@ -17,6 +17,7 @@ import {
 } from "@/shared/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { strongColors, lightColors } from "@/shared/utils/category-colors";
+import { log } from "@/shared/utils/logging";
 
 interface CreateCategoryDialogProps {
   open: boolean;
@@ -56,7 +57,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
       const data = await response.json();
       setCategories(data.categories || []);
     } catch (error) {
-      console.error("Error loading categories:", error);
+      log.error("Error loading categories:", error);
     } finally {
       setLoadingCategories(false);
     }
@@ -102,7 +103,7 @@ export function CreateCategoryDialog({ open, onOpenChange, onSuccess }: CreateCa
         onSuccess();
       }, 100);
     } catch (error) {
-      console.error("Error creating category:", error);
+      log.error("Error creating category:", error);
       toast.error(error instanceof Error ? error.message : "Failed to create category");
     } finally {
       setIsCreating(false);

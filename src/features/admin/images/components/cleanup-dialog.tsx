@@ -16,6 +16,7 @@ import { Trash2, Loader2 } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import { getOrphanedImages } from "@/features/admin/images/services/image-analytics";
 import { bulkDeleteImages } from "@/features/admin/images/services/images";
+import { log } from "@/shared/utils/logging";
 
 interface CleanupDialogProps {
   open: boolean;
@@ -61,7 +62,7 @@ export function CleanupDialog({
         toast.error(`Failed to delete some images: ${result.errors.join(", ")}`);
       }
     } catch (error) {
-      console.error("Failed to cleanup orphaned images:", error);
+      log.error("Failed to cleanup orphaned images:", error);
       toast.error("Failed to cleanup orphaned images");
     } finally {
       setIsDeleting(false);

@@ -7,6 +7,7 @@ import { SWRConfig, Cache } from "swr";
 import { useEffect } from "react";
 import { autoCleanup } from "@/shared/utils/cache/storage-cleanup";
 import { unifiedCache, CACHE_NAMESPACES } from "@/shared/services/unified-cache";
+import { log } from "@/shared/utils/logging";
 
 /**
  * SWR Cache Provider with Unified Cache System
@@ -65,7 +66,7 @@ export function SWRCacheProvider({ children }: { children: React.ReactNode }) {
               }
             }
           } catch (error) {
-            console.error("[SWR Cache] ❌ Failed to restore cache:", error);
+            log.error("[SWR Cache] ❌ Failed to restore cache:", error);
           }
 
           // Create custom Map that syncs with unified cache
@@ -130,13 +131,13 @@ export function SWRCacheProvider({ children }: { children: React.ReactNode }) {
 
         // Show errors in console during development
         onError: (error, key) => {
-          console.error(`[SWR Error] ${key}:`, error);
+          log.error(`[SWR Error] ${key}:`, error);
         },
 
         // Log successful data fetches in development
         onSuccess: (data, key) => {
           if (process.env.NODE_ENV === "development") {
-            console.log(`[SWR Success] ${key}:`, {
+            log.debug(`[SWR Success] ${key}:`, {
               dataType: typeof data,
               hasData: !!data,
               size: JSON.stringify(data).length,
@@ -159,7 +160,7 @@ export function clearSWRCache() {
     try {
       unifiedCache.clearNamespace(CACHE_NAMESPACES.SWR.name);
     } catch (error) {
-      console.error("[SWR Cache] ❌ Failed to clear cache:", error);
+      log.error("[SWR Cache] ❌ Failed to clear cache:", error);
     }
   }
 }

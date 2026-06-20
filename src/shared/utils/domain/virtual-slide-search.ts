@@ -12,6 +12,7 @@
 
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
 import { extractOrganTerms, getOrganBoostScore, type OrganTerm } from "./organ-terms";
+import { log } from "@/shared/utils/logging";
 
 // Pre-computed search index for faster lookups
 interface SearchIndexEntry {
@@ -197,7 +198,7 @@ export function buildSearchIndex(processedSlides: VirtualSlide[]): void {
     expansionMap.get(key)!.add(base);
   }
 
-  console.log(
+  log.debug(
     `[VirtualSlides] 💾 Cached ${processedSlides.length} slides + reverse index (${reverseIndex.size} keys) + ${expansionMap.size} abbreviations in memory`
   );
 }

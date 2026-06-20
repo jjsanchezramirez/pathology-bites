@@ -10,6 +10,7 @@ import {
   ReminderPayload as _ReminderPayload,
 } from "@/shared/types/notifications";
 import { InquiryData } from "@/features/admin/inquiries/types/inquiries";
+import { log } from "@/shared/utils/logging";
 
 export class NotificationsService {
   private getSupabase() {
@@ -269,7 +270,7 @@ export class NotificationsService {
         }
       }
     } catch (error) {
-      console.error("Error creating role-based notifications:", error);
+      log.error("Error creating role-based notifications:", error);
     }
   }
 
@@ -382,7 +383,7 @@ export class NotificationsService {
         }
       }
     } catch (error) {
-      console.error("Error creating test notifications:", error);
+      log.error("Error creating test notifications:", error);
     }
   }
 }

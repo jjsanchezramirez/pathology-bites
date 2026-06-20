@@ -15,6 +15,7 @@ import {
   CopyObjectCommand,
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
+import { log } from "@/shared/utils/logging";
 
 // R2 Configuration - Load dynamically to support scripts
 function getR2Config() {
@@ -716,7 +717,7 @@ export async function getBucketSize(
 
     return { totalSize, objectCount };
   } catch (error) {
-    console.error(`Failed to get bucket size for ${bucketName}:`, error);
+    log.error(`Failed to get bucket size for ${bucketName}:`, error);
     throw new Error(`Failed to get bucket size: ${error}`);
   }
 }

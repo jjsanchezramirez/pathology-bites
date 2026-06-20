@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
     const { error } = await supabase.from("interactive_sequences").delete().eq("id", id);
 
     if (error) {
-      console.error("Failed to delete interactive sequence:", error);
+      log.error("Failed to delete interactive sequence:", error);
       return NextResponse.json(
         { error: `Failed to delete sequence: ${error.message}` },
         { status: 500 }
@@ -84,7 +85,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Interactive sequence deletion error:", error);
+    log.error("Interactive sequence deletion error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: `Deletion failed: ${errorMessage}` }, { status: 500 });
   }

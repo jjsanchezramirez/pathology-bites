@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Badge } from "@/shared/components/ui/badge";
 import { FileQuestion, Users, MessageSquare, Image as ImageIcon, Clock } from "lucide-react";
 import { RecentActivity } from "@/features/admin/dashboard/services/service";
+import { log } from "@/shared/utils/logging";
 
 interface RecentActivityProps {
   activities: RecentActivity[];
@@ -79,7 +80,7 @@ export const RecentActivityCard = memo(function RecentActivityCard({
     // Try to parse the timestamp
     const date = new Date(timestamp);
     if (isNaN(date.getTime())) {
-      console.warn("Invalid timestamp received:", timestamp);
+      log.warn("Invalid timestamp received:", timestamp);
       return "Invalid date";
     }
 

@@ -2,6 +2,7 @@
 import { createClient } from "@/shared/services/client";
 import type { ImageData } from "@/shared/types/images";
 import { apiClient } from "@/shared/utils/api/api-client";
+import { log } from "@/shared/utils/logging";
 
 // Very aggressive client-side cache to reduce Supabase queries
 interface CacheEntry {
@@ -60,21 +61,21 @@ function cleanExpiredCache() {
 // Function to invalidate all image cache (call after updates/deletes/uploads)
 export function invalidateImageCache() {
   imageQueryCache.clear();
-  console.log("[Images] Cache invalidated");
+  log.debug("[Images] Cache invalidated");
 }
 
 export async function deleteImage(imageId: string) {
   try {
-    console.log("🗑️ Deleting image:", { imageId });
+    log.debug("🗑️ Deleting image:", { imageId });
 
     const url = "/api/admin/images/delete";
-    console.log("📡 Making DELETE request to:", url);
+    log.debug("📡 Making DELETE request to:", url);
 
     const response = await apiClient.delete(url, {
       imageId,
     });
 
-    console.log("📥 Delete response:", {
+    log.debug("📥 Delete response:", {
       ok: response.ok,
       status: response.status,
       statusText: response.statusText,
@@ -84,11 +85,11 @@ export async function deleteImage(imageId: string) {
     if (!response.ok) {
       // Check if response is HTML (error page) or JSON
       const contentType = response.headers.get("content-type");
-      console.log("❌ Error response content-type:", contentType);
+      log.debug("❌ Error response content-type:", contentType);
 
       if (contentType && contentType.includes("text/html")) {
         const htmlText = await response.text();
-        console.error("❌ Received HTML error page instead of JSON:", htmlText.substring(0, 500));
+        log.error("❌ Received HTML error page instead of JSON:", htmlText.substring(0, 500));
         throw new Error(
           `Server error (${response.status}): Received HTML error page instead of JSON response`
         );
@@ -96,12 +97,12 @@ export async function deleteImage(imageId: string) {
 
       try {
         const errorData = await response.json();
-        console.log("❌ Error data:", errorData);
+        log.debug("❌ Error data:", errorData);
         throw new Error(errorData.error || "Failed to delete image");
       } catch (parseError) {
-        console.error("❌ Failed to parse error response as JSON:", parseError);
+        log.error("❌ Failed to parse error response as JSON:", parseError);
         const responseText = await response.text();
-        console.error("❌ Raw response text:", responseText.substring(0, 500));
+        log.error("❌ Raw response text:", responseText.substring(0, 500));
         throw new Error(`Server error (${response.status}): ${response.statusText}`);
       }
     }
@@ -109,20 +110,20 @@ export async function deleteImage(imageId: string) {
     // Try to parse success response
     try {
       const result = await response.json();
-      console.log("✅ Delete successful:", result);
+      log.debug("✅ Delete successful:", result);
 
       // Invalidate cache after successful delete
       invalidateImageCache();
 
       return result;
     } catch (parseError) {
-      console.error("❌ Failed to parse success response as JSON:", parseError);
+      log.error("❌ Failed to parse success response as JSON:", parseError);
       const responseText = await response.text();
-      console.error("❌ Raw success response text:", responseText.substring(0, 500));
+      log.error("❌ Raw success response text:", responseText.substring(0, 500));
       throw new Error("Failed to parse server response");
     }
   } catch (error) {
-    console.error("Delete image error:", error);
+    log.error("Delete image error:", error);
     throw error;
   }
 }
@@ -144,7 +145,7 @@ export async function updateImage(
     const { error } = await supabase.from("images").update(data).eq("id", imageId);
 
     if (error) {
-      console.error("Update image error:", error);
+      log.error("Update image error:", error);
       throw new Error(`Failed to update image: ${error.message}`);
     }
 
@@ -153,7 +154,7 @@ export async function updateImage(
 
     return { success: true };
   } catch (error) {
-    console.error("Update image error:", error);
+    log.error("Update image error:", error);
     throw error;
   }
 }
@@ -187,7 +188,7 @@ export async function fetchImages(params: {
   const cachedEntry = imageQueryCache.get(cacheKey);
 
   if (cachedEntry && now - cachedEntry.timestamp < CACHE_TTL) {
-    console.log("[Images] Cache hit:", cacheKey.substring(0, 100));
+    log.debug("[Images] Cache hit:", cacheKey.substring(0, 100));
     return {
       data: cachedEntry.data,
       total: cachedEntry.total,
@@ -259,7 +260,7 @@ export async function fetchImages(params: {
     const dataResult = await dataQuery.order("created_at", { ascending: false }).range(from, to);
 
     if (dataResult.error) {
-      console.error("Data query error:", {
+      log.error("Data query error:", {
         message: dataResult.error.message,
         details: dataResult.error.details,
         hint: dataResult.error.hint,
@@ -276,7 +277,7 @@ export async function fetchImages(params: {
         },
       });
       // Log the full error object stringified to catch any non-enumerable properties
-      console.error("Full error object:", JSON.stringify(dataResult.error, null, 2));
+      log.error("Full error object:", JSON.stringify(dataResult.error, null, 2));
       return {
         data: [],
         total: 0,
@@ -336,7 +337,7 @@ export async function fetchImages(params: {
     const countResult = await countQuery;
 
     if (countResult.error) {
-      console.error("Count query error:", countResult.error);
+      log.error("Count query error:", countResult.error);
       // Fall back to estimation if count fails
       const hasMoreData = images.length === pageSize;
       const total = hasMoreData ? (page + 1) * pageSize + 1 : page * pageSize + images.length;
@@ -356,7 +357,7 @@ export async function fetchImages(params: {
       total: total,
       timestamp: Date.now(),
     });
-    console.log("[Images] Cached result:", cacheKey.substring(0, 100));
+    log.debug("[Images] Cached result:", cacheKey.substring(0, 100));
 
     return {
       data: images,
@@ -364,7 +365,7 @@ export async function fetchImages(params: {
       error: null,
     };
   } catch (error) {
-    console.error("Fetch images error:", error);
+    log.error("Fetch images error:", error);
     return {
       data: [],
       total: 0,
@@ -405,7 +406,7 @@ export async function uploadImage(
     const result = await response.json();
     return result.image;
   } catch (error) {
-    console.error("Upload image error:", error);
+    log.error("Upload image error:", error);
     throw error;
   }
 }
@@ -421,13 +422,13 @@ export async function getImageById(imageId: string): Promise<ImageData | null> {
         // No rows returned
         return null;
       }
-      console.error("Get image by ID error:", error);
+      log.error("Get image by ID error:", error);
       throw new Error(`Failed to fetch image: ${error.message}`);
     }
 
     return data;
   } catch (error) {
-    console.error("Get image by ID error:", error);
+    log.error("Get image by ID error:", error);
     throw error;
   }
 }
@@ -448,13 +449,13 @@ export async function createExternalImage(url: string, createdBy?: string): Prom
       .single();
 
     if (dbError) {
-      console.error("Create external image error:", dbError);
+      log.error("Create external image error:", dbError);
       throw new Error(`Failed to create external image: ${dbError.message}`);
     }
 
     return imageData;
   } catch (error) {
-    console.error("Create external image error:", error);
+    log.error("Create external image error:", error);
     throw error;
   }
 }
@@ -487,7 +488,7 @@ export async function createExternalImageIfNotExists(
     // Image doesn't exist, create it
     return await createExternalImage(url, createdBy);
   } catch (error) {
-    console.error("Create external image if not exists error:", error);
+    log.error("Create external image if not exists error:", error);
     throw error;
   }
 }
@@ -529,7 +530,7 @@ export async function bulkDeleteImages(
       errors: result.results.storageErrors || [],
     };
   } catch (error) {
-    console.error("Bulk delete images error:", error);
+    log.error("Bulk delete images error:", error);
     return {
       success: false,
       deleted: 0,

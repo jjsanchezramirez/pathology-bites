@@ -17,6 +17,7 @@ import { TagAutocomplete } from "../tag-autocomplete";
 import { createClient } from "@/shared/services/client";
 import { toast } from "@/shared/utils/ui/toast";
 import { TagData } from "@/shared/types/questions";
+import { log } from "@/shared/utils/logging";
 
 interface StepMetadataProps {
   formState: FormState;
@@ -110,7 +111,7 @@ export function StepMetadata({
       const firstCategory = categories[0];
       if (firstCategory) {
         updateFormState({ category_id: firstCategory.id });
-        console.log("Auto-assigned default category:", firstCategory.name);
+        log.debug("Auto-assigned default category:", firstCategory.name);
       }
     }
 
@@ -125,14 +126,14 @@ export function StepMetadata({
       if (initialQuestionSetId) {
         updateFormState({ question_set_id: initialQuestionSetId });
         setHasAutoAssignedQuestionSet(true);
-        console.log("Auto-assigned question set from initial data:", initialQuestionSetId);
+        log.debug("Auto-assigned question set from initial data:", initialQuestionSetId);
       } else {
         // Otherwise, auto-assign PathOutlines as the default
         const pathOutlinesSet = questionSets.find((set) => set.name === "PathOutlines");
         if (pathOutlinesSet) {
           updateFormState({ question_set_id: pathOutlinesSet.id });
           setHasAutoAssignedQuestionSet(true);
-          console.log("Auto-assigned default question set: PathOutlines");
+          log.debug("Auto-assigned default question set: PathOutlines");
         }
       }
     }
@@ -211,7 +212,7 @@ export function StepMetadata({
 
       toast.success("AI metadata suggestions applied!");
     } catch (error) {
-      console.error("Error generating metadata suggestions:", error);
+      log.error("Error generating metadata suggestions:", error);
       toast.error("Failed to generate metadata suggestions");
     } finally {
       setIsGeneratingMetadata(false);

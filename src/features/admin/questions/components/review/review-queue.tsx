@@ -35,6 +35,7 @@ import { toast } from "@/shared/utils/ui/toast";
 import { formatDistanceToNow } from "date-fns";
 import { QuestionWithDetails } from "@/shared/types/questions";
 import { CategoryBadge } from "@/shared/components/ui/category-badge";
+import { log } from "@/shared/utils/logging";
 
 // Extended type for review queue with joined data
 interface ReviewQuestionData {
@@ -113,7 +114,7 @@ export function ReviewQueue() {
         .order("created_at", { ascending: true }); // Oldest first
 
       if (error) {
-        console.error("Error fetching review queue:", error);
+        log.error("Error fetching review queue:", error);
         toast.error(`Failed to load review queue: ${error.message}`);
         return;
       }
@@ -167,7 +168,7 @@ export function ReviewQueue() {
       setFilteredQuestions(formattedData);
       setSelectedIds(new Set());
     } catch (error) {
-      console.error("Unexpected error fetching review queue:", error);
+      log.error("Unexpected error fetching review queue:", error);
       toast.error("Failed to load review queue");
     } finally {
       setLoading(false);
@@ -233,7 +234,7 @@ export function ReviewQueue() {
         .single();
 
       if (error || !fullQuestion) {
-        console.error("Error fetching question for preview:", error);
+        log.error("Error fetching question for preview:", error);
         toast.error("Failed to load question preview");
         return;
       }
@@ -259,7 +260,7 @@ export function ReviewQueue() {
       setSelectedQuestion(questionData as unknown as ReviewQuestionData);
       setPreviewOpen(true);
     } catch (error) {
-      console.error("Error fetching question for preview:", error);
+      log.error("Error fetching question for preview:", error);
       toast.error("Failed to load question preview");
     }
   };
@@ -338,7 +339,7 @@ export function ReviewQueue() {
         window.dispatchEvent(new CustomEvent("questionStatusChanged"));
       }
     } catch (error) {
-      console.error("Error bulk approving:", error);
+      log.error("Error bulk approving:", error);
       toast.error(error instanceof Error ? error.message : "Failed to bulk approve questions");
     } finally {
       setBulkApproving(false);

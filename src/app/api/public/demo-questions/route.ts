@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { DEMO_QUESTION_AVIF_OPTIMIZED } from "@/shared/config/demo-question-avif-manifest";
+import { log } from "@/shared/utils/logging";
 
 const R2_PUBLIC_HOST = "pub-a4bec7073d99465f99043c842be6318c.r2.dev";
 
@@ -238,7 +239,7 @@ export async function GET(request: Request) {
         .single();
 
       if (demoError || !demoData) {
-        console.error("Error fetching demo question:", demoError);
+        log.error("Error fetching demo question:", demoError);
         return NextResponse.json({ error: "Demo question not found" }, { status: 404 });
       }
 
@@ -294,12 +295,12 @@ export async function GET(request: Request) {
       ]);
 
       if (questionError || !questionData) {
-        console.error("Error fetching question data:", questionError);
+        log.error("Error fetching question data:", questionError);
         return NextResponse.json({ error: "Question data not found" }, { status: 404 });
       }
 
       if (optionsError) {
-        console.error("Error fetching question options:", optionsError);
+        log.error("Error fetching question options:", optionsError);
         return NextResponse.json({ error: "Question options not found" }, { status: 404 });
       }
 
@@ -366,7 +367,7 @@ export async function GET(request: Request) {
           },
         });
       } catch (processingError) {
-        console.error("Error processing question data:", processingError);
+        log.error("Error processing question data:", processingError);
         return NextResponse.json({ error: "Error processing question data" }, { status: 500 });
       }
     }
@@ -377,7 +378,7 @@ export async function GET(request: Request) {
 
       // Check if we have a cached version of the questions list
       if (!cachedQuestionsList || now - questionsListTimestamp >= CACHE_TTL) {
-        console.log("[Demo Questions] Cache miss for questions list, fetching from database...");
+        log.debug("[Demo Questions] Cache miss for questions list, fetching from database...");
         const { data: demoQuestions, error: demoError } = await supabase
           .from("demo_questions")
           .select("id, question_id, display_order")
@@ -385,7 +386,7 @@ export async function GET(request: Request) {
           .order("display_order", { ascending: true });
 
         if (demoError || !demoQuestions || demoQuestions.length === 0) {
-          console.error("[Demo Questions] Error fetching demo questions:", demoError);
+          log.error("[Demo Questions] Error fetching demo questions:", demoError);
           return NextResponse.json(
             {
               error:
@@ -395,7 +396,7 @@ export async function GET(request: Request) {
           );
         }
 
-        console.log(`[Demo Questions] Loaded ${demoQuestions.length} demo questions`);
+        log.debug(`[Demo Questions] Loaded ${demoQuestions.length} demo questions`);
         cachedQuestionsList = demoQuestions;
         questionsListTimestamp = now;
       }
@@ -407,7 +408,7 @@ export async function GET(request: Request) {
       // Check if we have a cached version of this question
       const cachedQuestion = demoQuestionsCache.get(selectedIndex);
       if (cachedQuestion && now - cachedQuestion.timestamp < CACHE_TTL) {
-        console.log(`[Demo Questions] Returning cached question index ${selectedIndex}`);
+        log.debug(`[Demo Questions] Returning cached question index ${selectedIndex}`);
         // Return cached question with updated metadata
         return NextResponse.json(
           {
@@ -428,7 +429,7 @@ export async function GET(request: Request) {
         );
       }
 
-      console.log(
+      log.debug(
         `[Demo Questions] Cache miss for question index ${selectedIndex}, fetching from database...`
       );
 
@@ -471,12 +472,12 @@ export async function GET(request: Request) {
       ]);
 
       if (questionError || !questionData) {
-        console.error("Error fetching question data:", questionError);
+        log.error("Error fetching question data:", questionError);
         return NextResponse.json({ error: "Question data not found" }, { status: 404 });
       }
 
       if (optionsError) {
-        console.error("Error fetching question options:", optionsError);
+        log.error("Error fetching question options:", optionsError);
         return NextResponse.json({ error: "Question options not found" }, { status: 404 });
       }
 
@@ -557,12 +558,12 @@ export async function GET(request: Request) {
           }
         );
       } catch (processingError) {
-        console.error("Error processing question data:", processingError);
+        log.error("Error processing question data:", processingError);
         return NextResponse.json({ error: "Error processing question data" }, { status: 500 });
       }
     }
   } catch (error) {
-    console.error("Unexpected error in demo question API:", error);
+    log.error("Unexpected error in demo question API:", error);
     return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 });
   }
 }

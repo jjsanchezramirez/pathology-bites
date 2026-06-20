@@ -19,6 +19,7 @@ import {
 } from "@/shared/components/ui/select";
 import { Switch } from "@/shared/components/ui/switch";
 import { Loader2 } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 interface CreateSetDialogProps {
   open: boolean;
@@ -90,7 +91,7 @@ export function CreateSetDialog({ open, onOpenChange, onSuccess }: CreateSetDial
       setIsActive(true);
       onSuccess();
     } catch (error) {
-      console.error("Error creating question set:", error);
+      log.error("Error creating question set:", error);
       toast.error(error instanceof Error ? error.message : "Failed to create question set");
     } finally {
       setIsCreating(false);

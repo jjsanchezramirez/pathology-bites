@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
+import { log } from "@/shared/utils/logging";
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
@@ -198,7 +199,7 @@ export async function POST(request: NextRequest) {
         .limit(5);
 
       if (checkError) {
-        console.error("Error checking for duplicates:", checkError);
+        log.error("Error checking for duplicates:", checkError);
         // Don't fail the request, just continue
       } else if (existingQuestions && existingQuestions.length > 0) {
         return NextResponse.json(
@@ -244,7 +245,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (questionError) {
-      console.error("Error creating question:", questionError);
+      log.error("Error creating question:", questionError);
 
       // Check if it's a duplicate constraint error (in case our check missed it)
       if (
@@ -283,8 +284,8 @@ export async function POST(request: NextRequest) {
       const { error: optionsError } = await supabase.from("question_options").insert(answerOptions);
 
       if (optionsError) {
-        console.error("Error creating answer options:", optionsError);
-        console.error("Options data:", answerOptions);
+        log.error("Error creating answer options:", optionsError);
+        log.error("Options data:", answerOptions);
         // Clean up the question if options failed
         await supabase.from("questions").delete().eq("id", question.id);
         return NextResponse.json(
@@ -307,7 +308,7 @@ export async function POST(request: NextRequest) {
       const { error: tagsError } = await supabase.from("question_tags").insert(questionTags);
 
       if (tagsError) {
-        console.error("Error creating question tags:", tagsError);
+        log.error("Error creating question tags:", tagsError);
         // Don't fail the entire operation for tags
       }
     }
@@ -324,7 +325,7 @@ export async function POST(request: NextRequest) {
       const { error: imagesError } = await supabase.from("question_images").insert(questionImages);
 
       if (imagesError) {
-        console.error("Error creating question images:", imagesError);
+        log.error("Error creating question images:", imagesError);
         // Don't fail the entire operation for images
       }
     }
@@ -341,7 +342,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Error in create question API:", error);
+    log.error("Error in create question API:", error);
     const errorMessage = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json(
       {

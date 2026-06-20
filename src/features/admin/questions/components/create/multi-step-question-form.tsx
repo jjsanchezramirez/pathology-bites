@@ -24,6 +24,7 @@ import { StepProgressBar } from "./step-progress-bar";
 // Import types
 import { QuestionFormData, QuestionWithDetails } from "@/shared/types/questions";
 import { EducationalContent } from "./content-selector";
+import { log } from "@/shared/utils/logging";
 
 interface MultiStepQuestionFormProps {
   mode?: "create" | "edit";
@@ -130,13 +131,13 @@ export function MultiStepQuestionForm({
         const { data: tagsData } = await supabase.from("tags").select("id, name").order("name");
 
         // Data fetched but not currently used - reserved for future AI Assistant features
-        console.log("Fetched data for AI Assistant:", {
+        log.debug("Fetched data for AI Assistant:", {
           categories: categoriesData?.length,
           questionSets: questionSetsData?.length,
           tags: tagsData?.length,
         });
       } catch (error) {
-        console.error("Error fetching data for AI Assistant:", error);
+        log.error("Error fetching data for AI Assistant:", error);
       }
     };
 
@@ -371,7 +372,7 @@ export function MultiStepQuestionForm({
 
       await onSubmit(questionData);
     } catch (error) {
-      console.error("Submission error:", error);
+      log.error("Submission error:", error);
       toast.error("Failed to create question");
     } finally {
       setIsSubmitting(false);

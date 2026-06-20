@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { log } from "@/shared/utils/logging";
 
 const ALLOWED_HOST = "pub-a4bec7073d99465f99043c842be6318c.r2.dev";
 
@@ -114,7 +115,7 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (err) {
-    console.error("[proxy-image] fetch failed:", err);
+    log.error("[proxy-image] fetch failed:", err);
     return NextResponse.json({ error: "Upstream fetch failed" }, { status: 502 });
   }
 }

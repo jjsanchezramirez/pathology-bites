@@ -8,6 +8,7 @@ import {
   checkAchievements,
   ACHIEVEMENT_DEFINITIONS,
 } from "./achievement-checker";
+import { log } from "@/shared/utils/logging";
 
 /**
  * Create a Supabase client with service role for bypassing RLS
@@ -62,7 +63,7 @@ export async function getUserStats(userId: string): Promise<UserStats> {
   const accuracyOver12 = calculateAccuracy(allQuizSessions, 12);
   const accuracyOver15 = calculateAccuracy(allQuizSessions, 15);
 
-  console.log("Accuracy calculations:", {
+  log.debug("Accuracy calculations:", {
     accuracyOver3,
     accuracyOver5,
     accuracyOver8,
@@ -173,7 +174,7 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     }
   }
 
-  console.log("Streak calculation - current:", currentStreak, "longest:", longestStreak);
+  log.debug("Streak calculation - current:", currentStreak, "longest:", longestStreak);
 
   const stats = {
     totalQuizzes: totalQuizzes || 0,
@@ -193,7 +194,7 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     totalCategories,
   };
 
-  console.log("User stats calculated:", JSON.stringify(stats, null, 2));
+  log.debug("User stats calculated:", JSON.stringify(stats, null, 2));
 
   return stats;
 }
@@ -275,8 +276,8 @@ export async function awardAchievements(
   // Combine client-requested and backfilled achievements
   const filteredIds = [...new Set([...clientRequestedValid, ...validIds])];
 
-  console.log("Client requested achievements:", achievementIdsToUnlock);
-  console.log("Server validated achievements:", filteredIds);
+  log.debug("Client requested achievements:", achievementIdsToUnlock);
+  log.debug("Server validated achievements:", filteredIds);
 
   const newAchievements: AchievementDefinition[] = [];
 
@@ -287,7 +288,7 @@ export async function awardAchievements(
       achievement_id: id,
     }));
 
-    console.log("Attempting to insert achievements:", achievementsToInsert.length);
+    log.debug("Attempting to insert achievements:", achievementsToInsert.length);
 
     // Use service client to bypass RLS for achievement insertion
     const serviceClient = createServiceClient();
@@ -297,11 +298,11 @@ export async function awardAchievements(
       .select("achievement_id");
 
     if (error) {
-      console.error("Error inserting achievements:", error);
+      log.error("Error inserting achievements:", error);
       throw new Error(`Failed to insert achievements: ${error.message}`);
     }
 
-    console.log("Successfully inserted achievements:", data);
+    log.debug("Successfully inserted achievements:", data);
 
     // Get achievement definitions for return value
     for (const id of filteredIds) {
@@ -311,7 +312,7 @@ export async function awardAchievements(
       }
     }
   } else {
-    console.log("No new achievements to insert");
+    log.debug("No new achievements to insert");
   }
 
   // Get last quiz timestamp for cache validation
@@ -358,13 +359,11 @@ export async function getRecentUnshownAchievements(
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error fetching recent achievements:", error);
+    log.error("Error fetching recent achievements:", error);
     return [];
   }
 
-  console.log(
-    `[Achievements] Found ${recentAchievements?.length || 0} recent unshown achievements`
-  );
+  log.debug(`[Achievements] Found ${recentAchievements?.length || 0} recent unshown achievements`);
 
   // Get achievement definitions for the IDs
   const achievementDefs: AchievementDefinition[] = [];

@@ -22,6 +22,7 @@ import { createClient } from "@/shared/services/client";
 import { isPublicRoute } from "@/shared/utils/route-helpers";
 import type { User, Session } from "@supabase/supabase-js";
 import type { UserRole } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 interface UseAuthOptions {
   /** Enable security validation (session monitoring) */
@@ -98,7 +99,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
         }
       } catch (e) {
         // Ignore parse errors
-        console.error("[useAuth] ❌ Failed to parse cached auth:", e);
+        log.error("[useAuth] ❌ Failed to parse cached auth:", e);
       }
     }
 
@@ -140,7 +141,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
         sessionStorage.setItem("auth-state", JSON.stringify(dataToSave));
       } catch (e) {
         // Ignore storage errors (quota exceeded, etc.)
-        console.error("[useAuth] ❌ Failed to save to sessionStorage:", e);
+        log.error("[useAuth] ❌ Failed to save to sessionStorage:", e);
       }
     }
   };
@@ -151,7 +152,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
       try {
         sessionStorage.removeItem("auth-state");
       } catch (e) {
-        console.error("[useAuth] ❌ Failed to clear sessionStorage:", e);
+        log.error("[useAuth] ❌ Failed to clear sessionStorage:", e);
       }
     }
   };
@@ -187,7 +188,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
         } = await supabase.auth.getSession();
 
         if (error) {
-          console.error("[useAuth] Error getting session:", error);
+          log.error("[useAuth] Error getting session:", error);
           if (mounted.current) {
             setAuthState((prev) => ({
               ...prev,
@@ -224,7 +225,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
           }
         }
       } catch (err) {
-        console.error("Auth initialization error:", err);
+        log.error("Auth initialization error:", err);
         if (mounted.current) {
           setAuthState((prev) => ({
             ...prev,
@@ -342,7 +343,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
         clearAuthState();
       }
     } catch (err) {
-      console.error("Refresh session error:", err);
+      log.error("Refresh session error:", err);
       clearAuthState();
       setAuthState((prev) => ({
         ...prev,

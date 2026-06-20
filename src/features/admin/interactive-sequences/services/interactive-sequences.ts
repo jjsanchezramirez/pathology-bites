@@ -5,6 +5,7 @@ import type {
   CreateInteractiveSequenceParams,
   UpdateInteractiveSequenceParams,
 } from "../types";
+import { log } from "@/shared/utils/logging";
 
 /**
  * Fetch all interactive sequences with optional filters
@@ -40,7 +41,7 @@ export async function fetchInteractiveSequences(
   const { data, error } = await query;
 
   if (error) {
-    console.error("Error fetching interactive sequences:", error);
+    log.error("Error fetching interactive sequences:", error);
     throw new Error(error.message);
   }
 
@@ -62,7 +63,7 @@ export async function fetchInteractiveSequenceById(
     .single();
 
   if (error) {
-    console.error("Error fetching interactive sequence by ID:", error);
+    log.error("Error fetching interactive sequence by ID:", error);
     throw new Error(error.message);
   }
 
@@ -90,7 +91,7 @@ export async function createInteractiveSequence(
     .single();
 
   if (error) {
-    console.error("Error creating interactive sequence:", error);
+    log.error("Error creating interactive sequence:", error);
     throw new Error(error.message);
   }
 
@@ -121,7 +122,7 @@ export async function updateInteractiveSequence(
     .single();
 
   if (error) {
-    console.error("Error updating interactive sequence:", error);
+    log.error("Error updating interactive sequence:", error);
     throw new Error(error.message);
   }
 
@@ -137,7 +138,7 @@ export async function deleteInteractiveSequence(id: string): Promise<void> {
   const { error } = await supabase.from("interactive_sequences").delete().eq("id", id);
 
   if (error) {
-    console.error("Error deleting interactive sequence:", error);
+    log.error("Error deleting interactive sequence:", error);
     throw new Error(error.message);
   }
 }
@@ -154,7 +155,7 @@ export async function getInteractiveSequenceStats(): Promise<{
   const { data, error } = await supabase.from("interactive_sequences").select("status");
 
   if (error) {
-    console.error("Error fetching interactive sequence stats:", error);
+    log.error("Error fetching interactive sequence stats:", error);
     throw new Error(error.message);
   }
 

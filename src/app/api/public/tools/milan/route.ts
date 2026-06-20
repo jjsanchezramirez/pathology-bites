@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { log } from "@/shared/utils/logging";
 
 // Cache for gene lookup results with 1-hour TTL
 const CACHE_TTL = 60 * 60 * 1000 // 1 hour
@@ -197,7 +198,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ data: combinedGeneInfo })
 
   } catch (error) {
-    console.error('Gene lookup error:', error)
+    log.error('Gene lookup error:', error)
     return NextResponse.json(
       { error: error instanceof Error ? error.message : 'Failed to fetch gene information' },
       { status: 500 }

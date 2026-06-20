@@ -3,6 +3,7 @@ import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
 import { Resend } from "resend";
 import { createAdminResponseEmail } from "@/shared/config/email-templates";
+import { log } from "@/shared/utils/logging";
 
 // Initialize Resend only if API key is available
 const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
@@ -108,7 +109,7 @@ function createAdminClient() {
 export async function POST(request: NextRequest, context: { params: Promise<{ id: string }> }) {
   try {
     const params = await context.params;
-    console.log("Inquiry response API called for ID:", params.id);
+    log.debug("Inquiry response API called for ID:", params.id);
 
     // Auth check - require admin role only
     const userId = request.headers.get("x-user-id");
@@ -139,7 +140,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     const { response } = validation.data;
 
     // Get the inquiry details
-    console.log("Fetching inquiry with ID:", inquiryId);
+    log.debug("Fetching inquiry with ID:", inquiryId);
     const { data: inquiry, error: inquiryError } = await supabase
       .from("inquiries")
       .select("*")
@@ -147,17 +148,17 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       .single();
 
     if (inquiryError || !inquiry) {
-      console.error("Inquiry not found:", inquiryError);
+      log.error("Inquiry not found:", inquiryError);
       return NextResponse.json({ error: "Inquiry not found" }, { status: 404 });
     }
 
-    console.log("Found inquiry:", inquiry.id, "from", inquiry.email);
+    log.debug("Found inquiry:", inquiry.id, "from", inquiry.email);
 
     // Check if Resend is configured
     if (!resend) {
-      console.warn("Resend API key not configured - running in test mode");
+      log.warn("Resend API key not configured - running in test mode");
       // In test mode, just log the response instead of sending email
-      console.log("TEST MODE - Would send email response:", {
+      log.debug("TEST MODE - Would send email response:", {
         to: inquiry.email,
         response: response,
         inquiryId,
@@ -171,7 +172,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
 
     // Send email response
     try {
-      console.log("Attempting to send email to:", inquiry.email);
+      log.debug("Attempting to send email to:", inquiry.email);
 
       // Create professional email using the template
       const emailContent = createAdminResponseEmail({
@@ -192,14 +193,14 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
       });
 
       if (emailResult.error) {
-        console.error("Email sending failed:", emailResult.error);
+        log.error("Email sending failed:", emailResult.error);
         return NextResponse.json(
           { error: "Failed to send email response", details: emailResult.error },
           { status: 500 }
         );
       }
 
-      console.log("Email sent successfully to:", inquiry.email);
+      log.debug("Email sent successfully to:", inquiry.email);
 
       // Auto-resolve the inquiry after successful response
       const { error: updateError } = await supabase
@@ -211,10 +212,10 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         .eq("id", inquiryId);
 
       if (updateError) {
-        console.error("Failed to update inquiry status to resolved:", updateError);
+        log.error("Failed to update inquiry status to resolved:", updateError);
         // Don't fail the request since email was sent successfully
       } else {
-        console.log("Inquiry status updated to resolved:", inquiryId);
+        log.debug("Inquiry status updated to resolved:", inquiryId);
       }
 
       return NextResponse.json({
@@ -222,11 +223,11 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
         message: "Response sent successfully and inquiry marked as resolved",
       });
     } catch (emailError) {
-      console.error("Error sending email:", emailError);
+      log.error("Error sending email:", emailError);
       return NextResponse.json({ error: "Failed to send email response" }, { status: 500 });
     }
   } catch (error) {
-    console.error("Error responding to inquiry:", error);
+    log.error("Error responding to inquiry:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

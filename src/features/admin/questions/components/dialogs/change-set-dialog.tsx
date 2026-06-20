@@ -17,6 +17,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { apiClient } from "@/shared/utils/api/api-client";
 import { QuestionWithDetails } from "@/shared/types/questions";
+import { log } from "@/shared/utils/logging";
 
 interface QuestionSet {
   id: string;
@@ -60,7 +61,7 @@ export function ChangeSetDialog({ open, onOpenChange, onSuccess, question }: Cha
       const data = await response.json();
       setSets((data.questionSets || []).filter((s: QuestionSet) => s.is_active));
     } catch (error) {
-      console.error("Error loading question sets:", error);
+      log.error("Error loading question sets:", error);
       toast.error("Failed to load question sets");
     } finally {
       setLoading(false);
@@ -117,7 +118,7 @@ export function ChangeSetDialog({ open, onOpenChange, onSuccess, question }: Cha
       onOpenChange(false);
       setTimeout(() => onSuccess(), 100);
     } catch (error) {
-      console.error("Error updating question set:", error);
+      log.error("Error updating question set:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update question set");
     } finally {
       setSaving(false);

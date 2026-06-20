@@ -1,3 +1,5 @@
+import { log } from "@/shared/utils/logging";
+
 // Utility to map educational content categories and subjects to database category IDs
 
 interface CategoryMapping {
@@ -53,13 +55,13 @@ const CONTENT_TO_CATEGORY_MAPPING: CategoryMapping = {
 export function getCategoryIdFromContent(category: string, subject: string): string | null {
   const categoryMapping = CONTENT_TO_CATEGORY_MAPPING[category];
   if (!categoryMapping) {
-    console.warn(`No mapping found for educational content category: ${category}`);
+    log.warn(`No mapping found for educational content category: ${category}`);
     return null;
   }
 
   const categoryId = categoryMapping[subject];
   if (!categoryId) {
-    console.warn(
+    log.warn(
       `No mapping found for educational content subject: ${subject} in category: ${category}`
     );
     return null;

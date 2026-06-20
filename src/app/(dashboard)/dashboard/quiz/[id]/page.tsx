@@ -25,6 +25,7 @@ import {
   PauseOverlay,
 } from "./components";
 import { preloadLottieReactChunk } from "./components/dialogs/TimerExpiredDialog";
+import { log } from "@/shared/utils/logging";
 
 // Pattern-match on error messages that look like transient connectivity issues
 // (offline / DNS / connection reset). Used to drive the offline-wait branch in
@@ -117,7 +118,7 @@ export default function QuizSessionPage() {
           setSessionConfig(data.data.config);
         }
       } catch (error) {
-        console.error("Error fetching session config:", error);
+        log.error("Error fetching session config:", error);
       } finally {
         setSessionConfigLoading(false);
       }
@@ -147,7 +148,7 @@ export default function QuizSessionPage() {
     onTimerExpired: () => {
       if (isReviewMode) return;
       if (timerExpired) return; // Guard: the hook's setInterval can fire callback twice on tick=0 in some race conditions
-      console.log("[Quiz Page] Timer expired, showing dialog");
+      log.debug("[Quiz Page] Timer expired, showing dialog");
 
       // Commit any pending answer selection (practice mode) before the hook
       // proceeds to forced completion. The dispatch is queued; what actually
@@ -162,9 +163,9 @@ export default function QuizSessionPage() {
       if (pending) {
         try {
           hybridActions.submitAnswer(pending.questionId, pending.answerId);
-          console.log("[Quiz Page] Committed pending selection on timer expiry:", pending);
+          log.debug("[Quiz Page] Committed pending selection on timer expiry:", pending);
         } catch (err) {
-          console.warn("[Quiz Page] Failed to commit pending selection on timer expiry:", err);
+          log.warn("[Quiz Page] Failed to commit pending selection on timer expiry:", err);
         }
         setPendingAnswerSelection(null);
         pendingAnswerSelectionRef.current = null;
@@ -577,7 +578,7 @@ export default function QuizSessionPage() {
       // currentQuestion could be N+1 while the pending selection is still for N. The
       // user's intent was to answer N; silently dropping that selection was a bug.
       if (pendingAnswerSelection.questionId !== currentQuestion.id) {
-        console.warn(
+        log.warn(
           "[Quiz Page] Pending selection question id differs from current question — committing to the pending id anyway",
           {
             pendingQuestionId: pendingAnswerSelection.questionId,
@@ -622,7 +623,7 @@ export default function QuizSessionPage() {
     // The dialog/runCompletion decision is the same for both.
     if (isLastQuestion) {
       if (isCompletingQuiz) {
-        console.log("[Quiz Page] Already completing quiz, ignoring duplicate click");
+        log.debug("[Quiz Page] Already completing quiz, ignoring duplicate click");
         return;
       }
 
@@ -634,7 +635,7 @@ export default function QuizSessionPage() {
         return;
       }
 
-      console.log("[Quiz Page] Completion path with no pending selection - starting completion");
+      log.debug("[Quiz Page] Completion path with no pending selection - starting completion");
       await runCompletion();
     }
   };

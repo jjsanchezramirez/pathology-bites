@@ -3,6 +3,7 @@
 
 import { notificationGenerators } from "./notification-generators";
 import { createClient } from "@/shared/services/client";
+import { log } from "@/shared/utils/logging";
 
 export class NotificationTriggers {
   private supabase = createClient();
@@ -158,7 +159,7 @@ export class NotificationTriggers {
         }
       );
     } catch (error) {
-      console.error("Error creating question approval notification:", error);
+      log.error("Error creating question approval notification:", error);
     }
   }
 
@@ -183,7 +184,7 @@ export class NotificationTriggers {
         }
       );
     } catch (error) {
-      console.error("Error creating question rejection notification:", error);
+      log.error("Error creating question rejection notification:", error);
     }
   }
 
@@ -206,7 +207,7 @@ export class NotificationTriggers {
         }
       );
     } catch (error) {
-      console.error("Error creating question submission notification:", error);
+      log.error("Error creating question submission notification:", error);
     }
   }
 

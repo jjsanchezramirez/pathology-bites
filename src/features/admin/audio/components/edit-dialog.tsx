@@ -25,6 +25,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { Loader2, ExternalLink } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 interface EditAudioDialogProps {
   audio: Audio | null;
@@ -85,7 +86,7 @@ export function EditAudioDialog({ audio, open, onOpenChange, onSave }: EditAudio
         onSave();
       }, 100);
     } catch (error) {
-      console.error("Failed to update audio:", error);
+      log.error("Failed to update audio:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update audio");
     } finally {
       setIsSubmitting(false);

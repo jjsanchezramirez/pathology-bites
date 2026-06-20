@@ -13,6 +13,7 @@ import type {
   PlannedTextSlide,
   PlannedSvgPlacement,
 } from "./types";
+import { log } from "@/shared/utils/logging";
 
 // ---------------------------------------------------------------------------
 // Prompt
@@ -258,10 +259,10 @@ export async function planLesson(
     const parsed = parsePlanResponse(raw, images.length);
     if (parsed) return parsed;
 
-    console.warn("[planner] Could not parse AI response, using fallback");
+    log.warn("[planner] Could not parse AI response, using fallback");
     return fallbackPlan(images.length);
   } catch (err) {
-    console.warn("[planner] All models failed:", err);
+    log.warn("[planner] All models failed:", err);
     return fallbackPlan(images.length);
   }
 }

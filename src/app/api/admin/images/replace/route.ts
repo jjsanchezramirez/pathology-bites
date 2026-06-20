@@ -4,6 +4,7 @@ import { uploadToR2 } from "@/shared/services/r2-storage";
 import { formatImageName } from "@/features/admin/images/services/image-upload";
 import { getImageDimensionsFromFile } from "@/shared/utils/images/server-image-utils";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -134,7 +135,7 @@ import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
  *                   type: object
  */
 export async function POST(request: NextRequest) {
-  console.log("🔄 Image replace API called");
+  log.debug("🔄 Image replace API called");
 
   try {
     const supabase = await createClient();
@@ -179,14 +180,14 @@ export async function POST(request: NextRequest) {
     }
 
     // Get existing image record
-    console.log("🔍 Fetching existing image record...");
+    log.debug("🔍 Fetching existing image record...");
     const { data: existingImage, error: fetchError } = await supabase
       .from("images")
       .select("*")
       .eq("id", imageId)
       .single();
 
-    console.log("📄 Existing image fetch result:", {
+    log.debug("📄 Existing image fetch result:", {
       hasData: !!existingImage,
       error: fetchError?.message,
       imageData: existingImage
@@ -203,12 +204,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Get new image dimensions
-    console.log("📐 Processing image dimensions...");
+    log.debug("📐 Processing image dimensions...");
     const fileBuffer = Buffer.from(await file.arrayBuffer());
-    console.log("📦 File buffer created, size:", fileBuffer.length);
+    log.debug("📦 File buffer created, size:", fileBuffer.length);
 
     const dimensions = await getImageDimensionsFromFile(file);
-    console.log("📐 Dimensions obtained:", dimensions);
+    log.debug("📐 Dimensions obtained:", dimensions);
 
     // Upload new file to same R2 path (this will overwrite the existing file)
     const uploadResult = await uploadToR2(fileBuffer, existingImage.storage_path, {
@@ -266,7 +267,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (dbError) {
-      console.error("Database update error:", dbError);
+      log.error("Database update error:", dbError);
       return NextResponse.json({ error: "Failed to update image record" }, { status: 500 });
     }
 
@@ -284,7 +285,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("Image replacement error:", error);
+    log.error("Image replacement error:", error);
 
     // More detailed error response
     const errorMessage = error instanceof Error ? error.message : "Unknown error";

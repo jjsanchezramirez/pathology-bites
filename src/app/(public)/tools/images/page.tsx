@@ -21,6 +21,7 @@ import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
 import { ImageViewerModal } from "@/shared/components/ui/image-viewer-modal";
 import { ImageGridSkeleton } from "@/features/public/tools/images/components/image-grid-skeleton";
+import { log } from "@/shared/utils/logging";
 
 type CategoryFilterType = "all" | "microscopic" | "gross";
 
@@ -184,7 +185,7 @@ function ImagesPageContent() {
         });
 
         if (result.error) {
-          console.error("Failed to load images:", result.error);
+          log.error("Failed to load images:", result.error);
           setImages([]);
           setTotalItems(0);
           setTotalPages(0);
@@ -208,7 +209,7 @@ function ImagesPageContent() {
           }
         }
       } catch (error) {
-        console.error("Error loading images:", error);
+        log.error("Error loading images:", error);
         setImages([]);
         setTotalItems(0);
         setTotalPages(0);

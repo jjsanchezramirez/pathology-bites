@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -122,14 +123,14 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
-      console.error("Error fetching images:", error);
+      log.error("Error fetching images:", error);
       return NextResponse.json({ error: "Failed to fetch images" }, { status: 500 });
     }
 
     const images = data || [];
     return NextResponse.json({ images, hasMore: images.length === limit });
   } catch (error) {
-    console.error("Error in GET /api/admin/library/images:", error);
+    log.error("Error in GET /api/admin/library/images:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

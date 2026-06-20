@@ -11,6 +11,7 @@ import { Sparkles, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import { FormState } from "../multi-step-question-form";
 import { FetchReferencesDialog } from "@/features/admin/questions/components/dialogs/fetch-references-dialog";
+import { log } from "@/shared/utils/logging";
 
 interface StepContentEditProps {
   formState: FormState;
@@ -92,7 +93,7 @@ export function StepContentEdit({
       setEnhancementRequest("");
       toast.success("Question enhanced successfully!");
     } catch (error) {
-      console.error("Enhancement error:", error);
+      log.error("Enhancement error:", error);
       toast.error("Failed to enhance question");
     } finally {
       setIsEnhancing(false);

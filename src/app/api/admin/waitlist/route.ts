@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { log } from "@/shared/utils/logging";
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
@@ -111,7 +112,7 @@ export async function GET(request: Request) {
         .order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching waitlist for export:", error);
+        log.error("Error fetching waitlist for export:", error);
         return NextResponse.json({ error: "Failed to export waitlist data" }, { status: 500 });
       }
 
@@ -146,7 +147,7 @@ export async function GET(request: Request) {
       .range(offset, offset + limit - 1);
 
     if (waitlistError) {
-      console.error("Error fetching waitlist:", waitlistError);
+      log.error("Error fetching waitlist:", waitlistError);
       return NextResponse.json({ error: "Failed to fetch waitlist data" }, { status: 500 });
     }
 
@@ -160,7 +161,7 @@ export async function GET(request: Request) {
       },
     });
   } catch (error) {
-    console.error("Unexpected error in waitlist API:", error);
+    log.error("Unexpected error in waitlist API:", error);
     return NextResponse.json({ error: "An unexpected error occurred" }, { status: 500 });
   }
 }

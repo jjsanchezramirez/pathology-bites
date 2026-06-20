@@ -18,6 +18,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 export function CreateQuestionClient() {
   const router = useRouter();
@@ -56,7 +57,7 @@ export function CreateQuestionClient() {
       router.push("/admin/my-questions");
       router.refresh();
     } catch (error) {
-      console.error("Error creating question:", error);
+      log.error("Error creating question:", error);
       toast.error(error instanceof Error ? error.message : "Failed to create question");
       throw error; // Re-throw to let the form handle it
     }

@@ -20,7 +20,7 @@ async function fetchQuestionSuccessRates(questionIds: string[]): Promise<Map<str
     question_ids: questionIds,
   });
   if (error) {
-    console.error("[quiz-service] get_question_success_rates RPC error:", error);
+    log.error("[quiz-service] get_question_success_rates RPC error:", error);
     return map;
   }
   (data as Array<{ question_id: string; success_rate: number }> | null)?.forEach((row) =>
@@ -40,6 +40,7 @@ import {
 } from "@/features/user/quiz/types/quiz";
 import { QuestionWithDetails } from "@/shared/types/questions";
 import { unifiedCache } from "@/shared/services/unified-cache";
+import { log } from "@/shared/utils/logging";
 
 // Database row type interfaces
 interface QuizSessionRow {
@@ -153,7 +154,7 @@ export class QuizService {
       .single();
 
     if (!parentCategory?.id) {
-      console.warn(`[Quiz Service] ${categoryName} parent category not found`);
+      log.warn(`[Quiz Service] ${categoryName} parent category not found`);
       return [];
     }
 
@@ -186,7 +187,7 @@ export class QuizService {
     try {
       // Use authenticated client if provided, otherwise fall back to default
 
-      console.log(`[Quiz Creation] Selecting questions for user ${userId}`, {
+      log.debug(`[Quiz Creation] Selecting questions for user ${userId}`, {
         questionType: formData.questionType,
         categorySelection: formData.categorySelection,
         requestedCount: formData.questionCount,
@@ -224,7 +225,7 @@ export class QuizService {
       );
 
       if (selectionError) {
-        console.error("[Quiz Creation] Error selecting questions:", selectionError);
+        log.error("[Quiz Creation] Error selecting questions:", selectionError);
         throw selectionError;
       }
 
@@ -235,7 +236,7 @@ export class QuizService {
         );
       }
 
-      console.log(`[Quiz Creation] Selected ${questionIds.length} questions`);
+      log.debug(`[Quiz Creation] Selected ${questionIds.length} questions`);
 
       // Extract question IDs from RPC response
       const selectedQuestionIds = questionIds.map(
@@ -280,7 +281,7 @@ export class QuizService {
         .single();
 
       if (error) {
-        console.error("Quiz session creation error:", error);
+        log.error("Quiz session creation error:", error);
         throw error;
       }
 
@@ -309,7 +310,7 @@ export class QuizService {
         updatedAt: sessionRow.updated_at,
       };
     } catch (error) {
-      console.error("Error creating quiz session:", error);
+      log.error("Error creating quiz session:", error);
       throw error;
     }
   }
@@ -333,7 +334,7 @@ export class QuizService {
         .single();
 
       if (error) {
-        console.error("Error getting quiz session:", error);
+        log.error("Error getting quiz session:", error);
         throw error;
       }
       if (!session) return null;
@@ -350,7 +351,7 @@ export class QuizService {
         .eq("quiz_session_id", sessionId);
 
       if (attemptsError) {
-        console.error("Error fetching quiz attempts:", attemptsError);
+        log.error("Error fetching quiz attempts:", attemptsError);
       }
 
       // Transform attempts to the format expected by hybrid system
@@ -363,7 +364,7 @@ export class QuizService {
           timestamp: new Date(attempt.attempted_at).getTime(),
         })) || [];
 
-      console.log(
+      log.debug(
         `[Quiz Service] Fetched ${answers.length} existing answers for session ${sessionId}`
       );
 
@@ -389,7 +390,7 @@ export class QuizService {
         answers, // Include answers in the response
       };
     } catch (error) {
-      console.error("Error getting quiz session:", error);
+      log.error("Error getting quiz session:", error);
       throw error;
     }
   }
@@ -491,7 +492,7 @@ export class QuizService {
         .single();
 
       if (error) {
-        console.error("Database error during quiz attempt insertion:", error);
+        log.error("Database error during quiz attempt insertion:", error);
         throw error;
       }
 
@@ -507,7 +508,7 @@ export class QuizService {
         reviewedAt: attemptRow.reviewed_at,
       };
     } catch (error) {
-      console.error("Error submitting answer:", error);
+      log.error("Error submitting answer:", error);
       throw error;
     }
   }
@@ -552,7 +553,7 @@ export class QuizService {
 
       if (error) throw error;
     } catch (error) {
-      console.error("Error updating quiz session:", error);
+      log.error("Error updating quiz session:", error);
       throw error;
     }
   }
@@ -572,7 +573,7 @@ export class QuizService {
         supabaseClient
       );
     } catch (error) {
-      console.error("Error starting quiz session:", error);
+      log.error("Error starting quiz session:", error);
       throw error;
     }
   }
@@ -595,7 +596,7 @@ export class QuizService {
         supabaseClient
       );
     } catch (error) {
-      console.error("Error pausing quiz session:", error);
+      log.error("Error pausing quiz session:", error);
       throw error;
     }
   }
@@ -614,7 +615,7 @@ export class QuizService {
         supabaseClient
       );
     } catch (error) {
-      console.error("Error resuming quiz session:", error);
+      log.error("Error resuming quiz session:", error);
       throw error;
     }
   }
@@ -636,7 +637,7 @@ export class QuizService {
         supabaseClient
       );
     } catch (error) {
-      console.error("Error updating time remaining:", error);
+      log.error("Error updating time remaining:", error);
       throw error;
     }
   }
@@ -670,7 +671,7 @@ export class QuizService {
         session.completedAt || new Date().toISOString()
       );
     } catch (error) {
-      console.error("Error getting quiz results:", error);
+      log.error("Error getting quiz results:", error);
       throw error;
     }
   }
@@ -712,7 +713,7 @@ export class QuizService {
 
       return result;
     } catch (error) {
-      console.error("Error completing quiz:", error);
+      log.error("Error completing quiz:", error);
       throw error;
     }
   }
@@ -751,7 +752,7 @@ export class QuizService {
       { category_ids: categoryIds }
     );
     if (categoriesError) {
-      console.error("[Quiz Results] Error fetching categories:", categoriesError);
+      log.error("[Quiz Results] Error fetching categories:", categoriesError);
     }
     const categoryInfoMap = new Map(
       (

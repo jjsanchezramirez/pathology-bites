@@ -2,6 +2,7 @@
 // Hook for loading Lottie animations with HTTP browser cache + memory deduplication
 
 import { useEffect, useState } from "react";
+import { log } from "@/shared/utils/logging";
 
 const ANIMATION_BASE_URL = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/animations";
 
@@ -81,7 +82,7 @@ export function useLottieAnimation(animationName: string): UseLottieAnimationRes
           setIsLoading(false);
         }
       } catch (err) {
-        console.error(`[Lottie] ❌ Error loading ${animationName}:`, err);
+        log.error(`[Lottie] ❌ Error loading ${animationName}:`, err);
         pendingRequests.delete(animationName);
         const errorObj = err instanceof Error ? err : new Error("Failed to load animation");
         if (isMounted) {
@@ -128,7 +129,7 @@ export function preloadLottieAnimation(animationName: string): void {
     })
     .catch((err) => {
       pendingRequests.delete(animationName);
-      console.warn(`[Lottie] Preload failed for ${animationName}:`, err);
+      log.warn(`[Lottie] Preload failed for ${animationName}:`, err);
       return null;
     });
 

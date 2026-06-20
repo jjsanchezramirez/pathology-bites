@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { log } from "@/shared/utils/logging";
 
 // Create Supabase client with service role for admin operations (bypasses RLS)
 function createAdminClient() {
@@ -75,7 +76,7 @@ export async function DELETE(
 ) {
   try {
     const resolvedParams = await params;
-    console.log("Deleting inquiry with ID:", resolvedParams.id);
+    log.debug("Deleting inquiry with ID:", resolvedParams.id);
 
     // Auth check - require admin role only
     const userId = request.headers.get("x-user-id");
@@ -100,7 +101,7 @@ export async function DELETE(
       .single();
 
     if (fetchError || !inquiry) {
-      console.error("Inquiry not found:", fetchError);
+      log.error("Inquiry not found:", fetchError);
       return NextResponse.json({ error: "Inquiry not found" }, { status: 404 });
     }
 
@@ -108,11 +109,11 @@ export async function DELETE(
     const { error: deleteError } = await supabase.from("inquiries").delete().eq("id", inquiryId);
 
     if (deleteError) {
-      console.error("Failed to delete inquiry:", deleteError);
+      log.error("Failed to delete inquiry:", deleteError);
       return NextResponse.json({ error: "Failed to delete inquiry" }, { status: 500 });
     }
 
-    console.log("Inquiry deleted successfully:", inquiryId);
+    log.debug("Inquiry deleted successfully:", inquiryId);
 
     return NextResponse.json({
       success: true,
@@ -120,7 +121,7 @@ export async function DELETE(
       deletedInquiry: inquiry,
     });
   } catch (error) {
-    console.error("Error deleting inquiry:", error);
+    log.error("Error deleting inquiry:", error);
     return NextResponse.json(
       { error: "Internal server error", details: error.message },
       { status: 500 }

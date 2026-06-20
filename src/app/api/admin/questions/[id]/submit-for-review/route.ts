@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -80,7 +81,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     try {
       body = await request.json();
     } catch (parseError) {
-      console.error("Error parsing request body:", parseError);
+      log.error("Error parsing request body:", parseError);
       return NextResponse.json(
         { error: "Invalid request body. Expected JSON format." },
         { status: 400 }
@@ -102,7 +103,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       .single();
 
     if (reviewerError) {
-      console.error("Error fetching reviewer:", reviewerError);
+      log.error("Error fetching reviewer:", reviewerError);
       return NextResponse.json(
         { error: "Database error while validating reviewer. Please try again." },
         { status: 500 }
@@ -132,7 +133,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       .single();
 
     if (fetchError) {
-      console.error("Error fetching question:", fetchError);
+      log.error("Error fetching question:", fetchError);
       return NextResponse.json(
         { error: "Database error while fetching question. Please try again." },
         { status: 500 }
@@ -184,7 +185,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       .single();
 
     if (updateError) {
-      console.error("Error submitting question for review:", updateError);
+      log.error("Error submitting question for review:", updateError);
       return NextResponse.json(
         { error: `Failed to submit question: ${updateError.message}` },
         { status: 500 }
@@ -208,11 +209,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         });
 
         if (reviewError) {
-          console.error("Error creating resubmission review record:", reviewError);
+          log.error("Error creating resubmission review record:", reviewError);
           // Don't fail the request if review record creation fails
         }
       } catch (error) {
-        console.error("Unexpected error creating resubmission review record:", error);
+        log.error("Unexpected error creating resubmission review record:", error);
         // Don't fail the request if review record creation fails
       }
     }
@@ -227,7 +228,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         userId
       );
     } catch (error) {
-      console.error("Error sending submission notification:", error);
+      log.error("Error sending submission notification:", error);
       // Don't fail the request if notification fails
     }
 
@@ -239,7 +240,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       question: updatedQuestion,
     });
   } catch (error) {
-    console.error("Unexpected error submitting question for review:", error);
+    log.error("Unexpected error submitting question for review:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json(
       {

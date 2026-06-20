@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -126,7 +127,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Failed to create interactive sequence:", error);
+      log.error("Failed to create interactive sequence:", error);
       return NextResponse.json(
         { error: `Failed to create sequence: ${error.message}` },
         { status: 500 }
@@ -135,7 +136,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, sequence: data });
   } catch (error) {
-    console.error("Interactive sequence creation error:", error);
+    log.error("Interactive sequence creation error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: `Creation failed: ${errorMessage}` }, { status: 500 });
   }

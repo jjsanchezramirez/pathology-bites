@@ -31,6 +31,7 @@ import {
 import { fetchSvgAssets } from "@/features/admin/svg-library/services/svg-assets";
 import type { SvgAsset, SvgListFilters } from "@/features/admin/svg-library/types";
 import { toast } from "@/shared/utils/ui/toast";
+import { log } from "@/shared/utils/logging";
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -114,7 +115,7 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
       setAssets(result.data);
       setTotalItems(result.total);
     } catch (error) {
-      console.error("Error loading SVG assets:", error);
+      log.error("Error loading SVG assets:", error);
       toast.error("Failed to load SVG assets");
     } finally {
       setLoading(false);

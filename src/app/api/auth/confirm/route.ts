@@ -11,6 +11,7 @@ import {
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_UI_SETTINGS,
 } from "@/shared/config/user-settings-defaults";
+import { log } from "@/shared/utils/logging";
 
 // Service-role client for is_email_confirmed RPC (SECURITY DEFINER, service_role-only EXECUTE)
 async function isEmailAlreadyVerified(email: string | null): Promise<boolean> {
@@ -23,7 +24,7 @@ async function isEmailAlreadyVerified(email: string | null): Promise<boolean> {
     const { data } = await admin.rpc("is_email_confirmed", { p_email: email });
     return data === true;
   } catch (err) {
-    console.error("is_email_confirmed RPC failed:", err);
+    log.error("is_email_confirmed RPC failed:", err);
     return false;
   }
 }
@@ -68,12 +69,12 @@ async function ensureUserRecords(supabase: SupabaseClient): Promise<void> {
 
     if (createError) {
       if (createError.code === "23505") {
-        console.log("User already exists (created by trigger):", authUser.id);
+        log.debug("User already exists (created by trigger):", authUser.id);
       } else {
-        console.error("Error creating user:", createError);
+        log.error("Error creating user:", createError);
       }
     } else {
-      console.log("User created successfully via email confirmation:", authUser.id);
+      log.debug("User created successfully via email confirmation:", authUser.id);
     }
 
     // Create default user_settings for new user
@@ -86,12 +87,12 @@ async function ensureUserRecords(supabase: SupabaseClient): Promise<void> {
 
     if (settingsError) {
       if (settingsError.code === "23505") {
-        console.log("User settings already exist (created by trigger):", authUser.id);
+        log.debug("User settings already exist (created by trigger):", authUser.id);
       } else {
-        console.error("Error creating user settings for new user:", settingsError);
+        log.error("Error creating user settings for new user:", settingsError);
       }
     } else {
-      console.log("User settings created successfully for new user:", authUser.id);
+      log.debug("User settings created successfully for new user:", authUser.id);
     }
   }
 
@@ -103,7 +104,7 @@ async function ensureUserRecords(supabase: SupabaseClient): Promise<void> {
     .single();
 
   if (!existingSettings) {
-    console.log("Creating missing user_settings as final safeguard:", authUser.id);
+    log.debug("Creating missing user_settings as final safeguard:", authUser.id);
     const { error: settingsError } = await supabase.from("user_settings").insert({
       user_id: authUser.id,
       quiz_settings: DEFAULT_QUIZ_SETTINGS,
@@ -112,9 +113,9 @@ async function ensureUserRecords(supabase: SupabaseClient): Promise<void> {
     });
 
     if (settingsError) {
-      console.error("Error creating user settings in final safeguard:", settingsError);
+      log.error("Error creating user settings in final safeguard:", settingsError);
     } else {
-      console.log("User settings created successfully in final safeguard:", authUser.id);
+      log.debug("User settings created successfully in final safeguard:", authUser.id);
     }
   }
 }
@@ -179,7 +180,7 @@ export async function GET(request: NextRequest) {
   const next = searchParams.get("next") ?? "/";
   const email = searchParams.get("email");
 
-  console.log("Auth confirm route called:", {
+  log.debug("Auth confirm route called:", {
     token_hash: !!token_hash,
     token: !!token,
     code: !!code,
@@ -195,20 +196,20 @@ export async function GET(request: NextRequest) {
     const { error } = await supabase.auth.exchangeCodeForSession(code);
 
     if (!error) {
-      console.log("Code exchange successful, type:", type);
+      log.debug("Code exchange successful, type:", type);
 
       if (type === "signup" || type === "email" || !type) {
         // Email verification — ensure user records exist, then redirect to success
         try {
           await ensureUserRecords(supabase);
         } catch (userCreationError) {
-          console.error("Error during user creation process:", userCreationError);
+          log.error("Error during user creation process:", userCreationError);
           // Continue to success redirect — verification was successful
         }
-        console.log("Redirecting to email-verified page");
+        log.debug("Redirecting to email-verified page");
         return NextResponse.redirect(`${origin}/email-verified`);
       } else if (type === "recovery") {
-        console.log("Password recovery, redirecting to:", next);
+        log.debug("Password recovery, redirecting to:", next);
         return NextResponse.redirect(`${origin}${next}`);
       } else if (type === "email_change") {
         return NextResponse.redirect(`${origin}/dashboard?message=Email updated successfully`);
@@ -217,7 +218,7 @@ export async function GET(request: NextRequest) {
       // Default redirect
       return NextResponse.redirect(`${origin}${next}`);
     } else {
-      console.error("Code exchange failed:", error);
+      log.error("Code exchange failed:", error);
 
       // Handle expired or invalid codes
       if (
@@ -227,11 +228,11 @@ export async function GET(request: NextRequest) {
         error.code === "otp_expired"
       ) {
         if (type === "recovery") {
-          console.log("Password reset code expired or invalid, redirecting to link-expired page");
+          log.debug("Password reset code expired or invalid, redirecting to link-expired page");
           return NextResponse.redirect(`${origin}/link-expired?type=recovery`);
         } else {
           // For signup verification, distinguish already-verified from genuinely expired
-          console.log("Email verification code expired or already used");
+          log.debug("Email verification code expired or already used");
           const alreadyVerified = await isEmailAlreadyVerified(email);
           return expiredSignupRedirect(origin, alreadyVerified);
         }
@@ -251,7 +252,7 @@ export async function GET(request: NextRequest) {
     const verificationToken = token_hash || token;
 
     if (!verificationToken) {
-      console.error("No verification token found");
+      log.error("No verification token found");
       return NextResponse.redirect(
         `${origin}/auth-error?error=verification_failed&description=No verification token found`
       );
@@ -263,7 +264,7 @@ export async function GET(request: NextRequest) {
     });
 
     if (!error) {
-      console.log("OTP verification successful");
+      log.debug("OTP verification successful");
 
       // Handle different verification types
       if (type === "signup" || type === "email") {
@@ -271,15 +272,15 @@ export async function GET(request: NextRequest) {
         try {
           await ensureUserRecords(supabase);
         } catch (userCreationError) {
-          console.error("Error during user creation process:", userCreationError);
+          log.error("Error during user creation process:", userCreationError);
           // Continue to success redirect — verification was successful
         }
 
         // ALWAYS redirect to success after OTP verification succeeds
-        console.log("Redirecting to email-verified page");
+        log.debug("Redirecting to email-verified page");
         return NextResponse.redirect(`${origin}/email-verified`);
       } else if (type === "recovery") {
-        console.log("Password recovery, redirecting to:", next);
+        log.debug("Password recovery, redirecting to:", next);
         return NextResponse.redirect(`${origin}${next}`);
       } else if (type === "email_change") {
         return NextResponse.redirect(`${origin}/dashboard?message=Email updated successfully`);
@@ -288,34 +289,34 @@ export async function GET(request: NextRequest) {
       // Default redirect
       return NextResponse.redirect(`${origin}${next}`);
     } else {
-      console.error("OTP verification failed:", error);
+      log.error("OTP verification failed:", error);
 
       // Handle expired or invalid links
       if (error.code === "otp_expired") {
         if (type === "recovery") {
-          console.log("Password reset link expired, redirecting to link-expired page");
+          log.debug("Password reset link expired, redirecting to link-expired page");
           return NextResponse.redirect(`${origin}/link-expired?type=recovery`);
         } else if (type === "signup" || type === "email") {
           // No session at this point — look up email_confirmed_at via service-role RPC
           // to distinguish "already verified" (re-click) from "genuinely expired".
-          console.log("Email verification link expired or already used");
+          log.debug("Email verification link expired or already used");
           const alreadyVerified = await isEmailAlreadyVerified(email);
           return expiredSignupRedirect(origin, alreadyVerified);
         }
       }
 
       // For other errors, redirect to generic auth error page
-      console.log("Other verification error, redirecting to auth-error page");
+      log.debug("Other verification error, redirecting to auth-error page");
       return NextResponse.redirect(
         `${origin}/auth-error?error=verification_failed&description=${encodeURIComponent(error.message)}`
       );
     }
   } else {
-    console.error("Missing token_hash/token or type");
+    log.error("Missing token_hash/token or type");
   }
 
   // redirect the user to an error page with instructions
-  console.log("Redirecting to auth error page");
+  log.debug("Redirecting to auth error page");
   return NextResponse.redirect(
     `${origin}/auth-error?error=verification_failed&description=Missing verification parameters`
   );

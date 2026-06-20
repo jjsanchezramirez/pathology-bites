@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { toast } from "@/shared/utils/ui/toast";
+import { log } from "@/shared/utils/logging";
 
 // Type for PathPresenter case data from JSON
 interface PathPresenterCase {
@@ -130,14 +131,12 @@ export async function loadClientWSIData(): Promise<VirtualSlide[]> {
         !slide.image_url.includes("localhost")
     );
 
-    console.log(
+    log.debug(
       `[WSI Data] ✅ Loaded ${validEntries.length} PathPresenter cases (from ${pathPresenterCases.length} total cases)`
     );
 
     if (validEntries.length === 0) {
-      console.warn(
-        "[WSI Data] ⚠️ No valid PathPresenter cases found! This may cause loading issues."
-      );
+      log.warn("[WSI Data] ⚠️ No valid PathPresenter cases found! This may cause loading issues.");
     }
 
     return validEntries;
@@ -165,12 +164,12 @@ export function useClientWSIData(): UseClientWSIDataResult {
 
     // Check if data is already cached
     if (cachedWSIPromise) {
-      console.log("[WSI Data] Using cached data promise");
+      log.debug("[WSI Data] Using cached data promise");
       setIsLoading(true);
       cachedWSIPromise
         .then((data) => {
           if (mounted) {
-            console.log("[WSI Data] ✅ Loaded from cache:", data.length, "slides");
+            log.debug("[WSI Data] ✅ Loaded from cache:", data.length, "slides");
             setWSIData(data);
             setError(null);
             setIsLoading(false);
@@ -178,7 +177,7 @@ export function useClientWSIData(): UseClientWSIDataResult {
         })
         .catch((err) => {
           if (mounted) {
-            console.error("[WSI Data] ❌ Cache error:", err);
+            log.error("[WSI Data] ❌ Cache error:", err);
             const errorMessage = err.message || "Failed to load WSI data";
             setError(errorMessage);
             setWSIData(null);
@@ -200,12 +199,12 @@ export function useClientWSIData(): UseClientWSIDataResult {
         });
     } else {
       // Load fresh data
-      console.log("[WSI Data] Loading fresh data from R2");
+      log.debug("[WSI Data] Loading fresh data from R2");
       setIsLoading(true);
       loadClientWSIData()
         .then((data) => {
           if (mounted) {
-            console.log("[WSI Data] ✅ Fresh load complete:", data.length, "slides");
+            log.debug("[WSI Data] ✅ Fresh load complete:", data.length, "slides");
             setWSIData(data);
             setError(null);
             setIsLoading(false);
@@ -213,7 +212,7 @@ export function useClientWSIData(): UseClientWSIDataResult {
         })
         .catch((err) => {
           if (mounted) {
-            console.error("[WSI Data] ❌ Fresh load error:", err);
+            log.error("[WSI Data] ❌ Fresh load error:", err);
             const errorMessage = err.message || "Failed to load WSI data";
             setError(errorMessage);
             setWSIData(null);

@@ -30,6 +30,7 @@ import { SaveToDatabaseDialog } from "./components/save-to-database-dialog";
 import { LoadFromDatabaseDialog } from "./components/load-from-database-dialog";
 import { ExportDialog } from "./components/export-dialog";
 import { GenerateLessonDialog } from "./components/generate-lesson-dialog";
+import { log } from "@/shared/utils/logging";
 
 export default function LessonStudioPage() {
   const lesson = useEditorStore((s) => s.lesson);
@@ -82,7 +83,7 @@ export default function LessonStudioPage() {
       setAudioRecords(result.data);
     } catch (err) {
       if (reqId !== audioReqIdRef.current) return;
-      console.error("[lesson-studio] audio fetch failed:", err);
+      log.error("[lesson-studio] audio fetch failed:", err);
     } finally {
       if (reqId === audioReqIdRef.current) setAudioLoading(false);
     }
@@ -117,7 +118,7 @@ export default function LessonStudioPage() {
           });
         }
       } catch (err) {
-        console.error("[lesson-studio] transcript fetch failed:", err);
+        log.error("[lesson-studio] transcript fetch failed:", err);
       }
     },
     [setAudio]

@@ -14,6 +14,7 @@ import { useEffect } from "react";
 import { Button } from "@/shared/components/ui/button";
 import FloatingCharacter from "@/shared/components/common/dr-albright";
 import { getR2PublicUrl } from "@/shared/services/r2-storage";
+import { log } from "@/shared/utils/logging";
 
 const ERROR_CONTENT = {
   headlines: [
@@ -73,7 +74,7 @@ export default function ErrorPage({ error }: { error: Error & { digest?: string 
     html.setAttribute("data-error-page-enforced", "true");
 
     // Log error
-    console.error("Page Error:", error);
+    log.error("Page Error:", error);
 
     // Create and use the error message for screen readers
     const errorMessage = `Error occurred: ${error.message}`;

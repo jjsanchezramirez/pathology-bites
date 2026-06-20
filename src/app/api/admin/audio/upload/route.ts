@@ -3,6 +3,7 @@ import { createClient } from "@/shared/services/server";
 import { uploadToR2, generateAudioStoragePath, deleteFromR2 } from "@/shared/services/r2-storage";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 import { parseAudioFilename } from "@/shared/utils/images/filename-parser";
+import { log } from "@/shared/utils/logging";
 
 const ALLOWED_AUDIO_TYPES = [
   "audio/mpeg",
@@ -168,7 +169,7 @@ export async function POST(request: NextRequest) {
 
     // Parse filename to extract title, description, and pathology category
     const parsedFilename = parseAudioFilename(file.name);
-    console.log("Parsed audio filename:", parsedFilename);
+    log.debug("Parsed audio filename:", parsedFilename);
 
     // Generate R2 storage path using only the title (no description or metadata)
     const fileExtension = file.name.split(".").pop() || "mp3";
@@ -190,7 +191,7 @@ export async function POST(request: NextRequest) {
         },
       });
     } catch (error) {
-      console.error("R2 audio upload failed:", error);
+      log.error("R2 audio upload failed:", error);
       uploadedStoragePath = null;
       return NextResponse.json({ error: "Failed to upload audio to storage." }, { status: 500 });
     }
@@ -209,13 +210,13 @@ export async function POST(request: NextRequest) {
       pathologyCategoryFromForm?.trim() || parsedFilename.categoryId || null;
 
     if (parsedFilename.categoryId && !pathologyCategoryFromForm) {
-      console.log(
+      log.debug(
         `Pathology category (from filename): ${parsedFilename.categoryName} (${parsedFilename.categoryId})`
       );
     }
 
     if (parsedFilename.description && !descriptionFromForm) {
-      console.log(`Description (from filename): ${parsedFilename.description}`);
+      log.debug(`Description (from filename): ${parsedFilename.description}`);
     }
 
     const parsedDuration = duration_seconds ? parseFloat(duration_seconds) : null;
@@ -239,12 +240,12 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (dbError) {
-      console.error("Database insert failed:", dbError);
+      log.error("Database insert failed:", dbError);
       // Clean up R2 storage on database error
       try {
         await deleteFromR2(storagePath, "pathology-bites-audio");
       } catch (cleanupError) {
-        console.error("Failed to cleanup R2 after database error:", cleanupError);
+        log.error("Failed to cleanup R2 after database error:", cleanupError);
       }
       uploadedStoragePath = null;
       return NextResponse.json(
@@ -260,13 +261,13 @@ export async function POST(request: NextRequest) {
       audio: audioData,
     });
   } catch (error) {
-    console.error("Audio upload error:", error);
+    log.error("Audio upload error:", error);
 
     if (uploadedStoragePath) {
       try {
         await deleteFromR2(uploadedStoragePath, "pathology-bites-audio");
       } catch (cleanupError) {
-        console.error("Failed to cleanup R2 audio file:", cleanupError);
+        log.error("Failed to cleanup R2 audio file:", cleanupError);
       }
     }
 

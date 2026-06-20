@@ -11,6 +11,8 @@ import { UnifiedHeader, HeaderConfig } from "./unified-header";
 import { getNavigationConfig } from "@/shared/config/navigation";
 import { SidebarStateProvider } from "@/shared/contexts/sidebar-state-context";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
+import { log } from "@/shared/utils/logging";
+
 // import { useUserRole } from '@/shared/hooks/use-user-role' // Commented out - middleware already validates role server-side
 
 interface UnifiedLayoutClientProps {
@@ -90,14 +92,14 @@ export function UnifiedLayoutClient({
         preQuizDesktopStateRef.current = desktopCollapsed;
         wasInSpecialModeRef.current = true;
         setDesktopCollapsed(true);
-        console.log("[Sidebar] Entering special mode, saving state:", desktopCollapsed);
+        log.debug("[Sidebar] Entering special mode, saving state:", desktopCollapsed);
       }
       // Exiting special mode
       else if (!isInSpecialMode && wasInSpecialModeRef.current) {
         // Restore previous state
         wasInSpecialModeRef.current = false;
         setDesktopCollapsed(preQuizDesktopStateRef.current);
-        console.log(
+        log.debug(
           "[Sidebar] Exiting special mode, restoring state:",
           preQuizDesktopStateRef.current
         );

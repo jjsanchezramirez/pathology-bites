@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -136,7 +137,7 @@ export async function GET(request: NextRequest) {
     const { data: favorites, error } = await query;
 
     if (error) {
-      console.error("Error fetching user favorites:", error);
+      log.error("Error fetching user favorites:", error);
       return NextResponse.json({ error: "Failed to fetch favorites" }, { status: 500 });
     }
 
@@ -145,7 +146,7 @@ export async function GET(request: NextRequest) {
       data: favorites || [],
     });
   } catch (error) {
-    console.error("Error in user favorites GET:", error);
+    log.error("Error in user favorites GET:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -250,7 +251,7 @@ export async function POST(request: NextRequest) {
           message: "Question already in favorites",
         });
       }
-      console.error("Error adding to favorites:", error);
+      log.error("Error adding to favorites:", error);
       return NextResponse.json({ error: "Failed to add to favorites" }, { status: 500 });
     }
 
@@ -259,7 +260,7 @@ export async function POST(request: NextRequest) {
       data: favorite,
     });
   } catch (error) {
-    console.error("Error in user favorites POST:", error);
+    log.error("Error in user favorites POST:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -330,7 +331,7 @@ export async function DELETE(request: NextRequest) {
       .eq("question_id", question_id);
 
     if (error) {
-      console.error("Error removing from favorites:", error);
+      log.error("Error removing from favorites:", error);
       return NextResponse.json({ error: "Failed to remove from favorites" }, { status: 500 });
     }
 
@@ -339,7 +340,7 @@ export async function DELETE(request: NextRequest) {
       message: "Removed from favorites",
     });
   } catch (error) {
-    console.error("Error in user favorites DELETE:", error);
+    log.error("Error in user favorites DELETE:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

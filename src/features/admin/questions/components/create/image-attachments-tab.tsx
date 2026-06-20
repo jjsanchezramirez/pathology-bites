@@ -19,6 +19,7 @@ import { fetchImages } from "@/features/admin/images/services/images";
 import { ImageData } from "@/shared/types/images";
 import { ImagePreview } from "@/features/admin/images/components/image-preview";
 import Image from "next/image";
+import { log } from "@/shared/utils/logging";
 
 interface ImageAttachment {
   image_id: string;
@@ -60,7 +61,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
       });
 
       if (result.error) {
-        console.error("Failed to load images:", result.error);
+        log.error("Failed to load images:", result.error);
         throw new Error(typeof result.error === "string" ? result.error : "Failed to load images");
       }
 
@@ -72,7 +73,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
         return newCache;
       });
     } catch (error) {
-      console.error("Failed to load images:", error);
+      log.error("Failed to load images:", error);
     } finally {
       setLoading(false);
     }
@@ -119,7 +120,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
             }
           })
           .catch((error) => {
-            console.error("Failed to load attached images metadata:", error);
+            log.error("Failed to load attached images metadata:", error);
           });
 
         return currentCache;

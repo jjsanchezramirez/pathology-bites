@@ -11,6 +11,7 @@ import {
 
 import { TABLE_NAMES } from "@/shared/types/database";
 import { apiClient } from "@/shared/utils/api/api-client";
+import { log } from "@/shared/utils/logging";
 
 export interface UseQuestionsParams {
   page?: number;
@@ -228,7 +229,7 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         } else {
           // If not JSON, get text for debugging
           const text = await response.text();
-          console.error("Non-JSON response:", text);
+          log.error("Non-JSON response:", text);
           throw new Error(`Server returned non-JSON response (${response.status})`);
         }
 

@@ -5,6 +5,7 @@
 
 import { ParsedVariant, VariantData, OncoKBData } from "./types";
 import { normalizeClinvarSignificance } from "./clinvar";
+import { log } from "@/shared/utils/logging";
 
 /**
  * Fetch with timeout wrapper
@@ -66,12 +67,12 @@ export async function fetchVariantData(parsed: ParsedVariant): Promise<VariantDa
       if (res.ok) {
         const results = await res.json();
         if (results.hits && results.hits.length > 0) {
-          console.log("✓ Found via gene + protein query");
+          log.debug("✓ Found via gene + protein query");
           return extractVariantData(results.hits[0]);
         }
       }
     } catch (error) {
-      console.error("Gene + protein search failed:", error);
+      log.error("Gene + protein search failed:", error);
     }
   }
 
@@ -85,12 +86,12 @@ export async function fetchVariantData(parsed: ParsedVariant): Promise<VariantDa
       if (res.ok) {
         const data = await res.json();
         if (data && !data.notfound) {
-          console.log("✓ Found via HGVS genomic");
+          log.debug("✓ Found via HGVS genomic");
           return extractVariantData(data);
         }
       }
     } catch (error) {
-      console.error("HGVS genomic search failed:", error);
+      log.error("HGVS genomic search failed:", error);
     }
   }
 
@@ -104,16 +105,16 @@ export async function fetchVariantData(parsed: ParsedVariant): Promise<VariantDa
       if (res.ok) {
         const data = await res.json();
         if (data && !data.notfound) {
-          console.log("✓ Found via rsID");
+          log.debug("✓ Found via rsID");
           return extractVariantData(data);
         }
       }
     } catch (error) {
-      console.error("rsID search failed:", error);
+      log.error("rsID search failed:", error);
     }
   }
 
-  console.log("✗ No variant found");
+  log.debug("✗ No variant found");
   return emptyResult;
 }
 
@@ -237,7 +238,7 @@ export async function fetchOncoKBData(parsed: ParsedVariant): Promise<OncoKBData
     });
 
     const url = `https://www.oncokb.org/api/v1/annotate/mutations/byProteinChange?${params.toString()}`;
-    console.log(`Querying OncoKB: ${parsed.gene} ${alteration}`);
+    log.debug(`Querying OncoKB: ${parsed.gene} ${alteration}`);
 
     const response = await fetchWithTimeout(
       url,
@@ -274,7 +275,7 @@ export async function fetchOncoKBData(parsed: ParsedVariant): Promise<OncoKBData
       };
     }
 
-    console.log("✓ Found OncoKB data:", {
+    log.debug("✓ Found OncoKB data:", {
       oncogenic: data.oncogenic,
       highestSensitiveLevel: data.highestSensitiveLevel,
     });
@@ -300,7 +301,7 @@ export async function fetchOncoKBData(parsed: ParsedVariant): Promise<OncoKBData
         therapeuticImplications.length > 0 ? therapeuticImplications : undefined,
     };
   } catch (error) {
-    console.error("OncoKB API error:", error);
+    log.error("OncoKB API error:", error);
     return null;
   }
 }

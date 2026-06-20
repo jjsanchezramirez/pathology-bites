@@ -12,6 +12,7 @@ import {
   getCacheStats as getPublicToolsCacheStats,
   getRecentItems,
 } from "@/shared/utils/cache/public-tools-cache";
+import { log } from "@/shared/utils/logging";
 
 interface GeneInfo {
   hgncId: string;
@@ -57,14 +58,14 @@ export function useSmartGeneLookup(): UseSmartGeneLookupResult {
         // Check cache first
         const cached = getCachedItem<GeneInfo>("milan", cacheKey);
         if (cached) {
-          console.log(`🎯 Gene cache hit: ${normalizedSymbol}`);
+          log.debug(`🎯 Gene cache hit: ${normalizedSymbol}`);
           setIsLoading(false);
           setError(null);
           return cached;
         }
 
         // Cache miss - fetch from API
-        console.log(`🔄 Gene cache miss: ${normalizedSymbol}`);
+        log.debug(`🔄 Gene cache miss: ${normalizedSymbol}`);
         const response = await fetch(
           `/api/public/tools/milan?symbol=${encodeURIComponent(symbol.trim())}`
         );
@@ -80,7 +81,7 @@ export function useSmartGeneLookup(): UseSmartGeneLookupResult {
 
         // Save to cache
         setCachedItem("milan", cacheKey, geneInfo);
-        console.log(`✅ Gene cached: ${normalizedSymbol}`);
+        log.debug(`✅ Gene cached: ${normalizedSymbol}`);
 
         // Clear any previous errors on successful lookup
         setError(null);

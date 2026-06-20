@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { z } from "zod";
+import { log } from "@/shared/utils/logging";
 
 const bulkDeleteSchema = z.object({
   inquiryIds: z
@@ -108,7 +109,7 @@ function createAdminClient() {
  */
 export async function DELETE(request: NextRequest) {
   try {
-    console.log("Bulk delete inquiries API called");
+    log.debug("Bulk delete inquiries API called");
 
     // Auth check - require admin role only
     const userId = request.headers.get("x-user-id");
@@ -137,10 +138,7 @@ export async function DELETE(request: NextRequest) {
 
     const { inquiryIds } = validation.data;
 
-    console.log(
-      `Attempting to delete ${inquiryIds.length} inquiries by user ${userId}:`,
-      inquiryIds
-    );
+    log.debug(`Attempting to delete ${inquiryIds.length} inquiries by user ${userId}:`, inquiryIds);
 
     // First, verify all inquiries exist and get their details for logging
     const { data: existingInquiries, error: fetchError } = await supabase
@@ -149,7 +147,7 @@ export async function DELETE(request: NextRequest) {
       .in("id", inquiryIds);
 
     if (fetchError) {
-      console.error("Error fetching inquiries for verification:", fetchError);
+      log.error("Error fetching inquiries for verification:", fetchError);
       return NextResponse.json({ error: "Failed to verify inquiries" }, { status: 500 });
     }
 
@@ -157,7 +155,7 @@ export async function DELETE(request: NextRequest) {
     const notFoundIds = inquiryIds.filter((id) => !foundIds.includes(id));
 
     if (notFoundIds.length > 0) {
-      console.warn("Some inquiries not found:", notFoundIds);
+      log.warn("Some inquiries not found:", notFoundIds);
       return NextResponse.json(
         {
           error: "Some inquiries not found",
@@ -172,15 +170,15 @@ export async function DELETE(request: NextRequest) {
     const { error: deleteError } = await supabase.from("inquiries").delete().in("id", inquiryIds);
 
     if (deleteError) {
-      console.error("Error deleting inquiries:", deleteError);
+      log.error("Error deleting inquiries:", deleteError);
       return NextResponse.json({ error: "Failed to delete inquiries" }, { status: 500 });
     }
 
     const deletedCount = inquiryIds.length;
-    console.log(`Successfully deleted ${deletedCount} inquiries`);
+    log.debug(`Successfully deleted ${deletedCount} inquiries`);
 
     // Log the deletion for audit purposes
-    console.log(
+    log.debug(
       "Deleted inquiries:",
       existingInquiries?.map((inquiry) => ({
         id: inquiry.id,
@@ -196,7 +194,7 @@ export async function DELETE(request: NextRequest) {
       message: `Successfully deleted ${deletedCount} inquiries`,
     });
   } catch (error) {
-    console.error("Unexpected error in bulk delete:", error);
+    log.error("Unexpected error in bulk delete:", error);
     return NextResponse.json(
       {
         error: "Internal server error",

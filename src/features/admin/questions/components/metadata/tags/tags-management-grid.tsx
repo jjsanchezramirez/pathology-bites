@@ -42,6 +42,7 @@ import { CreateTagDialog } from "./create-tag-dialog";
 import { EditTagDialog } from "./edit-tag-dialog";
 import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
 import { TagStatsCards } from "./tag-stats-cards";
+import { log } from "@/shared/utils/logging";
 
 interface Tag {
   id: string;
@@ -380,7 +381,7 @@ export function TagsManagementGrid() {
       setTotalTags(data.totalTags || 0);
       setTotalPages(data.totalPages || 0);
     } catch (error) {
-      console.error("Error loading tags:", error);
+      log.error("Error loading tags:", error);
       toast.error(error instanceof Error ? error.message : "Failed to load tags");
     } finally {
       setLoading(false);
@@ -407,7 +408,7 @@ export function TagsManagementGrid() {
       setSelectedTag(null);
       loadTags();
     } catch (error) {
-      console.error("Error deleting tag:", error);
+      log.error("Error deleting tag:", error);
       toast.error(error instanceof Error ? error.message : "Failed to delete tag");
     } finally {
       setIsDeleting(false);
@@ -448,7 +449,7 @@ export function TagsManagementGrid() {
       const data = await response.json();
       setTagQuestions(data.questions || []);
     } catch (error) {
-      console.error("Error loading questions:", error);
+      log.error("Error loading questions:", error);
       toast.error("Failed to load questions for this tag");
       setTagQuestions([]);
     } finally {
@@ -505,7 +506,7 @@ export function TagsManagementGrid() {
       setShowBulkDeleteDialog(false);
       loadTags();
     } catch (error) {
-      console.error("Error bulk deleting tags:", error);
+      log.error("Error bulk deleting tags:", error);
       toast.error("Failed to delete tags");
     } finally {
       setIsBulkDeleting(false);
@@ -544,7 +545,7 @@ export function TagsManagementGrid() {
       setSelectedTagIds(new Set());
       loadTags();
     } catch (error) {
-      console.error("Error merging tags:", error);
+      log.error("Error merging tags:", error);
       toast.error(error instanceof Error ? error.message : "Failed to merge tags");
     } finally {
       setIsMerging(false);

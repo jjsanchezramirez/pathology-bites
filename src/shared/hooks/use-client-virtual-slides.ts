@@ -7,6 +7,7 @@ import {
   buildSearchIndex,
   rankSlidesWithExpansion,
 } from "@/shared/utils/domain/virtual-slide-search";
+import { log } from "@/shared/utils/logging";
 
 // Module-scope cache for request deduplication and in-session speed
 // HTTP browser cache handles persistence across sessions
@@ -234,11 +235,11 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
       const manifest = await mres.json();
       if (manifest?.url) {
         corpusUrl = manifest.url as string;
-        console.log("[VirtualSlides] manifest →", manifest.hash, `(${manifest.total} slides)`);
+        log.debug("[VirtualSlides] manifest →", manifest.hash, `(${manifest.total} slides)`);
       }
     }
   } catch (manifestError) {
-    console.warn("[VirtualSlides] manifest fetch failed, using compiled URL", manifestError);
+    log.warn("[VirtualSlides] manifest fetch failed, using compiled URL", manifestError);
   }
 
   // Check if URL is gzipped at the top level (before promise chain)
@@ -265,7 +266,7 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
         timeoutMs: 8000,
       });
       if (!res.ok) throw new Error(`Failed: ${res.status}`);
-      console.log("[VirtualSlides] ✅ Response OK, returning to processing...");
+      log.debug("[VirtualSlides] ✅ Response OK, returning to processing...");
       return res;
     } catch (e) {
       const msg =
@@ -276,25 +277,22 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
       // Try non-gzipped fallback first if gzip failed
       if (VIRTUAL_SLIDES_JSON_URL.endsWith(".gz") && VIRTUAL_SLIDES_JSON_URL_FALLBACK) {
         try {
-          console.warn("[VirtualSlides] Gzipped fetch failed, trying non-gzipped fallback");
+          log.warn("[VirtualSlides] Gzipped fetch failed, trying non-gzipped fallback");
           const fallbackRes = await fetchWithTimeout(VIRTUAL_SLIDES_JSON_URL_FALLBACK, {
             cache: "force-cache",
             timeoutMs: 8000,
           });
           if (fallbackRes.ok) return fallbackRes;
         } catch (fallbackError) {
-          console.error("[VirtualSlides] Fallback also failed:", fallbackError);
+          log.error("[VirtualSlides] Fallback also failed:", fallbackError);
         }
       }
 
       if (process.env.NODE_ENV === "production") {
-        console.error(
-          "[VirtualSlides] R2 fetch failed in production. Check R2 CORS and network.",
-          e
-        );
+        log.error("[VirtualSlides] R2 fetch failed in production. Check R2 CORS and network.", e);
         throw new Error(msg);
       }
-      console.warn(
+      log.warn(
         "[VirtualSlides] R2 fetch failed in dev, falling back to /api/public/tools/virtual-slides"
       );
       return await fetchWithTimeout("/api/public/tools/virtual-slides", {
@@ -322,13 +320,13 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
             const decompressedStream = res.body.pipeThrough(new DecompressionStream("gzip"));
             const decompressedResponse = new Response(decompressedStream);
             json = await decompressedResponse.json();
-            console.log("[VirtualSlides] ✅ Decompressed gzipped data (832KB → 6.6MB)");
+            log.debug("[VirtualSlides] ✅ Decompressed gzipped data (832KB → 6.6MB)");
           } catch (decompressError) {
-            console.error("[VirtualSlides] ❌ Decompression failed:", decompressError);
+            log.error("[VirtualSlides] ❌ Decompression failed:", decompressError);
 
             // Try fallback to non-gzipped version
             if (VIRTUAL_SLIDES_JSON_URL_FALLBACK) {
-              console.warn("[VirtualSlides] Trying fallback URL...");
+              log.warn("[VirtualSlides] Trying fallback URL...");
               try {
                 const fallbackRes = await fetch(VIRTUAL_SLIDES_JSON_URL_FALLBACK, {
                   cache: "force-cache",
@@ -336,7 +334,7 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
                 if (!fallbackRes.ok) throw new Error(`Fallback failed: ${fallbackRes.status}`);
                 json = await fallbackRes.json();
               } catch (fallbackError) {
-                console.error("[VirtualSlides] ❌ Fallback failed:", fallbackError);
+                log.error("[VirtualSlides] ❌ Fallback failed:", fallbackError);
                 throw new Error(
                   `Failed to load virtual slides: Decompression failed and fallback unavailable`
                 );
@@ -350,13 +348,13 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
         } else {
           // DecompressionStream not supported - try fallback
           if (VIRTUAL_SLIDES_JSON_URL_FALLBACK) {
-            console.warn("[VirtualSlides] DecompressionStream not supported, using fallback...");
+            log.warn("[VirtualSlides] DecompressionStream not supported, using fallback...");
             const fallbackRes = await fetch(VIRTUAL_SLIDES_JSON_URL_FALLBACK, {
               cache: "force-cache",
             });
             if (!fallbackRes.ok) throw new Error(`Fallback failed: ${fallbackRes.status}`);
             json = await fallbackRes.json();
-            console.log("[VirtualSlides] ✅ Loaded from fallback (no DecompressionStream)");
+            log.debug("[VirtualSlides] ✅ Loaded from fallback (no DecompressionStream)");
           } else {
             throw new Error(
               "Your browser does not support decompressing gzipped files. Please use a modern browser or try again later."
@@ -385,7 +383,7 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
       const processedSlides: VirtualSlide[] = json.data
         .map((e) => normalizeToVirtualSlide(e))
         .filter((s) => s.repository !== "University of Toronto LMP");
-      console.log("[VirtualSlides] ✅ Loaded v7/v8 production format");
+      log.debug("[VirtualSlides] ✅ Loaded v7/v8 production format");
 
       // Build the case-group sibling index (related slides). `groups` is absent on
       // pre-v9 datasets — getRelatedSlides then returns [] for everything.
@@ -409,7 +407,7 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
     })
     .catch((error) => {
       // Clear the cached promise on error so next attempt will retry
-      console.error("[VirtualSlides] ❌ Fatal error, clearing cache:", error);
+      log.error("[VirtualSlides] ❌ Fatal error, clearing cache:", error);
       cachedSlidesPromise = null;
       throw error;
     });

@@ -4,6 +4,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { createClient } from "@/shared/services/client";
+import { log } from "@/shared/utils/logging";
 
 interface SystemMetrics {
   vercelStatus: "operational" | "error";
@@ -64,7 +65,7 @@ export function SystemStatus() {
           lastUpdated: new Date(data.lastUpdated),
         });
       } else {
-        console.warn(`System status API returned ${response.status}, falling back to direct check`);
+        log.warn(`System status API returned ${response.status}, falling back to direct check`);
 
         // If API fails, fall back to direct check
         const startTime = performance.now();
@@ -93,7 +94,7 @@ export function SystemStatus() {
         });
       }
     } catch (error) {
-      console.error("System health check failed:", error);
+      log.error("System health check failed:", error);
 
       // Detect network errors (laptop sleep/wake, offline, etc.)
       const isNetworkError =
@@ -101,7 +102,7 @@ export function SystemStatus() {
         (error.message?.includes("fetch") || error.message?.includes("network"));
 
       if (isNetworkError) {
-        console.warn("Network connection interrupted during system health check");
+        log.warn("Network connection interrupted during system health check");
       }
 
       // Set error state but don't show toast (this is background polling)

@@ -12,6 +12,7 @@ import {
 } from "@/shared/components/ui/card";
 import { UsersManagementTabs } from "@/features/admin/users/components/users-management-tabs";
 import { Loader2 } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 export default function UsersPage() {
   const userStatsRef = useRef<UserStatsRef>(null);
@@ -32,7 +33,7 @@ export default function UsersPage() {
       const result = await response.json();
       setWaitlistCount(result.pagination?.total || 0);
     } catch (error) {
-      console.error("Error fetching waitlist count:", error);
+      log.error("Error fetching waitlist count:", error);
       setWaitlistCount(0);
     } finally {
       setLoadingWaitlistCount(false);

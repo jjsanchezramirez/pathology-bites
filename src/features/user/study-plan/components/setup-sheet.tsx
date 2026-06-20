@@ -63,6 +63,7 @@ import { SubjectEditPanel } from "./subject-edit-panel";
 import { useDebounce } from "../hooks/use-debounce";
 import { CATEGORIES, CP_CATEGORIES, AP_CATEGORIES } from "../lib/categories";
 import { studyPlanService } from "../services/study-plan-service";
+import { log } from "@/shared/utils/logging";
 
 function SortableResourceRow({
   id,
@@ -200,7 +201,7 @@ export function SetupSheet({
     setConfig(debouncedConfig);
     studyPlanService
       .saveConfig(debouncedConfig)
-      .catch((err) => console.error("Failed to save config:", err));
+      .catch((err) => log.error("Failed to save config:", err));
   }, [debouncedConfig, setConfig]);
 
   // Flush any pending config save synchronously — the debounced useEffect
@@ -262,7 +263,7 @@ export function SetupSheet({
       setResources(updated);
       await studyPlanService.saveResources(updated);
     } catch (e) {
-      console.error("Failed to save resource:", e);
+      log.error("Failed to save resource:", e);
     }
   };
 
@@ -272,7 +273,7 @@ export function SetupSheet({
       setResources(updated);
       await studyPlanService.saveResources(updated);
     } catch (e) {
-      console.error("Failed to delete resource:", e);
+      log.error("Failed to delete resource:", e);
     }
   };
 
@@ -289,7 +290,7 @@ export function SetupSheet({
     try {
       await flushConfig(localConfig);
       const { tasks: newSched, warnings } = generateSchedule(resources, localConfig);
-      if (warnings.length > 0) console.warn("Schedule warnings:", warnings);
+      if (warnings.length > 0) log.warn("Schedule warnings:", warnings);
       await studyPlanService.saveSchedule(newSched);
       // Generate is "wipe clean" — progress must be cleared in the DB too,
       // not just in local state, or a reload will resurrect completions.
@@ -298,7 +299,7 @@ export function SetupSheet({
       setCompletedTasks({});
       setSuccessMsg("Schedule generated successfully");
     } catch (e) {
-      console.error("Failed to generate:", e);
+      log.error("Failed to generate:", e);
       setErrors(["Something went wrong saving your schedule. Try again in a bit."]);
     } finally {
       setGenerating(false);
@@ -307,13 +308,13 @@ export function SetupSheet({
 
   const rebalance = async () => {
     if (!localConfig) {
-      console.warn("Rebalance: no config");
+      log.warn("Rebalance: no config");
       return;
     }
     const errs = validateConfig(resources, localConfig);
     if (errs.length > 0) {
       setErrors(errs.map((e) => e.message));
-      console.warn("Rebalance validation errors:", errs);
+      log.warn("Rebalance validation errors:", errs);
       return;
     }
     setErrors([]);
@@ -355,7 +356,7 @@ export function SetupSheet({
       setSchedule(merged);
       setSuccessMsg("Schedule rebalanced successfully");
     } catch (e) {
-      console.error("Failed to rebalance:", e);
+      log.error("Failed to rebalance:", e);
       setErrors(["Something went wrong saving your schedule. Try again in a bit."]);
     } finally {
       setGenerating(false);

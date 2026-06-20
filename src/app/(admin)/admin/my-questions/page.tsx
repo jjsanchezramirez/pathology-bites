@@ -70,6 +70,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/shared/components/ui/dialog";
+import { log } from "@/shared/utils/logging";
 
 interface MyQuestion extends QuestionWithDetails {
   creator_name?: string;
@@ -157,7 +158,7 @@ export default function MyQuestionsPage() {
           .order("updated_at", { ascending: false });
 
         if (error) {
-          console.error("Error fetching questions:", error);
+          log.error("Error fetching questions:", error);
           toast.error(`Failed to load questions: ${error.message}`);
           return;
         }
@@ -257,7 +258,7 @@ export default function MyQuestionsPage() {
           setActiveTab(firstNonEmpty?.tab || "revision");
         }
       } catch (error) {
-        console.error("Unexpected error fetching questions:", error);
+        log.error("Unexpected error fetching questions:", error);
         toast.error("Failed to load questions");
       } finally {
         setInitialLoading(false);
@@ -340,7 +341,7 @@ export default function MyQuestionsPage() {
         .single();
 
       if (error) {
-        console.error("Error fetching question:", error);
+        log.error("Error fetching question:", error);
         toast.error("Failed to load question preview");
         return;
       }
@@ -358,7 +359,7 @@ export default function MyQuestionsPage() {
       setSelectedQuestion(fullQuestion);
       setPreviewOpen(true);
     } catch (error) {
-      console.error("Error fetching question for preview:", error);
+      log.error("Error fetching question for preview:", error);
       toast.error("Failed to load question preview");
     }
   };
@@ -462,7 +463,7 @@ export default function MyQuestionsPage() {
       // Force refresh to update sidebar counts
       router.refresh();
     } catch (error) {
-      console.error("Error in bulk submission:", error);
+      log.error("Error in bulk submission:", error);
       toast.error("Failed to submit questions");
     }
   };
@@ -512,7 +513,7 @@ export default function MyQuestionsPage() {
       }
       router.refresh();
     } catch (error) {
-      console.error("Error deleting question(s):", error);
+      log.error("Error deleting question(s):", error);
       toast.error("Failed to delete question(s)");
     } finally {
       setDeleting(false);

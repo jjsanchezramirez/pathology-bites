@@ -1,3 +1,5 @@
+import { log } from "@/shared/utils/logging";
+
 /**
  * Unified Cache System
  *
@@ -85,7 +87,7 @@ class UnifiedCacheService {
       localStorage.removeItem(testKey);
       return true;
     } catch {
-      console.warn("[UnifiedCache] localStorage not available, using memory cache only");
+      log.warn("[UnifiedCache] localStorage not available, using memory cache only");
       return false;
     }
   }
@@ -128,14 +130,14 @@ class UnifiedCacheService {
       try {
         localStorage.setItem(cacheKey, JSON.stringify(entry));
       } catch (error) {
-        console.warn(`[UnifiedCache] Failed to store ${cacheKey} in localStorage:`, error);
+        log.warn(`[UnifiedCache] Failed to store ${cacheKey} in localStorage:`, error);
         // If quota exceeded, try cleanup and retry once
         if (error instanceof Error && error.name === "QuotaExceededError") {
           this.cleanup(namespace);
           try {
             localStorage.setItem(cacheKey, JSON.stringify(entry));
           } catch {
-            console.warn(`[UnifiedCache] Still failed after cleanup, using memory cache only`);
+            log.warn(`[UnifiedCache] Still failed after cleanup, using memory cache only`);
           }
         }
       }
@@ -164,7 +166,7 @@ class UnifiedCacheService {
           }
         }
       } catch (error) {
-        console.warn(`[UnifiedCache] Failed to read ${cacheKey} from localStorage:`, error);
+        log.warn(`[UnifiedCache] Failed to read ${cacheKey} from localStorage:`, error);
         return null;
       }
     }
@@ -203,7 +205,7 @@ class UnifiedCacheService {
       try {
         localStorage.removeItem(cacheKey);
       } catch (error) {
-        console.warn(`[UnifiedCache] Failed to delete ${cacheKey} from localStorage:`, error);
+        log.warn(`[UnifiedCache] Failed to delete ${cacheKey} from localStorage:`, error);
       }
     }
   }
@@ -233,7 +235,7 @@ class UnifiedCacheService {
         }
         keysToRemove.forEach((key) => localStorage.removeItem(key));
       } catch (error) {
-        console.warn(`[UnifiedCache] Failed to clear namespace ${namespace}:`, error);
+        log.warn(`[UnifiedCache] Failed to clear namespace ${namespace}:`, error);
       }
     }
   }
@@ -262,7 +264,7 @@ class UnifiedCacheService {
         }
         keysToRemove.forEach((key) => localStorage.removeItem(key));
       } catch (error) {
-        console.warn("[UnifiedCache] Failed to clear all caches:", error);
+        log.warn("[UnifiedCache] Failed to clear all caches:", error);
       }
     }
   }
@@ -320,7 +322,7 @@ class UnifiedCacheService {
 
         keysToRemove.forEach((key) => localStorage.removeItem(key));
       } catch (error) {
-        console.warn("[UnifiedCache] Cleanup failed:", error);
+        log.warn("[UnifiedCache] Cleanup failed:", error);
       }
     }
   }
@@ -388,7 +390,7 @@ class UnifiedCacheService {
         }
       }
     } catch (error) {
-      console.warn("[UnifiedCache] Failed to restore memory cache:", error);
+      log.warn("[UnifiedCache] Failed to restore memory cache:", error);
     }
   }
 

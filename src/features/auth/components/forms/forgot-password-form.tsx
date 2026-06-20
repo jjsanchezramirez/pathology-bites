@@ -15,6 +15,7 @@ import { FormButton } from "@/features/auth/components/ui/form-button";
 import { createClient } from "@/shared/services/client";
 import { useTurnstile } from "@/features/auth/hooks/use-turnstile";
 import { getCaptchaSiteKey } from "@/features/auth/utils/captcha-config";
+import { log } from "@/shared/utils/logging";
 
 // Form schema definition
 const formSchema = z.object({
@@ -82,7 +83,7 @@ export function ForgotPasswordForm({ className, initialError, ...props }: Forgot
       // Success - redirect to check email page
       router.push("/check-email");
     } catch (error) {
-      console.error("Forgot password error:", error);
+      log.error("Forgot password error:", error);
       toast.error("An unexpected error occurred. Please try again.");
       // Reset CAPTCHA on error
       turnstileRef.current?.reset();
@@ -129,16 +130,16 @@ export function ForgotPasswordForm({ className, initialError, ...props }: Forgot
               }}
               onSuccess={(token) => {
                 setCaptchaToken(token);
-                console.log("[ForgotPasswordForm] CAPTCHA verification successful");
+                log.debug("[ForgotPasswordForm] CAPTCHA verification successful");
               }}
               onError={(error) => {
                 setCaptchaToken(null);
-                console.log("[ForgotPasswordForm] CAPTCHA verification error:", error);
+                log.debug("[ForgotPasswordForm] CAPTCHA verification error:", error);
                 // Don't show toast on error - Turnstile will auto-retry
               }}
               onExpire={() => {
                 setCaptchaToken(null);
-                console.log("[ForgotPasswordForm] CAPTCHA verification expired");
+                log.debug("[ForgotPasswordForm] CAPTCHA verification expired");
                 // Don't show toast on expire - it will auto-reload
               }}
             />

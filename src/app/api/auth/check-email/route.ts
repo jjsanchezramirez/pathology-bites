@@ -1,6 +1,7 @@
 // src/app/api/auth/check-email/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -76,7 +77,7 @@ export async function POST(request: NextRequest) {
     const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
     if (!supabaseUrl || !supabaseServiceKey) {
-      console.error("Missing Supabase configuration");
+      log.error("Missing Supabase configuration");
       return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
     }
 
@@ -97,7 +98,7 @@ export async function POST(request: NextRequest) {
 
     if (error && error.code !== "PGRST116") {
       // PGRST116 means no rows found, which is what we want for new emails
-      console.error("Database error checking email in public.users:", error);
+      log.error("Database error checking email in public.users:", error);
       return NextResponse.json({ error: "Database error" }, { status: 500 });
     }
 
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ exists });
   } catch (error) {
-    console.error("Error in check-email API:", error);
+    log.error("Error in check-email API:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -25,6 +25,7 @@ import {
 import { Badge } from "@/shared/components/ui/badge";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Plus, Loader2, Pencil, Trash2, BookOpen, ExternalLink } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 interface SubjectWithMeta extends LearningSubject {
   category: { id: string; name: string; color: string | null; short_form: string | null };
@@ -62,7 +63,7 @@ export function SubjectManager() {
         }))
       );
     } catch (err) {
-      console.error("Failed to load:", err);
+      log.error("Failed to load:", err);
     } finally {
       setLoading(false);
     }
@@ -121,7 +122,7 @@ export function SubjectManager() {
       resetForm();
       await load();
     } catch (err) {
-      console.error("Failed to save:", err);
+      log.error("Failed to save:", err);
       alert(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setSaving(false);
@@ -134,7 +135,7 @@ export function SubjectManager() {
       await adminLearnService.deleteSubject(id);
       await load();
     } catch (err) {
-      console.error("Failed to delete:", err);
+      log.error("Failed to delete:", err);
     }
   };
 

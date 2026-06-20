@@ -12,6 +12,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
 import { AlertCircle } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 // Dynamically import Lottie to avoid SSR issues
 const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
@@ -35,7 +36,7 @@ function readCachedResults(sessionId: string): QuizResult | null {
     }
     return null;
   } catch (err) {
-    console.warn("[Results Page] Failed to read cached results:", err);
+    log.warn("[Results Page] Failed to read cached results:", err);
     return null;
   }
 }
@@ -58,7 +59,7 @@ function writeCachedResults(sessionId: string, results: QuizResult): void {
     };
     localStorage.setItem(key, JSON.stringify(wrapped));
   } catch (err) {
-    console.warn("[Results Page] Failed to write results cache:", err);
+    log.warn("[Results Page] Failed to write results cache:", err);
   }
 }
 
@@ -84,7 +85,7 @@ export default function QuizResultsPage() {
       // 1) Fast path: read from the shared quiz-result cache. Populated by completion sync.
       const cached = readCachedResults(sessionId);
       if (cached) {
-        console.log("[Results Page] ✅ Loaded results from local cache");
+        log.debug("[Results Page] ✅ Loaded results from local cache");
         if (!cancelled) {
           setResult(cached);
           setLoading(false);
@@ -144,7 +145,7 @@ export default function QuizResultsPage() {
 
         // Retryable failure
         if (attempt < maxRetries) {
-          console.log(
+          log.debug(
             `[Results Page] Quiz not ready, retrying in ${retryDelays[attempt]}ms... (attempt ${attempt + 1}/${maxRetries})`
           );
           await new Promise((resolve) => setTimeout(resolve, retryDelays[attempt]));

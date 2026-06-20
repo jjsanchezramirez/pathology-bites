@@ -45,6 +45,7 @@ import { SlideViewerModal } from "@/shared/components/common/slide-viewer-modal"
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
 import { Pagination } from "@/features/public/tools/virtual-slides/components/pagination";
 import { LoadingSkeleton } from "@/features/public/tools/virtual-slides/components/loading-skeleton";
+import { log } from "@/shared/utils/logging";
 
 // Error state component with Lottie animation
 function VirtualSlidesErrorState({ error }: { error: string }) {
@@ -218,7 +219,7 @@ function VirtualSlidesContent() {
           setOrganSystems(client.organSystems);
         }
       } catch (error) {
-        console.error("Failed to load metadata:", error);
+        log.error("Failed to load metadata:", error);
       }
     }
     loadMetadata();
@@ -252,7 +253,7 @@ function VirtualSlidesContent() {
   // Console-only notice of dataset URL after initial load completes
   useEffect(() => {
     if (!isInitialLoading) {
-      console.info("[VirtualSlides] Client dataset URL:", VIRTUAL_SLIDES_JSON_URL);
+      log.info("[VirtualSlides] Client dataset URL:", VIRTUAL_SLIDES_JSON_URL);
     }
   }, [isInitialLoading]);
 
@@ -327,12 +328,12 @@ function VirtualSlidesContent() {
 
   const toggleDiagnoses = () => {
     const newValue = !showDiagnoses;
-    console.log(`[Toggle] mode=${mode}, old=${showDiagnoses}, new=${newValue}`);
+    log.debug(`[Toggle] mode=${mode}, old=${showDiagnoses}, new=${newValue}`);
     setShowDiagnoses(newValue);
     setRevealedDiagnoses(new Set());
     // Update the saved state if in Search mode
     if (mode === "search") {
-      console.log(`[Toggle] Updating ref to: ${newValue}`);
+      log.debug(`[Toggle] Updating ref to: ${newValue}`);
       searchModeDiagnosesVisibility.current = newValue;
     }
   };

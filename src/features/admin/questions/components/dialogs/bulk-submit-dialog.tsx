@@ -23,6 +23,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { toast } from "@/shared/utils/ui/toast";
 import { createClient as _createClient } from "@/shared/services/client";
 import { Send, Users, Clock, Loader2 } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 interface Reviewer {
   id: string;
@@ -64,7 +65,7 @@ export function BulkSubmitDialog({
       dedupingInterval: 60_000,
       revalidateOnFocus: false,
       onError: (error: unknown) => {
-        console.error("Error fetching reviewers:", error);
+        log.error("Error fetching reviewers:", error);
         toast.error("Failed to load reviewers");
       },
     }
@@ -83,7 +84,7 @@ export function BulkSubmitDialog({
       onOpenChange(false);
       setSelectedReviewerId("");
     } catch (error) {
-      console.error("Error in bulk submit:", error);
+      log.error("Error in bulk submit:", error);
       toast.error("Failed to submit questions");
     } finally {
       setSubmitting(false);

@@ -1,5 +1,6 @@
 import { createClient } from "@/shared/services/client";
 import type { Audio, AudioListFilters } from "../types";
+import { log } from "@/shared/utils/logging";
 
 /**
  * Fetch audio files with optional filters and server-side pagination
@@ -34,7 +35,7 @@ export async function fetchAudio(
   const { data, error } = await query;
 
   if (error) {
-    console.error("Error fetching audio:", error);
+    log.error("Error fetching audio:", error);
     return { data: [], total: 0, error: error.message };
   }
 
@@ -62,7 +63,7 @@ export async function fetchAudio(
   const { count, error: countError } = await countQuery;
 
   if (countError) {
-    console.error("Error fetching audio count:", countError);
+    log.error("Error fetching audio count:", countError);
   }
 
   return { data: rows, total: count ?? 0, error: null };
@@ -77,7 +78,7 @@ export async function fetchAudioById(id: string): Promise<Audio | null> {
   const { data, error } = await supabase.from("audio").select("*").eq("id", id).single();
 
   if (error) {
-    console.error("Error fetching audio by ID:", error);
+    log.error("Error fetching audio by ID:", error);
     throw new Error(error.message);
   }
 
@@ -101,7 +102,7 @@ export async function updateAudio(
     .single();
 
   if (error) {
-    console.error("Error updating audio:", error);
+    log.error("Error updating audio:", error);
     throw new Error(error.message);
   }
 
@@ -118,7 +119,7 @@ export async function softDeleteAudio(id: string): Promise<void> {
   const { error } = await supabase.from("audio").delete().eq("id", id);
 
   if (error) {
-    console.error("Error deleting audio:", error);
+    log.error("Error deleting audio:", error);
     throw new Error(error.message);
   }
 }
@@ -134,7 +135,7 @@ export async function getAudioStats(): Promise<{
   const res = await fetch("/api/admin/audio/stats");
   if (!res.ok) {
     const message = `Failed to fetch audio stats (${res.status})`;
-    console.error("Error fetching audio stats:", message);
+    log.error("Error fetching audio stats:", message);
     throw new Error(message);
   }
   const result = (await res.json()) as { total: number; totalSizeBytes: number };

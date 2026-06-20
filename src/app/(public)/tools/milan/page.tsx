@@ -21,6 +21,7 @@ import {
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
 import { useSmartGeneLookup } from "@/shared/hooks/use-smart-gene-lookup";
+import { log } from "@/shared/utils/logging";
 
 interface GeneInfo {
   hgncId: string;
@@ -69,7 +70,7 @@ export default function GeneLookupPage() {
       setCopiedField(field);
       setTimeout(() => setCopiedField(null), 2000);
     } catch (err) {
-      console.error("Failed to copy to clipboard:", err);
+      log.error("Failed to copy to clipboard:", err);
     }
   };
 

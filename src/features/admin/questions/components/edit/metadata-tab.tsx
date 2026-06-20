@@ -23,6 +23,7 @@ import { QuestionWithDetails } from "@/shared/types/questions";
 import { createClient } from "@/shared/services/client";
 import { EditQuestionFormData } from "@/features/admin/questions/hooks/use-edit-question-form";
 import { TagAutocomplete } from "@/features/admin/questions/components/create/tag-autocomplete";
+import { log } from "@/shared/utils/logging";
 
 interface Tag {
   id: string;
@@ -131,7 +132,7 @@ export function MetadataTab({
           setAvailableTags(Array.from(allTagsMap.values()));
         }
       } catch (error) {
-        console.error("Error loading tags:", error);
+        log.error("Error loading tags:", error);
       }
     };
 

@@ -18,6 +18,7 @@ import { Search, BookOpen, X, ChevronDown, ChevronRight, Download, BookText } fr
 import { ABPathPDFGenerator } from "@/features/public/tools/abpath/utils/pdf-generator";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
+import { log } from "@/shared/utils/logging";
 
 export default function ABPathContentPage() {
   const [searchTerm, setSearchTerm] = useState("");
@@ -469,7 +470,7 @@ export default function ABPathContentPage() {
       const filename = `abpath-content_${timestamp}${filterSuffix ? "_" + filterSuffix : ""}.pdf`;
       pdf.save(filename);
     } catch (error) {
-      console.error("Error generating PDF:", error);
+      log.error("Error generating PDF:", error);
       // You might want to show a user-friendly error message here
     }
   };

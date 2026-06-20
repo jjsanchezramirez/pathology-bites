@@ -3,6 +3,7 @@
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/shared/services/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
+import { log } from "@/shared/utils/logging";
 
 // increment_r2_metrics / decrement_r2_metrics are SECURITY DEFINER and only
 // granted to service_role. The cookie-auth client used to silently 404 here,
@@ -35,14 +36,14 @@ export async function incrementStorageMetrics(
 
     if (error) {
       // Log warning but don't throw - metrics are non-critical
-      console.warn(`[R2 Metrics] Failed to increment ${bucketName}:`, error.message);
+      log.warn(`[R2 Metrics] Failed to increment ${bucketName}:`, error.message);
       // TODO: Could send to error monitoring (Sentry, etc.)
     } else {
-      console.log(`[R2 Metrics] ✓ Incremented ${bucketName} by ${sizeBytes} bytes`);
+      log.debug(`[R2 Metrics] ✓ Incremented ${bucketName} by ${sizeBytes} bytes`);
     }
   } catch (err) {
     // Catch-all to prevent any metric errors from breaking uploads
-    console.error(`[R2 Metrics] Unexpected error incrementing ${bucketName}:`, err);
+    log.error(`[R2 Metrics] Unexpected error incrementing ${bucketName}:`, err);
   }
 }
 
@@ -64,12 +65,12 @@ export async function decrementStorageMetrics(
     });
 
     if (error) {
-      console.warn(`[R2 Metrics] Failed to decrement ${bucketName}:`, error.message);
+      log.warn(`[R2 Metrics] Failed to decrement ${bucketName}:`, error.message);
     } else {
-      console.log(`[R2 Metrics] ✓ Decremented ${bucketName} by ${sizeBytes} bytes`);
+      log.debug(`[R2 Metrics] ✓ Decremented ${bucketName} by ${sizeBytes} bytes`);
     }
   } catch (err) {
-    console.error(`[R2 Metrics] Unexpected error decrementing ${bucketName}:`, err);
+    log.error(`[R2 Metrics] Unexpected error decrementing ${bucketName}:`, err);
   }
 }
 
@@ -106,7 +107,7 @@ export async function getCachedStorageMetrics(
   const { data, error } = await query;
 
   if (error) {
-    console.error("[R2 Metrics] Failed to fetch cached metrics:", error);
+    log.error("[R2 Metrics] Failed to fetch cached metrics:", error);
     throw error;
   }
 

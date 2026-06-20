@@ -1,3 +1,5 @@
+import { log } from "@/shared/utils/logging";
+
 // src/shared/services/video-upload.ts
 /**
  * Video Upload Service
@@ -77,7 +79,7 @@ export async function uploadVideo(data: VideoUploadData): Promise<VideoUploadRes
     const result = await response.json();
     return result;
   } catch (error) {
-    console.error("Video upload error:", error);
+    log.error("Video upload error:", error);
     return {
       success: false,
       error: error instanceof Error ? error.message : "Unknown error",
@@ -131,7 +133,7 @@ export async function generateThumbnail(videoBlob: Blob, seekTime = 0): Promise<
 
       video.src = URL.createObjectURL(videoBlob);
     } catch (error) {
-      console.error("Thumbnail generation error:", error);
+      log.error("Thumbnail generation error:", error);
       resolve(null);
     }
   });

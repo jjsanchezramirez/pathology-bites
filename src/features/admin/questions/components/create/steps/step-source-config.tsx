@@ -26,6 +26,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { getCategoryIdFromContent } from "@/features/admin/questions/utils/category-mapping";
+import { log } from "@/shared/utils/logging";
 
 interface StepSourceConfigProps {
   formState: FormState;
@@ -102,7 +103,7 @@ async function findCategoryIdByName(name: string): Promise<string | null> {
     return partialMatch[0].id;
   }
 
-  console.warn(`⚠️ Category not found: "${name}"`);
+  log.warn(`⚠️ Category not found: "${name}"`);
   return null;
 }
 
@@ -146,11 +147,11 @@ async function findOrCreateQuestionSet(name: string): Promise<string | null> {
     .single();
 
   if (created && !error) {
-    console.log(`✅ Created new question set: "${name}"`);
+    log.debug(`✅ Created new question set: "${name}"`);
     return created.id;
   }
 
-  console.warn(`⚠️ Failed to find or create question set: "${name}"`, error);
+  log.warn(`⚠️ Failed to find or create question set: "${name}"`, error);
   return null;
 }
 
@@ -319,7 +320,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
 
     setIsGenerating(true);
     try {
-      console.log("🤖 Generating question from educational content:", formState.selectedContent);
+      log.debug("🤖 Generating question from educational content:", formState.selectedContent);
 
       const response = await fetch("/api/admin/questions/ai-generate", {
         method: "POST",
@@ -338,7 +339,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("AI generation failed:", response.status, errorText);
+        log.error("AI generation failed:", response.status, errorText);
 
         try {
           const errorData = JSON.parse(errorText);
@@ -351,7 +352,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
       }
 
       const data = await response.json();
-      console.log("🎯 AI generation response:", data);
+      log.debug("🎯 AI generation response:", data);
 
       // Extract and normalize the generated question data
       const generatedData: Partial<FormState> = {
@@ -387,7 +388,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
         );
         if (categoryId) {
           generatedData.category_id = categoryId;
-          console.log("✅ Auto-assigned category from content mapping:", categoryId);
+          log.debug("✅ Auto-assigned category from content mapping:", categoryId);
         }
       }
 
@@ -424,7 +425,7 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
         }
       }, 1500); // Small delay to show success message
     } catch (error) {
-      console.error("AI generation error:", error);
+      log.error("AI generation error:", error);
       toast.error(`Failed to generate question: ${error.message}`);
     } finally {
       setIsGenerating(false);

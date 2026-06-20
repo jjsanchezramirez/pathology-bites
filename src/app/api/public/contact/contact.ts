@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { createClient } from '@supabase/supabase-js'
 import { Resend } from 'resend'
 import { createContactNotificationEmail } from '@/shared/config/email-templates'
+import { log } from "@/shared/utils/logging";
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
@@ -57,7 +58,7 @@ export async function submitContactForm(formData: ContactFormData) {
       .single()
 
     if (dbError) {
-      console.error('Database error:', dbError)
+      log.error('Database error:', dbError)
       return {
         success: false,
         error: `Database error: ${dbError.message}`,
@@ -71,12 +72,12 @@ export async function submitContactForm(formData: ContactFormData) {
       const { notificationGenerators } = await import('@/shared/services/notification-generators')
       await notificationGenerators.createInquiryNotification(dbData.id)
     } catch (error) {
-      console.error('Error creating inquiry notification:', error)
+      log.error('Error creating inquiry notification:', error)
       // Don't fail the request if notification fails
     }
 
     // Send email
-    console.log('Sending email notification...')
+    log.debug('Sending email notification...')
     const emailContent = createContactNotificationEmail({
       firstName: validatedData.firstName,
       lastName: validatedData.lastName,
@@ -98,11 +99,11 @@ export async function submitContactForm(formData: ContactFormData) {
       })
 
       if (emailResult.error) {
-        console.error('Email sending failed:', emailResult.error)
+        log.error('Email sending failed:', emailResult.error)
         emailError = emailResult.error
       }
     } catch (error) {
-      console.error('Error sending email:', error)
+      log.error('Error sending email:', error)
       emailError = error instanceof Error ? error.message : 'Failed to send email notification'
     }
 
@@ -112,7 +113,7 @@ export async function submitContactForm(formData: ContactFormData) {
       emailError: emailError ? 'Your message was saved but there was an issue sending the email notification. Our team will still receive your inquiry.' : null
     }
   } catch (error) {
-    console.error('Contact form submission error:', error)
+    log.error('Contact form submission error:', error)
 
     if (error instanceof z.ZodError) {
       return {

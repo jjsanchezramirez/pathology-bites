@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
 import { getCachedStorageMetrics } from "@/shared/services/r2-storage-metrics";
 import { formatSize } from "@/features/admin/images/services/image-upload";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -144,7 +145,7 @@ export async function GET() {
       },
     });
   } catch (error) {
-    console.error("Failed to get R2 storage stats:", error);
+    log.error("Failed to get R2 storage stats:", error);
     return NextResponse.json(
       {
         success: false,

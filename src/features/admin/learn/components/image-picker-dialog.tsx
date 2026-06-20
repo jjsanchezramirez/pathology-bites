@@ -15,6 +15,7 @@ import { Search, Image as ImageIcon } from "lucide-react";
 import { fetchImages } from "@/features/admin/images/services/images";
 import { ImageData } from "@/shared/types/images";
 import { ImagePreview } from "@/features/admin/images/components/image-preview";
+import { log } from "@/shared/utils/logging";
 
 interface ImagePickerDialogProps {
   open: boolean;
@@ -49,7 +50,7 @@ export function ImagePickerDialog({
         setAvailableImages(result.data);
       }
     } catch (error) {
-      console.error("Failed to load images:", error);
+      log.error("Failed to load images:", error);
     } finally {
       setLoading(false);
     }

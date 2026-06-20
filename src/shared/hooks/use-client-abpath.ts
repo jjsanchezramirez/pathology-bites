@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import type { ABPathData } from "@/shared/types/abpath";
+import { log } from "@/shared/utils/logging";
 
 // Direct R2 access - CORS is configured on bucket.
 // `.json.br` object on R2 stored w/ HTTP `Content-Encoding: br` — browser
@@ -54,7 +55,7 @@ async function loadABPathContentSpecs(): Promise<ABPathData> {
           : e?.message || "Failed to fetch ABPath content specifications.";
 
       // Log the error but don't throw - return a fallback empty structure
-      console.warn("[ABPath] API fetch failed, returning empty data structure:", e);
+      log.warn("[ABPath] API fetch failed, returning empty data structure:", e);
 
       // Return a mock response with empty data structure to prevent crashes
       return {
@@ -81,7 +82,7 @@ async function loadABPathContentSpecs(): Promise<ABPathData> {
 
     // Validate data structure and provide defaults if missing
     if (!data || !data.content_specifications) {
-      console.warn("[ABPath] Invalid data structure, using fallback");
+      log.warn("[ABPath] Invalid data structure, using fallback");
       return {
         content_specifications: {
           ap_sections: [],
@@ -116,14 +117,14 @@ export function useClientABPath(): UseClientABPathResult {
         setIsLoading(true);
         setError(null);
 
-        console.log("🔄 Loading ABPath content specs from API...");
+        log.debug("🔄 Loading ABPath content specs from API...");
 
         const abpathData = await loadABPathContentSpecs();
 
         if (mounted) {
           setData(abpathData);
 
-          console.log("✅ ABPath content specs loaded successfully:", {
+          log.debug("✅ ABPath content specs loaded successfully:", {
             totalSections: abpathData.metadata?.total_sections || 0,
             apSections: abpathData.metadata?.ap_sections || 0,
             cpSections: abpathData.metadata?.cp_sections || 0,
@@ -133,7 +134,7 @@ export function useClientABPath(): UseClientABPathResult {
           });
         }
       } catch (err) {
-        console.warn("⚠️ ABPath content specs load issue (using fallback):", err);
+        log.warn("⚠️ ABPath content specs load issue (using fallback):", err);
         if (mounted) {
           // Don't set error state since we have fallback data
           // setError(err.message || 'Failed to load ABPath content specifications')

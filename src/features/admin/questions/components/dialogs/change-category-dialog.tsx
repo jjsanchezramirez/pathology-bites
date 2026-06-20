@@ -17,6 +17,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { apiClient } from "@/shared/utils/api/api-client";
 import { QuestionWithDetails } from "@/shared/types/questions";
+import { log } from "@/shared/utils/logging";
 
 interface Category {
   id: string;
@@ -54,7 +55,7 @@ export function ChangeCategoryDialog({
       const data = await response.json();
       setCategories(data.categories || []);
     } catch (error) {
-      console.error("Error loading categories:", error);
+      log.error("Error loading categories:", error);
       toast.error("Failed to load categories");
     } finally {
       setLoading(false);
@@ -127,7 +128,7 @@ export function ChangeCategoryDialog({
       onOpenChange(false);
       setTimeout(() => onSuccess(), 100);
     } catch (error) {
-      console.error("Error updating category:", error);
+      log.error("Error updating category:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update category");
     } finally {
       setSaving(false);

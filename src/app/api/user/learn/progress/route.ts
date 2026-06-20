@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -40,7 +41,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data || []);
   } catch (error) {
-    console.error("[Learn API] Failed to fetch progress:", error);
+    log.error("[Learn API] Failed to fetch progress:", error);
     return NextResponse.json({ error: "Failed to fetch progress" }, { status: 500 });
   }
 }
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[Learn API] Failed to save progress:", error);
+    log.error("[Learn API] Failed to save progress:", error);
     return NextResponse.json({ error: "Failed to save progress" }, { status: 500 });
   }
 }

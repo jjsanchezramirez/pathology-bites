@@ -9,6 +9,7 @@ import { useUserSettings } from "@/shared/hooks/use-user-settings";
 import { getTextZoomConfig, applyTextZoom, getValidZoomLevel } from "@/shared/utils/ui/text-zoom";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { getAdminModeFromCookie, getThemeKeyForMode } from "@/shared/utils/auth/admin-mode";
+import { log } from "@/shared/utils/logging";
 
 interface DashboardSettingsContextType {
   textZoom: number;
@@ -90,7 +91,7 @@ export function DashboardSettingsProvider({
         );
       }
     } catch (error) {
-      console.error("[DashboardSettings] Failed to save text zoom:", error);
+      log.error("[DashboardSettings] Failed to save text zoom:", error);
     }
   };
 
@@ -119,7 +120,7 @@ export function DashboardSettingsProvider({
         );
       }
     } catch (error) {
-      console.error("[DashboardSettings] Failed to save theme:", error);
+      log.error("[DashboardSettings] Failed to save theme:", error);
     }
   };
 

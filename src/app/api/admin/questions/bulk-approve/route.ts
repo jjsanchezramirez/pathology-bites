@@ -2,6 +2,7 @@ import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -157,7 +158,7 @@ export async function POST(request: NextRequest) {
     const { error: reviewError } = await supabase.from("question_reviews").insert(reviewRecords);
 
     if (reviewError) {
-      console.error("Error recording bulk reviews:", reviewError);
+      log.error("Error recording bulk reviews:", reviewError);
     }
 
     // Send notifications (non-blocking)
@@ -170,7 +171,7 @@ export async function POST(request: NextRequest) {
         )
       );
     } catch (error) {
-      console.error("Error sending bulk approval notifications:", error);
+      log.error("Error sending bulk approval notifications:", error);
     }
 
     revalidateQuestions({ includeDashboard: true });
@@ -182,7 +183,7 @@ export async function POST(request: NextRequest) {
       errors: errors.length > 0 ? errors : undefined,
     });
   } catch (error) {
-    console.error("Unexpected error in bulk approve:", error);
+    log.error("Unexpected error in bulk approve:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

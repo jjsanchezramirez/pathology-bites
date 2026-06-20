@@ -6,6 +6,7 @@ import { useImageCacheHandler } from "@/shared/hooks/use-smart-image-cache";
 import { ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { useMobile } from "@/shared/hooks/use-mobile";
 import { SilentErrorBoundary } from "@/shared/components/error-boundaries/silent-error-boundary";
+import { log } from "@/shared/utils/logging";
 
 interface ImageProps {
   url: string;
@@ -173,7 +174,7 @@ export function SimpleImageCarousel({
       fallbackMessage="Image gallery temporarily unavailable"
       showErrorDetails={process.env.NODE_ENV === "development"}
       onError={(error, retryCount) => {
-        console.warn(`SimpleImageCarousel error (attempt ${retryCount + 1}):`, error.message);
+        log.warn(`SimpleImageCarousel error (attempt ${retryCount + 1}):`, error.message);
       }}
     >
       <SimpleImageCarouselInternal images={images} className={className} resetKey={resetKey} />

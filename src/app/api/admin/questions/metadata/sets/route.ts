@@ -1,6 +1,7 @@
 // src/app/api/admin/questions/sets/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -89,7 +90,7 @@ export async function GET(request: NextRequest) {
     const { count, error: countError } = await query;
 
     if (countError) {
-      console.error("Error getting count:", countError);
+      log.error("Error getting count:", countError);
       throw countError;
     }
 
@@ -99,7 +100,7 @@ export async function GET(request: NextRequest) {
       .range(page * pageSize, (page + 1) * pageSize - 1);
 
     if (dataError) {
-      console.error("Error getting data:", dataError);
+      log.error("Error getting data:", dataError);
       throw dataError;
     }
 
@@ -140,7 +141,7 @@ export async function GET(request: NextRequest) {
       currentPage: page,
     });
   } catch (error) {
-    console.error("Error in admin question sets API:", error);
+    log.error("Error in admin question sets API:", error);
     const errorMessage = error instanceof Error ? error.message : "Internal server error";
     return NextResponse.json(
       {
@@ -259,7 +260,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ questionSet: data });
   } catch (error) {
-    console.error("Error creating question set:", error);
+    log.error("Error creating question set:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -345,7 +346,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ questionSet: data });
   } catch (error) {
-    console.error("Error updating question set:", error);
+    log.error("Error updating question set:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -438,7 +439,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting question set:", error);
+    log.error("Error deleting question set:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

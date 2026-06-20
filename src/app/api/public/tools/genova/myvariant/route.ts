@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -289,7 +290,7 @@ export async function GET(request: NextRequest) {
       data,
     });
   } catch (error) {
-    console.error("MyVariant.info lookup error:", error);
+    log.error("MyVariant.info lookup error:", error);
     return NextResponse.json(
       { error: "Failed to fetch data from MyVariant.info" },
       { status: 500 }
