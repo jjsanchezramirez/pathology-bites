@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { userSettingsService } from "@/shared/services/user-settings";
+import { log } from "@/shared/utils/logging";
 
 interface QuizScoreBugMessageProps {
   onDismiss: () => void;
@@ -19,7 +20,7 @@ export function QuizScoreBugMessage({ onDismiss }: QuizScoreBugMessageProps) {
       await userSettingsService.markQuizScoreBugDismissed();
       onDismiss();
     } catch (error) {
-      console.error("Error dismissing quiz scoring bug notice:", error);
+      log.error("Error dismissing quiz scoring bug notice:", error);
       onDismiss();
     } finally {
       setIsLoading(false);

@@ -39,6 +39,7 @@ import {
   EducationalContent,
 } from "@/features/admin/questions/components/create/content-selector";
 import { ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
+import { log } from "@/shared/utils/logging";
 
 interface QuestionOptionFormData {
   id?: string;
@@ -156,7 +157,7 @@ export function ContentTab({
       setEnhancementRequest("");
       toast.success("Question enhanced successfully!");
     } catch (error) {
-      console.error("Enhancement error:", error);
+      log.error("Enhancement error:", error);
       toast.error("Failed to enhance question");
     } finally {
       setIsEnhancing(false);

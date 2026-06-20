@@ -4,6 +4,7 @@ import { createClient } from "@/shared/services/server";
 import { quizAnalyticsService } from "@/features/user/quiz/services/analytics-service";
 import { quizService } from "@/features/user/quiz/services/quiz-service";
 import { awardAchievements } from "@/features/user/achievements/services/achievement-service.server";
+import { log } from "@/shared/utils/logging";
 
 interface BatchAnswerSubmission {
   questionId: string;
@@ -179,7 +180,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // OPTIMIZATION: Submit final answers if provided (eliminates separate batch call!)
     if (requestBody.answers && requestBody.answers.length > 0) {
-      console.log(`[Quiz Complete] Submitting ${requestBody.answers.length} final answers`);
+      log.debug(`[Quiz Complete] Submitting ${requestBody.answers.length} final answers`);
 
       const attemptData = requestBody.answers.map((answer) => ({
         quiz_session_id: id,
@@ -200,7 +201,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       });
 
       if (insertError) {
-        console.error("[Quiz Complete] Error inserting final answers:", insertError);
+        log.error("[Quiz Complete] Error inserting final answers:", insertError);
         return NextResponse.json(
           {
             error: "Failed to record quiz answers",
@@ -210,7 +211,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
           { status: 500 }
         );
       }
-      console.log(`[Quiz Complete] Upserted ${attemptData.length} final answers`);
+      log.debug(`[Quiz Complete] Upserted ${attemptData.length} final answers`);
     }
 
     // Complete the quiz using the service
@@ -218,7 +219,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Validate result has required properties
     if (!result || typeof result.score !== "number" || typeof result.totalQuestions !== "number") {
-      console.error("[Quiz Complete] Invalid result from completeQuiz:", result);
+      log.error("[Quiz Complete] Invalid result from completeQuiz:", result);
       throw new Error("Invalid quiz completion result");
     }
 
@@ -227,13 +228,13 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 
     // Update analytics for all questions in this quiz session (batch update)
     try {
-      console.log("[Quiz Complete] Starting batch analytics update for session:", id);
+      log.debug("[Quiz Complete] Starting batch analytics update for session:", id);
       // Pass question IDs to avoid re-fetching them from database
       await quizAnalyticsService.updateQuizSessionAnalytics(id, questionIds);
-      console.log("[Quiz Complete] Batch analytics update completed successfully");
+      log.debug("[Quiz Complete] Batch analytics update completed successfully");
     } catch (analyticsError) {
       // Don't fail the quiz completion if analytics update fails
-      console.error("[Quiz Complete] Failed to update analytics:", analyticsError);
+      log.error("[Quiz Complete] Failed to update analytics:", analyticsError);
     }
 
     // Note: Activity generation removed - dashboard now gets activities directly
@@ -243,24 +244,24 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     let newAchievements = [];
     let metadata = undefined;
     try {
-      console.log("[Quiz Complete] Checking for new achievements...");
+      log.debug("[Quiz Complete] Checking for new achievements...");
       const clientAchievementIds = requestBody.achievementIds || [];
-      console.log("[Quiz Complete] Client provided achievement IDs:", clientAchievementIds);
+      log.debug("[Quiz Complete] Client provided achievement IDs:", clientAchievementIds);
 
       const achievementResult = await awardAchievements(userId, clientAchievementIds);
       newAchievements = achievementResult.newAchievements;
       metadata = achievementResult.metadata;
 
       if (newAchievements.length > 0) {
-        console.log(
+        log.debug(
           `✅ Awarded ${newAchievements.length} new achievement(s):`,
           newAchievements.map((a) => a.title)
         );
       }
-      console.log("[Quiz Complete] Stats metadata for cache validation:", metadata);
+      log.debug("[Quiz Complete] Stats metadata for cache validation:", metadata);
     } catch (achievementError) {
       // Don't fail the quiz completion if achievement check fails
-      console.error("Failed to check/award achievements:", achievementError);
+      log.error("Failed to check/award achievements:", achievementError);
     }
 
     return NextResponse.json({
@@ -270,7 +271,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       metadata, // Include for client-side cache validation
     });
   } catch (error) {
-    console.error("Error completing quiz:", error);
+    log.error("Error completing quiz:", error);
 
     if (error instanceof Error) {
       return NextResponse.json({ error: error.message }, { status: 400 });

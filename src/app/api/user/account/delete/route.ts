@@ -4,6 +4,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { deleteUser, deleteUserFromAuth } from "@/shared/services/user-deletion";
+import { log } from "@/shared/utils/logging";
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
@@ -101,7 +102,7 @@ export async function DELETE(request: NextRequest) {
       .single();
 
     if (userError) {
-      console.error("Error fetching user data:", userError);
+      log.error("Error fetching user data:", userError);
       return NextResponse.json({ error: "Failed to fetch user data" }, { status: 500 });
     }
 
@@ -147,13 +148,13 @@ export async function DELETE(request: NextRequest) {
         await deleteUserFromAuth(adminClient, userId);
       }
 
-      console.log("User account deleted successfully:", {
+      log.debug("User account deleted successfully:", {
         userId: userId,
         email: user.email,
         deletionType,
       });
     } catch (deletionError) {
-      console.error("Error deleting user account:", deletionError);
+      log.error("Error deleting user account:", deletionError);
       return NextResponse.json({ error: "Failed to delete account" }, { status: 500 });
     }
 
@@ -161,7 +162,7 @@ export async function DELETE(request: NextRequest) {
     try {
       await supabase.auth.signOut();
     } catch (signOutError) {
-      console.error("Error signing out user after deletion:", signOutError);
+      log.error("Error signing out user after deletion:", signOutError);
       // Don't fail the request if sign out fails
     }
 
@@ -170,7 +171,7 @@ export async function DELETE(request: NextRequest) {
       message: "Account deleted successfully",
     });
   } catch (error) {
-    console.error("Error in account deletion:", error);
+    log.error("Error in account deletion:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

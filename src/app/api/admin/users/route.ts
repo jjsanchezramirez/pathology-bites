@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { deleteUser, deleteUserFromAuth } from "@/shared/services/user-deletion";
+import { log } from "@/shared/utils/logging";
 
 // Create Supabase client with service role for admin operations
 function createAdminClient() {
@@ -10,7 +11,7 @@ function createAdminClient() {
   const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
 
   if (!supabaseUrl || !supabaseServiceKey) {
-    console.error("Missing Supabase environment variables:", {
+    log.error("Missing Supabase environment variables:", {
       hasUrl: !!supabaseUrl,
       hasServiceKey: !!supabaseServiceKey,
     });
@@ -168,7 +169,7 @@ export async function GET(request: NextRequest) {
       currentPage: page,
     });
   } catch (error) {
-    console.error("Error in admin users API:", error);
+    log.error("Error in admin users API:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -261,18 +262,18 @@ export async function PATCH(request: NextRequest) {
         });
 
         if (authError) {
-          console.error("Error updating auth metadata:", authError);
+          log.error("Error updating auth metadata:", authError);
           // Don't fail the request if auth metadata update fails
         }
       } catch (authUpdateError) {
-        console.error("Error updating user auth metadata:", authUpdateError);
+        log.error("Error updating user auth metadata:", authUpdateError);
         // Don't fail the request if auth metadata update fails
       }
     }
 
     return NextResponse.json({ user: data });
   } catch (error) {
-    console.error("Error updating user:", error);
+    log.error("Error updating user:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -367,7 +368,7 @@ export async function DELETE(request: NextRequest) {
       .single();
 
     if (targetUserError || !targetUser) {
-      console.error("Target user not found:", targetUserError);
+      log.error("Target user not found:", targetUserError);
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
@@ -380,7 +381,7 @@ export async function DELETE(request: NextRequest) {
     try {
       adminClient = createAdminClient();
     } catch (adminClientError) {
-      console.error("Failed to create admin client:", adminClientError);
+      log.error("Failed to create admin client:", adminClientError);
       return NextResponse.json(
         {
           error: "Server configuration error - unable to perform admin operations",
@@ -409,14 +410,14 @@ export async function DELETE(request: NextRequest) {
         await deleteUserFromAuth(adminClient, userId);
       }
 
-      console.log("Successfully deleted user:", { userId, email: targetUser.email, deletionType });
+      log.debug("Successfully deleted user:", { userId, email: targetUser.email, deletionType });
       return NextResponse.json({
         success: true,
         message: `User ${isContentCreator ? "soft" : "hard"} deleted successfully`,
         deletionType,
       });
     } catch (deletionError) {
-      console.error("Exception during user deletion:", {
+      log.error("Exception during user deletion:", {
         error: deletionError,
         userId,
         targetUser: { id: targetUser.id, email: targetUser.email, role: targetUser.role },
@@ -445,7 +446,7 @@ export async function DELETE(request: NextRequest) {
       }
     }
   } catch (error) {
-    console.error("Error in DELETE /api/admin/users:", error);
+    log.error("Error in DELETE /api/admin/users:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Internal server error" },
       { status: 500 }

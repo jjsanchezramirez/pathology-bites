@@ -15,6 +15,7 @@ import { Trash2, Loader2 } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import { softDeleteAudio } from "@/features/admin/audio/services/audio";
 import type { Audio } from "@/features/admin/audio/types";
+import { log } from "@/shared/utils/logging";
 
 interface DeleteAudioDialogProps {
   open: boolean;
@@ -42,7 +43,7 @@ export function DeleteAudioDialog({
       onOpenChange(false);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to delete audio file";
-      console.error("Delete error:", error);
+      log.error("Delete error:", error);
       toast.error(message);
     } finally {
       setIsDeleting(false);

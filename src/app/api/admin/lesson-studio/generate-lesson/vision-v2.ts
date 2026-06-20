@@ -11,6 +11,7 @@ import {
   deriveMicroscopicTool,
 } from "../generate-sequence/vision";
 import type { ImageInput } from "../generate-sequence/prompt";
+import { log } from "@/shared/utils/logging";
 
 // ---------------------------------------------------------------------------
 // Prompt — simplified for Claude's better spatial reasoning
@@ -291,7 +292,7 @@ async function analyzeOneImage(image: ImageInput, modelOverride?: string): Promi
     // Override Claude's tool suggestion with deterministic decision table
     return overrideToolDeterministically(result, imageWithMag);
   } catch (err) {
-    console.warn(`[vision-v2] All models failed for "${image.title}":`, err);
+    log.warn(`[vision-v2] All models failed for "${image.title}":`, err);
     return FALLBACK;
   }
 }
@@ -304,9 +305,9 @@ export async function analyzeImagesV2(
   images: ImageInput[],
   modelOverride?: string
 ): Promise<VisionResult[]> {
-  console.log(`[vision-v2] Analysing ${images.length} images...`);
+  log.debug(`[vision-v2] Analysing ${images.length} images...`);
   const results = await Promise.all(images.map((img) => analyzeOneImage(img, modelOverride)));
   const seen = results.filter((r) => r.canSeeImage).length;
-  console.log(`[vision-v2] Done — ${seen}/${images.length} analysed successfully`);
+  log.debug(`[vision-v2] Done — ${seen}/${images.length} analysed successfully`);
   return results;
 }

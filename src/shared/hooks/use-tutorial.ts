@@ -4,6 +4,7 @@ import { useState, useCallback, useEffect } from "react";
 import { useUISettings } from "@/shared/hooks/use-user-settings";
 import { userSettingsService } from "@/shared/services/user-settings";
 import type { UISettings } from "@/shared/config/user-settings-defaults";
+import { log } from "@/shared/utils/logging";
 
 const LEGACY_PREFIX = "tutorial:";
 
@@ -50,7 +51,7 @@ export function useTutorial(tutorialId: string) {
       userSettingsService
         .updateUISettings({ [fieldName]: true } as Partial<UISettings>)
         .then(() => invalidate())
-        .catch((err) => console.warn("Tutorial legacy migration failed:", err));
+        .catch((err) => log.warn("Tutorial legacy migration failed:", err));
     }
     try {
       localStorage.removeItem(legacyKey);
@@ -71,7 +72,7 @@ export function useTutorial(tutorialId: string) {
       } as Partial<UISettings>);
       invalidate();
     } catch (error) {
-      console.warn("Failed to mark tutorial completed:", error);
+      log.warn("Failed to mark tutorial completed:", error);
     }
   }, [fieldName, invalidate]);
 
@@ -83,7 +84,7 @@ export function useTutorial(tutorialId: string) {
       } as Partial<UISettings>);
       invalidate();
     } catch (error) {
-      console.warn("Failed to reset tutorial:", error);
+      log.warn("Failed to reset tutorial:", error);
     }
   }, [fieldName, invalidate]);
 

@@ -1,3 +1,5 @@
+import { log } from "@/shared/utils/logging";
+
 // localStorage cleanup utilities
 // Manages localStorage size and cleans up old data
 
@@ -141,7 +143,7 @@ export function cleanupOldQuizSessions(maxAge = QUIZ_SESSION_MAX_AGE): number {
   });
 
   if (cleanedCount > 0) {
-    console.log(`[Storage Cleanup] 🗑️ Removed ${cleanedCount} old quiz sessions`);
+    log.debug(`[Storage Cleanup] 🗑️ Removed ${cleanedCount} old quiz sessions`);
   }
 
   return cleanedCount;
@@ -156,7 +158,7 @@ export function performFullCleanup(): {
   totalCleaned: number;
   stats: StorageStats;
 } {
-  console.log("[Storage Cleanup] 🧹 Starting full cleanup...");
+  log.debug("[Storage Cleanup] 🧹 Starting full cleanup...");
 
   const oldSessions = cleanupOldQuizSessions();
 
@@ -168,7 +170,7 @@ export function performFullCleanup(): {
     stats,
   };
 
-  console.log("[Storage Cleanup] ✅ Cleanup complete:", result);
+  log.debug("[Storage Cleanup] ✅ Cleanup complete:", result);
 
   return result;
 }
@@ -203,7 +205,7 @@ export function enforceStorageQuota(): number {
     return 0;
   }
 
-  console.warn(
+  log.warn(
     `[Storage Cleanup] ⚠️ localStorage at ${(stats.totalSize / 1024 / 1024).toFixed(2)}MB, cleaning up...`
   );
 
@@ -254,11 +256,11 @@ export function enforceStorageQuota(): number {
     localStorage.removeItem(session.key);
     currentSize -= session.size;
     removedCount++;
-    console.log(`[Storage Cleanup] Removed old quiz session: ${session.key}`);
+    log.debug(`[Storage Cleanup] Removed old quiz session: ${session.key}`);
   }
 
   if (removedCount > 0) {
-    console.log(
+    log.debug(
       `[Storage Cleanup] ✅ Removed ${removedCount} old quiz sessions. Storage: ${(currentSize / 1024 / 1024).toFixed(2)}MB`
     );
   }
@@ -306,7 +308,7 @@ export function migrateLegacyQuizKeys(): number {
   }
 
   if (migrated > 0) {
-    console.log(`[Storage Cleanup] ♻️ Migrated ${migrated} legacy quiz keys to new naming`);
+    log.debug(`[Storage Cleanup] ♻️ Migrated ${migrated} legacy quiz keys to new naming`);
   }
   return migrated;
 }
@@ -369,7 +371,7 @@ export function cleanupOrphans(): number {
   }
 
   if (removed > 0) {
-    console.log(`[Storage Cleanup] 🧹 Removed ${removed} orphan/legacy/empty keys`);
+    log.debug(`[Storage Cleanup] 🧹 Removed ${removed} orphan/legacy/empty keys`);
   }
   return removed;
 }
@@ -381,7 +383,7 @@ export function cleanupOrphans(): number {
 export function autoCleanup() {
   if (typeof window === "undefined") return;
 
-  console.log("[Storage Cleanup] 🚀 Running auto-cleanup on app init");
+  log.debug("[Storage Cleanup] 🚀 Running auto-cleanup on app init");
 
   // Rename legacy quiz-session/quiz-state keys to the new quiz-result/quiz-draft naming
   // before any other cleanup runs (so subsequent steps see the canonical key names).
@@ -395,7 +397,7 @@ export function autoCleanup() {
 
   // Log final stats
   const stats = getStorageStats();
-  console.log("[Storage Cleanup] 📊 Storage stats:", {
+  log.debug("[Storage Cleanup] 📊 Storage stats:", {
     totalSize: `${(stats.totalSize / 1024).toFixed(2)} KB`,
     totalItems: stats.totalItems,
     largestItems: stats.items.slice(0, 5).map((item) => ({

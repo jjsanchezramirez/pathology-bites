@@ -12,6 +12,7 @@ import {
   QuestionImageFormData,
 } from "@/shared/types/questions";
 import { useQuestions } from "./use-questions";
+import { log } from "@/shared/utils/logging";
 
 // Form schema
 const editQuestionSchema = z.object({
@@ -203,7 +204,7 @@ export function useEditQuestionForm({ question, open, onSave, onClose }: UseEdit
         onSave();
         onClose();
       } catch (error) {
-        console.error("Error in handleSubmit:", error);
+        log.error("Error in handleSubmit:", error);
         const errorMessage = error instanceof Error ? error.message : "Failed to update question";
         toast.error(errorMessage);
         throw error;

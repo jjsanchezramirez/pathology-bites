@@ -9,6 +9,7 @@ import {
   checkSequentialAchievements,
   checkSpeedAchievements,
 } from "./achievement-checker";
+import { log } from "@/shared/utils/logging";
 
 /**
  * Calculate which achievements should be unlocked after completing a quiz
@@ -60,9 +61,9 @@ export function calculateAchievementsToUnlock(
     (id) => !unlockedSet.has(id)
   );
 
-  console.log("[Client Achievement Check] Calculated achievements to unlock:", uniqueAchievements);
-  console.log("[Client Achievement Check] Speed achievements:", speedAchievements);
-  console.log(
+  log.debug("[Client Achievement Check] Calculated achievements to unlock:", uniqueAchievements);
+  log.debug("[Client Achievement Check] Speed achievements:", speedAchievements);
+  log.debug(
     "[Client Achievement Check] Sequential achievements:",
     sequential.map((a) => a.id)
   );

@@ -12,6 +12,7 @@ import { AuthCard } from "@/features/auth/components/ui/auth-card";
 import { FormField } from "@/features/auth/components/ui/form-field";
 import { FormButton } from "@/features/auth/components/ui/form-button";
 import { createClient } from "@/shared/services/client";
+import { log } from "@/shared/utils/logging";
 
 // Enhanced form schema with proper password validation
 const formSchema = z
@@ -99,7 +100,7 @@ export function ResetPasswordForm({ className, initialError, ...props }: ResetPa
         router.push("/reset-success");
       }, 1000);
     } catch (error) {
-      console.error("Reset password error:", error);
+      log.error("Reset password error:", error);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data, error } = await supabase.from("users").select("role").eq("id", userId).single();
@@ -61,7 +62,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("[Admin Learn API] Failed to fetch lesson:", error);
+    log.error("[Admin Learn API] Failed to fetch lesson:", error);
     return NextResponse.json({ error: "Failed to fetch lesson" }, { status: 500 });
   }
 }
@@ -186,7 +187,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("[Admin Learn API] Failed to update lesson:", error);
+    log.error("[Admin Learn API] Failed to update lesson:", error);
     return NextResponse.json({ error: "Failed to update lesson" }, { status: 500 });
   }
 }
@@ -242,7 +243,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[Admin Learn API] Failed to delete lesson:", error);
+    log.error("[Admin Learn API] Failed to delete lesson:", error);
     return NextResponse.json({ error: "Failed to delete lesson" }, { status: 500 });
   }
 }

@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useClientWSIData } from "./use-client-wsi-data";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { getWSIHistoryTracker } from "@/features/user/wsi-questions/utils/wsi-history-tracker";
+import { log } from "@/shared/utils/logging";
 
 interface QuestionData {
   stem: string;
@@ -86,7 +87,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
   const [error, setError] = useState<string | null>(null);
   const { wsiData, isLoading: isLoadingWSI, error: wsiError } = useClientWSIData();
 
-  console.log("[WSI Hook] Loaded - SINGLE ENDPOINT VERSION - no prepare/parse routes");
+  log.debug("[WSI Hook] Loaded - SINGLE ENDPOINT VERSION - no prepare/parse routes");
 
   const clearError = useCallback(() => {
     setError(null);
@@ -95,7 +96,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
   // Main generation function with model fallback
   const generateQuestionWithFallback = useCallback(
     async (wsi: unknown, modelIndex: number): Promise<QuestionGenerationResponse> => {
-      console.log(`[WSI Generator] Attempting generation with model index: ${modelIndex}`);
+      log.debug(`[WSI Generator] Attempting generation with model index: ${modelIndex}`);
 
       const baseUrl =
         typeof window !== "undefined"
@@ -104,7 +105,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
       const apiPath = "/api/user/wsi-questions/generate";
 
-      console.log("[WSI Generator] Using SINGLE /generate endpoint (no multi-step)");
+      log.debug("[WSI Generator] Using SINGLE /generate endpoint (no multi-step)");
       const response = await fetch(`${baseUrl}${apiPath}?cb=${Date.now()}`, {
         method: "POST",
         headers: {
@@ -122,7 +123,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
           const errorData = await response.json();
           if (errorData.nextModelIndex !== null) {
             // Recursive fallback to next model
-            console.log(`[WSI Generator] Continuing fallback to model: ${errorData.nextModel}`);
+            log.debug(`[WSI Generator] Continuing fallback to model: ${errorData.nextModel}`);
             return generateQuestionWithFallback(wsi, errorData.nextModelIndex);
           } else {
             // No more models available
@@ -152,7 +153,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
       setError(null);
 
       try {
-        console.log("[WSI Generator] Starting question generation");
+        log.debug("[WSI Generator] Starting question generation");
 
         // Ensure WSI data is available - use direct access to cached promise
         let finalWSIData = wsiData;
@@ -162,15 +163,13 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
             throw new Error(`WSI data error: ${wsiError}`);
           }
 
-          console.log(
-            "[WSI Generator] WSI data not available in hook, accessing cache directly..."
-          );
+          log.debug("[WSI Generator] WSI data not available in hook, accessing cache directly...");
 
           try {
             // Import and call the loadClientWSIData function directly
             const { loadClientWSIData } = await import("./use-client-wsi-data");
             finalWSIData = await loadClientWSIData();
-            console.log(
+            log.debug(
               "[WSI Generator] ✅ WSI data loaded from cache:",
               finalWSIData.length,
               "slides"
@@ -188,7 +187,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         }
 
         // Step 1: Select WSI using simplified approach with history tracking
-        console.log(
+        log.debug(
           `[WSI Generator] Step 1 - Selecting WSI from ${finalWSIData.length} available slides...`
         );
         let selectedWSI: VirtualSlide;
@@ -198,7 +197,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         const effectiveCategory = category || "all";
         const recentIds = historyTracker.getRecentIds(effectiveCategory);
 
-        console.log(
+        log.debug(
           `[WSI Generator] Recent history size for "${effectiveCategory}": ${recentIds.length} slides`
         );
 
@@ -219,7 +218,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
           // If all slides in category have been shown, reset and use all category slides
           if (availableSlides.length === 0) {
-            console.log(
+            log.debug(
               `[WSI Generator] All ${categorySlides.length} slides in "${category}" have been shown. Resetting history for this category.`
             );
             historyTracker.clearCategory(effectiveCategory);
@@ -227,7 +226,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
           }
 
           selectedWSI = availableSlides[Math.floor(Math.random() * availableSlides.length)];
-          console.log(
+          log.debug(
             `[WSI Generator] Selected from ${availableSlides.length} available slides in category: ${category} (${categorySlides.length} total, ${recentIds.length} recently shown)`
           );
         } else {
@@ -236,7 +235,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
           // If all slides have been shown, reset and use all slides
           if (availableSlides.length === 0) {
-            console.log(
+            log.debug(
               `[WSI Generator] All ${finalWSIData.length} slides have been shown. Resetting history.`
             );
             historyTracker.clearAll();
@@ -249,15 +248,15 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
           if (!selectedWSI) {
             throw new Error("Failed to select random WSI");
           }
-          console.log(
+          log.debug(
             `[WSI Generator] Selected random slide from ${availableSlides.length} available slides (${finalWSIData.length} total, ${recentIds.length} recently shown)`
           );
         }
 
-        console.log(`[WSI Generator] Selected WSI - ${selectedWSI.diagnosis}`);
+        log.debug(`[WSI Generator] Selected WSI - ${selectedWSI.diagnosis}`);
 
         // Step 2: Generate question using main generate route
-        console.log("[WSI Generator] Step 2 - Using main generate route...");
+        log.debug("[WSI Generator] Step 2 - Using main generate route...");
 
         const _baseUrl =
           typeof window !== "undefined"
@@ -265,7 +264,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
             : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
 
         // Generate question with fallback support
-        console.log("[WSI Generator] Generating question with AI fallback...");
+        log.debug("[WSI Generator] Generating question with AI fallback...");
         const questionData = await generateQuestionWithFallback(selectedWSI, 0);
 
         if (!questionData.success || !questionData.question) {
@@ -276,18 +275,18 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         if (questionData.metadata?.retry_info) {
           const retryInfo = questionData.metadata.retry_info;
           if (retryInfo.retries > 0) {
-            console.log(
+            log.debug(
               `[WSI Generator] ✅ Success after ${retryInfo.retries} retries in ${retryInfo.totalTime}ms`
             );
           } else {
-            console.log(`[WSI Generator] ✅ Success on first attempt in ${retryInfo.totalTime}ms`);
+            log.debug(`[WSI Generator] ✅ Success on first attempt in ${retryInfo.totalTime}ms`);
           }
         } else {
-          console.log("[WSI Generator] Successfully generated question");
+          log.debug("[WSI Generator] Successfully generated question");
         }
 
         // Log token usage for debugging
-        console.log("[WSI Generator] Token usage from API:", questionData.metadata?.token_usage);
+        log.debug("[WSI Generator] Token usage from API:", questionData.metadata?.token_usage);
 
         // Combine all data into the expected format
         const generationTime = Date.now() - startTime;
@@ -319,7 +318,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
         // Add to history after successful generation
         historyTracker.addToHistory(selectedWSI.id, effectiveCategory);
-        console.log(
+        log.debug(
           `[WSI Generator] Added ${selectedWSI.id} to history. Stats:`,
           historyTracker.getStats()
         );
@@ -327,7 +326,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         return generatedQuestion;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-        console.error("[WSI Generator] Client-side generation failed:", errorMessage);
+        log.error("[WSI Generator] Client-side generation failed:", errorMessage);
         setError(errorMessage);
         throw err;
       } finally {

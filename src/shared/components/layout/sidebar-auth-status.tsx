@@ -13,6 +13,7 @@ import {
 } from "@/shared/components/ui/dropdown-menu";
 import { RefreshCw, LogOut, ChevronUp, Shield, ShieldAlert, ShieldCheck, User } from "lucide-react";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
+import { log } from "@/shared/utils/logging";
 
 interface UserProfile {
   id: string;
@@ -55,7 +56,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
         setProfileLoading(false);
       }
     } catch (error) {
-      console.error("Failed to refresh auth:", error);
+      log.error("Failed to refresh auth:", error);
     }
   };
 
@@ -83,7 +84,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
         if (profileError) {
           // Only log meaningful errors (empty objects are often false positives from RLS)
           if (profileError.message || profileError.code) {
-            console.error("Profile error:", profileError);
+            log.error("Profile error:", profileError);
           }
           // Fallback to auth metadata when database query fails
           const fallbackProfile = {
@@ -121,7 +122,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
         }
       } catch (err) {
         if (!mounted) return;
-        console.error("Profile fetch error:", err);
+        log.error("Profile fetch error:", err);
         // Fallback to auth metadata on exception
         const fallbackProfile = {
           id: user.id,
@@ -157,7 +158,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
       const { error } = await supabase.auth.signOut();
 
       if (error) {
-        console.error("Sign out error:", error);
+        log.error("Sign out error:", error);
         throw error;
       }
 
@@ -178,7 +179,7 @@ export function SidebarAuthStatus({ isCollapsed = false }: SidebarAuthStatusProp
       // Force a hard refresh to clear all cached data and redirect to login
       window.location.href = "/login";
     } catch (err) {
-      console.error("Error during sign out:", err);
+      log.error("Error during sign out:", err);
       // Still redirect to login even if there's an error
       window.location.href = "/login";
     }

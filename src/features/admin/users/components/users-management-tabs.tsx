@@ -9,6 +9,7 @@ import { formatDistanceToNow } from "date-fns";
 import { toast } from "@/shared/utils/ui/toast";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { UsersTable } from "./users-table";
+import { log } from "@/shared/utils/logging";
 
 interface WaitlistEntry {
   id: string;
@@ -57,7 +58,7 @@ export function UsersManagementTabs({ onUserChange }: UsersManagementTabsProps) 
       const result: WaitlistResponse = await response.json();
       setWaitlistData(result.data);
     } catch (error) {
-      console.error("Error fetching waitlist:", error);
+      log.error("Error fetching waitlist:", error);
       toast.error("Failed to load waitlist data");
     } finally {
       setLoadingWaitlist(false);
@@ -78,7 +79,7 @@ export function UsersManagementTabs({ onUserChange }: UsersManagementTabsProps) 
       }));
       setRegisteredUsers(users);
     } catch (error) {
-      console.error("Error fetching registered users:", error);
+      log.error("Error fetching registered users:", error);
       toast.error("Failed to load registered users data");
     } finally {
       setLoadingRegisteredUsers(false);
@@ -100,7 +101,7 @@ export function UsersManagementTabs({ onUserChange }: UsersManagementTabsProps) 
       window.URL.revokeObjectURL(url);
       document.body.removeChild(a);
     } catch (error) {
-      console.error("Error exporting waitlist:", error);
+      log.error("Error exporting waitlist:", error);
       toast.error("Failed to export waitlist");
     }
   };

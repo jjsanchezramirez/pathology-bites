@@ -40,6 +40,10 @@ const eslintConfig = [
       "@typescript-eslint/no-empty-interface": "off",
       "prefer-const": "warn",
 
+      // Enforce the centralized logger over raw console.
+      // Use `log` from '@/shared/utils/logging' instead.
+      "no-console": "error",
+
       // Enforce standardized toast imports
       "no-restricted-imports": [
         "error",
@@ -67,6 +71,14 @@ const eslintConfig = [
     files: ["tests/**/*.{ts,tsx}", "**/*.test.{ts,tsx}", "vitest.setup.ts"],
     rules: {
       "@typescript-eslint/no-explicit-any": "off",
+    },
+  },
+  {
+    // The logger module wraps console; standalone scripts and test/benchmark
+    // harnesses legitimately log results to stdout.
+    files: ["src/shared/utils/logging/**/*.ts", "scripts/**/*.{ts,tsx}", "tests/**/*.{ts,tsx}"],
+    rules: {
+      "no-console": "off",
     },
   },
   {

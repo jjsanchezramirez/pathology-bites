@@ -55,6 +55,7 @@ import { EditAudioDialog } from "@/features/admin/audio/components/edit-dialog";
 import { DeleteAudioDialog } from "@/features/admin/audio/components/delete-dialog";
 import { CATEGORIES } from "@/shared/config/categories";
 import { getCategoryById } from "@/shared/config/category-color-map";
+import { log } from "@/shared/utils/logging";
 
 function formatBytes(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;
@@ -217,7 +218,7 @@ export default function AdminAudioPage() {
       setAudio(result.data);
       setTotalItems(result.total);
     } catch (error) {
-      console.error("Error loading audio:", error);
+      log.error("Error loading audio:", error);
       toast.error("Failed to load audio files");
     } finally {
       setLoading(false);
@@ -234,7 +235,7 @@ export default function AdminAudioPage() {
         unusedSizeBytes: 0,
       });
     } catch (error) {
-      console.error("Error loading stats:", error);
+      log.error("Error loading stats:", error);
     }
   }, []);
 
@@ -537,9 +538,7 @@ export default function AdminAudioPage() {
                                         id: item.id,
                                         duration: audioElement.duration,
                                       }),
-                                    }).catch((err) =>
-                                      console.error("Failed to update duration:", err)
-                                    );
+                                    }).catch((err) => log.error("Failed to update duration:", err));
                                   }
                                 }
                               }}
@@ -562,7 +561,7 @@ export default function AdminAudioPage() {
                                                 : "UNKNOWN",
                                     }
                                   : "No error details available";
-                                console.error(
+                                log.error(
                                   `Audio loading error for "${item.title}":`,
                                   errorDetails,
                                   `\nURL: ${item.url}`

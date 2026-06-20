@@ -4,6 +4,7 @@ import { computeSegmentTimings, type SegmentTiming } from "./timing";
 import { TEXT_FALLBACK_CHAIN } from "@/shared/config/ai-models";
 import { callWithFallback } from "@/shared/services/ai-fallback";
 import { callClaudeText } from "@/shared/services/claude-api";
+import { log } from "@/shared/utils/logging";
 
 const SEGMENTER_TIMEOUT_MS = 20_000;
 const MIN_SEGMENT_DURATION = 3.0;
@@ -263,11 +264,11 @@ export async function segmentByAI(
     return computeSegmentTimings(images, captions, totalDuration);
   }
 
-  console.log(`[segmenter] Input images for segmentation:`);
+  log.debug(`[segmenter] Input images for segmentation:`);
   images.forEach((img, i) => {
-    console.log(`  [${i}] ${img.title} — ${img.category}, mag: ${img.magnification ?? "null"}`);
+    log.debug(`  [${i}] ${img.title} — ${img.category}, mag: ${img.magnification ?? "null"}`);
   });
-  console.log(`[segmenter] ${captions.length} captions, ${totalDuration.toFixed(1)}s duration`);
+  log.debug(`[segmenter] ${captions.length} captions, ${totalDuration.toFixed(1)}s duration`);
 
   const prompt = buildSegmenterPrompt(images, captions);
 
@@ -286,16 +287,16 @@ export async function segmentByAI(
 
     const indices = parseSegmenterResponse(raw, images.length, captions.length);
     if (!indices) {
-      console.warn(`[segmenter] Could not parse response "${raw.slice(0, 120)}" — falling back`);
+      log.warn(`[segmenter] Could not parse response "${raw.slice(0, 120)}" — falling back`);
       return computeSegmentTimings(images, captions, totalDuration);
     }
 
-    console.log(`[segmenter] AI transition indices: [${indices.join(", ")}]`);
+    log.debug(`[segmenter] AI transition indices: [${indices.join(", ")}]`);
     return indicesToTimings(indices, captions, totalDuration);
   } catch (err) {
     clearTimeout(timeoutId);
     const msg = err instanceof Error ? err.message : String(err);
-    console.warn(`[segmenter] All models failed: ${msg} — falling back to keyword scorer`);
+    log.warn(`[segmenter] All models failed: ${msg} — falling back to keyword scorer`);
     return computeSegmentTimings(images, captions, totalDuration);
   }
 }

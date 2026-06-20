@@ -55,6 +55,7 @@ import {
 import { CreateCategoryDialog } from "./create-category-dialog";
 import { EditCategoryDialog } from "./edit-category-dialog";
 import { CategoryBadge } from "@/shared/components/ui/category-badge";
+import { log } from "@/shared/utils/logging";
 
 interface Category {
   id: string;
@@ -216,7 +217,7 @@ export function CategoriesManagement() {
         setTotalPages(Math.ceil(organizedCategories.length / PAGE_SIZE));
       }
     } catch (error) {
-      console.error("Error loading categories:", error);
+      log.error("Error loading categories:", error);
       toast.error(error instanceof Error ? error.message : "Failed to load categories");
     } finally {
       setLoading(false);
@@ -250,7 +251,7 @@ export function CategoriesManagement() {
       setSelectedCategory(null);
       loadCategories();
     } catch (error) {
-      console.error("Error deleting category:", error);
+      log.error("Error deleting category:", error);
       toast.error(error instanceof Error ? error.message : "Failed to delete category");
     } finally {
       setIsDeleting(false);
@@ -296,7 +297,7 @@ export function CategoriesManagement() {
       clearSelection();
       loadCategories();
     } catch (error) {
-      console.error("Error bulk deleting categories:", error);
+      log.error("Error bulk deleting categories:", error);
       toast.error(error instanceof Error ? error.message : "Failed to delete categories");
     } finally {
       setIsBulkDeleting(false);
@@ -335,7 +336,7 @@ export function CategoriesManagement() {
       clearSelection();
       loadCategories();
     } catch (error) {
-      console.error("Error bulk assigning parent:", error);
+      log.error("Error bulk assigning parent:", error);
       toast.error(error instanceof Error ? error.message : "Failed to assign parent categories");
     } finally {
       setIsBulkAssigning(false);

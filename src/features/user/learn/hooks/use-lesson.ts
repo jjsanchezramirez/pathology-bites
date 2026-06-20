@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { LessonWithProgress } from "../types/lesson";
 import { learnService } from "../services/learn-service";
+import { log } from "@/shared/utils/logging";
 
 export function useLesson(lessonId: string | null) {
   const [lesson, setLesson] = useState<LessonWithProgress | null>(null);
@@ -20,7 +21,7 @@ export function useLesson(lessonId: string | null) {
       const data = await learnService.getLesson(lessonId);
       setLesson(data);
     } catch (err) {
-      console.error("Failed to load lesson:", err);
+      log.error("Failed to load lesson:", err);
       setError(err instanceof Error ? err.message : "Failed to load lesson");
     } finally {
       setLoading(false);
@@ -56,7 +57,7 @@ export function useLesson(lessonId: string | null) {
             : null
         );
       } catch (err) {
-        console.error("Failed to mark lesson complete:", err);
+        log.error("Failed to mark lesson complete:", err);
         throw err;
       }
     },

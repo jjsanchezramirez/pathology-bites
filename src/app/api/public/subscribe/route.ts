@@ -1,6 +1,7 @@
 // src/app/api/public/subscribe/route.ts
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { log } from "@/shared/utils/logging";
 
 // Define error interface for Supabase errors
 interface SupabaseError {
@@ -133,13 +134,13 @@ export async function POST(request: Request) {
       
       // If we hit an RLS error and have a service key, try the fallback approach
       if (supabaseError.code === '42501' && supabaseServiceKey) {
-        console.log('Falling back to service role key due to RLS error')
+        log.debug('Falling back to service role key due to RLS error')
         return await tryServiceRoleInsert(supabaseUrl, supabaseServiceKey, email)
       }
       
       throw error
     } catch (error) {
-      console.error('Supabase error with anon key:', error)
+      log.error('Supabase error with anon key:', error)
       
       // Try service role as fallback only if we have the key and got an RLS error
       const supabaseError = error as SupabaseError;
@@ -160,7 +161,7 @@ export async function POST(request: Request) {
       )
     }
   } catch (error) {
-    console.error('Unexpected error in subscribe API:', error)
+    log.error('Unexpected error in subscribe API:', error)
     return NextResponse.json(
       { error: 'An unexpected error occurred. Please try again later.' },
       { status: 500 }
@@ -184,7 +185,7 @@ async function tryServiceRoleInsert(supabaseUrl: string, serviceKey: string, ema
       .insert([{ email }])
     
     if (error) {
-      console.error('Supabase error with service key:', error)
+      log.error('Supabase error with service key:', error)
       
       const supabaseError = error as SupabaseError;
       
@@ -213,7 +214,7 @@ async function tryServiceRoleInsert(supabaseUrl: string, serviceKey: string, ema
       { status: 201 }
     )
   } catch (serviceError) {
-    console.error('Service role insertion error:', serviceError)
+    log.error('Service role insertion error:', serviceError)
     return NextResponse.json(
       { error: 'An unexpected error occurred. Please try again later.' },
       { status: 500 }

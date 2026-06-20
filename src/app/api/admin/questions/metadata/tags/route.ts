@@ -1,6 +1,7 @@
 // src/app/api/admin/questions/metadata/tags/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -162,7 +163,7 @@ export async function GET(request: NextRequest) {
       currentPage: page,
     });
   } catch (error) {
-    console.error("Error in admin tags API:", error);
+    log.error("Error in admin tags API:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -249,7 +250,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ tag: data });
   } catch (error) {
-    console.error("Error creating tag:", error);
+    log.error("Error creating tag:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -341,7 +342,7 @@ export async function PATCH(request: NextRequest) {
 
     return NextResponse.json({ tag: data });
   } catch (error) {
-    console.error("Error updating tag:", error);
+    log.error("Error updating tag:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -428,7 +429,7 @@ export async function DELETE(request: NextRequest) {
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("Error deleting tag:", error);
+    log.error("Error deleting tag:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

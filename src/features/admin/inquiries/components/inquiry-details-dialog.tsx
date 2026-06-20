@@ -18,6 +18,7 @@ import { Mail, Calendar, User, Send, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/shared/utils/ui/toast";
 import { InquiryStatusBadge } from "./inquiry-status-badge";
+import { log } from "@/shared/utils/logging";
 
 interface Inquiry {
   id: string;
@@ -49,7 +50,7 @@ export function InquiryDetailsDialog({ inquiry, open, onOpenChange }: InquiryDet
 
     setSending(true);
     try {
-      console.log("Sending response for inquiry:", inquiry.id);
+      log.debug("Sending response for inquiry:", inquiry.id);
 
       const res = await fetch(`/api/admin/inquiries/${inquiry.id}/respond`, {
         method: "POST",
@@ -59,7 +60,7 @@ export function InquiryDetailsDialog({ inquiry, open, onOpenChange }: InquiryDet
         body: JSON.stringify({ response: response.trim() }),
       });
 
-      console.log("Response status:", res.status);
+      log.debug("Response status:", res.status);
 
       if (!res.ok) {
         let errorMessage = "Failed to send response";
@@ -67,20 +68,20 @@ export function InquiryDetailsDialog({ inquiry, open, onOpenChange }: InquiryDet
           const errorData = await res.json();
           errorMessage = errorData.error || errorMessage;
         } catch (parseError) {
-          console.error("Failed to parse error response:", parseError);
+          log.error("Failed to parse error response:", parseError);
           errorMessage = `HTTP ${res.status}: ${res.statusText}`;
         }
         throw new Error(errorMessage);
       }
 
       const result = await res.json();
-      console.log("Response sent successfully:", result);
+      log.debug("Response sent successfully:", result);
 
       toast.success("Response sent successfully!");
       setResponse("");
       onOpenChange(false);
     } catch (error) {
-      console.error("Error sending response:", error);
+      log.error("Error sending response:", error);
 
       if (error instanceof TypeError && error.message === "Failed to fetch") {
         toast.error(

@@ -1,5 +1,6 @@
 import { createClient } from "@/shared/services/client";
 import type { SvgAsset, SvgListFilters } from "../types";
+import { log } from "@/shared/utils/logging";
 
 /**
  * Fetch SVG assets with optional filters and server-side pagination
@@ -32,7 +33,7 @@ export async function fetchSvgAssets(
   const { data, error } = await query;
 
   if (error) {
-    console.error("Error fetching SVG assets:", error);
+    log.error("Error fetching SVG assets:", error);
     return { data: [], total: 0, error: error.message };
   }
 
@@ -52,7 +53,7 @@ export async function fetchSvgAssets(
   const { count, error: countError } = await countQuery;
 
   if (countError) {
-    console.error("Error fetching SVG assets count:", countError);
+    log.error("Error fetching SVG assets count:", countError);
   }
 
   return { data: data || [], total: count ?? 0, error: null };
@@ -75,7 +76,7 @@ export async function updateSvgAsset(
     .single();
 
   if (error) {
-    console.error("Error updating SVG asset:", error);
+    log.error("Error updating SVG asset:", error);
     throw new Error(error.message);
   }
 
@@ -92,7 +93,7 @@ export async function deleteSvgAsset(id: string): Promise<void> {
   const { error } = await supabase.from("svg_assets").delete().eq("id", id);
 
   if (error) {
-    console.error("Error deleting SVG asset:", error);
+    log.error("Error deleting SVG asset:", error);
     throw new Error(error.message);
   }
 }

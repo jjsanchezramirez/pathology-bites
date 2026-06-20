@@ -16,6 +16,7 @@ import {
 import { Plus, X, Search, Image as ImageIcon } from "lucide-react";
 import { ImageData } from "@/shared/types/images";
 import { fetchImages } from "@/features/admin/images/services/images";
+import { log } from "@/shared/utils/logging";
 
 interface ImagesTabProps {
   question?: QuestionWithDetails;
@@ -83,13 +84,13 @@ function ImageSection({
       });
 
       if (result.error) {
-        console.error("Failed to load images:", result.error);
+        log.error("Failed to load images:", result.error);
         throw new Error(typeof result.error === "string" ? result.error : "Failed to load images");
       }
 
       setAvailableImages(result.data);
     } catch (error) {
-      console.error("Failed to load images:", error);
+      log.error("Failed to load images:", error);
     } finally {
       setLoading(false);
     }

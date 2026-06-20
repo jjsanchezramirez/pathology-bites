@@ -4,6 +4,7 @@
 // WSI question generation, debug routes.
 
 import { getApiKey, getModelProvider } from "@/shared/config/ai-models";
+import { log } from "@/shared/utils/logging";
 
 type ErrorClass = "retryable" | "fallback" | "fatal";
 
@@ -85,20 +86,20 @@ export async function callWithFallback<T>(
     const apiKey = getApiKey(provider);
     if (!apiKey) {
       const msg = `No API key for provider "${provider}" (model ${modelId})`;
-      console.warn(`[${label}] ${msg}, skipping`);
+      log.warn(`[${label}] ${msg}, skipping`);
       errors.push(`${modelId}: ${msg}`);
       continue;
     }
 
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
       try {
-        console.log(`[${label}] Trying ${modelId}${attempt > 0 ? ` (retry ${attempt})` : ""}`);
+        log.debug(`[${label}] Trying ${modelId}${attempt > 0 ? ` (retry ${attempt})` : ""}`);
         return await callFn(modelId, apiKey, provider);
       } catch (err) {
         const errClass = classifyError(err);
         const msg = err instanceof Error ? err.message : String(err);
         errors.push(`${modelId}[${attempt}]: ${msg}`);
-        console.warn(`[${label}] ${modelId} attempt ${attempt} failed (${errClass}): ${msg}`);
+        log.warn(`[${label}] ${modelId} attempt ${attempt} failed (${errClass}): ${msg}`);
 
         if (errClass === "retryable" && attempt < maxRetries) {
           const delay = BASE_DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, attempt);

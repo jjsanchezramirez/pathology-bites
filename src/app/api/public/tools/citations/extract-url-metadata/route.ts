@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import * as cheerio from 'cheerio'
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -118,7 +119,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json(metadata)
     
   } catch (error) {
-    console.error('Error extracting metadata:', error)
+    log.error('Error extracting metadata:', error)
     
     return NextResponse.json(
       { error: 'Failed to extract metadata from the provided URL' },

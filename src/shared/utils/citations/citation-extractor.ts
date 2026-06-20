@@ -1,3 +1,5 @@
+import { log } from "@/shared/utils/logging";
+
 // Citation metadata extraction utilities
 
 export interface CitationData {
@@ -58,7 +60,7 @@ export async function extractWebsiteMetadata(url: string): Promise<CitationData>
       type: "website",
     };
   } catch (error) {
-    console.error("Error extracting website metadata:", error);
+    log.error("Error extracting website metadata:", error);
 
     // Fallback to basic URL parsing
     return {
@@ -113,7 +115,7 @@ export async function extractBookMetadata(isbn: string): Promise<CitationData> {
       type: "book",
     };
   } catch (error) {
-    console.error("Error extracting book metadata:", error);
+    log.error("Error extracting book metadata:", error);
 
     // Fallback response
     return {
@@ -173,7 +175,7 @@ export async function extractJournalMetadata(doi: string): Promise<CitationData>
       type: "journal",
     };
   } catch (error) {
-    console.error("Error extracting journal metadata:", error);
+    log.error("Error extracting journal metadata:", error);
 
     // Fallback response
     return {

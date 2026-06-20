@@ -39,6 +39,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { UserCheck } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 interface EditQuestionClientProps {
   questionId: string;
@@ -85,7 +86,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
           // Try to get error details from response
           const errorData = await response.json().catch(() => ({}));
           const errorMessage = errorData.error || `Failed to fetch question (${response.status})`;
-          console.error("API Error:", errorData);
+          log.error("API Error:", errorData);
           throw new Error(errorMessage);
         }
 
@@ -93,7 +94,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
         setQuestion(data.question);
         setAssignedReviewerId(data.question.reviewer_id || null);
       } catch (err) {
-        console.error("Error fetching question:", err);
+        log.error("Error fetching question:", err);
         const errorMessage = err instanceof Error ? err.message : "Failed to load question";
         setError(errorMessage);
         toast.error(errorMessage);
@@ -159,7 +160,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
           }
         }
       } catch (error) {
-        console.error("Error loading educational context:", error);
+        log.error("Error loading educational context:", error);
       }
     };
 
@@ -326,7 +327,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       await form.handleSubmit((data) => handleSubmit(data))();
     } catch (error) {
       // Error is already displayed in toast by useEditQuestionForm
-      console.error("Save confirmation error:", error);
+      log.error("Save confirmation error:", error);
     }
   };
 
@@ -341,7 +342,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
           const data = await response.json();
           setReviewers(data.reviewers || []);
         } catch (error) {
-          console.error("Error fetching reviewers:", error);
+          log.error("Error fetching reviewers:", error);
           toast.error("Failed to load reviewers");
         } finally {
           setLoadingReviewers(false);
@@ -376,7 +377,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
     try {
       await form.handleSubmit((data) => handleSubmit(data, selectedReviewerId))();
     } catch (error) {
-      console.error("Save after reviewer assignment error:", error);
+      log.error("Save after reviewer assignment error:", error);
       skipNavigationRef.current = false; // Reset flag on error
     }
   };
@@ -398,7 +399,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       // Submit the form (the onSave callback will handle toast and navigation)
       await form.handleSubmit((data) => handleSubmit(data))();
     } catch (error) {
-      console.error("Save and submit error:", error);
+      log.error("Save and submit error:", error);
       toast.error("Failed to save and submit question");
     }
   };

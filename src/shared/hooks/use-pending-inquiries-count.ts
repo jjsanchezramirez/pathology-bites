@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { createClient } from "@/shared/services/client";
 import { debounce } from "@/shared/utils/ui/debounce";
+import { log } from "@/shared/utils/logging";
 
 export function usePendingInquiriesCount() {
   const [count, setCount] = useState(0);
@@ -20,13 +21,13 @@ export function usePendingInquiriesCount() {
         .eq("status", "pending");
 
       if (error) {
-        console.error("Error fetching pending inquiries count:", error);
+        log.error("Error fetching pending inquiries count:", error);
         return;
       }
 
       setCount(pendingCount || 0);
     } catch (error) {
-      console.error("Unexpected error fetching pending inquiries count:", error);
+      log.error("Unexpected error fetching pending inquiries count:", error);
     } finally {
       setLoading(false);
     }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (error) {
-      console.error("Failed to update audio duration:", error);
+      log.error("Failed to update audio duration:", error);
       return NextResponse.json(
         { error: `Failed to update duration: ${error.message}` },
         { status: 500 }
@@ -131,7 +132,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({ success: true, audio: data });
   } catch (error) {
-    console.error("Audio duration update error:", error);
+    log.error("Audio duration update error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: `Update failed: ${errorMessage}` }, { status: 500 });
   }

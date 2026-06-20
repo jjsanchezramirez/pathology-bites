@@ -5,6 +5,7 @@ import { useEffect, useState, useRef } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Card } from "@/shared/components/ui/card";
 import { X, Cookie } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 const CONSENT_KEY = "pathology-bites-cookie-consent";
 const CONSENT_VERSION = "1.0"; // Increment this if you update the policy
@@ -47,14 +48,14 @@ export function CookieConsentBanner() {
           // Apply consent preferences and don't show banner
           applyConsent(consent);
           setShowBanner(false);
-          console.log("[CookieConsent] Valid consent found, not showing banner");
+          log.debug("[CookieConsent] Valid consent found, not showing banner");
           return;
         } else {
-          console.log("[CookieConsent] Consent version mismatch, showing banner");
+          log.debug("[CookieConsent] Consent version mismatch, showing banner");
         }
       }
     } catch (e) {
-      console.warn("[CookieConsent] Failed to parse saved consent:", e);
+      log.warn("[CookieConsent] Failed to parse saved consent:", e);
       // Invalid consent data, show banner
     }
 
@@ -96,16 +97,16 @@ export function CookieConsentBanner() {
       // Verify it was saved
       const saved = localStorage.getItem(CONSENT_KEY);
       if (!saved) {
-        console.warn("[CookieConsent] Failed to save consent to localStorage");
+        log.warn("[CookieConsent] Failed to save consent to localStorage");
         return;
       }
 
       // Apply consent preferences
       applyConsent(consent);
       setShowBanner(false);
-      console.log("[CookieConsent] Consent saved:", { analytics, timestamp: consent.timestamp });
+      log.debug("[CookieConsent] Consent saved:", { analytics, timestamp: consent.timestamp });
     } catch (error) {
-      console.error("[CookieConsent] Failed to save consent:", error);
+      log.error("[CookieConsent] Failed to save consent:", error);
     }
   };
 

@@ -8,6 +8,7 @@ import { StatusCard } from "@/features/auth/components/ui/status-card";
 import { FormButton } from "@/features/auth/components/ui/form-button";
 import { Button } from "@/shared/components/ui/button";
 import { createClient } from "@/shared/services/client";
+import { log } from "@/shared/utils/logging";
 
 interface VerifyEmailFormProps {
   email?: string;
@@ -60,7 +61,7 @@ export function VerifyEmailForm({ email, initialError, initialMessage }: VerifyE
 
       toast.success("Verification email sent successfully");
     } catch (error) {
-      console.error("Resend verification error:", error);
+      log.error("Resend verification error:", error);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);

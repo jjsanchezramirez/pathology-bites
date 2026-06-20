@@ -10,6 +10,7 @@ import {
   type UserStats,
 } from "@/features/user/achievements/services/achievement-checker";
 import type { AchievementProgress } from "@/features/user/achievements/types/achievement";
+import { log } from "@/shared/utils/logging";
 
 interface _UserCategoryStats {
   category_id: string;
@@ -416,7 +417,7 @@ export async function GET(request: NextRequest) {
       .limit(100);
 
     if (sessionsResult.error) {
-      console.error("Error fetching sessions:", sessionsResult.error);
+      log.error("Error fetching sessions:", sessionsResult.error);
       return NextResponse.json({ error: "Failed to fetch performance data" }, { status: 500 });
     }
 
@@ -1096,7 +1097,7 @@ export async function GET(request: NextRequest) {
     );
 
     if (statsError) {
-      console.error("Error fetching user category stats:", statsError);
+      log.error("Error fetching user category stats:", statsError);
       // Continue with empty stats rather than failing the whole request
     }
 
@@ -1274,7 +1275,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(response);
   } catch (error) {
-    console.error("Error in unified performance API:", error);
+    log.error("Error in unified performance API:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -15,6 +15,7 @@ import { MarkdownLessonRenderer, extractImageIds } from "./markdown-lesson-rende
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Library } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 interface LessonViewerProps {
   subjectSlug: string;
@@ -88,7 +89,7 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
         await learnService.markComplete(lesson.id, score);
         setIsCompleted(true);
       } catch (err) {
-        console.error("Failed to save progress:", err);
+        log.error("Failed to save progress:", err);
       }
     },
     [lesson]
@@ -100,7 +101,7 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
       await learnService.markComplete(lesson.id);
       setIsCompleted(true);
     } catch (err) {
-      console.error("Failed to mark complete:", err);
+      log.error("Failed to mark complete:", err);
     }
   }, [lesson]);
 

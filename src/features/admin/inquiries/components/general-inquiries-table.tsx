@@ -22,6 +22,7 @@ import { InquiryActionsDropdown } from "./inquiry-actions-dropdown";
 import { InquiryStatusBadge, getStatusSortOrder } from "./inquiry-status-badge";
 import { toast } from "@/shared/utils/ui/toast";
 import { useNotificationRefresh } from "@/shared/contexts/notification-refresh-context";
+import { log } from "@/shared/utils/logging";
 
 interface Inquiry {
   id: string;
@@ -86,7 +87,7 @@ export function GeneralInquiriesTable({
       const { data, error } = await query.order("created_at", { ascending: false });
 
       if (error) {
-        console.error("Error fetching inquiries:", error);
+        log.error("Error fetching inquiries:", error);
         toast.error(`Failed to load inquiries: ${error.message || "Unknown error"}`);
         return;
       }
@@ -109,10 +110,10 @@ export function GeneralInquiriesTable({
       setInquiries(fetchedInquiries);
 
       if (fetchedInquiries.length === 0) {
-        console.log(`No inquiries found for type: ${type}, status: ${statusFilter}`);
+        log.debug(`No inquiries found for type: ${type}, status: ${statusFilter}`);
       }
     } catch (error) {
-      console.error("Unexpected error fetching inquiries:", error);
+      log.error("Unexpected error fetching inquiries:", error);
       toast.error(`An unexpected error occurred while loading inquiries`);
     } finally {
       setLoading(false);
@@ -202,7 +203,7 @@ export function GeneralInquiriesTable({
       onInquiriesChange?.();
       refreshNotifications();
     } catch (error) {
-      console.error("Error deleting inquiries:", error);
+      log.error("Error deleting inquiries:", error);
       toast.error(error instanceof Error ? error.message : "Failed to delete inquiries");
     } finally {
       setBulkDeleting(false);

@@ -4,6 +4,7 @@
 import { createClient } from "@/shared/services/client";
 import { SocialButton } from "@/features/auth/components/ui/social-button";
 import { toast } from "@/shared/utils/ui/toast";
+import { log } from "@/shared/utils/logging";
 
 export function GoogleSignInButton() {
   // Feature flags removed - always allow Google sign-in
@@ -19,7 +20,7 @@ export function GoogleSignInButton() {
     });
 
     if (error) {
-      console.error("Google sign-in error:", error);
+      log.error("Google sign-in error:", error);
       toast.error("Failed to sign in with Google. Please try again.");
     }
   };

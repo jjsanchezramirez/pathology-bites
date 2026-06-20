@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -177,7 +178,7 @@ export async function POST(request: NextRequest) {
       updatedCount: count || categoryIds.length,
     });
   } catch (error) {
-    console.error("Error bulk assigning parent categories:", error);
+    log.error("Error bulk assigning parent categories:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

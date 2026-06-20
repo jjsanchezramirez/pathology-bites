@@ -9,6 +9,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Loader2 } from "lucide-react";
 import { apiClient } from "@/shared/utils/api/api-client";
+import { log } from "@/shared/utils/logging";
 
 interface Tag {
   id: string;
@@ -104,7 +105,7 @@ export function EditTagDialog({ open, onOpenChange, onSuccess, tag }: EditTagDia
         onSuccess();
       }, 100);
     } catch (error) {
-      console.error("Error updating tag:", error);
+      log.error("Error updating tag:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update tag");
     } finally {
       setIsUpdating(false);

@@ -8,6 +8,7 @@ import {
   classifyVariant,
   type AnalysisResult,
 } from "@/shared/utils/genomic";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -170,7 +171,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("Genomic analysis error:", error);
+    log.error("Genomic analysis error:", error);
     return NextResponse.json({ error: "Failed to analyze genomic data" }, { status: 500 });
   }
 }

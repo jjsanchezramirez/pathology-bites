@@ -4,6 +4,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { StudyResource, StudyConfig, ScheduleTask } from "../lib/types";
 import { buildColorMap } from "../lib/color-utils";
 import { studyPlanService } from "../services/study-plan-service";
+import { log } from "@/shared/utils/logging";
 
 export interface CompletionData {
   [taskKey: string]: string;
@@ -48,7 +49,7 @@ export function useStudyPlan() {
         setCompletedTasks(completionMap);
         setSchedule(schedData);
       } catch (err) {
-        console.error("Failed to load data:", err);
+        log.error("Failed to load data:", err);
         setError(err instanceof Error ? err.message : "Failed to load study data");
       } finally {
         setLoading(false);
@@ -103,7 +104,7 @@ export function useStudyPlan() {
           await studyPlanService.uncompleteTask(taskId);
         }
       } catch (err) {
-        console.error("Failed to update task:", err);
+        log.error("Failed to update task:", err);
         // Revert optimistic update
         setCompletedTasks((prev) => {
           const next = { ...prev };

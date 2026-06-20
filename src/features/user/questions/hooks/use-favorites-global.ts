@@ -4,6 +4,7 @@
 import useSWR from "swr";
 import { useCallback, useRef } from "react";
 import { toast } from "@/shared/utils/ui/toast";
+import { log } from "@/shared/utils/logging";
 
 interface FavoriteResponse {
   success: boolean;
@@ -67,13 +68,13 @@ export function useFavoritesGlobal() {
   const toggleFavorite = useCallback(
     async (questionId: string) => {
       if (!favoritesArray) {
-        console.warn("[Favorites] Data not loaded yet, skipping toggle");
+        log.warn("[Favorites] Data not loaded yet, skipping toggle");
         return;
       }
 
       // Prevent concurrent operations on same question (race condition protection)
       if (pendingOperations.current.has(questionId)) {
-        console.warn(`[Favorites] Toggle already in progress for question ${questionId}`);
+        log.warn(`[Favorites] Toggle already in progress for question ${questionId}`);
         return;
       }
 
@@ -113,7 +114,7 @@ export function useFavoritesGlobal() {
       } catch (error) {
         // Rollback on error
         await boundMutate(favoritesArray, false);
-        console.error("[Favorites] Error toggling favorite:", error);
+        log.error("[Favorites] Error toggling favorite:", error);
         toast.error(
           error instanceof Error ? error.message : "Failed to update favorite. Please try again."
         );

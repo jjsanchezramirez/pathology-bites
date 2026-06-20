@@ -22,6 +22,7 @@ import {
 import { createClient } from "@/shared/services/client";
 import { useTurnstile } from "@/features/auth/hooks/use-turnstile";
 import { getCaptchaSiteKey } from "@/features/auth/utils/captcha-config";
+import { log } from "@/shared/utils/logging";
 
 // Enhanced form schema with proper password validation
 const formSchema = z
@@ -88,7 +89,7 @@ export function SignupForm() {
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error("Error checking email existence:", {
+        log.error("Error checking email existence:", {
           status: response.status,
           error: errorData.error,
         });
@@ -100,7 +101,7 @@ export function SignupForm() {
       const data = await response.json();
       return data.exists;
     } catch (error) {
-      console.error("Error checking email existence:", error);
+      log.error("Error checking email existence:", error);
       // Re-throw to let the caller handle it
       throw error;
     }
@@ -124,7 +125,7 @@ export function SignupForm() {
           return;
         }
       } catch (emailCheckError) {
-        console.error("Email check failed:", emailCheckError);
+        log.error("Email check failed:", emailCheckError);
         toast.error("Unable to verify email availability. Please try again.");
         return;
       }
@@ -133,7 +134,7 @@ export function SignupForm() {
       const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || window.location.origin;
       const redirectTo = `${siteUrl}/api/auth/confirm`;
 
-      console.log("Signup attempt:", {
+      log.debug("Signup attempt:", {
         email: values.email,
         redirectTo,
         siteUrl,
@@ -158,10 +159,10 @@ export function SignupForm() {
         },
       });
 
-      console.log("Supabase signup response:", { data, error });
+      log.debug("Supabase signup response:", { data, error });
 
       if (error) {
-        console.error("Supabase signup error details:", {
+        log.error("Supabase signup error details:", {
           message: error.message,
           status: error.status,
           name: error.name,
@@ -177,11 +178,11 @@ export function SignupForm() {
         return;
       }
 
-      console.log("Signup successful, redirecting to verification page");
+      log.debug("Signup successful, redirecting to verification page");
       // Success - redirect to verification page
       router.push(`/verify-email?email=${encodeURIComponent(values.email)}`);
     } catch (error) {
-      console.error("Signup error:", error);
+      log.error("Signup error:", error);
       toast.error("An unexpected error occurred. Please try again.");
     } finally {
       setLoading(false);
@@ -316,16 +317,16 @@ export function SignupForm() {
               }}
               onSuccess={(token) => {
                 setCaptchaToken(token);
-                console.log("[SignupForm] CAPTCHA verification successful");
+                log.debug("[SignupForm] CAPTCHA verification successful");
               }}
               onError={(error) => {
                 setCaptchaToken(null);
-                console.log("[SignupForm] CAPTCHA verification error:", error);
+                log.debug("[SignupForm] CAPTCHA verification error:", error);
                 // Don't show toast on error - Turnstile will auto-retry
               }}
               onExpire={() => {
                 setCaptchaToken(null);
-                console.log("[SignupForm] CAPTCHA verification expired");
+                log.debug("[SignupForm] CAPTCHA verification expired");
                 // Don't show toast on expire - it will auto-reload
               }}
             />

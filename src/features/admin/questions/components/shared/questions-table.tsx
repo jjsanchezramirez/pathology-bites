@@ -73,6 +73,7 @@ const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
 import { CategoryBadge } from "@/shared/components/ui/category-badge";
 import { StatusBadge } from "@/shared/components/ui/status-badge";
+import { log } from "@/shared/utils/logging";
 
 // Helper function to format version string in semantic versioning format
 const getVersionString = (question: QuestionWithDetails): string => {
@@ -715,7 +716,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
           .single();
 
         if (error) {
-          console.error("Error fetching full question data:", error);
+          log.error("Error fetching full question data:", error);
           toast.error("Failed to load question details");
           return;
         }
@@ -723,7 +724,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
         setQuestionToPreview(fullQuestion);
         setShowPreviewDialog(true);
       } catch (error) {
-        console.error("Error fetching question for preview:", error);
+        log.error("Error fetching question for preview:", error);
         toast.error("Failed to load question preview");
       }
     },
@@ -752,7 +753,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
 
       toast.success("Question exported successfully");
     } catch (error) {
-      console.error("Error exporting question:", error);
+      log.error("Error exporting question:", error);
       toast.error("Failed to export question");
     }
   }, []);
@@ -779,7 +780,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
 
       toast.success("All questions exported successfully");
     } catch (error) {
-      console.error("Error exporting questions:", error);
+      log.error("Error exporting questions:", error);
       toast.error("Failed to export questions");
     }
   }, []);
@@ -854,7 +855,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
 
         setSelectedQuestions([]);
       } catch (error) {
-        console.error(`Error performing bulk ${action}:`, error);
+        log.error(`Error performing bulk ${action}:`, error);
         toast.error(error instanceof Error ? error.message : `Failed to ${action} questions`);
       }
     },
@@ -890,7 +891,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
       setSelectedQuestions([]);
       setShowBulkDeleteConfirm(false);
     } catch (error) {
-      console.error("Error performing bulk delete:", error);
+      log.error("Error performing bulk delete:", error);
       toast.error(error instanceof Error ? error.message : "Failed to delete questions");
     } finally {
       setIsBulkDeleting(false);

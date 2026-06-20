@@ -8,6 +8,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Search, Play, Loader2 } from "lucide-react";
 import { fetchInteractiveSequences } from "@/features/admin/interactive-sequences/services/interactive-sequences";
 import type { InteractiveSequence } from "@/features/admin/interactive-sequences/types";
+import { log } from "@/shared/utils/logging";
 
 interface SequencePickerDialogProps {
   open: boolean;
@@ -29,7 +30,7 @@ export function SequencePickerDialog({ open, onOpenChange, onSelect }: SequenceP
         const data = await fetchInteractiveSequences(search ? { search } : undefined);
         setSequences(data);
       } catch (err) {
-        console.error("Failed to load sequences:", err);
+        log.error("Failed to load sequences:", err);
       } finally {
         setLoading(false);
       }

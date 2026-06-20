@@ -10,6 +10,7 @@ import {
   type UISettings,
   type CounterConfig,
 } from "@/shared/config/user-settings-defaults";
+import { log } from "@/shared/utils/logging";
 
 export type { QuizSettings, NotificationSettings, UISettings, CounterConfig };
 
@@ -59,7 +60,7 @@ class UserSettingsService {
           throw new Error(error.error || "Failed to fetch user settings");
         } else {
           // Response is not JSON (likely HTML error page)
-          console.error(
+          log.error(
             "User settings API returned non-JSON response:",
             response.status,
             response.statusText
@@ -83,7 +84,7 @@ class UserSettingsService {
       const result = await response.json();
       return result.data;
     } catch (fetchError) {
-      console.error("Error in getUserSettings:", fetchError);
+      log.error("Error in getUserSettings:", fetchError);
       throw fetchError;
     }
   }
@@ -134,15 +135,15 @@ class UserSettingsService {
       } catch {
         error = { error: "Failed to parse error response", rawResponse: responseText };
       }
-      console.error("[UserSettings] Update failed:", {
+      log.error("[UserSettings] Update failed:", {
         status: response.status,
         statusText: response.statusText,
         error: error,
         section,
         settings: settings,
       });
-      console.error("[UserSettings] Full error object:", JSON.stringify(error, null, 2));
-      console.error("[UserSettings] Raw response:", responseText);
+      log.error("[UserSettings] Full error object:", JSON.stringify(error, null, 2));
+      log.error("[UserSettings] Raw response:", responseText);
       throw new Error(error.error || error.details || "Failed to update user settings");
     }
 
@@ -186,7 +187,7 @@ class UserSettingsService {
       const userSettings = await this.getUserSettings();
       return userSettings.quiz_settings;
     } catch (error) {
-      console.error("Error fetching quiz settings, using defaults:", error);
+      log.error("Error fetching quiz settings, using defaults:", error);
       return DEFAULT_QUIZ_SETTINGS;
     }
   }
@@ -199,7 +200,7 @@ class UserSettingsService {
       const userSettings = await this.getUserSettings();
       return userSettings.notification_settings;
     } catch (error) {
-      console.error("Error fetching notification settings, using defaults:", error);
+      log.error("Error fetching notification settings, using defaults:", error);
       return DEFAULT_NOTIFICATION_SETTINGS;
     }
   }
@@ -211,7 +212,7 @@ class UserSettingsService {
     try {
       await this.updateUISettings({ welcome_message_seen: true });
     } catch (error) {
-      console.error("Error marking welcome message as seen:", error);
+      log.error("Error marking welcome message as seen:", error);
       throw error;
     }
   }
@@ -224,7 +225,7 @@ class UserSettingsService {
       const userSettings = await this.getUserSettings();
       return userSettings.ui_settings.welcome_message_seen ?? false;
     } catch (error) {
-      console.error("Error checking welcome message status:", error);
+      log.error("Error checking welcome message status:", error);
       // Default to true to avoid showing welcome message on error
       return true;
     }
@@ -237,7 +238,7 @@ class UserSettingsService {
     try {
       await this.updateUISettings({ v1_release_dismissed: true });
     } catch (error) {
-      console.error("Error marking v1.0 release announcement as dismissed:", error);
+      log.error("Error marking v1.0 release announcement as dismissed:", error);
       throw error;
     }
   }
@@ -250,7 +251,7 @@ class UserSettingsService {
       const userSettings = await this.getUserSettings();
       return userSettings.ui_settings.v1_release_dismissed ?? false;
     } catch (error) {
-      console.error("Error checking v1.0 release announcement status:", error);
+      log.error("Error checking v1.0 release announcement status:", error);
       // Default to false to show the message on error (better to inform users)
       return false;
     }
@@ -263,7 +264,7 @@ class UserSettingsService {
     try {
       await this.updateUISettings({ quiz_score_bug_dismissed: true });
     } catch (error) {
-      console.error("Error marking quiz scoring bug apology as dismissed:", error);
+      log.error("Error marking quiz scoring bug apology as dismissed:", error);
       throw error;
     }
   }
@@ -283,7 +284,7 @@ class UserSettingsService {
       const userSettings = await this.getUserSettings();
       return userSettings.counter_settings;
     } catch (error) {
-      console.error("Error fetching counter settings:", error);
+      log.error("Error fetching counter settings:", error);
       return null;
     }
   }
@@ -296,7 +297,7 @@ class UserSettingsService {
       const userSettings = await this.getUserSettings();
       return userSettings.ui_settings;
     } catch (error) {
-      console.error("Error fetching UI settings, using defaults:", error);
+      log.error("Error fetching UI settings, using defaults:", error);
       return DEFAULT_UI_SETTINGS;
     }
   }

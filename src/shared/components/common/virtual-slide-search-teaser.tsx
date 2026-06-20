@@ -16,6 +16,7 @@ import { rankSlidesWithExpansion } from "@/shared/utils/domain/virtual-slide-sea
 import { isViewerSupported } from "@/shared/utils/domain/repository";
 import { SlideViewerModal } from "@/shared/components/common/slide-viewer-modal";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
+import { log } from "@/shared/utils/logging";
 
 // Exclude raw image files — the homepage buttons should land users on an
 // interactive WSI viewer, not a downloadable image.
@@ -142,7 +143,7 @@ export function VirtualSlideSearchTeaser() {
         );
       }
     } catch (error) {
-      console.error("Feeling lucky failed:", error);
+      log.error("Feeling lucky failed:", error);
       window.open(
         `/tools/virtual-slides?search=${encodeURIComponent(query)}`,
         "_blank",
@@ -167,7 +168,7 @@ export function VirtualSlideSearchTeaser() {
       }
 
       if (candidates.length === 0) {
-        console.warn("[Random Slide] No valid WSI viewer URLs found in open repos");
+        log.warn("[Random Slide] No valid WSI viewer URLs found in open repos");
         return;
       }
 

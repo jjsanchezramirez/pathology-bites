@@ -2,6 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -109,7 +110,7 @@ export async function POST(request: NextRequest) {
       .single();
 
     if (profileError) {
-      console.error("Error fetching user profile:", profileError);
+      log.error("Error fetching user profile:", profileError);
       return NextResponse.json({ error: "Failed to fetch user profile" }, { status: 500 });
     }
 
@@ -123,7 +124,7 @@ export async function POST(request: NextRequest) {
     const userSettings = userSettingsData?.settings;
 
     if (settingsError) {
-      console.error("Error fetching user settings:", settingsError);
+      log.error("Error fetching user settings:", settingsError);
     }
 
     // Get quiz sessions
@@ -134,7 +135,7 @@ export async function POST(request: NextRequest) {
       .order("created_at", { ascending: false });
 
     if (sessionsError) {
-      console.error("Error fetching quiz sessions:", sessionsError);
+      log.error("Error fetching quiz sessions:", sessionsError);
     }
 
     // Get quiz attempts
@@ -152,7 +153,7 @@ export async function POST(request: NextRequest) {
       .order("created_at", { ascending: false });
 
     if (attemptsError) {
-      console.error("Error fetching quiz attempts:", attemptsError);
+      log.error("Error fetching quiz attempts:", attemptsError);
     }
 
     // Get user favorites
@@ -168,7 +169,7 @@ export async function POST(request: NextRequest) {
       .order("created_at", { ascending: false });
 
     if (favoritesError) {
-      console.error("Error fetching favorites:", favoritesError);
+      log.error("Error fetching favorites:", favoritesError);
     }
 
     // Get question flags created by user
@@ -184,7 +185,7 @@ export async function POST(request: NextRequest) {
       .order("created_at", { ascending: false });
 
     if (flagsError) {
-      console.error("Error fetching question flags:", flagsError);
+      log.error("Error fetching question flags:", flagsError);
     }
 
     // Compile all user data
@@ -238,7 +239,7 @@ export async function POST(request: NextRequest) {
       data: userData,
     });
   } catch (error) {
-    console.error("Error in data export:", error);
+    log.error("Error in data export:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
 import { callClaudeText } from "@/shared/services/claude-api";
+import { log } from "@/shared/utils/logging";
 
 const QUESTION_GEN_SYSTEM =
   "You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.";
@@ -587,7 +588,7 @@ function sanitizeJSONString(jsonStr: string): string {
  */
 
 function extractJSON(text: string): unknown {
-  console.log(`[Admin AI] Extracting JSON from response (${text.length} chars)`);
+  log.debug(`[Admin AI] Extracting JSON from response (${text.length} chars)`);
 
   // Handle Mistral thinking format first
   let cleanedText = text;
@@ -600,7 +601,7 @@ function extractJSON(text: string): unknown {
         const textResponse = parsed.find((item) => item.type === "text" && !item.thinking);
         if (textResponse?.text) {
           cleanedText = textResponse.text;
-          console.log("[Admin AI] Extracted content from Mistral thinking format");
+          log.debug("[Admin AI] Extracted content from Mistral thinking format");
         }
       }
     }
@@ -639,7 +640,7 @@ function extractJSON(text: string): unknown {
               try {
                 return JSON.parse(jsonStr);
               } catch {
-                console.log("[Admin AI] JSON parsing failed, trying next strategy");
+                log.debug("[Admin AI] JSON parsing failed, trying next strategy");
                 break;
               }
             }
@@ -659,7 +660,7 @@ function extractJSON(text: string): unknown {
       try {
         return JSON.parse(codeBlockMatch[1]);
       } catch {
-        console.log("[Admin AI] Code block JSON parsing failed");
+        log.debug("[Admin AI] Code block JSON parsing failed");
       }
     }
   }
@@ -686,12 +687,9 @@ function extractJSON(text: string): unknown {
           try {
             return JSON.parse(fixedJson);
           } catch (finalError) {
-            console.error("[Admin AI] All JSON parsing strategies failed.");
-            console.error(
-              "[Admin AI] Response preview (first 1000 chars):",
-              text.substring(0, 1000)
-            );
-            console.error(
+            log.error("[Admin AI] All JSON parsing strategies failed.");
+            log.error("[Admin AI] Response preview (first 1000 chars):", text.substring(0, 1000));
+            log.error(
               "[Admin AI] Response preview (last 500 chars):",
               text.substring(Math.max(0, text.length - 500))
             );
@@ -705,11 +703,11 @@ function extractJSON(text: string): unknown {
     }
   }
 
-  console.error(
+  log.error(
     "[Admin AI] Failed to extract JSON. Response preview (first 1000 chars):",
     text.substring(0, 1000)
   );
-  console.error(
+  log.error(
     "[Admin AI] Response preview (last 500 chars):",
     text.substring(Math.max(0, text.length - 500))
   );
@@ -800,7 +798,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    console.log(
+    log.debug(
       `[Admin AI] Generating question using ${selectedModel} (${provider}) in ${mode} mode`
     );
 
@@ -813,8 +811,8 @@ export async function POST(request: NextRequest) {
     const aiResponse = await callAIService(provider, prompt, selectedModel, apiKey);
     const generationTime = Date.now() - startTime;
 
-    console.log(`[Admin AI] Generated response in ${generationTime}ms`);
-    console.log(
+    log.debug(`[Admin AI] Generated response in ${generationTime}ms`);
+    log.debug(
       `[Admin AI] Raw AI response (${mode} mode):`,
       aiResponse.content.substring(0, 500) + "..."
     );
@@ -823,19 +821,16 @@ export async function POST(request: NextRequest) {
     let questionData: Record<string, unknown>;
     try {
       questionData = extractJSON(aiResponse.content) as Record<string, unknown>;
-      console.log(
-        `[Admin AI] Extracted JSON (${mode} mode):`,
-        JSON.stringify(questionData, null, 2)
-      );
+      log.debug(`[Admin AI] Extracted JSON (${mode} mode):`, JSON.stringify(questionData, null, 2));
     } catch (parseError) {
-      console.error(`[Admin AI] JSON extraction failed for model ${selectedModel} (${provider})`);
+      log.error(`[Admin AI] JSON extraction failed for model ${selectedModel} (${provider})`);
       throw parseError;
     }
 
     // Normalize options field - AI models sometimes use different field names despite our prompt
     // Accept question_options (preferred), answer_options, or options, then normalize to question_options
     if (!questionData.question_options && (questionData.answer_options || questionData.options)) {
-      console.log(
+      log.debug(
         "[Admin AI] Normalizing options field from:",
         questionData.answer_options ? "answer_options" : "options"
       );
@@ -855,7 +850,7 @@ export async function POST(request: NextRequest) {
         questionData.suggested_tag_ids;
 
       if (!hasMetadataFields) {
-        console.error("[Admin AI] Metadata suggestion validation failed. Response structure:", {
+        log.error("[Admin AI] Metadata suggestion validation failed. Response structure:", {
           hasCategoryId: !!questionData.category_id,
           hasQuestionSetId: !!questionData.question_set_id,
           hasDifficulty: !!questionData.difficulty,
@@ -875,7 +870,7 @@ export async function POST(request: NextRequest) {
         Array.isArray(questionData.question_options);
 
       if (!hasRequiredFields) {
-        console.error("[Admin AI] Validation failed. Response structure:", {
+        log.error("[Admin AI] Validation failed. Response structure:", {
           hasTitle: !!questionData.title,
           hasStem: !!questionData.stem,
           hasQuestionOptions: !!questionData.question_options,
@@ -944,7 +939,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("[Admin AI] Error:", error);
+    log.error("[Admin AI] Error:", error);
     return NextResponse.json(
       {
         success: false,

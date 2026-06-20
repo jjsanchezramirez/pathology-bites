@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { bulkDeleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -188,7 +189,7 @@ export async function DELETE(request: NextRequest) {
         results.storageDeleted = r2Result.deleted;
         results.storageErrors = r2Result.errors;
       } catch (storageError) {
-        console.warn("R2 bulk deletion error:", storageError);
+        log.warn("R2 bulk deletion error:", storageError);
         results.storageErrors.push(`Bulk R2 deletion failed: ${storageError}`);
       }
     }
@@ -208,7 +209,7 @@ export async function DELETE(request: NextRequest) {
       message: `Successfully deleted ${results.deleted.length} images`,
     });
   } catch (error) {
-    console.error("Bulk image deletion error:", error);
+    log.error("Bulk image deletion error:", error);
     return NextResponse.json({ error: "Failed to delete images" }, { status: 500 });
   }
 }

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { log } from "@/shared/utils/logging";
 
 function createAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -79,7 +80,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("Unexpected export error:", error);
+    log.error("Unexpected export error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

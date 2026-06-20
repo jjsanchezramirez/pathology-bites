@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { formatVersion } from "@/shared/utils/version";
+import { log } from "@/shared/utils/logging";
 
 // Create Supabase client with service role for admin operations
 async function createAdminClient() {
@@ -157,7 +158,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     );
 
     if (versionError) {
-      console.error("Error updating question version:", versionError);
+      log.error("Error updating question version:", versionError);
       return NextResponse.json({ error: "Failed to update question version" }, { status: 500 });
     }
 
@@ -169,7 +170,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       .single();
 
     if (fetchError) {
-      console.error("Error fetching updated question:", fetchError);
+      log.error("Error fetching updated question:", fetchError);
       return NextResponse.json(
         { error: "Question updated but failed to fetch updated data" },
         { status: 500 }
@@ -190,7 +191,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       message: `Question updated to version ${versionString}`,
     });
   } catch (error) {
-    console.error("Error in question versioning API:", error);
+    log.error("Error in question versioning API:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -206,7 +207,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     }
 
     const { id: questionId } = await params;
-    console.log("Version history API called for question:", questionId, "by user:", userId);
+    log.debug("Version history API called for question:", questionId, "by user:", userId);
 
     // Use admin client to fetch version history
     const adminClient = await createAdminClient();
@@ -233,7 +234,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .order("version_patch", { ascending: false });
 
     if (versionsError) {
-      console.error("Error fetching version history:", versionsError);
+      log.error("Error fetching version history:", versionsError);
       return NextResponse.json({ error: "Failed to fetch version history" }, { status: 500 });
     }
 
@@ -280,7 +281,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       versions: versionsWithUsers,
     });
   } catch (error) {
-    console.error("Error in version history API:", error);
+    log.error("Error in version history API:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -5,6 +5,7 @@ import { useAuth } from "@/shared/hooks/use-auth";
 import { useCounterSettings } from "@/shared/hooks/use-user-settings";
 import { userSettingsService } from "@/shared/services/user-settings";
 import type { CounterConfig } from "@/shared/config/user-settings-defaults";
+import { log } from "@/shared/utils/logging";
 
 const DEBOUNCE_MS = 2000;
 
@@ -33,7 +34,7 @@ export function useCounterSync() {
           await userSettingsService.updateCounterSettings(config);
           invalidate();
         } catch (error) {
-          console.error("[CounterSync] Failed to save config to server:", error);
+          log.error("[CounterSync] Failed to save config to server:", error);
         }
       }, DEBOUNCE_MS);
     },

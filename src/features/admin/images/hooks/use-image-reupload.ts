@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { toast } from "@/shared/utils/ui/toast";
 import { compressImage } from "@/features/admin/images/services/image-upload";
+import { log } from "@/shared/utils/logging";
 
 export interface ReuploadResult {
   success: boolean;
@@ -48,7 +49,7 @@ export function useImageReupload({
       setIsUploading(true);
 
       try {
-        console.log("🔄 Starting image reupload...", {
+        log.debug("🔄 Starting image reupload...", {
           imageId,
           fileName: file.name,
           originalFileSize: file.size,
@@ -57,14 +58,14 @@ export function useImageReupload({
 
         // Always compress images
         let fileToUpload = file;
-        console.log("🗜️ Compressing image...", {
+        log.debug("🗜️ Compressing image...", {
           originalSize: file.size,
           maxSize: maxSizeBytes,
         });
 
         try {
           fileToUpload = await compressImage(file, maxSizeBytes);
-          console.log("✅ Image compressed:", {
+          log.debug("✅ Image compressed:", {
             originalSize: file.size,
             compressedSize: fileToUpload.size,
             compressionRatio: Math.round((1 - fileToUpload.size / file.size) * 100),
@@ -72,13 +73,13 @@ export function useImageReupload({
 
           if (fileToUpload.size > maxSizeBytes) {
             const error = "Image is still too large after compression. Please try a smaller image.";
-            console.error("❌ Compression insufficient:", error);
+            log.error("❌ Compression insufficient:", error);
             onError?.(error);
             toast.error(error);
             return null;
           }
         } catch (compressionError) {
-          console.error("❌ Compression failed, proceeding with original file:", compressionError);
+          log.error("❌ Compression failed, proceeding with original file:", compressionError);
           // Fallback: proceed with original file if compression fails
           fileToUpload = file;
           toast.warning("Image compression failed, uploading original file. This may take longer.");
@@ -89,13 +90,13 @@ export function useImageReupload({
         formData.append("imageId", imageId);
         formData.append("updateMetadata", updateMetadata.toString());
 
-        console.log("📤 Sending request to /api/admin/images/replace...");
+        log.debug("📤 Sending request to /api/admin/images/replace...");
         const response = await fetch("/api/admin/images/replace", {
           method: "POST",
           body: formData,
         });
 
-        console.log("📥 Response received:", {
+        log.debug("📥 Response received:", {
           ok: response.ok,
           status: response.status,
           statusText: response.statusText,
@@ -104,14 +105,14 @@ export function useImageReupload({
         let result: ReuploadResult;
         try {
           result = await response.json();
-          console.log("📋 Response parsed:", result);
+          log.debug("📋 Response parsed:", result);
         } catch (parseError) {
-          console.error("Failed to parse response as JSON:", parseError);
+          log.error("Failed to parse response as JSON:", parseError);
           throw new Error(`Failed to parse API response: ${response.statusText}`);
         }
 
         if (!response.ok) {
-          console.error("API Error Response:", {
+          log.error("API Error Response:", {
             status: response.status,
             statusText: response.statusText,
             result,
@@ -152,7 +153,7 @@ export function useImageReupload({
         return result;
       } catch (error) {
         const errorMessage = error instanceof Error ? error.message : "Failed to replace image";
-        console.error("Image reupload error:", error);
+        log.error("Image reupload error:", error);
         onError?.(errorMessage);
         toast.error(errorMessage);
         return null;

@@ -34,6 +34,7 @@ import {
 
 // Import the canonical VirtualSlide interface
 import { VirtualSlide } from "@/shared/types/virtual-slides";
+import { log } from "@/shared/utils/logging";
 
 // Funny loading messages for question generation
 const LOADING_MESSAGES = [
@@ -166,7 +167,7 @@ export function WSIQuestionGenerator({
 
       setCurrentQuestion(questionWithRepository);
     } catch (err) {
-      console.error("Error generating question:", err);
+      log.error("Error generating question:", err);
       // Error state is managed by the hook
     }
   }, [generateQuestion, selectedCategory, clearError, ensureWSIRepository]);

@@ -12,6 +12,7 @@
  */
 
 import { QuizQuestion, QuizAnswer, QuizState } from "../../types/quiz-question";
+import { log } from "@/shared/utils/logging";
 
 // QuizState is now imported from the standardized types
 
@@ -51,7 +52,7 @@ export function quizStateReducer(state: QuizState, action: QuizAction): QuizStat
       // Use server-provided status if available, otherwise default to 'not_started'
       // This ensures we properly handle completed quizzes when user navigates back
       const initialStatus = (action.payload.status as QuizState["status"]) || "not_started";
-      console.log(
+      log.debug(
         "[State Machine] INITIALIZE action - received status:",
         action.payload.status,
         "using:",
@@ -69,7 +70,7 @@ export function quizStateReducer(state: QuizState, action: QuizAction): QuizStat
       const incorrectCount = answeredCount - correctCount;
       const totalQuestions = action.payload.questions.length;
 
-      console.log("[State Machine] INITIALIZE - using existing state:", {
+      log.debug("[State Machine] INITIALIZE - using existing state:", {
         answersCount: answeredCount,
         currentIndex: initialQuestionIndex,
         timeSpent: initialTimeSpent,

@@ -2,6 +2,7 @@ import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -106,7 +107,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       .single();
 
     if (updateError) {
-      console.error("Error approving question:", updateError);
+      log.error("Error approving question:", updateError);
       return NextResponse.json(
         { error: `Failed to approve question: ${updateError.message}` },
         { status: 500 }
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     });
 
     if (reviewError) {
-      console.error("Error recording review:", reviewError);
+      log.error("Error recording review:", reviewError);
       // Don't fail the request if review recording fails
     }
 
@@ -136,7 +137,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         userId
       );
     } catch (error) {
-      console.error("Error sending approval notification:", error);
+      log.error("Error sending approval notification:", error);
       // Don't fail the request if notification fails
     }
 
@@ -148,7 +149,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       question: updatedQuestion,
     });
   } catch (error) {
-    console.error("Unexpected error approving question:", error);
+    log.error("Unexpected error approving question:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

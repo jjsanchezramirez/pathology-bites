@@ -55,6 +55,7 @@ import { format } from "date-fns";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { apiClient } from "@/shared/utils/api/api-client";
+import { log } from "@/shared/utils/logging";
 
 interface User {
   id: string;
@@ -205,9 +206,9 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
 
   // Debug: Track component lifecycle
   useEffect(() => {
-    console.log(`[UsersTable] 🟢 Mounted`);
+    log.debug(`[UsersTable] 🟢 Mounted`);
     return () => {
-      console.log(`[UsersTable] 🔴 Unmounted`);
+      log.debug(`[UsersTable] 🔴 Unmounted`);
     };
   }, []);
 
@@ -221,7 +222,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
       ...(statusFilter !== "all" && { status: statusFilter }),
     });
     const url = `/api/admin/users?${params.toString()}`;
-    console.log("[UsersTable] API URL:", url);
+    log.debug("[UsersTable] API URL:", url);
     return url;
   }, [page, searchTerm, roleFilter, statusFilter]);
 
@@ -229,14 +230,14 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
   const { data, isLoading, mutate } = useSWR(
     apiUrl,
     async (url) => {
-      console.log("[UsersTable] 🌐 Fetching:", url);
+      log.debug("[UsersTable] 🌐 Fetching:", url);
       const response = await fetch(url);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || "Failed to load users");
       }
       const result = await response.json();
-      console.log("[UsersTable] ✅ Fetched:", url, "→", result.users?.length, "users");
+      log.debug("[UsersTable] ✅ Fetched:", url, "→", result.users?.length, "users");
       return result;
     },
     {
@@ -244,7 +245,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
       dedupingInterval: 2000, // Prevent duplicate requests within 2 seconds
       revalidateOnReconnect: false,
       onError: (err) => {
-        console.error("[UsersTable] ❌ Error loading users:", err);
+        log.error("[UsersTable] ❌ Error loading users:", err);
         toast.error(err instanceof Error ? err.message : "Failed to load users");
       },
     }
@@ -322,7 +323,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
       await mutate();
       onUserChange?.();
     } catch (error) {
-      console.error("Error updating role:", error);
+      log.error("Error updating role:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update user role");
     } finally {
       setIsUpdating(false);
@@ -356,7 +357,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
       await mutate();
       onUserChange?.();
     } catch (error) {
-      console.error("Error updating status:", error);
+      log.error("Error updating status:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update user status");
     } finally {
       setIsUpdating(false);
@@ -390,7 +391,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
       await mutate();
       onUserChange?.();
     } catch (error) {
-      console.error("Error updating type:", error);
+      log.error("Error updating type:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update user type");
     } finally {
       setIsUpdating(false);
@@ -407,27 +408,27 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
 
     setIsUpdating(true);
     try {
-      console.log("Attempting to delete user:", userId);
+      log.debug("Attempting to delete user:", userId);
 
       const response = await apiClient.delete("/api/admin/users", { userId });
 
       const responseData = await response.json();
-      console.log("Delete user response:", { status: response.status, data: responseData });
+      log.debug("Delete user response:", { status: response.status, data: responseData });
 
       if (!response.ok) {
         const errorMessage = responseData.error || `Failed to delete user (${response.status})`;
-        console.error("Delete user failed:", { status: response.status, error: errorMessage });
+        log.error("Delete user failed:", { status: response.status, error: errorMessage });
         throw new Error(errorMessage);
       }
 
       toast.success(responseData.message || "User deleted successfully");
-      console.log("User deleted successfully:", userId);
+      log.debug("User deleted successfully:", userId);
 
       // Revalidate SWR cache
       await mutate();
       onUserChange?.();
     } catch (error) {
-      console.error("Error deleting user:", error);
+      log.error("Error deleting user:", error);
 
       // Provide more specific error messages
       let errorMessage = "Failed to delete user";

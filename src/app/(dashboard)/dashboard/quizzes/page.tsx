@@ -17,6 +17,7 @@ import {
   QuizzesLoading,
   type QuizSessionListItem,
 } from "@/features/user/quiz/components";
+import { log } from "@/shared/utils/logging";
 
 export default function QuizzesPage() {
   // All hooks must be called before any conditional returns
@@ -101,7 +102,7 @@ export default function QuizzesPage() {
       setShowDeleteDialog(false);
       setSelectedQuiz(null);
     } catch (error) {
-      console.error("Delete quiz error:", error);
+      log.error("Delete quiz error:", error);
       toast.error(error instanceof Error ? error.message : "Failed to delete quiz");
     } finally {
       setIsDeleting(false);

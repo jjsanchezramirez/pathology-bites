@@ -14,6 +14,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Trash2, Loader2 } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import type { SvgAsset } from "../types";
+import { log } from "@/shared/utils/logging";
 
 interface DeleteSvgDialogProps {
   open: boolean;
@@ -46,7 +47,7 @@ export function DeleteSvgDialog({ open, onOpenChange, asset, onSuccess }: Delete
       onOpenChange(false);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to delete SVG asset";
-      console.error("Delete error:", error);
+      log.error("Delete error:", error);
       toast.error(message);
     } finally {
       setIsDeleting(false);

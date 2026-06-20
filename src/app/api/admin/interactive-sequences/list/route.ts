@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -100,7 +101,7 @@ export async function GET(request: NextRequest) {
     const { data, error } = await query;
 
     if (error) {
-      console.error("Failed to fetch interactive sequences:", error);
+      log.error("Failed to fetch interactive sequences:", error);
       return NextResponse.json(
         { error: `Failed to fetch sequences: ${error.message}` },
         { status: 500 }
@@ -109,7 +110,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json({ success: true, sequences: data });
   } catch (error) {
-    console.error("Interactive sequences list error:", error);
+    log.error("Interactive sequences list error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: `Fetch failed: ${errorMessage}` }, { status: 500 });
   }

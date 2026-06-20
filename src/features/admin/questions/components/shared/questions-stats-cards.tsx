@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { FileQuestion, BookOpen, FolderTree } from "lucide-react";
 import { createClient } from "@/shared/services/client";
+import { log } from "@/shared/utils/logging";
 
 interface QuestionStats {
   totalPublishedQuestions: number;
@@ -34,7 +35,7 @@ export function QuestionsStatsCards() {
           .select("status, question_set_id, category_id");
 
         if (error) {
-          console.error("Error fetching questions for stats:", error);
+          log.error("Error fetching questions for stats:", error);
           return;
         }
 
@@ -61,7 +62,7 @@ export function QuestionsStatsCards() {
           totalCategoriesWithQuestions,
         });
       } catch (error) {
-        console.error("Unexpected error fetching question statistics:", error);
+        log.error("Unexpected error fetching question statistics:", error);
       } finally {
         setLoading(false);
       }

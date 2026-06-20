@@ -1,5 +1,7 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
+import { log } from "@/shared/utils/logging";
+
 /**
  * @swagger
  * /api/admin/questions/{id}/delete:
@@ -49,10 +51,10 @@ export async function DELETE(
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    console.log("DELETE route called");
+    log.debug("DELETE route called");
     const supabase = await createClient();
     const { id: questionId } = await params;
-    console.log(`Question ID to delete: ${questionId}`);
+    log.debug(`Question ID to delete: ${questionId}`);
 
     // Get current user
     const userId = request.headers.get("x-user-id");
@@ -117,16 +119,16 @@ export async function DELETE(
     }
 
     // Delete the question (cascade will handle related records)
-    console.log(`Attempting to delete question: ${questionId}`);
+    log.debug(`Attempting to delete question: ${questionId}`);
     const { error: deleteError, data: deleteData } = await supabase
       .from("questions")
       .delete()
       .eq("id", questionId);
 
-    console.log("Delete result:", { deleteError, deleteData });
+    log.debug("Delete result:", { deleteError, deleteData });
 
     if (deleteError) {
-      console.error("Error deleting question:", deleteError);
+      log.error("Error deleting question:", deleteError);
       return NextResponse.json(
         { error: `Failed to delete question: ${deleteError.message}`, details: deleteError },
         { status: 500 }
@@ -139,7 +141,7 @@ export async function DELETE(
       questionId: questionId,
     });
   } catch (error) {
-    console.error("Unexpected error deleting question:", error);
+    log.error("Unexpected error deleting question:", error);
     return NextResponse.json(
       {
         error: "Internal server error",

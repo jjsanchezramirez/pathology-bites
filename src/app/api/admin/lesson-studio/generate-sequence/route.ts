@@ -5,6 +5,7 @@ import { analyzeImages } from "./vision";
 import { computeAllCameraKeyframes } from "./camera";
 import { segmentByAI } from "./segmenter";
 import { assembleSequenceDeterministically } from "./assembler";
+import { log } from "@/shared/utils/logging";
 
 // Tell Next.js to allow up to 60 seconds for this route (vision pass + segmentation pass)
 export const maxDuration = 60;
@@ -219,18 +220,18 @@ export async function POST(request: NextRequest) {
     // ---------------------------------------------------------------------------
     // Log input images with magnification data
     // ---------------------------------------------------------------------------
-    console.log("[generate-sequence] Input images:");
+    log.debug("[generate-sequence] Input images:");
     images.forEach((img, i) => {
-      console.log(`  [${i}] ${img.title}`);
-      console.log(`      category: ${img.category}, magnification: ${img.magnification ?? "null"}`);
-      console.log(`      url: ${img.url.slice(-60)}`);
+      log.debug(`  [${i}] ${img.title}`);
+      log.debug(`      category: ${img.category}, magnification: ${img.magnification ?? "null"}`);
+      log.debug(`      url: ${img.url.slice(-60)}`);
     });
 
     // ---------------------------------------------------------------------------
     // AI pass: Vision analysis + AI segmentation — run in parallel
     // Both are best-effort; failures fall back gracefully.
     // ---------------------------------------------------------------------------
-    console.log(
+    log.debug(
       `[generate-sequence] AI pass — vision analysis + segmentation for ${images.length} images`
     );
     const [visionResults, segmentTimings] = await Promise.all([
@@ -239,14 +240,14 @@ export async function POST(request: NextRequest) {
     ]);
 
     const aiElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(`[generate-sequence] AI pass complete in ${aiElapsed}s`);
+    log.debug(`[generate-sequence] AI pass complete in ${aiElapsed}s`);
 
     // ---------------------------------------------------------------------------
     // Deterministic assembly: build sequence from vision + timing data
     // ---------------------------------------------------------------------------
     const cameraKeyframes = computeAllCameraKeyframes(images, visionResults);
 
-    console.log(
+    log.debug(
       `[generate-sequence] Deterministic assembly for ${images.length} images, ${audioDuration.toFixed(1)}s audio`
     );
 
@@ -261,7 +262,7 @@ export async function POST(request: NextRequest) {
     );
 
     const totalElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(`[generate-sequence] Complete in ${totalElapsed}s`);
+    log.debug(`[generate-sequence] Complete in ${totalElapsed}s`);
 
     return NextResponse.json({
       success: true,
@@ -273,7 +274,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("[generate-sequence] Unexpected error:", error);
+    log.error("[generate-sequence] Unexpected error:", error);
     return NextResponse.json(
       {
         error: error instanceof Error ? error.message : "Unknown error during sequence generation",

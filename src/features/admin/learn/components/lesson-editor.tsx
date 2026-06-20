@@ -49,6 +49,7 @@ import {
   MarkdownLessonRenderer,
   extractImageIds,
 } from "@/features/user/learn/components/markdown-lesson-renderer";
+import { log } from "@/shared/utils/logging";
 
 interface LessonEditorProps {
   lessonId?: string;
@@ -135,7 +136,7 @@ export function LessonEditor({ lessonId, subjectId, subjectTitle }: LessonEditor
         const anki = data.anki_deck_ref || (data.content as LessonContent)?.ankiDeckRef;
         if (anki) setAnkiDeckRef(anki);
       } catch (err) {
-        console.error("Failed to load lesson:", err);
+        log.error("Failed to load lesson:", err);
       } finally {
         setLoading(false);
       }
@@ -199,7 +200,7 @@ export function LessonEditor({ lessonId, subjectId, subjectTitle }: LessonEditor
       }
       router.push("/admin/learn");
     } catch (err) {
-      console.error("Failed to save:", err);
+      log.error("Failed to save:", err);
       alert(err instanceof Error ? err.message : "Failed to save");
     } finally {
       setSaving(false);

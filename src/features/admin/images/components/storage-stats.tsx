@@ -10,6 +10,7 @@ import { toast } from "@/shared/utils/ui/toast";
 import { getStorageStats, StorageStats } from "@/features/admin/images/services/image-analytics";
 
 import { CleanupDialog } from "./cleanup-dialog";
+import { log } from "@/shared/utils/logging";
 
 export interface StorageStatsRef {
   refresh: () => void;
@@ -45,7 +46,7 @@ export const StorageStatsCards = forwardRef<StorageStatsRef>(
         if (imageStatsResult.status === "fulfilled") {
           setStats(imageStatsResult.value);
         } else {
-          console.error("Failed to load image stats:", imageStatsResult.reason);
+          log.error("Failed to load image stats:", imageStatsResult.reason);
           // Check if it's a network error (laptop sleep/wake)
           const isNetworkError =
             imageStatsResult.reason?.message?.includes("fetch") ||
@@ -67,18 +68,18 @@ export const StorageStatsCards = forwardRef<StorageStatsRef>(
             if (r2Data.success) {
               setR2Stats(r2Data.data);
             } else {
-              console.warn("R2 stats API returned error:", r2Data.error);
+              log.warn("R2 stats API returned error:", r2Data.error);
             }
           } else {
-            console.warn("Failed to fetch R2 stats:", r2StatsResponse.status);
+            log.warn("Failed to fetch R2 stats:", r2StatsResponse.status);
           }
         } else {
           // R2 stats failed - not critical, just log it
-          console.warn("R2 stats request failed:", r2StatsResult.reason);
+          log.warn("R2 stats request failed:", r2StatsResult.reason);
           // Don't show toast for R2 stats failure - we have fallback values
         }
       } catch (error) {
-        console.error("Failed to load storage stats:", error);
+        log.error("Failed to load storage stats:", error);
         const isNetworkError = error instanceof TypeError && error.message.includes("fetch");
 
         if (isNetworkError) {

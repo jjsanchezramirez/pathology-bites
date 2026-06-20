@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -107,7 +108,7 @@ export async function POST(request: NextRequest) {
       deletedCount: count || setIds.length,
     });
   } catch (error) {
-    console.error("Error bulk deleting question sets:", error);
+    log.error("Error bulk deleting question sets:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

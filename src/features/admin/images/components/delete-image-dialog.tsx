@@ -16,6 +16,7 @@ import { Trash2, Loader2 } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import { deleteImage } from "@/features/admin/images/services/images";
 import type { ImageData } from "@/shared/types/images";
+import { log } from "@/shared/utils/logging";
 
 interface DeleteImageDialogProps {
   open: boolean;
@@ -45,7 +46,7 @@ export function DeleteImageDialog({
       onOpenChange(false);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Failed to delete image";
-      console.error("Delete error:", error);
+      log.error("Delete error:", error);
       toast.error(message);
     } finally {
       setIsDeleting(false);

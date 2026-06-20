@@ -21,6 +21,7 @@ import {
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Loader2, Search, ExternalLink } from "lucide-react";
 import { Badge } from "@/shared/components/ui/badge";
+import { log } from "@/shared/utils/logging";
 
 interface Paper {
   paperId: string;
@@ -88,7 +89,7 @@ export function FetchReferencesDialog({
       const data = await response.json();
       setResults(data.papers || []);
     } catch (err) {
-      console.error("Error fetching references:", err);
+      log.error("Error fetching references:", err);
       setError(err instanceof Error ? err.message : "Failed to fetch references");
     } finally {
       setLoading(false);

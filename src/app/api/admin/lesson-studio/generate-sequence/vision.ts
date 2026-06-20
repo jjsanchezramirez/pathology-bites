@@ -1,4 +1,5 @@
 import type { ImageInput } from "./prompt";
+import { log } from "@/shared/utils/logging";
 
 // ---------------------------------------------------------------------------
 // Vision result — one area of interest per image
@@ -542,7 +543,7 @@ async function analyzeOneImage(
   const imageWithMag: ImageInput =
     resolvedMag !== image.magnification ? { ...image, magnification: resolvedMag } : image;
 
-  console.log(
+  log.debug(
     `[vision] ${image.title.slice(0, 50)} — category: ${image.category}, mag: ${image.magnification} → ${resolvedMag}`
   );
 
@@ -564,7 +565,7 @@ async function analyzeOneImage(
     clearTimeout(timeoutId);
   } catch (err) {
     clearTimeout(timeoutId);
-    console.warn(`[vision] All models failed for ${image.url.slice(-40)}: ${err}`);
+    log.warn(`[vision] All models failed for ${image.url.slice(-40)}: ${err}`);
     return FALLBACK;
   }
 
@@ -618,7 +619,7 @@ export async function analyzeImages(
   apiKey: string,
   modelOverride?: string
 ): Promise<VisionResult[]> {
-  console.log(`[vision] Analysing ${images.length} images in parallel…`);
+  log.debug(`[vision] Analysing ${images.length} images in parallel…`);
   const results = await Promise.all(
     images.map((img) => analyzeOneImage(img, apiKey, undefined, modelOverride))
   );
@@ -630,12 +631,10 @@ export async function analyzeImages(
     },
     {} as Record<string, number>
   );
-  console.log(
-    `[vision] Done — ${seen}/${images.length} seen, tools: ${JSON.stringify(toolCounts)}`
-  );
-  console.log(`[vision] Results summary:`);
+  log.debug(`[vision] Done — ${seen}/${images.length} seen, tools: ${JSON.stringify(toolCounts)}`);
+  log.debug(`[vision] Results summary:`);
   results.forEach((r, i) => {
-    console.log(
+    log.debug(
       `  [${i}] tool: ${r.annotationTool}, position: ${r.featurePosition ? `x=${r.featurePosition.x}, y=${r.featurePosition.y}` : "null"}, label: ${r.suggestedLabel || "(none)"}`
     );
   });

@@ -8,6 +8,7 @@ import {
   shouldRetry,
   debugLog,
 } from "../config/auto-save-config";
+import { log } from "@/shared/utils/logging";
 
 /**
  * Manages offline queue for failed sync operations
@@ -77,7 +78,7 @@ export class OfflineQueueManager {
         return item;
       });
     } catch (error) {
-      console.error("Failed to read offline queue:", error);
+      log.error("Failed to read offline queue:", error);
       return [];
     }
   }
@@ -90,7 +91,7 @@ export class OfflineQueueManager {
       if (typeof window === "undefined") return; // SSR guard
       localStorage.setItem(OfflineQueueManager.QUEUE_KEY, JSON.stringify(queue));
     } catch (error) {
-      console.error("Failed to save offline queue:", error);
+      log.error("Failed to save offline queue:", error);
     }
   }
 

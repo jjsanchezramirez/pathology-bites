@@ -12,6 +12,7 @@ import { toast } from "@/shared/utils/ui/toast";
 import { Icons } from "@/shared/components/common/icons";
 import { submitContactForm } from "@/app/api/public/contact/contact";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
+import { log } from "@/shared/utils/logging";
 
 type FormData = {
   requestType: "technical" | "general";
@@ -86,11 +87,11 @@ export function ContactForm({
     e.preventDefault();
     setIsSubmitting(true);
     setErrors({});
-    console.log("Form submitted:", formData);
+    log.debug("Form submitted:", formData);
 
     try {
       const result = await submitContactForm(formData);
-      console.log("Submission result:", result);
+      log.debug("Submission result:", result);
 
       if (result.success) {
         toast.success("Thanks for reaching out! We'll get back to you soon.");
@@ -119,10 +120,10 @@ export function ContactForm({
         } else {
           toast.error(result.error || "Something went wrong. Please try again.");
         }
-        console.error("Submission error:", result);
+        log.error("Submission error:", result);
       }
     } catch (error) {
-      console.error("Form submission error:", error);
+      log.error("Form submission error:", error);
       toast.error("Something went wrong. Please try again.");
     } finally {
       setIsSubmitting(false);

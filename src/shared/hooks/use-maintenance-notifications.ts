@@ -1,5 +1,6 @@
 // src/shared/hooks/use-maintenance-notifications.ts
 import { useState } from "react";
+import { log } from "@/shared/utils/logging";
 
 interface MaintenanceNotificationOptions {
   onSuccess?: () => void;
@@ -40,7 +41,7 @@ export function useMaintenanceNotifications(options: MaintenanceNotificationOpti
       try {
         data = await response.json();
       } catch (parseError) {
-        console.error("Failed to parse response as JSON:", parseError);
+        log.error("Failed to parse response as JSON:", parseError);
         throw new Error("Server response was not valid JSON.");
       }
 

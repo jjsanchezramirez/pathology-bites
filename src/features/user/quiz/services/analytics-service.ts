@@ -3,6 +3,7 @@
 
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 // Service-role client for invoking update_question_analytics_batch.
 // That RPC is SECURITY DEFINER (it writes to question_analytics, bypassing
@@ -47,7 +48,7 @@ export class QuizAnalyticsService {
    */
   async updateQuizSessionAnalytics(sessionId: string, questionIds?: string[]): Promise<void> {
     try {
-      console.log("[Analytics] Starting batch analytics update for session:", sessionId);
+      log.debug("[Analytics] Starting batch analytics update for session:", sessionId);
 
       const supabase = await this.getSupabase();
       let questionIdsToUpdate = questionIds;
@@ -60,12 +61,12 @@ export class QuizAnalyticsService {
           .eq("quiz_session_id", sessionId);
 
         if (attemptsError) {
-          console.error("[Analytics] Error fetching quiz attempts:", attemptsError);
+          log.error("[Analytics] Error fetching quiz attempts:", attemptsError);
           throw attemptsError;
         }
 
         if (!attempts || attempts.length === 0) {
-          console.log("[Analytics] No attempts found for session:", sessionId);
+          log.debug("[Analytics] No attempts found for session:", sessionId);
           return;
         }
 
@@ -75,7 +76,7 @@ export class QuizAnalyticsService {
         ] as string[];
       }
 
-      console.log("[Analytics] Updating analytics for questions:", questionIdsToUpdate);
+      log.debug("[Analytics] Updating analytics for questions:", questionIdsToUpdate);
 
       // Call database function to update analytics (bypasses RLS with SECURITY DEFINER).
       // Use service-role client because EXECUTE is revoked from `authenticated`.
@@ -85,12 +86,12 @@ export class QuizAnalyticsService {
       });
 
       if (updateError) {
-        console.error("[Analytics] Error calling analytics function:", updateError);
+        log.error("[Analytics] Error calling analytics function:", updateError);
       } else {
-        console.log("[Analytics] Batch analytics update completed for session:", sessionId);
+        log.debug("[Analytics] Batch analytics update completed for session:", sessionId);
       }
     } catch (error) {
-      console.error("[Analytics] Error in batch analytics update:", error);
+      log.error("[Analytics] Error in batch analytics update:", error);
       // Don't throw - analytics failures shouldn't break quiz completion
     }
   }
@@ -101,7 +102,7 @@ export class QuizAnalyticsService {
    */
   async updateMultipleQuestionAnalytics(questionIds: string[]): Promise<void> {
     try {
-      console.log("[Analytics] Updating analytics for multiple questions:", questionIds.length);
+      log.debug("[Analytics] Updating analytics for multiple questions:", questionIds.length);
 
       // Call database function to update analytics (bypasses RLS with SECURITY DEFINER).
       // Use service-role client because EXECUTE is revoked from `authenticated`.
@@ -111,12 +112,12 @@ export class QuizAnalyticsService {
       });
 
       if (updateError) {
-        console.error("[Analytics] Error calling analytics function:", updateError);
+        log.error("[Analytics] Error calling analytics function:", updateError);
       } else {
-        console.log("[Analytics] Batch update completed for", questionIds.length, "questions");
+        log.debug("[Analytics] Batch update completed for", questionIds.length, "questions");
       }
     } catch (error) {
-      console.error("[Analytics] Error in multiple question analytics update:", error);
+      log.error("[Analytics] Error in multiple question analytics update:", error);
     }
   }
 
@@ -125,7 +126,7 @@ export class QuizAnalyticsService {
    */
   async recalculateAllAnalytics(): Promise<void> {
     try {
-      console.log("[Analytics] Starting full analytics recalculation");
+      log.debug("[Analytics] Starting full analytics recalculation");
 
       const supabase = await this.getSupabase();
 
@@ -135,12 +136,12 @@ export class QuizAnalyticsService {
         .select("question_id");
 
       if (questionsError) {
-        console.error("[Analytics] Error fetching questions with attempts:", questionsError);
+        log.error("[Analytics] Error fetching questions with attempts:", questionsError);
         throw questionsError;
       }
 
       if (!questions || questions.length === 0) {
-        console.log("[Analytics] No questions with attempts found");
+        log.debug("[Analytics] No questions with attempts found");
         return;
       }
 
@@ -152,13 +153,13 @@ export class QuizAnalyticsService {
       // Call database function to update all analytics at once
       await this.updateMultipleQuestionAnalytics(questionIds);
 
-      console.log(
+      log.debug(
         "[Analytics] Full analytics recalculation completed for",
         questionIds.length,
         "questions"
       );
     } catch (error) {
-      console.error("[Analytics] Error in full analytics recalculation:", error);
+      log.error("[Analytics] Error in full analytics recalculation:", error);
       throw error;
     }
   }
@@ -180,7 +181,7 @@ export class QuizAnalyticsService {
         .eq("quiz_session_id", sessionId);
 
       if (error || !attempts) {
-        console.error("[Analytics] Error fetching session summary:", error);
+        log.error("[Analytics] Error fetching session summary:", error);
         return null;
       }
 
@@ -198,7 +199,7 @@ export class QuizAnalyticsService {
         averageTimePerQuestion,
       };
     } catch (error) {
-      console.error("[Analytics] Error calculating session summary:", error);
+      log.error("[Analytics] Error calculating session summary:", error);
       return null;
     }
   }

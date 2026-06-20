@@ -50,6 +50,7 @@ import { CreateSetDialog } from "./create-set-dialog";
 import { EditSetDialog } from "./edit-set-dialog";
 
 import { SOURCE_TYPE_CONFIG } from "@/shared/types/question-sets";
+import { log } from "@/shared/utils/logging";
 
 interface QuestionSet {
   id: string;
@@ -146,7 +147,7 @@ export function SetsManagement() {
       setTotalSets(data.totalSets || 0);
       setTotalPages(data.totalPages || 0);
     } catch (error) {
-      console.error("Error loading question sets:", error);
+      log.error("Error loading question sets:", error);
       toast.error(error instanceof Error ? error.message : "Failed to load question sets");
     } finally {
       setLoading(false);
@@ -180,7 +181,7 @@ export function SetsManagement() {
       setSelectedSet(null);
       loadSets();
     } catch (error) {
-      console.error("Error deleting question set:", error);
+      log.error("Error deleting question set:", error);
       toast.error(error instanceof Error ? error.message : "Failed to delete question set");
     } finally {
       setIsDeleting(false);
@@ -215,7 +216,7 @@ export function SetsManagement() {
       clearSelection();
       loadSets();
     } catch (error) {
-      console.error("Error bulk deleting question sets:", error);
+      log.error("Error bulk deleting question sets:", error);
       toast.error(error instanceof Error ? error.message : "Failed to delete question sets");
     } finally {
       setIsBulkDeleting(false);
@@ -256,7 +257,7 @@ export function SetsManagement() {
       clearSelection();
       loadSets();
     } catch (error) {
-      console.error("Error merging question sets:", error);
+      log.error("Error merging question sets:", error);
       toast.error(error instanceof Error ? error.message : "Failed to merge question sets");
     } finally {
       setIsMerging(false);
@@ -296,7 +297,7 @@ export function SetsManagement() {
 
       loadSets();
     } catch (error) {
-      console.error("Error updating question set status:", error);
+      log.error("Error updating question set status:", error);
       toast.error("Failed to update question set status");
     }
   };

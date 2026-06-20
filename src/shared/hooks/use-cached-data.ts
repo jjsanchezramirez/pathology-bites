@@ -8,6 +8,7 @@ import {
   type CacheNamespace,
 } from "@/shared/services/unified-cache";
 import { toast } from "@/shared/utils/ui/toast";
+import { log } from "@/shared/utils/logging";
 
 interface UseCachedDataOptions<T> extends CacheOptions {
   namespace: CacheNamespace; // Required: specify which namespace to use
@@ -150,21 +151,21 @@ export function useCachedData<T>(
       // Always try to load from cache or fetch on mount
       const cached = unifiedCache.get<T>(namespace, key, { ttl, version });
 
-      console.log("=".repeat(80));
-      console.log("🔍 [USE CACHED DATA] CHECKING FOR CACHE:");
-      console.log("=".repeat(80));
-      console.log("[useCachedData] Mount:", { key, hasCached: !!cached, namespace });
+      log.debug("=".repeat(80));
+      log.debug("🔍 [USE CACHED DATA] CHECKING FOR CACHE:");
+      log.debug("=".repeat(80));
+      log.debug("[useCachedData] Mount:", { key, hasCached: !!cached, namespace });
 
       if (cached) {
         // Use cached data immediately
-        console.log("✅ [CACHE HIT] Found cached data for:", key);
-        console.log("[useCachedData] Cached data structure:", {
+        log.debug("✅ [CACHE HIT] Found cached data for:", key);
+        log.debug("[useCachedData] Cached data structure:", {
           dataType: typeof cached,
           hasData: !!cached,
           keys: cached ? Object.keys(cached).slice(0, 5) : [],
           rawCached: cached,
         });
-        console.log("=".repeat(80));
+        log.debug("=".repeat(80));
         setData(cached);
         setLastFetch(Date.now());
         const isStaleData = false; // Consider cache hit as fresh data
@@ -178,8 +179,8 @@ export function useCachedData<T>(
         }
       } else {
         // No cached data, always fetch on initial mount
-        console.log("❌ [CACHE MISS] No cache found, fetching:", key);
-        console.log("=".repeat(80));
+        log.debug("❌ [CACHE MISS] No cache found, fetching:", key);
+        log.debug("=".repeat(80));
         fetchDataRef.current();
       }
     }

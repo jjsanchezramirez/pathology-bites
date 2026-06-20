@@ -19,6 +19,7 @@ import { diffWords } from "diff";
 import { formatVersion } from "@/shared/utils/version";
 import { QuestionMarkdown } from "@/shared/components/common/question-markdown";
 import { SimpleImageCarousel } from "../shared/simple-image-carousel";
+import { log } from "@/shared/utils/logging";
 
 // Types
 interface QuestionOption {
@@ -158,7 +159,7 @@ export function VersionHistoryDialog({
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error("API Error:", response.status, errorText);
+        log.error("API Error:", response.status, errorText);
         toast.error(`Failed to load version history: ${response.status} ${response.statusText}`);
         return;
       }
@@ -204,7 +205,7 @@ export function VersionHistoryDialog({
         setSelectedVersionIndex(null);
       }
     } catch (error) {
-      console.error("Error fetching version history:", error);
+      log.error("Error fetching version history:", error);
       toast.error(`Failed to load version history: ${error}`);
     } finally {
       setLoading(false);

@@ -11,6 +11,7 @@ import {
 
 import { Loader2, BookOpen, GraduationCap, Target } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
+import { log } from "@/shared/utils/logging";
 
 export interface EducationalContent {
   category: string;
@@ -193,7 +194,7 @@ export async function loadContentFromR2(filename: string): Promise<ContentData |
       return data;
     }
   } catch (error) {
-    console.error(`Error loading ${filename}:`, error);
+    log.error(`Error loading ${filename}:`, error);
   }
 
   return null;
@@ -241,7 +242,7 @@ export function ContentSelector({ onContentSelect, selectedContent }: ContentSel
           // Don't show error if request was aborted
           if (aborted) return;
 
-          console.error("Error loading educational content data:", error);
+          log.error("Error loading educational content data:", error);
 
           // More specific error messages based on error type
           if (error instanceof TypeError && error.message === "Failed to fetch") {

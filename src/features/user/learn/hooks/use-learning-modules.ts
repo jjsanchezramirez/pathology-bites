@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { LearningSubjectWithCategory } from "../types/lesson";
 import { learnService } from "../services/learn-service";
+import { log } from "@/shared/utils/logging";
 
 export function useLearningModules() {
   const [subjects, setSubjects] = useState<LearningSubjectWithCategory[]>([]);
@@ -16,7 +17,7 @@ export function useLearningModules() {
       const data = await learnService.getSubjects();
       setSubjects(data);
     } catch (err) {
-      console.error("Failed to load learning modules:", err);
+      log.error("Failed to load learning modules:", err);
       setError(err instanceof Error ? err.message : "Failed to load");
     } finally {
       setLoading(false);

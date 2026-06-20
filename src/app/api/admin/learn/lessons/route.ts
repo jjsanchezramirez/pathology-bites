@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data, error } = await supabase.from("users").select("role").eq("id", userId).single();
@@ -66,7 +67,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(data || []);
   } catch (error) {
-    console.error("[Admin Learn API] Failed to fetch lessons:", error);
+    log.error("[Admin Learn API] Failed to fetch lessons:", error);
     return NextResponse.json({ error: "Failed to fetch lessons" }, { status: 500 });
   }
 }
@@ -199,7 +200,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    console.error("[Admin Learn API] Failed to create lesson:", error);
+    log.error("[Admin Learn API] Failed to create lesson:", error);
     return NextResponse.json({ error: "Failed to create lesson" }, { status: 500 });
   }
 }

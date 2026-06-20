@@ -13,6 +13,7 @@ import {
   QuizAction,
 } from "../core/quiz-state-machine";
 import { QuizState, QuizQuestion, QuizAnswer } from "../../types/quiz-question";
+import { log } from "@/shared/utils/logging";
 
 export interface UseQuizStateMachineOptions {
   sessionId: string;
@@ -87,7 +88,7 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
           return parsed;
         }
       } catch (error) {
-        console.warn("Failed to load quiz state from localStorage:", error);
+        log.warn("Failed to load quiz state from localStorage:", error);
       }
     }
     return createInitialQuizState();
@@ -140,7 +141,7 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
       try {
         // Don't save to localStorage if quiz is completed (will be cleared anyway)
         if (state.status === "completed") {
-          console.log("[State Machine] Quiz completed - clearing localStorage instead of saving");
+          log.debug("[State Machine] Quiz completed - clearing localStorage instead of saving");
           localStorage.removeItem(localStorageKey);
           return;
         }
@@ -164,7 +165,7 @@ export function useQuizStateMachine(options: UseQuizStateMachineOptions) {
         };
         localStorage.setItem(localStorageKey, JSON.stringify(stateToSave));
       } catch (error) {
-        console.warn("Failed to save quiz state to localStorage:", error);
+        log.warn("Failed to save quiz state to localStorage:", error);
       }
     }
   }, [state, enableLocalStorage, localStorageKey, sessionId]);

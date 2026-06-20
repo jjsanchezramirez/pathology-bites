@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -62,7 +63,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
       .maybeSingle();
 
     if (error) {
-      console.error("Failed to fetch interactive sequence:", error);
+      log.error("Failed to fetch interactive sequence:", error);
       return NextResponse.json(
         { error: `Failed to fetch sequence: ${error.message}` },
         { status: 500 }
@@ -75,7 +76,7 @@ export async function GET(_request: NextRequest, { params }: { params: Promise<{
 
     return NextResponse.json({ sequence: data });
   } catch (error) {
-    console.error("Interactive sequence fetch error:", error);
+    log.error("Interactive sequence fetch error:", error);
     const errorMessage = error instanceof Error ? error.message : "Unknown error";
     return NextResponse.json({ error: `Fetch failed: ${errorMessage}` }, { status: 500 });
   }

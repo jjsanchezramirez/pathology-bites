@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data, error } = await supabase.from("users").select("role").eq("id", userId).single();
@@ -99,7 +100,7 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
 
     return NextResponse.json(data);
   } catch (error) {
-    console.error("[Admin Learn API] Failed to update subject:", error);
+    log.error("[Admin Learn API] Failed to update subject:", error);
     return NextResponse.json({ error: "Failed to update subject" }, { status: 500 });
   }
 }
@@ -155,7 +156,7 @@ export async function DELETE(
 
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[Admin Learn API] Failed to delete subject:", error);
+    log.error("[Admin Learn API] Failed to delete subject:", error);
     return NextResponse.json({ error: "Failed to delete subject" }, { status: 500 });
   }
 }

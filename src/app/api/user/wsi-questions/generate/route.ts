@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getApiKey, getModelProvider, TEXT_FALLBACK_CHAIN } from "@/shared/config/ai-models";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { callClaudeText } from "@/shared/services/claude-api";
+import { log } from "@/shared/utils/logging";
 
 const WSI_SYSTEM_PROMPT =
   "You are an expert pathologist creating educational multiple-choice questions for medical students and residents. Focus on clinical correlation, diagnosis, and educational value.";
@@ -166,11 +167,11 @@ async function callMetaAPI(
   const data = await response.json();
 
   // Debug logging for Meta LLAMA API response
-  console.log("[Meta API] Full response keys:", Object.keys(data));
-  console.log("[Meta API] Usage data:", data.usage);
-  console.log("[Meta API] Token usage data:", data.token_usage);
-  console.log("[Meta API] Completion message:", data.completion_message);
-  console.log(
+  log.debug("[Meta API] Full response keys:", Object.keys(data));
+  log.debug("[Meta API] Usage data:", data.usage);
+  log.debug("[Meta API] Token usage data:", data.token_usage);
+  log.debug("[Meta API] Completion message:", data.completion_message);
+  log.debug(
     '[Meta API] Looking for any field containing "token" or "usage":',
     Object.keys(data).filter(
       (key) =>
@@ -210,7 +211,7 @@ async function callMetaAPI(
     };
   }
 
-  console.log("[Meta API] Extracted token usage:", tokenUsage);
+  log.debug("[Meta API] Extracted token usage:", tokenUsage);
 
   // If no token usage found, create estimated usage for testing
   if (!tokenUsage && content) {
@@ -224,7 +225,7 @@ async function callMetaAPI(
       completion_tokens: estimatedCompletionTokens,
       total_tokens: estimatedPromptTokens + estimatedCompletionTokens,
     };
-    console.log("[Meta API] Created estimated token usage:", tokenUsage);
+    log.debug("[Meta API] Created estimated token usage:", tokenUsage);
   }
 
   return {
@@ -706,9 +707,9 @@ async function generateQuestionWithRetries(
 
     try {
       if (attempt === 0) {
-        console.log(`[Question Gen] Starting generation with model: ${modelId}`);
+        log.debug(`[Question Gen] Starting generation with model: ${modelId}`);
       } else {
-        console.log(
+        log.debug(
           `[Question Gen] Retry ${attempt}/${RETRY_CONFIG.maxRetries} for model: ${modelId}`
         );
         retryInfo.retries = attempt;
@@ -718,11 +719,11 @@ async function generateQuestionWithRetries(
       retryInfo.totalTime = Date.now() - startTime;
 
       if (attempt === 0) {
-        console.log(
+        log.debug(
           `[Question Gen] ✅ Success on first attempt with ${modelId} in ${retryInfo.totalTime}ms`
         );
       } else {
-        console.log(
+        log.debug(
           `[Question Gen] ✅ Success after ${attempt} retries with ${modelId} in ${retryInfo.totalTime}ms`
         );
       }
@@ -732,24 +733,24 @@ async function generateQuestionWithRetries(
       lastError = error;
       const errorType = classifyError(error);
 
-      console.warn(
+      log.warn(
         `[Question Gen] Attempt ${attempt + 1} failed (${errorType}):`,
         error instanceof Error ? error.message : error
       );
 
       // If error is not retryable, stop trying this model
       if (errorType !== "retryable") {
-        console.log(`[Question Gen] ${errorType} error - stopping retries for ${modelId}`);
+        log.debug(`[Question Gen] ${errorType} error - stopping retries for ${modelId}`);
         break;
       }
 
       // If retryable and not the last attempt, wait before retrying
       if (attempt < RETRY_CONFIG.maxRetries) {
         const delay = getRetryDelay(attempt);
-        console.log(`[Question Gen] Retrying ${modelId} in ${delay}ms...`);
+        log.debug(`[Question Gen] Retrying ${modelId} in ${delay}ms...`);
         await sleep(delay);
       } else {
-        console.log(`[Question Gen] Max retries reached for ${modelId}`);
+        log.debug(`[Question Gen] Max retries reached for ${modelId}`);
       }
     }
   }
@@ -785,13 +786,13 @@ async function generateQuestionSingle(
   // Fast config lookup
   const { provider, apiKey } = getAPIConfig(modelId);
 
-  console.log(`[Question Gen] Using model: ${modelId} (${provider})`);
+  log.debug(`[Question Gen] Using model: ${modelId} (${provider})`);
 
   // Fast AI service dispatch - use computed provider directly
   const apiResponse = await callAIService(provider, prompt, modelId, apiKey);
 
-  console.log(`[Question Gen] AI service response received`);
-  console.log(`[Question Gen] Token usage from AI service:`, apiResponse.tokenUsage);
+  log.debug(`[Question Gen] AI service response received`);
+  log.debug(`[Question Gen] Token usage from AI service:`, apiResponse.tokenUsage);
 
   const tokenUsage = apiResponse.tokenUsage || null;
   const generatedText = apiResponse.content;
@@ -800,7 +801,7 @@ async function generateQuestionSingle(
     throw new Error("No content received from AI service");
   }
 
-  console.log("[Question Gen] Parsing AI response...");
+  log.debug("[Question Gen] Parsing AI response...");
 
   // Fast parsing and validation
   const questionData = parseAndValidateQuestionFast(generatedText);
@@ -861,7 +862,7 @@ function extractJSONFast(response: string): string | null {
 
 // Fast question parsing - optimized validation
 function parseAndValidateQuestionFast(response: string): QuestionData {
-  console.log(`[Question Gen] Fast parsing AI response (${response.length} chars)`);
+  log.debug(`[Question Gen] Fast parsing AI response (${response.length} chars)`);
 
   // Fast JSON extraction
   const jsonStr = extractJSONFast(response);
@@ -972,7 +973,7 @@ function validateAndNormalizeQuestionFast(questionObj: Record<string, unknown>):
     throw new Error(`Expected exactly 1 correct answer, found ${correctCount}`);
   }
 
-  console.log(
+  log.debug(
     `[Question Gen] Fast validation completed: ${normalizedQuestion.options.length} options`
   );
   return normalizedQuestion;
@@ -982,7 +983,7 @@ export async function POST(request: NextRequest) {
   const startTime = Date.now();
 
   try {
-    console.log("[Question Gen] Starting unified question generation request");
+    log.debug("[Question Gen] Starting unified question generation request");
 
     // Parse request body
     const body = await request.json();
@@ -1058,7 +1059,7 @@ export async function POST(request: NextRequest) {
     // modelOverride bypasses the chain — single-model mode for debug testing
     if (modelOverride) {
       const selectedModel = modelOverride as string;
-      console.log(`[Question Gen] modelOverride mode: ${selectedModel}`);
+      log.debug(`[Question Gen] modelOverride mode: ${selectedModel}`);
       const questionResult = await generateQuestionWithRetries(
         wsi,
         selectedModel,
@@ -1104,7 +1105,7 @@ export async function POST(request: NextRequest) {
     }
 
     const selectedModel = WSI_FALLBACK_MODELS[modelIndex];
-    console.log(
+    log.debug(
       `[Question Gen] Generating question for: ${wsi.diagnosis} using model ${modelIndex + 1}/${WSI_FALLBACK_MODELS.length}: ${selectedModel}`
     );
 
@@ -1118,7 +1119,7 @@ export async function POST(request: NextRequest) {
       );
 
       const generationTime = Date.now() - startTime;
-      console.log(`[Question Gen] Question generation completed in ${generationTime}ms`);
+      log.debug(`[Question Gen] Question generation completed in ${generationTime}ms`);
 
       const result = {
         success: true,
@@ -1135,7 +1136,7 @@ export async function POST(request: NextRequest) {
         debug: questionResult.debug,
       };
 
-      console.log("[Question Gen] Final API response token_usage:", result.metadata.token_usage);
+      log.debug("[Question Gen] Final API response token_usage:", result.metadata.token_usage);
 
       return NextResponse.json(result, {
         status: 200,
@@ -1147,7 +1148,7 @@ export async function POST(request: NextRequest) {
       });
     } catch (modelError) {
       const errorType = classifyError(modelError);
-      console.error(`[Question Gen] Model ${selectedModel} failed (${errorType}):`, modelError);
+      log.error(`[Question Gen] Model ${selectedModel} failed (${errorType}):`, modelError);
 
       // Determine next action based on error type
       const nextModelIndex = modelIndex + 1;
@@ -1177,7 +1178,7 @@ export async function POST(request: NextRequest) {
       );
     }
   } catch (error) {
-    console.error("[Question Gen] Unexpected error:", error);
+    log.error("[Question Gen] Unexpected error:", error);
 
     return NextResponse.json(
       {

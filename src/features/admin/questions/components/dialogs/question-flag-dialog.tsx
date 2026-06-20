@@ -25,6 +25,7 @@ import { toast } from "@/shared/utils/ui/toast";
 import { FlagType, FLAG_TYPE_CONFIG } from "@/shared/types/questions";
 import { createClient } from "@/shared/services/client";
 import { Flag } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 interface QuestionFlagDialogProps {
   question: { id: string; title?: string; stem: string } | null;
@@ -73,7 +74,7 @@ export function QuestionFlagDialog({
         .single();
 
       if (checkError && checkError.code !== "PGRST116") {
-        console.error("Error checking existing flags:", checkError);
+        log.error("Error checking existing flags:", checkError);
         toast.error("Failed to check existing flags");
         return;
       }
@@ -92,7 +93,7 @@ export function QuestionFlagDialog({
       });
 
       if (flagError) {
-        console.error("Error creating flag:", flagError);
+        log.error("Error creating flag:", flagError);
         toast.error(`Failed to flag question: ${flagError.message || "Unknown error"}`);
         return;
       }
@@ -108,7 +109,7 @@ export function QuestionFlagDialog({
       setSelectedFlagType("");
       setDescription("");
     } catch (error) {
-      console.error("Error flagging question:", error);
+      log.error("Error flagging question:", error);
       toast.error("An unexpected error occurred");
     } finally {
       setIsSubmitting(false);

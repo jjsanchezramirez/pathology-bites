@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -134,7 +135,7 @@ export async function GET(request: NextRequest) {
     // Check server-side cache first
     const cached = doiCache.get(cleanDoi)
     if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
-      console.log(`[DOI Cache] Hit: ${cleanDoi}`)
+      log.debug(`[DOI Cache] Hit: ${cleanDoi}`)
       return NextResponse.json(cached.data)
     }
 
@@ -179,13 +180,13 @@ export async function GET(request: NextRequest) {
             data: result,
             timestamp: Date.now()
           })
-          console.log(`[DOI Cache] Stored: ${cleanDoi}`)
+          log.debug(`[DOI Cache] Stored: ${cleanDoi}`)
 
           return NextResponse.json(result)
         }
       }
     } catch (error) {
-      console.error('CrossRef API error:', error)
+      log.error('CrossRef API error:', error)
     }
     
     // Fallback response if CrossRef fails
@@ -200,7 +201,7 @@ export async function GET(request: NextRequest) {
     })
     
   } catch (error) {
-    console.error('Error extracting journal metadata:', error)
+    log.error('Error extracting journal metadata:', error)
     
     return NextResponse.json(
       { error: 'Failed to extract journal metadata' },

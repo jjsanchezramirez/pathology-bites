@@ -1,6 +1,7 @@
 // src/features/dashboard/services/client-service.ts
 import { createClient } from "@/shared/services/client";
 import { DashboardStats, RecentActivity, QuickAction } from "./service";
+import { log } from "@/shared/utils/logging";
 
 class ClientDashboardService {
   private supabase = createClient();
@@ -32,7 +33,7 @@ class ClientDashboardService {
 
     // Log view error for debugging
     if (viewError) {
-      console.warn(
+      log.warn(
         "[getDashboardStats] View query failed, falling back to individual queries:",
         viewError
       );
@@ -80,7 +81,7 @@ class ClientDashboardService {
     const allFailed = results.every((result) => result.status === "rejected");
     if (allFailed) {
       const firstError = results[0].status === "rejected" ? results[0].reason : "Unknown error";
-      console.error("[getDashboardStats] All stats queries failed:", firstError);
+      log.error("[getDashboardStats] All stats queries failed:", firstError);
       throw new Error(
         "Failed to load dashboard statistics. Please check your connection and try again."
       );
@@ -89,7 +90,7 @@ class ClientDashboardService {
     // Log individual failures for debugging
     results.forEach((result, index) => {
       if (result.status === "rejected") {
-        console.warn(`[getDashboardStats] Query ${index} failed:`, result.reason);
+        log.warn(`[getDashboardStats] Query ${index} failed:`, result.reason);
       }
     });
 
@@ -119,7 +120,7 @@ class ClientDashboardService {
     try {
       const activities: RecentActivity[] = [];
 
-      console.log(
+      log.debug(
         "[DashboardService] getRecentActivity called with role:",
         userRole,
         "userId:",
@@ -129,19 +130,19 @@ class ClientDashboardService {
       // Role-based activity filtering
       if (userRole === "admin") {
         // Admins see all activities
-        console.log("[DashboardService] Fetching ADMIN activities (questions, users, inquiries)");
+        log.debug("[DashboardService] Fetching ADMIN activities (questions, users, inquiries)");
         await this.getAdminActivities(activities);
       } else if (userRole === "creator") {
         // Creators see their own questions and status changes
-        console.log("[DashboardService] Fetching CREATOR activities");
+        log.debug("[DashboardService] Fetching CREATOR activities");
         await this.getCreatorActivities(activities, userId);
       } else if (userRole === "reviewer") {
         // Reviewers see pending reviews and their review activity
-        console.log("[DashboardService] Fetching REVIEWER activities");
+        log.debug("[DashboardService] Fetching REVIEWER activities");
         await this.getReviewerActivities(activities, userId);
       } else {
         // Default: get general recent questions
-        console.log(
+        log.debug(
           "[DashboardService] Fetching GENERAL activities (questions only - NO users/inquiries)"
         );
         await this.getGeneralActivities(activities);
@@ -152,7 +153,7 @@ class ClientDashboardService {
         .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())
         .slice(0, 10);
 
-      console.log(
+      log.debug(
         "[DashboardService] Returning",
         sortedActivities.length,
         "activities. Types:",
@@ -161,7 +162,7 @@ class ClientDashboardService {
 
       return sortedActivities;
     } catch (error) {
-      console.error("Error fetching recent activity:", error);
+      log.error("Error fetching recent activity:", error);
       return [];
     }
   }

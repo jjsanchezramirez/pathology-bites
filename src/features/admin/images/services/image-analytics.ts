@@ -1,6 +1,7 @@
 // Image usage analytics service
 import { createClient } from "@/shared/services/client";
 import { formatSize } from "./image-upload";
+import { log } from "@/shared/utils/logging";
 
 export interface ImageUsageStats {
   id: string;
@@ -45,7 +46,7 @@ export async function getImageUsageStats(): Promise<ImageUsageStats[]> {
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error("Supabase error fetching v_image_usage_stats:", error);
+      log.error("Supabase error fetching v_image_usage_stats:", error);
       throw error;
     }
 
@@ -69,7 +70,7 @@ export async function getImageUsageStats(): Promise<ImageUsageStats[]> {
 
     return usageStats;
   } catch (error) {
-    console.error("Get image usage stats error:", error);
+    log.error("Get image usage stats error:", error);
     // Return empty array instead of throwing to prevent UI crashes
     return [];
   }
@@ -91,7 +92,7 @@ export async function getImageUsageStatsForIds(imageIds: string[]): Promise<Imag
       .in("id", imageIds);
 
     if (error) {
-      console.error("Supabase error fetching usage stats for IDs:", error);
+      log.error("Supabase error fetching usage stats for IDs:", error);
       throw error;
     }
 
@@ -112,7 +113,7 @@ export async function getImageUsageStatsForIds(imageIds: string[]): Promise<Imag
       dimensions_text: "",
     }));
   } catch (error) {
-    console.error("Get image usage stats for IDs error:", error);
+    log.error("Get image usage stats for IDs error:", error);
     return [];
   }
 }
@@ -122,7 +123,7 @@ export async function getOrphanedImages(): Promise<ImageUsageStats[]> {
     const stats = await getImageUsageStats();
     return stats.filter((stat) => stat.is_orphaned);
   } catch (error) {
-    console.error("Get orphaned images error:", error);
+    log.error("Get orphaned images error:", error);
     // Return empty array instead of throwing to prevent UI crashes
     return [];
   }
@@ -136,7 +137,7 @@ export async function getStorageStats(): Promise<StorageStats> {
     const { data, error } = await supabase.from("v_storage_stats").select("*").single();
 
     if (error) {
-      console.error("Supabase error fetching v_storage_stats:", {
+      log.error("Supabase error fetching v_storage_stats:", {
         error,
         code: error.code,
         message: error.message,
@@ -147,7 +148,7 @@ export async function getStorageStats(): Promise<StorageStats> {
     }
 
     if (!data) {
-      console.error("No data returned from v_storage_stats");
+      log.error("No data returned from v_storage_stats");
       throw new Error("No storage stats data available");
     }
 
@@ -189,7 +190,7 @@ export async function getStorageStats(): Promise<StorageStats> {
       formatted_orphaned_size: formatSize(data.orphaned_size_bytes),
     };
   } catch (error) {
-    console.error("Get storage stats error:", error);
+    log.error("Get storage stats error:", error);
     // Return default stats instead of throwing to prevent UI crashes
     return {
       total_images: 0,

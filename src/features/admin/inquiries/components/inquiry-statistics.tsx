@@ -7,6 +7,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui
 import { MessageSquare, CheckCircle, Clock, HelpCircle, type LucideIcon } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import { INQUIRY_TYPES } from "../types/inquiries";
+import { log } from "@/shared/utils/logging";
 
 interface InquiryStats {
   totalInquiries: number;
@@ -41,7 +42,7 @@ export function InquiryStatistics({ onStatsChange, refreshTrigger }: InquiryStat
         .select("request_type, status");
 
       if (error) {
-        console.error("Error fetching inquiry statistics:", error);
+        log.error("Error fetching inquiry statistics:", error);
         toast.error("Failed to load inquiry statistics");
         return;
       }
@@ -69,7 +70,7 @@ export function InquiryStatistics({ onStatsChange, refreshTrigger }: InquiryStat
 
       onStatsChange?.();
     } catch (error) {
-      console.error("Unexpected error fetching inquiry statistics:", error);
+      log.error("Unexpected error fetching inquiry statistics:", error);
       toast.error("An unexpected error occurred while loading statistics");
     } finally {
       setLoading(false);

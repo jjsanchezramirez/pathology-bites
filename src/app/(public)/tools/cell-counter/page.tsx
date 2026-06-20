@@ -34,6 +34,7 @@ import {
 } from "@/shared/components/ui/dialog";
 import { useCounterSync } from "./use-counter-sync";
 import type { CounterConfig, SavedPreset } from "@/shared/config/user-settings-defaults";
+import { log } from "@/shared/utils/logging";
 
 interface CellType {
   id: string;
@@ -814,12 +815,12 @@ ${
             await copyWithClipboardApi();
             toast.success("Copied table for Epic. Paste into Epic.");
           } catch (error) {
-            console.warn("ClipboardItem write failed; falling back to execCommand:", error);
+            log.warn("ClipboardItem write failed; falling back to execCommand:", error);
             try {
               await copyWithExecCommand();
               toast.success("Copied for Epic. Paste into Epic.");
             } catch (fallbackError) {
-              console.error("Copy failed:", fallbackError);
+              log.error("Copy failed:", fallbackError);
               await navigator.clipboard.writeText(plainText);
               toast.success("Copied as plain text (tab-delimited).", {
                 duration: 5000,
@@ -828,7 +829,7 @@ ${
           }
         } catch (error) {
           toast.error("Failed to copy table");
-          console.error(error);
+          log.error(error);
         }
       } else {
         // Plain text format (human-readable)

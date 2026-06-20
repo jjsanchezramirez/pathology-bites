@@ -3,6 +3,7 @@
 // (its scripts/sync-openapi.mjs runs this) to bundle a fresh API reference on every docs deploy.
 // Run from the main app root: `npm run gen:openapi` (or `tsx src/shared/utils/gen-openapi.ts`).
 import { writeFileSync } from "node:fs";
+import { log } from "@/shared/utils/logging";
 
 async function main() {
   process.env.NEXT_PUBLIC_SITE_URL ||= "https://pathologybites.com";
@@ -11,10 +12,10 @@ async function main() {
   const spec = (await getApiDocs()) as { paths?: Record<string, unknown> };
   const out = "/tmp/pb-openapi.json";
   writeFileSync(out, JSON.stringify(spec, null, 2));
-  console.log(`wrote ${out} — ${Object.keys(spec.paths ?? {}).length} paths`);
+  log.debug(`wrote ${out} — ${Object.keys(spec.paths ?? {}).length} paths`);
 }
 
 main().catch((err) => {
-  console.error(err);
+  log.error(err);
   process.exit(1);
 });

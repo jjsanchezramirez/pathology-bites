@@ -6,6 +6,7 @@ import { analyzeTranscript } from "./transcript-analysis";
 import { analyzeImagesV2 } from "./vision-v2";
 import { planLesson } from "./planner";
 import { assembleLesson } from "./assembler-v2";
+import { log } from "@/shared/utils/logging";
 
 // Vercel hobby plan caps serverless functions at 60s. Pipeline must fit within
 // that ceiling — see planner / assembler for the per-pass budgets.
@@ -61,7 +62,7 @@ export async function POST(request: NextRequest) {
     }
 
     const startTime = Date.now();
-    console.log(
+    log.debug(
       `[generate-lesson] Starting pipeline for ${images.length} images, ${audioDuration.toFixed(1)}s audio`
     );
 
@@ -69,12 +70,12 @@ export async function POST(request: NextRequest) {
     // Pass 0: Enrich image metadata from DB
     // -----------------------------------------------------------------------
     const enrichedImages = await enrichImageMetadata(images);
-    console.log(
+    log.debug(
       `[generate-lesson] Enriched ${enrichedImages.filter((img) => img.title).length}/${images.length} images with DB metadata`
     );
 
     const userSvgs = svgs ?? [];
-    console.log(`[generate-lesson] User provided ${userSvgs.length} SVGs`);
+    log.debug(`[generate-lesson] User provided ${userSvgs.length} SVGs`);
 
     // -----------------------------------------------------------------------
     // Passes 1-2: run in parallel (transcript analysis + vision)
@@ -85,15 +86,15 @@ export async function POST(request: NextRequest) {
     ]);
 
     const parallelElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(`[generate-lesson] Passes 1-2 complete in ${parallelElapsed}s`);
-    console.log(
+    log.debug(`[generate-lesson] Passes 1-2 complete in ${parallelElapsed}s`);
+    log.debug(
       `[generate-lesson] Transcript: ${transcriptAnalysis.segments.length} segments, title="${transcriptAnalysis.episodeTitle}"`
     );
-    console.log(
+    log.debug(
       `[generate-lesson] Vision: ${visionResults.filter((r) => r.canSeeImage).length}/${images.length} analysed`
     );
     visionResults.forEach((v, i) => {
-      console.log(
+      log.debug(
         `  [${i}] tool=${v.annotationTool}, pos=${v.featurePosition ? `${v.featurePosition.x},${v.featurePosition.y}` : "none"}, label="${v.suggestedLabel}"`
       );
     });
@@ -110,7 +111,7 @@ export async function POST(request: NextRequest) {
     );
 
     const planElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(
+    log.debug(
       `[generate-lesson] Plan complete in ${planElapsed}s — order=[${plan.imageOrder}], ${plan.textSlides.length} text slides, ${plan.svgPlacements.length} SVG placements`
     );
 
@@ -130,7 +131,7 @@ export async function POST(request: NextRequest) {
     );
 
     const totalElapsed = ((Date.now() - startTime) / 1000).toFixed(1);
-    console.log(
+    log.debug(
       `[generate-lesson] Complete in ${totalElapsed}s — ${lesson.slides.length} slides, ${lesson.slides.reduce((n, s) => n + s.elements.length, 0)} elements`
     );
 
@@ -145,7 +146,7 @@ export async function POST(request: NextRequest) {
       },
     });
   } catch (error) {
-    console.error("[generate-lesson] Unexpected error:", error);
+    log.error("[generate-lesson] Unexpected error:", error);
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Unknown error during lesson generation" },
       { status: 500 }
@@ -170,7 +171,7 @@ async function enrichImageMetadata(images: ImageInput[]): Promise<ImageInput[]> 
       .in("url", urls);
 
     if (error || !data) {
-      console.warn("[enrich] DB lookup failed:", error?.message);
+      log.warn("[enrich] DB lookup failed:", error?.message);
       return images;
     }
 
@@ -193,7 +194,7 @@ async function enrichImageMetadata(images: ImageInput[]): Promise<ImageInput[]> 
       };
     });
   } catch (err) {
-    console.warn("[enrich] Unexpected error:", err);
+    log.warn("[enrich] Unexpected error:", err);
     return images;
   }
 }

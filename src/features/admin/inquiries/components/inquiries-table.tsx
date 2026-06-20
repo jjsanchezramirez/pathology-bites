@@ -8,6 +8,7 @@ import { MessageSquare, HelpCircle, CheckCircle, Inbox } from "lucide-react";
 import { INQUIRY_TYPES } from "../types/inquiries";
 import { createClient } from "@/shared/services/client";
 import { Badge } from "@/shared/components/ui/badge";
+import { log } from "@/shared/utils/logging";
 
 interface InquiriesTableProps {
   onInquiriesChange?: (refreshTrigger: number) => void;
@@ -38,7 +39,7 @@ export function InquiriesTable({ onInquiriesChange }: InquiriesTableProps) {
         .select("request_type, status");
 
       if (error) {
-        console.error("Error fetching tab counts:", error);
+        log.error("Error fetching tab counts:", error);
         return;
       }
 
@@ -54,7 +55,7 @@ export function InquiriesTable({ onInquiriesChange }: InquiriesTableProps) {
       };
       setTabCounts(counts);
     } catch (error) {
-      console.error("Error calculating tab counts:", error);
+      log.error("Error calculating tab counts:", error);
     }
   };
 

@@ -15,6 +15,7 @@ import { GoogleSignInButton } from "@/features/auth/components/google-sign-in-bu
 import { AuthDivider } from "@/features/auth/components/ui/auth-divider";
 import { useTurnstile } from "@/features/auth/hooks/use-turnstile";
 import { getCaptchaSiteKey } from "@/features/auth/utils/captcha-config";
+import { log } from "@/shared/utils/logging";
 
 // Form schema definition
 const formSchema = z.object({
@@ -52,7 +53,7 @@ export function LoginForm({
 
   // Show error/message toasts from props (passed from server component)
   useEffect(() => {
-    console.log(
+    log.debug(
       "[LoginForm] useEffect triggered - initialError:",
       initialError,
       "initialMessage:",
@@ -62,10 +63,10 @@ export function LoginForm({
     if (initialError) {
       // Use a unique ID based on the error message to prevent deduplication issues
       const errorId = `login-error-${Date.now()}`;
-      console.log("[LoginForm] Showing error toast with ID:", errorId, "Message:", initialError);
+      log.debug("[LoginForm] Showing error toast with ID:", errorId, "Message:", initialError);
 
       const toastResult = toast.error(initialError, { id: errorId, duration: 8000 });
-      console.log("[LoginForm] Toast result:", toastResult);
+      log.debug("[LoginForm] Toast result:", toastResult);
 
       // Track failed attempts for rate limit warning
       if (
@@ -85,10 +86,10 @@ export function LoginForm({
     }
     if (initialMessage) {
       const messageId = `login-message-${Date.now()}`;
-      console.log("[LoginForm] Showing info toast with ID:", messageId, "Message:", initialMessage);
+      log.debug("[LoginForm] Showing info toast with ID:", messageId, "Message:", initialMessage);
 
       const toastResult = toast.info(initialMessage, { id: messageId, duration: 8000 });
-      console.log("[LoginForm] Toast result:", toastResult);
+      log.debug("[LoginForm] Toast result:", toastResult);
 
       // Clear the message from URL
       router.replace("/login", { scroll: false });
@@ -134,7 +135,7 @@ export function LoginForm({
         throw error;
       }
 
-      console.error("Login error:", error);
+      log.error("Login error:", error);
       toast.error("An unexpected error occurred. Please try again.");
       // Reset CAPTCHA on error
       turnstileRef.current?.reset();
@@ -203,17 +204,17 @@ export function LoginForm({
               }}
               onSuccess={(token) => {
                 setCaptchaToken(token);
-                console.log("[LoginForm] CAPTCHA verification successful");
+                log.debug("[LoginForm] CAPTCHA verification successful");
               }}
               onError={(error) => {
                 setCaptchaToken(null);
-                console.log("[LoginForm] CAPTCHA verification error:", error);
+                log.debug("[LoginForm] CAPTCHA verification error:", error);
                 // Don't show toast on error - Turnstile will auto-retry
                 // The widget reloads automatically, so no need to alarm the user
               }}
               onExpire={() => {
                 setCaptchaToken(null);
-                console.log("[LoginForm] CAPTCHA verification expired");
+                log.debug("[LoginForm] CAPTCHA verification expired");
                 // Don't show toast on expire - it will auto-reload
               }}
             />

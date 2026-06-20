@@ -8,6 +8,7 @@ import { Shield, User, PenTool, Eye } from "lucide-react";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 import { useRouter } from "next/navigation";
+import { log } from "@/shared/utils/logging";
 
 export function AdminModeToggle() {
   const { isAdmin, isCreator, isReviewer, role } = useUserRole();
@@ -47,7 +48,7 @@ export function AdminModeToggle() {
       // This prevents showing hybrid content during navigation
       setIsLoading(false);
     } catch (error) {
-      console.error("Error switching mode:", error);
+      log.error("Error switching mode:", error);
       setIsLoading(false);
       setTransitioning(false);
     }

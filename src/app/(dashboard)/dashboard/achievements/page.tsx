@@ -12,6 +12,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 import { ScrollReveal } from "@/shared/components/common";
+import { log } from "@/shared/utils/logging";
 
 // Mirrors the real layout — page header, then six category sections each with
 // a header + 2/3-col grid of cards. Keeping the structure identical avoids the
@@ -75,7 +76,7 @@ export default function AchievementsPage() {
       .map((progress) => {
         const definition = definitions.find((def) => def.id === progress.id);
         if (!definition) {
-          console.error(`Achievement definition not found for ID: ${progress.id}`);
+          log.error(`Achievement definition not found for ID: ${progress.id}`);
           return null;
         }
         return {

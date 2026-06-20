@@ -4,6 +4,7 @@ import React from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
 import { RefreshCw, AlertCircle } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 interface SilentErrorBoundaryState {
   hasError: boolean;
@@ -49,7 +50,7 @@ export class SilentErrorBoundary extends React.Component<
     const { maxRetries = 2, retryDelay = 1000, onError, onMaxRetriesReached } = this.props;
     const { retryCount } = this.state;
 
-    console.warn(`SilentErrorBoundary caught error (attempt ${retryCount + 1}):`, error.message);
+    log.warn(`SilentErrorBoundary caught error (attempt ${retryCount + 1}):`, error.message);
 
     // Call custom error handler
     onError?.(error, retryCount);

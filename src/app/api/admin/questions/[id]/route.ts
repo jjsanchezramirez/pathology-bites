@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { formatVersion } from "@/shared/utils/version";
+import { log } from "@/shared/utils/logging";
 
 // Create Supabase client with service role for admin operations
 async function createAdminClient() {
@@ -62,7 +63,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("GET - User authenticated:", userId, "Role:", userRole);
+    log.debug("GET - User authenticated:", userId, "Role:", userRole);
 
     // Use admin client for the actual operations
     const adminClient = await createAdminClient();
@@ -77,8 +78,8 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .single();
 
     if (simpleError || !simpleQuestion) {
-      console.error("Simple question fetch error:", simpleError);
-      console.error("Question ID:", questionId);
+      log.error("Simple question fetch error:", simpleError);
+      log.error("Question ID:", questionId);
       return NextResponse.json(
         { error: "Question not found in simple query", details: simpleError?.message },
         { status: 404 }
@@ -162,9 +163,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .single();
 
     if (questionError || !question) {
-      console.error("Question fetch error:", questionError);
-      console.error("Question ID:", questionId);
-      console.error("Question data:", question);
+      log.error("Question fetch error:", questionError);
+      log.error("Question ID:", questionId);
+      log.error("Question data:", question);
       return NextResponse.json(
         { error: "Question not found", details: questionError?.message },
         { status: 404 }
@@ -210,7 +211,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       question: questionWithFlattenedTags,
     });
   } catch (error) {
-    console.error("Error fetching question:", error);
+    log.error("Error fetching question:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }
@@ -344,9 +345,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: questionId } = await params;
-    console.log("PATCH /api/admin/questions/[id] - Question ID:", questionId);
-    console.log("PATCH /api/admin/questions/[id] - Params type:", typeof params);
-    console.log("PATCH /api/admin/questions/[id] - Params:", params);
+    log.debug("PATCH /api/admin/questions/[id] - Question ID:", questionId);
+    log.debug("PATCH /api/admin/questions/[id] - Params type:", typeof params);
+    log.debug("PATCH /api/admin/questions/[id] - Params:", params);
 
     const body = await request.json();
     const {
@@ -394,7 +395,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       reviewerId?: string;
     };
 
-    console.log("PATCH /api/admin/questions/[id] - Body received:", {
+    log.debug("PATCH /api/admin/questions/[id] - Body received:", {
       hasQuestionData: !!questionData,
       hasAnswerOptions: !!answerOptions,
       hasQuestionImages: !!questionImages,
@@ -410,14 +411,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log("PATCH - User authenticated:", userId, "Role:", userRole);
+    log.debug("PATCH - User authenticated:", userId, "Role:", userRole);
 
     // Use admin client for the actual operations
     const adminClient = await createAdminClient();
-    console.log("PATCH - Admin client created");
+    log.debug("PATCH - Admin client created");
 
     // Get current question to check status and permissions
-    console.log("PATCH - Fetching question with ID:", questionId);
+    log.debug("PATCH - Fetching question with ID:", questionId);
     const { data: currentQuestionData, error: questionError } = await adminClient
       .from("questions")
       .select(
@@ -447,14 +448,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       anki_deck_name: string | null;
     };
 
-    console.log("PATCH - Question fetch result:", {
+    log.debug("PATCH - Question fetch result:", {
       found: !!currentQuestion,
       error: questionError?.message,
       status: currentQuestion?.status,
     });
 
     if (questionError || !currentQuestion) {
-      console.error("PATCH - Question fetch error:", {
+      log.error("PATCH - Question fetch error:", {
         questionId,
         error: questionError,
         message: questionError?.message,
@@ -490,15 +491,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       if (isPatchEdit) {
         // Creators can make patch edits to their own published questions
         if (isCreator && isQuestionCreator) {
-          console.log("PATCH - Creator making patch edit to own published question");
+          log.debug("PATCH - Creator making patch edit to own published question");
         }
         // Reviewers can make patch edits to any published question
         else if (isReviewer) {
-          console.log("PATCH - Reviewer making patch edit to published question");
+          log.debug("PATCH - Reviewer making patch edit to published question");
         }
         // Admins can always edit
         else if (isAdmin) {
-          console.log("PATCH - Admin making patch edit to published question");
+          log.debug("PATCH - Admin making patch edit to published question");
         } else {
           return NextResponse.json(
             {
@@ -524,7 +525,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         // For creators making non-patch edits, they need to go through review
         if (isCreator && isQuestionCreator && !isAdmin) {
           // This will be handled by changing status to pending_review
-          console.log(
+          log.debug(
             "PATCH - Creator making minor/major edit to published question (will require review)"
           );
         }
@@ -536,15 +537,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       if (isReviewer && isAssignedReviewer) {
         // Reviewer can make patch-level edits (typos, rewording, etc.)
         // This is allowed and will be tracked via updated_by
-        console.log("PATCH - Reviewer making patch edit to assigned question");
+        log.debug("PATCH - Reviewer making patch edit to assigned question");
       }
       // Creators can edit their own pending questions (before review starts)
       else if (isCreator && isQuestionCreator) {
-        console.log("PATCH - Creator editing own pending question");
+        log.debug("PATCH - Creator editing own pending question");
       }
       // Admins can always edit
       else if (isAdmin) {
-        console.log("PATCH - Admin editing pending question");
+        log.debug("PATCH - Admin editing pending question");
       } else {
         return NextResponse.json(
           {
@@ -559,11 +560,11 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     else {
       // Creators can edit their own draft/rejected questions
       if (isCreator && isQuestionCreator) {
-        console.log("PATCH - Creator editing own draft/rejected question");
+        log.debug("PATCH - Creator editing own draft/rejected question");
       }
       // Admins can edit any draft/rejected question
       else if (isAdmin) {
-        console.log("PATCH - Admin editing draft/rejected question");
+        log.debug("PATCH - Admin editing draft/rejected question");
       } else {
         return NextResponse.json(
           {
@@ -592,7 +593,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           // No reviewer assigned - cannot move to pending_review due to constraint
           // The question will remain published, and admin must manually assign a reviewer
           // and change status to pending_review if they want it reviewed
-          console.log(
+          log.debug(
             `PATCH - Cannot change status to pending_review for ${updateType} edit: no reviewer assigned. Question will remain published.`
           );
           throw new Error(
@@ -601,7 +602,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         }
         statusToSet = "pending_review";
         // Use the assigned reviewer (newly assigned or existing)
-        console.log(
+        log.debug(
           `PATCH - Changing status from published to pending_review for ${updateType} edit, using reviewer: ${reviewerToSet}`
         );
       }
@@ -672,7 +673,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
       // Update answer options if provided
       if (answerOptions) {
-        console.log("Updating answer options...");
+        log.debug("Updating answer options...");
 
         // Get existing options for this question
         const { data: existingOptions, error: fetchError } = await adminClient
@@ -681,7 +682,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           .eq("question_id", questionId);
 
         if (fetchError) {
-          console.error("Error fetching existing options:", fetchError);
+          log.error("Error fetching existing options:", fetchError);
           throw new Error(`Failed to fetch existing options: ${fetchError.message}`);
         }
 
@@ -696,14 +697,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           );
 
         if (referencedError) {
-          console.error("Error checking referenced options:", referencedError);
+          log.error("Error checking referenced options:", referencedError);
           throw new Error(`Failed to check referenced options: ${referencedError.message}`);
         }
 
         const referencedOptionIds = new Set(
           referencedOptions?.map((ref) => ref.selected_answer_id) || []
         );
-        console.log("Referenced option IDs:", Array.from(referencedOptionIds));
+        log.debug("Referenced option IDs:", Array.from(referencedOptionIds));
 
         // Process incoming options
         const incomingOptionIds = new Set();
@@ -748,7 +749,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             .eq("id", option.id);
 
           if (updateError) {
-            console.error("Error updating option:", updateError);
+            log.error("Error updating option:", updateError);
             throw new Error(`Failed to update option: ${updateError.message}`);
           }
         }
@@ -760,7 +761,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             .insert(optionsToInsert);
 
           if (insertError) {
-            console.error("Error inserting new options:", insertError);
+            log.error("Error inserting new options:", insertError);
             throw new Error(`Failed to insert new options: ${insertError.message}`);
           }
         }
@@ -780,10 +781,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             .in("id", optionsToDelete);
 
           if (deleteError) {
-            console.error("Error deleting unreferenced options:", deleteError);
+            log.error("Error deleting unreferenced options:", deleteError);
             throw new Error(`Failed to delete unreferenced options: ${deleteError.message}`);
           }
-          console.log(`Deleted ${optionsToDelete.length} unreferenced options`);
+          log.debug(`Deleted ${optionsToDelete.length} unreferenced options`);
         }
 
         // Log warning for options that couldn't be deleted due to references
@@ -791,15 +792,15 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           (id) => !incomingOptionIds.has(id) && referencedOptionIds.has(id)
         );
         if (referencedButNotIncoming.length > 0) {
-          console.warn(
+          log.warn(
             `Warning: ${referencedButNotIncoming.length} options could not be deleted because they are referenced by quiz attempts:`,
             referencedButNotIncoming
           );
         }
 
-        console.log("Answer options updated successfully");
+        log.debug("Answer options updated successfully");
       } else {
-        console.log("No answer options to update");
+        log.debug("No answer options to update");
       }
 
       // Update question images if provided
@@ -828,7 +829,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
       // Update question tags if provided
       if (tagIds !== undefined) {
-        console.log("Updating tags...");
+        log.debug("Updating tags...");
 
         // Delete existing tags
         const { error: deleteTagsError } = await adminClient
@@ -837,7 +838,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           .eq("question_id", questionId);
 
         if (deleteTagsError) {
-          console.error("Error deleting existing tags:", deleteTagsError);
+          log.error("Error deleting existing tags:", deleteTagsError);
           throw new Error(`Failed to delete existing tags: ${deleteTagsError.message}`);
         }
 
@@ -852,8 +853,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
               tagId.trim() !== ""
           );
 
-          console.log("Original tagIds:", tagIds);
-          console.log("Filtered validTagIds:", validTagIds);
+          log.debug("Original tagIds:", tagIds);
+          log.debug("Filtered validTagIds:", validTagIds);
 
           if (validTagIds.length > 0) {
             const { error: tagsError } = await adminClient.from("question_tags").insert(
@@ -864,7 +865,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             );
 
             if (tagsError) {
-              console.error("Tags update error:", tagsError);
+              log.error("Tags update error:", tagsError);
               throw new Error(
                 `Failed to update question tags: ${tagsError.message || JSON.stringify(tagsError)}`
               );
@@ -920,7 +921,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           .single();
 
         if (versionError) {
-          console.error("Error creating initial version history:", versionError);
+          log.error("Error creating initial version history:", versionError);
           // Continue without version history rather than failing the entire update
         } else {
           versionId = newVersionId?.id;
@@ -942,7 +943,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             .eq("id", questionId);
 
           if (versionUpdateError) {
-            console.error("Error updating patch version:", versionUpdateError);
+            log.error("Error updating patch version:", versionUpdateError);
             throw new Error(`Failed to update patch version: ${versionUpdateError.message}`);
           }
 
@@ -976,7 +977,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             .single();
 
           if (versionError) {
-            console.error("Error creating patch version history:", versionError);
+            log.error("Error creating patch version history:", versionError);
             // Continue without version history rather than failing the entire update
           } else {
             versionId = newVersionId?.id;
@@ -1006,7 +1007,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             .eq("id", questionId);
 
           if (versionUpdateError) {
-            console.error("Error updating version:", versionUpdateError);
+            log.error("Error updating version:", versionUpdateError);
             throw new Error(`Failed to update version: ${versionUpdateError.message}`);
           }
 
@@ -1040,7 +1041,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
             .single();
 
           if (versionError) {
-            console.error(`Error creating ${updateType} version history:`, versionError);
+            log.error(`Error creating ${updateType} version history:`, versionError);
             // Continue without version history rather than failing the entire update
           } else {
             versionId = newVersionId?.id;
@@ -1056,7 +1057,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         .single();
 
       if (fetchError) {
-        console.error("Error fetching updated question:", fetchError);
+        log.error("Error fetching updated question:", fetchError);
         return NextResponse.json(
           { error: "Question updated but failed to fetch updated data" },
           { status: 500 }
@@ -1082,14 +1083,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           : "Question updated successfully",
       });
     } catch (error) {
-      console.error("Error during question update:", error);
+      log.error("Error during question update:", error);
       return NextResponse.json(
         { error: error instanceof Error ? error.message : "Failed to update question" },
         { status: 500 }
       );
     }
   } catch (error) {
-    console.error("Error in question update API:", error);
+    log.error("Error in question update API:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

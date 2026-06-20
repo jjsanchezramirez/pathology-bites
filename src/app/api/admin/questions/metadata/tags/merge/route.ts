@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -78,7 +79,7 @@ export async function POST(request: NextRequest) {
     }
 
     const { sourceTagIds, targetTagId } = await request.json();
-    console.log("Merge request:", { sourceTagIds, targetTagId });
+    log.debug("Merge request:", { sourceTagIds, targetTagId });
 
     if (!sourceTagIds || !Array.isArray(sourceTagIds) || sourceTagIds.length === 0) {
       return NextResponse.json({ error: "Source tag IDs are required" }, { status: 400 });
@@ -104,13 +105,13 @@ export async function POST(request: NextRequest) {
       .in("tag_id", sourceTagIds);
 
     if (fetchError) {
-      console.error("Error fetching source question_tags:", fetchError);
+      log.error("Error fetching source question_tags:", fetchError);
       return NextResponse.json({ error: "Failed to fetch question tags" }, { status: 500 });
     }
 
     // Get unique question IDs that had any of the source tags
     const questionIdsToTag = [...new Set(sourceQuestionTags?.map((qt) => qt.question_id) || [])];
-    console.log("Questions that had source tags:", questionIdsToTag.length, questionIdsToTag);
+    log.debug("Questions that had source tags:", questionIdsToTag.length, questionIdsToTag);
 
     // 2. Get all question_tags that already use the target tag to avoid duplicates
     const { data: existingTargetTags, error: targetFetchError } = await supabase
@@ -120,12 +121,12 @@ export async function POST(request: NextRequest) {
       .in("question_id", questionIdsToTag);
 
     if (targetFetchError) {
-      console.error("Error fetching existing target question_tags:", targetFetchError);
+      log.error("Error fetching existing target question_tags:", targetFetchError);
       return NextResponse.json({ error: "Failed to fetch existing target tags" }, { status: 500 });
     }
 
     const existingQuestionIds = new Set(existingTargetTags?.map((qt) => qt.question_id) || []);
-    console.log(
+    log.debug(
       "Questions that already have target tag:",
       existingQuestionIds.size,
       Array.from(existingQuestionIds)
@@ -139,13 +140,13 @@ export async function POST(request: NextRequest) {
         question_id: questionId,
         tag_id: targetTagId,
       }));
-    console.log("New question_tags to insert:", newQuestionTags.length, newQuestionTags);
+    log.debug("New question_tags to insert:", newQuestionTags.length, newQuestionTags);
 
     if (newQuestionTags.length > 0) {
       const { error: insertError } = await supabase.from("question_tags").insert(newQuestionTags);
 
       if (insertError) {
-        console.error("Error inserting new question_tags:", insertError);
+        log.error("Error inserting new question_tags:", insertError);
         return NextResponse.json(
           { error: "Failed to reassign questions to target tag" },
           { status: 500 }
@@ -161,7 +162,7 @@ export async function POST(request: NextRequest) {
       .in("tag_id", sourceTagIds);
 
     if (deleteSourceError) {
-      console.error("Error deleting source question_tags:", deleteSourceError);
+      log.error("Error deleting source question_tags:", deleteSourceError);
       return NextResponse.json({ error: "Failed to delete source question tags" }, { status: 500 });
     }
 
@@ -169,7 +170,7 @@ export async function POST(request: NextRequest) {
     const { error: deleteTagsError } = await supabase.from("tags").delete().in("id", sourceTagIds);
 
     if (deleteTagsError) {
-      console.error("Error deleting source tags:", deleteTagsError);
+      log.error("Error deleting source tags:", deleteTagsError);
       return NextResponse.json({ error: "Failed to delete source tags" }, { status: 500 });
     }
 
@@ -178,7 +179,7 @@ export async function POST(request: NextRequest) {
       mergedCount: sourceTagIds.length,
     });
   } catch (error) {
-    console.error("Error in merge tags API:", error);
+    log.error("Error in merge tags API:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

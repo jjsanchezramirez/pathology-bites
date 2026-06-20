@@ -20,6 +20,7 @@ import {
   isAdminTypeMode,
 } from "@/shared/utils/auth/admin-mode";
 import { userSettingsService } from "@/shared/services/user-settings";
+import { log } from "@/shared/utils/logging";
 
 /**
  * Derive admin mode from the current URL pathname.
@@ -147,19 +148,19 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
       });
 
       root.setAttribute("data-dashboard-theme", "default");
-      console.log("[DashboardTheme] Cleanup: Reset to default theme");
+      log.debug("[DashboardTheme] Cleanup: Reset to default theme");
     };
   }, []);
 
   // Load theme from SWR cache (no API calls, no redundant localStorage!)
   useEffect(() => {
     try {
-      console.log("[DashboardTheme] Loading theme from SWR cache...");
+      log.debug("[DashboardTheme] Loading theme from SWR cache...");
 
       // Mode is derived from URL pathname (see derivedMode above). Cookie sync
       // happens in the dedicated effect.
       const defaultMode = derivedMode;
-      console.log("[DashboardTheme] Admin mode:", defaultMode, "isAdmin:", isAdmin, "role:", role);
+      log.debug("[DashboardTheme] Admin mode:", defaultMode, "isAdmin:", isAdmin, "role:", role);
 
       // Load theme based on admin mode from SWR cache
       const availableThemes = getAvailableThemes(defaultMode);
@@ -169,31 +170,31 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
         const themeKey = getThemeKeyForMode(defaultMode);
         const themeId = settings.ui_settings[themeKey];
 
-        console.log(`[DashboardTheme] Mode: ${defaultMode}, Theme:`, themeId);
+        log.debug(`[DashboardTheme] Mode: ${defaultMode}, Theme:`, themeId);
 
         if (themeId) {
           const theme = getThemeById(themeId);
           if (theme && availableThemes.some((t) => t.id === theme.id)) {
             themeToSet = theme;
-            console.log("[DashboardTheme] Loaded from SWR cache:", themeToSet.id);
+            log.debug("[DashboardTheme] Loaded from SWR cache:", themeToSet.id);
           } else {
             themeToSet = getDefaultThemeForMode(defaultMode);
-            console.log("[DashboardTheme] Theme not available, using default:", themeToSet.id);
+            log.debug("[DashboardTheme] Theme not available, using default:", themeToSet.id);
           }
         } else {
           themeToSet = getDefaultThemeForMode(defaultMode);
-          console.log("[DashboardTheme] No theme preference, using default:", themeToSet.id);
+          log.debug("[DashboardTheme] No theme preference, using default:", themeToSet.id);
         }
       } else {
         themeToSet = getDefaultThemeForMode(defaultMode);
-        console.log("[DashboardTheme] No settings in SWR cache, using default:", themeToSet.id);
+        log.debug("[DashboardTheme] No settings in SWR cache, using default:", themeToSet.id);
       }
 
-      console.log("[DashboardTheme] Applying theme:", themeToSet.id);
+      log.debug("[DashboardTheme] Applying theme:", themeToSet.id);
       setCurrentTheme(themeToSet);
       setIsLoading(false);
     } catch (error) {
-      console.warn("[DashboardTheme] Failed to load dashboard settings:", error);
+      log.warn("[DashboardTheme] Failed to load dashboard settings:", error);
       setCurrentTheme(getDefaultTheme());
       setIsLoading(false);
     }
@@ -218,11 +219,11 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
             const availableThemes = getAvailableThemes(adminMode);
             if (theme && availableThemes.some((t) => t.id === theme.id)) {
               setCurrentTheme(theme);
-              console.log("[DashboardTheme] Updated theme from localStorage:", themeId);
+              log.debug("[DashboardTheme] Updated theme from localStorage:", themeId);
             }
           }
         } catch (error) {
-          console.warn("[DashboardTheme] Failed to update theme from storage event:", error);
+          log.warn("[DashboardTheme] Failed to update theme from storage event:", error);
         }
       }
     };
@@ -241,7 +242,7 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
       // IMPORTANT: Don't apply dashboard theme on error pages
       // Error pages should always use light mode and system theme
       if (root.hasAttribute("data-error-page-enforced")) {
-        console.log("[DashboardTheme] Error page detected, skipping theme application");
+        log.debug("[DashboardTheme] Error page detected, skipping theme application");
         return;
       }
 
@@ -322,7 +323,7 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
       try {
         // Save to database immediately and update SWR cache
         const updatedSettings = await userSettingsService.updateUISettings({ [themeKey]: themeId });
-        console.log(`[DashboardTheme] Saved ${adminMode} theme to database:`, themeId);
+        log.debug(`[DashboardTheme] Saved ${adminMode} theme to database:`, themeId);
 
         // Manually update SWR cache to keep it in sync
         if (settings) {
@@ -334,10 +335,10 @@ export function DashboardThemeProvider({ children, isGuest = false }: DashboardT
             },
             false
           );
-          console.log(`[DashboardTheme] SWR cache updated`);
+          log.debug(`[DashboardTheme] SWR cache updated`);
         }
       } catch (error) {
-        console.error("[DashboardTheme] Failed to save theme to database:", error);
+        log.error("[DashboardTheme] Failed to save theme to database:", error);
       }
     }
   };

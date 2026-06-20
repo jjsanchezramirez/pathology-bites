@@ -1,5 +1,6 @@
 import { createClient } from "@/shared/services/server";
 import { NextResponse } from "next/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -81,12 +82,12 @@ export async function GET(request: Request) {
     const { data: workloadData, error: workloadError } = workloadResult;
 
     if (reviewersError) {
-      console.error("Error fetching reviewers:", reviewersError);
+      log.error("Error fetching reviewers:", reviewersError);
       return NextResponse.json({ error: "Failed to fetch reviewers" }, { status: 500 });
     }
 
     if (workloadError) {
-      console.error("Error fetching workload:", workloadError);
+      log.error("Error fetching workload:", workloadError);
       // Continue without workload data
     }
 
@@ -119,7 +120,7 @@ export async function GET(request: Request) {
       reviewers: reviewersWithWorkload,
     });
   } catch (error) {
-    console.error("Unexpected error fetching reviewers:", error);
+    log.error("Unexpected error fetching reviewers:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

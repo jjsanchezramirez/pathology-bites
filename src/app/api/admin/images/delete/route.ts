@@ -3,6 +3,7 @@ import { createClient } from "@/shared/services/server";
 import { deleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 import { revalidateImages } from "@/shared/utils/api/revalidation";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -95,8 +96,8 @@ import { revalidateImages } from "@/shared/utils/api/revalidation";
  *                   example: Failed to delete image
  */
 export async function DELETE(request: NextRequest) {
-  console.log("🗑️ DELETE /api/admin/images/delete called");
-  console.log("🍪 Request headers:", {
+  log.debug("🗑️ DELETE /api/admin/images/delete called");
+  log.debug("🍪 Request headers:", {
     cookie: request.headers.get("cookie") ? "present" : "missing",
     authorization: request.headers.get("authorization") ? "present" : "missing",
     userAgent: request.headers.get("user-agent"),
@@ -104,17 +105,17 @@ export async function DELETE(request: NextRequest) {
 
   try {
     const supabase = await createClient();
-    console.log("✅ Supabase client created");
+    log.debug("✅ Supabase client created");
 
     // Verify user is authenticated admin
     const userId = getUserIdFromHeaders(request);
-    console.log("👤 Auth check:", {
+    log.debug("👤 Auth check:", {
       hasUser: !!userId,
       userId: userId,
     });
 
     if (!userId) {
-      console.log("❌ Authentication failed");
+      log.debug("❌ Authentication failed");
       return NextResponse.json(
         { error: "You must be logged in to delete images" },
         { status: 401 }
@@ -127,10 +128,10 @@ export async function DELETE(request: NextRequest) {
       .eq("id", userId)
       .single();
 
-    console.log("🔐 Role check:", { userData, roleError: roleError?.message });
+    log.debug("🔐 Role check:", { userData, roleError: roleError?.message });
 
     if (roleError || !userData || userData.role !== "admin") {
-      console.log("❌ Authorization failed");
+      log.debug("❌ Authorization failed");
       return NextResponse.json(
         { error: "Only administrators can delete images", details: roleError?.message },
         { status: 403 }
@@ -139,10 +140,10 @@ export async function DELETE(request: NextRequest) {
 
     // Parse request body
     const { imageId } = await request.json();
-    console.log("📋 Request data:", { imageId });
+    log.debug("📋 Request data:", { imageId });
 
     if (!imageId) {
-      console.log("❌ Missing imageId");
+      log.debug("❌ Missing imageId");
       return NextResponse.json({ error: "Image ID is required" }, { status: 400 });
     }
 
@@ -169,7 +170,7 @@ export async function DELETE(request: NextRequest) {
           await deleteFromR2(imageData.storage_path);
         }
       } catch (storageError) {
-        console.warn("R2 deletion error (continuing with database deletion):", storageError);
+        log.warn("R2 deletion error (continuing with database deletion):", storageError);
         // Continue with database deletion even if R2 deletion fails
       }
     }
@@ -181,7 +182,7 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Failed to delete image from database" }, { status: 500 });
     }
 
-    console.log("✅ Image deleted successfully");
+    log.debug("✅ Image deleted successfully");
 
     // Revalidate caches to update all admin pages
     revalidateImages({ imageId, includeDashboard: true });
@@ -191,7 +192,7 @@ export async function DELETE(request: NextRequest) {
       message: "Image deleted successfully",
     });
   } catch (error) {
-    console.error("❌ Image deletion error:", error);
+    log.error("❌ Image deletion error:", error);
     return NextResponse.json({ error: "Failed to delete image" }, { status: 500 });
   }
 }

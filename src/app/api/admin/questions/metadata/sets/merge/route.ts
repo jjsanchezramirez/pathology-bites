@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -137,7 +138,7 @@ export async function POST(request: NextRequest) {
     if (deleteError) {
       // If deletion fails, we should ideally rollback the question moves
       // For now, we'll log the error but still report success for the merge
-      console.error("Error deleting source sets after merge:", deleteError);
+      log.error("Error deleting source sets after merge:", deleteError);
     }
 
     return NextResponse.json({
@@ -147,7 +148,7 @@ export async function POST(request: NextRequest) {
       targetSet: targetSet.name,
     });
   } catch (error) {
-    console.error("Error merging question sets:", error);
+    log.error("Error merging question sets:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

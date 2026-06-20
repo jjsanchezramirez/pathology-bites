@@ -1,6 +1,7 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -150,7 +151,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       .single();
 
     if (updateError) {
-      console.error("Error reassigning question:", updateError);
+      log.error("Error reassigning question:", updateError);
       return NextResponse.json(
         { error: `Failed to reassign question: ${updateError.message}` },
         { status: 500 }
@@ -166,7 +167,7 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       message: `Question reassigned to new reviewer`,
     });
   } catch (error) {
-    console.error("Unexpected error reassigning question:", error);
+    log.error("Unexpected error reassigning question:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

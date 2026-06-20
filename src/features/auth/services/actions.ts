@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/shared/services/server";
 import { headers } from "next/headers";
 import { loginRateLimiter } from "@/features/auth/utils/rate-limiter";
+import { log } from "@/shared/utils/logging";
 
 export async function login(formData: FormData) {
   const supabase = await createClient();
@@ -20,13 +21,11 @@ export async function login(formData: FormData) {
   const rateLimitResult = loginRateLimiter.checkLimit(clientIP, "login");
   const currentAttempts = loginRateLimiter.getAttempts(clientIP, "login");
 
-  console.log(`Login attempt from IP ${clientIP}: ${currentAttempts}/10 attempts`);
+  log.debug(`Login attempt from IP ${clientIP}: ${currentAttempts}/10 attempts`);
 
   if (!rateLimitResult.allowed) {
     const retryAfterMinutes = Math.ceil((rateLimitResult.retryAfter || 0) / (1000 * 60));
-    console.log(
-      `Rate limit exceeded for IP ${clientIP}. Retry after: ${retryAfterMinutes} minutes`
-    );
+    log.debug(`Rate limit exceeded for IP ${clientIP}. Retry after: ${retryAfterMinutes} minutes`);
     redirect(
       "/login?error=" +
         encodeURIComponent(
@@ -60,22 +59,22 @@ export async function login(formData: FormData) {
   const { error, data: authData } = await supabase.auth.signInWithPassword(signInData);
 
   if (error) {
-    console.error("[Auth] Login error:", error);
+    log.error("[Auth] Login error:", error);
     const redirectParam = redirectPath ? `&redirect=${encodeURIComponent(redirectPath)}` : "";
 
     if (error.message === "Invalid login credentials") {
-      console.log("[Auth] Invalid credentials, redirecting to login");
+      log.debug("[Auth] Invalid credentials, redirecting to login");
       redirect(`/login?error=${encodeURIComponent("Invalid email or password")}${redirectParam}`);
       return;
     }
     if (error.message === "Email not confirmed") {
-      console.log("[Auth] Email not confirmed, redirecting to verify-email");
+      log.debug("[Auth] Email not confirmed, redirecting to verify-email");
       redirect("/verify-email?email=" + encodeURIComponent(email));
       return;
     }
     // Handle CAPTCHA errors specifically with user-friendly messages
     if (error.message?.includes("captcha") || error.code === "captcha_failed") {
-      console.log("[Auth] CAPTCHA verification failed:", error.message);
+      log.debug("[Auth] CAPTCHA verification failed:", error.message);
 
       let userMessage = "Security verification failed. Please try again.";
 
@@ -91,22 +90,22 @@ export async function login(formData: FormData) {
       redirect(`/login?error=${encodeURIComponent(userMessage)}${redirectParam}`);
       return;
     }
-    console.log("[Auth] Other login error, redirecting to login with error");
+    log.debug("[Auth] Other login error, redirecting to login with error");
     redirect(`/login?error=${encodeURIComponent(error.message)}${redirectParam}`);
     return;
   }
 
-  console.log("[Auth] Login successful for user:", authData.user.id);
+  log.debug("[Auth] Login successful for user:", authData.user.id);
 
   // Reset rate limit on successful login
   loginRateLimiter.reset(clientIP, "login");
-  console.log(`[Auth] Rate limit reset for IP ${clientIP} after successful login`);
+  log.debug(`[Auth] Rate limit reset for IP ${clientIP} after successful login`);
 
   revalidatePath("/", "layout");
 
   // Use redirect path if provided
   if (redirectPath) {
-    console.log("[Auth] Redirecting to provided path:", redirectPath);
+    log.debug("[Auth] Redirecting to provided path:", redirectPath);
     redirect(redirectPath);
   }
 
@@ -122,10 +121,10 @@ export async function login(formData: FormData) {
         .eq("id", authData.user.id)
         .maybeSingle();
 
-      console.log("[Auth] User role data:", userData);
+      log.debug("[Auth] User role data:", userData);
 
       if (roleError) {
-        console.error("[Auth] Role check error:", roleError);
+        log.error("[Auth] Role check error:", roleError);
       } else if (userData) {
         userRole = userData.role || "user";
 
@@ -135,25 +134,25 @@ export async function login(formData: FormData) {
           await supabase.auth.updateUser({
             data: { role: userRole },
           });
-          console.log("[Auth] Updated user_metadata with role:", userRole);
+          log.debug("[Auth] Updated user_metadata with role:", userRole);
         } catch (metadataError) {
-          console.error("[Auth] Failed to update user_metadata:", metadataError);
+          log.error("[Auth] Failed to update user_metadata:", metadataError);
           // Non-critical error, continue with login
         }
       }
     } catch (error) {
-      console.error("[Auth] Database error during role check:", error);
+      log.error("[Auth] Database error during role check:", error);
     }
   } else {
-    console.log("[Auth] Role retrieved from JWT:", userRole);
+    log.debug("[Auth] Role retrieved from JWT:", userRole);
   }
 
   // Redirect based on role
   if (userRole === "admin" || userRole === "creator" || userRole === "reviewer") {
-    console.log("[Auth] Redirecting to admin dashboard for role:", userRole);
+    log.debug("[Auth] Redirecting to admin dashboard for role:", userRole);
     redirect("/admin");
   } else {
-    console.log("[Auth] Redirecting to user dashboard for role:", userRole);
+    log.debug("[Auth] Redirecting to user dashboard for role:", userRole);
     redirect("/dashboard");
   }
 }

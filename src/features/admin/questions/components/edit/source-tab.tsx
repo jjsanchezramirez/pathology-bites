@@ -19,6 +19,7 @@ import {
   ContentSelector,
   EducationalContent,
 } from "@/features/admin/questions/components/create/content-selector";
+import { log } from "@/shared/utils/logging";
 
 interface SourceDetails {
   primary_model?: string;
@@ -98,7 +99,7 @@ export function SourceTab({
         const fileInfo = getContentFileInfo(question.lesson, question.topic);
         return fileInfo?.subject || null;
       } catch (error) {
-        console.error("Error loading subject from content index:", error);
+        log.error("Error loading subject from content index:", error);
       }
     }
     return null;

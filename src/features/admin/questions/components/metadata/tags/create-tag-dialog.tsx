@@ -9,6 +9,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Loader2 } from "lucide-react";
+import { log } from "@/shared/utils/logging";
 
 interface CreateTagDialogProps {
   open: boolean;
@@ -89,7 +90,7 @@ export function CreateTagDialog({ open, onOpenChange, onSuccess }: CreateTagDial
         onSuccess();
       }, 100);
     } catch (error) {
-      console.error("Error creating tag:", error);
+      log.error("Error creating tag:", error);
       toast.error(error instanceof Error ? error.message : "Failed to create tag");
     } finally {
       setIsCreating(false);

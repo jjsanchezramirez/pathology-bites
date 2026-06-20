@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { CELL_QUIZ_IMAGES_URL, CELL_QUIZ_REFERENCES_URL } from "@/shared/config/cell-quiz";
 import { transformCellQuizData } from "@/shared/utils/r2/r2-url-transformer";
 import { toast } from "@/shared/utils/ui/toast";
+import { log } from "@/shared/utils/logging";
 
 // Type definitions for cell quiz data
 export interface CellImageData {
@@ -75,7 +76,7 @@ async function loadCellQuizImages(): Promise<CellQuizImagesData> {
       if (!res.ok) throw new Error(`Failed: ${res.status}`);
       return res;
     } catch (e) {
-      console.warn(
+      log.warn(
         "[CellQuiz Images] R2 fetch failed in dev, falling back to /api/public/tools/cell-quiz/images",
         e
       );
@@ -97,7 +98,7 @@ async function loadCellQuizImages(): Promise<CellQuizImagesData> {
             ? "Timed out fetching cell quiz images. Please check your network and try again."
             : e?.message || "Failed to fetch cell quiz images.";
 
-        console.error("[CellQuiz Images] Both R2 and fallback API failed.", fallbackError);
+        log.error("[CellQuiz Images] Both R2 and fallback API failed.", fallbackError);
         throw new Error(msg);
       }
     }
@@ -142,7 +143,7 @@ async function loadCellQuizReferences(): Promise<BloodCellsReferenceData> {
       if (!res.ok) throw new Error(`Failed: ${res.status}`);
       return res;
     } catch (e) {
-      console.warn(
+      log.warn(
         "[CellQuiz References] R2 fetch failed in dev, falling back to /api/public/tools/cell-quiz/references",
         e
       );
@@ -164,7 +165,7 @@ async function loadCellQuizReferences(): Promise<BloodCellsReferenceData> {
             ? "Timed out fetching cell quiz references. Please check your network and try again."
             : e?.message || "Failed to fetch cell quiz references.";
 
-        console.error("[CellQuiz References] Both R2 and fallback API failed.", fallbackError);
+        log.error("[CellQuiz References] Both R2 and fallback API failed.", fallbackError);
         throw new Error(msg);
       }
     }
@@ -194,7 +195,7 @@ export function useClientCellQuiz(): UseCellQuizResult {
         setIsLoading(true);
         setError(null);
 
-        console.log("🔄 Loading cell quiz data from R2...");
+        log.debug("🔄 Loading cell quiz data from R2...");
 
         // Load both datasets in parallel
         const [imagesData, referencesData] = await Promise.all([
@@ -206,7 +207,7 @@ export function useClientCellQuiz(): UseCellQuizResult {
           setCellData(imagesData);
           setBloodCellsReference(referencesData);
 
-          console.log("✅ Cell quiz data loaded successfully:", {
+          log.debug("✅ Cell quiz data loaded successfully:", {
             images: {
               cellCount: imagesData ? Object.keys(imagesData).length : 0,
               sampleCells: imagesData ? Object.keys(imagesData).slice(0, 3) : [],
@@ -224,7 +225,7 @@ export function useClientCellQuiz(): UseCellQuizResult {
           });
         }
       } catch (err) {
-        console.error("❌ Failed to load cell quiz data:", err);
+        log.error("❌ Failed to load cell quiz data:", err);
         if (mounted) {
           const errorMessage = err.message || "Failed to load cell quiz data";
           setError(errorMessage);

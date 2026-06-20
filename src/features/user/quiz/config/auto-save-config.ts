@@ -1,3 +1,5 @@
+import { log } from "@/shared/utils/logging";
+
 // src/features/quiz/config/auto-save-config.ts
 
 /**
@@ -125,6 +127,6 @@ export function shouldRetry(item: OfflineQueueItem): boolean {
  */
 export function debugLog(message: string, ...args: unknown[]): void {
   if (AUTO_SAVE_CONFIG.enableDebugLogging) {
-    console.log(`[AutoSave] ${message}`, ...args);
+    log.debug(`[AutoSave] ${message}`, ...args);
   }
 }

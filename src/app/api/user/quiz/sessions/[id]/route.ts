@@ -4,6 +4,7 @@ import { createClient } from "@/shared/services/server";
 import { quizService } from "@/features/user/quiz/services/quiz-service";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 import { QuizStatus } from "@/features/user/quiz/types/quiz";
+import { log } from "@/shared/utils/logging";
 
 interface QuizSessionUpdate {
   action?: "start" | "pause" | "resume";
@@ -85,7 +86,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       data: quizSession,
     });
   } catch (error) {
-    console.error("Error fetching quiz session:", error);
+    log.error("Error fetching quiz session:", error);
     return NextResponse.json({ error: "Failed to fetch quiz session" }, { status: 500 });
   }
 }
@@ -221,12 +222,12 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     if (existingSession.status === "completed") {
       // Allow answer submissions (they'll be deduplicated), but don't update session
       if (updates.answers && updates.answers.length > 0) {
-        console.log(
+        log.debug(
           "[Quiz PATCH] Quiz already completed - accepting answers but not updating session"
         );
         // Continue to answer submission below, but skip session update
       } else {
-        console.log("[Quiz PATCH] Attempted to update completed quiz - blocking update");
+        log.debug("[Quiz PATCH] Attempted to update completed quiz - blocking update");
         return NextResponse.json({
           success: true,
           message: "Quiz is already completed - no updates allowed",
@@ -236,9 +237,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
 
     // OPTIMIZATION: Submit answers if provided (eliminates separate batch call!)
     if (updates.answers && updates.answers.length > 0) {
-      console.log(
-        `[Quiz PATCH] Submitting ${updates.answers.length} answers during progress update`
-      );
+      log.debug(`[Quiz PATCH] Submitting ${updates.answers.length} answers during progress update`);
 
       const attemptData = updates.answers.map((answer) => ({
         quiz_session_id: id,
@@ -259,7 +258,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       });
 
       if (insertError) {
-        console.error("[Quiz PATCH] Error inserting answers:", insertError);
+        log.error("[Quiz PATCH] Error inserting answers:", insertError);
         return NextResponse.json(
           {
             error: "Failed to record quiz answers",
@@ -269,7 +268,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
           { status: 500 }
         );
       }
-      console.log(`[Quiz PATCH] Upserted ${attemptData.length} answers`);
+      log.debug(`[Quiz PATCH] Upserted ${attemptData.length} answers`);
 
       // If quiz was already completed and we just submitted answers, return success
       if (existingSession.status === "completed") {
@@ -308,7 +307,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       message: "Quiz session updated successfully",
     });
   } catch (error) {
-    console.error("Error updating quiz session:", error);
+    log.error("Error updating quiz session:", error);
     return NextResponse.json({ error: "Failed to update quiz session" }, { status: 500 });
   }
 }
@@ -399,7 +398,7 @@ export async function DELETE(
       message: "Quiz session deleted successfully",
     });
   } catch (error) {
-    console.error("Error deleting quiz session:", error);
+    log.error("Error deleting quiz session:", error);
     return NextResponse.json({ error: "Failed to delete quiz session" }, { status: 500 });
   }
 }

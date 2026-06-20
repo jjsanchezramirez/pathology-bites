@@ -18,6 +18,7 @@ import {
 import { Switch } from "@/shared/components/ui/switch";
 import { Loader2 } from "lucide-react";
 import { apiClient } from "@/shared/utils/api/api-client";
+import { log } from "@/shared/utils/logging";
 
 interface QuestionSet {
   id: string;
@@ -106,7 +107,7 @@ export function EditSetDialog({ open, onOpenChange, onSuccess, questionSet }: Ed
         onSuccess();
       }, 100);
     } catch (error) {
-      console.error("Error updating question set:", error);
+      log.error("Error updating question set:", error);
       toast.error(error instanceof Error ? error.message : "Failed to update question set");
     } finally {
       setIsUpdating(false);

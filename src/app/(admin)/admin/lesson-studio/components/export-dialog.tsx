@@ -13,6 +13,7 @@ import {
 import { Download } from "lucide-react";
 import type { ExplainerSequence } from "@/shared/types/explainer";
 import { computeFrameState, drawExportFrame } from "../utils/export-engine";
+import { log } from "@/shared/utils/logging";
 
 // Export resolution options
 const EXPORT_RESOLUTIONS = [
@@ -86,7 +87,7 @@ export function ExportDialog({ open, onOpenChange, previewSequence, audioUrl }: 
             ac.close();
           }
         } catch (err) {
-          console.warn("Audio fetch/decode failed, using sequence.duration:", err);
+          log.warn("Audio fetch/decode failed, using sequence.duration:", err);
         }
       }
       if (exportCancelRef.current) return;
@@ -123,7 +124,7 @@ export function ExportDialog({ open, onOpenChange, previewSequence, audioUrl }: 
               img.src = blobUrl;
             });
           } catch (err) {
-            console.error(`[export] failed to load image ${url}:`, err);
+            log.error(`[export] failed to load image ${url}:`, err);
           }
         })
       );
@@ -141,7 +142,7 @@ export function ExportDialog({ open, onOpenChange, previewSequence, audioUrl }: 
       const { FFmpeg } = await import("@ffmpeg/ffmpeg");
       const ffmpeg = new FFmpeg();
       ffmpeg.on("progress", ({ progress: p }) => setExportProgress(70 + Math.round(p * 25)));
-      ffmpeg.on("log", ({ message }) => console.log("[FFmpeg]", message));
+      ffmpeg.on("log", ({ message }) => log.debug("[FFmpeg]", message));
       await ffmpeg.load({ coreURL: "/ffmpeg/ffmpeg-core.js", wasmURL: "/ffmpeg/ffmpeg-core.wasm" });
       if (exportCancelRef.current) return;
 
@@ -184,7 +185,7 @@ export function ExportDialog({ open, onOpenChange, previewSequence, audioUrl }: 
           await ffmpeg.writeFile("audio.mp3", new Uint8Array(audioData));
           hasAudio = true;
         } catch (err) {
-          console.warn("Failed to write audio:", err);
+          log.warn("Failed to write audio:", err);
         }
       }
       if (exportCancelRef.current) return;
@@ -221,7 +222,7 @@ export function ExportDialog({ open, onOpenChange, previewSequence, audioUrl }: 
       setExportStatus(`Done — ${(mp4Blob.size / 1024 / 1024).toFixed(1)} MB`);
       setExportPhase("done");
     } catch (error) {
-      console.error("Export error:", error);
+      log.error("Export error:", error);
       setExportStatus(`Error: ${error instanceof Error ? error.message : String(error)}`);
       setExportPhase("error");
     } finally {

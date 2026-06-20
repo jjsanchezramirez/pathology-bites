@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { log } from "@/shared/utils/logging";
 
 /**
  * @swagger
@@ -104,7 +105,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .eq("tag_id", tagId);
 
     if (questionTagsError) {
-      console.error("Error fetching questions for tag:", questionTagsError);
+      log.error("Error fetching questions for tag:", questionTagsError);
       return NextResponse.json({ error: "Failed to fetch questions" }, { status: 500 });
     }
 
@@ -126,7 +127,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       count: questions.length,
     });
   } catch (error) {
-    console.error("Error in tag questions API:", error);
+    log.error("Error in tag questions API:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { log } from "@/shared/utils/logging";
 
 async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
   const { data, error } = await supabase.from("users").select("role").eq("id", userId).single();
@@ -60,7 +61,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(result);
   } catch (error) {
-    console.error("[Admin Learn API] Failed to fetch subjects:", error);
+    log.error("[Admin Learn API] Failed to fetch subjects:", error);
     return NextResponse.json({ error: "Failed to fetch subjects" }, { status: 500 });
   }
 }
@@ -165,7 +166,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json(data, { status: 201 });
   } catch (error) {
-    console.error("[Admin Learn API] Failed to create subject:", error);
+    log.error("[Admin Learn API] Failed to create subject:", error);
     return NextResponse.json({ error: "Failed to create subject" }, { status: 500 });
   }
 }

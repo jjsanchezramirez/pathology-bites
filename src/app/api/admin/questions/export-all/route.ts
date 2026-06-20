@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { log } from "@/shared/utils/logging";
 
 function createAdminClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
@@ -73,7 +74,7 @@ export async function GET(request: NextRequest) {
     );
 
     if (error) {
-      console.error("Error exporting questions:", error);
+      log.error("Error exporting questions:", error);
       return NextResponse.json({ error: "Failed to export questions" }, { status: 500 });
     }
 
@@ -84,7 +85,7 @@ export async function GET(request: NextRequest) {
       exported_at: new Date().toISOString(),
     });
   } catch (error) {
-    console.error("Unexpected export error:", error);
+    log.error("Unexpected export error:", error);
     return NextResponse.json({ error: "Internal server error" }, { status: 500 });
   }
 }

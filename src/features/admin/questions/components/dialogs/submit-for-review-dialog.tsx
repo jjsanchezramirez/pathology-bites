@@ -22,6 +22,7 @@ import {
 } from "@/shared/components/ui/select";
 import { Loader2, UserCheck } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
+import { log } from "@/shared/utils/logging";
 
 interface Reviewer {
   id: string;
@@ -70,7 +71,7 @@ export function SubmitForReviewDialog({
       dedupingInterval: 60_000,
       revalidateOnFocus: false,
       onError: (error: unknown) => {
-        console.error("Error fetching reviewers:", error);
+        log.error("Error fetching reviewers:", error);
         const isNetworkError =
           error instanceof TypeError &&
           (error.message?.includes("fetch") || error.message?.includes("network"));
@@ -121,7 +122,7 @@ export function SubmitForReviewDialog({
       setSelectedReviewerId("");
       setResubmissionNotes("");
     } catch (error) {
-      console.error("Error submitting question:", error);
+      log.error("Error submitting question:", error);
       toast.error(error instanceof Error ? error.message : "Failed to submit question");
     } finally {
       setSubmitting(false);

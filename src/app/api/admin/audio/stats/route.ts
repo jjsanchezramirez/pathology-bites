@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { log } from "@/shared/utils/logging";
 
 export const dynamic = "force-dynamic";
 
@@ -59,7 +60,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
 
   const { data, error } = await adminSupabase.rpc("get_audio_aggregate_stats").single();
   if (error) {
-    console.error("[admin/audio/stats] RPC error:", error);
+    log.error("[admin/audio/stats] RPC error:", error);
     return NextResponse.json({ error: "Failed to fetch audio stats" }, { status: 500 });
   }
 

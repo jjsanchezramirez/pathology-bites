@@ -14,6 +14,7 @@ import { getCategoryByName } from "@/shared/config/categories";
 import { CategoryBadge } from "@/shared/components/ui/category-badge";
 import { useFavoritesGlobal } from "@/features/user/questions/hooks/use-favorites-global";
 import { cn } from "@/shared/utils/utils";
+import { log } from "@/shared/utils/logging";
 
 interface QuizResultsSummaryProps {
   result: QuizResult;
@@ -90,7 +91,7 @@ export function QuizResultsSummary({ result, onReviewQuestions }: QuizResultsSum
       const particleCount = Math.round(50 + (percentage - 50) * 3);
       const spread = 60 + (percentage - 50); // 60° at 50%, up to 110° at 100%
 
-      console.log("[Confetti] Score-based confetti:", { percentage, particleCount, spread });
+      log.debug("[Confetti] Score-based confetti:", { percentage, particleCount, spread });
 
       // Standard confetti colors (no custom colors - uses default colorful confetti)
       confetti({

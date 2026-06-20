@@ -55,6 +55,7 @@ import { formatSize } from "@/features/admin/images/services/image-upload";
 import { CATEGORIES } from "@/shared/config/categories";
 
 import { ImageData, ImageCategory, PAGE_SIZE, PAGE_SIZE_OPTIONS } from "@/shared/types/images";
+import { log } from "@/shared/utils/logging";
 
 // Define the valid category values type
 type CategoryFilterType = "all" | "unused" | "uncategorized" | ImageCategory;
@@ -441,7 +442,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
   }, []);
 
   const handleEditSave = useCallback(() => {
-    console.log("handleEditSave called - refreshing table");
+    log.debug("handleEditSave called - refreshing table");
     // Force reload by temporarily resetting state then reloading
     // This ensures we get fresh data after an edit that might affect filters
     setImages([]);
