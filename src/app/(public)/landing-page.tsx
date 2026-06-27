@@ -1,5 +1,3 @@
-"use client";
-
 import { ScrollToTopButton } from "@/shared/components/common/scroll-to-top";
 import { PublicStatsSection } from "@/shared/components/common/public-stats-section";
 import { WhyChoosePathologyBites } from "@/shared/components/common/why-choose-pathology-bites";
