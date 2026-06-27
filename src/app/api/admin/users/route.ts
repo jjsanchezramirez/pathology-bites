@@ -1,25 +1,9 @@
 import { UserRole } from "@/shared/utils/auth/auth-helpers";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { deleteUser, deleteUserFromAuth } from "@/shared/services/user-deletion";
 import { log } from "@/shared/utils/logging";
-
-// Create Supabase client with service role for admin operations
-function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    log.error("Missing Supabase environment variables:", {
-      hasUrl: !!supabaseUrl,
-      hasServiceKey: !!supabaseServiceKey,
-    });
-    throw new Error("Missing required Supabase environment variables");
-  }
-
-  return createSupabaseClient(supabaseUrl, supabaseServiceKey);
-}
 
 /**
  * @swagger
@@ -379,7 +363,7 @@ export async function DELETE(request: NextRequest) {
     // Create admin client for auth operations
     let adminClient;
     try {
-      adminClient = createAdminClient();
+      adminClient = createServiceRoleClient();
     } catch (adminClientError) {
       log.error("Failed to create admin client:", adminClientError);
       return NextResponse.json(

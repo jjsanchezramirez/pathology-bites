@@ -1,15 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { formatVersion } from "@/shared/utils/version";
 import { log } from "@/shared/utils/logging";
-
-// Create Supabase client with service role for admin operations
-async function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  return createSupabaseClient(supabaseUrl, supabaseServiceKey);
-}
 
 /**
  * @swagger
@@ -66,7 +59,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     log.debug("GET - User authenticated:", userId, "Role:", userRole);
 
     // Use admin client for the actual operations
-    const adminClient = await createAdminClient();
+    const adminClient = await createServiceRoleClient();
 
     // First, try a simple query to see if the question exists
     const { data: simpleQuestion, error: simpleError } = await adminClient
@@ -414,7 +407,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     log.debug("PATCH - User authenticated:", userId, "Role:", userRole);
 
     // Use admin client for the actual operations
-    const adminClient = await createAdminClient();
+    const adminClient = await createServiceRoleClient();
     log.debug("PATCH - Admin client created");
 
     // Get current question to check status and permissions
