@@ -252,29 +252,34 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .eq("id", questionId)
       .single();
 
-    // Fetch user data for each version
-    const versionsWithUsers = await Promise.all(
-      versions.map(async (version, index) => {
-        const { data: user } = await adminClient
+    // Fetch all changer users in ONE query (was N+1: a users lookup per version).
+    const changerIds = [...new Set(versions.map((v) => v.changed_by).filter(Boolean))];
+    const { data: changers } = changerIds.length
+      ? await adminClient
           .from("users")
-          .select("first_name, last_name, email")
-          .eq("id", version.changed_by)
-          .single();
+          .select("id, first_name, last_name, email")
+          .in("id", changerIds)
+      : { data: [] };
+    const changerById = new Map((changers || []).map((u) => [u.id, u]));
 
-        // Mark the version that matches current question as current
-        const isCurrent =
-          currentQuestion &&
-          version.version_major === currentQuestion.version_major &&
-          version.version_minor === currentQuestion.version_minor &&
-          version.version_patch === currentQuestion.version_patch;
+    const versionsWithUsers = versions.map((version, index) => {
+      // Mark the version that matches current question as current
+      const isCurrent =
+        currentQuestion &&
+        version.version_major === currentQuestion.version_major &&
+        version.version_minor === currentQuestion.version_minor &&
+        version.version_patch === currentQuestion.version_patch;
 
-        return {
-          ...version,
-          changer: user || { first_name: "Unknown", last_name: "User", email: "" },
-          is_current: isCurrent || index === 0, // Fallback to first if no match
-        };
-      })
-    );
+      return {
+        ...version,
+        changer: changerById.get(version.changed_by) || {
+          first_name: "Unknown",
+          last_name: "User",
+          email: "",
+        },
+        is_current: isCurrent || index === 0, // Fallback to first if no match
+      };
+    });
 
     return NextResponse.json({
       success: true,
