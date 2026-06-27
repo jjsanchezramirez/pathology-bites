@@ -1,5 +1,4 @@
 // src/app/faq/page.tsx
-"use client";
 
 import { Button } from "@/shared/components/ui/button";
 import Link from "next/link";

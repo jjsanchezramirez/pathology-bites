@@ -1,7 +1,7 @@
 // src/app/api/admin/system-status/route.ts
 import { NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { getCachedStorageMetrics } from "@/shared/services/r2-storage-metrics";
 import { formatSize } from "@/features/admin/images/services/image-upload";
 import { devLog } from "@/shared/utils/logging/dev-logger";
@@ -110,16 +110,7 @@ export async function GET(request: Request) {
     const supabase = await createClient();
 
     // Create a service role client for admin operations
-    const supabaseAdmin = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    const supabaseAdmin = createServiceRoleClient();
     devLog.debug("Supabase clients created");
 
     // Measure database query time separately

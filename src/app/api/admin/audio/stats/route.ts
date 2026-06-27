@@ -5,7 +5,7 @@
 // admin role and forwards the call.
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { log } from "@/shared/utils/logging";
 
 export const dynamic = "force-dynamic";
@@ -53,10 +53,7 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
   }
 
-  const adminSupabase = createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
+  const adminSupabase = createServiceRoleClient();
 
   const { data, error } = await adminSupabase.rpc("get_audio_aggregate_stats").single();
   if (error) {

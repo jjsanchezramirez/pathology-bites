@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { z } from "zod";
 import { Resend } from "resend";
 import { createAdminResponseEmail } from "@/shared/config/email-templates";
@@ -11,13 +11,6 @@ const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KE
 const responseSchema = z.object({
   response: z.string().min(1, "Response is required"),
 });
-
-// Create Supabase client with service role for admin operations (bypasses RLS)
-function createAdminClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-  return createSupabaseClient(supabaseUrl, supabaseServiceKey);
-}
 
 /**
  * @swagger
@@ -123,7 +116,7 @@ export async function POST(request: NextRequest, context: { params: Promise<{ id
     }
 
     // Use admin client for database operations (bypasses RLS)
-    const supabase = createAdminClient();
+    const supabase = createServiceRoleClient();
     const inquiryId = params.id;
 
     // Parse request body

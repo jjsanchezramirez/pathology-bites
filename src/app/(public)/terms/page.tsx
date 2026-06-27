@@ -1,5 +1,4 @@
 // src/app/terms/page.tsx
-"use client";
 
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { PolicyCard } from "@/shared/components/common/policy-card";
