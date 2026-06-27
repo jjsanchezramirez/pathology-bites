@@ -2,7 +2,7 @@
 // Consolidates: timeline, category-details, activity-heatmap, dashboard stats, and achievements
 
 import { NextRequest, NextResponse } from "next/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 import {
@@ -509,10 +509,7 @@ export async function GET(request: NextRequest) {
     // exposure to signed-in users); we invoke it here through a service-role client
     // because the parameters are already trusted (userId from middleware JWT,
     // avgScore computed server-side from the caller's own RLS-filtered sessions).
-    const adminSupabase = createSupabaseClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    const adminSupabase = createServiceRoleClient();
     const { data: percentileData } = await adminSupabase.rpc("get_user_percentile", {
       p_user_id: userId,
       p_avg_score: avgScore,
