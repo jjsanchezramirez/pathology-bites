@@ -1,297 +1,40 @@
 // src/features/questions/components/tags-management-grid.tsx
 "use client";
 
-import { useState, useCallback, useEffect, memo } from "react";
-import { createClient as _createClient } from "@/shared/services/client";
+import { useState, useCallback, useEffect } from "react";
 import { toast } from "@/shared/utils/ui/toast";
 import { apiClient } from "@/shared/utils/api/api-client";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
-import { Label } from "@/shared/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import {
-  Search,
-  Loader2,
-  MoreVertical as _MoreVertical,
-  Plus,
-  Trash2,
-  RefreshCw,
-  Edit,
-  Filter,
-  Check as _Check,
-  X,
-  Merge,
-  Eye,
-} from "lucide-react";
+import { Search, Plus, Trash2, RefreshCw, Filter, X, Merge } from "lucide-react";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 
 import { CreateTagDialog } from "./create-tag-dialog";
 import { EditTagDialog } from "./edit-tag-dialog";
-import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
 import { TagStatsCards } from "./tag-stats-cards";
 import { log } from "@/shared/utils/logging";
-
-interface Tag {
-  id: string;
-  name: string;
-  created_at: string;
-  question_count?: number;
-}
-
-const DEFAULT_PAGE_SIZE = 100; // Increased for grid layout
-const PAGE_SIZE_OPTIONS = [50, 100, 200, 500] as const;
-
-function TagsPagination({
-  currentPage,
-  totalPages,
-  onPageChange,
-  totalItems,
-  pageSize,
-  onPageSizeChange,
-}: {
-  currentPage: number;
-  totalPages: number;
-  onPageChange: (page: number) => void;
-  totalItems: number;
-  pageSize: number;
-  onPageSizeChange: (size: number) => void;
-}) {
-  // Calculate which page numbers to show
-  const getPageNumbers = () => {
-    const pages: (number | string)[] = [];
-    const maxPagesToShow = 5;
-
-    if (totalPages <= maxPagesToShow) {
-      // Show all pages if total is small
-      for (let i = 0; i < totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Always show first page
-      pages.push(0);
-
-      // Calculate range around current page
-      let start = Math.max(1, currentPage - 1);
-      let end = Math.min(totalPages - 2, currentPage + 1);
-
-      // Adjust if near the beginning
-      if (currentPage < 3) {
-        end = 3;
-      }
-
-      // Adjust if near the end
-      if (currentPage > totalPages - 4) {
-        start = totalPages - 4;
-      }
-
-      // Add ellipsis if needed
-      if (start > 1) {
-        pages.push("...");
-      }
-
-      // Add middle pages
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-
-      // Add ellipsis if needed
-      if (end < totalPages - 2) {
-        pages.push("...");
-      }
-
-      // Always show last page
-      pages.push(totalPages - 1);
-    }
-
-    return pages;
-  };
-
-  const pageNumbers = getPageNumbers();
-
-  return (
-    <div className="flex justify-between items-center">
-      <div className="flex items-center gap-4">
-        <p className="text-sm text-muted-foreground">
-          Showing {totalItems > 0 ? currentPage * pageSize + 1 : 0} to{" "}
-          {Math.min((currentPage + 1) * pageSize, totalItems)} of {totalItems} tags
-        </p>
-        <div className="flex items-center gap-2">
-          <Label htmlFor="pageSize" className="text-sm text-muted-foreground whitespace-nowrap">
-            Items per page:
-          </Label>
-          <Select
-            value={pageSize.toString()}
-            onValueChange={(value) => onPageSizeChange(parseInt(value))}
-          >
-            <SelectTrigger id="pageSize" className="w-[80px] h-8">
-              <SelectValue />
-            </SelectTrigger>
-            <SelectContent>
-              {PAGE_SIZE_OPTIONS.map((size) => (
-                <SelectItem key={size} value={size.toString()}>
-                  {size}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-      </div>
-      <div className="flex gap-1 items-center">
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(currentPage - 1)}
-          disabled={currentPage === 0}
-        >
-          Previous
-        </Button>
-
-        {pageNumbers.map((pageNum, idx) =>
-          pageNum === "..." ? (
-            <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
-              ...
-            </span>
-          ) : (
-            <Button
-              key={pageNum}
-              variant={currentPage === pageNum ? "default" : "outline"}
-              size="sm"
-              onClick={() => onPageChange(pageNum as number)}
-              className="w-9"
-            >
-              {(pageNum as number) + 1}
-            </Button>
-          )
-        )}
-
-        <Button
-          variant="outline"
-          size="sm"
-          onClick={() => onPageChange(currentPage + 1)}
-          disabled={currentPage >= totalPages - 1}
-        >
-          Next
-        </Button>
-      </div>
-    </div>
-  );
-}
-
-const TagCardSkeleton = memo(function TagCardSkeleton() {
-  return (
-    <div className="bg-card border rounded-lg p-3 animate-pulse">
-      <div className="flex items-center gap-2 mb-2">
-        <div className="h-4 w-4 bg-muted rounded" />
-        <div className="h-4 bg-muted rounded flex-1" />
-      </div>
-      <div className="flex items-center justify-between">
-        <div className="h-5 w-20 bg-muted rounded" />
-        <div className="flex items-center gap-1">
-          <div className="h-6 w-6 bg-muted rounded" />
-          <div className="h-6 w-6 bg-muted rounded" />
-          <div className="h-6 w-6 bg-muted rounded" />
-        </div>
-      </div>
-    </div>
-  );
-});
-
-const TagCard = memo(function TagCard({
-  tag,
-  isSelected,
-  onSelect,
-  onEdit,
-  onDelete,
-  onViewQuestions,
-}: {
-  tag: Tag;
-  isSelected: boolean;
-  onSelect: (id: string) => void;
-  onEdit: (tag: Tag) => void;
-  onDelete: (tag: Tag) => void;
-  onViewQuestions: (tag: Tag) => void;
-}) {
-  return (
-    <div
-      className={`group relative bg-card border rounded-lg p-3 hover:shadow-sm transition-all duration-200 ${
-        isSelected ? "border-primary bg-primary/5" : "hover:border-primary/20"
-      }`}
-    >
-      {/* Selection checkbox and tag name */}
-      <div className="flex items-center gap-2 mb-2">
-        <Checkbox
-          checked={isSelected}
-          onCheckedChange={() => onSelect(tag.id)}
-          className="h-4 w-4"
-        />
-        <h3 className="font-medium text-sm truncate flex-1" title={tag.name}>
-          {tag.name}
-        </h3>
-      </div>
-
-      {/* Stats and actions */}
-      <div className="flex items-center justify-between">
-        <Badge
-          variant={tag.question_count === 0 ? "outline" : "secondary"}
-          className={`text-xs ${tag.question_count === 0 ? "text-muted-foreground" : ""}`}
-        >
-          {tag.question_count || 0} questions
-        </Badge>
-
-        {/* Simple action buttons */}
-        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            onClick={() => onViewQuestions(tag)}
-            title="View questions"
-          >
-            <Eye className="h-3 w-3" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6"
-            onClick={() => onEdit(tag)}
-            title="Edit tag"
-          >
-            <Edit className="h-3 w-3" />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-6 w-6 text-destructive hover:text-destructive"
-            onClick={() => onDelete(tag)}
-            title="Delete tag"
-          >
-            <Trash2 className="h-3 w-3" />
-          </Button>
-        </div>
-      </div>
-    </div>
-  );
-});
-
-interface TagQuestion {
-  id: string;
-  title: string;
-  stem: string;
-  category?: string;
-}
+import {
+  type Tag,
+  type TagQuestion,
+  type SortBy,
+  DEFAULT_PAGE_SIZE,
+  sortTags,
+  sortByLabel,
+} from "./tags-utils";
+import { TagCard, TagCardSkeleton } from "./tag-card";
+import { TagsPagination } from "./tags-pagination";
+import {
+  DeleteTagDialog,
+  BulkDeleteTagsDialog,
+  MergeTagsDialog,
+  ViewQuestionsDialog,
+} from "./tags-dialogs";
 
 export function TagsManagementGrid() {
   const [tags, setTags] = useState<Tag[]>([]);
@@ -307,7 +50,7 @@ export function TagsManagementGrid() {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [sortBy, setSortBy] = useState<"name" | "usage" | "date" | "oldest" | "unused">("name");
+  const [sortBy, setSortBy] = useState<SortBy>("name");
 
   // New state for enhanced features
   const [selectedTagIds, setSelectedTagIds] = useState<Set<string>>(new Set());
@@ -350,32 +93,8 @@ export function TagsManagementGrid() {
 
       const data = await response.json();
 
-      let sortedTags = data.tags || [];
-
       // Client-side sorting and filtering
-      switch (sortBy) {
-        case "usage":
-          sortedTags.sort((a: Tag, b: Tag) => (b.question_count || 0) - (a.question_count || 0));
-          break;
-        case "date":
-          sortedTags.sort(
-            (a: Tag, b: Tag) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
-          );
-          break;
-        case "oldest":
-          sortedTags.sort(
-            (a: Tag, b: Tag) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()
-          );
-          break;
-        case "unused":
-          sortedTags = sortedTags.filter((tag: Tag) => (tag.question_count || 0) === 0);
-          sortedTags.sort((a: Tag, b: Tag) => a.name.localeCompare(b.name));
-          break;
-        case "name":
-        default:
-          sortedTags.sort((a: Tag, b: Tag) => a.name.localeCompare(b.name));
-          break;
-      }
+      const sortedTags = sortTags(data.tags || [], sortBy);
 
       setTags(sortedTags);
       setTotalTags(data.totalTags || 0);
@@ -553,6 +272,7 @@ export function TagsManagementGrid() {
   };
 
   const unusedTagsCount = tags.filter((tag) => (tag.question_count || 0) === 0).length;
+  const selectedTags = tags.filter((tag) => selectedTagIds.has(tag.id));
 
   useEffect(() => {
     loadTags();
@@ -670,20 +390,7 @@ export function TagsManagementGrid() {
           </div>
           {debouncedSearchTerm && <span>Showing results for "{debouncedSearchTerm}"</span>}
         </div>
-        <div className="text-xs">
-          Sorted by:{" "}
-          {sortBy === "name"
-            ? "Alphabetical"
-            : sortBy === "usage"
-              ? "Most Used"
-              : sortBy === "date"
-                ? "Newest"
-                : sortBy === "oldest"
-                  ? "Oldest"
-                  : sortBy === "unused"
-                    ? "Unused Only"
-                    : "Alphabetical"}
-        </div>
+        <div className="text-xs">Sorted by: {sortByLabel(sortBy)}</div>
       </div>
 
       {/* Flowing Layout */}
@@ -741,41 +448,13 @@ export function TagsManagementGrid() {
       )}
 
       {/* Delete Dialog */}
-      <BlurredDialog
+      <DeleteTagDialog
         open={showDeleteDialog}
         onOpenChange={setShowDeleteDialog}
-        title="Delete Tag"
-        description={`Are you sure you want to delete the tag "${selectedTag?.name}"? This will remove it from all associated questions and cannot be undone.`}
-        maxWidth="md"
-        footer={
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowDeleteDialog(false)}
-              disabled={isDeleting}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleDelete} disabled={isDeleting} variant="destructive">
-              {isDeleting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                "Delete"
-              )}
-            </Button>
-          </>
-        }
-      >
-        <div className="py-2">
-          <p className="text-sm text-muted-foreground">
-            This action cannot be undone. The tag will be permanently removed from the system.
-          </p>
-        </div>
-      </BlurredDialog>
+        tag={selectedTag}
+        isDeleting={isDeleting}
+        onConfirm={handleDelete}
+      />
 
       {/* Create Dialog */}
       <CreateTagDialog
@@ -793,45 +472,16 @@ export function TagsManagementGrid() {
       />
 
       {/* Bulk Delete Dialog */}
-      <BlurredDialog
+      <BulkDeleteTagsDialog
         open={showBulkDeleteDialog}
         onOpenChange={setShowBulkDeleteDialog}
-        title="Delete Selected Tags"
-        description={`Are you sure you want to delete ${selectedTagIds.size} selected tag${selectedTagIds.size === 1 ? "" : "s"}? This will remove them from all associated questions and cannot be undone.`}
-        maxWidth="md"
-        footer={
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowBulkDeleteDialog(false)}
-              disabled={isBulkDeleting}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleBulkDelete} disabled={isBulkDeleting} variant="destructive">
-              {isBulkDeleting ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Deleting...
-                </>
-              ) : (
-                `Delete ${selectedTagIds.size} Tag${selectedTagIds.size === 1 ? "" : "s"}`
-              )}
-            </Button>
-          </>
-        }
-      >
-        <div className="py-2">
-          <p className="text-sm text-muted-foreground">
-            This action cannot be undone. All selected tags will be permanently removed from the
-            system and from all associated questions.
-          </p>
-        </div>
-      </BlurredDialog>
+        count={selectedTagIds.size}
+        isDeleting={isBulkDeleting}
+        onConfirm={handleBulkDelete}
+      />
 
       {/* Merge Dialog */}
-      <BlurredDialog
+      <MergeTagsDialog
         open={showMergeDialog}
         onOpenChange={(open) => {
           setShowMergeDialog(open);
@@ -839,103 +489,15 @@ export function TagsManagementGrid() {
             setMergeTargetTag(null);
           }
         }}
-        title="Merge Tags"
-        description="Select a target tag to merge the selected tags into. All questions will be reassigned to the target tag."
-        maxWidth="lg"
-        footer={
-          <>
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => {
-                setShowMergeDialog(false);
-                setMergeTargetTag(null);
-              }}
-              disabled={isMerging}
-            >
-              Cancel
-            </Button>
-            <Button onClick={handleMergeTags} disabled={!mergeTargetTag || isMerging}>
-              {isMerging ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Merging...
-                </>
-              ) : (
-                "Merge Tags"
-              )}
-            </Button>
-          </>
-        }
-      >
-        <div className="space-y-4">
-          {/* Target Tag Selection */}
-          <div className="space-y-2">
-            <label className="text-sm font-medium">Target Tag:</label>
-            <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <Button variant="outline" className="w-full justify-start">
-                  {mergeTargetTag ? mergeTargetTag.name : "Select target tag..."}
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent className="w-full">
-                {tags
-                  .filter((tag) => selectedTagIds.has(tag.id))
-                  .map((tag) => (
-                    <DropdownMenuItem key={tag.id} onClick={() => setMergeTargetTag(tag)}>
-                      {tag.name} ({tag.question_count || 0} questions)
-                    </DropdownMenuItem>
-                  ))}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-
-          {/* Preview Section */}
-          {mergeTargetTag && (
-            <div className="space-y-3 border-t pt-3">
-              <h4 className="text-sm font-medium">Merge Preview:</h4>
-
-              {/* Tags to be merged */}
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">
-                  Tags to be merged (will be deleted):
-                </p>
-                <div className="flex flex-wrap gap-2 p-3 bg-muted/30 rounded-md border">
-                  {tags
-                    .filter((tag) => selectedTagIds.has(tag.id) && tag.id !== mergeTargetTag.id)
-                    .map((tag) => (
-                      <Badge key={tag.id} variant="outline" className="text-xs">
-                        {tag.name} ({tag.question_count || 0})
-                      </Badge>
-                    ))}
-                </div>
-              </div>
-
-              {/* Target tag */}
-              <div className="space-y-2">
-                <p className="text-xs text-muted-foreground">Into target tag:</p>
-                <div className="p-3 bg-primary/10 rounded-md border border-primary/20">
-                  <Badge variant="default" className="text-xs">
-                    {mergeTargetTag.name} ({mergeTargetTag.question_count || 0} questions)
-                  </Badge>
-                </div>
-              </div>
-
-              {/* Summary */}
-              <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-md border border-blue-200 dark:border-blue-900">
-                <p className="text-xs text-blue-900 dark:text-blue-300">
-                  <strong>Result:</strong> {selectedTagIds.size - 1} tag
-                  {selectedTagIds.size - 1 === 1 ? "" : "s"} will be deleted, and their questions
-                  will be reassigned to "{mergeTargetTag.name}".
-                </p>
-              </div>
-            </div>
-          )}
-        </div>
-      </BlurredDialog>
+        selectedTags={selectedTags}
+        mergeTargetTag={mergeTargetTag}
+        onSelectTarget={setMergeTargetTag}
+        isMerging={isMerging}
+        onConfirm={handleMergeTags}
+      />
 
       {/* View Questions Dialog */}
-      <BlurredDialog
+      <ViewQuestionsDialog
         open={showViewQuestionsDialog}
         onOpenChange={(open) => {
           setShowViewQuestionsDialog(open);
@@ -945,94 +507,13 @@ export function TagsManagementGrid() {
             setQuestionsPage(0);
           }
         }}
-        title={`Questions with tag: ${viewQuestionsTag?.name || ""}`}
-        description={`Showing ${tagQuestions.length} question${tagQuestions.length === 1 ? "" : "s"} that use this tag.`}
-        maxWidth="2xl"
-        footer={
-          <div className="flex items-center justify-between w-full">
-            {/* Pagination */}
-            {tagQuestions.length > questionsPageSize && (
-              <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                <span>
-                  Page {questionsPage + 1} of {Math.ceil(tagQuestions.length / questionsPageSize)}
-                </span>
-                <div className="flex gap-1">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setQuestionsPage((p) => Math.max(0, p - 1))}
-                    disabled={questionsPage === 0}
-                  >
-                    Previous
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() =>
-                      setQuestionsPage((p) =>
-                        Math.min(Math.ceil(tagQuestions.length / questionsPageSize) - 1, p + 1)
-                      )
-                    }
-                    disabled={
-                      questionsPage >= Math.ceil(tagQuestions.length / questionsPageSize) - 1
-                    }
-                  >
-                    Next
-                  </Button>
-                </div>
-              </div>
-            )}
-            <Button
-              type="button"
-              variant="outline"
-              onClick={() => setShowViewQuestionsDialog(false)}
-              className="ml-auto"
-            >
-              Close
-            </Button>
-          </div>
-        }
-      >
-        <div className="space-y-4">
-          {loadingQuestions ? (
-            <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-6 w-6 animate-spin" />
-              <span className="ml-2">Loading questions...</span>
-            </div>
-          ) : tagQuestions.length === 0 ? (
-            <div className="text-center py-8 text-muted-foreground">
-              No questions found with this tag
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {tagQuestions
-                .slice(questionsPage * questionsPageSize, (questionsPage + 1) * questionsPageSize)
-                .map((question, index) => (
-                  <div key={question.id} className="border rounded-lg p-3 hover:bg-muted/50">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <div className="font-medium text-sm mb-1">
-                          {question.title ||
-                            `Question ${questionsPage * questionsPageSize + index + 1}`}
-                        </div>
-                        <div className="text-sm text-muted-foreground line-clamp-2">
-                          {question.stem || "No question content available"}
-                        </div>
-                        {question.category && (
-                          <div className="mt-2">
-                            <Badge variant="outline" className="text-xs">
-                              {question.category}
-                            </Badge>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))}
-            </div>
-          )}
-        </div>
-      </BlurredDialog>
+        tag={viewQuestionsTag}
+        questions={tagQuestions}
+        loading={loadingQuestions}
+        questionsPage={questionsPage}
+        onQuestionsPageChange={setQuestionsPage}
+        questionsPageSize={questionsPageSize}
+      />
     </div>
   );
 }
