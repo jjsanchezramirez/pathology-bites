@@ -13,11 +13,14 @@ import {
   extractClozes,
   hasInteractiveClozes,
 } from "@/features/user/anki/utils/interactive-cloze-processor";
-import {
-  extractImagesFromHtml,
-  replaceImagePlaceholders,
-} from "@/shared/utils/images/html-image-extractor";
 import { cn } from "@/shared/utils";
+import {
+  isImageOcclusionCard,
+  isMultipleImagesCard,
+  processCardImageHtml,
+  hasNonCitationAnswer,
+  getNextClozeIndex,
+} from "./interactive-anki-viewer-utils";
 
 interface InteractiveAnkiViewerProps extends Omit<
   AnkiCardViewerProps,
@@ -47,17 +50,8 @@ export function InteractiveAnkiViewer({
   const [showAnswer, setShowAnswer] = useState(false);
   const [imageOcclusionRevealed, setImageOcclusionRevealed] = useState(false);
 
-  // Check if this is an image occlusion card (strict check; do NOT infer from presence of <img>)
-  const isImageOcclusion =
-    card.modelName === "Image Occlusion Enhanced+" ||
-    card.modelName === "Image Occlusion Enhanced+++" ||
-    card.modelName.includes("Image Occlusion Enhanced") ||
-    card.tags.some((tag) => tag.toLowerCase().includes("image-occlusion"));
-
-  // Check if this is a multiple images card (handled specially by the parser)
-  const isMultipleImagesCard =
-    card.modelName === "Cloze (Multiple Images)" ||
-    card.tags.some((tag) => tag === "#multiple-images");
+  const isImageOcclusion = isImageOcclusionCard(card);
+  const isMultiImages = isMultipleImagesCard(card);
 
   // Check if the card has clozes (only for non-image occlusion cards)
   const questionHasClozes = !isImageOcclusion && hasInteractiveClozes(card.question);
@@ -65,7 +59,7 @@ export function InteractiveAnkiViewer({
   const hasClozes = questionHasClozes || answerHasClozes;
 
   // Check if this is a basic front/back card (no clozes, no image occlusion, no multiple images)
-  const isBasicCard = !hasClozes && !isImageOcclusion && !isMultipleImagesCard;
+  const isBasicCard = !hasClozes && !isImageOcclusion && !isMultiImages;
 
   // Extract clozes for reference
   const questionClozes = useMemo(
@@ -88,91 +82,16 @@ export function InteractiveAnkiViewer({
   // For multiple images cards (already processed by parser), skip complex extraction
   const { processedQuestionHtml, hasMultipleImages } = useMemo(() => {
     // Multiple images cards are already processed by the parser - use as-is
-    if (isMultipleImagesCard) {
-      return {
-        processedQuestionHtml: card.question,
-        hasMultipleImages: true,
-      };
+    if (isMultiImages) {
+      return { processedQuestionHtml: card.question, hasMultipleImages: true };
     }
-
-    const extracted = extractImagesFromHtml(card.question, true);
-
-    // Replace [IMAGE_#] placeholders with actual inline image tags
-    const htmlWithImages = replaceImagePlaceholders(extracted.cleanHtml, (index) => {
-      const image = extracted.images[index];
-      if (image && image.src) {
-        // Check if it's an arrow or small icon (should stay small)
-        const hasSmallKeyword =
-          image.alt?.toLowerCase().includes("arrow") ||
-          image.src?.toLowerCase().includes("arrow") ||
-          image.alt?.toLowerCase().includes("icon") ||
-          image.src?.toLowerCase().includes("symbol") ||
-          image.src?.toLowerCase().includes("emoji");
-
-        const width = image.width ? parseInt(image.width) : null;
-        const height = image.height ? parseInt(image.height) : null;
-        const isSmallByDimensions =
-          (width !== null && width < 50) || (height !== null && height < 50);
-
-        const filename = image.src.split("/").pop() || "";
-        const filenameWithoutExt = filename.replace(/\.[^.]+$/, "");
-        const isShortFilename =
-          filenameWithoutExt.length <= 3 && /\.(png|svg|gif)$/i.test(filename);
-
-        const isSmallIcon = hasSmallKeyword || isSmallByDimensions || isShortFilename;
-        const className = isSmallIcon ? "inline-image-small" : "inline-image";
-        return `<img src="${image.src}" alt="${image.alt || "Image"}" class="${className}" loading="lazy" />`;
-      }
-      return `<span class="text-muted-foreground text-sm italic">[Image ${index + 1} not available]</span>`;
-    });
-
     return {
-      processedQuestionHtml: htmlWithImages,
+      processedQuestionHtml: processCardImageHtml(card.question),
       hasMultipleImages: false,
     };
-  }, [card.question, isMultipleImagesCard]);
+  }, [card.question, isMultiImages]);
 
-  const { processedAnswerHtml } = useMemo(() => {
-    const extracted = extractImagesFromHtml(card.answer, true);
-
-    // Replace [IMAGE_#] placeholders with actual inline image tags
-    const htmlWithImages = replaceImagePlaceholders(extracted.cleanHtml, (index) => {
-      const image = extracted.images[index];
-      if (image && image.src) {
-        // Check if it's an arrow or small icon (should stay small)
-        // Check by keywords in alt/src
-        const hasSmallKeyword =
-          image.alt?.toLowerCase().includes("arrow") ||
-          image.src?.toLowerCase().includes("arrow") ||
-          image.alt?.toLowerCase().includes("icon") ||
-          image.src?.toLowerCase().includes("symbol") ||
-          image.src?.toLowerCase().includes("emoji");
-
-        // Check by dimensions (if width or height is specified and < 50px)
-        const width = image.width ? parseInt(image.width) : null;
-        const height = image.height ? parseInt(image.height) : null;
-        const isSmallByDimensions =
-          (width !== null && width < 50) || (height !== null && height < 50);
-
-        // Check for very short filenames (likely icons/arrows like BO.png, BS.png)
-        // Extract filename from src (after last slash)
-        const filename = image.src.split("/").pop() || "";
-        const filenameWithoutExt = filename.replace(/\.[^.]+$/, ""); // Remove extension
-        const isShortFilename =
-          filenameWithoutExt.length <= 3 && /\.(png|svg|gif)$/i.test(filename);
-
-        const isSmallIcon = hasSmallKeyword || isSmallByDimensions || isShortFilename;
-        const className = isSmallIcon ? "inline-image-small" : "inline-image";
-        return `<img src="${image.src}" alt="${image.alt || "Image"}" class="${className}" loading="lazy" />`;
-      }
-      // Show placeholder text if image is missing
-      return `<span class="text-muted-foreground text-sm italic">[Image ${index + 1} not available]</span>`;
-    });
-
-    return {
-      processedAnswerHtml: htmlWithImages,
-    };
-  }, [card.answer]);
+  const processedAnswerHtml = useMemo(() => processCardImageHtml(card.answer), [card.answer]);
 
   // Process content with interactive clozes or handle image occlusion
   const clozeProcessedQuestion = useMemo(() => {
@@ -238,28 +157,7 @@ export function InteractiveAnkiViewer({
   }, [isImageOcclusion]);
 
   // For Basic cards, only show the back if there is more than a citation
-  const basicHasNonCitationAnswer = useMemo(() => {
-    const ans = card.answer || "";
-    if (!ans.trim()) return false;
-
-    // Remove HTML tags and check if there's actual content
-    const textContent = ans.replace(/<[^>]*>/g, "").trim();
-    if (!textContent) return false;
-
-    // Check for meaningful sections (Extra/Personal Notes/Textbook)
-    const hasMeaningfulSections =
-      ans.includes("extra-section") ||
-      ans.includes("personal-notes-section") ||
-      ans.includes("textbook-section");
-
-    // Check if answer has substantial text content (more than just a citation)
-    const hasSubstantialContent = textContent.length > 50;
-
-    // Check if answer has images
-    const hasImages = ans.includes("<img") || ans.includes("[IMAGE_");
-
-    return hasMeaningfulSections || hasSubstantialContent || hasImages;
-  }, [card.answer]);
+  const basicHasNonCitationAnswer = useMemo(() => hasNonCitationAnswer(card.answer), [card.answer]);
 
   // Keyboard controls
   useEffect(() => {
@@ -276,10 +174,10 @@ export function InteractiveAnkiViewer({
           event.preventDefault();
           if (hasAnyClozes && !allClozesRevealed) {
             // Reveal next cloze in numerical order (c1, c2, c3, etc.)
-            const nextClozeIndex = [...questionClozes, ...answerClozes]
-              .map((c) => c.index)
-              .sort((a, b) => a - b)
-              .find((index) => !revealedClozes.has(index));
+            const nextClozeIndex = getNextClozeIndex(
+              [...questionClozes, ...answerClozes],
+              revealedClozes
+            );
             if (nextClozeIndex !== undefined) {
               handleClozeClick(nextClozeIndex);
               // For multiple images cards, also reveal the answer when revealing cloze
