@@ -6,11 +6,7 @@ import { toast } from "@/shared/utils/ui/toast";
 import { AlertCircle, Send, ArrowLeft, Loader2 } from "lucide-react";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
 import { Button } from "@/shared/components/ui/button";
-import { Card } from "@/shared/components/ui/card";
 import { Form } from "@/shared/components/ui/form";
-import { Skeleton } from "@/shared/components/ui/skeleton";
-import { Label } from "@/shared/components/ui/label";
-import { RadioGroup, RadioGroupItem } from "@/shared/components/ui/radio-group";
 
 import { QuestionWithDetails } from "@/shared/types/questions";
 import { useEditQuestionForm } from "@/features/admin/questions/hooks/use-edit-question-form";
@@ -23,23 +19,11 @@ import { ContentTab } from "@/features/admin/questions/components/edit/content-t
 import { ImagesTab } from "@/features/admin/questions/components/edit/images-tab";
 import { MetadataTab } from "@/features/admin/questions/components/edit/metadata-tab";
 import { SaveConfirmationDialog } from "@/features/admin/questions/components/edit/save-confirmation-dialog";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
-import { UserCheck } from "lucide-react";
 import { log } from "@/shared/utils/logging";
+import { getContextBanner, getReviewerFeedback, computePatchDisabled } from "./edit-question-utils";
+import { EditQuestionSkeleton } from "./edit-question-skeleton";
+import { EditTypeCard } from "./edit-type-card";
+import { ReviewerAssignmentDialog } from "./reviewer-assignment-dialog";
 
 interface EditQuestionClientProps {
   questionId: string;
@@ -239,23 +223,13 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   useEffect(() => {
     if (!question || originalCorrectAnswerRef.current === null) return;
 
-    // Check if correct answer changed
     const currentCorrectOption = answerOptions?.find((opt) => opt.is_correct);
-    const correctAnswerChanged = currentCorrectOption?.id !== originalCorrectAnswerRef.current;
-
-    // Check if images changed (only if we have original images to compare)
-    let imagesChanged = false;
-    if (originalImagesRef.current.length > 0 || questionImages.length > 0) {
-      imagesChanged =
-        questionImages.length !== originalImagesRef.current.length ||
-        questionImages.some(
-          (img, idx) =>
-            !originalImagesRef.current[idx] ||
-            img.image_id !== originalImagesRef.current[idx].image_id
-        );
-    }
-
-    const shouldDisablePatch = correctAnswerChanged || imagesChanged;
+    const shouldDisablePatch = computePatchDisabled(
+      originalCorrectAnswerRef.current,
+      currentCorrectOption?.id,
+      originalImagesRef.current,
+      questionImages
+    );
 
     // Only auto-switch if currently on patch AND it should be disabled
     const currentUpdateType = form.getValues("updateType");
@@ -406,58 +380,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
   // Loading state
   if (loading) {
-    return (
-      <div className="space-y-6">
-        {/* Status Badge Skeleton */}
-        <div className="flex items-center gap-2">
-          <Skeleton className="h-4 w-12" />
-          <Skeleton className="h-6 w-32" />
-        </div>
-
-        {/* Tab Navigation Skeleton */}
-        <Card className="overflow-hidden">
-          <div className="border-b bg-muted/50 px-6 py-3">
-            <div className="flex gap-4">
-              <Skeleton className="h-10 w-24" />
-              <Skeleton className="h-10 w-24" />
-              <Skeleton className="h-10 w-28" />
-            </div>
-          </div>
-
-          {/* Form Content Skeleton */}
-          <div className="p-6 space-y-6">
-            {/* Question Title */}
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-32" />
-              <Skeleton className="h-10 w-full" />
-            </div>
-
-            {/* Question Stem */}
-            <div className="space-y-2">
-              <Skeleton className="h-4 w-40" />
-              <Skeleton className="h-32 w-full" />
-            </div>
-
-            {/* Options */}
-            <div className="space-y-4">
-              <Skeleton className="h-4 w-24" />
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton className="h-10 w-full" />
-                  <Skeleton className="h-20 w-full" />
-                </div>
-              ))}
-            </div>
-
-            {/* Action Buttons */}
-            <div className="flex justify-end gap-2">
-              <Skeleton className="h-10 w-24" />
-              <Skeleton className="h-10 w-32" />
-            </div>
-          </div>
-        </Card>
-      </div>
-    );
+    return <EditQuestionSkeleton />;
   }
 
   // Error state
@@ -477,49 +400,9 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   }
 
   // Get reviewer feedback if question was flagged or rejected
-  const reviewerFeedback =
-    question.status === "flagged" || question.status === "rejected"
-      ? question.reviewer_feedback
-      : null;
+  const reviewerFeedback = getReviewerFeedback(question);
 
-  // Get context for banner
-  const getContextBanner = () => {
-    // Don't show context banner for rejected questions - feedback is shown separately
-    if (question.status === "draft") {
-      return {
-        variant: "default" as const,
-        title: "Editing Draft",
-        description: "This question has not been submitted for review yet.",
-      };
-    }
-    if (question.status === "flagged") {
-      return {
-        variant: "default" as const,
-        title: "Editing Flagged Question",
-        description:
-          "This question was flagged for review. Make necessary changes and resubmit for review.",
-      };
-    }
-    if (question.status === "published") {
-      return {
-        variant: "default" as const,
-        title: "Patch Editing Published Question",
-        description:
-          "Making changes to a published question. Select the appropriate edit type below.",
-      };
-    }
-    if (question.status === "pending_review") {
-      return {
-        variant: "default" as const,
-        title: "Editing Question Under Review",
-        description:
-          "This question is currently being reviewed. Changes will require resubmission.",
-      };
-    }
-    return null;
-  };
-
-  const contextBanner = getContextBanner();
+  const contextBanner = getContextBanner(question.status);
 
   return (
     <div className="space-y-6">
@@ -602,60 +485,18 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
 
           {/* Edit Type Card for Published Questions */}
           {question.status === "published" && (
-            <Card className="p-4">
-              <div className="space-y-3">
-                <div>
-                  <h3 className="text-sm font-semibold">Edit Type</h3>
-                  <p className="text-xs text-muted-foreground mt-1">
-                    Select the type of changes you're making to this published question
-                  </p>
-                </div>
-                <RadioGroup
-                  value={form.watch("updateType") || "patch"}
-                  onValueChange={(value: "patch" | "minor" | "major") => {
-                    if (value === "patch" && isPatchEditDisabled) {
-                      return; // Don't allow patch if disabled
-                    }
-                    setIsPatchEdit(value === "patch");
-                    form.setValue("updateType", value, { shouldDirty: true });
-                    handleUnsavedChanges();
-                  }}
-                  className="flex gap-4"
-                >
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="patch" id="patch" disabled={isPatchEditDisabled} />
-                    <Label
-                      htmlFor="patch"
-                      className={`font-normal cursor-pointer ${isPatchEditDisabled ? "opacity-50 cursor-not-allowed" : ""}`}
-                    >
-                      Patch{" "}
-                      <span className="text-xs text-muted-foreground">(typos, formatting)</span>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="minor" id="minor" />
-                    <Label htmlFor="minor" className="font-normal cursor-pointer">
-                      Minor <span className="text-xs text-muted-foreground">(content changes)</span>
-                    </Label>
-                  </div>
-                  <div className="flex items-center space-x-2">
-                    <RadioGroupItem value="major" id="major" />
-                    <Label htmlFor="major" className="font-normal cursor-pointer">
-                      Major{" "}
-                      <span className="text-xs text-muted-foreground">
-                        (answer change, overhaul)
-                      </span>
-                    </Label>
-                  </div>
-                </RadioGroup>
-                {isPatchEditDisabled && (
-                  <p className="text-xs text-yellow-600 dark:text-yellow-500 bg-yellow-50 dark:bg-yellow-950/20 p-2 rounded">
-                    ⚠️ Patch edit is disabled because you've changed the correct answer or modified
-                    images. These changes require review.
-                  </p>
-                )}
-              </div>
-            </Card>
+            <EditTypeCard
+              updateType={(form.watch("updateType") as "patch" | "minor" | "major") || "patch"}
+              isPatchEditDisabled={isPatchEditDisabled}
+              onUpdateTypeChange={(value) => {
+                if (value === "patch" && isPatchEditDisabled) {
+                  return; // Don't allow patch if disabled
+                }
+                setIsPatchEdit(value === "patch");
+                form.setValue("updateType", value, { shouldDirty: true });
+                handleUnsavedChanges();
+              }}
+            />
           )}
 
           {/* Footer with Action Buttons */}
@@ -716,7 +557,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       )}
 
       {/* Reviewer Assignment Dialog */}
-      <Dialog
+      <ReviewerAssignmentDialog
         open={showReviewerDialog}
         onOpenChange={(open) => {
           setShowReviewerDialog(open);
@@ -725,65 +566,15 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
             setIsSubmittingForReview(false);
           }
         }}
-      >
-        <DialogContent className="sm:max-w-[500px]">
-          <DialogHeader>
-            <DialogTitle>Assign Reviewer</DialogTitle>
-            <DialogDescription>
-              {isSubmittingForReview
-                ? "Please select a reviewer to evaluate this question."
-                : `This ${form.getValues("updateType")} edit requires review. Please select a reviewer to evaluate these changes.`}
-            </DialogDescription>
-          </DialogHeader>
-
-          <div className="space-y-4 py-4">
-            <div className="space-y-2">
-              <Label htmlFor="reviewer">Select Reviewer</Label>
-              {loadingReviewers ? (
-                <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                </div>
-              ) : (
-                <Select value={selectedReviewerId} onValueChange={setSelectedReviewerId}>
-                  <SelectTrigger id="reviewer">
-                    <SelectValue placeholder="Select a reviewer..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {reviewers.map((reviewer) => (
-                      <SelectItem key={reviewer.id} value={reviewer.id}>
-                        <div className="flex items-center justify-between w-full">
-                          <div className="flex items-center gap-2">
-                            <UserCheck className="h-4 w-4" />
-                            <span>{reviewer.full_name}</span>
-                          </div>
-                          <span className="text-xs text-muted-foreground ml-4">
-                            {reviewer.pending_count} pending
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-              {reviewers.length === 0 && !loadingReviewers && (
-                <p className="text-sm text-muted-foreground">No reviewers available</p>
-              )}
-            </div>
-          </div>
-
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setShowReviewerDialog(false)}>
-              Cancel
-            </Button>
-            <Button
-              onClick={handleReviewerSelection}
-              disabled={!selectedReviewerId || loadingReviewers}
-            >
-              Assign & Save
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        isSubmittingForReview={isSubmittingForReview}
+        updateType={form.getValues("updateType")}
+        loadingReviewers={loadingReviewers}
+        reviewers={reviewers}
+        selectedReviewerId={selectedReviewerId}
+        onSelectReviewer={setSelectedReviewerId}
+        onCancel={() => setShowReviewerDialog(false)}
+        onAssign={handleReviewerSelection}
+      />
     </div>
   );
 }
