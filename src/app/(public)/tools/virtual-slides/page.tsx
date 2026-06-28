@@ -2,113 +2,24 @@
 
 import { useState, useEffect, Suspense, useRef, useCallback, useMemo } from "react";
 import { useSearchParams } from "next/navigation";
-import dynamic from "next/dynamic";
-import { useClientVirtualSlides, getRelatedSlides } from "@/shared/hooks/use-client-virtual-slides";
-import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
+import { useClientVirtualSlides } from "@/shared/hooks/use-client-virtual-slides";
 import { VIRTUAL_SLIDES_JSON_URL } from "@/shared/config/virtual-slides";
-import { Card, CardContent } from "@/shared/components/ui/card";
-import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
-import {
-  Search,
-  Microscope,
-  Filter,
-  FileText,
-  Loader2,
-  Eye,
-  EyeOff,
-  Shuffle,
-  RefreshCw,
-  Info,
-  GraduationCap,
-} from "lucide-react";
+import { Microscope, FileText } from "lucide-react";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
 import { ContentDisclaimer } from "@/shared/components/common/content-disclaimer";
-import { repositoryLogos } from "@/shared/components/common/repository-logos";
-import { getR2PublicUrl } from "@/shared/services/r2-storage";
-
-// Dynamically import Lottie to avoid SSR issues
-const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 // Import components
-import { SlideRowUnified } from "@/features/public/tools/virtual-slides/components/slide-row-unified";
 import { SlideViewerModal } from "@/shared/components/common/slide-viewer-modal";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
-import { Pagination } from "@/features/public/tools/virtual-slides/components/pagination";
 import { LoadingSkeleton } from "@/features/public/tools/virtual-slides/components/loading-skeleton";
 import { log } from "@/shared/utils/logging";
-
-// Error state component with Lottie animation
-function VirtualSlidesErrorState({ error }: { error: string }) {
-  const { animationData } = useLottieAnimation("error");
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const lottieRef = useRef<any>(null);
-
-  useEffect(() => {
-    if (lottieRef.current && animationData) {
-      const anim = lottieRef.current;
-      let active = true;
-
-      // Play forward-reverse loop. `active` guard prevents a queued `complete` from calling
-      // play() after unmount/destroy, which would resurrect (and thus leak) the animation.
-      const handleComplete = () => {
-        if (!active || !anim.animationItem) return;
-        anim.animationItem.setDirection(anim.animationItem.playDirection * -1);
-        anim.animationItem.play();
-      };
-
-      anim.animationItem?.addEventListener("complete", handleComplete);
-
-      return () => {
-        active = false;
-        anim.animationItem?.removeEventListener("complete", handleComplete);
-      };
-    }
-  }, [animationData]);
-
-  return (
-    <div className="flex min-h-screen flex-col bg-background">
-      <PublicHero
-        title="Virtual Slide Search Engine"
-        description="Search and explore thousands of virtual pathology slides from leading institutions worldwide."
-      />
-      <div className="container mx-auto px-4 py-4 md:py-8 max-w-6xl">
-        <Card className="p-8 md:p-12 text-center">
-          {/* Lottie Animation - Forward-reverse loop */}
-          {animationData && (
-            <div className="w-full max-w-[200px] mx-auto mb-6">
-              <Lottie
-                lottieRef={lottieRef}
-                animationData={animationData}
-                loop={false}
-                autoplay={true}
-                style={{ width: "100%", height: "auto" }}
-              />
-            </div>
-          )}
-
-          <h3 className="text-xl font-semibold mb-3">Failed to Load Virtual Slides</h3>
-          <p className="text-muted-foreground mb-6 max-w-md mx-auto">
-            {error || "Unknown error occurred"}
-          </p>
-          <Button onClick={() => window.location.reload()} size="lg">
-            <RefreshCw className="h-4 w-4 mr-2" />
-            Try Again
-          </Button>
-        </Card>
-      </div>
-    </div>
-  );
-}
+import { VirtualSlidesErrorState } from "./virtual-slides-error-state";
+import { RepositoryLogoStrip } from "./repository-logo-strip";
+import { VirtualSlidesModeToggle } from "./virtual-slides-mode-toggle";
+import { SearchFilterCard } from "./search-filter-card";
+import { SlideResultsTable } from "./slide-results-table";
+import { NoResultsSection } from "./no-results-section";
 
 function VirtualSlidesContent() {
   const searchParams = useSearchParams();
@@ -350,6 +261,72 @@ function VirtualSlidesContent() {
     });
   };
 
+  const handleSelectSearch = async () => {
+    // If coming from Study mode, restore the saved diagnosis visibility and re-run search
+    if (mode === "study") {
+      setShowDiagnoses(searchModeDiagnosesVisibility.current);
+      setMode("search");
+      const isEmptySearch = !debouncedSearchTerm || debouncedSearchTerm.trim() === "";
+      await searchWithFilters({
+        query: debouncedSearchTerm || undefined,
+        repository: selectedRepository !== "all" ? selectedRepository : undefined,
+        category: selectedCategory !== "all" ? selectedCategory : undefined,
+        subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
+        randomSeed: isEmptySearch ? Math.floor(Math.random() * 1e9) : undefined,
+        page: 1,
+      });
+    } else {
+      setMode("search");
+    }
+  };
+
+  const handleSelectStudy = () => {
+    // Save current diagnosis visibility before entering Study mode
+    if (mode === "search") {
+      searchModeDiagnosesVisibility.current = showDiagnoses;
+    }
+    // Always hide diagnoses in Study mode
+    setShowDiagnoses(false);
+    setMode("study");
+  };
+
+  const openViewer = (slide: VirtualSlide) => {
+    setViewerInitialSlide(undefined);
+    setViewerSlide(slide);
+  };
+
+  // Immediately search with the current input value (used by Enter + the Search button)
+  const runImmediateSearch = () => {
+    if (debounceTimerRef.current) {
+      clearTimeout(debounceTimerRef.current);
+    }
+    const currentValue = searchInputRef.current?.value || "";
+    setDebouncedSearchTerm(currentValue);
+    const isEmptySearch = !currentValue || currentValue.trim() === "";
+    searchWithFilters({
+      query: currentValue || undefined,
+      repository: selectedRepository !== "all" ? selectedRepository : undefined,
+      category: selectedCategory !== "all" ? selectedCategory : undefined,
+      subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
+      randomSeed: isEmptySearch ? Math.floor(Math.random() * 1e9) : undefined,
+      page: 1,
+    });
+  };
+
+  const runGenerateQuestions = async () => {
+    setRevealedDiagnoses(new Set());
+    const seed = Math.floor(Math.random() * 1e9);
+    await searchWithFilters({
+      query: "",
+      repository: selectedRepository !== "all" ? selectedRepository : undefined,
+      category: selectedCategory !== "all" ? selectedCategory : undefined,
+      subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
+      randomSeed: seed,
+      limit: studyQuestionCount,
+      page: 1,
+    });
+  };
+
   if (isInitialLoading) {
     return (
       <div className="flex min-h-screen flex-col bg-background">
@@ -397,528 +374,87 @@ function VirtualSlidesContent() {
         }
       />
 
-      {/* Repository logos — static strip. Split into balanced rows (instead of one wrapped
-          band with a lopsided trailing row): ≤6 → 1 row, ≤12 → 2, else 3, evenly chunked. */}
-      <section className="py-4 md:py-6 hidden sm:block">
-        <div className="container px-4 mx-auto max-w-6xl">
-          <div className="flex flex-col items-center gap-y-3">
-            {(() => {
-              const total = repositoryLogos.length;
-              const rows = total <= 6 ? 1 : total <= 12 ? 2 : 3;
-              const perRow = Math.ceil(total / rows);
-              return Array.from({ length: rows }, (_, ri) =>
-                repositoryLogos.slice(ri * perRow, (ri + 1) * perRow)
-              ).map((rowLogos, ri) => (
-                <div
-                  key={ri}
-                  className="flex flex-wrap items-center justify-center gap-x-6 gap-y-3"
-                >
-                  {rowLogos.map((repo) => (
-                    <a
-                      key={repo.id}
-                      href={repo.href}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      aria-label={repo.alt}
-                      className="group flex items-center justify-center"
-                    >
-                      <picture>
-                        <source
-                          srcSet={getR2PublicUrl(
-                            `logos/optimized/${repo.file.replace(/\.png$/, ".avif")}`
-                          )}
-                          type="image/avif"
-                        />
-                        {}
-                        <img
-                          src={getR2PublicUrl(`logos/optimized/${repo.file}`)}
-                          alt={repo.alt}
-                          width={90}
-                          height={36}
-                          loading="lazy"
-                          decoding="async"
-                          className="object-contain opacity-60 grayscale transition-all duration-200 hover:scale-105 group-hover:opacity-100 group-hover:grayscale-0"
-                        />
-                      </picture>
-                    </a>
-                  ))}
-                </div>
-              ));
-            })()}
-          </div>
-        </div>
-      </section>
+      {/* Repository logos — static strip */}
+      <RepositoryLogoStrip />
 
       {/* Mode Toggle - Above Card */}
       <section className="py-2 md:py-4">
         <div className="container px-4 mx-auto max-w-6xl">
-          {/* Mode Toggle - Segmented control on desktop, pills on mobile */}
-          <div className="flex items-center justify-center mb-4">
-            <div className="inline-flex bg-muted/50 rounded-full p-1 gap-1">
-              <button
-                onClick={async () => {
-                  // If coming from Study mode, restore the saved diagnosis visibility and re-run search
-                  if (mode === "study") {
-                    setShowDiagnoses(searchModeDiagnosesVisibility.current);
-                    // First set the mode
-                    setMode("search");
-                    // Then explicitly trigger search with current filters
-                    const isEmptySearch = !debouncedSearchTerm || debouncedSearchTerm.trim() === "";
-                    await searchWithFilters({
-                      query: debouncedSearchTerm || undefined,
-                      repository: selectedRepository !== "all" ? selectedRepository : undefined,
-                      category: selectedCategory !== "all" ? selectedCategory : undefined,
-                      subcategory: selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-                      randomSeed: isEmptySearch ? Math.floor(Math.random() * 1e9) : undefined,
-                      page: 1,
-                    });
-                  } else {
-                    setMode("search");
-                  }
-                }}
-                className={`flex items-center gap-2 px-4 md:px-6 py-2 rounded-full font-medium transition-all ${
-                  mode === "search"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <Search className="h-4 w-4" />
-                <span className="text-sm md:text-base">Search</span>
-              </button>
-              <button
-                onClick={() => {
-                  // Save current diagnosis visibility before entering Study mode
-                  if (mode === "search") {
-                    searchModeDiagnosesVisibility.current = showDiagnoses;
-                  }
-                  // Always hide diagnoses in Study mode
-                  setShowDiagnoses(false);
-                  setMode("study");
-                }}
-                className={`flex items-center gap-2 px-4 md:px-6 py-2 rounded-full font-medium transition-all ${
-                  mode === "study"
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                <GraduationCap className="h-4 w-4" />
-                <span className="text-sm md:text-base">Study</span>
-              </button>
-            </div>
-          </div>
+          <VirtualSlidesModeToggle
+            mode={mode}
+            onSelectSearch={handleSelectSearch}
+            onSelectStudy={handleSelectStudy}
+          />
 
           {/* Search and Filter Card */}
-          <Card className="p-4 md:p-8 shadow-lg">
-            <CardContent className="space-y-4 md:space-y-6">
-              {/* Study Mode Configuration */}
-              {mode === "study" && (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="question-count" className="text-lg font-semibold">
-                      Number of Questions
-                    </Label>
-                    <Select
-                      value={studyQuestionCount.toString()}
-                      onValueChange={(val) => {
-                        const newCount = parseInt(val);
-                        setStudyQuestionCount(newCount);
-                        // The useEffect will automatically regenerate with the new count
-                      }}
-                    >
-                      <SelectTrigger id="question-count">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="10">10 Questions</SelectItem>
-                        <SelectItem value="20">20 Questions</SelectItem>
-                        <SelectItem value="30">30 Questions</SelectItem>
-                        <SelectItem value="50">50 Questions</SelectItem>
-                        <SelectItem value="100">100 Questions</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="generate-questions" className="opacity-0 pointer-events-none">
-                      Actions
-                    </Label>
-                    <Button
-                      id="generate-questions"
-                      onClick={async () => {
-                        setRevealedDiagnoses(new Set());
-                        const seed = Math.floor(Math.random() * 1e9);
-                        await searchWithFilters({
-                          query: "",
-                          repository: selectedRepository !== "all" ? selectedRepository : undefined,
-                          category: selectedCategory !== "all" ? selectedCategory : undefined,
-                          subcategory:
-                            selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-                          randomSeed: seed,
-                          limit: studyQuestionCount,
-                          page: 1,
-                        });
-                      }}
-                      disabled={isLoading}
-                      className="w-full"
-                    >
-                      {isLoading ? (
-                        <Loader2 className="h-4 w-4 animate-spin mr-2" />
-                      ) : (
-                        <Shuffle className="h-4 w-4 mr-2" />
-                      )}
-                      Generate New Questions
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* Search Bar - Only in Search Mode */}
-              {mode === "search" && (
-                <div className="space-y-2 md:space-y-4">
-                  <Label htmlFor="search-input" className="text-lg font-semibold">
-                    Search Virtual Slides
-                  </Label>
-                  <div className="flex flex-col sm:flex-row gap-2">
-                    <Input
-                      ref={searchInputRef}
-                      id="search-input"
-                      placeholder="Search by diagnosis, patient info, repository, category, or organ system..."
-                      defaultValue={searchParams.get("search") || ""}
-                      onChange={(e) => {
-                        handleSearchInput(e.target.value);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === "Enter") {
-                          // On Enter: immediately search with current value
-                          e.preventDefault();
-                          if (debounceTimerRef.current) {
-                            clearTimeout(debounceTimerRef.current);
-                          }
-                          const currentValue = searchInputRef.current?.value || "";
-                          setDebouncedSearchTerm(currentValue);
-                          const isEmptySearch = !currentValue || currentValue.trim() === "";
-                          searchWithFilters({
-                            query: currentValue || undefined,
-                            repository:
-                              selectedRepository !== "all" ? selectedRepository : undefined,
-                            category: selectedCategory !== "all" ? selectedCategory : undefined,
-                            subcategory:
-                              selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-                            randomSeed: isEmptySearch ? Math.floor(Math.random() * 1e9) : undefined,
-                            page: 1,
-                          });
-                        }
-                      }}
-                      className="flex-1"
-                    />
-
-                    <Button
-                      onClick={() => {
-                        // On Search button click: immediately search with current input value
-                        if (debounceTimerRef.current) {
-                          clearTimeout(debounceTimerRef.current);
-                        }
-                        const currentValue = searchInputRef.current?.value || "";
-                        setDebouncedSearchTerm(currentValue);
-                        const isEmptySearch = !currentValue || currentValue.trim() === "";
-                        searchWithFilters({
-                          query: currentValue || undefined,
-                          repository: selectedRepository !== "all" ? selectedRepository : undefined,
-                          category: selectedCategory !== "all" ? selectedCategory : undefined,
-                          subcategory:
-                            selectedOrganSystem !== "all" ? selectedOrganSystem : undefined,
-                          randomSeed: isEmptySearch ? Math.floor(Math.random() * 1e9) : undefined,
-                          page: 1,
-                        });
-                      }}
-                      disabled={isLoading}
-                      className="px-6 w-full sm:w-auto"
-                    >
-                      <Search className="h-4 w-4 mr-2" />
-                      Search
-                    </Button>
-                  </div>
-
-                  {/* Expanded Search Terms Display */}
-                  {expandedSearchTerms && expandedSearchTerms.length > 0 && (
-                    <div className="flex items-start gap-2 p-3 bg-muted/50 rounded-md border border-muted">
-                      <Info className="h-4 w-4 mt-0.5 text-muted-foreground flex-shrink-0" />
-                      <div className="flex-1 text-sm">
-                        <span className="text-muted-foreground">Also searching for: </span>
-                        <span className="font-medium">{expandedSearchTerms.join(", ")}</span>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {/* Filters */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 md:gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="repository-filter">Web Repository</Label>
-                  <Select value={selectedRepository} onValueChange={setSelectedRepository}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All repositories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Repositories</SelectItem>
-                      {repositories.map((repo, index) => (
-                        <SelectItem key={`repo-${index}-${repo}`} value={repo as string}>
-                          {repo as string}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="category-filter">Category</Label>
-                  <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All categories" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Categories</SelectItem>
-                      {categories.map((category, index) => (
-                        <SelectItem key={`cat-${index}-${category}`} value={category as string}>
-                          {category as string}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="organ-system-filter">Organ System</Label>
-                  <Select value={selectedOrganSystem} onValueChange={setSelectedOrganSystem}>
-                    <SelectTrigger>
-                      <SelectValue placeholder="All organ systems" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Organ Systems</SelectItem>
-                      {organSystems.map((system, index) => (
-                        <SelectItem key={`sys-${index}-${system}`} value={system as string}>
-                          {system as string}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              </div>
-
-              {/* Clear Filters Button and Filter Summary */}
-              <div className="space-y-2 md:space-y-4">
-                {/* Desktop: Horizontal layout */}
-                <div className="hidden md:flex items-center justify-between">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    {mode === "study" ? (
-                      <>
-                        <GraduationCap className="h-4 w-4" />
-                        <span>Showing {displaySlides.length.toLocaleString()} questions</span>
-                      </>
-                    ) : (
-                      <>
-                        <Filter className="h-4 w-4" />
-                        <span>
-                          Showing {totalResults.toLocaleString()} of{" "}
-                          {filteredTotal.toLocaleString()} slides
-                        </span>
-                      </>
-                    )}
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button variant="outline" onClick={clearFilters} size="sm">
-                      Clear Filters
-                    </Button>
-                    <Button
-                      variant={showDiagnoses ? "outline" : "default"}
-                      size="sm"
-                      onClick={toggleDiagnoses}
-                    >
-                      {showDiagnoses ? (
-                        <>
-                          <EyeOff className="h-4 w-4 mr-2" />
-                          Hide Diagnoses
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="h-4 w-4 mr-2" />
-                          Show Diagnoses
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Mobile: Vertical layout */}
-                <div className="md:hidden space-y-3">
-                  <div className="flex flex-col gap-2">
-                    <Button variant="outline" onClick={clearFilters} size="sm" className="w-full">
-                      Clear Filters
-                    </Button>
-                    <Button
-                      variant={showDiagnoses ? "outline" : "default"}
-                      size="sm"
-                      onClick={toggleDiagnoses}
-                      className="w-full"
-                    >
-                      {showDiagnoses ? (
-                        <>
-                          <EyeOff className="h-4 w-4 mr-2" />
-                          Hide Diagnoses
-                        </>
-                      ) : (
-                        <>
-                          <Eye className="h-4 w-4 mr-2" />
-                          Show Diagnoses
-                        </>
-                      )}
-                    </Button>
-                  </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    {mode === "study" ? (
-                      <>
-                        <GraduationCap className="h-4 w-4" />
-                        <span>Showing {displaySlides.length} questions</span>
-                      </>
-                    ) : (
-                      <>
-                        <Filter className="h-4 w-4" />
-                        <span>
-                          Showing {totalResults.toLocaleString()} of{" "}
-                          {filteredTotal.toLocaleString()} slides
-                        </span>
-                      </>
-                    )}
-                  </div>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <SearchFilterCard
+            mode={mode}
+            studyQuestionCount={studyQuestionCount}
+            onStudyQuestionCountChange={setStudyQuestionCount}
+            searchInputRef={searchInputRef}
+            initialSearchValue={searchParams.get("search") || ""}
+            onSearchInput={handleSearchInput}
+            onImmediateSearch={runImmediateSearch}
+            onGenerateQuestions={runGenerateQuestions}
+            selectedRepository={selectedRepository}
+            onRepositoryChange={setSelectedRepository}
+            repositories={repositories}
+            selectedCategory={selectedCategory}
+            onCategoryChange={setSelectedCategory}
+            categories={categories}
+            selectedOrganSystem={selectedOrganSystem}
+            onOrganSystemChange={setSelectedOrganSystem}
+            organSystems={organSystems}
+            isLoading={isLoading}
+            expandedSearchTerms={expandedSearchTerms}
+            displaySlidesCount={displaySlides.length}
+            totalResults={totalResults}
+            filteredTotal={filteredTotal}
+            showDiagnoses={showDiagnoses}
+            onToggleDiagnoses={toggleDiagnoses}
+            onClearFilters={clearFilters}
+          />
         </div>
       </section>
 
       {/* Results Section */}
-      {isInitialLoading ? (
-        <section className="relative py-4 md:py-8">
-          <div className="container px-4 mx-auto max-w-6xl">
-            <Card className="shadow-lg">
-              <CardContent className="p-0">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead className="bg-muted/50 border-b">
-                      <tr>
-                        <th className="text-left p-2 md:p-4 font-semibold w-20 md:w-24">Preview</th>
-                        <th className="text-left p-2 md:p-4 font-semibold">Slide Info</th>
-                        {/* Site column (Category + Organ) - visible on desktop (lg+) */}
-                        <th className="text-left p-2 md:p-4 font-semibold w-32 md:w-40 hidden lg:table-cell">
-                          Site
-                        </th>
-                        <th className="text-left p-2 md:p-4 font-semibold w-20 md:w-32 hidden md:table-cell">
-                          Repository
-                        </th>
-                        <th className="text-left p-2 md:p-4 font-semibold w-16 md:w-40">Actions</th>
-                      </tr>
-                    </thead>
-                    <LoadingSkeleton variant="table" />
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
-      ) : (
-        displaySlides.length > 0 && (
-          <section className="relative py-4 md:py-8">
-            <div className="container px-4 mx-auto max-w-6xl">
-              <Card className="shadow-lg">
-                <CardContent className="p-0">
-                  <div className="overflow-x-auto">
-                    <table className="w-full">
-                      <thead className="bg-muted/50 border-b">
-                        <tr>
-                          <th className="text-left p-2 md:p-4 font-semibold w-20 md:w-24">
-                            Preview
-                          </th>
-                          <th className="text-left p-2 md:p-4 font-semibold">Slide Info</th>
-                          <th className="text-left p-2 md:p-4 font-semibold w-20 md:w-32 hidden md:table-cell">
-                            Repository
-                          </th>
-                          <th className="text-left p-2 md:p-4 font-semibold w-16 md:w-40">
-                            Actions
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {displaySlides.map((slide, index) => (
-                          <SlideRowUnified
-                            key={`${slide.id}-${index}`}
-                            slide={slide}
-                            index={index}
-                            showDiagnoses={showDiagnoses}
-                            isRevealed={revealedDiagnoses.has(slide.id)}
-                            onToggleReveal={() => toggleDiagnosisReveal(slide.id)}
-                            related={getRelatedSlides(slide)}
-                            onOpenViewer={() => {
-                              setViewerInitialSlide(undefined);
-                              setViewerSlide(slide);
-                            }}
-                            onOpenViewerAt={(slideName) => {
-                              setViewerInitialSlide(slideName);
-                              setViewerSlide(slide);
-                            }}
-                            onOpenRelated={(r) => {
-                              setViewerInitialSlide(undefined);
-                              setViewerSlide(r);
-                            }}
-                          />
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-
-                  {mode === "search" && (
-                    <Pagination
-                      currentPage={currentPage}
-                      totalPages={totalPages}
-                      itemsPerPage={client.currentSearchOptions.limit || 20}
-                      totalItems={totalResults}
-                      onPageChange={goToPage}
-                      onItemsPerPageChange={(n) => searchWithFilters({ limit: n, page: 1 })}
-                    />
-                  )}
-                </CardContent>
-              </Card>
-            </div>
-          </section>
-        )
-      )}
+      <SlideResultsTable
+        isInitialLoading={isInitialLoading}
+        displaySlides={displaySlides}
+        mode={mode}
+        showDiagnoses={showDiagnoses}
+        revealedDiagnoses={revealedDiagnoses}
+        onToggleReveal={toggleDiagnosisReveal}
+        onOpenViewer={openViewer}
+        onOpenViewerAt={(slide, slideName) => {
+          setViewerInitialSlide(slideName);
+          setViewerSlide(slide);
+        }}
+        onOpenRelated={openViewer}
+        currentPage={currentPage}
+        totalPages={totalPages}
+        itemsPerPage={client.currentSearchOptions.limit || 20}
+        totalItems={totalResults}
+        onPageChange={goToPage}
+        onItemsPerPageChange={(n) => searchWithFilters({ limit: n, page: 1 })}
+      />
 
       {/* No Results - Show immediately when no results, hide during loading */}
       {displaySlides.length === 0 && !isInitialLoading && (
-        <section className="relative py-16">
-          <div className="container px-4 mx-auto max-w-4xl text-center">
-            <div className="space-y-4">
-              <Microscope className="h-16 w-16 text-muted-foreground mx-auto" />
-              <h3 className="text-xl font-semibold">No slides found</h3>
-              <p className="text-muted-foreground">
-                Try adjusting your search terms
-                {(selectedRepository !== "all" ||
-                  selectedCategory !== "all" ||
-                  selectedOrganSystem !== "all") &&
-                  " or filters"}{" "}
-                to find more results.
-              </p>
-              {(debouncedSearchTerm ||
-                selectedRepository !== "all" ||
-                selectedCategory !== "all" ||
-                selectedOrganSystem !== "all") && (
-                <Button onClick={clearFilters} variant="outline">
-                  Clear All Filters
-                </Button>
-              )}
-            </div>
-          </div>
-        </section>
+        <NoResultsSection
+          hasActiveFilters={
+            selectedRepository !== "all" ||
+            selectedCategory !== "all" ||
+            selectedOrganSystem !== "all"
+          }
+          hasAnyFilterOrSearch={
+            !!debouncedSearchTerm ||
+            selectedRepository !== "all" ||
+            selectedCategory !== "all" ||
+            selectedOrganSystem !== "all"
+          }
+          onClearFilters={clearFilters}
+        />
       )}
 
       <ContentDisclaimer />
