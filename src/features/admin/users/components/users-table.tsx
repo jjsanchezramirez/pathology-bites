@@ -1,7 +1,7 @@
 // src/features/users/components/users-table.tsx
 "use client";
 
-import { useState, useCallback, useEffect, memo, useMemo } from "react";
+import { useState, useCallback, useEffect, useMemo } from "react";
 import useSWR from "swr";
 import { toast } from "@/shared/utils/ui/toast";
 import {
@@ -14,8 +14,6 @@ import {
 } from "@/shared/components/ui/table";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
-import { RoleBadge } from "@/shared/components/ui/role-badge";
-import { UserStatusBadge } from "@/shared/components/ui/user-status-badge";
 import {
   Select,
   SelectContent,
@@ -23,167 +21,24 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogOverlay,
-  DialogPortal,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
-import {
-  Search,
-  Loader2,
-  MoreVertical,
-  Shield,
-  UserCheck,
-  GraduationCap,
-  RefreshCw,
-  Trash2,
-} from "lucide-react";
-import { format } from "date-fns";
+import { Search, Loader2, RefreshCw } from "lucide-react";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { apiClient } from "@/shared/utils/api/api-client";
 import { log } from "@/shared/utils/logging";
-
-interface User {
-  id: string;
-  email: string | null;
-  first_name: string | null;
-  last_name: string | null;
-  role: string;
-  user_type: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-}
-
-const PAGE_SIZE = 10;
-
-const userTypeConfig = {
-  student: "Student",
-  resident: "Resident",
-  fellow: "Fellow",
-  attending: "Attending",
-  other: "Other",
-};
-
-interface UserRowProps {
-  user: User;
-  isAdmin: boolean;
-  onRoleChange: (user: User) => void;
-  onStatusChange: (user: User) => void;
-  onTypeChange: (user: User) => void;
-  onDelete: (user: User) => void;
-  canModifyUser: (user: User) => boolean;
-  canDeleteUser: (user: User) => boolean;
-  getDisplayName: (user: User) => string;
-}
-
-const UserRow = memo(function UserRow({
-  user,
-  isAdmin,
-  onRoleChange,
-  onStatusChange,
-  onTypeChange,
-  onDelete,
-  canModifyUser,
-  canDeleteUser,
-  getDisplayName,
-}: UserRowProps) {
-  return (
-    <TableRow key={user.id}>
-      <TableCell>
-        <div>
-          <div className="font-medium">{getDisplayName(user)}</div>
-          <div className="text-sm text-muted-foreground">{user.email}</div>
-        </div>
-      </TableCell>
-      <TableCell>
-        <RoleBadge role={user.role} className="text-[10px] px-1.5 py-0" />
-      </TableCell>
-      <TableCell>
-        <span className="text-sm">
-          {userTypeConfig[user.user_type as keyof typeof userTypeConfig] || user.user_type}
-        </span>
-      </TableCell>
-      <TableCell>
-        <UserStatusBadge status={user.status} className="text-[10px] px-1.5 py-0" />
-      </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
-        {format(new Date(user.created_at), "MMM d, yyyy")}
-      </TableCell>
-      {isAdmin && (
-        <TableCell>
-          <DropdownMenu modal={false}>
-            <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8">
-                <MoreVertical className="h-4 w-4" />
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent align="end">
-              <DropdownMenuLabel>Actions</DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => onRoleChange(user)} disabled={!canModifyUser(user)}>
-                <Shield className="h-4 w-4 mr-2" />
-                Change Role
-              </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => onStatusChange(user)}
-                disabled={!canModifyUser(user)}
-              >
-                <UserCheck className="h-4 w-4 mr-2" />
-                Change Status
-              </DropdownMenuItem>
-              <DropdownMenuItem onClick={() => onTypeChange(user)} disabled={!canModifyUser(user)}>
-                <GraduationCap className="h-4 w-4 mr-2" />
-                Change Type
-              </DropdownMenuItem>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem
-                onClick={() => onDelete(user)}
-                disabled={!canDeleteUser(user)}
-                className="text-destructive focus:text-destructive disabled:text-muted-foreground"
-              >
-                <Trash2 className="h-4 w-4 mr-2" />
-                Delete User
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
-        </TableCell>
-      )}
-    </TableRow>
-  );
-});
+import { type User, PAGE_SIZE, getUserDisplayName } from "./users-table-utils";
+import { UserRow } from "./user-row";
+import { UsersPagination } from "./users-pagination";
+import {
+  UserFieldChangeDialog,
+  DeleteUserDialog,
+  ROLE_OPTIONS,
+  STATUS_OPTIONS,
+  TYPE_OPTIONS,
+} from "./user-dialogs";
 
 interface UsersTableProps {
   onUserChange?: () => void;
-}
-
-function getPageNumbers(currentPage: number, totalPages: number): (number | "ellipsis")[] {
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, i) => i);
-  }
-  const pages: (number | "ellipsis")[] = [];
-  pages.push(0);
-  if (currentPage > 2) pages.push("ellipsis");
-  const start = Math.max(1, currentPage - 1);
-  const end = Math.min(totalPages - 2, currentPage + 1);
-  for (let i = start; i <= end; i++) pages.push(i);
-  if (currentPage < totalPages - 3) pages.push("ellipsis");
-  pages.push(totalPages - 1);
-  return pages;
 }
 
 export function UsersTable({ onUserChange }: UsersTableProps = {}) {
@@ -263,12 +118,6 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
   const canDeleteUser = (targetUser: User) => {
     return isAdmin && currentUser?.id !== targetUser.id;
   };
-
-  const getDisplayName = useCallback((user: User) => {
-    return user.first_name && user.last_name
-      ? `${user.first_name} ${user.last_name}`
-      : user.email || "Unknown User";
-  }, []);
 
   const handleRoleDialogOpen = useCallback((user: User) => {
     setSelectedUser(user);
@@ -537,7 +386,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
                 </TableCell>
               </TableRow>
             ) : (
-              users.map((user) => (
+              users.map((user: User) => (
                 <UserRow
                   key={user.id}
                   user={user}
@@ -548,7 +397,6 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
                   onDelete={handleDeleteDialogOpen}
                   canModifyUser={canModifyUser}
                   canDeleteUser={canDeleteUser}
-                  getDisplayName={getDisplayName}
                 />
               ))
             )}
@@ -557,267 +405,88 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
       </div>
 
       {/* Pagination */}
-      <div className="flex justify-between items-center">
-        <p className="text-sm text-muted-foreground">
-          Showing {users.length > 0 ? page * PAGE_SIZE + 1 : 0} to{" "}
-          {Math.min((page + 1) * PAGE_SIZE, totalUsers)} of {totalUsers} users
-        </p>
-        <div className="flex gap-2 items-center">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(page - 1)}
-            disabled={page === 0}
-          >
-            Previous
-          </Button>
-          {getPageNumbers(page, totalPages).map((p, idx) =>
-            p === "ellipsis" ? (
-              <span key={`ellipsis-${idx}`} className="px-2 text-sm text-muted-foreground">
-                ...
-              </span>
-            ) : (
-              <Button
-                key={p}
-                variant={p === page ? "default" : "outline"}
-                size="sm"
-                className="min-w-[36px]"
-                onClick={() => setPage(p)}
-              >
-                {p + 1}
-              </Button>
-            )
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(page + 1)}
-            disabled={page >= totalPages - 1}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
+      <UsersPagination
+        page={page}
+        totalPages={totalPages}
+        totalUsers={totalUsers}
+        shownCount={users.length}
+        onPageChange={setPage}
+      />
 
       {/* Role Change Dialog */}
-      <Dialog open={showRoleDialog} onOpenChange={setShowRoleDialog}>
-        <DialogPortal>
-          <DialogOverlay className="backdrop-blur-md bg-black/20" />
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Change User Role</DialogTitle>
-              <DialogDescription>
-                Select a new role for {selectedUser && getDisplayName(selectedUser)}. This will
-                affect their permissions across the platform.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <Select value={pendingRole} onValueChange={setPendingRole}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="admin">Admin</SelectItem>
-                  <SelectItem value="creator">Creator</SelectItem>
-                  <SelectItem value="reviewer">Reviewer</SelectItem>
-                  <SelectItem value="user">User</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowRoleDialog(false)}
-                disabled={isUpdating}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => selectedUser && handleRoleChange(selectedUser.id, pendingRole)}
-                disabled={
-                  isUpdating ||
-                  !pendingRole ||
-                  pendingRole === selectedUser?.role ||
-                  !selectedUser ||
-                  !canModifyUser(selectedUser)
-                }
-              >
-                {isUpdating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  "Confirm"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </DialogPortal>
-      </Dialog>
+      <UserFieldChangeDialog
+        open={showRoleDialog}
+        onOpenChange={setShowRoleDialog}
+        title="Change User Role"
+        description={
+          <>
+            Select a new role for {selectedUser && getUserDisplayName(selectedUser)}. This will
+            affect their permissions across the platform.
+          </>
+        }
+        value={pendingRole}
+        onValueChange={setPendingRole}
+        options={ROLE_OPTIONS}
+        confirmDisabled={
+          !pendingRole ||
+          pendingRole === selectedUser?.role ||
+          !selectedUser ||
+          !canModifyUser(selectedUser)
+        }
+        isUpdating={isUpdating}
+        onConfirm={() => selectedUser && handleRoleChange(selectedUser.id, pendingRole)}
+      />
 
       {/* Status Change Dialog */}
-      <Dialog open={showStatusDialog} onOpenChange={setShowStatusDialog}>
-        <DialogPortal>
-          <DialogOverlay className="backdrop-blur-md bg-black/20" />
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Change User Status</DialogTitle>
-              <DialogDescription>
-                Select a new status for {selectedUser && getDisplayName(selectedUser)}.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <Select value={pendingStatus} onValueChange={setPendingStatus}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="active">Active</SelectItem>
-                  <SelectItem value="inactive">Inactive</SelectItem>
-                  <SelectItem value="suspended">Suspended</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowStatusDialog(false)}
-                disabled={isUpdating}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => selectedUser && handleStatusChange(selectedUser.id, pendingStatus)}
-                disabled={
-                  isUpdating ||
-                  !pendingStatus ||
-                  pendingStatus === selectedUser?.status ||
-                  !selectedUser ||
-                  !canModifyUser(selectedUser)
-                }
-              >
-                {isUpdating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  "Confirm"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </DialogPortal>
-      </Dialog>
+      <UserFieldChangeDialog
+        open={showStatusDialog}
+        onOpenChange={setShowStatusDialog}
+        title="Change User Status"
+        description={
+          <>Select a new status for {selectedUser && getUserDisplayName(selectedUser)}.</>
+        }
+        value={pendingStatus}
+        onValueChange={setPendingStatus}
+        options={STATUS_OPTIONS}
+        confirmDisabled={
+          !pendingStatus ||
+          pendingStatus === selectedUser?.status ||
+          !selectedUser ||
+          !canModifyUser(selectedUser)
+        }
+        isUpdating={isUpdating}
+        onConfirm={() => selectedUser && handleStatusChange(selectedUser.id, pendingStatus)}
+      />
 
       {/* Type Change Dialog */}
-      <Dialog open={showTypeDialog} onOpenChange={setShowTypeDialog}>
-        <DialogPortal>
-          <DialogOverlay className="backdrop-blur-md bg-black/20" />
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Change User Type</DialogTitle>
-              <DialogDescription>
-                Select a new type for {selectedUser && getDisplayName(selectedUser)}.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="py-4">
-              <Select value={pendingType} onValueChange={setPendingType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="student">Student</SelectItem>
-                  <SelectItem value="resident">Resident</SelectItem>
-                  <SelectItem value="fellow">Fellow</SelectItem>
-                  <SelectItem value="attending">Attending</SelectItem>
-                  <SelectItem value="other">Other</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowTypeDialog(false)}
-                disabled={isUpdating}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => selectedUser && handleTypeChange(selectedUser.id, pendingType)}
-                disabled={
-                  isUpdating ||
-                  !pendingType ||
-                  pendingType === selectedUser?.user_type ||
-                  !selectedUser ||
-                  !canModifyUser(selectedUser)
-                }
-              >
-                {isUpdating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Updating...
-                  </>
-                ) : (
-                  "Confirm"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </DialogPortal>
-      </Dialog>
+      <UserFieldChangeDialog
+        open={showTypeDialog}
+        onOpenChange={setShowTypeDialog}
+        title="Change User Type"
+        description={<>Select a new type for {selectedUser && getUserDisplayName(selectedUser)}.</>}
+        value={pendingType}
+        onValueChange={setPendingType}
+        options={TYPE_OPTIONS}
+        confirmDisabled={
+          !pendingType ||
+          pendingType === selectedUser?.user_type ||
+          !selectedUser ||
+          !canModifyUser(selectedUser)
+        }
+        isUpdating={isUpdating}
+        onConfirm={() => selectedUser && handleTypeChange(selectedUser.id, pendingType)}
+      />
 
       {/* Delete User Dialog */}
-      <Dialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
-        <DialogPortal>
-          <DialogOverlay className="backdrop-blur-md bg-black/20" />
-          <DialogContent className="sm:max-w-md">
-            <DialogHeader>
-              <DialogTitle>Confirm Deletion</DialogTitle>
-              <DialogDescription>
-                {selectedUser && currentUser?.id === selectedUser.id ? (
-                  <>
-                    You cannot delete your own account.
-                    <br />
-                    Please contact another administrator to delete your account.
-                  </>
-                ) : (
-                  <>
-                    Are you sure you want to permanently delete{" "}
-                    {selectedUser && getDisplayName(selectedUser)}?
-                    <br />
-                    This action cannot be undone.
-                  </>
-                )}
-              </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setShowDeleteDialog(false)}
-                disabled={isUpdating}
-              >
-                Cancel
-              </Button>
-              <Button
-                onClick={() => selectedUser && handleDeleteUser(selectedUser.id)}
-                disabled={isUpdating || !selectedUser || !canDeleteUser(selectedUser)}
-                variant="destructive"
-              >
-                {isUpdating ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Deleting...
-                  </>
-                ) : (
-                  "Delete User"
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </DialogPortal>
-      </Dialog>
+      <DeleteUserDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        user={selectedUser}
+        isSelf={!!selectedUser && currentUser?.id === selectedUser.id}
+        confirmDisabled={!selectedUser || !canDeleteUser(selectedUser)}
+        isUpdating={isUpdating}
+        onConfirm={() => selectedUser && handleDeleteUser(selectedUser.id)}
+      />
     </div>
   );
 }
