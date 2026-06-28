@@ -1,7 +1,7 @@
 // src/app/(admin)/admin/my-questions/page.tsx
 "use client";
 
-import React, { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/shared/services/client";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
@@ -15,15 +15,12 @@ import {
   TableRow,
 } from "@/shared/components/ui/table";
 import { Button } from "@/shared/components/ui/button";
-import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Card } from "@/shared/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import {
-  Eye,
   Search,
-  Edit3,
   Send,
   RefreshCw,
   Plus,
@@ -31,22 +28,14 @@ import {
   AlertTriangle,
   Clock,
   CheckCircle2,
-  ChevronDown,
-  ChevronRight,
   Flag,
-  MoreVertical,
   Trash2,
 } from "lucide-react";
-import { Skeleton } from "@/shared/components/ui/skeleton";
 import { QuestionPreviewDialog } from "@/features/admin/questions/components/dialogs/question-preview-dialog";
 import { SubmitForReviewDialog } from "@/features/admin/questions/components/dialogs/submit-for-review-dialog";
 import { BulkSubmitDialog } from "@/features/admin/questions/components/dialogs/bulk-submit-dialog";
 import { toast } from "@/shared/utils/ui/toast";
-import { formatDistanceToNow } from "date-fns";
-import { QuestionWithDetails, FLAG_TYPE_CONFIG } from "@/shared/types/questions";
-import { formatVersion } from "@/shared/utils/version";
 import { AccessDenied, AccessDeniedPresets } from "@/shared/components/common/access-denied";
-import { CategoryBadge } from "@/shared/components/ui/category-badge";
 import {
   Select,
   SelectContent,
@@ -54,35 +43,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/shared/components/ui/dropdown-menu";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-} from "@/shared/components/ui/dialog";
 import { log } from "@/shared/utils/logging";
-
-interface MyQuestion extends QuestionWithDetails {
-  creator_name?: string;
-  resubmission_notes?: string;
-  resubmission_date?: string;
-  flag_info?: {
-    flag_type: string;
-    description: string | null;
-    flagged_by_name: string;
-    created_at: string;
-  };
-}
+import {
+  type MyQuestion,
+  filterQuestions,
+  getColSpan,
+  pickInitialTab,
+  buildMyQuestions,
+} from "./my-questions-utils";
+import { MyQuestionsSkeleton } from "./my-questions-skeleton";
+import { MyQuestionsEmptyState } from "./my-questions-empty-state";
+import { MyQuestionRow } from "./my-question-row";
+import { DeleteQuestionsDialog } from "./my-questions-dialogs";
 
 export default function MyQuestionsPage() {
   const router = useRouter();
@@ -196,66 +168,17 @@ export default function MyQuestionsPage() {
             : Promise.resolve({ data: [], error: null }),
         ]);
 
-        // Build maps: latest entry per question_id (rows already ordered desc).
-        const notesByQuestion = new Map<
-          string,
-          { resubmission_notes: string | null; resubmission_date: string }
-        >();
-        for (const row of reviewsResult.data || []) {
-          if (!notesByQuestion.has(row.question_id)) {
-            notesByQuestion.set(row.question_id, {
-              resubmission_notes: row.changes_made?.resubmission_notes ?? null,
-              resubmission_date: row.created_at,
-            });
-          }
-        }
-
-        const flagsByQuestion = new Map<
-          string,
-          {
-            flag_type: string;
-            description: string | null;
-            flagged_by_name: string;
-            created_at: string;
-          }
-        >();
-        for (const row of flagsResult.data || []) {
-          if (flagsByQuestion.has(row.question_id)) continue;
-          const flaggedByUser = row.flagged_by_user as unknown as
-            | { first_name: string; last_name: string }
-            | null
-            | undefined;
-          flagsByQuestion.set(row.question_id, {
-            flag_type: row.flag_type,
-            description: row.description,
-            flagged_by_name: flaggedByUser
-              ? `${flaggedByUser.first_name} ${flaggedByUser.last_name}`
-              : "Unknown",
-            created_at: row.created_at,
-          });
-        }
-
-        const finalData = (data || []).map((q) => ({
-          ...q,
-          ...(notesByQuestion.get(q.id) ?? {}),
-          flag_info: flagsByQuestion.get(q.id),
-        })) as unknown as MyQuestion[];
+        const finalData = buildMyQuestions(
+          data,
+          reviewsResult.data as Record<string, unknown>[] | null,
+          flagsResult.data as Record<string, unknown>[] | null
+        );
         setQuestions(finalData);
         setFilteredQuestions(finalData);
 
         // Auto-select the first tab that has pending items (only on initial load)
         if (!activeTab) {
-          const tabPriority: { tab: string; status: string }[] = [
-            { tab: "revision", status: "rejected" },
-            { tab: "flagged", status: "flagged" },
-            { tab: "drafts", status: "draft" },
-            { tab: "under-review", status: "pending_review" },
-            { tab: "published", status: "published" },
-          ];
-          const firstNonEmpty = tabPriority.find(({ status }) =>
-            finalData.some((q) => q.status === status)
-          );
-          setActiveTab(firstNonEmpty?.tab || "revision");
+          setActiveTab(pickInitialTab(finalData));
         }
       } catch (error) {
         log.error("Unexpected error fetching questions:", error);
@@ -275,36 +198,7 @@ export default function MyQuestionsPage() {
   }, [user]);
 
   useEffect(() => {
-    let filtered = questions;
-
-    // Apply tab filter
-    if (activeTab === "revision") {
-      filtered = filtered.filter((q) => q.status === "rejected");
-    } else if (activeTab === "flagged") {
-      filtered = filtered.filter((q) => q.status === "flagged");
-    } else if (activeTab === "drafts") {
-      filtered = filtered.filter((q) => q.status === "draft");
-    } else if (activeTab === "under-review") {
-      filtered = filtered.filter((q) => q.status === "pending_review");
-    } else if (activeTab === "published") {
-      filtered = filtered.filter((q) => q.status === "published");
-    }
-
-    // Apply search filter
-    if (searchTerm) {
-      filtered = filtered.filter(
-        (q) =>
-          q.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-          q.stem.toLowerCase().includes(searchTerm.toLowerCase())
-      );
-    }
-
-    // Apply difficulty filter
-    if (difficultyFilter !== "all") {
-      filtered = filtered.filter((q) => q.difficulty?.toLowerCase() === difficultyFilter);
-    }
-
-    setFilteredQuestions(filtered);
+    setFilteredQuestions(filterQuestions(questions, { activeTab, searchTerm, difficultyFilter }));
   }, [searchTerm, difficultyFilter, activeTab, questions]);
 
   // Refresh data when page becomes visible
@@ -530,29 +424,6 @@ export default function MyQuestionsPage() {
     setCollapsedFeedback(newCollapsed);
   };
 
-  const getAgeIndicator = (updatedAt: string) => {
-    const daysOld = Math.floor(
-      (Date.now() - new Date(updatedAt).getTime()) / (1000 * 60 * 60 * 24)
-    );
-    if (daysOld > 7) {
-      return (
-        <Badge variant="outline" className="ml-2 text-xs border-red-300 bg-red-50 text-red-700">
-          Urgent
-        </Badge>
-      );
-    } else if (daysOld > 3) {
-      return (
-        <Badge
-          variant="outline"
-          className="ml-2 text-xs border-amber-300 bg-amber-50 text-amber-700"
-        >
-          Aging
-        </Badge>
-      );
-    }
-    return null;
-  };
-
   // Calculate stats
   const revisionCount = questions.filter((q) => q.status === "rejected").length;
   const flaggedCount = questions.filter((q) => q.status === "flagged").length;
@@ -565,12 +436,8 @@ export default function MyQuestionsPage() {
     activeTab === "drafts" &&
     selectedQuestions.size === filteredQuestions.length;
 
-  // Calculate column span based on active tab
-  const getColSpan = () => {
-    if (activeTab === "drafts") return 3; // checkbox + Question + Actions
-    if (activeTab === "published") return 3; // Question + Version + Actions
-    return 2; // Question + Actions
-  };
+  const colSpan = getColSpan(activeTab);
+  const hasFilters = !!searchTerm || difficultyFilter !== "all";
 
   // Access control
   if (!canAccess("questions.create")) {
@@ -578,44 +445,7 @@ export default function MyQuestionsPage() {
   }
 
   if (initialLoading) {
-    return (
-      <div className="space-y-6">
-        <div>
-          <Skeleton className="h-9 w-56 mb-2" />
-          <Skeleton className="h-5 w-96" />
-        </div>
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Skeleton className="h-10 w-64" />
-            <Skeleton className="h-10 w-32" />
-          </div>
-          <Skeleton className="h-9 w-24" />
-        </div>
-        <div className="space-y-4">
-          <div className="flex gap-2 border-b">
-            <Skeleton className="h-10 w-32" />
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-24" />
-            <Skeleton className="h-10 w-32" />
-            <Skeleton className="h-10 w-28" />
-          </div>
-          <div className="rounded-md border bg-card">
-            <div className="p-4 space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="space-y-2">
-                  <Skeleton className="h-5 w-3/4" />
-                  <Skeleton className="h-4 w-full" />
-                  <div className="flex gap-2">
-                    <Skeleton className="h-5 w-24" />
-                    <Skeleton className="h-5 w-20" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
+    return <MyQuestionsSkeleton />;
   }
 
   return (
@@ -733,322 +563,28 @@ export default function MyQuestionsPage() {
                 <TableBody>
                   {filteredQuestions.length === 0 ? (
                     <TableRow>
-                      <TableCell colSpan={getColSpan()} className="h-24 text-center">
-                        <div className="text-center py-6">
-                          {activeTab === "revision" && (
-                            <>
-                              <AlertTriangle className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                              <h3 className="text-lg font-medium mb-2">
-                                No questions need revision
-                              </h3>
-                              <p className="text-muted-foreground">
-                                {searchTerm || difficultyFilter !== "all"
-                                  ? "No questions match your filters"
-                                  : "Great work! You have no rejected questions to revise."}
-                              </p>
-                            </>
-                          )}
-                          {activeTab === "flagged" && (
-                            <>
-                              <Flag className="h-12 w-12 mx-auto mb-4 text-orange-500" />
-                              <h3 className="text-lg font-medium mb-2">No flagged questions</h3>
-                              <p className="text-muted-foreground">
-                                {searchTerm || difficultyFilter !== "all"
-                                  ? "No questions match your filters"
-                                  : "Questions flagged by reviewers will appear here"}
-                              </p>
-                            </>
-                          )}
-                          {activeTab === "drafts" && (
-                            <>
-                              <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                              <h3 className="text-lg font-medium mb-2">No drafts yet</h3>
-                              <p className="text-muted-foreground">
-                                {searchTerm || difficultyFilter !== "all"
-                                  ? "No questions match your filters"
-                                  : "Create a new question to get started"}
-                              </p>
-                            </>
-                          )}
-                          {activeTab === "under-review" && (
-                            <>
-                              <Clock className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                              <h3 className="text-lg font-medium mb-2">Nothing under review</h3>
-                              <p className="text-muted-foreground">
-                                {searchTerm || difficultyFilter !== "all"
-                                  ? "No questions match your filters"
-                                  : "Submit draft questions to see them here"}
-                              </p>
-                            </>
-                          )}
-                          {activeTab === "published" && (
-                            <>
-                              <CheckCircle2 className="h-12 w-12 mx-auto mb-4 text-muted-foreground" />
-                              <h3 className="text-lg font-medium mb-2">No published questions</h3>
-                              <p className="text-muted-foreground">
-                                {searchTerm || difficultyFilter !== "all"
-                                  ? "No questions match your filters"
-                                  : "Questions appear here once approved by reviewers"}
-                              </p>
-                            </>
-                          )}
-                        </div>
+                      <TableCell colSpan={colSpan} className="h-24 text-center">
+                        <MyQuestionsEmptyState activeTab={activeTab} hasFilters={hasFilters} />
                       </TableCell>
                     </TableRow>
                   ) : (
-                    filteredQuestions.map((question) => {
-                      const isCollapsed = collapsedFeedback.has(question.id);
-                      const showFeedback =
-                        (activeTab === "revision" && !!question.reviewer_feedback) ||
-                        (activeTab === "flagged" && !!question.flag_info);
-
-                      return (
-                        <React.Fragment key={question.id}>
-                          <TableRow>
-                            {activeTab === "drafts" && (
-                              <TableCell>
-                                <Checkbox
-                                  checked={selectedQuestions.has(question.id)}
-                                  onCheckedChange={(checked) =>
-                                    handleSelectQuestion(question.id, !!checked)
-                                  }
-                                />
-                              </TableCell>
-                            )}
-                            <TableCell>
-                              <div className="space-y-3">
-                                {/* Question Title */}
-                                <div className="flex items-start gap-2">
-                                  {showFeedback && (
-                                    <button
-                                      onClick={() => toggleFeedback(question.id)}
-                                      className="text-muted-foreground hover:text-foreground transition-colors flex-shrink-0 mt-0.5"
-                                      aria-label={
-                                        isCollapsed ? "Expand feedback" : "Collapse feedback"
-                                      }
-                                    >
-                                      {isCollapsed ? (
-                                        <ChevronRight className="h-4 w-4" />
-                                      ) : (
-                                        <ChevronDown className="h-4 w-4" />
-                                      )}
-                                    </button>
-                                  )}
-                                  {!showFeedback &&
-                                    (activeTab === "revision" || activeTab === "flagged") && (
-                                      <div className="w-6 flex-shrink-0" />
-                                    )}
-                                  <div className="flex-1">
-                                    <div className="font-medium flex items-center">
-                                      {question.title}
-                                      {(activeTab === "revision" || activeTab === "flagged") &&
-                                        getAgeIndicator(question.updated_at)}
-                                    </div>
-                                  </div>
-                                </div>
-
-                                {/* Question Stem */}
-                                <div className="flex gap-2">
-                                  {(activeTab === "revision" || activeTab === "flagged") && (
-                                    <div className="w-6 flex-shrink-0" />
-                                  )}
-                                  <div className="text-sm text-muted-foreground line-clamp-2 flex-1">
-                                    {question.stem}
-                                  </div>
-                                </div>
-
-                                {/* Metadata row: category + set + timestamp */}
-                                <div className="flex gap-2">
-                                  {(activeTab === "revision" || activeTab === "flagged") && (
-                                    <div className="w-6 flex-shrink-0" />
-                                  )}
-                                  <div className="flex items-center flex-wrap gap-2 text-xs text-muted-foreground">
-                                    {question.category && (
-                                      <CategoryBadge
-                                        category={{
-                                          id: question.category.id,
-                                          color: question.category.color ?? undefined,
-                                          short_form: question.category.short_form ?? undefined,
-                                          name: question.category.name,
-                                        }}
-                                      />
-                                    )}
-                                    {question.question_set && (
-                                      <Badge variant="outline" className="text-xs">
-                                        {question.question_set.name}
-                                      </Badge>
-                                    )}
-                                    <span>
-                                      {activeTab === "revision"
-                                        ? "Rejected "
-                                        : activeTab === "flagged"
-                                          ? "Flagged "
-                                          : "Updated "}
-                                      {formatDistanceToNow(new Date(question.updated_at), {
-                                        addSuffix: true,
-                                      })}
-                                    </span>
-                                  </div>
-                                </div>
-
-                                {/* Resubmission Notes */}
-                                {(activeTab === "revision" || activeTab === "flagged") &&
-                                  question.resubmission_notes && (
-                                    <div className="flex gap-2">
-                                      <div className="w-6 flex-shrink-0" />
-                                      <div className="p-3 bg-blue-50 dark:bg-blue-950/30 border-l-4 border-blue-500 dark:border-blue-600 rounded-md flex-1">
-                                        <div className="flex items-start gap-2">
-                                          <div className="flex-1 min-w-0">
-                                            <span className="text-xs font-medium text-blue-900 dark:text-blue-100 block mb-1">
-                                              Previous Changes Made
-                                            </span>
-                                            <p className="text-xs text-blue-800 dark:text-blue-300">
-                                              {question.resubmission_notes}
-                                            </p>
-                                            {question.resubmission_date && (
-                                              <p className="text-xs text-blue-600 dark:text-blue-400 mt-1">
-                                                {formatDistanceToNow(
-                                                  new Date(question.resubmission_date)
-                                                )}{" "}
-                                                ago
-                                              </p>
-                                            )}
-                                          </div>
-                                        </div>
-                                      </div>
-                                    </div>
-                                  )}
-                              </div>
-                            </TableCell>
-                            {/* Version column only for Published tab */}
-                            {activeTab === "published" && (
-                              <TableCell>
-                                <div className="text-sm font-mono">
-                                  {formatVersion(
-                                    question.version_major,
-                                    question.version_minor,
-                                    question.version_patch
-                                  )}
-                                </div>
-                              </TableCell>
-                            )}
-                            <TableCell className="text-right">
-                              <div className="flex items-center justify-end gap-2">
-                                <Button
-                                  variant="ghost"
-                                  size="sm"
-                                  onClick={() => handlePreview(question.id)}
-                                >
-                                  <Eye className="h-4 w-4 mr-1" />
-                                  Preview
-                                </Button>
-                                {(activeTab === "revision" || activeTab === "flagged") && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleEditAndResubmit(question.id)}
-                                  >
-                                    <Edit3 className="h-4 w-4 mr-1" />
-                                    Resubmit
-                                  </Button>
-                                )}
-                                {activeTab === "drafts" && (
-                                  <Button
-                                    size="sm"
-                                    onClick={() => handleSubmitForReview(question.id)}
-                                  >
-                                    <Send className="h-4 w-4 mr-1" />
-                                    Submit
-                                  </Button>
-                                )}
-                                {activeTab === "published" && (
-                                  <Button size="sm" onClick={() => handleEdit(question.id)}>
-                                    <Edit3 className="h-4 w-4 mr-1" />
-                                    Patch
-                                  </Button>
-                                )}
-                                {activeTab === "drafts" && (
-                                  <DropdownMenu>
-                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="sm" className="h-9 w-9 p-0">
-                                        <span className="sr-only">Open menu</span>
-                                        <MoreVertical className="h-4 w-4" />
-                                      </Button>
-                                    </DropdownMenuTrigger>
-                                    <DropdownMenuContent align="end">
-                                      <DropdownMenuLabel>Actions</DropdownMenuLabel>
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem onClick={() => handleEdit(question.id)}>
-                                        <Edit3 className="h-4 w-4 mr-2" />
-                                        Edit
-                                      </DropdownMenuItem>
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem
-                                        onClick={() => openDeleteDialog([question.id])}
-                                        className="text-destructive focus:text-destructive"
-                                      >
-                                        <Trash2 className="h-4 w-4 mr-2" />
-                                        Delete
-                                      </DropdownMenuItem>
-                                    </DropdownMenuContent>
-                                  </DropdownMenu>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-
-                          {/* Reviewer Feedback / Flag Reason Row */}
-                          {showFeedback && !isCollapsed && (
-                            <TableRow className="bg-muted/50 border-t">
-                              <TableCell colSpan={getColSpan()} className="py-6 pl-6 pr-6">
-                                <div className="flex items-start gap-2">
-                                  <div className="w-6 flex-shrink-0 flex justify-center">
-                                    {activeTab === "flagged" ? (
-                                      <Flag className="h-4 w-4 text-orange-500 mt-0.5" />
-                                    ) : (
-                                      <AlertTriangle className="h-4 w-4 text-destructive mt-0.5" />
-                                    )}
-                                  </div>
-                                  <div className="flex-1">
-                                    {activeTab === "flagged" && question.flag_info ? (
-                                      <>
-                                        <h4 className="text-sm font-semibold mb-2">
-                                          Flagged:{" "}
-                                          {FLAG_TYPE_CONFIG[
-                                            question.flag_info
-                                              .flag_type as keyof typeof FLAG_TYPE_CONFIG
-                                          ]?.label ?? question.flag_info.flag_type}
-                                        </h4>
-                                        {question.flag_info.description && (
-                                          <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap mb-2">
-                                            {question.flag_info.description}
-                                          </p>
-                                        )}
-                                        <p className="text-xs text-muted-foreground">
-                                          Flagged by {question.flag_info.flagged_by_name}{" "}
-                                          {formatDistanceToNow(
-                                            new Date(question.flag_info.created_at)
-                                          )}{" "}
-                                          ago
-                                        </p>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <h4 className="text-sm font-semibold mb-2">
-                                          Reviewer Feedback
-                                        </h4>
-                                        <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                                          {question.reviewer_feedback}
-                                        </p>
-                                      </>
-                                    )}
-                                  </div>
-                                </div>
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </React.Fragment>
-                      );
-                    })
+                    filteredQuestions.map((question) => (
+                      <MyQuestionRow
+                        key={question.id}
+                        question={question}
+                        activeTab={activeTab}
+                        isCollapsed={collapsedFeedback.has(question.id)}
+                        isSelected={selectedQuestions.has(question.id)}
+                        colSpan={colSpan}
+                        onToggleFeedback={toggleFeedback}
+                        onSelectQuestion={handleSelectQuestion}
+                        onPreview={handlePreview}
+                        onEditAndResubmit={handleEditAndResubmit}
+                        onSubmitForReview={handleSubmitForReview}
+                        onEdit={handleEdit}
+                        onDelete={openDeleteDialog}
+                      />
+                    ))
                   )}
                 </TableBody>
               </Table>
@@ -1083,39 +619,13 @@ export default function MyQuestionsPage() {
         onConfirm={handleBulkSubmitConfirm}
       />
 
-      <Dialog
+      <DeleteQuestionsDialog
         open={deleteDialogOpen}
-        onOpenChange={(open) => {
-          if (!deleting) setDeleteDialogOpen(open);
-        }}
-      >
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>
-              Delete{" "}
-              {deleteTargetIds.length === 1 ? "question" : `${deleteTargetIds.length} questions`}?
-            </DialogTitle>
-            <DialogDescription>
-              {deleteTargetIds.length === 1
-                ? "This permanently deletes the draft question. This action cannot be undone."
-                : `This permanently deletes ${deleteTargetIds.length} draft questions. This action cannot be undone.`}
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button
-              variant="outline"
-              onClick={() => setDeleteDialogOpen(false)}
-              disabled={deleting}
-            >
-              Cancel
-            </Button>
-            <Button variant="destructive" onClick={handleDeleteConfirm} disabled={deleting}>
-              <Trash2 className="h-4 w-4 mr-2" />
-              {deleting ? "Deleting..." : "Delete"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+        onOpenChange={setDeleteDialogOpen}
+        count={deleteTargetIds.length}
+        deleting={deleting}
+        onConfirm={handleDeleteConfirm}
+      />
     </div>
   );
 }
