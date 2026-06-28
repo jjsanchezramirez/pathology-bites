@@ -25,83 +25,19 @@ import {
 import { rankSlidesWithExpansion } from "@/shared/utils/domain/virtual-slide-search";
 import { isViewerSupported } from "@/shared/utils/domain/repository";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
-
-const SEARCH_SUFFIX = "pathology";
-const MIN_CHARS = 2;
-const VIRTUAL_SLIDES_SEARCH_PATH = "/tools/virtual-slides";
-
-const TOP_MATCH_MIN_SCORE_WHO = 85;
-// 90 = the selected phrase appears verbatim inside a real diagnosis ("contains exact phrase").
-// Was 95 (exact diagnosis / WHO-acronym only), which suppressed the WSI button for basic terms
-// that exist only as a substring of a longer diagnosis (e.g. "Chronic Hepatitis B" → corpus
-// "Mild chronic hepatitis B and steatosis"). 90 keeps it confident without demanding an exact row.
-const TOP_MATCH_MIN_SCORE_OTHER = 90;
-const PATHPRESENTER_TIE_DELTA = 5;
-const PATHPRESENTER_REPOSITORY = "PathPresenter";
-const WHO_REPOSITORY = "WHO Blue Books Online";
-
-// Choose which slide the inline-viewer action opens. The top WSI match is often a PathPresenter
-// slide (preferred for external deep-links) our viewer can't render, so we may need a substitute.
-// Priority:
-//   1. The #1-ranked match if the viewer can render it — highest confidence wins, any repo.
-//   2. Otherwise a WHO Blue Books slide (curated reference).
-//   3. Otherwise just the highest-ranked renderable match (natural search order — no repo bias).
-// Returns null when nothing among the matches is renderable (caller falls back to the link).
-// topMatches is ranked (and deduped by diagnosis), so index 0 is the strongest match.
-function pickViewableSlide(
-  topMatch: TopMatch | null,
-  topMatches: VirtualSlide[]
-): VirtualSlide | null {
-  if (!topMatch || topMatches.length === 0) return null;
-  if (isViewerSupported(topMatches[0].repository)) return topMatches[0];
-  const supported = topMatches.filter((s) => isViewerSupported(s.repository));
-  if (supported.length === 0) return null;
-  return supported.find((s) => s.repository === WHO_REPOSITORY) ?? supported[0];
-}
-
-function queryTokens(text: string): string[] {
-  return (
-    text
-      .toLowerCase()
-      .replace(/[-/]/g, " ")
-      .match(/[a-z0-9]+/g) || []
-  );
-}
-
-function isWhoAcronymMatch(slide: VirtualSlide, queryText: string): boolean {
-  if (!slide.acronym) return false;
-  const acronyms = (Array.isArray(slide.acronym) ? slide.acronym : [slide.acronym]).map((a) =>
-    a.toLowerCase()
-  );
-  const tokens = queryTokens(queryText);
-  return tokens.some((t) => acronyms.includes(t));
-}
-
-function buildGoogleImagesUrl(text: string) {
-  const q = `${text} ${SEARCH_SUFFIX}`.trim();
-  return `https://www.google.com/search?tbm=isch&q=${encodeURIComponent(q)}`;
-}
-
-function buildVirtualSlidesUrl(text: string) {
-  return `${VIRTUAL_SLIDES_SEARCH_PATH}?search=${encodeURIComponent(text)}`;
-}
-
-function openInTab(url: string) {
-  window.open(url, "_blank", "noopener,noreferrer");
-  window.getSelection()?.removeAllRanges();
-}
-
-function openGoogleImages(text: string) {
-  openInTab(buildGoogleImagesUrl(text));
-}
-
-function openVirtualSlides(text: string) {
-  openInTab(buildVirtualSlidesUrl(text));
-}
-
-function openWsi(url: string) {
-  openInTab(url);
-}
+import {
+  MIN_CHARS,
+  TOP_MATCH_MIN_SCORE_WHO,
+  TOP_MATCH_MIN_SCORE_OTHER,
+  PATHPRESENTER_TIE_DELTA,
+  PATHPRESENTER_REPOSITORY,
+  type TopMatch,
+  pickViewableSlide,
+  isWhoAcronymMatch,
+  openGoogleImages,
+  openVirtualSlides,
+  openWsi,
+} from "./fake-selection-highlight-utils";
 
 function useDebouncedValue<T>(value: T, delayMs: number): T {
   const [debounced, setDebounced] = useState(value);
@@ -162,8 +98,6 @@ function useDelayedPresence<T>(
 
   return { current, visible };
 }
-
-type TopMatch = { slide: VirtualSlide; score: number; isWho: boolean };
 
 function useTopMatches(
   text: string | undefined,
