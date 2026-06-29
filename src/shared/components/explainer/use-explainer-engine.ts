@@ -1,44 +1,55 @@
 "use client";
 
 import { useMemo, useEffect, useRef } from "react";
-import type { ExplainerSequence } from "@/shared/types/explainer";
-import { computeEngineState, type EngineState } from "./engine-core";
+import type { Lesson } from "@/shared/lesson/types";
+import { evaluate, slideStarts, type FrameState } from "@/shared/lesson/evaluate";
 
 interface UseExplainerEngineOptions {
-  sequence: ExplainerSequence;
+  lesson: Lesson;
   currentTime: number;
+  /** 0..1 reduced-motion multiplier (1 = full motion). */
+  motion?: number;
 }
 
 export function useExplainerEngine({
-  sequence,
+  lesson,
   currentTime,
-}: UseExplainerEngineOptions): EngineState {
+  motion = 1,
+}: UseExplainerEngineOptions): FrameState {
   const preloadedRef = useRef<Set<string>>(new Set());
 
-  const state = useMemo(() => computeEngineState(sequence, currentTime), [sequence, currentTime]);
+  const state = useMemo(
+    () => evaluate(lesson, currentTime, { motion }),
+    [lesson, currentTime, motion]
+  );
 
-  // Reset preload cache when sequence changes
+  // Reset preload cache when the lesson changes.
   useEffect(() => {
     preloadedRef.current.clear();
-  }, [sequence]);
+  }, [lesson]);
 
-  // Preload upcoming images
+  // Preload the current + next 2 slide background images.
   useEffect(() => {
-    const { segments } = sequence;
-    const currentIndex = segments.findIndex(
-      (s) => currentTime >= s.startTime && currentTime < s.endTime
+    const { slides } = lesson;
+    const { starts } = slideStarts(lesson);
+    let currentIndex = slides.findIndex(
+      (_, i) => currentTime >= starts[i] && currentTime < starts[i] + slides[i].duration
     );
+    if (currentIndex < 0) currentIndex = 0;
 
-    // Preload current + next 2 segments
-    for (let i = Math.max(0, currentIndex); i < Math.min(segments.length, currentIndex + 3); i++) {
-      const url = segments[i]?.imageUrl;
+    for (let i = currentIndex; i < Math.min(slides.length, currentIndex + 3); i++) {
+      const bg = slides[i]?.elements.find(
+        (e) =>
+          e.kind === "image" && (e.id.startsWith("image-bg-") || (e.rect.w >= 99 && e.rect.h >= 99))
+      );
+      const url = bg && bg.kind === "image" ? bg.imageUrl : undefined;
       if (url && !preloadedRef.current.has(url)) {
         preloadedRef.current.add(url);
         const img = new Image();
         img.src = url;
       }
     }
-  }, [sequence, currentTime]);
+  }, [lesson, currentTime]);
 
   return state;
 }

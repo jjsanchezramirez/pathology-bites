@@ -2,7 +2,6 @@
 
 import { useState, useRef, useEffect, memo } from "react";
 import type {
-  Segment,
   Transform,
   HighlightRegion,
   ArrowPointer,
@@ -11,9 +10,12 @@ import type {
 } from "@/shared/types/explainer";
 
 interface ExplainerViewportProps {
-  currentSegment: Segment | null;
-  incomingSegment: Segment | null;
+  imageUrl: string;
+  backgroundColor?: string;
+  incomingImageUrl: string;
+  incomingBackgroundColor?: string;
   transform: Transform;
+  incomingTransform: Transform;
   highlights: HighlightRegion[];
   arrows: ArrowPointer[];
   textOverlays: TextOverlay[];
@@ -128,6 +130,7 @@ function HighlightOverlay({ highlight }: { highlight: HighlightRegion }) {
   };
 
   const size = getSize();
+  const cs = highlight.computedScale ?? 1;
 
   return (
     <div
@@ -136,7 +139,7 @@ function HighlightOverlay({ highlight }: { highlight: HighlightRegion }) {
         left: `${highlight.position.x}%`,
         top: `${highlight.position.y}%`,
         ...size,
-        transform: "translate(-50%, -50%)",
+        transform: `translate(-50%, -50%) scale(${cs})`,
         borderRadius: isCircle || isOval ? "50%" : "4px",
         border: `${highlight.borderWidth}px ${highlight.borderStyle || "solid"} ${highlight.borderColor}`,
         backgroundColor: highlight.fillColor || "transparent",
@@ -327,9 +330,11 @@ function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
   const computedOpacity = overlay.computedOpacity ?? 1;
   const isLetterByLetter = overlay.animation === "letter-by-letter";
 
-  // Build transform with centering and optional slide-up animation
+  const cs = overlay.computedScale ?? 1;
+
+  // Build transform with centering, scale-pop, and optional slide-up animation
   const buildTransform = () => {
-    const centerTransform = "translate(-50%, -50%)";
+    const centerTransform = `translate(-50%, -50%) scale(${cs})`;
     if (overlay.animation === "slide-up") {
       const slideOffset = (1 - computedOpacity) * 0.5;
       return `${centerTransform} translateY(${slideOffset}cqw)`;
@@ -382,6 +387,7 @@ function TextOverlayElement({ overlay }: { overlay: TextOverlay }) {
 
 function SvgOverlayItem({ overlay }: { overlay: SvgOverlayElement }) {
   const computedOpacity = overlay.computedOpacity ?? overlay.opacity;
+  const cs = overlay.computedScale ?? 1;
 
   return (
     <div
@@ -391,7 +397,7 @@ function SvgOverlayItem({ overlay }: { overlay: SvgOverlayElement }) {
         top: `${overlay.position.y}%`,
         width: `${overlay.size.width}%`,
         height: `${overlay.size.height}%`,
-        transform: `translate(-50%, -50%) rotate(${overlay.rotation}deg)`,
+        transform: `translate(-50%, -50%) rotate(${overlay.rotation}deg) scale(${cs})`,
         opacity: computedOpacity,
         transition: "none",
         zIndex: 18,
@@ -404,9 +410,12 @@ function SvgOverlayItem({ overlay }: { overlay: SvgOverlayElement }) {
 }
 
 export function ExplainerViewport({
-  currentSegment,
-  incomingSegment,
+  imageUrl,
+  backgroundColor,
+  incomingImageUrl,
+  incomingBackgroundColor,
   transform,
+  incomingTransform,
   highlights,
   arrows,
   textOverlays,
@@ -416,17 +425,6 @@ export function ExplainerViewport({
   aspectRatio,
   onClick,
 }: ExplainerViewportProps) {
-  if (!currentSegment) {
-    return (
-      <div
-        className="relative w-full bg-black flex items-center justify-center"
-        style={{ aspectRatio: getAspectRatioValue(aspectRatio) }}
-      >
-        <div className="text-muted-foreground text-sm">No content</div>
-      </div>
-    );
-  }
-
   return (
     <div
       className="relative w-full bg-black overflow-hidden cursor-pointer select-none"
@@ -438,43 +436,33 @@ export function ExplainerViewport({
       }}
       onClick={onClick}
     >
-      {/* Current image layer (bottom layer) or blank segment background */}
-      {currentSegment.imageUrl ? (
-        <ImageLayer
-          src={currentSegment.imageUrl}
-          alt={currentSegment.imageAlt}
-          transform={transform}
-          opacity={transitionOpacity}
-        />
+      {/* Current image layer (bottom layer) or blank slide background */}
+      {imageUrl ? (
+        <ImageLayer src={imageUrl} transform={transform} opacity={transitionOpacity} />
       ) : (
         <div
           className="absolute inset-0 w-full h-full"
           style={{
-            backgroundColor: currentSegment.backgroundColor || "#000000",
+            backgroundColor: backgroundColor || "#000000",
             opacity: transitionOpacity,
           }}
         />
       )}
 
       {/* Incoming image layer (fades in on top of current) */}
-      {incomingSegment &&
-        incomingOpacity > 0 &&
-        (incomingSegment.imageUrl ? (
+      {incomingOpacity > 0 &&
+        (incomingImageUrl ? (
           <ImageLayer
-            src={incomingSegment.imageUrl}
-            alt={incomingSegment.imageAlt}
-            transform={incomingSegment.keyframes[0]?.transform ?? { x: 0, y: 0, scale: 1 }}
+            src={incomingImageUrl}
+            transform={incomingTransform}
             opacity={incomingOpacity}
           />
-        ) : (
+        ) : incomingBackgroundColor ? (
           <div
             className="absolute inset-0 w-full h-full"
-            style={{
-              backgroundColor: incomingSegment.backgroundColor || "#000000",
-              opacity: incomingOpacity,
-            }}
+            style={{ backgroundColor: incomingBackgroundColor, opacity: incomingOpacity }}
           />
-        ))}
+        ) : null)}
 
       {/* Spotlight overlay (dims everything except highlighted regions) */}
       <SpotlightOverlay highlights={highlights} aspectRatio={aspectRatio} transform={transform} />

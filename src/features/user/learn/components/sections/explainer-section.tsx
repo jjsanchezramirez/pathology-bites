@@ -3,7 +3,8 @@
 import { useState, useEffect } from "react";
 import { ExplainerSection as ExplainerSectionType } from "../../types";
 import { Loader2 } from "lucide-react";
-import type { ExplainerSequence } from "@/shared/types/explainer";
+import type { Lesson } from "@/shared/lesson/types";
+import { normalizeStoredLesson } from "@/shared/lesson/normalize";
 
 // Lazy import the ExplainerPlayer since it has heavy dependencies
 import dynamic from "next/dynamic";
@@ -24,10 +25,7 @@ interface ExplainerSectionProps {
 }
 
 export function ExplainerSection({ section }: ExplainerSectionProps) {
-  const [sequenceData, setSequenceData] = useState<{
-    sequence: ExplainerSequence;
-    audioUrl: string;
-  } | null>(null);
+  const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,10 +39,12 @@ export function ExplainerSection({ section }: ExplainerSectionProps) {
         }
         if (!res.ok) throw new Error("Failed to load sequence");
         const { sequence } = await res.json();
-        setSequenceData({
-          sequence: sequence.sequence_data as ExplainerSequence,
-          audioUrl: sequence.audio_url || "",
-        });
+        const normalized = normalizeStoredLesson(sequence.sequence_data);
+        if (!normalized) {
+          setError("This sequence is in a legacy format and needs to be re-saved.");
+          return;
+        }
+        setLesson(normalized);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load");
       } finally {
@@ -68,9 +68,9 @@ export function ExplainerSection({ section }: ExplainerSectionProps) {
           {error}
         </div>
       )}
-      {sequenceData && (
+      {lesson && (
         <div className="rounded-lg overflow-hidden border">
-          <ExplainerPlayer sequence={sequenceData.sequence} audioUrl={sequenceData.audioUrl} />
+          <ExplainerPlayer lesson={lesson} />
         </div>
       )}
     </div>

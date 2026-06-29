@@ -1,5 +1,7 @@
 // src/shared/types/explainer.ts
 
+import type { Lesson } from "@/shared/lesson/types";
+
 // ---- Geometry & Animation Primitives ----
 
 export interface Position {
@@ -32,6 +34,8 @@ export interface HighlightRegion {
   opacity: number; // 0-1
   spotlight?: boolean; // if true, dims everything except this region
   shadow?: boolean; // if true, draws a drop shadow. Default false.
+  /** Runtime-only: entrance/exit scale-pop multiplier (~0.85–1.05). */
+  computedScale?: number;
 }
 
 export interface ArrowPointer {
@@ -43,6 +47,8 @@ export interface ArrowPointer {
   opacity: number; // 0-1
   headSize?: number; // arrowhead size in px (default 12)
   shadow?: boolean; // if true, draws a drop shadow. Default true.
+  /** Runtime-only: entrance/exit scale-pop multiplier (~0.85–1.05). */
+  computedScale?: number;
   direction?:
     | "up"
     | "down"
@@ -68,6 +74,8 @@ export interface TextOverlay {
   shadow?: boolean; // if true, draws a text shadow. Default true.
   /** Runtime-only: computed opacity for fade animations (0–1) */
   computedOpacity?: number;
+  /** Runtime-only: entrance/exit scale-pop multiplier (~0.85–1.05). */
+  computedScale?: number;
 }
 
 // ---- SVG Overlay ----
@@ -82,31 +90,15 @@ export interface SvgOverlayElement {
   rotation: number;
   opacity: number;
   computedOpacity?: number; // Runtime-only: computed opacity for fade animations (0–1)
+  /** Runtime-only: entrance/exit scale-pop multiplier (~0.85–1.05). */
+  computedScale?: number;
   color?: string;
 }
 
-// ---- Keyframe & Segment ----
-
-export interface Keyframe {
-  time: number; // seconds from segment start
-  transform: Transform;
-  highlights: HighlightRegion[];
-  arrows: ArrowPointer[];
-  textOverlays: TextOverlay[];
-  svgOverlays?: SvgOverlayElement[]; // Optional for backward compatibility
-}
-
-export interface Segment {
-  id: string;
-  imageUrl: string; // Cloudflare R2 URL (empty string for blank segments)
-  imageAlt?: string;
-  backgroundColor?: string; // Background color for blank segments
-  startTime: number; // seconds from sequence start
-  endTime: number; // seconds from sequence start
-  transition: "crossfade" | "cut" | "fade-to-black";
-  transitionDuration: number; // seconds
-  keyframes: Keyframe[]; // at least 2: start and end
-}
+// NOTE: The old document/keyframe layer (ExplainerSequence/Segment/Keyframe) was
+// removed when the player collapsed onto the single Lesson model. The interfaces
+// above (Transform, HighlightRegion, ArrowPointer, TextOverlay, SvgOverlayElement)
+// are the render primitives emitted by the evaluator (src/shared/lesson/evaluate.ts).
 
 // ---- Captions ----
 
@@ -115,33 +107,23 @@ export interface CaptionChunk {
   text: string;
   start: number;
   end: number;
-}
-
-// ---- Top-Level Sequence ----
-
-export interface ExplainerSequence {
-  version: 1;
-  duration: number; // total duration in seconds
-  aspectRatio: "16:9" | "16:10" | "4:3";
-  segments: Segment[];
-  /** URL of the audio track associated with this sequence */
-  audioUrl?: string;
-  /** Pre-computed caption chunks (uniform word timing) */
-  captions?: CaptionChunk[];
-  /** Original editor state for lossless round-trip loading (optional, absent in old sequences) */
-  editorState?: { selectedImages?: unknown[]; lesson?: unknown };
+  /** Optional per-word timings (from forced alignment) for karaoke captions. */
+  words?: { text: string; start: number; end: number }[];
 }
 
 // ---- Component Props ----
 
 export interface ExplainerPlayerProps {
-  sequence: ExplainerSequence;
-  audioUrl: string;
+  /** The lesson to play (the single canonical model). */
+  lesson: Lesson;
+  /** Audio track URL. Defaults to `lesson.audio?.url`. */
+  audioUrl?: string;
   autoPlay?: boolean;
   className?: string;
   onEnded?: () => void;
   onTimeUpdate?: (currentTime: number) => void;
   onAudioLoaded?: (duration: number) => void; // Called when audio loads with its duration
   seekToTime?: number; // Seek to this time when it changes
-  captions?: CaptionChunk[]; // Optional flat list of caption chunks
+  /** Optional caption chunks; derived from `lesson.audio` when omitted. */
+  captions?: CaptionChunk[];
 }

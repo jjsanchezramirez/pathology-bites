@@ -101,14 +101,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Valid sequence_data is required." }, { status: 400 });
     }
 
-    // Validate sequence_data has required fields
-    if (
-      !sequence_data.version ||
-      !sequence_data.segments ||
-      !Array.isArray(sequence_data.segments)
-    ) {
+    // Validate sequence_data has required fields (canonical Lesson shape)
+    if (!Array.isArray(sequence_data.slides) || sequence_data.aspectRatio == null) {
       return NextResponse.json(
-        { error: "sequence_data must be a valid ExplainerSequence object." },
+        { error: "sequence_data must be a valid Lesson object (slides[] + aspectRatio)." },
         { status: 400 }
       );
     }
