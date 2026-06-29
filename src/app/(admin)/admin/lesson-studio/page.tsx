@@ -110,6 +110,7 @@ export default function LessonStudioPage() {
             title: record.title,
             transcript: full.generated_text,
             duration: record.duration_seconds ?? undefined,
+            wordTimings: full.word_timings ?? undefined,
           });
         }
       } catch (err) {

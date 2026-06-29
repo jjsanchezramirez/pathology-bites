@@ -54,6 +54,7 @@ export type Database = {
           title: string;
           updated_at: string | null;
           url: string;
+          word_timings: Json | null;
         };
         Insert: {
           created_at?: string | null;
@@ -70,6 +71,7 @@ export type Database = {
           title: string;
           updated_at?: string | null;
           url: string;
+          word_timings?: Json | null;
         };
         Update: {
           created_at?: string | null;
@@ -86,6 +88,7 @@ export type Database = {
           title?: string;
           updated_at?: string | null;
           url?: string;
+          word_timings?: Json | null;
         };
         Relationships: [
           {

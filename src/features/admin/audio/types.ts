@@ -11,6 +11,8 @@ export interface Audio {
   file_size_bytes: number;
   duration_seconds: number | null;
   generated_text: string | null;
+  /** Forced-alignment word timestamps (seconds). Null until aligned. */
+  word_timings?: { text: string; start: number; end: number }[] | null;
   created_by: string | null;
   created_at: string;
   updated_at: string;
