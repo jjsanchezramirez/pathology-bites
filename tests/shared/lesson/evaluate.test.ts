@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { evaluate, scaleAt } from "@/shared/lesson/evaluate";
+import { evaluate, scaleAt, stepPointsForLesson } from "@/shared/lesson/evaluate";
 import {
   timing,
   DEFAULT_FRAMING,
@@ -118,5 +118,34 @@ describe("evaluate — transitions", () => {
     expect(f.incomingSlide?.id).toBe("b");
     expect(f.incomingOpacity).toBeGreaterThan(0);
     expect(f.incomingOpacity).toBeLessThan(1);
+  });
+});
+
+describe("stepPointsForLesson", () => {
+  const labelAt = (start: number): ShapeElement => ({
+    ...shape,
+    id: `el-${start}`,
+    timing: timing(start, 0.5, 1, 0.5),
+  });
+
+  it("includes each slide start and each element appearance time (absolute)", () => {
+    // slide a: duration 5, element appears at local 2 → absolute 2
+    // slide b: starts at 5, element appears at local 1 → absolute 6
+    const a = slide([labelAt(2)], { id: "a", duration: 5 });
+    const b = slide([labelAt(1)], { id: "b", duration: 5 });
+    const pts = stepPointsForLesson(lesson([a, b]));
+    expect(pts).toContain(0); // slide a start
+    expect(pts).toContain(2); // element on a
+    expect(pts).toContain(5); // slide b start
+    expect(pts).toContain(6); // element on b
+  });
+
+  it("is sorted, de-duplicated, and clipped to [0, duration)", () => {
+    // two elements appearing at the same local time → one entry
+    const a = slide([labelAt(0), labelAt(0)], { id: "a", duration: 4 });
+    const pts = stepPointsForLesson(lesson([a]));
+    expect(pts).toEqual([...pts].sort((x, y) => x - y));
+    expect(new Set(pts).size).toBe(pts.length);
+    expect(pts.every((t) => t >= 0 && t < 4)).toBe(true);
   });
 });

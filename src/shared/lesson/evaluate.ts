@@ -485,6 +485,23 @@ export function slideStarts(lesson: Lesson): { starts: number[]; duration: numbe
   return { starts, duration: cursor };
 }
 
+/**
+ * Absolute times (seconds) a learner can step between: each slide start plus the
+ * appearance time of every element on that slide. Sorted, de-duplicated, and
+ * clipped to [0, duration). Drives the player's step mode.
+ */
+export function stepPointsForLesson(lesson: Lesson): number[] {
+  const { starts, duration } = slideStarts(lesson);
+  const set = new Set<number>();
+  lesson.slides.forEach((slide, i) => {
+    set.add(starts[i]);
+    for (const el of slide.elements) {
+      set.add(starts[i] + el.timing.start);
+    }
+  });
+  return [...set].filter((t) => t >= 0 && t < duration).sort((a, b) => a - b);
+}
+
 export interface EvaluateOptions {
   /** 0..1 reduced-motion multiplier (0 pins the camera, 1 = full motion). */
   motion?: number;

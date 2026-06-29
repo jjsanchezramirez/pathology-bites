@@ -9,7 +9,7 @@ import { ExplainerViewport } from "./explainer-viewport";
 import { ExplainerControls } from "./explainer-controls";
 import { useReducedMotion } from "./use-reduced-motion";
 import type { ExplainerPlayerProps, CaptionChunk } from "@/shared/types/explainer";
-import { slideStarts } from "@/shared/lesson/evaluate";
+import { slideStarts, stepPointsForLesson } from "@/shared/lesson/evaluate";
 import { captionsForAudio } from "@/shared/lesson/captions";
 
 export function ExplainerPlayer({
@@ -37,6 +37,13 @@ export function ExplainerPlayer({
   const motion = useReducedMotion();
   // Stable key for resume-position persistence.
   const resumeKey = lesson.id ?? audioUrl;
+  // Step points (slide starts + element appearance times) for step mode.
+  const stepPoints = useMemo(() => stepPointsForLesson(lesson), [lesson]);
+
+  // Hover-scrub preview time (null = not hovering) and step mode.
+  const [hoverTime, setHoverTime] = useState<number | null>(null);
+  const [stepMode, setStepMode] = useState(false);
+  const nextStopRef = useRef<number | null>(null);
 
   // CC visibility — defaults on when captions are provided
   const [captionsVisible, setCaptionsVisible] = useState(true);
@@ -103,17 +110,75 @@ export function ExplainerPlayer({
     fallbackDuration: duration,
   });
 
+  // Frame shown = hover-preview time when hovering the scrubber, else committed time.
+  const displayTime = hoverTime ?? audio.currentTime;
+
   const engine = useExplainerEngine({
     lesson,
-    currentTime: audio.currentTime,
+    currentTime: displayTime,
     motion,
   });
 
-  // Find the active caption chunk for the current time
+  // Find the active caption chunk for the displayed time
   const activeCaption = useMemo((): CaptionChunk | null => {
     if (!captions || !captionsVisible) return null;
-    return captions.find((c) => audio.currentTime >= c.start && audio.currentTime < c.end) ?? null;
-  }, [captions, captionsVisible, audio.currentTime]);
+    return captions.find((c) => displayTime >= c.start && displayTime < c.end) ?? null;
+  }, [captions, captionsVisible, displayTime]);
+
+  // ---- Step mode + hover-scrub handlers ------------------------------------
+
+  const nextStep = useCallback(
+    (t: number): number | null => stepPoints.find((p) => p > t + 0.05) ?? null,
+    [stepPoints]
+  );
+  const prevStep = useCallback(
+    (t: number): number => {
+      for (let i = stepPoints.length - 1; i >= 0; i--) {
+        if (stepPoints[i] < t - 0.05) return stepPoints[i];
+      }
+      return 0;
+    },
+    [stepPoints]
+  );
+
+  // Play/pause that, in step mode, only plays up to the next step point.
+  const togglePlay = useCallback(() => {
+    if (!preloader.isReady) return;
+    if (audio.isPlaying) {
+      audio.pause();
+      return;
+    }
+    nextStopRef.current = stepMode ? nextStep(audio.currentTime) : null;
+    audio.play();
+  }, [audio, preloader.isReady, stepMode, nextStep]);
+
+  const handleSeek = useCallback(
+    (t: number) => {
+      setHoverTime(null);
+      audio.seek(t);
+    },
+    [audio]
+  );
+  const onStepNext = useCallback(() => {
+    const n = nextStep(audio.currentTime);
+    if (n != null) audio.seek(n);
+  }, [audio, nextStep]);
+  const onStepPrev = useCallback(() => audio.seek(prevStep(audio.currentTime)), [audio, prevStep]);
+  const onToggleStepMode = useCallback(() => {
+    nextStopRef.current = null;
+    setStepMode((v) => !v);
+  }, []);
+
+  // Auto-pause at the next step point while playing in step mode.
+  useEffect(() => {
+    if (!stepMode || !audio.isPlaying || nextStopRef.current == null) return;
+    if (audio.currentTime >= nextStopRef.current - 0.01) {
+      const stop = nextStopRef.current;
+      nextStopRef.current = null;
+      audio.pause();
+      audio.seek(stop);
+    }
+  }, [audio, stepMode, audio.currentTime, audio.isPlaying]);
 
   // Auto-play
   useEffect(() => {
@@ -170,10 +235,8 @@ export function ExplainerPlayer({
   }, [audio.currentTime, resumeKey]);
 
   const handleViewportClick = useCallback(() => {
-    if (preloader.isReady) {
-      audio.togglePlay();
-    }
-  }, [audio, preloader.isReady]);
+    togglePlay();
+  }, [togglePlay]);
 
   // Keyboard controls
   const handleKeyDown = useCallback(
@@ -182,17 +245,25 @@ export function ExplainerPlayer({
         case " ":
         case "k":
           e.preventDefault();
-          audio.togglePlay();
+          togglePlay();
           break;
         case "ArrowLeft":
-        case "j":
           e.preventDefault();
-          audio.seek(Math.max(0, audio.currentTime - (e.key === "j" ? 10 : 5)));
+          if (stepMode) onStepPrev();
+          else audio.seek(Math.max(0, audio.currentTime - 5));
           break;
         case "ArrowRight":
+          e.preventDefault();
+          if (stepMode) onStepNext();
+          else audio.seek(Math.min(audio.duration, audio.currentTime + 5));
+          break;
+        case "j":
+          e.preventDefault();
+          audio.seek(Math.max(0, audio.currentTime - 10));
+          break;
         case "l":
           e.preventDefault();
-          audio.seek(Math.min(audio.duration, audio.currentTime + (e.key === "l" ? 10 : 5)));
+          audio.seek(Math.min(audio.duration, audio.currentTime + 10));
           break;
         case "0":
           e.preventDefault();
@@ -216,7 +287,7 @@ export function ExplainerPlayer({
           break;
       }
     },
-    [audio, toggleFullscreen]
+    [audio, toggleFullscreen, togglePlay, stepMode, onStepPrev, onStepNext]
   );
 
   return (
@@ -279,8 +350,8 @@ export function ExplainerPlayer({
             >
               {activeCaption.words && activeCaption.words.length > 0
                 ? activeCaption.words.map((w, i) => {
-                    const spoken = audio.currentTime >= w.start;
-                    const active = spoken && audio.currentTime < w.end;
+                    const spoken = displayTime >= w.start;
+                    const active = spoken && displayTime < w.end;
                     return (
                       <span
                         key={i}
@@ -311,9 +382,9 @@ export function ExplainerPlayer({
             volume={audio.volume}
             playbackRate={audio.playbackRate}
             isReady={preloader.isReady}
-            onPlay={audio.play}
+            onPlay={togglePlay}
             onPause={audio.pause}
-            onSeek={audio.seek}
+            onSeek={handleSeek}
             onVolumeChange={audio.setVolume}
             onPlaybackRateChange={audio.setPlaybackRate}
             captionsAvailable={!!captions && captions.length > 0}
@@ -322,6 +393,11 @@ export function ExplainerPlayer({
             isFullscreen={isFullscreen}
             onToggleFullscreen={toggleFullscreen}
             markers={markers}
+            onHover={setHoverTime}
+            stepMode={stepMode}
+            onToggleStepMode={onToggleStepMode}
+            onStepPrev={onStepPrev}
+            onStepNext={onStepNext}
           />
         </div>
 
