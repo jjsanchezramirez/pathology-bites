@@ -17,10 +17,125 @@ import { useEditorStore } from "../model/store";
 import { Section, Row, NumberInput, TextInput, TextArea, ColorInput, Select } from "./inputs";
 import { WaypointsSection } from "./waypoints-section";
 import { clamp } from "../utils/math";
+import { rectAt } from "../model/runtime";
+import { frameTransformForRegion } from "@/shared/lesson/framing";
+import { captionsForAudio } from "@/shared/lesson/captions";
+import type { EaseName } from "@/shared/lesson/easing";
+import { useState } from "react";
 
 interface Props<T extends SlideElement> {
   element: T;
   slideId: string;
+}
+
+// Curated easing options for camera moves.
+const EASE_OPTIONS: { value: EaseName; label: string }[] = [
+  { value: "easeInOutCubic", label: "Smooth (in-out)" },
+  { value: "easeOutCubic", label: "Glide out" },
+  { value: "easeOutBack", label: "Overshoot" },
+  { value: "easeOutExpo", label: "Snap out" },
+  { value: "smoothstep", label: "Smoothstep" },
+  { value: "linear", label: "Linear" },
+];
+
+/**
+ * "Auto-frame to this region" — inserts a transient camera that pans+zooms to
+ * frame the selected shape/spotlight, timed to the element's visible window.
+ */
+function AutoFrameButton({
+  element,
+  slideId,
+}: {
+  element: ShapeElement | SpotlightElement;
+  slideId: string;
+}) {
+  const onClick = () => {
+    const rect = rectAt(element, element.timing.start) ?? element.rect;
+    const f = frameTransformForRegion(rect);
+    const t = element.timing;
+    const cam: CameraElement = {
+      id: `camera-frame-${element.id}-${Date.now()}`,
+      kind: "camera",
+      to: { x: f.x, y: f.y, scale: f.scale },
+      persistent: false,
+      easing: "easeInOutCubic",
+      timing: {
+        start: t.start,
+        fadeIn: Math.max(0.6, t.fadeIn),
+        hold: Math.max(0.5, t.hold),
+        fadeOut: Math.max(0.6, t.fadeOut),
+      },
+    };
+    useEditorStore.getState().addElement(slideId, cam);
+  };
+  return (
+    <Section title="Camera">
+      <button
+        type="button"
+        onClick={onClick}
+        className="w-full rounded border border-input bg-background px-2 py-1.5 text-xs font-medium hover:bg-accent"
+      >
+        Auto-frame to this region
+      </button>
+    </Section>
+  );
+}
+
+/**
+ * "Sync to narration" — sets the element's start to when a chosen term is spoken,
+ * derived from the lesson's caption timing (word-aligned when available).
+ */
+function SyncToNarration({ element, slideId }: { element: SlideElement; slideId: string }) {
+  const [term, setTerm] = useState("");
+
+  const sync = () => {
+    const q = term.trim().toLowerCase();
+    if (!q) return;
+    const state = useEditorStore.getState();
+    const { lesson } = state;
+    const captions = captionsForAudio(lesson.audio);
+    if (captions.length === 0) return;
+    // Prefer an exact word match (word-aligned), else the containing chunk.
+    let absolute: number | null = null;
+    for (const c of captions) {
+      const word = c.words?.find((w) => w.text.toLowerCase().replace(/[^a-z0-9]/g, "").includes(q));
+      if (word) {
+        absolute = word.start;
+        break;
+      }
+    }
+    if (absolute == null) {
+      const chunk = captions.find((c) => c.text.toLowerCase().includes(q));
+      if (chunk) absolute = chunk.start;
+    }
+    if (absolute == null) return;
+    // Convert absolute (sequence) time to slide-local time.
+    let offset = 0;
+    for (const s of lesson.slides) {
+      if (s.id === slideId) break;
+      offset += s.duration;
+    }
+    const localStart = Math.max(0, absolute - offset);
+    state.updateElement(slideId, element.id, {
+      timing: { ...element.timing, start: localStart },
+    } as Partial<SlideElement>);
+  };
+
+  return (
+    <Section title="Narration sync">
+      <Row label="Term">
+        <TextInput value={term} placeholder="e.g. stroma" onChange={setTerm} />
+      </Row>
+      <button
+        type="button"
+        onClick={sync}
+        disabled={!term.trim()}
+        className="w-full rounded border border-input bg-background px-2 py-1.5 text-xs font-medium hover:bg-accent disabled:opacity-50"
+      >
+        Sync start to narration
+      </button>
+    </Section>
+  );
 }
 
 function useUpdate<T extends SlideElement>(slideId: string, elementId: string) {
@@ -136,6 +251,7 @@ export function ShapeForm({ element, slideId }: Props<ShapeElement>) {
         </Row>
       </Section>
       <RectSection rect={element.rect} onChange={(rect) => update({ rect })} />
+      <AutoFrameButton element={element} slideId={slideId} />
       <WaypointsSection element={element} slideId={slideId} />
     </>
   );
@@ -169,6 +285,7 @@ export function SpotlightForm({ element, slideId }: Props<SpotlightElement>) {
         </Row>
       </Section>
       <RectSection rect={element.rect} onChange={(rect) => update({ rect })} />
+      <AutoFrameButton element={element} slideId={slideId} />
       <WaypointsSection element={element} slideId={slideId} />
     </>
   );
@@ -245,6 +362,7 @@ export function ArrowForm({ element, slideId }: Props<ArrowElement>) {
           />
         </Row>
       </Section>
+      <SyncToNarration element={element} slideId={slideId} />
       <WaypointsSection element={element} slideId={slideId} />
     </>
   );
@@ -321,6 +439,7 @@ export function TextForm({ element, slideId }: Props<TextElement>) {
         </Row>
       </Section>
       <RectSection rect={element.rect} onChange={(rect) => update({ rect })} />
+      <SyncToNarration element={element} slideId={slideId} />
       <WaypointsSection element={element} slideId={slideId} />
     </>
   );
@@ -515,6 +634,13 @@ export function CameraForm({ element, slideId }: Props<CameraElement>) {
           min={0.1}
           suffix="×"
           onChange={(v) => update({ to: { ...element.to, scale: Math.max(0.1, v) } })}
+        />
+      </Row>
+      <Row label="Ease">
+        <Select<EaseName>
+          value={element.easing ?? "easeInOutCubic"}
+          onChange={(v) => update({ easing: v })}
+          options={EASE_OPTIONS}
         />
       </Row>
     </Section>
