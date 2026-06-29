@@ -22,25 +22,27 @@ import type { WsiTileSourceResult, RelatedSlide } from "@/shared/utils/domain/ws
 import { getRepositoryLogo } from "@/shared/components/common/repository-logos";
 import { useMobile } from "@/shared/hooks/use-mobile";
 import {
-  MAG_PRESETS,
-  TIGHT_PRESETS,
   HIRES_WARN_MB,
   HIRES_OPTIONS,
   snap,
   fmtMag,
-  magToSlider,
-  sliderToMag,
   buildExportName,
   estimateExportMB,
+  nativeMagFromMpp,
+  computeOnScreenMag,
+  computeHiResDimensions,
+  buildPanelItems,
+  buildOsdOptions,
 } from "./self-hosted-osd-viewer-utils";
 import {
   Sep,
   Popover,
-  MagSlider,
-  AdjustRow,
-  InfoRow,
   BarBtn,
   RotationDial,
+  MagPanelBody,
+  InfoPanelBody,
+  AdjustPanelBody,
+  RelatedPanelBody,
 } from "./self-hosted-osd-viewer-parts";
 
 // Approach 2: render a repo's slide in OUR OWN bundled OpenSeadragon against the repo's
@@ -248,7 +250,7 @@ export function SelfHostedOSDViewer({
     const cw = containerRef.current?.clientWidth;
     if (!v || !cw) return null;
     const { nativeMag, imageW } = magRef.current;
-    return (nativeMag * (v.viewport.getZoom(true) * cw)) / imageW;
+    return computeOnScreenMag(nativeMag, v.viewport.getZoom(true), cw, imageW);
   }, []);
   // Live tick (zoom/animation): readout always tracks; highlight tracks too UNLESS a
   // programmatic glide is pinning it. → manual scroll/pinch updates both in real time.
@@ -439,7 +441,7 @@ export function SelfHostedOSDViewer({
         const iiif = ts.kind === "iiif";
         setIsTainted(tainted || iiif);
         // MPP → native objective mag (0.25µm/px ≈ 40x). Default 40x when unknown.
-        const nativeMag = ts.mpp ? 10 / ts.mpp : 40;
+        const nativeMag = nativeMagFromMpp(ts.mpp);
         magRef.current = { nativeMag, imageW: ts.width };
         setMagKnown(!!ts.mpp);
 
@@ -459,41 +461,20 @@ export function SelfHostedOSDViewer({
           (forceDrawer ?? (corsClean ? "webgl" : "canvas")) === "webgl" && corsClean
             ? "webgl"
             : "canvas";
-        viewer = OpenSeadragon({
-          element: containerRef.current,
-          prefixUrl: "https://cdn.jsdelivr.net/npm/openseadragon@4.1.0/build/openseadragon/images/",
-          tileSources: buildOsdTileSource(ts, { proxy }) as never,
-          crossOriginPolicy: corsClean ? "Anonymous" : false,
-          drawer,
-          // Keep the WebGL backbuffer so the Photo button's toDataURL isn't blank.
-          drawerOptions: { webgl: { preserveDrawingBuffer: true } },
-          // Default button groups OFF — we render our own branded bar below.
-          showNavigationControl: false,
-          showRotationControl: false,
-          showFlipControl: false,
-          showFullPageControl: false,
-          // Minimap bottom-left — but not on mobile (OSD sets an inline display on the
-          // navigator that beats a CSS hide, so we skip creating it entirely below md).
-          // Read the media query live at init (the useMobile state is undefined first paint).
-          showNavigator:
-            typeof window === "undefined" || !window.matchMedia("(max-width: 767px)").matches,
-          navigatorPosition: "BOTTOM_LEFT",
-          // Slower, finer zoom (smaller per-scroll step + longer glide).
-          animationTime: 1.0,
-          springStiffness: 5.5,
-          zoomPerScroll: 1.15,
-          blendTime: 0.1,
-          immediateRender: false,
-          preload: true,
-          // Allow digital zoom past native so high mag presets (e.g. 100×) are reachable.
-          maxZoomPixelRatio: 4,
-          visibilityRatio: 1,
-          maxImageCacheCount: 600,
-          imageLoaderLimit: 8,
-          preserveImageSizeOnResize: true,
-          gestureSettingsMouse: { flickEnabled: true },
-          gestureSettingsTouch: { flickEnabled: true, flickMomentum: 0.4, pinchToZoom: true },
-        }) as unknown as OsdViewer;
+        // Minimap bottom-left — but not on mobile (OSD sets an inline display on the
+        // navigator that beats a CSS hide, so we skip creating it entirely below md).
+        // Read the media query live at init (the useMobile state is undefined first paint).
+        const showNavigator =
+          typeof window === "undefined" || !window.matchMedia("(max-width: 767px)").matches;
+        viewer = OpenSeadragon(
+          buildOsdOptions({
+            element: containerRef.current,
+            tileSources: buildOsdTileSource(ts, { proxy }),
+            drawer,
+            corsClean,
+            showNavigator,
+          })
+        ) as unknown as OsdViewer;
 
         viewerRef.current = viewer;
         viewer.addHandler("open", updateMag);
@@ -673,9 +654,7 @@ export function SelfHostedOSDViewer({
       setBusy(true);
       const liveW = containerRef.current?.clientWidth || 800;
       const liveH = containerRef.current?.clientHeight || 600;
-      const f = Math.max(1, px / Math.max(liveW, liveH));
-      const W = Math.round(liveW * f);
-      const H = Math.round(liveH * f);
+      const { width: W, height: H } = computeHiResDimensions(px, liveW, liveH);
       // Un-rotated viewport rect — the hidden viewer re-applies rotation itself, so the
       // framing matches WYSIWYG (getBounds(true) would be the larger rotated bbox → black corners).
       const bounds = v.viewport.getBoundsNoRotate(true);
@@ -736,21 +715,7 @@ export function SelfHostedOSDViewer({
   // Related-slides panel items. Corpus mode (relatedSlides prop) navigates across WSIs;
   // otherwise the MGH within-case prototype (`related` + pickSlide/activeSlide).
   const corpusMode = relatedSlides !== undefined;
-  const panelItems = corpusMode
-    ? (relatedSlides ?? []).map((r) => ({
-        key: r.slideUrl,
-        label: r.label,
-        thumbUrl: r.thumbUrl,
-        stain: r.stain,
-        active: r.slideUrl === slideUrl,
-      }))
-    : related.map((r) => ({
-        key: r.name,
-        label: r.label,
-        thumbUrl: r.thumbUrl,
-        stain: undefined as string | undefined,
-        active: (activeSlide ?? related[0]?.name) === r.name,
-      }));
+  const panelItems = buildPanelItems(corpusMode, relatedSlides, related, slideUrl, activeSlide);
   // "Related" count = siblings of the current slide, i.e. excluding the one on screen. Matches
   // the search-row count outside the viewer (panelItems includes the current slide itself).
   const relatedCount = Math.max(0, panelItems.length - 1);
@@ -765,105 +730,37 @@ export function SelfHostedOSDViewer({
   };
 
   // Menu bodies — shared verbatim between the desktop anchored popovers and the mobile
-  // bottom sheets so each control reads identically in both. Sizing is responsive (bigger
-  // touch targets on mobile via md: breakpoints; desktop keeps the compact dimensions).
+  // bottom sheets so each control reads identically in both (sizing is responsive inside
+  // each part). Extracted to self-hosted-osd-viewer-parts.tsx.
   const magBody = (
-    <>
-      {/* Mobile portrait: a 6-col grid forces presets onto one row (2× / 60× hidden so six fit).
-          Mobile landscape: a horizontally-scrolling row with all eight. Desktop: the popover row. */}
-      <div className="grid grid-cols-6 gap-1 max-md:landscape:flex max-md:landscape:overflow-x-auto md:flex md:justify-between md:gap-0.5">
-        {MAG_PRESETS.map((m) => {
-          const active = Math.abs(hiliteMag - m) / m < 0.15;
-          return (
-            <button
-              key={m}
-              onClick={() => setMagnification(m)}
-              className={`rounded px-1 py-2 text-center text-sm font-medium tabular-nums max-md:landscape:shrink-0 max-md:landscape:px-3 md:px-1 md:py-0.5 md:text-[11px] ${
-                TIGHT_PRESETS.has(m) ? "max-md:portrait:hidden" : ""
-              } ${active ? "bg-primary text-primary-foreground" : "text-gray-700 hover:bg-gray-100"}`}
-            >
-              {m}×
-            </button>
-          );
-        })}
-      </div>
-      <div className="mt-4 px-1 md:mt-3">
-        <MagSlider
-          frac={magToSlider(currentMag)}
-          onLive={(f) => setMagnification(sliderToMag(f), true)}
-          onCommit={(f) => setMagnification(sliderToMag(f), true)}
-        />
-      </div>
-    </>
+    <MagPanelBody
+      hiliteMag={hiliteMag}
+      currentMag={currentMag}
+      onSetMagnification={setMagnification}
+    />
   );
 
-  const infoBody = (
-    <dl className="space-y-1 text-xs text-gray-600">
-      <InfoRow label="Diagnosis" value={info?.diagnosis} />
-      <InfoRow label="Repository" value={repository} />
-      <InfoRow label="Category" value={info?.category} />
-      <InfoRow label="Organ system" value={info?.subcategory} />
-      <InfoRow label="Stain" value={info?.stain} />
-      <InfoRow
-        label="Dimensions"
-        value={dims ? `${dims.w.toLocaleString()} × ${dims.h.toLocaleString()} px` : undefined}
-      />
-    </dl>
-  );
+  const infoBody = <InfoPanelBody info={info} repository={repository} dims={dims} />;
 
   const adjustBody = (
-    <>
-      <AdjustRow label="Brightness" value={brightness} onChange={setBrightness} />
-      <AdjustRow label="Contrast" value={contrast} onChange={setContrast} />
-      <AdjustRow label="Saturation" value={saturation} onChange={setSaturation} />
-    </>
+    <AdjustPanelBody
+      brightness={brightness}
+      contrast={contrast}
+      saturation={saturation}
+      onBrightness={setBrightness}
+      onContrast={setContrast}
+      onSaturation={setSaturation}
+    />
   );
 
-  // Related slides for the mobile bottom sheet (the desktop side rail is a separate hover
-  // element). Portrait → 2-col grid that scrolls vertically; landscape → a single row that
-  // scrolls horizontally (the sheet is short in landscape). Picking one navigates + dismisses.
   const relatedBody = (
-    <div className="gap-3 portrait:grid portrait:grid-cols-2 landscape:flex landscape:overflow-x-auto landscape:pb-1">
-      {panelItems.map((s, i) => (
-        <button
-          key={s.key}
-          onClick={() => {
-            onPickItem(s.key);
-            setPanel(null);
-          }}
-          className={`block rounded-lg p-2 text-left landscape:w-44 landscape:shrink-0 ${
-            s.active ? "bg-primary/5 ring-2 ring-primary" : "bg-gray-50 active:bg-gray-100"
-          }`}
-        >
-          <div className="mb-1.5 flex items-start gap-1 text-xs font-medium text-gray-700">
-            <span className="text-gray-400">{i + 1}.</span>
-            <span className="line-clamp-2 leading-snug" title={s.label}>
-              {s.label}
-            </span>
-          </div>
-          <div className="relative">
-            {s.thumbUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
-              <img
-                src={s.thumbUrl}
-                alt={s.label}
-                loading="lazy"
-                className="h-24 w-full rounded bg-white object-contain"
-              />
-            ) : (
-              <div className="flex h-24 w-full items-center justify-center rounded bg-white text-gray-300">
-                <Microscope className="h-6 w-6" />
-              </div>
-            )}
-            {s.stain && (
-              <span className="pointer-events-none absolute left-1 top-1 max-w-[calc(100%-0.5rem)] truncate rounded bg-white/90 px-1.5 py-0.5 text-[9px] font-medium uppercase leading-none tracking-[0.1em] text-slate-500 shadow-sm ring-1 ring-black/5 backdrop-blur">
-                {s.stain}
-              </span>
-            )}
-          </div>
-        </button>
-      ))}
-    </div>
+    <RelatedPanelBody
+      items={panelItems}
+      onPick={(key) => {
+        onPickItem(key);
+        setPanel(null);
+      }}
+    />
   );
 
   return (

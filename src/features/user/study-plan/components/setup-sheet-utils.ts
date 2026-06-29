@@ -75,3 +75,35 @@ export function surplusBarColor(surplus: number, available: number): string {
   if (ratio >= -0.15) return "bg-amber-300";
   return "bg-destructive";
 }
+
+/** Menu summary of the days-off map ("2 days off · 1 half-days off" / "None"). */
+export function daysOffSummary(daysOff: Record<string, string> | undefined): string {
+  const offs = Object.values(daysOff || {});
+  const full = offs.filter((v) => v === "full").length;
+  const half = offs.filter((v) => v === "half").length;
+  const parts: string[] = [];
+  if (full > 0) parts.push(`${full} days off`);
+  if (half > 0) parts.push(`${half} half-days off`);
+  return parts.length > 0 ? parts.join(" · ") : "None";
+}
+
+/** Total schedule time from minutes → "2h30m" / "45m" / "3h". */
+export function formatTotalTime(totalMinutes: number): string {
+  const h = Math.floor(totalMinutes / 60);
+  const m = totalMinutes % 60;
+  return h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h${m}m`;
+}
+
+/** Tongue-in-cheek warning when the busiest phase's average daily load is unrealistic. */
+export function overloadMessage(maxAvgDailyHours: number): string | null {
+  const h = Math.ceil(maxAvgDailyHours);
+  if (h > 24)
+    return `Fun fact: the Earth completes one full rotation in 24 hours, not ${h}h. Unless you've discovered a new planet?`;
+  if (h > 16)
+    return `${h}h daily of studying? Sleep is not a luxury, it's when your brain consolidates memories. You need those.`;
+  if (h > 12)
+    return `${h}h daily? Bold strategy. Your attention span checked out around hour 6, but sure.`;
+  if (h > 8)
+    return `${h}h daily? That's a full work day plus overtime. Don't forget to eat, stretch, and see sunlight.`;
+  return null;
+}

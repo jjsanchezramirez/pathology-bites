@@ -12,19 +12,7 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import {
-  Settings,
-  Loader2,
-  GraduationCap,
-  Layers,
-  BookOpen,
-  CalendarOff,
-  Grid3x3,
-  ChevronRight,
-  Zap,
-  ListOrdered,
-} from "lucide-react";
+import { Settings } from "lucide-react";
 import { KeyboardSensor, PointerSensor, useSensor, useSensors } from "@dnd-kit/core";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { StudyResource, StudyConfig, ScheduleTask, PhaseConfig } from "../lib/types";
@@ -37,9 +25,11 @@ import { CATEGORIES, CP_CATEGORIES, AP_CATEGORIES } from "../lib/categories";
 import { studyPlanService } from "../services/study-plan-service";
 import { log } from "@/shared/utils/logging";
 
-import { fmtH, orderedSubjectIds, aggregateRebalanceProgress } from "./setup-sheet-utils";
+import { orderedSubjectIds, aggregateRebalanceProgress } from "./setup-sheet-utils";
 import { PanelHeader } from "./setup-sheet-parts";
 import {
+  MenuPanel,
+  PhaseDetailPanel,
   ExamsPanel,
   PhasesPanel,
   ResourcesPanel,
@@ -280,211 +270,27 @@ export function SetupSheet({
 
   const renderPanel = () => {
     if (panel === "menu") {
-      const menuItems: { key: Panel; icon: typeof GraduationCap; label: string; detail: string }[] =
-        [
-          {
-            key: "exams",
-            icon: GraduationCap,
-            label: "Exam Dates",
-            detail: `${localConfig.exam_dates?.length || 0} exams`,
-          },
-          {
-            key: "phases",
-            icon: Layers,
-            label: "Phases",
-            detail: `${localConfig.phases?.length || 0} phases`,
-          },
-          {
-            key: "resource-matrix",
-            icon: Grid3x3,
-            label: "Resource Matrix",
-            detail: `${resources.length} resources · ${localConfig.phases?.length || 0} phases`,
-          },
-          {
-            key: "resources",
-            icon: BookOpen,
-            label: "Resources",
-            detail: `${resources.length} resources`,
-          },
-          {
-            key: "daysoff",
-            icon: CalendarOff,
-            label: "Days Off",
-            detail: (() => {
-              const offs = Object.values(localConfig.days_off || {});
-              const full = offs.filter((v) => v === "full").length;
-              const half = offs.filter((v) => v === "half").length;
-              const parts: string[] = [];
-              if (full > 0) parts.push(`${full} days off`);
-              if (half > 0) parts.push(`${half} half-days off`);
-              return parts.length > 0 ? parts.join(" · ") : "None";
-            })(),
-          },
-        ];
-
       return (
-        <div className="flex h-full flex-col">
-          <div className="px-4 pt-4 pb-2">
-            <h2 className="text-lg font-semibold text-foreground">Edit Plan</h2>
-            <p className="text-xs text-muted-foreground">Configure your study plan</p>
-          </div>
-
-          <div className="flex-1 overflow-y-auto">
-            <div className="py-2">
-              {menuItems.map(({ key, icon: Icon, label, detail }) => (
-                <button
-                  key={key}
-                  onClick={() => goTo(key)}
-                  className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-muted/50"
-                >
-                  <Icon size={18} className="shrink-0 text-muted-foreground" />
-                  <div className="flex-1">
-                    <div className="text-sm font-medium text-foreground">{label}</div>
-                    <div className="text-xs text-muted-foreground">{detail}</div>
-                  </div>
-                  <ChevronRight size={16} className="shrink-0 text-muted-foreground" />
-                </button>
-              ))}
-            </div>
-          </div>
-
-          <div className="shrink-0 border-t border-border px-4 py-3 space-y-2">
-            {errors.length > 0 && (
-              <div className="rounded-xl bg-destructive/10 p-2.5 space-y-0.5">
-                {errors.map((e, i) => (
-                  <p key={i} className="text-xs text-destructive">
-                    {e}
-                  </p>
-                ))}
-              </div>
-            )}
-
-            {successMsg && (
-              <div className="rounded-xl bg-emerald-500/10 p-2.5">
-                <p className="text-xs text-emerald-700 dark:text-emerald-400">{successMsg}</p>
-              </div>
-            )}
-
-            {localConfig.phases.length > 0 &&
-              resources.length > 0 &&
-              (() => {
-                const ests = estimatePhaseHours(resources, localConfig);
-                const maxAvgDaily = Math.max(
-                  ...ests.map((e) =>
-                    e.effective_day_count > 0 ? e.total_needed_hours / e.effective_day_count : 0
-                  ),
-                  0
-                );
-
-                return (
-                  <div className="space-y-1.5">
-                    {ests.map((e) => {
-                      const avgDaily =
-                        e.effective_day_count > 0
-                          ? e.total_needed_hours / e.effective_day_count
-                          : 0;
-                      const pct =
-                        e.total_available_hours > 0
-                          ? Math.min(100, (e.total_needed_hours / e.total_available_hours) * 100)
-                          : 0;
-                      const ratio =
-                        e.total_available_hours > 0 ? e.surplus_hours / e.total_available_hours : 0;
-                      const barColor =
-                        ratio >= -0.05
-                          ? "bg-emerald-300"
-                          : ratio >= -0.15
-                            ? "bg-amber-300"
-                            : "bg-destructive";
-                      return (
-                        <div key={e.phase_index}>
-                          <div className="flex items-center justify-between text-xs">
-                            <span className="text-muted-foreground">{e.phase_name}</span>
-                            <span className="tabular-nums text-muted-foreground">
-                              {fmtH(avgDaily)} daily
-                            </span>
-                          </div>
-                          <div className="mt-0.5 h-1 w-full overflow-hidden rounded-full bg-muted">
-                            <div
-                              className={`h-full rounded-full ${barColor}`}
-                              style={{ width: `${pct}%` }}
-                            />
-                          </div>
-                        </div>
-                      );
-                    })}
-
-                    {schedule.length > 0 &&
-                      (() => {
-                        const totalMin = schedule.reduce((s, t) => s + t.minutes, 0);
-                        const h = Math.floor(totalMin / 60);
-                        const m = totalMin % 60;
-                        const time = h === 0 ? `${m}m` : m === 0 ? `${h}h` : `${h}h${m}m`;
-                        return (
-                          <div className="text-xs text-muted-foreground">
-                            {schedule.length} tasks · {time}
-                          </div>
-                        );
-                      })()}
-
-                    {(() => {
-                      const h = Math.ceil(maxAvgDaily);
-                      if (h > 24)
-                        return (
-                          <p className="border-l-2 border-muted-foreground/30 pl-2.5 text-xs italic text-muted-foreground">
-                            Fun fact: the Earth completes one full rotation in 24 hours, not {h}h.
-                            Unless you&apos;ve discovered a new planet?
-                          </p>
-                        );
-                      if (h > 16)
-                        return (
-                          <p className="border-l-2 border-muted-foreground/30 pl-2.5 text-xs italic text-muted-foreground">
-                            {h}h daily of studying? Sleep is not a luxury, it&apos;s when your brain
-                            consolidates memories. You need those.
-                          </p>
-                        );
-                      if (h > 12)
-                        return (
-                          <p className="border-l-2 border-muted-foreground/30 pl-2.5 text-xs italic text-muted-foreground">
-                            {h}h daily? Bold strategy. Your attention span checked out around hour
-                            6, but sure.
-                          </p>
-                        );
-                      if (h > 8)
-                        return (
-                          <p className="border-l-2 border-muted-foreground/30 pl-2.5 text-xs italic text-muted-foreground">
-                            {h}h daily? That&apos;s a full work day plus overtime. Don&apos;t forget
-                            to eat, stretch, and see sunlight.
-                          </p>
-                        );
-                      return null;
-                    })()}
-                  </div>
-                );
-              })()}
-
-            <div className="flex gap-2">
-              <Button
-                size="sm"
-                className="flex-1"
-                onClick={() => setConfirmAction("generate")}
-                disabled={generating}
-              >
-                {generating ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}{" "}
-                Generate
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="flex-1"
-                onClick={() => setConfirmAction("rebalance")}
-                disabled={generating}
-              >
-                {generating ? <Loader2 size={14} className="animate-spin" /> : <Zap size={14} />}{" "}
-                Rebalance
-              </Button>
-            </div>
-          </div>
-        </div>
+        <MenuPanel
+          examCount={localConfig.exam_dates?.length || 0}
+          phaseCount={localConfig.phases?.length || 0}
+          resourceCount={resources.length}
+          daysOff={localConfig.days_off}
+          estimates={
+            localConfig.phases.length > 0 && resources.length > 0
+              ? estimatePhaseHours(resources, localConfig)
+              : []
+          }
+          hasResources={resources.length > 0}
+          scheduleTaskCount={schedule.length}
+          scheduleTotalMinutes={schedule.reduce((sum, t) => sum + t.minutes, 0)}
+          errors={errors}
+          successMsg={successMsg}
+          generating={generating}
+          onNavigate={goTo}
+          onGenerate={() => setConfirmAction("generate")}
+          onRebalance={() => setConfirmAction("rebalance")}
+        />
       );
     }
 
@@ -564,243 +370,34 @@ export function SetupSheet({
         setPanel("phases");
         return null;
       }
-
-      const phaseResAssignments = phase.resources || [];
       const canonicalAllIds = [
         ...CP_CATEGORIES.map((c) => c.id),
         ...AP_CATEGORIES.map((c) => c.id),
       ];
-      const savedOrder = phase.subject_order || [];
-      const subjectIds = [
-        ...savedOrder.filter((id) => canonicalAllIds.includes(id)),
-        ...canonicalAllIds.filter((id) => !savedOrder.includes(id)),
-      ];
-
-      const estimates = estimatePhaseHours(resources, localConfig);
-      const est = estimates[activePhaseIdx];
-
+      const subjectIds = orderedSubjectIds(phase.subject_order || [], canonicalAllIds);
+      const est = estimatePhaseHours(resources, localConfig)[activePhaseIdx];
       return (
-        <div className="flex h-full flex-col">
-          <PanelHeader
-            title={phase.name || `Phase ${activePhaseIdx + 1}`}
-            onBack={() => goBack("phases")}
-          />
-          <div className="flex-1 space-y-4 overflow-y-auto p-4">
-            <div>
-              <label className="mb-1 block text-xs text-muted-foreground">Name</label>
-              <Input
-                value={phase.name}
-                onChange={(e) => updatePhase(activePhaseIdx, { name: e.target.value })}
-              />
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="mb-1 block text-xs text-muted-foreground">Start</label>
-                <Input
-                  type="date"
-                  value={phase.start_date}
-                  onChange={(e) => updatePhase(activePhaseIdx, { start_date: e.target.value })}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs text-muted-foreground">End</label>
-                <Input
-                  type="date"
-                  value={phase.end_date}
-                  onChange={(e) => updatePhase(activePhaseIdx, { end_date: e.target.value })}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="mb-1 block text-xs text-muted-foreground">Weekday hours</label>
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={phase.daily_minutes_weekday / 60}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (v === "" || /^\d*\.?\d*$/.test(v))
-                      updatePhase(activePhaseIdx, {
-                        daily_minutes_weekday: Math.max(0, (parseFloat(v) || 0) * 60),
-                      });
-                  }}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs text-muted-foreground">Weekend hours</label>
-                <Input
-                  type="text"
-                  inputMode="decimal"
-                  value={phase.daily_minutes_weekend / 60}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (v === "" || /^\d*\.?\d*$/.test(v))
-                      updatePhase(activePhaseIdx, {
-                        daily_minutes_weekend: Math.max(0, (parseFloat(v) || 0) * 60),
-                      });
-                  }}
-                />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <div>
-                <label className="mb-1 block text-xs text-muted-foreground">
-                  Catch-up day interval
-                </label>
-                <Input
-                  type="text"
-                  inputMode="numeric"
-                  value={phase.catchup_every}
-                  onChange={(e) => {
-                    const v = e.target.value;
-                    if (v === "" || /^\d+$/.test(v))
-                      updatePhase(activePhaseIdx, { catchup_every: parseInt(v) || 0 });
-                  }}
-                />
-              </div>
-              <div>
-                <label className="mb-1 block text-xs text-muted-foreground">
-                  First catch-up date
-                </label>
-                <Input
-                  type="date"
-                  value={phase.catchup_first_date || ""}
-                  onChange={(e) =>
-                    updatePhase(activePhaseIdx, { catchup_first_date: e.target.value })
-                  }
-                />
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <button
-                onClick={() => goTo("phase-resources")}
-                className="flex w-full items-center gap-3 rounded-xl border border-border px-3 py-3 text-left transition-colors hover:bg-muted/50"
-              >
-                <BookOpen size={16} className="text-muted-foreground" />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-foreground">Resources</div>
-                  <div className="text-xs text-muted-foreground">
-                    {phaseResAssignments.filter((r) => r.mode === "study").length} study ·{" "}
-                    {phaseResAssignments.filter((r) => r.mode === "review").length} review
-                  </div>
-                </div>
-                <ChevronRight size={16} className="text-muted-foreground" />
-              </button>
-              <button
-                onClick={() => {
-                  if (!phase.subject_order?.length) {
-                    updatePhase(activePhaseIdx, { subject_order: subjectIds });
-                  }
-                  goTo("subject-order");
-                }}
-                className="flex w-full items-center gap-3 rounded-xl border border-border px-3 py-3 text-left transition-colors hover:bg-muted/50"
-              >
-                <ListOrdered size={16} className="text-muted-foreground" />
-                <div className="flex-1">
-                  <div className="text-sm font-medium text-foreground">Subject Order</div>
-                  <div className="text-xs text-muted-foreground">
-                    {subjectIds.length} categories
-                  </div>
-                </div>
-                <ChevronRight size={16} className="text-muted-foreground" />
-              </button>
-            </div>
-
-            {est &&
-              (() => {
-                const avgDaily =
-                  est.effective_day_count > 0
-                    ? est.total_needed_hours / est.effective_day_count
-                    : 0;
-                const ratio =
-                  est.total_available_hours > 0 ? est.surplus_hours / est.total_available_hours : 0;
-                const diffCls =
-                  ratio >= -0.05
-                    ? "text-emerald-500"
-                    : ratio >= -0.15
-                      ? "text-amber-400"
-                      : "text-destructive";
-                const barCls =
-                  ratio >= -0.05
-                    ? "bg-emerald-300"
-                    : ratio >= -0.15
-                      ? "bg-amber-300"
-                      : "bg-destructive";
-                return (
-                  <div className="rounded-xl border border-border p-3 space-y-2">
-                    <div className="flex items-baseline justify-between">
-                      <span className="text-sm font-semibold tabular-nums text-foreground">
-                        {fmtH(avgDaily)} daily
-                      </span>
-                      <span className="text-xs tabular-nums text-muted-foreground">
-                        {est.study_day_count} study days
-                      </span>
-                    </div>
-                    <div>
-                      <div className="mb-0.5 flex justify-between text-[11px]">
-                        <span className="text-muted-foreground">
-                          Needed: {fmtH(est.total_needed_hours)}
-                        </span>
-                        <span className="text-muted-foreground">
-                          Available: {fmtH(est.total_available_hours)}
-                        </span>
-                        {est.surplus_hours !== 0 && (
-                          <span className={`font-medium tabular-nums ${diffCls}`}>
-                            {est.surplus_hours > 0 ? "+" : ""}
-                            {fmtH(est.surplus_hours)}
-                          </span>
-                        )}
-                      </div>
-                      {est.total_available_hours > 0 && (
-                        <div className="h-1.5 overflow-hidden rounded-full bg-muted">
-                          <div
-                            className={`h-full rounded-full ${barCls}`}
-                            style={{
-                              width: `${Math.min(100, (est.total_needed_hours / est.total_available_hours) * 100)}%`,
-                            }}
-                          />
-                        </div>
-                      )}
-                    </div>
-                    {est.resource_hours.length > 0 && (
-                      <div className="space-y-0.5">
-                        {est.resource_hours.map((r) => (
-                          <div key={r.resource_name} className="flex justify-between text-[11px]">
-                            <span className="truncate text-muted-foreground">
-                              {r.resource_name}
-                            </span>
-                            <span className="shrink-0 tabular-nums text-foreground">
-                              {fmtH(r.total_hours)}{" "}
-                              <span className="text-muted-foreground">
-                                ({fmtH(r.hours_per_day)} daily)
-                              </span>
-                            </span>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </div>
-                );
-              })()}
-            <Button
-              variant="ghost"
-              size="sm"
-              className="w-full text-destructive hover:text-destructive"
-              onClick={() => {
-                if (confirm(`Remove ${phase.name}?`)) {
-                  updateConfig({
-                    phases: localConfig.phases.filter((_, i) => i !== activePhaseIdx),
-                  });
-                  goBack("phases");
-                }
-              }}
-            >
-              Remove Phase
-            </Button>
-          </div>
-        </div>
+        <PhaseDetailPanel
+          phase={phase}
+          phaseNumber={activePhaseIdx + 1}
+          est={est}
+          subjectCount={subjectIds.length}
+          onUpdatePhase={(updates) => updatePhase(activePhaseIdx, updates)}
+          onOpenResources={() => goTo("phase-resources")}
+          onOpenSubjectOrder={() => {
+            if (!phase.subject_order?.length) {
+              updatePhase(activePhaseIdx, { subject_order: subjectIds });
+            }
+            goTo("subject-order");
+          }}
+          onRemove={() => {
+            if (confirm(`Remove ${phase.name}?`)) {
+              updateConfig({ phases: localConfig.phases.filter((_, i) => i !== activePhaseIdx) });
+              goBack("phases");
+            }
+          }}
+          onBack={() => goBack("phases")}
+        />
       );
     }
 

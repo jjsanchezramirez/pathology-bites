@@ -46,9 +46,7 @@ describe("URL builders", () => {
   });
 
   it("buildVirtualSlidesUrl points at the search page", () => {
-    expect(buildVirtualSlidesUrl("renal cell")).toBe(
-      "/tools/virtual-slides?search=renal%20cell"
-    );
+    expect(buildVirtualSlidesUrl("renal cell")).toBe("/tools/virtual-slides?search=renal%20cell");
   });
 });
 
@@ -61,7 +59,10 @@ describe("pickViewableSlide", () => {
   });
 
   it("returns the #1 match when our viewer can render it", () => {
-    const slides = [slide({ id: "a", repository: "MGH" }), slide({ id: "b", repository: "WHO Blue Books Online" })];
+    const slides = [
+      slide({ id: "a", repository: "MGH" }),
+      slide({ id: "b", repository: "WHO Blue Books Online" }),
+    ];
     expect(pickViewableSlide(tm, slides)?.id).toBe("a");
   });
 
