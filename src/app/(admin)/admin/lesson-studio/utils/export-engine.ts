@@ -1,30 +1,26 @@
 // Canvas rendering for the MP4 export pipeline.
-// Interpolation is handled by the shared engine-core; this file only draws.
+// Interpolation is handled by the shared lesson evaluator; this file only draws.
 
-import type { Segment, Transform } from "@/shared/types/explainer";
-import {
-  computeEngineState,
-  DEFAULT_TRANSFORM,
-  type EngineState,
-} from "@/shared/components/explainer/engine-core";
+import type { Transform } from "@/shared/types/explainer";
+import { evaluate, type FrameState } from "@/shared/lesson/evaluate";
 
 // Re-export for callers that currently import from this module.
-export type { EngineState };
-export { computeEngineState as computeFrameState };
+export type { FrameState };
+export { evaluate as computeFrameState };
 
 export function drawExportFrame(
   ctx: CanvasRenderingContext2D,
   W: number,
   H: number,
-  state: EngineState,
+  state: FrameState,
   images: Map<string, HTMLImageElement>
 ) {
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = "#000";
   ctx.fillRect(0, 0, W, H);
 
-  function drawSegmentImage(seg: Segment, transform: Transform, opacity: number) {
-    const img = images.get(seg.imageUrl);
+  function drawImage(url: string, transform: Transform, opacity: number) {
+    const img = images.get(url);
     if (!img || !img.complete) return;
     ctx.save();
     ctx.globalAlpha = opacity;
@@ -35,16 +31,11 @@ export function drawExportFrame(
     ctx.restore();
   }
 
-  if (state.currentSegment)
-    drawSegmentImage(state.currentSegment, state.interpolatedTransform, state.transitionOpacity);
-  if (state.incomingSegment && state.incomingOpacity > 0)
-    drawSegmentImage(
-      state.incomingSegment,
-      state.incomingSegment.keyframes[0]?.transform ?? DEFAULT_TRANSFORM,
-      state.incomingOpacity
-    );
+  if (state.imageUrl) drawImage(state.imageUrl, state.transform, state.transitionOpacity);
+  if (state.incomingImageUrl && state.incomingOpacity > 0)
+    drawImage(state.incomingImageUrl, state.incomingTransform, state.incomingOpacity);
 
-  const spotlights = state.activeHighlights.filter((h) => h.spotlight);
+  const spotlights = state.highlights.filter((h) => h.spotlight);
   if (spotlights.length > 0) {
     const maxOpacity = Math.max(...spotlights.map((h) => h.opacity));
     const tmpCanvas = document.createElement("canvas");
@@ -73,7 +64,7 @@ export function drawExportFrame(
     ctx.restore();
   }
 
-  for (const hl of state.activeHighlights.filter((h) => !h.spotlight)) {
+  for (const hl of state.highlights.filter((h) => !h.spotlight)) {
     ctx.save();
     ctx.globalAlpha = hl.opacity;
     ctx.strokeStyle = hl.borderColor;
@@ -81,10 +72,11 @@ export function drawExportFrame(
     ctx.setLineDash(
       hl.borderStyle === "dashed" ? [12, 8] : hl.borderStyle === "dotted" ? [2, 6] : []
     );
+    const sc = hl.computedScale ?? 1;
     const cx = (hl.position.x / 100) * W,
       cy = (hl.position.y / 100) * H,
-      hw = (hl.size.width / 100) * W,
-      hh = (hl.size.height / 100) * H;
+      hw = ((hl.size.width / 100) * W) * sc,
+      hh = ((hl.size.height / 100) * H) * sc;
     ctx.shadowColor = "rgba(0,0,0,0.7)";
     ctx.shadowBlur = 8 * (H / 1080);
     ctx.shadowOffsetY = 2 * (H / 1080);
@@ -96,7 +88,7 @@ export function drawExportFrame(
     ctx.restore();
   }
 
-  for (const arrow of state.activeArrows) {
+  for (const arrow of state.arrows) {
     ctx.save();
     ctx.globalAlpha = arrow.opacity;
     const x1 = (arrow.startPosition.x / 100) * W,
@@ -135,10 +127,10 @@ export function drawExportFrame(
   }
 
   const DOM_VIEWPORT_H = 450;
-  for (const o of state.activeTextOverlays) {
+  for (const o of state.textOverlays) {
     ctx.save();
     ctx.globalAlpha = o.computedOpacity ?? 1;
-    const fontSize = o.fontSize * 16 * (H / DOM_VIEWPORT_H);
+    const fontSize = o.fontSize * 16 * (H / DOM_VIEWPORT_H) * (o.computedScale ?? 1);
     const weight =
       o.fontWeight === "bold" ? "bold" : o.fontWeight === "semibold" ? "600" : "normal";
     ctx.font = `${weight} ${fontSize}px sans-serif`;

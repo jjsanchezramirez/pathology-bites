@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import type { ExplainerSequence } from "@/shared/types/explainer";
+import type { Lesson } from "@/shared/lesson/types";
 
 interface UseResourcePreloaderOptions {
-  sequence: ExplainerSequence;
+  lesson: Lesson;
   audioUrl: string;
 }
 
@@ -16,7 +16,7 @@ interface UseResourcePreloaderReturn {
 }
 
 export function useResourcePreloader({
-  sequence,
+  lesson,
   audioUrl,
 }: UseResourcePreloaderOptions): UseResourcePreloaderReturn {
   const [isLoading, setIsLoading] = useState(true);
@@ -36,11 +36,11 @@ export function useResourcePreloader({
       loadedResourcesRef.current.clear();
 
       try {
-        // Collect all unique image URLs from the sequence
+        // Collect all unique image URLs from the lesson's slides.
         const imageUrls = new Set<string>();
-        for (const segment of sequence.segments) {
-          if (segment.imageUrl) {
-            imageUrls.add(segment.imageUrl);
+        for (const slide of lesson.slides) {
+          for (const el of slide.elements) {
+            if (el.kind === "image" && el.imageUrl) imageUrls.add(el.imageUrl);
           }
         }
 
@@ -124,7 +124,7 @@ export function useResourcePreloader({
     return () => {
       cancelled = true;
     };
-  }, [sequence, audioUrl]);
+  }, [lesson, audioUrl]);
 
   return {
     isLoading,

@@ -107,9 +107,13 @@ export async function POST(request: NextRequest) {
     }
 
     if (sequence_data !== undefined) {
-      if (typeof sequence_data !== "object" || !sequence_data.version || !sequence_data.segments) {
+      if (
+        typeof sequence_data !== "object" ||
+        !Array.isArray(sequence_data.slides) ||
+        sequence_data.aspectRatio == null
+      ) {
         return NextResponse.json(
-          { error: "sequence_data must be a valid ExplainerSequence object." },
+          { error: "sequence_data must be a valid Lesson object (slides[] + aspectRatio)." },
           { status: 400 }
         );
       }

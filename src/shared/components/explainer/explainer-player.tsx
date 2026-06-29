@@ -8,19 +8,28 @@ import { useResourcePreloader } from "./use-resource-preloader";
 import { ExplainerViewport } from "./explainer-viewport";
 import { ExplainerControls } from "./explainer-controls";
 import type { ExplainerPlayerProps, CaptionChunk } from "@/shared/types/explainer";
+import { slideStarts } from "@/shared/lesson/evaluate";
+import { captionsForAudio } from "@/shared/lesson/captions";
 
 export function ExplainerPlayer({
-  sequence,
-  audioUrl,
+  lesson,
+  audioUrl: audioUrlProp,
   autoPlay = false,
   className,
   onEnded,
   onTimeUpdate,
   onAudioLoaded,
   seekToTime,
-  captions,
+  captions: captionsProp,
 }: ExplainerPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const audioUrl = audioUrlProp ?? lesson.audio?.url ?? "";
+  const duration = useMemo(() => slideStarts(lesson).duration, [lesson]);
+  const captions = useMemo(
+    () => captionsProp ?? captionsForAudio(lesson.audio),
+    [captionsProp, lesson.audio]
+  );
 
   // CC visibility — defaults on when captions are provided
   const [captionsVisible, setCaptionsVisible] = useState(true);
@@ -76,7 +85,7 @@ export function ExplainerPlayer({
 
   // Preload all resources before playback
   const preloader = useResourcePreloader({
-    sequence,
+    lesson,
     audioUrl,
   });
 
@@ -84,11 +93,11 @@ export function ExplainerPlayer({
     audioUrl,
     onEnded,
     onTimeUpdate,
-    fallbackDuration: sequence.duration,
+    fallbackDuration: duration,
   });
 
   const engine = useExplainerEngine({
-    sequence,
+    lesson,
     currentTime: audio.currentTime,
   });
 
@@ -189,19 +198,22 @@ export function ExplainerPlayer({
           "relative overflow-hidden bg-black group",
           isFullscreen ? "h-full" : "w-full rounded-2xl"
         )}
-        style={isFullscreen ? { aspectRatio: sequence.aspectRatio.replace(":", "/") } : undefined}
+        style={isFullscreen ? { aspectRatio: lesson.aspectRatio.replace(":", "/") } : undefined}
       >
         <ExplainerViewport
-          currentSegment={engine.currentSegment}
-          incomingSegment={engine.incomingSegment}
-          transform={engine.interpolatedTransform}
-          highlights={engine.activeHighlights}
-          arrows={engine.activeArrows}
-          textOverlays={engine.activeTextOverlays}
-          svgOverlays={engine.activeSvgOverlays}
+          imageUrl={engine.imageUrl}
+          backgroundColor={engine.backgroundColor}
+          incomingImageUrl={engine.incomingImageUrl}
+          incomingBackgroundColor={engine.incomingBackgroundColor}
+          transform={engine.transform}
+          incomingTransform={engine.incomingTransform}
+          highlights={engine.highlights}
+          arrows={engine.arrows}
+          textOverlays={engine.textOverlays}
+          svgOverlays={engine.svgOverlays}
           transitionOpacity={engine.transitionOpacity}
           incomingOpacity={engine.incomingOpacity}
-          aspectRatio={sequence.aspectRatio}
+          aspectRatio={lesson.aspectRatio}
           onClick={handleViewportClick}
         />
 

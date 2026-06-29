@@ -19,14 +19,15 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Loader2, FolderOpen, Calendar } from "lucide-react";
-import type { ExplainerSequence } from "@/shared/types/explainer";
 import type { InteractiveSequence } from "@/features/admin/interactive-sequences/types";
+import { normalizeStoredLesson } from "@/shared/lesson/normalize";
+import { slideStarts } from "@/shared/lesson/evaluate";
 
 interface LoadFromDatabaseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onLoadSequence: (
-    sequence: ExplainerSequence,
+    sequenceData: unknown,
     sequenceId: string,
     title: string,
     description: string
@@ -224,8 +225,17 @@ export function LoadFromDatabaseDialog({
                             <Calendar className="h-3 w-3" />
                             {formatDate(seq.created_at)}
                           </span>
-                          <span>{seq.sequence_data.segments?.length || 0} segments</span>
-                          <span>{seq.sequence_data.duration?.toFixed(1) || 0}s</span>
+                          {(() => {
+                            const l = normalizeStoredLesson(seq.sequence_data);
+                            const slides = l?.slides.length ?? 0;
+                            const dur = l ? slideStarts(l).duration : 0;
+                            return (
+                              <>
+                                <span>{slides} slides</span>
+                                <span>{dur.toFixed(1)}s</span>
+                              </>
+                            );
+                          })()}
                         </div>
                       </div>
                       {selectedSequenceId === seq.id && (

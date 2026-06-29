@@ -3,8 +3,9 @@
 // with a drag-session bracket that coalesces rapid updates into a single entry.
 
 import { create } from "zustand";
-import type { Lesson, Slide, SlideElement, Framing, ImageElement } from "./types";
+import type { Lesson, Slide, SlideElement, Framing } from "./types";
 import { newBlankLesson } from "./slide-factory";
+import { migrateLesson } from "@/shared/lesson/normalize";
 
 const HISTORY_LIMIT = 50;
 
@@ -99,72 +100,6 @@ function cloneLesson(l: Lesson): Lesson {
   return structuredClone(l);
 }
 
-/**
- * Convert legacy `backgroundImageUrl` slides (from old DB records) to
- * image-as-element slides. Inserts a full-canvas ImageElement at index 0
- * and strips the legacy field. Idempotent for already-migrated slides.
- */
-function migrateLessonBackgrounds(lesson: Lesson): Lesson {
-  let changed = false;
-  const slides = lesson.slides.map((slide) => {
-    // Legacy field may still exist on data loaded from DB.
-    const legacyUrl = (slide as unknown as Record<string, unknown>).backgroundImageUrl as
-      | string
-      | null;
-    if (!legacyUrl) return slide;
-    changed = true;
-    const bgElement: ImageElement = {
-      id: `image-bg-${slide.id}`,
-      kind: "image",
-      imageUrl: legacyUrl,
-      rect: { x: 0, y: 0, w: 100, h: 100, rotation: 0 },
-      opacity: 1,
-      timing: {
-        start: 0,
-        fadeIn: 0,
-        hold: Math.max(0.01, slide.duration),
-        fadeOut: 0,
-      },
-    };
-    // Strip legacy fields and insert the image element.
-    const {
-      backgroundImageUrl: _,
-      backgroundImageId: _2,
-      backgroundImageAlt: _3,
-      ...rest
-    } = slide as Record<string, unknown> & Slide;
-    return {
-      ...rest,
-      elements: [bgElement, ...slide.elements],
-    } as Slide;
-  });
-  return changed ? { ...lesson, slides } : lesson;
-}
-
-/**
- * Migrate legacy `kind: "zoom"` / `kind: "pan"` elements to the unified
- * `kind: "camera"` with a `persistent` flag. Idempotent.
- */
-function migrateLegacyCameraElements(lesson: Lesson): Lesson {
-  let changed = false;
-  const slides = lesson.slides.map((slide) => {
-    const elements = slide.elements.map((el): SlideElement => {
-      const raw = el as unknown as Record<string, unknown>;
-      if (raw.kind === "zoom") {
-        changed = true;
-        return { ...el, kind: "camera", persistent: false } as SlideElement;
-      }
-      if (raw.kind === "pan") {
-        changed = true;
-        return { ...el, kind: "camera", persistent: true } as SlideElement;
-      }
-      return el;
-    });
-    return changed ? { ...slide, elements } : slide;
-  });
-  return changed ? { ...lesson, slides } : lesson;
-}
-
 function pushHistory(past: HistoryEntry[], entry: HistoryEntry): HistoryEntry[] {
   const next = [...past, entry];
   if (next.length > HISTORY_LIMIT) next.shift();
@@ -224,7 +159,7 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
   // ---- Document --------------------------------------------------------------
 
   setLesson: (lesson) => {
-    const migrated = migrateLegacyCameraElements(migrateLessonBackgrounds(lesson));
+    const migrated = migrateLesson(lesson);
     set((state) => {
       const nextId = state.currentSnapshotId + 1;
       return {

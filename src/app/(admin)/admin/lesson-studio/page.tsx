@@ -5,15 +5,14 @@
 
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ExplainerPlayer } from "@/shared/components/explainer/explainer-player";
 import { fetchAudio, fetchAudioById } from "@/features/admin/audio/services/audio";
 import type { Audio as AudioRecord } from "@/features/admin/audio/types";
-import type { ExplainerSequence } from "@/shared/types/explainer";
+import { slideStarts } from "@/shared/lesson/evaluate";
+import { normalizeStoredLesson } from "@/shared/lesson/normalize";
 
 import { useEditorStore } from "./model/store";
-import { lessonToSequence } from "./model/to-sequence";
-import { sequenceToLesson } from "./model/from-sequence";
 import { newBlankLesson } from "./model/slide-factory";
 
 import { LibraryPanel } from "./library-panel";
@@ -51,10 +50,6 @@ export default function LessonStudioPage() {
     window.addEventListener("beforeunload", handler);
     return () => window.removeEventListener("beforeunload", handler);
   }, [isDirty]);
-
-  // ---- Derived sequence (for preview, save, export) ----------------------
-
-  const sequence: ExplainerSequence | null = useMemo(() => lessonToSequence(lesson), [lesson]);
 
   // ---- Audio picker ------------------------------------------------------
 
@@ -185,8 +180,12 @@ export default function LessonStudioPage() {
   );
 
   const onLoadSequence = useCallback(
-    (loaded: ExplainerSequence, sequenceId: string, title: string, description: string) => {
-      const next = sequenceToLesson(loaded);
+    (loaded: unknown, sequenceId: string, title: string, description: string) => {
+      const next = normalizeStoredLesson(loaded);
+      if (!next) {
+        window.alert("This sequence can't be opened (legacy format). Please re-create it.");
+        return;
+      }
       next.id = sequenceId;
       next.title = title;
       next.description = description;
@@ -199,7 +198,8 @@ export default function LessonStudioPage() {
   // ---- Layout ------------------------------------------------------------
 
   const audioUrl = lesson.audio?.url ?? "";
-  const inPreview = mode === "preview" && sequence !== null;
+  const totalDuration = slideStarts(lesson).duration;
+  const inPreview = mode === "preview" && lesson.slides.length > 0;
 
   return (
     <div className="flex h-full flex-col bg-gray-50">
@@ -212,21 +212,20 @@ export default function LessonStudioPage() {
         onSaveAsNew={onSaveAsNew}
         onClearAudio={onClearAudio}
         onGenerate={onGenerate}
-        totalDuration={sequence?.duration ?? 0}
+        totalDuration={totalDuration}
       />
 
       <div className="flex flex-1 overflow-hidden">
         <LibraryPanel />
         <div className="relative flex-1 overflow-hidden bg-gray-100">
           {!inPreview && <ToolPalette />}
-          {inPreview && sequence ? (
+          {inPreview ? (
             <div className="flex h-full w-full items-center justify-center p-4">
               <div className="w-full" style={{ maxHeight: "100%" }}>
                 <ExplainerPlayer
-                  sequence={sequence}
+                  lesson={lesson}
                   audioUrl={audioUrl}
                   autoPlay
-                  captions={sequence.captions}
                   onEnded={() => useEditorStore.getState().setMode("edit")}
                 />
               </div>
@@ -256,7 +255,7 @@ export default function LessonStudioPage() {
       <SaveToDatabaseDialog
         open={saveOpen}
         onOpenChange={setSaveOpen}
-        sequence={sequence}
+        lesson={lesson}
         existingSequenceId={lesson.id}
         existingTitle={lesson.title}
         existingDescription={lesson.description}
@@ -270,7 +269,7 @@ export default function LessonStudioPage() {
       <ExportDialog
         open={exportOpen}
         onOpenChange={setExportOpen}
-        previewSequence={sequence}
+        previewLesson={lesson}
         audioUrl={audioUrl}
       />
       <GenerateLessonDialog open={generateOpen} onOpenChange={setGenerateOpen} />
