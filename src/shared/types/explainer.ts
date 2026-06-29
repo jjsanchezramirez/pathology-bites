@@ -32,6 +32,8 @@ export interface HighlightRegion {
   opacity: number; // 0-1
   spotlight?: boolean; // if true, dims everything except this region
   shadow?: boolean; // if true, draws a drop shadow. Default false.
+  /** Runtime-only: entrance/exit scale-pop multiplier (~0.85–1.05). */
+  computedScale?: number;
 }
 
 export interface ArrowPointer {
@@ -43,6 +45,8 @@ export interface ArrowPointer {
   opacity: number; // 0-1
   headSize?: number; // arrowhead size in px (default 12)
   shadow?: boolean; // if true, draws a drop shadow. Default true.
+  /** Runtime-only: entrance/exit scale-pop multiplier (~0.85–1.05). */
+  computedScale?: number;
   direction?:
     | "up"
     | "down"
@@ -68,6 +72,8 @@ export interface TextOverlay {
   shadow?: boolean; // if true, draws a text shadow. Default true.
   /** Runtime-only: computed opacity for fade animations (0–1) */
   computedOpacity?: number;
+  /** Runtime-only: entrance/exit scale-pop multiplier (~0.85–1.05). */
+  computedScale?: number;
 }
 
 // ---- SVG Overlay ----
@@ -82,6 +88,8 @@ export interface SvgOverlayElement {
   rotation: number;
   opacity: number;
   computedOpacity?: number; // Runtime-only: computed opacity for fade animations (0–1)
+  /** Runtime-only: entrance/exit scale-pop multiplier (~0.85–1.05). */
+  computedScale?: number;
   color?: string;
 }
 
