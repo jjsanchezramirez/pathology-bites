@@ -7,6 +7,7 @@ import { useExplainerEngine } from "./use-explainer-engine";
 import { useResourcePreloader } from "./use-resource-preloader";
 import { ExplainerViewport } from "./explainer-viewport";
 import { ExplainerControls } from "./explainer-controls";
+import { useReducedMotion } from "./use-reduced-motion";
 import type { ExplainerPlayerProps, CaptionChunk } from "@/shared/types/explainer";
 import { slideStarts } from "@/shared/lesson/evaluate";
 import { captionsForAudio } from "@/shared/lesson/captions";
@@ -30,6 +31,12 @@ export function ExplainerPlayer({
     () => captionsProp ?? captionsForAudio(lesson.audio),
     [captionsProp, lesson.audio]
   );
+  // Slide-boundary ticks for the scrubber (absolute seconds, excluding 0).
+  const markers = useMemo(() => slideStarts(lesson).starts.slice(1), [lesson]);
+  // Reduced-motion multiplier (0 pins camera + suppresses scale-pop).
+  const motion = useReducedMotion();
+  // Stable key for resume-position persistence.
+  const resumeKey = lesson.id ?? audioUrl;
 
   // CC visibility — defaults on when captions are provided
   const [captionsVisible, setCaptionsVisible] = useState(true);
@@ -99,6 +106,7 @@ export function ExplainerPlayer({
   const engine = useExplainerEngine({
     lesson,
     currentTime: audio.currentTime,
+    motion,
   });
 
   // Find the active caption chunk for the current time
@@ -131,6 +139,36 @@ export function ExplainerPlayer({
     }
   }, [audio.isLoaded, audio.duration, onAudioLoaded]);
 
+  // Resume position — restore once when loaded (unless the caller drives seek).
+  const resumedRef = useRef(false);
+  useEffect(() => {
+    if (resumedRef.current || !audio.isLoaded || !resumeKey || seekToTime !== undefined) return;
+    resumedRef.current = true;
+    try {
+      const saved = parseFloat(localStorage.getItem(`explainer-resume:${resumeKey}`) || "");
+      if (isFinite(saved) && saved > 1 && saved < (audio.duration || duration) - 1) {
+        audio.seek(saved);
+      }
+    } catch {
+      /* localStorage unavailable */
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audio.isLoaded, audio.duration]);
+
+  // Persist position (throttled to ~1s of movement).
+  const lastSavedRef = useRef(0);
+  useEffect(() => {
+    if (!resumeKey) return;
+    const t = audio.currentTime;
+    if (Math.abs(t - lastSavedRef.current) < 1) return;
+    lastSavedRef.current = t;
+    try {
+      localStorage.setItem(`explainer-resume:${resumeKey}`, String(t));
+    } catch {
+      /* localStorage unavailable */
+    }
+  }, [audio.currentTime, resumeKey]);
+
   const handleViewportClick = useCallback(() => {
     if (preloader.isReady) {
       audio.togglePlay();
@@ -147,12 +185,18 @@ export function ExplainerPlayer({
           audio.togglePlay();
           break;
         case "ArrowLeft":
+        case "j":
           e.preventDefault();
-          audio.seek(Math.max(0, audio.currentTime - 5));
+          audio.seek(Math.max(0, audio.currentTime - (e.key === "j" ? 10 : 5)));
           break;
         case "ArrowRight":
+        case "l":
           e.preventDefault();
-          audio.seek(Math.min(audio.duration, audio.currentTime + 5));
+          audio.seek(Math.min(audio.duration, audio.currentTime + (e.key === "l" ? 10 : 5)));
+          break;
+        case "0":
+          e.preventDefault();
+          audio.seek(0);
           break;
         case "ArrowUp":
           e.preventDefault();
@@ -233,7 +277,21 @@ export function ExplainerPlayer({
                 borderRadius: "0.4cqw",
               }}
             >
-              {activeCaption.text}
+              {activeCaption.words && activeCaption.words.length > 0
+                ? activeCaption.words.map((w, i) => {
+                    const spoken = audio.currentTime >= w.start;
+                    const active = spoken && audio.currentTime < w.end;
+                    return (
+                      <span
+                        key={i}
+                        style={{ opacity: spoken ? 1 : 0.55, fontWeight: active ? 700 : 400 }}
+                      >
+                        {w.text}
+                        {i < activeCaption.words!.length - 1 ? " " : ""}
+                      </span>
+                    );
+                  })
+                : activeCaption.text}
             </div>
           </div>
         )}
@@ -263,6 +321,7 @@ export function ExplainerPlayer({
             onToggleCaptions={() => setCaptionsVisible((v) => !v)}
             isFullscreen={isFullscreen}
             onToggleFullscreen={toggleFullscreen}
+            markers={markers}
           />
         </div>
 

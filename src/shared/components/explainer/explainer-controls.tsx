@@ -22,6 +22,8 @@ interface ExplainerControlsProps {
   onToggleCaptions?: () => void;
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
+  /** Absolute times (seconds) to mark on the scrubber, e.g. slide boundaries. */
+  markers?: number[];
 }
 
 const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -50,6 +52,7 @@ export function ExplainerControls({
   onToggleCaptions,
   isFullscreen = false,
   onToggleFullscreen,
+  markers = [],
 }: ExplainerControlsProps) {
   const handleSeekChange = useCallback(
     (value: number[]) => {
@@ -71,16 +74,28 @@ export function ExplainerControls({
 
   return (
     <div className="space-y-1.5 px-3 pb-2 pt-1">
-      {/* Progress bar */}
-      <Slider
-        value={[currentTime]}
-        min={0}
-        max={duration || 1}
-        step={0.1}
-        onValueChange={handleSeekChange}
-        className="w-full"
-        disabled={!isReady}
-      />
+      {/* Progress bar with slide-boundary ticks */}
+      <div className="relative w-full">
+        <Slider
+          value={[currentTime]}
+          min={0}
+          max={duration || 1}
+          step={0.1}
+          onValueChange={handleSeekChange}
+          className="w-full"
+          disabled={!isReady}
+        />
+        {duration > 0 &&
+          markers
+            .filter((m) => m > 0 && m < duration)
+            .map((m, i) => (
+              <span
+                key={i}
+                className="pointer-events-none absolute top-1/2 h-2 w-px -translate-y-1/2 bg-white/50"
+                style={{ left: `${(m / duration) * 100}%` }}
+              />
+            ))}
+      </div>
 
       {/* Controls row */}
       <div className="flex items-center gap-2">
