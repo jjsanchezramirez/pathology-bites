@@ -39,7 +39,8 @@ export function useExplainerEngine({
 
     for (let i = currentIndex; i < Math.min(slides.length, currentIndex + 3); i++) {
       const bg = slides[i]?.elements.find(
-        (e) => e.kind === "image" && (e.id.startsWith("image-bg-") || (e.rect.w >= 99 && e.rect.h >= 99))
+        (e) =>
+          e.kind === "image" && (e.id.startsWith("image-bg-") || (e.rect.w >= 99 && e.rect.h >= 99))
       );
       const url = bg && bg.kind === "image" ? bg.imageUrl : undefined;
       if (url && !preloadedRef.current.has(url)) {

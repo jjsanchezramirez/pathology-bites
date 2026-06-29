@@ -98,7 +98,12 @@ function SyncToNarration({ element, slideId }: { element: SlideElement; slideId:
     // Prefer an exact word match (word-aligned), else the containing chunk.
     let absolute: number | null = null;
     for (const c of captions) {
-      const word = c.words?.find((w) => w.text.toLowerCase().replace(/[^a-z0-9]/g, "").includes(q));
+      const word = c.words?.find((w) =>
+        w.text
+          .toLowerCase()
+          .replace(/[^a-z0-9]/g, "")
+          .includes(q)
+      );
       if (word) {
         absolute = word.start;
         break;

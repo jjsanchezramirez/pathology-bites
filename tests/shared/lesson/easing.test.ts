@@ -16,7 +16,9 @@ describe("Easing set", () => {
   });
 
   it("easeOutBack overshoots above 1 before settling", () => {
-    const peak = Math.max(...Array.from({ length: 99 }, (_, i) => Easing.easeOutBack((i + 1) / 100)));
+    const peak = Math.max(
+      ...Array.from({ length: 99 }, (_, i) => Easing.easeOutBack((i + 1) / 100))
+    );
     expect(peak).toBeGreaterThan(1);
   });
 });

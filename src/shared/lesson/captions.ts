@@ -28,7 +28,10 @@ export function buildCaptionChunks(
 }
 
 /** Accurate path: group aligned words into chunks, preserving per-word timing. */
-export function buildCaptionsFromWords(words: WordTiming[], chunkSize = CHUNK_SIZE): CaptionChunk[] {
+export function buildCaptionsFromWords(
+  words: WordTiming[],
+  chunkSize = CHUNK_SIZE
+): CaptionChunk[] {
   const chunks: CaptionChunk[] = [];
   for (let i = 0; i < words.length; i += chunkSize) {
     const slice = words.slice(i, i + chunkSize);

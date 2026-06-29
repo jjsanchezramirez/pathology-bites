@@ -221,7 +221,11 @@ export function applyActiveCamera(
     for (const prior of sortedPersistent) {
       if (prior === p) break;
       if (prior.timing.start + prior.timing.fadeIn <= t.start) {
-        panBase = { x: uiToTransform(prior.to.x), y: uiToTransform(prior.to.y), scale: prior.to.scale };
+        panBase = {
+          x: uiToTransform(prior.to.x),
+          y: uiToTransform(prior.to.y),
+          scale: prior.to.scale,
+        };
       }
     }
     const raw = t.fadeIn > 0 ? (time - t.start) / t.fadeIn : 1;

@@ -75,8 +75,8 @@ export function drawExportFrame(
     const sc = hl.computedScale ?? 1;
     const cx = (hl.position.x / 100) * W,
       cy = (hl.position.y / 100) * H,
-      hw = ((hl.size.width / 100) * W) * sc,
-      hh = ((hl.size.height / 100) * H) * sc;
+      hw = (hl.size.width / 100) * W * sc,
+      hh = (hl.size.height / 100) * H * sc;
     ctx.shadowColor = "rgba(0,0,0,0.7)";
     ctx.shadowBlur = 8 * (H / 1080);
     ctx.shadowOffsetY = 2 * (H / 1080);

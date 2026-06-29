@@ -54,7 +54,7 @@ export function interpolate(
       if (t >= input[i] && t <= input[i + 1]) {
         const span = input[i + 1] - input[i];
         const local = span === 0 ? 0 : (t - input[i]) / span;
-        const easeFn = Array.isArray(ease) ? ease[i] ?? Easing.linear : ease;
+        const easeFn = Array.isArray(ease) ? (ease[i] ?? Easing.linear) : ease;
         return output[i] + (output[i + 1] - output[i]) * easeFn(local);
       }
     }

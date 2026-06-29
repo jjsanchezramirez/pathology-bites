@@ -84,8 +84,7 @@ export function useAudioSync({
     }
     lastTickRef.current = now;
     const elapsed =
-      timerOffsetRef.current +
-      ((now - timerStartRef.current) / 1000) * playbackRateRef.current;
+      timerOffsetRef.current + ((now - timerStartRef.current) / 1000) * playbackRateRef.current;
     const totalDur = fallbackDuration;
     if (elapsed >= totalDur) {
       setCurrentTime(totalDur);
