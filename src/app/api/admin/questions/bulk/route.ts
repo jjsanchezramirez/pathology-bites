@@ -256,13 +256,6 @@ export async function POST(request: NextRequest) {
             "question_id",
             deletableQuestions.map((q) => q.id)
           );
-        await supabase
-          .from("question_categories")
-          .delete()
-          .in(
-            "question_id",
-            deletableQuestions.map((q) => q.id)
-          );
 
         result = await supabase
           .from("questions")
@@ -284,8 +277,7 @@ export async function POST(request: NextRequest) {
             *,
             question_options(*),
             question_images(*),
-            question_tags(tag_id),
-            question_categories(category_id)
+            question_tags(tag_id)
           `
           )
           .in("id", questionIds);

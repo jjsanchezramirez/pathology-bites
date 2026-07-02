@@ -214,24 +214,9 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // Create audit log for data export
-    await supabase.from("audit_logs").insert({
-      user_id: userId,
-      action: "data_export",
-      table_name: "users",
-      record_id: userId,
-      metadata: {
-        export_timestamp: new Date().toISOString(),
-        data_types_exported: [
-          "profile",
-          "settings",
-          "quiz_sessions",
-          "quiz_attempts",
-          "favorites",
-          "question_flags",
-        ],
-      },
-    });
+    // Audit trail. There is no audit_logs table in the schema — the insert this
+    // used to do failed silently on every export — so log instead.
+    log.info("[Audit] data_export", { userId });
 
     return NextResponse.json({
       success: true,

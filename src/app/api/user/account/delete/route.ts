@@ -103,20 +103,9 @@ export async function DELETE(request: NextRequest) {
     const isContentCreator = ["admin", "creator", "reviewer"].includes(userData.role);
     const deletionType = isContentCreator ? "soft_delete" : "hard_delete";
 
-    // Create audit log before deletion
-    await supabase.from("audit_logs").insert({
-      user_id: userId,
-      action: "account_deletion",
-      table_name: "users",
-      record_id: userId,
-      old_values: userData,
-      new_values: null,
-      metadata: {
-        self_deletion: true,
-        deletion_type: deletionType,
-        timestamp: new Date().toISOString(),
-      },
-    });
+    // Audit trail. There is no audit_logs table in the schema — the insert this
+    // used to do failed silently on every deletion — so log instead.
+    log.info("[Audit] account_deletion", { userId, deletionType, selfDeletion: true });
 
     /**
      * USER DELETION NOTE:

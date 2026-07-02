@@ -153,18 +153,12 @@ export async function POST(request: NextRequest) {
     log.debug("[Password Reset] Type:", type);
     log.debug("[Password Reset] Redirect URL:", redirectTo);
 
-    // Create audit log
-    await supabase.from("audit_logs").insert({
-      user_id: user.id,
+    // Audit trail. There is no audit_logs table in the schema — the insert this
+    // used to do failed silently on every request — so log instead.
+    log.info("[Audit] password_reset_request", {
+      userId: user.id,
       action: type === "magic_link" ? "magic_link_requested" : "password_reset_requested",
-      table_name: "users",
-      record_id: user.id,
-      metadata: {
-        email: email,
-        type: type,
-        timestamp: new Date().toISOString(),
-        ip_address: request.headers.get("x-forwarded-for") || "unknown",
-      },
+      ipAddress: request.headers.get("x-forwarded-for") || "unknown",
     });
 
     return NextResponse.json({
@@ -289,17 +283,8 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: updateError.message }, { status: 400 });
     }
 
-    // Create audit log
-    await supabase.from("audit_logs").insert({
-      user_id: userId,
-      action: "password_updated",
-      table_name: "users",
-      record_id: userId,
-      metadata: {
-        timestamp: new Date().toISOString(),
-        method: "password_reset",
-      },
-    });
+    // Audit trail (no audit_logs table in the schema — see PATCH above).
+    log.info("[Audit] password_updated", { userId, method: "password_reset" });
 
     return NextResponse.json({
       success: true,

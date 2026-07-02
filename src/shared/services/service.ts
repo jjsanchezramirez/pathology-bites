@@ -10,7 +10,6 @@ import {
   ReminderPayload as _ReminderPayload,
 } from "@/shared/types/notifications";
 import { InquiryData } from "@/features/admin/inquiries/types/inquiries";
-import { log } from "@/shared/utils/logging";
 
 export class NotificationsService {
   private getSupabase() {
@@ -219,61 +218,6 @@ export class NotificationsService {
     }
   }
 
-  // Create notifications for role-appropriate events
-  async createRoleBasedNotifications(
-    userRole: string,
-    eventType:
-      | "question_submitted"
-      | "question_approved"
-      | "question_rejected"
-      | "new_user_registered",
-    sourceId: string,
-    targetUserId?: string
-  ): Promise<void> {
-    try {
-      // Get users based on role who should receive this notification
-      let targetUsers: string[] = [];
-
-      if (targetUserId) {
-        targetUsers = [targetUserId];
-      } else {
-        // Get users by role
-        const { data: users } = await this.getSupabase()
-          .from("user_profiles")
-          .select("user_id")
-          .eq("role", userRole)
-          .eq("status", "active");
-
-        targetUsers = users?.map((u) => u.user_id) || [];
-      }
-
-      // Create notifications for each target user
-      const notifications = targetUsers.map((userId) => ({
-        user_id: userId,
-        source_type:
-          eventType === "question_submitted"
-            ? "question_review"
-            : eventType === "new_user_registered"
-              ? "admin_alert"
-              : "question_status",
-        source_id: sourceId,
-        read: false,
-      }));
-
-      if (notifications.length > 0) {
-        const { error } = await this.getSupabase()
-          .from("notification_states")
-          .insert(notifications);
-
-        if (error) {
-          throw error;
-        }
-      }
-    } catch (error) {
-      log.error("Error creating role-based notifications:", error);
-    }
-  }
-
   async markAsRead(notificationId: string): Promise<void> {
     const { error } = await this.getSupabase()
       .from("notification_states")
@@ -309,82 +253,6 @@ export class NotificationsService {
     }
 
     return count || 0;
-  }
-
-  // Test method to create sample notifications for different roles
-  async createTestNotifications(): Promise<void> {
-    try {
-      // Get admin users
-      const { data: adminUsers } = await this.getSupabase()
-        .from("user_profiles")
-        .select("user_id")
-        .eq("role", "admin")
-        .limit(5);
-
-      // Get creator users
-      const { data: creatorUsers } = await this.getSupabase()
-        .from("user_profiles")
-        .select("user_id")
-        .eq("role", "creator")
-        .limit(5);
-
-      // Get reviewer users
-      const { data: reviewerUsers } = await this.getSupabase()
-        .from("user_profiles")
-        .select("user_id")
-        .eq("role", "reviewer")
-        .limit(5);
-
-      const notifications = [];
-
-      // Create admin notifications
-      if (adminUsers?.length) {
-        for (const user of adminUsers) {
-          notifications.push({
-            user_id: user.user_id,
-            source_type: "admin_alert",
-            source_id: `admin_${Date.now()}_${Math.random()}`,
-            read: false,
-          });
-        }
-      }
-
-      // Create creator notifications
-      if (creatorUsers?.length) {
-        for (const user of creatorUsers) {
-          notifications.push({
-            user_id: user.user_id,
-            source_type: "question_status",
-            source_id: `creator_${Date.now()}_${Math.random()}`,
-            read: false,
-          });
-        }
-      }
-
-      // Create reviewer notifications
-      if (reviewerUsers?.length) {
-        for (const user of reviewerUsers) {
-          notifications.push({
-            user_id: user.user_id,
-            source_type: "question_review",
-            source_id: `reviewer_${Date.now()}_${Math.random()}`,
-            read: false,
-          });
-        }
-      }
-
-      if (notifications.length > 0) {
-        const { error } = await this.getSupabase()
-          .from("notification_states")
-          .insert(notifications);
-
-        if (error) {
-          throw error;
-        }
-      }
-    } catch (error) {
-      log.error("Error creating test notifications:", error);
-    }
   }
 }
 
