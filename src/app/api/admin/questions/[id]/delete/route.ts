@@ -1,5 +1,6 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 /**
@@ -57,11 +58,9 @@ export async function DELETE(
     log.debug(`Question ID to delete: ${questionId}`);
 
     // Get current user
-    const userId = request.headers.get("x-user-id");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Get user profile to check role
     const { data: userProfile, error: profileError } = await supabase

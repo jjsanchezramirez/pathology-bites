@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { bulkDeleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 /**
@@ -114,13 +114,9 @@ export async function DELETE(request: NextRequest) {
     const supabase = await createClient();
 
     // Verify user is authenticated admin
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json(
-        { error: "You must be logged in to delete images" },
-        { status: 401 }
-      );
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { data: userData, error: roleError } = await supabase
       .from("users")

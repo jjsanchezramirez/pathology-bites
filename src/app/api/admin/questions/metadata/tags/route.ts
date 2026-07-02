@@ -1,5 +1,6 @@
 // src/app/api/admin/questions/metadata/tags/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { requireContentRole } from "@/shared/utils/api/api-guard";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
 
@@ -79,15 +80,8 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // Auth check - require content role (admin, creator, or reviewer)
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Content role required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireContentRole(request);
+    if (auth instanceof NextResponse) return auth;
 
     // Get query parameters
     const { searchParams } = new URL(request.url);
@@ -216,15 +210,8 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // Auth check - require content role (admin, creator, or reviewer)
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Content role required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireContentRole(request);
+    if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
     const { name } = body;
@@ -307,15 +294,8 @@ export async function PATCH(request: NextRequest) {
     const supabase = await createClient();
 
     // Auth check - require content role (admin, creator, or reviewer)
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Content role required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireContentRole(request);
+    if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
     const { tagId, name } = body;
@@ -393,15 +373,8 @@ export async function DELETE(request: NextRequest) {
     const supabase = await createClient();
 
     // Auth check - require content role (admin, creator, or reviewer)
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Content role required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireContentRole(request);
+    if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
     const { tagId } = body;

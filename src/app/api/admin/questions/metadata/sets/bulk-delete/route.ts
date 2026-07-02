@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireContentRole } from "@/shared/utils/api/api-guard";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
 
@@ -52,26 +53,9 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Check if user is authenticated
-    const userId = request.headers.get("x-user-id");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    if (userError || !["admin", "creator", "reviewer"].includes(userData?.role)) {
-      return NextResponse.json(
-        { error: "Forbidden - Admin, Creator, or Reviewer access required" },
-        { status: 403 }
-      );
-    }
+    // Auth check - require admin, creator, or reviewer role
+    const auth = requireContentRole(request);
+    if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
     const { setIds } = body;

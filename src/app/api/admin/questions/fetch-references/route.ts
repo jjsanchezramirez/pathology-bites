@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireContentRole } from "@/shared/utils/api/api-guard";
 import { PATHOLOGY_JOURNALS } from "@/shared/utils/domain/pathology-journals";
 import { log } from "@/shared/utils/logging";
 
@@ -194,15 +195,8 @@ interface SemanticScholarPaper {
 export async function POST(request: NextRequest) {
   try {
     // Auth check - require admin, creator, or reviewer role
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireContentRole(request);
+    if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
     const searchTerms = body.searchTerms;
@@ -287,15 +281,8 @@ export async function POST(request: NextRequest) {
 export async function GET(request: NextRequest) {
   try {
     // Auth check - require admin, creator, or reviewer role
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireContentRole(request);
+    if (auth instanceof NextResponse) return auth;
 
     const { searchParams } = new URL(request.url);
     const query = searchParams.get("query");

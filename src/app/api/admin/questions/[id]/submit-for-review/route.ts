@@ -2,7 +2,7 @@ import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 /**
@@ -68,13 +68,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { id: questionId } = await params;
 
     // Get current user from headers (set by middleware)
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized. Please sign in and try again." },
-        { status: 401 }
-      );
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Parse request body with error handling
     let body;

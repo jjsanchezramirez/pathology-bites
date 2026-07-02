@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { formatVersion } from "@/shared/utils/version";
@@ -49,12 +50,10 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const { id: questionId } = await params;
 
     // Auth is handled by middleware - get user ID and role from headers
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
+    const userRole = auth.role;
 
     log.debug("GET - User authenticated:", userId, "Role:", userRole);
 
@@ -386,12 +385,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     };
 
     // Auth is handled by middleware - get user ID and role from headers
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
+    const userRole = auth.role;
 
     log.debug("PATCH - User authenticated:", userId, "Role:", userRole);
 

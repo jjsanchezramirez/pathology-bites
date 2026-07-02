@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { formatVersion } from "@/shared/utils/version";
 import { log } from "@/shared/utils/logging";
@@ -193,11 +194,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Auth is handled by middleware - get user ID from headers
-    const userId = request.headers.get("x-user-id");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { id: questionId } = await params;
     log.debug("Version history API called for question:", questionId, "by user:", userId);

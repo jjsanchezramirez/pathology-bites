@@ -1,5 +1,6 @@
 import { createClient } from "@/shared/services/server";
 import { NextResponse } from "next/server";
+import { requireContentRole } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 /**
@@ -55,15 +56,8 @@ export async function GET(request: Request) {
     const supabase = await createClient();
 
     // Auth check - require admin, creator, or reviewer role
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || !["admin", "creator", "reviewer"].includes(userRole || "")) {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireContentRole(request);
+    if (auth instanceof NextResponse) return auth;
 
     // Parallel: reviewers list + workload (all pending_review questions). Workload query
     // intentionally doesn't filter on reviewer_ids — they aren't known yet, and the result

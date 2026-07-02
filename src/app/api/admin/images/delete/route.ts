@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { deleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { revalidateImages } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
 
@@ -108,19 +108,9 @@ export async function DELETE(request: NextRequest) {
     log.debug("✅ Supabase client created");
 
     // Verify user is authenticated admin
-    const userId = getUserIdFromHeaders(request);
-    log.debug("👤 Auth check:", {
-      hasUser: !!userId,
-      userId: userId,
-    });
-
-    if (!userId) {
-      log.debug("❌ Authentication failed");
-      return NextResponse.json(
-        { error: "You must be logged in to delete images" },
-        { status: 401 }
-      );
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { data: userData, error: roleError } = await supabase
       .from("users")

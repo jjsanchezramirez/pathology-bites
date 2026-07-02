@@ -1,5 +1,6 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
@@ -51,11 +52,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { id: questionId } = await params;
 
     // Get current user
-    const userId = request.headers.get("x-user-id");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Get the question to verify reviewer assignment
     const { data: question, error: fetchError } = await supabase
