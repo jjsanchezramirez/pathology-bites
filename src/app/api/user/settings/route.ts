@@ -4,6 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import type { Database } from "@/shared/types/supabase";
 import {
   DEFAULT_QUIZ_SETTINGS,
   DEFAULT_NOTIFICATION_SETTINGS,
@@ -149,7 +150,7 @@ export async function GET(request: NextRequest) {
       "[UserSettings API] Returning settings for user:",
       userId,
       "text_zoom:",
-      combinedSettings.ui_settings.text_zoom
+      (combinedSettings.ui_settings as { text_zoom?: number })?.text_zoom
     );
 
     return NextResponse.json({
@@ -354,7 +355,9 @@ export async function PATCH(request: NextRequest) {
 
     const { data, error } = await supabase
       .from("user_settings")
-      .upsert(updateData, {
+      // updateData is built section-by-section under dynamic keys; user_id is
+      // always set above, satisfying the Insert type at runtime
+      .upsert(updateData as Database["public"]["Tables"]["user_settings"]["Insert"], {
         onConflict: "user_id", // Use user_id for conflict resolution
         ignoreDuplicates: false, // Update on conflict instead of ignoring
       })

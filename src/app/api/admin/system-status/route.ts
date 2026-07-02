@@ -187,10 +187,11 @@ export async function GET(request: Request) {
       vercelStatus = "error";
     }
 
-    // Check Supabase storage
-    let storageUsage = 0; // Supabase storage
+    // Check Supabase storage (RPC reports bytes; total_size_mb never existed,
+    // so this stat was silently 0 before)
+    let storageUsage = 0; // Supabase storage in MB
     if (storageStats.status === "fulfilled" && storageStats.value.data) {
-      storageUsage = storageStats.value.data.total_size_mb || 0;
+      storageUsage = Math.round((storageStats.value.data.total_size_bytes || 0) / (1024 * 1024));
     }
 
     // Check Cloudflare R2 status and get cached usage metrics

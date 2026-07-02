@@ -4,7 +4,7 @@ import { createClient } from "@/shared/services/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
 import { QuizCreationForm } from "@/features/user/quiz/types/quiz";
 import { quizService } from "@/features/user/quiz/services/quiz-service";
-import { TABLE_NAMES } from "@/shared/types/database";
+import { TABLE_NAMES, isSessionStatus } from "@/shared/types/database";
 import { devLog } from "@/shared/utils/logging/dev-logger";
 
 /**
@@ -292,8 +292,8 @@ export async function GET(request: NextRequest) {
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
-    // Filter by status if provided
-    if (status) {
+    // Filter by status if provided (unknown values are ignored)
+    if (status && isSessionStatus(status)) {
       query = query.eq("status", status);
     }
 
@@ -312,26 +312,33 @@ export async function GET(request: NextRequest) {
       throw error;
     }
 
-    // Map database fields to expected format
+    // Map database fields to expected format (config is a Json column)
     const mappedSessions =
-      sessions?.map((session) => ({
-        id: session.id,
-        title: session.title,
-        status: session.status,
-        mode: session.config?.mode || "unknown",
-        difficulty: session.config?.difficulty,
-        totalQuestions: session.total_questions,
-        score: session.score,
-        correctAnswers: session.correct_answers,
-        createdAt: session.created_at,
-        completedAt: session.completed_at,
-        totalTimeSpent: session.total_time_spent,
-        currentQuestionIndex: session.current_question_index,
-        totalTimeLimit: session.total_time_limit,
-        timeRemaining: session.time_remaining,
-        isTimedMode: session.config?.timing === "timed",
-        config: session.config,
-      })) || [];
+      sessions?.map((session) => {
+        const config = session.config as {
+          mode?: string;
+          difficulty?: string;
+          timing?: string;
+        } | null;
+        return {
+          id: session.id,
+          title: session.title,
+          status: session.status,
+          mode: config?.mode || "unknown",
+          difficulty: config?.difficulty,
+          totalQuestions: session.total_questions,
+          score: session.score,
+          correctAnswers: session.correct_answers,
+          createdAt: session.created_at,
+          completedAt: session.completed_at,
+          totalTimeSpent: session.total_time_spent,
+          currentQuestionIndex: session.current_question_index,
+          totalTimeLimit: session.total_time_limit,
+          timeRemaining: session.time_remaining,
+          isTimedMode: config?.timing === "timed",
+          config: session.config,
+        };
+      }) || [];
 
     const totalDuration = Date.now() - startTime;
     devLog.info("Quiz sessions fetched successfully", {

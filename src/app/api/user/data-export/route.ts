@@ -113,14 +113,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch user profile" }, { status: 500 });
     }
 
-    // Get user settings
+    // Get user settings ("settings" was never a real column — that select
+    // errored on every export and the settings section silently exported null)
     const { data: userSettingsData, error: settingsError } = await supabase
       .from("user_settings")
-      .select("settings")
+      .select("quiz_settings, notification_settings, ui_settings, counter_settings")
       .eq("user_id", userId)
       .single();
 
-    const userSettings = userSettingsData?.settings;
+    const userSettings = userSettingsData ?? null;
 
     if (settingsError) {
       log.error("Error fetching user settings:", settingsError);

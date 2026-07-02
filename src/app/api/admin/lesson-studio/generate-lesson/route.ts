@@ -182,7 +182,8 @@ async function enrichImageMetadata(images: ImageInput[]): Promise<ImageInput[]> 
         title: db.description || db.alt_text || img.title,
         description: db.alt_text || db.description || img.description,
         category: db.category || img.category,
-        magnification: db.magnification || img.magnification,
+        // images.magnification is free-text in the DB; ImageInput narrows it
+        magnification: (db.magnification as ImageInput["magnification"]) || img.magnification,
         width: db.width || img.width,
         height: db.height || img.height,
       };

@@ -1,4 +1,5 @@
 import { UserRole } from "@/shared/utils/auth/auth-helpers";
+import { isUserRole, isUserStatus } from "@/shared/types/database";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
@@ -108,14 +109,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Apply role filter
-    if (roleFilter !== "all") {
+    // Apply role filter (unknown values are ignored rather than matching nothing)
+    if (roleFilter !== "all" && isUserRole(roleFilter)) {
       countQuery = countQuery.eq("role", roleFilter);
       dataQuery = dataQuery.eq("role", roleFilter);
     }
 
     // Apply status filter
-    if (statusFilter !== "all") {
+    if (statusFilter !== "all" && isUserStatus(statusFilter)) {
       countQuery = countQuery.eq("status", statusFilter);
       dataQuery = dataQuery.eq("status", statusFilter);
     }
