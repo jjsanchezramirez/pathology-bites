@@ -4,7 +4,7 @@ import { createClient } from "@/shared/services/client";
 import {
   NotificationWithSource,
   PaginatedNotifications,
-  NotificationSourceType as _NotificationSourceType,
+  NotificationSourceType,
   SystemUpdatePayload as _SystemUpdatePayload,
   MilestonePayload as _MilestonePayload,
   ReminderPayload as _ReminderPayload,
@@ -83,7 +83,9 @@ export class NotificationsService {
 
       // Combine notification states with source data
       const notifications: NotificationWithSource[] = notificationStates
-        .map((state) => {
+        .map((row): NotificationWithSource | null => {
+          // source_type is plain text in the DB; the app narrows it
+          const state = { ...row, source_type: row.source_type as NotificationSourceType };
           if (state.source_type === "inquiry") {
             const inquiry = inquiryMap.get(state.source_id);
             if (!inquiry) return null;

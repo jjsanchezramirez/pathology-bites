@@ -1,5 +1,6 @@
 // src/lib/images/images.ts
 import { createClient } from "@/shared/services/client";
+import type { Database } from "@/shared/types/supabase";
 import type { ImageData } from "@/shared/types/images";
 import { apiClient } from "@/shared/utils/api/api-client";
 import { log } from "@/shared/utils/logging";
@@ -139,10 +140,15 @@ export async function updateImage(
     magnification?: string | null;
   }
 ) {
-  const supabase = createClient(); // Remove <Database>
+  const supabase = createClient();
 
   try {
-    const { error } = await supabase.from("images").update(data).eq("id", imageId);
+    // category/magnification arrive as strings from the edit form; the DB
+    // enum rejects invalid values at runtime
+    const { error } = await supabase
+      .from("images")
+      .update(data as Database["public"]["Tables"]["images"]["Update"])
+      .eq("id", imageId);
 
     if (error) {
       log.error("Update image error:", error);
@@ -200,7 +206,7 @@ export async function fetchImages(params: {
   // Clean expired cache entries periodically
   cleanExpiredCache();
 
-  const supabase = createClient(); // Remove <Database>
+  const supabase = createClient();
 
   try {
     // Choose the appropriate table/view based on filter
@@ -208,12 +214,13 @@ export async function fetchImages(params: {
 
     // Build the base query for data first
     // Include pathology category information via join (only for regular images table)
-    // The v_orphaned_images view doesn't include pathology_category_id
-    const selectQuery = showUnusedOnly
-      ? "*"
-      : "*, pathology_category:categories(id, name, short_form)";
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    let dataQuery = supabase.from(tableName).select(selectQuery) as any;
+    // The v_orphaned_images view doesn't include pathology_category_id, so the
+    // two sources have different row shapes — hence the untyped chain below.
+    let dataQuery = (
+      showUnusedOnly
+        ? supabase.from("v_orphaned_images").select("*")
+        : supabase.from("images").select("*, pathology_category:categories(id, name, short_form)")
+    ) as any; // eslint-disable-line @typescript-eslint/no-explicit-any
 
     // Exclude external images from management table (only for regular images table)
     if (!showUnusedOnly) {
@@ -266,7 +273,6 @@ export async function fetchImages(params: {
         hint: dataResult.error.hint,
         code: dataResult.error.code,
         table: tableName,
-        selectQuery,
         params: {
           page,
           pageSize,
@@ -297,7 +303,9 @@ export async function fetchImages(params: {
     }
 
     // Build count query with same filters (only when filters change)
-    let countQuery = supabase.from(tableName).select("*", { count: "exact", head: true });
+    let countQuery = (showUnusedOnly ? supabase.from("v_orphaned_images") : supabase.from("images"))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .select("*", { count: "exact", head: true }) as any;
 
     // Apply same filters as data query
     if (!showUnusedOnly) {

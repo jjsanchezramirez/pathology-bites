@@ -1,4 +1,5 @@
 import { createClient } from "@/shared/services/client";
+import type { Database, Json } from "@/shared/types/supabase";
 import type {
   InteractiveSequence,
   InteractiveSequenceListFilters,
@@ -6,6 +7,11 @@ import type {
   UpdateInteractiveSequenceParams,
 } from "../types";
 import { log } from "@/shared/utils/logging";
+
+type SequenceRow = Database["public"]["Tables"]["interactive_sequences"]["Row"];
+
+// sequence_data is a Json column; the app type narrows it to ExplainerSequence
+const toSequence = (row: SequenceRow): InteractiveSequence => row as unknown as InteractiveSequence;
 
 /**
  * Fetch all interactive sequences with optional filters
@@ -45,7 +51,7 @@ export async function fetchInteractiveSequences(
     throw new Error(error.message);
   }
 
-  return data || [];
+  return (data || []).map(toSequence);
 }
 
 /**
@@ -67,7 +73,7 @@ export async function fetchInteractiveSequenceById(
     throw new Error(error.message);
   }
 
-  return data;
+  return toSequence(data);
 }
 
 /**
@@ -83,7 +89,7 @@ export async function createInteractiveSequence(
     .insert({
       title: params.title,
       description: params.description || null,
-      sequence_data: params.sequence_data,
+      sequence_data: params.sequence_data as unknown as Json,
       category_id: params.category_id || null,
       status: params.status || "draft",
     })
@@ -95,7 +101,7 @@ export async function createInteractiveSequence(
     throw new Error(error.message);
   }
 
-  return data;
+  return toSequence(data);
 }
 
 /**
@@ -106,11 +112,12 @@ export async function updateInteractiveSequence(
 ): Promise<InteractiveSequence> {
   const supabase = createClient();
 
-  const updates: Partial<InteractiveSequence> = {};
+  const updates: Database["public"]["Tables"]["interactive_sequences"]["Update"] = {};
 
   if (params.title !== undefined) updates.title = params.title;
   if (params.description !== undefined) updates.description = params.description;
-  if (params.sequence_data !== undefined) updates.sequence_data = params.sequence_data;
+  if (params.sequence_data !== undefined)
+    updates.sequence_data = params.sequence_data as unknown as Json;
   if (params.category_id !== undefined) updates.category_id = params.category_id;
   if (params.status !== undefined) updates.status = params.status;
 
@@ -126,7 +133,7 @@ export async function updateInteractiveSequence(
     throw new Error(error.message);
   }
 
-  return data;
+  return toSequence(data);
 }
 
 /**

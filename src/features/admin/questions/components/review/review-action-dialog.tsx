@@ -73,10 +73,12 @@ export function ReviewActionDialog({
           if (isNetworkError) {
             toast.error("Network connection interrupted while loading change notes.");
           }
-        } else if (resubmissionInfo?.changes_made?.resubmission_notes) {
-          setResubmissionNotes(resubmissionInfo.changes_made.resubmission_notes);
         } else {
-          setResubmissionNotes(null);
+          // changes_made is a Json column
+          const changesMade = resubmissionInfo?.changes_made as {
+            resubmission_notes?: string;
+          } | null;
+          setResubmissionNotes(changesMade?.resubmission_notes ?? null);
         }
       } catch (error) {
         log.error("Unexpected error fetching resubmission notes:", error);

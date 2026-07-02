@@ -122,10 +122,10 @@ export function MetadataTab({
             allTagsMap.set(tag.id, tag as Tag);
           });
 
-          // Add all loaded tags
+          // Add all loaded tags (query selects a subset of Tag's fields)
           tagsData.forEach((tag) => {
             if (!allTagsMap.has(tag.id)) {
-              allTagsMap.set(tag.id, tag);
+              allTagsMap.set(tag.id, tag as Tag);
             }
           });
 
