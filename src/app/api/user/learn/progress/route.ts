@@ -1,7 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const lessonProgressSchema = z.object({
+  lesson_id: z.string().min(1, "lesson_id is required"),
+  completed: z.boolean().nullish(),
+  quiz_score: z.number().nullish(),
+});
 
 /**
  * @swagger
@@ -100,11 +108,9 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 
-    const { lesson_id, completed, quiz_score } = await request.json();
-
-    if (!lesson_id) {
-      return NextResponse.json({ error: "lesson_id is required" }, { status: 400 });
-    }
+    const body = await parseBody(request, lessonProgressSchema);
+    if (body instanceof NextResponse) return body;
+    const { lesson_id, completed, quiz_score } = body;
 
     const updateData: Record<string, unknown> = {
       last_accessed_at: new Date().toISOString(),

@@ -2,8 +2,10 @@
 // API routes for managing user settings
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import type { Database } from "@/shared/types/supabase";
 import {
   DEFAULT_QUIZ_SETTINGS,
@@ -11,6 +13,14 @@ import {
   DEFAULT_UI_SETTINGS,
 } from "@/shared/config/user-settings-defaults";
 import { log } from "@/shared/utils/logging";
+
+// Section payloads are loosely-structured blobs (merged/replaced wholesale),
+// so settings stays a record — per-field validation for quiz_settings happens
+// in the handler below.
+const settingsPatchSchema = z.object({
+  section: z.enum(["quiz_settings", "notification_settings", "ui_settings", "counter_settings"]),
+  settings: z.record(z.unknown()),
+});
 
 /**
  * @swagger
@@ -244,31 +254,11 @@ export async function PATCH(request: NextRequest) {
     const userId = auth.userId;
 
     // Parse request body
-    const body = await request.json();
+    const body = await parseBody(request, settingsPatchSchema);
+    if (body instanceof NextResponse) return body;
     const { section, settings } = body;
 
     log.debug("[UserSettings PATCH] Request:", { section, settings });
-
-    // Validate section
-    const validSections = [
-      "quiz_settings",
-      "notification_settings",
-      "ui_settings",
-      "counter_settings",
-    ];
-    if (!section || !validSections.includes(section)) {
-      log.error("[UserSettings PATCH] Invalid section:", section);
-      return NextResponse.json(
-        { error: "Invalid section. Must be one of: " + validSections.join(", ") },
-        { status: 400 }
-      );
-    }
-
-    // Validate settings
-    if (!settings || typeof settings !== "object") {
-      log.error("[UserSettings PATCH] Invalid settings:", settings);
-      return NextResponse.json({ error: "Settings must be a valid object" }, { status: 400 });
-    }
 
     // Validate quiz settings if that's what we're updating
     if (section === "quiz_settings") {

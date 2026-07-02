@@ -1,7 +1,20 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { getApiKey, getModelProvider, TEXT_FALLBACK_CHAIN } from "@/shared/config/ai-models";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+// wsi is a loosely-structured VirtualSlide-ish blob (normalized downstream by
+// normalizeWSI) and context is prompt metadata — keep both loose.
+const generateQuestionSchema = z.object({
+  wsi: z.record(z.unknown()),
+  context: z.unknown().optional(),
+  modelIndex: z.number().optional(),
+  customPrompt: z.string().optional(),
+  modelOverride: z.string().optional(),
+  responseMode: z.string().optional(),
+});
 import { buildQuestionPrompt } from "./wsi-question-prompt";
 import { type QuestionData, parseAndValidateQuestionFast } from "./wsi-question-parsing";
 import { callAIService, normalizeWSI } from "./wsi-question-providers";
@@ -414,18 +427,10 @@ export async function POST(request: NextRequest) {
     log.debug("[Question Gen] Starting unified question generation request");
 
     // Parse request body
-    const body = await request.json();
-    const { wsi, context, modelIndex = 0, customPrompt, modelOverride, responseMode } = body;
-
-    if (!wsi) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Missing required parameter: wsi",
-        },
-        { status: 400 }
-      );
-    }
+    const body = await parseBody(request, generateQuestionSchema);
+    if (body instanceof NextResponse) return body;
+    const { context, modelIndex = 0, customPrompt, modelOverride, responseMode } = body;
+    const wsi = body.wsi as unknown as VirtualSlide;
 
     // responseMode === "raw" → skip the strict stem/answer_options validator.
     // Caller ships its own prompt with a non-standard JSON shape (e.g. the

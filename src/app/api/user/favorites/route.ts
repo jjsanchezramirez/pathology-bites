@@ -1,8 +1,14 @@
 // src/app/api/user/favorites/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const favoriteSchema = z.object({
+  question_id: z.string().min(1, "question_id is required"),
+});
 
 /**
  * @swagger
@@ -209,11 +215,9 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 
-    const { question_id } = await request.json();
-
-    if (!question_id) {
-      return NextResponse.json({ error: "question_id is required" }, { status: 400 });
-    }
+    const body = await parseBody(request, favoriteSchema);
+    if (body instanceof NextResponse) return body;
+    const { question_id } = body;
 
     // Check if question exists and is accessible
     const { data: question, error: questionError } = await supabase
@@ -314,11 +318,9 @@ export async function DELETE(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 
-    const { question_id } = await request.json();
-
-    if (!question_id) {
-      return NextResponse.json({ error: "question_id is required" }, { status: 400 });
-    }
+    const body = await parseBody(request, favoriteSchema);
+    if (body instanceof NextResponse) return body;
+    const { question_id } = body;
 
     // Remove from favorites
     const { error } = await supabase

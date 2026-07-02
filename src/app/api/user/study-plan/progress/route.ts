@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { TABLE_NAMES } from "@/shared/types/database";
+
+const taskProgressSchema = z.object({
+  task_key: z.string().min(1, "task_key is required"),
+  completed_at: z.string().nullish(),
+});
 
 /**
  * @swagger
@@ -98,7 +105,9 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 
-    const { task_key, completed_at } = await request.json();
+    const body = await parseBody(request, taskProgressSchema);
+    if (body instanceof NextResponse) return body;
+    const { task_key, completed_at } = body;
 
     const { error } = await supabase.from(TABLE_NAMES.BOARD_PREP_PROGRESS).upsert(
       {

@@ -1,11 +1,17 @@
 // src/app/api/user/account/delete/route.ts
 import { UserRole } from "@/shared/utils/auth/auth-helpers";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { deleteUser, deleteUserFromAuth } from "@/shared/services/user-deletion";
 import { log } from "@/shared/utils/logging";
+
+const deleteAccountSchema = z.object({
+  password: z.string().min(1, "Password is required for account deletion"),
+});
 
 /**
  * @swagger
@@ -67,15 +73,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch user data" }, { status: 500 });
     }
 
-    const body = await request.json();
+    const body = await parseBody(request, deleteAccountSchema);
+    if (body instanceof NextResponse) return body;
     const { password } = body;
-
-    if (!password) {
-      return NextResponse.json(
-        { error: "Password is required for account deletion" },
-        { status: 400 }
-      );
-    }
 
     // Verify password before deletion
     const { error: signInError } = await supabase.auth.signInWithPassword({

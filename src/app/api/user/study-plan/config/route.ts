@@ -1,7 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { TABLE_NAMES } from "@/shared/types/database";
+
+// Config sections are loosely-structured JSON blobs stored as-is (with ||
+// fallbacks below) — guard the envelope only, don't invent strict shapes.
+const configSchema = z.object({
+  exam_dates: z.any(),
+  days_off: z.any(),
+  recurring_off: z.any(),
+  phases: z.any(),
+});
 
 /**
  * @swagger
@@ -119,7 +130,8 @@ export async function PUT(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 
-    const config = await request.json();
+    const config = await parseBody(request, configSchema);
+    if (config instanceof NextResponse) return config;
 
     const { error } = await supabase.from(TABLE_NAMES.BOARD_PREP_CONFIG).upsert(
       {

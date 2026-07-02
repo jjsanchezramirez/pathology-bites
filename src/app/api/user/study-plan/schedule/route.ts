@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { TABLE_NAMES } from "@/shared/types/database";
+import type { Database } from "@/shared/types/supabase";
+
+// Schedule tasks are loosely-structured (per-field || fallbacks below), so
+// each item stays a record rather than a strict shape.
+const scheduleSchema = z.object({
+  tasks: z.array(z.record(z.unknown())).nullish(),
+});
 
 /**
  * @swagger
@@ -167,7 +176,9 @@ export async function PUT(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 
-    const { tasks } = await request.json();
+    const body = await parseBody(request, scheduleSchema);
+    if (body instanceof NextResponse) return body;
+    const { tasks } = body;
 
     // Delete all existing schedule for this user, then insert new
     await supabase.from(TABLE_NAMES.BOARD_PREP_SCHEDULE).delete().eq("user_id", userId);
@@ -177,6 +188,9 @@ export async function PUT(request: NextRequest) {
       const batchSize = 500;
       for (let i = 0; i < tasks.length; i += batchSize) {
         const batch = tasks.slice(i, i + batchSize);
+        // Rows are assembled from loosely-typed record fields with runtime
+        // fallbacks; cast to the table Insert type (same pattern as the
+        // user_settings upsert in settings/route.ts).
         const rows = batch.map((t: Record<string, unknown>) => ({
           user_id: userId,
           task_id: t.task_id,
@@ -193,7 +207,7 @@ export async function PUT(request: NextRequest) {
           is_review: t.is_review || false,
           content_units: t.content_units || 0,
           content_label: t.content_label || "",
-        }));
+        })) as Database["public"]["Tables"]["board_prep_schedule"]["Insert"][];
 
         const { error } = await supabase.from(TABLE_NAMES.BOARD_PREP_SCHEDULE).insert(rows);
 

@@ -1,8 +1,16 @@
 // src/app/api/public/subscribe/route.ts
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { z } from 'zod'
 import { createServiceRoleClient } from '@/shared/services/service-role-client'
+import { parseBody } from '@/shared/utils/api/parse-body'
 import { log } from "@/shared/utils/logging";
+
+// Format validation stays in the handler so the user-facing message is
+// preserved for the common invalid-format case.
+const subscribeSchema = z.object({
+  email: z.string(),
+})
 
 // Define error interface for Supabase errors
 interface SupabaseError {
@@ -85,10 +93,12 @@ interface SupabaseError {
  */
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json()
-    
+    const body = await parseBody(request, subscribeSchema)
+    if (body instanceof NextResponse) return body
+    const { email } = body
+
     // Validate email
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
         { error: 'Please provide a valid email address.' },
         { status: 400 }

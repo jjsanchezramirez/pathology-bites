@@ -1,11 +1,32 @@
 // src/app/api/user/quiz/sessions/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { QuizCreationForm } from "@/features/user/quiz/types/quiz";
 import { quizService } from "@/features/user/quiz/services/quiz-service";
 import { TABLE_NAMES, isSessionStatus } from "@/shared/types/database";
 import { devLog } from "@/shared/utils/logging/dev-logger";
+
+// Loose shape guard only — the manual checks below (required fields, question
+// count range, custom-category rule) return the exact 400 messages clients and
+// tests rely on, so they stay authoritative. Passthrough keeps any extra keys
+// quizService.createQuizSession may read.
+const quizCreationSchema = z
+  .object({
+    title: z.string().optional(),
+    mode: z.string().optional(),
+    timing: z.string().optional(),
+    questionCount: z.number().optional(),
+    questionType: z.string().optional(),
+    categorySelection: z.string().optional(),
+    selectedCategories: z.array(z.string()).optional(),
+    shuffleQuestions: z.boolean().optional(),
+    shuffleAnswers: z.boolean().optional(),
+    showProgress: z.boolean().optional(),
+  })
+  .passthrough();
 
 /**
  * @swagger
@@ -95,7 +116,9 @@ export async function POST(request: NextRequest) {
     const userId = auth.userId;
 
     // Parse request body
-    const formData: QuizCreationForm = await request.json();
+    const parsed = await parseBody(request, quizCreationSchema);
+    if (parsed instanceof NextResponse) return parsed;
+    const formData = parsed as QuizCreationForm;
     devLog.debug("Quiz form data parsed", {
       requestId,
       userId,
