@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { TABLE_NAMES } from "@/shared/types/database";
 
 /**
@@ -34,8 +35,9 @@ import { TABLE_NAMES } from "@/shared/types/database";
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const userId = request.headers.get("x-user-id");
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { data, error } = await supabase
       .from(TABLE_NAMES.BOARD_PREP_PROGRESS)
@@ -92,8 +94,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const userId = request.headers.get("x-user-id");
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { task_key, completed_at } = await request.json();
 
@@ -156,8 +159,9 @@ export async function POST(request: NextRequest) {
 export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const userId = request.headers.get("x-user-id");
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { searchParams } = new URL(request.url);
     const taskKey = searchParams.get("task_key");

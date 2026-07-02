@@ -1,7 +1,7 @@
 // src/app/api/user/data-export/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 /**
@@ -97,10 +97,9 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Get user profile data
     const { data: userProfile, error: profileError } = await supabase

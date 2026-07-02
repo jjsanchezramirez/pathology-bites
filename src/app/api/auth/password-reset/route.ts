@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createClient as createAdminClient } from "@supabase/supabase-js";
 import { z } from "zod";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 const passwordResetSchema = z.object({
@@ -268,10 +268,12 @@ export async function PATCH(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated (should have valid reset token)
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) {
+      // Preserve the route-specific 401 message (reset-token context, not a generic gate)
       return NextResponse.json({ error: "Invalid or expired reset token" }, { status: 401 });
     }
+    const userId = auth.userId;
 
     const body = await request.json();
 

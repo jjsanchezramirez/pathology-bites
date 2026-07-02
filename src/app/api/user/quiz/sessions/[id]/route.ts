@@ -2,7 +2,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { quizService } from "@/features/user/quiz/services/quiz-service";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { QuizStatus } from "@/features/user/quiz/types/quiz";
 import { log } from "@/shared/utils/logging";
 
@@ -60,11 +60,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Get quiz session using authenticated client
     const quizSession = await quizService.getQuizSession(id, supabase);
@@ -189,10 +187,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Parse request body
     const updates: {
@@ -360,10 +357,9 @@ export async function DELETE(
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Check if user owns this quiz session
     const { data: session, error: sessionError } = await supabase

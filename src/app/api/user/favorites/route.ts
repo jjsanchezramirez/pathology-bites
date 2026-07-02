@@ -1,7 +1,7 @@
 // src/app/api/user/favorites/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 /**
@@ -88,10 +88,9 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get("category_id");
@@ -206,10 +205,9 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { question_id } = await request.json();
 
@@ -312,10 +310,9 @@ export async function DELETE(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { question_id } = await request.json();
 

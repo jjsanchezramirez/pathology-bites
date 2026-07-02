@@ -1,6 +1,7 @@
 // src/app/api/user/account/delete/route.ts
 import { UserRole } from "@/shared/utils/auth/auth-helpers";
 import { NextRequest, NextResponse } from "next/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { createClient } from "@/shared/services/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { deleteUser, deleteUserFromAuth } from "@/shared/services/user-deletion";
@@ -53,10 +54,9 @@ export async function DELETE(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = request.headers.get("x-user-id");
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Get user email for password verification
     const {

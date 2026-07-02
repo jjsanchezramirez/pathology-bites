@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { TABLE_NAMES } from "@/shared/types/database";
 
 /**
@@ -46,8 +47,9 @@ import { TABLE_NAMES } from "@/shared/types/database";
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const userId = request.headers.get("x-user-id");
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { data, error } = await supabase
       .from(TABLE_NAMES.BOARD_PREP_RESOURCES)
@@ -130,8 +132,9 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const userId = request.headers.get("x-user-id");
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { resources } = await request.json();
 

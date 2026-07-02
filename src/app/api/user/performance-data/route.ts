@@ -4,7 +4,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import {
   ACHIEVEMENT_DEFINITIONS,
   type UserStats,
@@ -382,11 +382,9 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // Get user ID from headers (set by middleware)
-    const userId = getUserIdFromHeaders(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Fetch user's quiz sessions (optimized with limit).
     // NOTE: This `sessions` array is used for heavy per-session/per-attempt calculations
