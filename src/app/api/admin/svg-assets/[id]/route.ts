@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { deleteFromR2 } from "@/shared/services/r2-storage";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 /**
@@ -59,20 +59,8 @@ export async function DELETE(
     const supabase = await createClient();
 
     // Verify user is authenticated admin
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-    }
-
-    const { data: userData, error: roleError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    if (roleError || !userData || userData.role !== "admin") {
-      return NextResponse.json({ error: "Administrator privileges required." }, { status: 403 });
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
     // Fetch asset details
     const { data: asset, error: fetchError } = await supabase
@@ -182,20 +170,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const supabase = await createClient();
 
     // Verify user is authenticated admin
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-    }
-
-    const { data: userData, error: roleError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    if (roleError || !userData || userData.role !== "admin") {
-      return NextResponse.json({ error: "Administrator privileges required." }, { status: 403 });
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
     const updates: Record<string, unknown> = {};

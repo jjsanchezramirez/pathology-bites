@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireRole } from "@/shared/utils/api/api-guard";
 import type { CaptionChunk } from "@/shared/types/explainer";
 import type { ImageInput } from "./prompt";
 import { analyzeImages } from "./vision";
@@ -180,16 +181,9 @@ interface GenerateSequenceRequest {
  */
 export async function POST(request: NextRequest) {
   try {
-    // Auth check — admin only (lesson studio is admin-only)
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || !["admin", "creator"].includes(userRole || "")) {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden — admin/creator access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    // Auth check — admin or creator (lesson studio)
+    const auth = requireRole(request, ["admin", "creator"]);
+    if (auth instanceof NextResponse) return auth;
 
     const body: GenerateSequenceRequest = await request.json();
     const { images, captions, audioDuration, audioUrl, modelOverride } = body;

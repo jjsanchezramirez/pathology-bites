@@ -1,12 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
-
-async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data, error } = await supabase.from("users").select("role").eq("id", userId).single();
-  return !error && data?.role === "admin";
-}
 
 /**
  * @swagger
@@ -41,10 +36,8 @@ async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, u
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const userId = getUserIdFromHeaders(request);
-    if (!userId || !(await verifyAdmin(supabase, userId))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
     const subjectId = request.nextUrl.searchParams.get("subject_id");
 
@@ -137,10 +130,9 @@ export async function GET(request: NextRequest) {
 export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const userId = getUserIdFromHeaders(request);
-    if (!userId || !(await verifyAdmin(supabase, userId))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const body = await request.json();
     const {

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { requireRole } from "@/shared/utils/api/api-guard";
 import type { ImageInput } from "../generate-sequence/prompt";
 import type { GenerateLessonRequest } from "./types";
 import { analyzeTranscript } from "./transcript-analysis";
@@ -31,15 +32,8 @@ export const maxDuration = 60;
 export async function POST(request: NextRequest) {
   try {
     // Auth check
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || !["admin", "creator"].includes(userRole || "")) {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden — admin/creator access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireRole(request, ["admin", "creator"]);
+    if (auth instanceof NextResponse) return auth;
 
     const body: GenerateLessonRequest = await request.json();
     const { images, svgs, transcript, audioDuration, audioUrl, audioTitle, modelOverride } = body;

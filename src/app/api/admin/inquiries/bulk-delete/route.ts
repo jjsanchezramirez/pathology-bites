@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { z } from "zod";
 import { log } from "@/shared/utils/logging";
 
@@ -105,15 +106,9 @@ export async function DELETE(request: NextRequest) {
     log.debug("Bulk delete inquiries API called");
 
     // Auth check - require admin role only
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || userRole !== "admin") {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Use admin client for database operations (bypasses RLS)
     const supabase = createServiceRoleClient();
