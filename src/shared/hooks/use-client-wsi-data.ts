@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
+import { loadR2Json, useR2Json } from "@/shared/hooks/use-r2-json";
 import { toast } from "@/shared/utils/ui/toast";
 import { log } from "@/shared/utils/logging";
 
@@ -21,128 +22,98 @@ interface PathPresenterCase {
   differential_diagnosis?: string;
 }
 
-// Module-scope cache so we only fetch once per session
-let cachedWSIPromise: Promise<VirtualSlide[]> | null = null;
-
 // WSI data URL - using the optimized PathPresenter cases
 const WSI_DATA_URL =
   "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json";
 
-export async function loadClientWSIData(): Promise<VirtualSlide[]> {
-  if (cachedWSIPromise) return cachedWSIPromise;
+// Convert the PathPresenter cases JSON into VirtualSlide entries, dropping any
+// without a usable remote URL.
+function transformWSIData(raw: unknown): VirtualSlide[] {
+  const json = raw as { cases?: PathPresenterCase[] };
+  const pathPresenterCases = (json.cases || []) as PathPresenterCase[];
 
-  async function fetchWithFallback() {
-    const fetchWithTimeout = async (
-      input: RequestInfo | URL,
-      init?: RequestInit & { timeoutMs?: number }
-    ) => {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), init?.timeoutMs ?? 8000);
-      try {
-        const res = await fetch(input, { ...init, signal: controller.signal });
-        return res;
-      } finally {
-        clearTimeout(timeout);
+  const entries: VirtualSlide[] = pathPresenterCases.map((pathCase, index) => {
+    // Generate consistent ID
+    const caseId = `pathpresenter_${index + 1}`;
+
+    // Parse authors - handle both string and array formats
+    let authorsArray: string[] = [];
+    if (pathCase.authors) {
+      if (Array.isArray(pathCase.authors)) {
+        authorsArray = pathCase.authors;
+      } else if (typeof pathCase.authors === "string") {
+        authorsArray = [pathCase.authors];
       }
-    };
+    }
 
-    const res = await fetchWithTimeout(WSI_DATA_URL, {
-      cache: "force-cache",
-      headers: {
-        Accept: "application/json",
+    // Extract age and gender from clinical history if available
+    const clinicalHistory = pathCase.clinical_history || "";
+    const ageMatch = clinicalHistory.match(/(\d+)[-\s]?year[-\s]?old/i);
+    const genderMatch = clinicalHistory.match(/\b(male|female|man|woman)\b/i);
+
+    return {
+      id: caseId,
+      repository: "PathPresenter",
+      category: pathCase.chapter || "Unknown",
+      subcategory: pathCase.organ_system || "Unknown",
+      diagnosis: pathCase.diagnosis || "Unknown diagnosis",
+      patient_info: `${pathCase.organ_system || "Unknown organ"} case from PathPresenter`,
+      age: ageMatch ? ageMatch[1] : null,
+      gender: genderMatch ? genderMatch[1].toLowerCase() : null,
+      clinical_history: clinicalHistory,
+      stain_type: "H&E", // Assume H&E for PathPresenter cases
+      image_url: pathCase.url,
+      slide_url: pathCase.url,
+      case_url: pathCase.url,
+      thumbnail_url: "",
+      preview_image_url: "",
+      magnification: "Variable",
+      organ_system: pathCase.organ_system,
+      difficulty_level: "medium",
+      keywords: [],
+      other_urls: [],
+      source_metadata: {
+        pages: pathCase.pages,
+        microscopic_features: pathCase.microscopic_features,
+        other_prognostic_factors: pathCase.other_prognostic_factors,
+        immuno_profile: pathCase.immuno_profile,
+        molecular_profile: pathCase.molecular_profile,
+        differential_diagnosis: pathCase.differential_diagnosis,
+        authors: authorsArray,
       },
-      timeoutMs: 8000,
-    });
-
-    if (!res.ok) {
-      throw new Error(`Failed to fetch WSI data: ${res.status} ${res.statusText}`);
-    }
-
-    return res;
-  }
-
-  cachedWSIPromise = fetchWithFallback().then(async (res) => {
-    if (!res.ok) throw new Error(`Failed to fetch WSI data: ${res.status}`);
-    const json = await res.json();
-
-    // Handle the new PathPresenter cases JSON format
-    const pathPresenterCases = (json.cases || []) as PathPresenterCase[];
-
-    // Convert PathPresenter cases to VirtualSlide format
-    const entries: VirtualSlide[] = pathPresenterCases.map((pathCase, index) => {
-      // Generate consistent ID
-      const caseId = `pathpresenter_${index + 1}`;
-
-      // Parse authors - handle both string and array formats
-      let authorsArray: string[] = [];
-      if (pathCase.authors) {
-        if (Array.isArray(pathCase.authors)) {
-          authorsArray = pathCase.authors;
-        } else if (typeof pathCase.authors === "string") {
-          authorsArray = [pathCase.authors];
-        }
-      }
-
-      // Extract age and gender from clinical history if available
-      const clinicalHistory = pathCase.clinical_history || "";
-      const ageMatch = clinicalHistory.match(/(\d+)[-\s]?year[-\s]?old/i);
-      const genderMatch = clinicalHistory.match(/\b(male|female|man|woman)\b/i);
-
-      return {
-        id: caseId,
-        repository: "PathPresenter",
-        category: pathCase.chapter || "Unknown",
-        subcategory: pathCase.organ_system || "Unknown",
-        diagnosis: pathCase.diagnosis || "Unknown diagnosis",
-        patient_info: `${pathCase.organ_system || "Unknown organ"} case from PathPresenter`,
-        age: ageMatch ? ageMatch[1] : null,
-        gender: genderMatch ? genderMatch[1].toLowerCase() : null,
-        clinical_history: clinicalHistory,
-        stain_type: "H&E", // Assume H&E for PathPresenter cases
-        image_url: pathCase.url,
-        slide_url: pathCase.url,
-        case_url: pathCase.url,
-        thumbnail_url: "",
-        preview_image_url: "",
-        magnification: "Variable",
-        organ_system: pathCase.organ_system,
-        difficulty_level: "medium",
-        keywords: [],
-        other_urls: [],
-        source_metadata: {
-          pages: pathCase.pages,
-          microscopic_features: pathCase.microscopic_features,
-          other_prognostic_factors: pathCase.other_prognostic_factors,
-          immuno_profile: pathCase.immuno_profile,
-          molecular_profile: pathCase.molecular_profile,
-          differential_diagnosis: pathCase.differential_diagnosis,
-          authors: authorsArray,
-        },
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
-      };
-    });
-
-    // Filter out any entries without valid URLs
-    const validEntries = entries.filter(
-      (slide) =>
-        slide.image_url &&
-        slide.image_url.startsWith("http") &&
-        !slide.image_url.includes("localhost")
-    );
-
-    log.debug(
-      `[WSI Data] ✅ Loaded ${validEntries.length} PathPresenter cases (from ${pathPresenterCases.length} total cases)`
-    );
-
-    if (validEntries.length === 0) {
-      log.warn("[WSI Data] ⚠️ No valid PathPresenter cases found! This may cause loading issues.");
-    }
-
-    return validEntries;
+      created_at: new Date().toISOString(),
+      updated_at: new Date().toISOString(),
+    };
   });
 
-  return cachedWSIPromise;
+  // Filter out any entries without valid URLs
+  const validEntries = entries.filter(
+    (slide) =>
+      slide.image_url &&
+      slide.image_url.startsWith("http") &&
+      !slide.image_url.includes("localhost")
+  );
+
+  log.debug(
+    `[WSI Data] ✅ Loaded ${validEntries.length} PathPresenter cases (from ${pathPresenterCases.length} total cases)`
+  );
+
+  if (validEntries.length === 0) {
+    log.warn("[WSI Data] ⚠️ No valid PathPresenter cases found! This may cause loading issues.");
+  }
+
+  return validEntries;
+}
+
+// Imperative loader for callers that must `await` the dataset outside React
+// (e.g. use-wsi-question-generator). Shares the per-URL module cache with the
+// hook via loadR2Json — no extra fetch.
+export function loadClientWSIData(): Promise<VirtualSlide[]> {
+  return loadR2Json<VirtualSlide[]>({
+    url: WSI_DATA_URL,
+    transform: transformWSIData,
+    label: "WSI data",
+  });
 }
 
 export interface UseClientWSIDataResult {
@@ -155,89 +126,27 @@ export interface UseClientWSIDataResult {
 }
 
 export function useClientWSIData(): UseClientWSIDataResult {
-  const [wsiData, setWSIData] = useState<VirtualSlide[] | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const {
+    data: wsiData,
+    isLoading,
+    error,
+  } = useR2Json<VirtualSlide[]>({
+    url: WSI_DATA_URL,
+    transform: transformWSIData,
+    label: "WSI data",
+  });
 
+  // Surface load failures as toasts (network blips, laptop sleep/wake, etc.)
   useEffect(() => {
-    let mounted = true;
-
-    // Check if data is already cached
-    if (cachedWSIPromise) {
-      log.debug("[WSI Data] Using cached data promise");
-      setIsLoading(true);
-      cachedWSIPromise
-        .then((data) => {
-          if (mounted) {
-            log.debug("[WSI Data] ✅ Loaded from cache:", data.length, "slides");
-            setWSIData(data);
-            setError(null);
-            setIsLoading(false);
-          }
-        })
-        .catch((err) => {
-          if (mounted) {
-            log.error("[WSI Data] ❌ Cache error:", err);
-            const errorMessage = err.message || "Failed to load WSI data";
-            setError(errorMessage);
-            setWSIData(null);
-            setIsLoading(false);
-
-            // Detect network errors (laptop sleep/wake, offline, etc.)
-            const isNetworkError =
-              err instanceof TypeError &&
-              (err.message?.includes("fetch") || err.message?.includes("network"));
-
-            if (isNetworkError) {
-              toast.error("Network connection interrupted. Please refresh the page.");
-            } else if (err.message?.includes("Timed out") || err.name === "AbortError") {
-              toast.error("Request timed out. Please check your network connection.");
-            } else {
-              toast.error(errorMessage);
-            }
-          }
-        });
+    if (!error) return;
+    if (error.includes("Timed out")) {
+      toast.error("Request timed out. Please check your network connection.");
+    } else if (/network|Failed to fetch/i.test(error)) {
+      toast.error("Network connection interrupted. Please refresh the page.");
     } else {
-      // Load fresh data
-      log.debug("[WSI Data] Loading fresh data from R2");
-      setIsLoading(true);
-      loadClientWSIData()
-        .then((data) => {
-          if (mounted) {
-            log.debug("[WSI Data] ✅ Fresh load complete:", data.length, "slides");
-            setWSIData(data);
-            setError(null);
-            setIsLoading(false);
-          }
-        })
-        .catch((err) => {
-          if (mounted) {
-            log.error("[WSI Data] ❌ Fresh load error:", err);
-            const errorMessage = err.message || "Failed to load WSI data";
-            setError(errorMessage);
-            setWSIData(null);
-            setIsLoading(false);
-
-            // Detect network errors (laptop sleep/wake, offline, etc.)
-            const isNetworkError =
-              err instanceof TypeError &&
-              (err.message?.includes("fetch") || err.message?.includes("network"));
-
-            if (isNetworkError) {
-              toast.error("Network connection interrupted. Please refresh the page.");
-            } else if (err.message?.includes("Timed out") || err.name === "AbortError") {
-              toast.error("Request timed out. Please check your network connection.");
-            } else {
-              toast.error(errorMessage);
-            }
-          }
-        });
+      toast.error(error);
     }
-
-    return () => {
-      mounted = false;
-    };
-  }, []);
+  }, [error]);
 
   const selectRandomWSI = (): VirtualSlide | null => {
     if (!wsiData || wsiData.length === 0) return null;

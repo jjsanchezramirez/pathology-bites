@@ -44,7 +44,9 @@ async function fetchWithTimeout(input: string, timeoutMs: number): Promise<Respo
   }
 }
 
-function loadR2Json<T>(options: R2JsonOptions<T>): Promise<T> {
+// Exported so imperative callers (e.g. click handlers that must `await` a
+// dataset outside React) can share the same per-URL module cache the hook uses.
+export function loadR2Json<T>(options: R2JsonOptions<T>): Promise<T> {
   const { url, fallbackUrl, transform, label, timeoutMs = 8000 } = options;
 
   const existing = cachedPromises.get(url);
