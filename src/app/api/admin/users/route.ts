@@ -1,4 +1,5 @@
 import { UserRole } from "@/shared/utils/auth/auth-helpers";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
@@ -76,16 +77,8 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin role
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || userRole !== "admin") {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
@@ -208,16 +201,8 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin role
-    const adminUserId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!adminUserId || userRole !== "admin") {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
     const { userId, updates } = body;
@@ -315,16 +300,8 @@ export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin role
-    const currentUserId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!currentUserId || userRole !== "admin") {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
     const body = await request.json();
     const { userId } = body;
@@ -340,7 +317,7 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Prevent admin from deleting themselves
-    if (userId === currentUserId) {
+    if (userId === auth.userId) {
       return NextResponse.json({ error: "Cannot delete your own account" }, { status: 400 });
     }
 

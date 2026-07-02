@@ -1,6 +1,7 @@
 // src/app/api/user/quiz/sessions/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { QuizCreationForm } from "@/features/user/quiz/types/quiz";
 import { quizService } from "@/features/user/quiz/services/quiz-service";
 import { TABLE_NAMES } from "@/shared/types/database";
@@ -86,13 +87,12 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Auth is now handled by middleware - get user info from headers
-    const userId = request.headers.get("x-user-id");
-
-    if (!userId) {
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) {
       devLog.warn("Quiz session creation - unauthorized", { requestId });
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return auth;
     }
+    const userId = auth.userId;
 
     // Parse request body
     const formData: QuizCreationForm = await request.json();
@@ -263,13 +263,12 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Auth is now handled by middleware
-    const userId = request.headers.get("x-user-id");
-
-    if (!userId) {
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) {
       devLog.warn("Quiz sessions fetch - unauthorized", { requestId });
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return auth;
     }
+    const userId = auth.userId;
 
     // Get query parameters
     const { searchParams } = new URL(request.url);

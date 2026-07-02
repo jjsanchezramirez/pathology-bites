@@ -3,6 +3,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import {
   DEFAULT_QUIZ_SETTINGS,
   DEFAULT_NOTIFICATION_SETTINGS,
@@ -72,12 +73,9 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth is handled by middleware
-    const userId = request.headers.get("x-user-id");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Get user settings using correct schema with separate columns
     const { data, error } = await supabase
@@ -240,15 +238,9 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth is handled by middleware
-    const userId = request.headers.get("x-user-id");
-
-    log.debug("[UserSettings PATCH] userId:", userId);
-
-    if (!userId) {
-      log.error("[UserSettings PATCH] No userId in headers");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Parse request body
     const body = await request.json();
