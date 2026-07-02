@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { __test__, generateSchedule, validateConfig } from "./scheduler";
-import type { StudyConfig, StudyResource } from "./types";
+import {
+  __test__,
+  generateSchedule,
+  validateConfig,
+} from "@/features/user/study-plan/lib/scheduler";
+import type { StudyConfig, StudyResource } from "@/features/user/study-plan/lib/types";
 
 const { computeDailyAllocations, allocateSubjectDays, buildCalendar, partitionSubjects } = __test__;
 
