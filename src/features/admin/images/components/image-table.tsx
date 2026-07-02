@@ -10,23 +10,18 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
-import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
 import { CategoryBadge } from "@/shared/components/ui/category-badge";
 import { ImageTypeBadge } from "@/shared/components/ui/image-type-badge";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { EmptyState } from "@/shared/components/ui/empty-state";
+import { getPageNumbers } from "@/shared/components/data-table/table-pagination";
+import { TableControlBar } from "@/shared/components/data-table/table-control-bar";
+import { useDebounce } from "@/shared/hooks/use-debounce";
 import { toast } from "@/shared/utils/ui/toast";
-import {
-  Search,
-  Upload,
-  MoreVertical,
-  Edit,
-  Trash2,
-  AlertTriangle,
-  CheckCircle,
-} from "lucide-react";
+import { Upload, MoreVertical, Edit, Trash2, AlertTriangle, CheckCircle } from "lucide-react";
 import {
   Select,
   SelectContent,
@@ -60,83 +55,14 @@ import { log } from "@/shared/utils/logging";
 // Define the valid category values type
 type CategoryFilterType = "all" | "unused" | "uncategorized" | ImageCategory;
 
-// Table Header component with search and filters
-function TableControls({
-  onSearch,
-  onCategoryChange,
-  onPathologyCategoryChange,
-  onUpload,
-  categoryFilter,
-  pathologyCategoryFilter,
-}: {
-  onSearch: (term: string) => void;
-  onCategoryChange: (category: CategoryFilterType) => void;
-  onPathologyCategoryChange: (categoryId: string) => void;
-  onUpload: () => void;
-  categoryFilter: CategoryFilterType;
-  pathologyCategoryFilter: string;
-}) {
-  // Get level 2 categories (subspecialties) for the pathology category dropdown
-  const pathologyCategories = CATEGORIES.filter((cat) => cat.level === 2).sort((a, b) =>
-    a.name.localeCompare(b.name)
-  );
+// Level 2 categories (subspecialties) for the pathology category dropdown
+const pathologyCategories = CATEGORIES.filter((cat) => cat.level === 2).sort((a, b) =>
+  a.name.localeCompare(b.name)
+);
 
-  return (
-    <div className="flex gap-4 items-center justify-between">
-      <div className="flex gap-4 items-center flex-1">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search by name, description, or source..."
-            onChange={(e) => onSearch(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-        <Select
-          value={categoryFilter}
-          onValueChange={(value: CategoryFilterType) => onCategoryChange(value)}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Image Type" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="all">All Types</SelectItem>
-            <SelectItem value="unused">Unused Images</SelectItem>
-            <SelectItem value="microscopic">Microscopic</SelectItem>
-            <SelectItem value="figure">Figure</SelectItem>
-            <SelectItem value="table">Table</SelectItem>
-            <SelectItem value="gross">Gross</SelectItem>
-          </SelectContent>
-        </Select>
-        <Select
-          value={pathologyCategoryFilter}
-          onValueChange={(value: string) => onPathologyCategoryChange(value)}
-          disabled={categoryFilter === "unused"}
-        >
-          <SelectTrigger className="w-[180px]">
-            <SelectValue placeholder="Category" />
-          </SelectTrigger>
-          <SelectContent className="max-h-[300px]">
-            <SelectItem value="all">All Categories</SelectItem>
-            <SelectItem value="uncategorized">Uncategorized</SelectItem>
-            {pathologyCategories.map((cat) => (
-              <SelectItem key={cat.id} value={cat.id}>
-                {cat.shortForm}
-              </SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
-      </div>
-      <Button onClick={onUpload} className="bg-primary hover:bg-primary/90">
-        <Upload className="h-4 w-4 mr-2" />
-        Upload Images
-      </Button>
-    </div>
-  );
-}
-
-// Pagination component
-function TablePagination({
+// Local pagination row — kept custom (not the shared <TablePagination>) because it
+// embeds an "Items per page" selector and must stay visible when totalPages === 1.
+function ImagesTablePagination({
   currentPage,
   totalPages,
   onPageChange,
@@ -151,57 +77,7 @@ function TablePagination({
   pageSize: number;
   onPageSizeChange: (size: number) => void;
 }) {
-  // Calculate which page numbers to show
-  const getPageNumbers = () => {
-    const pages: (number | string)[] = [];
-    const maxPagesToShow = 5;
-
-    if (totalPages <= maxPagesToShow) {
-      // Show all pages if total is small
-      for (let i = 0; i < totalPages; i++) {
-        pages.push(i);
-      }
-    } else {
-      // Always show first page
-      pages.push(0);
-
-      // Calculate range around current page
-      let start = Math.max(1, currentPage - 1);
-      let end = Math.min(totalPages - 2, currentPage + 1);
-
-      // Adjust if near the beginning
-      if (currentPage < 3) {
-        end = 3;
-      }
-
-      // Adjust if near the end
-      if (currentPage > totalPages - 4) {
-        start = totalPages - 4;
-      }
-
-      // Add ellipsis if needed
-      if (start > 1) {
-        pages.push("...");
-      }
-
-      // Add middle pages
-      for (let i = start; i <= end; i++) {
-        pages.push(i);
-      }
-
-      // Add ellipsis if needed
-      if (end < totalPages - 2) {
-        pages.push("...");
-      }
-
-      // Always show last page
-      pages.push(totalPages - 1);
-    }
-
-    return pages;
-  };
-
-  const pageNumbers = getPageNumbers();
+  const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   return (
     <div className="flex justify-between items-center">
@@ -242,7 +118,7 @@ function TablePagination({
         </Button>
 
         {pageNumbers.map((pageNum, idx) =>
-          pageNum === "..." ? (
+          pageNum === "ellipsis" ? (
             <span key={`ellipsis-${idx}`} className="px-2 text-muted-foreground">
               ...
             </span>
@@ -251,10 +127,10 @@ function TablePagination({
               key={pageNum}
               variant={currentPage === pageNum ? "default" : "outline"}
               size="sm"
-              onClick={() => onPageChange(pageNum as number)}
+              onClick={() => onPageChange(pageNum)}
               className="w-9"
             >
-              {(pageNum as number) + 1}
+              {pageNum + 1}
             </Button>
           )
         )}
@@ -315,7 +191,8 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
   const [imageStats, setImageStats] = useState<ImageUsageStats[]>([]);
   const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-  const [debouncedSearchTerm, setDebouncedSearchTerm] = useState("");
+  // Debounce search term - 500ms to reduce Supabase queries
+  const debouncedSearchTerm = useDebounce(searchTerm, 500);
   const [categoryFilter, setCategoryFilter] = useState<CategoryFilterType>("all");
   const [pathologyCategoryFilter, setPathologyCategoryFilter] = useState<string>("all");
   const [page, setPage] = useState(0);
@@ -328,14 +205,6 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [imageToDelete, setImageToDelete] = useState<ImageData | null>(null);
   const [error, setError] = useState<string | null>(null);
-
-  // Debounce search term - 500ms to reduce Supabase queries
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchTerm(searchTerm);
-    }, 500);
-    return () => clearTimeout(timer);
-  }, [searchTerm]);
 
   const loadImages = useCallback(async () => {
     setLoading(true);
@@ -474,14 +343,53 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
 
   return (
     <div className="space-y-4">
-      <TableControls
-        onSearch={handleSearch}
-        onCategoryChange={handleCategoryChange}
-        onPathologyCategoryChange={handlePathologyCategoryChange}
-        onUpload={() => setShowUploadDialog(true)}
-        categoryFilter={categoryFilter}
-        pathologyCategoryFilter={pathologyCategoryFilter}
-      />
+      <TableControlBar
+        searchValue={searchTerm}
+        searchPlaceholder="Search by name, description, or source..."
+        onSearchChange={handleSearch}
+      >
+        <Select
+          value={categoryFilter}
+          onValueChange={(value: CategoryFilterType) => handleCategoryChange(value)}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Image Type" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Types</SelectItem>
+            <SelectItem value="unused">Unused Images</SelectItem>
+            <SelectItem value="microscopic">Microscopic</SelectItem>
+            <SelectItem value="figure">Figure</SelectItem>
+            <SelectItem value="table">Table</SelectItem>
+            <SelectItem value="gross">Gross</SelectItem>
+          </SelectContent>
+        </Select>
+        <Select
+          value={pathologyCategoryFilter}
+          onValueChange={handlePathologyCategoryChange}
+          disabled={categoryFilter === "unused"}
+        >
+          <SelectTrigger className="w-[180px]">
+            <SelectValue placeholder="Category" />
+          </SelectTrigger>
+          <SelectContent className="max-h-[300px]">
+            <SelectItem value="all">All Categories</SelectItem>
+            <SelectItem value="uncategorized">Uncategorized</SelectItem>
+            {pathologyCategories.map((cat) => (
+              <SelectItem key={cat.id} value={cat.id}>
+                {cat.shortForm}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+        <Button
+          onClick={() => setShowUploadDialog(true)}
+          className="bg-primary hover:bg-primary/90"
+        >
+          <Upload className="h-4 w-4 mr-2" />
+          Upload Images
+        </Button>
+      </TableControlBar>
 
       <div className="rounded-md border bg-card">
         <Table>
@@ -524,14 +432,20 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
               ))
             ) : images.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={8} className="h-24 text-center text-muted-foreground">
-                  {categoryFilter === "unused"
-                    ? "No unused images found"
-                    : pathologyCategoryFilter === "uncategorized"
-                      ? "No uncategorized images found"
-                      : searchTerm || categoryFilter !== "all" || pathologyCategoryFilter !== "all"
-                        ? "No images found matching your filters"
-                        : "No images uploaded yet"}
+                <TableCell colSpan={8}>
+                  <EmptyState
+                    title={
+                      categoryFilter === "unused"
+                        ? "No unused images found"
+                        : pathologyCategoryFilter === "uncategorized"
+                          ? "No uncategorized images found"
+                          : searchTerm ||
+                              categoryFilter !== "all" ||
+                              pathologyCategoryFilter !== "all"
+                            ? "No images found matching your filters"
+                            : "No images uploaded yet"
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ) : (
@@ -636,7 +550,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
       </div>
 
       {totalPages > 0 && (
-        <TablePagination
+        <ImagesTablePagination
           currentPage={page}
           totalPages={totalPages}
           onPageChange={setPage}
