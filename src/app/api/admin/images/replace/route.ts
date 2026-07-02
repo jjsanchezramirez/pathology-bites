@@ -3,7 +3,7 @@ import { createClient } from "@/shared/services/server";
 import { uploadToR2 } from "@/shared/services/r2-storage";
 import { formatImageName } from "@/features/admin/images/services/image-upload";
 import { getImageDimensionsFromFile } from "@/shared/utils/images/server-image-utils";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 /**
@@ -141,13 +141,9 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // Verify user is authenticated admin
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json(
-        { error: "You must be logged in to replace images" },
-        { status: 401 }
-      );
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { data: userData, error: roleError } = await supabase
       .from("users")

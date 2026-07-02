@@ -1,6 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { TABLE_NAMES } from "@/shared/types/database";
+
+// Config sections are loosely-structured JSON blobs stored as-is (with ||
+// fallbacks below) — guard the envelope only, don't invent strict shapes.
+const configSchema = z.object({
+  exam_dates: z.any(),
+  days_off: z.any(),
+  recurring_off: z.any(),
+  phases: z.any(),
+});
 
 /**
  * @swagger
@@ -41,8 +53,9 @@ import { TABLE_NAMES } from "@/shared/types/database";
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const userId = request.headers.get("x-user-id");
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { data, error } = await supabase
       .from(TABLE_NAMES.BOARD_PREP_CONFIG)
@@ -113,10 +126,12 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const userId = request.headers.get("x-user-id");
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
-    const config = await request.json();
+    const config = await parseBody(request, configSchema);
+    if (config instanceof NextResponse) return config;
 
     const { error } = await supabase.from(TABLE_NAMES.BOARD_PREP_CONFIG).upsert(
       {

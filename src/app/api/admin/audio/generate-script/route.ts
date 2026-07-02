@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { z } from "zod";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
 import { callClaudeText } from "@/shared/services/claude-api";
 import { log } from "@/shared/utils/logging";
@@ -16,19 +17,20 @@ const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
   (model) => model.id
 );
 
-interface EducationalContent {
-  category: string;
-  subject: string;
-  lesson: string;
-  topic: string;
-  content: unknown;
-}
+const generateScriptSchema = z.object({
+  content: z.object({
+    category: z.string().min(1),
+    subject: z.string().min(1),
+    lesson: z.string().min(1),
+    topic: z.string().min(1),
+    content: z.unknown().optional(),
+  }),
+  additionalInstructions: z.string().optional(),
+  model: z.string().optional(),
+  modelOverride: z.string().optional(),
+});
 
-interface TextGenerationRequest {
-  content: EducationalContent;
-  additionalInstructions?: string;
-  model?: string;
-}
+type EducationalContent = z.infer<typeof generateScriptSchema>["content"];
 
 async function callAIService(
   provider: string,
@@ -303,42 +305,12 @@ Return ONLY the script text with no additional commentary, metadata, titles, or 
  */
 export async function POST(request: NextRequest) {
   try {
-    const supabase = await createClient();
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-    }
-
-    const { data: userData, error: roleError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    if (roleError || !userData || userData.role !== "admin") {
-      return NextResponse.json({ error: "Administrator privileges required." }, { status: 403 });
-    }
-
-    const body: TextGenerationRequest & { modelOverride?: string } = await request.json();
+    const body = await parseBody(request, generateScriptSchema);
+    if (body instanceof NextResponse) return body;
     const { content, additionalInstructions = "", model, modelOverride } = body;
-
-    if (!content) {
-      return NextResponse.json(
-        { success: false, error: "Educational content is required" },
-        { status: 400 }
-      );
-    }
-
-    if (!content.category || !content.subject || !content.lesson || !content.topic) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: "Educational content must include category, subject, lesson, and topic",
-        },
-        { status: 400 }
-      );
-    }
 
     const selectedModel = modelOverride || model || "gemini-2.5-flash-lite";
 

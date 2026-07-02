@@ -99,27 +99,33 @@ export async function invalidateQuizSessions(mutate: ScopedMutator, revalidate =
 /**
  * Patch a single session in the cached quiz-sessions-all list.
  *
- * Why this exists: My Quizzes uses useCachedData (reads unifiedCache directly,
- * not SWR), so SWR `mutate("quiz-sessions-all", ...)` writes don't propagate
- * to the consumer. After a quiz completes we already have the new field
- * values — patch them in place to avoid a re-fetch and the "session shows as
- * In Progress after completion" stale-UI bug.
+ * Why this exists: after a quiz completes we already have the new field
+ * values — patch them in place (no refetch) so My Quizzes flips the session
+ * to "completed" instantly instead of showing the "In Progress after
+ * completion" stale-UI bug. The SWR provider persists the write to
+ * unifiedCache, so it also survives a page refresh.
  *
  * No-op if cache doesn't exist (cold cache will fetch fresh on next mount).
  */
 type CachedQuizSession = Record<string, unknown> & { id: string };
 
-export function patchCachedQuizSession(sessionId: string, patch: Partial<CachedQuizSession>): void {
-  const existing = unifiedCache.get<CachedQuizSession[]>(
-    CACHE_NAMESPACES.SWR.name,
-    "quiz-sessions-all"
+export async function patchCachedQuizSession(
+  mutate: ScopedMutator,
+  sessionId: string,
+  patch: Partial<CachedQuizSession>
+): Promise<void> {
+  await mutate(
+    "quiz-sessions-all",
+    (existing: CachedQuizSession[] | undefined) => {
+      if (!existing || !Array.isArray(existing)) return existing;
+      const idx = existing.findIndex((s) => s.id === sessionId);
+      if (idx === -1) return existing;
+      const next = [...existing];
+      next[idx] = { ...existing[idx], ...patch };
+      return next;
+    },
+    { revalidate: false }
   );
-  if (!existing || !Array.isArray(existing)) return;
-  const idx = existing.findIndex((s) => s.id === sessionId);
-  if (idx === -1) return;
-  const next = [...existing];
-  next[idx] = { ...existing[idx], ...patch };
-  unifiedCache.set(CACHE_NAMESPACES.SWR.name, "quiz-sessions-all", next);
 }
 
 /**

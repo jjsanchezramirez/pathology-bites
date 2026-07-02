@@ -1,12 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
 
-async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, userId: string) {
-  const { data, error } = await supabase.from("users").select("role").eq("id", userId).single();
-  return !error && data?.role === "admin";
-}
+const updateSubjectSchema = z.object({
+  title: z.string().optional(),
+  description: z.string().nullish(),
+  slug: z.string().optional(),
+  category_id: z.string().optional(),
+  cover_image_url: z.string().nullish(),
+  sort_order: z.number().int().optional(),
+  status: z.string().optional(),
+});
 
 /**
  * @swagger
@@ -63,13 +70,12 @@ async function verifyAdmin(supabase: Awaited<ReturnType<typeof createClient>>, u
 export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const supabase = await createClient();
-    const userId = getUserIdFromHeaders(request);
-    if (!userId || !(await verifyAdmin(supabase, userId))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
-    const body = await request.json();
+    const body = await parseBody(request, updateSubjectSchema);
+    if (body instanceof NextResponse) return body;
     const { title, description, slug, category_id, cover_image_url, sort_order, status } = body;
 
     const updateData: Record<string, unknown> = {};
@@ -143,10 +149,8 @@ export async function DELETE(
 ) {
   try {
     const supabase = await createClient();
-    const userId = getUserIdFromHeaders(request);
-    if (!userId || !(await verifyAdmin(supabase, userId))) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 403 });
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
 

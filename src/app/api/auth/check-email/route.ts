@@ -1,7 +1,15 @@
 // src/app/api/auth/check-email/route.ts
 import { NextRequest, NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { z } from "zod";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+// Format validation stays in the handler so the "Invalid email format"
+// message is preserved for clients.
+const checkEmailSchema = z.object({
+  email: z.string(),
+});
 
 /**
  * @swagger
@@ -60,11 +68,9 @@ import { log } from "@/shared/utils/logging";
  */
 export async function POST(request: NextRequest) {
   try {
-    const { email } = await request.json();
-
-    if (!email) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
-    }
+    const body = await parseBody(request, checkEmailSchema);
+    if (body instanceof NextResponse) return body;
+    const { email } = body;
 
     // Validate email format
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -72,16 +78,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Invalid email format" }, { status: 400 });
     }
 
-    // Use service role key to bypass RLS policies
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      log.error("Missing Supabase configuration");
-      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    // Use service role client to bypass RLS policies
+    const supabase = createServiceRoleClient();
 
     /**
      * EMAIL EXISTENCE CHECK - SINGLE SOURCE OF TRUTH

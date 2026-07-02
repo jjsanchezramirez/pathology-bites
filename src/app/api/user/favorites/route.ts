@@ -1,8 +1,14 @@
 // src/app/api/user/favorites/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const favoriteSchema = z.object({
+  question_id: z.string().min(1, "question_id is required"),
+});
 
 /**
  * @swagger
@@ -88,10 +94,9 @@ export async function GET(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { searchParams } = new URL(request.url);
     const categoryId = searchParams.get("category_id");
@@ -206,16 +211,13 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
-    const { question_id } = await request.json();
-
-    if (!question_id) {
-      return NextResponse.json({ error: "question_id is required" }, { status: 400 });
-    }
+    const body = await parseBody(request, favoriteSchema);
+    if (body instanceof NextResponse) return body;
+    const { question_id } = body;
 
     // Check if question exists and is accessible
     const { data: question, error: questionError } = await supabase
@@ -312,16 +314,13 @@ export async function DELETE(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
-    const { question_id } = await request.json();
-
-    if (!question_id) {
-      return NextResponse.json({ error: "question_id is required" }, { status: 400 });
-    }
+    const body = await parseBody(request, favoriteSchema);
+    if (body instanceof NextResponse) return body;
+    const { question_id } = body;
 
     // Remove from favorites
     const { error } = await supabase

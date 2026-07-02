@@ -1,10 +1,32 @@
 // src/app/api/user/quiz/sessions/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { QuizCreationForm } from "@/features/user/quiz/types/quiz";
 import { quizService } from "@/features/user/quiz/services/quiz-service";
-import { TABLE_NAMES } from "@/shared/types/database";
+import { TABLE_NAMES, isSessionStatus } from "@/shared/types/database";
 import { devLog } from "@/shared/utils/logging/dev-logger";
+
+// Loose shape guard only — the manual checks below (required fields, question
+// count range, custom-category rule) return the exact 400 messages clients and
+// tests rely on, so they stay authoritative. Passthrough keeps any extra keys
+// quizService.createQuizSession may read.
+const quizCreationSchema = z
+  .object({
+    title: z.string().optional(),
+    mode: z.string().optional(),
+    timing: z.string().optional(),
+    questionCount: z.number().optional(),
+    questionType: z.string().optional(),
+    categorySelection: z.string().optional(),
+    selectedCategories: z.array(z.string()).optional(),
+    shuffleQuestions: z.boolean().optional(),
+    shuffleAnswers: z.boolean().optional(),
+    showProgress: z.boolean().optional(),
+  })
+  .passthrough();
 
 /**
  * @swagger
@@ -86,16 +108,17 @@ export async function POST(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Auth is now handled by middleware - get user info from headers
-    const userId = request.headers.get("x-user-id");
-
-    if (!userId) {
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) {
       devLog.warn("Quiz session creation - unauthorized", { requestId });
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return auth;
     }
+    const userId = auth.userId;
 
     // Parse request body
-    const formData: QuizCreationForm = await request.json();
+    const parsed = await parseBody(request, quizCreationSchema);
+    if (parsed instanceof NextResponse) return parsed;
+    const formData = parsed as QuizCreationForm;
     devLog.debug("Quiz form data parsed", {
       requestId,
       userId,
@@ -263,13 +286,12 @@ export async function GET(request: NextRequest) {
 
     const supabase = await createClient();
 
-    // Auth is now handled by middleware
-    const userId = request.headers.get("x-user-id");
-
-    if (!userId) {
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) {
       devLog.warn("Quiz sessions fetch - unauthorized", { requestId });
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      return auth;
     }
+    const userId = auth.userId;
 
     // Get query parameters
     const { searchParams } = new URL(request.url);
@@ -293,8 +315,8 @@ export async function GET(request: NextRequest) {
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1);
 
-    // Filter by status if provided
-    if (status) {
+    // Filter by status if provided (unknown values are ignored)
+    if (status && isSessionStatus(status)) {
       query = query.eq("status", status);
     }
 
@@ -313,26 +335,33 @@ export async function GET(request: NextRequest) {
       throw error;
     }
 
-    // Map database fields to expected format
+    // Map database fields to expected format (config is a Json column)
     const mappedSessions =
-      sessions?.map((session) => ({
-        id: session.id,
-        title: session.title,
-        status: session.status,
-        mode: session.config?.mode || "unknown",
-        difficulty: session.config?.difficulty,
-        totalQuestions: session.total_questions,
-        score: session.score,
-        correctAnswers: session.correct_answers,
-        createdAt: session.created_at,
-        completedAt: session.completed_at,
-        totalTimeSpent: session.total_time_spent,
-        currentQuestionIndex: session.current_question_index,
-        totalTimeLimit: session.total_time_limit,
-        timeRemaining: session.time_remaining,
-        isTimedMode: session.config?.timing === "timed",
-        config: session.config,
-      })) || [];
+      sessions?.map((session) => {
+        const config = session.config as {
+          mode?: string;
+          difficulty?: string;
+          timing?: string;
+        } | null;
+        return {
+          id: session.id,
+          title: session.title,
+          status: session.status,
+          mode: config?.mode || "unknown",
+          difficulty: config?.difficulty,
+          totalQuestions: session.total_questions,
+          score: session.score,
+          correctAnswers: session.correct_answers,
+          createdAt: session.created_at,
+          completedAt: session.completed_at,
+          totalTimeSpent: session.total_time_spent,
+          currentQuestionIndex: session.current_question_index,
+          totalTimeLimit: session.total_time_limit,
+          timeRemaining: session.time_remaining,
+          isTimedMode: config?.timing === "timed",
+          config: session.config,
+        };
+      }) || [];
 
     const totalDuration = Date.now() - startTime;
     devLog.info("Quiz sessions fetched successfully", {

@@ -10,6 +10,7 @@ import {
   CardTitle,
 } from "@/shared/components/ui/card";
 import { Plus } from "lucide-react";
+import { PageHeader } from "@/shared/components/ui/page-header";
 import { SvgTable } from "@/features/admin/svg-library/components/svg-table";
 import { SvgUploadDialog } from "@/features/admin/svg-library/components/upload-dialog";
 import { EditSvgDialog } from "@/features/admin/svg-library/components/edit-dialog";
@@ -39,12 +40,10 @@ export default function AdminSvgLibraryPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">SVG Assets</h1>
-        <p className="text-muted-foreground">
-          Manage SVG illustrations, diagrams, and vector graphics
-        </p>
-      </div>
+      <PageHeader
+        title="SVG Assets"
+        description="Manage SVG illustrations, diagrams, and vector graphics"
+      />
 
       {/* SVG Management Card */}
       <Card>

@@ -1,4 +1,5 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/shared/types/supabase";
 
 /**
  * Server-only **service-role** Supabase client. Bypasses RLS, so use it ONLY inside route
@@ -11,8 +12,8 @@ import { createClient, type SupabaseClient } from "@supabase/supabase-js";
  *  - `persistSession` / `autoRefreshToken` are off: they're browser-only concerns (localStorage,
  *    refresh timers) and no-ops in a one-shot server request, but set explicitly for clarity.
  */
-export function createServiceRoleClient(): SupabaseClient {
-  return createClient(
+export function createServiceRoleClient(): SupabaseClient<Database> {
+  return createClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.SUPABASE_SERVICE_ROLE_KEY!,
     { auth: { autoRefreshToken: false, persistSession: false } }

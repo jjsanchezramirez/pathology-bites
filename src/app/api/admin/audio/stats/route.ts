@@ -6,6 +6,7 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 export const dynamic = "force-dynamic";
@@ -43,15 +44,8 @@ export const dynamic = "force-dynamic";
  *         description: RPC failure fetching audio stats.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const userId = request.headers.get("x-user-id");
-  const userRole = request.headers.get("x-user-role");
-
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  if (userRole !== "admin") {
-    return NextResponse.json({ error: "Forbidden - Admin access required" }, { status: 403 });
-  }
+  const auth = requireAdmin(request);
+  if (auth instanceof NextResponse) return auth;
 
   const adminSupabase = createServiceRoleClient();
 

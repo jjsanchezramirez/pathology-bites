@@ -1,9 +1,22 @@
 import { UserRole } from "@/shared/utils/auth/auth-helpers";
+import { isUserRole, isUserStatus } from "@/shared/types/database";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { deleteUser, deleteUserFromAuth } from "@/shared/services/user-deletion";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const updateUserSchema = z.object({
+  userId: z.string().min(1),
+  updates: z.record(z.unknown()),
+});
+
+const deleteUserSchema = z.object({
+  userId: z.string().uuid(),
+});
 
 /**
  * @swagger
@@ -76,16 +89,8 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin role
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || userRole !== "admin") {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
     // Parse query parameters
     const { searchParams } = new URL(request.url);
@@ -115,14 +120,14 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Apply role filter
-    if (roleFilter !== "all") {
+    // Apply role filter (unknown values are ignored rather than matching nothing)
+    if (roleFilter !== "all" && isUserRole(roleFilter)) {
       countQuery = countQuery.eq("role", roleFilter);
       dataQuery = dataQuery.eq("role", roleFilter);
     }
 
     // Apply status filter
-    if (statusFilter !== "all") {
+    if (statusFilter !== "all" && isUserStatus(statusFilter)) {
       countQuery = countQuery.eq("status", statusFilter);
       dataQuery = dataQuery.eq("status", statusFilter);
     }
@@ -208,23 +213,12 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin role
-    const adminUserId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
-    if (!adminUserId || userRole !== "admin") {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
-
-    const body = await request.json();
+    const body = await parseBody(request, updateUserSchema);
+    if (body instanceof NextResponse) return body;
     const { userId, updates } = body;
-
-    if (!userId || !updates) {
-      return NextResponse.json({ error: "Missing userId or updates" }, { status: 400 });
-    }
 
     // Update user with service role to bypass RLS
     const { data, error } = await supabase
@@ -315,32 +309,15 @@ export async function DELETE(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth check - require admin role
-    const currentUserId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
-    if (!currentUserId || userRole !== "admin") {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
-
-    const body = await request.json();
+    const body = await parseBody(request, deleteUserSchema);
+    if (body instanceof NextResponse) return body;
     const { userId } = body;
 
-    if (!userId) {
-      return NextResponse.json({ error: "Missing userId" }, { status: 400 });
-    }
-
-    // Validate userId format
-    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-    if (!uuidRegex.test(userId)) {
-      return NextResponse.json({ error: "Invalid user ID format" }, { status: 400 });
-    }
-
     // Prevent admin from deleting themselves
-    if (userId === currentUserId) {
+    if (userId === auth.userId) {
       return NextResponse.json({ error: "Cannot delete your own account" }, { status: 400 });
     }
 

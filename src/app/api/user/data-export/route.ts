@@ -1,7 +1,7 @@
 // src/app/api/user/data-export/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 /**
@@ -97,10 +97,9 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Get user profile data
     const { data: userProfile, error: profileError } = await supabase
@@ -114,14 +113,15 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch user profile" }, { status: 500 });
     }
 
-    // Get user settings
+    // Get user settings ("settings" was never a real column — that select
+    // errored on every export and the settings section silently exported null)
     const { data: userSettingsData, error: settingsError } = await supabase
       .from("user_settings")
-      .select("settings")
+      .select("quiz_settings, notification_settings, ui_settings, counter_settings")
       .eq("user_id", userId)
       .single();
 
-    const userSettings = userSettingsData?.settings;
+    const userSettings = userSettingsData ?? null;
 
     if (settingsError) {
       log.error("Error fetching user settings:", settingsError);
@@ -215,24 +215,9 @@ export async function POST(request: NextRequest) {
       },
     };
 
-    // Create audit log for data export
-    await supabase.from("audit_logs").insert({
-      user_id: userId,
-      action: "data_export",
-      table_name: "users",
-      record_id: userId,
-      metadata: {
-        export_timestamp: new Date().toISOString(),
-        data_types_exported: [
-          "profile",
-          "settings",
-          "quiz_sessions",
-          "quiz_attempts",
-          "favorites",
-          "question_flags",
-        ],
-      },
-    });
+    // Audit trail. There is no audit_logs table in the schema — the insert this
+    // used to do failed silently on every export — so log instead.
+    log.info("[Audit] data_export", { userId });
 
     return NextResponse.json({
       success: true,

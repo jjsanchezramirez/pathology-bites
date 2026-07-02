@@ -1,21 +1,14 @@
 // Quiz Analytics Service
 // Handles batch analytics updates to reduce database load and improve reliability
 
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/shared/services/server";
-import { log } from "@/shared/utils/logging";
-
 // Service-role client for invoking update_question_analytics_batch.
 // That RPC is SECURITY DEFINER (it writes to question_analytics, bypassing
 // RLS), and it is INTENTIONALLY not granted EXECUTE to `authenticated` — so
 // signed-in users cannot reach it via /rest/v1/rpc/. We call it here from the
 // server only, with a question-id list derived from the caller's own session.
-function createServiceRoleClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import { log } from "@/shared/utils/logging";
 
 // Database row interfaces
 interface QuizAttemptRow {

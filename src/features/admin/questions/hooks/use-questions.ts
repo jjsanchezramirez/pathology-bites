@@ -9,7 +9,7 @@ import {
   QuestionWithDetails,
 } from "@/shared/types/questions";
 
-import { TABLE_NAMES } from "@/shared/types/database";
+import { TABLE_NAMES, isDifficultyLevel, isQuestionStatus } from "@/shared/types/database";
 import { apiClient } from "@/shared/utils/api/api-client";
 import { log } from "@/shared/utils/logging";
 
@@ -121,11 +121,11 @@ export function useQuestions(params: UseQuestionsParams = {}): UseQuestionsRetur
         query = query.or(`title.ilike.${searchPattern},stem.ilike.${searchPattern}`);
       }
 
-      if (difficulty !== "all") {
+      if (difficulty !== "all" && isDifficultyLevel(difficulty)) {
         query = query.eq("difficulty", difficulty);
       }
 
-      if (status !== "all") {
+      if (status !== "all" && isQuestionStatus(status)) {
         query = query.eq("status", status);
       }
 

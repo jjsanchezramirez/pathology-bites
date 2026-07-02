@@ -383,7 +383,7 @@ class ClientDashboardService {
       .select(
         `
         id, title, status, created_at, updated_at,
-        reviewer_feedback, rejected_at,
+        reviewer_feedback,
         reviewer:users!reviewer_id(first_name, last_name)
       `
       )

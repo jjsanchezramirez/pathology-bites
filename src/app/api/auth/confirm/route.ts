@@ -1,11 +1,8 @@
 // src/app/api/auth/confirm/route.ts
-import {
-  type EmailOtpType,
-  type SupabaseClient,
-  createClient as createSupabaseClient,
-} from "@supabase/supabase-js";
+import { type EmailOtpType, type SupabaseClient } from "@supabase/supabase-js";
 import { type NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import {
   DEFAULT_QUIZ_SETTINGS,
   DEFAULT_NOTIFICATION_SETTINGS,
@@ -13,14 +10,11 @@ import {
 } from "@/shared/config/user-settings-defaults";
 import { log } from "@/shared/utils/logging";
 
-// Service-role client for is_email_confirmed RPC (SECURITY DEFINER, service_role-only EXECUTE)
+// Service-role client for is_email_confirmed RPC (SECURITY DEFINER, service_role-only EXECUTE).
 async function isEmailAlreadyVerified(email: string | null): Promise<boolean> {
   if (!email) return false;
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY;
-  if (!url || !key) return false;
   try {
-    const admin = createSupabaseClient(url, key);
+    const admin = createServiceRoleClient();
     const { data } = await admin.rpc("is_email_confirmed", { p_email: email });
     return data === true;
   } catch (err) {

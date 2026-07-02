@@ -1,108 +1,41 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { AnkomaData, AnkomaDeck } from "@/features/user/anki/types/anki-card";
 import { parseAnkomaData } from "@/features/user/anki/utils/ankoma-parser";
 import { ANKOMA_JSON_URL } from "@/shared/config/ankoma";
+import { useR2Json } from "@/shared/hooks/use-r2-json";
 import { toast } from "@/shared/utils/ui/toast";
-import { log } from "@/shared/utils/logging";
 
-// Module-scope cache so we only fetch once per session
-let cachedAnkomaPromise: Promise<AnkomaData> | null = null;
-
-async function loadClientAnkoma(): Promise<AnkomaData> {
-  if (cachedAnkomaPromise) return cachedAnkomaPromise;
-
-  async function fetchWithFallback() {
-    const fetchWithTimeout = async (
-      input: RequestInfo | URL,
-      init?: RequestInit & { timeoutMs?: number }
-    ) => {
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), init?.timeoutMs ?? 15000);
-      try {
-        const res = await fetch(input, { ...init, signal: controller.signal });
-        return res;
-      } finally {
-        clearTimeout(timeout);
-      }
-    };
-
-    try {
-      const res = await fetchWithTimeout(ANKOMA_JSON_URL, {
-        cache: "force-cache",
-        timeoutMs: 15000,
-      });
-      if (!res.ok) throw new Error(`Failed: ${res.status}`);
-      return res;
-    } catch (e) {
-      const msg =
-        e?.name === "AbortError"
-          ? "Timed out fetching Ankoma data. Please check your network and try again."
-          : e?.message || "Failed to fetch Ankoma dataset.";
-
-      // In production, do NOT fall back to Vercel proxy to avoid bandwidth/invocations.
-      log.error("[Ankoma] R2 fetch failed. Check R2 CORS and network.", e);
-      throw new Error(msg);
-    }
-  }
-
-  cachedAnkomaPromise = fetchWithFallback()
-    .then(async (res) => {
-      if (!res.ok) throw new Error(`Failed to fetch Ankoma data: ${res.status}`);
-      const rawData: AnkomaDeck = await res.json();
-      return parseAnkomaData(rawData);
-    })
-    .catch((err) => {
-      // Don't cache a rejected promise — otherwise a transient failure
-      // (sleep/wake, offline blip, R2 hiccup) would permanently break the
-      // viewer until a full page reload, since in-SPA navigation reuses this
-      // module-scope cache. Clearing it lets the next mount retry.
-      cachedAnkomaPromise = null;
-      throw err;
-    });
-
-  return cachedAnkomaPromise;
+function transformAnkoma(raw: unknown): AnkomaData {
+  return parseAnkomaData(raw as AnkomaDeck);
 }
 
 export function useClientAnkoma() {
-  const [ankomaData, setAnkomaData] = useState<AnkomaData | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  // No same-origin fallback: in production we deliberately don't proxy through
+  // Vercel to avoid bandwidth/invocations — R2 (with CORS) is the only source.
+  const {
+    data: ankomaData,
+    isLoading,
+    error,
+  } = useR2Json<AnkomaData>({
+    url: ANKOMA_JSON_URL,
+    transform: transformAnkoma,
+    label: "Ankoma data",
+    timeoutMs: 15000,
+  });
 
+  // Surface load failures as toasts (network blips, laptop sleep/wake, etc.)
   useEffect(() => {
-    let mounted = true;
-    setIsLoading(true);
-    loadClientAnkoma()
-      .then((data) => {
-        if (mounted) setAnkomaData(data);
-      })
-      .catch((err) => {
-        if (mounted) {
-          const errorMessage = err.message || "Failed to load Ankoma data";
-          setError(errorMessage);
-
-          // Detect network errors (laptop sleep/wake, offline, etc.)
-          const isNetworkError =
-            err instanceof TypeError &&
-            (err.message?.includes("fetch") || err.message?.includes("network"));
-
-          if (isNetworkError) {
-            toast.error("Network connection interrupted. Please refresh the page.");
-          } else if (err.message?.includes("Timed out")) {
-            toast.error("Request timed out. Please check your network connection.");
-          } else {
-            toast.error(errorMessage);
-          }
-        }
-      })
-      .finally(() => {
-        if (mounted) setIsLoading(false);
-      });
-    return () => {
-      mounted = false;
-    };
-  }, []);
+    if (!error) return;
+    if (error.includes("Timed out")) {
+      toast.error("Request timed out. Please check your network connection.");
+    } else if (/network|Failed to fetch/i.test(error)) {
+      toast.error("Network connection interrupted. Please refresh the page.");
+    } else {
+      toast.error(error);
+    }
+  }, [error]);
 
   const totalCards = ankomaData?.totalCards || 0;
   const sections = ankomaData?.sections || [];
@@ -120,6 +53,6 @@ export function useClientAnkoma() {
     lastLoaded,
 
     // Cache status
-    isDataCached: !!cachedAnkomaPromise,
+    isDataCached: ankomaData !== null,
   };
 }

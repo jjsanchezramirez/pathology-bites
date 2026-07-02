@@ -1,5 +1,6 @@
 // src/lib/supabase/client.ts
 import { createBrowserClient } from "@supabase/ssr";
+import type { Database } from "@/shared/types/supabase";
 
 export function createClient() {
   // Use environment variables directly for client-side
@@ -10,5 +11,5 @@ export function createClient() {
     throw new Error("Missing Supabase environment variables");
   }
 
-  return createBrowserClient(url, anonKey);
+  return createBrowserClient<Database>(url, anonKey);
 }

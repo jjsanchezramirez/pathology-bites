@@ -7,11 +7,10 @@
 
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import { requireContentRole } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 export const dynamic = "force-dynamic";
-
-const ALLOWED_ROLES = new Set(["admin", "creator", "reviewer"]);
 
 /**
  * @swagger
@@ -46,15 +45,8 @@ const ALLOWED_ROLES = new Set(["admin", "creator", "reviewer"]);
  *         description: RPC failure fetching user statistics.
  */
 export async function GET(request: NextRequest): Promise<NextResponse> {
-  const userId = request.headers.get("x-user-id");
-  const userRole = request.headers.get("x-user-role");
-
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-  if (!userRole || !ALLOWED_ROLES.has(userRole)) {
-    return NextResponse.json({ error: "Forbidden - Insufficient permissions" }, { status: 403 });
-  }
+  const auth = requireContentRole(request);
+  if (auth instanceof NextResponse) return auth;
 
   const adminSupabase = createServiceRoleClient();
 

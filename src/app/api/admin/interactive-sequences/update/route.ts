@@ -1,7 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const updateSequenceSchema = z.object({
+  id: z.string().min(1),
+  title: z.string().trim().min(1).optional(),
+  description: z.string().nullish(),
+  // ExplainerSequence blob — only version/segments are validated, the rest passes through.
+  sequence_data: z
+    .object({
+      version: z.unknown().refine((v) => !!v, { message: "version is required" }),
+      segments: z.unknown().refine((v) => !!v, { message: "segments is required" }),
+    })
+    .passthrough()
+    .optional(),
+  category_id: z.string().nullish(),
+  status: z.enum(["draft", "published", "archived"]).optional(),
+});
 
 /**
  * @swagger
@@ -70,35 +88,17 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
-    const { data: userData, error: roleError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    if (roleError || !userData || userData.role !== "admin") {
-      return NextResponse.json({ error: "Administrator privileges required." }, { status: 403 });
-    }
-
-    const body = await request.json();
+    const body = await parseBody(request, updateSequenceSchema);
+    if (body instanceof NextResponse) return body;
     const { id, title, description, sequence_data, category_id, status } = body;
-
-    if (!id) {
-      return NextResponse.json({ error: "Sequence ID is required." }, { status: 400 });
-    }
 
     // Build updates object with only provided fields
     const updates: Record<string, unknown> = {};
 
     if (title !== undefined) {
-      if (!title.trim()) {
-        return NextResponse.json({ error: "Title cannot be empty." }, { status: 400 });
-      }
       updates.title = title.trim();
     }
 
@@ -107,12 +107,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (sequence_data !== undefined) {
-      if (typeof sequence_data !== "object" || !sequence_data.version || !sequence_data.segments) {
-        return NextResponse.json(
-          { error: "sequence_data must be a valid ExplainerSequence object." },
-          { status: 400 }
-        );
-      }
       updates.sequence_data = sequence_data;
     }
 
@@ -121,9 +115,6 @@ export async function POST(request: NextRequest) {
     }
 
     if (status !== undefined) {
-      if (!["draft", "published", "archived"].includes(status)) {
-        return NextResponse.json({ error: "Invalid status value." }, { status: 400 });
-      }
       updates.status = status;
     }
 

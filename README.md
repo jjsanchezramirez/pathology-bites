@@ -150,6 +150,8 @@ Key variables (full list in `.env.example`):
 | `npm run test:api`       | API tests (incl. swagger coverage guard) |
 | `npm run find-unused`    | Dead-code / unused-export check (knip)   |
 
+> **Note**: `src/shared/config/content-index.ts` is generated data. The generator it names (`scripts/generate-content-index.ts`) lived in the gitignored `dev/` directory and is not in the repo — rewrite it from the file's documented structure if the index ever needs regenerating.
+
 ## API Documentation
 
 Interactive API reference is served by **Scalar at [`/docs`](http://localhost:3000/docs)**, generated from `@swagger` JSDoc blocks on each route handler (`next-swagger-doc`). The raw OpenAPI spec is at `/api/docs`.

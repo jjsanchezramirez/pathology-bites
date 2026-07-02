@@ -2,9 +2,19 @@
 // API endpoint for admins to broadcast system update notifications
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { notificationGenerators } from "@/shared/services/notification-generators";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const systemUpdateSchema = z.object({
+  title: z.string().min(1),
+  message: z.string().min(1),
+  updateType: z.enum(["maintenance", "feature", "announcement", "security"]),
+  severity: z.enum(["info", "warning", "critical"]).default("info"),
+  targetAudience: z.enum(["all", "admin", "user", "creator", "reviewer"]).default("all"),
+});
 
 /**
  * @swagger
@@ -90,43 +100,9 @@ export async function POST(request: NextRequest) {
     // Auth is now handled by middleware
 
     // Parse request body
-    const body = await request.json();
-    const { title, message, updateType, severity = "info", targetAudience = "all" } = body;
-
-    // Validate required fields
-    if (!title || !message || !updateType) {
-      return NextResponse.json(
-        { error: "Missing required fields: title, message, updateType" },
-        { status: 400 }
-      );
-    }
-
-    // Validate updateType
-    const validUpdateTypes = ["maintenance", "feature", "announcement", "security"];
-    if (!validUpdateTypes.includes(updateType)) {
-      return NextResponse.json(
-        { error: "Invalid updateType. Must be one of: " + validUpdateTypes.join(", ") },
-        { status: 400 }
-      );
-    }
-
-    // Validate severity
-    const validSeverities = ["info", "warning", "critical"];
-    if (!validSeverities.includes(severity)) {
-      return NextResponse.json(
-        { error: "Invalid severity. Must be one of: " + validSeverities.join(", ") },
-        { status: 400 }
-      );
-    }
-
-    // Validate targetAudience
-    const validAudiences = ["all", "admin", "user", "creator", "reviewer"];
-    if (!validAudiences.includes(targetAudience)) {
-      return NextResponse.json(
-        { error: "Invalid targetAudience. Must be one of: " + validAudiences.join(", ") },
-        { status: 400 }
-      );
-    }
+    const body = await parseBody(request, systemUpdateSchema);
+    if (body instanceof NextResponse) return body;
+    const { title, message, updateType, severity, targetAudience } = body;
 
     // Broadcast the system update
     await notificationGenerators.broadcastSystemUpdate(

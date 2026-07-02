@@ -2,7 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useCachedData } from "@/shared/hooks/use-cached-data";
+import useSWR from "swr";
+import { fetcher } from "@/shared/utils/api/fetcher";
 import { Button } from "@/shared/components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
@@ -31,33 +32,20 @@ export default function QuizzesPage() {
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
 
-  // Optimized quiz fetching with caching (fetch all, filter client-side)
+  // Optimized quiz fetching with caching (fetch all, filter client-side).
+  // Uses the app-wide SWR provider (persisted to unifiedCache), so quiz
+  // completion can patch this list in place via patchCachedQuizSession.
   const {
     data: quizzesData,
     isLoading,
     error,
-    invalidate,
-  } = useCachedData(
-    "quiz-sessions-all",
-    async () => {
-      const params = new URLSearchParams();
-      params.append("limit", "100"); // Increased limit
-
-      const response = await fetch(`/api/user/quiz/sessions?${params}`);
-      if (!response.ok) {
-        throw new Error("Failed to fetch quizzes");
-      }
-
-      const result = await response.json();
-      return result.data;
-    },
-    {
-      namespace: "swr",
-      refetchOnMount: true, // Always fetch on mount if no valid cache
-      ttl: 2 * 60 * 1000, // 2 minutes cache
-      staleTime: 1 * 60 * 1000, // 1 minute stale time
-    }
-  );
+    mutate: mutateSessions,
+  } = useSWR<QuizSessionListItem[]>("quiz-sessions-all", async () => {
+    const result = await fetcher<{ data: QuizSessionListItem[] }>(
+      "/api/user/quiz/sessions?limit=100"
+    );
+    return result.data;
+  });
 
   // Update quizzes when data changes
   useEffect(() => {
@@ -94,8 +82,11 @@ export default function QuizzesPage() {
 
       toast.success("Quiz deleted successfully");
 
-      // Invalidate cache to force refresh
-      invalidate();
+      // Remove the session from the SWR cache in place (bound mutate is
+      // provider-scoped) — no refetch needed, we know exactly what changed.
+      mutateSessions((prev) => prev?.filter((quiz) => quiz.id !== selectedQuiz.id), {
+        revalidate: false,
+      });
 
       // Also update local state immediately for instant UI feedback
       setQuizzes((prev) => prev.filter((quiz) => quiz.id !== selectedQuiz.id));

@@ -1,9 +1,9 @@
 // src/app/api/auth/password-reset/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
-import { createClient as createAdminClient } from "@supabase/supabase-js";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { z } from "zod";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 const passwordResetSchema = z.object({
@@ -137,14 +137,7 @@ export async function POST(request: NextRequest) {
     // Create admin client to bypass CAPTCHA requirement
     // Note: This endpoint is only accessible to authenticated users (admin tools, user settings),
     // so we can safely bypass CAPTCHA by using the service role client
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
-    const adminClient = createAdminClient(supabaseUrl, supabaseServiceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false,
-      },
-    });
+    const adminClient = createServiceRoleClient();
 
     // Use resetPasswordForEmail() - Supabase handles email sending automatically
     const { error: resetError } = await adminClient.auth.resetPasswordForEmail(email, {
@@ -160,18 +153,12 @@ export async function POST(request: NextRequest) {
     log.debug("[Password Reset] Type:", type);
     log.debug("[Password Reset] Redirect URL:", redirectTo);
 
-    // Create audit log
-    await supabase.from("audit_logs").insert({
-      user_id: user.id,
+    // Audit trail. There is no audit_logs table in the schema — the insert this
+    // used to do failed silently on every request — so log instead.
+    log.info("[Audit] password_reset_request", {
+      userId: user.id,
       action: type === "magic_link" ? "magic_link_requested" : "password_reset_requested",
-      table_name: "users",
-      record_id: user.id,
-      metadata: {
-        email: email,
-        type: type,
-        timestamp: new Date().toISOString(),
-        ip_address: request.headers.get("x-forwarded-for") || "unknown",
-      },
+      ipAddress: request.headers.get("x-forwarded-for") || "unknown",
     });
 
     return NextResponse.json({
@@ -268,10 +255,12 @@ export async function PATCH(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated (should have valid reset token)
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) {
+      // Preserve the route-specific 401 message (reset-token context, not a generic gate)
       return NextResponse.json({ error: "Invalid or expired reset token" }, { status: 401 });
     }
+    const userId = auth.userId;
 
     const body = await request.json();
 
@@ -294,17 +283,8 @@ export async function PATCH(request: NextRequest) {
       return NextResponse.json({ error: updateError.message }, { status: 400 });
     }
 
-    // Create audit log
-    await supabase.from("audit_logs").insert({
-      user_id: userId,
-      action: "password_updated",
-      table_name: "users",
-      record_id: userId,
-      metadata: {
-        timestamp: new Date().toISOString(),
-        method: "password_reset",
-      },
-    });
+    // Audit trail (no audit_logs table in the schema — see PATCH above).
+    log.info("[Audit] password_updated", { userId, method: "password_reset" });
 
     return NextResponse.json({
       success: true,

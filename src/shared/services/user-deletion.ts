@@ -12,6 +12,7 @@
  */
 
 import { SupabaseClient } from "@supabase/supabase-js";
+import type { Database } from "@/shared/types/supabase";
 import { log } from "@/shared/utils/logging";
 
 export interface UserDeletionResult {
@@ -63,7 +64,7 @@ export async function deleteUser(
     } else {
       // Hard delete: remove all user data
       // Delete from all user-related tables (order matters for foreign keys)
-      const tablesToDelete = [
+      const tablesToDelete: (keyof Database["public"]["Tables"])[] = [
         "user_settings",
         "user_favorites",
         "user_achievements",

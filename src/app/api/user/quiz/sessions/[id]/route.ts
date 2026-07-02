@@ -1,8 +1,10 @@
 // src/app/api/user/quiz/sessions/[id]/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { quizService } from "@/features/user/quiz/services/quiz-service";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { QuizStatus } from "@/features/user/quiz/types/quiz";
 import { log } from "@/shared/utils/logging";
 
@@ -60,11 +62,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Get quiz session using authenticated client
     const quizSession = await quizService.getQuizSession(id, supabase);
@@ -91,12 +91,27 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
   }
 }
 
-interface BatchAnswerSubmission {
-  questionId: string;
-  selectedAnswerId: string;
-  timeSpent: number;
-  timestamp: number;
-}
+const batchAnswerSchema = z.object({
+  questionId: z.string(),
+  selectedAnswerId: z.string(),
+  timeSpent: z.number().optional(),
+  timestamp: z.number(),
+});
+
+// Loose on purpose: `action`/`status` stay plain strings (unknown actions fall
+// through to the regular-update path, as before), and passthrough preserves
+// extra keys quizService.updateQuizSession reads off the same object (score,
+// correctAnswers, startedAt, completedAt, totalTimeLimit).
+const quizSessionPatchSchema = z
+  .object({
+    action: z.string().optional(),
+    timeRemaining: z.number().optional(),
+    currentQuestionIndex: z.number().optional(),
+    totalTimeSpent: z.number().optional(),
+    status: z.string().optional(),
+    answers: z.array(batchAnswerSchema).optional(),
+  })
+  .passthrough();
 
 /**
  * @swagger
@@ -189,20 +204,13 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Parse request body
-    const updates: {
-      action?: string;
-      timeRemaining?: number;
-      currentQuestionIndex?: number;
-      totalTimeSpent?: number;
-      status?: string;
-      answers?: BatchAnswerSubmission[];
-    } = await request.json();
+    const updates = await parseBody(request, quizSessionPatchSchema);
+    if (updates instanceof NextResponse) return updates;
 
     // Get existing quiz session to verify ownership
     const existingSession = await quizService.getQuizSession(id, supabase);
@@ -360,10 +368,9 @@ export async function DELETE(
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Check if user owns this quiz session
     const { data: session, error: sessionError } = await supabase

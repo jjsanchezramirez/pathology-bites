@@ -2,6 +2,7 @@
 // Generator functions for creating user notifications
 
 import { createClient } from "@/shared/services/server";
+import { isUserRole } from "@/shared/types/database";
 import { log } from "@/shared/utils/logging";
 
 export const notificationGenerators = {
@@ -120,7 +121,7 @@ export const notificationGenerators = {
         }
 
         targetUserIds = users?.map((u) => u.id) || [];
-      } else {
+      } else if (isUserRole(targetAudience)) {
         // Get users with specific role
         const { data: users, error: usersError } = await supabase
           .from("users")
@@ -134,6 +135,10 @@ export const notificationGenerators = {
         }
 
         targetUserIds = users?.map((u) => u.id) || [];
+      } else {
+        // Unknown audience matched no rows before the typed client either
+        log.warn("Unknown notification target audience:", targetAudience);
+        targetUserIds = [];
       }
 
       // Create notification_states for each target user

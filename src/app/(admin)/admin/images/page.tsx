@@ -14,6 +14,7 @@ import {
   CardHeader,
   CardTitle,
 } from "@/shared/components/ui/card";
+import { PageHeader } from "@/shared/components/ui/page-header";
 
 export default function ImagesPage() {
   const storageStatsRef = useRef<StorageStatsRef>(null);
@@ -26,12 +27,10 @@ export default function ImagesPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Image Library</h1>
-        <p className="text-muted-foreground">
-          Manage and organize pathology images, diagrams, and illustrations
-        </p>
-      </div>
+      <PageHeader
+        title="Image Library"
+        description="Manage and organize pathology images, diagrams, and illustrations"
+      />
 
       {/* Storage Statistics Cards */}
       <StorageStatsCards ref={storageStatsRef} />

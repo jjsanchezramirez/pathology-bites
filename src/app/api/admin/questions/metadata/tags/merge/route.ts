@@ -1,6 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
+
+const mergeTagsSchema = z.object({
+  sourceTagIds: z.array(z.string()).min(1),
+  targetTagId: z.string().min(1),
+});
 
 /**
  * @swagger
@@ -57,37 +65,14 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Check if user is authenticated
-    const userId = request.headers.get("x-user-id");
+    // Auth check - require admin, creator, or reviewer role
+    const auth = requireContentRole(request);
+    if (auth instanceof NextResponse) return auth;
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // Check if user is admin
-    const { data: userData, error: userError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    if (userError || !["admin", "creator", "reviewer"].includes(userData?.role)) {
-      return NextResponse.json(
-        { error: "Forbidden - Admin, Creator, or Reviewer access required" },
-        { status: 403 }
-      );
-    }
-
-    const { sourceTagIds, targetTagId } = await request.json();
+    const body = await parseBody(request, mergeTagsSchema);
+    if (body instanceof NextResponse) return body;
+    const { sourceTagIds, targetTagId } = body;
     log.debug("Merge request:", { sourceTagIds, targetTagId });
-
-    if (!sourceTagIds || !Array.isArray(sourceTagIds) || sourceTagIds.length === 0) {
-      return NextResponse.json({ error: "Source tag IDs are required" }, { status: 400 });
-    }
-
-    if (!targetTagId) {
-      return NextResponse.json({ error: "Target tag ID is required" }, { status: 400 });
-    }
 
     // Ensure target tag is not in source tags list
     if (sourceTagIds.includes(targetTagId)) {

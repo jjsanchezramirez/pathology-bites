@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { z } from "zod";
 import { log } from "@/shared/utils/logging";
 
@@ -92,15 +93,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     log.debug("Updating inquiry status for ID:", resolvedParams.id);
 
     // Auth check - require admin role only
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || userRole !== "admin") {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
     // Use admin client for database operations (bypasses RLS)
     const supabase = createServiceRoleClient();

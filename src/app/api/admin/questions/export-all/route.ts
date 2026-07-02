@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireContentRole } from "@/shared/utils/api/api-guard";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { log } from "@/shared/utils/logging";
 
@@ -44,16 +45,8 @@ import { log } from "@/shared/utils/logging";
  */
 export async function GET(request: NextRequest) {
   try {
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    if (!["admin", "creator", "reviewer"].includes(userRole || "")) {
-      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-    }
+    const auth = requireContentRole(request);
+    if (auth instanceof NextResponse) return auth;
 
     const supabase = createServiceRoleClient();
     const { data, error } = await supabase.from("questions").select(
