@@ -3,7 +3,6 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "setup-ffmpeg": "node dev/code/scripts/build/setup-ffmpeg.js",
     "tailwind": "tailwindcss --input ./src/styles/globals.css --output ./src/styles/output.css",
     "dev": "next dev",
     "build": "next build",
@@ -20,7 +19,6 @@
     "type-check": "tsc --noEmit",
     "gen:openapi": "tsx src/shared/utils/gen-openapi.ts",
     "find-unused": "npx knip --no-exit-code",
-    "find-unused:custom": "npx tsx dev/code/scripts/utils/find-unused-code.ts",
     "test": "vitest",
     "test:ui": "vitest --ui",
     "test:run": "vitest run",

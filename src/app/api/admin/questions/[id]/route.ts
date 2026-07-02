@@ -338,9 +338,6 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
 export async function PATCH(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     const { id: questionId } = await params;
-    log.debug("PATCH /api/admin/questions/[id] - Question ID:", questionId);
-    log.debug("PATCH /api/admin/questions/[id] - Params type:", typeof params);
-    log.debug("PATCH /api/admin/questions/[id] - Params:", params);
 
     const body = await request.json();
     const {
@@ -387,14 +384,6 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       updateType?: string;
       reviewerId?: string;
     };
-
-    log.debug("PATCH /api/admin/questions/[id] - Body received:", {
-      hasQuestionData: !!questionData,
-      hasAnswerOptions: !!answerOptions,
-      hasQuestionImages: !!questionImages,
-      hasTagIds: !!tagIds,
-      hasCategoryId: !!categoryId,
-    });
 
     // Auth is handled by middleware - get user ID and role from headers
     const userId = request.headers.get("x-user-id");
