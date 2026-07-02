@@ -134,9 +134,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: "Question not found" }, { status: 404 });
     }
 
-    if (question.status !== "approved") {
+    // "approved" is not a question_status value — the live enum's terminal
+    // state is "published", which is what the comment above always meant.
+    // The old check made this endpoint 400 on every request.
+    if (question.status !== "published") {
       return NextResponse.json(
-        { error: "Only approved questions can be versioned" },
+        { error: "Only published questions can be versioned" },
         { status: 400 }
       );
     }

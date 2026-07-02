@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import type { QuestionStatus } from "@/shared/types/database";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { formatVersion } from "@/shared/utils/version";
@@ -168,7 +169,7 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const canAccess =
       userRole === "admin" ||
       (question.created_by === userId && ["admin", "creator"].includes(userRole || "")) ||
-      (["reviewer", "admin"].includes(userRole || "") && question.status === "pending");
+      (["reviewer", "admin"].includes(userRole || "") && question.status === "pending_review");
 
     if (!canAccess) {
       return NextResponse.json(
@@ -354,14 +355,14 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       questionData?: {
         title?: string;
         stem?: string;
-        difficulty?: string;
+        difficulty?: "easy" | "medium" | "hard";
         teaching_point?: string;
         question_references?: string;
         question_set_id?: string;
         lesson?: string;
         topic?: string;
         reviewer_id?: string;
-        status?: string;
+        status?: QuestionStatus;
         anki_card_id?: number | null;
         anki_deck_name?: string | null;
       };
@@ -616,8 +617,10 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         }),
         ...(questionData?.lesson !== undefined && { lesson: questionData.lesson }),
         ...(questionData?.topic !== undefined && { topic: questionData.topic }),
+        // DB column is text; clients send Anki's numeric card id
         ...(questionData?.anki_card_id !== undefined && {
-          anki_card_id: questionData.anki_card_id,
+          anki_card_id:
+            questionData.anki_card_id === null ? null : String(questionData.anki_card_id),
         }),
         ...(questionData?.anki_deck_name !== undefined && {
           anki_deck_name: questionData.anki_deck_name,

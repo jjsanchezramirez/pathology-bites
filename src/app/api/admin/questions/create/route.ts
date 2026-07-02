@@ -21,7 +21,7 @@ interface QuestionImageInput {
 interface CreateQuestionRequest {
   title: string;
   stem: string;
-  difficulty?: string;
+  difficulty?: "easy" | "medium" | "hard";
   teaching_point?: string;
   question_references?: string;
   question_set_id?: string;
