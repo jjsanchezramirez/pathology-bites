@@ -3,7 +3,6 @@ import { ConditionalThemeProvider } from "@/shared/components/common/conditional
 import { Toaster as SonnerToaster } from "sonner";
 import { ConnectionStatus } from "@/shared/components/common/connection-status";
 import { CookieConsentBanner } from "@/shared/components/common/cookie-consent-banner";
-import { CacheInitializer } from "@/shared/contexts/cache-initializer";
 import { SWRCacheProvider } from "@/shared/contexts/swr-cache-provider";
 
 import { cn } from "@/shared/utils";
@@ -159,7 +158,6 @@ export default async function RootLayout({ children }: { children: React.ReactNo
                 <SonnerToaster />
                 <ConnectionStatus />
                 <CookieConsentBanner />
-                <CacheInitializer />
               </NotificationRefreshProvider>
             </ConditionalThemeProvider>
           </SWRCacheProvider>
