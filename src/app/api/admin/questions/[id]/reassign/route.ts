@@ -1,8 +1,14 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
+
+const reassignQuestionSchema = z.object({
+  reviewer_id: z.string().min(1),
+});
 
 /**
  * @swagger
@@ -71,13 +77,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const userId = auth.userId;
 
     // Parse request body
-    const body = await request.json();
+    const body = await parseBody(request, reassignQuestionSchema);
+    if (body instanceof NextResponse) return body;
     const { reviewer_id } = body;
-
-    // Validate reviewer_id is provided
-    if (!reviewer_id || typeof reviewer_id !== "string") {
-      return NextResponse.json({ error: "reviewer_id is required" }, { status: 400 });
-    }
 
     // Verify new reviewer exists and has appropriate role
     const { data: reviewer, error: reviewerError } = await supabase

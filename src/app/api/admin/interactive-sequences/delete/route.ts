@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const deleteSequenceSchema = z.object({
+  id: z.string().min(1),
+});
 
 /**
  * @swagger
@@ -54,12 +60,9 @@ export async function POST(request: NextRequest) {
     const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, deleteSequenceSchema);
+    if (body instanceof NextResponse) return body;
     const { id } = body;
-
-    if (!id) {
-      return NextResponse.json({ error: "Sequence ID is required." }, { status: 400 });
-    }
 
     const { error } = await supabase.from("interactive_sequences").delete().eq("id", id);
 

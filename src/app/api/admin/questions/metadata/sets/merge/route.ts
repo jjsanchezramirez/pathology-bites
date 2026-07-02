@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
+
+const mergeSetsSchema = z.object({
+  sourceSetIds: z.array(z.string()).min(1),
+  targetSetId: z.string().min(1),
+});
 
 /**
  * @swagger
@@ -68,16 +75,9 @@ export async function POST(request: NextRequest) {
     const auth = requireContentRole(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, mergeSetsSchema);
+    if (body instanceof NextResponse) return body;
     const { sourceSetIds, targetSetId } = body;
-
-    if (!sourceSetIds || !Array.isArray(sourceSetIds) || sourceSetIds.length === 0) {
-      return NextResponse.json({ error: "Source set IDs array is required" }, { status: 400 });
-    }
-
-    if (!targetSetId) {
-      return NextResponse.json({ error: "Target set ID is required" }, { status: 400 });
-    }
 
     // Verify target set exists
     const { data: targetSet, error: targetError } = await supabase

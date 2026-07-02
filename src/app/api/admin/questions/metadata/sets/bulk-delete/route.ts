@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
+
+const bulkDeleteSetsSchema = z.object({
+  setIds: z.array(z.string()).min(1),
+});
 
 /**
  * @swagger
@@ -57,12 +63,9 @@ export async function POST(request: NextRequest) {
     const auth = requireContentRole(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, bulkDeleteSetsSchema);
+    if (body instanceof NextResponse) return body;
     const { setIds } = body;
-
-    if (!setIds || !Array.isArray(setIds) || setIds.length === 0) {
-      return NextResponse.json({ error: "Set IDs array is required" }, { status: 400 });
-    }
 
     // Check if any sets have questions
     const { data: questionsCheck } = await supabase

@@ -1,9 +1,15 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
+
+const bulkApproveSchema = z.object({
+  questionIds: z.array(z.string()).min(1),
+});
 
 /**
  * @swagger
@@ -73,11 +79,9 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 
-    const { questionIds } = await request.json();
-
-    if (!Array.isArray(questionIds) || questionIds.length === 0) {
-      return NextResponse.json({ error: "questionIds must be a non-empty array" }, { status: 400 });
-    }
+    const body = await parseBody(request, bulkApproveSchema);
+    if (body instanceof NextResponse) return body;
+    const { questionIds } = body;
 
     // Check if user is admin or reviewer
     const { data: userProfile } = await supabase

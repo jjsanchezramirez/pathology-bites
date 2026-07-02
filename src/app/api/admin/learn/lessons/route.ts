@@ -1,7 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import type { Json } from "@/shared/types/supabase";
 import { createClient } from "@/shared/services/server";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const createLessonSchema = z.object({
+  subject_id: z.string().min(1),
+  title: z.string().trim().min(1),
+  slug: z.string().trim().min(1),
+  description: z.string().nullish(),
+  content: z.unknown().optional(),
+  content_markdown: z.string().nullish(),
+  quiz: z.unknown().optional(),
+  anki_deck_ref: z.string().nullish(),
+  cover_image_url: z.string().nullish(),
+  sort_order: z.number().int().nullish(),
+  estimated_minutes: z.number().int().nullish(),
+  status: z.string().optional(),
+});
 
 /**
  * @swagger
@@ -134,7 +152,8 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 
-    const body = await request.json();
+    const body = await parseBody(request, createLessonSchema);
+    if (body instanceof NextResponse) return body;
     const {
       subject_id,
       title,
@@ -150,16 +169,6 @@ export async function POST(request: NextRequest) {
       status,
     } = body;
 
-    if (!subject_id) {
-      return NextResponse.json({ error: "Subject is required" }, { status: 400 });
-    }
-    if (!title?.trim()) {
-      return NextResponse.json({ error: "Title is required" }, { status: 400 });
-    }
-    if (!slug?.trim()) {
-      return NextResponse.json({ error: "Slug is required" }, { status: 400 });
-    }
-
     const { data, error } = await supabase
       .from("lessons")
       .insert({
@@ -167,9 +176,9 @@ export async function POST(request: NextRequest) {
         title: title.trim(),
         slug: slug.trim().toLowerCase(),
         description: description?.trim() || null,
-        content: content || { version: 1, sections: [] },
+        content: (content as Json) || { version: 1, sections: [] },
         content_markdown: content_markdown || null,
-        quiz: quiz || null,
+        quiz: (quiz as Json) || null,
         anki_deck_ref: anki_deck_ref || null,
         cover_image_url: cover_image_url || null,
         sort_order: sort_order ?? 0,

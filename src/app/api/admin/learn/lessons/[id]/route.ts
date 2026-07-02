@@ -1,7 +1,24 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const updateLessonSchema = z.object({
+  title: z.string().optional(),
+  slug: z.string().optional(),
+  description: z.string().nullish(),
+  content: z.unknown().optional(),
+  content_markdown: z.string().nullish(),
+  quiz: z.unknown().optional(),
+  anki_deck_ref: z.string().nullish(),
+  cover_image_url: z.string().nullish(),
+  sort_order: z.number().int().optional(),
+  estimated_minutes: z.number().int().nullish(),
+  status: z.string().optional(),
+  subject_id: z.string().optional(),
+});
 
 /**
  * @swagger
@@ -129,7 +146,8 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
     if (auth instanceof NextResponse) return auth;
 
     const { id } = await params;
-    const body = await request.json();
+    const body = await parseBody(request, updateLessonSchema);
+    if (body instanceof NextResponse) return body;
     const {
       title,
       slug,

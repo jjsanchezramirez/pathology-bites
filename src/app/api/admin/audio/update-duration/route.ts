@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const updateDurationSchema = z.object({
+  id: z.string().min(1),
+  duration: z.number().positive(),
+});
 
 /**
  * @swagger
@@ -96,12 +103,9 @@ export async function POST(request: NextRequest) {
     const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, updateDurationSchema);
+    if (body instanceof NextResponse) return body;
     const { id, duration } = body;
-
-    if (!id || typeof duration !== "number" || duration <= 0) {
-      return NextResponse.json({ error: "Invalid audio ID or duration." }, { status: 400 });
-    }
 
     const { data, error } = await supabase
       .from("audio")

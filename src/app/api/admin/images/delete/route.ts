@@ -1,9 +1,15 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { deleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { revalidateImages } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
+
+const deleteImageSchema = z.object({
+  imageId: z.string().min(1),
+});
 
 /**
  * @swagger
@@ -129,13 +135,10 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Parse request body
-    const { imageId } = await request.json();
+    const body = await parseBody(request, deleteImageSchema);
+    if (body instanceof NextResponse) return body;
+    const { imageId } = body;
     log.debug("📋 Request data:", { imageId });
-
-    if (!imageId) {
-      log.debug("❌ Missing imageId");
-      return NextResponse.json({ error: "Image ID is required" }, { status: 400 });
-    }
 
     // Get image details to determine storage location
     const { data: imageData, error: fetchError } = await supabase

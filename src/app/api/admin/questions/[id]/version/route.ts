@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { formatVersion } from "@/shared/utils/version";
 import { log } from "@/shared/utils/logging";
+
+const createVersionSchema = z.object({
+  changeSummary: z.string().nullish(),
+});
 
 /**
  * @swagger
@@ -117,7 +123,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     const { id: questionId } = await params;
     const userId = request.headers.get("x-user-id"); // Still need user ID for changed_by
-    const body = await request.json();
+    const body = await parseBody(request, createVersionSchema);
+    if (body instanceof NextResponse) return body;
     const changeSummary = body.changeSummary;
 
     // Use admin client for the actual operations

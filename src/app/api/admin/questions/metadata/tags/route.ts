@@ -1,8 +1,23 @@
 // src/app/api/admin/questions/metadata/tags/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
+
+const createTagSchema = z.object({
+  name: z.string().trim().min(1),
+});
+
+const updateTagSchema = z.object({
+  tagId: z.string().min(1),
+  name: z.string().trim().min(1),
+});
+
+const deleteTagSchema = z.object({
+  tagId: z.string().min(1),
+});
 
 /**
  * @swagger
@@ -213,12 +228,9 @@ export async function POST(request: NextRequest) {
     const auth = requireContentRole(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, createTagSchema);
+    if (body instanceof NextResponse) return body;
     const { name } = body;
-
-    if (!name || !name.trim()) {
-      return NextResponse.json({ error: "Tag name is required" }, { status: 400 });
-    }
 
     // Create tag with service role to bypass RLS
     const { data, error } = await supabase
@@ -297,12 +309,9 @@ export async function PATCH(request: NextRequest) {
     const auth = requireContentRole(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, updateTagSchema);
+    if (body instanceof NextResponse) return body;
     const { tagId, name } = body;
-
-    if (!tagId || !name || !name.trim()) {
-      return NextResponse.json({ error: "Tag ID and name are required" }, { status: 400 });
-    }
 
     // Update tag with service role to bypass RLS
     const { data, error } = await supabase
@@ -376,12 +385,9 @@ export async function DELETE(request: NextRequest) {
     const auth = requireContentRole(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, deleteTagSchema);
+    if (body instanceof NextResponse) return body;
     const { tagId } = body;
-
-    if (!tagId) {
-      return NextResponse.json({ error: "Tag ID is required" }, { status: 400 });
-    }
 
     // First delete all question_tags relationships
     const { error: relationError } = await supabase

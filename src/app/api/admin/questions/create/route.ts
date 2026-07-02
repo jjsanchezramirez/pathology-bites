@@ -1,38 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
 
-// Type definitions for request body
-interface QuestionOptionInput {
-  text: string;
-  is_correct?: boolean;
-  explanation?: string;
-  order_index?: number;
-}
+const questionOptionInputSchema = z.object({
+  text: z.string(),
+  is_correct: z.boolean().optional(),
+  explanation: z.string().nullish(),
+  order_index: z.number().int().optional(),
+});
 
-interface QuestionImageInput {
-  image_id: string;
-  question_section: string;
-  order_index: number;
-}
+const questionImageInputSchema = z.object({
+  image_id: z.string(),
+  question_section: z.string(),
+  order_index: z.number().int(),
+});
 
-interface CreateQuestionRequest {
-  title: string;
-  stem: string;
-  difficulty?: "easy" | "medium" | "hard";
-  teaching_point?: string;
-  question_references?: string;
-  question_set_id?: string;
-  category_id?: string;
-  lesson?: string;
-  topic?: string;
-  question_options: QuestionOptionInput[];
-  tag_ids?: string[];
-  question_images?: QuestionImageInput[];
-  allowDuplicate?: boolean; // Allow creating question with duplicate topic combination
-}
+const createQuestionSchema = z.object({
+  title: z.string().min(1),
+  stem: z.string().min(1),
+  difficulty: z.enum(["easy", "medium", "hard"]).optional(),
+  teaching_point: z.string().nullish(),
+  question_references: z.string().nullish(),
+  question_set_id: z.string().nullish(),
+  category_id: z.string().nullish(),
+  lesson: z.string().nullish(),
+  topic: z.string().nullish(),
+  question_options: z.array(questionOptionInputSchema),
+  tag_ids: z.array(z.string()).optional(),
+  question_images: z.array(questionImageInputSchema).optional(),
+  allowDuplicate: z.boolean().optional(), // Allow creating question with duplicate topic combination
+});
+
+type QuestionOptionInput = z.infer<typeof questionOptionInputSchema>;
+type QuestionImageInput = z.infer<typeof questionImageInputSchema>;
 
 /**
  * @swagger
@@ -164,12 +168,8 @@ export async function POST(request: NextRequest) {
     // Use service role client for database operations to bypass RLS
     const supabase = createServiceRoleClient();
 
-    const questionData = (await request.json()) as CreateQuestionRequest;
-
-    // Validate required fields
-    if (!questionData.title || !questionData.stem || !questionData.question_options) {
-      return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
-    }
+    const questionData = await parseBody(request, createQuestionSchema);
+    if (questionData instanceof NextResponse) return questionData;
 
     // Check for duplicate topic combination if not explicitly allowed
     if (

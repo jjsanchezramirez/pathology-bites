@@ -1,9 +1,15 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
+
+const rejectQuestionSchema = z.object({
+  feedback: z.string().trim().min(1),
+});
 
 /**
  * @swagger
@@ -69,16 +75,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const userId = auth.userId;
 
     // Parse request body
-    const body = await request.json();
+    const body = await parseBody(request, rejectQuestionSchema);
+    if (body instanceof NextResponse) return body;
     const { feedback } = body;
-
-    // Validate feedback is provided
-    if (!feedback || typeof feedback !== "string" || feedback.trim() === "") {
-      return NextResponse.json(
-        { error: "Feedback is required when rejecting a question" },
-        { status: 400 }
-      );
-    }
 
     // Get the question to verify reviewer assignment
     const { data: question, error: fetchError } = await supabase

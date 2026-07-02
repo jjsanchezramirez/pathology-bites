@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { deleteFromR2 } from "@/shared/services/r2-storage";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const updateSvgAssetSchema = z.object({
+  name: z.string().optional(),
+  description: z.string().nullish(),
+  tags: z.array(z.string()).optional(),
+  category: z.string().nullish(),
+});
 
 /**
  * @swagger
@@ -173,7 +182,8 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, updateSvgAssetSchema);
+    if (body instanceof NextResponse) return body;
     const updates: Record<string, unknown> = {};
 
     if (body.name !== undefined) updates.name = body.name;

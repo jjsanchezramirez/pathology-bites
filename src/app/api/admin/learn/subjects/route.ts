@@ -1,7 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const createSubjectSchema = z.object({
+  title: z.string().trim().min(1),
+  description: z.string().nullish(),
+  slug: z.string().trim().min(1),
+  category_id: z.string().min(1),
+  cover_image_url: z.string().nullish(),
+  sort_order: z.number().int().nullish(),
+  status: z.string().optional(),
+});
 
 /**
  * @swagger
@@ -118,18 +130,9 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 
-    const body = await request.json();
+    const body = await parseBody(request, createSubjectSchema);
+    if (body instanceof NextResponse) return body;
     const { title, description, slug, category_id, cover_image_url, sort_order, status } = body;
-
-    if (!title?.trim()) {
-      return NextResponse.json({ error: "Title is required" }, { status: 400 });
-    }
-    if (!slug?.trim()) {
-      return NextResponse.json({ error: "Slug is required" }, { status: 400 });
-    }
-    if (!category_id) {
-      return NextResponse.json({ error: "Category is required" }, { status: 400 });
-    }
 
     const { data, error } = await supabase
       .from("learning_subjects")

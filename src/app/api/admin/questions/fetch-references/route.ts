@@ -1,7 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { PATHOLOGY_JOURNALS } from "@/shared/utils/domain/pathology-journals";
 import { log } from "@/shared/utils/logging";
+
+const fetchReferencesSchema = z.object({
+  searchTerms: z.string().min(1),
+});
 
 /**
  * Semantic Scholar API route for fetching academic references
@@ -198,15 +204,9 @@ export async function POST(request: NextRequest) {
     const auth = requireContentRole(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, fetchReferencesSchema);
+    if (body instanceof NextResponse) return body;
     const searchTerms = body.searchTerms;
-
-    if (!searchTerms || typeof searchTerms !== "string") {
-      return NextResponse.json(
-        { error: "searchTerms is required in request body" },
-        { status: 400 }
-      );
-    }
 
     // Build Semantic Scholar API URL
     const semanticScholarUrl = new URL("https://api.semanticscholar.org/graph/v1/paper/search");

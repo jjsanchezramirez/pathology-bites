@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
+
+const mergeTagsSchema = z.object({
+  sourceTagIds: z.array(z.string()).min(1),
+  targetTagId: z.string().min(1),
+});
 
 /**
  * @swagger
@@ -62,16 +69,10 @@ export async function POST(request: NextRequest) {
     const auth = requireContentRole(request);
     if (auth instanceof NextResponse) return auth;
 
-    const { sourceTagIds, targetTagId } = await request.json();
+    const body = await parseBody(request, mergeTagsSchema);
+    if (body instanceof NextResponse) return body;
+    const { sourceTagIds, targetTagId } = body;
     log.debug("Merge request:", { sourceTagIds, targetTagId });
-
-    if (!sourceTagIds || !Array.isArray(sourceTagIds) || sourceTagIds.length === 0) {
-      return NextResponse.json({ error: "Source tag IDs are required" }, { status: 400 });
-    }
-
-    if (!targetTagId) {
-      return NextResponse.json({ error: "Target tag ID is required" }, { status: 400 });
-    }
 
     // Ensure target tag is not in source tags list
     if (sourceTagIds.includes(targetTagId)) {

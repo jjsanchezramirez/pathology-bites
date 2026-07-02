@@ -1,8 +1,26 @@
 // src/app/api/admin/questions/sets/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
+
+const createSetSchema = z.object({
+  name: z.string().trim().min(1),
+  description: z.string().nullish(),
+  sourceType: z.string().min(1),
+  isActive: z.boolean().optional(),
+});
+
+const updateSetSchema = z.object({
+  setId: z.string().min(1),
+  updates: z.record(z.unknown()),
+});
+
+const deleteSetSchema = z.object({
+  setId: z.string().min(1),
+});
 
 /**
  * @swagger
@@ -217,16 +235,9 @@ export async function POST(request: NextRequest) {
     if (auth instanceof NextResponse) return auth;
     const userId = auth.userId;
 
-    const body = await request.json();
+    const body = await parseBody(request, createSetSchema);
+    if (body instanceof NextResponse) return body;
     const { name, description, sourceType, isActive } = body;
-
-    if (!name || !name.trim()) {
-      return NextResponse.json({ error: "Question set name is required" }, { status: 400 });
-    }
-
-    if (!sourceType) {
-      return NextResponse.json({ error: "Source type is required" }, { status: 400 });
-    }
 
     // Create question set with service role to bypass RLS
     const { data, error } = await supabase
@@ -313,12 +324,9 @@ export async function PATCH(request: NextRequest) {
     const auth = requireContentRole(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, updateSetSchema);
+    if (body instanceof NextResponse) return body;
     const { setId, updates } = body;
-
-    if (!setId || !updates) {
-      return NextResponse.json({ error: "Set ID and updates are required" }, { status: 400 });
-    }
 
     // Update question set with service role to bypass RLS
     const { data, error } = await supabase
@@ -388,12 +396,9 @@ export async function DELETE(request: NextRequest) {
     const auth = requireContentRole(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, deleteSetSchema);
+    if (body instanceof NextResponse) return body;
     const { setId } = body;
-
-    if (!setId) {
-      return NextResponse.json({ error: "Set ID is required" }, { status: 400 });
-    }
 
     // Check if set has questions
     const { data: questions } = await supabase

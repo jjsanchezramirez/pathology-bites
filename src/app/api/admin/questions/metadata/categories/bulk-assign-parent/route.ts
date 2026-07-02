@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
+
+const bulkAssignParentSchema = z.object({
+  categoryIds: z.array(z.string()).min(1),
+  parentId: z.string().nullish(),
+});
 
 /**
  * @swagger
@@ -61,12 +68,9 @@ export async function POST(request: NextRequest) {
     const auth = requireContentRole(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, bulkAssignParentSchema);
+    if (body instanceof NextResponse) return body;
     const { categoryIds, parentId } = body;
-
-    if (!categoryIds || !Array.isArray(categoryIds) || categoryIds.length === 0) {
-      return NextResponse.json({ error: "Category IDs array is required" }, { status: 400 });
-    }
 
     // If parentId is provided, validate it exists and prevent circular references
     if (parentId) {

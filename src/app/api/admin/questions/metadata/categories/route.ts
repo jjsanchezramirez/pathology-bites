@@ -1,8 +1,29 @@
 // src/app/api/admin/questions/metadata/categories/route.ts
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { requireContentRole } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { log } from "@/shared/utils/logging";
+
+const createCategorySchema = z.object({
+  name: z.string().trim().min(1),
+  shortForm: z.string().nullish(),
+  parentId: z.string().nullish(),
+  color: z.string().nullish(),
+});
+
+const updateCategorySchema = z.object({
+  categoryId: z.string().min(1),
+  name: z.string().trim().min(1),
+  shortForm: z.string().nullish(),
+  parentId: z.string().nullish(),
+  color: z.string().nullish(),
+});
+
+const deleteCategorySchema = z.object({
+  categoryId: z.string().min(1),
+});
 
 /**
  * @swagger
@@ -221,12 +242,9 @@ export async function POST(request: NextRequest) {
     const auth = requireContentRole(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, createCategorySchema);
+    if (body instanceof NextResponse) return body;
     const { name, shortForm, parentId, color } = body;
-
-    if (!name || !name.trim()) {
-      return NextResponse.json({ error: "Category name is required" }, { status: 400 });
-    }
 
     // Calculate level based on parent
     let level = 1;
@@ -335,12 +353,9 @@ export async function PATCH(request: NextRequest) {
     const auth = requireContentRole(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, updateCategorySchema);
+    if (body instanceof NextResponse) return body;
     const { categoryId, name, shortForm, parentId, color } = body;
-
-    if (!categoryId || !name || !name.trim()) {
-      return NextResponse.json({ error: "Category ID and name are required" }, { status: 400 });
-    }
 
     // Calculate level based on parent
     let level = 1;
@@ -437,12 +452,9 @@ export async function DELETE(request: NextRequest) {
     const auth = requireContentRole(request);
     if (auth instanceof NextResponse) return auth;
 
-    const body = await request.json();
+    const body = await parseBody(request, deleteCategorySchema);
+    if (body instanceof NextResponse) return body;
     const { categoryId } = body;
-
-    if (!categoryId) {
-      return NextResponse.json({ error: "Category ID is required" }, { status: 400 });
-    }
 
     // Check if category has children
     const { data: children } = await supabase
