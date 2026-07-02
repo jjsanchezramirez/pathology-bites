@@ -1,6 +1,7 @@
 // src/app/api/public/subscribe/route.ts
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { createServiceRoleClient } from '@/shared/services/service-role-client'
 import { log } from "@/shared/utils/logging";
 
 // Define error interface for Supabase errors
@@ -135,7 +136,7 @@ export async function POST(request: Request) {
       // If we hit an RLS error and have a service key, try the fallback approach
       if (supabaseError.code === '42501' && supabaseServiceKey) {
         log.debug('Falling back to service role key due to RLS error')
-        return await tryServiceRoleInsert(supabaseUrl, supabaseServiceKey, email)
+        return await tryServiceRoleInsert(email)
       }
       
       throw error
@@ -146,7 +147,7 @@ export async function POST(request: Request) {
       const supabaseError = error as SupabaseError;
       
       if (supabaseError.code === '42501' && supabaseServiceKey) {
-        return await tryServiceRoleInsert(supabaseUrl, supabaseServiceKey, email)
+        return await tryServiceRoleInsert(email)
       }
       
       // Return the database error with proper status code
@@ -169,15 +170,10 @@ export async function POST(request: Request) {
   }
 }
 
-async function tryServiceRoleInsert(supabaseUrl: string, serviceKey: string, email: string) {
+async function tryServiceRoleInsert(email: string) {
   try {
     // Create admin client that bypasses RLS
-    const adminSupabase = createClient(supabaseUrl, serviceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+    const adminSupabase = createServiceRoleClient()
     
     // Try insertion with admin privileges
     const { error } = await adminSupabase
