@@ -11,19 +11,11 @@ import {
 import { log } from "@/shared/utils/logging";
 
 // Service-role client for is_email_confirmed RPC (SECURITY DEFINER, service_role-only EXECUTE).
-// The RPC is absent from the generated schema (src/shared/types/supabase.ts) — hence the cast.
-// If it's missing from the live DB too, the call errors and we fall through to `false`,
-// which matches historical behavior; verify on the next `supabase gen types` run.
 async function isEmailAlreadyVerified(email: string | null): Promise<boolean> {
   if (!email) return false;
   try {
     const admin = createServiceRoleClient();
-    const { data } = await admin.rpc(
-      "is_email_confirmed" as never,
-      {
-        p_email: email,
-      } as never
-    );
+    const { data } = await admin.rpc("is_email_confirmed", { p_email: email });
     return data === true;
   } catch (err) {
     log.error("is_email_confirmed RPC failed:", err);
