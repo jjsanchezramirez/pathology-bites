@@ -3,6 +3,7 @@
 
 import { useState, useCallback, useEffect, useMemo } from "react";
 import useSWR from "swr";
+import { fetcher } from "@/shared/utils/api/fetcher";
 import { toast } from "@/shared/utils/ui/toast";
 import {
   Table,
@@ -84,17 +85,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
   // Use SWR for data fetching with caching and deduplication
   const { data, isLoading, mutate } = useSWR(
     apiUrl,
-    async (url) => {
-      log.debug("[UsersTable] 🌐 Fetching:", url);
-      const response = await fetch(url);
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || "Failed to load users");
-      }
-      const result = await response.json();
-      log.debug("[UsersTable] ✅ Fetched:", url, "→", result.users?.length, "users");
-      return result;
-    },
+    (url: string) => fetcher<{ users: User[]; totalUsers: number; totalPages: number }>(url),
     {
       revalidateOnFocus: false,
       dedupingInterval: 2000, // Prevent duplicate requests within 2 seconds

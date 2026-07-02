@@ -3,6 +3,7 @@
 
 import { useState, useEffect } from "react";
 import useSWR from "swr";
+import { fetcher } from "@/shared/utils/api/fetcher";
 import { Button } from "@/shared/components/ui/button";
 import { Plus } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
@@ -40,15 +41,9 @@ export default function QuizzesPage() {
     error,
     mutate: mutateSessions,
   } = useSWR<QuizSessionListItem[]>("quiz-sessions-all", async () => {
-    const params = new URLSearchParams();
-    params.append("limit", "100"); // Increased limit
-
-    const response = await fetch(`/api/user/quiz/sessions?${params}`);
-    if (!response.ok) {
-      throw new Error("Failed to fetch quizzes");
-    }
-
-    const result = await response.json();
+    const result = await fetcher<{ data: QuizSessionListItem[] }>(
+      "/api/user/quiz/sessions?limit=100"
+    );
     return result.data;
   });
 
