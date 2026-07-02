@@ -1,7 +1,9 @@
 // src/features/achievements/services/achievement-service.server.ts
 // SERVER-SIDE ONLY - Do not import in client components
 import { createClient } from "@/shared/services/server";
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
+// Service-role client bypasses RLS — used for achievement insertion which
+// needs to write rows the user's own RLS policies wouldn't allow.
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import {
   UserStats,
   AchievementDefinition,
@@ -9,21 +11,6 @@ import {
   ACHIEVEMENT_DEFINITIONS,
 } from "./achievement-checker";
 import { log } from "@/shared/utils/logging";
-
-/**
- * Create a Supabase client with service role for bypassing RLS
- * Used for achievement insertion which needs to bypass user RLS policies
- */
-function createServiceClient() {
-  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-  if (!supabaseUrl || !supabaseServiceKey) {
-    throw new Error("Missing Supabase environment variables for service role");
-  }
-
-  return createSupabaseClient(supabaseUrl, supabaseServiceKey);
-}
 
 /**
  * Get user stats from the database
@@ -291,7 +278,7 @@ export async function awardAchievements(
     log.debug("Attempting to insert achievements:", achievementsToInsert.length);
 
     // Use service client to bypass RLS for achievement insertion
-    const serviceClient = createServiceClient();
+    const serviceClient = createServiceRoleClient();
     const { data, error } = await serviceClient
       .from("user_achievements")
       .insert(achievementsToInsert)
