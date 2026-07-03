@@ -3,6 +3,12 @@
 // Versioning side-effects for the admin question PATCH route:
 // - first publish        → initial 1.0.0 history entry (snapshot falls back to
 //                          the current row for fields the edit didn't touch)
+// - published, no history yet → backfill an "initial" entry for the version
+//                          this question was actually on (see
+//                          preEditSnapshotForBackfill below), then proceed as usual.
+//                          Covers questions published outside this route (e.g.
+//                          via /approve or an external tool) that never got a
+//                          first snapshot.
 // - published + patch    → bump version_patch, "patch" history entry
 // - published + minor/major → bump version_minor/major, matching history entry
 //
@@ -11,7 +17,7 @@
 // Returns the new question_versions row id, or null when no entry was created.
 
 import type { SupabaseClient } from "@supabase/supabase-js";
-import type { Database } from "@/shared/types/supabase";
+import type { Database, Json } from "@/shared/types/supabase";
 import { log } from "@/shared/utils/logging";
 import type { QuestionUpdateBody } from "./question-update-schema";
 
@@ -74,7 +80,7 @@ async function insertVersionHistory(
     version_patch: number;
     update_type: "initial" | "patch" | "minor" | "major";
     change_summary: string;
-    question_data: ReturnType<typeof buildQuestionSnapshot>;
+    question_data: ReturnType<typeof buildQuestionSnapshot> | Json;
     changed_by: string;
   }
 ): Promise<string | null> {
@@ -100,9 +106,23 @@ export async function applyQuestionVersioning(
     currentQuestion: CurrentQuestionForVersioning;
     body: QuestionUpdateBody;
     isFirstTimePublishing: boolean;
+    /**
+     * Set by the caller when this published question has zero question_versions
+     * rows — an accurate snapshot of its state as of *before* this edit's
+     * mutations ran. Non-null signals a backfill is needed; content is what
+     * gets stored as the (missing) version the question was actually on.
+     */
+    preEditSnapshotForBackfill?: Json | null;
   }
 ): Promise<string | null> {
-  const { questionId, userId, currentQuestion, body, isFirstTimePublishing } = input;
+  const {
+    questionId,
+    userId,
+    currentQuestion,
+    body,
+    isFirstTimePublishing,
+    preEditSnapshotForBackfill,
+  } = input;
   const { changeSummary, isPatchEdit, patchEditReason, updateType } = body;
 
   // Create initial version entry when publishing for the first time
@@ -122,6 +142,22 @@ export async function applyQuestionVersioning(
   // Versioning only applies to already-published questions beyond this point
   if (currentQuestion.status !== "published") {
     return null;
+  }
+
+  // Question was published without ever getting a version snapshot (e.g. via
+  // /approve or an external tool). Backfill the version it was actually on
+  // before continuing with this edit's own bump below.
+  if (preEditSnapshotForBackfill) {
+    await insertVersionHistory(adminClient, {
+      question_id: questionId,
+      version_major: currentQuestion.version_major || 1,
+      version_minor: currentQuestion.version_minor || 0,
+      version_patch: currentQuestion.version_patch || 0,
+      update_type: "initial",
+      change_summary: "Initial publication (backfilled)",
+      question_data: preEditSnapshotForBackfill as Json,
+      changed_by: userId,
+    });
   }
 
   if (isPatchEdit) {

@@ -15,6 +15,7 @@ import {
   updateQuestionCategory,
 } from "@/features/admin/questions/services/sync-question-relations";
 import { applyQuestionVersioning } from "@/features/admin/questions/services/question-versioning";
+import type { Json } from "@/shared/types/supabase";
 
 /**
  * @swagger
@@ -413,6 +414,27 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       );
     }
 
+    // Published questions can reach this route with zero `question_versions`
+    // rows (e.g. published via /approve or an external MCP tool, neither of
+    // which snapshot a version). If so, grab an accurate pre-edit snapshot
+    // now — before any of the mutations below run — so applyQuestionVersioning
+    // can backfill the version this question was actually on (usually 1.0.0)
+    // instead of silently starting its history mid-stream.
+    let preEditSnapshotForBackfill: Json | null = null;
+    if (currentQuestion.status === "published") {
+      const { count } = await adminClient
+        .from("question_versions")
+        .select("id", { count: "exact", head: true })
+        .eq("question_id", questionId);
+
+      if (!count) {
+        const { data } = await adminClient.rpc("get_question_snapshot_data", {
+          question_id_param: questionId,
+        });
+        preEditSnapshotForBackfill = data;
+      }
+    }
+
     // Start transaction-like operations
     try {
       // Status-transition rules + main questions UPDATE payload
@@ -460,6 +482,7 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
         currentQuestion,
         body,
         isFirstTimePublishing,
+        preEditSnapshotForBackfill,
       });
 
       // Get updated question data

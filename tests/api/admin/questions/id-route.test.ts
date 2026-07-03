@@ -398,7 +398,11 @@ describe("PATCH /api/admin/questions/[id]", () => {
           error: null,
         } // final refetch
       );
-      supabase.enqueue("question_versions", { data: { id: "version-1" }, error: null });
+      supabase.enqueue(
+        "question_versions",
+        { data: null, error: null, count: 1 }, // has-existing-history count check
+        { data: { id: "version-1" }, error: null } // insert
+      );
     }
 
     it("allows creator patch edit on own published question", async () => {
@@ -575,7 +579,11 @@ describe("PATCH /api/admin/questions/[id]", () => {
           error: null,
         }
       );
-      supabase.enqueue("question_versions", { data: { id: "version-minor-1" }, error: null });
+      supabase.enqueue(
+        "question_versions",
+        { data: null, error: null, count: 1 }, // has-existing-history count check
+        { data: { id: "version-minor-1" }, error: null } // insert
+      );
 
       const request = makeRequest({
         userId: CREATOR_ID,
@@ -606,8 +614,9 @@ describe("PATCH /api/admin/questions/[id]", () => {
         version_patch: 0,
       });
 
-      // Version history entry recorded as minor update.
-      const versionInsert = supabase.callsFor("question_versions")[0];
+      // Version history entry recorded as minor update (index 1: index 0 is
+      // the has-existing-history count check).
+      const versionInsert = supabase.callsFor("question_versions")[1];
       expect(versionInsert.builder.insert.mock.calls[0][0]).toMatchObject({
         question_id: QUESTION_ID,
         version_major: 2,
@@ -822,7 +831,11 @@ describe("PATCH /api/admin/questions/[id]", () => {
           error: null,
         }
       );
-      supabase.enqueue("question_versions", { data: { id: "version-patch-1" }, error: null });
+      supabase.enqueue(
+        "question_versions",
+        { data: null, error: null, count: 1 }, // has-existing-history count check
+        { data: { id: "version-patch-1" }, error: null } // insert
+      );
 
       const request = makeRequest({
         userId: ADMIN_ID,
@@ -846,8 +859,9 @@ describe("PATCH /api/admin/questions/[id]", () => {
       const bumpPayload = questionsCalls[2].builder.update.mock.calls[0][0];
       expect(bumpPayload.version_patch).toBe(4);
 
-      // Version history entry.
-      const versionInsert = supabase.callsFor("question_versions")[0];
+      // Version history entry (index 1: index 0 is the has-existing-history
+      // count check).
+      const versionInsert = supabase.callsFor("question_versions")[1];
       expect(versionInsert.builder.insert.mock.calls[0][0]).toMatchObject({
         question_id: QUESTION_ID,
         version_major: 1,
@@ -857,6 +871,135 @@ describe("PATCH /api/admin/questions/[id]", () => {
         change_summary: "Fixed a typo",
         changed_by: ADMIN_ID,
       });
+    });
+
+    it("backfills a missing initial version entry before recording a patch edit on a published question with no history (e.g. published via /approve)", async () => {
+      supabase.enqueue(
+        "questions",
+        {
+          data: makeQuestionRow({
+            status: "published",
+            created_by: CREATOR_ID,
+            version_major: 1,
+            version_minor: 0,
+            version_patch: 0,
+          }),
+          error: null,
+        },
+        { error: null }, // main update
+        { error: null }, // patch version bump
+        {
+          data: makeUpdatedRow({
+            status: "published",
+            version_major: 1,
+            version_minor: 0,
+            version_patch: 1,
+          }),
+          error: null,
+        }
+      );
+      supabase.enqueue(
+        "question_versions",
+        { data: null, error: null, count: 0 }, // no existing history rows
+        { data: { id: "version-initial-backfill" }, error: null }, // backfill insert
+        { data: { id: "version-patch-1" }, error: null } // this edit's patch insert
+      );
+      const snapshotData = { title: "Existing title", question_options: [], question_images: [] };
+      supabase.client.rpc.mockResolvedValueOnce({ data: snapshotData, error: null });
+
+      const request = makeRequest({
+        userId: ADMIN_ID,
+        role: "admin",
+        body: {
+          questionData: { title: "Typo fixed" },
+          isPatchEdit: true,
+          patchEditReason: "Fixed a typo",
+        },
+      });
+
+      const response = await PATCH(request, routeParams);
+      const json = await getResponseJson(response);
+
+      expect(response.status).toBe(200);
+      expect(json.versionId).toBe("version-patch-1");
+
+      // The pre-edit snapshot RPC is called before any mutation, using the
+      // question's own id — not the sync/update calls' payloads.
+      expect(supabase.client.rpc).toHaveBeenCalledWith("get_question_snapshot_data", {
+        question_id_param: QUESTION_ID,
+      });
+
+      const versionCalls = supabase.callsFor("question_versions");
+      // [0] is the has-existing-history count check.
+      const backfillInsert = versionCalls[1];
+      expect(backfillInsert.builder.insert.mock.calls[0][0]).toMatchObject({
+        question_id: QUESTION_ID,
+        version_major: 1,
+        version_minor: 0,
+        version_patch: 0,
+        update_type: "initial",
+        change_summary: "Initial publication (backfilled)",
+        question_data: snapshotData,
+        changed_by: ADMIN_ID,
+      });
+
+      const patchInsert = versionCalls[2];
+      expect(patchInsert.builder.insert.mock.calls[0][0]).toMatchObject({
+        question_id: QUESTION_ID,
+        version_major: 1,
+        version_minor: 0,
+        version_patch: 1,
+        update_type: "patch",
+        changed_by: ADMIN_ID,
+      });
+    });
+
+    it("does not backfill when a published question already has version history", async () => {
+      supabase.enqueue(
+        "questions",
+        {
+          data: makeQuestionRow({
+            status: "published",
+            created_by: CREATOR_ID,
+            version_major: 1,
+            version_minor: 2,
+            version_patch: 3,
+          }),
+          error: null,
+        },
+        { error: null }, // main update
+        { error: null }, // patch version bump
+        {
+          data: makeUpdatedRow({
+            status: "published",
+            version_major: 1,
+            version_minor: 2,
+            version_patch: 4,
+          }),
+          error: null,
+        }
+      );
+      supabase.enqueue(
+        "question_versions",
+        { data: null, error: null, count: 1 }, // has-existing-history count check
+        { data: { id: "version-patch-1" }, error: null } // this edit's patch insert
+      );
+
+      const request = makeRequest({
+        userId: ADMIN_ID,
+        role: "admin",
+        body: { ...MINIMAL_BODY, isPatchEdit: true, patchEditReason: "Fixed typo" },
+      });
+
+      const response = await PATCH(request, routeParams);
+      expect(response.status).toBe(200);
+
+      // Only the count check + this edit's own patch insert — no backfill.
+      expect(supabase.callsFor("question_versions")).toHaveLength(2);
+      expect(supabase.client.rpc).not.toHaveBeenCalledWith(
+        "get_question_snapshot_data",
+        expect.anything()
+      );
     });
 
     it("initializes version 1.0.0 and creates an initial version entry on first publish", async () => {
