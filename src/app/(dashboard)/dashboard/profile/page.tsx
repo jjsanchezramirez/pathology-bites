@@ -4,6 +4,7 @@
 import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/shared/services/client";
+import type { Database } from "@/shared/types/supabase";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { PasswordChangeForm } from "@/features/auth/components/forms/password-change-form";
@@ -107,7 +108,8 @@ function ProfilePageContent() {
           first_name: formData.first_name || null,
           last_name: formData.last_name || null,
           institution: formData.institution || null,
-          user_type: formData.user_type || null,
+          // form select only offers valid user_type enum values
+          user_type: (formData.user_type as Database["public"]["Enums"]["user_type"]) || null,
           updated_at: new Date().toISOString(),
         })
         .eq("id", user?.id);

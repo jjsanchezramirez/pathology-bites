@@ -1,22 +1,16 @@
 // src/features/quiz/services/quiz-service.ts
-import { createClient as createSupabaseAdminClient, SupabaseClient } from "@supabase/supabase-js";
+import { SupabaseClient } from "@supabase/supabase-js";
 
 // quizService is only used from Next.js server route handlers
 // (src/app/api/user/quiz/sessions/**). The two RPCs below are SECURITY DEFINER
 // with no `authenticated` EXECUTE grant, so they must be invoked via a
-// service-role client — which we can build directly here because we're always
-// on the server.
-function makeServiceRoleClient() {
-  return createSupabaseAdminClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+// service-role client — safe because we're always on the server.
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 
 async function fetchQuestionSuccessRates(questionIds: string[]): Promise<Map<string, number>> {
   const map = new Map<string, number>();
   if (questionIds.length === 0) return map;
-  const { data, error } = await makeServiceRoleClient().rpc("get_question_success_rates", {
+  const { data, error } = await createServiceRoleClient().rpc("get_question_success_rates", {
     question_ids: questionIds,
   });
   if (error) {
@@ -213,7 +207,7 @@ export class QuizService {
       // and internally calls get_most_recent_attempts (SECURITY DEFINER, no authenticated
       // EXECUTE grant). Caller-as-authenticated → permission denied. user_id is passed as
       // a param so scoping is enforced by the function body, not RLS.
-      const { data: questionIds, error: selectionError } = await makeServiceRoleClient().rpc(
+      const { data: questionIds, error: selectionError } = await createServiceRoleClient().rpc(
         "select_quiz_questions",
         {
           p_user_id: userId,

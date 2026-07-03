@@ -1,6 +1,7 @@
 // src/app/api/user/quiz/sessions/[id]/complete/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { quizAnalyticsService } from "@/features/user/quiz/services/analytics-service";
 import { quizService } from "@/features/user/quiz/services/quiz-service";
 import { awardAchievements } from "@/features/user/achievements/services/achievement-service.server";
@@ -131,11 +132,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = request.headers.get("x-user-id");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // OPTIMIZATION: Parse request body for optional answers and achievement IDs
     let requestBody: CompleteQuizRequest = {};

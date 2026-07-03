@@ -1,20 +1,13 @@
 // src/shared/services/r2-storage-metrics.ts
 
-import { createClient as createSupabaseClient } from "@supabase/supabase-js";
 import { createClient } from "@/shared/services/server";
 import type { SupabaseClient } from "@supabase/supabase-js";
-import { log } from "@/shared/utils/logging";
-
 // increment_r2_metrics / decrement_r2_metrics are SECURITY DEFINER and only
 // granted to service_role. The cookie-auth client used to silently 404 here,
-// leaving r2_storage_metrics out of sync. Build a one-off service-role client
-// for these fire-and-forget metric updates.
-function createServiceRoleClient() {
-  return createSupabaseClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  );
-}
+// leaving r2_storage_metrics out of sync — hence the service-role client for
+// these fire-and-forget metric updates.
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import { log } from "@/shared/utils/logging";
 
 /**
  * Increment storage metrics after successful upload

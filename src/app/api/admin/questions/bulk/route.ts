@@ -1,7 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
+
+const bulkQuestionsSchema = z.object({
+  action: z.enum(["submit_for_review", "approve", "reject", "delete", "export"]),
+  // Bulk operations limited to 100 questions at a time to prevent excessive resource usage
+  questionIds: z.array(z.string()).min(1).max(100),
+});
 
 /**
  * @swagger
@@ -70,28 +79,13 @@ import { log } from "@/shared/utils/logging";
  */
 export async function POST(request: NextRequest) {
   try {
-    const userId = request.headers.get("x-user-id");
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    const { action, questionIds } = await request.json();
-
-    if (!action || !Array.isArray(questionIds) || questionIds.length === 0) {
-      return NextResponse.json(
-        { error: "Invalid request. Requires action and questionIds array." },
-        { status: 400 }
-      );
-    }
-
-    // Limit bulk operations to prevent excessive resource usage
-    if (questionIds.length > 100) {
-      return NextResponse.json(
-        { error: "Bulk operations limited to 100 questions at a time" },
-        { status: 400 }
-      );
-    }
+    const body = await parseBody(request, bulkQuestionsSchema);
+    if (body instanceof NextResponse) return body;
+    const { action, questionIds } = body;
 
     const supabase = createServiceRoleClient();
 
@@ -257,13 +251,6 @@ export async function POST(request: NextRequest) {
             "question_id",
             deletableQuestions.map((q) => q.id)
           );
-        await supabase
-          .from("question_categories")
-          .delete()
-          .in(
-            "question_id",
-            deletableQuestions.map((q) => q.id)
-          );
 
         result = await supabase
           .from("questions")
@@ -285,8 +272,7 @@ export async function POST(request: NextRequest) {
             *,
             question_options(*),
             question_images(*),
-            question_tags(tag_id),
-            question_categories(category_id)
+            question_tags(tag_id)
           `
           )
           .in("id", questionIds);
@@ -316,10 +302,9 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: `Failed to ${action} questions` }, { status: 500 });
     }
 
-    // Revalidate caches to update all admin pages (for mutation operations)
-    if (action !== "export") {
-      revalidateQuestions({ includeDashboard: true });
-    }
+    // Revalidate caches to update all admin pages (for mutation operations).
+    // The export action returns early inside the switch, so this only runs for mutations.
+    revalidateQuestions({ includeDashboard: true });
 
     return NextResponse.json({
       success: true,

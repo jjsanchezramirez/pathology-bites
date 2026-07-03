@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { uploadToR2, generateSvgStoragePath, deleteFromR2 } from "@/shared/services/r2-storage";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 export const runtime = "nodejs";
@@ -82,26 +82,9 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // Verify user is authenticated admin
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Authentication required. Please log in to upload SVG assets." },
-        { status: 401 }
-      );
-    }
-
-    const { data: userData, error: roleError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    if (roleError || !userData || userData.role !== "admin") {
-      return NextResponse.json(
-        { error: "Administrator privileges required to upload SVG assets." },
-        { status: 403 }
-      );
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Parse form data
     const formData = await request.formData();

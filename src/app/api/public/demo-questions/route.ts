@@ -1,6 +1,6 @@
 // src/app/api/public/demo-questions/route.ts
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { DEMO_QUESTION_AVIF_OPTIMIZED } from "@/shared/config/demo-question-avif-manifest";
 import { log } from "@/shared/utils/logging";
 
@@ -219,14 +219,7 @@ export async function GET(request: Request) {
     const id = url.searchParams.get("id");
 
     // Initialize Supabase client with service role for demo questions (public access)
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-    const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
-
-    if (!supabaseUrl || !supabaseServiceKey) {
-      return NextResponse.json({ error: "Server configuration error" }, { status: 500 });
-    }
-
-    const supabase = createClient(supabaseUrl, supabaseServiceKey);
+    const supabase = createServiceRoleClient();
 
     // If ID is provided, fetch a specific demo question
     if (id) {

@@ -1,10 +1,17 @@
 // src/app/api/user/account/delete/route.ts
 import { UserRole } from "@/shared/utils/auth/auth-helpers";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createClient } from "@/shared/services/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { deleteUser, deleteUserFromAuth } from "@/shared/services/user-deletion";
 import { log } from "@/shared/utils/logging";
+
+const deleteAccountSchema = z.object({
+  password: z.string().min(1, "Password is required for account deletion"),
+});
 
 /**
  * @swagger
@@ -53,10 +60,9 @@ export async function DELETE(request: NextRequest) {
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = request.headers.get("x-user-id");
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Get user email for password verification
     const {
@@ -67,15 +73,9 @@ export async function DELETE(request: NextRequest) {
       return NextResponse.json({ error: "Failed to fetch user data" }, { status: 500 });
     }
 
-    const body = await request.json();
+    const body = await parseBody(request, deleteAccountSchema);
+    if (body instanceof NextResponse) return body;
     const { password } = body;
-
-    if (!password) {
-      return NextResponse.json(
-        { error: "Password is required for account deletion" },
-        { status: 400 }
-      );
-    }
 
     // Verify password before deletion
     const { error: signInError } = await supabase.auth.signInWithPassword({
@@ -103,20 +103,9 @@ export async function DELETE(request: NextRequest) {
     const isContentCreator = ["admin", "creator", "reviewer"].includes(userData.role);
     const deletionType = isContentCreator ? "soft_delete" : "hard_delete";
 
-    // Create audit log before deletion
-    await supabase.from("audit_logs").insert({
-      user_id: userId,
-      action: "account_deletion",
-      table_name: "users",
-      record_id: userId,
-      old_values: userData,
-      new_values: null,
-      metadata: {
-        self_deletion: true,
-        deletion_type: deletionType,
-        timestamp: new Date().toISOString(),
-      },
-    });
+    // Audit trail. There is no audit_logs table in the schema — the insert this
+    // used to do failed silently on every deletion — so log instead.
+    log.info("[Audit] account_deletion", { userId, deletionType, selfDeletion: true });
 
     /**
      * USER DELETION NOTE:

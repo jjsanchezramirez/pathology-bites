@@ -1,6 +1,16 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { TABLE_NAMES } from "@/shared/types/database";
+import type { Database } from "@/shared/types/supabase";
+
+// Resource entries are loosely-structured (per-field || fallbacks below), so
+// each item stays a record rather than a strict shape.
+const resourcesSchema = z.object({
+  resources: z.array(z.record(z.unknown())).nullish(),
+});
 
 /**
  * @swagger
@@ -46,8 +56,9 @@ import { TABLE_NAMES } from "@/shared/types/database";
 export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const userId = request.headers.get("x-user-id");
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { data, error } = await supabase
       .from(TABLE_NAMES.BOARD_PREP_RESOURCES)
@@ -130,15 +141,21 @@ export async function GET(request: NextRequest) {
 export async function PUT(request: NextRequest) {
   try {
     const supabase = await createClient();
-    const userId = request.headers.get("x-user-id");
-    if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
-    const { resources } = await request.json();
+    const body = await parseBody(request, resourcesSchema);
+    if (body instanceof NextResponse) return body;
+    const { resources } = body;
 
     // Delete existing resources for user, then insert new ones
     await supabase.from(TABLE_NAMES.BOARD_PREP_RESOURCES).delete().eq("user_id", userId);
 
     if (resources && resources.length > 0) {
+      // Rows are assembled from loosely-typed record fields with runtime
+      // fallbacks; cast to the table Insert type (same pattern as the
+      // user_settings upsert in settings/route.ts).
       const rows = resources.map((r: Record<string, unknown>) => ({
         user_id: userId,
         resource_id: r.id,
@@ -149,7 +166,7 @@ export async function PUT(request: NextRequest) {
         subjects: r.subjects || [],
         pace: r.pace || 10,
         active: r.active !== false,
-      }));
+      })) as Database["public"]["Tables"]["board_prep_resources"]["Insert"][];
 
       const { error } = await supabase.from(TABLE_NAMES.BOARD_PREP_RESOURCES).insert(rows);
 

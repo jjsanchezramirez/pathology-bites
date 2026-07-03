@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { formatVersion } from "@/shared/utils/version";
 import { log } from "@/shared/utils/logging";
+
+const createVersionSchema = z.object({
+  changeSummary: z.string().nullish(),
+});
 
 /**
  * @swagger
@@ -116,7 +123,8 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
   try {
     const { id: questionId } = await params;
     const userId = request.headers.get("x-user-id"); // Still need user ID for changed_by
-    const body = await request.json();
+    const body = await parseBody(request, createVersionSchema);
+    if (body instanceof NextResponse) return body;
     const changeSummary = body.changeSummary;
 
     // Use admin client for the actual operations
@@ -133,9 +141,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
       return NextResponse.json({ error: "Question not found" }, { status: 404 });
     }
 
-    if (question.status !== "approved") {
+    // "approved" is not a question_status value — the live enum's terminal
+    // state is "published", which is what the comment above always meant.
+    // The old check made this endpoint 400 on every request.
+    if (question.status !== "published") {
       return NextResponse.json(
-        { error: "Only approved questions can be versioned" },
+        { error: "Only published questions can be versioned" },
         { status: 400 }
       );
     }
@@ -193,11 +204,9 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
 export async function GET(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     // Auth is handled by middleware - get user ID from headers
-    const userId = request.headers.get("x-user-id");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { id: questionId } = await params;
     log.debug("Version history API called for question:", questionId, "by user:", userId);

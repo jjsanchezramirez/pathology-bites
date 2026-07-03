@@ -2,6 +2,7 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { getCachedStorageMetrics } from "@/shared/services/r2-storage-metrics";
 import { formatSize } from "@/features/admin/images/services/image-upload";
 import { devLog } from "@/shared/utils/logging/dev-logger";
@@ -94,16 +95,8 @@ export async function GET(request: Request) {
   const startTime = performance.now();
 
   try {
-    // Auth check - require admin role only
-    const userId = request.headers.get("x-user-id");
-    const userRole = request.headers.get("x-user-role");
-
-    if (!userId || userRole !== "admin") {
-      return NextResponse.json(
-        { error: userRole ? "Forbidden - Admin access required" : "Unauthorized" },
-        { status: userRole ? 403 : 401 }
-      );
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
     devLog.debug("System status check started");
 
@@ -194,10 +187,11 @@ export async function GET(request: Request) {
       vercelStatus = "error";
     }
 
-    // Check Supabase storage
-    let storageUsage = 0; // Supabase storage
+    // Check Supabase storage (RPC reports bytes; total_size_mb never existed,
+    // so this stat was silently 0 before)
+    let storageUsage = 0; // Supabase storage in MB
     if (storageStats.status === "fulfilled" && storageStats.value.data) {
-      storageUsage = storageStats.value.data.total_size_mb || 0;
+      storageUsage = Math.round((storageStats.value.data.total_size_bytes || 0) / (1024 * 1024));
     }
 
     // Check Cloudflare R2 status and get cached usage metrics

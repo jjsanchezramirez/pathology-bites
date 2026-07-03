@@ -2,7 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { uploadToR2, generateImageStoragePath, deleteFromR2 } from "@/shared/services/r2-storage";
 import { getImageDimensionsFromFile } from "@/shared/utils/images/server-image-utils";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
+import { isImageCategory } from "@/shared/types/database";
 import { parseImageFilename } from "@/shared/utils/images/filename-parser";
 import { revalidateImages } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
@@ -144,13 +145,9 @@ export async function POST(request: NextRequest) {
     const supabase = await createClient();
 
     // Verify user is authenticated admin
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Authentication required. Please log in to upload images." },
-        { status: 401 }
-      );
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { data: userData, error: roleError } = await supabase
       .from("users")
@@ -263,7 +260,15 @@ export async function POST(request: NextRequest) {
     // Use form data overrides if provided, otherwise fall back to parsed values
     const pathologyCategoryId = pathologyCategoryOverride || parsedFilename.categoryId;
     const magnification = magnificationOverride || parsedFilename.magnification;
-    const finalImageCategory = parsedFilename.imageCategory || category; // Use parsed category if available
+    const rawImageCategory = parsedFilename.imageCategory || category; // Use parsed category if available
+    if (!isImageCategory(rawImageCategory)) {
+      // The DB enum would have rejected this anyway — fail early with a clear message
+      return NextResponse.json(
+        { error: `Invalid image category: ${rawImageCategory}` },
+        { status: 400 }
+      );
+    }
+    const finalImageCategory = rawImageCategory;
     const finalSourceRef = sourceRef || parsedFilename.sourceRef; // Use parsed source if no form data
 
     if (pathologyCategoryId) {

@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { getCachedStorageMetrics } from "@/shared/services/r2-storage-metrics";
 import { formatSize } from "@/features/admin/images/services/image-upload";
 import { log } from "@/shared/utils/logging";
@@ -93,16 +93,7 @@ import { log } from "@/shared/utils/logging";
 export async function GET() {
   try {
     // Create service role client to bypass RLS
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!,
-      {
-        auth: {
-          autoRefreshToken: false,
-          persistSession: false,
-        },
-      }
-    );
+    const supabaseAdmin = createServiceRoleClient();
 
     // Get cached metrics from database (FAST - <100ms vs 10+ seconds)
     const cachedMetrics = await getCachedStorageMetrics(undefined, supabaseAdmin);
