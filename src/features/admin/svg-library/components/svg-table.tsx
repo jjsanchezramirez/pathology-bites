@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -18,8 +17,13 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
-import { Search, Trash2, MoreVertical, Edit, ChevronLeft, ChevronRight } from "lucide-react";
+import { Trash2, MoreVertical, Edit, ChevronLeft, ChevronRight } from "lucide-react";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { getPageNumbers } from "@/shared/components/data-table/table-pagination";
+import { TableControlBar } from "@/shared/components/data-table/table-control-bar";
+import { EmptyState } from "@/shared/components/ui/empty-state";
+import { useDebounce } from "@/shared/hooks/use-debounce";
+import { formatBytes } from "@/shared/utils/format";
 import {
   Table,
   TableBody,
@@ -32,12 +36,6 @@ import { fetchSvgAssets } from "@/features/admin/svg-library/services/svg-assets
 import type { SvgAsset, SvgListFilters } from "@/features/admin/svg-library/types";
 import { toast } from "@/shared/utils/ui/toast";
 import { log } from "@/shared/utils/logging";
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${bytes} B`;
-  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-  return `${(bytes / (1024 * 1024)).toFixed(2)} MB`;
-}
 
 function RowActions({
   asset,
@@ -74,21 +72,6 @@ function RowActions({
 
 const PAGE_SIZE_OPTIONS = [10, 20, 50, 100];
 
-function getPageNumbers(currentPage: number, totalPages: number): (number | "ellipsis")[] {
-  if (totalPages <= 7) {
-    return Array.from({ length: totalPages }, (_, i) => i);
-  }
-  const pages: (number | "ellipsis")[] = [];
-  pages.push(0);
-  if (currentPage > 2) pages.push("ellipsis");
-  const start = Math.max(1, currentPage - 1);
-  const end = Math.min(totalPages - 2, currentPage + 1);
-  for (let i = start; i <= end; i++) pages.push(i);
-  if (currentPage < totalPages - 3) pages.push("ellipsis");
-  pages.push(totalPages - 1);
-  return pages;
-}
-
 interface SvgTableProps {
   onEdit: (asset: SvgAsset) => void;
   onDelete: (asset: SvgAsset) => void;
@@ -100,6 +83,7 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState<SvgListFilters>({ page: 0, pageSize: 10 });
   const [searchQuery, setSearchQuery] = useState("");
+  const debouncedSearchQuery = useDebounce(searchQuery, 300);
   const [page, setPage] = useState(0);
   const [pageSize, setPageSize] = useState(10);
   const [totalItems, setTotalItems] = useState(0);
@@ -126,19 +110,15 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
     loadAssets();
   }, [loadAssets, refreshKey]);
 
-  // Debounced search
+  // Debounced search — reset to first page when the term settles
   useEffect(() => {
-    const delayDebounceFn = setTimeout(() => {
-      setPage(0);
-      setFilters({
-        search: searchQuery || undefined,
-        page: 0,
-        pageSize,
-      });
-    }, 300);
-
-    return () => clearTimeout(delayDebounceFn);
-  }, [searchQuery, pageSize]);
+    setPage(0);
+    setFilters((prev) => ({
+      ...prev,
+      search: debouncedSearchQuery || undefined,
+      page: 0,
+    }));
+  }, [debouncedSearchQuery]);
 
   // Sync page changes into filters
   useEffect(() => {
@@ -150,17 +130,11 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
   return (
     <div className="space-y-4">
       {/* Search */}
-      <div className="flex gap-4 items-center">
-        <div className="relative flex-1">
-          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            placeholder="Search by name or description..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-8"
-          />
-        </div>
-      </div>
+      <TableControlBar
+        searchValue={searchQuery}
+        searchPlaceholder="Search by name or description..."
+        onSearchChange={setSearchQuery}
+      />
 
       {/* Table */}
       <div className="rounded-md border bg-card">
@@ -208,10 +182,14 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
               ))
             ) : assets.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
-                  {searchQuery
-                    ? "No SVG assets found matching your search"
-                    : "No SVG assets uploaded yet"}
+                <TableCell colSpan={7}>
+                  <EmptyState
+                    title={
+                      searchQuery
+                        ? "No SVG assets found matching your search"
+                        : "No SVG assets uploaded yet"
+                    }
+                  />
                 </TableCell>
               </TableRow>
             ) : (

@@ -1,7 +1,7 @@
 'use server'
 
 import { z } from 'zod'
-import { createClient } from '@supabase/supabase-js'
+import { createServiceRoleClient } from '@/shared/services/service-role-client'
 import { Resend } from 'resend'
 import { createContactNotificationEmail } from '@/shared/config/email-templates'
 import { log } from "@/shared/utils/logging";
@@ -32,16 +32,9 @@ export async function submitContactForm(formData: ContactFormData) {
     // Validate form data
     const validatedData = formSchema.parse(formData)
 
-    // Use service role key for contact form submissions
+    // Use service role client for contact form submissions
     // This bypasses RLS since we want anyone to be able to submit inquiries
-    const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
-    const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY
-
-    if (!supabaseUrl || !serviceRoleKey) {
-      throw new Error('Missing Supabase environment variables')
-    }
-
-    const supabase = createClient(supabaseUrl, serviceRoleKey)
+    const supabase = createServiceRoleClient()
 
     // Insert into database
     const { data: dbData, error: dbError } = await supabase

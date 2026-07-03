@@ -1,6 +1,14 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { Microscope } from "lucide-react";
+import {
+  MAG_PRESETS,
+  TIGHT_PRESETS,
+  magToSlider,
+  sliderToMag,
+  type PanelItem,
+} from "./self-hosted-osd-viewer-utils";
 
 // Presentational sub-components extracted verbatim from self-hosted-osd-viewer.tsx
 // (control-bar bits + the magnification slider and rotation dial).
@@ -31,7 +39,7 @@ export function Popover({
 
 // Magnification slider styled like the rotation dial (thin primary track + white-ringed
 // primary knob). Drags smoothly via a local fraction (no OSD round-trip), snaps on release.
-export function MagSlider({
+function MagSlider({
   frac,
   onLive,
   onCommit,
@@ -107,7 +115,7 @@ export function MagSlider({
   );
 }
 
-export function AdjustRow({
+function AdjustRow({
   label,
   value,
   onChange,
@@ -137,7 +145,7 @@ export function AdjustRow({
   );
 }
 
-export function InfoRow({ label, value }: { label: string; value?: string }) {
+function InfoRow({ label, value }: { label: string; value?: string }) {
   if (!value) return null;
   return (
     <div className="flex justify-between gap-3">
@@ -259,6 +267,143 @@ export function RotationDial({
           {Math.round(degrees)}°
         </text>
       </svg>
+    </div>
+  );
+}
+
+export function MagPanelBody({
+  hiliteMag,
+  currentMag,
+  onSetMagnification,
+}: {
+  hiliteMag: number;
+  currentMag: number;
+  onSetMagnification: (target: number, immediate?: boolean) => void;
+}) {
+  return (
+    <>
+      {/* Mobile portrait: a 6-col grid forces presets onto one row (2× / 60× hidden so six fit).
+          Mobile landscape: a horizontally-scrolling row with all eight. Desktop: the popover row. */}
+      <div className="grid grid-cols-6 gap-1 max-md:landscape:flex max-md:landscape:overflow-x-auto md:flex md:justify-between md:gap-0.5">
+        {MAG_PRESETS.map((m) => {
+          const active = Math.abs(hiliteMag - m) / m < 0.15;
+          return (
+            <button
+              key={m}
+              onClick={() => onSetMagnification(m)}
+              className={`rounded px-1 py-2 text-center text-sm font-medium tabular-nums max-md:landscape:shrink-0 max-md:landscape:px-3 md:px-1 md:py-0.5 md:text-[11px] ${
+                TIGHT_PRESETS.has(m) ? "max-md:portrait:hidden" : ""
+              } ${active ? "bg-primary text-primary-foreground" : "text-gray-700 hover:bg-gray-100"}`}
+            >
+              {m}×
+            </button>
+          );
+        })}
+      </div>
+      <div className="mt-4 px-1 md:mt-3">
+        <MagSlider
+          frac={magToSlider(currentMag)}
+          onLive={(f) => onSetMagnification(sliderToMag(f), true)}
+          onCommit={(f) => onSetMagnification(sliderToMag(f), true)}
+        />
+      </div>
+    </>
+  );
+}
+
+export function InfoPanelBody({
+  info,
+  repository,
+  dims,
+}: {
+  info?: { diagnosis?: string; category?: string; subcategory?: string; stain?: string };
+  repository?: string;
+  dims: { w: number; h: number } | null;
+}) {
+  return (
+    <dl className="space-y-1 text-xs text-gray-600">
+      <InfoRow label="Diagnosis" value={info?.diagnosis} />
+      <InfoRow label="Repository" value={repository} />
+      <InfoRow label="Category" value={info?.category} />
+      <InfoRow label="Organ system" value={info?.subcategory} />
+      <InfoRow label="Stain" value={info?.stain} />
+      <InfoRow
+        label="Dimensions"
+        value={dims ? `${dims.w.toLocaleString()} × ${dims.h.toLocaleString()} px` : undefined}
+      />
+    </dl>
+  );
+}
+
+export function AdjustPanelBody({
+  brightness,
+  contrast,
+  saturation,
+  onBrightness,
+  onContrast,
+  onSaturation,
+}: {
+  brightness: number;
+  contrast: number;
+  saturation: number;
+  onBrightness: (v: number) => void;
+  onContrast: (v: number) => void;
+  onSaturation: (v: number) => void;
+}) {
+  return (
+    <>
+      <AdjustRow label="Brightness" value={brightness} onChange={onBrightness} />
+      <AdjustRow label="Contrast" value={contrast} onChange={onContrast} />
+      <AdjustRow label="Saturation" value={saturation} onChange={onSaturation} />
+    </>
+  );
+}
+
+export function RelatedPanelBody({
+  items,
+  onPick,
+}: {
+  items: PanelItem[];
+  onPick: (key: string) => void;
+}) {
+  return (
+    <div className="gap-3 portrait:grid portrait:grid-cols-2 landscape:flex landscape:overflow-x-auto landscape:pb-1">
+      {items.map((s, i) => (
+        <button
+          key={s.key}
+          onClick={() => onPick(s.key)}
+          className={`block rounded-lg p-2 text-left landscape:w-44 landscape:shrink-0 ${
+            s.active ? "bg-primary/5 ring-2 ring-primary" : "bg-gray-50 active:bg-gray-100"
+          }`}
+        >
+          <div className="mb-1.5 flex items-start gap-1 text-xs font-medium text-gray-700">
+            <span className="text-gray-400">{i + 1}.</span>
+            <span className="line-clamp-2 leading-snug" title={s.label}>
+              {s.label}
+            </span>
+          </div>
+          <div className="relative">
+            {s.thumbUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={s.thumbUrl}
+                alt={s.label}
+                loading="lazy"
+                className="h-24 w-full rounded bg-white object-contain"
+              />
+            ) : (
+              <div className="flex h-24 w-full items-center justify-center rounded bg-white text-gray-300">
+                <Microscope className="h-6 w-6" />
+              </div>
+            )}
+            {s.stain && (
+              <span className="pointer-events-none absolute left-1 top-1 max-w-[calc(100%-0.5rem)] truncate rounded bg-white/90 px-1.5 py-0.5 text-[9px] font-medium uppercase leading-none tracking-[0.1em] text-slate-500 shadow-sm ring-1 ring-black/5 backdrop-blur">
+                {s.stain}
+              </span>
+            )}
+          </div>
+        </button>
+      ))}
     </div>
   );
 }

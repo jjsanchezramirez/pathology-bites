@@ -246,11 +246,16 @@ export default function MyQuestionsPage() {
         .select("tags(id, name)")
         .eq("question_id", questionId);
 
+      // The MyQuestion shape predates the typed client: it embeds a partial
+      // question_set and a synthesized tags array, so widen at the boundary
+      const questionForPreview = fullQuestion as unknown as MyQuestion;
       if (tagRows) {
-        fullQuestion.tags = tagRows.map((row: Record<string, unknown>) => row.tags).filter(Boolean);
+        questionForPreview.tags = tagRows
+          .map((row: Record<string, unknown>) => row.tags)
+          .filter(Boolean) as MyQuestion["tags"];
       }
 
-      setSelectedQuestion(fullQuestion);
+      setSelectedQuestion(questionForPreview);
       setPreviewOpen(true);
     } catch (error) {
       log.error("Error fetching question for preview:", error);

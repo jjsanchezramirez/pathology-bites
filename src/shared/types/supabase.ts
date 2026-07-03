@@ -157,15 +157,11 @@ export type Database = {
       board_prep_resources: {
         Row: {
           active: boolean;
-          activity_verb: string;
           color: string;
           created_at: string;
           id: string;
           name: string;
           pace: number;
-          phase_assignments: Json | null;
-          phases: number[] | null;
-          priority: string | null;
           resource_id: string;
           short_name: string;
           subjects: Json;
@@ -175,15 +171,11 @@ export type Database = {
         };
         Insert: {
           active?: boolean;
-          activity_verb?: string;
           color?: string;
           created_at?: string;
           id?: string;
           name: string;
           pace?: number;
-          phase_assignments?: Json | null;
-          phases?: number[] | null;
-          priority?: string | null;
           resource_id: string;
           short_name?: string;
           subjects?: Json;
@@ -193,15 +185,11 @@ export type Database = {
         };
         Update: {
           active?: boolean;
-          activity_verb?: string;
           color?: string;
           created_at?: string;
           id?: string;
           name?: string;
           pace?: number;
-          phase_assignments?: Json | null;
-          phases?: number[] | null;
-          priority?: string | null;
           resource_id?: string;
           short_name?: string;
           subjects?: Json;
@@ -222,8 +210,11 @@ export type Database = {
           idx: number;
           is_review: boolean;
           minutes: number;
+          resource_id: string;
           resource_name: string;
+          resource_type: string;
           subject: string;
+          subject_id: string;
           task_id: string;
           task_type: string;
           user_id: string;
@@ -238,8 +229,11 @@ export type Database = {
           idx?: number;
           is_review?: boolean;
           minutes?: number;
+          resource_id: string;
           resource_name: string;
+          resource_type: string;
           subject?: string;
+          subject_id: string;
           task_id: string;
           task_type?: string;
           user_id: string;
@@ -254,8 +248,11 @@ export type Database = {
           idx?: number;
           is_review?: boolean;
           minutes?: number;
+          resource_id?: string;
           resource_name?: string;
+          resource_type?: string;
           subject?: string;
+          subject_id?: string;
           task_id?: string;
           task_type?: string;
           user_id?: string;
@@ -849,54 +846,6 @@ export type Database = {
             columns: ["question_id"];
             isOneToOne: false;
             referencedRelation: "questions";
-            referencedColumns: ["id"];
-          },
-        ];
-      };
-      question_reports: {
-        Row: {
-          created_at: string | null;
-          description: string | null;
-          id: string;
-          question_id: string;
-          report_type: Database["public"]["Enums"]["report_type"];
-          reported_by: string;
-          status: string;
-          updated_at: string | null;
-        };
-        Insert: {
-          created_at?: string | null;
-          description?: string | null;
-          id?: string;
-          question_id: string;
-          report_type: Database["public"]["Enums"]["report_type"];
-          reported_by: string;
-          status?: string;
-          updated_at?: string | null;
-        };
-        Update: {
-          created_at?: string | null;
-          description?: string | null;
-          id?: string;
-          question_id?: string;
-          report_type?: Database["public"]["Enums"]["report_type"];
-          reported_by?: string;
-          status?: string;
-          updated_at?: string | null;
-        };
-        Relationships: [
-          {
-            foreignKeyName: "question_reports_question_id_fkey";
-            columns: ["question_id"];
-            isOneToOne: false;
-            referencedRelation: "questions";
-            referencedColumns: ["id"];
-          },
-          {
-            foreignKeyName: "question_reports_reported_by_fkey";
-            columns: ["reported_by"];
-            isOneToOne: false;
-            referencedRelation: "users";
             referencedColumns: ["id"];
           },
         ];
@@ -1737,9 +1686,7 @@ export type Database = {
           flagged_questions: number | null;
           last_updated: string | null;
           pending_questions: number | null;
-          pending_reports: number | null;
           published_questions: number | null;
-          question_reports: number | null;
           recent_questions: number | null;
           recent_quiz_sessions: number | null;
           recent_users: number | null;
@@ -1949,11 +1896,7 @@ export type Database = {
         Args: { p_bucket_name: string; p_size_bytes: number };
         Returns: undefined;
       };
-      is_current_user_admin: { Args: never; Returns: boolean };
-      refresh_user_stats_incremental: {
-        Args: { p_user_id: string };
-        Returns: undefined;
-      };
+      is_email_confirmed: { Args: { p_email: string }; Returns: boolean };
       select_quiz_questions: {
         Args: {
           p_category_ids?: string[];
@@ -1981,12 +1924,6 @@ export type Database = {
         | "archived"
         | "rejected"
         | "published";
-      report_type:
-        | "incorrect_answer"
-        | "unclear_explanation"
-        | "broken_image"
-        | "inappropriate_content"
-        | "other";
       session_status: "not_started" | "in_progress" | "completed" | "abandoned";
       user_role: "admin" | "creator" | "reviewer" | "user";
       user_status: "active" | "inactive" | "suspended" | "deleted";
@@ -2119,13 +2056,6 @@ export const Constants = {
       difficulty_level: ["easy", "medium", "hard"],
       image_category: ["microscopic", "gross", "figure", "table", "external"],
       question_status: ["draft", "pending_review", "flagged", "archived", "rejected", "published"],
-      report_type: [
-        "incorrect_answer",
-        "unclear_explanation",
-        "broken_image",
-        "inappropriate_content",
-        "other",
-      ],
       session_status: ["not_started", "in_progress", "completed", "abandoned"],
       user_role: ["admin", "creator", "reviewer", "user"],
       user_status: ["active", "inactive", "suspended", "deleted"],

@@ -1,9 +1,16 @@
 import { createClient } from "@/shared/services/server";
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { NotificationTriggers } from "@/shared/services/notification-triggers";
 import { revalidateQuestions } from "@/shared/utils/api/revalidation";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const submitForReviewSchema = z.object({
+  reviewer_id: z.string().min(1),
+  resubmission_notes: z.string().nullish(),
+});
 
 /**
  * @swagger
@@ -68,32 +75,14 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     const { id: questionId } = await params;
 
     // Get current user from headers (set by middleware)
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json(
-        { error: "Unauthorized. Please sign in and try again." },
-        { status: 401 }
-      );
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
-    // Parse request body with error handling
-    let body;
-    try {
-      body = await request.json();
-    } catch (parseError) {
-      log.error("Error parsing request body:", parseError);
-      return NextResponse.json(
-        { error: "Invalid request body. Expected JSON format." },
-        { status: 400 }
-      );
-    }
-
+    // Parse request body
+    const body = await parseBody(request, submitForReviewSchema);
+    if (body instanceof NextResponse) return body;
     const { reviewer_id, resubmission_notes } = body;
-
-    // Validate reviewer_id is provided
-    if (!reviewer_id || typeof reviewer_id !== "string") {
-      return NextResponse.json({ error: "reviewer_id is required" }, { status: 400 });
-    }
 
     // Verify reviewer exists and has appropriate role
     const { data: reviewer, error: reviewerError } = await supabase

@@ -6,16 +6,20 @@
 import { isViewerSupported } from "@/shared/utils/domain/repository";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
 
-export const SEARCH_SUFFIX = "pathology";
+const SEARCH_SUFFIX = "pathology";
 export const MIN_CHARS = 2;
-export const VIRTUAL_SLIDES_SEARCH_PATH = "/tools/virtual-slides";
+const VIRTUAL_SLIDES_SEARCH_PATH = "/tools/virtual-slides";
+
+// Selections longer than this many words drop the search actions (only Highlight + Copy
+// remain) — a slide search on a whole sentence is noise.
+export const SEARCH_WORD_LIMIT = 8;
 
 export const TOP_MATCH_MIN_SCORE_WHO = 85;
 // 90 = the selected phrase appears verbatim inside a real diagnosis ("contains exact phrase").
 export const TOP_MATCH_MIN_SCORE_OTHER = 90;
 export const PATHPRESENTER_TIE_DELTA = 5;
 export const PATHPRESENTER_REPOSITORY = "PathPresenter";
-export const WHO_REPOSITORY = "WHO Blue Books Online";
+const WHO_REPOSITORY = "WHO Blue Books Online";
 
 export type TopMatch = { slide: VirtualSlide; score: number; isWho: boolean };
 
@@ -64,7 +68,7 @@ export function buildVirtualSlidesUrl(text: string): string {
   return `${VIRTUAL_SLIDES_SEARCH_PATH}?search=${encodeURIComponent(text)}`;
 }
 
-export function openInTab(url: string): void {
+function openInTab(url: string): void {
   window.open(url, "_blank", "noopener,noreferrer");
   window.getSelection()?.removeAllRanges();
 }

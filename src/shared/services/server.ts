@@ -1,6 +1,7 @@
 // lib/supabase/server.ts
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
+import type { Database } from "@/shared/types/supabase";
 
 export async function createClient() {
   try {
@@ -15,7 +16,7 @@ export async function createClient() {
       throw new Error("Missing Supabase environment variables");
     }
 
-    return createServerClient(url, anonKey, {
+    return createServerClient<Database>(url, anonKey, {
       cookies: {
         getAll() {
           return cookieStore.getAll();

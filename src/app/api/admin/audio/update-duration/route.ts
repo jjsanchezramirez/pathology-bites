@@ -1,7 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const updateDurationSchema = z.object({
+  id: z.string().min(1),
+  duration: z.number().positive(),
+});
 
 /**
  * @swagger
@@ -93,27 +100,12 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
 
-    const { data: userData, error: roleError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    if (roleError || !userData || userData.role !== "admin") {
-      return NextResponse.json({ error: "Administrator privileges required." }, { status: 403 });
-    }
-
-    const body = await request.json();
+    const body = await parseBody(request, updateDurationSchema);
+    if (body instanceof NextResponse) return body;
     const { id, duration } = body;
-
-    if (!id || typeof duration !== "number" || duration <= 0) {
-      return NextResponse.json({ error: "Invalid audio ID or duration." }, { status: 400 });
-    }
 
     const { data, error } = await supabase
       .from("audio")

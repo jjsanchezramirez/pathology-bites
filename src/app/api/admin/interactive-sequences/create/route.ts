@@ -1,7 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import type { Json } from "@/shared/types/supabase";
 import { createClient } from "@/shared/services/server";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+import { isLessonShape } from "@/shared/lesson/normalize";
+
+const createSequenceSchema = z.object({
+  title: z.string().trim().min(1),
+  description: z.string().nullish(),
+  // Canonical Lesson blob (slides[] + aspectRatio); the rest passes through.
+  sequence_data: z.object({}).passthrough().refine(isLessonShape, {
+    message: "sequence_data must be a valid Lesson object (slides[] + aspectRatio).",
+  }),
+  category_id: z.string().nullish(),
+  status: z.string().optional(),
+});
 
 /**
  * @swagger
@@ -33,11 +48,11 @@ import { log } from "@/shared/utils/logging";
  *                 nullable: true
  *               sequence_data:
  *                 type: object
- *                 description: ExplainerSequence object; must include `version` and a `segments` array
+ *                 description: Lesson object; must include `slides` (array) and `aspectRatio`
  *                 properties:
- *                   version:
+ *                   aspectRatio:
  *                     type: string
- *                   segments:
+ *                   slides:
  *                     type: array
  *                     items:
  *                       type: object
@@ -74,47 +89,20 @@ export async function POST(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json({ error: "Authentication required." }, { status: 401 });
-    }
+    const auth = requireAdmin(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
-    const { data: userData, error: roleError } = await supabase
-      .from("users")
-      .select("role")
-      .eq("id", userId)
-      .single();
-
-    if (roleError || !userData || userData.role !== "admin") {
-      return NextResponse.json({ error: "Administrator privileges required." }, { status: 403 });
-    }
-
-    const body = await request.json();
+    const body = await parseBody(request, createSequenceSchema);
+    if (body instanceof NextResponse) return body;
     const { title, description, sequence_data, category_id, status } = body;
-
-    // Validation
-    if (!title || !title.trim()) {
-      return NextResponse.json({ error: "Title is required." }, { status: 400 });
-    }
-
-    if (!sequence_data || typeof sequence_data !== "object") {
-      return NextResponse.json({ error: "Valid sequence_data is required." }, { status: 400 });
-    }
-
-    // Validate sequence_data has required fields (canonical Lesson shape)
-    if (!Array.isArray(sequence_data.slides) || sequence_data.aspectRatio == null) {
-      return NextResponse.json(
-        { error: "sequence_data must be a valid Lesson object (slides[] + aspectRatio)." },
-        { status: 400 }
-      );
-    }
 
     const { data, error } = await supabase
       .from("interactive_sequences")
       .insert({
         title: title.trim(),
         description: description?.trim() || null,
-        sequence_data,
+        sequence_data: sequence_data as Json,
         category_id: category_id || null,
         status: status || "draft",
         created_by: userId,

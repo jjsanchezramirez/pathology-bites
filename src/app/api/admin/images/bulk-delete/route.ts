@@ -1,8 +1,14 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { bulkDeleteFromR2, extractR2KeyFromUrl } from "@/shared/services/r2-storage";
-import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
+import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+
+const bulkDeleteImagesSchema = z.object({
+  imageIds: z.array(z.string()).min(1),
+});
 
 /**
  * @swagger
@@ -114,13 +120,9 @@ export async function DELETE(request: NextRequest) {
     const supabase = await createClient();
 
     // Verify user is authenticated admin
-    const userId = getUserIdFromHeaders(request);
-    if (!userId) {
-      return NextResponse.json(
-        { error: "You must be logged in to delete images" },
-        { status: 401 }
-      );
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     const { data: userData, error: roleError } = await supabase
       .from("users")
@@ -133,11 +135,9 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Parse request body
-    const { imageIds } = await request.json();
-
-    if (!imageIds || !Array.isArray(imageIds) || imageIds.length === 0) {
-      return NextResponse.json({ error: "Image IDs array is required" }, { status: 400 });
-    }
+    const body = await parseBody(request, bulkDeleteImagesSchema);
+    if (body instanceof NextResponse) return body;
+    const { imageIds } = body;
 
     // Get image details for all images
     const { data: imageData, error: fetchError } = await supabase

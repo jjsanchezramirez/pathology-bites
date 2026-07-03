@@ -1,6 +1,7 @@
 // src/app/api/user/quiz/sessions/[id]/results/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
 import { quizService } from "@/features/user/quiz/services/quiz-service";
 import { getRecentUnshownAchievements } from "@/features/user/achievements/services/achievement-service.server";
 import { log } from "@/shared/utils/logging";
@@ -83,11 +84,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
     const supabase = await createClient();
 
     // Check if user is authenticated
-    const userId = request.headers.get("x-user-id");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Get quiz session to verify ownership
     const quizSession = await quizService.getQuizSession(id, supabase);

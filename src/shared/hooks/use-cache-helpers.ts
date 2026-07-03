@@ -32,7 +32,10 @@ export function useCacheHelpers() {
       invalidateUnifiedData: (revalidate = true) => invalidateUnifiedData(mutate, revalidate),
       invalidateUserSettings: (revalidate = true) => invalidateUserSettings(mutate, revalidate),
       invalidateQuizSessions: (revalidate = true) => invalidateQuizSessions(mutate, revalidate),
-      patchCachedQuizSession,
+      patchCachedQuizSession: (
+        sessionId: string,
+        patch: Parameters<typeof patchCachedQuizSession>[2]
+      ) => patchCachedQuizSession(mutate, sessionId, patch),
       invalidateAllCaches: () => invalidateAllCaches(mutate),
       refreshAllCaches: () => refreshAllCaches(mutate),
       updateCacheAfterQuiz: (

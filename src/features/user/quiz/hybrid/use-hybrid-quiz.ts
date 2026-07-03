@@ -475,9 +475,6 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
           log.debug("[Hybrid] Quiz was already completed on server, sync treated as success");
         }
 
-        // Always invalidate the quiz list cache so the completed quiz shows up.
-        invalidateQuizSessions(false);
-
         // Update dashboard / user-data cache incrementally if we have what we need;
         // otherwise fall back to a full refetch so stats are NEVER stale after completion.
         const data = result.serverResponse?.data;
@@ -485,11 +482,10 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
           const newAchievements = (result.serverResponse?.newAchievements ??
             []) as QuizResult["newAchievements"];
 
-          // Optimistically patch the My Quizzes list in unifiedCache so the
-          // session flips to "completed" without a re-fetch. invalidateQuizSessions
-          // above only touches SWR's cache; My Quizzes uses useCachedData which
-          // reads unifiedCache directly, so it would otherwise stay stale until
-          // the 2-min TTL expires.
+          // Patch the session in place in the quiz-sessions-all SWR cache so
+          // My Quizzes flips it to "completed" without a re-fetch. Do NOT
+          // invalidate here — clearing the key would wipe the list the patch
+          // just updated and leave the page empty until the next revalidation.
           const quizResult = data as QuizResult;
           patchCachedQuizSession(quizResult.sessionId, {
             status: "completed",
@@ -514,6 +510,9 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
             "[Hybrid] Missing quiz result data in serverResponse — falling back to full refetch",
             { serverResponseKeys: Object.keys(result.serverResponse ?? {}) }
           );
+          // No result payload to patch with — drop the cached list so the
+          // next My Quizzes mount refetches fresh data.
+          invalidateQuizSessions(false);
           invalidateUnifiedData(true).catch((err) => {
             log.warn("[Hybrid] Fallback invalidateUnifiedData failed:", err);
           });

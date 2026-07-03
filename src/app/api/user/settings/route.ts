@@ -2,13 +2,25 @@
 // API routes for managing user settings
 
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/shared/services/server";
+import { requireUser } from "@/shared/utils/api/api-guard";
+import { parseBody } from "@/shared/utils/api/parse-body";
+import type { Database } from "@/shared/types/supabase";
 import {
   DEFAULT_QUIZ_SETTINGS,
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_UI_SETTINGS,
 } from "@/shared/config/user-settings-defaults";
 import { log } from "@/shared/utils/logging";
+
+// Section payloads are loosely-structured blobs (merged/replaced wholesale),
+// so settings stays a record — per-field validation for quiz_settings happens
+// in the handler below.
+const settingsPatchSchema = z.object({
+  section: z.enum(["quiz_settings", "notification_settings", "ui_settings", "counter_settings"]),
+  settings: z.record(z.unknown()),
+});
 
 /**
  * @swagger
@@ -72,12 +84,9 @@ export async function GET(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth is handled by middleware
-    const userId = request.headers.get("x-user-id");
-
-    if (!userId) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Get user settings using correct schema with separate columns
     const { data, error } = await supabase
@@ -151,7 +160,7 @@ export async function GET(request: NextRequest) {
       "[UserSettings API] Returning settings for user:",
       userId,
       "text_zoom:",
-      combinedSettings.ui_settings.text_zoom
+      (combinedSettings.ui_settings as { text_zoom?: number })?.text_zoom
     );
 
     return NextResponse.json({
@@ -240,42 +249,16 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Auth is handled by middleware
-    const userId = request.headers.get("x-user-id");
-
-    log.debug("[UserSettings PATCH] userId:", userId);
-
-    if (!userId) {
-      log.error("[UserSettings PATCH] No userId in headers");
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    const auth = requireUser(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
 
     // Parse request body
-    const body = await request.json();
+    const body = await parseBody(request, settingsPatchSchema);
+    if (body instanceof NextResponse) return body;
     const { section, settings } = body;
 
     log.debug("[UserSettings PATCH] Request:", { section, settings });
-
-    // Validate section
-    const validSections = [
-      "quiz_settings",
-      "notification_settings",
-      "ui_settings",
-      "counter_settings",
-    ];
-    if (!section || !validSections.includes(section)) {
-      log.error("[UserSettings PATCH] Invalid section:", section);
-      return NextResponse.json(
-        { error: "Invalid section. Must be one of: " + validSections.join(", ") },
-        { status: 400 }
-      );
-    }
-
-    // Validate settings
-    if (!settings || typeof settings !== "object") {
-      log.error("[UserSettings PATCH] Invalid settings:", settings);
-      return NextResponse.json({ error: "Settings must be a valid object" }, { status: 400 });
-    }
 
     // Validate quiz settings if that's what we're updating
     if (section === "quiz_settings") {
@@ -362,7 +345,9 @@ export async function PATCH(request: NextRequest) {
 
     const { data, error } = await supabase
       .from("user_settings")
-      .upsert(updateData, {
+      // updateData is built section-by-section under dynamic keys; user_id is
+      // always set above, satisfying the Insert type at runtime
+      .upsert(updateData as Database["public"]["Tables"]["user_settings"]["Insert"], {
         onConflict: "user_id", // Use user_id for conflict resolution
         ignoreDuplicates: false, // Update on conflict instead of ignoring
       })

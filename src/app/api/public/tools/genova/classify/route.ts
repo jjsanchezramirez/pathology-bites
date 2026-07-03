@@ -1,4 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
+import { parseBody } from "@/shared/utils/api/parse-body";
 import {
   parseVariantText,
   fetchVariantData,
@@ -9,6 +11,10 @@ import {
   type AnalysisResult,
 } from "@/shared/utils/genomic";
 import { log } from "@/shared/utils/logging";
+
+const classifySchema = z.object({
+  rawText: z.string().min(1, "rawText parameter is required"),
+});
 
 /**
  * @swagger
@@ -118,12 +124,9 @@ import { log } from "@/shared/utils/logging";
  */
 export async function POST(request: NextRequest) {
   try {
-    const body = await request.json();
+    const body = await parseBody(request, classifySchema);
+    if (body instanceof NextResponse) return body;
     const { rawText } = body;
-
-    if (!rawText || typeof rawText !== "string") {
-      return NextResponse.json({ error: "rawText parameter is required" }, { status: 400 });
-    }
 
     // Parse variant text
     const parsed = parseVariantText(rawText);

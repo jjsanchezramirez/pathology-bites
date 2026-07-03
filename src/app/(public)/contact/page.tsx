@@ -1,20 +1,19 @@
 // src/app/(public)/contact/page.tsx
-"use client";
-
-import { useSearchParams } from "next/navigation";
-import { Suspense } from "react";
 import { PublicHero } from "@/shared/components/common/public-hero";
 import { ContactForm } from "@/shared/components/common/contact-form";
 import { JoinCommunitySection } from "@/shared/components/common/join-community-section";
 import { ScrollReveal } from "@/shared/components/common/scroll-reveal";
 
-function ContactPageContent() {
-  const searchParams = useSearchParams();
-
+export default async function ContactPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ type?: string; subject?: string; message?: string }>;
+}) {
   // Get prefill values from query params
-  const prefillType = searchParams.get("type") as "technical" | "general" | null;
-  const prefillSubject = searchParams.get("subject");
-  const prefillMessage = searchParams.get("message");
+  const params = await searchParams;
+  const prefillType = params.type === "technical" || params.type === "general" ? params.type : null;
+  const prefillSubject = params.subject ?? null;
+  const prefillMessage = params.message ?? null;
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -41,13 +40,5 @@ function ContactPageContent() {
         <JoinCommunitySection description="Start your learning journey today. No fees, no subscriptions - just high-quality pathology education available to everyone." />
       </ScrollReveal>
     </div>
-  );
-}
-
-export default function ContactPage() {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <ContactPageContent />
-    </Suspense>
   );
 }

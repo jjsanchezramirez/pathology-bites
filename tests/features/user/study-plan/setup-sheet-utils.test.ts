@@ -8,8 +8,40 @@ import {
   aggregateRebalanceProgress,
   surplusColor,
   surplusBarColor,
+  daysOffSummary,
+  formatTotalTime,
+  overloadMessage,
 } from "@/features/user/study-plan/components/setup-sheet-utils";
 import type { ScheduleTask, StudyResource } from "@/features/user/study-plan/lib/types";
+
+describe("daysOffSummary", () => {
+  it("summarizes full + half days, or 'None'", () => {
+    expect(daysOffSummary({ a: "full", b: "full", c: "half" })).toBe(
+      "2 days off · 1 half-days off"
+    );
+    expect(daysOffSummary({ a: "full" })).toBe("1 days off");
+    expect(daysOffSummary({})).toBe("None");
+    expect(daysOffSummary(undefined)).toBe("None");
+  });
+});
+
+describe("formatTotalTime", () => {
+  it("formats minutes as h/m", () => {
+    expect(formatTotalTime(150)).toBe("2h30m");
+    expect(formatTotalTime(45)).toBe("45m");
+    expect(formatTotalTime(120)).toBe("2h");
+  });
+});
+
+describe("overloadMessage", () => {
+  it("escalates with the daily load, null when reasonable", () => {
+    expect(overloadMessage(4)).toBeNull();
+    expect(overloadMessage(9)).toMatch(/full work day/);
+    expect(overloadMessage(13)).toMatch(/Bold strategy/);
+    expect(overloadMessage(17)).toMatch(/Sleep is not a luxury/);
+    expect(overloadMessage(25)).toMatch(/one full rotation/);
+  });
+});
 
 describe("fmtH", () => {
   it("formats whole hours, minutes, and combos", () => {

@@ -1,7 +1,16 @@
 // src/app/api/public/subscribe/route.ts
 import { NextResponse } from 'next/server'
 import { createClient } from '@supabase/supabase-js'
+import { z } from 'zod'
+import { createServiceRoleClient } from '@/shared/services/service-role-client'
+import { parseBody } from '@/shared/utils/api/parse-body'
 import { log } from "@/shared/utils/logging";
+
+// Format validation stays in the handler so the user-facing message is
+// preserved for the common invalid-format case.
+const subscribeSchema = z.object({
+  email: z.string(),
+})
 
 // Define error interface for Supabase errors
 interface SupabaseError {
@@ -84,10 +93,12 @@ interface SupabaseError {
  */
 export async function POST(request: Request) {
   try {
-    const { email } = await request.json()
-    
+    const body = await parseBody(request, subscribeSchema)
+    if (body instanceof NextResponse) return body
+    const { email } = body
+
     // Validate email
-    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return NextResponse.json(
         { error: 'Please provide a valid email address.' },
         { status: 400 }
@@ -135,7 +146,7 @@ export async function POST(request: Request) {
       // If we hit an RLS error and have a service key, try the fallback approach
       if (supabaseError.code === '42501' && supabaseServiceKey) {
         log.debug('Falling back to service role key due to RLS error')
-        return await tryServiceRoleInsert(supabaseUrl, supabaseServiceKey, email)
+        return await tryServiceRoleInsert(email)
       }
       
       throw error
@@ -146,7 +157,7 @@ export async function POST(request: Request) {
       const supabaseError = error as SupabaseError;
       
       if (supabaseError.code === '42501' && supabaseServiceKey) {
-        return await tryServiceRoleInsert(supabaseUrl, supabaseServiceKey, email)
+        return await tryServiceRoleInsert(email)
       }
       
       // Return the database error with proper status code
@@ -169,15 +180,10 @@ export async function POST(request: Request) {
   }
 }
 
-async function tryServiceRoleInsert(supabaseUrl: string, serviceKey: string, email: string) {
+async function tryServiceRoleInsert(email: string) {
   try {
     // Create admin client that bypasses RLS
-    const adminSupabase = createClient(supabaseUrl, serviceKey, {
-      auth: {
-        autoRefreshToken: false,
-        persistSession: false
-      }
-    })
+    const adminSupabase = createServiceRoleClient()
     
     // Try insertion with admin privileges
     const { error } = await adminSupabase
