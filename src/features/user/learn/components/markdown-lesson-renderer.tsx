@@ -8,7 +8,8 @@ import { visit } from "unist-util-visit";
 import { ImageCarousel } from "@/shared/components/media/image-carousel";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Lightbulb, Loader2 } from "lucide-react";
-import type { ExplainerSequence } from "@/shared/types/explainer";
+import type { Lesson } from "@/shared/lesson/types";
+import { normalizeStoredLesson } from "@/shared/lesson/normalize";
 import dynamic from "next/dynamic";
 
 const ExplainerPlayer = dynamic(
@@ -222,10 +223,7 @@ export function MarkdownLessonRenderer({ markdown, images }: MarkdownLessonRende
 }
 
 function ExplainerDirective({ sequenceId }: { sequenceId: string }) {
-  const [sequenceData, setSequenceData] = useState<{
-    sequence: ExplainerSequence;
-    audioUrl: string;
-  } | null>(null);
+  const [lesson, setLesson] = useState<Lesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -239,10 +237,12 @@ function ExplainerDirective({ sequenceId }: { sequenceId: string }) {
         }
         if (!res.ok) throw new Error("Failed to load sequence");
         const { sequence } = await res.json();
-        setSequenceData({
-          sequence: sequence.sequence_data as ExplainerSequence,
-          audioUrl: sequence.audio_url || "",
-        });
+        const normalized = normalizeStoredLesson(sequence.sequence_data);
+        if (!normalized) {
+          setError("This sequence is in a legacy format and needs to be re-saved.");
+          return;
+        }
+        setLesson(normalized);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load");
       } finally {
@@ -261,9 +261,7 @@ function ExplainerDirective({ sequenceId }: { sequenceId: string }) {
           </div>
         )}
         {error && <div className="p-4 text-center text-sm text-destructive">{error}</div>}
-        {sequenceData && (
-          <ExplainerPlayer sequence={sequenceData.sequence} audioUrl={sequenceData.audioUrl} />
-        )}
+        {lesson && <ExplainerPlayer lesson={lesson} />}
       </CardContent>
     </Card>
   );

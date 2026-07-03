@@ -5,17 +5,15 @@ import { createClient } from "@/shared/services/server";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
+import { isLessonShape } from "@/shared/lesson/normalize";
 
 const createSequenceSchema = z.object({
   title: z.string().trim().min(1),
   description: z.string().nullish(),
-  // ExplainerSequence blob — only version/segments are validated, the rest passes through.
-  sequence_data: z
-    .object({
-      version: z.unknown().refine((v) => !!v, { message: "version is required" }),
-      segments: z.array(z.unknown()),
-    })
-    .passthrough(),
+  // Canonical Lesson blob (slides[] + aspectRatio); the rest passes through.
+  sequence_data: z.object({}).passthrough().refine(isLessonShape, {
+    message: "sequence_data must be a valid Lesson object (slides[] + aspectRatio).",
+  }),
   category_id: z.string().nullish(),
   status: z.string().optional(),
 });
@@ -50,11 +48,11 @@ const createSequenceSchema = z.object({
  *                 nullable: true
  *               sequence_data:
  *                 type: object
- *                 description: ExplainerSequence object; must include `version` and a `segments` array
+ *                 description: Lesson object; must include `slides` (array) and `aspectRatio`
  *                 properties:
- *                   version:
+ *                   aspectRatio:
  *                     type: string
- *                   segments:
+ *                   slides:
  *                     type: array
  *                     items:
  *                       type: object

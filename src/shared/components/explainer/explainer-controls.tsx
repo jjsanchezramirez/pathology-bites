@@ -1,9 +1,19 @@
 "use client";
 
-import { useCallback } from "react";
+import { useCallback, useRef, useState } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Slider } from "@/shared/components/ui/slider";
-import { Play, Pause, Volume2, VolumeX, Maximize, Minimize } from "lucide-react";
+import {
+  Play,
+  Pause,
+  Volume2,
+  VolumeX,
+  Maximize,
+  Minimize,
+  SkipBack,
+  SkipForward,
+  Footprints,
+} from "lucide-react";
 
 interface ExplainerControlsProps {
   isPlaying: boolean;
@@ -22,6 +32,15 @@ interface ExplainerControlsProps {
   onToggleCaptions?: () => void;
   isFullscreen?: boolean;
   onToggleFullscreen?: () => void;
+  /** Absolute times (seconds) to mark on the scrubber, e.g. slide boundaries. */
+  markers?: number[];
+  /** Preview a frame on scrubber hover without seeking (null = stop previewing). */
+  onHover?: (time: number | null) => void;
+  /** Step mode: advance finding-by-finding. */
+  stepMode?: boolean;
+  onToggleStepMode?: () => void;
+  onStepPrev?: () => void;
+  onStepNext?: () => void;
 }
 
 const SPEED_OPTIONS = [0.5, 0.75, 1, 1.25, 1.5, 2];
@@ -50,13 +69,48 @@ export function ExplainerControls({
   onToggleCaptions,
   isFullscreen = false,
   onToggleFullscreen,
+  markers = [],
+  onHover,
+  stepMode = false,
+  onToggleStepMode,
+  onStepPrev,
+  onStepNext,
 }: ExplainerControlsProps) {
+  const trackRef = useRef<HTMLDivElement | null>(null);
+  const [hoverPct, setHoverPct] = useState<number | null>(null);
+
   const handleSeekChange = useCallback(
     (value: number[]) => {
       onSeek(value[0]);
     },
     [onSeek]
   );
+
+  const timeFromClientX = useCallback(
+    (clientX: number): number => {
+      const el = trackRef.current;
+      if (!el || duration <= 0) return 0;
+      const rect = el.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      return ratio * duration;
+    },
+    [duration]
+  );
+
+  const handleTrackMove = useCallback(
+    (e: React.MouseEvent) => {
+      if (!onHover || duration <= 0) return;
+      const t = timeFromClientX(e.clientX);
+      setHoverPct((t / duration) * 100);
+      onHover(t);
+    },
+    [onHover, duration, timeFromClientX]
+  );
+
+  const handleTrackLeave = useCallback(() => {
+    setHoverPct(null);
+    onHover?.(null);
+  }, [onHover]);
 
   const handleVolumeChange = useCallback(
     (value: number[]) => {
@@ -71,19 +125,56 @@ export function ExplainerControls({
 
   return (
     <div className="space-y-1.5 px-3 pb-2 pt-1">
-      {/* Progress bar */}
-      <Slider
-        value={[currentTime]}
-        min={0}
-        max={duration || 1}
-        step={0.1}
-        onValueChange={handleSeekChange}
-        className="w-full"
-        disabled={!isReady}
-      />
+      {/* Progress bar with slide-boundary ticks + hover-scrub preview */}
+      <div
+        ref={trackRef}
+        className="relative w-full"
+        onMouseMove={handleTrackMove}
+        onMouseLeave={handleTrackLeave}
+      >
+        <Slider
+          value={[currentTime]}
+          min={0}
+          max={duration || 1}
+          step={0.1}
+          onValueChange={handleSeekChange}
+          className="w-full"
+          disabled={!isReady}
+        />
+        {duration > 0 &&
+          markers
+            .filter((m) => m > 0 && m < duration)
+            .map((m, i) => (
+              <span
+                key={i}
+                className="pointer-events-none absolute top-1/2 h-2 w-px -translate-y-1/2 bg-white/50"
+                style={{ left: `${(m / duration) * 100}%` }}
+              />
+            ))}
+        {hoverPct !== null && (
+          <span
+            className="pointer-events-none absolute top-1/2 h-3 w-px -translate-y-1/2 bg-white"
+            style={{ left: `${hoverPct}%` }}
+          />
+        )}
+      </div>
 
       {/* Controls row */}
       <div className="flex items-center gap-2">
+        {/* Previous finding (step mode) */}
+        {stepMode && onStepPrev && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0 text-white hover:bg-white/20 hover:text-white"
+            onClick={onStepPrev}
+            disabled={!isReady}
+            title="Previous finding (←)"
+          >
+            <SkipBack className="h-4 w-4" />
+          </Button>
+        )}
+
         {/* Play/Pause */}
         <Button
           variant="ghost"
@@ -94,6 +185,20 @@ export function ExplainerControls({
         >
           {isPlaying ? <Pause className="h-4 w-4" /> : <Play className="h-4 w-4" />}
         </Button>
+
+        {/* Next finding (step mode) */}
+        {stepMode && onStepNext && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0 text-white hover:bg-white/20 hover:text-white"
+            onClick={onStepNext}
+            disabled={!isReady}
+            title="Next finding (→)"
+          >
+            <SkipForward className="h-4 w-4" />
+          </Button>
+        )}
 
         {/* Time */}
         <div className="text-xs text-white/80 tabular-nums shrink-0">
@@ -135,6 +240,21 @@ export function ExplainerControls({
             title={captionsVisible ? "Hide captions" : "Show captions"}
           >
             CC
+          </Button>
+        )}
+
+        {/* Step mode toggle */}
+        {onToggleStepMode && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className={`h-8 w-8 shrink-0 hover:bg-white/20 ${
+              stepMode ? "text-white" : "text-white/40"
+            }`}
+            onClick={onToggleStepMode}
+            title={stepMode ? "Exit step mode" : "Step mode (advance by finding)"}
+          >
+            <Footprints className="h-4 w-4" />
           </Button>
         )}
 

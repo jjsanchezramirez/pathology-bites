@@ -11,7 +11,8 @@ import {
   DialogOverlay,
 } from "@/shared/components/ui/dialog";
 import { Download } from "lucide-react";
-import type { ExplainerSequence } from "@/shared/types/explainer";
+import type { Lesson } from "@/shared/lesson/types";
+import { slideStarts } from "@/shared/lesson/evaluate";
 import { computeFrameState, drawExportFrame } from "../utils/export-engine";
 import { log } from "@/shared/utils/logging";
 
@@ -27,7 +28,7 @@ const EXPORT_FPS_OPTIONS = [24, 30, 60];
 interface ExportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  previewSequence: ExplainerSequence | null;
+  previewLesson: Lesson | null;
   audioUrl: string;
 }
 
@@ -41,7 +42,7 @@ type ExportPhase =
   | "done"
   | "error";
 
-export function ExportDialog({ open, onOpenChange, previewSequence, audioUrl }: ExportDialogProps) {
+export function ExportDialog({ open, onOpenChange, previewLesson, audioUrl }: ExportDialogProps) {
   const [exportPhase, setExportPhase] = useState<ExportPhase>("idle");
   const [exportProgress, setExportProgress] = useState(0);
   const [exportStatus, setExportStatus] = useState("");
@@ -61,21 +62,21 @@ export function ExportDialog({ open, onOpenChange, previewSequence, audioUrl }: 
   }, [exportUrl]);
 
   const startExport = async () => {
-    if (!previewSequence) return;
+    if (!previewLesson) return;
     setExportPhase("fetching-audio");
     setExportProgress(0);
     setExportStatus("Fetching audio…");
     setExportUrl(null);
     exportCancelRef.current = false;
 
-    const sequence = previewSequence;
-    // Use audioUrl from the sequence if present, else fall back to component state
-    const resolvedAudioUrl = sequence.audioUrl ?? audioUrl ?? null;
+    const lesson = previewLesson;
+    // Use audioUrl from the lesson if present, else fall back to component state
+    const resolvedAudioUrl = lesson.audio?.url ?? audioUrl ?? null;
     const blobUrls: string[] = []; // blob: URLs for image data — freed in finally
     try {
       // ── 1. Fetch audio ────────────────────────────────────────────────────
       let audioData: ArrayBuffer | null = null;
-      let totalDuration = sequence.duration;
+      let totalDuration = slideStarts(lesson).duration;
       if (resolvedAudioUrl) {
         try {
           const resp = await fetch(resolvedAudioUrl);
@@ -87,7 +88,7 @@ export function ExportDialog({ open, onOpenChange, previewSequence, audioUrl }: 
             ac.close();
           }
         } catch (err) {
-          log.warn("Audio fetch/decode failed, using sequence.duration:", err);
+          log.warn("Audio fetch/decode failed, using lesson duration:", err);
         }
       }
       if (exportCancelRef.current) return;
@@ -101,7 +102,13 @@ export function ExportDialog({ open, onOpenChange, previewSequence, audioUrl }: 
       setExportPhase("loading-images");
       setExportStatus("Loading images…");
       setExportProgress(5);
-      const uniqueUrls = [...new Set(sequence.segments.map((s) => s.imageUrl))];
+      const uniqueUrls = [
+        ...new Set(
+          lesson.slides.flatMap((s) =>
+            s.elements.flatMap((e) => (e.kind === "image" ? [e.imageUrl] : []))
+          )
+        ),
+      ].filter(Boolean);
       const imgMap = new Map<string, HTMLImageElement>();
       // Route each image through the server-side proxy so the browser receives
       // it as a same-origin response — no CORS restriction, no canvas taint.
@@ -164,7 +171,7 @@ export function ExportDialog({ open, onOpenChange, previewSequence, audioUrl }: 
       const imgQ = useJpeg ? 0.92 : undefined;
       for (let fi = 0; fi < totalFrames; fi++) {
         if (exportCancelRef.current) return;
-        drawExportFrame(ctx, w, h, computeFrameState(sequence, fi * frameDuration), imgMap);
+        drawExportFrame(ctx, w, h, computeFrameState(lesson, fi * frameDuration), imgMap);
         const blob = await new Promise<Blob>((res, rej) =>
           canvas.toBlob((b) => (b ? res(b) : rej(new Error("toBlob failed"))), imgMime, imgQ)
         );
@@ -251,7 +258,7 @@ export function ExportDialog({ open, onOpenChange, previewSequence, audioUrl }: 
   };
 
   const isRunning = exportPhase !== "idle" && exportPhase !== "done" && exportPhase !== "error";
-  const totalDuration = previewSequence?.duration ?? 0;
+  const totalDuration = previewLesson ? slideStarts(previewLesson).duration : 0;
   const totalFrames = Math.ceil(totalDuration * exportFps);
   const { w, h } = EXPORT_RESOLUTIONS[exportResolution];
   const BASE_FPS = 8;

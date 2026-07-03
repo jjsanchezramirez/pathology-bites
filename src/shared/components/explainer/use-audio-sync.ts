@@ -60,6 +60,12 @@ export function useAudioSync({
   const timerStartRef = useRef<number | null>(null); // DOMHighResTimeStamp when play() was called
   const timerOffsetRef = useRef(0); // accumulated time from previous play sessions (for pause/resume)
   const playbackRateRef = useRef(1);
+  const lastTickRef = useRef<number | null>(null); // last rAF timestamp, for delta clamping
+
+  // Cap how much wall-clock a single frame may advance. When a tab is
+  // backgrounded, rAF pauses and refocus would otherwise lurch the clock far
+  // ahead; we absorb the gap so playback resumes smoothly instead of jumping.
+  const MAX_FRAME_MS = 500;
 
   // Keep playbackRateRef in sync
   useEffect(() => {
@@ -68,14 +74,23 @@ export function useAudioSync({
 
   const timerTick = useCallback(() => {
     if (timerStartRef.current === null) return;
+    const now = performance.now();
+    if (lastTickRef.current !== null) {
+      const dt = now - lastTickRef.current;
+      if (dt > MAX_FRAME_MS) {
+        // Tab was backgrounded — push the start forward to absorb the gap.
+        timerStartRef.current += dt - MAX_FRAME_MS;
+      }
+    }
+    lastTickRef.current = now;
     const elapsed =
-      timerOffsetRef.current +
-      ((performance.now() - timerStartRef.current) / 1000) * playbackRateRef.current;
+      timerOffsetRef.current + ((now - timerStartRef.current) / 1000) * playbackRateRef.current;
     const totalDur = fallbackDuration;
     if (elapsed >= totalDur) {
       setCurrentTime(totalDur);
       setIsPlaying(false);
       timerStartRef.current = null;
+      lastTickRef.current = null;
       timerOffsetRef.current = 0;
       onTimeUpdateRef.current?.(totalDur);
       onEndedRef.current?.();
@@ -111,6 +126,7 @@ export function useAudioSync({
     if (!hasAudio) {
       // Timer mode
       timerStartRef.current = performance.now();
+      lastTickRef.current = performance.now();
       setIsPlaying(true);
       rafRef.current = requestAnimationFrame(timerTick);
       return;
@@ -129,6 +145,7 @@ export function useAudioSync({
           ((performance.now() - timerStartRef.current) / 1000) * playbackRateRef.current;
         timerStartRef.current = null;
       }
+      lastTickRef.current = null;
       setIsPlaying(false);
       if (rafRef.current !== null) {
         cancelAnimationFrame(rafRef.current);
@@ -154,6 +171,7 @@ export function useAudioSync({
         timerOffsetRef.current = clamped;
         if (timerStartRef.current !== null) {
           timerStartRef.current = performance.now();
+          lastTickRef.current = performance.now();
         }
         setCurrentTime(clamped);
         onTimeUpdateRef.current?.(clamped);

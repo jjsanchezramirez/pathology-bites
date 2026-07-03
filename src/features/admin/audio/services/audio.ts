@@ -82,7 +82,7 @@ export async function fetchAudioById(id: string): Promise<Audio | null> {
     throw new Error(error.message);
   }
 
-  return data;
+  return data as unknown as Audio;
 }
 
 /**
@@ -106,7 +106,7 @@ export async function updateAudio(
     throw new Error(error.message);
   }
 
-  return data;
+  return data as unknown as Audio;
 }
 
 /**

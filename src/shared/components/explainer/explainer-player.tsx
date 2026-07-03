@@ -7,20 +7,43 @@ import { useExplainerEngine } from "./use-explainer-engine";
 import { useResourcePreloader } from "./use-resource-preloader";
 import { ExplainerViewport } from "./explainer-viewport";
 import { ExplainerControls } from "./explainer-controls";
+import { useReducedMotion } from "./use-reduced-motion";
 import type { ExplainerPlayerProps, CaptionChunk } from "@/shared/types/explainer";
+import { slideStarts, stepPointsForLesson } from "@/shared/lesson/evaluate";
+import { captionsForAudio } from "@/shared/lesson/captions";
 
 export function ExplainerPlayer({
-  sequence,
-  audioUrl,
+  lesson,
+  audioUrl: audioUrlProp,
   autoPlay = false,
   className,
   onEnded,
   onTimeUpdate,
   onAudioLoaded,
   seekToTime,
-  captions,
+  captions: captionsProp,
 }: ExplainerPlayerProps) {
   const containerRef = useRef<HTMLDivElement>(null);
+
+  const audioUrl = audioUrlProp ?? lesson.audio?.url ?? "";
+  const duration = useMemo(() => slideStarts(lesson).duration, [lesson]);
+  const captions = useMemo(
+    () => captionsProp ?? captionsForAudio(lesson.audio),
+    [captionsProp, lesson.audio]
+  );
+  // Slide-boundary ticks for the scrubber (absolute seconds, excluding 0).
+  const markers = useMemo(() => slideStarts(lesson).starts.slice(1), [lesson]);
+  // Reduced-motion multiplier (0 pins camera + suppresses scale-pop).
+  const motion = useReducedMotion();
+  // Stable key for resume-position persistence.
+  const resumeKey = lesson.id ?? audioUrl;
+  // Step points (slide starts + element appearance times) for step mode.
+  const stepPoints = useMemo(() => stepPointsForLesson(lesson), [lesson]);
+
+  // Hover-scrub preview time (null = not hovering) and step mode.
+  const [hoverTime, setHoverTime] = useState<number | null>(null);
+  const [stepMode, setStepMode] = useState(false);
+  const nextStopRef = useRef<number | null>(null);
 
   // CC visibility — defaults on when captions are provided
   const [captionsVisible, setCaptionsVisible] = useState(true);
@@ -76,7 +99,7 @@ export function ExplainerPlayer({
 
   // Preload all resources before playback
   const preloader = useResourcePreloader({
-    sequence,
+    lesson,
     audioUrl,
   });
 
@@ -84,19 +107,78 @@ export function ExplainerPlayer({
     audioUrl,
     onEnded,
     onTimeUpdate,
-    fallbackDuration: sequence.duration,
+    fallbackDuration: duration,
   });
+
+  // Frame shown = hover-preview time when hovering the scrubber, else committed time.
+  const displayTime = hoverTime ?? audio.currentTime;
 
   const engine = useExplainerEngine({
-    sequence,
-    currentTime: audio.currentTime,
+    lesson,
+    currentTime: displayTime,
+    motion,
   });
 
-  // Find the active caption chunk for the current time
+  // Find the active caption chunk for the displayed time
   const activeCaption = useMemo((): CaptionChunk | null => {
     if (!captions || !captionsVisible) return null;
-    return captions.find((c) => audio.currentTime >= c.start && audio.currentTime < c.end) ?? null;
-  }, [captions, captionsVisible, audio.currentTime]);
+    return captions.find((c) => displayTime >= c.start && displayTime < c.end) ?? null;
+  }, [captions, captionsVisible, displayTime]);
+
+  // ---- Step mode + hover-scrub handlers ------------------------------------
+
+  const nextStep = useCallback(
+    (t: number): number | null => stepPoints.find((p) => p > t + 0.05) ?? null,
+    [stepPoints]
+  );
+  const prevStep = useCallback(
+    (t: number): number => {
+      for (let i = stepPoints.length - 1; i >= 0; i--) {
+        if (stepPoints[i] < t - 0.05) return stepPoints[i];
+      }
+      return 0;
+    },
+    [stepPoints]
+  );
+
+  // Play/pause that, in step mode, only plays up to the next step point.
+  const togglePlay = useCallback(() => {
+    if (!preloader.isReady) return;
+    if (audio.isPlaying) {
+      audio.pause();
+      return;
+    }
+    nextStopRef.current = stepMode ? nextStep(audio.currentTime) : null;
+    audio.play();
+  }, [audio, preloader.isReady, stepMode, nextStep]);
+
+  const handleSeek = useCallback(
+    (t: number) => {
+      setHoverTime(null);
+      audio.seek(t);
+    },
+    [audio]
+  );
+  const onStepNext = useCallback(() => {
+    const n = nextStep(audio.currentTime);
+    if (n != null) audio.seek(n);
+  }, [audio, nextStep]);
+  const onStepPrev = useCallback(() => audio.seek(prevStep(audio.currentTime)), [audio, prevStep]);
+  const onToggleStepMode = useCallback(() => {
+    nextStopRef.current = null;
+    setStepMode((v) => !v);
+  }, []);
+
+  // Auto-pause at the next step point while playing in step mode.
+  useEffect(() => {
+    if (!stepMode || !audio.isPlaying || nextStopRef.current == null) return;
+    if (audio.currentTime >= nextStopRef.current - 0.01) {
+      const stop = nextStopRef.current;
+      nextStopRef.current = null;
+      audio.pause();
+      audio.seek(stop);
+    }
+  }, [audio, stepMode, audio.currentTime, audio.isPlaying]);
 
   // Auto-play
   useEffect(() => {
@@ -122,11 +204,39 @@ export function ExplainerPlayer({
     }
   }, [audio.isLoaded, audio.duration, onAudioLoaded]);
 
-  const handleViewportClick = useCallback(() => {
-    if (preloader.isReady) {
-      audio.togglePlay();
+  // Resume position — restore once when loaded (unless the caller drives seek).
+  const resumedRef = useRef(false);
+  useEffect(() => {
+    if (resumedRef.current || !audio.isLoaded || !resumeKey || seekToTime !== undefined) return;
+    resumedRef.current = true;
+    try {
+      const saved = parseFloat(localStorage.getItem(`explainer-resume:${resumeKey}`) || "");
+      if (isFinite(saved) && saved > 1 && saved < (audio.duration || duration) - 1) {
+        audio.seek(saved);
+      }
+    } catch {
+      /* localStorage unavailable */
     }
-  }, [audio, preloader.isReady]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [audio.isLoaded, audio.duration]);
+
+  // Persist position (throttled to ~1s of movement).
+  const lastSavedRef = useRef(0);
+  useEffect(() => {
+    if (!resumeKey) return;
+    const t = audio.currentTime;
+    if (Math.abs(t - lastSavedRef.current) < 1) return;
+    lastSavedRef.current = t;
+    try {
+      localStorage.setItem(`explainer-resume:${resumeKey}`, String(t));
+    } catch {
+      /* localStorage unavailable */
+    }
+  }, [audio.currentTime, resumeKey]);
+
+  const handleViewportClick = useCallback(() => {
+    togglePlay();
+  }, [togglePlay]);
 
   // Keyboard controls
   const handleKeyDown = useCallback(
@@ -135,15 +245,29 @@ export function ExplainerPlayer({
         case " ":
         case "k":
           e.preventDefault();
-          audio.togglePlay();
+          togglePlay();
           break;
         case "ArrowLeft":
           e.preventDefault();
-          audio.seek(Math.max(0, audio.currentTime - 5));
+          if (stepMode) onStepPrev();
+          else audio.seek(Math.max(0, audio.currentTime - 5));
           break;
         case "ArrowRight":
           e.preventDefault();
-          audio.seek(Math.min(audio.duration, audio.currentTime + 5));
+          if (stepMode) onStepNext();
+          else audio.seek(Math.min(audio.duration, audio.currentTime + 5));
+          break;
+        case "j":
+          e.preventDefault();
+          audio.seek(Math.max(0, audio.currentTime - 10));
+          break;
+        case "l":
+          e.preventDefault();
+          audio.seek(Math.min(audio.duration, audio.currentTime + 10));
+          break;
+        case "0":
+          e.preventDefault();
+          audio.seek(0);
           break;
         case "ArrowUp":
           e.preventDefault();
@@ -163,7 +287,7 @@ export function ExplainerPlayer({
           break;
       }
     },
-    [audio, toggleFullscreen]
+    [audio, toggleFullscreen, togglePlay, stepMode, onStepPrev, onStepNext]
   );
 
   return (
@@ -189,19 +313,22 @@ export function ExplainerPlayer({
           "relative overflow-hidden bg-black group",
           isFullscreen ? "h-full" : "w-full rounded-2xl"
         )}
-        style={isFullscreen ? { aspectRatio: sequence.aspectRatio.replace(":", "/") } : undefined}
+        style={isFullscreen ? { aspectRatio: lesson.aspectRatio.replace(":", "/") } : undefined}
       >
         <ExplainerViewport
-          currentSegment={engine.currentSegment}
-          incomingSegment={engine.incomingSegment}
-          transform={engine.interpolatedTransform}
-          highlights={engine.activeHighlights}
-          arrows={engine.activeArrows}
-          textOverlays={engine.activeTextOverlays}
-          svgOverlays={engine.activeSvgOverlays}
+          imageUrl={engine.imageUrl}
+          backgroundColor={engine.backgroundColor}
+          incomingImageUrl={engine.incomingImageUrl}
+          incomingBackgroundColor={engine.incomingBackgroundColor}
+          transform={engine.transform}
+          incomingTransform={engine.incomingTransform}
+          highlights={engine.highlights}
+          arrows={engine.arrows}
+          textOverlays={engine.textOverlays}
+          svgOverlays={engine.svgOverlays}
           transitionOpacity={engine.transitionOpacity}
           incomingOpacity={engine.incomingOpacity}
-          aspectRatio={sequence.aspectRatio}
+          aspectRatio={lesson.aspectRatio}
           onClick={handleViewportClick}
         />
 
@@ -221,7 +348,21 @@ export function ExplainerPlayer({
                 borderRadius: "0.4cqw",
               }}
             >
-              {activeCaption.text}
+              {activeCaption.words && activeCaption.words.length > 0
+                ? activeCaption.words.map((w, i) => {
+                    const spoken = displayTime >= w.start;
+                    const active = spoken && displayTime < w.end;
+                    return (
+                      <span
+                        key={i}
+                        style={{ opacity: spoken ? 1 : 0.55, fontWeight: active ? 700 : 400 }}
+                      >
+                        {w.text}
+                        {i < activeCaption.words!.length - 1 ? " " : ""}
+                      </span>
+                    );
+                  })
+                : activeCaption.text}
             </div>
           </div>
         )}
@@ -241,9 +382,9 @@ export function ExplainerPlayer({
             volume={audio.volume}
             playbackRate={audio.playbackRate}
             isReady={preloader.isReady}
-            onPlay={audio.play}
+            onPlay={togglePlay}
             onPause={audio.pause}
-            onSeek={audio.seek}
+            onSeek={handleSeek}
             onVolumeChange={audio.setVolume}
             onPlaybackRateChange={audio.setPlaybackRate}
             captionsAvailable={!!captions && captions.length > 0}
@@ -251,6 +392,12 @@ export function ExplainerPlayer({
             onToggleCaptions={() => setCaptionsVisible((v) => !v)}
             isFullscreen={isFullscreen}
             onToggleFullscreen={toggleFullscreen}
+            markers={markers}
+            onHover={setHoverTime}
+            stepMode={stepMode}
+            onToggleStepMode={onToggleStepMode}
+            onStepPrev={onStepPrev}
+            onStepNext={onStepNext}
           />
         </div>
 

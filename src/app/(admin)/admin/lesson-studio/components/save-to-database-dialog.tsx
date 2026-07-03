@@ -21,12 +21,13 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Loader2, Save } from "lucide-react";
-import type { ExplainerSequence } from "@/shared/types/explainer";
+import type { Lesson } from "@/shared/lesson/types";
+import { slideStarts } from "@/shared/lesson/evaluate";
 
 interface SaveToDatabaseDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  sequence: ExplainerSequence | null;
+  lesson: Lesson | null;
   // If these are provided, we're updating an existing sequence
   existingSequenceId?: string | null;
   existingTitle?: string;
@@ -37,7 +38,7 @@ interface SaveToDatabaseDialogProps {
 export function SaveToDatabaseDialog({
   open,
   onOpenChange,
-  sequence,
+  lesson,
   existingSequenceId,
   existingTitle,
   existingDescription,
@@ -71,8 +72,8 @@ export function SaveToDatabaseDialog({
       return;
     }
 
-    if (!sequence) {
-      setError("No sequence data to save");
+    if (!lesson) {
+      setError("No lesson data to save");
       return;
     }
 
@@ -89,13 +90,13 @@ export function SaveToDatabaseDialog({
             id: existingSequenceId,
             title: title.trim(),
             description: description.trim() || null,
-            sequence_data: sequence,
+            sequence_data: lesson,
             status,
           }
         : {
             title: title.trim(),
             description: description.trim() || null,
-            sequence_data: sequence,
+            sequence_data: lesson,
             status,
           };
 
@@ -205,10 +206,9 @@ export function SaveToDatabaseDialog({
               <strong>Sequence Info:</strong>
             </p>
             <ul className="list-disc list-inside mt-1 space-y-1">
-              <li>{sequence?.segments.length || 0} segments</li>
-              <li>{sequence?.duration.toFixed(1) || 0}s duration</li>
-              <li>{sequence?.audioUrl ? "With audio" : "No audio"}</li>
-              <li>{sequence?.captions?.length || 0} captions</li>
+              <li>{lesson?.slides.length || 0} slides</li>
+              <li>{(lesson ? slideStarts(lesson).duration : 0).toFixed(1)}s duration</li>
+              <li>{lesson?.audio?.url ? "With audio" : "No audio"}</li>
             </ul>
           </div>
         </div>

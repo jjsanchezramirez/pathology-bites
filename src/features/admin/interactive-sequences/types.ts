@@ -1,12 +1,12 @@
 // Interactive Sequence types and interfaces
 
-import type { ExplainerSequence } from "@/shared/types/explainer";
+import type { Lesson } from "@/shared/lesson/types";
 
 export interface InteractiveSequence {
   id: string;
   title: string;
   description: string | null;
-  sequence_data: ExplainerSequence; // The actual ExplainerSequence JSON
+  sequence_data: Lesson; // The canonical Lesson JSON (older rows: ExplainerSequence — normalize on read)
   category_id: string | null;
   status: "draft" | "published" | "archived";
   published_at: string | null;
@@ -26,7 +26,7 @@ export interface InteractiveSequenceListFilters {
 export interface CreateInteractiveSequenceParams {
   title: string;
   description?: string;
-  sequence_data: ExplainerSequence;
+  sequence_data: Lesson;
   category_id?: string;
   status?: "draft" | "published" | "archived";
 }
@@ -35,7 +35,7 @@ export interface UpdateInteractiveSequenceParams {
   id: string;
   title?: string;
   description?: string;
-  sequence_data?: ExplainerSequence;
+  sequence_data?: Lesson;
   category_id?: string;
   status?: "draft" | "published" | "archived";
 }
