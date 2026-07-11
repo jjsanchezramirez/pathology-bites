@@ -5,6 +5,7 @@
 import { callClaudeText } from "@/shared/services/claude-api";
 import { TEXT_FALLBACK_CHAIN } from "@/shared/config/ai-models";
 import { callWithFallback } from "@/shared/services/ai-fallback";
+import { callOpenAICompatText, isOpenAICompatProvider } from "@/shared/services/openai-compat";
 import type { ImageInput } from "../generate-sequence/prompt";
 import type {
   SvgInput,
@@ -211,28 +212,14 @@ export async function planLesson(
           });
           return res.content;
         }
-        if (provider === "llama") {
-          const res = await fetch("https://api.llama.com/v1/chat/completions", {
-            method: "POST",
-            headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-            body: JSON.stringify({
-              model,
-              messages: [
-                {
-                  role: "system",
-                  content: "You are an expert video designer. Return only valid JSON.",
-                },
-                { role: "user", content: prompt },
-              ],
-              max_completion_tokens: 1024,
-              temperature: 0.2,
-            }),
+        if (isOpenAICompatProvider(provider)) {
+          const res = await callOpenAICompatText(provider, model, apiKey, prompt, {
+            system: "You are an expert video designer. Return only valid JSON.",
+            maxTokens: 1024,
+            temperature: 0.2,
+            timeoutMs: 20_000,
           });
-          if (!res.ok) throw new Error(`Llama API ${res.status}`);
-          const data = await res.json();
-          return (
-            data.completion_message?.content?.text ?? data.choices?.[0]?.message?.content ?? ""
-          );
+          return res.content;
         }
         if (provider === "google") {
           const res = await fetch(

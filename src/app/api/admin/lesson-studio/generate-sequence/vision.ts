@@ -26,7 +26,7 @@ export interface AnnotationShape {
 }
 
 export interface VisionResult {
-  /** Whether Llama could actually see and interpret the image. */
+  /** Whether the vision model could actually see and interpret the image. */
   canSeeImage: boolean;
   /** Position of the single most important feature, in 0–100 viewport coords. */
   featurePosition: { x: number; y: number } | null;
@@ -436,30 +436,25 @@ async function callVisionProvider(
   provider: string,
   signal: AbortSignal
 ): Promise<string> {
-  if (provider === "llama") {
-    const r = await fetch("https://api.llama.com/v1/chat/completions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-      signal,
-      body: JSON.stringify({
-        model,
-        messages: [
-          { role: "system", content: VISION_SYSTEM_PROMPT },
-          {
-            role: "user",
-            content: [
-              { type: "image_url", image_url: { url: imageUrl } },
-              { type: "text", text: promptText },
-            ],
-          },
-        ],
-        max_completion_tokens: 600,
-        temperature: 0.1,
-      }),
-    });
-    if (!r.ok) throw new Error(`Llama API ${r.status}`);
-    const data = await r.json();
-    return data.completion_message?.content?.text || data.choices?.[0]?.message?.content || "";
+  if (provider === "groq") {
+    const { callOpenAICompatChat } = await import("@/shared/services/openai-compat");
+    const res = await callOpenAICompatChat(
+      provider,
+      model,
+      apiKey,
+      [
+        { role: "system", content: VISION_SYSTEM_PROMPT },
+        {
+          role: "user",
+          content: [
+            { type: "image_url", image_url: { url: imageUrl } },
+            { type: "text", text: promptText },
+          ],
+        },
+      ],
+      { maxTokens: 600, temperature: 0.1, signal }
+    );
+    return res.content;
   }
 
   if (provider === "claude") {

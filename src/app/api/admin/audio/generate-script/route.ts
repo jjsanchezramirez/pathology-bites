@@ -2,8 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
-import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
+import {
+  getApiKey,
+  getModelProvider,
+  resolveModelId,
+  ACTIVE_AI_MODELS,
+} from "@/shared/config/ai-models";
 import { callClaudeText } from "@/shared/services/claude-api";
+import { callOpenAICompatText } from "@/shared/services/openai-compat";
 import { log } from "@/shared/utils/logging";
 
 // Vercel Hobby caps at 60s; Claude calls observed ~10s, chain walk worst case ~15s.
@@ -39,8 +45,16 @@ async function callAIService(
   apiKey: string
 ): Promise<{ content: string }> {
   switch (provider) {
-    case "llama":
-      return await callMetaAPI(prompt, modelId, apiKey);
+    case "groq":
+    case "cerebras": {
+      const res = await callOpenAICompatText(provider, modelId, apiKey, prompt, {
+        system: AUDIO_SCRIPT_SYSTEM,
+        maxTokens: 500,
+        temperature: 0.7,
+        timeoutMs: 20_000,
+      });
+      return { content: res.content };
+    }
     case "google":
       return await callGoogleAPI(prompt, modelId, apiKey);
     case "mistral":
@@ -56,66 +70,6 @@ async function callAIService(
     default:
       throw new Error(`Unsupported model provider: ${provider}`);
   }
-}
-
-async function callMetaAPI(
-  prompt: string,
-  model: string,
-  apiKey: string
-): Promise<{ content: string }> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 20000);
-
-  let response: Response;
-  try {
-    response = await fetch("https://api.llama.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: model,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an expert medical educator creating concise, engaging educational audio scripts for students. Your scripts should be clear, accurate, and suitable for text-to-speech conversion.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        max_completion_tokens: 500,
-        temperature: 0.7,
-      }),
-    });
-    clearTimeout(timeoutId);
-  } catch (error) {
-    clearTimeout(timeoutId);
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Meta LLAMA API timeout after 20 seconds");
-    }
-    throw error;
-  }
-
-  if (!response.ok) {
-    await response.text(); // Consume response body
-    throw new Error(`Meta LLAMA API error: ${response.status} ${response.statusText}`);
-  }
-
-  const data = await response.json();
-
-  let content = "";
-  if (data.completion_message?.content?.text) {
-    content = data.completion_message.content.text;
-  } else if (data.choices?.[0]?.message?.content) {
-    content = data.choices[0].message.content;
-  }
-
-  return { content: content || "" };
 }
 
 async function callGoogleAPI(
@@ -219,7 +173,7 @@ Return ONLY the script text with no additional commentary, metadata, titles, or 
  * /api/admin/audio/generate-script:
  *   post:
  *     summary: Generate audio script using AI
- *     description: Generate an educational audio script using AI based on educational content metadata. Supports multiple AI models (Llama, Google Gemini, Mistral). Requires admin role.
+ *     description: Generate an educational audio script using AI based on educational content metadata. Supports multiple AI models (Groq, Cerebras, Google Gemini, Mistral). Requires admin role.
  *     tags:
  *       - Admin - Audio
  *     security:
@@ -265,7 +219,7 @@ Return ONLY the script text with no additional commentary, metadata, titles, or 
  *                 type: string
  *                 description: AI model to use
  *                 default: "gemini-2.5-flash-lite"
- *                 enum: ["gemini-2.5-flash-lite", "llama-3.1-405b", "mistral-large"]
+ *                 enum: ["gemini-2.5-flash-lite", "llama-3.3-70b-versatile", "gpt-oss-120b", "mistral-large-latest"]
  *     responses:
  *       200:
  *         description: Script generated successfully
@@ -312,7 +266,7 @@ export async function POST(request: NextRequest) {
     if (body instanceof NextResponse) return body;
     const { content, additionalInstructions = "", model, modelOverride } = body;
 
-    const selectedModel = modelOverride || model || "gemini-2.5-flash-lite";
+    const selectedModel = resolveModelId(modelOverride || model || "gemini-2.5-flash-lite");
 
     if (!ADMIN_AI_MODELS.includes(selectedModel)) {
       return NextResponse.json(

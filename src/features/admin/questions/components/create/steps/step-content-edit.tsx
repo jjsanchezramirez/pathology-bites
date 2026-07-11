@@ -31,7 +31,7 @@ export function StepContentEdit({
   // Determine which AI model to use for refinement
   // Priority: 1. Question set's AI model, 2. Selected AI model from Step 1, 3. Default fast model
   const refinementModel =
-    questionSetAIModel || formState.selectedAIModel || "Llama-3.3-8B-Instruct";
+    questionSetAIModel || formState.selectedAIModel || "llama-3.3-70b-versatile";
 
   // Handle AI enhancement
   const handleAIEnhancement = async () => {

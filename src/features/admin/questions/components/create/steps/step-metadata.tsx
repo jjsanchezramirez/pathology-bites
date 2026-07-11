@@ -165,7 +165,7 @@ export function StepMetadata({
         },
         body: JSON.stringify({
           // Forward the same model the user picked for educational_content generation.
-          // The metadata-suggestion default (`Llama-3.3-8B-Instruct`) is a single
+          // The metadata-suggestion default (`llama-3.3-70b-versatile`) is a single
           // hardcoded fallback with no model-fallback chain — reusing the user's
           // selection avoids the bug where a single-model outage kills metadata.
           ...(formState.selectedAIModel ? { model: formState.selectedAIModel } : {}),

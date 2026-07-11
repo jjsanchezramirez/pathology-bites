@@ -6,7 +6,7 @@ import { log } from "@/shared/utils/logging";
 export interface AIModel {
   id: string;
   name: string;
-  provider: "llama" | "gemini" | "mistral" | "claude";
+  provider: "groq" | "cerebras" | "gemini" | "mistral" | "claude" | "llama";
   available: boolean;
   deprecated?: boolean;
   description?: string;
@@ -16,9 +16,28 @@ export interface AIModel {
   tpmLimit?: number; // Tokens Per Minute limit
 }
 
-// Helper function to determine provider from model ID
+// Legacy Meta Llama API model IDs → nearest live equivalent.
+// The Meta Llama API shut down July 6, 2026; stale IDs persisted in question
+// sets / user prefs are remapped here instead of erroring.
+export const LEGACY_MODEL_REMAP: Record<string, string> = {
+  "Llama-3.3-70B-Instruct": "llama-3.3-70b-versatile",
+  "Llama-3.3-8B-Instruct": "llama-3.1-8b-instant",
+  "Llama-4-Maverick-17B-128E-Instruct-FP8": "llama-3.3-70b-versatile",
+  "Llama-4-Scout-17B-16E-Instruct-FP8": "meta-llama/llama-4-scout-17b-16e-instruct",
+};
+
+/** Resolve legacy model IDs to their live replacement (identity for current IDs). */
+export function resolveModelId(model: string): string {
+  return LEGACY_MODEL_REMAP[model] ?? model;
+}
+
+// Helper function to determine provider from model ID.
+// Exact catalog lookup first (Groq's llama-* IDs would otherwise collide with
+// prefix rules), then prefix heuristics for models not in the catalog.
 export function getModelProvider(model: string): string {
-  if (model.startsWith("llama-") || model.startsWith("Llama-")) return "llama";
+  const resolved = resolveModelId(model);
+  const known = ALL_AI_MODELS.find((m) => m.id === resolved);
+  if (known) return known.provider === "gemini" ? "google" : known.provider;
   if (model.startsWith("gemini-")) return "google";
   if (
     model.startsWith("mistral-") ||
@@ -34,42 +53,53 @@ export function getModelProvider(model: string): string {
 
 // Active models (available for selection) - Prioritized for WSI Question Generator
 export const ACTIVE_AI_MODELS: AIModel[] = [
-  // High rate limit models (1M TPM)
+  // Groq — fast Llama inference, free tier: 30 RPM, per-model daily token caps
   {
-    id: "Llama-3.3-70B-Instruct",
-    name: "Llama 3.3 70B",
-    provider: "llama",
+    id: "llama-3.3-70b-versatile",
+    name: "Llama 3.3 70B (Groq)",
+    provider: "groq",
     available: true,
-    description: "Large Llama model - proven performance",
+    description: "Large Llama model on Groq - fast, proven performance",
     contextLength: "128K tokens",
-    tpmLimit: 1000000,
+    tpmLimit: 12000,
   },
   {
-    id: "Llama-4-Maverick-17B-128E-Instruct-FP8",
-    name: "Llama 4 Maverick 17B",
-    provider: "llama",
+    id: "meta-llama/llama-4-scout-17b-16e-instruct",
+    name: "Llama 4 Scout 17B (Groq)",
+    provider: "groq",
     available: true,
-    description: "Complex reasoning powerhouse",
+    description: "Multimodal vision model on Groq",
     contextLength: "128K tokens",
-    tpmLimit: 1000000,
+    tpmLimit: 30000,
   },
   {
-    id: "Llama-4-Scout-17B-16E-Instruct-FP8",
-    name: "Llama 4 Scout 17B",
-    provider: "llama",
+    id: "llama-3.1-8b-instant",
+    name: "Llama 3.1 8B (Groq)",
+    provider: "groq",
     available: true,
-    description: "Latest multimodal + medical reasoning",
-    contextLength: "16K tokens",
-    tpmLimit: 1000000,
+    description: "Fast lightweight Llama on Groq",
+    contextLength: "128K tokens",
+    tpmLimit: 6000,
+  },
+
+  // Cerebras — fastest inference (~2000+ tok/s), free tier: 5 RPM, 1M tokens/day
+  {
+    id: "gpt-oss-120b",
+    name: "GPT-OSS 120B (Cerebras)",
+    provider: "cerebras",
+    available: true,
+    description: "OpenAI open-weight 120B reasoning model on Cerebras",
+    contextLength: "128K tokens",
+    tpmLimit: 30000,
   },
   {
-    id: "Llama-3.3-8B-Instruct",
-    name: "Llama 3.3 8B",
-    provider: "llama",
+    id: "zai-glm-4.7",
+    name: "GLM 4.7 (Cerebras)",
+    provider: "cerebras",
     available: true,
-    description: "Fast, excellent quality",
+    description: "Z.ai GLM 4.7 355B on Cerebras - strong reasoning",
     contextLength: "128K tokens",
-    tpmLimit: 1000000,
+    tpmLimit: 30000,
   },
   {
     id: "gemini-2.5-flash-lite",
@@ -143,30 +173,32 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
 // ---------------------------------------------------------------------------
 // Unified fallback chains
 // ---------------------------------------------------------------------------
-// Free-tier only. Quota-first ordering: Llama → Mistral → Gemini.
+// Free-tier only. Speed-first ordering: Groq → Cerebras → Mistral → Gemini.
+// (Meta's Llama API shut down July 6, 2026; Groq serves the same Llama
+// models, Cerebras adds a 1M-token/day pool.)
 //
 // Claude is INTENTIONALLY EXCLUDED — it's paid, and we never want production
 // traffic to silently cascade into paid models. Claude is still callable via
 // `modelOverride` from the debug page or by explicit caller request; it just
 // won't be selected by automatic fallback.
 
-// Provider rotation: alternate between Llama/Mistral/Gemini so a single
-// provider outage falls through to a different provider in one hop, not 3.
-// Quota-first within each provider tier.
+// Provider rotation: alternate between Groq/Cerebras/Mistral/Gemini so a
+// single provider outage falls through to a different provider in one hop.
+// Groq leads (fast + 30 RPM); Cerebras next (deep 1M/day quota, only 5 RPM);
+// Mistral is the long-context/volume workhorse (500K TPM, ~1B tokens/month).
 export const TEXT_FALLBACK_CHAIN: string[] = [
-  "Llama-4-Maverick-17B-128E-Instruct-FP8", // Meta
+  "llama-3.3-70b-versatile", // Groq
+  "gpt-oss-120b", // Cerebras
   "mistral-large-latest", // Mistral
-  "Llama-3.3-70B-Instruct", // Meta
   "gemini-2.5-flash-lite", // Google
-  "Llama-3.3-8B-Instruct", // Meta
+  "zai-glm-4.7", // Cerebras
+  "llama-3.1-8b-instant", // Groq
   "mistral-medium-2505", // Mistral
-  "mistral-small-2506", // Mistral
 ];
 
 export const VISION_FALLBACK_CHAIN: string[] = [
-  "Llama-4-Scout-17B-16E-Instruct-FP8", // Meta
+  "meta-llama/llama-4-scout-17b-16e-instruct", // Groq
   "gemini-2.5-flash-lite", // Google
-  "Llama-4-Maverick-17B-128E-Instruct-FP8", // Meta
 ];
 
 // Vision-capable model IDs (includes Claude for modelOverride even though
@@ -178,6 +210,40 @@ export const VISION_CAPABLE_MODELS = new Set<string>([
 
 // Disabled models (show in UI but not selectable)
 export const DISABLED_AI_MODELS: AIModel[] = [
+  // Meta Llama API models (service shut down July 6, 2026 — see LEGACY_MODEL_REMAP)
+  {
+    id: "Llama-3.3-70B-Instruct",
+    name: "Llama 3.3 70B (Meta API)",
+    provider: "llama",
+    available: false,
+    deprecated: true,
+    description: "Meta Llama API retired July 2026 — remapped to Groq",
+  },
+  {
+    id: "Llama-4-Maverick-17B-128E-Instruct-FP8",
+    name: "Llama 4 Maverick 17B (Meta API)",
+    provider: "llama",
+    available: false,
+    deprecated: true,
+    description: "Meta Llama API retired July 2026 — remapped to Groq",
+  },
+  {
+    id: "Llama-4-Scout-17B-16E-Instruct-FP8",
+    name: "Llama 4 Scout 17B (Meta API)",
+    provider: "llama",
+    available: false,
+    deprecated: true,
+    description: "Meta Llama API retired July 2026 — remapped to Groq",
+  },
+  {
+    id: "Llama-3.3-8B-Instruct",
+    name: "Llama 3.3 8B (Meta API)",
+    provider: "llama",
+    available: false,
+    deprecated: true,
+    description: "Meta Llama API retired July 2026 — remapped to Groq",
+  },
+
   // Claude models (legacy — superseded by active claude-sonnet-4)
   {
     id: "claude-3-5-sonnet-20241022",
@@ -232,7 +298,8 @@ export const DEFAULT_MODEL = "gemini-2.5-flash-lite";
 
 // API key configuration - All keys must be provided via environment variables
 export const API_KEYS = {
-  llama: process.env.NEXT_PUBLIC_LLAMA_API_KEY || process.env.LLAMA_API_KEY || "",
+  groq: process.env.NEXT_PUBLIC_GROQ_API_KEY || process.env.GROQ_API_KEY || "",
+  cerebras: process.env.NEXT_PUBLIC_CEREBRAS_API_KEY || process.env.CEREBRAS_API_KEY || "",
   google:
     process.env.NEXT_PUBLIC_GOOGLE_AI_STUDIO_API_KEY ||
     process.env.NEXT_PUBLIC_GEMINI_API_KEY ||

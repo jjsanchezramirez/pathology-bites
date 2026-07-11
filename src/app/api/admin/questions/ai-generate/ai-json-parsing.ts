@@ -126,7 +126,7 @@ export function extractJSON(text: string): unknown {
             );
 
             // Provide more helpful error message
-            const errorMsg = `AI model returned invalid JSON. Try: (1) Use a different model like Gemini 2.5 Flash or LLAMA 3.3 70B, (2) Simplify instructions, or (3) Try again (responses vary). Error: ${finalError instanceof Error ? finalError.message : "Parse error"}`;
+            const errorMsg = `AI model returned invalid JSON. Try: (1) Use a different model like Gemini 2.5 Flash or Llama 3.3 70B (Groq), (2) Simplify instructions, or (3) Try again (responses vary). Error: ${finalError instanceof Error ? finalError.message : "Parse error"}`;
             throw new Error(errorMsg);
           }
         }
@@ -143,6 +143,6 @@ export function extractJSON(text: string): unknown {
     text.substring(Math.max(0, text.length - 500))
   );
   throw new Error(
-    "No JSON found in AI response. The model may have returned plain text instead of JSON. Try using a different AI model (e.g., Gemini 2.5 Flash or LLAMA 3.3 70B) or simplify your instructions."
+    "No JSON found in AI response. The model may have returned plain text instead of JSON. Try using a different AI model (e.g., Gemini 2.5 Flash or Llama 3.3 70B on Groq) or simplify your instructions."
   );
 }

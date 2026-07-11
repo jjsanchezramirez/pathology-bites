@@ -80,7 +80,7 @@ interface UseWSIQuestionGeneratorReturn {
 
 /**
  * WSI Question Generator Hook
- * Uses single optimized endpoint for question generation with Meta LLAMA support
+ * Uses single optimized endpoint for question generation with multi-provider fallback
  */
 export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
   const [isGenerating, setIsGenerating] = useState(false);

@@ -86,7 +86,7 @@ export function ContentTab({
         return String(modelId);
       }
     }
-    return ACTIVE_AI_MODELS[0]?.id || "Llama-3.3-8B-Instruct";
+    return ACTIVE_AI_MODELS[0]?.id || "llama-3.3-70b-versatile";
   }, [question, selectedModel]);
 
   // Handle AI enhancement

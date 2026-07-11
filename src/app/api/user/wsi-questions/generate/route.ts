@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { getApiKey, getModelProvider, TEXT_FALLBACK_CHAIN } from "@/shared/config/ai-models";
+import {
+  getApiKey,
+  getModelProvider,
+  resolveModelId,
+  TEXT_FALLBACK_CHAIN,
+} from "@/shared/config/ai-models";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
@@ -447,7 +452,7 @@ export async function POST(request: NextRequest) {
         typeof modelIndex === "number" && modelIndex >= 0 && modelIndex < WSI_FALLBACK_MODELS.length
           ? modelIndex
           : 0;
-      const selectedModel = (modelOverride as string) || WSI_FALLBACK_MODELS[idx];
+      const selectedModel = resolveModelId((modelOverride as string) || WSI_FALLBACK_MODELS[idx]);
       const { provider, apiKey } = getAPIConfig(selectedModel);
       try {
         const apiResponse = await callAIService(provider, customPrompt, selectedModel, apiKey);
@@ -491,7 +496,7 @@ export async function POST(request: NextRequest) {
 
     // modelOverride bypasses the chain — single-model mode for debug testing
     if (modelOverride) {
-      const selectedModel = modelOverride as string;
+      const selectedModel = resolveModelId(modelOverride as string);
       log.debug(`[Question Gen] modelOverride mode: ${selectedModel}`);
       const questionResult = await generateQuestionWithRetries(
         wsi,

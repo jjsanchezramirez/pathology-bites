@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireContentRole } from "@/shared/utils/api/api-guard";
-import { getApiKey, getModelProvider, ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
+import {
+  getApiKey,
+  getModelProvider,
+  resolveModelId,
+  ACTIVE_AI_MODELS,
+} from "@/shared/config/ai-models";
 import { log } from "@/shared/utils/logging";
 import { callAIService } from "./ai-providers";
 import { type QuestionGenerationRequest, buildAdminQuestionPrompt } from "./ai-question-prompt";
@@ -19,7 +24,7 @@ const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
  * /api/admin/questions/ai-generate:
  *   post:
  *     summary: AI-generate or refine questions
- *     description: Use AI models to generate new questions from educational content, refine existing questions, or suggest metadata. Supports multiple AI models (LLAMA, Google Gemini, Mistral). Requires admin, creator, or reviewer role.
+ *     description: Use AI models to generate new questions from educational content, refine existing questions, or suggest metadata. Supports multiple AI models (Groq, Cerebras, Google Gemini, Mistral). Requires admin, creator, or reviewer role.
  *     tags:
  *       - Admin - Questions
  *     security:
@@ -49,7 +54,7 @@ const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
  *                 description: Additional context or constraints
  *               model:
  *                 type: string
- *                 default: Llama-3.3-8B-Instruct
+ *                 default: llama-3.3-70b-versatile
  *                 description: AI model to use for generation
  *     responses:
  *       200:
@@ -145,7 +150,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Use default model for educational content mode if not specified
-    const selectedModel = modelOverride || model || "Llama-3.3-8B-Instruct";
+    const selectedModel = resolveModelId(modelOverride || model || "llama-3.3-70b-versatile");
 
     // Validate model
     if (!ADMIN_AI_MODELS.includes(selectedModel)) {

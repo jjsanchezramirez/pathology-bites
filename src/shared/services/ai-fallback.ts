@@ -3,7 +3,7 @@
 // Used by: lesson-studio (3 passes), generate-sequence (segmenter, vision),
 // WSI question generation, debug routes.
 
-import { getApiKey, getModelProvider } from "@/shared/config/ai-models";
+import { getApiKey, getModelProvider, resolveModelId } from "@/shared/config/ai-models";
 import { log } from "@/shared/utils/logging";
 
 type ErrorClass = "retryable" | "fallback" | "fatal";
@@ -78,7 +78,8 @@ export async function callWithFallback<T>(
   options: CallWithFallbackOptions = {}
 ): Promise<T> {
   const { modelOverride, maxRetries = DEFAULT_MAX_RETRIES } = options;
-  const chain = modelOverride ? [modelOverride] : modelIds;
+  // resolveModelId: stale Meta Llama API IDs (saved prefs, old links) → live equivalents
+  const chain = (modelOverride ? [modelOverride] : modelIds).map(resolveModelId);
   const errors: string[] = [];
 
   for (const modelId of chain) {

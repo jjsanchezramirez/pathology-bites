@@ -23,7 +23,7 @@ export const maxDuration = 60;
  *       Pass 1-2 run in parallel: transcript analysis + image vision analysis.
  *       Pass 3: AI lesson planning (slide ordering + text slides only).
  *       Pass 4: Deterministic assembly (durations, annotations, camera — all computed, not AI).
- *       Uses Claude Sonnet 4 with fallback to Llama and Gemini.
+ *       Uses Claude Sonnet 4 with fallback to Groq/Cerebras/Mistral/Gemini.
  *     tags:
  *       - Admin - Lesson Studio
  *     security:

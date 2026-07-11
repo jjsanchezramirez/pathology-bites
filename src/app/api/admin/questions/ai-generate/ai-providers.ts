@@ -1,5 +1,6 @@
-// Admin question generation — AI provider calls (Meta/Google/Mistral/Claude dispatch).
+// Admin question generation — AI provider calls (Groq/Cerebras/Google/Mistral/Claude dispatch).
 import { callClaudeText } from "@/shared/services/claude-api";
+import { callOpenAICompatText } from "@/shared/services/openai-compat";
 
 const QUESTION_GEN_SYSTEM =
   "You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.";
@@ -12,8 +13,14 @@ export async function callAIService(
   apiKey: string
 ): Promise<{ content: string; tokenUsage?: unknown }> {
   switch (provider) {
-    case "llama":
-      return await callMetaAPI(prompt, modelId, apiKey);
+    case "groq":
+    case "cerebras":
+      return await callOpenAICompatText(provider, modelId, apiKey, prompt, {
+        system: QUESTION_GEN_SYSTEM,
+        maxTokens: 4000,
+        temperature: 0.7,
+        timeoutMs: 20_000,
+      });
     case "google":
       return await callGoogleAPI(prompt, modelId, apiKey);
     case "mistral":
@@ -29,100 +36,6 @@ export async function callAIService(
     default:
       throw new Error(`Unsupported model provider: ${provider}`);
   }
-}
-
-async function callMetaAPI(
-  prompt: string,
-  model: string,
-  apiKey: string
-): Promise<{ content: string; tokenUsage?: unknown }> {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), 20000); // 20 second timeout
-
-  let response: Response;
-  try {
-    response = await fetch("https://api.llama.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      signal: controller.signal,
-      body: JSON.stringify({
-        model: model,
-        messages: [
-          {
-            role: "system",
-            content:
-              "You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.",
-          },
-          {
-            role: "user",
-            content: prompt,
-          },
-        ],
-        max_completion_tokens: 4000,
-        temperature: 0.7,
-      }),
-    });
-    clearTimeout(timeoutId);
-  } catch (error) {
-    clearTimeout(timeoutId);
-    if (error instanceof Error && error.name === "AbortError") {
-      throw new Error("Meta LLAMA API timeout after 20 seconds");
-    }
-    throw error;
-  }
-
-  if (!response.ok) {
-    const errorText = await response.text();
-    let errorMessage = `Meta LLAMA API error: ${response.status} ${response.statusText}`;
-
-    try {
-      const errorData = JSON.parse(errorText);
-      if (errorData.error?.message) {
-        errorMessage = errorData.error.message;
-      }
-    } catch {
-      // Use default error message if JSON parsing fails
-    }
-
-    throw new Error(errorMessage);
-  }
-
-  const data = await response.json();
-
-  // Handle Meta LLAMA API response format (match WSI implementation)
-  let content = "";
-  if (data.completion_message?.content?.text) {
-    content = data.completion_message.content.text;
-  } else if (data.choices?.[0]?.message?.content) {
-    content = data.choices[0].message.content;
-  }
-
-  // Check for token usage in various possible locations
-  let tokenUsage = undefined;
-  if (data.usage) {
-    tokenUsage = {
-      prompt_tokens: data.usage.prompt_tokens || 0,
-      completion_tokens: data.usage.completion_tokens || 0,
-      total_tokens: data.usage.total_tokens || 0,
-    };
-  } else if (data.token_usage) {
-    tokenUsage = {
-      prompt_tokens: data.token_usage.prompt_tokens || 0,
-      completion_tokens: data.token_usage.completion_tokens || 0,
-      total_tokens: data.token_usage.total_tokens || 0,
-    };
-  } else if (data.completion_message?.usage) {
-    tokenUsage = {
-      prompt_tokens: data.completion_message.usage.prompt_tokens || 0,
-      completion_tokens: data.completion_message.usage.completion_tokens || 0,
-      total_tokens: data.completion_message.usage.total_tokens || 0,
-    };
-  }
-
-  return { content: content || "", tokenUsage };
 }
 
 async function callGoogleAPI(

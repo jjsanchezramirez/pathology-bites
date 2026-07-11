@@ -1,5 +1,5 @@
 // Pass 2: Image analysis using Claude Sonnet for better spatial reasoning.
-// Falls back to the existing Llama-based vision.ts on failure.
+// Falls back to the existing vision.ts path (Groq Scout / Gemini) on failure.
 
 import { callClaudeVision } from "@/shared/services/claude-api";
 import { VISION_FALLBACK_CHAIN } from "@/shared/config/ai-models";
@@ -7,7 +7,7 @@ import { callWithFallback } from "@/shared/services/ai-fallback";
 import type { VisionResult, AnnotationTool } from "../generate-sequence/vision";
 import {
   normaliseMagnification,
-  analyzeImages as llamaAnalyzeImages,
+  analyzeImages as visionAnalyzeImages,
   deriveMicroscopicTool,
 } from "../generate-sequence/vision";
 import type { ImageInput } from "../generate-sequence/prompt";
@@ -251,10 +251,10 @@ async function analyzeOneImage(image: ImageInput, modelOverride?: string): Promi
           if (!parsed) throw new Error("Failed to parse Claude vision response");
           return parsed;
         }
-        if (provider === "llama") {
-          // Use existing Llama vision path
-          const llamaResults = await llamaAnalyzeImages([imageWithMag], apiKey);
-          return llamaResults[0] ?? FALLBACK;
+        if (provider === "groq") {
+          // Use existing vision.ts path (Groq Scout via callWithFallback)
+          const visionResults = await visionAnalyzeImages([imageWithMag], apiKey);
+          return visionResults[0] ?? FALLBACK;
         }
         if (provider === "google") {
           // Gemini vision
