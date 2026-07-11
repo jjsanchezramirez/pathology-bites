@@ -245,7 +245,7 @@ async function analyzeOneImage(image: ImageInput, modelOverride?: string): Promi
             system: "You are an expert pathologist. Respond with only the JSON requested.",
             maxTokens: 800,
             temperature: 0.1,
-            timeoutMs: 25_000,
+            timeoutMs: 18_000,
           });
           const parsed = parseVisionJSON(res.content, imageWithMag);
           if (!parsed) throw new Error("Failed to parse Claude vision response");

@@ -217,7 +217,7 @@ export async function planLesson(
             system: "You are an expert video designer. Return only valid JSON.",
             maxTokens: 1024,
             temperature: 0.2,
-            timeoutMs: 20_000,
+            timeoutMs: 12_000,
           });
           return res.content;
         }

@@ -198,7 +198,7 @@ export async function analyzeTranscript(
             system: "Return only valid JSON — no explanation.",
             maxTokens: 2048,
             temperature: 0.2,
-            timeoutMs: 20_000,
+            timeoutMs: 12_000,
           });
           return res.content;
         }

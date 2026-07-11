@@ -412,7 +412,7 @@ export interface VisionDebug {
 const VISION_SYSTEM_PROMPT =
   "You are an expert pathologist with strong visual analysis skills. Be concise and precise. Answer each numbered question on its own line. If you cannot see the image, say so on line 1.";
 
-const VISION_TIMEOUT_MS = 20000;
+const VISION_TIMEOUT_MS = 15000;
 
 // Fetch image, return base64 + mime type (used by Gemini, which doesn't accept URLs)
 async function fetchImageAsBase64(

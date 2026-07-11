@@ -51,7 +51,7 @@ async function callAIService(
         system: AUDIO_SCRIPT_SYSTEM,
         maxTokens: 500,
         temperature: 0.7,
-        timeoutMs: 20_000,
+        timeoutMs: 10_000, // ~500-token script finishes well under this
       });
       return { content: res.content };
     }

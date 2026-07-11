@@ -28,11 +28,13 @@ import { callAIService, normalizeWSI } from "./wsi-question-providers";
 // in the prompt as metadata, not sent to vision API.
 const WSI_FALLBACK_MODELS = TEXT_FALLBACK_CHAIN;
 
-// Retry configuration for transient errors
+// Retry configuration for transient errors. Only genuine "briefly busy" (503)
+// errors retry the same model now, so one quick retry is enough — the fallback
+// chain handles everything else. Kept small to fail over fast.
 const RETRY_CONFIG = {
-  maxRetries: 3,
-  baseDelay: 1000, // 1 second
-  maxDelay: 8000, // 8 seconds
+  maxRetries: 1,
+  baseDelay: 400,
+  maxDelay: 2000,
   backoffMultiplier: 2,
 };
 
@@ -42,22 +44,28 @@ function classifyError(error: unknown): "retryable" | "fallback" | "fatal" {
     typeof error === "string" ? error : error instanceof Error ? error.message : String(error);
   const lowerError = errorStr.toLowerCase();
 
-  // Retryable errors (same model): transient issues that might resolve quickly
+  // Retryable errors (same model): only genuine "briefly busy" signals that
+  // recover within a second. Rate-limits and timeouts are NOT here — on a shared
+  // free-tier key a limit won't clear in seconds, and re-hitting a hung provider
+  // just burns another full timeout, so those fail over to the next model.
   if (
     lowerError.includes("503") ||
     lowerError.includes("service unavailable") ||
-    lowerError.includes("timeout") ||
-    lowerError.includes("network") ||
-    lowerError.includes("rate limit") ||
-    lowerError.includes("too many requests") ||
+    lowerError.includes("overloaded") ||
     lowerError.includes("temporary") ||
     lowerError.includes("try again")
   ) {
     return "retryable";
   }
 
-  // Fallback errors (next model): fundamental issues with current model
+  // Fallback errors (next model): rate-limits, timeouts, and fundamental issues
+  // with the current model — move on rather than retry the same one.
   if (
+    lowerError.includes("rate limit") ||
+    lowerError.includes("429") ||
+    lowerError.includes("too many requests") ||
+    lowerError.includes("timeout") ||
+    lowerError.includes("network") ||
     lowerError.includes("401") ||
     lowerError.includes("unauthorized") ||
     lowerError.includes("invalid api key") ||
