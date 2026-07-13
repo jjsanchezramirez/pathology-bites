@@ -77,3 +77,8 @@ AGENTS.md
 # Rebuild: dev/resources/who_classification/build_ihc_matrix.mjs --assemble
 # Publish: dev/resources/who_classification/r2_publish_ihc.mjs
 public/data/
+
+# Migrations are dev artifacts applied via Supabase, not app source. They live in
+# dev/supabase/migrations/ (gitignored) alongside dev/code/scripts/migrations/.
+# Keeping this ignored stops one being committed to the repo root by accident.
+supabase/migrations/
