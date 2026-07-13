@@ -71,3 +71,9 @@ AGENTS.md
 .windsurf/
 .clinerules/
 .opencode/
+
+# IHC datasets are generated artifacts published to R2 (data/ihc/*.json.br), not
+# committed — each rebuild rewrites the whole multi-MB file and git can't delta it.
+# Rebuild: dev/resources/who_classification/build_ihc_matrix.mjs --assemble
+# Publish: dev/resources/who_classification/r2_publish_ihc.mjs
+public/data/

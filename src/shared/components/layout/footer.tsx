@@ -44,6 +44,11 @@ const tools = [
     category: "Laboratory Tools",
     items: [
       {
+        href: "/tools/ihc",
+        label: "IHC Panel Builder",
+        desc: "Compare differentials and rank the antibodies that best discriminate between them",
+      },
+      {
         href: "/tools/cell-counter",
         label: "Differential Cell Counter",
         desc: "Customizable differential calculator",
