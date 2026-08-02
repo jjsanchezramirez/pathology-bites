@@ -10,7 +10,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     <DashboardSettingsProvider>
       <DashboardThemeProvider>
         <UnifiedLayoutClient
-          userType="admin"
           headerConfig={{
             showNotifications: true,
             showFontSize: true,
