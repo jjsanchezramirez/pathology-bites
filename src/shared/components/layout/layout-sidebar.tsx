@@ -8,18 +8,13 @@ import type { NavigationSection } from "@/shared/config/navigation";
 interface LayoutSidebarProps {
   controller: SidebarController;
   navigationSections: NavigationSection[];
-  hideAuthStatus?: boolean;
 }
 
 /**
  * Sidebar placement for the unified shell. Mobile overlays a sliding panel over
  * a backdrop; desktop renders a static rail that expands on hover.
  */
-export function LayoutSidebar({
-  controller,
-  navigationSections,
-  hideAuthStatus,
-}: LayoutSidebarProps) {
+export function LayoutSidebar({ controller, navigationSections }: LayoutSidebarProps) {
   const {
     isMobile,
     desktopCollapsed,
@@ -52,7 +47,6 @@ export function LayoutSidebar({
             isCollapsed={false}
             navigationSections={navigationSections}
             isMobileMode
-            hideAuthStatus={hideAuthStatus}
           />
         </div>
       </>
@@ -70,7 +64,6 @@ export function LayoutSidebar({
         isHovered={isHovered}
         navigationSections={navigationSections}
         isMobileMode={false}
-        hideAuthStatus={hideAuthStatus}
       />
     </div>
   );

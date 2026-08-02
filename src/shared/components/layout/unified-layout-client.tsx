@@ -8,27 +8,20 @@ import { UnifiedHeader, HeaderConfig } from "./unified-header";
 import { LayoutSidebar } from "./layout-sidebar";
 import { isFullHeightPath } from "./layout-routes";
 import { useSidebarController } from "./use-sidebar-controller";
-import { getNavigationConfig, type NavigationSection } from "@/shared/config/navigation";
+import { getNavigationConfig } from "@/shared/config/navigation";
 import { SidebarStateProvider } from "@/shared/contexts/sidebar-state-context";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 
 interface UnifiedLayoutClientProps {
   children: React.ReactNode;
   headerConfig?: HeaderConfig;
-  navigationOverride?: NavigationSection[];
-  hideAuthStatus?: boolean;
 }
 
 // 100svh excludes the mobile address bar; 100vh is the fallback for browsers
 // without svh support.
 const SHELL_HEIGHT: React.CSSProperties = { height: "100svh", minHeight: "100vh" };
 
-export function UnifiedLayoutClient({
-  children,
-  headerConfig,
-  navigationOverride,
-  hideAuthStatus,
-}: UnifiedLayoutClientProps) {
+export function UnifiedLayoutClient({ children, headerConfig }: UnifiedLayoutClientProps) {
   const pathname = usePathname();
   const { adminMode } = useDashboardTheme();
   const sidebar = useSidebarController();
@@ -37,10 +30,7 @@ export function UnifiedLayoutClient({
 
   // Navigation follows the live adminMode from DashboardThemeProvider (which
   // tracks the URL), so it updates correctly across admin <-> user transitions.
-  const navigationSections = useMemo(
-    () => navigationOverride ?? getNavigationConfig(adminMode).sections,
-    [navigationOverride, adminMode]
-  );
+  const navigationSections = useMemo(() => getNavigationConfig(adminMode).sections, [adminMode]);
 
   const sidebarState = useMemo(
     () => ({
@@ -61,11 +51,7 @@ export function UnifiedLayoutClient({
 
   return (
     <div className="overflow-hidden bg-background" style={SHELL_HEIGHT}>
-      <LayoutSidebar
-        controller={sidebar}
-        navigationSections={navigationSections}
-        hideAuthStatus={hideAuthStatus}
-      />
+      <LayoutSidebar controller={sidebar} navigationSections={navigationSections} />
 
       <SidebarStateProvider value={sidebarState}>
         <div
