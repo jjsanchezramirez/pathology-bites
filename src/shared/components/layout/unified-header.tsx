@@ -10,24 +10,11 @@ import { AdminModeToggle } from "@/shared/components/common/admin-mode-toggle";
 import { NotificationsHandler } from "@/shared/components/layout/notifications-handler";
 import { ProfileDropdown } from "./profile-dropdown";
 
-export interface HeaderConfig {
-  showNotifications?: boolean;
-  showFontSize?: boolean;
-}
-
 interface UnifiedHeaderProps {
   onToggleSidebar: () => void;
-  config?: HeaderConfig;
 }
 
-const defaultConfig: HeaderConfig = {
-  showNotifications: false,
-  showFontSize: false,
-};
-
-export function UnifiedHeader({ onToggleSidebar, config = defaultConfig }: UnifiedHeaderProps) {
-  const finalConfig = { ...defaultConfig, ...config };
-
+export function UnifiedHeader({ onToggleSidebar }: UnifiedHeaderProps) {
   return (
     <header className="h-16 border-b bg-background/95 backdrop-blur-sm flex items-center px-4 gap-4 shrink-0 z-40">
       {/* Sidebar Toggle */}
@@ -52,24 +39,20 @@ export function UnifiedHeader({ onToggleSidebar, config = defaultConfig }: Unifi
         {/* Admin Mode Toggle - Only show for admin users */}
         <AdminModeToggle />
 
-        {/* Font Size Control - Only show if enabled */}
-        {finalConfig.showFontSize && (
-          <div data-tutorial="nav-font-size">
-            <FontSizeControl />
-          </div>
-        )}
+        {/* Font Size Control */}
+        <div data-tutorial="nav-font-size">
+          <FontSizeControl />
+        </div>
 
         {/* Theme Toggle - Always show */}
         <div data-tutorial="nav-theme-toggle">
           <ThemeModeToggle />
         </div>
 
-        {/* Notifications - Only show if enabled */}
-        {finalConfig.showNotifications && (
-          <div data-tutorial="nav-notifications">
-            <NotificationsHandler />
-          </div>
-        )}
+        {/* Notifications — NotificationsHandler self-gates on auth state */}
+        <div data-tutorial="nav-notifications">
+          <NotificationsHandler />
+        </div>
 
         {/* Profile Dropdown - Always show */}
         <div data-tutorial="nav-profile">

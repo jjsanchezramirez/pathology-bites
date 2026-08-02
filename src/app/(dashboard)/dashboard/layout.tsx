@@ -9,14 +9,7 @@ export default function DashboardLayoutWrapper({ children }: { children: React.R
   return (
     <DashboardSettingsProvider>
       <DashboardThemeProvider>
-        <UnifiedLayoutClient
-          headerConfig={{
-            showNotifications: true,
-            showFontSize: true,
-          }}
-        >
-          {children}
-        </UnifiedLayoutClient>
+        <UnifiedLayoutClient>{children}</UnifiedLayoutClient>
       </DashboardThemeProvider>
     </DashboardSettingsProvider>
   );

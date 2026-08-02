@@ -4,7 +4,7 @@
 import { useMemo } from "react";
 import { usePathname } from "next/navigation";
 
-import { UnifiedHeader, HeaderConfig } from "./unified-header";
+import { UnifiedHeader } from "./unified-header";
 import { LayoutSidebar } from "./layout-sidebar";
 import { isFullHeightPath } from "./layout-routes";
 import { useSidebarController } from "./use-sidebar-controller";
@@ -12,16 +12,11 @@ import { getNavigationConfig } from "@/shared/config/navigation";
 import { SidebarStateProvider } from "@/shared/contexts/sidebar-state-context";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 
-interface UnifiedLayoutClientProps {
-  children: React.ReactNode;
-  headerConfig?: HeaderConfig;
-}
-
 // 100svh excludes the mobile address bar; 100vh is the fallback for browsers
 // without svh support.
 const SHELL_HEIGHT: React.CSSProperties = { height: "100svh", minHeight: "100vh" };
 
-export function UnifiedLayoutClient({ children, headerConfig }: UnifiedLayoutClientProps) {
+export function UnifiedLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { adminMode } = useDashboardTheme();
   const sidebar = useSidebarController();
@@ -58,7 +53,7 @@ export function UnifiedLayoutClient({ children, headerConfig }: UnifiedLayoutCli
           className={`fixed top-0 right-0 flex flex-col transition-all duration-300 ease-in-out ${contentInset}`}
           style={SHELL_HEIGHT}
         >
-          <UnifiedHeader onToggleSidebar={sidebar.toggleSidebar} config={headerConfig} />
+          <UnifiedHeader onToggleSidebar={sidebar.toggleSidebar} />
 
           <main
             className={
