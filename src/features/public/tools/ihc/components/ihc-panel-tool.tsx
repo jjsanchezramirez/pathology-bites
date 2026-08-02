@@ -15,6 +15,7 @@ import {
   Shuffle,
 } from "lucide-react";
 import { IHC_MATRIX_URL, IHC_MOLECULAR_URL } from "@/shared/config/ihc-data";
+import { buildTextIndex, rankIndexed } from "../search";
 import { ImageMatches, SlideMatch } from "./reference-media";
 import type { Matrix, Cell, Diagnosis, Marker, MolecularData, MolecularEntry } from "../types";
 import {
@@ -162,20 +163,13 @@ function DiagnosisSearch({
   const [focus, setFocus] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
 
-  const results = useMemo(() => {
-    const query = q.trim().toLowerCase();
-    if (!query) return [];
-    const ex = new Set(exclude);
-    return matrix.diagnoses
-      .filter((d) => !ex.has(d.id))
-      .filter(
-        (d) =>
-          d.name.toLowerCase().includes(query) ||
-          d.organ.toLowerCase().includes(query) ||
-          (d.aliases || []).some((a) => a.toLowerCase().includes(query))
-      )
-      .slice(0, 12);
-  }, [q, matrix.diagnoses, exclude]);
+  // Index the full list once; ranking then filters. Rebuilding per keystroke
+  // would re-normalize all 1,400+ diagnoses on every character typed.
+  const index = useMemo(() => buildTextIndex(matrix.diagnoses), [matrix.diagnoses]);
+  const results = useMemo(
+    () => (q.trim() ? rankIndexed(q, index, { exclude }) : []),
+    [q, index, exclude]
+  );
 
   useEffect(() => {
     const h = (e: MouseEvent) => {
@@ -566,7 +560,7 @@ function ProfileMode({
           </table>
           {molEntry && <MolecularPanel entry={molEntry} molRefs={molecular!.references} />}
           <div className="mt-5 space-y-4">
-            <ImageMatches name={dx.name} />
+            <ImageMatches name={dx.name} aliases={dx.aliases} />
             <SlideMatch name={dx.name} aliases={dx.aliases} />
           </div>
         </div>
@@ -591,19 +585,11 @@ function MarkerSearch({
   const [focus, setFocus] = useState(false);
   const boxRef = useRef<HTMLDivElement>(null);
 
-  const results = useMemo(() => {
-    const query = q.trim().toLowerCase();
-    if (!query) return [];
-    const ex = new Set(exclude);
-    return matrix.markers
-      .filter((m) => !ex.has(m.id))
-      .filter(
-        (m) =>
-          m.name.toLowerCase().includes(query) ||
-          (m.aliases || []).some((a) => a.toLowerCase().includes(query))
-      )
-      .slice(0, 12);
-  }, [q, matrix.markers, exclude]);
+  const index = useMemo(() => buildTextIndex(matrix.markers), [matrix.markers]);
+  const results = useMemo(
+    () => (q.trim() ? rankIndexed(q, index, { exclude }) : []),
+    [q, index, exclude]
+  );
 
   useEffect(() => {
     const h = (e: MouseEvent) => {

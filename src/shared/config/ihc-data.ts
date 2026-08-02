@@ -15,5 +15,5 @@
 // hashes — paste them here when the data changes.
 const DATA_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev";
 
-export const IHC_MATRIX_URL = `${DATA_BASE}/data/ihc/ihc-matrix.json.br?v=20b580cf`;
+export const IHC_MATRIX_URL = `${DATA_BASE}/data/ihc/ihc-matrix.json.br?v=619da137`;
 export const IHC_MOLECULAR_URL = `${DATA_BASE}/data/ihc/ihc-molecular.json.br?v=723a19fd`;

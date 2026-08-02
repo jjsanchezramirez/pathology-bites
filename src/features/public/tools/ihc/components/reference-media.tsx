@@ -1,11 +1,18 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import dynamic from "next/dynamic";
 import { Microscope, ExternalLink } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
-import { fetchImages } from "@/features/admin/images/services/images";
+import {
+  searchImagesForDiagnosis,
+  type DiagnosisImage,
+} from "@/features/admin/images/services/images";
 import { useAllVirtualSlides } from "@/shared/hooks/use-client-virtual-slides";
+import {
+  buildSearchIndex,
+  rankSlidesWithExpansion,
+} from "@/shared/utils/domain/virtual-slide-search";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
 
 // The OSD viewer is heavy — load it only when a slide is actually shown.
@@ -14,29 +21,25 @@ const WSIViewer = dynamic(
   { ssr: false, loading: () => <div className="h-80 animate-pulse rounded-lg bg-muted" /> }
 );
 
-interface LibraryImage {
-  id: string;
-  url: string;
-  description?: string | null;
-  alt_text?: string | null;
-}
-
-/** Embed high-confidence image-library matches for a diagnosis. */
-export function ImageMatches({ name }: { name: string }) {
-  const [images, setImages] = useState<LibraryImage[]>([]);
+/** Embed image-library matches for a diagnosis (full-text, spelling/acronym aware). */
+export function ImageMatches({ name, aliases }: { name: string; aliases?: string[] }) {
+  const [images, setImages] = useState<DiagnosisImage[]>([]);
+  // Depend on a stable string, not the array: an aliasless diagnosis gets a fresh
+  // `[]` each render, which as an effect dependency would loop setImages forever.
+  const aliasKey = JSON.stringify(aliases ?? []);
 
   useEffect(() => {
     let cancelled = false;
     setImages([]);
-    fetchImages({ searchTerm: name, page: 1, pageSize: 8, includeOnlyMicroscopicAndGross: true })
+    searchImagesForDiagnosis(name, JSON.parse(aliasKey) as string[], 6)
       .then((res) => {
-        if (!cancelled && !res.error) setImages((res.data as LibraryImage[]).slice(0, 6));
+        if (!cancelled) setImages(res);
       })
       .catch(() => {});
     return () => {
       cancelled = true;
     };
-  }, [name]);
+  }, [name, aliasKey]);
 
   if (images.length === 0) return null;
 
@@ -71,20 +74,52 @@ export function ImageMatches({ name }: { name: string }) {
   );
 }
 
+// Score below which a ranked slide is treated as "no real match" rather than
+// shown. The slide engine scores an exact diagnosis 100, a contained phrase 90,
+// and word-level token overlap 70-80; anything under 70 is a weak/partial hit we
+// don't want to present as *the* slide for this entity.
+const SLIDE_MATCH_MIN_SCORE = 70;
+
 /** Embed the in-house WSI viewer for a matching virtual slide (loaded on demand). */
-export function SlideMatch({ name, aliases = [] }: { name: string; aliases?: string[] }) {
+export function SlideMatch({ name, aliases }: { name: string; aliases?: string[] }) {
   const [load, setLoad] = useState(false);
   const slides = useAllVirtualSlides(load);
+  const [match, setMatch] = useState<VirtualSlide | null>(null);
+  const [searched, setSearched] = useState(false);
+  // Depend on a stable string, not the array (a fresh `[]` each render would loop).
+  const aliasKey = JSON.stringify(aliases ?? []);
 
-  const match = useMemo<VirtualSlide | null>(() => {
-    if (!slides) return null;
-    const needles = [name, ...aliases].map((s) => s.toLowerCase());
-    const hit = slides.find((s) => {
-      const hay = `${s.diagnosis} ${s.category} ${s.subcategory}`.toLowerCase();
-      return needles.some((n) => n.length >= 4 && hay.includes(n));
-    });
-    return hit ?? null;
-  }, [slides, name, aliases]);
+  // Use the app's real slide-search engine (the same ranked matcher the WSI tool
+  // uses) instead of a substring scan: it's punctuation- and word-order-tolerant,
+  // expands WHO acronyms, and returns a confidence score we can gate on.
+  useEffect(() => {
+    if (!slides) return;
+    let cancelled = false;
+    setSearched(false);
+    setMatch(null);
+    buildSearchIndex(slides);
+    // Try the primary name first, then fall back through aliases until one clears
+    // the confidence bar — an old synonym sometimes matches the slide library's
+    // naming when the current WHO term doesn't.
+    (async () => {
+      for (const query of [name, ...(JSON.parse(aliasKey) as string[])]) {
+        if (cancelled) return;
+        const res = await rankSlidesWithExpansion(slides, query);
+        const best = res.scoredSlides?.[0];
+        if (best && (res.topScore ?? 0) >= SLIDE_MATCH_MIN_SCORE) {
+          if (!cancelled) {
+            setMatch(best.slide);
+            setSearched(true);
+          }
+          return;
+        }
+      }
+      if (!cancelled) setSearched(true);
+    })();
+    return () => {
+      cancelled = true;
+    };
+  }, [slides, name, aliasKey]);
 
   if (!load) {
     return (
@@ -93,7 +128,7 @@ export function SlideMatch({ name, aliases = [] }: { name: string; aliases?: str
       </Button>
     );
   }
-  if (!slides) return <div className="h-80 animate-pulse rounded-lg bg-muted" />;
+  if (!slides || !searched) return <div className="h-80 animate-pulse rounded-lg bg-muted" />;
   if (!match) {
     return <p className="text-xs text-muted-foreground">No matching virtual slide in the library.</p>;
   }
