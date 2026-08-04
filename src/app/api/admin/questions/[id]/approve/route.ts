@@ -102,8 +102,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         updated_by: userId,
       })
       .eq("id", questionId)
+      // The status check above only short-circuits; this filter is the actual
+      // barrier. Without it two concurrent reviewers both read pending_review
+      // and both write, double-notifying the creator (see CLAUDE.md TOCTOU).
+      .eq("status", "pending_review")
       .select()
-      .single();
+      .maybeSingle();
 
     if (updateError) {
       log.error("Error approving question:", updateError);
@@ -111,6 +115,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         { error: `Failed to approve question: ${updateError.message}` },
         { status: 500 }
       );
+    }
+
+    // Zero rows matched: someone else moved it out of pending_review between
+    // our read and our write. Bail before the review record and notification.
+    if (!updatedQuestion) {
+      return NextResponse.json({ error: "Question is no longer pending review" }, { status: 409 });
     }
 
     // Record the review action

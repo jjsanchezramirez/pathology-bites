@@ -148,8 +148,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         updated_by: userId,
       })
       .eq("id", questionId)
+      // The status check above only short-circuits; this filter is the actual
+      // barrier, so a reassign can't land on a question a reviewer just
+      // approved or rejected (see CLAUDE.md TOCTOU).
+      .eq("status", "pending_review")
       .select()
-      .single();
+      .maybeSingle();
 
     if (updateError) {
       log.error("Error reassigning question:", updateError);
@@ -157,6 +161,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         { error: `Failed to reassign question: ${updateError.message}` },
         { status: 500 }
       );
+    }
+
+    // Zero rows matched: it left pending_review between our read and our write.
+    if (!updatedQuestion) {
+      return NextResponse.json({ error: "Question is no longer pending review" }, { status: 409 });
     }
 
     // Revalidate caches to update all admin pages

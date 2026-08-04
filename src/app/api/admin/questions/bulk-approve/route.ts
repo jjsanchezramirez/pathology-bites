@@ -132,8 +132,11 @@ export async function POST(request: NextRequest) {
 
     const now = new Date().toISOString();
 
-    // Bulk update all valid questions to published
-    const { error: updateError } = await supabase
+    // Bulk update all valid questions to published. The per-question status
+    // check above only short-circuits; the .eq("status") filter is the actual
+    // barrier against a concurrent approve/reject (see CLAUDE.md TOCTOU), and
+    // the returned ids tell us which rows really flipped.
+    const { data: updatedRows, error: updateError } = await supabase
       .from("questions")
       .update({
         status: "published",
@@ -141,7 +144,9 @@ export async function POST(request: NextRequest) {
         updated_at: now,
         updated_by: userId,
       })
-      .in("id", validIds);
+      .in("id", validIds)
+      .eq("status", "pending_review")
+      .select("id");
 
     if (updateError) {
       return NextResponse.json(
@@ -150,22 +155,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Anything that lost the race is reported as failed rather than silently
+    // counted as approved — and gets no review record and no notification.
+    const approvedIds = (updatedRows ?? []).map((row) => row.id);
+    for (const id of validIds) {
+      if (!approvedIds.includes(id)) {
+        errors.push({ id, error: "No longer pending_review at write time" });
+      }
+    }
+
     // Record review actions in bulk
-    const reviewRecords = validIds.map((id) => ({
+    const reviewRecords = approvedIds.map((id) => ({
       question_id: id,
       reviewer_id: userId,
       action: "approved",
       feedback: null,
     }));
 
-    const { error: reviewError } = await supabase.from("question_reviews").insert(reviewRecords);
+    if (reviewRecords.length > 0) {
+      const { error: reviewError } = await supabase.from("question_reviews").insert(reviewRecords);
 
-    if (reviewError) {
-      log.error("Error recording bulk reviews:", reviewError);
+      if (reviewError) {
+        log.error("Error recording bulk reviews:", reviewError);
+      }
     }
 
     // Send notifications (non-blocking)
-    const approvedQuestions = questions.filter((q) => validIds.includes(q.id));
+    const approvedQuestions = questions.filter((q) => approvedIds.includes(q.id));
     try {
       const notificationTriggers = new NotificationTriggers();
       await Promise.allSettled(
@@ -181,7 +197,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      approved: validIds.length,
+      approved: approvedIds.length,
       failed: errors.length,
       errors: errors.length > 0 ? errors : undefined,
     });

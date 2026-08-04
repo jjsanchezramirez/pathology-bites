@@ -125,8 +125,11 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         updated_by: userId,
       })
       .eq("id", questionId)
+      // The status check above only short-circuits; this filter is the actual
+      // barrier against a concurrent approve/reject (see CLAUDE.md TOCTOU).
+      .eq("status", "pending_review")
       .select()
-      .single();
+      .maybeSingle();
 
     if (updateError) {
       log.error("Error rejecting question:", updateError);
@@ -134,6 +137,12 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         { error: `Failed to reject question: ${updateError.message}` },
         { status: 500 }
       );
+    }
+
+    // Zero rows matched: someone else moved it out of pending_review between
+    // our read and our write. Bail before the review record and notification.
+    if (!updatedQuestion) {
+      return NextResponse.json({ error: "Question is no longer pending review" }, { status: 409 });
     }
 
     // Record the review action

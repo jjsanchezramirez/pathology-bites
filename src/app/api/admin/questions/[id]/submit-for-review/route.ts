@@ -170,14 +170,27 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
         updated_by: userId,
       })
       .eq("id", questionId)
+      // The status check above only short-circuits; this filter is the actual
+      // barrier. Mirrors the draft/rejected check so a question that a
+      // reviewer just acted on can't be yanked back into review.
+      .in("status", ["draft", "rejected"])
       .select()
-      .single();
+      .maybeSingle();
 
     if (updateError) {
       log.error("Error submitting question for review:", updateError);
       return NextResponse.json(
         { error: `Failed to submit question: ${updateError.message}` },
         { status: 500 }
+      );
+    }
+
+    // Zero rows matched: status changed between our read and our write. Bail
+    // before the resubmission record and the reviewer notification.
+    if (!updatedQuestion) {
+      return NextResponse.json(
+        { error: "Question is no longer in a submittable state" },
+        { status: 409 }
       );
     }
 
