@@ -179,6 +179,9 @@ export default function DemoQuestion() {
                           url: currentQuestion.comparativeImage.url,
                           alt: currentQuestion.comparativeImage.alt,
                           caption: currentQuestion.comparativeImage.caption,
+                          // Preserved so a downscaled comparative image still
+                          // opens at full resolution in fullscreen.
+                          fullUrl: currentQuestion.comparativeImage.fullUrl,
                         },
                       ]}
                       className="bg-white border rounded-lg"

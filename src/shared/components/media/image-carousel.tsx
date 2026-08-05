@@ -13,6 +13,13 @@ interface ImageProps {
   url: string;
   alt: string;
   caption?: string;
+  /**
+   * Optional full-resolution source, used ONLY by the fullscreen modal.
+   * Lets a caller ship a smaller file inline (the carousel renders at most
+   * ~896px wide) while fullscreen still gets full diagnostic detail. When
+   * omitted, fullscreen falls back to `url` — existing callers are unaffected.
+   */
+  fullUrl?: string;
 }
 
 interface ImageCarouselProps {
@@ -28,6 +35,7 @@ function ImageCarouselInternal({ images, className = "", resetKey }: ImageCarous
   const [currentIndex, setCurrentIndex] = useState(0);
   const [showModal, setShowModal] = useState(false);
   const [imageLoading, setImageLoading] = useState(true);
+  const [modalLoading, setModalLoading] = useState(true);
   const isMobile = useMobile();
 
   // Reset to first image only when resetKey changes (e.g., new question)
@@ -40,7 +48,10 @@ function ImageCarouselInternal({ images, className = "", resetKey }: ImageCarous
   const safeIndex = Math.min(currentIndex, images.length - 1);
   const currentImage = images[safeIndex];
   const currentUrl = currentImage?.url || "";
+  // Fullscreen prefers the full-resolution source when the caller supplied one.
+  const modalUrl = currentImage?.fullUrl || currentUrl;
   const handleImageLoad = useImageCacheHandler(currentUrl);
+  const handleModalImageLoad = useImageCacheHandler(modalUrl);
 
   // Set loading state only when the actual displayed image URL changes.
   // Using the URL string (not the images array reference) prevents the spinner
@@ -49,6 +60,13 @@ function ImageCarouselInternal({ images, className = "", resetKey }: ImageCarous
   useEffect(() => {
     setImageLoading(true);
   }, [currentUrl]);
+
+  // The modal tracks its own loading state: when it shows a distinct
+  // full-resolution file, that file starts downloading on open and the inline
+  // image's already-settled `imageLoading` would otherwise suppress the spinner.
+  useEffect(() => {
+    if (showModal) setModalLoading(true);
+  }, [modalUrl, showModal]);
 
   // Keyboard navigation for fullscreen
   useEffect(() => {
@@ -203,14 +221,14 @@ function ImageCarouselInternal({ images, className = "", resetKey }: ImageCarous
               {currentImage?.url ? (
                 <div className="relative" onClick={(e) => e.stopPropagation()}>
                   {/* Loading spinner overlay for modal */}
-                  {imageLoading && (
+                  {modalLoading && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/20 backdrop-blur-sm rounded-2xl z-20">
                       <Loader2 className="w-12 h-12 text-white animate-spin" />
                     </div>
                   )}
 
                   <OfflineAwareImage
-                    src={currentImage.url}
+                    src={modalUrl}
                     alt={currentImage.alt}
                     width={1200}
                     height={800}
@@ -218,10 +236,10 @@ function ImageCarouselInternal({ images, className = "", resetKey }: ImageCarous
                     placeholderClassName="w-[80vw] aspect-[16/10] max-w-[90vw] max-h-[90vh] rounded-2xl"
                     unoptimized={true}
                     onLoad={() => {
-                      handleImageLoad();
-                      setImageLoading(false);
+                      handleModalImageLoad();
+                      setModalLoading(false);
                     }}
-                    onError={() => setImageLoading(false)}
+                    onError={() => setModalLoading(false)}
                   />
 
                   {/* Navigation controls positioned at image borders (only if multiple images) */}

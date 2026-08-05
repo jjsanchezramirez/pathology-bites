@@ -13,6 +13,11 @@ export interface QuestionImage {
   url: string;
   caption?: string;
   alt: string;
+  /**
+   * Full-resolution original, present when the API served a downscaled file
+   * inline. Consumed by ImageCarousel's fullscreen view.
+   */
+  fullUrl?: string;
 }
 
 export interface Question {

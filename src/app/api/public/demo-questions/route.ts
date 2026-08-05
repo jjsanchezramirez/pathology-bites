@@ -1,31 +1,8 @@
 // src/app/api/public/demo-questions/route.ts
 import { NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
-import { DEMO_QUESTION_AVIF_OPTIMIZED } from "@/shared/config/demo-question-avif-manifest";
+import { optimizeDemoImageUrl } from "@/shared/utils/r2/demo-question-image-url";
 import { log } from "@/shared/utils/logging";
-
-const R2_PUBLIC_HOST = "pub-a4bec7073d99465f99043c842be6318c.r2.dev";
-
-/**
- * If the image lives in our R2 `library/` bucket and we've pre-uploaded an
- * AVIF sibling under `library/demo-optimized/`, swap the URL so the demo
- * question ships the smaller file. Falls through for any URL we don't
- * recognise — the demo questions API serves arbitrary user-uploaded images
- * and we shouldn't rewrite anything we don't have a manifest entry for.
- */
-function rewriteToAvifIfOptimized(url: string): string {
-  if (!url) return url;
-  try {
-    const parsed = new URL(url);
-    if (parsed.host !== R2_PUBLIC_HOST) return url;
-    const key = parsed.pathname.replace(/^\/+/, "");
-    if (!DEMO_QUESTION_AVIF_OPTIMIZED.has(key)) return url;
-    const filename = key.replace(/^library\//, "");
-    return `${parsed.origin}/library/demo-optimized/${filename}.avif`;
-  } catch {
-    return url;
-  }
-}
 
 /**
  * @swagger
@@ -179,11 +156,11 @@ interface ProcessedQuestion {
   title: string;
   body: string;
   teachingPoint: string;
-  images: Array<{ url: string; caption: string; alt: string }>;
+  images: Array<{ url: string; caption: string; alt: string; fullUrl?: string }>;
   options: QuestionOption[];
   incorrectExplanations: Record<string, string>;
   references: string[];
-  comparativeImage: { url: string; caption: string; alt: string } | null;
+  comparativeImage: { url: string; caption: string; alt: string; fullUrl?: string } | null;
 }
 
 // Database query result interfaces
@@ -308,7 +285,7 @@ export async function GET(request: Request) {
           .map((qi) => {
             const imageDetail = Array.isArray(qi.images) ? qi.images[0] : qi.images;
             return {
-              url: rewriteToAvifIfOptimized(imageDetail?.url || ""),
+              ...optimizeDemoImageUrl(imageDetail?.url || ""),
               caption: imageDetail?.description || "",
               alt: imageDetail?.alt_text || "Question image",
             };
@@ -346,7 +323,7 @@ export async function GET(request: Request) {
           references: questionData.question_references ? [questionData.question_references] : [],
           comparativeImage: explanationImageDetail
             ? {
-                url: rewriteToAvifIfOptimized(explanationImageDetail.url || ""),
+                ...optimizeDemoImageUrl(explanationImageDetail.url || ""),
                 caption: explanationImageDetail.description || "",
                 alt: explanationImageDetail.alt_text || "Comparative image",
               }
@@ -484,7 +461,7 @@ export async function GET(request: Request) {
           .map((qi) => {
             const imageDetail = Array.isArray(qi.images) ? qi.images[0] : qi.images;
             return {
-              url: rewriteToAvifIfOptimized(imageDetail?.url || ""),
+              ...optimizeDemoImageUrl(imageDetail?.url || ""),
               caption: imageDetail?.description || "",
               alt: imageDetail?.alt_text || "Question image",
             };
@@ -521,7 +498,7 @@ export async function GET(request: Request) {
           references: questionData.question_references ? [questionData.question_references] : [],
           comparativeImage: explanationImageDetail
             ? {
-                url: rewriteToAvifIfOptimized(explanationImageDetail.url || ""),
+                ...optimizeDemoImageUrl(explanationImageDetail.url || ""),
                 caption: explanationImageDetail.description || "",
                 alt: explanationImageDetail.alt_text || "Comparative image",
               }
