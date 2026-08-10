@@ -79,6 +79,29 @@ interface UseWSIQuestionGeneratorReturn {
 }
 
 /**
+ * Decide whether a failed generation should retry against another model, and
+ * which one. Returns null to stop.
+ *
+ * Pure and exported because getting this wrong is expensive: an earlier version
+ * tested `nextModelIndex !== null`, which passes for `undefined`. Middleware
+ * answers an expired session with `{ error: "Unauthorized" }` — no
+ * `nextModelIndex` at all — so every 401 recursed into an identical request. One
+ * user's expired session generated ~89,000 requests in a day (Aug 2026).
+ */
+export function resolveFallbackIndex(
+  status: number,
+  errorData: { nextModelIndex?: number | null } | null,
+  currentIndex: number
+): number | null {
+  // Auth failures are not transient and not model-specific; they repeat forever.
+  if (status === 401 || status === 403) return null;
+  const next = errorData?.nextModelIndex;
+  // Require a real number, and require forward progress so the recursion is
+  // bounded even if the route ever hands back a stale or equal index.
+  return typeof next === "number" && next > currentIndex ? next : null;
+}
+
+/**
  * WSI Question Generator Hook
  * Uses single optimized endpoint for question generation with multi-provider fallback
  */
@@ -118,22 +141,37 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
       });
 
       if (!response.ok) {
-        // Try to get detailed error information for further fallback
-        try {
-          const errorData = await response.json();
-          if (errorData.nextModelIndex !== null) {
-            // Recursive fallback to next model
-            log.debug(`[WSI Generator] Continuing fallback to model: ${errorData.nextModel}`);
-            return generateQuestionWithFallback(wsi, errorData.nextModelIndex);
-          } else {
-            // No more models available
-            const errorMsg =
-              errorData.error || `All models exhausted: ${response.status} ${response.statusText}`;
-            throw new Error(errorMsg);
-          }
-        } catch (_parseError) {
-          throw new Error(`Fallback failed: ${response.status} ${response.statusText}`);
+        // An expired session fails identically every time, so retrying it loops
+        // forever. Middleware answers `{ error: "Unauthorized" }` with no fallback
+        // envelope, which is exactly the shape the model-fallback path below must
+        // not treat as "try the next model".
+        if (response.status === 401 || response.status === 403) {
+          throw new Error("Your session has expired. Please sign in again to generate questions.");
         }
+
+        // Read the body separately from acting on it — folding both into one try
+        // meant a deliberate throw below was caught and reported as a parse failure,
+        // hiding the real reason generation stopped.
+        let errorData: {
+          nextModelIndex?: number | null;
+          nextModel?: string;
+          error?: string;
+        } | null = null;
+        try {
+          errorData = await response.json();
+        } catch {
+          throw new Error(`Question generation failed: ${response.status} ${response.statusText}`);
+        }
+
+        const nextModelIndex = resolveFallbackIndex(response.status, errorData, modelIndex);
+        if (nextModelIndex !== null) {
+          log.debug(`[WSI Generator] Continuing fallback to model: ${errorData?.nextModel}`);
+          return generateQuestionWithFallback(wsi, nextModelIndex);
+        }
+
+        throw new Error(
+          errorData?.error || `All models exhausted: ${response.status} ${response.statusText}`
+        );
       }
 
       const questionData = await response.json();
