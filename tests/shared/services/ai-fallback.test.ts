@@ -6,7 +6,20 @@ vi.mock("@/shared/config/ai-models", () => ({
   getModelProvider: (model: string) => model.split(":")[0],
   getApiKey: (provider: string) => (provider === "nokey" ? "" : "test-key"),
   resolveModelId: (model: string) => model,
+  AI_TASKS: {
+    "wsi-question": {
+      chain: ["groq:a", "cerebras:a", "mistral:a"],
+      maxTokens: 2000,
+      temperature: 0.7,
+      timeoutMs: 12_000,
+      deadlineMs: 35_000,
+      jsonMode: false,
+    },
+  },
 }));
+
+const { callModel } = vi.hoisted(() => ({ callModel: vi.fn() }));
+vi.mock("@/shared/services/ai-providers", () => ({ callModel }));
 
 vi.mock("@/shared/utils/logging", () => ({
   log: { debug: vi.fn(), warn: vi.fn(), error: vi.fn(), info: vi.fn() },
@@ -15,12 +28,14 @@ vi.mock("@/shared/utils/logging", () => ({
 import {
   callWithFallback,
   classifyError,
+  runAITask,
   _resetProviderCooldowns,
 } from "@/shared/services/ai-fallback";
 
 beforeEach(() => {
   _resetProviderCooldowns();
   vi.clearAllMocks();
+  callModel.mockReset();
 });
 
 describe("classifyError", () => {
@@ -285,5 +300,61 @@ describe("callWithFallback deadline budget", () => {
       )
     ).rejects.toThrow(/All models exhausted/);
     expect(calls).toEqual(["groq:a", "cerebras:a", "mistral:a"]);
+  });
+});
+
+describe("runAITask", () => {
+  it("passes the task profile through to the provider call", async () => {
+    callModel.mockResolvedValue({ content: "hello" });
+    await runAITask("wsi-question", "the prompt", { system: "be brief" });
+
+    const [provider, model, apiKey, prompt, opts] = callModel.mock.calls[0];
+    expect({ provider, model, apiKey, prompt }).toEqual({
+      provider: "groq",
+      model: "groq:a",
+      apiKey: "test-key",
+      prompt: "the prompt",
+    });
+    expect(opts).toMatchObject({
+      system: "be brief",
+      maxTokens: 2000,
+      temperature: 0.7,
+      timeoutMs: 12_000,
+      jsonMode: false,
+    });
+  });
+
+  it("advances to the next model when parsing fails, not just when the call fails", async () => {
+    // The reason parse runs inside the attempt: a model that answers 200 with
+    // unusable content is as useless as one that errors, and should fail over.
+    callModel
+      .mockResolvedValueOnce({ content: "not json" })
+      .mockResolvedValueOnce({ content: '{"ok":true}' });
+
+    const result = await runAITask("wsi-question", "p", {
+      parse: (content) => {
+        const value = JSON.parse(content) as { ok: boolean };
+        return value;
+      },
+    });
+
+    expect(callModel).toHaveBeenCalledTimes(2);
+    expect(result.model).toBe("cerebras:a");
+    expect(result.parsed).toEqual({ ok: true });
+  });
+
+  it("treats empty content as a failure worth failing over", async () => {
+    callModel.mockResolvedValueOnce({ content: "" }).mockResolvedValueOnce({ content: "real" });
+    const result = await runAITask("wsi-question", "p");
+    expect(callModel).toHaveBeenCalledTimes(2);
+    expect(result.content).toBe("real");
+  });
+
+  it("reports the model that actually answered", async () => {
+    callModel
+      .mockRejectedValueOnce(new Error("429 rate limit"))
+      .mockResolvedValueOnce({ content: "ok" });
+    const result = await runAITask("wsi-question", "p");
+    expect(result.model).toBe("cerebras:a");
   });
 });

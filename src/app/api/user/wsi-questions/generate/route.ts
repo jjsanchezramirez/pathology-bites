@@ -240,15 +240,11 @@ function buildOptimizedPrompt(
     // The chain is walked here, server-side, in one request. Parsing runs inside
     // each attempt, so a model returning malformed JSON falls through to the
     // next model rather than failing the whole generation.
-    let responseLength = 0;
     const result = await runAITask("wsi-question", prompt, {
       system: WSI_SYSTEM_PROMPT,
       modelOverride: pinnedModel,
       label: "Question Gen",
-      parse: (content) => {
-        responseLength = content.length;
-        return parseAndValidateQuestionFast(content);
-      },
+      parse: parseAndValidateQuestionFast,
     });
 
     log.debug(`[Question Gen] Generated with ${result.model} in ${Date.now() - startTime}ms`);
@@ -266,7 +262,7 @@ function buildOptimizedPrompt(
         },
         debug: {
           prompt_length: prompt.length,
-          response_length: responseLength,
+          response_length: result.content.length,
           raw_response: result.content.substring(0, 1000),
         },
       },
