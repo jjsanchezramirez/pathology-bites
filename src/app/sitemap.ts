@@ -77,6 +77,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       changeFrequency: "monthly",
       priority: 0.7,
     },
+    {
+      url: `${baseUrl}/tools/image-converter`,
+      lastModified: currentDate,
+      changeFrequency: "monthly",
+      priority: 0.7,
+    },
 
     // Auth pages (indexable so users can find login/signup via search)
     {

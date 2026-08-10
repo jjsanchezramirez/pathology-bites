@@ -88,6 +88,11 @@ const tools = [
         label: "Citation Manager",
         desc: "Generate and organize reference citations",
       },
+      {
+        href: "/tools/image-converter",
+        label: "Image Converter",
+        desc: "Batch convert TIFF scans to PNG, JPEG, WebP or AVIF without uploading anything",
+      },
     ],
   },
 ];
