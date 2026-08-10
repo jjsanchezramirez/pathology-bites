@@ -236,3 +236,54 @@ describe("callWithFallback", () => {
     ).rejects.toThrow(/All models exhausted/);
   });
 });
+
+describe("callWithFallback deadline budget", () => {
+  const slowFailure = (ms: number) => async () => {
+    await new Promise((r) => setTimeout(r, ms));
+    throw new Error("context length exceeded"); // request-specific: no cooldown, keeps walking
+  };
+
+  it("stops walking the chain once the budget is spent", async () => {
+    const calls: string[] = [];
+    await expect(
+      callWithFallback(
+        ["groq:a", "cerebras:a", "mistral:a"],
+        async (model) => {
+          calls.push(model);
+          return slowFailure(50)();
+        },
+        "test",
+        { deadlineMs: 60, maxRetries: 0 }
+      )
+    ).rejects.toThrow(/All models exhausted/);
+
+    // First attempt always runs (0ms elapsed). Second starts at ~50ms, still
+    // inside 60. By ~100ms the budget is gone, so the third is never started.
+    expect(calls).toEqual(["groq:a", "cerebras:a"]);
+  });
+
+  it("names the deadline in the error so a timeout is not mistaken for a provider fault", async () => {
+    await expect(
+      callWithFallback(["groq:a", "cerebras:a", "mistral:a"], slowFailure(50), "test", {
+        deadlineMs: 60,
+        maxRetries: 0,
+      })
+    ).rejects.toThrow(/deadline 60ms exhausted/);
+  });
+
+  it("walks the whole chain when no deadline is set", async () => {
+    const calls: string[] = [];
+    await expect(
+      callWithFallback(
+        ["groq:a", "cerebras:a", "mistral:a"],
+        async (model) => {
+          calls.push(model);
+          return slowFailure(20)();
+        },
+        "test",
+        { maxRetries: 0 }
+      )
+    ).rejects.toThrow(/All models exhausted/);
+    expect(calls).toEqual(["groq:a", "cerebras:a", "mistral:a"]);
+  });
+});

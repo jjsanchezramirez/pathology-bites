@@ -95,3 +95,15 @@ Return the response in this exact JSON format:
   ]
 }`;
 }
+
+/** Role instruction sent with every WSI question-generation call. */
+export const WSI_SYSTEM_PROMPT =
+  "You are an expert pathologist creating educational multiple-choice questions for medical students and residents. Focus on clinical correlation, diagnosis, and educational value.";
+
+/** Prefer slide_url, then case_url, then image_url for the slide reference. */
+export function normalizeWSI(wsi: VirtualSlide): VirtualSlide {
+  return {
+    ...wsi,
+    image_url: wsi.image_url || wsi.slide_url || wsi.case_url || "",
+  };
+}

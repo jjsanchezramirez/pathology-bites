@@ -1,14 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireContentRole } from "@/shared/utils/api/api-guard";
-import {
-  getApiKey,
-  getModelProvider,
-  resolveModelId,
-  ACTIVE_AI_MODELS,
-} from "@/shared/config/ai-models";
+import { resolveModelId, getModelProvider, ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
 import { log } from "@/shared/utils/logging";
-import { callAIService } from "./ai-providers";
-import { type QuestionGenerationRequest, buildAdminQuestionPrompt } from "./ai-question-prompt";
+import { runAITask } from "@/shared/services/ai-fallback";
+import {
+  type QuestionGenerationRequest,
+  buildAdminQuestionPrompt,
+  QUESTION_GEN_SYSTEM,
+} from "./ai-question-prompt";
 import { extractJSON } from "./ai-json-parsing";
 
 // Vercel Hobby caps at 60s; Claude calls observed up to 17-80s.
@@ -149,33 +148,25 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    // Use default model for educational content mode if not specified
-    const selectedModel = resolveModelId(modelOverride || model || "llama-3.3-70b-versatile");
+    // A model named in the request is honoured exactly — no silent fallback, so
+    // an admin who picks Claude gets Claude or an error, never a cheaper
+    // substitute. With no model named we walk the shared chain instead, which is
+    // resilience this route previously had none of.
+    const requestedModel = modelOverride || model;
+    const pinnedModel = requestedModel ? resolveModelId(requestedModel) : undefined;
 
-    // Validate model
-    if (!ADMIN_AI_MODELS.includes(selectedModel)) {
+    if (pinnedModel && !ADMIN_AI_MODELS.includes(pinnedModel)) {
       return NextResponse.json(
         {
           success: false,
-          error: `Unsupported model: ${selectedModel}. Supported: ${ADMIN_AI_MODELS.join(", ")}`,
+          error: `Unsupported model: ${pinnedModel}. Supported: ${ADMIN_AI_MODELS.join(", ")}`,
         },
         { status: 400 }
       );
     }
 
-    // Get API configuration
-    const provider = getModelProvider(selectedModel);
-    const apiKey = getApiKey(provider);
-
-    if (!apiKey) {
-      return NextResponse.json(
-        { success: false, error: `No API key found for provider: ${provider}` },
-        { status: 500 }
-      );
-    }
-
     log.debug(
-      `[Admin AI] Generating question using ${selectedModel} (${provider}) in ${mode} mode`
+      `[Admin AI] Generating question using ${pinnedModel ?? "fallback chain"} in ${mode} mode`
     );
 
     // Build the prompt based on mode
@@ -184,7 +175,12 @@ export async function POST(request: NextRequest) {
 
     // Call AI service
     const startTime = Date.now();
-    const aiResponse = await callAIService(provider, prompt, selectedModel, apiKey);
+    const aiResponse = await runAITask("admin-question", prompt, {
+      system: QUESTION_GEN_SYSTEM,
+      modelOverride: pinnedModel,
+      label: "Admin AI",
+    });
+    const selectedModel = aiResponse.model;
     const generationTime = Date.now() - startTime;
 
     log.debug(`[Admin AI] Generated response in ${generationTime}ms`);
@@ -199,7 +195,7 @@ export async function POST(request: NextRequest) {
       questionData = extractJSON(aiResponse.content) as Record<string, unknown>;
       log.debug(`[Admin AI] Extracted JSON (${mode} mode):`, JSON.stringify(questionData, null, 2));
     } catch (parseError) {
-      log.error(`[Admin AI] JSON extraction failed for model ${selectedModel} (${provider})`);
+      log.error(`[Admin AI] JSON extraction failed for model ${selectedModel}`);
       throw parseError;
     }
 
@@ -309,7 +305,7 @@ export async function POST(request: NextRequest) {
         generated_at: new Date().toISOString(),
         generation_time_ms: generationTime,
         model: selectedModel,
-        provider: provider,
+        provider: getModelProvider(selectedModel),
         token_usage: aiResponse.tokenUsage,
         mode: mode,
       },

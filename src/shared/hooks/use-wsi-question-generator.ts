@@ -59,10 +59,6 @@ interface QuestionGenerationResponse {
   question: APIQuestionData;
   metadata?: {
     model?: string;
-    retry_info?: {
-      retries: number;
-      totalTime: number;
-    };
     token_usage?: unknown;
   };
   debug?: unknown;
@@ -79,110 +75,52 @@ interface UseWSIQuestionGeneratorReturn {
 }
 
 /**
- * Decide whether a failed generation should retry against another model, and
- * which one. Returns null to stop.
- *
- * Pure and exported because getting this wrong is expensive: an earlier version
- * tested `nextModelIndex !== null`, which passes for `undefined`. Middleware
- * answers an expired session with `{ error: "Unauthorized" }` — no
- * `nextModelIndex` at all — so every 401 recursed into an identical request. One
- * user's expired session generated ~89,000 requests in a day (Aug 2026).
- */
-export function resolveFallbackIndex(
-  status: number,
-  errorData: { nextModelIndex?: number | null } | null,
-  currentIndex: number
-): number | null {
-  // Auth failures are not transient and not model-specific; they repeat forever.
-  if (status === 401 || status === 403) return null;
-  const next = errorData?.nextModelIndex;
-  // Require a real number, and require forward progress so the recursion is
-  // bounded even if the route ever hands back a stale or equal index.
-  return typeof next === "number" && next > currentIndex ? next : null;
-}
-
-/**
  * WSI Question Generator Hook
- * Uses single optimized endpoint for question generation with multi-provider fallback
+ * Calls the single generate endpoint; the model fallback chain is walked
+ * server-side, so there is no client-side model loop any more.
  */
 export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const { wsiData, isLoading: isLoadingWSI, error: wsiError } = useClientWSIData();
 
-  log.debug("[WSI Hook] Loaded - SINGLE ENDPOINT VERSION - no prepare/parse routes");
-
   const clearError = useCallback(() => {
     setError(null);
   }, []);
 
-  // Main generation function with model fallback
-  const generateQuestionWithFallback = useCallback(
-    async (wsi: unknown, modelIndex: number): Promise<QuestionGenerationResponse> => {
-      log.debug(`[WSI Generator] Attempting generation with model index: ${modelIndex}`);
+  /**
+   * One request, one answer. The server walks every model itself, so a failure
+   * here is final — there is nothing for the client to retry, which is what
+   * removed the old recursive walk (an unexpected error shape once made it
+   * re-request forever against an expired session).
+   */
+  const requestQuestion = useCallback(async (wsi: unknown): Promise<QuestionGenerationResponse> => {
+    const response = await fetch("/api/user/wsi-questions/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ wsi }),
+    });
 
-      const baseUrl =
-        typeof window !== "undefined"
-          ? window.location.origin
-          : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-
-      const apiPath = "/api/user/wsi-questions/generate";
-
-      log.debug("[WSI Generator] Using SINGLE /generate endpoint (no multi-step)");
-      const response = await fetch(`${baseUrl}${apiPath}?cb=${Date.now()}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          wsi: wsi,
-          modelIndex: modelIndex,
-        }),
-      });
-
-      if (!response.ok) {
-        // An expired session fails identically every time, so retrying it loops
-        // forever. Middleware answers `{ error: "Unauthorized" }` with no fallback
-        // envelope, which is exactly the shape the model-fallback path below must
-        // not treat as "try the next model".
-        if (response.status === 401 || response.status === 403) {
-          throw new Error("Your session has expired. Please sign in again to generate questions.");
-        }
-
-        // Read the body separately from acting on it — folding both into one try
-        // meant a deliberate throw below was caught and reported as a parse failure,
-        // hiding the real reason generation stopped.
-        let errorData: {
-          nextModelIndex?: number | null;
-          nextModel?: string;
-          error?: string;
-        } | null = null;
-        try {
-          errorData = await response.json();
-        } catch {
-          throw new Error(`Question generation failed: ${response.status} ${response.statusText}`);
-        }
-
-        const nextModelIndex = resolveFallbackIndex(response.status, errorData, modelIndex);
-        if (nextModelIndex !== null) {
-          log.debug(`[WSI Generator] Continuing fallback to model: ${errorData?.nextModel}`);
-          return generateQuestionWithFallback(wsi, nextModelIndex);
-        }
-
-        throw new Error(
-          errorData?.error || `All models exhausted: ${response.status} ${response.statusText}`
-        );
+    if (!response.ok) {
+      if (response.status === 401 || response.status === 403) {
+        throw new Error("Your session has expired. Please sign in again to generate questions.");
       }
-
-      const questionData = await response.json();
-      if (!questionData.success || !questionData.question) {
-        throw new Error("Fallback question generation failed");
+      let details = `${response.status} ${response.statusText}`;
+      try {
+        const body = await response.json();
+        details = body.details || body.error || details;
+      } catch {
+        // Non-JSON error body — keep the status line.
       }
+      throw new Error(`Question generation failed: ${details}`);
+    }
 
-      return questionData;
-    },
-    []
-  );
+    const data = await response.json();
+    if (!data.success || !data.question) {
+      throw new Error(data.error || "Question generation returned no question");
+    }
+    return data;
+  }, []);
 
   const generateQuestion = useCallback(
     async (category?: string): Promise<GeneratedQuestion> => {
@@ -296,31 +234,10 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         // Step 2: Generate question using main generate route
         log.debug("[WSI Generator] Step 2 - Using main generate route...");
 
-        const _baseUrl =
-          typeof window !== "undefined"
-            ? window.location.origin
-            : process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-
-        // Generate question with fallback support
-        log.debug("[WSI Generator] Generating question with AI fallback...");
-        const questionData = await generateQuestionWithFallback(selectedWSI, 0);
+        const questionData = await requestQuestion(selectedWSI);
 
         if (!questionData.success || !questionData.question) {
           throw new Error("Failed to generate question");
-        }
-
-        // Log retry information if available
-        if (questionData.metadata?.retry_info) {
-          const retryInfo = questionData.metadata.retry_info;
-          if (retryInfo.retries > 0) {
-            log.debug(
-              `[WSI Generator] ✅ Success after ${retryInfo.retries} retries in ${retryInfo.totalTime}ms`
-            );
-          } else {
-            log.debug(`[WSI Generator] ✅ Success on first attempt in ${retryInfo.totalTime}ms`);
-          }
-        } else {
-          log.debug("[WSI Generator] Successfully generated question");
         }
 
         // Log token usage for debugging
@@ -371,7 +288,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         setIsGenerating(false);
       }
     },
-    [generateQuestionWithFallback, wsiData, wsiError]
+    [requestQuestion, wsiData, wsiError]
   );
 
   return {

@@ -1,11 +1,19 @@
-// Shared AI fallback runner.
-// All routes that need provider resilience call through here.
-// Used by: lesson-studio (3 passes), generate-sequence (vision), debug routes.
-// WSI question generation runs its own chain (its client walks models via
-// `nextModelIndex`) but imports `classifyError` from here — keep that the one
-// place retry-vs-fallback is decided, or the copies drift apart again.
+// Shared AI fallback runner — the single place model fallback happens.
+//
+// `runAITask` is the entry point for text tasks (WSI questions, admin questions,
+// audio scripts); lesson-studio's vision passes call `callWithFallback` directly
+// because they build their own multimodal payloads. Nothing else should assemble
+// a chain or a provider switch: three divergent copies of that is what this
+// replaced, and the copies had already drifted into different bugs.
 
-import { getApiKey, getModelProvider, resolveModelId } from "@/shared/config/ai-models";
+import {
+  AI_TASKS,
+  getApiKey,
+  getModelProvider,
+  resolveModelId,
+  type AITaskName,
+} from "@/shared/config/ai-models";
+import { callModel, type AICallResult } from "@/shared/services/ai-providers";
 import { log } from "@/shared/utils/logging";
 
 type FailureAction = "retry" | "next";
@@ -108,6 +116,13 @@ export interface CallWithFallbackOptions {
   modelOverride?: string;
   /** Max same-provider retries for transient "busy" errors. Default 1. */
   maxRetries?: number;
+  /**
+   * Total wall-clock budget for the whole walk, in ms. The chain runs inside one
+   * serverless invocation, so without this a slow provider early in the chain
+   * can consume the entire `maxDuration` and the request dies mid-walk with no
+   * usable error. Stop starting new attempts once the budget is spent.
+   */
+  deadlineMs?: number;
 }
 
 /**
@@ -129,7 +144,9 @@ export async function callWithFallback<T>(
   label: string,
   options: CallWithFallbackOptions = {}
 ): Promise<T> {
-  const { modelOverride, maxRetries = DEFAULT_MAX_RETRIES } = options;
+  const { modelOverride, maxRetries = DEFAULT_MAX_RETRIES, deadlineMs } = options;
+  const startedAt = Date.now();
+  const outOfTime = () => deadlineMs !== undefined && Date.now() - startedAt >= deadlineMs;
   // resolveModelId: stale Meta Llama API IDs (saved prefs/links) → live equivalents.
   const chain = (modelOverride ? [modelOverride] : modelIds).map(resolveModelId);
 
@@ -152,6 +169,11 @@ export async function callWithFallback<T>(
   const failedThisCall = new Set<string>();
 
   for (const modelId of ordered) {
+    if (outOfTime()) {
+      log.warn(`[${label}] Deadline of ${deadlineMs}ms reached; stopping before ${modelId}`);
+      errors.push(`deadline ${deadlineMs}ms exhausted before ${modelId}`);
+      break;
+    }
     const provider = getModelProvider(modelId);
     if (failedThisCall.has(provider)) continue;
 
@@ -180,7 +202,7 @@ export async function callWithFallback<T>(
           failedThisCall.add(provider);
         }
 
-        if (action === "retry" && attempt < maxRetries) {
+        if (action === "retry" && attempt < maxRetries && !outOfTime()) {
           await sleep(BASE_DELAY_MS * Math.pow(BACKOFF_MULTIPLIER, attempt));
           continue;
         }
@@ -190,4 +212,51 @@ export async function callWithFallback<T>(
   }
 
   throw new Error(`[${label}] All models exhausted. Errors:\n${errors.join("\n")}`);
+}
+
+/**
+ * The one way to run a text AI task.
+ *
+ * Resolves the task's profile (chain, token budget, timeouts), walks the chain
+ * with per-provider cooldowns, and returns the first success. Routes should call
+ * this rather than assembling their own chain or provider switch — three
+ * divergent copies of that is what this replaces.
+ *
+ * `parse` runs INSIDE the attempt, so a model that returns unparseable output
+ * falls through to the next model instead of failing the whole request. Parsing
+ * after the call would silently lose that.
+ */
+export interface RunAITaskOptions<T> {
+  system?: string;
+  /** Pin one model exactly — no fallback (an explicit ask is not a suggestion). */
+  modelOverride?: string;
+  label?: string;
+  parse?: (content: string) => T;
+}
+
+export async function runAITask<T = undefined>(
+  task: AITaskName,
+  prompt: string,
+  options: RunAITaskOptions<T> = {}
+): Promise<AICallResult & { model: string; parsed: T }> {
+  const profile = AI_TASKS[task];
+  const label = options.label ?? task;
+
+  return callWithFallback(
+    profile.chain,
+    async (model, apiKey, provider) => {
+      const res = await callModel(provider, model, apiKey, prompt, {
+        system: options.system,
+        maxTokens: profile.maxTokens,
+        temperature: profile.temperature,
+        timeoutMs: profile.timeoutMs,
+        jsonMode: profile.jsonMode,
+      });
+      if (!res.content) throw new Error(`${model} returned empty content`);
+      const parsed = (options.parse ? options.parse(res.content) : undefined) as T;
+      return { ...res, model, parsed };
+    },
+    label,
+    { modelOverride: options.modelOverride, deadlineMs: profile.deadlineMs }
+  );
 }

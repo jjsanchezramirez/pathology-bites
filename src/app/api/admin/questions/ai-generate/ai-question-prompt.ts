@@ -269,3 +269,7 @@ Return your response in this EXACT JSON format:
   "status": "draft"
 }`;
 }
+
+/** Role instruction sent with every admin question-generation call. */
+export const QUESTION_GEN_SYSTEM =
+  "You are an expert pathologist and medical educator creating high-quality board-style multiple-choice questions for medical students and residents. Create clinically relevant questions that test diagnostic reasoning, not just memorization. Focus on clinical correlation, differential diagnosis, and educational value. Always provide detailed explanations that include both clinical and histopathological reasoning. Always respond with properly formatted JSON and follow the exact format requested.";

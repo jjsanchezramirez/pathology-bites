@@ -196,6 +196,63 @@ export const TEXT_FALLBACK_CHAIN: string[] = [
   "mistral-medium-2505", // Mistral
 ];
 
+/**
+ * Per-task generation settings. One place to answer "what does this feature ask
+ * the model for", instead of the numbers being hardcoded in each route.
+ *
+ * On `maxTokens`: Groq bills its **daily token cap against `max_tokens`
+ * reserved**, not tokens generated. A WSI question measured ~1,750 total tokens
+ * (~780 prompt + ~970 completion), but `maxTokens: 4000` charged 4,784 per call
+ * — so the 100K TPD ran out after ~20 generations instead of ~57. Keep these
+ * sized to real output plus headroom, not to a round number.
+ *
+ * On `deadlineMs`: the whole fallback walk happens inside one serverless
+ * invocation, so this must stay comfortably under the route's `maxDuration`.
+ */
+export interface AITaskProfile {
+  chain: string[];
+  maxTokens: number;
+  temperature: number;
+  /** Per-model request timeout. */
+  timeoutMs: number;
+  /** Total budget for walking the chain. Must be < the route's maxDuration. */
+  deadlineMs: number;
+  /** Ask the provider for strict JSON. */
+  jsonMode?: boolean;
+}
+
+export const AI_TASKS = {
+  /** User-facing WSI question generation. maxDuration 45s. */
+  "wsi-question": {
+    chain: TEXT_FALLBACK_CHAIN,
+    maxTokens: 2000, // ~970 observed completion + headroom
+    temperature: 0.7,
+    timeoutMs: 12_000,
+    deadlineMs: 35_000,
+    jsonMode: false, // parser already handles fenced output; don't change today's behaviour
+  },
+  /** Admin question generation. maxDuration 60s. */
+  "admin-question": {
+    chain: TEXT_FALLBACK_CHAIN,
+    maxTokens: 4000,
+    temperature: 0.7,
+    timeoutMs: 20_000,
+    deadlineMs: 50_000,
+    jsonMode: true, // its system prompt demands JSON
+  },
+  /** Admin audio script. maxDuration 30s. */
+  "audio-script": {
+    chain: TEXT_FALLBACK_CHAIN,
+    maxTokens: 500,
+    temperature: 0.7,
+    timeoutMs: 10_000,
+    deadlineMs: 25_000,
+    jsonMode: false, // free-text script, not JSON
+  },
+} satisfies Record<string, AITaskProfile>;
+
+export type AITaskName = keyof typeof AI_TASKS;
+
 export const VISION_FALLBACK_CHAIN: string[] = [
   "meta-llama/llama-4-scout-17b-16e-instruct", // Groq
   "gemini-2.5-flash-lite", // Google

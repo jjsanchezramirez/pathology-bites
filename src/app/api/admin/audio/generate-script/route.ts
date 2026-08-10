@@ -2,14 +2,8 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
-import {
-  getApiKey,
-  getModelProvider,
-  resolveModelId,
-  ACTIVE_AI_MODELS,
-} from "@/shared/config/ai-models";
-import { callClaudeText } from "@/shared/services/claude-api";
-import { callOpenAICompatText } from "@/shared/services/openai-compat";
+import { getModelProvider, resolveModelId, ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
+import { runAITask } from "@/shared/services/ai-fallback";
 import { log } from "@/shared/utils/logging";
 
 // Vercel Hobby caps at 60s; Claude calls observed ~10s, chain walk worst case ~15s.
@@ -37,109 +31,6 @@ const generateScriptSchema = z.object({
 });
 
 type EducationalContent = z.infer<typeof generateScriptSchema>["content"];
-
-async function callAIService(
-  provider: string,
-  prompt: string,
-  modelId: string,
-  apiKey: string
-): Promise<{ content: string }> {
-  switch (provider) {
-    case "groq":
-    case "cerebras": {
-      const res = await callOpenAICompatText(provider, modelId, apiKey, prompt, {
-        system: AUDIO_SCRIPT_SYSTEM,
-        maxTokens: 500,
-        temperature: 0.7,
-        timeoutMs: 10_000, // ~500-token script finishes well under this
-      });
-      return { content: res.content };
-    }
-    case "google":
-      return await callGoogleAPI(prompt, modelId, apiKey);
-    case "mistral":
-      return await callMistralAPI(prompt, modelId, apiKey);
-    case "claude": {
-      const res = await callClaudeText(prompt, modelId, apiKey, {
-        system: AUDIO_SCRIPT_SYSTEM,
-        maxTokens: 500,
-        temperature: 0.7,
-      });
-      return { content: res.content };
-    }
-    default:
-      throw new Error(`Unsupported model provider: ${provider}`);
-  }
-}
-
-async function callGoogleAPI(
-  prompt: string,
-  model: string,
-  apiKey: string
-): Promise<{ content: string }> {
-  const response = await fetch(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        generationConfig: {
-          temperature: 0.7,
-          maxOutputTokens: 500,
-        },
-      }),
-    }
-  );
-
-  if (!response.ok) {
-    throw new Error(`Google API error: ${response.status} ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return {
-    content: data.candidates?.[0]?.content?.parts?.[0]?.text || "",
-  };
-}
-
-async function callMistralAPI(
-  prompt: string,
-  model: string,
-  apiKey: string
-): Promise<{ content: string }> {
-  const response = await fetch("https://api.mistral.ai/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${apiKey}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: model,
-      messages: [
-        {
-          role: "system",
-          content:
-            "You are an expert medical educator creating concise, engaging educational audio scripts for students. Your scripts should be clear, accurate, and suitable for text-to-speech conversion.",
-        },
-        {
-          role: "user",
-          content: prompt,
-        },
-      ],
-      max_tokens: 500,
-      temperature: 0.7,
-    }),
-  });
-
-  if (!response.ok) {
-    throw new Error(`Mistral API error: ${response.status} ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return {
-    content: data.choices[0]?.message?.content || "",
-  };
-}
 
 function buildTTSPrompt(content: EducationalContent, additionalInstructions: string): string {
   return `Topic: ${content.topic}
@@ -266,35 +157,32 @@ export async function POST(request: NextRequest) {
     if (body instanceof NextResponse) return body;
     const { content, additionalInstructions = "", model, modelOverride } = body;
 
-    const selectedModel = resolveModelId(modelOverride || model || "gemini-2.5-flash-lite");
+    // Named model honoured exactly; otherwise walk the shared chain.
+    const requestedModel = modelOverride || model;
+    const pinnedModel = requestedModel ? resolveModelId(requestedModel) : undefined;
 
-    if (!ADMIN_AI_MODELS.includes(selectedModel)) {
+    if (pinnedModel && !ADMIN_AI_MODELS.includes(pinnedModel)) {
       return NextResponse.json(
         {
           success: false,
-          error: `Unsupported model: ${selectedModel}. Supported: ${ADMIN_AI_MODELS.join(", ")}`,
+          error: `Unsupported model: ${pinnedModel}. Supported: ${ADMIN_AI_MODELS.join(", ")}`,
         },
         { status: 400 }
       );
     }
 
-    const provider = getModelProvider(selectedModel);
-    const apiKey = getApiKey(provider);
-
-    if (!apiKey) {
-      return NextResponse.json(
-        { success: false, error: `No API key found for provider: ${provider}` },
-        { status: 500 }
-      );
-    }
-
     log.debug(
-      `[TTS Text Gen] Generating text using ${selectedModel} (${provider}) for ${content.subject} > ${content.lesson} > ${content.topic}`
+      `[TTS Text Gen] Generating text using ${pinnedModel ?? "fallback chain"} for ${content.subject} > ${content.lesson} > ${content.topic}`
     );
 
     const prompt = buildTTSPrompt(content, additionalInstructions);
     const startTime = Date.now();
-    const aiResponse = await callAIService(provider, prompt, selectedModel, apiKey);
+    const aiResponse = await runAITask("audio-script", prompt, {
+      system: AUDIO_SCRIPT_SYSTEM,
+      modelOverride: pinnedModel,
+      label: "TTS Text Gen",
+    });
+    const selectedModel = aiResponse.model;
     const generationTime = Date.now() - startTime;
 
     log.debug(
@@ -308,7 +196,7 @@ export async function POST(request: NextRequest) {
         generated_at: new Date().toISOString(),
         generation_time_ms: generationTime,
         model: selectedModel,
-        provider: provider,
+        provider: getModelProvider(selectedModel),
         word_count: aiResponse.content.trim().split(/\s+/).length,
         educational_content: {
           category: content.category,
