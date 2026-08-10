@@ -1,7 +1,9 @@
 // Shared AI fallback runner.
 // All routes that need provider resilience call through here.
-// Used by: lesson-studio (3 passes), generate-sequence (vision),
-// WSI question generation, debug routes.
+// Used by: lesson-studio (3 passes), generate-sequence (vision), debug routes.
+// WSI question generation runs its own chain (its client walks models via
+// `nextModelIndex`) but imports `classifyError` from here — keep that the one
+// place retry-vs-fallback is decided, or the copies drift apart again.
 
 import { getApiKey, getModelProvider, resolveModelId } from "@/shared/config/ai-models";
 import { log } from "@/shared/utils/logging";

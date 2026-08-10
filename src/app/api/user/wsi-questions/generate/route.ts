@@ -8,6 +8,7 @@ import {
 } from "@/shared/config/ai-models";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { parseBody } from "@/shared/utils/api/parse-body";
+import { classifyError as classifyProviderError } from "@/shared/services/ai-fallback";
 import { log } from "@/shared/utils/logging";
 
 // wsi is a loosely-structured VirtualSlide-ish blob (normalized downstream by
@@ -38,48 +39,18 @@ const RETRY_CONFIG = {
   backoffMultiplier: 2,
 };
 
-// Enhanced error classification for retry vs fallback decisions
-function classifyError(error: unknown): "retryable" | "fallback" | "fatal" {
-  const errorStr =
-    typeof error === "string" ? error : error instanceof Error ? error.message : String(error);
-  const lowerError = errorStr.toLowerCase();
-
-  // Retryable errors (same model): only genuine "briefly busy" signals that
-  // recover within a second. Rate-limits and timeouts are NOT here — on a shared
-  // free-tier key a limit won't clear in seconds, and re-hitting a hung provider
-  // just burns another full timeout, so those fail over to the next model.
-  if (
-    lowerError.includes("503") ||
-    lowerError.includes("service unavailable") ||
-    lowerError.includes("overloaded") ||
-    lowerError.includes("temporary") ||
-    lowerError.includes("try again")
-  ) {
-    return "retryable";
-  }
-
-  // Fallback errors (next model): rate-limits, timeouts, and fundamental issues
-  // with the current model — move on rather than retry the same one.
-  if (
-    lowerError.includes("rate limit") ||
-    lowerError.includes("429") ||
-    lowerError.includes("too many requests") ||
-    lowerError.includes("timeout") ||
-    lowerError.includes("network") ||
-    lowerError.includes("401") ||
-    lowerError.includes("unauthorized") ||
-    lowerError.includes("invalid api key") ||
-    lowerError.includes("token limit") ||
-    lowerError.includes("context length") ||
-    lowerError.includes("model not found") ||
-    lowerError.includes("quota exceeded") ||
-    lowerError.includes("billing")
-  ) {
-    return "fallback";
-  }
-
-  // Default to fallback for unknown errors (conservative approach)
-  return "fallback";
+/**
+ * Retry-vs-fallback decision, delegated to the shared classifier.
+ *
+ * This route used to carry its own copy, which drifted: it tested the
+ * "briefly busy" patterns first, and one of them was the bare substring
+ * "try again". Groq phrases a daily-token-cap 429 as "Rate limit reached …
+ * Please try again in 44m58s", so every quota exhaustion matched "try again",
+ * was labelled retryable, and re-hit the same model 400ms later — against a
+ * limit that needed 45 minutes. The shared version checks rate limits first.
+ */
+function classifyError(error: unknown): "retryable" | "fallback" {
+  return classifyProviderError(error).action === "retry" ? "retryable" : "fallback";
 }
 
 // Sleep utility for retry delays
@@ -419,7 +390,7 @@ async function generateQuestionSingle(
  *                   type: string
  *                 errorType:
  *                   type: string
- *                   enum: [retryable, fallback, fatal]
+ *                   enum: [retryable, fallback]
  *                 nextModelIndex:
  *                   type: integer
  *                   nullable: true

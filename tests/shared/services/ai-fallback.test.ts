@@ -35,6 +35,23 @@ describe("classifyError", () => {
     }
   });
 
+  it("keeps a quota 429 as fallback even though it says 'please try again'", () => {
+    // Verbatim from a production log, 2026-08-10. Providers phrase a daily-cap
+    // 429 with a retry hint, so the message contains BOTH "rate limit" and
+    // "try again". Classification must not be decided by whichever substring is
+    // checked first: this needs to fail over, not re-hit the same model in
+    // 400ms against a limit that clears in 45 minutes.
+    const groqDailyCap =
+      "groq API error: 429 Too Many Requests \u2014 Rate limit reached for model " +
+      "`llama-3.3-70b-versatile` in organization `org_01kx922vhte7w85wqaa85h9xv4` " +
+      "service tier `on_demand` on tokens per day (TPD): Limit 100000, Used 98339, " +
+      "Requested 4784. Please try again in 44m58.272s.";
+    expect(classifyError(new Error(groqDailyCap))).toEqual({
+      action: "next",
+      cooldownMs: 60_000,
+    });
+  });
+
   it("treats auth failure as fallback with a short cooldown", () => {
     for (const msg of ["401 Unauthorized", "invalid api key", "403 Forbidden"]) {
       expect(classifyError(new Error(msg))).toEqual({ action: "next", cooldownMs: 15_000 });
