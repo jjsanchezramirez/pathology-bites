@@ -5,6 +5,7 @@ import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { loadR2Json, useR2Json } from "@/shared/hooks/use-r2-json";
 import { toast } from "@/shared/utils/ui/toast";
 import { log } from "@/shared/utils/logging";
+import { slideMatchesCategory } from "@/features/user/wsi-questions/components/wsi-question-generator-utils";
 
 // Type for PathPresenter case data from JSON
 interface PathPresenterCase {
@@ -156,7 +157,7 @@ export function useClientWSIData(): UseClientWSIDataResult {
 
   const getWSIByCategory = (category: string): VirtualSlide[] => {
     if (!wsiData) return [];
-    return wsiData.filter((slide) => slide.category.toLowerCase().includes(category.toLowerCase()));
+    return wsiData.filter((slide) => slideMatchesCategory(slide.category, category));
   };
 
   const getWSIByDiagnosis = (diagnosis: string): VirtualSlide[] => {

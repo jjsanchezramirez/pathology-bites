@@ -8,6 +8,7 @@ import {
   getOptionLabel,
   formatTokenUsage,
   extractCategories,
+  slideMatchesCategory,
 } from "@/features/user/wsi-questions/components/wsi-question-generator-utils";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
 
@@ -68,5 +69,53 @@ describe("extractCategories", () => {
         { category: null },
       ])
     ).toEqual(["Bone", "Renal"]);
+  });
+});
+
+describe("slideMatchesCategory", () => {
+  // The real chapter names from the PathPresenter case set behind the generator.
+  const CATEGORIES = [
+    "Bone and soft tissue pathology",
+    "Breast pathology",
+    "Cardiovascular pathology",
+    "Endocrine pathology",
+    "Gastrointestinal pathology",
+    "Gynecologic pathology",
+    "Head and neck pathology",
+    "Liver pathology",
+    "Male genital pathology",
+    "Neuropathology",
+    "Pancreatobiliary pathology",
+    "Pediatric pathology",
+    "Pulmonary pathology",
+    "Skin pathology",
+    "Uropathology",
+  ];
+
+  it("does not let Uropathology pull in Neuropathology", () => {
+    // "uropathology" is a literal substring of "neuropathology" (n-e-u-r-o-…).
+    // Substring matching returned 88 candidates for Uropathology — 47 of them
+    // neuropath — so the user got the category they asked for 47% of the time.
+    expect(slideMatchesCategory("Neuropathology", "Uropathology")).toBe(false);
+    expect(slideMatchesCategory("Uropathology", "Uropathology")).toBe(true);
+    expect(slideMatchesCategory("Uropathology", "Neuropathology")).toBe(false);
+  });
+
+  it("matches every real category to itself and to nothing else", () => {
+    for (const selected of CATEGORIES) {
+      const matched = CATEGORIES.filter((c) => slideMatchesCategory(c, selected));
+      expect(matched).toEqual([selected]);
+    }
+  });
+
+  it("ignores case and surrounding whitespace", () => {
+    expect(slideMatchesCategory("  Uropathology  ", "uropathology")).toBe(true);
+    expect(slideMatchesCategory("SKIN PATHOLOGY", "Skin pathology")).toBe(true);
+  });
+
+  it("treats a missing category as no match rather than throwing", () => {
+    expect(slideMatchesCategory(null, "Uropathology")).toBe(false);
+    expect(slideMatchesCategory(undefined, "Uropathology")).toBe(false);
+    expect(slideMatchesCategory("", "Uropathology")).toBe(false);
   });
 });

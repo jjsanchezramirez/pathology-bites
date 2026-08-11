@@ -2,6 +2,7 @@ import { useState, useCallback } from "react";
 import { useClientWSIData } from "./use-client-wsi-data";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { getWSIHistoryTracker } from "@/features/user/wsi-questions/utils/wsi-history-tracker";
+import { slideMatchesCategory } from "@/features/user/wsi-questions/components/wsi-question-generator-utils";
 import { log } from "@/shared/utils/logging";
 
 interface QuestionData {
@@ -180,7 +181,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         if (category && category !== "all") {
           // Filter by category first
           const categorySlides = finalWSIData.filter((slide) =>
-            slide.category.toLowerCase().includes(category.toLowerCase())
+            slideMatchesCategory(slide.category, category)
           );
 
           if (categorySlides.length === 0) {

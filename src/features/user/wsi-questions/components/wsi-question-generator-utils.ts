@@ -75,3 +75,19 @@ export function extractCategories(wsiData: { category?: string | null }[]): stri
     .filter((val) => val.length > 0)
     .sort();
 }
+
+/**
+ * Does a slide belong to the selected category?
+ *
+ * Exact match, not substring. The picker's options come from `extractCategories`
+ * — the same `category` field this compares — so equality is always sufficient,
+ * and substring matching is actively wrong: "uropathology" is a substring of
+ * "neuropathology" (n-e-u-r-o-…), so selecting Uropathology also matched all 47
+ * Neuropathology cases and returned the requested category only 47% of the time.
+ */
+export function slideMatchesCategory(
+  slideCategory: string | null | undefined,
+  selected: string
+): boolean {
+  return (slideCategory || "").trim().toLowerCase() === selected.trim().toLowerCase();
+}
