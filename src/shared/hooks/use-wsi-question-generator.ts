@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useClientWSIData } from "./use-client-wsi-data";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { getWSIHistoryTracker } from "@/features/user/wsi-questions/utils/wsi-history-tracker";
@@ -123,11 +123,13 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
     return data;
   }, []);
 
-  const generateQuestion = useCallback(
+  /**
+   * Select a slide and generate one question. No UI state: this runs both for
+   * the request the user is waiting on and for the background prefetch.
+   */
+  const produceQuestion = useCallback(
     async (category?: string): Promise<GeneratedQuestion> => {
       const startTime = Date.now();
-      setIsGenerating(true);
-      setError(null);
 
       try {
         log.debug("[WSI Generator] Starting question generation");
@@ -281,15 +283,76 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
         return generatedQuestion;
       } catch (err) {
+        log.error("[WSI Generator] Generation failed:", err instanceof Error ? err.message : err);
+        throw err;
+      }
+    },
+    [requestQuestion, wsiData, wsiError]
+  );
+
+  /**
+   * A question generated ahead of time for the category the user is on.
+   *
+   * Questions are consumed one after another, so the wait for every question
+   * after the first can be spent while the reader is still on the previous one.
+   * Generation measured ~1-4s, so this is the difference between a visible
+   * spinner and none. Held in a ref because nothing renders from it.
+   */
+  const prefetchRef = useRef<{ category: string; promise: Promise<GeneratedQuestion> } | null>(
+    null
+  );
+
+  const startPrefetch = useCallback(
+    (category?: string) => {
+      const key = category || "all";
+      if (prefetchRef.current?.category === key) return;
+      const promise = produceQuestion(category);
+      // A failed prefetch must stay invisible — the user never asked for it.
+      // Drop it so the next real request generates fresh instead of replaying
+      // the failure.
+      promise.catch(() => {
+        if (prefetchRef.current?.promise === promise) prefetchRef.current = null;
+      });
+      prefetchRef.current = { category: key, promise };
+    },
+    [produceQuestion]
+  );
+
+  const generateQuestion = useCallback(
+    async (category?: string): Promise<GeneratedQuestion> => {
+      const key = category || "all";
+      const ready = prefetchRef.current?.category === key ? prefetchRef.current : null;
+      // A prefetch for a different category is now useless — drop it so the
+      // next prefetch targets what the user is actually looking at.
+      if (!ready) prefetchRef.current = null;
+
+      setIsGenerating(true);
+      setError(null);
+      try {
+        let question: GeneratedQuestion;
+        if (ready) {
+          prefetchRef.current = null;
+          try {
+            question = await ready.promise;
+            log.debug("[WSI Generator] Served from prefetch");
+          } catch {
+            question = await produceQuestion(category);
+          }
+        } else {
+          question = await produceQuestion(category);
+        }
+        // Line up the next one while the reader works through this one.
+        startPrefetch(category);
+        return question;
+      } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";
-        log.error("[WSI Generator] Client-side generation failed:", errorMessage);
         setError(errorMessage);
         throw err;
       } finally {
         setIsGenerating(false);
       }
     },
-    [requestQuestion, wsiData, wsiError]
+    [produceQuestion, startPrefetch]
   );
 
   return {

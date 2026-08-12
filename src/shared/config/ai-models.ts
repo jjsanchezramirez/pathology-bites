@@ -182,18 +182,40 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
 // `modelOverride` from the debug page or by explicit caller request; it just
 // won't be selected by automatic fallback.
 
-// Provider rotation: alternate between Groq/Cerebras/Mistral/Gemini so a
-// single provider outage falls through to a different provider in one hop.
-// Groq leads (fast + 30 RPM); Cerebras next (deep 1M/day quota, only 5 RPM);
-// Mistral is the long-context/volume workhorse (500K TPM, ~1B tokens/month).
+// Ordered by measured wall-clock on a real WSI question prompt (~830 prompt
+// tokens, maxTokens 2000, Aug 2026), then by provider diversity so a single
+// provider outage still falls through in one hop.
+//
+//   gpt-oss-120b            1.0s   934 tok/s   Cerebras
+//   llama-3.1-8b-instant    1.5s   748 tok/s   Groq
+//   llama-3.3-70b-versatile 3.6s   269 tok/s   Groq
+//   gemini-2.5-flash-lite   4.4s   200 tok/s   Google
+//   mistral-large-latest   19.8s    58 tok/s   Mistral
+//
+// Cerebras leads on three counts: it was 3.4x faster than the previous leader,
+// it is the largest model here, and its 1M tokens/day dwarfs Groq's 100K —
+// which the WSI generator exhausts in ~36 questions, after which every request
+// paid a wasted 429 before failing over.
+//
+// Groq's 70B sits above Gemini on quality; the 8B is fast but small, so it
+// ranks below the 70B despite being quicker — this is a quality-ordered chain
+// that happens to lead with the fastest model, not a pure speed sort.
+//
+// Removed, both measured unusable rather than merely slow:
+//   zai-glm-4.7        a reasoning model: spends the entire 2000-token budget
+//                      on reasoning and returns content that does not parse.
+//   mistral-medium     17.8s, i.e. always past the 12s WSI timeout, and
+//                      strictly worse than mistral-large which is kept.
+//
+// mistral-large is kept LAST only as a different-provider backstop. It also
+// exceeds the WSI 12s budget, so in practice it can only serve tasks with a
+// longer deadline (admin question generation, audio scripts).
 export const TEXT_FALLBACK_CHAIN: string[] = [
-  "llama-3.3-70b-versatile", // Groq
-  "gpt-oss-120b", // Cerebras
-  "mistral-large-latest", // Mistral
-  "gemini-2.5-flash-lite", // Google
-  "zai-glm-4.7", // Cerebras
-  "llama-3.1-8b-instant", // Groq
-  "mistral-medium-2505", // Mistral
+  "gpt-oss-120b", // Cerebras — 1.0s
+  "llama-3.3-70b-versatile", // Groq — 3.6s
+  "gemini-2.5-flash-lite", // Google — 4.4s
+  "llama-3.1-8b-instant", // Groq — 1.5s, smaller model
+  "mistral-large-latest", // Mistral — 19.8s, backstop for long-deadline tasks only
 ];
 
 /**

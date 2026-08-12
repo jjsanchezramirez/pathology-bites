@@ -169,7 +169,10 @@ describe("hook: useWSIQuestionGenerator", () => {
       generated = (await result.current.generateQuestion()) as never;
     });
 
-    expect(fetchMock).toHaveBeenCalledTimes(1);
+    // Two requests: the one that produced this question, plus the background
+    // prefetch queued for the next one. The failure paths below still assert
+    // exactly one — a failed generation must not queue anything.
+    expect(fetchMock).toHaveBeenCalledTimes(2);
     expect(generated!.metadata.model).toBe("gpt-oss-120b");
   });
 
