@@ -1,15 +1,10 @@
-// Pass 2: Image analysis using Claude Sonnet for better spatial reasoning.
-// Falls back to the existing vision.ts path (Groq Scout / Gemini) on failure.
+// Pass 2: Image analysis.
+// Walks VISION_FALLBACK_CHAIN via the shared runVisionTask dispatcher; every
+// provider now sees the same prompt and the same JSON parser.
 
-import { callClaudeVision } from "@/shared/services/claude-api";
-import { VISION_FALLBACK_CHAIN } from "@/shared/config/ai-models";
-import { callWithFallback } from "@/shared/services/ai-fallback";
+import { runVisionTask } from "@/shared/services/ai-fallback";
 import type { VisionResult, AnnotationTool } from "../generate-sequence/vision";
-import {
-  normaliseMagnification,
-  analyzeImages as visionAnalyzeImages,
-  deriveMicroscopicTool,
-} from "../generate-sequence/vision";
+import { normaliseMagnification, deriveMicroscopicTool } from "../generate-sequence/vision";
 import type { ImageInput } from "../generate-sequence/prompt";
 import { log } from "@/shared/utils/logging";
 
@@ -237,58 +232,18 @@ async function analyzeOneImage(image: ImageInput, modelOverride?: string): Promi
   const prompt = buildVisionPrompt(imageWithMag);
 
   try {
-    const result = await callWithFallback(
-      VISION_FALLBACK_CHAIN,
-      async (model, apiKey, provider) => {
-        if (provider === "claude") {
-          const res = await callClaudeVision(prompt, image.url, model, apiKey, {
-            system: "You are an expert pathologist. Respond with only the JSON requested.",
-            maxTokens: 800,
-            temperature: 0.1,
-            timeoutMs: 18_000,
-          });
-          const parsed = parseVisionJSON(res.content, imageWithMag);
-          if (!parsed) throw new Error("Failed to parse Claude vision response");
-          return parsed;
-        }
-        if (provider === "groq") {
-          // Use existing vision.ts path (Groq Scout via callWithFallback)
-          const visionResults = await visionAnalyzeImages([imageWithMag], apiKey);
-          return visionResults[0] ?? FALLBACK;
-        }
-        if (provider === "google") {
-          // Gemini vision
-          const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [
-                  {
-                    parts: [
-                      { inline_data: undefined, file_data: undefined, text: undefined },
-                      { text: prompt },
-                    ],
-                  },
-                ],
-                generationConfig: { temperature: 0.1, maxOutputTokens: 800 },
-              }),
-            }
-          );
-          // Gemini doesn't easily support image URLs in the same way; fall through
-          if (!res.ok) throw new Error(`Gemini vision not supported for URL images`);
-          const data = await res.json();
-          const text = data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-          const parsed = parseVisionJSON(text, imageWithMag);
-          if (!parsed) throw new Error("Failed to parse Gemini vision response");
-          return parsed;
-        }
-        throw new Error(`Unsupported vision provider: ${provider}`);
+    const { parsed: result } = await runVisionTask("lesson-vision", prompt, image.url, {
+      system: "You are an expert pathologist. Respond with only the JSON requested.",
+      label: `vision-v2[${image.title.slice(0, 30)}]`,
+      modelOverride,
+      // Parsing inside the attempt is what makes fallback meaningful: a model
+      // that answers but returns unparseable JSON hands off to the next one.
+      parse: (content) => {
+        const p = parseVisionJSON(content, imageWithMag);
+        if (!p) throw new Error("Failed to parse vision response");
+        return p;
       },
-      `vision-v2[${image.title.slice(0, 30)}]`,
-      { modelOverride }
-    );
+    });
     // Override Claude's tool suggestion with deterministic decision table
     return overrideToolDeterministically(result, imageWithMag);
   } catch (err) {

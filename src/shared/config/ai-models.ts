@@ -243,6 +243,18 @@ export interface AITaskProfile {
   jsonMode?: boolean;
 }
 
+export const VISION_FALLBACK_CHAIN: string[] = [
+  "meta-llama/llama-4-scout-17b-16e-instruct", // Groq
+  "gemini-2.5-flash-lite", // Google
+];
+
+// Vision-capable model IDs (includes Claude for modelOverride even though
+// Claude is excluded from VISION_FALLBACK_CHAIN's automatic ordering).
+export const VISION_CAPABLE_MODELS = new Set<string>([
+  ...VISION_FALLBACK_CHAIN,
+  "claude-sonnet-4-20250514",
+]);
+
 export const AI_TASKS = {
   /** User-facing WSI question generation. maxDuration 45s. */
   "wsi-question": {
@@ -271,21 +283,43 @@ export const AI_TASKS = {
     deadlineMs: 25_000,
     jsonMode: false, // free-text script, not JSON
   },
+  /**
+   * Lesson-studio generate-lesson, pass 1 (transcript analysis) and pass 2
+   * (planner). Both share one 60s route budget with per-image vision, so their
+   * deadlines are deliberately short — a slow chain walk here starves vision.
+   *
+   * jsonMode stays off: these parsers already accept fenced output, and the
+   * previous hand-rolled calls never requested strict JSON. Standardising the
+   * call path should not quietly change what the models emit.
+   */
+  "lesson-transcript": {
+    chain: TEXT_FALLBACK_CHAIN,
+    maxTokens: 2048,
+    temperature: 0.2,
+    timeoutMs: 12_000,
+    deadlineMs: 20_000,
+    jsonMode: false,
+  },
+  "lesson-planner": {
+    chain: TEXT_FALLBACK_CHAIN,
+    maxTokens: 1024,
+    temperature: 0.2,
+    timeoutMs: 12_000,
+    deadlineMs: 20_000,
+    jsonMode: false,
+  },
+  /** Per-image vision analysis. vision-analyze route is maxDuration 30. */
+  "lesson-vision": {
+    chain: VISION_FALLBACK_CHAIN,
+    maxTokens: 800,
+    temperature: 0.1,
+    timeoutMs: 15_000,
+    deadlineMs: 25_000,
+    jsonMode: false,
+  },
 } satisfies Record<string, AITaskProfile>;
 
 export type AITaskName = keyof typeof AI_TASKS;
-
-export const VISION_FALLBACK_CHAIN: string[] = [
-  "meta-llama/llama-4-scout-17b-16e-instruct", // Groq
-  "gemini-2.5-flash-lite", // Google
-];
-
-// Vision-capable model IDs (includes Claude for modelOverride even though
-// Claude is excluded from VISION_FALLBACK_CHAIN's automatic ordering).
-export const VISION_CAPABLE_MODELS = new Set<string>([
-  ...VISION_FALLBACK_CHAIN,
-  "claude-sonnet-4-20250514",
-]);
 
 // Disabled models (show in UI but not selectable)
 export const DISABLED_AI_MODELS: AIModel[] = [

@@ -204,3 +204,123 @@ export async function callModel(
       throw new Error(`Unsupported model provider: ${provider}`);
   }
 }
+
+// ---------------------------------------------------------------------------
+// Vision
+// ---------------------------------------------------------------------------
+
+/**
+ * Fetch an image and return base64 + mime type. Gemini will not take a URL, so
+ * the bytes have to be inlined.
+ */
+async function fetchImageAsBase64(
+  url: string,
+  signal: AbortSignal | undefined
+): Promise<{ data: string; mediaType: string }> {
+  const res = await fetch(url, { signal });
+  if (!res.ok) throw new Error(`Image fetch ${res.status} for ${url.slice(-40)}`);
+  const buf = await res.arrayBuffer();
+  return {
+    data: Buffer.from(buf).toString("base64"),
+    mediaType: res.headers.get("content-type") || "image/jpeg",
+  };
+}
+
+/**
+ * Single dispatcher for every vision AI call, mirroring `callModel`.
+ *
+ * Replaces two hand-rolled per-provider copies in lesson-studio. One of them
+ * (`generate-lesson/vision-v2.ts`) sent Gemini a parts array of all-undefined
+ * values, so it shipped no image at all and "failed over" on a malformed
+ * request rather than on Gemini being unable to answer.
+ */
+export async function callVisionModel(
+  provider: string,
+  modelId: string,
+  apiKey: string,
+  prompt: string,
+  imageUrl: string,
+  options: AICallOptions = {}
+): Promise<AICallResult> {
+  const { system, maxTokens, temperature, timeoutMs, signal } = { ...DEFAULTS, ...options };
+
+  switch (provider) {
+    case "groq":
+    case "cerebras": {
+      const { callOpenAICompatChat } = await import("@/shared/services/openai-compat");
+      const messages = [
+        ...(system ? [{ role: "system" as const, content: system }] : []),
+        {
+          role: "user" as const,
+          content: [
+            { type: "image_url", image_url: { url: imageUrl } },
+            { type: "text", text: prompt },
+          ],
+        },
+      ];
+      const res = await callOpenAICompatChat(
+        provider,
+        modelId,
+        apiKey,
+        messages as Parameters<typeof callOpenAICompatChat>[3],
+        { maxTokens, temperature, timeoutMs, signal }
+      );
+      return { content: res.content, tokenUsage: res.tokenUsage };
+    }
+
+    case "claude": {
+      const { callClaudeVision } = await import("@/shared/services/claude-api");
+      const res = await callClaudeVision(prompt, imageUrl, modelId, apiKey, {
+        system,
+        maxTokens,
+        temperature,
+        timeoutMs,
+      });
+      return { content: res.content, tokenUsage: res.tokenUsage };
+    }
+
+    case "google":
+    case "gemini": {
+      const img = await fetchImageAsBase64(imageUrl, signal);
+      const response = await fetchWithTimeout(
+        `https://generativelanguage.googleapis.com/v1beta/models/${modelId}:generateContent?key=${apiKey}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contents: [
+              {
+                parts: [
+                  { inline_data: { mime_type: img.mediaType, data: img.data } },
+                  { text: prompt },
+                ],
+              },
+            ],
+            ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
+            generationConfig: { temperature, maxOutputTokens: maxTokens },
+          }),
+        },
+        timeoutMs,
+        signal,
+        "Google"
+      );
+      if (!response.ok) {
+        throw new Error(`Google vision API error: ${response.status} ${response.statusText}`);
+      }
+      const data = await response.json();
+      return {
+        content: data.candidates?.[0]?.content?.parts?.[0]?.text || "",
+        tokenUsage: data.usageMetadata
+          ? {
+              prompt_tokens: data.usageMetadata.promptTokenCount ?? 0,
+              completion_tokens: data.usageMetadata.candidatesTokenCount ?? 0,
+              total_tokens: data.usageMetadata.totalTokenCount ?? 0,
+            }
+          : undefined,
+      };
+    }
+
+    default:
+      throw new Error(`Unsupported vision provider: ${provider}`);
+  }
+}

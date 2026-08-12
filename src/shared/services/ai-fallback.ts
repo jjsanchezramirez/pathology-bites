@@ -13,7 +13,7 @@ import {
   resolveModelId,
   type AITaskName,
 } from "@/shared/config/ai-models";
-import { callModel, type AICallResult } from "@/shared/services/ai-providers";
+import { callModel, callVisionModel, type AICallResult } from "@/shared/services/ai-providers";
 import { log } from "@/shared/utils/logging";
 
 type FailureAction = "retry" | "next";
@@ -251,6 +251,40 @@ export async function runAITask<T = undefined>(
         temperature: profile.temperature,
         timeoutMs: profile.timeoutMs,
         jsonMode: profile.jsonMode,
+      });
+      if (!res.content) throw new Error(`${model} returned empty content`);
+      const parsed = (options.parse ? options.parse(res.content) : undefined) as T;
+      return { ...res, model, parsed };
+    },
+    label,
+    { modelOverride: options.modelOverride, deadlineMs: profile.deadlineMs }
+  );
+}
+
+/**
+ * Vision counterpart of `runAITask`.
+ *
+ * Same contract — task profile supplies the chain, budgets and per-model
+ * timeout; `parse` runs inside the attempt so a model that returns unparseable
+ * output falls through to the next one rather than failing the request.
+ */
+export async function runVisionTask<T = undefined>(
+  task: AITaskName,
+  prompt: string,
+  imageUrl: string,
+  options: RunAITaskOptions<T> = {}
+): Promise<AICallResult & { model: string; parsed: T }> {
+  const profile = AI_TASKS[task];
+  const label = options.label ?? task;
+
+  return callWithFallback(
+    profile.chain,
+    async (model, apiKey, provider) => {
+      const res = await callVisionModel(provider, model, apiKey, prompt, imageUrl, {
+        system: options.system,
+        maxTokens: profile.maxTokens,
+        temperature: profile.temperature,
+        timeoutMs: profile.timeoutMs,
       });
       if (!res.content) throw new Error(`${model} returned empty content`);
       const parsed = (options.parse ? options.parse(res.content) : undefined) as T;

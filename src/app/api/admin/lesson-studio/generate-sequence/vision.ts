@@ -412,102 +412,14 @@ export interface VisionDebug {
 const VISION_SYSTEM_PROMPT =
   "You are an expert pathologist with strong visual analysis skills. Be concise and precise. Answer each numbered question on its own line. If you cannot see the image, say so on line 1.";
 
-const VISION_TIMEOUT_MS = 15000;
-
-// Fetch image, return base64 + mime type (used by Gemini, which doesn't accept URLs)
-async function fetchImageAsBase64(
-  url: string,
-  signal: AbortSignal
-): Promise<{ data: string; mediaType: string }> {
-  const r = await fetch(url, { signal });
-  if (!r.ok) throw new Error(`Image fetch ${r.status} for ${url.slice(-40)}`);
-  const buf = await r.arrayBuffer();
-  const mediaType = r.headers.get("content-type") || "image/jpeg";
-  const data = Buffer.from(buf).toString("base64");
-  return { data, mediaType };
-}
-
-// Provider-agnostic vision call returning raw text content
-async function callVisionProvider(
-  imageUrl: string,
-  promptText: string,
-  model: string,
-  apiKey: string,
-  provider: string,
-  signal: AbortSignal
-): Promise<string> {
-  if (provider === "groq") {
-    const { callOpenAICompatChat } = await import("@/shared/services/openai-compat");
-    const res = await callOpenAICompatChat(
-      provider,
-      model,
-      apiKey,
-      [
-        { role: "system", content: VISION_SYSTEM_PROMPT },
-        {
-          role: "user",
-          content: [
-            { type: "image_url", image_url: { url: imageUrl } },
-            { type: "text", text: promptText },
-          ],
-        },
-      ],
-      { maxTokens: 600, temperature: 0.1, signal }
-    );
-    return res.content;
-  }
-
-  if (provider === "claude") {
-    const { callClaudeVision } = await import("@/shared/services/claude-api");
-    const res = await callClaudeVision(promptText, imageUrl, model, apiKey, {
-      system: VISION_SYSTEM_PROMPT,
-      maxTokens: 600,
-      temperature: 0.1,
-      timeoutMs: VISION_TIMEOUT_MS,
-    });
-    return res.content;
-  }
-
-  if (provider === "google") {
-    const img = await fetchImageAsBase64(imageUrl, signal);
-    const r = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-      {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        signal,
-        body: JSON.stringify({
-          contents: [
-            {
-              parts: [
-                { inline_data: { mime_type: img.mediaType, data: img.data } },
-                { text: `${VISION_SYSTEM_PROMPT}\n\n${promptText}` },
-              ],
-            },
-          ],
-          generationConfig: { temperature: 0.1, maxOutputTokens: 600 },
-        }),
-      }
-    );
-    if (!r.ok) throw new Error(`Gemini API ${r.status}`);
-    const data = await r.json();
-    return data.candidates?.[0]?.content?.parts?.[0]?.text || "";
-  }
-
-  throw new Error(`Unsupported vision provider: ${provider}`);
-}
-
 async function analyzeOneImage(
   image: ImageInput,
   _legacyApiKey: string,
   debug?: VisionDebug,
   modelOverride?: string
 ): Promise<VisionResult> {
-  // _legacyApiKey kept for caller compat — provider keys looked up per-model via callWithFallback
+  // _legacyApiKey kept for caller compat — runVisionTask resolves provider keys per-model
   void _legacyApiKey;
-
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), VISION_TIMEOUT_MS);
 
   const FALLBACK: VisionResult = {
     canSeeImage: false,
@@ -520,7 +432,6 @@ async function analyzeOneImage(
   // Skip vision pass for figures, tables, and gross images — handled elsewhere
   const category = image.category?.toLowerCase() ?? "";
   if (category === "figure" || category === "table" || category === "gross") {
-    clearTimeout(timeoutId);
     return {
       canSeeImage: true,
       featurePosition: null,
@@ -548,18 +459,14 @@ async function analyzeOneImage(
 
   let content: string;
   try {
-    const { callWithFallback } = await import("@/shared/services/ai-fallback");
-    const { VISION_FALLBACK_CHAIN } = await import("@/shared/config/ai-models");
-    content = await callWithFallback(
-      VISION_FALLBACK_CHAIN,
-      (model, apiKey, provider) =>
-        callVisionProvider(image.url, promptText, model, apiKey, provider, controller.signal),
-      `vision[${image.title.slice(0, 30)}]`,
-      { modelOverride }
-    );
-    clearTimeout(timeoutId);
+    const { runVisionTask } = await import("@/shared/services/ai-fallback");
+    const res = await runVisionTask("lesson-vision", promptText, image.url, {
+      system: VISION_SYSTEM_PROMPT,
+      label: `vision[${image.title.slice(0, 30)}]`,
+      modelOverride,
+    });
+    content = res.content;
   } catch (err) {
-    clearTimeout(timeoutId);
     log.warn(`[vision] All models failed for ${image.url.slice(-40)}: ${err}`);
     return FALLBACK;
   }
@@ -603,35 +510,4 @@ export async function analyzeSingleImageWithDebug(
   const debugObj: VisionDebug = { rawModelResponse: "", promptSent: "" };
   const result = await analyzeOneImage(image, apiKey, debugObj, modelOverride);
   return { result, debug: debugObj };
-}
-
-// ---------------------------------------------------------------------------
-// Public: analyse all images in parallel
-// ---------------------------------------------------------------------------
-
-export async function analyzeImages(
-  images: ImageInput[],
-  apiKey: string,
-  modelOverride?: string
-): Promise<VisionResult[]> {
-  log.debug(`[vision] Analysing ${images.length} images in parallel…`);
-  const results = await Promise.all(
-    images.map((img) => analyzeOneImage(img, apiKey, undefined, modelOverride))
-  );
-  const seen = results.filter((r) => r.canSeeImage).length;
-  const toolCounts = results.reduce(
-    (acc, r) => {
-      acc[r.annotationTool] = (acc[r.annotationTool] || 0) + 1;
-      return acc;
-    },
-    {} as Record<string, number>
-  );
-  log.debug(`[vision] Done — ${seen}/${images.length} seen, tools: ${JSON.stringify(toolCounts)}`);
-  log.debug(`[vision] Results summary:`);
-  results.forEach((r, i) => {
-    log.debug(
-      `  [${i}] tool: ${r.annotationTool}, position: ${r.featurePosition ? `x=${r.featurePosition.x}, y=${r.featurePosition.y}` : "null"}, label: ${r.suggestedLabel || "(none)"}`
-    );
-  });
-  return results;
 }

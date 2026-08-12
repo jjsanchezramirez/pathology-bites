@@ -2,10 +2,7 @@
 // Decides: slide order + text slide content + SVG placement.
 // Annotations, camera, durations are all handled deterministically by the assembler.
 
-import { callClaudeText } from "@/shared/services/claude-api";
-import { TEXT_FALLBACK_CHAIN } from "@/shared/config/ai-models";
-import { callWithFallback } from "@/shared/services/ai-fallback";
-import { callOpenAICompatText, isOpenAICompatProvider } from "@/shared/services/openai-compat";
+import { runAITask } from "@/shared/services/ai-fallback";
 import type { ImageInput } from "../generate-sequence/prompt";
 import type {
   SvgInput,
@@ -200,48 +197,11 @@ export async function planLesson(
   const prompt = buildPlannerPrompt(transcriptAnalysis, images, audioDuration, svgs);
 
   try {
-    const raw = await callWithFallback(
-      TEXT_FALLBACK_CHAIN,
-      async (model, apiKey, provider) => {
-        if (provider === "claude") {
-          const res = await callClaudeText(prompt, model, apiKey, {
-            system: "You are an expert educational video designer. Return only valid JSON.",
-            maxTokens: 1024,
-            temperature: 0.2,
-            timeoutMs: 20_000,
-          });
-          return res.content;
-        }
-        if (isOpenAICompatProvider(provider)) {
-          const res = await callOpenAICompatText(provider, model, apiKey, prompt, {
-            system: "You are an expert video designer. Return only valid JSON.",
-            maxTokens: 1024,
-            temperature: 0.2,
-            timeoutMs: 12_000,
-          });
-          return res.content;
-        }
-        if (provider === "google") {
-          const res = await fetch(
-            `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-            {
-              method: "POST",
-              headers: { "Content-Type": "application/json" },
-              body: JSON.stringify({
-                contents: [{ parts: [{ text: prompt }] }],
-                generationConfig: { temperature: 0.2, maxOutputTokens: 1024 },
-              }),
-            }
-          );
-          if (!res.ok) throw new Error(`Gemini API ${res.status}`);
-          const data = await res.json();
-          return data.candidates?.[0]?.content?.parts?.[0]?.text ?? "";
-        }
-        throw new Error(`Unsupported provider: ${provider}`);
-      },
-      "planner",
-      { modelOverride }
-    );
+    const { content: raw } = await runAITask("lesson-planner", prompt, {
+      system: "You are an expert educational video designer. Return only valid JSON.",
+      label: "planner",
+      modelOverride,
+    });
 
     const parsed = parsePlanResponse(raw, images.length);
     if (parsed) return parsed;

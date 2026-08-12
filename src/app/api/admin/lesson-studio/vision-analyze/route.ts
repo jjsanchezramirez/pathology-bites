@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: "image.url is required" }, { status: 400 });
     }
 
-    // vision.ts now resolves provider keys per-model via callWithFallback.
+    // vision.ts now resolves provider keys per-model via runVisionTask.
     // Pass an empty string for legacy compat; the actual key is looked up internally.
     const { result, debug } = await analyzeSingleImageWithDebug(image, "", modelOverride);
 
