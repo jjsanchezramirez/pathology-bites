@@ -3,9 +3,9 @@
 // (July 6, 2026) — its replacements all speak the OpenAI dialect, so one
 // caller covers them. Provider-specific quirks live here, not in routes:
 //   - Groq/Cerebras take `max_completion_tokens`; Mistral only `max_tokens`.
-//   - Cerebras serves reasoning models (gpt-oss, GLM) that spend completion
-//     budget on reasoning before emitting content — we floor the budget and
-//     pin gpt-oss to low reasoning effort so short-output calls still finish.
+//   - Reasoning models (gpt-oss on either provider) spend completion budget on
+//     thinking before emitting content — we floor the budget and pin them to low
+//     reasoning effort so short-output calls still finish.
 
 import { log } from "@/shared/utils/logging";
 
@@ -17,6 +17,20 @@ const ENDPOINTS: Record<string, string> = {
 
 // Reasoning models need headroom for thinking tokens before content appears.
 const CEREBRAS_MIN_COMPLETION_TOKENS = 1024;
+
+/**
+ * gpt-oss reasons before it answers, on every provider that serves it. Measured
+ * on Groq (Aug 2026): a 10-token budget goes 8 tokens to reasoning and returns
+ * an empty string with finish_reason "length" — which is what made the health
+ * ping report the model as broken when it was fine at a real budget.
+ *
+ * Matches both id shapes: Cerebras serves it as `gpt-oss-120b`, Groq namespaces
+ * it as `openai/gpt-oss-120b`. The Cerebras-only `startsWith` this replaces
+ * silently skipped the Groq copy.
+ */
+function isReasoningModel(model: string): boolean {
+  return /(^|\/)gpt-oss/.test(model);
+}
 
 export function isOpenAICompatProvider(provider: string): boolean {
   return provider in ENDPOINTS;
@@ -65,8 +79,12 @@ export async function callOpenAICompatChat(
 
   const { maxTokens = 4000, temperature = 0.7, timeoutMs = 20_000, signal, jsonMode } = options;
 
-  const effectiveMaxTokens =
-    provider === "cerebras" ? Math.max(maxTokens, CEREBRAS_MIN_COMPLETION_TOKENS) : maxTokens;
+  // Cerebras keeps its blanket floor (its whole catalog is reasoning-heavy);
+  // gpt-oss gets one on any provider.
+  const needsThinkingHeadroom = provider === "cerebras" || isReasoningModel(model);
+  const effectiveMaxTokens = needsThinkingHeadroom
+    ? Math.max(maxTokens, CEREBRAS_MIN_COMPLETION_TOKENS)
+    : maxTokens;
 
   const body: Record<string, unknown> = {
     model,
@@ -79,7 +97,11 @@ export async function callOpenAICompatChat(
   } else {
     body.max_completion_tokens = effectiveMaxTokens;
   }
-  if (provider === "cerebras" && model.startsWith("gpt-oss")) {
+  // Measured on Groq (Aug 2026), same prompt: default effort spent 228 tokens
+  // reasoning in 2.4s; "low" spent 37 in 1.7s and returned MORE content. Free
+  // latency, and it moves the model further from the maxTokens ceiling.
+  // Mistral does not accept the parameter.
+  if (isReasoningModel(model) && (provider === "groq" || provider === "cerebras")) {
     body.reasoning_effort = "low";
   }
 
