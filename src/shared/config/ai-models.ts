@@ -64,15 +64,6 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     tpmLimit: 12000,
   },
   {
-    id: "meta-llama/llama-4-scout-17b-16e-instruct",
-    name: "Llama 4 Scout 17B (Groq)",
-    provider: "groq",
-    available: true,
-    description: "Multimodal vision model on Groq",
-    contextLength: "128K tokens",
-    tpmLimit: 30000,
-  },
-  {
     id: "llama-3.1-8b-instant",
     name: "Llama 3.1 8B (Groq)",
     provider: "groq",
@@ -80,6 +71,19 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     description: "Fast lightweight Llama on Groq",
     contextLength: "128K tokens",
     tpmLimit: 6000,
+  },
+
+  // Groq's serving of the same model that leads the chain on Cerebras. Free tier
+  // gives it 200K TPD — double the 100K the llama models get — so it is the
+  // natural landing spot when Cerebras' 5 RPM runs out.
+  {
+    id: "openai/gpt-oss-120b",
+    name: "GPT-OSS 120B (Groq)",
+    provider: "groq",
+    available: true,
+    description: "Same model as the Cerebras chain leader, second provider",
+    contextLength: "128K tokens",
+    tpmLimit: 8000,
   },
 
   // Cerebras — fastest inference (~2000+ tok/s), free tier: 5 RPM, 1M tokens/day
@@ -93,11 +97,11 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     tpmLimit: 30000,
   },
   {
-    id: "zai-glm-4.7",
-    name: "GLM 4.7 (Cerebras)",
+    id: "gemma-4-31b",
+    name: "Gemma 4 31B (Cerebras)",
     provider: "cerebras",
     available: true,
-    description: "Z.ai GLM 4.7 355B on Cerebras - strong reasoning",
+    description: "Gemma 4 31B on Cerebras - bench candidate",
     contextLength: "128K tokens",
     tpmLimit: 30000,
   },
@@ -107,6 +111,29 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     provider: "gemini",
     available: true,
     description: "Most cost-effective Gemini, highest free-tier RPD",
+    contextLength: "1M tokens",
+    tpmLimit: 1000000,
+  },
+  // Gemini "flash" (non-lite) models think by default and the thinking tokens
+  // count against maxOutputTokens — at maxTokens 2000 the JSON comes back
+  // truncated (finishReason MAX_TOKENS). thinkingBudget:0 fixes 2.5-flash but is
+  // rejected outright by the 3.x lite models, so prefer the lite line, which
+  // does no thinking by default and answers in ~1.2s.
+  {
+    id: "gemini-3.5-flash-lite",
+    name: "Gemini 3.5 Flash Lite",
+    provider: "gemini",
+    available: true,
+    description: "Newest Gemini lite - no thinking by default, ~1.2s",
+    contextLength: "1M tokens",
+    tpmLimit: 1000000,
+  },
+  {
+    id: "gemini-3.1-flash-lite",
+    name: "Gemini 3.1 Flash Lite",
+    provider: "gemini",
+    available: true,
+    description: "Prior-generation Gemini lite - no thinking by default",
     contextLength: "1M tokens",
     tpmLimit: 1000000,
   },
@@ -127,6 +154,17 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     provider: "mistral",
     available: true,
     description: "Latest Mistral Medium 3 model - enhanced capabilities",
+    contextLength: "128K tokens",
+    tpmLimit: 500000,
+  },
+  // Current-generation Mistral. The 25xx small/medium entries below are the
+  // older releases the chain was measured against; kept for comparison.
+  {
+    id: "mistral-small-2603",
+    name: "Mistral Small (2603)",
+    provider: "mistral",
+    available: true,
+    description: "Current Mistral Small release - bench candidate",
     contextLength: "128K tokens",
     tpmLimit: 500000,
   },
@@ -182,40 +220,43 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
 // `modelOverride` from the debug page or by explicit caller request; it just
 // won't be selected by automatic fallback.
 
-// Ordered by measured wall-clock on a real WSI question prompt (~830 prompt
-// tokens, maxTokens 2000, Aug 2026), then by provider diversity so a single
-// provider outage still falls through in one hop.
+// Ordered by measured wall-clock on a real WSI question prompt (~813 prompt
+// tokens, maxTokens 2000, /debug/wsi-bench, Aug 2026), then by provider
+// diversity so a single provider outage still falls through in one hop.
 //
-//   gpt-oss-120b            1.0s   934 tok/s   Cerebras
-//   llama-3.1-8b-instant    1.5s   748 tok/s   Groq
-//   llama-3.3-70b-versatile 3.6s   269 tok/s   Groq
-//   gemini-2.5-flash-lite   4.4s   200 tok/s   Google
-//   mistral-large-latest   19.8s    58 tok/s   Mistral
+//   gpt-oss-120b            0.9s  1126 tok/s   Cerebras
+//   gemini-3.5-flash-lite   3.1s   282 tok/s   Google
+//   openai/gpt-oss-120b     3.6s   439 tok/s   Groq
+//   llama-3.3-70b-versatile 3.4s   310 tok/s   Groq
+//   mistral-small-2603      8.0s   129 tok/s   Mistral
 //
-// Cerebras leads on three counts: it was 3.4x faster than the previous leader,
-// it is the largest model here, and its 1M tokens/day dwarfs Groq's 100K —
-// which the WSI generator exhausts in ~36 questions, after which every request
-// paid a wasted 429 before failing over.
+// The first three are three DIFFERENT providers on purpose. That matters more
+// than shaving 400ms off slot 2: only ~3 models are ever reachable anyway —
+// with timeoutMs 12s and deadlineMs 35s, three consecutive timeouts spend 36s
+// and the deadline check stops the walk before a fourth attempt starts.
 //
-// Groq's 70B sits above Gemini on quality; the 8B is fast but small, so it
-// ranks below the 70B despite being quicker — this is a quality-ordered chain
-// that happens to lead with the fastest model, not a pure speed sort.
+// Cerebras leads on speed but has the TIGHTEST limit of the three (5 RPM vs
+// Groq's 30). Slot 2 is therefore load-bearing, not decorative: under any real
+// concurrency it serves a large share of traffic. Groq's own gpt-oss-120b sits
+// at 3 so a Cerebras outage keeps the same model family, and it carries a
+// 200K TPD free-tier allowance against the llama models' 100K.
 //
-// Removed, both measured unusable rather than merely slow:
-//   zai-glm-4.7        a reasoning model: spends the entire 2000-token budget
-//                      on reasoning and returns content that does not parse.
-//   mistral-medium     17.8s, i.e. always past the 12s WSI timeout, and
-//                      strictly worse than mistral-large which is kept.
-//
-// mistral-large is kept LAST only as a different-provider backstop. It also
-// exceeds the WSI 12s budget, so in practice it can only serve tasks with a
-// longer deadline (admin question generation, audio scripts).
+// Not in the chain, and why:
+//   llama-3.1-8b-instant   fine (2.8s) but same provider as slot 4, so a Groq
+//                          provider-level failure skips it anyway; and slot 5+
+//                          is unreachable on timeout paths. Still selectable.
+//   mistral-large/medium   17.4s / 17.6s — past the 12s WSI timeout every time.
+//                          Selectable for admin tasks (20s timeout) only.
+//   gemini-2.5-flash-lite  4.3s, superseded by 3.5-flash-lite (3.1s) which is
+//                          also free tier. Kept selectable as the Gemini
+//                          fallback in VISION_FALLBACK_CHAIN.
+// See DISABLED_AI_MODELS for the four that were measured genuinely unusable.
 export const TEXT_FALLBACK_CHAIN: string[] = [
-  "gpt-oss-120b", // Cerebras — 1.0s
-  "llama-3.3-70b-versatile", // Groq — 3.6s
-  "gemini-2.5-flash-lite", // Google — 4.4s
-  "llama-3.1-8b-instant", // Groq — 1.5s, smaller model
-  "mistral-large-latest", // Mistral — 19.8s, backstop for long-deadline tasks only
+  "gpt-oss-120b", // Cerebras — 0.9s
+  "gemini-3.5-flash-lite", // Google — 3.1s
+  "openai/gpt-oss-120b", // Groq — 3.6s
+  "llama-3.3-70b-versatile", // Groq — 3.4s
+  "mistral-small-2603", // Mistral — 8.0s, 4th-provider backstop
 ];
 
 /**
@@ -243,9 +284,19 @@ export interface AITaskProfile {
   jsonMode?: boolean;
 }
 
+// Groq's Llama 4 Scout led this chain until Groq removed it from their catalog;
+// the API returns `model_not_found`, so every vision call had been failing over
+// to Gemini regardless. Groq now serves no vision model on our account, which
+// leaves both slots on Google — there is NO provider diversity here. A Google
+// outage takes vision down; the deliberate escape hatch is passing Claude via
+// modelOverride, which is why it stays in VISION_CAPABLE_MODELS.
+//
+// Measured on a real R2 histology image (Aug 2026): 3.5-flash-lite 1.9s,
+// 2.5-flash-lite 2.8s. Both saw the image and returned parseable JSON with no
+// thinking tokens. Only the "lite" line behaves this way — see callGoogle.
 export const VISION_FALLBACK_CHAIN: string[] = [
-  "meta-llama/llama-4-scout-17b-16e-instruct", // Groq
-  "gemini-2.5-flash-lite", // Google
+  "gemini-3.5-flash-lite", // Google — 1.9s
+  "gemini-2.5-flash-lite", // Google — 2.8s
 ];
 
 // Vision-capable model IDs (includes Claude for modelOverride even though
@@ -374,6 +425,50 @@ export const DISABLED_AI_MODELS: AIModel[] = [
     provider: "mistral",
     available: false,
     description: "Mistral Small 2 model (disabled - API issues)",
+  },
+
+  // Retired by the provider — Groq removed Llama 4 Scout from the catalog and
+  // the API now answers `model_not_found`. It was VISION_FALLBACK_CHAIN[0], so
+  // every vision call had been silently failing over to Gemini.
+  {
+    id: "meta-llama/llama-4-scout-17b-16e-instruct",
+    name: "Llama 4 Scout 17B (Groq)",
+    provider: "groq",
+    available: false,
+    deprecated: true,
+    description: "Removed from Groq's catalog (404 as of Aug 2026)",
+  },
+
+  // Measured unusable on the real WSI prompt (/debug/wsi-bench, Aug 2026): each
+  // spent its entire 2000-token budget reasoning or rambling and never closed
+  // the JSON. Not slow — unusable. Kept visible so nobody re-adds them blind.
+  {
+    id: "zai-glm-4.7",
+    name: "GLM 4.7 (Cerebras)",
+    provider: "cerebras",
+    available: false,
+    description: "Burns the whole token budget on reasoning - output never parses",
+  },
+  {
+    id: "openai/gpt-oss-20b",
+    name: "GPT-OSS 20B (Groq)",
+    provider: "groq",
+    available: false,
+    description: "Hit the 2000-token cap without closing the JSON",
+  },
+  {
+    id: "qwen/qwen3.6-27b",
+    name: "Qwen3.6 27B (Groq)",
+    provider: "groq",
+    available: false,
+    description: "Hit the 2000-token cap without closing the JSON",
+  },
+  {
+    id: "ministral-14b-2512",
+    name: "Ministral 14B",
+    provider: "mistral",
+    available: false,
+    description: "15.7s and hit the 2000-token cap without closing the JSON",
   },
 ];
 

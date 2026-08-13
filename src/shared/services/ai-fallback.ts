@@ -1,10 +1,10 @@
 // Shared AI fallback runner — the single place model fallback happens.
 //
 // `runAITask` is the entry point for text tasks (WSI questions, admin questions,
-// audio scripts); lesson-studio's vision passes call `callWithFallback` directly
-// because they build their own multimodal payloads. Nothing else should assemble
-// a chain or a provider switch: three divergent copies of that is what this
-// replaced, and the copies had already drifted into different bugs.
+// audio scripts) and `runVisionTask` for image ones (lesson-studio's vision
+// passes). Nothing else should assemble a chain or a provider switch: several
+// divergent copies of that is what this replaced, and the copies had already
+// drifted into different bugs.
 
 import {
   AI_TASKS,

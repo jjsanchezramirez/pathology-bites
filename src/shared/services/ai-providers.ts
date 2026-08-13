@@ -67,6 +67,25 @@ async function fetchWithTimeout(
   }
 }
 
+/**
+ * Gemini "thinking" tokens are billed against `maxOutputTokens`, so a thinking
+ * model handed a 2000-token budget can spend ~1900 of it reasoning and return
+ * JSON truncated mid-string (finishReason MAX_TOKENS). Measured Aug 2026:
+ * gemini-2.5-flash burned 513 thought tokens on a trivial prompt and 1900+ on a
+ * real WSI question; gemini-3.6-flash never produced usable output at all.
+ *
+ * `thinkingBudget: 0` fixes the non-lite models — but the *lite* models reject
+ * it outright with HTTP 400, and they already do no thinking by default. So we
+ * only send it where it helps, and remember any model that rejects it.
+ */
+const THINKING_UNSUPPORTED = new Set<string>();
+
+function shouldDisableThinking(model: string): boolean {
+  if (THINKING_UNSUPPORTED.has(model)) return false;
+  // Lite models and Gemma do no thinking by default and 400 on the parameter.
+  return !/flash-lite/.test(model) && !/^gemma/.test(model);
+}
+
 async function callGoogle(
   prompt: string,
   model: string,
@@ -78,27 +97,49 @@ async function callGoogle(
     ...options,
   };
 
-  const response = await fetchWithTimeout(
-    `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`,
-    {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: prompt }] }],
-        // Every caller passes a system prompt and expects it honoured; the old
-        // copies built this body without one, so Gemini alone ran unprompted.
-        ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
-        generationConfig: {
-          temperature,
-          maxOutputTokens: maxTokens,
-          ...(jsonMode ? { responseMimeType: "application/json" } : {}),
-        },
-      }),
-    },
-    timeoutMs,
-    signal,
-    "Google"
-  );
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+  const buildBody = (disableThinking: boolean) =>
+    JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      // Every caller passes a system prompt and expects it honoured; the old
+      // copies built this body without one, so Gemini alone ran unprompted.
+      ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
+      generationConfig: {
+        temperature,
+        maxOutputTokens: maxTokens,
+        ...(jsonMode ? { responseMimeType: "application/json" } : {}),
+        ...(disableThinking ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
+      },
+    });
+
+  const post = (disableThinking: boolean) =>
+    fetchWithTimeout(
+      url,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: buildBody(disableThinking),
+      },
+      timeoutMs,
+      signal,
+      "Google"
+    );
+
+  const askedForNoThinking = shouldDisableThinking(model);
+  let response = await post(askedForNoThinking);
+
+  // A model that rejects thinkingBudget answers 400. Retry once without it and
+  // remember, so this costs one wasted request per model per warm instance
+  // rather than one per call — and so a future Google change self-heals.
+  if (!response.ok && response.status === 400 && askedForNoThinking) {
+    const detail = await response.text().catch(() => "");
+    if (/thinking/i.test(detail) || /invalid argument/i.test(detail)) {
+      THINKING_UNSUPPORTED.add(model);
+      response = await post(false);
+    } else {
+      throw new Error(`Google API error: 400 ${detail.slice(0, 200)}`);
+    }
+  }
 
   if (!response.ok) {
     throw new Error(`Google API error: ${response.status} ${response.statusText}`);
@@ -297,7 +338,14 @@ export async function callVisionModel(
               },
             ],
             ...(system ? { systemInstruction: { parts: [{ text: system }] } } : {}),
-            generationConfig: { temperature, maxOutputTokens: maxTokens },
+            generationConfig: {
+              temperature,
+              maxOutputTokens: maxTokens,
+              // Same trap as the text path: thinking tokens eat maxOutputTokens
+              // and truncate the JSON. The lite models in VISION_FALLBACK_CHAIN
+              // reject the parameter, so this is a no-op for them today.
+              ...(shouldDisableThinking(modelId) ? { thinkingConfig: { thinkingBudget: 0 } } : {}),
+            },
           }),
         },
         timeoutMs,
