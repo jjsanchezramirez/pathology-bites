@@ -12,6 +12,27 @@ function redirectToLogin(request: NextRequest, pathname: string) {
   return NextResponse.redirect(url);
 }
 
+/**
+ * Dev-only stand-in identity for the /debug tools.
+ *
+ * The debug pages themselves need no auth, but several of them drive real
+ * product routes (`/api/admin/lesson-studio/*`, `/api/user/wsi-questions/*`)
+ * which 401 without a session — so the tool is unusable unless you happen to be
+ * logged in. This supplies an identity for ANONYMOUS requests only: a real
+ * session always wins, so role-gated behaviour stays testable locally.
+ *
+ * Hard-gated on NODE_ENV !== "production" AND on the id being configured, so it
+ * cannot activate on Vercel even if the env vars leak into a deployment.
+ * Configure in .env.local (see .env.example) — the id is deliberately NOT
+ * committed, since this repository is public.
+ */
+function devFallbackIdentity(): { id: string; role: string } | null {
+  if (process.env.NODE_ENV === "production") return null;
+  const id = process.env.DEBUG_USER_ID;
+  if (!id) return null;
+  return { id, role: process.env.DEBUG_USER_ROLE || "admin" };
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -102,12 +123,14 @@ export async function middleware(request: NextRequest) {
 
   // Private API: 401 if unauthenticated, otherwise forward identity to the handler via headers.
   if (isApiRoute && !isPublicApi) {
-    if (!user) {
+    const fallback = user ? null : devFallbackIdentity();
+    if (!user && !fallback) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-    const role = user.app_metadata?.role || user.user_metadata?.role;
+    const userId = user?.id ?? fallback!.id;
+    const role = user ? user.app_metadata?.role || user.user_metadata?.role : fallback!.role;
     const requestHeaders = new Headers(request.headers);
-    requestHeaders.set("x-user-id", user.id);
+    requestHeaders.set("x-user-id", userId);
     if (role) {
       requestHeaders.set("x-user-role", role);
     }
