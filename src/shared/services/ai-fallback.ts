@@ -8,11 +8,11 @@
 
 import {
   AI_TASKS,
-  getApiKey,
   getModelProvider,
   resolveModelId,
   type AITaskName,
 } from "@/shared/config/ai-models";
+import { getApiKey } from "@/shared/config/ai-keys";
 import { callModel, callVisionModel, type AICallResult } from "@/shared/services/ai-providers";
 import { log } from "@/shared/utils/logging";
 

@@ -289,12 +289,20 @@ export async function callVisionModel(
     case "groq":
     case "cerebras": {
       const { callOpenAICompatChat } = await import("@/shared/services/openai-compat");
+      // Groq fetches a remote image itself; Cerebras refuses them outright
+      // ("Remote image URLs are not supported; send images as data URIs") so
+      // its bytes have to be inlined, the same as Gemini's.
+      let imageRef = imageUrl;
+      if (provider === "cerebras") {
+        const img = await fetchImageAsBase64(imageUrl, signal);
+        imageRef = `data:${img.mediaType};base64,${img.data}`;
+      }
       const messages = [
         ...(system ? [{ role: "system" as const, content: system }] : []),
         {
           role: "user" as const,
           content: [
-            { type: "image_url", image_url: { url: imageUrl } },
+            { type: "image_url", image_url: { url: imageRef } },
             { type: "text", text: prompt },
           ],
         },

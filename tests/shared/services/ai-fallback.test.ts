@@ -2,9 +2,16 @@ import { describe, it, expect, beforeEach, vi } from "vitest";
 
 // Deterministic provider/key resolution: model id "provider:variant" → provider.
 // "nokey:*" simulates a provider with no configured API key.
+//
+// Keys live in ai-keys.ts (server-only), separate from the model catalog, so
+// they need their own mock — the catalog is importable from client components
+// and the keys deliberately are not.
+vi.mock("@/shared/config/ai-keys", () => ({
+  getApiKey: (provider: string) => (provider === "nokey" ? "" : "test-key"),
+}));
+
 vi.mock("@/shared/config/ai-models", () => ({
   getModelProvider: (model: string) => model.split(":")[0],
-  getApiKey: (provider: string) => (provider === "nokey" ? "" : "test-key"),
   resolveModelId: (model: string) => model,
   AI_TASKS: {
     "wsi-question": {

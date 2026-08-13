@@ -1,5 +1,3 @@
-import { log } from "@/shared/utils/logging";
-
 // Centralized AI model configuration
 // This file defines all available AI models and their status across the application
 
@@ -286,16 +284,23 @@ export interface AITaskProfile {
 
 // Groq's Llama 4 Scout led this chain until Groq removed it from their catalog;
 // the API returns `model_not_found`, so every vision call had been failing over
-// to Gemini regardless. Groq now serves no vision model on our account, which
-// leaves both slots on Google — there is NO provider diversity here. A Google
-// outage takes vision down; the deliberate escape hatch is passing Claude via
-// modelOverride, which is why it stays in VISION_CAPABLE_MODELS.
+// to Gemini regardless. Groq serves no vision model on our account at all now.
+//
+// Cerebras' gemma-4-31b sits at slot 2 to keep a SECOND PROVIDER in the chain —
+// with Google in slots 1 and 3, a Google outage would otherwise take vision down
+// completely. It refuses remote image URLs and needs the bytes inlined as a data
+// URI; callVisionModel handles that.
 //
 // Measured on a real R2 histology image (Aug 2026): 3.5-flash-lite 1.9s,
-// 2.5-flash-lite 2.8s. Both saw the image and returned parseable JSON with no
-// thinking tokens. Only the "lite" line behaves this way — see callGoogle.
+// gemma-4-31b 1.2s, 2.5-flash-lite 2.8s. All three saw the image and returned
+// parseable JSON with no thinking tokens. Among Gemini only the "lite" line
+// behaves this way — see callGoogle.
+//
+// Claude stays in VISION_CAPABLE_MODELS but out of the chain: it is paid, and
+// automatic fallback must never cascade into a paid model.
 export const VISION_FALLBACK_CHAIN: string[] = [
   "gemini-3.5-flash-lite", // Google — 1.9s
+  "gemma-4-31b", // Cerebras — 1.2s, the non-Google leg
   "gemini-2.5-flash-lite", // Google — 2.8s
 ];
 
@@ -508,38 +513,6 @@ export function isModelAvailable(modelId: string): boolean {
 // Default model selection
 export const DEFAULT_MODEL = "gemini-2.5-flash-lite";
 
-// API key configuration - All keys must be provided via environment variables
-export const API_KEYS = {
-  groq: process.env.NEXT_PUBLIC_GROQ_API_KEY || process.env.GROQ_API_KEY || "",
-  cerebras: process.env.NEXT_PUBLIC_CEREBRAS_API_KEY || process.env.CEREBRAS_API_KEY || "",
-  google:
-    process.env.NEXT_PUBLIC_GOOGLE_AI_STUDIO_API_KEY ||
-    process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
-    "",
-  claude: process.env.NEXT_PUBLIC_CLAUDE_API_KEY || "",
-  mistral: process.env.NEXT_PUBLIC_MISTRAL_API_KEY || "",
-};
-
-// Get API key for provider
-export function getApiKey(provider: string): string {
-  const key = API_KEYS[provider as keyof typeof API_KEYS];
-  if (!key) {
-    log.warn(
-      `⚠️ No API key found for provider: ${provider}. Please set NEXT_PUBLIC_${provider.toUpperCase()}_API_KEY in your environment variables.`
-    );
-  }
-  return key || "";
-}
-
-// Check if API key is available for provider
-export function hasApiKey(provider: string): boolean {
-  const key = API_KEYS[provider as keyof typeof API_KEYS];
-  return !!(key && key.trim() !== "");
-}
-
-// Get all available providers (those with API keys)
-export function getAvailableProviders(): string[] {
-  return Object.entries(API_KEYS)
-    .filter(([, key]) => key && key.trim() !== "")
-    .map(([provider]) => provider);
-}
+// API keys moved to ./ai-keys.ts, which is `server-only`. This module is
+// imported by admin CLIENT components for ACTIVE_AI_MODELS, so keys living
+// here were one client-side getApiKey() call away from a public bundle.

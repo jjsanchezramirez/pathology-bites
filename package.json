@@ -86,6 +86,7 @@
     "remark-directive": "^4.0.0",
     "remark-gfm": "^4.0.1",
     "resend": "^4.7.0",
+    "server-only": "^0.0.1",
     "sharp": "^0.34.3",
     "sonner": "^2.0.3",
     "swr": "^2.3.8",

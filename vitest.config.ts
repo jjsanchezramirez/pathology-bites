@@ -33,6 +33,10 @@ export default defineConfig({
     alias: {
       "@": path.resolve(__dirname, "./src"),
       "@tests": path.resolve(__dirname, "./tests"),
+      // `server-only` throws when resolved through the client condition, which
+      // is the point of it — but Vitest's happy-dom environment trips that
+      // guard on import, failing whole test files before they run. See the stub.
+      "server-only": path.resolve(__dirname, "./tests/stubs/server-only.ts"),
     },
   },
 });
