@@ -10,6 +10,7 @@
 
 import { callClaudeText } from "@/shared/services/claude-api";
 import { callOpenAICompatText } from "@/shared/services/openai-compat";
+import { fetchWithTimeout } from "@/shared/utils/fetch-with-timeout";
 
 export interface TokenUsage {
   prompt_tokens: number;
@@ -39,33 +40,6 @@ const DEFAULTS = {
   temperature: 0.7,
   timeoutMs: 20_000,
 };
-
-/**
- * Bound a raw fetch by a timeout, unless the caller supplied its own signal.
- * Google and Mistral previously ran unbounded, which is what let a hung provider
- * eat the whole serverless budget instead of failing over.
- */
-async function fetchWithTimeout(
-  url: string,
-  init: RequestInit,
-  timeoutMs: number,
-  signal: AbortSignal | undefined,
-  providerLabel: string
-): Promise<Response> {
-  if (signal) return fetch(url, { ...init, signal });
-  const controller = new AbortController();
-  const timer = setTimeout(() => controller.abort(), timeoutMs);
-  try {
-    return await fetch(url, { ...init, signal: controller.signal });
-  } catch (err) {
-    if (controller.signal.aborted) {
-      throw new Error(`${providerLabel} API timeout after ${Math.round(timeoutMs / 1000)}s`);
-    }
-    throw err;
-  } finally {
-    clearTimeout(timer);
-  }
-}
 
 /**
  * Gemini "thinking" tokens are billed against `maxOutputTokens`, so a thinking
@@ -122,7 +96,7 @@ async function callGoogle(
       },
       timeoutMs,
       signal,
-      "Google"
+      "Google API"
     );
 
   const askedForNoThinking = shouldDisableThinking(model);
@@ -190,7 +164,7 @@ async function callMistral(
     },
     timeoutMs,
     signal,
-    "Mistral"
+    "Mistral API"
   );
 
   if (!response.ok) {
@@ -358,7 +332,7 @@ export async function callVisionModel(
         },
         timeoutMs,
         signal,
-        "Google"
+        "Google API"
       );
       if (!response.ok) {
         throw new Error(`Google vision API error: ${response.status} ${response.statusText}`);

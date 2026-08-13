@@ -2,6 +2,27 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { getUserIdFromHeaders } from "@/shared/utils/auth/auth-helpers";
 import { log } from "@/shared/utils/logging";
+import { fetchWithTimeout } from "@/shared/utils/fetch-with-timeout";
+
+/**
+ * Transcription is slow — a lesson's audio is minutes long and Whisper reads all
+ * of it. Without this the route inherits the platform default, which is shorter
+ * than the work takes.
+ */
+export const maxDuration = 60;
+
+/**
+ * Both outbound calls are bounded, and both budgets fit inside maxDuration with
+ * room for the Supabase round-trips either side.
+ *
+ * This route is exempt from the shared AI dispatcher — audio→text is a different
+ * modality, not chat-completions — but the exemption was only ever about the
+ * dispatcher, not about timeouts. Both fetches here ran unbounded, which is the
+ * exact shape that made a hung provider eat the whole invocation and return a
+ * generic 500 on the WSI path.
+ */
+const AUDIO_FETCH_TIMEOUT_MS = 15_000;
+const WHISPER_TIMEOUT_MS = 40_000;
 
 /**
  * @swagger
@@ -62,7 +83,13 @@ export async function POST(request: NextRequest) {
     }
 
     // Fetch the audio bytes and send to Whisper for word-level timestamps.
-    const audioResp = await fetch(audio.url);
+    const audioResp = await fetchWithTimeout(
+      audio.url,
+      {},
+      AUDIO_FETCH_TIMEOUT_MS,
+      undefined,
+      "Audio fetch"
+    );
     if (!audioResp.ok) {
       return NextResponse.json(
         { error: `Failed to fetch audio (${audioResp.status}).` },
@@ -77,11 +104,17 @@ export async function POST(request: NextRequest) {
     form.append("response_format", "verbose_json");
     form.append("timestamp_granularities[]", "word");
 
-    const whisperResp = await fetch("https://api.openai.com/v1/audio/transcriptions", {
-      method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}` },
-      body: form,
-    });
+    const whisperResp = await fetchWithTimeout(
+      "https://api.openai.com/v1/audio/transcriptions",
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}` },
+        body: form,
+      },
+      WHISPER_TIMEOUT_MS,
+      undefined,
+      "Whisper"
+    );
     if (!whisperResp.ok) {
       const detail = await whisperResp.text().catch(() => "");
       log.error("Whisper alignment failed:", whisperResp.status, detail);

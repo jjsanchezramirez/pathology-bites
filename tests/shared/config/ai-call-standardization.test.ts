@@ -62,6 +62,21 @@ describe("AI call standardization", () => {
     // (audio → text), not served by the chat-completions dispatcher.
     const unexpected = offenders.filter((o) => !o.includes("admin/audio/align"));
 
+    // The exemption is about the DISPATCHER, not about timeouts. That
+    // distinction got lost once already: both of align's outbound fetches ran
+    // unbounded, which is the same shape that let a hung provider eat a whole
+    // invocation and return a generic 500 on the WSI path. An exempt route
+    // still has to bound its calls.
+    const alignSource = readFileSync(join(API_ROOT, "admin/audio/align/route.ts"), "utf8");
+    expect(
+      alignSource.includes("fetchWithTimeout"),
+      "audio/align is exempt from the dispatcher but must still bound its fetches"
+    ).toBe(true);
+    expect(
+      /(?<!fetchWith)\bfetch\(/.test(alignSource),
+      "audio/align has a bare fetch() — every outbound call here needs a deadline"
+    ).toBe(false);
+
     expect(unexpected, `Route(s) calling a provider directly:\n${unexpected.join("\n")}`).toEqual(
       []
     );
