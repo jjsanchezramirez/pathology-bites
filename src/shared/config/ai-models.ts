@@ -310,7 +310,11 @@ export const AI_TASKS = {
   /** User-facing WSI question generation. maxDuration 45s. */
   "wsi-question": {
     chain: TEXT_FALLBACK_CHAIN,
-    maxTokens: 2000, // ~970 observed completion + headroom
+    // The prompt caps explanations at 2 sentences; observed completions dropped
+    // to ~700-800, so 1600 keeps ~2x headroom. Groq bills its daily cap against
+    // the RESERVED figure, so this is a 20% cut in daily-cap burn as well as a
+    // latency win. Raise it back if anything starts truncating.
+    maxTokens: 1600,
     temperature: 0.7,
     timeoutMs: 12_000,
     deadlineMs: 35_000,

@@ -45,12 +45,15 @@ CRITICAL INSTRUCTIONS:
 Requirements:
 1. Create a clinically relevant scenario-based question
 2. Include 5 answer choices with one clearly correct answer
-3. Provide detailed explanations for each choice that include BOTH clinical correlation AND histological features
+3. Provide an explanation for each choice covering BOTH clinical correlation AND histological features
 4. Ensure the question tests understanding, not just memorization
 5. Use appropriate medical terminology
 6. Make the question challenging but fair
 7. Suggest 2-4 relevant medical/pathology tags that categorize this question
 8. Answer explanations must describe key histologic features and their clinical significance
+9. Keep each answer explanation to AT MOST 2 sentences, and the stem under 120 words. Be dense,
+   not verbose — every clause should carry diagnostic information. Output length is the single
+   biggest driver of how long the reader waits for the question to appear.
 
 Return the response in this exact JSON format:
 {

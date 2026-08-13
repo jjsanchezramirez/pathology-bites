@@ -73,6 +73,23 @@ interface UseWSIQuestionGeneratorReturn {
   isWSIDataLoading: boolean;
   isReady: boolean;
   wsiData: VirtualSlide[] | null;
+  /**
+   * The slide chosen for the question currently being generated, published as
+   * soon as it is picked — before the model is called.
+   *
+   * The slide is known ~instantly but its tiles take seconds to load, and the
+   * question text takes seconds to generate. Exposing the slide early lets the
+   * viewer start fetching tiles during generation instead of after it, so the
+   * two waits overlap and the reader can begin looking at histology while the
+   * question is still being written.
+   */
+  pendingSlide: VirtualSlide | null;
+  /**
+   * Warm a question for `category` without consuming it. Call when the user
+   * changes category: the pending prefetch is keyed by category, so switching
+   * otherwise throws it away and the next question pays full latency.
+   */
+  startPrefetch: (category?: string) => void;
 }
 
 /**
@@ -83,6 +100,7 @@ interface UseWSIQuestionGeneratorReturn {
 export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
   const [isGenerating, setIsGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [pendingSlide, setPendingSlide] = useState<VirtualSlide | null>(null);
   const { wsiData, isLoading: isLoadingWSI, error: wsiError } = useClientWSIData();
 
   const clearError = useCallback(() => {
@@ -128,7 +146,10 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
    * the request the user is waiting on and for the background prefetch.
    */
   const produceQuestion = useCallback(
-    async (category?: string): Promise<GeneratedQuestion> => {
+    async (
+      category?: string,
+      onSlideSelected?: (wsi: VirtualSlide) => void
+    ): Promise<GeneratedQuestion> => {
       const startTime = Date.now();
 
       try {
@@ -234,6 +255,11 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
 
         log.debug(`[WSI Generator] Selected WSI - ${selectedWSI.diagnosis}`);
 
+        // Publish the slide before the model call so the viewer can start
+        // fetching tiles during generation rather than after it. Background
+        // prefetches pass no callback — they must stay invisible.
+        onSlideSelected?.(selectedWSI);
+
         // Step 2: Generate question using main generate route
         log.debug("[WSI Generator] Step 2 - Using main generate route...");
 
@@ -336,10 +362,10 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
             question = await ready.promise;
             log.debug("[WSI Generator] Served from prefetch");
           } catch {
-            question = await produceQuestion(category);
+            question = await produceQuestion(category, setPendingSlide);
           }
         } else {
-          question = await produceQuestion(category);
+          question = await produceQuestion(category, setPendingSlide);
         }
         // Line up the next one while the reader works through this one.
         startPrefetch(category);
@@ -350,6 +376,8 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         throw err;
       } finally {
         setIsGenerating(false);
+        // The real question carries its own slide from here on.
+        setPendingSlide(null);
       }
     },
     [produceQuestion, startPrefetch]
@@ -363,5 +391,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
     isWSIDataLoading: isLoadingWSI,
     isReady: !isLoadingWSI && !wsiError && wsiData !== null,
     wsiData,
+    pendingSlide,
+    startPrefetch,
   };
 }

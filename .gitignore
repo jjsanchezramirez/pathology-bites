@@ -82,3 +82,6 @@ public/data/
 # dev/supabase/migrations/ (gitignored) alongside dev/code/scripts/migrations/.
 # Keeping this ignored stops one being committed to the repo root by accident.
 supabase/migrations/
+
+# Wrangler local state (R2/D1 simulator cache)
+.wrangler/
