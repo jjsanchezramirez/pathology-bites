@@ -194,14 +194,22 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     tpmLimit: 500000,
   },
 
-  // Anthropic Claude models
+  // Anthropic Claude — the paid escape hatch. Never selected by automatic
+  // fallback (see VISION_FALLBACK_CHAIN); reachable only via modelOverride.
+  //
+  // claude-sonnet-4-20250514 sat here until 2026-08-13 and had been RETIRED by
+  // Anthropic since 2026-06-15 — the API answered `not_found_error`, so the one
+  // non-Google vision option in the catalog did not exist. Verified on a real
+  // histology image: opus-5 4.2s, and the only one of the three current models
+  // to read the atrophic/regressed germinal centre correctly (sonnet-5 called
+  // the organ spleen; haiku-4-5 was vaguer but 10x cheaper at ~$0.002/image).
   {
-    id: "claude-sonnet-4-20250514",
-    name: "Claude Sonnet 4",
+    id: "claude-opus-5",
+    name: "Claude Opus 5",
     provider: "claude",
     available: true,
-    description: "Excellent vision, spatial reasoning, and structured output",
-    contextLength: "200K tokens",
+    description: "Paid escape hatch - best vision read, high-res tier (~$0.02/image)",
+    contextLength: "1M tokens",
     tpmLimit: 200000,
   },
 ];
@@ -306,10 +314,7 @@ export const VISION_FALLBACK_CHAIN: string[] = [
 
 // Vision-capable model IDs (includes Claude for modelOverride even though
 // Claude is excluded from VISION_FALLBACK_CHAIN's automatic ordering).
-export const VISION_CAPABLE_MODELS = new Set<string>([
-  ...VISION_FALLBACK_CHAIN,
-  "claude-sonnet-4-20250514",
-]);
+export const VISION_CAPABLE_MODELS = new Set<string>([...VISION_FALLBACK_CHAIN, "claude-opus-5"]);
 
 export const AI_TASKS = {
   /** User-facing WSI question generation. maxDuration 45s. */
@@ -417,14 +422,14 @@ export const DISABLED_AI_MODELS: AIModel[] = [
     description: "Meta Llama API retired July 2026 — remapped to Groq",
   },
 
-  // Claude models (legacy — superseded by active claude-sonnet-4)
+  // Claude models retired by Anthropic — the API answers `not_found_error`.
   {
     id: "claude-3-5-sonnet-20241022",
     name: "Claude 3.5 Sonnet",
     provider: "claude",
     available: false,
     deprecated: true,
-    description: "Anthropic Claude 3.5 Sonnet (superseded by Claude Sonnet 4)",
+    description: "Retired by Anthropic (404)",
   },
 
   // Mistral models (disabled due to issues)

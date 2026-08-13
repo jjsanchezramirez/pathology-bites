@@ -18,6 +18,17 @@ export type ClaudeContentBlock =
 export interface ClaudeCallOptions {
   system?: string;
   maxTokens?: number;
+  /**
+   * ACCEPTED FOR CALLER SYMMETRY, DELIBERATELY NOT SENT.
+   *
+   * Anthropic removed the sampling parameters: `temperature` on any current
+   * model (Opus 4.7 and later, Opus 5, Sonnet 5, Fable 5) is rejected outright —
+   * `400 invalid_request_error: "temperature is deprecated for this model"`.
+   *
+   * The shared dispatcher passes a temperature for every provider, so dropping
+   * it from the signature would mean special-casing Claude at each call site.
+   * Swallowing it here keeps one call shape and cannot 400.
+   */
   temperature?: number;
   timeoutMs?: number;
 }
@@ -35,7 +46,7 @@ export interface ClaudeCallResult {
  * Call the Anthropic Messages API.
  *
  * @param messages  Conversation messages (text or multimodal)
- * @param model     Model ID, e.g. "claude-sonnet-4-20250514"
+ * @param model     Model ID, e.g. "claude-opus-5"
  * @param apiKey    Anthropic API key
  * @param options   Optional system prompt, max tokens, temperature, timeout
  */
@@ -45,7 +56,8 @@ export async function callClaude(
   apiKey: string,
   options: ClaudeCallOptions = {}
 ): Promise<ClaudeCallResult> {
-  const { system, maxTokens = 4096, temperature = 0.3, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
+  // `temperature` is intentionally not destructured — see ClaudeCallOptions.
+  const { system, maxTokens = 4096, timeoutMs = DEFAULT_TIMEOUT_MS } = options;
 
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
@@ -56,7 +68,6 @@ export async function callClaude(
       model,
       messages,
       max_tokens: maxTokens,
-      temperature,
     };
     if (system) body.system = system;
 
