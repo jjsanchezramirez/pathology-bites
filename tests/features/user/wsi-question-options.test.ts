@@ -11,7 +11,9 @@ import { describe, it, expect } from "vitest";
 
 import {
   buildImmunoOptions,
+  candidateAlterations,
   hasUsableMolecularProfile,
+  leadingAlteration,
   parseImmunoProfile,
   sanitizeHistory,
 } from "@/features/user/wsi-questions/utils/wsi-question-options";
@@ -164,5 +166,94 @@ describe("profiles from the reconciled matrix", () => {
     expect(built.correct).not.toContain("S100-");
     expect(built.options).toHaveLength(5);
     expect(new Set(built.options).size).toBe(5);
+  });
+});
+
+describe("leadingAlteration", () => {
+  it("keeps a karyotype whole", () => {
+    // Splitting on ";" cut nomenclature in half — "Fusions: YWHAE-NUTM2A/B
+    // fusions (t(10;17)(q22;p13))" became "...(t(10", and broken nomenclature
+    // offered as distractor material teaches the writer to emit more of it.
+    expect(leadingAlteration("Fusions: YWHAE-NUTM2A/B fusions (t(10;17)(q22;p13)); others")).toBe(
+      "Fusions: YWHAE-NUTM2A/B fusions (t(10;17)(q22;p13))"
+    );
+  });
+
+  it("keeps a karyotype and its fusion together", () => {
+    // Standard nomenclature separates them with the same semicolon.
+    expect(leadingAlteration("t(8;21)(q22;q22); RUNX1::RUNX1T1 (defining); more")).toBe(
+      "t(8;21)(q22;q22); RUNX1::RUNX1T1"
+    );
+  });
+
+  it("drops a significance annotation but never real nomenclature", () => {
+    expect(leadingAlteration("ETV6::NTRK3 fusion (defining)")).toBe("ETV6::NTRK3 fusion");
+    expect(leadingAlteration("MYC amplification (seen in 60% of cases)")).toBe("MYC amplification");
+    // The trailing bracket here IS the alteration.
+    expect(leadingAlteration("t(10;17)(q22;p13)")).toBe("t(10;17)(q22;p13)");
+  });
+
+  it("strips corpus bullets and method prefixes", () => {
+    expect(leadingAlteration("* Often has loss of 16q")).toBe("Often has loss of 16q");
+    expect(leadingAlteration("FISH: 13q14 deletions")).toBe("13q14 deletions");
+  });
+});
+
+describe("candidateAlterations", () => {
+  const pool = [
+    {
+      category: "Breast pathology",
+      diagnosis: "Secretory carcinoma",
+      source_metadata: { molecular_profile: "ETV6::NTRK3 fusion (defining)" },
+    },
+    {
+      category: "Breast pathology",
+      diagnosis: "Atypical vascular lesion",
+      source_metadata: { molecular_profile: "No MYC overexpression/amplification" },
+    },
+    {
+      category: "Breast pathology",
+      diagnosis: "Radial scar",
+      source_metadata: { molecular_profile: "Approximately 2/3 rd will have a PIK3CA mutation" },
+    },
+    {
+      category: "Breast pathology",
+      diagnosis: "Graves-like",
+      source_metadata: { molecular_profile: "Polymorphisms in HLA-DR3 and CTLA-4 gene." },
+    },
+    {
+      category: "Hematopathology",
+      diagnosis: "AML",
+      source_metadata: { molecular_profile: "t(8;21)(q22;q22); RUNX1::RUNX1T1" },
+    },
+  ];
+
+  it("offers only same-chapter alterations, attributed to their entity", () => {
+    const out = candidateAlterations(pool, {
+      category: "Breast pathology",
+      diagnosis: "Mucinous carcinoma",
+    });
+    expect(out).toContain("ETV6::NTRK3 fusion (Secretory carcinoma)");
+    // A breast question offering a leukaemia translocation marks the on-topic
+    // option as the answer.
+    expect(out.join(" ")).not.toContain("RUNX1");
+  });
+
+  it("refuses negations, prose and associations", () => {
+    const out = candidateAlterations(pool, {
+      category: "Breast pathology",
+      diagnosis: "Mucinous carcinoma",
+    }).join(" ");
+    expect(out).not.toMatch(/No MYC/i);
+    expect(out).not.toMatch(/Approximately/i);
+    expect(out).not.toMatch(/Polymorphisms/i);
+  });
+
+  it("never offers the case's own alteration", () => {
+    const out = candidateAlterations(pool, {
+      category: "Breast pathology",
+      diagnosis: "Secretory carcinoma",
+    });
+    expect(out.join(" ")).not.toContain("ETV6::NTRK3");
   });
 });

@@ -237,7 +237,12 @@ function caseHeader(slide: VirtualSlide): string {
     .join("\n");
 }
 
-export function buildWsiQuestionPrompt(slide: VirtualSlide, kind: WsiQuestionKind): string {
+export function buildWsiQuestionPrompt(
+  slide: VirtualSlide,
+  kind: WsiQuestionKind,
+  /** Real alterations from the same chapter, offered as distractor material. */
+  candidateAlterations: string[] = []
+): string {
   if (kind === "ihc") {
     // Options are built here, not requested in prose: five over one marker set,
     // differing only in signs. Asking for that shape was the most-violated
@@ -301,8 +306,22 @@ No immunophenotype is recorded — build the stem from the clinical presentation
   RUNX1::RUNX1T1"). Copy what is given: do NOT add codon numbers, variant coordinates or
   percentages that are not in the text. A frequency like "(seen in ~57%)" is a prevalence, not a
   variant — reading it as one produced a fabricated "MAP2K1 p.K57N".
-- The four distractors must be real alterations defining other entities in the same
-  differential — never invented fusions.
+- Each option is the alteration and nothing else: "t(11;14)(q13;q32); IGH::CCND1". No commentary,
+  no "— seen in mantle cell lymphoma", no "— recurrent but not pathognomonic". That belongs in
+  the explanation. An option carrying a comment the others lack is pickable without the slide.
+- The four distractors must be alterations of entities in THIS case's differential — same organ,
+  same chapter, the tumours a pathologist would actually be deciding between. Stock
+  haematolymphoid translocations (RUNX1::RUNX1T1, IGH::BCL2, IGH::CCND1, ETV6::RUNX1) under a
+  breast or soft-tissue case are not distractors; nobody weighing a breast mass considers them,
+  and they mark the odd option out as the answer. Never invent a fusion.${
+    candidateAlterations.length
+      ? `
+
+REAL ALTERATIONS FROM THIS CHAPTER — draw your four distractors from here. Each is another
+entity's defining alteration, named in brackets; drop the brackets when you write the option.
+${candidateAlterations.map((a) => `  ${a}`).join("\n")}`
+      : ""
+  }
 - End the stem with "Which genetic alteration is most characteristic of this entity?"
 
 ${RULES}

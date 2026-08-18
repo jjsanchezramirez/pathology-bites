@@ -139,6 +139,49 @@ describe("enforceQuestionContract", () => {
     );
   });
 
+  it("rejects options where only some carry a trailing comment", () => {
+    // Real failure: four distractors read "— seen in <entity>" and the key read
+    // "— recurrent but not pathognomonic". The odd phrasing IS the answer, and
+    // the attribution belongs in the explanation shown after committing.
+    const q = question("A patient has a breast mass. Which alteration is characteristic?", [
+      "OAZ1::CSNK1G2 fusion — recurrent but not pathognomonic",
+      "t(8;21)(q22;q22); RUNX1::RUNX1T1 — seen in acute myeloid leukemia",
+      "t(14;18)(q32;q21); IGH::BCL2 — seen in follicular lymphoma",
+      "t(11;14)(q13;q32); IGH::CCND1 — seen in mantle cell lymphoma",
+      "t(12;21)(p13;q22); ETV6::RUNX1 — seen in B-lymphoblastic leukemia",
+    ]);
+    expect(() => enforceQuestionContract(q, "Mucinous carcinoma of the breast")).toThrow(
+      /trailing comment/i
+    );
+  });
+
+  it("rejects a comment even when every option carries one", () => {
+    // Consistency is not enough: the gloss still names the entity each
+    // alteration belongs to, which is the explanation's job, and it was where
+    // the odd-one-out phrasing crept in.
+    const q = question("A patient has a mass. Which alteration is characteristic?", [
+      "OAZ1::CSNK1G2 fusion — seen in mucinous carcinoma",
+      "ETV6::NTRK3 fusion — seen in secretory carcinoma",
+      "CRTC1::MAML2 fusion — seen in mucoepidermoid carcinoma",
+      "MYB::NFIB fusion — seen in adenoid cystic carcinoma",
+      "PIK3CA H1047R — seen in invasive ductal carcinoma",
+    ]);
+    expect(() => enforceQuestionContract(q, "Mucinous carcinoma of the breast")).toThrow(
+      /trailing comment/i
+    );
+  });
+
+  it("accepts bare alterations, which is the shape all five should share", () => {
+    const q = question("A patient has a breast mass. Which alteration is characteristic?", [
+      "OAZ1::CSNK1G2 fusion",
+      "ETV6::NTRK3 fusion",
+      "CRTC1::MAML2 fusion",
+      "MYB::NFIB fusion",
+      "PIK3CA H1047R mutation",
+    ]);
+    expect(() => enforceQuestionContract(q, "Mucinous carcinoma of the breast")).not.toThrow();
+  });
+
   it("does not mistake a results report for narration", () => {
     // Widening the specimen subjects to catch "peripheral blood shows..." also
     // matched "Immunohistochemistry on the specimen shows CD20+..." on the word

@@ -207,3 +207,136 @@ export function hasUsableMolecularProfile(profile: string): boolean {
   if (text.length < 12) return false;
   return (text.match(GENE_LIKE) ?? []).some((symbol) => !NOT_A_GENE.has(symbol));
 }
+
+/**
+ * Real alterations from other entities in the same chapter, to offer as
+ * distractors.
+ *
+ * Left to itself the writer reached for stock haematolymphoid translocations —
+ * RUNX1::RUNX1T1 and IGH::BCL2 under a breast carcinoma — which nobody weighing
+ * a breast mass would consider, so the on-topic option was the answer.
+ *
+ * The candidates come from the corpus rather than a curated list, because the
+ * corpus already holds each entity's defining alteration and we key answers on
+ * it. That makes every candidate real, attributable to a named entity, and from
+ * the differential the reader is actually in. Supplying material beats policing
+ * the choice: it cannot reject a question, and it costs nothing at runtime.
+ */
+/**
+ * The first alteration in a free-text profile, kept intact.
+ *
+ * Splitting on ";" alone cuts through nomenclature: "Fusions: YWHAE-NUTM2A/B
+ * fusions (t(10;17)(q22;p13))" became "Fusions: YWHAE-NUTM2A/B fusions (t(10",
+ * and a truncated karyotype offered as distractor material teaches the writer to
+ * emit broken ones. Separators only count at bracket depth zero.
+ */
+export function leadingAlteration(profile: string): string {
+  const text = (profile || "")
+    // Corpus prose carries markdown bullets and method prefixes that are not part
+    // of the alteration: "* Often has loss of 16q", "FISH: 13q14 deletions".
+    .replace(/^\s*[*\-\u2022]+\s*/, "")
+    .replace(/^(?:FISH|PCR|NGS|IHC|Sequencing)\s*:\s*/i, "")
+    .trim();
+  let depth = 0;
+  let cut = text.length;
+
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (ch === "(" || ch === "[") depth++;
+    else if (ch === ")" || ch === "]") depth = Math.max(0, depth - 1);
+    else if ((ch === ";" || ch === "\n") && depth === 0) {
+      cut = i;
+      break;
+    }
+  }
+
+  let alteration = text.slice(0, cut).trim();
+
+  // Standard cytogenetic nomenclature puts the karyotype and its fusion either
+  // side of a semicolon — "t(8;21)(q22;q22); RUNX1::RUNX1T1" is ONE alteration,
+  // and cutting at the separator throws away the half that names the genes.
+  const remainder = text.slice(cut + 1).trim();
+  const fusion = remainder.match(/^[A-Z][A-Z0-9-]*::[A-Z][A-Z0-9-]*/);
+  if (fusion && /^(?:t|inv|del|dup|der)\(/i.test(alteration)) {
+    alteration = `${alteration}; ${fusion[0]}`;
+  }
+
+  // An unclosed bracket means the clause was cut short upstream; drop the tail
+  // rather than emit half a karyotype.
+  let open = 0;
+  let lastBalanced = alteration.length;
+  for (let i = 0; i < alteration.length; i++) {
+    const ch = alteration[i];
+    if (ch === "(" || ch === "[") open++;
+    else if (ch === ")" || ch === "]") open = Math.max(0, open - 1);
+    if (open === 0) lastBalanced = i + 1;
+  }
+  if (open > 0) alteration = alteration.slice(0, lastBalanced).trim();
+
+  // Trailing significance or prevalence: "(defining)", "(seen in 60% of cases)".
+  // Only these words — a trailing bracket is part of the nomenclature in
+  // "t(10;17)(q22;p13)" and must survive.
+  return alteration
+    .replace(
+      /\s*\((?:defining|diagnostic|characteristic|hallmark|recurrent|common|frequent|rare|seen|found|present|reported|in|~|\d+\s*%)\b[^)]*\)\s*$/i,
+      ""
+    )
+    .trim();
+}
+
+/** Susceptibility and risk associations are not tumour alterations. */
+const ASSOCIATION = /\b(polymorphism|susceptibilit|predispos|risk allele|associated with)\b/i;
+
+/**
+ * A distractor has to read like an answer. Corpus profiles are free text, so
+ * plenty of them open with prose — "Approximately 2/3 rd will have a PIK3CA
+ * mutation", "No MYC overexpression" — and an option in that voice is pickable
+ * on shape alone, quite apart from being wrong when it is a negation.
+ */
+const STARTS_WITH_ALTERATION =
+  /^(?:[A-Z][A-Z0-9-]{1,}|t\(|inv\(|del\(|dup\(|der\(|trisomy|monosomy|chromosome|\d{1,2}[pq])/;
+const OPENS_WITH_NEGATION = /^(?:no|not|lack|lacks|absence|absent|without)\b/i;
+
+export function candidateAlterations(
+  pool: { category?: string | null; diagnosis?: string | null; source_metadata?: unknown }[],
+  slide: { category?: string | null; diagnosis?: string | null },
+  max = 8
+): string[] {
+  const chapter = (slide.category || "").trim().toLowerCase();
+  if (!chapter) return [];
+
+  const seen = new Set<string>();
+  const out: string[] = [];
+
+  for (const other of pool) {
+    if ((other.category || "").trim().toLowerCase() !== chapter) continue;
+    if ((other.diagnosis || "") === (slide.diagnosis || "")) continue;
+
+    const profile = String(
+      (other.source_metadata as Record<string, unknown>)?.molecular_profile ?? ""
+    ).trim();
+    if (!profile) continue;
+
+    // Bracket-aware, so a karyotype survives intact (see leadingAlteration).
+    const alteration = leadingAlteration(profile);
+    if (alteration.length < 5 || alteration.length > 60) continue;
+    // Candidates are held to the same bar as an answer key: a real alteration,
+    // not an absence, a method, or a susceptibility association.
+    if (!hasUsableMolecularProfile(alteration) || ASSOCIATION.test(alteration)) continue;
+    if (OPENS_WITH_NEGATION.test(alteration) || !STARTS_WITH_ALTERATION.test(alteration)) continue;
+
+    // One per gene: four flavours of BRCA make one distractor, not four.
+    const gene =
+      alteration.match(/([A-Z][A-Z0-9-]{1,})::/)?.[1] ??
+      alteration.match(/\b(t\(\d+;\d+\)|inv\(\d+\)|trisomy \d+)/i)?.[1] ??
+      alteration.match(/\b[A-Z][A-Z0-9]{2,}\b/)?.[0] ??
+      alteration.toLowerCase();
+    if (seen.has(gene.toLowerCase())) continue;
+    seen.add(gene.toLowerCase());
+
+    out.push(`${alteration} (${other.diagnosis})`);
+    if (out.length >= max) break;
+  }
+
+  return out;
+}

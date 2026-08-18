@@ -324,6 +324,17 @@ export function enforceQuestionContract(
     }
   }
 
+  // Options carry the answer, not a gloss on it. A real set read four
+  // "— seen in <entity>" against one "— recurrent but not pathognomonic": the odd
+  // phrasing IS the key, and no slide is needed to spot it. Rejecting the comment
+  // outright is simpler than policing consistency, and the attribution belongs in
+  // the explanation, which the reader sees after committing.
+  const commentary = /\s(?:\u2014|\u2013|--)\s\S|\s-\s\w+(?:\s+\w+){2,}/;
+  const commented = options.find((o) => commentary.test(o.text || ""));
+  if (commented) {
+    throw new Error(`Option carries a trailing comment: "${(commented.text || "").slice(0, 70)}"`);
+  }
+
   // The stem must not contain the answer's own gene or marker symbols.
   //
   // "Molecular testing reveals a JAK2 mutation ... Which genetic alteration is

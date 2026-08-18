@@ -3,6 +3,7 @@ import { useClientWSIData } from "./use-client-wsi-data";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { getWSIHistoryTracker } from "@/features/user/wsi-questions/utils/wsi-history-tracker";
 import { slideMatchesCategory } from "@/features/user/wsi-questions/components/wsi-question-generator-utils";
+import { candidateAlterations } from "@/features/user/wsi-questions/utils/wsi-question-options";
 import { isViewerSupported } from "@/shared/utils/domain/repository";
 import {
   WSI_QUESTION_KINDS,
@@ -136,7 +137,11 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
    * re-request forever against an expired session).
    */
   const requestQuestion = useCallback(
-    async (wsi: VirtualSlide, kind: WsiQuestionKind): Promise<QuestionGenerationResponse> => {
+    async (
+      wsi: VirtualSlide,
+      kind: WsiQuestionKind,
+      candidates: string[] = []
+    ): Promise<QuestionGenerationResponse> => {
       // The prompt is built client-side per question kind. IHC and molecular
       // questions must be handed their correct answer (the case's own recorded
       // profile) rather than asked to invent one — a model asked to produce both
@@ -145,7 +150,10 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
       const response = await fetch("/api/user/wsi-questions/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ wsi, customPrompt: buildWsiQuestionPrompt(wsi, kind) }),
+        body: JSON.stringify({
+          wsi,
+          customPrompt: buildWsiQuestionPrompt(wsi, kind, candidates),
+        }),
       });
 
       if (!response.ok) {
@@ -368,7 +376,14 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
           const kind = chooseKind(selectedWSI, active);
           attempted.add(selectedWSI.id);
           try {
-            questionData = await requestQuestion(selectedWSI, kind);
+            // Molecular distractors are drawn from other entities in the same
+            // chapter rather than invented: supplying the material is what keeps a
+            // breast question from offering leukaemia translocations.
+            questionData = await requestQuestion(
+              selectedWSI,
+              kind,
+              kind === "molecular" ? candidateAlterations(finalWSIData, selectedWSI) : []
+            );
             if (!questionData.success || !questionData.question) {
               throw new Error("Failed to generate question");
             }
