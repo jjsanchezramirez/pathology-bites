@@ -51,12 +51,19 @@ interface WsiQuestionCase {
 }
 
 // WSI data URL - using the optimized PathPresenter cases.
+//
+// v=who-1 (Aug 2026): the object gained WHO-derived immuno/molecular profiles
+// for 429 cases and is now stored brotli again (6.3x, 1.23MB -> 197KB). It had
+// silently reverted to plain JSON at some earlier republish, which is the exact
+// trap this pipeline is prone to — verify with
+//   curl -sI -H 'Accept-Encoding: br' <url> | grep -i content-encoding
+// after every publish, not just the ones where compression is the point.
 // The `v` param is a cache-buster, not a real version: the object carries no
 // Cache-Control and the loader fetches with `cache: "force-cache"`, so a browser
 // holding the pre-tile-source copy would keep serving slides the viewer cannot
 // render. Bump it whenever a republish adds a field the code depends on.
 const WSI_DATA_URL =
-  "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json?v=haem-6";
+  "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json?v=who-1";
 
 // Convert the PathPresenter cases JSON into VirtualSlide entries, dropping any
 // without a usable remote URL.
