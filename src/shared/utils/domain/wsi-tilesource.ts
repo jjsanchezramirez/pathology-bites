@@ -71,24 +71,73 @@ const UA = "Mozilla/5.0 (compatible; PathologyBitesWSI/1.0)";
 
 // Bound metadata fetches so a dead/slow repo returns a prompt error instead of hanging the
 // route (and the same-origin connection behind it) for Node's ~120s default.
-async function fetchText(url: string): Promise<string> {
+const TIMEOUT_MS = 8000;
+
+/**
+ * One retry, because the common failure here is a cold server rather than a dead
+ * one. Several repos serve tiles from dynamic backends that spin up on first
+ * touch (MGH's pv-http, KiKoXP's slide host), and the first request after an idle
+ * period routinely exceeds the budget while the second returns immediately. A
+ * single 8s timeout turns that into "this slide is unavailable" and costs the
+ * reader a question that was already paid for with an AI call.
+ *
+ * Only transient conditions are retried — a timeout, a dropped connection, or a
+ * 5xx. A 404 means the slide is genuinely gone and asking twice just doubles
+ * the wait.
+ */
+async function fetchOnce(url: string): Promise<Response> {
   const res = await fetch(url, {
     headers: { "User-Agent": UA },
     redirect: "follow",
-    signal: AbortSignal.timeout(8000),
+    signal: AbortSignal.timeout(TIMEOUT_MS),
   });
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`);
-  return res.text();
+  if (!res.ok) {
+    const err = new Error(`${res.status} ${res.statusText} for ${url}`);
+    (err as Error & { transient?: boolean }).transient = res.status >= 500;
+    throw err;
+  }
+  return res;
+}
+
+function isTransient(e: unknown): boolean {
+  if ((e as { transient?: boolean } | null)?.transient) return true;
+  const name = (e as { name?: string } | null)?.name ?? "";
+  // AbortSignal.timeout rejects with TimeoutError; a dropped socket surfaces as
+  // a TypeError from fetch itself.
+  return name === "TimeoutError" || name === "AbortError" || e instanceof TypeError;
+}
+
+async function fetchWithRetry(url: string): Promise<Response> {
+  try {
+    return await fetchOnce(url);
+  } catch (e) {
+    if (!isTransient(e)) throw e;
+    return await fetchOnce(url);
+  }
+}
+
+async function fetchText(url: string): Promise<string> {
+  return (await fetchWithRetry(url)).text();
 }
 
 async function fetchJson(url: string): Promise<unknown> {
-  const res = await fetch(url, {
-    headers: { "User-Agent": UA },
-    redirect: "follow",
-    signal: AbortSignal.timeout(8000),
-  });
-  if (!res.ok) throw new Error(`${res.status} ${res.statusText} for ${url}`);
-  return res.json();
+  return (await fetchWithRetry(url)).json();
+}
+
+/**
+ * Raw exception text is not an explanation. "The operation was aborted due to
+ * timeout" is what AbortSignal says, not something a reader looking at a blank
+ * slide can act on.
+ */
+function describeFailure(e: unknown): string {
+  const name = (e as { name?: string } | null)?.name ?? "";
+  if (name === "TimeoutError" || name === "AbortError")
+    return "This slide's source repository didn't respond in time.";
+  if (e instanceof TypeError) return "Couldn't reach this slide's source repository.";
+  const msg = e instanceof Error ? e.message : "";
+  if (/^40[34] /.test(msg)) return "This slide is no longer available from its repository.";
+  if (/^5\d\d /.test(msg)) return "This slide's source repository returned an error.";
+  return msg || "resolver error";
 }
 
 function num(re: RegExp, s: string): number | null {
@@ -401,7 +450,7 @@ export async function resolveTileSource(
       return await resolveKikoxp(slideUrl);
     return { kind: "unsupported", reason: `No self-hosted tile-source resolver for ${host}` };
   } catch (e) {
-    return { kind: "unsupported", reason: e instanceof Error ? e.message : "resolver error" };
+    return { kind: "unsupported", reason: describeFailure(e) };
   }
 }
 

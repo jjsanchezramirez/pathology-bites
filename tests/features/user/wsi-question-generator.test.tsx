@@ -356,14 +356,24 @@ describe("WSIQuestionGenerator — viewer continuity", () => {
     expect(mountCount()).toBe(1);
   });
 
-  it("offers another question when the slide cannot be opened", async () => {
+  it("offers a free slide retry — and a new question — when the slide will not open", async () => {
     hook.value.pendingSlide = hook.question.wsi;
     render(<WSIQuestionGenerator />);
     await screen.findByText("What is the diagnosis shown in this slide?");
+    expect(hook.value.generateQuestion).toHaveBeenCalledTimes(1);
 
     fireEvent.click(screen.getByTestId("osd-fail"));
-
-    expect(await screen.findByText(/try another/i)).toBeTruthy();
+    expect(await screen.findByText(/tile host is unreachable/i)).toBeTruthy();
+    // Giving up on the slide entirely is offered too, as the expensive option.
     expect(screen.getByRole("button", { name: /another question/i })).toBeTruthy();
+
+    // Retrying the slide remounts the viewer against the same slide. It must not
+    // cost a generation: the model chain is the scarce resource, and the reader's
+    // question is still perfectly good.
+    fireEvent.click(screen.getByRole("button", { name: /retry slide/i }));
+    expect(mountCount()).toBe(2);
+    expect(hook.value.generateQuestion).toHaveBeenCalledTimes(1);
+    expect(screen.queryByText(/tile host is unreachable/i)).toBeNull();
+    expect(screen.getByText("What is the diagnosis shown in this slide?")).toBeTruthy();
   });
 });

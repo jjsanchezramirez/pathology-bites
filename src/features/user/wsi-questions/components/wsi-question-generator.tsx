@@ -141,6 +141,7 @@ export function WSIQuestionGenerator({
   const generateNewQuestion = useCallback(
     async (categoryOverride?: string) => {
       setSlideUnavailable(null);
+      setSlideRetry(0);
       // Scroll to the main content section (bottom of hero) immediately when button is clicked
       const contentSection = document.getElementById("wsi-content");
       if (contentSection) {
@@ -216,6 +217,17 @@ export function WSIQuestionGenerator({
   const [slideUnavailable, setSlideUnavailable] = useState<string | null>(null);
   const handleSlideUnavailable = useCallback((message: string) => {
     setSlideUnavailable(message);
+  }, []);
+
+  // Bumped to remount the viewer against the same slide. Retrying the SLIDE is
+  // free; asking for another question spends an AI call, and the model chain is
+  // the scarce resource here — so the cheap fix leads, and the question the
+  // reader already has is preserved. The remembered view is keyed by slide id,
+  // so a retry comes back to the same field.
+  const [slideRetry, setSlideRetry] = useState(0);
+  const retrySlide = useCallback(() => {
+    setSlideUnavailable(null);
+    setSlideRetry((n) => n + 1);
   }, []);
 
   // Callers that are just "generate another" (buttons, Try Again) must not pass
@@ -486,7 +498,7 @@ export function WSIQuestionGenerator({
   // transition. Keyed on the slide, so a NEW slide does remount.
   const viewer = (
     <WSIQuestionViewer
-      key={activeSlide.id}
+      key={`${activeSlide.id}:${slideRetry}`}
       slide={activeSlide}
       fillHeight={layout === "fullscreen"}
       onUnavailable={handleSlideUnavailable}
@@ -495,11 +507,16 @@ export function WSIQuestionGenerator({
 
   const unavailableNotice = slideUnavailable ? (
     <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
-      <span>{slideUnavailable} This question needs it, so try another.</span>
-      <Button size="sm" variant="outline" onClick={newQuestion} disabled={isGenerating}>
-        <RefreshCw className="mr-2 h-4 w-4" />
-        Another question
-      </Button>
+      <span>{slideUnavailable} The question needs it.</span>
+      <span className="flex items-center gap-2">
+        <Button size="sm" variant="outline" onClick={retrySlide}>
+          <RefreshCw className="mr-2 h-4 w-4" />
+          Retry slide
+        </Button>
+        <Button size="sm" variant="ghost" onClick={newQuestion} disabled={isGenerating}>
+          Another question
+        </Button>
+      </span>
     </div>
   ) : null;
 
