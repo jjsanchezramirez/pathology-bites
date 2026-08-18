@@ -14,7 +14,7 @@
  */
 
 import dynamic from "next/dynamic";
-import { useCallback } from "react";
+import { useCallback, useEffect } from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Loader2 } from "lucide-react";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
@@ -50,9 +50,19 @@ interface WSIQuestionViewerProps {
   slide: VirtualSlide;
   /** Fill the parent's height (full-screen layout) instead of a fixed inline box. */
   fillHeight?: boolean;
+  /**
+   * The slide could not be opened — a dead tile host, a pyramid that has gone
+   * away. The question is unanswerable without it, and the host is the only
+   * thing that can offer the reader another one.
+   */
+  onUnavailable?: (message: string) => void;
 }
 
-export function WSIQuestionViewer({ slide, fillHeight = false }: WSIQuestionViewerProps) {
+export function WSIQuestionViewer({
+  slide,
+  fillHeight = false,
+  onUnavailable,
+}: WSIQuestionViewerProps) {
   const rememberView = useCallback(
     (view: SavedView) => {
       remembered = { slideId: slide.id, view };
@@ -68,6 +78,14 @@ export function WSIQuestionViewer({ slide, fillHeight = false }: WSIQuestionView
   //     by host, exactly as it does on /tools/virtual-slides.
   // Requiring a manifest rejected the whole second group with "no tile source".
   const openable = Boolean(slide.tileSourceUrl) || isViewerSupported(slide.repository || "");
+
+  // Reported through the same channel whether the failure is structural (no
+  // openable source) or happens at load time, so the host handles one case.
+  // In an effect, not in the branch below: the host reacts by setting state, and
+  // doing that from inside another component's render is a React error.
+  useEffect(() => {
+    if (!openable) onUnavailable?.("This slide has no source the viewer can open.");
+  }, [openable, onUnavailable]);
 
   if (!openable) {
     return (
@@ -100,6 +118,7 @@ export function WSIQuestionViewer({ slide, fillHeight = false }: WSIQuestionView
         className="rounded-[18px]"
         initialView={remembered?.slideId === slide.id ? remembered.view : undefined}
         onViewChange={rememberView}
+        onError={onUnavailable}
         info={{
           // No `diagnosis` — the info panel would print the answer.
           category: slide.category,

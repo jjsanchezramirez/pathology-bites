@@ -9,12 +9,23 @@
  *   - the error state
  *   - the category filter derived from wsiData
  */
+import React from "react";
 import { describe, it, expect, beforeEach, vi } from "vitest";
 import { render, screen, fireEvent, waitFor } from "@testing-library/react";
 
+const osd = vi.hoisted(() => ({ mounts: 0 }));
+const mountCount = () => osd.mounts;
+
 const hook = vi.hoisted(() => {
   const question = {
-    wsi: { id: "mgh_1", slide_url: "https://example.org/slide", source_metadata: {} },
+    // A tile source, or the viewer short-circuits to its "cannot be opened" card
+    // and never mounts OSD at all.
+    wsi: {
+      id: "mgh_1",
+      slide_url: "https://example.org/slide",
+      tileSourceUrl: "https://example.org/slide.dzi",
+      source_metadata: {},
+    },
     question: {
       stem: "What is the diagnosis shown in this slide?",
       options: [
@@ -47,6 +58,7 @@ const hook = vi.hoisted(() => {
       clearError: vi.fn(),
       isWSIDataLoading: false,
       isReady: true,
+      pendingSlide: null as unknown,
       wsiData: [{ category: "Dermatopathology" }, { category: "Cytopathology" }],
     },
   };
@@ -58,6 +70,20 @@ vi.mock("@/shared/hooks/use-wsi-question-generator", () => ({
 vi.mock("@/shared/hooks/use-client-virtual-slides", () => ({ useAllVirtualSlides: () => [] }));
 vi.mock("@/shared/components/common/wsi-viewer", () => ({
   WSIViewer: () => <div data-testid="wsi-viewer" />,
+}));
+// Stands in for OpenSeadragon. Counts its own mounts, because the point of the
+// continuity test is that it is constructed exactly once.
+vi.mock("@/shared/components/common/self-hosted-osd-viewer", () => ({
+  SelfHostedOSDViewer: ({ onError }: { onError?: (m: string) => void }) => {
+    React.useEffect(() => {
+      osd.mounts++;
+    }, []);
+    return (
+      <div data-testid="osd-viewer">
+        <button data-testid="osd-fail" onClick={() => onError?.("Tile host is unreachable.")} />
+      </div>
+    );
+  },
 }));
 vi.mock("@/shared/components/common/fake-selection-highlight", () => ({
   FakeSelectionHighlight: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
@@ -78,6 +104,9 @@ beforeEach(() => {
   hook.value.error = null;
   hook.value.isWSIDataLoading = false;
   hook.value.isReady = true;
+  hook.value.pendingSlide = null;
+  hook.value.generateQuestion = vi.fn(async () => hook.question);
+  osd.mounts = 0;
   // The layout preference persists; without this, a full-screen test leaks into
   // whatever runs after it.
   window.localStorage.clear();
@@ -293,5 +322,48 @@ describe("WSIQuestionGenerator — overlapping requests", () => {
     });
     await waitFor(() => expect(screen.queryByText("STALE question")).toBeNull());
     expect(screen.getByText("SECOND question")).toBeTruthy();
+  });
+});
+
+/**
+ * The slide is shown during generation so its tiles load while the question is
+ * being written. That only pays off if the SAME viewer survives the question's
+ * arrival — the generating and answered states used to be separate branches
+ * rendering separate viewers, so OSD was torn down and every tile refetched at
+ * the moment the question appeared. Zooming while waiting made it obvious: the
+ * field you had navigated to snapped back and reloaded, which reads as a refetch.
+ */
+describe("WSIQuestionGenerator — viewer continuity", () => {
+  it("keeps one viewer instance across the generating → answered transition", async () => {
+    // Hold the question open so the component sits with a slide chosen and no
+    // question yet — the state the reader zooms around in while waiting.
+    let release: (q: unknown) => void = () => {};
+    hook.value.generateQuestion = vi.fn(
+      () => new Promise((resolve) => (release = resolve as (q: unknown) => void))
+    );
+    hook.value.pendingSlide = hook.question.wsi;
+
+    render(<WSIQuestionGenerator />);
+
+    const during = await screen.findByTestId("osd-viewer");
+    expect(screen.queryByText("What is the diagnosis shown in this slide?")).toBeNull();
+
+    release(hook.question);
+
+    expect(await screen.findByText("What is the diagnosis shown in this slide?")).toBeTruthy();
+    // Same DOM node, so React never unmounted it and OSD kept its viewport.
+    expect(screen.getByTestId("osd-viewer")).toBe(during);
+    expect(mountCount()).toBe(1);
+  });
+
+  it("offers another question when the slide cannot be opened", async () => {
+    hook.value.pendingSlide = hook.question.wsi;
+    render(<WSIQuestionGenerator />);
+    await screen.findByText("What is the diagnosis shown in this slide?");
+
+    fireEvent.click(screen.getByTestId("osd-fail"));
+
+    expect(await screen.findByText(/try another/i)).toBeTruthy();
+    expect(screen.getByRole("button", { name: /another question/i })).toBeTruthy();
   });
 });

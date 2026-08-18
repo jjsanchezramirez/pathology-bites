@@ -5,6 +5,7 @@ import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { AlertCircle, RefreshCw, Loader2, Highlighter } from "lucide-react";
 import { WSIQuestionViewer } from "./wsi-question-viewer";
+import { LoadingNote, OptionsSkeleton, StemSkeleton } from "./wsi-loading-parts";
 import { isViewerSupported } from "@/shared/utils/domain/repository";
 import { toast } from "@/shared/utils/ui/toast";
 import { WsiFullscreenShell } from "./wsi-fullscreen-shell";
@@ -28,7 +29,6 @@ import {
   extractCategories,
 } from "./wsi-question-generator-utils";
 import { WSIGeneratorSkeleton } from "./wsi-generator-skeleton";
-import { WSIGeneratingWithSlide } from "./wsi-generating-with-slide";
 import { WSIGeneratorControls } from "./wsi-generator-controls";
 import { WSISlideCredits } from "./wsi-slide-credits";
 import { WSIAnswerOptions } from "./wsi-answer-options";
@@ -140,6 +140,7 @@ export function WSIQuestionGenerator({
 
   const generateNewQuestion = useCallback(
     async (categoryOverride?: string) => {
+      setSlideUnavailable(null);
       // Scroll to the main content section (bottom of hero) immediately when button is clicked
       const contentSection = document.getElementById("wsi-content");
       if (contentSection) {
@@ -203,6 +204,14 @@ export function WSIQuestionGenerator({
     );
     clearError();
   }, [error, currentQuestion, clearError]);
+
+  // A question whose slide will not load is unanswerable, and the reader should
+  // not have to work out that the blank frame is the problem. Rare — the pool is
+  // filtered to openable slides — but a tile host can be down at read time.
+  const [slideUnavailable, setSlideUnavailable] = useState<string | null>(null);
+  const handleSlideUnavailable = useCallback((message: string) => {
+    setSlideUnavailable(message);
+  }, []);
 
   // Callers that are just "generate another" (buttons, Try Again) must not pass
   // their click event in as a category.
@@ -353,24 +362,15 @@ export function WSIQuestionGenerator({
     />
   );
 
-  // Slide already chosen but the question still being written: show the real
-  // viewer so tiles load during generation rather than after it. The reader
-  // gets something to look at immediately, and the two waits overlap.
-  if (isGenerating && pendingSlide) {
-    return (
-      <WSIGeneratingWithSlide
-        className={className}
-        slide={pendingSlide}
-        controls={controls}
-        layout={layout}
-        currentLoadingMessage={currentLoadingMessage}
-      />
-    );
-  }
+  // The slide on screen, whichever phase we are in. While a question is being
+  // written this is the pending slide (so its tiles load during generation
+  // rather than after it); once the question lands it is the question's own —
+  // the same object, so the viewer below never remounts on that transition.
+  const activeSlide = currentQuestion?.wsi ?? pendingSlide;
 
-  // No slide yet (corpus still loading, or a prefetched question resolving) —
-  // nothing concrete to show, so fall back to the plain skeleton.
-  if (isGenerating || isWSIDataLoading) {
+  // No slide at all yet: the corpus is still loading, or a prefetched question
+  // is resolving without having published one.
+  if (!activeSlide && (isGenerating || isWSIDataLoading)) {
     return (
       <WSIGeneratorSkeleton
         className={className}
@@ -382,8 +382,8 @@ export function WSIQuestionGenerator({
     );
   }
 
-  // If no question available, show loading state instead of null
-  if (!currentQuestion) {
+  // Nothing at all to show: no slide and no question, and nothing in flight.
+  if (!activeSlide) {
     return (
       <div className={`w-full max-w-4xl mx-auto ${className}`} style={{ minHeight: "600px" }}>
         <Card className="h-full">
@@ -400,7 +400,7 @@ export function WSIQuestionGenerator({
   }
 
   // Safety check to ensure we have a valid question structure
-  if (!currentQuestion.wsi || !currentQuestion.question) {
+  if (currentQuestion && (!currentQuestion.wsi || !currentQuestion.question)) {
     return (
       <div className={`w-full max-w-4xl mx-auto ${className}`} style={{ minHeight: "600px" }}>
         <Card className="h-full">
@@ -421,7 +421,7 @@ export function WSIQuestionGenerator({
   }
 
   // The remaining pieces are shared by both layouts so the two can't drift apart.
-  const stem = (
+  const stem = !currentQuestion ? null : (
     <FakeSelectionHighlight allSlides={allSlides} onViewSlide={setLookupSlide}>
       <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed">
         {currentQuestion.question.stem}
@@ -429,7 +429,7 @@ export function WSIQuestionGenerator({
     </FakeSelectionHighlight>
   );
 
-  const options = (
+  const options = !currentQuestion ? null : (
     <WSIAnswerOptions
       options={currentQuestion.question.options}
       selectedOption={selectedOption}
@@ -440,7 +440,7 @@ export function WSIQuestionGenerator({
     />
   );
 
-  const explanation = isAnswered && (
+  const explanation = isAnswered && currentQuestion && (
     <WSIExplanation
       question={currentQuestion.question}
       metadata={currentQuestion.metadata}
@@ -465,21 +465,50 @@ export function WSIQuestionGenerator({
     </div>
   );
 
+  // Written once and used by both layouts, so the element — and therefore the
+  // OpenSeadragon instance — is identical across the generating/answered
+  // transition. Keyed on the slide, so a NEW slide does remount.
+  const viewer = (
+    <WSIQuestionViewer
+      key={activeSlide.id}
+      slide={activeSlide}
+      fillHeight={layout === "fullscreen"}
+      onUnavailable={handleSlideUnavailable}
+    />
+  );
+
+  const unavailableNotice = slideUnavailable ? (
+    <div className="flex flex-wrap items-center justify-between gap-2 rounded-lg border border-amber-300 bg-amber-50 px-3 py-2 text-sm text-amber-800">
+      <span>{slideUnavailable} This question needs it, so try another.</span>
+      <Button size="sm" variant="outline" onClick={newQuestion} disabled={isGenerating}>
+        <RefreshCw className="mr-2 h-4 w-4" />
+        Another question
+      </Button>
+    </div>
+  ) : null;
+
+  // While the question is still being written, the panel holds its skeleton and
+  // the rotating note; the slide beside it is already live.
+  const panel = currentQuestion ? (
+    <>
+      {unavailableNotice}
+      {stem}
+      {options}
+      {explanation}
+      <WSISlideCredits wsi={activeSlide} />
+    </>
+  ) : (
+    <>
+      <LoadingNote currentLoadingMessage={currentLoadingMessage} compact />
+      <StemSkeleton />
+      <OptionsSkeleton />
+      <WSISlideCredits wsi={activeSlide} />
+    </>
+  );
+
   if (layout === "fullscreen") {
     return (
-      <WsiFullscreenShell
-        className={className}
-        controls={controls}
-        viewer={<WSIQuestionViewer slide={currentQuestion.wsi} fillHeight />}
-        panel={
-          <>
-            {stem}
-            {options}
-            {explanation}
-            <WSISlideCredits wsi={currentQuestion.wsi} />
-          </>
-        }
-      >
+      <WsiFullscreenShell className={className} controls={controls} viewer={viewer} panel={panel}>
         <SlideViewerModal slide={lookupSlide} onClose={() => setLookupSlide(null)} />
       </WsiFullscreenShell>
     );
@@ -495,17 +524,25 @@ export function WSIQuestionGenerator({
 
       <Card className="h-full">
         <CardContent className="space-y-3 sm:space-y-4 pt-4 sm:pt-6 px-3 sm:px-6">
-          {stem}
+          {currentQuestion ? (
+            stem
+          ) : (
+            <>
+              <LoadingNote currentLoadingMessage={currentLoadingMessage} compact />
+              <StemSkeleton />
+            </>
+          )}
 
           {/* WSI Viewer — not selectable */}
           <div className="w-full">
-            <WSIQuestionViewer slide={currentQuestion.wsi} />
-            <WSISlideCredits wsi={currentQuestion.wsi} />
+            {viewer}
+            <WSISlideCredits wsi={activeSlide} />
           </div>
 
-          {options}
+          {unavailableNotice}
+          {currentQuestion ? options : <OptionsSkeleton />}
           {explanation}
-          {highlightHint}
+          {currentQuestion ? highlightHint : null}
           <SlideViewerModal slide={lookupSlide} onClose={() => setLookupSlide(null)} />
         </CardContent>
       </Card>
