@@ -3,6 +3,7 @@
  */
 import { describe, it, expect } from "vitest";
 import {
+  categoriesWithoutKinds,
   getRepositoryFromId,
   ensureWSIRepository,
   getOptionLabel,
@@ -117,5 +118,47 @@ describe("slideMatchesCategory", () => {
     expect(slideMatchesCategory(null, "Uropathology")).toBe(false);
     expect(slideMatchesCategory(undefined, "Uropathology")).toBe(false);
     expect(slideMatchesCategory("", "Uropathology")).toBe(false);
+  });
+});
+
+describe("categoriesWithoutKinds", () => {
+  const slide = (over: Record<string, unknown>) =>
+    ({
+      tileSourceUrl: "https://example.org/a.dzi",
+      source_metadata: {},
+      ...over,
+    }) as unknown as Parameters<typeof categoriesWithoutKinds>[0][number];
+
+  const renderable = () => true;
+
+  const CORPUS = [
+    // Curated haematolymphoid: morphology only, no recorded profiles.
+    slide({ category: "Hematopathology", diagnosis: "Follicular lymphoma" }),
+    // PathPresenter: carries the author's own immuno and molecular notes.
+    slide({
+      category: "Breast pathology",
+      diagnosis: "Invasive ductal carcinoma",
+      source_metadata: {
+        immuno_profile: "ER+, PR+, HER2-, GATA3+",
+        molecular_profile: "PIK3CA H1047R mutation",
+      },
+    }),
+  ];
+
+  it("flags a category that cannot carry the enabled types", () => {
+    // Asking for IHC empties Hematopathology before the category is applied —
+    // which the picker should show rather than let the reader discover.
+    expect(categoriesWithoutKinds(CORPUS, ["ihc"], renderable)).toEqual(["Hematopathology"]);
+    expect(categoriesWithoutKinds(CORPUS, ["molecular"], renderable)).toEqual(["Hematopathology"]);
+  });
+
+  it("flags nothing when diagnosis is enabled, since every slide supports it", () => {
+    expect(categoriesWithoutKinds(CORPUS, ["diagnosis"], renderable)).toEqual([]);
+    expect(categoriesWithoutKinds(CORPUS, ["diagnosis", "ihc"], renderable)).toEqual([]);
+  });
+
+  it("ignores slides the viewer cannot render, which are never in the pool anyway", () => {
+    const unrenderable = () => false;
+    expect(categoriesWithoutKinds(CORPUS, ["ihc"], unrenderable)).toEqual([]);
   });
 });

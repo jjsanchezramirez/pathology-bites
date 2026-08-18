@@ -3,6 +3,10 @@
 // and token formatting are unit-testable in isolation (see *-utils.test.ts).
 
 import { VirtualSlide } from "@/shared/types/virtual-slides";
+import {
+  slideSupportsKind,
+  type WsiQuestionKind,
+} from "@/features/user/wsi-questions/utils/wsi-question-kinds";
 
 // Funny loading messages shown while a question is generated.
 export const LOADING_MESSAGES = [
@@ -90,4 +94,31 @@ export function slideMatchesCategory(
   selected: string
 ): boolean {
   return (slideCategory || "").trim().toLowerCase() === selected.trim().toLowerCase();
+}
+
+/**
+ * Categories that cannot answer the question types currently switched on.
+ *
+ * The pool is filtered by type before the category is applied, so asking for
+ * Immunohistochemistry in a category whose cases record no immunoprofile — every
+ * curated haematolymphoid case, for instance — leaves nothing to draw from. That
+ * used to be discovered by picking the category and getting an error. The picker
+ * can know in advance, so it disables those entries instead.
+ */
+export function categoriesWithoutKinds(
+  slides: VirtualSlide[],
+  kinds: WsiQuestionKind[],
+  isRenderable: (slide: VirtualSlide) => boolean
+): string[] {
+  const usable = new Set<string>();
+  const all = new Set<string>();
+
+  for (const slide of slides) {
+    const category = (slide.category || "").trim();
+    if (!category || !isRenderable(slide)) continue;
+    all.add(category);
+    if (kinds.some((kind) => slideSupportsKind(slide, kind))) usable.add(category);
+  }
+
+  return [...all].filter((category) => !usable.has(category)).sort();
 }

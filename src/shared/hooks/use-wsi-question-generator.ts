@@ -3,6 +3,28 @@ import { useClientWSIData } from "./use-client-wsi-data";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { getWSIHistoryTracker } from "@/features/user/wsi-questions/utils/wsi-history-tracker";
 import { slideMatchesCategory } from "@/features/user/wsi-questions/components/wsi-question-generator-utils";
+import { isViewerSupported } from "@/shared/utils/domain/repository";
+import {
+  WSI_QUESTION_KINDS,
+  buildWsiQuestionPrompt,
+  chooseKind,
+  DEFAULT_WSI_KINDS,
+  slideSupportsKind,
+  type WsiQuestionKind,
+} from "@/features/user/wsi-questions/utils/wsi-question-kinds";
+
+/** Human-readable names for the error the kind filter can produce. */
+const KIND_LABELS: Record<WsiQuestionKind, string> = Object.fromEntries(
+  WSI_QUESTION_KINDS.map((k) => [k.id, k.label])
+) as Record<WsiQuestionKind, string>;
+
+/**
+ * Cache key for a prefetch. Sorted, so enabling {diagnosis, ihc} and
+ * {ihc, diagnosis} share one entry instead of each starting its own request.
+ */
+function prefetchKey(category: string | undefined, kinds: WsiQuestionKind[]): string {
+  return `${category || "all"}|${[...kinds].sort().join(",")}`;
+}
 import { log } from "@/shared/utils/logging";
 
 interface QuestionData {
@@ -66,7 +88,7 @@ interface QuestionGenerationResponse {
 }
 
 interface UseWSIQuestionGeneratorReturn {
-  generateQuestion: (category?: string) => Promise<GeneratedQuestion>;
+  generateQuestion: (category?: string, kinds?: WsiQuestionKind[]) => Promise<GeneratedQuestion>;
   isGenerating: boolean;
   error: string | null;
   clearError: () => void;
@@ -89,7 +111,7 @@ interface UseWSIQuestionGeneratorReturn {
    * changes category: the pending prefetch is keyed by category, so switching
    * otherwise throws it away and the next question pays full latency.
    */
-  startPrefetch: (category?: string) => void;
+  startPrefetch: (category?: string, kinds?: WsiQuestionKind[]) => void;
 }
 
 /**
@@ -113,33 +135,41 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
    * removed the old recursive walk (an unexpected error shape once made it
    * re-request forever against an expired session).
    */
-  const requestQuestion = useCallback(async (wsi: unknown): Promise<QuestionGenerationResponse> => {
-    const response = await fetch("/api/user/wsi-questions/generate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ wsi }),
-    });
+  const requestQuestion = useCallback(
+    async (wsi: VirtualSlide, kind: WsiQuestionKind): Promise<QuestionGenerationResponse> => {
+      // The prompt is built client-side per question kind. IHC and molecular
+      // questions must be handed their correct answer (the case's own recorded
+      // profile) rather than asked to invent one — a model asked to produce both
+      // the question and its own ground truth writes something plausible and
+      // wrong, and nothing downstream can catch it.
+      const response = await fetch("/api/user/wsi-questions/generate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ wsi, customPrompt: buildWsiQuestionPrompt(wsi, kind) }),
+      });
 
-    if (!response.ok) {
-      if (response.status === 401 || response.status === 403) {
-        throw new Error("Your session has expired. Please sign in again to generate questions.");
+      if (!response.ok) {
+        if (response.status === 401 || response.status === 403) {
+          throw new Error("Your session has expired. Please sign in again to generate questions.");
+        }
+        let details = `${response.status} ${response.statusText}`;
+        try {
+          const body = await response.json();
+          details = body.details || body.error || details;
+        } catch {
+          // Non-JSON error body — keep the status line.
+        }
+        throw new Error(`Question generation failed: ${details}`);
       }
-      let details = `${response.status} ${response.statusText}`;
-      try {
-        const body = await response.json();
-        details = body.details || body.error || details;
-      } catch {
-        // Non-JSON error body — keep the status line.
-      }
-      throw new Error(`Question generation failed: ${details}`);
-    }
 
-    const data = await response.json();
-    if (!data.success || !data.question) {
-      throw new Error(data.error || "Question generation returned no question");
-    }
-    return data;
-  }, []);
+      const data = await response.json();
+      if (!data.success || !data.question) {
+        throw new Error(data.error || "Question generation returned no question");
+      }
+      return data;
+    },
+    []
+  );
 
   /**
    * Select a slide and generate one question. No UI state: this runs both for
@@ -148,7 +178,8 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
   const produceQuestion = useCallback(
     async (
       category?: string,
-      onSlideSelected?: (wsi: VirtualSlide) => void
+      onSlideSelected?: (wsi: VirtualSlide) => void,
+      kinds: WsiQuestionKind[] = DEFAULT_WSI_KINDS
     ): Promise<GeneratedQuestion> => {
       const startTime = Date.now();
 
@@ -186,11 +217,63 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
           );
         }
 
+        // The viewer is our own OpenSeadragon, so a case has to be openable in it:
+        // either it ships a Deep Zoom manifest (PathPresenter, whose `url` is a Vue
+        // page rather than a slide), or its repository is one the tile-source
+        // resolver can open from the slide URL alone (the curated haematolymphoid
+        // cases — Leeds, WHO, MGH and the rest). A case that is neither could only
+        // be shown in someone else's iframe, so it is not a question we can ask.
+        {
+          const renderable = finalWSIData.filter(
+            (slide) => Boolean(slide.tileSourceUrl) || isViewerSupported(slide.repository || "")
+          );
+          if (renderable.length === 0) {
+            throw new Error(
+              "No slides in this corpus carry a tile source — the viewer has nothing to render."
+            );
+          }
+          finalWSIData = renderable;
+        }
+
+        // Only slides that can carry at least ONE of the enabled kinds. Diagnosis
+        // accepts everything; IHC and molecular need the case to record the answer,
+        // which roughly half and a third of the corpus respectively do. Which kind a
+        // given slide actually gets is decided after it is picked (chooseKind), so
+        // enabling IHC alone narrows the pool while enabling it alongside diagnosis
+        // does not.
+        const active = kinds.length > 0 ? kinds : DEFAULT_WSI_KINDS;
+        if (!active.includes("diagnosis")) {
+          const eligible = finalWSIData.filter((slide) =>
+            active.some((k) => slideSupportsKind(slide, k))
+          );
+          if (eligible.length === 0) {
+            throw new Error(
+              active.length === 1
+                ? `No slides in this corpus record ${active[0] === "ihc" ? "an immunoprofile" : "molecular findings"}.`
+                : "No slides in this corpus record the findings these question types need."
+            );
+          }
+          finalWSIData = eligible;
+        }
+
         // Step 1: Select WSI using simplified approach with history tracking
         log.debug(
           `[WSI Generator] Step 1 - Selecting WSI from ${finalWSIData.length} available slides...`
         );
         let selectedWSI: VirtualSlide;
+        // Slides already tried this round. The server now rejects a question that
+        // narrates the slide, names the entity, or builds immunophenotype options
+        // from different marker sets — and on a handful of cases every model in
+        // the chain fails the same way (an entity whose name is unavoidable in a
+        // clinical stem, say). That used to surface as "generation failed". A
+        // different slide almost always succeeds, so try one before giving up.
+        const attempted = new Set<string>();
+        // Only when someone is waiting. A prefetch has no reader to disappoint,
+        // and it is identified by the absence of the slide callback (it must stay
+        // invisible, so it never publishes a slide); spending three model calls
+        // on one would just eat the rate limit the prefetch exists to protect.
+        const MAX_SLIDE_ATTEMPTS = onSlideSelected ? 3 : 1;
+        let questionData: QuestionGenerationResponse | null = null;
 
         // Get history tracker
         const historyTracker = getWSIHistoryTracker();
@@ -201,71 +284,112 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
           `[WSI Generator] Recent history size for "${effectiveCategory}": ${recentIds.length} slides`
         );
 
-        if (category && category !== "all") {
-          // Filter by category first
-          const categorySlides = finalWSIData.filter((slide) =>
-            slideMatchesCategory(slide.category, category)
-          );
+        // Kept so a run that exhausts the pool can still report why the last
+        // attempt failed, rather than a generic "Failed to generate question".
+        let lastError: unknown = null;
+        for (let attempt = 1; attempt <= MAX_SLIDE_ATTEMPTS; attempt++) {
+          const attemptPool = finalWSIData.filter((slide) => !attempted.has(slide.id));
+          if (attemptPool.length === 0) break;
 
-          if (categorySlides.length === 0) {
-            throw new Error(
-              `No WSI slides found for category: ${category}. Available slides: ${finalWSIData.length}`
+          if (category && category !== "all") {
+            // Filter by category first
+            const categorySlides = attemptPool.filter((slide) =>
+              slideMatchesCategory(slide.category, category)
             );
-          }
 
-          // Filter out recently shown slides
-          let availableSlides = categorySlides.filter((slide) => !recentIds.includes(slide.id));
+            if (categorySlides.length === 0) {
+              // Nearly always the question types rather than the category: the
+              // curated haematolymphoid cases record no immunoprofile and no
+              // molecular findings, so with only IHC or Molecular switched on the
+              // pool is emptied before the category is even applied. Name the
+              // knob that fixes it — "no slides found" sends the reader hunting
+              // through categories that are all equally empty.
+              const missingBecauseOfKinds = !active.includes("diagnosis");
+              const kindNames = active.map((k) => KIND_LABELS[k]).join(" or ");
+              throw new Error(
+                missingBecauseOfKinds
+                  ? `No ${category} slides can carry ${kindNames} questions — those cases record no immunoprofile or molecular findings. Switch Diagnosis on to include them.`
+                  : `No slides found for category: ${category}.`
+              );
+            }
 
-          // If all slides in category have been shown, reset and use all category slides
-          if (availableSlides.length === 0) {
+            // Filter out recently shown slides
+            let availableSlides = categorySlides.filter((slide) => !recentIds.includes(slide.id));
+
+            // If all slides in category have been shown, reset and use all category slides
+            if (availableSlides.length === 0) {
+              log.debug(
+                `[WSI Generator] All ${categorySlides.length} slides in "${category}" have been shown. Resetting history for this category.`
+              );
+              historyTracker.clearCategory(effectiveCategory);
+              availableSlides = categorySlides;
+            }
+
+            selectedWSI = availableSlides[Math.floor(Math.random() * availableSlides.length)];
             log.debug(
-              `[WSI Generator] All ${categorySlides.length} slides in "${category}" have been shown. Resetting history for this category.`
+              `[WSI Generator] Selected from ${availableSlides.length} available slides in category: ${category} (${categorySlides.length} total, ${recentIds.length} recently shown)`
             );
-            historyTracker.clearCategory(effectiveCategory);
-            availableSlides = categorySlides;
-          }
+          } else {
+            // Filter out recently shown slides from all slides
+            let availableSlides = attemptPool.filter((slide) => !recentIds.includes(slide.id));
 
-          selectedWSI = availableSlides[Math.floor(Math.random() * availableSlides.length)];
-          log.debug(
-            `[WSI Generator] Selected from ${availableSlides.length} available slides in category: ${category} (${categorySlides.length} total, ${recentIds.length} recently shown)`
-          );
-        } else {
-          // Filter out recently shown slides from all slides
-          let availableSlides = finalWSIData.filter((slide) => !recentIds.includes(slide.id));
+            // If all slides have been shown, reset and use all slides
+            if (availableSlides.length === 0) {
+              log.debug(
+                `[WSI Generator] All ${attemptPool.length} slides have been shown. Resetting history.`
+              );
+              historyTracker.clearAll();
+              availableSlides = attemptPool;
+            }
 
-          // If all slides have been shown, reset and use all slides
-          if (availableSlides.length === 0) {
+            const randomIndex = Math.floor(Math.random() * availableSlides.length);
+            selectedWSI = availableSlides[randomIndex];
+
+            if (!selectedWSI) {
+              throw new Error("Failed to select random WSI");
+            }
             log.debug(
-              `[WSI Generator] All ${finalWSIData.length} slides have been shown. Resetting history.`
+              `[WSI Generator] Selected random slide from ${availableSlides.length} available slides (${finalWSIData.length} total, ${recentIds.length} recently shown)`
             );
-            historyTracker.clearAll();
-            availableSlides = finalWSIData;
           }
 
-          const randomIndex = Math.floor(Math.random() * availableSlides.length);
-          selectedWSI = availableSlides[randomIndex];
+          log.debug(`[WSI Generator] Selected WSI - ${selectedWSI.diagnosis}`);
 
-          if (!selectedWSI) {
-            throw new Error("Failed to select random WSI");
+          // Publish the slide before the model call so the viewer can start
+          // fetching tiles during generation rather than after it. Background
+          // prefetches pass no callback — they must stay invisible.
+          onSlideSelected?.(selectedWSI);
+
+          // Step 2: Generate question using main generate route
+          log.debug("[WSI Generator] Step 2 - Using main generate route...");
+
+          // The slide is chosen first, then the kind from what it can support: the
+          // other order would reject most slides for most kinds.
+          const kind = chooseKind(selectedWSI, active);
+          attempted.add(selectedWSI.id);
+          try {
+            questionData = await requestQuestion(selectedWSI, kind);
+            if (!questionData.success || !questionData.question) {
+              throw new Error("Failed to generate question");
+            }
+            break;
+          } catch (attemptError) {
+            lastError = attemptError;
+            const message =
+              attemptError instanceof Error ? attemptError.message : String(attemptError);
+            // A dead session is not the slide's fault and no other slide will fix
+            // it — surface it immediately rather than burning two more calls.
+            if (/session has expired/i.test(message) || attempt === MAX_SLIDE_ATTEMPTS) {
+              throw attemptError;
+            }
+            log.warn(
+              `[WSI Generator] Attempt ${attempt} failed on "${selectedWSI.diagnosis}" (${message}); trying another slide`
+            );
           }
-          log.debug(
-            `[WSI Generator] Selected random slide from ${availableSlides.length} available slides (${finalWSIData.length} total, ${recentIds.length} recently shown)`
-          );
         }
 
-        log.debug(`[WSI Generator] Selected WSI - ${selectedWSI.diagnosis}`);
-
-        // Publish the slide before the model call so the viewer can start
-        // fetching tiles during generation rather than after it. Background
-        // prefetches pass no callback — they must stay invisible.
-        onSlideSelected?.(selectedWSI);
-
-        // Step 2: Generate question using main generate route
-        log.debug("[WSI Generator] Step 2 - Using main generate route...");
-
-        const questionData = await requestQuestion(selectedWSI);
-
-        if (!questionData.success || !questionData.question) {
+        if (!questionData?.question) {
+          if (lastError) throw lastError;
           throw new Error("Failed to generate question");
         }
 
@@ -300,16 +424,24 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
           debug: questionData.debug as { prompt: string; instructions: string } | null | undefined,
         };
 
-        // Add to history after successful generation
-        historyTracker.addToHistory(selectedWSI.id, effectiveCategory);
-        log.debug(
-          `[WSI Generator] Added ${selectedWSI.id} to history. Stats:`,
-          historyTracker.getStats()
-        );
-
+        // NOT recorded in history here. A prefetch that is later orphaned — the
+        // reader changed category or question type before consuming it — would
+        // otherwise mark a slide "recently shown" that nobody ever saw, and
+        // exclude it from future draws. History is written when a question is
+        // actually delivered (see generateQuestion).
         return generatedQuestion;
       } catch (err) {
-        log.error("[WSI Generator] Generation failed:", err instanceof Error ? err.message : err);
+        const message = err instanceof Error ? err.message : String(err);
+        // A prefetch that fails is invisible and self-healing: nobody is waiting
+        // on it, and the next real request generates fresh. Logging it at error
+        // level put a red console entry in front of the reader for something that
+        // did not affect them — while the question they DID ask for had already
+        // succeeded on a retry.
+        if (onSlideSelected) {
+          log.error("[WSI Generator] Generation failed:", message);
+        } else {
+          log.warn("[WSI Generator] Prefetch failed (no reader waiting):", message);
+        }
         throw err;
       }
     },
@@ -329,10 +461,12 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
   );
 
   const startPrefetch = useCallback(
-    (category?: string) => {
-      const key = category || "all";
+    (category?: string, kinds: WsiQuestionKind[] = DEFAULT_WSI_KINDS) => {
+      // Keyed on category AND the enabled kinds: a prefetched diagnosis question is not a
+      // valid answer to a request for an IHC one.
+      const key = prefetchKey(category, kinds);
       if (prefetchRef.current?.category === key) return;
-      const promise = produceQuestion(category);
+      const promise = produceQuestion(category, undefined, kinds);
       // A failed prefetch must stay invisible — the user never asked for it.
       // Drop it so the next real request generates fresh instead of replaying
       // the failure.
@@ -345,8 +479,11 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
   );
 
   const generateQuestion = useCallback(
-    async (category?: string): Promise<GeneratedQuestion> => {
-      const key = category || "all";
+    async (
+      category?: string,
+      kinds: WsiQuestionKind[] = DEFAULT_WSI_KINDS
+    ): Promise<GeneratedQuestion> => {
+      const key = prefetchKey(category, kinds);
       const ready = prefetchRef.current?.category === key ? prefetchRef.current : null;
       // A prefetch for a different category is now useless — drop it so the
       // next prefetch targets what the user is actually looking at.
@@ -362,13 +499,19 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
             question = await ready.promise;
             log.debug("[WSI Generator] Served from prefetch");
           } catch {
-            question = await produceQuestion(category, setPendingSlide);
+            question = await produceQuestion(category, setPendingSlide, kinds);
           }
         } else {
-          question = await produceQuestion(category, setPendingSlide);
+          question = await produceQuestion(category, setPendingSlide, kinds);
         }
+        // Recorded now, because now is when the reader sees it — a question
+        // generated by a prefetch and then discarded never reaches this line.
+        if (question.wsi?.id) {
+          getWSIHistoryTracker().addToHistory(question.wsi.id, category || "all");
+        }
+
         // Line up the next one while the reader works through this one.
-        startPrefetch(category);
+        startPrefetch(category, kinds);
         return question;
       } catch (err) {
         const errorMessage = err instanceof Error ? err.message : "Unknown error occurred";

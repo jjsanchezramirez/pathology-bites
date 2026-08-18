@@ -29,6 +29,8 @@ const SLIDE = {
   category: "Gastrointestinal",
   diagnosis: "Tubular adenoma",
   slide_url: "https://example.org/slide",
+  // The generator skips slides the in-house viewer cannot render.
+  tileSourceUrl: "https://example.org/slide.dzi",
 };
 
 const QUESTION = {

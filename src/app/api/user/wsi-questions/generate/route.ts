@@ -6,7 +6,7 @@ import { parseBody } from "@/shared/utils/api/parse-body";
 import { runAITask } from "@/shared/services/ai-fallback";
 import { log } from "@/shared/utils/logging";
 import { buildQuestionPrompt, WSI_SYSTEM_PROMPT, normalizeWSI } from "./wsi-question-prompt";
-import { parseAndValidateQuestionFast } from "./wsi-question-parsing";
+import { enforceQuestionContract, parseAndValidateQuestionFast } from "./wsi-question-parsing";
 
 // wsi is a loosely-structured VirtualSlide-ish blob (normalized downstream by
 // normalizeWSI) and context is prompt metadata — keep both loose.
@@ -244,7 +244,19 @@ function buildOptimizedPrompt(
       system: WSI_SYSTEM_PROMPT,
       modelOverride: pinnedModel,
       label: "Question Gen",
-      parse: parseAndValidateQuestionFast,
+      // Contract violations throw here, inside the attempt, so the runner falls
+      // through to the next model instead of returning a question that gives its
+      // own answer away.
+      parse: (content: string) =>
+        enforceQuestionContract(
+          parseAndValidateQuestionFast(content),
+          normalizedWSI.diagnosis,
+          // What the slide actually is, so a stem may still cite findings from a
+          // DIFFERENT specimen as history.
+          String(
+            (normalizedWSI.source_metadata as Record<string, unknown> | undefined)?.specimen ?? ""
+          )
+        ),
     });
 
     log.debug(`[Question Gen] Generated with ${result.model} in ${Date.now() - startTime}ms`);

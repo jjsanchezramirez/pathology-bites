@@ -11,11 +11,14 @@ export function buildQuestionPrompt(
     chapter: wsi.category || "Not specified",
     organ: wsi.subcategory || "Not specified",
     diagnosis: wsi.diagnosis || "Not specified",
-    // Note: WSI data typically doesn't have differential, immunoprofile, or molecular info
-    // These would need to be added to WSI metadata if available
-    differential: wsi.source_metadata?.differential || null,
-    immunoprofile: wsi.source_metadata?.immunoprofile || null,
-    molecular: wsi.source_metadata?.molecular || null,
+    // Field names match what the corpus actually publishes. They used to read
+    // `differential` / `immunoprofile` / `molecular`, which are not fields any
+    // case has, so this path silently produced a prompt with all three blank.
+    // Unreachable today — every caller passes a customPrompt built client-side —
+    // but a fallback that quietly drops the case's data is worth not leaving.
+    differential: wsi.source_metadata?.differential_diagnosis || null,
+    immunoprofile: wsi.source_metadata?.immuno_profile || null,
+    molecular: wsi.source_metadata?.molecular_profile || null,
   };
 
   const contextInfo = context
