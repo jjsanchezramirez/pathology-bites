@@ -19,11 +19,19 @@ export function StructuredData({ data }: StructuredDataProps) {
     return null;
   }
 
+  // Emit a lone schema as an object, not a one-element array. Both are valid
+  // JSON-LD, but consumers routinely read `parsed["@context"]` straight off the
+  // parsed value — on an array that is `undefined`, and the usual next step
+  // (`.toLowerCase()`) throws. Every block on the site was a single schema
+  // wrapped in an array, so every structured-data reader that took the naive
+  // path crashed on us. Arrays are still emitted when there really are several.
+  const payload = safeJsonLd.length === 1 ? safeJsonLd[0] : safeJsonLd;
+
   return (
     <script
       type="application/ld+json"
       dangerouslySetInnerHTML={{
-        __html: JSON.stringify(safeJsonLd, null, 0),
+        __html: JSON.stringify(payload, null, 0),
       }}
     />
   );
