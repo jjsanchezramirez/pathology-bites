@@ -7,10 +7,18 @@ import type { Matrix, Marker, Cell, Diagnosis } from "./types";
 /** Numeric value for ranking/tone: the % if known, else a proxy from polarity. */
 export function effVal(c: Cell): number {
   if (c.pct !== null && c.pct !== undefined) return c.pct;
+  // A proliferation index with no number tells us nothing about positivity, and a
+  // disputed call should not pull a marker up the ranking.
+  if (c.polarity === "index" || c.status === "review") return 50;
   return c.polarity === "positive" ? 85 : 2;
 }
 
-export function pctTone(c: Cell): "pos" | "partial" | "neg" {
+export function pctTone(c: Cell): "pos" | "partial" | "neg" | "unsettled" {
+  if (c.status === "review") return "unsettled";
+  if (c.polarity === "index") return "partial";
+  // Hedged in the source ("a subset", "variable") — not the same claim as a
+  // definite positive, and it should not be coloured like one.
+  if (c.certainty === "variable" && (c.pct === null || c.pct === undefined)) return "partial";
   if (c.pct === null || c.pct === undefined) return c.polarity === "positive" ? "pos" : "neg";
   if (c.pct >= 50) return "pos";
   if (c.pct <= 15) return "neg";
@@ -293,11 +301,19 @@ export function characteristicStains(
   max = 4
 ): { markerId: string; polarity: Observation }[] {
   return matrix.cells
-    .filter((c) => c.d === diagnosisId)
+    .filter(
+      (c) =>
+        c.d === diagnosisId &&
+        // A worked example should demonstrate the tool with calls the source
+        // actually asserts: not a disputed one, and not an index, which is a
+        // number rather than an observation a user can enter.
+        c.status !== "review" &&
+        (c.polarity === "positive" || c.polarity === "negative")
+    )
     .map((c) => ({ c, extremity: Math.abs(effVal(c) - 50) }))
     .sort((a, b) => b.extremity - a.extremity)
     .slice(0, max)
-    .map(({ c }) => ({ markerId: c.m, polarity: c.polarity }));
+    .map(({ c }) => ({ markerId: c.m, polarity: c.polarity as Observation }));
 }
 
 /**

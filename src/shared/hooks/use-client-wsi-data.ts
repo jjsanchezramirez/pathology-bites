@@ -56,7 +56,7 @@ interface WsiQuestionCase {
 // holding the pre-tile-source copy would keep serving slides the viewer cannot
 // render. Bump it whenever a republish adds a field the code depends on.
 const WSI_DATA_URL =
-  "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json?v=haem-5";
+  "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json?v=haem-6";
 
 // Convert the PathPresenter cases JSON into VirtualSlide entries, dropping any
 // without a usable remote URL.

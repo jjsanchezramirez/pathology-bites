@@ -49,9 +49,12 @@ function randomOf<T>(arr: T[]): T | undefined {
 const MAX_PANEL = 3;
 type Mode = "diagnose" | "panel" | "profile";
 
-function toneClass(tone: "pos" | "partial" | "neg"): string {
+function toneClass(tone: "pos" | "partial" | "neg" | "unsettled"): string {
   if (tone === "pos") return "bg-emerald-50 text-emerald-700 dark:bg-emerald-950/40 dark:text-emerald-300";
   if (tone === "partial") return "bg-amber-50 text-amber-700 dark:bg-amber-950/40 dark:text-amber-300";
+  // Deliberately colourless: the two extractions disagreed, so the table has no
+  // claim to make and should not look like it does.
+  if (tone === "unsettled") return "bg-muted text-muted-foreground";
   return "bg-rose-50 text-rose-700 dark:bg-rose-950/40 dark:text-rose-300";
 }
 
@@ -79,18 +82,31 @@ function ResultLegend() {
   );
 }
 
+function cellLabel(cell: Cell): string {
+  if (cell.status === "review") return "?";
+  // An index is a number, not a call: "Ki-67 < 5%" is not Ki-67 negative.
+  if (cell.polarity === "index") return cell.pct !== null && cell.pct !== undefined ? `${cell.pct}%` : "index";
+  if (cell.pct !== null && cell.pct !== undefined) return `${cell.pct}%`;
+  return cell.polarity === "positive" ? "Pos" : "Neg";
+}
+
 function CellValue({ cell }: { cell?: Cell }) {
   if (!cell) return <span className="text-xs text-muted-foreground/40">—</span>;
   const tone = pctTone(cell);
+  const variable = cell.certainty === "variable" && cell.status !== "review";
+  const title =
+    cell.status === "review"
+      ? "Two independent extractions disagree — not asserted"
+      : variable
+        ? "WHO reports this in a subset of cases, not uniformly"
+        : undefined;
+
   return (
-    <div className={`rounded-md px-2 py-1 text-center ${toneClass(tone)}`}>
-      <div className="text-sm font-semibold leading-none">
-        {cell.pct !== null && cell.pct !== undefined
-          ? `${cell.pct}%`
-          : cell.polarity === "positive"
-            ? "Pos"
-            : "Neg"}
-      </div>
+    <div className={`rounded-md px-2 py-1 text-center ${toneClass(tone)}`} title={title}>
+      <div className="text-sm font-semibold leading-none">{cellLabel(cell)}</div>
+      {/* Said out loud rather than implied by colour: a hedged call read as fact
+          was the single largest inaccuracy in this table. */}
+      {variable ? <div className="mt-0.5 text-[10px] opacity-70">variable</div> : null}
       {cell.n ? <div className="mt-0.5 text-[10px] opacity-70">n={cell.n.toLocaleString()}</div> : null}
     </div>
   );

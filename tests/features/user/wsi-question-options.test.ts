@@ -153,3 +153,16 @@ describe("hasUsableMolecularProfile", () => {
     }
   });
 });
+
+describe("profiles from the reconciled matrix", () => {
+  it("builds options from a corrected phenotype", () => {
+    // Rosai-Dorfman reached live questions keyed S100-NEGATIVE, from a v1 matrix
+    // call the reconciliation corrected. The profile below is what the rebuilt
+    // corpus now carries; the builder has to make a fair question from it.
+    const built = buildImmunoOptions("S100+, OCT2+, CD11C+, fascin+, CD1A-, CD207-")!;
+    expect(built.correct).toContain("S100+");
+    expect(built.correct).not.toContain("S100-");
+    expect(built.options).toHaveLength(5);
+    expect(new Set(built.options).size).toBe(5);
+  });
+});

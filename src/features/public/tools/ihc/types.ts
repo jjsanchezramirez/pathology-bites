@@ -34,7 +34,26 @@ export interface Cell {
   d: string;
   /** marker id */
   m: string;
-  polarity: "positive" | "negative";
+  /**
+   * "index" is a proliferation index reported as a number, not a positive: WHO
+   * writing "Ki-67 index < 5%" was recorded as Ki-67 POSITIVE in the first
+   * extraction, which reads as the opposite of what the source says.
+   */
+  polarity: "positive" | "negative" | "index";
+  /**
+   * How firmly the source states it. A re-audit of every call found 19.7% of
+   * them hedged in the text — "a subset", "variable", "weak" — while the table
+   * presented all of them as definite.
+   */
+  certainty?: "definite" | "variable";
+  /**
+   * Provenance, from reconciling two independent extractions against a
+   * sentence-level audit:
+   *   confirmed  both passes agree
+   *   carried    one pass only, but the audit verified its quote supports it
+   *   review     the passes disagree — shown as unsettled, never asserted
+   */
+  status?: "confirmed" | "carried" | "review";
   /** reported positivity % (0–100), or null when only qualitative */
   pct: number | null;
   /** total cases pooled, when known (from primary literature) */
