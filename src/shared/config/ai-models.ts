@@ -494,6 +494,29 @@ export const DISABLED_AI_MODELS: AIModel[] = [
   // Measured unusable on the real WSI prompt (/debug/wsi-bench, Aug 2026): each
   // spent its entire 2000-token budget reasoning or rambling and never closed
   // the JSON. Not slow — unusable. Kept visible so nobody re-adds them blind.
+  // Re-measured on Cloudflare (Aug 2026, /debug/wsi-bench with the FULL
+  // enforceQuestionContract, n=6 each) after the same families failed on
+  // Cerebras and Groq. The point of the re-test was that disablement had looked
+  // provider-specific: Groq's openai/gpt-oss-20b is disabled below for hitting
+  // the token cap, while the identical weights on Cloudflare pass 6/6. That
+  // does not generalise. Both of these reproduced their original defect on a
+  // third, independent host, and both blow the 12s wsi-question timeout on
+  // median latency alone — so they fail twice over, before quality is even
+  // discussed. Control in the same run: @cf/openai/gpt-oss-20b, 6/6 at 3.9s.
+  {
+    id: "@cf/qwen/qwen3-30b-a3b-fp8",
+    name: "Qwen3 30B A3B (Cloudflare)",
+    provider: "cloudflare",
+    available: false,
+    description: "2/6 contract passes, 15.2s median (>12s timeout) - truncates JSON mid-object",
+  },
+  {
+    id: "@cf/zai-org/glm-4.7-flash",
+    name: "GLM 4.7 Flash (Cloudflare)",
+    provider: "cloudflare",
+    available: false,
+    description: "0/6 contract passes, 20.7s median - empty content, finish_reason length",
+  },
   {
     id: "zai-glm-4.7",
     name: "GLM 4.7 (Cerebras)",
