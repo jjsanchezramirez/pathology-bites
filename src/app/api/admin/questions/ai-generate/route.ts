@@ -53,7 +53,7 @@ const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
  *                 description: Additional context or constraints
  *               model:
  *                 type: string
- *                 default: llama-3.3-70b-versatile
+ *                 default: openai/gpt-oss-120b
  *                 description: AI model to use for generation
  *     responses:
  *       200:

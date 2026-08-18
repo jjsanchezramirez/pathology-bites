@@ -4,7 +4,7 @@
 export interface AIModel {
   id: string;
   name: string;
-  provider: "groq" | "cerebras" | "gemini" | "mistral" | "claude" | "llama" | "cloudflare";
+  provider: "groq" | "cerebras" | "gemini" | "mistral" | "claude" | "cloudflare";
   available: boolean;
   deprecated?: boolean;
   description?: string;
@@ -17,6 +17,14 @@ export interface AIModel {
 // Legacy Meta Llama API model IDs → nearest live equivalent.
 // The Meta Llama API shut down July 6, 2026; stale IDs persisted in question
 // sets / user prefs are remapped here instead of erroring.
+//
+// This map is the ONLY llama remnant, and it is load-bearing: a stored id in
+// the database still has to resolve to something callable. The four matching
+// entries in DISABLED_AI_MODELS were deleted in Aug 2026 — they were tombstones
+// nothing could reach, because getModelProvider() resolves an id through this
+// map BEFORE looking it up in the catalog, so the tombstones were unmatchable
+// by construction. Deleting a key here is a different matter entirely: it would
+// let a stale id through unresolved.
 export const LEGACY_MODEL_REMAP: Record<string, string> = {
   "Llama-3.3-70B-Instruct": "openai/gpt-oss-120b",
   // Was llama-3.1-8b-instant until Groq decommissioned it on 2026-08-16.
@@ -318,6 +326,18 @@ export const TEXT_FALLBACK_CHAIN: string[] = [
 ];
 
 /**
+ * The model to use when a caller has no preference of its own.
+ *
+ * Admin components used to hardcode `llama-3.3-70b-versatile` for this, which
+ * Groq decommissioned on 2026-08-16 — and unlike the Meta-era ids it is NOT in
+ * LEGACY_MODEL_REMAP, so nothing would have rescued it: the refinement step in
+ * question creation would have posted a dead model id and taken a 404. Pointing
+ * at the chain leader means this cannot rot silently, because the chain tests
+ * assert every entry is present and available in the catalog.
+ */
+export const DEFAULT_AI_MODEL = TEXT_FALLBACK_CHAIN[0];
+
+/**
  * Per-task generation settings. One place to answer "what does this feature ask
  * the model for", instead of the numbers being hardcoded in each route.
  *
@@ -440,40 +460,6 @@ export type AITaskName = keyof typeof AI_TASKS;
 
 // Disabled models (show in UI but not selectable)
 export const DISABLED_AI_MODELS: AIModel[] = [
-  // Meta Llama API models (service shut down July 6, 2026 — see LEGACY_MODEL_REMAP)
-  {
-    id: "Llama-3.3-70B-Instruct",
-    name: "Llama 3.3 70B (Meta API)",
-    provider: "llama",
-    available: false,
-    deprecated: true,
-    description: "Meta Llama API retired July 2026 — remapped to Groq",
-  },
-  {
-    id: "Llama-4-Maverick-17B-128E-Instruct-FP8",
-    name: "Llama 4 Maverick 17B (Meta API)",
-    provider: "llama",
-    available: false,
-    deprecated: true,
-    description: "Meta Llama API retired July 2026 — remapped to Groq",
-  },
-  {
-    id: "Llama-4-Scout-17B-16E-Instruct-FP8",
-    name: "Llama 4 Scout 17B (Meta API)",
-    provider: "llama",
-    available: false,
-    deprecated: true,
-    description: "Meta Llama API retired July 2026 — remapped to Groq",
-  },
-  {
-    id: "Llama-3.3-8B-Instruct",
-    name: "Llama 3.3 8B (Meta API)",
-    provider: "llama",
-    available: false,
-    deprecated: true,
-    description: "Meta Llama API retired July 2026 — remapped to Groq",
-  },
-
   // Claude models retired by Anthropic — the API answers `not_found_error`.
   {
     id: "claude-3-5-sonnet-20241022",

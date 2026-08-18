@@ -38,7 +38,7 @@ import {
   ContentSelector,
   EducationalContent,
 } from "@/features/admin/questions/components/create/content-selector";
-import { ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
+import { ACTIVE_AI_MODELS, DEFAULT_AI_MODEL } from "@/shared/config/ai-models";
 import { log } from "@/shared/utils/logging";
 
 interface QuestionOptionFormData {
@@ -86,7 +86,7 @@ export function ContentTab({
         return String(modelId);
       }
     }
-    return ACTIVE_AI_MODELS[0]?.id || "llama-3.3-70b-versatile";
+    return ACTIVE_AI_MODELS[0]?.id || DEFAULT_AI_MODEL;
   }, [question, selectedModel]);
 
   // Handle AI enhancement

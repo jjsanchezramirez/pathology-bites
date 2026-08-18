@@ -12,6 +12,7 @@ import { toast } from "@/shared/utils/ui/toast";
 import { FormState } from "../multi-step-question-form";
 import { FetchReferencesDialog } from "@/features/admin/questions/components/dialogs/fetch-references-dialog";
 import { log } from "@/shared/utils/logging";
+import { DEFAULT_AI_MODEL } from "@/shared/config/ai-models";
 
 interface StepContentEditProps {
   formState: FormState;
@@ -30,8 +31,7 @@ export function StepContentEdit({
 
   // Determine which AI model to use for refinement
   // Priority: 1. Question set's AI model, 2. Selected AI model from Step 1, 3. Default fast model
-  const refinementModel =
-    questionSetAIModel || formState.selectedAIModel || "llama-3.3-70b-versatile";
+  const refinementModel = questionSetAIModel || formState.selectedAIModel || DEFAULT_AI_MODEL;
 
   // Handle AI enhancement
   const handleAIEnhancement = async () => {

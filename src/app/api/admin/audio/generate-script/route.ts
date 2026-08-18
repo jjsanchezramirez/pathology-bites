@@ -110,7 +110,7 @@ Return ONLY the script text with no additional commentary, metadata, titles, or 
  *                 type: string
  *                 description: AI model to use
  *                 default: "gemini-2.5-flash-lite"
- *                 enum: ["gemini-2.5-flash-lite", "llama-3.3-70b-versatile", "gpt-oss-120b", "mistral-large-latest"]
+ *                 enum: ["gemini-3.5-flash-lite", "openai/gpt-oss-120b", "gpt-oss-120b", "mistral-large-latest"]
  *     responses:
  *       200:
  *         description: Script generated successfully

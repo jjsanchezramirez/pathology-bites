@@ -47,6 +47,15 @@ function walk(dir: string): string[] {
   });
 }
 
+/** Like walk(), but includes .tsx — the dead default lived in a component. */
+function walkSources(dir: string): string[] {
+  return readdirSync(dir).flatMap((entry) => {
+    const full = join(dir, entry);
+    if (statSync(full).isDirectory()) return entry === "debug" ? [] : walkSources(full);
+    return /\.tsx?$/.test(full) ? [full] : [];
+  });
+}
+
 describe("AI call standardization", () => {
   it("has no raw provider endpoint in any production API route", () => {
     const offenders: string[] = [];
@@ -89,6 +98,28 @@ describe("AI call standardization", () => {
     for (const name of ["lesson-planner", "lesson-transcript"] as const) {
       expect(AI_TASKS[name].chain, `${name} must use the text chain`).toBe(TEXT_FALLBACK_CHAIN);
     }
+  });
+
+  it("has no decommissioned model id anywhere in the source", () => {
+    // These ids are gone from their providers and answer 404. The danger is not
+    // the chain — the chain is covered above — but hardcoded defaults, which is
+    // exactly where llama-3.3-70b-versatile survived its own removal: it sat as
+    // the last-resort fallback in question refinement, reachable whenever a
+    // question set had no model and the user had not picked one. It is also NOT
+    // in LEGACY_MODEL_REMAP (that map holds the Meta-era `Llama-*` ids, not
+    // Groq's), so nothing would have translated it. Use DEFAULT_AI_MODEL.
+    const DECOMMISSIONED = ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "llama-4-scout"];
+    const offenders: string[] = [];
+    for (const file of walkSources(join(process.cwd(), "src"))) {
+      const rel = file.replace(process.cwd() + "/", "");
+      // The catalog and the vision-bench notes discuss these ids by name.
+      if (rel.includes("shared/config/ai-models.ts") || rel.includes("api/debug/")) continue;
+      const source = readFileSync(file, "utf8");
+      for (const id of DECOMMISSIONED) {
+        if (source.includes(id)) offenders.push(`${rel} → ${id}`);
+      }
+    }
+    expect(offenders, `Decommissioned model id referenced:\n${offenders.join("\n")}`).toEqual([]);
   });
 
   it("only points the chains at models that are active in the catalog", () => {
