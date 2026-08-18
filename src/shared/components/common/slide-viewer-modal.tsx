@@ -151,6 +151,9 @@ export function SlideViewerModal({
     () =>
       members.length > 1
         ? members.map((s) => ({
+            // Corpus id, because slide_url is NOT unique within a case: LearnHaem
+            // siblings all share the course-page URL.
+            id: s.id,
             // Stain rendered as its own chip on the thumbnail (below), so the label is just
             // the diagnosis — avoids "diagnosis · stain" duplicating the chip.
             label: s.diagnosis || "Slide",
@@ -162,8 +165,10 @@ export function SlideViewerModal({
     [members]
   );
 
-  const onSelectRelated = (url: string) => {
-    const s = members.find((m) => (m.slide_url || m.case_url) === url);
+  const onSelectRelated = (id: string) => {
+    // Matches on corpus id now — see the `id` passed above.
+    const s =
+      members.find((m) => m.id === id) ?? members.find((m) => (m.slide_url || m.case_url) === id);
     if (s) setCurrent(s);
   };
 
@@ -257,11 +262,14 @@ export function SlideViewerModal({
                 stain: current.stain_type,
               }}
               relatedSlides={relatedSlides}
+              activeRelatedId={current.id}
               onSelectRelated={onSelectRelated}
               fitToken={fitToken}
               onReady={() => {
                 if (!readyRef.current && !loadError) setReady(true);
               }}
+              // The dialog's own close X lives in that corner.
+              reservesTopRight
               onError={(msg) => setLoadError(msg)}
               onCssFullscreenChange={setCssFullscreen}
             />

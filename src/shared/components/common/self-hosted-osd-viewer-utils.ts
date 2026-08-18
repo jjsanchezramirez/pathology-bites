@@ -99,7 +99,10 @@ export function computeHiResDimensions(
 }
 
 export interface PanelItem {
+  /** React identity. Unique even when several slides share a slideUrl. */
   key: string;
+  /** What onSelectRelated receives — an id when the caller supplies one, else the URL. */
+  value: string;
   label: string;
   thumbUrl?: string;
   stain?: string;
@@ -113,23 +116,32 @@ export interface PanelItem {
 export function buildPanelItems(
   corpusMode: boolean,
   relatedSlides:
-    | { label: string; thumbUrl?: string; slideUrl: string; stain?: string }[]
+    | { id?: string; label: string; thumbUrl?: string; slideUrl: string; stain?: string }[]
     | undefined,
   related: { name: string; label: string; thumbUrl?: string }[],
   slideUrl: string,
-  activeSlide: string | null
+  activeSlide: string | null,
+  activeId?: string | null
 ): PanelItem[] {
   if (corpusMode) {
-    return (relatedSlides ?? []).map((r) => ({
-      key: r.slideUrl,
+    // Key on `id` where the caller supplies one. slideUrl is NOT unique: a
+    // LearnHaem case's slides all share the course-page URL and differ only by
+    // their derived tile source, so keying on it collided in React AND made
+    // every sibling in the case select the first one.
+    return (relatedSlides ?? []).map((r, i) => ({
+      key: r.id ?? `${r.slideUrl}#${i}`,
+      // Callers that supply ids get ids back (and must match on them); callers
+      // that don't keep the original URL contract unchanged.
+      value: r.id ?? r.slideUrl,
       label: r.label,
       thumbUrl: r.thumbUrl,
       stain: r.stain,
-      active: r.slideUrl === slideUrl,
+      active: r.id && activeId ? r.id === activeId : r.slideUrl === slideUrl,
     }));
   }
   return related.map((r) => ({
     key: r.name,
+    value: r.name,
     label: r.label,
     thumbUrl: r.thumbUrl,
     stain: undefined as string | undefined,
@@ -138,15 +150,124 @@ export function buildPanelItems(
 }
 
 /** OpenSeadragon constructor options (static viewer config + the per-init dynamic bits). */
+/**
+ * Longest edge of the minimap, in px. The other edge follows the slide's aspect.
+ *
+ * OSD's default sizes the navigator box from `navigatorSizeRatio` and then
+ * letterboxes the slide inside it, so the BOX was identical for every slide
+ * (164x156 measured) while the slide within it was not: a portrait scan became a
+ * thin vertical strip, a landscape one a short band, each floating in dead space.
+ * That is what read as "the minimap changes size".
+ *
+ * Fixing the long edge instead makes the box track the slide, so the thumbnail
+ * fills it and every minimap is drawn at the same scale.
+ *
+ * The long edge scales with the viewer, the way OSD's own `navigatorSizeRatio`
+ * does — a fixed edge that looks right in the dialog is tiny in a small inline
+ * viewer, and vice versa. Clamped at both ends so it stays usable in a narrow
+ * panel and never eats a full-screen slide.
+ *
+ * Note the area trap: matching the OLD long edge (~164) made the minimap SMALLER
+ * than before, because the old box was 164x156 for every slide while an
+ * aspect-matched box at the same long edge is only 164x75 for a 2.2:1 scan —
+ * under half the area. The ratio below is set from area, not edge length.
+ */
+const NAVIGATOR_SIZE_RATIO = 0.24;
+const NAVIGATOR_MIN_EDGE = 170;
+const NAVIGATOR_MAX_EDGE = 300;
+/** Absolute bounds so the minimap stays legible without dominating the viewer. */
+const NAVIGATOR_MAX_WIDTH = 340;
+const NAVIGATOR_MAX_HEIGHT = 260;
+const NAVIGATOR_MIN_WIDTH = 110;
+const NAVIGATOR_MIN_HEIGHT = 110;
+/**
+ * Ceiling as a share of the viewer, in BOTH axes.
+ *
+ * The absolute bounds alone are not enough: `edge` has a 170px floor that ignored
+ * the container, so a tall narrow viewer (142px wide, measured) produced a 251px
+ * minimap — 177% of the viewer's own width. Anything relative has to be relative
+ * to both dimensions, or one of them goes unchecked.
+ */
+const NAVIGATOR_MAX_FRACTION = 0.33;
+
+/**
+ * Navigator box matched to the slide's aspect ratio, holding AREA constant.
+ *
+ * Area, not long edge: fixing the long edge still shrinks a wide slide's minimap
+ * to a thin band (a 2.2:1 scan at a 164 long edge is 164x75, well under half the
+ * area of the old fixed box), which reads as "the minimap got small". Holding
+ * area constant gives every minimap the same visual weight whatever the slide's
+ * shape, which is what "the same size" actually means here.
+ *
+ * `edge` is the geometric mean of the two sides — the side length the box would
+ * have if the slide were square — and is what scales with the viewer.
+ */
+export function navigatorSize(
+  imageWidth?: number,
+  imageHeight?: number,
+  containerWidth?: number,
+  containerHeight?: number
+): { navigatorWidth: string; navigatorHeight: string } | null {
+  if (!imageWidth || !imageHeight || imageWidth <= 0 || imageHeight <= 0) return null;
+  const cw = containerWidth || 900;
+  const ch = containerHeight || 600;
+  const edge = Math.min(
+    NAVIGATOR_MAX_EDGE,
+    Math.max(NAVIGATOR_MIN_EDGE, cw * NAVIGATOR_SIZE_RATIO)
+  );
+  // The box must match the slide's aspect EXACTLY. OSD fits the thumbnail inside
+  // whatever box it is given and fills the remainder with the navigator's own
+  // background, so any mismatch shows up as black bands across the minimap — an
+  // earlier version clamped the aspect and forced a min height, and a ribbon-
+  // shaped scan came out with a black rectangle above and below the tissue.
+  const aspect = imageWidth / imageHeight;
+
+  let w = edge * Math.sqrt(aspect);
+  let h = edge / Math.sqrt(aspect);
+
+  // Bounds are applied by scaling the WHOLE box, never by adjusting one side —
+  // that is what keeps the aspect exact and the letterboxing gone.
+  const maxW = Math.min(NAVIGATOR_MAX_WIDTH, cw * NAVIGATOR_MAX_FRACTION);
+  const maxH = Math.min(NAVIGATOR_MAX_HEIGHT, ch * NAVIGATOR_MAX_FRACTION);
+  // A minimum can never out-rank a maximum: in a small viewer the ceiling wins,
+  // otherwise the minimap grows straight back through it.
+  const minW = Math.min(NAVIGATOR_MIN_WIDTH, maxW);
+  const minH = Math.min(NAVIGATOR_MIN_HEIGHT, maxH);
+
+  // Shrink to fit both ceilings.
+  const shrink = Math.min(1, maxW / w, maxH / h);
+  w *= shrink;
+  h *= shrink;
+
+  // Then grow toward the floors, but never back past a ceiling. A ribbon-shaped
+  // slide cannot satisfy both; it stays short rather than being stretched.
+  const grow = Math.min(Math.max(1, minW / w, minH / h), maxW / w, maxH / h);
+  w *= grow;
+  h *= grow;
+
+  return { navigatorWidth: `${Math.round(w)}px`, navigatorHeight: `${Math.round(h)}px` };
+}
+
 export function buildOsdOptions(args: {
   element: HTMLElement;
   tileSources: unknown;
   drawer: "webgl" | "canvas";
   corsClean: boolean;
   showNavigator: boolean;
+  imageWidth?: number;
+  imageHeight?: number;
+  containerWidth?: number;
+  containerHeight?: number;
 }): Record<string, unknown> {
-  const { element, tileSources, drawer, corsClean, showNavigator } = args;
+  const { element, tileSources, drawer, corsClean, showNavigator, imageWidth, imageHeight } = args;
+  const containerWidth = args.containerWidth || element.clientWidth || undefined;
+  const containerHeight = args.containerHeight || element.clientHeight || undefined;
   return {
+    // Explicit navigator dimensions override navigatorSizeRatio. Spread first so
+    // the keys below still win if they ever collide.
+    ...(showNavigator
+      ? (navigatorSize(imageWidth, imageHeight, containerWidth, containerHeight) ?? {})
+      : {}),
     element,
     prefixUrl: "https://cdn.jsdelivr.net/npm/openseadragon@4.1.0/build/openseadragon/images/",
     tileSources,
@@ -171,6 +292,11 @@ export function buildOsdOptions(args: {
     // Allow digital zoom past native so high mag presets (e.g. 100×) are reachable.
     maxZoomPixelRatio: 4,
     visibilityRatio: 1,
+    // Enforce the bounds continuously, not just at the end of a gesture. With this
+    // off (OSD's default) a pan can settle a fraction of a pixel past the image
+    // edge and the black backdrop shows as a hairline down that side — the thin
+    // dark lines reported along the top/right edges at high zoom.
+    constrainDuringPan: true,
     maxImageCacheCount: 600,
     imageLoaderLimit: 8,
     preserveImageSizeOnResize: true,

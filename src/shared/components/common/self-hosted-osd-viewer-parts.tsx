@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useRef, useState } from "react";
 import { Microscope } from "lucide-react";
 import {
   MAG_PRESETS,
@@ -18,17 +18,55 @@ export function Sep() {
 }
 
 // Popover anchored directly under its trigger button (parent must be `relative`).
+//
+// `maxWidth` is not decoration: these menus have fixed widths (w-80 = 320px) and
+// the viewer clips its own overflow, so in a narrow viewer the menu was rendered
+// entirely outside the visible box — indistinguishable from "the menus don't
+// open". Callers pass the viewer's measured width so the menu always fits.
 export function Popover({
   children,
   className = "",
+  maxWidth,
 }: {
   children: React.ReactNode;
   className?: string;
+  maxWidth?: number;
 }) {
+  const ref = useRef<HTMLDivElement>(null);
+
+  // Keep the menu inside the viewer.
+  //
+  // A max-width alone cannot do this: the menu is anchored under its trigger, so
+  // its left edge already sits however far along the toolbar that button is.
+  // Measured overflow of 68px on a 346px-wide viewer, and the viewer clips its
+  // own overflow, so the menu was simply invisible. Nudge it back horizontally
+  // and cap its height against the viewer's bottom edge.
+  useLayoutEffect(() => {
+    const el = ref.current;
+    const viewer = el?.closest(".wsi-squircle");
+    if (!el || !viewer) return;
+    // Reset before measuring, or each pass compounds the previous nudge.
+    el.style.transform = "";
+    el.style.maxHeight = "";
+    const v = viewer.getBoundingClientRect();
+    const r = el.getBoundingClientRect();
+    const PAD = 12;
+    const overRight = r.right - (v.right - PAD);
+    const overLeft = v.left + PAD - r.left;
+    const dx = overRight > 0 ? -overRight : overLeft > 0 ? overLeft : 0;
+    if (dx) el.style.transform = `translateX(${Math.round(dx)}px)`;
+    const room = v.bottom - PAD - r.top;
+    if (room > 0 && r.height > room) el.style.maxHeight = `${Math.round(room)}px`;
+  });
+
   return (
     <div
+      ref={ref}
       data-pb-popover
-      className={`absolute top-full z-20 mt-2 rounded-lg bg-white/95 shadow-lg ring-1 ring-black/5 backdrop-blur ${
+      style={maxWidth ? { maxWidth } : undefined}
+      // `before:` draws a transparent bridge over the 8px mt-2 gap so the pointer
+      // never leaves the hover group on its way from the button to the menu.
+      className={`absolute top-full z-20 mt-2 overflow-y-auto overflow-x-hidden wsi-glass rounded-lg shadow-lg ring-1 ring-black/5 before:absolute before:inset-x-0 before:-top-2 before:h-2 before:content-[''] ${
         className.includes("right-0") ? "" : "left-0"
       } ${className}`}
     >
@@ -173,7 +211,7 @@ export function BarBtn({
       onClick={onClick}
       // Bigger touch target + icon on mobile (h-9/size-5), compact on desktop (h-7/size-4).
       // The [&_svg] rule scales the icon children regardless of their own h-4/w-4 classes.
-      className={`flex h-9 w-9 items-center justify-center rounded-md text-gray-700 hover:bg-gray-100 [&_svg]:size-5 md:h-7 md:w-7 md:[&_svg]:size-4 ${
+      className={`flex h-9 w-9 items-center justify-center rounded-md text-gray-700 hover:bg-black/5 [&_svg]:size-5 md:h-7 md:w-7 md:[&_svg]:size-4 ${
         active ? "bg-primary/10 text-primary" : ""
       }`}
     >
@@ -189,15 +227,27 @@ export function RotationDial({
   degrees,
   onChange,
   size = 76,
+  touch = false,
 }: {
   degrees: number;
   onChange: (deg: number) => void;
   size?: number;
+  /** Fatten the parts a finger has to find: the knob and the ring it rides. */
+  touch?: boolean;
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const SIZE = size;
   const C = SIZE / 2;
-  const R = SIZE / 2 - 7;
+  // The knob is the affordance — it is what reads as "drag me" — so it grows by
+  // more than the dial does on touch. A pointer can aim at 15px; a fingertip
+  // covers about 45px of screen and hides whatever is under it.
+  const KNOB = SIZE * (touch ? 0.105 : 0.072);
+  // The ring's radius is derived FROM the knob, not fixed: the knob is centred on
+  // the ring, so a radius that ignores it puts half the knob outside the disc,
+  // where the SVG viewBox clips it flat. That is what a hard-coded `SIZE / 2 - 7`
+  // did as soon as the knob grew for touch.
+  const DISC_INSET = 3;
+  const R = SIZE / 2 - DISC_INSET - KNOB - 1;
 
   const angleFromEvent = useCallback((clientX: number, clientY: number) => {
     const el = ref.current;
@@ -231,12 +281,19 @@ export function RotationDial({
       onDoubleClick={() => onChange(0)}
       onWheel={(e) => onChange(degrees + (e.deltaY < 0 ? 1 : -1))}
       title="Rotate — drag the knob, scroll = 1°, double-click = reset"
-      className="group absolute bottom-3 right-3 cursor-grab touch-none select-none opacity-85 drop-shadow transition-opacity hover:opacity-100 active:cursor-grabbing"
+      className="group absolute bottom-3 right-3 cursor-grab touch-none select-none active:cursor-grabbing"
       style={{ width: SIZE, height: SIZE }}
     >
-      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="h-full w-full">
-        {/* white disc backing so the dial stays visible over any slide */}
-        <circle cx={C} cy={C} r={R + 4} fill="white" fillOpacity="0.9" />
+      {/* Frosted disc backing so the dial stays legible over any slide, and matches
+          the rest of the chrome. A real element rather than an SVG <circle> —
+          backdrop-filter is not reliable on SVG shapes. It fills the box; the ring
+          is inset from it by the knob's radius so the knob rides inside the glass. */}
+      <div
+        aria-hidden
+        className="wsi-glass pointer-events-none absolute rounded-full shadow-md ring-1 ring-black/5"
+        style={{ inset: DISC_INSET }}
+      />
+      <svg viewBox={`0 0 ${SIZE} ${SIZE}`} className="relative h-full w-full">
         {/* ring track */}
         <circle
           cx={C}
@@ -244,17 +301,17 @@ export function RotationDial({
           r={R}
           fill="none"
           stroke="currentColor"
-          strokeWidth="2.5"
+          strokeWidth={touch ? 4 : 2.5}
           className="text-primary/40"
         />
         {/* knob */}
         <circle
           cx={hx}
           cy={hy}
-          r={(SIZE * 0.072).toFixed(1)}
+          r={KNOB.toFixed(1)}
           className="fill-primary"
           stroke="white"
-          strokeWidth="2"
+          strokeWidth={touch ? 3 : 2}
         />
         <text
           x={C}
@@ -293,7 +350,7 @@ export function MagPanelBody({
               onClick={() => onSetMagnification(m)}
               className={`rounded px-1 py-2 text-center text-sm font-medium tabular-nums max-md:landscape:shrink-0 max-md:landscape:px-3 md:px-1 md:py-0.5 md:text-[11px] ${
                 TIGHT_PRESETS.has(m) ? "max-md:portrait:hidden" : ""
-              } ${active ? "bg-primary text-primary-foreground" : "text-gray-700 hover:bg-gray-100"}`}
+              } ${active ? "bg-primary text-primary-foreground" : "text-gray-700 hover:bg-black/5"}`}
             >
               {m}×
             </button>
@@ -371,7 +428,7 @@ export function RelatedPanelBody({
       {items.map((s, i) => (
         <button
           key={s.key}
-          onClick={() => onPick(s.key)}
+          onClick={() => onPick(s.value)}
           className={`block rounded-lg p-2 text-left landscape:w-44 landscape:shrink-0 ${
             s.active ? "bg-primary/5 ring-2 ring-primary" : "bg-gray-50 active:bg-gray-100"
           }`}
@@ -397,7 +454,7 @@ export function RelatedPanelBody({
               </div>
             )}
             {s.stain && (
-              <span className="pointer-events-none absolute left-1 top-1 max-w-[calc(100%-0.5rem)] truncate rounded bg-white/90 px-1.5 py-0.5 text-[9px] font-medium uppercase leading-none tracking-[0.1em] text-slate-500 shadow-sm ring-1 ring-black/5 backdrop-blur">
+              <span className="pointer-events-none absolute left-1 top-1 max-w-[calc(100%-0.5rem)] truncate rounded bg-white/90 px-1.5 py-0.5 text-[9px] font-medium uppercase leading-none tracking-[0.1em] text-slate-500 shadow-sm ring-1 ring-black/5">
                 {s.stain}
               </span>
             )}

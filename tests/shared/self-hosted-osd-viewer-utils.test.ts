@@ -146,9 +146,31 @@ describe("buildPanelItems", () => {
   it("corpus mode keys off slideUrl and flags the active slide", () => {
     const items = buildPanelItems(true, relatedSlides, [], "u2", null);
     expect(items).toEqual([
-      { key: "u1", label: "H&E", thumbUrl: "a.jpg", stain: "HE", active: false },
-      { key: "u2", label: "PAS", thumbUrl: "b.jpg", stain: "PAS", active: true },
+      { key: "u1#0", value: "u1", label: "H&E", thumbUrl: "a.jpg", stain: "HE", active: false },
+      { key: "u2#1", value: "u2", label: "PAS", thumbUrl: "b.jpg", stain: "PAS", active: true },
     ]);
+  });
+
+  // A LearnHaem case's slides all share the course-page URL and differ only by
+  // their derived tile source. Keying on slideUrl collided in React ("two children
+  // with the same key") and made every sibling select the first one.
+  it("gives siblings that share a slideUrl distinct keys", () => {
+    const sameUrl = [
+      { id: "learnhaem_1", label: "H&E", slideUrl: "course-page" },
+      { id: "learnhaem_2", label: "CD34", slideUrl: "course-page" },
+      { id: "learnhaem_3", label: "MPO", slideUrl: "course-page" },
+    ];
+    const items = buildPanelItems(true, sameUrl, [], "course-page", null, "learnhaem_2");
+    expect(new Set(items.map((i) => i.key)).size).toBe(3);
+    // Selection identifies the exact slide, not just its page.
+    expect(items.map((i) => i.value)).toEqual(["learnhaem_1", "learnhaem_2", "learnhaem_3"]);
+    expect(items.map((i) => i.active)).toEqual([false, true, false]);
+  });
+
+  it("falls back to slideUrl identity when no ids are supplied", () => {
+    const items = buildPanelItems(true, relatedSlides, [], "u2", null);
+    expect(items.map((i) => i.value)).toEqual(["u1", "u2"]);
+    expect(new Set(items.map((i) => i.key)).size).toBe(2);
   });
 
   it("corpus mode tolerates undefined relatedSlides", () => {
@@ -158,8 +180,22 @@ describe("buildPanelItems", () => {
   it("MGH mode keys off name and defaults the active slide to the first", () => {
     const items = buildPanelItems(false, undefined, related, "ignored", null);
     expect(items).toEqual([
-      { key: "n1", label: "Slide 1", thumbUrl: "c.jpg", stain: undefined, active: true },
-      { key: "n2", label: "Slide 2", thumbUrl: "d.jpg", stain: undefined, active: false },
+      {
+        key: "n1",
+        value: "n1",
+        label: "Slide 1",
+        thumbUrl: "c.jpg",
+        stain: undefined,
+        active: true,
+      },
+      {
+        key: "n2",
+        value: "n2",
+        label: "Slide 2",
+        thumbUrl: "d.jpg",
+        stain: undefined,
+        active: false,
+      },
     ]);
   });
 

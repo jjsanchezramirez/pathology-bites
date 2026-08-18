@@ -553,7 +553,9 @@
     --card-foreground: hsl(0 0% 14.902%);
     --popover: hsl(0 0% 100%);
     --popover-foreground: hsl(0 0% 14.902%);
-    --primary: hsl(186 66% 32%); /* Teal primary — 32% L gives white-on-teal 4.85:1 (WCAG AA); 40% was 3.28:1 and failed color-contrast */
+    --primary: hsl(
+      186 66% 32%
+    ); /* Teal primary — 32% L gives white-on-teal 4.85:1 (WCAG AA); 40% was 3.28:1 and failed color-contrast */
     --primary-foreground: hsl(0 0% 100%);
     --secondary: hsl(210 40% 96.1%);
     --secondary-foreground: hsl(222.2 47.4% 11.2%);
@@ -573,7 +575,9 @@
     --chart-5: hsl(354 78% 56%);
     --sidebar: hsl(222.2 47.4% 11.2%);
     --sidebar-foreground: hsl(214.3 31.8% 91.4%);
-    --sidebar-primary: hsl(186 66% 32%); /* 32% L → white-on-teal 4.85:1 (WCAG AA), matches --primary; foreground is white */
+    --sidebar-primary: hsl(
+      186 66% 32%
+    ); /* 32% L → white-on-teal 4.85:1 (WCAG AA), matches --primary; foreground is white */
     --sidebar-primary-foreground: hsl(0 0% 100%);
     --sidebar-accent: hsl(217.2 32.6% 17.5%);
     --sidebar-accent-foreground: hsl(0 0% 100%);
@@ -889,4 +893,186 @@
 /* Apply letter-spacing globally when themes specify it */
 .dashboard-theme-container {
   letter-spacing: var(--tracking-normal, 0em);
+}
+
+/* One frosted-glass surface for ALL viewer chrome.
+ *
+ * A single class rather than per-element `bg-white/xx backdrop-blur-*` because
+ * the opacities had already drifted (95 / 98 / 90 across nine elements), and
+ * mismatched transparency between panels that sit side by side reads as a bug.
+ * Change the look here and every surface moves together.
+ *
+ * `saturate` is what makes it read as glass rather than as washed-out white: it
+ * keeps the tissue's colour in the blur instead of greying it out.
+ */
+.wsi-glass {
+  background-color: rgb(255 255 255 / 0.9);
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+}
+
+/* Squircle corners for the in-house WSI viewer's chrome (toolbar, panels, chips).
+ *
+ * `corner-shape` (CSS Borders Level 4) reinterprets an element's existing
+ * `border-radius` as a superellipse instead of a circular arc. Chromium ships it;
+ * Safari and Firefox ignore the declaration and keep the normal rounded corner,
+ * so this is purely additive — no fallback needed and nothing to feature-detect.
+ *
+ * The broad descendant selector is safe because `corner-shape` does nothing when
+ * `border-radius` is 0: only elements that already round are affected, and the
+ * radius itself still lives in the Tailwind classes.
+ *
+ * `rounded-full` is excluded deliberately. A superellipse of a circle is a lumpy
+ * square, which is wrong for the drag handle and the rotation slider's track and
+ * knob — those are meant to read as pills and dots.
+ */
+.wsi-squircle,
+.wsi-squircle *:not([class*="rounded-full"]),
+.pb-squircle,
+.pb-squircle *:not([class*="rounded-full"]) {
+  corner-shape: squircle;
+}
+
+/* `pb-squircle` is the same treatment for a surface OUTSIDE the viewer, so a
+ * screen that embeds the viewer doesn't read as two different shape languages
+ * meeting at the slide's edge (squircled toolbar beside circular answer
+ * options). It carries no `--radius` override — unlike `.wsi-squircle` below,
+ * which rescales the viewer's own chrome — so every radius stays exactly as its
+ * Tailwind class set it and only the corner's curve changes. */
+
+/* Softer corners on that chrome.
+ *
+ * A squircle reads visibly tighter than the circular arc it replaces at the same
+ * radius, so the toolbar and chips looked sharper after the switch than before
+ * it. `--radius` is the root of the whole scale (`--radius-lg: var(--radius)`,
+ * `-md: calc(… - 2px)`, `-sm: calc(… - 4px)`), and custom properties inherit —
+ * so raising it here rescales every rounded-* class in the viewer at once,
+ * proportionally, without touching a single className.
+ *
+ * 0.5rem -> 0.75rem: lg 8->12px, md 6->10px, sm 4->8px. Scoped to the viewer, so
+ * the rest of the app keeps the global radius.
+ */
+.wsi-squircle {
+  --radius: 1rem;
+}
+
+/* OSD renders into a box 1px larger than the viewer on every side; the wrapper's
+ * overflow-hidden then clips that ring away. OSD can settle a fraction of a pixel
+ * off its own bounds, exposing the black backdrop as a hairline along an edge —
+ * cropping the outermost pixel removes that whole class of artifact instead of
+ * chasing each instance. Nothing is resampled: the tiles simply render into a
+ * slightly larger viewport.
+ *
+ * `!important` on position because OpenSeadragon writes `position: relative`
+ * INLINE on its container, which beats a utility class — with the element left
+ * relative, `inset` has nothing to stretch against and the box collapses to zero
+ * height.
+ *
+ * The chrome is positioned against the wrapper, not this element, so every inset
+ * measured above is unaffected.
+ */
+.wsi-squircle .wsi-osd-bleed {
+  position: absolute !important;
+  inset: -1px !important;
+}
+
+/* The minimap is built by OpenSeadragon, not by our JSX, so it carries no
+ * `rounded-*` class — and `corner-shape` above does nothing without a radius,
+ * which is why it stayed square while every other chip rounded. Give it the
+ * radius here and clip its canvas to it.
+ *
+ * `!important` because OSD writes width/height/position/overflow inline on this
+ * element and its own stylesheet owns the border; the radius has to win over
+ * both without us reaching into the library.
+ *
+ * `var(--radius)`, NOT `var(--radius-lg)`: `--radius-lg: var(--radius)` is
+ * declared on :root, so it computes to a literal 0.5rem there and inherits as
+ * that literal — overriding `--radius` further down cannot re-resolve it. The
+ * `rounded-*` utilities reference `--radius` directly, which is why they picked
+ * up the softening above and a `--radius-lg` rule here silently did not.
+ */
+.wsi-squircle .navigator {
+  border-radius: var(--radius) !important;
+  overflow: hidden !important;
+  /* OSD writes `border: 2px solid #555` inline. Drop it and lift the minimap with
+   * the same shadow + hairline ring the toolbar and chips use (Tailwind's
+   * `shadow-md ring-1 ring-black/5`), so it reads as one of our surfaces rather
+   * than a library default. */
+  border: 0 !important;
+
+  /* The .wsi-glass colour and filter, but reached the way this element has to
+   * reach it.
+   *
+   * The thumbnail canvas covers the whole box, so unlike the toolbar or the chips
+   * there is no exposed surface for `backdrop-filter` to render into: the only
+   * thing that lets anything through here is the ELEMENT's opacity. Hence 0.9 on
+   * the element — the same 90% the other surfaces get from their background
+   * alpha, arrived at differently because the content is a canvas rather than
+   * text. (A framed mount would expose real glass, but it reads as a white border
+   * around the thumbnail, which is worse than the thing it fixes.)
+   *
+   * The background colour is then seen in exactly one place: the wedges a ROTATED
+   * slide leaves unpainted. White keeps those consistent with the rest of the
+   * chrome — untinted they showed the magnified tissue behind and washed the panel
+   * pink, which is what started all this.
+   */
+  opacity: 0.9 !important;
+  background-color: rgb(255 255 255 / 0.9) !important;
+  -webkit-backdrop-filter: blur(12px) saturate(150%);
+  backdrop-filter: blur(12px) saturate(150%);
+
+  /* Inset from the viewer's corner, matching the 12px the toolbar, logo and
+   * rotation dial use. OSD pins the navigator hard against the edge and writes
+   * `margin: 0` inline, so this needs !important to breathe.
+   *
+   * The numbers are not 12/12: the minimap lives INSIDE the OSD container, which
+   * is bled 1px past the viewer on every side (.wsi-osd-bleed), and OSD's own
+   * container adds a further 6px at the bottom only. 13 left and 7 bottom land it
+   * on the same 12px as the toolbar, logo and rotation dial, which are positioned
+   * against the wrapper instead. */
+  margin: 0 0 7px 13px !important;
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.05),
+    0 4px 6px -1px rgb(0 0 0 / 0.1),
+    0 2px 4px -2px rgb(0 0 0 / 0.1);
+}
+
+/* The 2px outermost-pixel crop, the same one the main viewer gets (.wsi-osd-bleed):
+ * a slide whose pyramid carries the scanner's dark border draws it along the
+ * thumbnail's edge, and 2px clears it.
+ *
+ * On the CONTAINER, which holds both the thumbnail canvas and the viewport
+ * rectangle — so the two scale together and the rectangle keeps pointing at the
+ * right part of the thumbnail. Cropping the canvas alone slides them apart.
+ *
+ * `width`/`height` must be released: OSD writes them inline in px, and an explicit
+ * width beats `inset` on an absolutely positioned box.
+ */
+.wsi-squircle .navigator > .openseadragon-container {
+  position: absolute !important;
+  inset: -2px !important;
+  width: auto !important;
+  height: auto !important;
+}
+
+/* OSD builds the minimap at init and writes an inline `display` on it, so a viewer
+ * that has since been resized below the floor (MINIMAP_MIN_W/H) cannot simply drop
+ * the element — hence a class on the wrapper and !important here. Applies to the
+ * shrink case only; a viewer that starts small never builds one. */
+.wsi-hide-minimap .navigator {
+  display: none !important;
+}
+
+/* The viewport rectangle.
+ *
+ * Radius: zoomed fully out it covers the whole minimap, so with a rounded box its
+ * square corners get sliced off and leave stray slivers. A slightly tighter radius
+ * lets it sit inside the curve instead of fighting it.
+ *
+ * Colour: OpenSeadragon's default is a dark red set INLINE on the element, hence
+ * !important. Using the app's accent instead keeps the one piece of coloured UI in
+ * the viewer consistent with the rotation dial and the rest of the chrome. */
+.wsi-squircle .displayregion {
+  border-radius: calc(var(--radius) - 4px) !important;
+  border-color: var(--primary) !important;
 }
