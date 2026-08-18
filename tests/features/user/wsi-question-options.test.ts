@@ -257,3 +257,26 @@ describe("candidateAlterations", () => {
     expect(out.join(" ")).not.toContain("ETV6::NTRK3");
   });
 });
+
+describe("buildImmunoOptions — scarce positives", () => {
+  it("uses the negatives it has when only one marker is positive", () => {
+    // WHO-derived profiles often define an entity by a single positive against
+    // several excluded markers. The composition step used to take at most one
+    // negative, so this four-call profile produced a two-marker set and was
+    // discarded — 20+ real corpus cases lost to arithmetic, not to data.
+    const built = buildImmunoOptions("ERG+, SMA-, Thyroglobulin-, TTF-1-");
+    expect(built).not.toBeNull();
+    expect(built!.options).toHaveLength(5);
+    expect(built!.correct).toContain("ERG+");
+    expect(built!.correct).toContain("SMA-");
+  });
+
+  it("still prefers positives when both polarities are plentiful", () => {
+    const built = buildImmunoOptions("A+, B+, C+, D+, E+, F+, X-, Y-, Z-");
+    expect(built).not.toBeNull();
+    const plus = (built!.correct.match(/\+/g) || []).length;
+    const minus = (built!.correct.match(/-/g) || []).length;
+    expect(plus).toBe(4);
+    expect(minus).toBe(1);
+  });
+});

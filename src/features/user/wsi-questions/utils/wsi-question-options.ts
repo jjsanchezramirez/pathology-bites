@@ -89,11 +89,17 @@ export function buildImmunoOptions(
   const negatives = calls.filter((c) => !c.positive);
   if (!positives.length || !negatives.length) return null;
 
+  // Aim for roughly a third negatives, then top up from whichever polarity has
+  // more. Without the top-up a profile like "ERG+, SMA-, Thyroglobulin-, TTF-1-"
+  // is thrown away: one positive is available, so the first slice yields one
+  // marker, the negatives contribute one, and the set falls under the minimum —
+  // even though four perfectly good calls were sitting there. That shape is
+  // common in WHO-derived profiles, where an entity is defined by a single
+  // positive against several excluded markers.
   const negativesWanted = Math.min(negatives.length, Math.max(1, Math.floor(markerCount / 3)));
-  const chosen = [
-    ...positives.slice(0, markerCount - negativesWanted),
-    ...negatives.slice(0, negativesWanted),
-  ];
+  const positivesTaken = Math.min(positives.length, markerCount - negativesWanted);
+  const negativesTaken = Math.min(negatives.length, markerCount - positivesTaken);
+  const chosen = [...positives.slice(0, positivesTaken), ...negatives.slice(0, negativesTaken)];
   if (chosen.length < 4) return null;
 
   const correct = format(chosen);
