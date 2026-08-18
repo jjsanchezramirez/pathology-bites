@@ -17,13 +17,23 @@ import {
 } from "@aws-sdk/client-s3";
 import { log } from "@/shared/utils/logging";
 
+/**
+ * The bucket used when a caller does not name one.
+ *
+ * This was `CLOUDFLARE_R2_BUCKET_NAME`, read from the environment with this
+ * exact string as its fallback — and every environment set it to that same
+ * string, so the knob was never turned. Worse, it implied a flexibility the
+ * other three buckets never had: `pathology-bites-audio`, `-videos` and `-data`
+ * are all named inline at their call sites. One configurable bucket and three
+ * literals is not a convention, and the env var was the half that lied.
+ */
+const DEFAULT_BUCKET = "pathology-bites-images";
+
 // R2 Configuration - Load dynamically to support scripts
 function getR2Config() {
   const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
   const CLOUDFLARE_R2_ACCESS_KEY_ID = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
   const CLOUDFLARE_R2_SECRET_ACCESS_KEY = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-  const CLOUDFLARE_R2_BUCKET_NAME =
-    process.env.CLOUDFLARE_R2_BUCKET_NAME || "pathology-bites-images";
   const CLOUDFLARE_R2_PUBLIC_URL =
     process.env.CLOUDFLARE_R2_PUBLIC_URL ||
     (CLOUDFLARE_ACCOUNT_ID ? `https://pub-${CLOUDFLARE_ACCOUNT_ID}.r2.dev` : "");
@@ -38,7 +48,7 @@ function getR2Config() {
     CLOUDFLARE_ACCOUNT_ID,
     CLOUDFLARE_R2_ACCESS_KEY_ID,
     CLOUDFLARE_R2_SECRET_ACCESS_KEY,
-    CLOUDFLARE_R2_BUCKET_NAME,
+    defaultBucket: DEFAULT_BUCKET,
     CLOUDFLARE_R2_PUBLIC_URL,
   };
 }
@@ -109,7 +119,7 @@ export async function uploadToR2(
     const contentType =
       options.contentType || (file instanceof File ? file.type : "application/octet-stream");
     const fileBuffer = file instanceof File ? Buffer.from(await file.arrayBuffer()) : file;
-    const bucketName = options.bucket || config.CLOUDFLARE_R2_BUCKET_NAME;
+    const bucketName = options.bucket || config.defaultBucket;
 
     const command = new PutObjectCommand({
       Bucket: bucketName,
@@ -144,7 +154,7 @@ export async function deleteFromR2(key: string, bucket?: string): Promise<void> 
     const config = getR2Config();
     const r2Client = createR2Client();
 
-    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME;
+    const bucketName = bucket || config.defaultBucket;
 
     const command = new DeleteObjectCommand({
       Bucket: bucketName,
@@ -172,7 +182,7 @@ export async function bulkDeleteFromR2(
     const config = getR2Config();
     const r2Client = createR2Client();
 
-    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME;
+    const bucketName = bucket || config.defaultBucket;
 
     // R2 supports bulk delete up to 1000 objects
     const chunks = [];
@@ -224,7 +234,7 @@ export async function getR2FileInfo(key: string): Promise<R2FileInfo | null> {
     const r2Client = createR2Client();
 
     const command = new HeadObjectCommand({
-      Bucket: config.CLOUDFLARE_R2_BUCKET_NAME,
+      Bucket: config.defaultBucket,
       Key: key,
     });
 
@@ -320,7 +330,7 @@ export async function getFileContent(bucket: string, key: string): Promise<Uint8
 export function getR2PublicUrl(key: string, bucket?: string): string {
   try {
     const config = getR2Config();
-    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME;
+    const bucketName = bucket || config.defaultBucket;
 
     // Public access buckets
     if (bucketName === "pathology-bites-images") {
@@ -458,7 +468,7 @@ export async function listR2Files(
     const r2Client = createR2Client();
 
     // Use provided bucket or default to configured bucket
-    const bucketName = options.bucket || config.CLOUDFLARE_R2_BUCKET_NAME;
+    const bucketName = options.bucket || config.defaultBucket;
 
     const command = new ListObjectsV2Command({
       Bucket: bucketName,
@@ -604,8 +614,8 @@ export async function copyR2Object(
     const config = getR2Config();
     const r2Client = createR2Client();
 
-    const srcBucket = sourceBucket || config.CLOUDFLARE_R2_BUCKET_NAME;
-    const destBucket = destinationBucket || config.CLOUDFLARE_R2_BUCKET_NAME;
+    const srcBucket = sourceBucket || config.defaultBucket;
+    const destBucket = destinationBucket || config.defaultBucket;
 
     const command = new CopyObjectCommand({
       Bucket: destBucket,
@@ -648,7 +658,7 @@ export async function moveR2Folder(
 ): Promise<{ moved: number; errors: string[] }> {
   try {
     const config = getR2Config();
-    const bucketName = bucket || config.CLOUDFLARE_R2_BUCKET_NAME;
+    const bucketName = bucket || config.defaultBucket;
 
     // List all objects with the source prefix
     const listResult = await listR2Files({
@@ -690,7 +700,7 @@ export async function getBucketSize(
   try {
     const config = getR2Config();
     const r2Client = createR2Client();
-    const targetBucket = bucketName || config.CLOUDFLARE_R2_BUCKET_NAME;
+    const targetBucket = bucketName || config.defaultBucket;
 
     let totalSize = 0;
     let objectCount = 0;
