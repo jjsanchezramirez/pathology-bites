@@ -19,11 +19,24 @@ export function WSISlideCredits({ wsi }: { wsi: VirtualSlide }) {
     return author;
   };
 
+  // Credit the repository the slide actually came from. The corpus used to be
+  // PathPresenter alone, so this line was a constant; it now also carries curated
+  // haematolymphoid slides from Leeds, WHO, MGH and others, and crediting those to
+  // PathPresenter would be a false attribution rather than a cosmetic slip.
+  const isPathPresenter = (wsi.repository || "PathPresenter") === "PathPresenter";
+
   return (
     <div className="mt-2 text-xs text-muted-foreground text-center">
       <div>
-        Virtual slide provided by <span className="font-bold">PathPresenter</span> and{" "}
-        <span className="font-bold">Ace My Path</span>. All credits belong to the original authors.
+        Virtual slide provided by{" "}
+        <span className="font-bold">{wsi.repository || "PathPresenter"}</span>
+        {isPathPresenter && (
+          <>
+            {" "}
+            and <span className="font-bold">Ace My Path</span>
+          </>
+        )}
+        . All credits belong to the original authors.
       </div>
       {hasAuthors && (
         <div className="mt-1">

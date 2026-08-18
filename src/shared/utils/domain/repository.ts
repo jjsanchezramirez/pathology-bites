@@ -22,8 +22,9 @@ export function getRepositoryFromId(id: string): string {
 }
 
 // Repositories our in-house OSD viewer can render (tilesource resolver handles DZI / Leeds
-// / Aperio). Others (PathPresenter SAS-token, Recut login, Wirtualny IIIF-not-wired) keep
-// the external link-out.
+// / Aperio / Wirtualny). Others — Recut (login) and University of Toronto (auth-walled) —
+// keep the external link-out. PathPresenter renders too, but only via a pre-resolved
+// tile_source_url published with the case, so it is gated on that field rather than listed here.
 const VIEWER_SUPPORTED_REPOS = new Set([
   "Hematopathology eTutorial",
   "Leeds University",

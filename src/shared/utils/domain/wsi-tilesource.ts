@@ -147,6 +147,25 @@ async function resolveLearnhaem(dziUrl: string): Promise<WsiTileSourceResult> {
   return parseDzi(dziUrl, tiles);
 }
 
+// PathPresenter. The corpus stores the case-viewer page (pathpresenter.net/public/case?token=…),
+// which is a Vue app, not a slide — so the DZI is resolved ahead of time and handed here as the
+// slide's tileSourceUrl. What the app itself loads is ordinary Deep Zoom on an Azure Blob
+// container: "<root>.dzi" with tiles under "<root>_files/". The site appends a SAS signature to
+// every request, but the container is public and both the manifest and the tiles return 200
+// unsigned, so nothing here needs credentials or an expiry-aware refresh.
+async function resolvePathPresenter(dziUrl: string): Promise<WsiTileSourceResult> {
+  const tiles = dziUrl.replace(/\.dzi$/, "_files/");
+  // ppprodpublic keeps its pyramids in a PRIVATE container, so the manifest 404s
+  // unsigned. The tile proxy already mints the (public, short-lived) SAS for that
+  // host, so read the manifest through it rather than duplicating the signing
+  // dance server-side. Tiles need no special casing: DZI tile URLs are proxied on
+  // the client anyway (kind "dzi" is canvas-tainting), so they get signed there.
+  const manifest = /(^|\/\/)ppprodpublic\.blob\.core\.windows\.net/i.test(dziUrl)
+    ? `https://wsi.pathologybites.com/?url=${dziUrl}`
+    : dziUrl;
+  return parseDzi(manifest, tiles);
+}
+
 // KiKoXP (kikoxp.com) dynamic tiler. slides.kikoxp.com lazily tiles each slide on demand: a cold
 // slide's .dzi 404s ("Slide not available") until a GET to "<dzi-url>.status" triggers tiling. The
 // status endpoint transitions "Starting to Fetch Slide" → "Fetching Slide..." → "Slide Active", at
@@ -367,6 +386,11 @@ export async function resolveTileSource(
     if (host.includes("neuro2.pathology.pitt.edu")) return await resolveAanp(slideUrl);
     if (host.includes("wirtualnymikroskop.mostwiedzy.pl")) return await resolveWirtualny(slideUrl);
     if (host.includes("slides.learnhaem.com")) return await resolveLearnhaem(slideUrl);
+    // Three distinct hosts, not subdomains of one another — a substring test on
+    // any single one silently misses the others. ppprodpublic is the private
+    // container (signed via the tile proxy, see resolvePathPresenter).
+    if (/^(pathpresenter\d*|ppprodpublic)\.blob\.core\.windows\.net$/.test(host))
+      return await resolvePathPresenter(slideUrl);
     // KiKoXP — capability only; not in the live corpus (see resolveKikoxp note).
     if (host === "slides.kikoxp.com" || host === "objektyv-production.s3.amazonaws.com")
       return await resolveKikoxp(slideUrl);

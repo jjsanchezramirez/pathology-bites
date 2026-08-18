@@ -7,8 +7,17 @@ import { toast } from "@/shared/utils/ui/toast";
 import { log } from "@/shared/utils/logging";
 import { slideMatchesCategory } from "@/features/user/wsi-questions/components/wsi-question-generator-utils";
 
-// Type for PathPresenter case data from JSON
-interface PathPresenterCase {
+/**
+ * A case in the question corpus.
+ *
+ * Two sources share this file. PathPresenter cases carry the author's own
+ * immuno/molecular notes and reach the viewer through a pre-resolved DZI. WHO
+ * haematolymphoid cases come from the curation tool instead — a slide from the
+ * virtual-slides corpus paired with the WHO entity as its answer — and carry a
+ * `repository` the tile-source resolver knows how to open by host. Fields the
+ * second kind uses are optional, so a PathPresenter case is unchanged.
+ */
+interface WsiQuestionCase {
   authors?: string[] | string;
   clinical_history?: string;
   chapter?: string;
@@ -21,21 +30,43 @@ interface PathPresenterCase {
   immuno_profile?: string;
   molecular_profile?: string;
   differential_diagnosis?: string;
+  /** Deep Zoom manifest on PathPresenter's Azure Blob containers. Resolved ahead of
+   *  time and published with the corpus: `url` is a Vue case page, not a slide, so
+   *  the in-house viewer has nothing to work from without this. 808/875 have one —
+   *  the rest never had a pyramid built. */
+  tile_source_url?: string;
+
+  // --- WHO haematolymphoid cases (curation-derived) ---
+  /** Corpus id (e.g. "leeds_1234"), used verbatim so history de-duplication works. */
+  slide_id?: string;
+  /** Drives the tile-source resolver; PathPresenter is assumed when absent. */
+  repository?: string;
+  stain?: string;
+  preview_image_url?: string;
+  /** What the slide physically is ("peripheral blood smear"), so the question
+   *  writer cannot invent a procedure that contradicts it. */
+  specimen?: string;
+  /** "who-entity" when the profiles describe the entity rather than this case. */
+  profile_source?: string;
 }
 
-// WSI data URL - using the optimized PathPresenter cases
+// WSI data URL - using the optimized PathPresenter cases.
+// The `v` param is a cache-buster, not a real version: the object carries no
+// Cache-Control and the loader fetches with `cache: "force-cache"`, so a browser
+// holding the pre-tile-source copy would keep serving slides the viewer cannot
+// render. Bump it whenever a republish adds a field the code depends on.
 const WSI_DATA_URL =
-  "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json";
+  "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json?v=haem-5";
 
 // Convert the PathPresenter cases JSON into VirtualSlide entries, dropping any
 // without a usable remote URL.
 function transformWSIData(raw: unknown): VirtualSlide[] {
-  const json = raw as { cases?: PathPresenterCase[] };
-  const pathPresenterCases = (json.cases || []) as PathPresenterCase[];
+  const json = raw as { cases?: WsiQuestionCase[] };
+  const pathPresenterCases = (json.cases || []) as WsiQuestionCase[];
 
   const entries: VirtualSlide[] = pathPresenterCases.map((pathCase, index) => {
-    // Generate consistent ID
-    const caseId = `pathpresenter_${index + 1}`;
+    // Curated cases bring their own corpus id; PathPresenter cases are numbered.
+    const caseId = pathCase.slide_id || `pathpresenter_${index + 1}`;
 
     // Parse authors - handle both string and array formats
     let authorsArray: string[] = [];
@@ -54,7 +85,7 @@ function transformWSIData(raw: unknown): VirtualSlide[] {
 
     return {
       id: caseId,
-      repository: "PathPresenter",
+      repository: pathCase.repository || "PathPresenter",
       category: pathCase.chapter || "Unknown",
       subcategory: pathCase.organ_system || "Unknown",
       diagnosis: pathCase.diagnosis || "Unknown diagnosis",
@@ -62,12 +93,13 @@ function transformWSIData(raw: unknown): VirtualSlide[] {
       age: ageMatch ? ageMatch[1] : null,
       gender: genderMatch ? genderMatch[1].toLowerCase() : null,
       clinical_history: clinicalHistory,
-      stain_type: "H&E", // Assume H&E for PathPresenter cases
+      stain_type: pathCase.stain || "H&E", // PathPresenter records none; assume H&E
       image_url: pathCase.url,
       slide_url: pathCase.url,
       case_url: pathCase.url,
+      tileSourceUrl: pathCase.tile_source_url,
       thumbnail_url: "",
-      preview_image_url: "",
+      preview_image_url: pathCase.preview_image_url || "",
       magnification: "Variable",
       organ_system: pathCase.organ_system,
       difficulty_level: "medium",
@@ -80,6 +112,8 @@ function transformWSIData(raw: unknown): VirtualSlide[] {
         immuno_profile: pathCase.immuno_profile,
         molecular_profile: pathCase.molecular_profile,
         differential_diagnosis: pathCase.differential_diagnosis,
+        specimen: pathCase.specimen,
+        profile_source: pathCase.profile_source,
         authors: authorsArray,
       },
       created_at: new Date().toISOString(),

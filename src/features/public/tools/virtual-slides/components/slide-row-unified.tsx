@@ -163,6 +163,10 @@ export const SlideRowUnified = memo(function SlideRowUnified({
   const categoryInfo = getVirtualSlideCategoryInfo(slide.category);
   const [relatedOpen, setRelatedOpen] = useState(false);
 
+  // Whether the in-house viewer is actually on offer for this row. Doubles as the
+  // condition for suppressing a login-walled external link (see the Actions cell).
+  const canOpenViewer = Boolean(onOpenViewer && isViewerSupported(slide.repository));
+
   // MGH cases have no corpus case-group — their within-case stain set lives behind /list and is
   // fetched lazily on first expand. mghSlideCount (>1) is baked into the corpus so the row can
   // offer the expander without a per-row network hit.
@@ -303,7 +307,7 @@ export const SlideRowUnified = memo(function SlideRowUnified({
       {/* Actions */}
       <td className="p-2 md:p-4 w-16 md:w-40">
         <div className="flex flex-col gap-2">
-          {onOpenViewer && isViewerSupported(slide.repository) && (
+          {canOpenViewer && (
             <button
               onClick={onOpenViewer}
               aria-label="Open in our viewer"
@@ -313,14 +317,19 @@ export const SlideRowUnified = memo(function SlideRowUnified({
               <span className="hidden md:inline">Open viewer</span>
             </button>
           )}
-          {/* Login-walled pages (per-case, mostly MGH): tiles are public but the external
-              page needs login, so we hide the link and route through the in-house viewer. */}
-          {slide.slide_url && !slide.loginWalled && (
+          {/* Login-walled pages: hide the external link ONLY when we can offer the
+              in-house viewer instead (MGH — its tiles are public, just the index.php
+              page is gated). Without that fallback, suppressing the link would leave
+              the row with no action at all, which is worse than a link that asks for
+              a login — PathPresenter's ~11k slide-library pages are the case in
+              point. Flagged either way, so the tooltip can warn before the click. */}
+          {slide.slide_url && (!slide.loginWalled || !canOpenViewer) && (
             <a
               href={slide.slide_url}
               target="_blank"
               rel="noopener noreferrer"
-              aria-label="View Slide"
+              aria-label={slide.loginWalled ? "View Slide (requires login)" : "View Slide"}
+              title={slide.loginWalled ? "Opens the source site, which requires a login" : undefined}
               className="inline-flex items-center justify-center rounded-md text-primary-foreground bg-primary hover:bg-primary/90 transition-colors p-2 md:px-3 md:py-1.5 text-xs font-medium"
             >
               <ExternalLink className="w-4 h-4 md:mr-1.5" />
