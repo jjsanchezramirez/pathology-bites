@@ -18,6 +18,8 @@ import {
   ACTIVE_AI_MODELS,
   AI_TASKS,
   DISABLED_AI_MODELS,
+  LEGACY_MODEL_REMAP,
+  VISION_CAPABLE_MODELS,
   VISION_FALLBACK_CHAIN,
   TEXT_FALLBACK_CHAIN,
 } from "@/shared/config/ai-models";
@@ -146,5 +148,32 @@ describe("AI call standardization", () => {
 
     // Headroom for image fetching, DB reads and assembly, which are not AI time.
     expect(criticalPath).toBeLessThanOrEqual(50_000);
+  });
+
+  // Providers retire models on their own schedule, and a remap is the one place
+  // a dead id can hide: nothing references it until a stale id shows up in a
+  // saved question or a user preference, at which point it resolves to a 404.
+  // Two have already rotted this way — llama-3.1-8b-instant (Groq, 2026-08-16)
+  // and llama-4-scout, which was retired without notice.
+  it("remaps every legacy model id onto a model that still exists", () => {
+    const live = new Set(ACTIVE_AI_MODELS.map((m) => m.id));
+    const dangling = Object.entries(LEGACY_MODEL_REMAP)
+      .filter(([, target]) => !live.has(target))
+      .map(([from, to]) => `${from} -> ${to}`);
+    expect(dangling).toEqual([]);
+  });
+
+  it("never remaps a legacy id onto itself", () => {
+    // A self-remap means the entry is doing nothing and the original id is being
+    // sent to a provider that no longer serves it.
+    const selfRefs = Object.entries(LEGACY_MODEL_REMAP).filter(([from, to]) => from === to);
+    expect(selfRefs).toEqual([]);
+  });
+
+  it("remaps a vision model onto a model that can still see", () => {
+    // Scout was the vision entry; remapping it to a text-only model would fail at
+    // call time with an unhelpful error rather than at config time.
+    const target = LEGACY_MODEL_REMAP["Llama-4-Scout-17B-16E-Instruct-FP8"];
+    expect(VISION_CAPABLE_MODELS.has(target)).toBe(true);
   });
 });

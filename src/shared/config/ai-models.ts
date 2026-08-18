@@ -18,10 +18,18 @@ export interface AIModel {
 // The Meta Llama API shut down July 6, 2026; stale IDs persisted in question
 // sets / user prefs are remapped here instead of erroring.
 export const LEGACY_MODEL_REMAP: Record<string, string> = {
-  "Llama-3.3-70B-Instruct": "llama-3.3-70b-versatile",
-  "Llama-3.3-8B-Instruct": "llama-3.1-8b-instant",
-  "Llama-4-Maverick-17B-128E-Instruct-FP8": "llama-3.3-70b-versatile",
-  "Llama-4-Scout-17B-16E-Instruct-FP8": "meta-llama/llama-4-scout-17b-16e-instruct",
+  "Llama-3.3-70B-Instruct": "openai/gpt-oss-120b",
+  // Was llama-3.1-8b-instant until Groq decommissioned it on 2026-08-16.
+  // openai/gpt-oss-20b is Groq's own recommended replacement and the closest
+  // thing left in that small-and-fast slot.
+  "Llama-3.3-8B-Instruct": "openai/gpt-oss-20b",
+  "Llama-4-Maverick-17B-128E-Instruct-FP8": "openai/gpt-oss-120b",
+  // Scout was the vision model, and it was remapped onto Groq's serving of it —
+  // which Groq has since retired too (it is absent from their live model list,
+  // the same reason the vision chain had to be rebuilt). Point it at the current
+  // vision chain leader so a stale Scout id still resolves to something that can
+  // actually see an image.
+  "Llama-4-Scout-17B-16E-Instruct-FP8": "gemini-3.5-flash-lite",
 };
 
 /** Resolve legacy model IDs to their live replacement (identity for current IDs). */
@@ -51,24 +59,23 @@ export function getModelProvider(model: string): string {
 
 // Active models (available for selection) - Prioritized for WSI Question Generator
 export const ACTIVE_AI_MODELS: AIModel[] = [
-  // Groq — fast Llama inference, free tier: 30 RPM, per-model daily token caps
+  // Groq — free tier: 30 RPM, per-model daily token caps.
+  //
+  // llama-3.3-70b-versatile lived here until Groq decommissioned it; the API now
+  // answers 404 "does not exist or you do not have access to it". It has no
+  // replacement: Groq's /models list still serves only the gpt-oss family and
+  // qwen3.6-27b, and both of the small ones are in DISABLED_AI_MODELS for
+  // running past the token cap without closing their JSON.
+  // Replaced llama-3.1-8b-instant, decommissioned by Groq 2026-08-16. This is
+  // Groq's nominated successor and keeps a small/fast option selectable.
   {
-    id: "llama-3.3-70b-versatile",
-    name: "Llama 3.3 70B (Groq)",
+    id: "openai/gpt-oss-20b",
+    name: "GPT-OSS 20B (Groq)",
     provider: "groq",
     available: true,
-    description: "Large Llama model on Groq - fast, proven performance",
+    description: "Small fast model on Groq — replaces Llama 3.1 8B",
     contextLength: "128K tokens",
-    tpmLimit: 12000,
-  },
-  {
-    id: "llama-3.1-8b-instant",
-    name: "Llama 3.1 8B (Groq)",
-    provider: "groq",
-    available: true,
-    description: "Fast lightweight Llama on Groq",
-    contextLength: "128K tokens",
-    tpmLimit: 6000,
+    tpmLimit: 8000,
   },
 
   // Groq's serving of the same model that leads the chain on Cerebras. Free tier
@@ -248,9 +255,10 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
 // 200K TPD free-tier allowance against the llama models' 100K.
 //
 // Not in the chain, and why:
-//   llama-3.1-8b-instant   fine (2.8s) but same provider as slot 4, so a Groq
-//                          provider-level failure skips it anyway; and slot 5+
-//                          is unreachable on timeout paths. Still selectable.
+//   openai/gpt-oss-20b     same provider as slots 3-4, so a Groq provider-level
+//                          failure skips it anyway; and slot 5+ is unreachable on
+//                          timeout paths. Still selectable. (Took this slot from
+//                          llama-3.1-8b-instant, decommissioned 2026-08-16.)
 //   mistral-large/medium   17.4s / 17.6s — past the 12s WSI timeout every time.
 //                          Selectable for admin tasks (20s timeout) only.
 //   gemini-2.5-flash-lite  4.3s, superseded by 3.5-flash-lite (3.1s) which is
@@ -261,7 +269,11 @@ export const TEXT_FALLBACK_CHAIN: string[] = [
   "gpt-oss-120b", // Cerebras — 0.9s
   "gemini-3.5-flash-lite", // Google — 3.1s
   "openai/gpt-oss-120b", // Groq — 3.6s
-  "llama-3.3-70b-versatile", // Groq — 3.4s
+  // A fifth slot held llama-3.3-70b-versatile until Groq decommissioned it. It
+  // stayed in the chain long enough to 404 on every single failure, wasting an
+  // attempt that could not possibly answer — and, because the chain is walked in
+  // order, delaying the one backstop that still works. Four live models is worth
+  // more than five with a corpse in it.
   "mistral-small-2603", // Mistral — 8.0s, 4th-provider backstop
 ];
 

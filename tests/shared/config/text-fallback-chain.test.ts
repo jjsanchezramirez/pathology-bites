@@ -17,7 +17,9 @@ import {
 /** Measured seconds to produce a full WSI question. */
 const MEASURED_SECONDS: Record<string, number> = {
   "gpt-oss-120b": 1.05,
-  "llama-3.1-8b-instant": 1.55,
+  // llama-3.1-8b-instant measured 1.55s but Groq decommissioned it 2026-08-16.
+  // Dropped rather than kept as a record: a fast number next to a dead model id
+  // is an invitation to put it back in the chain.
   "llama-3.3-70b-versatile": 3.58,
   "gemini-2.5-flash-lite": 4.4,
   "mistral-large-latest": 19.8,
