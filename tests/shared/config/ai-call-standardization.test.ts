@@ -60,28 +60,17 @@ describe("AI call standardization", () => {
       }
     }
 
-    // Whisper transcription is intentionally exempt: it is a different modality
-    // (audio → text), not served by the chat-completions dispatcher.
-    const unexpected = offenders.filter((o) => !o.includes("admin/audio/align"));
-
-    // The exemption is about the DISPATCHER, not about timeouts. That
-    // distinction got lost once already: both of align's outbound fetches ran
-    // unbounded, which is the same shape that let a hung provider eat a whole
-    // invocation and return a generic 500 on the WSI path. An exempt route
-    // still has to bound its calls.
-    const alignSource = readFileSync(join(API_ROOT, "admin/audio/align/route.ts"), "utf8");
-    expect(
-      alignSource.includes("fetchWithTimeout"),
-      "audio/align is exempt from the dispatcher but must still bound its fetches"
-    ).toBe(true);
-    expect(
-      /(?<!fetchWith)\bfetch\(/.test(alignSource),
-      "audio/align has a bare fetch() — every outbound call here needs a deadline"
-    ).toBe(false);
-
-    expect(unexpected, `Route(s) calling a provider directly:\n${unexpected.join("\n")}`).toEqual(
-      []
-    );
+    // No exemptions. There used to be exactly one — admin/audio/align called
+    // Whisper directly, on the grounds that audio → text is a different
+    // modality from chat completions and so had no business going through the
+    // dispatcher. That was a fair argument, but the route was deleted in Aug
+    // 2026: it had no caller anywhere in the codebase and could only ever
+    // return 501, since there is no OpenAI key and no plan to get one.
+    //
+    // Its exemption is not being preserved for a hypothetical successor. If a
+    // genuinely non-chat modality is added later, the exemption should be
+    // re-argued then, against that route's real code.
+    expect(offenders, `Route(s) calling a provider directly:\n${offenders.join("\n")}`).toEqual([]);
   });
 
   it("gives every task a deadline that can outlast at least one model attempt", () => {
