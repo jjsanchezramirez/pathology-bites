@@ -208,6 +208,11 @@ export function WSIQuestionGenerator({
   // A question whose slide will not load is unanswerable, and the reader should
   // not have to work out that the blank frame is the problem. Rare — the pool is
   // filtered to openable slides — but a tile host can be down at read time.
+  // The last slide shown, so the pending → question hand-off cannot fall through
+  // a render with neither set. Read where `activeSlide` is derived, below; up
+  // here only because hooks cannot live past the early returns.
+  const lastSlide = useRef<VirtualSlide | null>(null);
+
   const [slideUnavailable, setSlideUnavailable] = useState<string | null>(null);
   const handleSlideUnavailable = useCallback((message: string) => {
     setSlideUnavailable(message);
@@ -366,7 +371,18 @@ export function WSIQuestionGenerator({
   // written this is the pending slide (so its tiles load during generation
   // rather than after it); once the question lands it is the question's own —
   // the same object, so the viewer below never remounts on that transition.
-  const activeSlide = currentQuestion?.wsi ?? pendingSlide;
+  //
+  // The third fallback closes a one-render gap between the two. They are owned
+  // by different components and written in different microtasks: the hook clears
+  // `pendingSlide` in its `finally`, and only then does the awaiting handler here
+  // set `currentQuestion`. React batches those two today, so the gap never
+  // commits — but that is a scheduling detail, not a guarantee, and if it ever
+  // commits the viewer unmounts and every tile reloads. Holding the last slide
+  // makes the hand-off structural instead of a bet on batching.
+  const activeSlide = currentQuestion?.wsi ?? pendingSlide ?? lastSlide.current;
+  // Derived, idempotent, and never read before it is written in the same render,
+  // so assigning during render is safe here.
+  lastSlide.current = activeSlide ?? null;
 
   // No slide at all yet: the corpus is still loading, or a prefetched question
   // is resolving without having published one.
