@@ -13,92 +13,67 @@
  * actually still unknown.
  */
 
-import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/shared/components/ui/select";
-import { Loader2 } from "lucide-react";
-import { WSIViewer } from "@/shared/components/common/wsi-viewer";
+import { LoadingNote, OptionsSkeleton, StemSkeleton } from "./wsi-loading-parts";
+import { WSIQuestionViewer } from "./wsi-question-viewer";
+import { WsiFullscreenShell } from "./wsi-fullscreen-shell";
 import { WSISlideCredits } from "./wsi-slide-credits";
+import type { ReactNode } from "react";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
+import type { WsiLayout } from "@/features/user/wsi-questions/utils/wsi-layout";
 
 interface WSIGeneratingWithSlideProps {
   className: string;
   slide: VirtualSlide;
-  showCategoryFilter: boolean;
-  availableCategories: string[];
-  selectedCategory: string;
-  onCategoryChange: (value: string) => void;
+  /** The live control bar, rendered by the parent so it is identical to the answered view's. */
+  controls: ReactNode;
+  layout: WsiLayout;
   currentLoadingMessage: string;
 }
 
 export function WSIGeneratingWithSlide({
   className,
   slide,
-  showCategoryFilter,
-  availableCategories,
-  selectedCategory,
-  onCategoryChange,
+  controls,
+  layout,
   currentLoadingMessage,
 }: WSIGeneratingWithSlideProps) {
+  // Full screen has to match the answered view exactly, or the overlay tears down
+  // and re-mounts on every question — taking the tile cache with it.
+  if (layout === "fullscreen") {
+    return (
+      <WsiFullscreenShell
+        className={className}
+        controls={controls}
+        viewer={<WSIQuestionViewer slide={slide} fillHeight />}
+        panel={
+          <>
+            <LoadingNote currentLoadingMessage={currentLoadingMessage} compact />
+            <StemSkeleton />
+            <OptionsSkeleton />
+            <WSISlideCredits wsi={slide} />
+          </>
+        }
+      />
+    );
+  }
+
   return (
     <div className={`w-full max-w-4xl mx-auto ${className}`} style={{ minHeight: "600px" }}>
-      {showCategoryFilter && availableCategories.length > 0 && (
-        <div className="mb-6 flex flex-col sm:flex-row gap-4 items-start sm:items-center justify-between">
-          <div className="flex items-center gap-2">
-            <label className="text-sm font-medium">Category:</label>
-            <Select value={selectedCategory} onValueChange={onCategoryChange}>
-              <SelectTrigger className="w-48">
-                <SelectValue placeholder="All categories" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All categories</SelectItem>
-                {availableCategories.map((category) => (
-                  <SelectItem key={category} value={category}>
-                    {category}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <Button disabled>
-            <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-            Generating...
-          </Button>
-        </div>
-      )}
+      {controls}
 
       <Card className="h-full">
         <CardContent className="space-y-3 sm:space-y-4 pt-4 sm:pt-6 px-3 sm:px-6">
-          {/* Stem placeholder — the only part still unknown. */}
-          <div className="space-y-2 animate-pulse" aria-hidden="true">
-            <div className="h-4 bg-muted rounded-lg w-3/4" />
-            <div className="h-4 bg-muted rounded-lg w-full" />
-            <div className="h-4 bg-muted rounded-lg w-5/6" />
-          </div>
-
-          <p className="flex items-center gap-2 text-xs text-muted-foreground" role="status">
-            <Loader2 className="h-3.5 w-3.5 animate-spin shrink-0" />
-            {currentLoadingMessage || "Writing your question…"}
-          </p>
+          <StemSkeleton />
+          <LoadingNote currentLoadingMessage={currentLoadingMessage} compact />
 
           {/* The real viewer — tiles start loading now, not after generation. */}
           <div className="w-full">
-            <WSIViewer slide={slide} showMetadata={false} />
+            <WSIQuestionViewer slide={slide} />
             <WSISlideCredits wsi={slide} />
           </div>
 
-          {/* Answer option placeholders. */}
-          <div className="space-y-2 animate-pulse" aria-hidden="true">
-            {[0, 1, 2, 3, 4].map((i) => (
-              <div key={i} className="h-10 bg-muted rounded-lg w-full" />
-            ))}
-          </div>
+          <OptionsSkeleton />
         </CardContent>
       </Card>
     </div>

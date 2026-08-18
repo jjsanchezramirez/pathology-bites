@@ -27,12 +27,16 @@ export interface SidebarController {
 /**
  * Owns every piece of sidebar state: desktop collapse, mobile visibility, hover,
  * and the auto-collapse/restore around quiz, anki and lesson-studio sessions.
+ *
+ * `immersive` is the same request made by a page rather than by a route — a
+ * layout the reader toggles has no pathname to detect. It folds into the same
+ * save/restore, so turning it off puts the rail back the way the reader had it.
  */
-export function useSidebarController(): SidebarController {
+export function useSidebarController(immersive = false): SidebarController {
   const { isInQuizMode } = useQuizMode();
   const { isInAnkiMode } = useAnkiMode();
   const { isInLessonStudioMode } = useLessonStudioMode();
-  const isInSpecialMode = isInQuizMode || isInAnkiMode || isInLessonStudioMode;
+  const isInSpecialMode = isInQuizMode || isInAnkiMode || isInLessonStudioMode || immersive;
 
   // Treat undefined (pre-hydration) as false (desktop) so SSR and the first
   // client render agree, eliminating the hydration mismatch. Effects wait for

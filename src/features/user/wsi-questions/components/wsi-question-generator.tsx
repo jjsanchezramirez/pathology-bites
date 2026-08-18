@@ -1,10 +1,13 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { AlertCircle, RefreshCw, Loader2, Highlighter } from "lucide-react";
-import { WSIViewer } from "@/shared/components/common/wsi-viewer";
+import { WSIQuestionViewer } from "./wsi-question-viewer";
+import { isViewerSupported } from "@/shared/utils/domain/repository";
+import { toast } from "@/shared/utils/ui/toast";
+import { WsiFullscreenShell } from "./wsi-fullscreen-shell";
 import { FakeSelectionHighlight } from "@/shared/components/common/fake-selection-highlight";
 import { SlideViewerModal } from "@/shared/components/common/slide-viewer-modal";
 import { useAllVirtualSlides } from "@/shared/hooks/use-client-virtual-slides";
@@ -20,6 +23,7 @@ import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { log } from "@/shared/utils/logging";
 import {
   LOADING_MESSAGES,
+  categoriesWithoutKinds,
   ensureWSIRepository,
   extractCategories,
 } from "./wsi-question-generator-utils";
@@ -29,6 +33,17 @@ import { WSIGeneratorControls } from "./wsi-generator-controls";
 import { WSISlideCredits } from "./wsi-slide-credits";
 import { WSIAnswerOptions } from "./wsi-answer-options";
 import { WSIExplanation } from "./wsi-explanation";
+import {
+  DEFAULT_WSI_KINDS,
+  WSI_QUESTION_KINDS,
+  WSI_KINDS_STORAGE_KEY,
+  type WsiQuestionKind,
+} from "@/features/user/wsi-questions/utils/wsi-question-kinds";
+import {
+  hydrateWsiLayout,
+  setWsiLayout,
+  useWsiLayout,
+} from "@/features/user/wsi-questions/utils/wsi-layout";
 
 interface WSIQuestionGeneratorProps {
   className?: string;
@@ -62,10 +77,45 @@ export function WSIQuestionGenerator({
   const [isAnswered, setIsAnswered] = useState(false);
   const [showExplanation, setShowExplanation] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
+  // A set, not one choice: mixed practice is the normal case. Persisted, because
+  // it is a standing preference like the layout, not part of a question.
+  const [questionKinds, setQuestionKinds] = useState<WsiQuestionKind[]>(DEFAULT_WSI_KINDS);
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(WSI_KINDS_STORAGE_KEY);
+      const parsed = saved ? (JSON.parse(saved) as unknown) : null;
+      const valid = Array.isArray(parsed)
+        ? parsed.filter((k): k is WsiQuestionKind =>
+            WSI_QUESTION_KINDS.some((known) => known.id === k)
+          )
+        : [];
+      if (valid.length) setQuestionKinds(valid);
+    } catch {
+      // Bad JSON or no storage — the default set is fine.
+    }
+  }, []);
+  const changeKinds = useCallback((next: WsiQuestionKind[]) => {
+    setQuestionKinds(next);
+    try {
+      window.localStorage.setItem(WSI_KINDS_STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // Private browsing — the preference just won't persist.
+    }
+  }, []);
+  // Layout is a reading preference, not question state, and the page needs the
+  // same answer (it drops its heading and asks the shell to collapse), so it
+  // lives in a module store rather than here. Persisting is the store's job.
+  const layout = useWsiLayout();
+  useEffect(hydrateWsiLayout, []);
   const [availableCategories, setAvailableCategories] = useState<string[]>([]);
   const [currentLoadingMessage, setCurrentLoadingMessage] = useState("");
   const [_loadingMessageIndex, setLoadingMessageIndex] = useState(0);
   const containerRef = useRef<HTMLDivElement>(null);
+  // Which request the reader is actually waiting for. Disabling the picker mid
+  // generation closes the common path, but a keyboard-driven change or a toggle
+  // can still overlap — and whichever request resolves LAST would otherwise set
+  // the question, regardless of which one the reader asked for.
+  const requestToken = useRef(0);
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Extract categories directly from client-side WSI data (like virtual slides page)
@@ -76,38 +126,104 @@ export function WSIQuestionGenerator({
     setAvailableCategories(extractCategories(wsiData));
   }, [showCategoryFilter, wsiData]);
 
-  const generateNewQuestion = useCallback(async () => {
-    // Scroll to the main content section (bottom of hero) immediately when button is clicked
-    const contentSection = document.getElementById("wsi-content");
-    if (contentSection) {
-      contentSection.scrollIntoView({ behavior: "smooth", block: "start" });
-    }
+  // Categories the enabled question types cannot draw from. Computed with the
+  // same renderability rule the generator uses, so the picker and the pool agree.
+  const unavailableCategories = useMemo(
+    () =>
+      wsiData
+        ? categoriesWithoutKinds(wsiData, questionKinds, (slide) =>
+            Boolean(slide.tileSourceUrl || isViewerSupported(slide.repository || ""))
+          )
+        : [],
+    [wsiData, questionKinds]
+  );
 
-    // Reset state for new question generation
-    setSelectedOption(null);
-    setIsAnswered(false);
-    setShowExplanation(false);
+  const generateNewQuestion = useCallback(
+    async (categoryOverride?: string) => {
+      // Scroll to the main content section (bottom of hero) immediately when button is clicked
+      const contentSection = document.getElementById("wsi-content");
+      if (contentSection) {
+        contentSection.scrollIntoView({ behavior: "smooth", block: "start" });
+      }
+
+      // Reset state for new question generation
+      setSelectedOption(null);
+      setIsAnswered(false);
+      setShowExplanation(false);
+      clearError();
+
+      // The override exists because a category change has to generate with the
+      // category the reader JUST picked: setState has not committed yet when the
+      // handler runs, so reading state here would use the previous one.
+      const category = categoryOverride ?? selectedCategory;
+      const token = ++requestToken.current;
+
+      try {
+        const question = await generateQuestion(
+          category === "all" ? undefined : category,
+          questionKinds
+        );
+
+        // Ensure the WSI has the repository field (in case the API response doesn't include it)
+        const questionWithRepository: GeneratedQuestion = question.wsi
+          ? {
+              ...question,
+              wsi: ensureWSIRepository(question.wsi),
+            }
+          : question;
+
+        // A superseded request drops its result on the floor.
+        if (token !== requestToken.current) {
+          log.debug("[WSI Generator] Discarding a superseded question");
+          return;
+        }
+        setCurrentQuestion(questionWithRepository);
+      } catch (err) {
+        log.error("Error generating question:", err);
+        // Error state is managed by the hook
+      }
+    },
+    [generateQuestion, selectedCategory, questionKinds, clearError]
+  );
+
+  const prefetchedCategory = useRef<string | null>(null);
+
+  // A failed REFRESH must not cost the reader the question they were working on.
+  // The error branch below takes over the whole view, which is right when there
+  // is nothing to show — and wrong when a slide and question are already on
+  // screen: three failed attempts would clear the case mid-read.
+  useEffect(() => {
+    if (!error || !currentQuestion) return;
+    const rateLimited = /429|too many requests|rate limit/i.test(error);
+    toast.error(
+      rateLimited
+        ? "Couldn't fetch a new question — the AI service is rate limited. Try again shortly."
+        : "Couldn't fetch a new question. Your current one is still here.",
+      { duration: 6000 }
+    );
     clearError();
+  }, [error, currentQuestion, clearError]);
 
-    try {
-      const question = await generateQuestion(
-        selectedCategory === "all" ? undefined : selectedCategory
-      );
+  // Callers that are just "generate another" (buttons, Try Again) must not pass
+  // their click event in as a category.
+  const newQuestion = useCallback(() => generateNewQuestion(), [generateNewQuestion]);
 
-      // Ensure the WSI has the repository field (in case the API response doesn't include it)
-      const questionWithRepository: GeneratedQuestion = question.wsi
-        ? {
-            ...question,
-            wsi: ensureWSIRepository(question.wsi),
-          }
-        : question;
-
-      setCurrentQuestion(questionWithRepository);
-    } catch (err) {
-      log.error("Error generating question:", err);
-      // Error state is managed by the hook
-    }
-  }, [generateQuestion, selectedCategory, clearError]);
+  // Changing the category should show a question from it right away — asking the
+  // reader to then press New question is a second step for something they have
+  // already asked for. "All categories" is excluded: it is the state you pass
+  // through on the way somewhere else, and refreshing there discards the question
+  // on screen for no gain.
+  const changeCategory = useCallback(
+    (next: string) => {
+      setSelectedCategory(next);
+      if (next === "all") return;
+      // Claim the prefetch scope so the effect below sees no change and stays
+      // quiet: this generation already warms the next one.
+      prefetchedCategory.current = `${next}|${[...questionKinds].sort().join(",")}`;
+      void generateNewQuestion(next);
+    },
+    [generateNewQuestion, questionKinds]
+  );
 
   // Auto-generate first question on component mount - use ref to prevent infinite loops
   const hasAutoGenerated = useRef(false);
@@ -120,17 +236,20 @@ export function WSIQuestionGenerator({
   // Only on an actual change: on mount this would race the auto-generate below
   // (which has not set isGenerating yet in the same commit) and fire two
   // concurrent generations, doubling the opening burst against a 5 RPM limit.
-  const prefetchedCategory = useRef<string | null>(null);
+
+  // Sorted so the effect doesn't refire when only the toggle ORDER changed.
+  const prefetchScope = `${selectedCategory}|${[...questionKinds].sort().join(",")}`;
   useEffect(() => {
     if (!isReady || isWSIDataLoading) return;
     if (prefetchedCategory.current === null) {
-      prefetchedCategory.current = selectedCategory; // adopt the initial value, don't act on it
+      // adopt the initial value, don't act on it
+      prefetchedCategory.current = prefetchScope;
       return;
     }
-    if (prefetchedCategory.current === selectedCategory) return;
-    prefetchedCategory.current = selectedCategory;
-    startPrefetch(selectedCategory === "all" ? undefined : selectedCategory);
-  }, [selectedCategory, isReady, isWSIDataLoading, startPrefetch]);
+    if (prefetchedCategory.current === prefetchScope) return;
+    prefetchedCategory.current = prefetchScope;
+    startPrefetch(selectedCategory === "all" ? undefined : selectedCategory, questionKinds);
+  }, [prefetchScope, selectedCategory, questionKinds, isReady, isWSIDataLoading, startPrefetch]);
 
   useEffect(() => {
     // Only auto-generate if:
@@ -193,7 +312,7 @@ export function WSIQuestionGenerator({
     }
   };
 
-  if (error) {
+  if (error && !currentQuestion) {
     return (
       <div className={`space-y-4 ${className}`}>
         <Card className="w-full">
@@ -204,7 +323,7 @@ export function WSIQuestionGenerator({
                 <p className="font-medium text-destructive">Error Loading Question</p>
                 <p className="text-sm text-muted-foreground">{error}</p>
               </div>
-              <Button onClick={generateNewQuestion} disabled={isGenerating}>
+              <Button onClick={newQuestion} disabled={isGenerating}>
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
               </Button>
@@ -215,6 +334,25 @@ export function WSIQuestionGenerator({
     );
   }
 
+  // Built above the early returns: the generating state renders the same bar,
+  // so the controls do not jump or reset between states.
+  const controls = (
+    <WSIGeneratorControls
+      showCategoryFilter={showCategoryFilter}
+      availableCategories={availableCategories}
+      unavailableCategories={unavailableCategories}
+      selectedCategory={selectedCategory}
+      onCategoryChange={changeCategory}
+      questionKinds={questionKinds}
+      onQuestionKindsChange={changeKinds}
+      layout={layout}
+      onLayoutChange={setWsiLayout}
+      isGenerating={isGenerating}
+      onNewQuestion={newQuestion}
+      compact={layout === "fullscreen"}
+    />
+  );
+
   // Slide already chosen but the question still being written: show the real
   // viewer so tiles load during generation rather than after it. The reader
   // gets something to look at immediately, and the two waits overlap.
@@ -223,10 +361,8 @@ export function WSIQuestionGenerator({
       <WSIGeneratingWithSlide
         className={className}
         slide={pendingSlide}
-        showCategoryFilter={showCategoryFilter}
-        availableCategories={availableCategories}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        controls={controls}
+        layout={layout}
         currentLoadingMessage={currentLoadingMessage}
       />
     );
@@ -238,10 +374,8 @@ export function WSIQuestionGenerator({
     return (
       <WSIGeneratorSkeleton
         className={className}
-        showCategoryFilter={showCategoryFilter}
-        availableCategories={availableCategories}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
+        controls={controls}
+        layout={layout}
         isWSIDataLoading={isWSIDataLoading}
         currentLoadingMessage={currentLoadingMessage}
       />
@@ -275,7 +409,7 @@ export function WSIQuestionGenerator({
               <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
               <p className="text-sm font-medium text-destructive">Invalid question data</p>
               <p className="text-xs text-muted-foreground">Please try generating a new question</p>
-              <Button onClick={generateNewQuestion} variant="outline">
+              <Button onClick={newQuestion} variant="outline">
                 <RefreshCw className="h-4 w-4 mr-2" />
                 Try Again
               </Button>
@@ -286,75 +420,92 @@ export function WSIQuestionGenerator({
     );
   }
 
+  // The remaining pieces are shared by both layouts so the two can't drift apart.
+  const stem = (
+    <FakeSelectionHighlight allSlides={allSlides} onViewSlide={setLookupSlide}>
+      <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed">
+        {currentQuestion.question.stem}
+      </div>
+    </FakeSelectionHighlight>
+  );
+
+  const options = (
+    <WSIAnswerOptions
+      options={currentQuestion.question.options}
+      selectedOption={selectedOption}
+      isAnswered={isAnswered}
+      onOptionClick={handleOptionClick}
+      allSlides={allSlides}
+      onViewSlide={setLookupSlide}
+    />
+  );
+
+  const explanation = isAnswered && (
+    <WSIExplanation
+      question={currentQuestion.question}
+      metadata={currentQuestion.metadata}
+      isGenerating={isGenerating}
+      showExplanation={showExplanation}
+      onNewQuestion={newQuestion}
+      allSlides={allSlides}
+      onViewSlide={setLookupSlide}
+    />
+  );
+
+  const highlightHint = (
+    <div data-no-highlight className="flex justify-center pt-1 pointer-coarse:hidden">
+      <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-gradient-to-r from-primary/15 to-primary/5 px-3.5 py-1.5 text-xs text-primary shadow-sm">
+        <Highlighter className="h-4 w-4 shrink-0" />
+        <span>
+          <strong className="font-semibold">Highlight</strong> any term to{" "}
+          <strong className="font-semibold">search images</strong> or{" "}
+          <strong className="font-semibold">view an example slide</strong>
+        </span>
+      </span>
+    </div>
+  );
+
+  if (layout === "fullscreen") {
+    return (
+      <WsiFullscreenShell
+        className={className}
+        controls={controls}
+        viewer={<WSIQuestionViewer slide={currentQuestion.wsi} fillHeight />}
+        panel={
+          <>
+            {stem}
+            {options}
+            {explanation}
+            <WSISlideCredits wsi={currentQuestion.wsi} />
+          </>
+        }
+      >
+        <SlideViewerModal slide={lookupSlide} onClose={() => setLookupSlide(null)} />
+      </WsiFullscreenShell>
+    );
+  }
+
   return (
     <div
       ref={containerRef}
       className={`w-full max-w-4xl mx-auto ${className}`}
       style={{ minHeight: "600px" }}
     >
-      {/* Top Controls - Standardized Responsive Layout */}
-      <WSIGeneratorControls
-        showCategoryFilter={showCategoryFilter}
-        availableCategories={availableCategories}
-        selectedCategory={selectedCategory}
-        onCategoryChange={setSelectedCategory}
-        currentQuestion={currentQuestion}
-        isGenerating={isGenerating}
-        onNewQuestion={generateNewQuestion}
-      />
+      {controls}
 
       <Card className="h-full">
         <CardContent className="space-y-3 sm:space-y-4 pt-4 sm:pt-6 px-3 sm:px-6">
-          {/* Question stem — its own selection container so a drag can't extend down into the
-              WSI viewer or the answer options (those stay non-selectable). */}
-          <FakeSelectionHighlight allSlides={allSlides} onViewSlide={setLookupSlide}>
-            <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed">
-              {currentQuestion.question.stem}
-            </div>
-          </FakeSelectionHighlight>
+          {stem}
 
           {/* WSI Viewer — not selectable */}
           <div className="w-full">
-            <WSIViewer slide={currentQuestion.wsi} showMetadata={false} />
+            <WSIQuestionViewer slide={currentQuestion.wsi} />
             <WSISlideCredits wsi={currentQuestion.wsi} />
           </div>
 
-          {/* Answer Options — their own selection container. */}
-          <WSIAnswerOptions
-            options={currentQuestion.question.options}
-            selectedOption={selectedOption}
-            isAnswered={isAnswered}
-            onOptionClick={handleOptionClick}
-            allSlides={allSlides}
-            onViewSlide={setLookupSlide}
-          />
-
-          {/* Answer Explanations */}
-          {isAnswered && (
-            <WSIExplanation
-              question={currentQuestion.question}
-              metadata={currentQuestion.metadata}
-              isGenerating={isGenerating}
-              showExplanation={showExplanation}
-              onNewQuestion={generateNewQuestion}
-              allSlides={allSlides}
-              onViewSlide={setLookupSlide}
-            />
-          )}
-
-          {/* Feature hint — highlight any term to look it up / open an example slide. Hidden on
-              touch devices, where the highlight/selection feature is disabled (see
-              FakeSelectionHighlight's coarse-pointer gate). */}
-          <div data-no-highlight className="flex justify-center pt-1 pointer-coarse:hidden">
-            <span className="inline-flex items-center gap-2 rounded-full border border-primary/30 bg-gradient-to-r from-primary/15 to-primary/5 px-3.5 py-1.5 text-xs text-primary shadow-sm">
-              <Highlighter className="h-4 w-4 shrink-0" />
-              <span>
-                <strong className="font-semibold">Highlight</strong> any term to{" "}
-                <strong className="font-semibold">search images</strong> or{" "}
-                <strong className="font-semibold">view an example slide</strong>
-              </span>
-            </span>
-          </div>
+          {options}
+          {explanation}
+          {highlightHint}
           <SlideViewerModal slide={lookupSlide} onClose={() => setLookupSlide(null)} />
         </CardContent>
       </Card>

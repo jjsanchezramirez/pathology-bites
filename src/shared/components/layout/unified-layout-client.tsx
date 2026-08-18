@@ -1,7 +1,7 @@
 // src/shared/components/layout/unified-layout-client.tsx
 "use client";
 
-import { useMemo } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { usePathname } from "next/navigation";
 
 import { UnifiedHeader } from "./unified-header";
@@ -11,6 +11,7 @@ import { useSidebarController } from "./use-sidebar-controller";
 import { getNavigationConfig } from "@/shared/config/navigation";
 import { SidebarStateProvider } from "@/shared/contexts/sidebar-state-context";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
+import { ImmersiveModeProvider } from "@/shared/contexts/immersive-mode-context";
 
 // 100svh excludes the mobile address bar; 100vh is the fallback for browsers
 // without svh support.
@@ -19,9 +20,15 @@ const SHELL_HEIGHT: React.CSSProperties = { height: "100svh", minHeight: "100vh"
 export function UnifiedLayoutClient({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { adminMode } = useDashboardTheme();
-  const sidebar = useSidebarController();
+  // A page can ask for the quiz-style treatment without owning a route; see
+  // immersive-mode-context. Held here because both the sidebar and `main` need it.
+  const [immersive, setImmersive] = useState(false);
+  const sidebar = useSidebarController(immersive);
 
-  const isFullHeightPage = isFullHeightPath(pathname);
+  // Identity has to be stable: the consumer calls it from an effect keyed on it.
+  const setImmersiveMode = useCallback((active: boolean) => setImmersive(active), []);
+
+  const isFullHeightPage = isFullHeightPath(pathname) || immersive;
 
   // Navigation follows the live adminMode from DashboardThemeProvider (which
   // tracks the URL), so it updates correctly across admin <-> user transitions.
@@ -62,11 +69,13 @@ export function UnifiedLayoutClient({ children }: { children: React.ReactNode })
                 : "flex-1 overflow-y-auto bg-background"
             }
           >
-            {isFullHeightPage ? (
-              <div className="h-full">{children}</div>
-            ) : (
-              <div className="mx-auto max-w-7xl px-4 py-4 pb-24 md:p-6 md:pb-24">{children}</div>
-            )}
+            <ImmersiveModeProvider value={setImmersiveMode}>
+              {isFullHeightPage ? (
+                <div className="h-full">{children}</div>
+              ) : (
+                <div className="mx-auto max-w-7xl px-4 py-4 pb-24 md:p-6 md:pb-24">{children}</div>
+              )}
+            </ImmersiveModeProvider>
           </main>
         </div>
       </SidebarStateProvider>
