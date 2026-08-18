@@ -29,11 +29,35 @@ export const API_KEYS = {
     "",
   claude: process.env.NEXT_PUBLIC_CLAUDE_API_KEY || "",
   mistral: process.env.NEXT_PUBLIC_MISTRAL_API_KEY || "",
+  // Workers AI. A plain Cloudflare API token with the Workers AI Read binding —
+  // deliberately NOT NEXT_PUBLIC_, since this one is new and nothing configured
+  // in Vercel depends on the old naming.
+  cloudflare: process.env.CLOUDFLARE_AI_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN || "",
 };
+
+/**
+ * Some providers need more than a key before a call can be made. Cloudflare's
+ * endpoint is account-scoped, so a token on its own addresses nothing — and the
+ * fallback walk decides whether to skip a model purely on `getApiKey`, so an
+ * incomplete config has to read as unconfigured there or the chain spends an
+ * attempt discovering it.
+ */
+function missingCompanionConfig(provider: string): boolean {
+  return (
+    provider === "cloudflare" &&
+    !(process.env.CLOUDFLARE_ACCOUNT_ID || process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID)
+  );
+}
 
 /** Get the API key for a provider. Empty string when unconfigured. */
 export function getApiKey(provider: string): string {
   const key = API_KEYS[provider as keyof typeof API_KEYS];
+  if (key && missingCompanionConfig(provider)) {
+    log.warn(
+      `⚠️ ${provider} has a key but no CLOUDFLARE_ACCOUNT_ID; its endpoint is account-scoped, so it is skipped.`
+    );
+    return "";
+  }
   if (!key) {
     log.warn(
       `⚠️ No API key found for provider: ${provider}. Please set NEXT_PUBLIC_${provider.toUpperCase()}_API_KEY in your environment variables.`
@@ -45,12 +69,10 @@ export function getApiKey(provider: string): string {
 /** Whether a provider has a usable key configured. */
 export function hasApiKey(provider: string): boolean {
   const key = API_KEYS[provider as keyof typeof API_KEYS];
-  return !!(key && key.trim() !== "");
+  return !!(key && key.trim() !== "" && !missingCompanionConfig(provider));
 }
 
 /** Every provider with a key configured. */
 export function getAvailableProviders(): string[] {
-  return Object.entries(API_KEYS)
-    .filter(([, key]) => key && key.trim() !== "")
-    .map(([provider]) => provider);
+  return Object.keys(API_KEYS).filter(hasApiKey);
 }

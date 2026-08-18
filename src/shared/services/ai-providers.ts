@@ -200,6 +200,7 @@ export async function callModel(
   switch (provider) {
     case "groq":
     case "cerebras":
+    case "cloudflare":
       return callOpenAICompatText(provider, modelId, apiKey, prompt, merged);
     case "google":
     case "gemini":

@@ -1,11 +1,13 @@
 // Shared caller for OpenAI-compatible chat-completions providers
-// (Groq, Cerebras, Mistral). Added when Meta shut down the Llama API
-// (July 6, 2026) — its replacements all speak the OpenAI dialect, so one
-// caller covers them. Provider-specific quirks live here, not in routes:
-//   - Groq/Cerebras take `max_completion_tokens`; Mistral only `max_tokens`.
-//   - Reasoning models (gpt-oss on either provider) spend completion budget on
+// (Groq, Cerebras, Mistral, Cloudflare Workers AI). Added when Meta shut down
+// the Llama API (July 6, 2026) — its replacements all speak the OpenAI dialect,
+// so one caller covers them. Provider-specific quirks live here, not in routes:
+//   - Groq/Cerebras/Cloudflare take `max_completion_tokens`; Mistral only `max_tokens`.
+//   - Reasoning models (gpt-oss on any provider) spend completion budget on
 //     thinking before emitting content — we floor the budget and pin them to low
 //     reasoning effort so short-output calls still finish.
+//   - Cloudflare scopes its endpoint to an account, so its URL is built rather
+//     than looked up.
 
 import { log } from "@/shared/utils/logging";
 
@@ -14,6 +16,27 @@ const ENDPOINTS: Record<string, string> = {
   cerebras: "https://api.cerebras.ai/v1/chat/completions",
   mistral: "https://api.mistral.ai/v1/chat/completions",
 };
+
+/**
+ * Cloudflare's OpenAI-compatible endpoint is per-account, so it cannot be a
+ * constant like the others. The account id is not a secret (it appears in every
+ * dashboard URL and in wrangler.toml), but it is deployment-specific.
+ */
+function cloudflareEndpoint(): string {
+  const account =
+    process.env.CLOUDFLARE_ACCOUNT_ID || process.env.NEXT_PUBLIC_CLOUDFLARE_ACCOUNT_ID;
+  if (!account) {
+    throw new Error(
+      "Cloudflare Workers AI needs CLOUDFLARE_ACCOUNT_ID — its API endpoint is scoped to an account."
+    );
+  }
+  return `https://api.cloudflare.com/client/v4/accounts/${account}/ai/v1/chat/completions`;
+}
+
+function endpointFor(provider: string): string | null {
+  if (provider === "cloudflare") return cloudflareEndpoint();
+  return ENDPOINTS[provider] ?? null;
+}
 
 // Reasoning models need headroom for thinking tokens before content appears.
 const CEREBRAS_MIN_COMPLETION_TOKENS = 1024;
@@ -24,16 +47,16 @@ const CEREBRAS_MIN_COMPLETION_TOKENS = 1024;
  * an empty string with finish_reason "length" — which is what made the health
  * ping report the model as broken when it was fine at a real budget.
  *
- * Matches both id shapes: Cerebras serves it as `gpt-oss-120b`, Groq namespaces
- * it as `openai/gpt-oss-120b`. The Cerebras-only `startsWith` this replaces
- * silently skipped the Groq copy.
+ * Matches every id shape in use: Cerebras serves it as `gpt-oss-120b`, Groq as
+ * `openai/gpt-oss-120b`, Cloudflare as `@cf/openai/gpt-oss-20b`. The
+ * Cerebras-only `startsWith` this replaces silently skipped the others.
  */
 function isReasoningModel(model: string): boolean {
   return /(^|\/)gpt-oss/.test(model);
 }
 
 export function isOpenAICompatProvider(provider: string): boolean {
-  return provider in ENDPOINTS;
+  return provider === "cloudflare" || provider in ENDPOINTS;
 }
 
 export type ChatContentPart =
@@ -74,7 +97,7 @@ export async function callOpenAICompatChat(
   messages: ChatMessage[],
   options: OpenAICompatOptions = {}
 ): Promise<OpenAICompatResult> {
-  const endpoint = ENDPOINTS[provider];
+  const endpoint = endpointFor(provider);
   if (!endpoint) throw new Error(`Not an OpenAI-compatible provider: ${provider}`);
 
   const { maxTokens = 4000, temperature = 0.7, timeoutMs = 20_000, signal, jsonMode } = options;
@@ -101,7 +124,10 @@ export async function callOpenAICompatChat(
   // reasoning in 2.4s; "low" spent 37 in 1.7s and returned MORE content. Free
   // latency, and it moves the model further from the maxTokens ceiling.
   // Mistral does not accept the parameter.
-  if (isReasoningModel(model) && (provider === "groq" || provider === "cerebras")) {
+  if (
+    isReasoningModel(model) &&
+    (provider === "groq" || provider === "cerebras" || provider === "cloudflare")
+  ) {
     body.reasoning_effort = "low";
   }
 

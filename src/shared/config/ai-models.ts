@@ -4,7 +4,7 @@
 export interface AIModel {
   id: string;
   name: string;
-  provider: "groq" | "cerebras" | "gemini" | "mistral" | "claude" | "llama";
+  provider: "groq" | "cerebras" | "gemini" | "mistral" | "claude" | "llama" | "cloudflare";
   available: boolean;
   deprecated?: boolean;
   description?: string;
@@ -44,6 +44,7 @@ export function getModelProvider(model: string): string {
   const resolved = resolveModelId(model);
   const known = ALL_AI_MODELS.find((m) => m.id === resolved);
   if (known) return known.provider === "gemini" ? "google" : known.provider;
+  if (model.startsWith("@cf/")) return "cloudflare";
   if (model.startsWith("gemini-")) return "google";
   if (
     model.startsWith("mistral-") ||
@@ -101,6 +102,19 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     contextLength: "128K tokens",
     tpmLimit: 30000,
   },
+  // Cloudflare Workers AI — 10K neurons/day free (~39% of current volume), then
+  // $0.011/1K neurons. The 20B rather than the 120B: at $0.20/$0.30 per MTok it
+  // is the cheapest thing in the chain by a wide margin, and a backstop's job is
+  // to answer at all, not to answer fastest.
+  {
+    id: "@cf/openai/gpt-oss-20b",
+    name: "GPT-OSS 20B (Cloudflare)",
+    provider: "cloudflare",
+    available: true,
+    description: "OpenAI open-weight 20B on Workers AI — cheapest chain backstop",
+    contextLength: "128K tokens",
+  },
+
   {
     id: "gemma-4-31b",
     name: "Gemma 4 31B (Cerebras)",
@@ -224,9 +238,26 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
 // ---------------------------------------------------------------------------
 // Unified fallback chains
 // ---------------------------------------------------------------------------
-// Free-tier only. Speed-first ordering: Groq → Cerebras → Mistral → Gemini.
+// Ordering: Groq → Cerebras → Cloudflare → Mistral → Gemini.
 // (Meta's Llama API shut down July 6, 2026; Groq serves the same Llama
 // models, Cerebras adds a 1M-token/day pool.)
+//
+// No longer free-tier only, and the ordering is no longer speed-first alone.
+// A cost pass (Aug 2026) priced one month of real traffic — 9.3M input /
+// 7.2M output — on every service serving these models:
+//
+//   Cloudflare gpt-oss-20b   $0.66   (after 10K free neurons/day)
+//   Groq                     $5.69
+//   Mistral small            $5.69
+//   Cerebras                 $8.62
+//   Gemini 3.5 Flash-Lite   $20.68
+//
+// Gemini is the most expensive option available to us, by 2.4x, because its
+// output rate is $2.50/MTok against everyone else's $0.30-0.75 — and this
+// workload is output-heavy. It sat at slot 2, absorbing everything the leader
+// dropped. That was invisible only because ~324 req/day fits inside Google's
+// free 1,000/day; the first busy month would have started billing at the worst
+// rate in the table with no code change. Hence last.
 //
 // Claude is INTENTIONALLY EXCLUDED — it's paid, and we never want production
 // traffic to silently cascade into paid models. Claude is still callable via
@@ -243,22 +274,31 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
 //   llama-3.3-70b-versatile 3.4s   310 tok/s   Groq
 //   mistral-small-2603      8.0s   129 tok/s   Mistral
 //
-// The first three are three DIFFERENT providers on purpose. That matters more
-// than shaving 400ms off slot 2: only ~3 models are ever reachable anyway —
-// with timeoutMs 12s and deadlineMs 35s, three consecutive timeouts spend 36s
-// and the deadline check stops the walk before a fourth attempt starts.
+// Every slot is a DIFFERENT provider on purpose. That matters more than raw
+// speed ordering: only ~3 models are ever reachable on a timeout path — with
+// timeoutMs 12s and deadlineMs 35s, three consecutive timeouts spend 36s and
+// the deadline check stops the walk before a fourth attempt starts.
 //
-// Cerebras leads on speed but has the TIGHTEST limit of the three (5 RPM vs
-// Groq's 30). Slot 2 is therefore load-bearing, not decorative: under any real
-// concurrency it serves a large share of traffic. Groq's own gpt-oss-120b sits
-// at 3 so a Cerebras outage keeps the same model family, and it carries a
-// 200K TPD free-tier allowance against the llama models' 100K.
+// Which is the case FOR this order rather than against it. Timeouts are the
+// slow failure; the common one is fast — 429 over a daily cap, 402 on an empty
+// prepaid balance — and those reject in milliseconds, so slots 4 and 5 are
+// genuinely reachable exactly when the cheap providers have run out. That is
+// the day observed on 2026-08-17: Cerebras 402, Groq over its 200K TPD, Gemini
+// 429, all within one request.
+//
+// Cerebras is no longer the leader despite being 4x faster (0.9s vs 3.6s). It
+// is the most expensive per token of the two, it has the tightest rate limit
+// (5 RPM vs Groq's 30), and its balance is prepaid — so it empties without
+// warning and takes the whole chain's leader slot down with it. Groq leads
+// because it is cheaper, has 6x the RPM, and degrades by 429 rather than by
+// going dark. Cerebras at 2 still serves the speed win under normal load.
 //
 // Not in the chain, and why:
-//   openai/gpt-oss-20b     same provider as slots 3-4, so a Groq provider-level
-//                          failure skips it anyway; and slot 5+ is unreachable on
-//                          timeout paths. Still selectable. (Took this slot from
-//                          llama-3.1-8b-instant, decommissioned 2026-08-16.)
+//   openai/gpt-oss-20b     Groq's serving of it duplicates slot 1's provider, so
+//                          a Groq provider-level failure skips it anyway.
+//                          Cloudflare's serving of the same model is in the
+//                          chain instead, which adds a provider rather than
+//                          repeating one. Still selectable.
 //   mistral-large/medium   17.4s / 17.6s — past the 12s WSI timeout every time.
 //                          Selectable for admin tasks (20s timeout) only.
 //   gemini-2.5-flash-lite  4.3s, superseded by 3.5-flash-lite (3.1s) which is
@@ -266,15 +306,15 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
 //                          fallback in VISION_FALLBACK_CHAIN.
 // See DISABLED_AI_MODELS for the four that were measured genuinely unusable.
 export const TEXT_FALLBACK_CHAIN: string[] = [
-  "gpt-oss-120b", // Cerebras — 0.9s
-  "gemini-3.5-flash-lite", // Google — 3.1s
-  "openai/gpt-oss-120b", // Groq — 3.6s
-  // A fifth slot held llama-3.3-70b-versatile until Groq decommissioned it. It
+  "openai/gpt-oss-120b", // Groq — 3.6s, $5.69/mo, 30 RPM
+  "gpt-oss-120b", // Cerebras — 0.9s, $8.62/mo, 5 RPM, prepaid
+  "@cf/openai/gpt-oss-20b", // Cloudflare — $0.66/mo, 10K free neurons/day
+  // A slot here held llama-3.3-70b-versatile until Groq decommissioned it. It
   // stayed in the chain long enough to 404 on every single failure, wasting an
   // attempt that could not possibly answer — and, because the chain is walked in
-  // order, delaying the one backstop that still works. Four live models is worth
-  // more than five with a corpse in it.
-  "mistral-small-2603", // Mistral — 8.0s, 4th-provider backstop
+  // order, delaying the one backstop that still works. Live models only.
+  "mistral-small-2603", // Mistral — 8.0s, ~1B tokens/mo free but 2 RPM
+  "gemini-3.5-flash-lite", // Google — 3.1s but $20.68/mo; last on cost, not speed
 ];
 
 /**
