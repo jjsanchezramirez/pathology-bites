@@ -27,16 +27,16 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 
 ## Tech Stack
 
-| Layer          | Choice                                                            |
-| -------------- | ---------------------------------------------------------------- |
-| Framework      | Next.js 15 (App Router) + React 19 + TypeScript 5.8              |
-| UI             | Tailwind CSS v4 + shadcn/ui                                       |
-| Auth & DB      | Supabase (PostgreSQL, Auth, Row Level Security)                  |
-| Storage        | Cloudflare R2 (`@aws-sdk/client-s3`), zero-egress CDN            |
-| Slide viewer   | OpenSeadragon (DZI / IIIF / Aperio tile sources)                |
-| Hosting / Edge | Vercel (serverless) behind Cloudflare (WAF, CDN, DDoS)          |
-| Testing        | Vitest                                                           |
-| API docs       | `next-swagger-doc` + Scalar, served at `/docs`                  |
+| Layer          | Choice                                                 |
+| -------------- | ------------------------------------------------------ |
+| Framework      | Next.js 15 (App Router) + React 19 + TypeScript 5.8    |
+| UI             | Tailwind CSS v4 + shadcn/ui                            |
+| Auth & DB      | Supabase (PostgreSQL, Auth, Row Level Security)        |
+| Storage        | Cloudflare R2 (`@aws-sdk/client-s3`), zero-egress CDN  |
+| Slide viewer   | OpenSeadragon (DZI / IIIF / Aperio tile sources)       |
+| Hosting / Edge | Vercel (serverless) behind Cloudflare (WAF, CDN, DDoS) |
+| Testing        | Vitest                                                 |
+| API docs       | `next-swagger-doc` + Scalar, served at `/docs`         |
 
 ## Architecture
 
@@ -62,12 +62,12 @@ Deeper references:
 
 The Vercel app is the core, but a few pieces run as standalone **Cloudflare Workers** in their own private repos. The main repo is public, so anything carrying scraping credentials or that's pure infrastructure lives outside it. Each Worker is deployed independently with `wrangler deploy` — no CI, by design (low change frequency, single maintainer).
 
-| Service | Domain | Repo (private) | What it does |
-| --- | --- | --- | --- |
-| **R2 Explorer** | `r2.pathologybites.com` | `pathology-bites-r2-explorer` | Admin file browser for the three R2 buckets. Hono worker (buckets bound directly) + React/Vite/Tailwind/shadcn SPA in the PB design system, cookie session auth. Replaced an abandoned `g4brym/R2-Explorer` fork. |
-| **WSI tile proxy** | `wsi.pathologybites.com` | `pathology-bites-wsi-proxy` | CORS-cleans + edge-caches whole-slide-image tiles for the in-house OpenSeadragon viewer. Moved off the Vercel route to escape egress overage — see [Performance notes](#performance-notes). (`wsi-tiles.pathologybites.com` is a transitional alias, slated for removal.) |
-| **Docs** | `docs.pathologybites.com` | `pathology-bites-docs` | Password-gated internal docs. Vocs (React/Vite) static site (architecture/infra) + an embedded Scalar React API reference rendering the bundled OpenAPI spec (auto-regenerated from this repo on each docs deploy). Cloudflare Worker gates it with the same cookie auth as R2 Explorer. |
-| **Search corpus / scrapers** | — (publishes to R2) | `pathology-bites-corpus` | Scraper pipeline + brotli-compressed search-corpus build, published to the `pathology-bites-data` bucket. Symlinked into `dev/resources/scrapers`. |
+| Service                      | Domain                    | Repo (private)                | What it does                                                                                                                                                                                                                                                                             |
+| ---------------------------- | ------------------------- | ----------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **R2 Explorer**              | `r2.pathologybites.com`   | `pathology-bites-r2-explorer` | Admin file browser for the three R2 buckets. Hono worker (buckets bound directly) + React/Vite/Tailwind/shadcn SPA in the PB design system, cookie session auth. Replaced an abandoned `g4brym/R2-Explorer` fork.                                                                        |
+| **WSI tile proxy**           | `wsi.pathologybites.com`  | `pathology-bites-wsi-proxy`   | CORS-cleans + edge-caches whole-slide-image tiles for the in-house OpenSeadragon viewer. Moved off the Vercel route to escape egress overage — see [Performance notes](#performance-notes). (`wsi-tiles.pathologybites.com` is a transitional alias, slated for removal.)                |
+| **Docs**                     | `docs.pathologybites.com` | `pathology-bites-docs`        | Password-gated internal docs. Vocs (React/Vite) static site (architecture/infra) + an embedded Scalar React API reference rendering the bundled OpenAPI spec (auto-regenerated from this repo on each docs deploy). Cloudflare Worker gates it with the same cookie auth as R2 Explorer. |
+| **Search corpus / scrapers** | — (publishes to R2)       | `pathology-bites-corpus`      | Scraper pipeline + brotli-compressed search-corpus build, published to the `pathology-bites-data` bucket. Symlinked into `dev/resources/scrapers`.                                                                                                                                       |
 
 **R2 buckets:** `pathology-bites-data`, `pathology-bites-images`, `pathology-bites-audio` (zero-egress; fronted by the explorer above and consumed directly by the app).
 
@@ -95,15 +95,15 @@ Feature code lives in `src/features/{domain}/`; reusable code in `src/shared/`. 
 
 ## Educational Tools
 
-| Tool                       | Notes                                                                 |
-| -------------------------- | --------------------------------------------------------------------- |
-| **Citations**              | URL/DOI/ISBN detection, APA/MLA/AMA/Vancouver, 24h localStorage cache |
-| **MILAN** (gene lookup)    | HGNC + Harmonizome, 7-day cache, common-gene pre-loading             |
-| **Genova**                 | Molecular classification helper                                       |
-| **Virtual Slides**         | R2-backed search over 7+ external WSI repositories + viewer          |
-| **ABPath Specs**           | Full ASCP content specs with client-side AP/CP filtering + PDF export |
-| **Cell Quiz / Counter**    | Blood-cell morphology practice with R2-optimized images             |
-| **Lupus Anticoagulant**    | Pure client-side coagulation interpretation (PT/INR/aPTT/dRVVT)     |
+| Tool                    | Notes                                                                 |
+| ----------------------- | --------------------------------------------------------------------- |
+| **Citations**           | URL/DOI/ISBN detection, APA/MLA/AMA/Vancouver, 24h localStorage cache |
+| **MILAN** (gene lookup) | HGNC + Harmonizome, 7-day cache, common-gene pre-loading              |
+| **Genova**              | Molecular classification helper                                       |
+| **Virtual Slides**      | R2-backed search over 7+ external WSI repositories + viewer           |
+| **ABPath Specs**        | Full ASCP content specs with client-side AP/CP filtering + PDF export |
+| **Cell Quiz / Counter** | Blood-cell morphology practice with R2-optimized images               |
+| **Lupus Anticoagulant** | Pure client-side coagulation interpretation (PT/INR/aPTT/dRVVT)       |
 
 ## Getting Started
 
@@ -127,28 +127,28 @@ npm run dev                  # http://localhost:3000
 
 Key variables (full list in `.env.example`):
 
-| Variable                                                       | Purpose                          |
-| ------------------------------------------------------------- | -------------------------------- |
-| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY`    | Supabase client                  |
-| `SUPABASE_SERVICE_ROLE_KEY`                                    | Server-side / SECURITY DEFINER RPC calls |
-| `CLOUDFLARE_R2_*`                                             | R2 access + public URL           |
-| `RESEND_API_KEY`                                              | Transactional email              |
-| `NEXT_PUBLIC_TURNSTILE_SITEKEY`                              | CAPTCHA (currently disabled)     |
-| AI / data provider keys (Gemini, Claude, Mistral, OncoKB…)   | Tool integrations                |
+| Variable                                                    | Purpose                                  |
+| ----------------------------------------------------------- | ---------------------------------------- |
+| `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase client                          |
+| `SUPABASE_SERVICE_ROLE_KEY`                                 | Server-side / SECURITY DEFINER RPC calls |
+| `CLOUDFLARE_R2_*`                                           | R2 access + public URL                   |
+| `RESEND_API_KEY`                                            | Transactional email                      |
+| `NEXT_PUBLIC_TURNSTILE_SITEKEY`                             | CAPTCHA (currently disabled)             |
+| AI / data provider keys (Gemini, Claude, Mistral, OncoKB…)  | Tool integrations                        |
 
 ## Commands
 
-| Command                  | Description                              |
-| ------------------------ | ---------------------------------------- |
-| `npm run dev`            | Local dev server                         |
-| `npm run build`          | Production build                         |
-| `npm run start`          | Serve the production build               |
-| `npm run lint`           | ESLint (`prettier/prettier` enforced)    |
-| `npm run format`         | Prettier write                           |
-| `npm run type-check`     | `tsc --noEmit`                           |
-| `npm run test`           | Vitest (watch); `test:run` for one-shot  |
-| `npm run test:api`       | API tests (incl. swagger coverage guard) |
-| `npm run find-unused`    | Dead-code / unused-export check (knip)   |
+| Command               | Description                              |
+| --------------------- | ---------------------------------------- |
+| `npm run dev`         | Local dev server                         |
+| `npm run build`       | Production build                         |
+| `npm run start`       | Serve the production build               |
+| `npm run lint`        | ESLint (`prettier/prettier` enforced)    |
+| `npm run format`      | Prettier write                           |
+| `npm run type-check`  | `tsc --noEmit`                           |
+| `npm run test`        | Vitest (watch); `test:run` for one-shot  |
+| `npm run test:api`    | API tests (incl. swagger coverage guard) |
+| `npm run find-unused` | Dead-code / unused-export check (knip)   |
 
 > **Note**: `src/shared/config/content-index.ts` is generated data. The generator it names (`scripts/generate-content-index.ts`) lived in the gitignored `dev/` directory and is not in the repo — rewrite it from the file's documented structure if the index ever needs regenerating.
 
