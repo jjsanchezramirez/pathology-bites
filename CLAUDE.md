@@ -1,5 +1,17 @@
 # CLAUDE.md
 
+## Before you build anything
+
+**Read `dev/docs/TOOLING-INDEX.md` first** (local, gitignored). It indexes the
+scripts, shared helpers, R2 keys, data fields and MCP servers that already
+exist. It is there because the recurring failure in this repo is a lookup gap,
+not a knowledge gap — rebuilding a worse version of something already present.
+
+Three questions, in order, before writing any script, matcher or publisher:
+does a script already do this, does a shared helper already do this, does the
+data already carry this. "Nearly, but not quite" means extend the existing
+thing; a second implementation is how the two diverge and one silently rots.
+
 ## Stack
 
 Next.js 15 (App Router) + React 19 + TypeScript + Supabase (auth/DB) + Cloudflare R2 (storage) + Tailwind + shadcn/ui + Vitest
