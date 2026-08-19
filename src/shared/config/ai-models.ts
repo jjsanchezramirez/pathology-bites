@@ -100,16 +100,6 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     tpmLimit: 8000,
   },
 
-  // Cerebras — fastest inference (~2000+ tok/s), free tier: 5 RPM, 1M tokens/day
-  {
-    id: "gpt-oss-120b",
-    name: "GPT-OSS 120B (Cerebras)",
-    provider: "cerebras",
-    available: true,
-    description: "OpenAI open-weight 120B reasoning model on Cerebras",
-    contextLength: "128K tokens",
-    tpmLimit: 30000,
-  },
   // Cloudflare Workers AI — 10K neurons/day free (~39% of current volume), then
   // $0.011/1K neurons. The 20B rather than the 120B: at $0.20/$0.30 per MTok it
   // is the cheapest thing in the chain by a wide margin, and a backstop's job is
@@ -315,7 +305,11 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
 // See DISABLED_AI_MODELS for the four that were measured genuinely unusable.
 export const TEXT_FALLBACK_CHAIN: string[] = [
   "openai/gpt-oss-120b", // Groq — 3.6s, $5.69/mo, 30 RPM
-  "gpt-oss-120b", // Cerebras — 0.9s, $8.62/mo, 5 RPM, prepaid
+  // Cerebras' gpt-oss-120b sat here — 0.9s, the fastest model available to us by
+  // 4x. Removed 2026-08-18: its balance is prepaid, it is empty, and there is no
+  // plan to top it up. A model that answers 402 on every call is worse than an
+  // absent one, because the chain is walked in order and it delays the providers
+  // that still work. See the Cerebras note in DISABLED_AI_MODELS to restore it.
   "@cf/openai/gpt-oss-20b", // Cloudflare — $0.66/mo, 10K free neurons/day
   // A slot here held llama-3.3-70b-versatile until Groq decommissioned it. It
   // stayed in the chain long enough to 404 on every single failure, wasting an
@@ -380,7 +374,12 @@ export interface AITaskProfile {
 // automatic fallback must never cascade into a paid model.
 export const VISION_FALLBACK_CHAIN: string[] = [
   "gemini-3.5-flash-lite", // Google — 1.9s
-  "gemma-4-31b", // Cerebras — 1.2s, the non-Google leg
+  // gemma-4-31b (Cerebras, 1.2s) was the non-Google leg and went with the
+  // billing. THIS CHAIN IS NOW SINGLE-PROVIDER: a Google outage or a 429 on the
+  // free tier empties it, where the text chain would still have three providers
+  // to fall through. That is a known gap, not an oversight — filling it needs a
+  // vision model benchmarked on a real image (/debug/vision-bench), and the
+  // candidates are Cloudflare Workers AI and Mistral's pixtral line.
   "gemini-2.5-flash-lite", // Google — 2.8s
 ];
 
@@ -489,6 +488,29 @@ export const DISABLED_AI_MODELS: AIModel[] = [
     available: false,
     deprecated: true,
     description: "Removed from Groq's catalog (404 as of Aug 2026)",
+  },
+
+  // Cerebras — parked 2026-08-18, not broken.
+  //
+  // These are the fastest models we ever measured (gpt-oss-120b at 0.9s, 4x the
+  // next best) and nothing is wrong with them. The account is prepaid, the
+  // balance is empty, and topping it up is not planned. Left visible rather than
+  // deleted so the numbers survive: at ~$8.62/month for our volume it is the
+  // dearest text option after Gemini, which is why parking it costs little.
+  //
+  // To restore: top up at console.cerebras.ai, flip these to available: true,
+  // put "gpt-oss-120b" back at slot 2 of TEXT_FALLBACK_CHAIN and "gemma-4-31b"
+  // at slot 2 of VISION_FALLBACK_CHAIN — the latter also un-does vision being
+  // single-provider. The chain tests will need their expectations moved back.
+  // Cerebras — fastest inference (~2000+ tok/s), free tier: 5 RPM, 1M tokens/day
+  {
+    id: "gpt-oss-120b",
+    name: "GPT-OSS 120B (Cerebras)",
+    provider: "cerebras",
+    available: false,
+    description: "OpenAI open-weight 120B reasoning model on Cerebras",
+    contextLength: "128K tokens",
+    tpmLimit: 30000,
   },
 
   // Measured unusable on the real WSI prompt (/debug/wsi-bench, Aug 2026): each

@@ -85,9 +85,11 @@ describe("Cloudflare Workers AI wiring", () => {
     expect(sentBody().max_tokens).toBeUndefined();
   });
 
-  it("is in the fallback chain, behind the faster providers", async () => {
+  it("is in the fallback chain, behind the leader", async () => {
+    // It moved from slot 3 to slot 2 when Cerebras was parked for billing, so
+    // this pins "behind Groq" rather than a fixed index.
     const at = TEXT_FALLBACK_CHAIN.indexOf(MODEL);
-    expect(at).toBeGreaterThan(1);
+    expect(at).toBeGreaterThan(0);
   });
 });
 

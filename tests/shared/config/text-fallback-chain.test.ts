@@ -39,12 +39,20 @@ describe("TEXT_FALLBACK_CHAIN", () => {
     expect(getModelProvider(TEXT_FALLBACK_CHAIN[0])).toBe("groq");
   });
 
-  it("keeps the two fastest models in the two leading slots", () => {
-    // Cost reordered the chain; it did not abandon latency. Both servings of
-    // gpt-oss-120b — the only sub-4s models measured — still lead.
-    expect(TEXT_FALLBACK_CHAIN.slice(0, 2).sort()).toEqual(
-      ["gpt-oss-120b", "openai/gpt-oss-120b"].sort()
-    );
+  it("does not carry a provider whose account is known-empty", () => {
+    // Cerebras held slot 2 and was the fastest model available by 4x, but its
+    // prepaid balance is empty with no plan to top it up. A model that answers
+    // 402 on every call is worse than an absent one: the chain is walked in
+    // order, so it delays every provider behind it. Its catalog entries stay in
+    // DISABLED_AI_MODELS with restore instructions.
+    expect(TEXT_FALLBACK_CHAIN).not.toContain("gpt-oss-120b");
+    expect(TEXT_FALLBACK_CHAIN.map(getModelProvider)).not.toContain("cerebras");
+  });
+
+  it("still leads with the fastest model it can actually reach", () => {
+    // Latency was not abandoned, only re-based on what is reachable: Groq's
+    // gpt-oss-120b at 3.6s is now the quickest live option.
+    expect(TEXT_FALLBACK_CHAIN[0]).toBe("openai/gpt-oss-120b");
   });
 
   it("puts Gemini last, because it is the most expensive option available", () => {
