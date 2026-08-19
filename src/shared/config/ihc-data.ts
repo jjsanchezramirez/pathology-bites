@@ -20,5 +20,5 @@ const DATA_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev";
 // (confirmed / carried / review) and `certainty` (definite / variable), and a
 // proliferation index is its own polarity rather than a positive. 1,654 v1 calls
 // that neither pass supports were dropped.
-export const IHC_MATRIX_URL = `${DATA_BASE}/data/ihc/ihc-matrix.json.br?v=55c7c057`;
+export const IHC_MATRIX_URL = `${DATA_BASE}/data/ihc/ihc-matrix.json.br?v=c0b371b8`;
 export const IHC_MOLECULAR_URL = `${DATA_BASE}/data/ihc/ihc-molecular.json.br?v=723a19fd`;
