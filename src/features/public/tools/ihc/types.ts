@@ -80,15 +80,36 @@ export interface Matrix {
 // keyed by the same diagnosis id slug as the Matrix.
 export interface MolecularAlteration {
   alteration: string;
-  kind: "fusion" | "mutation" | "amplification" | "deletion" | "methylation" | "other";
+  kind:
+    | "fusion"
+    | "mutation"
+    | "amplification"
+    | "deletion"
+    | "methylation"
+    // Whole-chromosome and arm-level copy change. The v2 extraction records it
+    // as its own kind; before that it was flattened into deletion/amplification.
+    | "aneuploidy"
+    | "other";
+  /** Only set when the chapter printed a figure for THIS alteration. */
   significance?: string | null;
   detection?: string | null;
+  /**
+   * The sentence the claim came from, verified verbatim against the WHO chapter
+   * that makes it. v1 had no such field: its `significance` string ("common",
+   * "reported") was standing in for a citation it never had.
+   */
+  quote?: string | null;
+  /** `absent` is a real claim — the chapter says this tumour LACKS it. */
+  presence?: "present" | "absent";
+  certainty?: "definite" | "variable";
   refs: string[];
 }
 
 export interface TherapeuticMarker {
   marker: string;
   implication?: string | null;
+  /** Verbatim WHO sentence tying this marker to treatment. */
+  quote?: string | null;
   refs: string[];
 }
 

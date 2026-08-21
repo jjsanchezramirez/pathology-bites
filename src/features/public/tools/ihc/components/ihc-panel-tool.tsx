@@ -405,8 +405,15 @@ const KIND_LABEL: Record<string, string> = {
   amplification: "Amplification",
   deletion: "Deletion",
   methylation: "Methylation",
+  aneuploidy: "Aneuploidy",
   other: "Alteration",
 };
+
+/** WHO prints inline footnote markers as `{9923922; 21307665}`. They are the
+ *  citation, which already renders as reference links, so they are stripped from
+ *  the displayed sentence rather than shown as noise inside it. */
+const displayQuote = (q: string) =>
+  q.replace(/\{[^}]*\}/g, "").replace(/\s+([,.;:])/g, "$1").replace(/\s+/g, " ").trim();
 
 /** Molecular alterations + therapeutic/predictive markers for one diagnosis. */
 function MolecularPanel({ entry, molRefs }: { entry: MolecularEntry; molRefs: MolecularData["references"] }) {
@@ -440,6 +447,11 @@ function MolecularPanel({ entry, molRefs }: { entry: MolecularEntry; molRefs: Mo
                 <span className="rounded bg-violet-50 px-1.5 py-0.5 text-[10px] font-medium uppercase text-violet-700 dark:bg-violet-950/40 dark:text-violet-300">
                   {KIND_LABEL[m.kind] ?? "Alteration"}
                 </span>
+                {m.presence === "absent" && (
+                  <span className="rounded border border-red-300 bg-red-50 px-1.5 py-0.5 text-[10px] font-medium uppercase text-red-700 dark:border-red-900 dark:bg-red-950/40 dark:text-red-300">
+                    Absent
+                  </span>
+                )}
                 <span className="font-medium">{m.alteration}</span>
                 {m.significance && <span className="text-muted-foreground">— {m.significance}</span>}
                 {m.detection && (
@@ -455,6 +467,11 @@ function MolecularPanel({ entry, molRefs }: { entry: MolecularEntry; molRefs: Mo
                       </span>
                     ))}
                     ]
+                  </span>
+                )}
+                {m.quote && (
+                  <span className="w-full text-[11px] italic leading-snug text-muted-foreground">
+                    &ldquo;{displayQuote(m.quote)}&rdquo;
                   </span>
                 )}
               </li>
@@ -485,6 +502,11 @@ function MolecularPanel({ entry, molRefs }: { entry: MolecularEntry; molRefs: Mo
                       </span>
                     ))}
                     ]
+                  </span>
+                )}
+                {t.quote && (
+                  <span className="w-full text-[11px] italic leading-snug text-muted-foreground">
+                    &ldquo;{displayQuote(t.quote)}&rdquo;
                   </span>
                 )}
               </li>
