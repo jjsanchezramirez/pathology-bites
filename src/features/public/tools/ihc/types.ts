@@ -82,6 +82,8 @@ export interface MolecularAlteration {
   alteration: string;
   kind:
     | "fusion"
+    // A break with no partner named: break-apart FISH, antigen-receptor clonality.
+    | "rearrangement"
     | "mutation"
     | "amplification"
     | "deletion"
