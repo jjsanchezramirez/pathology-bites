@@ -113,57 +113,204 @@ function CellValue({ cell }: { cell?: Cell }) {
   );
 }
 
-function References({ matrix, cells }: { matrix: Matrix; cells: (Cell | undefined)[] }) {
-  const [open, setOpen] = useState(false);
+/**
+ * A reference line, with the PMID said once.
+ *
+ * `citation` is usually "WHO-cited (PMID 9888704)", so printing it next to a
+ * "PMID 9888704" link stated the same number twice and cost two wrapped lines to
+ * do it. The number is the link; the citation keeps only whatever it says that
+ * the link does not.
+ */
+function refParts(ref: { citation: string; pmid?: string }) {
+  const label = ref.pmid
+    ? ref.citation.replace(/\s*[([]?\s*PMID:?\s*\d+\s*[)\]]?\s*/i, " ").trim().replace(/[·,;:—-]\s*$/, "")
+    : ref.citation;
+  return {
+    label,
+    text: ref.pmid ? `PMID ${ref.pmid}` : "PubMed",
+    href: ref.pmid
+      ? `https://pubmed.ncbi.nlm.nih.gov/${ref.pmid}/`
+      : `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(ref.citation)}`,
+  };
+}
+
+function useRefs(matrix: Matrix, cells: (Cell | undefined)[]) {
   const refIds = refsForCells(cells);
   const quotes = [...new Set(cells.map((c) => c?.quote).filter((q): q is string => Boolean(q)))];
-  if (refIds.length === 0 && quotes.length === 0)
-    return <span className="text-[11px] text-muted-foreground/50">—</span>;
+  return { refIds, quotes, any: refIds.length > 0 || quotes.length > 0 };
+}
+
+/**
+ * One marker row in the single-diagnosis profile, plus the evidence row it opens.
+ *
+ * Two <tr>s rather than one: the toggle belongs in the narrow Refs column, but
+ * the evidence it reveals needs the whole table width. Rendering the panel inside
+ * that 80px cell is what made a WHO sentence wrap at four words a line.
+ */
+function ProfileRow({
+  matrix, marker, cell,
+}: { matrix: Matrix; marker: Marker; cell: Cell }) {
+  const [open, setOpen] = useState(false);
+  const { refIds, quotes, any } = useRefs(matrix, [cell]);
   return (
-    <div className="mt-1">
-      <button
-        onClick={() => setOpen((o) => !o)}
-        className="inline-flex items-center gap-1 text-[11px] text-muted-foreground hover:text-foreground"
-      >
-        <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
-        {refIds.length} ref{refIds.length === 1 ? "" : "s"}
-      </button>
-      {open && (
-        <div className="mt-1 space-y-2 border-l-2 border-muted pl-3">
-          {quotes.map((q, i) => (
-            <blockquote key={i} className="text-[11px] italic leading-snug text-muted-foreground">
-              “{q}” <span className="not-italic opacity-60">— WHO</span>
-            </blockquote>
-          ))}
-          <ul className="space-y-1.5">
-          {refIds.map((id) => {
-            const ref = matrix.references[id];
-            if (!ref) return null;
-            const href = ref.pmid
-              ? `https://pubmed.ncbi.nlm.nih.gov/${ref.pmid}/`
-              : `https://pubmed.ncbi.nlm.nih.gov/?term=${encodeURIComponent(ref.citation)}`;
-            return (
-              <li key={id} className="text-[11px] leading-snug text-muted-foreground">
-                {ref.citation}{" "}
-                <a
-                  href={href}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-0.5 text-primary hover:underline"
-                >
-                  {ref.pmid ? `PMID ${ref.pmid}` : "PubMed"}
-                  <ExternalLink className="h-2.5 w-2.5" />
-                </a>
-              </li>
-            );
-          })}
-          </ul>
+    <>
+      <tr className={`align-top ${open ? "" : "border-b"} last:border-0`}>
+        <td className="py-2 pr-3 font-medium">{marker.name}</td>
+        <td className="py-2">
+          <CellValue cell={cell} />
+        </td>
+        <td className="py-2 pl-3 text-muted-foreground">{cell.pattern || "\u2014"}</td>
+        <td className="py-2 text-right">
+          {any ? (
+            <RefsToggle count={refIds.length} open={open} onToggle={() => setOpen((o) => !o)} />
+          ) : (
+            <span className="text-[11px] text-muted-foreground/50">&mdash;</span>
+          )}
+        </td>
+      </tr>
+      {open && any && (
+        <tr className="border-b last:border-0">
+          <td colSpan={4} className="pb-2">
+            <RefsPanel matrix={matrix} refIds={refIds} quotes={quotes} />
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
+/**
+ * One marker row in the comparison table, plus the evidence row it opens.
+ *
+ * Same two-<tr> shape as ProfileRow. The column count is 1 (marker) + one per
+ * selected diagnosis + 1 (power), so the evidence row can span the table exactly
+ * rather than being squeezed into the marker cell.
+ */
+function CompareRow({
+  matrix, marker, cells, spread, discriminates,
+}: {
+  matrix: Matrix;
+  marker: Marker;
+  cells: (Cell | undefined)[];
+  spread: number;
+  discriminates: boolean;
+}) {
+  const [open, setOpen] = useState(false);
+  const { refIds, quotes, any } = useRefs(matrix, cells);
+  return (
+    <>
+      <tr className={`align-top ${open ? "" : "border-b"} last:border-0`}>
+        <td className="py-2 pr-3">
+          <div className="flex items-center gap-1.5 font-medium">
+            {marker.name}
+            {discriminates && (
+              <Sparkles className="h-3.5 w-3.5 text-primary" aria-label="discriminates" />
+            )}
+          </div>
+          {marker.aliases && marker.aliases[0] && marker.aliases[0] !== marker.name && (
+            <div className="text-[10px] text-muted-foreground">{marker.aliases[0]}</div>
+          )}
+          {any && (
+            <div className="mt-1">
+              <RefsToggle count={refIds.length} open={open} onToggle={() => setOpen((o) => !o)} />
+            </div>
+          )}
+        </td>
+        {cells.map((c, i) => (
+          <td key={i} className="px-2 py-2">
+            <CellValue cell={c} />
+            {c?.pattern && (
+              <div className="mt-0.5 text-center text-[10px] text-muted-foreground">{c.pattern}</div>
+            )}
+          </td>
+        ))}
+        <td className="py-2 pl-2 text-right">
+          <span
+            className={`text-xs tabular-nums ${discriminates ? "font-semibold text-primary" : "text-muted-foreground"}`}
+          >
+            {spread}
+          </span>
+        </td>
+      </tr>
+      {open && any && (
+        <tr className="border-b last:border-0">
+          <td colSpan={cells.length + 2} className="pb-2">
+            <RefsPanel matrix={matrix} refIds={refIds} quotes={quotes} />
+          </td>
+        </tr>
+      )}
+    </>
+  );
+}
+
+/** The narrow-column control. The panel it opens is rendered by the row, full width. */
+function RefsToggle({
+  count, open, onToggle,
+}: { count: number; open: boolean; onToggle: () => void }) {
+  return (
+    <button
+      onClick={onToggle}
+      aria-expanded={open}
+      className="inline-flex items-center gap-1 whitespace-nowrap text-[11px] text-muted-foreground hover:text-foreground"
+    >
+      <ChevronDown className={`h-3 w-3 transition-transform ${open ? "rotate-180" : ""}`} />
+      {count} ref{count === 1 ? "" : "s"}
+    </button>
+  );
+}
+
+/**
+ * The expanded evidence, laid out across the FULL table width.
+ *
+ * It used to render inside the 80px right-aligned "Refs" cell, so a WHO sentence
+ * wrapped at about four words a line and three citations occupied most of a
+ * screen while the middle of the row sat empty. As an expandable row it reads
+ * left-to-right at normal measure, and references that share a label (nearly all
+ * are "WHO-cited") state it once and list their PMIDs inline.
+ */
+function RefsPanel({
+  matrix, refIds, quotes,
+}: { matrix: Matrix; refIds: string[]; quotes: string[] }) {
+  const refs = refIds.map((id) => matrix.references[id]).filter(Boolean).map(refParts);
+  const labels = [...new Set(refs.map((r) => r.label).filter(Boolean))];
+  const shared = labels.length === 1 && refs.every((r) => r.label === labels[0]) ? labels[0] : null;
+  const link = (r: ReturnType<typeof refParts>, key: string) => (
+    <a
+      key={key}
+      href={r.href}
+      target="_blank"
+      rel="noopener noreferrer"
+      className="inline-flex items-center gap-0.5 whitespace-nowrap text-primary hover:underline"
+    >
+      {r.text}
+      <ExternalLink className="h-2.5 w-2.5 shrink-0" />
+    </a>
+  );
+  return (
+    <div className="border-l-2 border-muted py-2 pl-3 text-left">
+      {quotes.map((q, i) => (
+        <blockquote key={i} className="max-w-prose text-[11px] italic leading-relaxed text-muted-foreground">
+          &ldquo;{q}&rdquo; <span className="not-italic opacity-60">&mdash; WHO</span>
+        </blockquote>
+      ))}
+      {refs.length > 0 && (
+        <div className={`flex flex-wrap items-baseline gap-x-3 gap-y-1 text-[11px] text-muted-foreground ${quotes.length ? "mt-1.5" : ""}`}>
+          {shared && <span className="opacity-70">{shared}</span>}
+          {refs.map((r, i) =>
+            shared ? (
+              link(r, String(i))
+            ) : (
+              <span key={i} className="inline-flex items-baseline gap-1">
+                {r.label && <span className="opacity-70">{r.label}</span>}
+                {link(r, String(i))}
+              </span>
+            )
+          )}
         </div>
       )}
     </div>
   );
 }
-
 /** Search box that filters diagnoses and calls onPick when one is chosen. */
 function DiagnosisSearch({
   matrix,
@@ -375,37 +522,14 @@ function PanelMode({
             </thead>
             <tbody>
               {ranked.map(({ marker, byDx, spread, discriminates }) => (
-                <tr key={marker.id} className="border-b align-top last:border-0">
-                  <td className="py-2 pr-3">
-                    <div className="flex items-center gap-1.5 font-medium">
-                      {marker.name}
-                      {discriminates && (
-                        <Sparkles className="h-3.5 w-3.5 text-primary" aria-label="discriminates" />
-                      )}
-                    </div>
-                    {marker.aliases && marker.aliases[0] && marker.aliases[0] !== marker.name && (
-                      <div className="text-[10px] text-muted-foreground">{marker.aliases[0]}</div>
-                    )}
-                    <References matrix={matrix} cells={selected.map((id) => byDx[id])} />
-                  </td>
-                  {selected.map((id) => (
-                    <td key={id} className="px-2 py-2">
-                      <CellValue cell={byDx[id]} />
-                      {byDx[id]?.pattern && (
-                        <div className="mt-0.5 text-center text-[10px] text-muted-foreground">
-                          {byDx[id]!.pattern}
-                        </div>
-                      )}
-                    </td>
-                  ))}
-                  <td className="py-2 pl-2 text-right">
-                    <span
-                      className={`text-xs tabular-nums ${discriminates ? "font-semibold text-primary" : "text-muted-foreground"}`}
-                    >
-                      {spread}
-                    </span>
-                  </td>
-                </tr>
+                <CompareRow
+                  key={marker.id}
+                  matrix={matrix}
+                  marker={marker}
+                  cells={selected.map((id) => byDx[id])}
+                  spread={spread}
+                  discriminates={discriminates}
+                />
               ))}
             </tbody>
           </table>
@@ -629,16 +753,7 @@ function ProfileMode({
             </thead>
             <tbody>
               {rows.map(({ marker, cell }) => (
-                <tr key={marker.id} className="border-b align-top last:border-0">
-                  <td className="py-2 pr-3 font-medium">{marker.name}</td>
-                  <td className="py-2">
-                    <CellValue cell={cell} />
-                  </td>
-                  <td className="py-2 pl-3 text-muted-foreground">{cell.pattern || "—"}</td>
-                  <td className="py-2 text-right">
-                    <References matrix={matrix} cells={[cell]} />
-                  </td>
-                </tr>
+                <ProfileRow key={marker.id} matrix={matrix} marker={marker} cell={cell} />
               ))}
             </tbody>
           </table>
