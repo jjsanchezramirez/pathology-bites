@@ -19,6 +19,21 @@ export interface Diagnosis {
   organs?: string[];
   /** WHO "Related terminology" synonyms (old/alternate names) for search */
   aliases?: string[];
+  /**
+   * What sort of thing this is, from WHO's own book structure -- bookid 67 is
+   * the Genetic Tumour Syndromes volume, and each other book has a genetic
+   * tumour syndromes chapter. Never inferred from the name: "Sezary syndrome",
+   * "Erdheim-Chester disease" and "Rosai-Dorfman disease" are neoplasms.
+   *
+   * It matters here because a SYNDROME does not have an immunoprofile the way a
+   * tumour does. What it has is a surrogate -- SDHB loss standing in for a
+   * germline SDHx mutation, MMR-protein loss for Lynch -- performed on the
+   * tumour but reporting the germline defect. Markers that merely belong to a
+   * tumour the syndrome predisposes to are re-homed onto that tumour instead of
+   * being listed here, because "MEN2 is positive for calcitonin" is false; the
+   * medullary carcinoma is.
+   */
+  kind?: "neoplasm" | "syndrome" | "non_neoplastic";
 }
 
 export interface Reference {

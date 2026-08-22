@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Button } from "@/shared/components/ui/button";
+import { Badge } from "@/shared/components/ui/badge";
 import {
   ExternalLink,
   Sparkles,
@@ -218,7 +219,10 @@ function DiagnosisSearch({
                 }}
                 className="flex w-full items-center justify-between px-3 py-2 text-left text-sm hover:bg-accent"
               >
-                <span>{d.name}</span>
+                <span className="flex items-center gap-1.5">
+                  {d.name}
+                  <KindBadge kind={d.kind} />
+                </span>
                 <span className="ml-2 text-[10px] text-muted-foreground">{d.organ}</span>
               </button>
             </li>
@@ -247,10 +251,48 @@ function LearnLinks({ name }: { name: string }) {
   );
 }
 
+/**
+ * A genetic tumour syndrome is not a tumour, and the difference is not cosmetic
+ * here: the stains listed under one are SURROGATES for a germline defect (SDHB
+ * loss standing in for an SDHx mutation, MMR-protein loss for Lynch), performed
+ * on the tumour but read as evidence about the patient. Markers that merely
+ * belong to a tumour the syndrome predisposes to are re-homed onto that tumour,
+ * because "MEN2 is positive for calcitonin" is false -- the medullary carcinoma
+ * is. Canonical outline badge per the repo's badge rules.
+ */
+function KindBadge({ kind }: { kind?: Diagnosis["kind"] }) {
+  if (!kind || kind === "neoplasm") return null;
+  const label = kind === "syndrome" ? "syndrome" : "non-neoplastic";
+  const tone =
+    kind === "syndrome"
+      ? "border-purple-300 bg-purple-50 text-purple-700"
+      : "border-sky-300 bg-sky-50 text-sky-700";
+  return (
+    <Badge variant="outline" className={`${tone} text-[10px] px-1.5 py-0 font-normal`}>
+      {label}
+    </Badge>
+  );
+}
+
+function SyndromeNote({ name }: { name: string }) {
+  return (
+    <div className="mt-2 flex gap-2 rounded-md border border-purple-200 bg-purple-50/60 px-3 py-2 text-[11px] leading-relaxed text-purple-900 dark:border-purple-900/50 dark:bg-purple-950/30 dark:text-purple-200">
+      <Info className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+      <span>
+        <strong>{name}</strong> is a genetic tumour syndrome, not a tumour. The stains below are
+        surrogates for the underlying germline defect — performed on tissue, but read as evidence
+        about the patient. Markers belonging to the tumours this syndrome predisposes to are listed
+        under those tumours instead.
+      </span>
+    </div>
+  );
+}
+
 function DxChip({ dx, onRemove }: { dx: Diagnosis; onRemove?: () => void }) {
   return (
     <span className="inline-flex items-center gap-1.5 rounded-full border border-primary bg-primary/10 px-3 py-1 text-sm text-primary">
       {dx.name}
+      <KindBadge kind={dx.kind} />
       {onRemove && (
         <button onClick={onRemove} className="hover:text-primary/70" aria-label={`Remove ${dx.name}`}>
           <X className="h-3.5 w-3.5" />
@@ -557,9 +599,12 @@ function ProfileMode({
       {dx && (
         <div>
           <div className="flex flex-wrap items-baseline justify-between gap-2">
-            <h3 className="text-sm font-semibold">
-              {dx.name}{" "}
-              <span className="font-normal text-muted-foreground">· {dx.organ} · IHC profile</span>
+            <h3 className="flex flex-wrap items-baseline gap-1.5 text-sm font-semibold">
+              {dx.name}
+              <KindBadge kind={dx.kind} />
+              <span className="font-normal text-muted-foreground">
+                · {dx.organ} · {dx.kind === "syndrome" ? "surrogate markers" : "IHC profile"}
+              </span>
             </h3>
             <span
               className="text-[11px] text-muted-foreground"
@@ -569,6 +614,7 @@ function ProfileMode({
               {completeness < 0.5 ? " · sparse" : ""}
             </span>
           </div>
+          {dx.kind === "syndrome" && <SyndromeNote name={dx.name} />}
           <div className="mt-2">
             <LearnLinks name={dx.name} />
           </div>
