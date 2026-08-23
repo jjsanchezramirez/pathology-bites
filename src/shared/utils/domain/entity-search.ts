@@ -73,9 +73,27 @@ async function buildIndex(): Promise<void> {
     id: string;
     name: string;
     slug: string;
+  }>(supabase, "entities", "id, name, slug");
+
+  // Organ and chapter are per-VOLUME facts and live on entity_placements: one
+  // tumour is placed in several volumes and has an organ in each. Search shows
+  // one only when it is unambiguous — a tumour placed in nine volumes has no
+  // single home, and naming one would be an arbitrary tie-break.
+  const placements = await fetchAll<{
+    entity_id: string;
     organ_system: string | null;
     chapter_name: string | null;
-  }>(supabase, "entities", "id, name, slug, organ_system, chapter_name");
+  }>(supabase, "entity_placements", "entity_id, organ_system, chapter_name");
+
+  const placeMap = new Map<string, { organs: Set<string>; chapters: Set<string> }>();
+  for (const p of placements) {
+    let m = placeMap.get(p.entity_id);
+    if (!m) placeMap.set(p.entity_id, (m = { organs: new Set(), chapters: new Set() }));
+    if (p.organ_system) m.organs.add(p.organ_system);
+    const c = p.chapter_name?.trim();
+    if (c) m.chapters.add(c);
+  }
+  const sole = (set: Set<string> | undefined) => (set && set.size === 1 ? [...set][0] : null);
 
   const synonyms = await fetchAll<{ entity_id: string; term: string }>(
     supabase,
@@ -104,8 +122,8 @@ async function buildIndex(): Promise<void> {
       id: e.id,
       name: e.name,
       slug: e.slug,
-      organSystem: e.organ_system,
-      chapterName: e.chapter_name,
+      organSystem: sole(placeMap.get(e.id)?.organs),
+      chapterName: sole(placeMap.get(e.id)?.chapters),
       tokens,
       tokenSet: new Set(tokens),
       nameLower,

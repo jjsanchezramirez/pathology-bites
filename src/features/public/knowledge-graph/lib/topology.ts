@@ -6,7 +6,7 @@
  * Lifted out of the debug API route so that the snapshot generator can build
  * exactly the same graph the explorer does. The route now wraps this in a
  * response; nothing else about it changed. A second implementation of the
- * concept collapse and the edge pooling is the one thing that would let a
+ * per-tumour collapse and the edge pooling is the one thing that would let a
  * baked homepage snapshot and the live explorer disagree about the data.
  */
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
@@ -99,11 +99,15 @@ export async function buildTopology(sb: Sb, part: TopologyPart): Promise<Topolog
   const wantEdges = part !== "nodes";
   const none = async () => [] as Record<string, unknown>[];
 
-  const [entities, concepts, markers, genes, findings, surrogates, relations] = await Promise.all([
-    // Entities are read either way: the subtype edges are their parent_id, and
-    // the concept mapping has to be applied to both halves of the payload.
-    all(sb, "entities", "id, name, organ_system, kind, parent_id, chapter_name, concept_id"),
-    all(sb, "concepts", "id, name, kind, icd_o, member_count, method"),
+  const [entities, placements, markers, genes, findings, surrogates, relations] = await Promise.all([
+    // Entities are read either way: the nodes half draws them, and the edges
+    // half needs their ids to reject edges that point outside the graph.
+    // entities is now ONE ROW PER TUMOUR. Everything volume-specific — organ,
+    // rank, parent, chapter — moved to entity_placements, which is why the
+    // concept layer below is gone: `concepts` existed to collapse per-volume
+    // duplicate rows into one node, and the rows are no longer duplicated.
+    all(sb, "entities", "id, name, kind, icd_o"),
+    all(sb, "entity_placements", "entity_id, volume, organ_system, rank, parent_id, chapter_name"),
     // `markers` absorbed `alterations`: one noun, distinguished by `kind`. The
     // split into two node types below is presentation only.
     // Read either way: the nodes half draws them, and the edges half needs
@@ -151,7 +155,7 @@ export async function buildTopology(sb: Sb, part: TopologyPart): Promise<Topolog
     (genes as { id: string; symbol: string }[]).map((g) => [g.symbol, g.id])
   );
 
-  /* ── one node per concept ──
+  /* ── one node per tumour ──
    *
    * WHO repeats the same tumour across volumes -- Schwannoma has nine chapter
    * rows, DLBCL ten -- and drawing each as its own node put the same disease in
@@ -161,57 +165,52 @@ export async function buildTopology(sb: Sb, part: TopologyPart): Promise<Topolog
    * The chapter rows are untouched in the database. Only the graph collapses,
    * and the detail endpoint opens each concept back up per chapter.
    */
-  const conceptOf = new Map<string, string>();
-  for (const e of entities) if (e.concept_id) conceptOf.set(e.id, e.concept_id as string);
-  const resolve = (id: string) => conceptOf.get(id) ?? id;
-
-  /* A concept spans several volumes, so it usually has no single organ system.
+  /* A tumour spans several volumes, so it usually has no single organ system.
    * It only claims one when a volume STRICTLY dominates -- otherwise there is no
    * mode to take and picking the first is the arbitrary tie-break that has
-   * already bitten this project twice. Schwannoma has one row in each of nine
-   * volumes; naming any of them its home would be invention. Those come back
-   * with no organ, and the UI colours them as what they are: tumours that cut
-   * across the whole classification. */
-  const conceptOrgans = new Map<string, Map<string, number>>();
-  for (const e of entities) {
-    if (!e.concept_id) continue;
-    let m = conceptOrgans.get(e.concept_id as string);
-    if (!m) conceptOrgans.set(e.concept_id as string, (m = new Map()));
-    m.set(e.organ_system as string, (m.get(e.organ_system as string) ?? 0) + 1);
+   * already bitten this project twice. Schwannoma is placed in nine volumes;
+   * naming any of them its home would be invention. Those come back with no
+   * organ, and the UI colours them as what they are: tumours that cut across the
+   * whole classification. */
+  const placeOf = new Map<string, Record<string, unknown>[]>();
+  for (const p of placements) {
+    const k = p.entity_id as string;
+    placeOf.set(k, [...(placeOf.get(k) ?? []), p]);
   }
-  const modalOrgan = (cid: string) => {
-    const counts = [...(conceptOrgans.get(cid) ?? new Map<string, number>()).entries()].sort(
-      (a, b) => b[1] - a[1]
+  const modalOrgan = (id: string) => {
+    const counts = new Map<string, number>();
+    for (const p of placeOf.get(id) ?? []) {
+      const o = p.organ_system as string;
+      if (o) counts.set(o, (counts.get(o) ?? 0) + 1);
+    }
+    const ranked = [...counts.entries()].sort((a, b) => b[1] - a[1]);
+    if (!ranked.length) return undefined;
+    if (ranked.length > 1 && ranked[0][1] === ranked[1][1]) return undefined;
+    return ranked[0][0];
+  };
+  /* The chapter shown is the one from the volume that owns the entity, and a
+   * tumour placed in several volumes has several. Show one only when it is
+   * unambiguous, for the same reason the organ is withheld on a tie. */
+  const soleChapter = (id: string) => {
+    const names = new Set(
+      (placeOf.get(id) ?? []).map((p) => (p.chapter_name as string)?.trim()).filter(Boolean)
     );
-    if (!counts.length) return undefined;
-    if (counts.length > 1 && counts[0][1] === counts[1][1]) return undefined;
-    return counts[0][0];
+    return names.size === 1 ? [...names][0] : undefined;
   };
 
   const nodes = !wantNodes
     ? []
     : [
-        // Entities appearing in a single volume stay as themselves...
-        ...entities
-          .filter((e) => !e.concept_id)
-          .map((e) => ({
-            id: e.id,
-            l: e.name,
-            t: "entity",
-            o: e.organ_system,
-            w: e.chapter_name?.trim() || undefined,
-            k: e.kind,
-            p: e.parent_id ?? undefined,
-          })),
-        // ...and the repeated ones appear once, as their concept.
-        ...concepts.map((c) => ({
-          id: c.id,
-          l: c.name,
+        // One node per tumour. No concept indirection: the rows are canonical.
+        ...entities.map((e) => ({
+          id: e.id,
+          l: e.name,
           t: "entity",
-          o: modalOrgan(c.id),
-          k: c.kind,
-          n: c.member_count,
-          icd: c.icd_o ?? undefined,
+          o: modalOrgan(e.id as string),
+          w: soleChapter(e.id as string),
+          k: e.kind,
+          n: (placeOf.get(e.id as string) ?? []).length,
+          icd: e.icd_o ?? undefined,
         })),
         ...markers.map((m) => ({
           id: m.id,
@@ -231,9 +230,16 @@ export async function buildTopology(sb: Sb, part: TopologyPart): Promise<Topolog
   const rawEdges = !wantEdges
     ? []
     : [
-        ...entities
-          .filter((e) => e.parent_id && entityIds.has(e.parent_id))
-          .map((e) => ({ s: e.id, t: e.parent_id, e: "subtype" })),
+        // Subtype edges come from placements: a tumour can sit under a different
+        // parent in each volume, and every one of those is a real WHO statement.
+        // Deduped so two volumes agreeing draw one edge, not two.
+        ...[
+          ...new Map(
+            placements
+              .filter((p) => p.parent_id && entityIds.has(p.parent_id as string) && p.entity_id !== p.parent_id)
+              .map((p) => [`${p.entity_id}|${p.parent_id}`, { s: p.entity_id, t: p.parent_id, e: "subtype" }])
+          ).values(),
+        ],
         // `v` stays review_status: the client filters edges against that
         // vocabulary, and handing it verification values instead would match
         // nothing and hide the entire graph. Verification rides along as `vf`.
