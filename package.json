@@ -29,7 +29,8 @@
     "test:features": "vitest run tests/features",
     "test:app": "vitest run tests/app",
     "test:ci": "vitest run --reporter=verbose",
-    "eval:search": "tsx tests/benchmarks/search-eval.ts"
+    "eval:search": "tsx tests/benchmarks/search-eval.ts",
+    "graph:snapshot": "tsx src/features/public/knowledge-graph/scripts/build-snapshot.ts"
   },
   "dependencies": {
     "@aflsolutions/graphology-communities-leiden": "^1.1.1",
