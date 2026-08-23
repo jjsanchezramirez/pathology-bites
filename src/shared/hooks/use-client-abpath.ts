@@ -3,14 +3,20 @@
 import { useMemo } from "react";
 import type { ABPathData } from "@/shared/types/abpath";
 import { useR2Json } from "@/shared/hooks/use-r2-json";
+import { createManifestResolver } from "@/shared/config/r2-manifest";
 import { log } from "@/shared/utils/logging";
 
 // Direct R2 access - CORS is configured on bucket.
 // `.json.br` object on R2 stored w/ HTTP `Content-Encoding: br` — browser
 // auto-decompresses, so the fetch sees plain JSON. Same pattern as
 // virtual-slides v8 / ankoma / cell-quiz.
-const ABPATH_API_URL =
-  "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/ab-path/content-specs.json.br?v=1";
+const ABPATH_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/ab-path";
+// FALLBACK: used only when the manifest is unreachable. See CLAUDE.md "Caching".
+const ABPATH_API_URL = `${ABPATH_BASE}/content-specs.json.br`;
+const resolveAbPathUrl = (() => {
+  const r = createManifestResolver(`${ABPATH_BASE}/manifest.json`, { specs: ABPATH_API_URL });
+  return async () => (await r()).urls.specs;
+})();
 
 interface UseClientABPathResult {
   data: ABPathData | null;
@@ -49,6 +55,7 @@ function transformABPathData(raw: unknown): ABPathData {
 export function useClientABPath(): UseClientABPathResult {
   const { data, isLoading, error } = useR2Json<ABPathData>({
     url: ABPATH_API_URL,
+    resolveUrl: resolveAbPathUrl,
     transform: transformABPathData,
     label: "ABPath content specifications",
   });

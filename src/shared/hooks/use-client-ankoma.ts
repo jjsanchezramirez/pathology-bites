@@ -3,7 +3,7 @@
 import { useEffect } from "react";
 import { AnkomaData, AnkomaDeck } from "@/features/user/anki/types/anki-card";
 import { parseAnkomaData } from "@/features/user/anki/utils/ankoma-parser";
-import { ANKOMA_JSON_URL } from "@/shared/config/ankoma";
+import { ANKOMA_JSON_URL, resolveAnkomaUrl } from "@/shared/config/ankoma";
 import { useR2Json } from "@/shared/hooks/use-r2-json";
 import { toast } from "@/shared/utils/ui/toast";
 
@@ -20,6 +20,7 @@ export function useClientAnkoma() {
     error,
   } = useR2Json<AnkomaData>({
     url: ANKOMA_JSON_URL,
+    resolveUrl: resolveAnkomaUrl,
     transform: transformAnkoma,
     label: "Ankoma data",
     timeoutMs: 15000,

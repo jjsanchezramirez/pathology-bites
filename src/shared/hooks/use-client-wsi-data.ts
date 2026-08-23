@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
 import { loadR2Json, useR2Json } from "@/shared/hooks/use-r2-json";
+import { createManifestResolver } from "@/shared/config/r2-manifest";
 import { toast } from "@/shared/utils/ui/toast";
 import { log } from "@/shared/utils/logging";
 import { slideMatchesCategory } from "@/features/user/wsi-questions/components/wsi-question-generator-utils";
@@ -62,8 +63,18 @@ interface WsiQuestionCase {
 // Cache-Control and the loader fetches with `cache: "force-cache"`, so a browser
 // holding the pre-tile-source copy would keep serving slides the viewer cannot
 // render. Bump it whenever a republish adds a field the code depends on.
-const WSI_DATA_URL =
-  "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides/public_wsi_cases.json?v=who-1";
+const WSI_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides";
+// FALLBACK: used only when the manifest is unreachable. The `?v=` cache-buster
+// is gone — virtual-slides/manifest.json now names a content-addressed object,
+// so a republish cannot be shadowed by a stale cached copy. CLAUDE.md "Caching".
+const WSI_DATA_URL = `${WSI_BASE}/public_wsi_cases.json`;
+
+// virtual-slides/manifest.json carries BOTH the search corpus (top level) and
+// this cases dataset under `cases`, so the two share one pointer.
+const resolveWsiCasesUrl = (() => {
+  const r = createManifestResolver(`${WSI_BASE}/manifest.json`, { cases: WSI_DATA_URL });
+  return async () => (await r()).urls.cases;
+})();
 
 // Convert the PathPresenter cases JSON into VirtualSlide entries, dropping any
 // without a usable remote URL.
@@ -153,6 +164,7 @@ function transformWSIData(raw: unknown): VirtualSlide[] {
 export function loadClientWSIData(): Promise<VirtualSlide[]> {
   return loadR2Json<VirtualSlide[]>({
     url: WSI_DATA_URL,
+    resolveUrl: resolveWsiCasesUrl,
     transform: transformWSIData,
     label: "WSI data",
   });
@@ -174,6 +186,7 @@ export function useClientWSIData(): UseClientWSIDataResult {
     error,
   } = useR2Json<VirtualSlide[]>({
     url: WSI_DATA_URL,
+    resolveUrl: resolveWsiCasesUrl,
     transform: transformWSIData,
     label: "WSI data",
   });

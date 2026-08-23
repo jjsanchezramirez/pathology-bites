@@ -10,8 +10,17 @@ import { useEffect, useState } from "react";
 import { log } from "@/shared/utils/logging";
 
 interface R2JsonOptions<T> {
-  /** Primary R2 URL for the dataset. */
+  /**
+   * Compiled R2 URL. Used as the cache identity, and as the fallback when
+   * `resolveUrl` is absent or its manifest is unreachable.
+   */
   url: string;
+  /**
+   * Resolve the live URL from the dataset's R2 manifest, so a republish is
+   * picked up without an app redeploy (CLAUDE.md "Caching"). Built with
+   * createManifestResolver — see src/shared/config/r2-manifest.ts.
+   */
+  resolveUrl?: () => Promise<string>;
   /** Same-origin API route to fall back to when R2 is unreachable (e.g. dev). */
   fallbackUrl?: string;
   /** Post-fetch transform (e.g. rewriting relative URLs to R2 public URLs). */
@@ -47,15 +56,28 @@ async function fetchWithTimeout(input: string, timeoutMs: number): Promise<Respo
 // Exported so imperative callers (e.g. click handlers that must `await` a
 // dataset outside React) can share the same per-URL module cache the hook uses.
 export function loadR2Json<T>(options: R2JsonOptions<T>): Promise<T> {
-  const { url, fallbackUrl, transform, label, timeoutMs = 8000 } = options;
+  const { url, resolveUrl, fallbackUrl, transform, label, timeoutMs = 8000 } = options;
 
+  // Key the cache on the COMPILED url: it is stable per dataset, whereas the
+  // resolved url changes with every republish and would leak cache entries.
   const existing = cachedPromises.get(url);
   if (existing) return existing as Promise<T>;
 
   const promise = (async () => {
+    // The manifest lookup must never be able to break loading: any failure
+    // inside the resolver already yields the compiled fallback.
+    let target = url;
+    if (resolveUrl) {
+      try {
+        target = (await resolveUrl()) || url;
+      } catch {
+        target = url;
+      }
+    }
+
     let res: Response;
     try {
-      res = await fetchWithTimeout(url, timeoutMs);
+      res = await fetchWithTimeout(target, timeoutMs);
       if (!res.ok) throw new Error(`Failed: ${res.status}`);
     } catch (e) {
       if (!fallbackUrl) {

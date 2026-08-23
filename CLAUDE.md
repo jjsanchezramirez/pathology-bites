@@ -65,7 +65,17 @@ data/<x>/<name>-<hash>.json.br   Cache-Control: max-age=31536000, immutable
 data/<x>/manifest.json           Cache-Control: max-age=60   ← the only mutable thing
 ```
 
-The app resolves URLs from the manifest (`cache: "no-cache"`, short timeout) and falls back to a compiled URL only if it is unreachable. **A republish then needs no redeploy.** Canonical examples: `src/shared/config/virtual-slides.ts`, `src/shared/config/ihc-data.ts` (`resolveIhcUrls()`).
+The app resolves URLs from the manifest (`cache: "no-cache"`, short timeout) and falls back to a compiled URL only if it is unreachable. **A republish then needs no redeploy.**
+
+Do not hand-roll either side — both halves exist:
+
+| use | helper |
+|---|---|
+| publish | `publishVersioned()` in `dev/resources/scrapers/r2_common.mjs` |
+| migrate an existing object | `dev/resources/scrapers/r2_migrate_to_manifest.mjs` (no rebuild needed) |
+| consume | `createManifestResolver()` in `src/shared/config/r2-manifest.ts`, or pass `resolveUrl` to `useR2Json` |
+
+All seven datasets are converted (anki, cell-quiz, ab-path, virtual-slides corpus + cases, who-curation, IHC matrix + molecular). Two traps when adding another: a prefix may **already** have a `manifest.json` (`virtual-slides/` holds both the corpus and cases — merge, never overwrite), and the legacy fixed key must keep a SHORT ttl since it is the mutable fallback.
 
 The anti-pattern — and how IHC was wrong until Aug 2026 — is a **mutable key carrying a long/immutable TTL**, cache-busted by a `?v=<hash>` compiled into the app. That works, but it makes every data change a code deploy, and the stale-cache failure is silent. If you find one, convert it; don't paste a new hash.
 

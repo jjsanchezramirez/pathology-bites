@@ -1,7 +1,12 @@
 "use client";
 
 import { useEffect } from "react";
-import { CELL_QUIZ_IMAGES_URL, CELL_QUIZ_REFERENCES_URL } from "@/shared/config/cell-quiz";
+import {
+  CELL_QUIZ_IMAGES_URL,
+  CELL_QUIZ_REFERENCES_URL,
+  resolveCellQuizImagesUrl,
+  resolveCellQuizReferencesUrl,
+} from "@/shared/config/cell-quiz";
 import { useR2Json } from "@/shared/hooks/use-r2-json";
 import { transformCellQuizData } from "@/shared/utils/r2/r2-url-transformer";
 import { toast } from "@/shared/utils/ui/toast";
@@ -55,6 +60,7 @@ export function useClientCellQuiz(): UseCellQuizResult {
     error: imagesError,
   } = useR2Json<CellQuizImagesData>({
     url: CELL_QUIZ_IMAGES_URL,
+    resolveUrl: resolveCellQuizImagesUrl,
     fallbackUrl: "/api/public/tools/cell-quiz/images",
     transform: transformImages,
     label: "cell quiz images",
@@ -66,6 +72,7 @@ export function useClientCellQuiz(): UseCellQuizResult {
     error: referencesError,
   } = useR2Json<BloodCellsReferenceData>({
     url: CELL_QUIZ_REFERENCES_URL,
+    resolveUrl: resolveCellQuizReferencesUrl,
     fallbackUrl: "/api/public/tools/cell-quiz/references",
     label: "cell quiz references",
   });
