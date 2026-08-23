@@ -58,6 +58,17 @@ src/
 
 Cloudflare CDN front of Vercel. Debug deploy/cache issues → purge BOTH caches. No custom Cache-Control headers for paths Next.js manages (`/_next/static/`).
 
+**Rebuildable R2 artifacts: content-address the payload, point at it with one short-TTL manifest.** Any dataset that gets regenerated (corpus, WSI, IHC, curation) must be published as an immutable, content-addressed object plus a small mutable pointer the app reads at runtime:
+
+```
+data/<x>/<name>-<hash>.json.br   Cache-Control: max-age=31536000, immutable
+data/<x>/manifest.json           Cache-Control: max-age=60   ← the only mutable thing
+```
+
+The app resolves URLs from the manifest (`cache: "no-cache"`, short timeout) and falls back to a compiled URL only if it is unreachable. **A republish then needs no redeploy.** Canonical examples: `src/shared/config/virtual-slides.ts`, `src/shared/config/ihc-data.ts` (`resolveIhcUrls()`).
+
+The anti-pattern — and how IHC was wrong until Aug 2026 — is a **mutable key carrying a long/immutable TTL**, cache-busted by a `?v=<hash>` compiled into the app. That works, but it makes every data change a code deploy, and the stale-cache failure is silent. If you find one, convert it; don't paste a new hash.
+
 ## Security
 
 Real defense = Cloudflare + Supabase auth/RLS + middleware. App-layer is thin on purpose. **Before re-adding any of these, read README.md "Security & Performance" first — they were removed deliberately in the Apr–May 2026 audit and have rationale documented there:**

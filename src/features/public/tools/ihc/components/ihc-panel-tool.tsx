@@ -15,7 +15,7 @@ import {
   BookOpen,
   Shuffle,
 } from "lucide-react";
-import { IHC_MATRIX_URL, IHC_MOLECULAR_URL } from "@/shared/config/ihc-data";
+import { resolveIhcUrls } from "@/shared/config/ihc-data";
 import { buildTextIndex, rankIndexed } from "../search";
 import { ImageMatches, SlideMatch } from "./reference-media";
 import type { Matrix, Cell, Diagnosis, Marker, MolecularData, MolecularEntry } from "../types";
@@ -1047,21 +1047,31 @@ export function IhcPanelTool() {
   const [referenceId, setReferenceId] = useState<string>("");
 
   useEffect(() => {
-    fetch(IHC_MATRIX_URL)
-      .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((m: Matrix) => {
-        setMatrix(m);
-        // seed Reference with a random example so it's never empty
-        if (m.diagnoses.length) {
-          setReferenceId(m.diagnoses[Math.floor(Math.random() * m.diagnoses.length)].id);
-        }
-      })
-      .catch((e) => setError(String(e)));
-    // Molecular companion is optional — the tool works without it.
-    fetch(IHC_MOLECULAR_URL)
-      .then((r) => (r.ok ? r.json() : null))
-      .then((m: MolecularData | null) => m && setMolecular(m))
-      .catch(() => {});
+    let cancelled = false;
+    // URLs come from the R2 manifest, so a republished dataset is picked up
+    // without an app redeploy. Falls back to the compiled URLs if unreachable.
+    resolveIhcUrls().then(({ matrixUrl, molecularUrl }) => {
+      if (cancelled) return;
+      fetch(matrixUrl)
+        .then((r) => (r.ok ? r.json() : Promise.reject(new Error(`HTTP ${r.status}`))))
+        .then((m: Matrix) => {
+          if (cancelled) return;
+          setMatrix(m);
+          // seed Reference with a random example so it's never empty
+          if (m.diagnoses.length) {
+            setReferenceId(m.diagnoses[Math.floor(Math.random() * m.diagnoses.length)].id);
+          }
+        })
+        .catch((e) => !cancelled && setError(String(e)));
+      // Molecular companion is optional — the tool works without it.
+      fetch(molecularUrl)
+        .then((r) => (r.ok ? r.json() : null))
+        .then((m: MolecularData | null) => !cancelled && m && setMolecular(m))
+        .catch(() => {});
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const openReference = (id: string) => {
