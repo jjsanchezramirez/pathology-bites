@@ -7,6 +7,7 @@ import { Card, CardContent } from "@/shared/components/ui/card";
 import { MarkerKindBadge } from "@/shared/components/ui/marker-kind-badge";
 import { Separator } from "@/shared/components/ui/separator";
 import { geneDetail } from "@/features/public/knowledge/lib/queries";
+import { KNOWLEDGE_PAGES_ENABLED } from "@/features/public/knowledge/lib/enabled";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -14,6 +15,7 @@ export const dynamicParams = true;
 type Params = { params: Promise<{ symbol: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  if (!KNOWLEDGE_PAGES_ENABLED) return { title: "Not found" };
   const { symbol } = await params;
   const d = await geneDetail(decodeURIComponent(symbol));
   if (!d) return { title: "Not found" };
@@ -24,6 +26,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function GenePage({ params }: Params) {
+  if (!KNOWLEDGE_PAGES_ENABLED) notFound();
   const { symbol } = await params;
   const detail = await geneDetail(decodeURIComponent(symbol));
   if (!detail) notFound();

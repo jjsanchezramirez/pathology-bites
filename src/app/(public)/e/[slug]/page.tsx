@@ -8,6 +8,7 @@ import { EntityKindBadge } from "@/shared/components/ui/entity-kind-badge";
 import { CallBadge, MarkerKindBadge } from "@/shared/components/ui/marker-kind-badge";
 import { Separator } from "@/shared/components/ui/separator";
 import { entityDetail, resolveEntity } from "@/features/public/knowledge/lib/queries";
+import { KNOWLEDGE_PAGES_ENABLED } from "@/features/public/knowledge/lib/enabled";
 
 /* Rendered on demand and cached for an hour. Pre-rendering all 4,001 at build
  * time would add thousands of queries to every deploy for pages most of which
@@ -18,6 +19,7 @@ export const dynamicParams = true;
 type Params = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  if (!KNOWLEDGE_PAGES_ENABLED) return { title: "Not found" };
   const { slug } = await params;
   const r = await resolveEntity(slug);
   if (!r || !("entity" in r)) return { title: "Not found" };
@@ -55,6 +57,7 @@ function Section({
 }
 
 export default async function EntityPage({ params }: Params) {
+  if (!KNOWLEDGE_PAGES_ENABLED) notFound();
   const { slug } = await params;
   const resolved = await resolveEntity(slug);
   if (!resolved) notFound();

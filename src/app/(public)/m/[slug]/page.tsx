@@ -8,6 +8,7 @@ import { EntityKindBadge } from "@/shared/components/ui/entity-kind-badge";
 import { CallBadge, MarkerKindBadge } from "@/shared/components/ui/marker-kind-badge";
 import { Separator } from "@/shared/components/ui/separator";
 import { markerDetail } from "@/features/public/knowledge/lib/queries";
+import { KNOWLEDGE_PAGES_ENABLED } from "@/features/public/knowledge/lib/enabled";
 
 export const revalidate = 3600;
 export const dynamicParams = true;
@@ -15,6 +16,7 @@ export const dynamicParams = true;
 type Params = { params: Promise<{ slug: string }> };
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
+  if (!KNOWLEDGE_PAGES_ENABLED) return { title: "Not found" };
   const { slug } = await params;
   const d = await markerDetail(slug);
   if (!d) return { title: "Not found" };
@@ -25,6 +27,7 @@ export async function generateMetadata({ params }: Params): Promise<Metadata> {
 }
 
 export default async function MarkerPage({ params }: Params) {
+  if (!KNOWLEDGE_PAGES_ENABLED) notFound();
   const { slug } = await params;
   const detail = await markerDetail(slug);
   if (!detail) notFound();
