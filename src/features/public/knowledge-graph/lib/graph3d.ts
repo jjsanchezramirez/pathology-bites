@@ -273,6 +273,18 @@ const BOUNCE_COOLDOWN_MS = 2500;
 const RESET_EASE = 0.09;
 /** Standby drift. Slow enough to read as alive rather than as animation. */
 const STANDBY_SPEED = 0.14;
+/** How fast it turns while it is opening. */
+const SPIN_OPEN = 1.1;
+/**
+ * How quickly the spin approaches whatever it should be, per frame.
+ *
+ * OrbitControls defaults autoRotateSpeed to 2.0, and the standby setter was
+ * skipped for the whole opening -- so it spun at 2.0 and then dropped fourteen
+ * times over in a single frame the instant the formation ended. This eases it
+ * instead: a time constant of about a second and a half, so the cloud coasts
+ * down rather than being caught.
+ */
+const SPIN_EASE = 0.011;
 /** How long after the last input the drift resumes. */
 const STANDBY_RESUME_MS = 4000;
 /** Camera elevation above the equator, so the drift traces a tilt. */
@@ -943,7 +955,6 @@ export class Graph3D {
       this.forming = 0;
       this.formingFrom = new Float32Array(0);
       this.settledAt = performance.now();
-      this.controls.autoRotateSpeed = STANDBY_SPEED;
       this.opts.onSettling(false);
     }
   }
@@ -1600,6 +1611,11 @@ export class Graph3D {
    * around a tilted axis so the motion is a drift rather than a spin. Any input
    * stops it at once; it comes back a few seconds after you stop.
    */
+  /** Gathering, blooming or still arriving: the cloud is not yours yet. */
+  private isAnimating() {
+    return !!(this.gatherStart || this.forming || this.emergeStart);
+  }
+
   private updateStandby() {
     const now = performance.now();
     if (this.points && this.lines) {
@@ -1615,10 +1631,23 @@ export class Graph3D {
       // the dot it belongs to, and slides on the breath's nine-second cycle.
       this.breath = scale;
     }
-    if (this.forming || this.gatherStart || this.focusIds) return;
-    this.controls.autoRotate = now - this.lastInput > STANDBY_RESUME_MS;
-    this.controls.autoRotateSpeed = STANDBY_SPEED;
+    /* The spin is eased every frame, including through the opening, which is
+     * the whole point: the speed it should be turning at changes abruptly, and
+     * what you see should not. */
+    const animating = this.isAnimating();
+    const want = animating ? SPIN_OPEN : STANDBY_SPEED;
+    this.spin += (want - this.spin) * SPIN_EASE;
+    this.controls.autoRotateSpeed = this.spin;
+
+    if (this.focusIds) {
+      this.controls.autoRotate = false;
+      return;
+    }
+    // While it is opening it turns regardless; there is no input to yield to.
+    this.controls.autoRotate = animating || now - this.lastInput > STANDBY_RESUME_MS;
   }
+
+  private spin = SPIN_OPEN;
 
   private globalRest: Float32Array | null = null;
 
@@ -2034,6 +2063,7 @@ export class Graph3D {
       // defined as a press that neither travelled nor lingered.
       const moved = Math.hypot(e.clientX - downPos.x, e.clientY - downPos.y);
       if (moved > 4 || performance.now() - downAt > 400) return;
+      if (this.isAnimating()) return;
       const hit = this.hovered;
       if (hit) this.opts.onClick(hit);
       else this.opts.onBackground();
@@ -2471,9 +2501,20 @@ export class Graph3D {
     this.updateZoomBounds();
     this.updateDepthUniforms();
     this.project();
-    // Nothing to point at until it has arrived, and a magnet tearing holes in
-    // the wave as it lands undoes the whole effect.
-    if (!this.emergeStart) {
+    /* Inert while it animates. Nothing to point at until it has arrived, a
+     * magnet tearing holes in the wave undoes the effect, and a click landing
+     * mid-bloom selects whatever happened to be under the cursor at the time.
+     * OrbitControls is switched off with it, so the cloud cannot be dragged or
+     * zoomed out of its own opening -- `enabled` gates the input handlers only,
+     * so the drift keeps running. */
+    const animating = this.isAnimating();
+    this.controls.enabled = !animating;
+    if (animating) {
+      if (this.hovered) {
+        this.hovered = null;
+        this.opts.onHover(null, 0, 0);
+      }
+    } else {
       this.updateHover();
       this.updateMagnet();
     }

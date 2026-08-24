@@ -13,7 +13,7 @@ export type EdgeType =
   | "expression"
   | "alteration"
   | "surrogate"
-  | "relation"
+  | "differential"
   | "gene"
   | "subtype";
 
@@ -23,7 +23,7 @@ export const EDGE_KINDS: EdgeType[] = [
   "expression",
   "alteration",
   "surrogate",
-  "relation",
+  "differential",
   "gene",
   "subtype",
 ];
@@ -39,7 +39,7 @@ export const EDGE_WEIGHT: Record<EdgeType, number> = {
   subtype: 8,
   gene: 3,
   surrogate: 3,
-  relation: 2,
+  differential: 2,
   alteration: 1.2,
   expression: 1,
 };
@@ -65,8 +65,9 @@ export const POLAR_KINDS = new Set<EdgeType>(["expression", "alteration"]);
 export const PUBLIC_POLARITIES = new Set<string>(["positive", "index", "present"]);
 /**
  * Every value `r` takes, across all edge kinds, as one indexable list. Index 0
- * is "no polarity"; on a gene edge `r` is the gene's ROLE and on a relation
- * edge it is the relation, which is why this is wider than POLARITIES.
+ * is "no polarity"; on a gene edge `r` is the gene's ROLE, which is why this is
+ * wider than POLARITIES. A differential edge carries no `r` at all -- the edge
+ * kind is the whole claim.
  */
 export const EDGE_RESULTS = [
   "",

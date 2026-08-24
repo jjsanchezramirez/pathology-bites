@@ -40,7 +40,8 @@ export const ORGAN_PALETTE: Record<string, string> = {
 };
 
 
-export function hexToHsl(hex: string): [number, number, number] {
+/** Internal to this module: only chapterColor() needs it. */
+function hexToHsl(hex: string): [number, number, number] {
   const r = parseInt(hex.slice(1, 3), 16) / 255;
   const g = parseInt(hex.slice(3, 5), 16) / 255;
   const b = parseInt(hex.slice(5, 7), 16) / 255;
@@ -57,7 +58,7 @@ export function hexToHsl(hex: string): [number, number, number] {
   return [h * 360, s * 100, l * 100];
 }
 
-export function hslToHex(h: number, s: number, l: number): string {
+function hslToHex(h: number, s: number, l: number): string {
   s /= 100;
   l /= 100;
   const c = (1 - Math.abs(2 * l - 1)) * s;
@@ -82,8 +83,13 @@ export function hslToHex(h: number, s: number, l: number): string {
     r = x;
     b = c;
   } else {
+    // The last sextant mirrors the one before it: red at full, blue on the
+    // ramp. It read `g = x` -- a copy of the h<60 branch -- which sent the
+    // ramp to the wrong channel and turned every pink into a tan. Female
+    // Genital (#b85670, h~344) and Breast (#9b6b8a, h~324) are the two organ
+    // hues that land here, so their whole chapter ramp was the wrong colour.
     r = c;
-    g = x;
+    b = x;
   }
   const toHex = (v: number) =>
     Math.round((v + m) * 255)

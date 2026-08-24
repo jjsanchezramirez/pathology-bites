@@ -82,7 +82,8 @@ async function all<T = Record<string, unknown>>(sb: Sb, table: string, cols: str
  *     expression   r result   p percentage   c certainty   v review_status
  *     alteration   f frequency_pct   c certainty   v review_status
  *     surrogate    d direction   sn sensitivity_pct   sp specificity_pct
- *     relation     r relation
+ *     differential (none -- from_entity -> to_entity, both ways when both
+ *                  chapters name each other)
  *     gene         r role
  *     subtype      (none -- entity.parent_id, child -> parent)
  */
@@ -105,7 +106,7 @@ async function all<T = Record<string, unknown>>(sb: Sb, table: string, cols: str
  *     expression   r result   p percentage   c certainty   v review_status
  *     alteration   r present/absent   c certainty   v review_status
  *     surrogate    d direction   sn sensitivity_pct   sp specificity_pct
- *     relation     r relation
+ *     differential (none -- from_entity -> to_entity)
  *     gene         r role
  *     subtype      (none -- placement.parent_id, child -> parent)
  *
@@ -122,7 +123,7 @@ export async function buildTopology(sb: Sb, part: TopologyPart): Promise<Topolog
   const wantEdges = part !== "nodes";
   const none = async () => [] as Record<string, unknown>[];
 
-  const [entities, placements, markers, genes, findings, surrogates, relations] =
+  const [entities, placements, markers, genes, findings, surrogates, differentials] =
     await Promise.all([
       all(sb, "entities", "id, name, kind, icd_o"),
       // Read either way: it carries the organ and chapter a node is coloured by,
@@ -146,7 +147,7 @@ export async function buildTopology(sb: Sb, part: TopologyPart): Promise<Topolog
             "alteration_id, marker_id, direction, sensitivity_pct, specificity_pct"
           )
         : none(),
-      wantEdges ? all(sb, "entity_relations", "from_entity, to_entity, relation") : none(),
+      wantEdges ? all(sb, "entity_differentials", "from_entity, to_entity") : none(),
     ]);
 
   /* A marker's `kind` says which instrument reaches it, and that is the only
@@ -275,11 +276,12 @@ export async function buildTopology(sb: Sb, part: TopologyPart): Promise<Topolog
           sn: s.sensitivity_pct ?? undefined,
           sp: s.specificity_pct ?? undefined,
         })),
-        ...relations.map((r) => ({
+        // `relation` the column is gone: entity_differentials holds exactly one
+        // kind of edge, so the table's name carries what the column used to.
+        ...differentials.map((r) => ({
           s: r.from_entity,
           t: r.to_entity,
-          e: "relation",
-          r: r.relation,
+          e: "differential",
         })),
         // gene_symbols replaced alteration_genes. Array order carries the role
         // that column used to: for a fusion, {5', 3'}.
@@ -337,7 +339,7 @@ export async function buildTopology(sb: Sb, part: TopologyPart): Promise<Topolog
       expressionEdges: edges.filter((x) => x.e === "expression").length,
       alterationEdges: edges.filter((x) => x.e === "alteration").length,
       surrogateEdges: edges.filter((x) => x.e === "surrogate").length,
-      relationEdges: edges.filter((x) => x.e === "relation").length,
+      differentialEdges: edges.filter((x) => x.e === "differential").length,
       geneEdges: edges.filter((x) => x.e === "gene").length,
       findingsBeforePooling: rawEdges.length,
     },
