@@ -27,8 +27,8 @@
  * eventually disagree with itself.
  */
 
-export const SNAPSHOT_MAGIC = 0x50424b47; // "PBKG"
-export const SNAPSHOT_FORMAT = 1;
+const SNAPSHOT_MAGIC = 0x50424b47; // "PBKG"
+const SNAPSHOT_FORMAT = 1;
 
 /** Everything the cloud needs, already in the shapes it will use. */
 export interface DecodedSnapshot {

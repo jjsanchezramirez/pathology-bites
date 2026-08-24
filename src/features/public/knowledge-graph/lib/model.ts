@@ -54,8 +54,6 @@ export const LEIDEN_RESOLUTION = 1.2;
 /** Exponent on the log-degree discount. 1 is the IDF-shaped default. */
 export const HUB_DAMPING = 1;
 
-/** Values an evidence edge's `r` can take. Only these two kinds carry polarity. */
-export const POLARITIES = ["positive", "negative", "index", "present", "absent"] as const;
 export const POLAR_KINDS = new Set<EdgeType>(["expression", "alteration"]);
 /**
  * The polarities the public cloud draws, and therefore the only ones a

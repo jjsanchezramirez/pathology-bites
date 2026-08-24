@@ -14,6 +14,8 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import { resolveKnowledgeGraphUrl } from "@/shared/config/knowledge-graph-data";
+
 import { Graph3D, type N3 } from "../lib/graph3d";
 import { EDGE_KINDS, EDGE_RESULTS, NODE_TYPES, POLAR_KINDS, type EdgeType } from "../lib/model";
 import { decodeSnapshot, type DecodedSnapshot } from "../lib/snapshot-codec";
@@ -33,8 +35,8 @@ import {
 const SHOWN = new Set(["positive", "index", "present"]);
 
 export interface KnowledgeCloudProps {
-  /** Where the brotli'd snapshot lives. */
-  src: string;
+  /** Override the snapshot URL. Normally resolved from the R2 manifest. */
+  src?: string;
   className?: string;
 }
 
@@ -49,9 +51,12 @@ export function KnowledgeCloud({ src, className }: KnowledgeCloudProps) {
 
   useEffect(() => {
     let cancelled = false;
-    // Binary, and brotli'd at rest: the browser inflates it from
-    // content-encoding, so all this has to do is ask for the bytes.
-    fetch(src)
+    /* The URL comes from the manifest, so a republished snapshot is picked up
+     * without a redeploy; `resolveKnowledgeGraphUrl` falls back to a compiled
+     * URL if the manifest cannot be read. Binary and brotli'd at rest, so the
+     * browser inflates it from content-encoding and this just asks for bytes. */
+    (src ? Promise.resolve(src) : resolveKnowledgeGraphUrl().then((r) => r.url))
+      .then((url) => fetch(url))
       .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
       .then((buf) => {
         if (cancelled) return;
@@ -279,5 +284,3 @@ export function KnowledgeCloud({ src, className }: KnowledgeCloudProps) {
     </div>
   );
 }
-
-export default KnowledgeCloud;

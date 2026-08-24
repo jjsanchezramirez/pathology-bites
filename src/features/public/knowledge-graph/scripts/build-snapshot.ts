@@ -42,7 +42,9 @@ import { buildTopology } from "../lib/topology";
 const OUT_DIR = path.resolve(process.cwd(), "public/data");
 const OUT_NAME = "knowledge-graph.bin";
 /** Matches the prefixes already in use in the bucket; see TOOLING-INDEX. */
-const R2_KEY = "knowledge-graph/cloud-v1.bin.br";
+const R2_PREFIX = "knowledge-graph/";
+/** Rewritten on every publish; the compiled fallback in knowledge-graph-data.ts. */
+const R2_FALLBACK = "cloud-v1.bin.br";
 /** Publishing is blocked below this fraction of the live snapshot's size. */
 const REGRESSION_FLOOR = 0.9;
 
@@ -308,23 +310,32 @@ async function main() {
     },
   });
 
-  mkdirSync(OUT_DIR, { recursive: true });
-  writeFileSync(path.join(OUT_DIR, OUT_NAME), packed);
-  writeFileSync(path.join(OUT_DIR, `${OUT_NAME}.br`), compressed);
   console.log(
     `\nsnapshot ${kb(packed.length)} raw -> ${kb(compressed.length)} brotli ` +
       `(${(packed.length / compressed.length).toFixed(1)}x)`
   );
-  console.log(`  ${path.join(OUT_DIR, `${OUT_NAME}.br`)}`);
+
+  /* Written to disk only when asked. The artifact belongs in R2; a copy under
+   * public/ is a second source of truth that goes stale the moment anything is
+   * republished, and it used to be what the debug page read. */
+  if (process.argv.includes("--local")) {
+    mkdirSync(OUT_DIR, { recursive: true });
+    writeFileSync(path.join(OUT_DIR, OUT_NAME), packed);
+    writeFileSync(path.join(OUT_DIR, `${OUT_NAME}.br`), compressed);
+    console.log(`  also written to ${path.join(OUT_DIR, OUT_NAME)}`);
+  }
 
   if (!process.argv.includes("--publish")) {
     console.log("\nnot published — pass --publish to upload to R2.");
     return;
   }
 
-  /* r2_common is the only correct way to talk to the bucket: it owns the
-   * client, the compression and, critically, the content-encoding header that
-   * is easy to forget and silent to get wrong. See TOOLING-INDEX. */
+  /* r2_common is the only correct way to talk to the bucket, and
+   * publishVersioned owns the content-addressing contract from CLAUDE.md: it
+   * writes an immutable `cloud-v1-<hash>.bin.br`, rewrites the fixed key as a
+   * short-TTL fallback, and flips manifest.json to point at the new object.
+   * Old versions are left in place deliberately -- they cost almost nothing and
+   * any of them is a working snapshot to roll back to. */
   const r2 = await import("../../../../../dev/resources/scrapers/r2_common.mjs");
   const env = r2.loadEnv();
   const s3 = r2.makeClient(env);
@@ -334,19 +345,17 @@ async function main() {
    * rewritten in place during curation work, and a scheduled job that happened
    * to run mid-migration would otherwise serve a half-empty map for a week.
    * A real shrink is possible, so --force exists; it just has to be deliberate. */
-  const existing = await r2.getBytes(s3, R2_KEY).catch(() => null);
+  const existing = await r2.getBytes(s3, `${R2_PREFIX}${R2_FALLBACK}`).catch(() => null);
   if (existing) {
     const raw = r2.unbrotli(existing) as Buffer;
-    const bytes = new Uint8Array(raw);
-    const prev = decodeSnapshot(bytes.buffer as ArrayBuffer);
-    const wasNodes = prev.labels.length;
-    const wasEdges = prev.edgeSource.length;
-    const nowNodes = nodes.length;
-    const nowEdges = edges.length;
-    const worst = Math.min(nowNodes / wasNodes, nowEdges / wasEdges);
+    const prev = decodeSnapshot(new Uint8Array(raw).buffer as ArrayBuffer);
+    const worst = Math.min(
+      nodes.length / prev.labels.length,
+      edges.length / prev.edgeSource.length
+    );
     console.log(
-      `\npublished snapshot has ${wasNodes} nodes / ${wasEdges} edges ` +
-        `(built ${prev.built}); this one has ${nowNodes} / ${nowEdges}`
+      `\npublished snapshot has ${prev.labels.length} nodes / ${prev.edgeSource.length} edges ` +
+        `(built ${prev.built}); this one has ${nodes.length} / ${edges.length}`
     );
     if (worst < REGRESSION_FLOOR && !process.argv.includes("--force")) {
       throw new Error(
@@ -356,15 +365,30 @@ async function main() {
     }
   }
 
-  await r2.putBytes(s3, R2_KEY, compressed, {
-    contentType: "application/octet-stream",
-    contentEncoding: "br",
+  const { manifest } = await r2.publishVersioned(s3, {
+    prefix: R2_PREFIX,
+    artifacts: [
+      {
+        key: R2_FALLBACK,
+        manifestKey: "cloud",
+        body: compressed,
+        contentType: "application/octet-stream",
+        contentEncoding: "br",
+      },
+    ],
+    extra: {
+      built: new Date().toISOString(),
+      nodes: nodes.length,
+      edges: edges.length,
+      groups: layout.count,
+      rawBytes: packed.length,
+    },
   });
-  const back = await r2.getBytes(s3, R2_KEY);
-  if (!back || back.length !== compressed.length) {
-    throw new Error(`published ${compressed.length} bytes but read back ${back?.length ?? 0}`);
-  }
-  console.log(`published ${r2.BUCKET}/${R2_KEY} and verified ${kb(back.length)} came back`);
+
+  const entry = (manifest as Record<string, { url: string; hash: string; bytes: number }>).cloud;
+  console.log(`\npublished ${r2.BUCKET}/${R2_PREFIX} v=${entry.hash} (${kb(entry.bytes)})`);
+  console.log(`  ${entry.url}`);
+  console.log("  the app resolves this from manifest.json — no redeploy needed.");
 }
 
 main().catch((e) => {
