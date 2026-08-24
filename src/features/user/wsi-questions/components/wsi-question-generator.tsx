@@ -116,6 +116,47 @@ export function WSIQuestionGenerator({
   // can still overlap — and whichever request resolves LAST would otherwise set
   // the question, regardless of which one the reader asked for.
   const requestToken = useRef(0);
+
+  /**
+   * How long a category or question-kind choice has to hold still before it is
+   * worth generating for.
+   *
+   * `requestToken` already discards a superseded question — but it discards it
+   * AFTER the model has produced it, so the guard sits downstream of the cost.
+   * Six generations were once launched inside four seconds by someone clicking
+   * through five categories; every one was paid for, none was ever shown, and
+   * together they exhausted the 30 RPM on the fast provider and pushed the
+   * questions that WERE wanted onto the 16-second fallback.
+   *
+   * A trailing delay is the only guard that helps, because it is the only one
+   * upstream of the request. Aborting in flight would not help: the server walks
+   * the whole model chain in one invocation, so the work is already committed by
+   * the time the client changes its mind.
+   *
+   * 900ms, chosen against the real timings rather than by feel. Replaying the
+   * observed burst through a trailing debounce: 600ms cuts 8 generations to 6,
+   * 1000ms cuts them to 4, and 1500ms gains nothing further. So the useful
+   * window is about a second, and anything past that is only latency.
+   *
+   * It costs the reader nothing noticeable: generation itself runs 5-16s, so a
+   * further 0.9s before it starts is inside the noise of the wait it precedes.
+   *
+   * This HALVES the burst, it does not remove it. Several of those requests
+   * launched inside the same second as each other, and second-resolution
+   * timestamps cannot say whether that was two clicks or one interaction firing
+   * twice. If the residue persists in wsi_question_events, that is the next
+   * thing to chase — with millisecond data this time.
+   */
+  const SCOPE_SETTLE_MS = 900;
+  const settleTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const cancelPendingScopeChange = useCallback(() => {
+    if (settleTimer.current) {
+      clearTimeout(settleTimer.current);
+      settleTimer.current = null;
+    }
+  }, []);
+  // A timer that outlives the component would generate against a dead one.
+  useEffect(() => cancelPendingScopeChange, [cancelPendingScopeChange]);
   const loadingIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   // Extract categories directly from client-side WSI data (like virtual slides page)
@@ -232,7 +273,12 @@ export function WSIQuestionGenerator({
 
   // Callers that are just "generate another" (buttons, Try Again) must not pass
   // their click event in as a category.
-  const newQuestion = useCallback(() => generateNewQuestion(), [generateNewQuestion]);
+  // An explicit "New question" is not a scope change and must not wait behind
+  // one: drop any pending settle and go now.
+  const newQuestion = useCallback(() => {
+    cancelPendingScopeChange();
+    return generateNewQuestion();
+  }, [generateNewQuestion, cancelPendingScopeChange]);
 
   // Changing the category should show a question from it right away — asking the
   // reader to then press New question is a second step for something they have
@@ -241,14 +287,20 @@ export function WSIQuestionGenerator({
   // on screen for no gain.
   const changeCategory = useCallback(
     (next: string) => {
+      // The selection itself is applied at once — the control must feel live
+      // even though the generation behind it waits.
       setSelectedCategory(next);
+      cancelPendingScopeChange();
       if (next === "all") return;
       // Claim the prefetch scope so the effect below sees no change and stays
       // quiet: this generation already warms the next one.
       prefetchedCategory.current = `${next}|${[...questionKinds].sort().join(",")}`;
-      void generateNewQuestion(next);
+      settleTimer.current = setTimeout(() => {
+        settleTimer.current = null;
+        void generateNewQuestion(next);
+      }, SCOPE_SETTLE_MS);
     },
-    [generateNewQuestion, questionKinds]
+    [generateNewQuestion, questionKinds, cancelPendingScopeChange]
   );
 
   // Auto-generate first question on component mount - use ref to prevent infinite loops
@@ -274,7 +326,14 @@ export function WSIQuestionGenerator({
     }
     if (prefetchedCategory.current === prefetchScope) return;
     prefetchedCategory.current = prefetchScope;
-    startPrefetch(selectedCategory === "all" ? undefined : selectedCategory, questionKinds);
+    // Settled the same way, for the same reason: toggling question kinds reaches
+    // the chain through here, and three toggles in a row are three generations
+    // for the two scopes nobody stayed on.
+    const t = setTimeout(
+      () => startPrefetch(selectedCategory === "all" ? undefined : selectedCategory, questionKinds),
+      SCOPE_SETTLE_MS
+    );
+    return () => clearTimeout(t);
   }, [prefetchScope, selectedCategory, questionKinds, isReady, isWSIDataLoading, startPrefetch]);
 
   useEffect(() => {
