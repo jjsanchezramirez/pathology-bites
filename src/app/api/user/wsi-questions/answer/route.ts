@@ -23,10 +23,25 @@ import { z } from "zod";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { log } from "@/shared/utils/logging";
 
-const answerSchema = z.object({
-  event_id: z.string().uuid(),
-  was_correct: z.boolean(),
-});
+/**
+ * Two things can be reported against a generation, and they arrive at different
+ * moments: that the reader was SHOWN it, and how they answered.
+ *
+ * Delivery is not implied by generation. The generator prefetches the next
+ * question while the reader works through the current one, so a question can be
+ * built and then discarded when the category changes — never seen by anyone.
+ * Without this signal those orphans are indistinguishable from questions that
+ * were read and skipped.
+ */
+const answerSchema = z
+  .object({
+    event_id: z.string().uuid(),
+    delivered: z.literal(true).optional(),
+    was_correct: z.boolean().optional(),
+  })
+  .refine((b) => b.delivered !== undefined || b.was_correct !== undefined, {
+    message: "report delivered, was_correct, or both",
+  });
 
 export async function POST(request: NextRequest) {
   const body = await parseBody(request, answerSchema);
@@ -45,13 +60,27 @@ export async function POST(request: NextRequest) {
 
   try {
     const db = createServiceClient(url, key, { auth: { persistSession: false } });
-    const { data, error } = await db
+    const now = new Date().toISOString();
+    const patch: Record<string, unknown> = {};
+    // A question can only be answered after it was shown, and the answer may be
+    // the first report we get if the delivery POST was lost. Stamping delivery
+    // here too keeps the CHECK (answered => delivered) satisfiable without a
+    // second round trip.
+    if (body.delivered || body.was_correct !== undefined) patch.delivered_at = now;
+    if (body.was_correct !== undefined) {
+      patch.answered_at = now;
+      patch.was_correct = body.was_correct;
+    }
+
+    let q = db
       .from("wsi_question_events")
-      .update({ answered_at: new Date().toISOString(), was_correct: body.was_correct })
+      .update(patch)
       .eq("id", body.event_id)
-      .eq("user_id", userId)
-      .is("answered_at", null)
-      .select("id");
+      .eq("user_id", userId);
+    // Guards live in the WHERE clause, never in a prior SELECT. Delivery may be
+    // re-reported harmlessly (first stamp wins); an answer may not be rewritten.
+    q = body.was_correct !== undefined ? q.is("answered_at", null) : q.is("delivered_at", null);
+    const { data, error } = await q.select("id");
 
     if (error) {
       log.error("[WSI Answer] update failed:", error.message);

@@ -534,6 +534,19 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
           getWSIHistoryTracker().addToHistory(question.wsi.id, category || "all");
         }
 
+        /* Same reasoning, same line: this is the only moment that separates a
+         * question a learner saw from one the prefetch built and threw away.
+         * Without it, "questions served" counts orphans and only ever reads
+         * high. Fire-and-forget — the reader is already looking at the question,
+         * and a failed analytics POST must not surface or delay anything. */
+        if (question.metadata?.event_id) {
+          void fetch("/api/user/wsi-questions/answer", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ event_id: question.metadata.event_id, delivered: true }),
+          }).catch(() => {});
+        }
+
         // Line up the next one while the reader works through this one.
         startPrefetch(category, kinds);
         return question;
