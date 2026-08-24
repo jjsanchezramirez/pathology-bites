@@ -102,7 +102,27 @@ export interface LayoutParams {
   depth: number;
 }
 
-export const DEFAULT_LAYOUT: LayoutParams = { separation: 1, clump: 1, shape: 1, depth: 0.28 };
+/**
+ * Measured against the real partition rather than chosen by feel.
+ *
+ * At separation 1 / clump 1 the mean gap between neighbouring clusters is +30
+ * units and only 7% of them touch -- which is what "very disperse" looks like:
+ * five hundred separate specks, each holding a median of eight nodes, spread
+ * evenly over a sphere. No Leiden setting fixes it, because the partition is
+ * not wrong; the graph really is that granular. Resolution moves the community
+ * count by 3% across its whole range and hub damping by 4%.
+ *
+ * So the clumping is geometric. Pulling the centres 20% in and swelling the
+ * blobs 15% takes the mean gap to roughly -14, so about three quarters of
+ * clusters overlap a neighbour and the globe reads as continuous mass with
+ * structure in it, rather than as scattered dust.
+ */
+export const DEFAULT_LAYOUT: LayoutParams = {
+  separation: 0.8,
+  clump: 1.15,
+  shape: 1,
+  depth: 0.28,
+};
 
 export interface Graph3DOptions {
   container: HTMLElement;

@@ -38,6 +38,19 @@ export interface CommunityRequest {
   kindWeights: Float64Array;
   resolution: number;
   /**
+   * A partition to use instead of running Leiden.
+   *
+   * Leiden finds real modularity, but on this graph it finds it at a very fine
+   * grain: about five hundred communities with a median of eight nodes, and
+   * neither the resolution nor the damping moves that by more than a few per
+   * cent. The structure genuinely is that granular. When something better is
+   * already known -- the WHO hierarchy, which is an explicit statement about
+   * what belongs with what -- it is passed in here and the detection step is
+   * skipped. Everything after it still runs: the absorption of specks, the
+   * per-cluster force layout, and the seating order.
+   */
+  communities?: Int32Array;
+  /**
    * How hard to discount an edge by the degree of its busier endpoint, as an
    * exponent on the log-degree. 1 is the IDF-shaped default; 0 turns the
    * discount off entirely and lets universal markers glue the graph into one
@@ -93,14 +106,18 @@ export function computeLayout(req: CommunityRequest): CommunityResponse {
     g.addEdge(String(s), String(t), { weight: weigh(k) });
   }
 
-  const mapping = leiden(g, {
-    attributes: { weight: "weight" },
-    weighted: true,
-    resolution,
-  }) as Record<string, number>;
-
-  const communities = new Int32Array(n);
-  for (let i = 0; i < n; i++) communities[i] = mapping[String(i)] ?? 0;
+  let communities: Int32Array;
+  if (req.communities) {
+    communities = Int32Array.from(req.communities);
+  } else {
+    const mapping = leiden(g, {
+      attributes: { weight: "weight" },
+      weighted: true,
+      resolution,
+    }) as Record<string, number>;
+    communities = new Int32Array(n);
+    for (let i = 0; i < n; i++) communities[i] = mapping[String(i)] ?? 0;
+  }
 
   /* ── absorb the specks ──
    *

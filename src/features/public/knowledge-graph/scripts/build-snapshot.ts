@@ -157,7 +157,86 @@ async function main() {
   index.clear();
   nodes.forEach((n, i) => index.set(n.id, i));
 
-  console.log("running Leiden and the cluster layouts…");
+  /* ── group by the classification, not by modularity ──
+   *
+   * WHO already says what belongs with what, and it says it far better than
+   * modularity can infer it from shared stains. Leiden on this graph returns
+   * about five hundred communities with a median of eight nodes, and neither
+   * resolution nor hub damping shifts that by more than a few per cent -- the
+   * structure really is that fine. Rolled up to their taxonomic roots the same
+   * entities form 127 groups with a median of 21 and a largest over a
+   * thousand: "Soft tissue and bone tumours", "Melanocytic neoplasms", "CNS
+   * tumours". Those are groups a pathologist would recognise, which is the
+   * whole point of the colour and the clustering.
+   *
+   * Markers and alterations have no place in the hierarchy, so each takes the
+   * group most of the entities it touches belong to. A universal stain lands
+   * somewhere fairly arbitrary, but it is one dot and it has no home to be
+   * wrong about.
+   */
+  const parentOf = new Map<string, string>();
+  for (const e of edges) {
+    if (e.e !== "subtype") continue;
+    // Several volumes can name different parents; the lowest id, so a rebuild
+    // of the same data always produces the same grouping.
+    const had = parentOf.get(e.s as string);
+    if (!had || (e.t as string) < had) parentOf.set(e.s as string, e.t as string);
+  }
+  const rootOf = new Map<string, string>();
+  const rootFor = (id: string) => {
+    const cached = rootOf.get(id);
+    if (cached) return cached;
+    const path: string[] = [];
+    let at = id;
+    const seen = new Set<string>();
+    while (parentOf.has(at) && !seen.has(at)) {
+      seen.add(at);
+      path.push(at);
+      at = parentOf.get(at)!;
+    }
+    for (const step of path) rootOf.set(step, at);
+    rootOf.set(at, at);
+    return at;
+  };
+
+  const groupId = new Map<string, number>();
+  const groupOf = new Int32Array(nodes.length);
+  const claim = (key: string) => {
+    let g = groupId.get(key);
+    if (g === undefined) groupId.set(key, (g = groupId.size));
+    return g;
+  };
+  const entityGroup = new Map<string, number>();
+  nodes.forEach((n, i) => {
+    if (n.t !== "entity") return;
+    const g = claim(rootFor(n.id));
+    groupOf[i] = g;
+    entityGroup.set(n.id, g);
+  });
+
+  // Markers take the group most of their entities sit in.
+  const votes = new Map<string, Map<number, number>>();
+  for (const e of edges) {
+    if (e.e !== "expression" && e.e !== "alteration") continue;
+    const from = entityGroup.get(e.s as string);
+    const marker = e.t as string;
+    if (from === undefined) continue;
+    let tally = votes.get(marker);
+    if (!tally) votes.set(marker, (tally = new Map()));
+    tally.set(from, (tally.get(from) ?? 0) + 1);
+  }
+  nodes.forEach((n, i) => {
+    if (n.t === "entity") return;
+    const tally = votes.get(n.id);
+    if (!tally || !tally.size) {
+      groupOf[i] = claim(`orphan:${n.id}`);
+      return;
+    }
+    groupOf[i] = [...tally.entries()].sort((a, b) => b[1] - a[1] || a[0] - b[0])[0][0];
+  });
+  console.log(`  ${groupId.size} taxonomic groups`);
+
+  console.log("running the cluster layouts…");
   const kindIndex = new Map(EDGE_KINDS.map((k, i) => [k, i]));
   const triples = new Int32Array(edges.length * 3);
   edges.forEach((e, i) => {
@@ -171,8 +250,9 @@ async function main() {
     kindWeights: Float64Array.from(EDGE_KINDS, (k) => EDGE_WEIGHT[k]),
     resolution: LEIDEN_RESOLUTION,
     damping: HUB_DAMPING,
+    communities: groupOf,
   });
-  console.log(`  ${layout.count} communities in ${layout.ms}ms`);
+  console.log(`  ${layout.count} communities drawn in ${layout.ms}ms`);
 
   const organs = [...new Set(nodes.map((n) => n.o).filter(Boolean))] as string[];
   const chapters = [...new Set(nodes.map((n) => n.w).filter(Boolean))] as string[];
