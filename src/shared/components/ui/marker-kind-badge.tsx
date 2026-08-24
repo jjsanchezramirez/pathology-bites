@@ -70,6 +70,22 @@ export function MarkerKindBadge({
 /**
  * The result a study reported. Polarity carries more signal than the marker
  * class, which is why the graph colours finding edges by this and not by kind.
+ *
+ * `loss` / `retained` / `wildtype` are NOT synonyms for negative / positive and
+ * must not be folded into them.
+ *
+ * For the tumour-suppressor and chromatin markers — SMARCB1/INI1, BAP1, ATRX,
+ * SDHB, H3K27me3, RB1, PTEN — the reportable finding is lost vs retained
+ * nuclear expression, which is how a pathologist writes it. And p53 is the case
+ * where collapsing would be an actual error: a WILDTYPE pattern is weak
+ * scattered nuclear staining, while strong diffuse staining is the ABERRANT
+ * (mutant) pattern. Calling wildtype "positive" would invert its meaning.
+ *
+ * 44 evidence rows use these three. They are absent from EDGE_RESULTS in
+ * model.ts on purpose: the snapshot codec packs kind and result as
+ * `kind * 9 + result` with `% 9` on the way out, so that list cannot grow
+ * without a format version bump. Those edges encode as index 0 — no polarity
+ * colour, which is graceful — and get their meaning back here.
  */
 export function CallBadge({ call, className }: { call: string | null; className?: string }) {
   const map: Record<string, { label: string; className: string }> = {
@@ -78,6 +94,9 @@ export function CallBadge({ call, className }: { call: string | null; className?
     present: { label: "Present", className: "border-emerald-300 bg-emerald-50 text-emerald-700" },
     absent: { label: "Absent", className: "border-rose-300 bg-rose-50 text-rose-700" },
     index: { label: "Index", className: "border-violet-300 bg-violet-50 text-violet-700" },
+    loss: { label: "Loss", className: "border-rose-300 bg-rose-50 text-rose-700" },
+    retained: { label: "Retained", className: "border-emerald-300 bg-emerald-50 text-emerald-700" },
+    wildtype: { label: "Wildtype", className: "border-sky-300 bg-sky-50 text-sky-700" },
   };
   const s = map[String(call ?? "").toLowerCase()];
   if (!s) return null;

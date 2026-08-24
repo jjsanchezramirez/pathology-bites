@@ -159,10 +159,16 @@ export async function entityDetail(entity: EntityRow): Promise<EntityDetail> {
   const eById = new Map((ents.data ?? []).map((e) => [e.id, e]));
   const mById = new Map((marks.data ?? []).map((m) => [m.id, m]));
 
-  /* The unique key is (term_normalized, entity_id), and normalisation has
-   * changed over time — so "Burkitt cell leukaemia" can sit alongside an
-   * identically-spelled row that normalised differently. Fold them for display;
-   * the rows themselves are harmless. */
+  /* Two spellings of one alias can still differ only by punctuation, so fold
+   * for display.
+   *
+   * This used to work around something worse: two normalisers had written
+   * term_normalized, so "Canale-Smith syndrome" and "Canale–Smith syndrome"
+   * held different keys under a unique index and both came back. That is fixed
+   * at the source — one rule now, enforced by
+   * entity_synonyms_term_normalized_is_canonical — and the 1,061 duplicate rows
+   * are gone. What remains is presentation: a term that differs only in
+   * whitespace should be shown once. */
   const seenTerm = new Set<string>();
   const uniqueSynonyms = synonyms.filter((s) => {
     const k = s.term.toLowerCase().replace(/\s+/g, " ").trim();
