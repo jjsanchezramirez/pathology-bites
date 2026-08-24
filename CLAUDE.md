@@ -7,6 +7,15 @@ scripts, shared helpers, R2 keys, data fields and MCP servers that already
 exist. It is there because the recurring failure in this repo is a lookup gap,
 not a knowledge gap — rebuilding a worse version of something already present.
 
+**Working on the WHO knowledge graph, the IHC matrix or the 3D explorer? Read
+`dev/docs/KNOWLEDGE-GRAPH.md`** (local, gitignored) as well. TOOLING-INDEX is the
+log of what broke; KNOWLEDGE-GRAPH is the map — the data model, the seven build
+stages, all 115 pipeline scripts by stage with their traps, and the runbook for
+adding a WHO volume, new evidence, or a new marker. It will save you the two
+mistakes everyone makes: assuming the IHC matrix is built from the database (it
+is not — it is upstream of it), and trusting `seed_knowledge_graph.ts --dry`
+(it stubs the id maps, so it cannot rehearse the part that matters).
+
 Three questions, in order, before writing any script, matcher or publisher:
 does a script already do this, does a shared helper already do this, does the
 data already carry this. "Nearly, but not quite" means extend the existing
