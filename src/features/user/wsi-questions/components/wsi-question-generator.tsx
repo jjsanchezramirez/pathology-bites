@@ -335,6 +335,20 @@ export function WSIQuestionGenerator({
       setIsAnswered(true);
       // Short delay before showing explanation for animation
       setTimeout(() => setShowExplanation(true), 300);
+
+      /* Report the outcome against this generation. Fire-and-forget on purpose:
+       * the answer is already on screen, and a failed analytics POST must never
+       * surface to the reader or block the explanation. */
+      const eventId = currentQuestion?.metadata?.event_id;
+      if (eventId) {
+        const wasCorrect =
+          currentQuestion?.question.options.find((o) => o.id === optionId)?.is_correct === true;
+        void fetch("/api/user/wsi-questions/answer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ event_id: eventId, was_correct: wasCorrect }),
+        }).catch(() => {});
+      }
     }
   };
 

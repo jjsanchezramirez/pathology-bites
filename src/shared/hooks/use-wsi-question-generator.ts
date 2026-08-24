@@ -70,6 +70,9 @@ export interface GeneratedQuestion {
       completion_tokens: number;
       total_tokens: number;
     } | null;
+    /** Row id in wsi_question_events, so the answer can be reported against
+     *  this exact generation. Null when the event could not be written. */
+    event_id?: string | null;
   };
   debug?: {
     prompt: string;
@@ -84,6 +87,7 @@ interface QuestionGenerationResponse {
   metadata?: {
     model?: string;
     token_usage?: unknown;
+    event_id?: string | null;
   };
   debug?: unknown;
 }
@@ -152,6 +156,10 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           wsi,
+          // `kind` is sent alongside the prompt it produced. The server cannot
+          // recover it from customPrompt, and which kinds learners actually
+          // reach for is one of the things the event log is there to answer.
+          kind,
           customPrompt: buildWsiQuestionPrompt(wsi, kind, candidates),
         }),
       });
@@ -435,6 +443,7 @@ export function useWSIQuestionGenerator(): UseWSIQuestionGeneratorReturn {
               | { prompt_tokens: number; completion_tokens: number; total_tokens: number }
               | null
               | undefined,
+            event_id: (questionData.metadata?.event_id as string | null | undefined) ?? null,
           },
           debug: questionData.debug as { prompt: string; instructions: string } | null | undefined,
         };

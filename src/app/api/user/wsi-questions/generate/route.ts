@@ -7,6 +7,7 @@ import { runAITask } from "@/shared/services/ai-fallback";
 import { log } from "@/shared/utils/logging";
 import { buildQuestionPrompt, WSI_SYSTEM_PROMPT, normalizeWSI } from "./wsi-question-prompt";
 import { enforceQuestionContract, parseAndValidateQuestionFast } from "./wsi-question-parsing";
+import { recordWsiQuestionEvent } from "./wsi-question-events";
 
 // wsi is a loosely-structured VirtualSlide-ish blob (normalized downstream by
 // normalizeWSI) and context is prompt metadata — keep both loose.
@@ -16,6 +17,11 @@ const generateQuestionSchema = z.object({
   customPrompt: z.string().optional(),
   modelOverride: z.string().optional(),
   responseMode: z.string().optional(),
+  // Which of the three question kinds was asked for. The prompt is built on the
+  // client and arrives as `customPrompt`, so without this the server cannot tell
+  // a diagnosis question from an IHC one -- and "which kinds do learners
+  // actually use" is a question the event log exists to answer.
+  kind: z.enum(["diagnosis", "ihc", "molecular"]).optional(),
 });
 
 // The whole fallback chain now runs inside this one invocation, bounded by the
@@ -189,12 +195,19 @@ function buildOptimizedPrompt(
  *                   type: string
  * */ export async function POST(request: NextRequest) {
   const startTime = Date.now();
+  /* Hoisted so the catch below can say WHICH slide and WHICH question kind
+   * failed. Scoped inside the try, they are invisible exactly where they matter
+   * most -- a failure log that cannot name the slide cannot find the bad slide. */
+  let seenWsi: VirtualSlide | null = null;
+  let seenKind: string | null = null;
 
   try {
     const body = await parseBody(request, generateQuestionSchema);
     if (body instanceof NextResponse) return body;
-    const { context, customPrompt, modelOverride, responseMode } = body;
+    const { context, customPrompt, modelOverride, responseMode, kind } = body;
     const wsi = body.wsi as unknown as VirtualSlide;
+    seenWsi = wsi;
+    seenKind = kind ?? null;
 
     // An explicitly named model is honoured exactly — no fallback.
     const pinnedModel = modelOverride ? resolveModelId(modelOverride as string) : undefined;
@@ -232,6 +245,15 @@ function buildOptimizedPrompt(
 
     const { normalizedWSI, isValid, error } = preprocessWSI(wsi);
     if (!isValid) {
+      // A slide with no usable image URL is a corpus defect, not a user error,
+      // and it is invisible unless recorded: the learner just sees a failure.
+      await recordWsiQuestionEvent(request, {
+        outcome: "invalid_wsi",
+        wsi,
+        questionKind: kind ?? null,
+        generationTimeMs: Date.now() - startTime,
+        errorDetail: error,
+      });
       return NextResponse.json({ success: false, error }, { status: 400 });
     }
 
@@ -261,6 +283,16 @@ function buildOptimizedPrompt(
 
     log.debug(`[Question Gen] Generated with ${result.model} in ${Date.now() - startTime}ms`);
 
+    const eventId = await recordWsiQuestionEvent(request, {
+      outcome: "generated",
+      wsi: normalizedWSI,
+      questionKind: kind ?? null,
+      model: result.model,
+      generationTimeMs: Date.now() - startTime,
+      promptTokens: result.tokenUsage?.prompt_tokens ?? null,
+      completionTokens: result.tokenUsage?.completion_tokens ?? null,
+    });
+
     return NextResponse.json(
       {
         success: true,
@@ -271,6 +303,10 @@ function buildOptimizedPrompt(
           model: result.model,
           diagnosis: wsi.diagnosis,
           token_usage: result.tokenUsage,
+          // Handed back so the client can report the learner's answer against
+          // this exact generation. Null when the event could not be written;
+          // the client simply skips reporting rather than failing.
+          event_id: eventId,
         },
         debug: {
           prompt_length: prompt.length,
@@ -285,6 +321,18 @@ function buildOptimizedPrompt(
     // "try the next one" for the client to do — that already happened here.
     const details = error instanceof Error ? error.message : "Unknown error";
     log.error("[Question Gen] All models failed:", details);
+
+    // The 500s are the point of this log, not an afterthought: 4.6% of requests
+    // in the only week we have numbers for ended here, and nothing recorded
+    // which slide or which model chain produced them.
+    await recordWsiQuestionEvent(request, {
+      outcome: "model_failed",
+      wsi: seenWsi,
+      questionKind: seenKind,
+      generationTimeMs: Date.now() - startTime,
+      errorDetail: details,
+    });
+
     return NextResponse.json(
       {
         success: false,
