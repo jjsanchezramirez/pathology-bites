@@ -63,17 +63,28 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
           it: the copy now sits on top of it. Still gated at lg, so phones do
           not pay for a WebGL canvas they never see.
 
-          The whole cloud is on screen: the box is the section's height, and
-          `framing` above 1 keeps the outermost nodes about 8% of that clear of
-          the top and bottom. That ceiling is also the width -- it is a sphere,
-          so nothing makes it wider without either cropping it or pushing it off
-          the top. Reach left is bought by moving the box, not by growing it.
+          The whole cloud is on screen, and it is a sphere, so its size is one
+          number: the side of the square box. Both axes get a say and the
+          smaller one wins.
+
+          Height caps it so it never runs off the top -- `framing` above 1 then
+          keeps the outermost nodes about 8% of the section clear of the top
+          and bottom. Width caps it so it never runs into the copy: anchored
+          4% off the right edge, a box of 52vw puts the leftmost nodes at about
+          48% of the viewport whatever the window is doing, so a narrow window
+          gets a smaller cloud rather than one sitting on the headline. Tall
+          and narrow is exactly the case that used to break -- at 1024x900 the
+          height rule alone reached 15% of the width, most of the way across
+          the text.
 
           The canvas clips at its own edges, so `framing` below 1 is what puts
           straight sides back on the cloud. If it ever needs to be bigger than
           the viewport again, overhang the section vertically and keep the box
           square, rather than zooming past it. */}
-      <div className="hidden lg:block absolute inset-y-0 right-[4%] aspect-square z-0">
+      <div
+        className="hidden lg:block absolute top-1/2 -translate-y-1/2 right-[4%] aspect-square z-0"
+        style={{ height: "min(100%, 52vw)" }}
+      >
         <KnowledgeCloud mask={HERO_FADE} framing={1.2} />
       </div>
 
