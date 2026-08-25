@@ -1,9 +1,21 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { ChevronDown } from "lucide-react";
-import { OrganicImageGallery } from "@/shared/components/common/organic-image-gallery";
+
+/* Code-split, and never server-rendered: it is ~175 kB of three.js against a
+ * homepage that ships 12 kB of its own, and it draws to a canvas so there is
+ * nothing for the server to render anyway. Still fetched on mount rather than
+ * on scroll -- it sits in the hero, so it is on screen immediately. */
+const KnowledgeCloud = dynamic(
+  () =>
+    import("@/features/public/knowledge-graph/components/knowledge-cloud").then(
+      (m) => m.KnowledgeCloud
+    ),
+  { ssr: false }
+);
 import { VirtualSlideSearchTeaser } from "@/shared/components/common/virtual-slide-search-teaser";
 
 interface HeroSectionProps {
@@ -100,9 +112,12 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
               </div>
             </div>
 
-            {/* Right Column - Organic Image Gallery (2/5 width) */}
+            {/* Right Column - the knowledge graph (2/5 width).
+                Reads one baked ~80 KB snapshot from R2: no API, no layout to
+                compute. Kept behind the same lg gate the gallery used, so
+                phones do not pay for a WebGL canvas they cannot see. */}
             <div className="hidden lg:block lg:col-span-2 relative h-[600px]">
-              <OrganicImageGallery />
+              <KnowledgeCloud />
             </div>
           </div>
         </div>
