@@ -285,7 +285,6 @@ async function main() {
   }
 
   const packed = encodeSnapshot({
-    built: new Date().toISOString(),
     organs,
     chapters,
     labels: seat.map((i) => nodes[i].l),
@@ -354,8 +353,8 @@ async function main() {
       edges.length / prev.edgeSource.length
     );
     console.log(
-      `\npublished snapshot has ${prev.labels.length} nodes / ${prev.edgeSource.length} edges ` +
-        `(built ${prev.built}); this one has ${nodes.length} / ${edges.length}`
+      `\npublished snapshot has ${prev.labels.length} nodes / ${prev.edgeSource.length} edges; ` +
+        `this one has ${nodes.length} / ${edges.length}`
     );
     if (worst < REGRESSION_FLOOR && !process.argv.includes("--force")) {
       throw new Error(

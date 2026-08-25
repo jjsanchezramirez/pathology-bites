@@ -32,7 +32,6 @@ const SNAPSHOT_FORMAT = 1;
 
 /** Everything the cloud needs, already in the shapes it will use. */
 export interface DecodedSnapshot {
-  built: string;
   organs: string[];
   chapters: string[];
   /** Per node, all in community order. */
@@ -65,7 +64,6 @@ export interface DecodedSnapshot {
 }
 
 export interface EncodeInput {
-  built: string;
   organs: string[];
   chapters: string[];
   labels: string[];
@@ -136,8 +134,13 @@ export function encodeSnapshot(input: EncodeInput): Uint8Array {
     code[i] = c;
   });
 
+  /* Deliberately carries no build timestamp. The key this is published under
+   * is a hash of these bytes, so a clock reading in the payload would mint a
+   * new immutable object on every run whether or not the graph had changed --
+   * content-addressing that addresses the time instead of the content. The
+   * build time lives in manifest.json, which is mutable and is where a fact
+   * about *this publish* rather than *this data* belongs. */
   const header = JSON.stringify({
-    built: input.built,
     organs: input.organs,
     chapters: input.chapters,
     n,
@@ -261,7 +264,6 @@ export function decodeSnapshot(buffer: ArrayBuffer): DecodedSnapshot {
   }
 
   return {
-    built: header.built,
     organs: header.organs,
     chapters: header.chapters,
     labels,

@@ -72,8 +72,46 @@ export interface CommunityResponse {
   ms: number;
 }
 
+/**
+ * A seeded generator, swapped in for Math.random while the layout runs.
+ *
+ * Both halves of this are randomised: Leiden shuffles node order, and
+ * d3-force's `jiggle` perturbs coincident nodes. That is fine on screen and
+ * fatal for the snapshot, which is published under a hash of its own bytes --
+ * an unseeded layout mints a brand new immutable object on every run whether or
+ * not a single fact has changed, and a weekly job would quietly fill the bucket
+ * with identical graphs under different names.
+ *
+ * Restored in a finally, because leaving a deterministic Math.random installed
+ * would be a far worse bug than the one it fixes.
+ */
+function seeded(seed: number) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = Math.imul(a ^ (a >>> 15), 1 | a);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
 export function computeLayout(req: CommunityRequest): CommunityResponse {
+  const realRandom = Math.random;
+  Math.random = seeded(0x5eed);
+  try {
+    return computeLayoutInner(req);
+  } finally {
+    Math.random = realRandom;
+  }
+}
+
+function computeLayoutInner(req: CommunityRequest): CommunityResponse {
   const t0 = performance.now();
+  /* Passed to Leiden explicitly. Patching the global is enough for d3-force,
+   * which reads Math.random when a force is initialised, but not for Leiden:
+   * its DEFAULTS object binds Math.random at require time, so by the time the
+   * patch is installed the library is already holding the real one. */
+  const rng = seeded(0xc0ffee);
   const { n, edges, kindWeights, resolution, damping } = req;
   const triples = edges.length / 3;
   const exponent = damping ?? 1;
@@ -114,6 +152,7 @@ export function computeLayout(req: CommunityRequest): CommunityResponse {
       attributes: { weight: "weight" },
       weighted: true,
       resolution,
+      rng,
     }) as Record<string, number>;
     communities = new Int32Array(n);
     for (let i = 0; i < n; i++) communities[i] = mapping[String(i)] ?? 0;
@@ -293,6 +332,7 @@ export function computeLayout(req: CommunityRequest): CommunityResponse {
     attributes: { weight: "weight" },
     weighted: true,
     resolution: 1,
+    rng,
   }) as Record<string, number>;
 
   // Seat family by family, biggest family first, biggest cluster first inside
