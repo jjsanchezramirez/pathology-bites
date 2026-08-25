@@ -151,18 +151,36 @@ describe("scoreDiagnoses", () => {
   });
 });
 
+const weighted = (...ids: string[]) => ids.map((id) => ({ id, weight: 1 }));
+
 describe("suggestNextMarker", () => {
   it("suggests the marker that best splits the candidates", () => {
     const m = clinicalMatrix();
     // lung vs colon still ambiguous → CK20 (pos colon / neg lung) or CK7 splits them
-    const s = suggestNextMarker(m, ["lung", "colon"], []);
+    const s = suggestNextMarker(m, weighted("lung", "colon"), []);
     expect(s.length).toBeGreaterThan(0);
     expect(["ck7", "ck20"]).toContain(s[0].marker.id);
     expect(s[0].infoGain).toBeGreaterThan(0);
   });
 
   it("returns nothing for a single candidate", () => {
-    expect(suggestNextMarker(clinicalMatrix(), ["lung"], [])).toEqual([]);
+    expect(suggestNextMarker(clinicalMatrix(), weighted("lung"), [])).toEqual([]);
+  });
+
+  it("ignores a split between candidates that carry no weight", () => {
+    const m = clinicalMatrix();
+    // colon is the only entity with CDX2; with colon weightless, CDX2 cannot
+    // be the top suggestion for separating what is actually still in play.
+    const s = suggestNextMarker(
+      m,
+      [
+        { id: "lung", weight: 1 },
+        { id: "ovary", weight: 1 },
+        { id: "colon", weight: 0 },
+      ],
+      []
+    );
+    expect(s.map((x) => x.marker.id)).not.toContain("cdx2");
   });
 });
 

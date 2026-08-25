@@ -17,6 +17,16 @@ export interface Diagnosis {
   organ: string;
   /** every organ chapter the entity was found under (cross-organ merge) */
   organs?: string[];
+  /** the WHO volume this chapter row came from */
+  book?: string;
+  /** every WHO volume the merged entity was described in */
+  books?: string[];
+  /**
+   * The chapter-level row ids this entity was folded from. Present only after
+   * aggregateMatrix() — the shipped artifact is keyed on (entity, volume) and
+   * one tumour arrives as up to nine rows. See ./aggregate.ts.
+   */
+  memberIds?: string[];
   /** WHO "Related terminology" synonyms (old/alternate names) for search */
   aliases?: string[];
   /**
@@ -77,6 +87,19 @@ export interface Cell {
   pattern?: string | null;
   /** the WHO source sentence this cell was derived from (evidence transparency) */
   quote?: string | null;
+  /**
+   * Every distinct source sentence, when this cell pools more than one volume's
+   * statement. `quote` stays the first of them so existing readers keep working.
+   */
+  quotes?: string[];
+  /** how many chapter-level cells were pooled into this one (>1 after merging) */
+  sourceCount?: number;
+  /**
+   * Set when the pooled volumes made OPPOSITE calls. The cell then carries
+   * `status: "review"` as well — a disagreement between books is presented as
+   * unsettled, exactly like a disagreement between the two extraction passes.
+   */
+  conflicted?: boolean;
   /** supporting reference ids (keys into Matrix.references) */
   refs: string[];
 }

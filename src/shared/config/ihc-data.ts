@@ -40,11 +40,35 @@ const resolver = createManifestResolver(IHC_MANIFEST_URL, {
   molecular: IHC_MOLECULAR_URL,
 });
 
+/**
+ * The knowledge graph's curated entity-merge map, published beside the matrix.
+ *
+ * The matrix is keyed on (entity, WHO volume) — one row per chapter — while the
+ * graph holds one row per tumour, so the tool folds the chapter rows together
+ * before showing them (see features/public/tools/ihc/aggregate.ts). This
+ * artifact is what lets it fold two DIFFERENTLY named rows the curators have
+ * already ruled to be one disease.
+ *
+ * There is deliberately NO compiled fallback: it is resolved only when the
+ * manifest advertises it, so a build published before this existed simply
+ * doesn't ask for it, and the tool degrades to name-level grouping rather than
+ * firing a request that is certain to 404.
+ */
+const isUrlEntry = (v: unknown): v is { url: string } =>
+  !!v && typeof v === "object" && typeof (v as { url?: unknown }).url === "string";
+
 export async function resolveIhcUrls(): Promise<{
   matrixUrl: string;
   molecularUrl: string;
+  entityGroupsUrl: string | null;
   manifest: R2Manifest | null;
 }> {
   const { urls, manifest } = await resolver();
-  return { matrixUrl: urls.matrix, molecularUrl: urls.molecular, manifest };
+  const groups = manifest?.entityGroups;
+  return {
+    matrixUrl: urls.matrix,
+    molecularUrl: urls.molecular,
+    entityGroupsUrl: isUrlEntry(groups) ? groups.url : null,
+    manifest,
+  };
 }

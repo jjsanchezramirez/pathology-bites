@@ -170,10 +170,19 @@ const MIN_SCORE = 38;
 const ALIAS_WEIGHT = 0.92;
 const ORGAN_WEIGHT = 0.5;
 
-export interface RankOptions {
+export interface RankOptions<T> {
   /** Item ids to omit (entries already picked). */
   exclude?: Iterable<string>;
   limit?: number;
+  /**
+   * Small per-item nudge added to the match score, for ranking among
+   * equally-good text matches. Used by the marker picker to float the stains
+   * that are actually in wide use: typing "cd" matched forty markers on an
+   * identical prefix score, and the alphabetically-first forty were not the
+   * forty anyone wanted. Keep the returned value small (single digits) — it is
+   * a tiebreaker, and must never let a weak text match overtake a strong one.
+   */
+  boost?: (item: T) => number;
 }
 
 /**
@@ -184,7 +193,7 @@ export interface RankOptions {
 export function rankIndexed<T extends Searchable>(
   query: string,
   index: TextIndex<T>,
-  { exclude, limit = 12 }: RankOptions = {}
+  { exclude, limit = 12, boost }: RankOptions<T> = {}
 ): T[] {
   const norm = normalizeMedical(query.trim());
   if (!norm) return [];
@@ -197,7 +206,7 @@ export function rankIndexed<T extends Searchable>(
     let best = scoreField(q, e.name);
     for (const a of e.aliases) best = Math.max(best, scoreField(q, a) * ALIAS_WEIGHT);
     if (e.organ) best = Math.max(best, scoreField(q, e.organ) * ORGAN_WEIGHT);
-    if (best >= MIN_SCORE) scored.push({ item: e.item, score: best });
+    if (best >= MIN_SCORE) scored.push({ item: e.item, score: best + (boost?.(e.item) ?? 0) });
   }
 
   scored.sort((a, b) => b.score - a.score || a.item.name.length - b.item.name.length);
