@@ -127,6 +127,17 @@ export const DEFAULT_LAYOUT: LayoutParams = {
 export interface Graph3DOptions {
   container: HTMLElement;
   labelCanvas: HTMLCanvasElement;
+  /**
+   * How much room to leave around the cloud when framing it, as a multiple of
+   * its radius. 1 puts the outermost node exactly on the top and bottom edges;
+   * below 1 the cloud runs off them, which is what you want when it is a
+   * backdrop rather than a picture. Framing is vertical -- a wide container
+   * gets a wide margin for free.
+   */
+  framing?: number;
+  /** Clear colour behind the cloud, or "transparent" to let the page show
+   *  through. Depth cueing is done with alpha rather than by mixing toward
+   *  this colour, so far nodes fade into whatever is actually behind them. */
   background: string;
   labelInk: string;
   labelHalo: string;
@@ -341,6 +352,8 @@ const TRAVEL_MS = 520;
  */
 const ZOOM_MIN = 0.82;
 const ZOOM_MAX = 1.15;
+/** Default room around the whole cloud. See `Graph3DOptions.framing`. */
+const DEFAULT_FRAMING = 1.35;
 /** Margin around the neighbourhood when framing a selection. */
 const FRAME_MARGIN = 1.25;
 /**
@@ -558,9 +571,11 @@ export class Graph3D {
     this.opts = opts;
     const { container } = opts;
 
-    this.renderer = new WebGLRenderer({ antialias: true, alpha: false });
+    const transparent = opts.background === "transparent";
+    this.renderer = new WebGLRenderer({ antialias: true, alpha: transparent });
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
-    this.renderer.setClearColor(new Color(opts.background), 1);
+    if (transparent) this.renderer.setClearColor(new Color("#000000"), 0);
+    else this.renderer.setClearColor(new Color(opts.background), 1);
     container.appendChild(this.renderer.domElement);
     this.renderer.domElement.style.display = "block";
     this.renderer.domElement.style.width = "100%";
@@ -1980,7 +1995,7 @@ export class Graph3D {
       );
       if (d > max) max = d;
     }
-    const dist = (max * 1.35) / Math.tan((this.camera.fov * Math.PI) / 360);
+    const dist = (max * (this.opts.framing ?? DEFAULT_FRAMING)) / Math.tan((this.camera.fov * Math.PI) / 360);
     /* The framing of the whole cloud, kept as home. Only recorded when nothing
      * is selected and no focus is up, so a selection's tighter framing never
      * becomes the thing deselecting returns to. */

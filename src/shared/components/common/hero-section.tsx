@@ -18,6 +18,23 @@ const KnowledgeCloud = dynamic(
 );
 import { VirtualSlideSearchTeaser } from "@/shared/components/common/virtual-slide-search-teaser";
 
+/**
+ * The backdrop's edge, and the reason the copy stays readable on top of it.
+ *
+ * The cloud is framed vertically, so it is as wide as it is tall and it sits
+ * in the middle of its own box -- which is why the box below is square and the
+ * mask is measured as a fraction of it: radii of `50% / framing` land the fade
+ * exactly on the outermost nodes, on every viewport, without knowing the
+ * aspect. Change one and change the other, or the fade drifts off the cloud
+ * and the dots get an edge again.
+ *
+ * The centre is nudged right of the box's own centre so the fade is not
+ * symmetric: the side the headline sits on thins out a good deal earlier than
+ * the open side, which is what keeps the text on a wash rather than on dots.
+ */
+const HERO_FADE =
+  "radial-gradient(ellipse 42% 42% at 56% 50%, #000 0%, rgba(0,0,0,0.92) 42%, rgba(0,0,0,0.45) 68%, rgba(0,0,0,0.14) 86%, transparent 100%)";
+
 interface HeroSectionProps {
   onLearnMoreClick?: () => void;
 }
@@ -42,8 +59,29 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
       {/* Background gradients matching other hero sections */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_50%,rgba(56,189,248,0.08),transparent_25%),radial-gradient(circle_at_70%_50%,rgba(56,189,248,0.08),transparent_25%),linear-gradient(to_bottom,rgba(56,189,248,0.05),transparent)]" />
 
+      {/* The knowledge graph, as the hero's backdrop rather than a panel beside
+          it: the copy now sits on top of it. Still gated at lg, so phones do
+          not pay for a WebGL canvas they never see.
+
+          The whole cloud is on screen: the box is the section's height, and
+          `framing` above 1 keeps the outermost nodes about 8% of that clear of
+          the top and bottom. That ceiling is also the width -- it is a sphere,
+          so nothing makes it wider without either cropping it or pushing it off
+          the top. Reach left is bought by moving the box, not by growing it.
+
+          The canvas clips at its own edges, so `framing` below 1 is what puts
+          straight sides back on the cloud. If it ever needs to be bigger than
+          the viewport again, overhang the section vertically and keep the box
+          square, rather than zooming past it. */}
+      <div className="hidden lg:block absolute inset-y-0 right-[4%] aspect-square z-0">
+        <KnowledgeCloud mask={HERO_FADE} framing={1.2} />
+      </div>
+
       {/* Content Container */}
-      <div className="container mx-auto px-4 relative z-10">
+      {/* Transparent to the pointer, so dragging anywhere the copy is not
+          spins the cloud underneath; the pieces that need events opt back in
+          one by one below. */}
+      <div className="container mx-auto px-4 relative z-10 pointer-events-none">
         <div className="max-w-6xl mx-auto">
           <div className="grid lg:grid-cols-5 gap-12 items-center min-h-[calc(100vh-8rem)] pt-8 pb-24 lg:pt-0 lg:pb-0">
             {/* Left Column - Text Content (3/5 width) */}
@@ -51,7 +89,7 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
               {/* Main Headline & Value Proposition */}
               <div className="space-y-5">
                 <h1
-                  className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight opacity-0"
+                  className="font-heading text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight leading-tight opacity-0 pointer-events-auto"
                   style={{
                     animation: mounted
                       ? "slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards"
@@ -64,7 +102,7 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
                   </span>
                 </h1>
                 <p
-                  className="text-lg sm:text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0 opacity-0"
+                  className="text-lg sm:text-xl md:text-2xl text-muted-foreground leading-relaxed max-w-2xl mx-auto lg:mx-0 opacity-0 pointer-events-auto"
                   style={{
                     animation: mounted
                       ? "slideUpFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards"
@@ -80,7 +118,7 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
               <div className="space-y-5">
                 {/* Search Bar */}
                 <div
-                  className="opacity-0"
+                  className="opacity-0 pointer-events-auto"
                   style={{
                     animation: mounted
                       ? "scaleInFade 1s cubic-bezier(0.16, 1, 0.3, 1) forwards"
@@ -103,7 +141,7 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
                 >
                   <Link
                     href="/signup"
-                    className="text-base text-primary hover:underline font-semibold inline-flex items-center gap-1 group"
+                    className="text-base text-primary hover:underline font-semibold inline-flex items-center gap-1 group pointer-events-auto"
                   >
                     <span>Or try our question bank</span>
                     <span className="transition-transform group-hover:translate-x-1">→</span>
@@ -112,13 +150,8 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
               </div>
             </div>
 
-            {/* Right Column - the knowledge graph (2/5 width).
-                Reads one baked ~80 KB snapshot from R2: no API, no layout to
-                compute. Kept behind the same lg gate the gallery used, so
-                phones do not pay for a WebGL canvas they cannot see. */}
-            <div className="hidden lg:block lg:col-span-2 relative h-[600px]">
-              <KnowledgeCloud />
-            </div>
+            {/* The right two columns are deliberately empty: the graph is
+                behind all five now, and this is what keeps the copy off it. */}
           </div>
         </div>
       </div>

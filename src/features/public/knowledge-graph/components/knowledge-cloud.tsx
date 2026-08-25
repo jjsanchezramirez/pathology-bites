@@ -31,16 +31,37 @@ import {
   sizeOf,
 } from "../lib/palette";
 
+/**
+ * Where the cloud stops. Opaque through the middle, gone by the edge, so the
+ * dots and their labels thin out rather than being cut off at a border.
+ */
+const EDGE_FADE =
+  "radial-gradient(ellipse closest-side at 50% 50%, #000 55%, rgba(0,0,0,0.55) 78%, transparent 100%)";
+
 /** Polarities the public cloud draws. Absences are a curation concern. */
 const SHOWN = new Set(["positive", "index", "present"]);
 
 export interface KnowledgeCloudProps {
   /** Override the snapshot URL. Normally resolved from the R2 manifest. */
   src?: string;
+  /**
+   * CSS `mask-image` for the whole cloud. Defaults to a centred vignette; a
+   * backdrop wants an off-centre one, so the side the text sits on is ghosted
+   * rather than merely soft-edged.
+   */
+  mask?: string;
+  /** Room around the cloud, as a multiple of its radius. Below 1 it bleeds
+   *  off the top and bottom of its box -- which the mask then hides. */
+  framing?: number;
   className?: string;
 }
 
-export function KnowledgeCloud({ src, className }: KnowledgeCloudProps) {
+export function KnowledgeCloud({
+  src,
+  mask = EDGE_FADE,
+  framing,
+  className,
+}: KnowledgeCloudProps) {
   /** Where the walk has been. The last entry is the node before this one. */
   const trailRef = useRef<string[]>([]);
   const stageRef = useRef<HTMLDivElement>(null);
@@ -184,7 +205,11 @@ export function KnowledgeCloud({ src, className }: KnowledgeCloudProps) {
     const engine = new Graph3D({
       container: stageRef.current,
       labelCanvas: labelRef.current,
-      background: "#ffffff",
+      framing,
+      // No clear colour: the cloud sits on the hero's gradient, not on a
+      // white card. Depth cueing fades far nodes by alpha, so this costs
+      // nothing but the page showing through.
+      background: "transparent",
       labelInk: LABEL_INK,
       labelHalo: LABEL_HALO,
       edgeColor: EDGE_HAZE.slice(0, 7),
@@ -260,10 +285,25 @@ export function KnowledgeCloud({ src, className }: KnowledgeCloudProps) {
       engine.dispose();
       engineRef.current = null;
     };
-  }, [snap, model]);
+  }, [snap, model, framing]);
 
   return (
-    <div className={className} style={{ position: "relative", width: "100%", height: "100%" }}>
+    <div
+      className={className}
+      style={{
+        position: "relative",
+        width: "100%",
+        height: "100%",
+        /* The cloud is bigger than its column, so without this it ends at four
+         * straight edges and reads as a framed picture pasted onto the page.
+         * Feathering the mask -- on the wrapper, so the WebGL canvas and the
+         * label canvas fade as one -- lets it run off into the background
+         * instead. An ellipse rather than a box gradient because the corners
+         * are where a rectangle gives itself away. */
+        maskImage: mask,
+        WebkitMaskImage: mask,
+      }}
+    >
       <div ref={stageRef} style={{ position: "absolute", inset: 0 }} />
       <canvas ref={labelRef} style={{ position: "absolute", inset: 0, pointerEvents: "none" }} />
       {failed && (
