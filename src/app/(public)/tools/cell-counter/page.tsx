@@ -10,7 +10,6 @@ import type { SavedPreset } from "@/shared/config/user-settings-defaults";
 import { log } from "@/shared/utils/logging";
 import {
   type CounterState,
-  DEFAULT_CELL_TYPES,
   DEFAULT_SETTINGS,
   STORAGE_KEY,
   PERIPHERAL_BLOOD_CELL_TYPES,
@@ -37,7 +36,7 @@ import { SavePresetDialog } from "./save-preset-dialog";
 
 export default function CellCounterPage() {
   const [state, setState] = useState<CounterState>({
-    cellTypes: DEFAULT_CELL_TYPES,
+    cellTypes: PERIPHERAL_BLOOD_CELL_TYPES,
     settings: DEFAULT_SETTINGS,
     undoHistory: [],
     isComplete: false,

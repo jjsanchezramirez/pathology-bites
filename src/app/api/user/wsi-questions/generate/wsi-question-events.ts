@@ -25,7 +25,7 @@ import type { NextRequest } from "next/server";
 import { log } from "@/shared/utils/logging";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
 
-export type WsiEventOutcome = "generated" | "model_failed" | "invalid_wsi" | "bad_request";
+type WsiEventOutcome = "generated" | "model_failed" | "invalid_wsi" | "bad_request";
 
 export interface WsiEventInput {
   outcome: WsiEventOutcome;

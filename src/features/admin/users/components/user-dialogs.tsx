@@ -22,7 +22,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { type User, getUserDisplayName } from "./users-table-utils";
 
-export interface FieldOption {
+interface FieldOption {
   value: string;
   label: string;
 }

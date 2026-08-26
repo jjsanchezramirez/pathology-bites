@@ -29,7 +29,7 @@ import type {
 } from "./types";
 import { Easing, applyEase } from "./easing";
 
-export const DEFAULT_TRANSFORM: Transform = { x: 0, y: 0, scale: 1 };
+const DEFAULT_TRANSFORM: Transform = { x: 0, y: 0, scale: 1 };
 
 // Entrance/exit scale-pop bounds (overlay "pops" in with overshoot, shrinks out).
 const ENTER_FROM = 0.85;
@@ -171,7 +171,7 @@ export function arrowPointsAt(arrow: ArrowElement, time: number): { from: Point;
  * Base camera transform at `time`: initialFraming composed with every persistent
  * camera whose fadeIn has completed by `time`. Returns player-space (−50..50).
  */
-export function baseTransformAt(
+function baseTransformAt(
   initialFraming: Framing,
   cameras: CameraElement[],
   time: number
@@ -198,7 +198,7 @@ export function baseTransformAt(
  * progress is eased by the camera's `easing` (default easeInOutCubic), so a whole
  * Ken-Burns move follows one authored curve.
  */
-export function applyActiveCamera(
+function applyActiveCamera(
   time: number,
   base: CameraTransform,
   cameras: CameraElement[],

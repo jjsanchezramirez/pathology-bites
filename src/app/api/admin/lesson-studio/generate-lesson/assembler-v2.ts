@@ -30,8 +30,7 @@ import type { SvgInput, LessonPlan, PlannedTextSlide, TranscriptAnalysis } from 
 // Constants
 // ---------------------------------------------------------------------------
 
-/** @internal exported for testing */
-export const TITLE_DURATION = 3;
+const TITLE_DURATION = 3;
 const MIN_IMAGE_DURATION = 5;
 const ZOOM_ANIMATION_DURATION = 2.0; // shared with camera.ts ZOOM_IN_HOLD timing
 
@@ -43,7 +42,7 @@ const MASCOT_SVG_URL =
 
 // Annotation sizes by objectSize (width, height in % of canvas)
 /** @internal exported for testing */
-export const ANNOTATION_SIZES: Record<string, { w: number; h: number }> = {
+const ANNOTATION_SIZES: Record<string, { w: number; h: number }> = {
   large: { w: 40, h: 40 },
   medium: { w: 28, h: 28 },
   small: { w: 18, h: 18 },
@@ -67,7 +66,7 @@ function fullTiming(duration: number): Timing {
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
-export function computeImageDurations(
+function computeImageDurations(
   segments: TranscriptAnalysis["segments"],
   imageOrder: number[],
   audioDuration: number,
@@ -99,7 +98,7 @@ export function computeImageDurations(
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
-export function buildAnnotation(vision: VisionResult, timing: Timing): SlideElement | null {
+function buildAnnotation(vision: VisionResult, timing: Timing): SlideElement | null {
   if (!vision.canSeeImage || !vision.featurePosition || vision.annotationTool === "none") {
     return null;
   }
@@ -194,7 +193,7 @@ function labelTiming(camera: CameraKeyframes, slideDuration: number): Timing {
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
-export function buildBackground(
+function buildBackground(
   img: ImageInput,
   slideId: string,
   duration: number
@@ -225,7 +224,7 @@ export function buildBackground(
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
-export function buildCamera(camera: CameraKeyframes, slideDuration: number): CameraElement | null {
+function buildCamera(camera: CameraKeyframes, slideDuration: number): CameraElement | null {
   if (!camera.hasTarget) return null;
   const zoomed = camera.zoomed;
   return {
@@ -250,7 +249,7 @@ export function buildCamera(camera: CameraKeyframes, slideDuration: number): Cam
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
-export function buildTextLabel(label: string, timing: Timing): TextElement {
+function buildTextLabel(label: string, timing: Timing): TextElement {
   return {
     id: uid("text"),
     kind: "text",
@@ -270,7 +269,7 @@ export function buildTextLabel(label: string, timing: Timing): TextElement {
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
-export function buildTitleSlide(episodeTitle: string, duration: number): Slide {
+function buildTitleSlide(episodeTitle: string, duration: number): Slide {
   const slideId = uid("slide");
   const elements: SlideElement[] = [
     {
@@ -348,7 +347,7 @@ export function buildTitleSlide(episodeTitle: string, duration: number): Slide {
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
-export function buildTextSlide(planned: PlannedTextSlide): Slide {
+function buildTextSlide(planned: PlannedTextSlide): Slide {
   const slideId = uid("slide");
   const isDark = planned.backgroundColor !== "#ffffff" && planned.backgroundColor !== "#f8fafc";
   const textColor = isDark ? "#ffffff" : "#1a1a2e";
@@ -406,7 +405,7 @@ export function buildTextSlide(planned: PlannedTextSlide): Slide {
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
-export function buildImageSlide(
+function buildImageSlide(
   image: ImageInput,
   vision: VisionResult | undefined,
   duration: number,

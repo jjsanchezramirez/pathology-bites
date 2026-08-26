@@ -19,8 +19,9 @@ export interface DeckData {
   totalCards: number;
 }
 
-// Cards to ignore by ID (excluded from all views)
-export const IGNORED_CARD_IDS = new Set(["e;+G?PkVD5"]);
+// Cards to ignore by ID (excluded from all views). Module-private: consumed
+// only inside this file (was exported but had no external importers).
+const IGNORED_CARD_IDS = new Set(["e;+G?PkVD5"]);
 
 const NAME_NORMALIZATIONS: Record<string, string> = {
   "Smooth Muscle": "Muscle",

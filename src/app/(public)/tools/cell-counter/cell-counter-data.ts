@@ -55,8 +55,6 @@ export const BONE_MARROW_CELL_TYPES: CellType[] = [
   { id: "bm14", name: "Mast cell", key: "b", count: 0, color: "bg-slate-600" },
 ];
 
-export const DEFAULT_CELL_TYPES = PERIPHERAL_BLOOD_CELL_TYPES;
-
 export const DEFAULT_SETTINGS: CounterSettings = {
   countLimit: 100,
   enableLimit: true,

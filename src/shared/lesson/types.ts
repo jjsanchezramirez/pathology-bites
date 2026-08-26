@@ -202,8 +202,13 @@ export interface Lesson {
   slides: Slide[];
 }
 
-/** Current persisted Lesson schema version. */
-export const LESSON_SCHEMA_VERSION = 2;
+/**
+ * Current persisted Lesson schema version, stamped onto every new Lesson by
+ * `emptyLesson()`. Not yet read back anywhere (no migration logic consumes it) —
+ * kept module-private since there is no external reader; bump it when the Lesson
+ * shape changes.
+ */
+const LESSON_SCHEMA_VERSION = 2;
 
 // ---- Constructors / defaults --------------------------------------------------
 
@@ -229,9 +234,4 @@ export function emptyLesson(): Lesson {
 /** Timing window where visible span = fadeIn + hold + fadeOut. */
 export function timing(start: number, fadeIn: number, hold: number, fadeOut: number): Timing {
   return { start, fadeIn, hold, fadeOut };
-}
-
-/** End time (seconds, segment-local) of a timing window. */
-export function timingEnd(t: Timing): number {
-  return t.start + t.fadeIn + t.hold + t.fadeOut;
 }
