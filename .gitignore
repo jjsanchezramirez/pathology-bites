@@ -55,7 +55,13 @@ SAMPLE_*.ts
 .cache/
 
 # Project-specific
-dev/
+# Ignore all of dev/, EXCEPT the overhaul changelog (the overhaul's running log
+# and final-report source) which we want version-controlled. Negations must
+# un-ignore each parent dir before the file.
+dev/*
+!dev/docs/
+dev/docs/*
+!dev/docs/OVERHAUL-CHANGELOG.md
 
 # Local-only sandbox (never committed, never deployed)
 src/app/debug/
