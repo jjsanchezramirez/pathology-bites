@@ -85,7 +85,7 @@ export function MultiStepQuestionForm({
   mode = "create",
   initialData,
   onSubmit,
-  // onCancel - TODO: Wire up cancel button
+  onCancel,
 }: MultiStepQuestionFormProps) {
   // Extract AI model from question set if available
   const questionSetAIModel = initialData?.question_set?.source_details?.model || null;
@@ -253,6 +253,10 @@ export function MultiStepQuestionForm({
   const [showExitDialog, setShowExitDialog] = useState(false);
   const pendingExitHrefRef = useRef<string | null>(null);
   const isNavigatingAwayRef = useRef(false);
+  // Marker stored in pendingExitHrefRef when the pending exit is the Cancel
+  // button rather than a real link/back target, so handleConfirmExit calls
+  // onCancel instead of navigating to a URL.
+  const CANCEL_SENTINEL = "__cancel__";
 
   useEffect(() => {
     if (!isDirty || isSubmitting) return;
@@ -305,7 +309,11 @@ export function MultiStepQuestionForm({
   const handleConfirmExit = () => {
     isNavigatingAwayRef.current = true;
     setShowExitDialog(false);
-    if (pendingExitHrefRef.current) {
+    if (pendingExitHrefRef.current === CANCEL_SENTINEL) {
+      // Cancel was confirmed — go where the parent says (e.g. back to the list).
+      pendingExitHrefRef.current = null;
+      onCancel?.();
+    } else if (pendingExitHrefRef.current) {
       window.location.href = pendingExitHrefRef.current;
     } else {
       window.history.back();
@@ -315,6 +323,20 @@ export function MultiStepQuestionForm({
   const handleStayOnForm = () => {
     pendingExitHrefRef.current = null;
     setShowExitDialog(false);
+  };
+
+  // Cancel: with no unsaved changes, leave immediately; with unsaved changes,
+  // reuse the discard-confirmation dialog. The sentinel marks the pending exit as
+  // "cancel" (not a link/back target) so handleConfirmExit routes to onCancel.
+  const handleCancelClick = () => {
+    if (!onCancel) return;
+    if (!isDirty || isSubmitting) {
+      isNavigatingAwayRef.current = true;
+      onCancel();
+      return;
+    }
+    pendingExitHrefRef.current = CANCEL_SENTINEL;
+    setShowExitDialog(true);
   };
 
   // Navigation handlers with smooth transitions
@@ -518,7 +540,17 @@ export function MultiStepQuestionForm({
 
           {/* Navigation Buttons - Streamlined Layout */}
           <div className="flex justify-between items-center pt-6 border-t">
-            <div>
+            <div className="flex gap-3">
+              {onCancel && (
+                <Button
+                  variant="ghost"
+                  onClick={handleCancelClick}
+                  disabled={isSubmitting || isTransitioning}
+                  size="lg"
+                >
+                  Cancel
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={goToPreviousStep}
