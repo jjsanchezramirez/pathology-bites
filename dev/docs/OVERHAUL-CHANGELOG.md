@@ -510,8 +510,13 @@ knowledge-graph schema was consolidated after they were written.
 - **Checks**: 0 unguarded debug-API routes; `tsc` PASS; full `eslint` 0 errors (fixed
   the inserted-guard indentation via `--fix`); full `vitest` PASS; `npm run build` PASS.
 
-## skills-lock.json decision
-- **Keep it.** It is the integrity lock for the Caveman skills installer, which
-  regenerates it; the maintainer commits it deliberately (commit 08a6473c) alongside
-  the `.gitignore` Caveman section. It is external-tooling state, not app dead code —
-  removing it gains nothing and the installer would rewrite it on next run. No action.
+## skills-lock.json + Caveman skills — REMOVED (supersedes the earlier "keep" note)
+The maintainer confirmed the Caveman skills are no longer used. Removed:
+- `skills-lock.json` (was the only git-tracked artifact — an integrity lock for skills
+  that were never actually committed; `.claude/` has always been gitignored).
+- `.claude/skills/` locally (the 7 caveman/cavecrew skill dirs).
+- Caveman-specific ignore entries (`.agents/`, `AGENTS.md`) from `.gitignore`,
+  `.vercelignore`, `.prettierignore` — neither existed on disk, nothing referenced them.
+Kept: `.claude/` itself (still used for local agents/settings — `agents/`, `launch.json`,
+`settings.local.json` are unrelated to Caveman) and the other AI-tool ignore entries
+(`.cursor`/`.windsurf`/`.clinerules`/`.opencode`). Commit 5d6ea419. tsc passes.
