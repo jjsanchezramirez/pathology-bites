@@ -16,6 +16,11 @@ dist/
 *.env
 !.env.example
 
+# Local Supabase access token hand-off for one-off CLI dumps (never committed)
+.supabase-token
+supabase/.temp/
+supabase/.branches/
+
 # Logs & runtime
 *.log
 pids/
