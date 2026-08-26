@@ -277,3 +277,49 @@ not source bugs, and both are now fixed so the "all tests passing" gate is real:
   `parse-body.ts` for the parse path; new routes may reuse it but inline
   `NextResponse.json({ error })` is the accepted pattern.
 - **Checks**: `tsc`/`eslint` PASS; api util tests PASS (14).
+
+## Phase 6 — Dev Folder & Retirement
+
+> NOTE: `dev/` is gitignored. The deletions below are local-only; they never touch
+> the deployed app. The changelog itself is now tracked via a `.gitignore` carve-out
+> (commit 5f17ffb0) so this record survives.
+
+### Retired (each verified zero-referenced before deletion)
+- `dev/split_imports.py` — ORPHANED. Zero references repo-wide (package.json, docs,
+  code). Standalone Python import-splitting helper with no caller.
+- `dev/tools/` (`ProfilerWrapper.tsx`, `logger.ts`, `performance-monitor.ts`) —
+  ORPHANED. Self-described "dev-only, not part of the production build"; zero
+  imports from `src/`/`tests/`/`package.json`.
+- `dev/docs/KNOWLEDGE-GRAPH-ARCHITECTURE.md.bak` — ORPHANED backup of the current
+  (itself stale-bannered) KNOWLEDGE-GRAPH-ARCHITECTURE.md. The only `.bak` in the repo.
+- `.wrangler/` — Wrangler R2/D1 simulator cache (gitignored, regenerates on use).
+- Completed planning docs — `dev/codebase-cleanup-plan.md` (self-labeled "PLAN ONLY —
+  not executed", superseded), `dev/phase0-baseline.md` (Phase 0 complete),
+  `dev/phase2-verify-checklist.md` (build-verified branch checklist). None referenced
+  by any other doc; their conclusions are either done or folded into the changelog.
+
+### Kept (referenced — documented why)
+- `webpack/empty-polyfill.js` — referenced by live `next.config.ts` webpack hook.
+- `dev/code/reference/` — referenced by `src/shared/config/navigation.ts:272`
+  (guest-quiz pattern deliberately preserved).
+- `dev/code/scripts/` — referenced by comments + dev READMEs; the `eval:search` and
+  image-optimization pipelines point here.
+- `dev/PathVideo.jsx` — referenced by `src/shared/lesson/easing.ts:1` (logic ported).
+- `dev/supabase/migrations/` — matches live schema in `src/shared/types/supabase.ts`;
+  documented in `.gitignore` as the canonical location.
+
+### Flagged, not changed (uncertain → report per protocol)
+- `skills-lock.json` — git-tracked integrity lock for the **gitignored** `.claude/`
+  Caveman skills. It was committed deliberately (commit 08a6473c) and the external
+  Caveman installer regenerates it. Removing it is an external-tooling decision, not
+  dead code, so it is left in place and flagged here.
+
+### Doc fixes for stale references
+- `dev/code/scripts/README.md` — `npm run find-unused:custom` → corrected to the real
+  `npm run find-unused` (knip).
+- `dev/README.md` — removed references to nonexistent `docs/changes/` and `dev/testing/`
+  (tests live at repo-root `tests/`), and the now-deleted `tools/`; added the note that
+  the test suite is at `tests/`.
+- `src/shared/utils/domain/virtual-slide-search.ts` — header comment pointed at a
+  nonexistent `dev/code/scripts/eval/`; corrected to `tests/benchmarks/search-eval.ts`
+  (commit 0568a6a9).
