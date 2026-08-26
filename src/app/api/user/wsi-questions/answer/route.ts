@@ -43,6 +43,46 @@ const answerSchema = z
     message: "report delivered, was_correct, or both",
   });
 
+/**
+ * @swagger
+ * /api/user/wsi-questions/answer:
+ *   post:
+ *     summary: Record delivery and/or the answer outcome for a generated WSI question
+ *     description: >
+ *       Closes the loop on a row written by /generate. Accepts a delivery signal
+ *       (the question was actually shown) and/or the answer outcome (was_correct).
+ *       The row is matched on the caller's x-user-id, so one learner cannot write
+ *       onto another's event. Guards live in the UPDATE WHERE clause (a delivery
+ *       may be re-reported; an answer may not be rewritten).
+ *     tags:
+ *       - User - WSI Questions
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [event_id]
+ *             properties:
+ *               event_id:
+ *                 type: string
+ *                 format: uuid
+ *               delivered:
+ *                 type: boolean
+ *                 description: Set true to stamp that the question was shown
+ *               was_correct:
+ *                 type: boolean
+ *                 description: Whether the learner answered correctly
+ *     responses:
+ *       200:
+ *         description: Outcome recorded (recorded=false if already answered / not found)
+ *       400:
+ *         description: Validation failed (bad event_id or neither field supplied)
+ *       401:
+ *         description: Not signed in
+ *       500:
+ *         description: Server error
+ */
 export async function POST(request: NextRequest) {
   const body = await parseBody(request, answerSchema);
   if (body instanceof NextResponse) return body;

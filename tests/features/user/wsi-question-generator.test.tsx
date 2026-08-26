@@ -10,8 +10,8 @@
  *   - the category filter derived from wsiData
  */
 import React from "react";
-import { describe, it, expect, beforeEach, vi } from "vitest";
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { describe, it, expect, beforeEach, afterEach, vi } from "vitest";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 
 const osd = vi.hoisted(() => ({ mounts: 0 }));
 const mountCount = () => osd.mounts;
@@ -210,9 +210,30 @@ describe("WSIQuestionGenerator — question kind + layout", () => {
 });
 
 describe("WSIQuestionGenerator — category switching", () => {
+  // Picking a category debounces generation behind SCOPE_SETTLE_MS (900ms) so
+  // rapidly-changed categories don't each cost a generation (see 01c702d). Fake
+  // timers let us advance that settle window deterministically.
+  beforeEach(() => {
+    vi.useFakeTimers();
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  // Advance past the category-settle debounce and flush the resulting work.
+  // fireEvent already wraps the interaction in act(); the timer advance is the
+  // only part that needs an explicit act().
+  const settleCategory = async () => {
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(1000);
+    });
+  };
+
   it("generates a question as soon as a category is picked", async () => {
     render(<WSIQuestionGenerator />);
-    await screen.findByText("What is the diagnosis shown in this slide?");
+    // The mount auto-generate resolves via the debounced/async path too.
+    await settleCategory();
+    expect(screen.getByText("What is the diagnosis shown in this slide?")).toBeTruthy();
     hook.value.generateQuestion.mockClear();
 
     // Radix's select is not driveable in jsdom, so go through the same callback
@@ -220,6 +241,7 @@ describe("WSIQuestionGenerator — category switching", () => {
     const select = screen.getByRole("combobox", { name: "Category" });
     fireEvent.keyDown(select, { key: "Enter" });
     fireEvent.click(screen.getByText("Cytopathology"));
+    await settleCategory();
 
     // The category the reader JUST picked, not the one in state a render ago.
     expect(hook.value.generateQuestion).toHaveBeenCalledWith("Cytopathology", ["diagnosis"]);
@@ -227,15 +249,18 @@ describe("WSIQuestionGenerator — category switching", () => {
 
   it("does not refresh when returning to All categories", async () => {
     render(<WSIQuestionGenerator />);
-    await screen.findByText("What is the diagnosis shown in this slide?");
+    await settleCategory();
+    expect(screen.getByText("What is the diagnosis shown in this slide?")).toBeTruthy();
 
     const select = screen.getByRole("combobox", { name: "Category" });
     fireEvent.keyDown(select, { key: "Enter" });
     fireEvent.click(screen.getByText("Cytopathology"));
+    await settleCategory();
     hook.value.generateQuestion.mockClear();
 
     fireEvent.keyDown(select, { key: "Enter" });
     fireEvent.click(screen.getByText("All categories"));
+    await settleCategory();
 
     // "All" is the state you pass through on the way somewhere else; refreshing
     // there would discard the question on screen for nothing.
