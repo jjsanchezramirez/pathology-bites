@@ -1,18 +1,13 @@
-// API Rate Limiting Utility for Server-Side Routes
+// API Rate Limiting Utility for Server-Side Routes.
 //
-// TODO: PRODUCTION SCALING CONSIDERATION
-// This implementation uses in-memory storage (Map) which works for:
-// - Development environments
-// - Single-server deployments
-// - Low to moderate traffic
+// DESIGN DECISION (not a TODO): deliberately in-memory. On Vercel this is
+// per-lambda-instance, so it does NOT enforce across instances — by design, because
+// the real brute-force defense lives in Supabase's server-side `/auth/v1/*` limits
+// and Cloudflare (see README.md "Security & Performance"). This layer exists for
+// fast feedback in dev / single-instance runs.
 //
-// For production at scale with serverless/Vercel, consider:
-// - Option A: Vercel KV (Redis) - Best performance, ~$0.25/100K requests after free tier
-// - Option B: Supabase table - Free, slightly slower, already in your stack
-// - Option C: Upstash Redis - Serverless-friendly Redis alternative
-//
-// Current implementation provides basic protection but won't work across
-// multiple serverless function instances. Each instance has its own memory.
+// If cross-instance enforcement is ever needed, migrate to Upstash KV / Vercel KV
+// (see README.md "Known gaps"). Until then, do not treat this as a security boundary.
 //
 import { NextRequest, NextResponse } from "next/server";
 

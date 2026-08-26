@@ -545,3 +545,29 @@ Kept: `.claude/` itself (still used for local agents/settings — `agents/`, `la
 - **Documented** the caveat + how to produce a true dump in `dev/supabase/README.md`.
 - **All under gitignored `dev/`** (local-only). `tsc` unaffected. The honest record of
   the live schema now exists without touching the DB.
+
+## Final cleanup: eslint warnings + rate-limiter comment accuracy
+
+**ESLint → 0 problems.** Cleared the 5 warnings (all in the gitignored debug sandbox):
+- `api/debug/knowledge-graph/route.ts` — deleted dead `citationWork` (the `citation`
+  fn already handles the volume label; `citationWork` had zero callers).
+- `app/debug/relations/page.tsx` — removed unused `useMemo` import, unused `stats`
+  state (its `setStats` was set but never read), and unused `remaining` var. Kept
+  `decided` (drives the progress bar).
+- `app/debug/entity-cloud/page.tsx` — fixed the `exhaustive-deps` warning by binding
+  `nodesPayload?.nodes` to a `payloadNodes` variable (an optional chain is not a valid
+  dep entry) and pointing both `nodeById` and `organs` memos at it. The `organs` memo
+  previously had a genuinely wrong dep (`[payload]` while reading `nodesPayload?.nodes`).
+  Debug tests pass (16); the deleted-function change to knowledge-graph/route.ts is
+  covered by `tests/debug/kg-atlas-geometry.test.ts`.
+
+**Rate limiters — clarified, not re-engineered.** The two limiters
+(`loginRateLimiter`, `authRateLimiter`) are deliberately in-memory and decorative on
+Vercel; the real brute-force defense is Supabase's server-side `/auth/v1/*` limits +
+Cloudflare (README.md "Security & Performance"). The only defect was the `TODO:
+PRODUCTION SCALING CONSIDERATION` header, which read as unfinished work. Reworded both
+headers to state plainly that in-memory is a **design decision**, point at the real
+defense, and name the migration path (Upstash/Vercel KV) only if cross-instance
+enforcement is ever actually needed. No behavior change.
+
+Checks: `tsc` 0 errors, `eslint` 0 problems, `vitest` 1081/1081, `build` PASS.
