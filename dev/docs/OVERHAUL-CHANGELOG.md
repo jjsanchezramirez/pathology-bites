@@ -520,3 +520,24 @@ The maintainer confirmed the Caveman skills are no longer used. Removed:
 Kept: `.claude/` itself (still used for local agents/settings — `agents/`, `launch.json`,
 `settings.local.json` are unrelated to Caveman) and the other AI-tool ignore entries
 (`.cursor`/`.windsurf`/`.clinerules`/`.opencode`). Commit 5d6ea419. tsc passes.
+
+### Schema snapshot regeneration (follow-up; DB-password-free path)
+- **Context**: a faithful `pg_dump`/`supabase db dump` needs the DB password, which
+  the maintainer chose not to provide/reset (and Docker is unavailable for the CLI
+  path). So instead of a rebuildable dump, I generated a **clearly-labeled schema
+  snapshot** from the live PostgREST OpenAPI spec.
+- **What the spec actually exposes** (richer than expected): columns, types,
+  nullability, defaults, AND PK/FK markers (PostgREST appends `<pk/>` /
+  `<fk table='…' column='…'/>` to column descriptions). 58 tables/views, 577
+  columns, 56 PKs, 73 FKs, 164 defaults.
+- **Built** `dev/supabase/generate-schema-snapshot.mjs` (fetches the live spec via
+  the service-role key, or reads a cached `/tmp/live_spec.json`; maps OpenAPI formats
+  to SQL types; quotes string defaults; emits PK/FK as comments). Regeneratable any
+  time with one command.
+- **Replaced** the 3 stale migration files (`_audio_word_timings`, `_knowledge_graph`,
+  `_entity_concepts`) — they had drifted from the live schema (KG consolidation) and
+  presented a false history — with `20260826141723_schema_snapshot.sql` (58/58 tables
+  covered, verified against the live spec).
+- **Documented** the caveat + how to produce a true dump in `dev/supabase/README.md`.
+- **All under gitignored `dev/`** (local-only). `tsc` unaffected. The honest record of
+  the live schema now exists without touching the DB.
