@@ -1,19 +1,14 @@
 import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 
+// The tokenizer, the scorer and the stop-word list moved to text-search-core so
+// /debug/kg-atlas could rank a CLIENT-side index with the SAME rules. Behaviour
+// here is unchanged: the bodies were sliced out, not rewritten.
+import { scoreEntry, STOP_WORDS, tokenize } from "./text-search-core";
+
 function getEnv(key: string): string {
   const v = process.env[key];
   if (!v) throw new Error(`missing ${key}`);
   return v;
-}
-
-// ── Tokenizer (mirrors virtual-slide-search.ts) ──────────────────────────
-function tokenize(text: string): string[] {
-  return (
-    text
-      .toLowerCase()
-      .replace(/[-\/]/g, " ")
-      .match(/[a-z0-9]+/g) || []
-  );
 }
 
 // ── Search index entry ──────────────────────────────────────────────────
@@ -51,6 +46,11 @@ async function fetchAll<T>(
     const { data, error } = await supabase
       .from(table)
       .select(columns)
+      // Postgres promises no row order between two queries, so LIMIT/OFFSET
+      // paging without an ORDER BY returns OVERLAPPING pages: the marker index
+      // once came back 5,262 rows deep with only 4,829 distinct, manufacturing
+      // 463 phantom duplicates. Every one of these tables has an id.
+      .order("id", { ascending: true })
       .range(offset, offset + pageSize - 1);
     if (error) throw error;
     results.push(...(data as T[]));
@@ -155,86 +155,6 @@ async function ensureIndex(): Promise<void> {
   if (!index) await buildIndex();
 }
 
-// ── Scoring (mirrors virtual-slide-search tiers) ────────────────────────
-function scoreEntity(entry: EntityEntry, queryTokens: string[], queryLower: string): number {
-  let score = 0;
-
-  // Tier 1: Exact name match
-  if (entry.nameLower === queryLower) return 100;
-
-  // Tier 2: Exact synonym match (e.g., "NEC" → "Neuroendocrine carcinoma")
-  if (entry.synonymSet.has(queryLower)) return 95;
-
-  // Tier 3: Name contains exact phrase (word-boundary aware)
-  const phraseRe = new RegExp(queryLower.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"));
-  if (phraseRe.test(entry.nameLower)) {
-    score = 90;
-  }
-
-  // Tier 4: All query tokens match entity name tokens
-  if (score === 0 && queryTokens.length > 1) {
-    const allInName = queryTokens.every((t) => entry.tokenSet.has(t));
-    if (allInName) score = 80;
-  }
-
-  // Tier 5: All query tokens match name OR synonyms
-  if (score === 0 && queryTokens.length > 1) {
-    const allInAny = queryTokens.every(
-      (t) => entry.tokenSet.has(t) || entry.synonymTokenSet.has(t)
-    );
-    if (allInAny) score = 75;
-  }
-
-  // Tier 6: Partial word matches in name (proportional)
-  if (score === 0) {
-    const matched = queryTokens.filter((t) => entry.tokenSet.has(t)).length;
-    if (matched > 0) {
-      score = 50 + (matched / queryTokens.length) * 20;
-    }
-  }
-
-  // Tier 7: Partial word matches including synonyms
-  if (score === 0) {
-    const matched = queryTokens.filter(
-      (t) => entry.tokenSet.has(t) || entry.synonymTokenSet.has(t)
-    ).length;
-    if (matched > 0) {
-      score = 40 + (matched / queryTokens.length) * 15;
-    }
-  }
-
-  // Tier 8: Prefix matching (4+ char query tokens only)
-  if (score === 0) {
-    let prefixHits = 0;
-    for (const t of queryTokens) {
-      if (t.length < 4) continue;
-      const pfx = t.substring(0, 3);
-      if (entry.tokenSet.has(pfx) || entry.synonymTokenSet.has(pfx)) {
-        prefixHits++;
-      }
-    }
-    if (prefixHits > 0) score = 20 + prefixHits * 5;
-  }
-
-  return score;
-}
-
-// ── Stop words (too common to be useful for matching) ───────────────────
-const STOP_WORDS = new Set([
-  "the",
-  "of",
-  "in",
-  "and",
-  "or",
-  "with",
-  "for",
-  "to",
-  "a",
-  "an",
-  "not",
-  "no",
-]);
-
 // ── Public API ──────────────────────────────────────────────────────────
 export interface EntitySearchResult {
   id: string;
@@ -292,7 +212,7 @@ export async function searchEntities(query: string): Promise<EntitySearchResult[
   const results: EntitySearchResult[] = [];
   for (const idx of candidateIndices) {
     const entry = index[idx];
-    const score = scoreEntity(entry, tokens, q);
+    const score = scoreEntry(entry, tokens, q);
     if (score > 0) {
       results.push({
         id: entry.id,
