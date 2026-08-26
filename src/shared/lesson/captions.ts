@@ -7,7 +7,7 @@ import type { LessonAudio, WordTiming } from "./types";
 const CHUNK_SIZE = 5; // words per caption chunk
 
 /** Uniform fallback: split a transcript into evenly-timed chunks. */
-export function buildCaptionChunks(
+function buildCaptionChunks(
   transcript: string,
   totalDuration: number,
   chunkSize = CHUNK_SIZE
@@ -28,10 +28,7 @@ export function buildCaptionChunks(
 }
 
 /** Accurate path: group aligned words into chunks, preserving per-word timing. */
-export function buildCaptionsFromWords(
-  words: WordTiming[],
-  chunkSize = CHUNK_SIZE
-): CaptionChunk[] {
+function buildCaptionsFromWords(words: WordTiming[], chunkSize = CHUNK_SIZE): CaptionChunk[] {
   const chunks: CaptionChunk[] = [];
   for (let i = 0; i < words.length; i += chunkSize) {
     const slice = words.slice(i, i + chunkSize);
