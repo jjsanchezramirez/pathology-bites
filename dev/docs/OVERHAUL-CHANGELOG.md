@@ -364,3 +364,98 @@ not source bugs, and both are now fixed so the "all tests passing" gate is real:
 - **Badges / caching / R2-manifest**: see `CLAUDE.md` conventions.
 - **Dead-code rule**: knip "unused export" ≠ dead — check internal use first.
   Internal-only → un-export; zero-references → delete. (Documented in changelog 1.3.)
+
+---
+
+# FINAL REPORT
+
+## 1. Changelog summary (by phase)
+
+**Baseline** — committed in-progress text-search work; captured the starting
+verification state (tsc ✓, eslint ✓, build ✓, vitest 2 pre-existing failures).
+
+**Phase 1 — External tools & integrations**: reconciled `.env.example` with the 44
+env vars actually read (added 10 undocumented vars incl. quiz-limits ×5, text-zoom
+×4, `NEXT_PUBLIC_KNOWLEDGE_PAGES`, `CLOUDFLARE_R2_DATA_PUBLIC_URL`); removed the
+dead `tailwind` CLI script + `@tailwindcss/cli` dep + create-next-app package.json
+boilerplate; cleared **all** knip findings (17 unused exports, 2 unused files, 2
+types, 1 duplicate export) down to zero.
+
+**Phase 2 — Authentication**: fixed **two open-redirect vulnerabilities**
+(`getSafeRedirectPath` added; applied to `/api/auth/confirm` `next` param and the
+login `redirect` field); removed stale middleware-mirroring helpers
+(`isAdminRoute`/`isProtectedApiRoute`/`isPublicApiRoute`).
+
+**Phase 3 — User-facing**: wired up the question form's `onCancel` prop (was an
+admitted TODO; now renders a Cancel button routed through the unsaved-changes
+dialog). Knip clean; TODO scan done.
+
+**Phase 4 — Admin**: closed a real authorization gap — middleware only guarantees
+a *session* on `/api/admin/*` (its role gate matches `/admin` pages only), so 5 of
+56 admin API routes enforced **no role** despite swagger docs promising one. All 56
+now enforce a role via `api-guard`. Highest-impact: `notifications/system-update`
+(broadcasts to users) and `r2-storage-stats` (service-role, bypasses RLS).
+
+**Phase 5 — API & debug**: verified debug surface cannot leak in production
+(gitignored + `.vercelignore`d + middleware prod-401 on `/api/debug/*`); folded the
+single-consumer `api-response.ts` into `parse-body.ts` (0 of 79 routes used it).
+
+**Phase 6 — Dev folder**: retired orphaned `dev/` items (split_imports.py, dev/tools/,
+the .bak, .wrangler cache, 3 completed planning docs); fixed stale references in dev
+docs + a stale code comment; carved the changelog out of the `dev/` gitignore so it
+is version-controlled.
+
+**Phase 7 — Documentation**: audited all tracked docs — zero stale references to
+deleted items; kept the existing coherent structure (a justified alternative to a
+forced `docs/` reorg); recorded the standards in force.
+
+## 2. Deletion log (with evidence)
+
+| Deleted | Evidence it was unused |
+|---|---|
+| `src/app/(admin)/admin/lesson-studio/utils/caption-builder.ts` | knip unused-file; 0 importers/tests/dynamic refs; byte-duplicate of `shared/lesson/captions.ts` |
+| `src/shared/components/common/organic-image-gallery.tsx` | knip unused-file; 0 importers/tests; not in `common/index.ts`; superseded homepage hero |
+| `src/shared/lesson/types.ts` `timingEnd()` | 0 callers repo-wide (1 occurrence = its own definition) |
+| `src/shared/components/data-table/table-pagination.tsx` `TablePagination` component (+ orphaned `Button` import) | every `<TablePagination>` is a local per-table component; only `getPageNumbers` (same file) is shared |
+| `cell-counter` `DEFAULT_CELL_TYPES` alias | identity alias for `PERIPHERAL_BLOOD_CELL_TYPES`; 1 use site updated |
+| `route-helpers.ts` `isAdminRoute`/`isProtectedApiRoute`/`isPublicApiRoute` | 0 external importers; API lists stale vs middleware |
+| `src/shared/utils/api/api-response.ts` + `apiSuccess` | 0 of 79 routes used it; only live consumer was `parse-body.ts` (folded in) |
+| `tests/shared/utils/api/api-response.test.ts` | covered the deleted module; apiError cases moved to `parse-body.test.ts` |
+| `@tailwindcss/cli` dep + `tailwind` script + package.json boilerplate | script wrote to never-imported `output.css`; dep had no dependents; `main:index.js` nonexistent |
+| `dev/split_imports.py`, `dev/tools/*`, `*.md.bak`, `.wrangler/`, 3 planning docs | all gitignored (local-only); 0 references; verified before deletion |
+
+**Un-exported (kept, internal-only — not deleted):** 9 helpers in `assembler-v2.ts`,
+3 in `lesson/evaluate.ts`, `LESSON_SCHEMA_VERSION`, `IGNORED_CARD_IDS`,
+`buildCaptionChunks`/`buildCaptionsFromWords`, `WsiEventOutcome`, `FieldOption`.
+
+## 3. Verification (final full run)
+
+- `npx tsc --noEmit` — **PASS** (0 errors)
+- `npx eslint .` — **PASS** (0 errors; 6 warnings, all pre-existing in the gitignored
+  debug sandbox)
+- `npx vitest run` — **PASS, 1081/1081** (baseline was 1080 with 2 failing; both
+  fixed, plus net new tests for the redirect-safety helper)
+- `npm run build` — **PASS** (exit 0)
+- `npx knip` — **clean** (0 findings)
+
+## 4. Remaining risks / flagged-not-changed
+
+- **Supabase migrations vs live DB** — only 3 migrations exist in
+  `dev/supabase/migrations/` and the TS schema matches them, but they are gitignored
+  dev artifacts applied out-of-band; I could not diff against the live DB without
+  credentials. Verification gap, not a defect.
+- **`next.config.ts` `ignoreDuringBuilds`/`ignoreBuildErrors: true`** — suppress
+  lint/type errors during `next build`. `tsc`/`eslint` are run separately and clean,
+  so these can be re-enabled, but that is a deploy-behavior change I deferred.
+- **7 of 10 debug-API routes lack an in-code `NODE_ENV` guard** — but they are
+  gitignored + `.vercelignore`d (not deployed) and prod-401'd by middleware. Adding
+  per-route guards is defense-in-depth, deferred (dev-only tools).
+- **`skills-lock.json`** — git-tracked lock for the gitignored `.claude/` Caveman
+  skills; regenerated by an external installer. Left in place (external-tooling
+  decision, not dead code).
+- **Rate-limiter "production scaling" TODOs** — in-memory limiters are correct for
+  single-instance deploy; the TODO is a documented multi-instance scaling note, not
+  incomplete code. Left.
+- **In-memory `use-auth` sessionStorage cache** — a UI/perf convenience only; the
+  real enforcement is server-side (middleware + api-guard + RLS). Verified correct,
+  not a security issue.
