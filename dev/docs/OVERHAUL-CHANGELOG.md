@@ -323,3 +323,44 @@ not source bugs, and both are now fixed so the "all tests passing" gate is real:
 - `src/shared/utils/domain/virtual-slide-search.ts` — header comment pointed at a
   nonexistent `dev/code/scripts/eval/`; corrected to `tests/benchmarks/search-eval.ts`
   (commit 0568a6a9).
+
+## Phase 7 — Documentation
+
+- **Audited all tracked docs** (`README.md`, `CLAUDE.md`, `src/README.md`,
+  `tests/README.md`, feature READMEs) for references to anything deleted in this
+  overhaul — **zero stale references found**. No live doc pointed at
+  split_imports, dev/tools, the .bak, the planning docs, output.css, or the
+  tailwind script.
+- **`README.md` is accurate and current** (architecture, security model, companion
+  Workers, caching, known gaps all match the code). Its links into `dev/docs/**`
+  point at gitignored files — this matches the repo's deliberate local-knowledge-base
+  pattern: `CLAUDE.md` explicitly frames `dev/docs/TOOLING-INDEX.md` and
+  `dev/docs/KNOWLEDGE-GRAPH.md` as "local, gitignored" prerequisites. The tracked
+  docs are self-sufficient for a fresh clone; `dev/docs/` is the maintainer's local
+  pipeline/reference archive.
+- **No doc reorganization forced.** The existing structure is coherent and
+  convention-based (tracked: onboarding/conventions at root + `src/`, `tests/`;
+  feature READMEs co-located; gitignored: the KG/tooling pipeline archive in
+  `dev/docs/`). Moving `dev/docs` into a tracked `docs/` would either (a) commit a
+  large, partially-stale local archive to git, or (b) split related content. Neither
+  improves maintainability, so the structure is kept as-is — this is a justified
+  alternative to the proposed `docs/` reorg.
+- Fixed stale references in gitignored dev docs (`dev/README.md`,
+  `dev/code/scripts/README.md`) and a stale code comment (`virtual-slide-search.ts`).
+
+## Standards now in force (with pointers)
+- **Auth**: middleware (`src/middleware.ts`) is the single route-gating + session
+  boundary. API role checks go through `api-guard` (`requireUser`/`requireRole`/
+  `requireAdmin`/`requireContentRole`). Role source of truth: `auth-helpers.ts`.
+  Post-auth redirects must pass through `getSafeRedirectPath` (`route-helpers.ts`).
+- **API**: error body `{ error }` (+optional `details`); validation via `parse-body`
+  (zod); auth via `api-guard`; every non-debug route carries an `@swagger` JSDoc
+  block (enforced by `tests/api/swagger-coverage.test.ts`).
+- **Logging**: `log` from `@/shared/utils/logging`, never raw `console`
+  (ESLint `no-console: error`).
+- **Toasts**: `@/shared/utils/toast`, never `sonner` directly (ESLint
+  `no-restricted-imports`).
+- **Dialogs**: always `Dialog`, never `AlertDialog` (CLAUDE.md).
+- **Badges / caching / R2-manifest**: see `CLAUDE.md` conventions.
+- **Dead-code rule**: knip "unused export" ≠ dead — check internal use first.
+  Internal-only → un-export; zero-references → delete. (Documented in changelog 1.3.)
