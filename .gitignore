@@ -70,9 +70,7 @@ src/app/api/debug/
 # FFmpeg WASM files (download via npm postinstall)
 public/ffmpeg/
 
-# Caveman (defensive — installer may regenerate these)
-.agents/
-AGENTS.md
+# AI-assistant tooling state (defensive — these tools may write local config)
 .cursor/
 .windsurf/
 .clinerules/
