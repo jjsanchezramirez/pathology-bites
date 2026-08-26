@@ -6,6 +6,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/shared/services/server";
 import { headers } from "next/headers";
 import { loginRateLimiter } from "@/features/auth/utils/rate-limiter";
+import { getSafeRedirectPath } from "@/shared/utils/route-helpers";
 import { log } from "@/shared/utils/logging";
 
 export async function login(formData: FormData) {
@@ -39,7 +40,12 @@ export async function login(formData: FormData) {
   const password = formData.get("password") as string;
   const captchaToken = formData.get("captchaToken") as string | null;
 
-  const redirectPath = formData.get("redirect") as string;
+  // Sanitize the caller-supplied post-login redirect. `redirect()` does not
+  // normalize a protocol-relative value, so a raw `//evil.com` would send the
+  // user off-origin after a successful login. Only same-origin paths survive;
+  // anything unsafe becomes null and falls through to the role-based default.
+  const rawRedirect = formData.get("redirect") as string | null;
+  const redirectPath = rawRedirect ? getSafeRedirectPath(rawRedirect, "") || null : null;
 
   // Prepare sign-in data with optional CAPTCHA token
   const signInData: {

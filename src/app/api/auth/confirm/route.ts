@@ -8,6 +8,7 @@ import {
   DEFAULT_NOTIFICATION_SETTINGS,
   DEFAULT_UI_SETTINGS,
 } from "@/shared/config/user-settings-defaults";
+import { getSafeRedirectPath } from "@/shared/utils/route-helpers";
 import { log } from "@/shared/utils/logging";
 
 // Service-role client for is_email_confirmed RPC (SECURITY DEFINER, service_role-only EXECUTE).
@@ -171,7 +172,10 @@ export async function GET(request: NextRequest) {
   const token = searchParams.get("token"); // Add support for token parameter
   const code = searchParams.get("code");
   const type = searchParams.get("type") as EmailOtpType | null;
-  const next = searchParams.get("next") ?? "/";
+  // Sanitize the caller-supplied redirect target: a raw `next` is an open
+  // redirect (`?next=//evil.com` -> Location: //evil.com). Only same-origin
+  // paths survive; anything else falls back to "/".
+  const next = getSafeRedirectPath(searchParams.get("next"), "/");
   const email = searchParams.get("email");
 
   log.debug("Auth confirm route called:", {
