@@ -3,8 +3,9 @@
 //
 // Extracted verbatim from use-client-virtual-slides.ts so the ranking
 // algorithm can be exercised IDENTICALLY by the production hook and the offline
-// eval harness (dev/code/scripts/eval/). Both import this module — there is no
-// second copy of the algorithm that can silently drift.
+// eval harness (tests/benchmarks/search-eval.ts, run via `npm run eval:search`).
+// Both import this module — there is no second copy of the algorithm that can
+// silently drift.
 //
 // Usage:
 //   buildSearchIndex(slides)               — call once after slides load
