@@ -10,7 +10,18 @@
 
 import { NextResponse } from "next/server";
 import type { z } from "zod";
-import { apiError } from "./api-response";
+
+/**
+ * The one standardized error body for route handlers: `{ error }` (optionally
+ * `{ error, details }`). Routes otherwise hand-roll `NextResponse.json({ error })`
+ * — this helper exists for the parse path so the 400 shape matches everywhere.
+ */
+export function apiError(message: string, status: number, details?: unknown): NextResponse {
+  return NextResponse.json(
+    details === undefined ? { error: message } : { error: message, details },
+    { status }
+  );
+}
 
 export async function parseBody<Schema extends z.ZodTypeAny>(
   request: Request,
