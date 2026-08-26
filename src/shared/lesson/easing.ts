@@ -1,4 +1,4 @@
-// Timeline easing primitives — ported from the reference player (dev/PathVideo.jsx).
+// Timeline easing primitives — ported from the reference player (dev/reference/PathVideo.jsx).
 // Pure, framework-agnostic. Shared by the lesson evaluator (editor preview, player,
 // and export) so motion is authored once and identical everywhere.
 

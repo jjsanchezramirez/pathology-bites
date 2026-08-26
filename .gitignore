@@ -66,7 +66,9 @@ SAMPLE_*.ts
 dev/*
 !dev/docs/
 dev/docs/*
-!dev/docs/OVERHAUL-CHANGELOG.md
+!dev/docs/meta/
+dev/docs/meta/*
+!dev/docs/meta/OVERHAUL-CHANGELOG.md
 
 # Local-only sandbox (never committed, never deployed)
 src/app/debug/
@@ -88,7 +90,7 @@ public/ffmpeg/
 public/data/
 
 # Migrations are dev artifacts applied via Supabase, not app source. They live in
-# dev/supabase/migrations/ (gitignored) alongside dev/code/scripts/migrations/.
+# dev/supabase/migrations/ (gitignored) alongside dev/scripts/migrations/.
 # Keeping this ignored stops one being committed to the repo root by accident.
 supabase/migrations/
 

@@ -6,7 +6,7 @@
 // chapter that describes a tumour, because that is what the extraction reads.
 // The knowledge graph is not: `entities` holds ONE row per tumour and
 // `entity_placements` carries the per-volume parent (see
-// dev/docs/KNOWLEDGE-GRAPH.md §1). The tool was consuming the chapter-level
+// dev/docs/tooling/KNOWLEDGE-GRAPH.md §1). The tool was consuming the chapter-level
 // artifact and therefore presenting the same disease many times over: CD20+
 // CD5− CD10− returned SEVEN rows of extranodal marginal zone lymphoma, one per
 // book that mentions it, all with identical support.

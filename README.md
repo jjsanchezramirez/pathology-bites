@@ -54,8 +54,8 @@ The codebase is organized around a **4-tier access model** mirrored consistently
 Deeper references:
 
 - [`dev/docs/system/project-structure.md`](./dev/docs/system/project-structure.md) — full directory map & access model
-- [`dev/docs/system/auth/architecture.md`](./dev/docs/system/auth/architecture.md) — auth layering
-- [`dev/docs/system/api/unified-architecture.md`](./dev/docs/system/api/unified-architecture.md) — unified data API & `useUnifiedData`
+- [`dev/docs/system/auth-architecture.md`](./dev/docs/system/auth-architecture.md) — auth layering
+- [`dev/docs/system/api-unified-architecture.md`](./dev/docs/system/api-unified-architecture.md) — unified data API & `useUnifiedData`
 - `CLAUDE.md` — conventions, lint rules, and hard-won gotchas
 
 ## Companion services & repos

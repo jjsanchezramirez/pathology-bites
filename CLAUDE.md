@@ -2,13 +2,13 @@
 
 ## Before you build anything
 
-**Read `dev/docs/TOOLING-INDEX.md` first** (local, gitignored). It indexes the
+**Read `dev/docs/tooling/TOOLING-INDEX.md` first** (local, gitignored). It indexes the
 scripts, shared helpers, R2 keys, data fields and MCP servers that already
 exist. It is there because the recurring failure in this repo is a lookup gap,
 not a knowledge gap — rebuilding a worse version of something already present.
 
 **Working on the WHO knowledge graph, the IHC matrix or the 3D explorer? Read
-`dev/docs/KNOWLEDGE-GRAPH.md`** (local, gitignored) as well. TOOLING-INDEX is the
+`dev/docs/tooling/KNOWLEDGE-GRAPH.md`** (local, gitignored) as well. TOOLING-INDEX is the
 log of what broke; KNOWLEDGE-GRAPH is the map — the data model, the seven build
 stages, all 115 pipeline scripts by stage with their traps, and the runbook for
 adding a WHO volume, new evidence, or a new marker. It will save you the two

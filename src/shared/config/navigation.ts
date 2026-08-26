@@ -269,7 +269,7 @@ export function getUserNavigationSections(): NavigationSection[] {
 }
 
 // Guest/USCAP Navigation Sections Configuration
-// RETIRED: USCAP pages removed (April 2026). Guest-quiz pattern preserved in dev/code/reference/guest-quiz/.
+// RETIRED: USCAP pages removed (April 2026). Guest-quiz pattern preserved in dev/reference/guest-quiz/.
 // export function getGuestNavigationSections(): NavigationSection[] {
 //   return [
 //     {

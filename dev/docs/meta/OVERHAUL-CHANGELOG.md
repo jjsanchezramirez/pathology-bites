@@ -60,7 +60,7 @@ Notes on environment discovered during baseline:
   the old homepage hero gallery — superseded when the hero became the knowledge
   graph (git log `e2d3f64` "defer ... gate hero gallery to desktop", then the
   graph-hero commits). Its only other reference was a comment pointing at the
-  `dev/code/scripts/r2/optimize-hero-images.ts` regeneration script, which is a
+  `dev/scripts/r2/optimize-hero-images.ts` regeneration script, which is a
   dev artifact, not a code dependency.
 - **Un-exported** `buildCaptionChunks` and `buildCaptionsFromWords` in
   `src/shared/lesson/captions.ts`: both were exported but consumed **only
@@ -300,11 +300,11 @@ not source bugs, and both are now fixed so the "all tests passing" gate is real:
 
 ### Kept (referenced — documented why)
 - `webpack/empty-polyfill.js` — referenced by live `next.config.ts` webpack hook.
-- `dev/code/reference/` — referenced by `src/shared/config/navigation.ts:272`
+- `dev/reference/` — referenced by `src/shared/config/navigation.ts:272`
   (guest-quiz pattern deliberately preserved).
-- `dev/code/scripts/` — referenced by comments + dev READMEs; the `eval:search` and
+- `dev/scripts/` — referenced by comments + dev READMEs; the `eval:search` and
   image-optimization pipelines point here.
-- `dev/PathVideo.jsx` — referenced by `src/shared/lesson/easing.ts:1` (logic ported).
+- `dev/reference/PathVideo.jsx` — referenced by `src/shared/lesson/easing.ts:1` (logic ported).
 - `dev/supabase/migrations/` — matches live schema in `src/shared/types/supabase.ts`;
   documented in `.gitignore` as the canonical location.
 
@@ -315,13 +315,13 @@ not source bugs, and both are now fixed so the "all tests passing" gate is real:
   dead code, so it is left in place and flagged here.
 
 ### Doc fixes for stale references
-- `dev/code/scripts/README.md` — `npm run find-unused:custom` → corrected to the real
+- `dev/scripts/README.md` — `npm run find-unused:custom` → corrected to the real
   `npm run find-unused` (knip).
 - `dev/README.md` — removed references to nonexistent `docs/changes/` and `dev/testing/`
   (tests live at repo-root `tests/`), and the now-deleted `tools/`; added the note that
   the test suite is at `tests/`.
 - `src/shared/utils/domain/virtual-slide-search.ts` — header comment pointed at a
-  nonexistent `dev/code/scripts/eval/`; corrected to `tests/benchmarks/search-eval.ts`
+  nonexistent `dev/scripts/eval/`; corrected to `tests/benchmarks/search-eval.ts`
   (commit 0568a6a9).
 
 ## Phase 7 — Documentation
@@ -346,7 +346,7 @@ not source bugs, and both are now fixed so the "all tests passing" gate is real:
   improves maintainability, so the structure is kept as-is — this is a justified
   alternative to the proposed `docs/` reorg.
 - Fixed stale references in gitignored dev docs (`dev/README.md`,
-  `dev/code/scripts/README.md`) and a stale code comment (`virtual-slide-search.ts`).
+  `dev/scripts/README.md`) and a stale code comment (`virtual-slide-search.ts`).
 
 ## Standards now in force (with pointers)
 - **Auth**: middleware (`src/middleware.ts`) is the single route-gating + session
@@ -571,3 +571,247 @@ defense, and name the migration path (Upstash/Vercel KV) only if cross-instance
 enforcement is ever actually needed. No behavior change.
 
 Checks: `tsc` 0 errors, `eslint` 0 problems, `vitest` 1081/1081, `build` PASS.
+
+---
+
+# DOCS MAINTENANCE PASS — 2026-08-26
+
+dev/docs audited against the live code (14,022 → 12,234 lines, 33 → 28 files).
+All changes local-only (dev/docs is gitignored except this file). Fact-checking
+done by 4 parallel read-only agents (doc-line → claim → src/ evidence); edits
+applied by 6 parallel writer agents + orchestrator, each verifying against src/
+before writing.
+
+## Consolidated (6 → 2 docs)
+
+- **Anki**: `anki.md` + `anki-quick-start.md` + `anki-workflow.md` → `anki.md`.
+  Rewritten against reality: `upload-anki.sh` calls the deleted
+  `/api/media/r2/upload-anki-media` route (documented as stale; Wrangler mode
+  of `compress-and-upload-anki.sh` is the supported path); app consumption is
+  the R2 manifest pattern (`src/shared/config/ankoma.ts` →
+  `anki/manifest.json` → `ankoma.json.br`), so the doc adds the mandatory
+  manifest-republish step (`r2_migrate_to_manifest.mjs --prefix anki/`).
+  Dropped duplicated perf tables, the hand-rolled "batch script" (a worse
+  reimplementation of the real scripts), changelog/FAQ filler.
+- **Genova**: `genova-algorithm.md` + `genova-quickstart.md` → `genova.md`.
+  Endpoint corrected to `/api/public/tools/genova/classify` (+ new
+  `myvariant` route); file list corrected to the 8 real files
+  (added format-predictions.ts, variant-evidence.ts); dropped the placeholder
+  `github.com/your-repo` link and the dangling `docs/genomic-analysis-algorithm.md`.
+- **API**: `api-data-flow.md` absorbed into `api-unified-architecture.md` as
+  two new sections ("Client Storage & Quiz Lifecycle" with the corrected
+  localStorage key catalog — per-key `pathology-bites-swr-<key>` {data,timestamp,
+  ttl,version:"v3"} 30-day TTL, quiz `-result-`/`-draft-`/`-strikes-` keys,
+  `migrateLegacyQuizKeys()`; "Cache Helper Inventory & Invalidation" with
+  mutate-first helpers + `useCacheHelpers()`); redundant flow diagrams and the
+  fictional `quiz_{sessionId}`/`cleanupLegacyQuizData()` content dropped.
+  Unified doc also fixed: `/api/user/performance/all` →
+  `/api/user/performance-data` (SWR key "user-data"), 32 → 42 achievement
+  definitions, `makeServiceRoleClient` → `createServiceRoleClient`, removed
+  the nonexistent "Check for New Achievements" button claim, reload-is-a-HIT
+  correction, `dashboard`/`quizInit` response blocks, hook-vs-provider SWR
+  config override. api-data-flow.md deleted.
+
+## Deleted (1)
+
+- `audit-checklist-2026-05-17.md` — closed May-2026 security-audit record.
+  Its durable rationale already lives in README.md "Security & Performance" +
+  CLAUDE.md "Security"; the commit SHAs and issue resolutions are in git
+  history (dev/docs itself is gitignored, so the record wasn't versioned
+  anyway). Per docs rule: no recaps.
+
+## Updated (against live code)
+
+- `system/project-structure.md` — 19 fixes: added tests/, webpack/, configs,
+  dev/{reference,resources,scripts,supabase}; removed dead `dev/docs/{database,
+  setup,testing,tools}`; (public) adds maintenance/, short-links e/[slug] g/
+  [symbol] m/[slug], tools/{ihc,image-converter}; `robots.txt`/`sitemap.xml` →
+  `.ts` generators; dropped api/docs + api/public/csrf-token (both removed
+  deliberately); features adds knowledge/, knowledge-graph/, tools/ihc/;
+  shared/ tree rebuilt (config/, fonts/, lesson/; real contexts/hooks/services
+  — old names like auth-context.tsx, cache-service.ts, database-sync-manager.ts
+  gone); example import paths fixed; postcss.config.js; dates reconciled.
+- `system/auth-architecture.md` — middleware DOES gate /dashboard (redirect to
+  /login?redirect=); no /docs handling exists; `enableSecurity` is a no-op.
+- `system/toast-system.md` — wrapper at `shared/utils/ui/toast.ts`; sonner.tsx
+  doesn't exist (Toaster inline in layout.tsx, sonner defaults — the claimed
+  position/duration/visibleToasts/richColors config was fictional); theme
+  forcing is ConditionalThemeProvider, not the dead `data-public-layout-enforced`
+  attribute.
+- `system/IMAGES_README.md` + `system/R2_README.md` — exported wrappers
+  (uploadToR2 etc., not PutObject); r2-direct-access/r2-url-transformer live in
+  utils/r2/; middleware = auth-only for API routes, roles per-route.
+- `system/EXPLAINER-SYSTEM.md` — full rewrite: old ExplainerSequence/Segment/
+  Keyframe layer removed upstream; rebuilt on the Lesson/Slide/SlideElement
+  model (src/shared/lesson/*), evaluate()-based engine, zustand studio store
+  with HISTORY_LIMIT=50 undo/redo; removed the fictional 5s audio cushion,
+  explainer-image-selector.tsx, /test/explainer-player.
+- `features/logging-guide.md` — getClientIP import/signature; `[Database Query]`
+  prefix; secureLog only wraps info/warn/error in production; no credit-card/
+  SSN redaction.
+- `features/runtime-warnings.md` — Next 15.5.18; removed the dead
+  MIDDLEWARE_NODEJS_RUNTIME.md reference.
+- `features/virtual-slides-organ-systems-final.md` → renamed
+  `virtual-slides-organ-systems.md` and rewritten to the 63-entry v8 taxonomy
+  in `organ_aliases.json` (old 62-entry list matched no data file); v4-era
+  stats labeled historical.
+- `features/virtual-slides-v7-production.md` — field spec kept (app still
+  validates json.bases && json.data); added superseded-by-v9–v15-manifest
+  header; WHO-abbreviation matching is exact-match only (no partial/first-letter
+  fallback); dead input/output paths marked historical.
+- `filename-parsing-guide.md` — magnification is bracketed `[40x]`; documented
+  the `[Src=xxx]` tag → images.source_ref.
+- `question-versions-json.md` — buildQuestionSnapshot() shape (added tag_ids,
+  removed id/status); SQL example fixed (no version_string column);
+  dual producers (code + get_question_snapshot_data RPC) noted.
+- `knip-annotation-guide.md` — removed @scalar/nextjs-api-reference from the
+  embedded config; softened the CI claim (knip is advisory, --no-exit-code).
+- `manual-testing-plan.md` — quiz localStorage keys corrected to -result-/
+  -draft-/-strikes-; auto-save is every answer (periodicSaveInterval: 1).
+- `quick-reference.md` — localStorage cheat sheet rewritten (unified-cache
+  per-key entries, real quiz prefixes, pathology-bites-theme); real
+  [Storage Cleanup] log strings; removed fictional keys.
+- `AUDIT-PROMPT.md` — added header noting "Current state"/"What is open" are
+  point-in-time snapshots from the kgaudit dump; traps/methodology timeless.
+
+## Added (1)
+
+- `DOCS-MAINTENANCE-PROMPT.md` — reusable, self-contained prompt for auditing
+  and repairing this docs tree (survey → parallel fact-check → consolidate →
+  update → delete → index/changelog close-out), with explicit keep-vs-delete
+  criteria. Supersedes the one-off prompts used for earlier passes.
+
+## Index updates
+
+- `README.md` / `system/README.md` / `features/README.md` — file lists,
+  one-liners, and the API/data-flow entry updated; docs now advertise the
+  maintenance prompt.
+
+## Verification
+
+- Dangling-reference grep across dev/docs + README.md + CLAUDE.md + src/ +
+  tests/: zero live hits (only two intentional historical mentions).
+- No code touched; docs-only. `tsc`/`eslint`/`vitest` unaffected (not rerun;
+  no source changes).
+
+---
+
+# DOCS REORG — 2026-08-26 (folder layout)
+
+`dev/docs/` reorganized into six subfolders; the root now holds only
+`README.md` (the index). No content changes beyond path references.
+
+- `system/` — project-structure, auth-architecture, api-unified-architecture,
+  toast-system, R2_README, IMAGES_README, EXPLAINER-SYSTEM, + moved in:
+  `filename-parsing-guide.md`, `question-versions-json.md`
+- `features/` — unchanged (anki, genova, logging-guide, runtime-warnings,
+  virtual-slides ×2)
+- `knowledge-graph/` — KNOWLEDGE-GRAPH.md, KNOWLEDGE-GRAPH-ARCHITECTURE.md,
+  AUDIT-PROMPT.md, OPEN-ITEMS-orphan-markers.md
+- `tooling/` — TOOLING-INDEX.md, knip-annotation-guide.md
+- `testing/` — manual-testing-plan.md, quick-reference.md
+- `meta/` — OVERHAUL-CHANGELOG.md, DOCS-MAINTENANCE-PROMPT.md
+
+Ripple updates:
+- `.gitignore` — changelog carve-out extended for the new path
+  (`!dev/docs/meta/` + `!dev/docs/meta/OVERHAUL-CHANGELOG.md`), keeping it
+  the only git-tracked doc.
+- `CLAUDE.md` — TOOLING-INDEX / KNOWLEDGE-GRAPH pointers → new paths.
+- `src/features/public/tools/ihc/aggregate.ts` — comment path updated.
+- `dev/docs/README.md` — rewritten as the single root index (layout +
+  start-here + rules).
+- Cross-references fixed: `knowledge-graph/` → `../tooling/TOOLING-INDEX.md`;
+  `testing/quick-reference.md` → `../system/api-unified-architecture.md`;
+  `features/README.md` auth link; `meta/DOCS-MAINTENANCE-PROMPT.md` and
+  `system/project-structure.md` dev/docs subtrees updated to the new layout.
+- Historical entries above keep their original paths (accurate at the time).
+
+---
+
+# FEATURE-DOC GAP FILL + KG SECTION REFRAME — 2026-08-26
+
+Coverage audit (every feature dir + route vs dev/docs) found five gaps and one
+category confusion. All new docs fact-checked against src/ by parallel
+research agents; written to match existing doc voice.
+
+## Added — 5 feature docs
+
+- `features/question-authoring.md` — roles, status lifecycle (draft →
+  pending_review → published/flagged/rejected) with per-transition enforcement
+  routes, versioning rules (applyQuestionVersioning: initial 1.0.0, semver
+  bumps, backfill via get_question_snapshot_data RPC), resubmission/feedback
+  flow (notes live in question_reviews.changes_made — no column on questions),
+  distributed audit trail (question_reviews / question_versions /
+  question_flags + DB trigger), API route table. Flagged: `archived` status is
+  dead; POST [id]/version uses requireUser despite swagger saying admin.
+- `features/learning-features.md` — Learn module (two content formats:
+  markdown + :::image/:::explainer/:::key-points directives; legacy JSONB),
+  progress recording, study-plan scheduler pipeline (calendar → resources →
+  work-items → distribution → merge/glue → stable task ids), persistence
+  tables, and the three distinct "progress" surfaces. Flagged:
+  /dashboard/progress is a placeholder; "completed: false" never clears
+  completed_at; src/shared/lesson `Lesson` ≠ Learn-module `Lesson`.
+- `features/wsi-questions.md` — client-driven flow (client picks the slide,
+  pendingSlide before generation), generate/answer API, TEXT_FALLBACK_CHAIN
+  (Groq → CF Workers AI → Mistral → Gemini), contract enforcement, events-only
+  data model (no wsi_questions table), 900ms debounce rationale. Flagged: the
+  slide image is never sent to any model; no per-user rate limiter.
+- `features/ihc-panel-builder.md` — three modes, log₂-LR scoring model,
+  coverage discount, merge rules (entity_merge_redirects + canonical-name
+  fold), R2 manifest data path (no API route), pipeline scripts + the
+  acronym-pass trap. Flagged: page disclaimer counts are dynamic per build
+  and unreproducible from current artifacts; live manifest lacks
+  entityGroups (newer than last publish → ~76 curated merges inactive).
+- `features/knowledge-graph.md` — runtime feature: hero cloud (dynamic import,
+  not flag-gated) vs /e /m /g pages (NEXT_PUBLIC_KNOWLEDGE_PAGES === "1",
+  request-time read), two disjoint data paths (R2 snapshot binary vs anon+
+  RLS server components), graph3d/community rendering, snapshot build/publish
+  (90%-regression gate), hero interactions, public-vs-debug boundary.
+
+## KG section restructured (reframe, not move)
+
+- `knowledge-graph/README.md` added: the folder is the WHO dataset **pipeline
+  + design rationale**, not the runtime feature; runtime → ../features/
+  knowledge-graph.md; KNOWLEDGE-GRAPH-ARCHITECTURE.md labeled stale-bannered
+  (its own header already says so); AUDIT-PROMPT/OPEN-ITEMS framed as
+  point-in-time / work-queue.
+- Root `dev/docs/README.md`: layout + start-here updated (pipeline vs runtime
+  pointers).
+- `features/README.md`: all 11 feature docs listed.
+
+## Code-comment fix (documentation-only)
+
+- `.env.example`: NEXT_PUBLIC_KNOWLEDGE_PAGES comment corrected — routes are
+  /e /m /g (not /knowledge), read at request time (not build time), "1" is the
+  only enabling value, hero cloud not gated.
+
+## Verification
+
+- Every claim in the 5 new docs traced to a src/ file by the research agents;
+  unverifiable items are flagged inline in the docs.
+- No code changes (one comment-only .env.example edit).
+
+---
+
+# KG FOLDER RETIRED — PIPELINE DOCS MERGED INTO tooling/ — 2026-08-26
+
+`dev/docs/knowledge-graph/` removed. The folder misnamed its content: it never
+held "the graph" (that's the runtime feature, documented in
+`features/knowledge-graph.md`) — it held the WHO **dataset pipeline** (build
+map, audit brief, work queue, stale design rationale). Those are tooling docs,
+and TOOLING-INDEX already treats KNOWLEDGE-GRAPH as its sibling pillar
+("the log" / "the map"). Both now live side by side:
+
+- `tooling/KNOWLEDGE-GRAPH.md` + `KNOWLEDGE-GRAPH-ARCHITECTURE.md` +
+  `AUDIT-PROMPT.md` + `OPEN-ITEMS-orphan-markers.md` (moved from
+  `knowledge-graph/`)
+- `tooling/README.md` added: frames the two pillars, labels
+  KNOWLEDGE-GRAPH-ARCHITECTURE stale-bannered, AUDIT-PROMPT point-in-time,
+  OPEN-ITEMS as the active queue
+
+Ripple updates: `CLAUDE.md` + `ihc/aggregate.ts` comment → `dev/docs/tooling/`;
+root `dev/docs/README.md` (five subfolders, pipeline/runtime pointers);
+`system/project-structure.md` subtree; `features/{knowledge-graph,ihc-panel-builder}.md`
+cross-links → `../tooling/`; `KNOWLEDGE-GRAPH.md` internal TOOLING-INDEX refs →
+same-folder; `meta/DOCS-MAINTENANCE-PROMPT.md` cluster lists.
+No code changes.
