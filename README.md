@@ -18,11 +18,13 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 
 - **Question bank & review workflow** — multi-role authoring (creator → reviewer → published) with versioning, resubmission notes, and an audit trail.
 - **Quiz system** — configurable quizzes with a hybrid client/server state machine, results analytics, and percentile/peer comparisons.
+- **Knowledge graph** — interactive 3D map of WHO disease entities (homepage hero) plus public knowledge pages for entities, markers, and genes.
 - **Learn module** — subjects → lessons with per-user progress tracking.
 - **Study plan** — a personalized scheduler that builds a dated plan from exam date, available time, and progress.
 - **Interactive sequences** — step-through teaching content used by the lesson studio.
+- **WSI questions** — AI-generated board-style questions from the virtual-slides corpus.
 - **Virtual slides (WSI)** — OpenSeadragon-based whole-slide viewer with a same-origin tile proxy across multiple external pathology repositories.
-- **Educational tools** — citations, MILAN gene lookup, Genova, ABPath specs, cell quiz/counter, lupus anticoagulant interpreter (see [Educational Tools](#educational-tools)).
+- **Educational tools** — citations, MILAN gene lookup, Genova, IHC panel builder, ABPath specs, cell quiz/counter, lupus anticoagulant interpreter, image converter (see [Educational Tools](#educational-tools)).
 - **Anki integration** — compressed deck upload + serving from R2.
 
 ## Tech Stack
@@ -36,7 +38,7 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 | Slide viewer   | OpenSeadragon (DZI / IIIF / Aperio tile sources)       |
 | Hosting / Edge | Vercel (serverless) behind Cloudflare (WAF, CDN, DDoS) |
 | Testing        | Vitest                                                 |
-| API docs       | `next-swagger-doc` + Scalar, served at `/docs`         |
+| API docs       | OpenAPI spec from `@swagger` JSDoc (`next-swagger-doc`); rendered by Scalar on the companion docs site |
 
 ## Architecture
 
@@ -86,7 +88,7 @@ src/
 │   ├── admin/              # questions, images, inquiries, audio, learn…
 │   ├── auth/               # auth flows
 │   ├── user/               # quiz, learn, study-plan, anki, performance…
-│   └── public/             # tools/
+│   └── public/             # tools/, knowledge/, knowledge-graph/
 │
 └── shared/                 # Reusable components, hooks, services, utils, types, config
 ```
@@ -100,10 +102,12 @@ Feature code lives in `src/features/{domain}/`; reusable code in `src/shared/`. 
 | **Citations**           | URL/DOI/ISBN detection, APA/MLA/AMA/Vancouver, 24h localStorage cache |
 | **MILAN** (gene lookup) | HGNC + Harmonizome, 7-day cache, common-gene pre-loading              |
 | **Genova**              | Molecular classification helper                                       |
+| **IHC Panel Builder**   | Stain-based differential ranking over the WHO IHC matrix (client-side from R2) |
 | **Virtual Slides**      | R2-backed search over 7+ external WSI repositories + viewer           |
 | **ABPath Specs**        | Full ASCP content specs with client-side AP/CP filtering + PDF export |
 | **Cell Quiz / Counter** | Blood-cell morphology practice with R2-optimized images               |
 | **Lupus Anticoagulant** | Pure client-side coagulation interpretation (PT/INR/aPTT/dRVVT)       |
+| **Image Converter**     | Client-side image format conversion (`/tools/image-converter`)        |
 
 ## Getting Started
 
@@ -134,7 +138,7 @@ Key variables (full list in `.env.example`):
 | `CLOUDFLARE_R2_*`                                           | R2 access + public URL                   |
 | `RESEND_API_KEY`                                            | Transactional email                      |
 | `NEXT_PUBLIC_TURNSTILE_SITEKEY`                             | CAPTCHA (currently disabled)             |
-| AI / data provider keys (Gemini, Claude, Mistral, OncoKB…)  | Tool integrations                        |
+| AI / data provider keys (Gemini, Claude, Mistral, Groq, Cerebras, Cloudflare AI, OncoKB…) | Tool integrations |
 
 ## Commands
 
@@ -154,17 +158,28 @@ Key variables (full list in `.env.example`):
 
 ## API Documentation
 
-Interactive API reference is served by **Scalar at [`/docs`](http://localhost:3000/docs)**, generated from `@swagger` JSDoc blocks on each route handler (`next-swagger-doc`). The raw OpenAPI spec is at `/api/docs`.
+There is no in-app `/docs` route. The OpenAPI spec is generated from the
+`@swagger` JSDoc blocks on each route handler (`next-swagger-doc`) into a
+bundled spec (`src/shared/config/swagger.ts`; regenerate with
+`npm run gen:openapi`). The interactive Scalar reference is served on the
+companion docs site (`docs.pathologybites.com`, repo `pathology-bites-docs`),
+which consumes that spec on each docs deploy.
 
-Every non-debug route under `src/app/api` is expected to carry an `@swagger` block; `tests/api/swagger-coverage.test.ts` fails the build if one drifts out of the docs. When adding a route, add a block (mirror any existing one, e.g. `src/app/api/public/demo-questions/route.ts`).
+Every non-debug route under `src/app/api` is expected to carry an `@swagger`
+block; `tests/api/swagger-coverage.test.ts` fails if one drifts out of the
+docs. When adding a route, add a block (mirror any existing one, e.g.
+`src/app/api/public/demo-questions/route.ts`).
 
 ## Database
 
-PostgreSQL via Supabase — ~32 tables, 100% RLS coverage, with `SECURITY DEFINER` functions for cross-user aggregation (percentiles, ranks). Core domains:
+PostgreSQL via Supabase — 58 tables/views (live-schema snapshot in
+`dev/supabase/`), RLS-scoped reads (RLS policies live in the Supabase project,
+not in-repo migrations), with `SECURITY DEFINER` functions for cross-user
+aggregation (percentiles, ranks). Core domains:
 
-- **Questions** — `questions`, `question_options`, `question_images`, `question_reviews` (audit trail), `question_versions` (published-question snapshots).
-- **Learning** — `subjects`, `lessons`, lesson progress, interactive sequences, study-plan config/progress.
-- **Users & activity** — `users` (mirrors `auth.users`, role + status enums), quiz sessions/attempts, favorites, notifications.
+- **Questions** — `questions`, `question_options`, `question_images`, `question_reviews` (review log), `question_versions` (published-question snapshots).
+- **Learning** — `learning_subjects`, `lessons`, `user_lesson_progress`, interactive sequences, study-plan `board_prep_*` (config/resources/schedule/progress).
+- **Users & activity** — `users` (mirrors `auth.users`, role + status enums), quiz sessions/attempts, favorites, notifications, `wsi_question_events`.
 - **Media** — `images`, R2 object references, SVG assets, audio.
 
 > Cross-user aggregation must use `SECURITY DEFINER` (RLS otherwise collapses aggregates to "1st of 1") — see the gotchas in `CLAUDE.md`. Schema detail lives in `dev/docs/system/` and the Supabase dashboard.
@@ -177,7 +192,7 @@ Real defense lives at the edge and in the database, not the app layer. The app-l
 
 1. **Cloudflare edge** — DDoS scrubbing, WAF, bot management, TLS termination. Front of Vercel. Zero code, max value. Strongest layer.
 2. **Supabase auth + RLS** — JWT session, refresh-token rotation w/ reuse detection, server-side rate limits on `/auth/v1/token`, `/auth/v1/signup`, `/auth/v1/recover` (default 30 req/5min/IP). Per-table RLS scopes reads to `auth.uid()`. Real brute-force defense lives here.
-3. **Middleware** (`src/middleware.ts`) — JWT check on `/admin/*`, `/dashboard/*`, `/docs/*`, non-public `/api/*`. Role gate on `/admin` (admin/creator/reviewer). Injects trusted `x-user-id` + `x-user-role` headers downstream so handlers don't re-verify.
+3. **Middleware** (`src/middleware.ts`) — JWT check on `/admin/*`, `/dashboard/*`, non-public `/api/*`. Role gate on `/admin` (admin/creator/reviewer). Injects trusted `x-user-id` + `x-user-role` headers downstream so handlers don't re-verify.
 4. **Session cookies** — Supabase sets httpOnly, secure (prod), `sameSite: lax`. Browser blocks cross-site POST/PATCH/DELETE → automatic CSRF defense.
 5. **Honeypot** — hidden `referral_source` input on signup + contact forms. Bots auto-fill, humans don't. Server-side reject on signup form. Server action silent-success on contact.
 6. **App-layer rate limiters** (decorative on Vercel) — `loginRateLimiter` on login server action, `authRateLimiter` on `/api/auth/callback`. In-memory Map per lambda → effective only single-instance / dev. Supabase's server-side limits do the real work.
