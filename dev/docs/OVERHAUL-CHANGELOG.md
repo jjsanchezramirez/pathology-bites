@@ -459,3 +459,59 @@ forced `docs/` reorg); recorded the standards in force.
 - **In-memory `use-auth` sessionStorage cache** — a UI/perf convenience only; the
   real enforcement is server-side (middleware + api-guard + RLS). Verified correct,
   not a security issue.
+
+---
+
+# POST-REPORT FOLLOW-UP (Supabase connection + debug guards)
+
+## Supabase: connected, verified migrations vs live schema
+
+Connected read-only via the project's PostgREST OpenAPI spec (service-role key,
+`htsnkuudinrcgfqlqmpi`). 58 tables/views live. Result: **the 3 migration files in
+`dev/supabase/migrations/` are OUT OF DATE relative to the live schema** — the
+knowledge-graph schema was consolidated after they were written.
+
+- **Applied & current**: `20260629_audio_word_timings` (`audio.word_timings` jsonb
+  ✓ present). Partially: `20260819_knowledge_graph` created `sources/assays/genes/
+  entities/markers/entity_synonyms/marker_synonyms/surrogates` (all ✓ present).
+- **Live schema DIVERGED from the migration files**:
+  - `markers` **absorbed** `alterations` — live `markers` has a `kind` column;
+    `topology.ts:132` documents "markers absorbed alterations: one noun,
+    distinguished by kind".
+  - **Dropped** (in migration files, absent live): `alterations`, `entity_relations`,
+    `alteration_genes`, `expression_findings`, `alteration_findings`,
+    `alteration_synonyms`, `concepts` (migration 3).
+  - **Added live, not in any migration file**: `entity_placements` (heavily used),
+    `entity_differentials`, `entity_merge_redirects`, `marker_summary`.
+- **Impact on code**: none for live features — every table the production code
+  queries (`entities`, `entity_placements`, `entity_synonyms`, `marker_synonyms`,
+  `markers`, `surrogates`) exists live. Only the gitignored debug
+  `knowledge-graph/route.ts` and `topology.ts` reference the consolidated-away
+  tables (they read live-shape columns, so they work).
+- **Action taken**: none to the migrations themselves — they are gitignored dev
+  artifacts and rewriting them blind (no live migration history table was
+  introspectable) risks falsifying history. This divergence is now documented here
+  as the record. Recommend regenerating the migration files from the live schema
+  (or adopting a proper migration-history table) as a separate, deliberate task.
+
+## Debug-API guards: hardened all unguarded debug routes
+
+### Debug-API hardening (per-route production guards)
+- **Added** `if (process.env.NODE_ENV === "production") return 404` to the 7 debug-API
+  routes that previously lacked an in-code guard: `ask-question`, `relation-review`
+  (GET+POST), `audio-upload`, `knowledge-graph`, `ai-ping` (GET+POST),
+  `generate-text`, `entity-search`. Several spend AI credits or write to R2, so the
+  in-code guard matters.
+- **Context**: these routes were never exploitable in production — they are
+  gitignored + `.vercelignore`d (not in any deploy) and middleware 401s `/api/debug/*`
+  in prod. This is defense-in-depth so a route stays safe even if that outer gating
+  is ever bypassed or the file is copied out of the sandbox. 10/10 debug-API routes
+  now carry the guard.
+- **Checks**: 0 unguarded debug-API routes; `tsc` PASS; full `eslint` 0 errors (fixed
+  the inserted-guard indentation via `--fix`); full `vitest` PASS; `npm run build` PASS.
+
+## skills-lock.json decision
+- **Keep it.** It is the integrity lock for the Caveman skills installer, which
+  regenerates it; the maintainer commits it deliberately (commit 08a6473c) alongside
+  the `.gitignore` Caveman section. It is external-tooling state, not app dead code —
+  removing it gains nothing and the installer would rewrite it on next run. No action.
