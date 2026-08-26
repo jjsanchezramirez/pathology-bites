@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { analyzeSingleImageWithDebug } from "../generate-sequence/vision";
 import type { ImageInput } from "../generate-sequence/prompt";
+import { requireContentRole } from "@/shared/utils/api/api-guard";
 
 export const maxDuration = 30;
 
@@ -85,6 +86,13 @@ export const maxDuration = 30;
  *         description: Internal server error - API key not configured or analysis failed
  */
 export async function POST(request: NextRequest) {
+  // Spends AI credits on vision analysis; the swagger doc above already promises
+  // "admin or creator role", but middleware only guarantees a session on
+  // /api/admin/* — enforce the content role here so any signed-in user can't
+  // burn model quota.
+  const auth = requireContentRole(request);
+  if (auth instanceof NextResponse) return auth;
+
   try {
     const body = (await request.json()) as { image: ImageInput; modelOverride?: string };
     const { image, modelOverride } = body;

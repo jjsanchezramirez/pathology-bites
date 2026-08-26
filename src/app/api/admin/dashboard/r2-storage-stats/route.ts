@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { getCachedStorageMetrics } from "@/shared/services/r2-storage-metrics";
 import { formatSize } from "@/features/admin/images/services/image-upload";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 /**
@@ -90,7 +91,12 @@ import { log } from "@/shared/utils/logging";
  *                   type: string
  *                   description: Detailed error message
  */
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Bypasses RLS via the service-role client, so it must be admin-gated itself —
+  // middleware only guarantees a session on /api/admin/*, not a role.
+  const auth = requireAdmin(request);
+  if (auth instanceof NextResponse) return auth;
+
   try {
     // Create service role client to bypass RLS
     const supabaseAdmin = createServiceRoleClient();

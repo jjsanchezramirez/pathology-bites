@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import { requireContentRole } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 const ALLOWED_HOST = "pub-a4bec7073d99465f99043c842be6318c.r2.dev";
@@ -77,6 +78,12 @@ const ALLOWED_HOST = "pub-a4bec7073d99465f99043c842be6318c.r2.dev";
  *                   example: Upstream fetch failed
  */
 export async function GET(req: NextRequest) {
+  // The ALLOWED_HOST check below stops open-proxy abuse, but middleware only
+  // guarantees a session on /api/admin/* — not a role. Gate it so any signed-in
+  // user can't use this as a same-origin image proxy for the R2 bucket.
+  const auth = requireContentRole(req);
+  if (auth instanceof NextResponse) return auth;
+
   const rawUrl = req.nextUrl.searchParams.get("url");
   if (!rawUrl) {
     return NextResponse.json({ error: "Missing url param" }, { status: 400 });

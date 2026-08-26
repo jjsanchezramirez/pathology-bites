@@ -6,6 +6,7 @@ import { z } from "zod";
 import { createClient } from "@/shared/services/server";
 import { notificationGenerators } from "@/shared/services/notification-generators";
 import { parseBody } from "@/shared/utils/api/parse-body";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 const systemUpdateSchema = z.object({
@@ -96,9 +97,13 @@ const systemUpdateSchema = z.object({
  *         description: Internal server error
  */
 export async function POST(request: NextRequest) {
-  try {
-    // Auth is now handled by middleware
+  // Middleware guarantees a session on /api/admin/* but does NOT check role for
+  // API routes (its isAdminRoute role gate only matches /admin pages). This
+  // broadcasts to users, so enforce admin here.
+  const auth = requireAdmin(request);
+  if (auth instanceof NextResponse) return auth;
 
+  try {
     // Parse request body
     const body = await parseBody(request, systemUpdateSchema);
     if (body instanceof NextResponse) return body;
@@ -210,10 +215,12 @@ export async function POST(request: NextRequest) {
  *         description: Internal server error
  */
 export async function GET(request: NextRequest) {
+  // See POST: middleware guarantees a session but not a role on /api/admin/*.
+  const auth = requireAdmin(request);
+  if (auth instanceof NextResponse) return auth;
+
   try {
     const supabase = await createClient();
-
-    // Auth is now handled by middleware
 
     // Get query parameters
     const { searchParams } = new URL(request.url);

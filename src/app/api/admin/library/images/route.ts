@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { isImageCategory } from "@/shared/types/database";
+import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 /**
@@ -93,6 +94,11 @@ import { log } from "@/shared/utils/logging";
  *         description: Internal server error
  */
 export async function GET(request: NextRequest) {
+  // The swagger doc promises "admin role"; middleware only guarantees a session
+  // on /api/admin/*, so enforce it here.
+  const auth = requireAdmin(request);
+  if (auth instanceof NextResponse) return auth;
+
   try {
     const supabase = await createClient();
 
