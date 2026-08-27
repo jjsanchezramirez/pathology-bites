@@ -2,6 +2,8 @@
 // Runs on every route except static assets (see `config.matcher`). Gates dashboard, admin, and
 // private API routes against the Supabase session, and injects `x-user-id` / `x-user-role`
 // headers on authenticated API requests for downstream handlers.
+// Identity comes from the cookie session, or from an `Authorization: Bearer <access-token>`
+// header (native clients like the iOS app, which have no cookies).
 
 import { type NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
@@ -100,9 +102,14 @@ export async function middleware(request: NextRequest) {
     }
   );
 
+  // Identity: a Bearer token (native clients — the iOS app authenticates with
+  // Supabase directly and has no cookies) takes precedence; otherwise the
+  // cookie session as before. getUser() with an invalid token returns a null
+  // user rather than throwing.
+  const bearerToken = request.headers.get("authorization")?.replace(/^Bearer\s+/i, "");
   const {
     data: { user },
-  } = await supabase.auth.getUser();
+  } = bearerToken ? await supabase.auth.getUser(bearerToken) : await supabase.auth.getUser();
 
   // Dashboard: just needs a session.
   if (isDashboardRoute && !user) {
