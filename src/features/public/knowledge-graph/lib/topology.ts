@@ -162,6 +162,7 @@ export async function buildTopology(sb: Sb, part: TopologyPart): Promise<Topolog
     "amplification",
     "methylation",
     "aneuploidy",
+    "gene_expression",
   ]);
   const kindByMarker = new Map(
     (markers as { id: string; kind: string }[]).map((m) => [m.id, m.kind])

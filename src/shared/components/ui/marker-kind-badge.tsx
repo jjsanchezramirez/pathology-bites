@@ -18,6 +18,7 @@ export type MarkerKind =
   | "deletion"
   | "aneuploidy"
   | "methylation"
+  | "gene_expression"
   | "dye"
   | "probe"
   | "index";
@@ -37,6 +38,10 @@ const STYLE: Record<MarkerKind, { label: string; className: string }> = {
   deletion: { label: "Deletion", className: "border-amber-300 bg-amber-50 text-amber-700" },
   aneuploidy: { label: "Aneuploidy", className: "border-lime-300 bg-lime-50 text-lime-700" },
   methylation: { label: "Methylation", className: "border-teal-300 bg-teal-50 text-teal-700" },
+  gene_expression: {
+    label: "Gene expression",
+    className: "border-emerald-300 bg-emerald-50 text-emerald-700",
+  },
   dye: { label: "Special stain", className: "border-cyan-300 bg-cyan-50 text-cyan-700" },
   probe: { label: "ISH probe", className: "border-indigo-300 bg-indigo-50 text-indigo-700" },
   index: { label: "Index", className: "border-slate-300 bg-slate-50 text-slate-700" },
