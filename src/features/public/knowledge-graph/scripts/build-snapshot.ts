@@ -1,9 +1,15 @@
 /* eslint-disable no-console -- a CLI tool; its output IS the interface */
 /**
- * Bakes the knowledge graph into a static snapshot for the public cloud.
+ * Bakes the knowledge graph into static snapshots for the public cloud.
  *
  *   npx tsx src/features/public/knowledge-graph/scripts/build-snapshot.ts
- *   ... --publish     also uploads it to R2
+ *   ... --publish        also uploads them to R2
+ *   ... --hero-nodes=N   size of the hero cut (default 1500)
+ *
+ * TWO snapshots, from one read of the database and published in one call: the
+ * explorer's full cloud, and a sparse cut for the landing-page hero. The hero
+ * draws a backdrop rather than a map, and every node it carries is paid for on
+ * every frame for as long as the page is open -- see `bake`.
  *
  * The public cloud has no API. It downloads one brotli'd file and draws it,
  * which is the only way it can appear fast enough to belong on a landing page:
@@ -41,10 +47,23 @@ import { buildTopology } from "../lib/topology";
 
 const OUT_DIR = path.resolve(process.cwd(), "public/data");
 const OUT_NAME = "knowledge-graph.bin";
+const HERO_NAME = "knowledge-graph-hero.bin";
 /** Matches the prefixes already in use in the bucket; see TOOLING-INDEX. */
 const R2_PREFIX = "knowledge-graph/";
 /** Rewritten on every publish; the compiled fallback in knowledge-graph-data.ts. */
 const R2_FALLBACK = "cloud-v1.bin.br";
+/** The hero's sparse cut, published beside the full cloud under one manifest. */
+const R2_HERO = "hero-v1.bin.br";
+/**
+ * How many nodes the landing page gets.
+ *
+ * Not a download budget -- the full cloud is only 80KB brotli'd. It is a
+ * per-frame budget: every node is paid for in the projection pass, the label
+ * candidate pass, the magnet scan and the line rasteriser, on every frame, for
+ * as long as the page is open. Fifteen hundred keeps every hub and the shape
+ * they make; the rest of the cloud was texture.
+ */
+const HERO_NODES = 1500;
 /** Publishing is blocked below this fraction of the live snapshot's size. */
 const REGRESSION_FLOOR = 0.9;
 
@@ -92,6 +111,153 @@ async function main() {
   }
   console.log(`  ${rawNodes.length} nodes, ${rawEdges.length} edges before pruning`);
 
+  const minLinks = Number(
+    process.argv.find((a) => a.startsWith("--min-entity-links="))?.split("=")[1] ?? 2
+  );
+  const keepGenes = process.argv.includes("--keep-genes");
+  const heroNodes = Number(
+    process.argv.find((a) => a.startsWith("--hero-nodes="))?.split("=")[1] ?? HERO_NODES
+  );
+
+  const cloud = bake(nodes, edges, { minLinks, keepGenes, maxNodes: 0, label: "cloud" });
+  const hero = bake(nodes, edges, {
+    minLinks,
+    keepGenes,
+    maxNodes: heroNodes,
+    label: "hero",
+  });
+
+  /* Written to disk only when asked. The artifact belongs in R2; a copy under
+   * public/ is a second source of truth that goes stale the moment anything is
+   * republished, and it used to be what the debug page read. */
+  if (process.argv.includes("--local")) {
+    mkdirSync(OUT_DIR, { recursive: true });
+    writeFileSync(path.join(OUT_DIR, OUT_NAME), cloud.packed);
+    writeFileSync(path.join(OUT_DIR, `${OUT_NAME}.br`), cloud.compressed);
+    writeFileSync(path.join(OUT_DIR, HERO_NAME), hero.packed);
+    writeFileSync(path.join(OUT_DIR, `${HERO_NAME}.br`), hero.compressed);
+    console.log(`  also written to ${path.join(OUT_DIR, OUT_NAME)}`);
+  }
+
+  if (!process.argv.includes("--publish")) {
+    console.log("\nnot published — pass --publish to upload to R2.");
+    return;
+  }
+
+  /* r2_common is the only correct way to talk to the bucket, and
+   * publishVersioned owns the content-addressing contract from CLAUDE.md: it
+   * writes an immutable `cloud-v1-<hash>.bin.br`, rewrites the fixed key as a
+   * short-TTL fallback, and flips manifest.json to point at the new object.
+   * Old versions are left in place deliberately -- they cost almost nothing and
+   * any of them is a working snapshot to roll back to. */
+  const r2 = await import("../../../../../dev/resources/scrapers/r2_common.mjs");
+  const env = r2.loadEnv();
+  const s3 = r2.makeClient(env);
+
+  /* Safety gate, copied in spirit from the corpus publisher: refuse to
+   * overwrite a good snapshot with a much smaller one. These tables get
+   * rewritten in place during curation work, and a scheduled job that happened
+   * to run mid-migration would otherwise serve a half-empty map for a week.
+   * A real shrink is possible, so --force exists; it just has to be deliberate. */
+  const existing = await r2.getBytes(s3, `${R2_PREFIX}${R2_FALLBACK}`).catch(() => null);
+  if (existing) {
+    const raw = r2.unbrotli(existing) as Buffer;
+    const prev = decodeSnapshot(new Uint8Array(raw).buffer as ArrayBuffer);
+    /* Gated on the full cloud only. The hero cut is a fixed head count by
+     * construction, so comparing it to anything would just be asserting that
+     * HERO_NODES has not changed. */
+    const worst = Math.min(
+      cloud.nodes / prev.labels.length,
+      cloud.edges / prev.edgeSource.length
+    );
+    console.log(
+      `\npublished snapshot has ${prev.labels.length} nodes / ${prev.edgeSource.length} edges; ` +
+        `this one has ${cloud.nodes} / ${cloud.edges}`
+    );
+    if (worst < REGRESSION_FLOOR && !process.argv.includes("--force")) {
+      throw new Error(
+        `refusing to publish: down to ${(worst * 100).toFixed(1)}% of the live snapshot. ` +
+          `If the graph really did shrink, re-run with --force.`
+      );
+    }
+  }
+
+  /* BOTH artifacts in ONE call, and this is not a style choice.
+   * `publishVersioned` writes manifest.json from the artifacts it was handed --
+   * it does not merge with what is already in the bucket. Publishing the hero
+   * on its own would therefore delete the `cloud` entry and leave the explorer
+   * resolving its compiled fallback until the next full run. This is the
+   * shared-prefix trap from CLAUDE.md, in the one prefix that now has two
+   * datasets in it. */
+  const { manifest } = await r2.publishVersioned(s3, {
+    prefix: R2_PREFIX,
+    artifacts: [
+      {
+        key: R2_FALLBACK,
+        manifestKey: "cloud",
+        body: cloud.compressed,
+        contentType: "application/octet-stream",
+        contentEncoding: "br",
+      },
+      {
+        key: R2_HERO,
+        manifestKey: "hero",
+        body: hero.compressed,
+        contentType: "application/octet-stream",
+        contentEncoding: "br",
+      },
+    ],
+    extra: {
+      built: new Date().toISOString(),
+      nodes: cloud.nodes,
+      edges: cloud.edges,
+      groups: cloud.groups,
+      rawBytes: cloud.packed.length,
+      heroNodes: hero.nodes,
+      heroEdges: hero.edges,
+    },
+  });
+
+  const entries = manifest as Record<string, { url: string; hash: string; bytes: number }>;
+  for (const key of ["cloud", "hero"]) {
+    const entry = entries[key];
+    console.log(
+      `\npublished ${r2.BUCKET}/${R2_PREFIX} ${key} v=${entry.hash} (${kb(entry.bytes)})`
+    );
+    console.log(`  ${entry.url}`);
+  }
+  console.log("  the app resolves these from manifest.json — no redeploy needed.");
+}
+
+type RawNode = { id: string; l: string; t: string; o?: string; w?: string };
+type RawEdge = { s: string; t: string; e: string; r?: string };
+
+type Baked = {
+  packed: Uint8Array;
+  compressed: Buffer;
+  nodes: number;
+  edges: number;
+  groups: number;
+};
+
+/**
+ * Prune, group, lay out and encode one snapshot.
+ *
+ * Called twice: once for the explorer's full cloud and once for the hero's
+ * sparse cut. It takes copies, because the pruning below rewrites its inputs in
+ * place and the second call needs the same graph the first one started from.
+ */
+function bake(
+  allNodes: RawNode[],
+  allEdges: RawEdge[],
+  opts: { minLinks: number; keepGenes: boolean; maxNodes: number; label: string }
+): Baked {
+  const { minLinks, keepGenes, maxNodes, label } = opts;
+  console.log(`\nbaking the ${label} snapshot…`);
+  const nodes: RawNode[] = [...allNodes];
+  const edges: RawEdge[] = [...allEdges];
+  const index = new Map(nodes.map((n, i) => [n.id, i]));
+
   /* ── prune to what the public cloud actually draws ──────────────────────
    *
    * Three cuts, in order of how much they buy.
@@ -112,11 +278,6 @@ async function main() {
    *
    * Entities are never pruned. They are the subject.
    */
-  const minLinks = Number(
-    process.argv.find((a) => a.startsWith("--min-entity-links="))?.split("=")[1] ?? 2
-  );
-  const keepGenes = process.argv.includes("--keep-genes");
-
   const drawable = edges.filter((e) => {
     const kind = e.e as EdgeType;
     return !(POLAR_KINDS.has(kind) && e.r && !PUBLIC_POLARITIES.has(e.r));
@@ -144,8 +305,36 @@ async function main() {
     } else if ((entitiesTouching.get(n.id)?.size ?? 0) >= minLinks) keep.add(n.id);
   }
 
-  const kept = nodes.filter((n) => keep.has(n.id));
-  const keptEdges = drawable.filter((e) => keep.has(e.s) && keep.has(e.t));
+  let kept = nodes.filter((n) => keep.has(n.id));
+  let keptEdges = drawable.filter((e) => keep.has(e.s) && keep.has(e.t));
+
+  /* ── the hero cut ──
+   *
+   * The landing page draws a backdrop, not a map. Ranked by drawn degree and
+   * cut to the best-connected `maxNodes`: what survives is the structure --
+   * the hubs and the tumours hanging off them -- and what goes is the rim of
+   * nearly-isolated dots that reads as texture but costs a full pass each in
+   * the projection, the label candidates and the magnet scan, sixty times a
+   * second, forever. Edges follow their endpoints.
+   *
+   * Ties break on id so a rebuild of the same data cuts the same way.
+   */
+  if (maxNodes && kept.length > maxNodes) {
+    const deg = new Map<string, number>();
+    for (const e of keptEdges) {
+      deg.set(e.s, (deg.get(e.s) ?? 0) + 1);
+      deg.set(e.t, (deg.get(e.t) ?? 0) + 1);
+    }
+    const top = new Set(
+      [...kept]
+        .sort((a, b) => (deg.get(b.id) ?? 0) - (deg.get(a.id) ?? 0) || a.id.localeCompare(b.id))
+        .slice(0, maxNodes)
+        .map((n) => n.id)
+    );
+    kept = kept.filter((n) => top.has(n.id));
+    keptEdges = keptEdges.filter((e) => top.has(e.s) && top.has(e.t));
+    console.log(`  cut to the ${kept.length} best-connected nodes`);
+  }
   console.log(
     `  keeping every entity, markers linking >= ${minLinks} of them` +
       `${keepGenes ? ", genes" : ", no genes"}`
@@ -313,81 +502,13 @@ async function main() {
     `\nsnapshot ${kb(packed.length)} raw -> ${kb(compressed.length)} brotli ` +
       `(${(packed.length / compressed.length).toFixed(1)}x)`
   );
-
-  /* Written to disk only when asked. The artifact belongs in R2; a copy under
-   * public/ is a second source of truth that goes stale the moment anything is
-   * republished, and it used to be what the debug page read. */
-  if (process.argv.includes("--local")) {
-    mkdirSync(OUT_DIR, { recursive: true });
-    writeFileSync(path.join(OUT_DIR, OUT_NAME), packed);
-    writeFileSync(path.join(OUT_DIR, `${OUT_NAME}.br`), compressed);
-    console.log(`  also written to ${path.join(OUT_DIR, OUT_NAME)}`);
-  }
-
-  if (!process.argv.includes("--publish")) {
-    console.log("\nnot published — pass --publish to upload to R2.");
-    return;
-  }
-
-  /* r2_common is the only correct way to talk to the bucket, and
-   * publishVersioned owns the content-addressing contract from CLAUDE.md: it
-   * writes an immutable `cloud-v1-<hash>.bin.br`, rewrites the fixed key as a
-   * short-TTL fallback, and flips manifest.json to point at the new object.
-   * Old versions are left in place deliberately -- they cost almost nothing and
-   * any of them is a working snapshot to roll back to. */
-  const r2 = await import("../../../../../dev/resources/scrapers/r2_common.mjs");
-  const env = r2.loadEnv();
-  const s3 = r2.makeClient(env);
-
-  /* Safety gate, copied in spirit from the corpus publisher: refuse to
-   * overwrite a good snapshot with a much smaller one. These tables get
-   * rewritten in place during curation work, and a scheduled job that happened
-   * to run mid-migration would otherwise serve a half-empty map for a week.
-   * A real shrink is possible, so --force exists; it just has to be deliberate. */
-  const existing = await r2.getBytes(s3, `${R2_PREFIX}${R2_FALLBACK}`).catch(() => null);
-  if (existing) {
-    const raw = r2.unbrotli(existing) as Buffer;
-    const prev = decodeSnapshot(new Uint8Array(raw).buffer as ArrayBuffer);
-    const worst = Math.min(
-      nodes.length / prev.labels.length,
-      edges.length / prev.edgeSource.length
-    );
-    console.log(
-      `\npublished snapshot has ${prev.labels.length} nodes / ${prev.edgeSource.length} edges; ` +
-        `this one has ${nodes.length} / ${edges.length}`
-    );
-    if (worst < REGRESSION_FLOOR && !process.argv.includes("--force")) {
-      throw new Error(
-        `refusing to publish: down to ${(worst * 100).toFixed(1)}% of the live snapshot. ` +
-          `If the graph really did shrink, re-run with --force.`
-      );
-    }
-  }
-
-  const { manifest } = await r2.publishVersioned(s3, {
-    prefix: R2_PREFIX,
-    artifacts: [
-      {
-        key: R2_FALLBACK,
-        manifestKey: "cloud",
-        body: compressed,
-        contentType: "application/octet-stream",
-        contentEncoding: "br",
-      },
-    ],
-    extra: {
-      built: new Date().toISOString(),
-      nodes: nodes.length,
-      edges: edges.length,
-      groups: layout.count,
-      rawBytes: packed.length,
-    },
-  });
-
-  const entry = (manifest as Record<string, { url: string; hash: string; bytes: number }>).cloud;
-  console.log(`\npublished ${r2.BUCKET}/${R2_PREFIX} v=${entry.hash} (${kb(entry.bytes)})`);
-  console.log(`  ${entry.url}`);
-  console.log("  the app resolves this from manifest.json — no redeploy needed.");
+  return {
+    packed,
+    compressed,
+    nodes: nodes.length,
+    edges: edges.length,
+    groups: layout.count,
+  };
 }
 
 main().catch((e) => {

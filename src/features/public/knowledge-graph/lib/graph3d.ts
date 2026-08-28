@@ -214,6 +214,7 @@ const LABEL_FADE = 1.2;
 const EDGE_REVEAL_MS = 1000;
 /** Screen-pixel radius of the magnet's influence. */
 const MAGNET_RADIUS_PX = 120;
+const MAGNET_RADIUS_SQ = MAGNET_RADIUS_PX * MAGNET_RADIUS_PX;
 const MAGNET_PULL = 0.85;
 /** Peak sideways nudge, as a fraction of the radius. A reading aid, not a shove. */
 const MAGNET_PUSH = 0.16;
@@ -329,6 +330,35 @@ const STANDBY_TILT = 0.22;
  */
 const BREATH_AMOUNT = 0.005;
 const BREATH_MS = 9000;
+/**
+ * How much of a breath is worth re-projecting for. The cycle is half a percent
+ * of scale over nine seconds, so a single frame of it moves an outlying node by
+ * a fraction of a pixel -- far below anything the labels or the magnet could
+ * act on, and not worth 8,930 matrix multiplies to chase.
+ */
+const BREATH_EPSILON = 2e-4;
+
+/* ── frame budget ──────────────────────────────────────────────────────────
+ *
+ * Standby is the state this thing spends nearly all of its life in: settled,
+ * unattended, turning slowly. It is also the state it used to render at a full
+ * sixty frames a second, for a drift of 0.14 and a half-percent breath. Both
+ * survive being shown at thirty; neither is legible enough to notice.
+ */
+const STANDBY_FRAME_MS = 33;
+/** Once degraded. Still smooth for a drift this slow. */
+const STANDBY_FRAME_MS_TIER1 = 50;
+/**
+ * Reduced motion. Nothing moves by itself, so a frame is only worth drawing
+ * when something has changed -- but tracking every source of change is a bug
+ * farm, and a second's latency on an unattended backdrop costs nothing.
+ */
+const STANDBY_FRAME_MS_STILL = 1000;
+/** Names are read, not animated. Twenty a second is more than enough. */
+const LABEL_FRAME_MS = 50;
+/** Frames per self-tuning verdict, and the per-frame budget it judges against. */
+const TUNE_SAMPLES = 90;
+const TUNE_BUDGET_MS = 12;
 /**
  * How a selection arrives and leaves.
  *
@@ -567,13 +597,111 @@ export class Graph3D {
   private proj = new Float32Array(0);
   private radius = 1;
 
+  /* ── frame budget ────────────────────────────────────────────────────────
+   *
+   * The loop used to be unconditional -- re-armed at the top of every frame,
+   * with nothing anywhere that could stop it. A landing-page hero is one
+   * viewport tall, so within seconds of arriving every visitor has scrolled it
+   * off screen and is then paying sixty frames a second for a canvas nobody
+   * can see, for the rest of the session. That, not the 80KB download, is what
+   * was felt as this page making the machine slow.
+   *
+   * Three gates now, in order of what they save: asleep when off screen or in
+   * a background tab, half rate when nothing is being driven, and a
+   * self-tuning step down when the machine still cannot keep up.
+   */
+  private onScreen = true;
+  private pageVisible = true;
+  private io: IntersectionObserver | null = null;
+  private awake = true;
+  private lastRender = 0;
+  private lastLabels = 0;
+  /** What the labels on screen were drawn for; see `drawLabelsThrottled`. */
+  private labelFor = "";
+  /** 0 full, 1 pixel ratio 1 and slower labels, 2 no labels at all. */
+  private tier = 0;
+  private dprCap = 1.5;
+  private frames: number[] = [];
+  private reduced =
+    typeof window !== "undefined" &&
+    window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+  private onVisibility = () => {
+    this.pageVisible = document.visibilityState === "visible";
+    this.sync();
+  };
+
+  /**
+   * The one place the device pixel ratio is decided.
+   *
+   * Capped at 1.5 rather than 2: this is a cloud of soft dots and hairlines
+   * behind body copy, and the top half of a retina ratio is spent on detail
+   * none of it has. `degrade` lowers the cap again at runtime, which is why
+   * every reader goes through here -- the label canvas has to move with the
+   * scene or the names slide off their dots.
+   */
+  private dpr() {
+    return Math.min(window.devicePixelRatio || 1, this.dprCap);
+  }
+
+  /**
+   * Runs the loop iff it can be seen. Cancelling the frame outright is the
+   * point: a `requestAnimationFrame` that returns early still costs a callback
+   * sixty times a second, and background tabs are throttled unevenly by the
+   * browser rather than stopped.
+   *
+   * Only rendering sleeps. Every animation here is driven by wall time, so a
+   * cloud that was mid-formation when it went to sleep is simply settled when
+   * it wakes -- which is what you want from something you scrolled away from.
+   */
+  private sync() {
+    const want = this.onScreen && this.pageVisible && !this.disposed;
+    if (want === this.awake) return;
+    this.awake = want;
+    if (want) {
+      this.lastRender = 0;
+      this.raf = requestAnimationFrame(this.loop);
+    } else {
+      cancelAnimationFrame(this.raf);
+      this.raf = 0;
+    }
+  }
+
+  private watchVisibility() {
+    document.addEventListener("visibilitychange", this.onVisibility);
+    /* A margin, so it is already running by the time it arrives. Waking on the
+     * exact boundary shows a frame or two of a frozen cloud sliding up the
+     * screen before it starts turning again. */
+    this.io = new IntersectionObserver(
+      (entries) => {
+        this.onScreen = entries[entries.length - 1].isIntersecting;
+        this.sync();
+      },
+      { rootMargin: "200px" }
+    );
+    this.io.observe(this.opts.container);
+  }
+
   constructor(opts: Graph3DOptions) {
     this.opts = opts;
     const { container } = opts;
 
     const transparent = opts.background === "transparent";
-    this.renderer = new WebGLRenderer({ antialias: true, alpha: transparent });
-    this.renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+    /* No MSAA. The dots are round because the point shader masks them, not
+     * because the sampler smooths them, so antialiasing buys nothing on the
+     * 8,930 things you actually look at and pays for it on all 26,552 lines --
+     * on a hero-sized canvas that is the single largest fragment cost here.
+     *
+     * `low-power` is the important one on laptops. A WebGL context with no
+     * preference stated is enough to hand a dual-GPU MacBook to its discrete
+     * chip and keep it there, which is felt as the whole machine getting hot
+     * and slow rather than as this canvas being expensive. */
+    this.renderer = new WebGLRenderer({
+      antialias: false,
+      alpha: transparent,
+      powerPreference: "low-power",
+    });
+    this.renderer.setPixelRatio(this.dpr());
     if (transparent) this.renderer.setClearColor(new Color("#000000"), 0);
     else this.renderer.setClearColor(new Color(opts.background), 1);
     container.appendChild(this.renderer.domElement);
@@ -595,6 +723,7 @@ export class Graph3D {
     this.controls.screenSpacePanning = true;
 
     this.bindPointer();
+    this.watchVisibility();
     this.resize();
     this.loop();
   }
@@ -1159,6 +1288,7 @@ export class Graph3D {
 
   /** Copies rest positions (plus any magnet displacement) into the buffers. */
   private pushPositions() {
+    this.posEpoch++;
     if (!this.points) return;
     const pos = this.points.geometry.getAttribute("position") as BufferAttribute;
     const arr = pos.array as Float32Array;
@@ -1657,7 +1787,10 @@ export class Graph3D {
       // Breathes whatever else is happening: suspending it during a formation
       // or a focus would show up as the cloud holding its breath.
       const phase = Math.sin((now / BREATH_MS) * Math.PI * 2);
-      const scale = 1 + phase * BREATH_AMOUNT;
+      /* Held at rest under `prefers-reduced-motion`. Sustained idle movement
+       * is exactly what the preference is about, and stilling the breath is
+       * also what lets the frame gate below stop re-rendering entirely. */
+      const scale = this.reduced ? 1 : 1 + phase * BREATH_AMOUNT;
       (this.points.material as ShaderMaterial).uniforms.uBreath.value = scale;
       (this.lines.material as ShaderMaterial).uniforms.uBreath.value = scale;
       // `project` has to apply the same scale. It reads the raw positions, and
@@ -1679,7 +1812,8 @@ export class Graph3D {
       return;
     }
     // While it is opening it turns regardless; there is no input to yield to.
-    this.controls.autoRotate = animating || now - this.lastInput > STANDBY_RESUME_MS;
+    this.controls.autoRotate =
+      !this.reduced && (animating || now - this.lastInput > STANDBY_RESUME_MS);
   }
 
   private spin = SPIN_OPEN;
@@ -2052,7 +2186,8 @@ export class Graph3D {
     this.renderer.setSize(w, h, false);
     this.camera.aspect = w / h;
     this.camera.updateProjectionMatrix();
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    this.posEpoch++;
+    const dpr = this.dpr();
     labelCanvas.width = Math.round(w * dpr);
     labelCanvas.height = Math.round(h * dpr);
     labelCanvas.style.width = `${w}px`;
@@ -2066,6 +2201,8 @@ export class Graph3D {
   dispose() {
     this.disposed = true;
     cancelAnimationFrame(this.raf);
+    this.io?.disconnect();
+    document.removeEventListener("visibilitychange", this.onVisibility);
     this.controls.dispose();
     this.renderer.dispose();
     this.renderer.domElement.remove();
@@ -2226,8 +2363,13 @@ export class Graph3D {
       if (picked && !isPicked) continue;
       const dx = this.proj[i * 3] - this.pointer.x;
       const dy = this.proj[i * 3 + 1] - this.pointer.y;
-      const d = Math.hypot(dx, dy);
-      if (d > MAGNET_RADIUS_PX) continue;
+      /* Squared until it is known to be a keeper. `Math.hypot` is variadic and
+       * overflow-guarded, which costs several times a plain multiply-add, and
+       * this runs 8,930 times a frame to reject all but a handful. The
+       * displacement maths below still wants the true distance. */
+      const d2 = dx * dx + dy * dy;
+      if (d2 > MAGNET_RADIUS_SQ) continue;
+      const d = Math.sqrt(d2);
       near.push({ i, d });
       /* Only the CHOICE of what to hold is biased. Every displacement below is
        * computed from the true distance, so nothing is dragged further than it
@@ -2331,12 +2473,12 @@ export class Graph3D {
       ? Math.min(1, (performance.now() - this.settledAt) / LABEL_WAKE_MS)
       : 0;
     if (wake <= 0.01) {
-      const dpr0 = Math.min(window.devicePixelRatio || 1, 2);
+      const dpr0 = this.dpr();
       ctx.setTransform(dpr0, 0, 0, dpr0, 0, 0);
       ctx.clearRect(0, 0, cv.width / dpr0, cv.height / dpr0);
       return;
     }
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    const dpr = this.dpr();
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const w = cv.width / dpr;
     const h = cv.height / dpr;
@@ -2508,21 +2650,149 @@ export class Graph3D {
       claimed.push(box[0], box[1], box[2], box[3]);
       this.labelled[i] = 1;
       ctx.globalAlpha = isHovered ? wake : alpha * wake;
-      ctx.shadowColor = this.opts.labelHalo;
-      // A wider halo under the emphasised names, so they lift off the cloud
-      // rather than just getting heavier against it.
-      ctx.shadowBlur = isSelected || isHovered ? 10 : 6;
+      /* Stroked, not shadowed. `shadowBlur` is a separate gaussian pass per
+       * fillText -- the most expensive thing the 2D context offers -- and it
+       * ran on every name on every frame. A round-joined stroke in the halo
+       * colour under the fill reads the same at these sizes for a fraction of
+       * the cost. A wider one under the emphasised names, so they still lift
+       * off the cloud rather than just getting heavier against it. */
+      ctx.strokeStyle = this.opts.labelHalo;
+      ctx.lineWidth = isSelected || isHovered ? 4 : 3;
+      ctx.lineJoin = "round";
+      ctx.miterLimit = 2;
+      ctx.strokeText(text, x, y);
       ctx.fillStyle = this.opts.labelInk;
       ctx.fillText(text, x, y);
-      ctx.shadowBlur = 0;
       ctx.globalAlpha = 1;
       drawn++;
     }
   }
 
+  /** Bumped by everything that moves a node. Read by `projectIfMoved`. */
+  private posEpoch = 0;
+  /** The camera, breath and positions the cached projection was taken at. */
+  private projAt = {
+    x: NaN,
+    y: NaN,
+    z: NaN,
+    qx: 0,
+    qy: 0,
+    qz: 0,
+    qw: 0,
+    zoom: 0,
+    breath: 0,
+    epoch: -1,
+  };
+
+  /**
+   * Projects only when the projection could have changed.
+   *
+   * `project` is 8,930 matrix multiplies and it used to run unconditionally,
+   * including on the frames where nothing had moved at all. Positions change
+   * through `pushPositions` and the formation writes, which bump the epoch; the
+   * camera and the breath are compared directly.
+   *
+   * Worth being honest about the size of this one: while the cloud is drifting
+   * the camera really does move every frame, so this changes nothing there. It
+   * pays when the drift is off -- a focus, a fresh interaction, reduced motion
+   * -- which is also when the cloud is most likely to be sitting in front of
+   * someone doing something else.
+   */
+  private projectIfMoved(animating: boolean) {
+    const c = this.camera;
+    const q = c.quaternion;
+    const a = this.projAt;
+    if (
+      !animating &&
+      a.epoch === this.posEpoch &&
+      a.x === c.position.x &&
+      a.y === c.position.y &&
+      a.z === c.position.z &&
+      a.qx === q.x &&
+      a.qy === q.y &&
+      a.qz === q.z &&
+      a.qw === q.w &&
+      a.zoom === c.zoom &&
+      Math.abs(a.breath - this.breath) < BREATH_EPSILON
+    )
+      return;
+    a.epoch = this.posEpoch;
+    a.x = c.position.x;
+    a.y = c.position.y;
+    a.z = c.position.z;
+    a.qx = q.x;
+    a.qy = q.y;
+    a.qz = q.z;
+    a.qw = q.w;
+    a.zoom = c.zoom;
+    a.breath = this.breath;
+    this.project();
+  }
+
+  /**
+   * Names are the most expensive thing per frame after the scene itself -- a
+   * full candidate pass, a sort, a quadratic overlap test and a stroked draw --
+   * and they are the least urgent thing on screen: text you are reading does
+   * not need recomputing sixty times a second.
+   *
+   * Throttled, except when the answer would visibly change. The exception is
+   * not optional: hovering re-weights a label to bold 12px, and a hover whose
+   * name only appears 50ms later is the same flicker the ranking rules
+   * upstream exist to prevent.
+   */
+  private drawLabelsThrottled(now: number) {
+    if (this.tier >= 2) return;
+    const sig = `${this.selected}|${this.hovered}|${this.waypoints.size}|${this.focusIds ? 1 : 0}`;
+    const gap = this.tier ? LABEL_FRAME_MS * 2 : LABEL_FRAME_MS;
+    if (sig === this.labelFor && now - this.lastLabels < gap) return;
+    this.labelFor = sig;
+    this.lastLabels = now;
+    this.drawLabels();
+  }
+
+  /**
+   * Measures the work this class does, not the gap between frames. Timing the
+   * gap would read the frame gate's own 30fps as a struggling machine and
+   * degrade a cloud that is running perfectly.
+   *
+   * Only sampled once settled -- the formation is legitimately heavy and is
+   * over in 2.6 seconds, so judging on it would degrade every machine.
+   */
+  private sampleFrame(ms: number) {
+    if (this.tier >= 2 || this.isAnimating() || !this.settledAt) return;
+    this.frames.push(ms);
+    if (this.frames.length < TUNE_SAMPLES) return;
+    const sorted = [...this.frames].sort((a, b) => a - b);
+    const median = sorted[sorted.length >> 1];
+    this.frames.length = 0;
+    if (median > TUNE_BUDGET_MS) this.degrade();
+  }
+
+  /** Two steps, cheapest visual loss first: resolution, then names. Sampling
+   *  carries on afterwards, so a machine still over budget takes the second
+   *  step a few seconds later. */
+  private degrade() {
+    if (this.tier === 0) {
+      this.tier = 1;
+      this.dprCap = 1;
+      this.renderer.setPixelRatio(this.dpr());
+      this.resize();
+      return;
+    }
+    this.tier = 2;
+    const cv = this.opts.labelCanvas;
+    const ctx = cv.getContext("2d");
+    if (!ctx) return;
+    // Reset the transform first: the context is left scaled by the pixel ratio.
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.clearRect(0, 0, cv.width, cv.height);
+  }
+
   private loop = () => {
     this.raf = requestAnimationFrame(this.loop);
     if (this.disposed || !this.points) return;
+
+    const now = performance.now();
     this.advanceGather();
     this.advanceFormation();
     this.advanceFade();
@@ -2531,11 +2801,15 @@ export class Graph3D {
     this.advanceEmergence();
     this.advanceSizes();
     this.advanceReveal();
-    if (!this.travelUntil && performance.now() < this.refitUntil) this.fit(true);
+    if (!this.travelUntil && now < this.refitUntil) this.fit(true);
+    /* Ahead of the frame gate on purpose. Damping and auto-rotation integrate
+     * per call, so stepping them only on rendered frames would halve the spin
+     * rather than halve its cost -- and they are a few trigonometric operations
+     * against the eight thousand below. */
     this.controls.update();
     this.updateZoomBounds();
     this.updateDepthUniforms();
-    this.project();
+
     /* Inert while it animates. Nothing to point at until it has arrived, a
      * magnet tearing holes in the wave undoes the effect, and a click landing
      * mid-bloom selects whatever happened to be under the cursor at the time.
@@ -2544,6 +2818,22 @@ export class Graph3D {
      * so the drift keeps running. */
     const animating = this.isAnimating();
     this.controls.enabled = !animating;
+
+    /* Full rate while it is opening or being driven, half rate once it has been
+     * left alone. The threshold is the one that already governs the drift, so
+     * the cloud drops to thirty frames at the same moment it starts turning by
+     * itself -- one state change, not two that can disagree. */
+    const idleGap = this.reduced
+      ? STANDBY_FRAME_MS_STILL
+      : this.tier
+        ? STANDBY_FRAME_MS_TIER1
+        : STANDBY_FRAME_MS;
+    const busy = animating || now - this.lastInput < STANDBY_RESUME_MS;
+    if (!busy && now - this.lastRender < idleGap) return;
+    this.lastRender = now;
+
+    const started = performance.now();
+    this.projectIfMoved(animating);
     if (animating) {
       if (this.hovered) {
         this.hovered = null;
@@ -2554,6 +2844,7 @@ export class Graph3D {
       this.updateMagnet();
     }
     this.renderer.render(this.scene, this.camera);
-    this.drawLabels();
+    this.drawLabelsThrottled(now);
+    this.sampleFrame(performance.now() - started);
   };
 }

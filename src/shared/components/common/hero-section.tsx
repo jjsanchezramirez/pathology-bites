@@ -85,7 +85,7 @@ export function HeroSection({ onLearnMoreClick }: HeroSectionProps) {
         className="hidden lg:block absolute top-1/2 -translate-y-1/2 right-[4%] aspect-square z-0"
         style={{ height: "min(100%, 52vw)" }}
       >
-        <KnowledgeCloud mask={HERO_FADE} framing={1.2} />
+        <KnowledgeCloud mask={HERO_FADE} framing={1.2} variant="hero" />
       </div>
 
       {/* Content Container */}

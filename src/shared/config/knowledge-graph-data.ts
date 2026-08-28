@@ -27,18 +27,37 @@ export const KNOWLEDGE_GRAPH_MANIFEST_URL = `${DATA_BASE}/knowledge-graph/manife
 // manifest cannot be read. Safe to leave stale — a degraded-mode backstop.
 export const KNOWLEDGE_GRAPH_URL = `${DATA_BASE}/knowledge-graph/cloud-v1.bin.br`;
 
+/**
+ * The hero's own, much sparser snapshot.
+ *
+ * The landing page draws a backdrop, not a map: it is ghosted behind body copy
+ * at about half the viewport, nothing in it is read, and nothing in it is
+ * clicked. It does not need all 8,930 nodes and 26,552 edges -- and every one
+ * of them is paid for on every frame, in the projection pass, the label
+ * candidate pass, the magnet scan and the line rasteriser. Cut to the
+ * best-connected fifteen hundred it is the same cloud, visibly, at a fraction
+ * of the per-frame cost.
+ *
+ * The explorer keeps the full graph; there the nodes are the point.
+ */
+export const KNOWLEDGE_GRAPH_HERO_URL = `${DATA_BASE}/knowledge-graph/hero-v1.bin.br`;
+
 const resolver = createManifestResolver(KNOWLEDGE_GRAPH_MANIFEST_URL, {
   cloud: KNOWLEDGE_GRAPH_URL,
+  hero: KNOWLEDGE_GRAPH_HERO_URL,
 });
+
+/** Which baked snapshot to draw. Both live under the same manifest. */
+export type SnapshotVariant = "cloud" | "hero";
 
 /**
  * Resolve the live snapshot URL from the manifest, falling back to the compiled
  * URL if it is unreachable.
  */
-export async function resolveKnowledgeGraphUrl(): Promise<{
+export async function resolveKnowledgeGraphUrl(variant: SnapshotVariant = "cloud"): Promise<{
   url: string;
   manifest: R2Manifest | null;
 }> {
   const { urls, manifest } = await resolver();
-  return { url: urls.cloud, manifest };
+  return { url: urls[variant], manifest };
 }

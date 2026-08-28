@@ -14,7 +14,7 @@
  */
 import { useEffect, useMemo, useRef, useState } from "react";
 
-import { resolveKnowledgeGraphUrl } from "@/shared/config/knowledge-graph-data";
+import { resolveKnowledgeGraphUrl, type SnapshotVariant } from "@/shared/config/knowledge-graph-data";
 
 import { Graph3D, type N3 } from "../lib/graph3d";
 import { EDGE_KINDS, EDGE_RESULTS, NODE_TYPES, POLAR_KINDS, type EdgeType } from "../lib/model";
@@ -44,6 +44,8 @@ const SHOWN = new Set(["positive", "index", "present"]);
 export interface KnowledgeCloudProps {
   /** Override the snapshot URL. Normally resolved from the R2 manifest. */
   src?: string;
+  /** Which baked snapshot to draw. `hero` is the sparse backdrop cut. */
+  variant?: SnapshotVariant;
   /**
    * CSS `mask-image` for the whole cloud. Defaults to a centred vignette; a
    * backdrop wants an off-centre one, so the side the text sits on is ghosted
@@ -58,6 +60,7 @@ export interface KnowledgeCloudProps {
 
 export function KnowledgeCloud({
   src,
+  variant = "cloud",
   mask = EDGE_FADE,
   framing,
   className,
@@ -76,18 +79,31 @@ export function KnowledgeCloud({
      * without a redeploy; `resolveKnowledgeGraphUrl` falls back to a compiled
      * URL if the manifest cannot be read. Binary and brotli'd at rest, so the
      * browser inflates it from content-encoding and this just asks for bytes. */
-    (src ? Promise.resolve(src) : resolveKnowledgeGraphUrl().then((r) => r.url))
-      .then((url) => fetch(url))
-      .then((r) => (r.ok ? r.arrayBuffer() : Promise.reject(new Error(String(r.status)))))
-      .then((buf) => {
-        if (cancelled) return;
-        setSnap(decodeSnapshot(buf));
+    const load = async (which: SnapshotVariant) => {
+      const url = src ?? (await resolveKnowledgeGraphUrl(which)).url;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(String(res.status));
+      return decodeSnapshot(await res.arrayBuffer());
+    };
+
+    load(variant)
+      /* The hero cut is a separate object under the same manifest, so a deploy
+       * that lands before the first `--publish` of it would leave the backdrop
+       * empty. Falling back to the full cloud costs a larger download on
+       * exactly one deploy and nothing after it. */
+      .catch(() =>
+        variant === "hero" && !src
+          ? load("cloud")
+          : Promise.reject(new Error("no snapshot"))
+      )
+      .then((decoded) => {
+        if (!cancelled) setSnap(decoded);
       })
       .catch(() => !cancelled && setFailed(true));
     return () => {
       cancelled = true;
     };
-  }, [src]);
+  }, [src, variant]);
 
   /** Degrees, sizes and colours: all derived, none of them worth shipping. */
   const model = useMemo(() => {
