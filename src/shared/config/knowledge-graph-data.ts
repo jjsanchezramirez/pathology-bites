@@ -32,11 +32,14 @@ export const KNOWLEDGE_GRAPH_URL = `${DATA_BASE}/knowledge-graph/cloud-v1.bin.br
  *
  * The landing page draws a backdrop, not a map: it is ghosted behind body copy
  * at about half the viewport, nothing in it is read, and nothing in it is
- * clicked. It does not need all 8,930 nodes and 26,552 edges -- and every one
- * of them is paid for on every frame, in the projection pass, the label
- * candidate pass, the magnet scan and the line rasteriser. Cut to the
- * best-connected fifteen hundred it is the same cloud, visibly, at a fraction
- * of the per-frame cost.
+ * clicked. It does not need all 5,378 nodes -- and every one of them is paid
+ * for on every frame, in the projection pass, the label candidate pass and the
+ * magnet scan. Cut to the best-connected fifteen hundred it is the same cloud,
+ * visibly, at a bit over a quarter of the per-node work.
+ *
+ * Edges do not fall nearly as far (17,780 -> 9,974): ranking by degree keeps
+ * the well-connected nodes by construction, so it keeps their edges too. The
+ * win here is the per-node passes, not the line rasteriser.
  *
  * The explorer keeps the full graph; there the nodes are the point.
  */
