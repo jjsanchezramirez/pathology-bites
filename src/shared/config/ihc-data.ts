@@ -41,10 +41,10 @@ const resolver = createManifestResolver(IHC_MANIFEST_URL, {
 });
 
 /**
- * The knowledge graph's curated entity-merge map, published beside the matrix.
+ * The knowledge base's curated entity-merge map, published beside the matrix.
  *
  * The matrix is keyed on (entity, WHO volume) — one row per chapter — while the
- * graph holds one row per tumour, so the tool folds the chapter rows together
+ * base holds one row per tumour, so the tool folds the chapter rows together
  * before showing them (see features/public/tools/ihc/aggregate.ts). This
  * artifact is what lets it fold two DIFFERENTLY named rows the curators have
  * already ruled to be one disease.

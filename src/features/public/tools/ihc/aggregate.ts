@@ -4,7 +4,7 @@
 //
 // The published IHC matrix is keyed on (entity, WHO volume) — one row per
 // chapter that describes a tumour, because that is what the extraction reads.
-// The knowledge graph is not: `entities` holds ONE row per tumour and
+// The knowledge base is not: `entities` holds ONE row per tumour and
 // `entity_placements` carries the per-volume parent (see
 // dev/docs/tooling/KNOWLEDGE-GRAPH.md §1). The tool was consuming the chapter-level
 // artifact and therefore presenting the same disease many times over: CD20+
@@ -13,14 +13,14 @@
 //
 // This module reconciles the two. It never invents a merge:
 //
-//   1. `redirects` — the knowledge graph's own curated merge map
+//   1. `redirects` — the knowledge base's own curated merge map
 //      (`entity_merge_redirects`, 1,086 rows). Authoritative, and the only
 //      thing that can merge two DIFFERENTLY named rows. Optional: it is
 //      published alongside the matrix and the tool degrades to rule 2 alone if
 //      it is not there.
 //   2. Identical canonical name. WHO uses one name for one disease across its
 //      volumes, so "Granular cell tumour" in nine books is nine chapters about
-//      one tumour. 1,010 of the graph's own 1,086 curated merges are exactly
+//      one tumour. 1,010 of the base's own 1,086 curated merges are exactly
 //      this case — the rule reproduces the curators' decisions rather than
 //      guessing past them.
 //
@@ -29,7 +29,7 @@
 // the name it just gave. That covers most of the 76 curated merges rule 1 adds.
 //
 // What it deliberately does NOT do is merge two different names on similarity.
-// The graph's rule of engagement applies here too: a missed merge leaves a
+// The knowledge base's rule of engagement applies here too: a missed merge leaves a
 // harmless duplicate, a wrong merge destroys a distinction.
 //
 // EVIDENCE POOLING
@@ -43,7 +43,7 @@
 import { normalizeMedicalSpelling } from "@/shared/utils/text/medical-spelling";
 import type { Cell, Diagnosis, Matrix } from "./types";
 
-/** `{ [losing slug]: winning slug }` — the graph's curated merge map. */
+/** `{ [losing slug]: winning slug }` — the knowledge base's curated merge map. */
 export type RedirectMap = Record<string, string>;
 
 /**
@@ -265,7 +265,7 @@ export function aggregateMatrix(matrix: Matrix, redirects: RedirectMap = {}): Ag
   const winners = new Set(Object.values(redirects));
 
   for (const [, group] of members) {
-    // Prefer a row the graph itself named as a merge winner; then the
+    // Prefer a row the knowledge base itself named as a merge winner; then the
     // best-characterised row; then the shortest (most canonical) name.
     const rep =
       [...group].sort((a, b) => {

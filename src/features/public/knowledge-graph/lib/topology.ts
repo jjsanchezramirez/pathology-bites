@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck knowledge graph tables are not in the generated Supabase types
+// @ts-nocheck knowledge base tables are not in the generated Supabase types
 /**
  * The knowledge graph's topology, built from the database.
  *

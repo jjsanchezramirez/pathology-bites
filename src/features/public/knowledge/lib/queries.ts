@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck knowledge graph tables are not in the generated Supabase types --
+// @ts-nocheck knowledge base tables are not in the generated Supabase types --
 // same reason topology.ts carries this. The suppression stops HERE: every export
 // below declares its own return type, so the pages that consume them are fully
 // checked. Regenerating types would lift it; until then one untyped file beats

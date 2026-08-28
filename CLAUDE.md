@@ -7,7 +7,7 @@ scripts, shared helpers, R2 keys, data fields and MCP servers that already
 exist. It is there because the recurring failure in this repo is a lookup gap,
 not a knowledge gap — rebuilding a worse version of something already present.
 
-**Working on the WHO knowledge graph, the IHC matrix or the 3D explorer? Read
+**Working on the WHO knowledge base, the IHC matrix or the 3D explorer? Read
 `dev/docs/tooling/KNOWLEDGE-GRAPH.md`** (local, gitignored) as well. TOOLING-INDEX is the
 log of what broke; KNOWLEDGE-GRAPH is the map — the data model, the seven build
 stages, all 115 pipeline scripts by stage with their traps, and the runbook for
@@ -15,6 +15,20 @@ adding a WHO volume, new evidence, or a new marker. It will save you the two
 mistakes everyone makes: assuming the IHC matrix is built from the database (it
 is not — it is upstream of it), and trusting `seed_knowledge_graph.ts --dry`
 (it stubs the id maps, so it cannot rehearse the part that matters).
+
+**Naming: knowledge base vs knowledge graph.** They are two layers, not
+synonyms. The **knowledge base** is the dataset and everything that reads it as
+a dataset — `entities` / `markers` / `evidence` / `sources` and their kin, the
+WHO pipeline that seeds them, the curation tools, and the public pages
+`/e/<slug>`, `/m/<slug>`, `/g/<symbol>` (`features/public/knowledge/`). The
+**knowledge graph** is the one layer that treats it as a graph: the 3D explorer
+and its topology, Leiden communities, force layout and baked snapshot
+(`features/public/knowledge-graph/`, `/debug/entity-cloud`, the hero cloud).
+Write "knowledge base" for the data, "knowledge graph" only for the
+visualisation. Existing identifiers keep their spelling — `KNOWLEDGE-GRAPH.md`,
+`kg_curation_log`, KG Atlas, `/api/debug/knowledge-graph`, the R2
+`knowledge-graph/` prefix, `npm run graph:snapshot` — all name the graph layer
+or are load-bearing; do not rename them to chase the prose.
 
 Three questions, in order, before writing any script, matcher or publisher:
 does a script already do this, does a shared helper already do this, does the

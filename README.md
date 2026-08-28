@@ -19,7 +19,7 @@ Pathology Bites is a modern, AI-powered educational platform providing free, hig
 - **Question bank & review workflow** — multi-role authoring (creator → reviewer → published) with versioning, resubmission notes, and an audit trail.
 - **Quiz system** — configurable quizzes with a hybrid client/server state machine, results analytics, and percentile/peer comparisons.
 - **Achievements** — gamified milestone badges with Lottie celebrations, earned from quiz/study activity.
-- **Knowledge graph** — interactive 3D map of WHO disease entities (homepage hero) plus public knowledge pages for entities, markers, and genes.
+- **Knowledge base** — public pages for WHO disease entities, markers, and genes, plus the knowledge graph: an interactive 3D map of the same data, rendered as the homepage hero.
 - **Learn module** — subjects → lessons with per-user progress tracking.
 - **Study plan** — a personalized scheduler that builds a dated plan from exam date, available time, and progress.
 - **Interactive sequences** — step-through teaching content used by the lesson studio.
@@ -182,7 +182,7 @@ aggregation (percentiles, ranks). Core domains:
 - **Learning** — `learning_subjects`, `lessons`, `user_lesson_progress`, interactive sequences, study-plan `board_prep_*` (config/resources/schedule/progress).
 - **Users & activity** — `users` (mirrors `auth.users`, role + status enums), quiz sessions/attempts, favorites, notifications, achievements (`achievements`, `user_achievements`), `wsi_question_events`.
 - **Media** — `images`, R2 object references, SVG assets, audio.
-- **Knowledge graph** — `entities` (WHO neoplasms, slug-keyed), `markers` (one row per (name, kind) — kind is the instrument: protein/mutation/fusion/rearrangement/amplification/deletion/aneuploidy/methylation/gene_expression), `evidence` (verbatim-quoted entity↔marker findings, unique per entity+marker+source+assay), `sources` (WHO chapters / PubMed / PathologyOutlines), `assays`, `genes`, plus `entity_placements`, `entity_synonyms`, `marker_synonyms`, `entity_differentials`, `surrogates`, `entity_merge_redirects`, and `kg_curation_log` (undo/redo for the curation tool). Consumed by the 3D explorer and knowledge pages via a brotli-compressed R2 snapshot (`npm run graph:snapshot -- --publish`).
+- **Knowledge base** — `entities` (WHO neoplasms, slug-keyed), `markers` (one row per (name, kind) — kind is the instrument: protein/mutation/fusion/rearrangement/amplification/deletion/aneuploidy/methylation/gene_expression), `evidence` (verbatim-quoted entity↔marker findings, unique per entity+marker+source+assay), `sources` (WHO chapters / PubMed / PathologyOutlines), `assays`, `genes`, plus `entity_placements`, `entity_synonyms`, `marker_synonyms`, `entity_differentials`, `surrogates`, `entity_merge_redirects`, and `kg_curation_log` (undo/redo for the curation tool). Consumed by the 3D explorer and knowledge pages via a brotli-compressed R2 snapshot (`npm run graph:snapshot -- --publish`).
 
 > Cross-user aggregation must use `SECURITY DEFINER` (RLS otherwise collapses aggregates to "1st of 1") — see the gotchas in `CLAUDE.md`. Schema detail lives in `dev/docs/system/` and the Supabase dashboard.
 
