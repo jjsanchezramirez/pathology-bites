@@ -3,9 +3,12 @@
  */
 import { describe, it, expect, vi } from "vitest";
 
-// pickViewableSlide depends on which repositories our viewer can render.
+// pickViewableSlide depends on which repositories our viewer can render. WHO is listed as
+// renderable here on purpose: it proves no repository is preferred over rank even when the
+// viewer could open it (production no longer renders WHO; see repository.ts).
 vi.mock("@/shared/utils/domain/repository", () => ({
-  isViewerSupported: (repo?: string) => repo === "WHO Blue Books Online" || repo === "MGH",
+  isViewerSupported: (repo?: string) =>
+    repo === "WHO Blue Books Online" || repo === "MGH" || repo === "Leeds",
 }));
 
 import {
@@ -66,17 +69,25 @@ describe("pickViewableSlide", () => {
     expect(pickViewableSlide(tm, slides)?.id).toBe("a");
   });
 
-  it("prefers a WHO slide over an earlier non-WHO renderable when the top match is not renderable", () => {
-    // mgh is renderable and comes first, but WHO is preferred → must return "who", not "mgh"
+  it("does not prefer a WHO slide over a higher-ranked renderable match", () => {
     const slides = [
       slide({ id: "pp", repository: "PathPresenter" }),
       slide({ id: "mgh", repository: "MGH" }),
       slide({ id: "who", repository: "WHO Blue Books Online" }),
     ];
-    expect(pickViewableSlide(tm, slides)?.id).toBe("who");
+    expect(pickViewableSlide(tm, slides)?.id).toBe("mgh");
   });
 
-  it("falls back to the first renderable match when no WHO slide exists", () => {
+  it("takes renderable matches in rank order, whatever the repository", () => {
+    const slides = [
+      slide({ id: "pp", repository: "PathPresenter" }),
+      slide({ id: "leeds", repository: "Leeds" }),
+      slide({ id: "mgh", repository: "MGH" }),
+    ];
+    expect(pickViewableSlide(tm, slides)?.id).toBe("leeds");
+  });
+
+  it("skips unrenderable matches to the first renderable one", () => {
     const slides = [
       slide({ id: "pp", repository: "PathPresenter" }),
       slide({ id: "mgh", repository: "MGH" }),

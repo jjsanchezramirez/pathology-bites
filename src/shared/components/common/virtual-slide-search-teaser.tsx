@@ -30,7 +30,8 @@ function isValidWSIUrl(url: string | undefined): url is string {
 // Repos that gate access behind a login wall — exclude from Random Slide so
 // the user doesn't land on a sign-in screen. The slide.id prefixes mirror
 // the IDs minted in normalizeToVirtualSlide / repository.ts.
-const LOGIN_REQUIRED_PREFIXES = ["pathpresenter_", "toronto_", "recutclub_"];
+// WHO joined in Nov 2026 (subscription-walled; see whoSourceViewerUrl).
+const LOGIN_REQUIRED_PREFIXES = ["pathpresenter_", "toronto_", "recutclub_", "who_"];
 function isOpenRepo(slideId: string | undefined): boolean {
   if (!slideId) return false;
   return !LOGIN_REQUIRED_PREFIXES.some((p) => slideId.startsWith(p));
