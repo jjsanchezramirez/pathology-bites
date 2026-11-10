@@ -3,7 +3,7 @@ import { requireContentRole } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 import { R2_IMAGES_HOSTS } from "@/shared/config/r2-public-urls";
 
-// Our images bucket: the custom domain plus the legacy r2.dev host still stored in old rows.
+// Our images bucket (custom domain; the retired r2.dev host is still recognised).
 const ALLOWED_HOSTS = R2_IMAGES_HOSTS;
 
 /**

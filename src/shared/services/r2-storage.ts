@@ -16,7 +16,11 @@ import {
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
 import { log } from "@/shared/utils/logging";
-import { R2_IMAGES_PUBLIC_URL, isR2PublicHost } from "@/shared/config/r2-public-urls";
+import {
+  R2_AUDIO_PUBLIC_URL,
+  R2_IMAGES_PUBLIC_URL,
+  isR2PublicHost,
+} from "@/shared/config/r2-public-urls";
 
 /**
  * The bucket used when a caller does not name one.
@@ -336,14 +340,9 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
       return `${config.CLOUDFLARE_R2_PUBLIC_URL}/${key}`;
     }
 
-    // Anki media bucket uses its own domain
-    if (bucketName === "pathology-bites-anki") {
-      return `https://pathology-bites-anki.r2.dev/${key}`;
-    }
-
     // Audio bucket
     if (bucketName === "pathology-bites-audio") {
-      return `https://pub-9b9085c172ac445ca3d87dec27a0518f.r2.dev/${key}`;
+      return `${R2_AUDIO_PUBLIC_URL}/${key}`;
     }
 
     // Video bucket
@@ -354,8 +353,8 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
       if (videoPublicUrl) {
         return `${videoPublicUrl}/${key}`;
       }
-      // Fallback to generic R2 domain if not configured
-      return `https://pathology-bites-videos.r2.dev/${key}`;
+      // No public domain configured: treat as private.
+      return `[PRIVATE:${bucketName}]${key}`;
     }
 
     // For private buckets, return a placeholder that indicates signed URL needed
@@ -373,14 +372,9 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
       return `${publicUrl}/${key}`;
     }
 
-    // Anki media bucket uses its own domain
-    if (bucketName === "pathology-bites-anki") {
-      return `https://pathology-bites-anki.r2.dev/${key}`;
-    }
-
     // Audio bucket
     if (bucketName === "pathology-bites-audio") {
-      return `https://pub-9b9085c172ac445ca3d87dec27a0518f.r2.dev/${key}`;
+      return `${R2_AUDIO_PUBLIC_URL}/${key}`;
     }
 
     // Video bucket
@@ -391,8 +385,8 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
       if (videoPublicUrl) {
         return `${videoPublicUrl}/${key}`;
       }
-      // Fallback to generic R2 domain if not configured
-      return `https://pathology-bites-videos.r2.dev/${key}`;
+      // No public domain configured: treat as private.
+      return `[PRIVATE:${bucketName}]${key}`;
     }
 
     // For private buckets, return a placeholder that indicates signed URL needed
