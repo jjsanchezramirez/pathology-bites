@@ -6,8 +6,9 @@
 // — browser (and Node 18+ undici fetch) auto-decompress, so callers see plain
 // JSON. Same pattern as virtual-slides v8 and ankoma.
 import { createManifestResolver } from "@/shared/config/r2-manifest";
+import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 
-const DATA_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev";
+const DATA_BASE = R2_DATA_PUBLIC_URL;
 
 export const CELL_QUIZ_MANIFEST_URL = `${DATA_BASE}/cell-quiz/manifest.json`;
 

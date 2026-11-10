@@ -25,6 +25,7 @@ import type { ImageInput } from "../generate-sequence/prompt";
 import type { VisionResult, AnnotationTool } from "../generate-sequence/vision";
 import { computeCameraKeyframes, type CameraKeyframes } from "../generate-sequence/camera";
 import type { SvgInput, LessonPlan, PlannedTextSlide, TranscriptAnalysis } from "./types";
+import { R2_IMAGES_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -37,8 +38,7 @@ const ZOOM_ANIMATION_DURATION = 2.0; // shared with camera.ts ZOOM_IN_HOLD timin
 const BRAND_TEAL = "#14B8A6";
 const BRAND_DARK_TEAL = "#0F766E";
 const BRAND_BG = "#f0f9f8";
-const MASCOT_SVG_URL =
-  "https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/svg/20260418024420-dr-albright.svg";
+const MASCOT_SVG_URL = `${R2_IMAGES_PUBLIC_URL}/svg/20260418024420-dr-albright.svg`;
 
 // Annotation sizes by objectSize (width, height in % of canvas)
 /** @internal exported for testing */

@@ -3,8 +3,9 @@
 
 import { useEffect, useState } from "react";
 import { log } from "@/shared/utils/logging";
+import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 
-const ANIMATION_BASE_URL = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/animations";
+const ANIMATION_BASE_URL = `${R2_DATA_PUBLIC_URL}/animations`;
 
 // Module-scope memory cache for request deduplication only
 // HTTP browser cache handles persistence across sessions

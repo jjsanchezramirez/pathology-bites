@@ -17,12 +17,17 @@ import { optimizeDemoImageUrl } from "@/shared/utils/r2/demo-question-image-url"
 import { DEMO_QUESTION_AVIF_OPTIMIZED } from "@/shared/config/demo-question-avif-manifest";
 import { DEMO_QUESTION_RESIZED } from "@/shared/config/demo-question-resized-manifest";
 
-const HOST = "https://pub-a4bec7073d99465f99043c842be6318c.r2.dev";
+// Both the custom domain and the legacy r2.dev host (still stored in older
+// images.url rows) must get the optimisation; each rewrite keeps its own origin.
+const HOSTS = [
+  "https://img.pathologybites.com",
+  "https://pub-a4bec7073d99465f99043c842be6318c.r2.dev",
+];
 
 const [resizedOriginalKey, resizedVariantKey] = [...DEMO_QUESTION_RESIZED.entries()][0];
 const avifKey = [...DEMO_QUESTION_AVIF_OPTIMIZED][0];
 
-describe("optimizeDemoImageUrl — resized JPEG entries", () => {
+describe.each(HOSTS)("optimizeDemoImageUrl — resized JPEG entries (%s)", (HOST) => {
   it("serves the downscaled file inline and keeps the original as fullUrl", () => {
     const result = optimizeDemoImageUrl(`${HOST}/${resizedOriginalKey}`);
 
@@ -36,7 +41,7 @@ describe("optimizeDemoImageUrl — resized JPEG entries", () => {
   });
 });
 
-describe("optimizeDemoImageUrl — AVIF entries", () => {
+describe.each(HOSTS)("optimizeDemoImageUrl — AVIF entries (%s)", (HOST) => {
   it("rewrites to the AVIF sibling", () => {
     const result = optimizeDemoImageUrl(`${HOST}/${avifKey}`);
     const filename = avifKey.replace(/^library\//, "");
@@ -52,7 +57,7 @@ describe("optimizeDemoImageUrl — AVIF entries", () => {
 
 describe("optimizeDemoImageUrl — pass-through", () => {
   it("leaves an unmanifested key on our host alone", () => {
-    const url = `${HOST}/library/some-other-user-upload.abc123`;
+    const url = `${HOSTS[0]}/library/some-other-user-upload.abc123`;
     expect(optimizeDemoImageUrl(url)).toEqual({ url });
   });
 

@@ -1,6 +1,8 @@
+import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
+
 // src/shared/config/virtual-slides.ts
 // Public R2 URLs for client-only virtual-slide search.
-const DATA_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev";
+const DATA_BASE = R2_DATA_PUBLIC_URL;
 
 // PRIMARY: the loader fetches this manifest first to discover the live corpus URL.
 // The corpus pipeline (publish_corpus.mjs) writes each rebuild as a NEW immutable object

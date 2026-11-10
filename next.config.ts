@@ -14,7 +14,13 @@ const nextConfig = {
     // All images use unoptimized=true to avoid Vercel optimization costs
     // remotePatterns are configured for security but optimization is disabled
     remotePatterns: [
-      // Cloudflare R2 CDN (primary image storage - all images now in 'library' folder)
+      // Cloudflare R2 images bucket via its custom domain (edge-cached)
+      {
+        protocol: "https",
+        hostname: "img.pathologybites.com",
+        pathname: "/**",
+      },
+      // Legacy r2.dev URL still stored in older images.url rows
       {
         protocol: "https",
         hostname: "pub-a4bec7073d99465f99043c842be6318c.r2.dev",
@@ -274,8 +280,8 @@ const nextConfig = {
               "style-src 'self' 'unsafe-inline' https://fonts.googleapis.com",
               "font-src 'self' https://fonts.gstatic.com",
               "img-src 'self' data: blob: https: http:",
-              "media-src 'self' data: blob: https://pub-9b9085c172ac445ca3d87dec27a0518f.r2.dev https://pub-a4bec7073d99465f99043c842be6318c.r2.dev https://pathology-bites-audio.r2.dev",
-              "connect-src 'self' https://wsi.pathologybites.com https://pathpresenter.blob.core.windows.net https://pathpresenter2.blob.core.windows.net https://*.supabase.co https://vercel.live wss://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://virtualpathology.leeds.ac.uk https://www.virtualpathology.leeds.ac.uk https://images.virtualpathology.leeds.ac.uk https://tumourclassification.iarc.who.int https://wirtualnymikroskop.mostwiedzy.pl https://slides.learnhaem.com https://pub-a4bec7073d99465f99043c842be6318c.r2.dev https://pub-9b9085c172ac445ca3d87dec27a0518f.r2.dev https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev https://challenges.cloudflare.com https://turnstile.com https://unpkg.com https://cdn.jsdelivr.net",
+              "media-src 'self' data: blob: https://img.pathologybites.com https://data.pathologybites.com https://pub-9b9085c172ac445ca3d87dec27a0518f.r2.dev https://pub-a4bec7073d99465f99043c842be6318c.r2.dev https://pathology-bites-audio.r2.dev",
+              "connect-src 'self' https://wsi.pathologybites.com https://pathpresenter.blob.core.windows.net https://pathpresenter2.blob.core.windows.net https://*.supabase.co https://vercel.live wss://*.supabase.co https://www.google-analytics.com https://analytics.google.com https://www.googletagmanager.com https://virtualpathology.leeds.ac.uk https://www.virtualpathology.leeds.ac.uk https://images.virtualpathology.leeds.ac.uk https://tumourclassification.iarc.who.int https://wirtualnymikroskop.mostwiedzy.pl https://slides.learnhaem.com https://img.pathologybites.com https://data.pathologybites.com https://pub-a4bec7073d99465f99043c842be6318c.r2.dev https://pub-9b9085c172ac445ca3d87dec27a0518f.r2.dev https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev https://challenges.cloudflare.com https://turnstile.com https://unpkg.com https://cdn.jsdelivr.net",
               "frame-src 'self' https://accounts.google.com https://vercel.live https://image.upmc.edu https://*.supabase.co https://pathpresenter.net https://pathpresenter.blob.core.windows.net https://pathpresenter2.blob.core.windows.net https://learn.mghpathology.org https://virtualpathology.leeds.ac.uk https://www.virtualpathology.leeds.ac.uk https://images.virtualpathology.leeds.ac.uk https://dlm.lmp.utoronto.ca https://rosai.secondslide.com https://rosaicollection.net http://www.hematopathologyetutorial.com https://hematopathologyetutorial.com https://images.virtualpathology.leeds.ac.uk/ https://pecan.stjude.cloud https://stjudecloudslides.blob.core.windows.net https://tumourclassification.iarc.who.int https://wirtualnymikroskop.mostwiedzy.pl https://slides.learnhaem.com https://www.learnhaem.com https://learnhaem.com https://neuro2.pathology.pitt.edu https://challenges.cloudflare.com https://turnstile.com",
               "object-src 'none'",
               "base-uri 'self'",

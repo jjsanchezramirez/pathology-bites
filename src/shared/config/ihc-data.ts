@@ -1,5 +1,6 @@
 // src/shared/config/ihc-data.ts
 import { createManifestResolver, type R2Manifest } from "@/shared/config/r2-manifest";
+import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 // Public R2 URLs for the IHC Panel Builder's client-fetched datasets.
 //
 // These used to be 8MB of uncompressed JSON committed under public/data/. They are
@@ -20,7 +21,7 @@ import { createManifestResolver, type R2Manifest } from "@/shared/config/r2-mani
 // Same architecture as virtual-slides/manifest.json — see
 // src/shared/config/virtual-slides.ts. Manifest shape:
 //   { matrix: {url, hash, brBytes}, molecular: {...}, diagnoses, markers, cells, ... }
-const DATA_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev";
+const DATA_BASE = R2_DATA_PUBLIC_URL;
 
 export const IHC_MANIFEST_URL = `${DATA_BASE}/data/ihc/manifest.json`;
 

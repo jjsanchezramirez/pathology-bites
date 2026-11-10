@@ -1,7 +1,6 @@
 import { DEMO_QUESTION_AVIF_OPTIMIZED } from "@/shared/config/demo-question-avif-manifest";
 import { DEMO_QUESTION_RESIZED } from "@/shared/config/demo-question-resized-manifest";
-
-const R2_PUBLIC_HOST = "pub-a4bec7073d99465f99043c842be6318c.r2.dev";
+import { R2_IMAGES_HOSTS } from "@/shared/config/r2-public-urls";
 
 export interface DemoImageUrls {
   /** What the carousel renders inline. */
@@ -28,7 +27,7 @@ export function optimizeDemoImageUrl(url: string): DemoImageUrls {
   if (!url) return { url };
   try {
     const parsed = new URL(url);
-    if (parsed.host !== R2_PUBLIC_HOST) return { url };
+    if (!R2_IMAGES_HOSTS.has(parsed.host)) return { url };
     const key = parsed.pathname.replace(/^\/+/, "");
 
     const resizedKey = DEMO_QUESTION_RESIZED.get(key);

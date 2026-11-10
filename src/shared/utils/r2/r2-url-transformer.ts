@@ -1,3 +1,4 @@
+import { R2_IMAGES_PUBLIC_URL, isR2PublicUrl } from "@/shared/config/r2-public-urls";
 /**
  * R2 URL Transformer
  *
@@ -8,9 +9,7 @@
 // Get R2 public URL from environment
 // Use server-side env var on server, client-side env var on client
 const getR2PublicUrl = () => {
-  return (
-    process.env.CLOUDFLARE_R2_PUBLIC_URL || "https://pub-a4bec7073d99465f99043c842be6318c.r2.dev"
-  );
+  return process.env.CLOUDFLARE_R2_PUBLIC_URL || R2_IMAGES_PUBLIC_URL;
 };
 
 const R2_PUBLIC_URL = getR2PublicUrl();
@@ -40,7 +39,7 @@ export function transformAnkiMediaUrl(originalPath: string): string {
   if (!originalPath) return originalPath;
 
   // If already an R2 URL, return as-is
-  if (originalPath.includes("r2.dev") || originalPath.includes("r2.cloudflarestorage.com")) {
+  if (isR2PublicUrl(originalPath)) {
     return originalPath;
   }
 
@@ -63,7 +62,7 @@ export function transformImagePath(imagePath: string, isAnkiContent: boolean = f
 
   // Skip if already an R2 URL or external URL
   if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
-    if (imagePath.includes("r2.dev") || imagePath.includes("r2.cloudflarestorage.com")) {
+    if (isR2PublicUrl(imagePath)) {
       return imagePath; // Already R2 URL
     }
     // External URL, leave as-is

@@ -1,5 +1,6 @@
 // src/shared/config/knowledge-graph-data.ts
 import { createManifestResolver, type R2Manifest } from "@/shared/config/r2-manifest";
+import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 // Public R2 URL for the knowledge graph's baked cloud snapshot.
 //
 // The graph is ~10,600 nodes and 28,500 edges in the database. Served live it is
@@ -19,7 +20,7 @@ import { createManifestResolver, type R2Manifest } from "@/shared/config/r2-mani
 //
 // Same architecture as data/ihc/manifest.json and virtual-slides/manifest.json —
 // see src/shared/config/ihc-data.ts and the CLAUDE.md "Caching" rule.
-const DATA_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev";
+const DATA_BASE = R2_DATA_PUBLIC_URL;
 
 export const KNOWLEDGE_GRAPH_MANIFEST_URL = `${DATA_BASE}/knowledge-graph/manifest.json`;
 
