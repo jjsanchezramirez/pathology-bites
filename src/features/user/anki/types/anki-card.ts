@@ -146,6 +146,12 @@ export interface AnkomaNote {
   guid: string;
   note_model_uuid: string;
   tags: string[];
+  /**
+   * Position of the note within its source deck node in the FULL deck. Set only
+   * on per-category files (anki-sections.ts), which drop sibling notes; the
+   * parser uses it instead of the array index so card ids/numbers don't change.
+   */
+  _index?: number;
 }
 
 export interface AnkomaDeck {

@@ -123,12 +123,15 @@ export function useR2Json<T>(options: R2JsonOptions<T>): UseR2JsonResult<T> {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const { url, fallbackUrl, transform, label, timeoutMs } = options;
+  const { url, resolveUrl, fallbackUrl, transform, label, timeoutMs } = options;
 
   useEffect(() => {
     let mounted = true;
 
-    loadR2Json<T>({ url, fallbackUrl, transform, label, timeoutMs })
+    // resolveUrl must be passed through: without it every hook consumer skipped
+    // its manifest and read the mutable fallback key — with force-cache, a
+    // stale copy could then be served indefinitely after a republish.
+    loadR2Json<T>({ url, resolveUrl, fallbackUrl, transform, label, timeoutMs })
       .then((result) => {
         if (!mounted) return;
         setData(result);

@@ -8,6 +8,8 @@ import {
   organizeDecks,
   getSubcategoryCards,
   buildCategorySidebarData,
+  summarizeDecks,
+  placeByTags,
 } from "@/app/(dashboard)/dashboard/anki/anki-data";
 import type { AnkiCard, AnkomaSection } from "@/features/user/anki/types/anki-card";
 
@@ -109,12 +111,48 @@ describe("buildCategorySidebarData", () => {
         ]),
       ],
     });
-    const sidebar = buildCategorySidebarData(decks[0]);
+    const sidebar = buildCategorySidebarData(summarizeDecks(decks)[0]);
     expect(sidebar.map((c) => c.name)).toEqual(["Alpha", "Zeta"]);
     expect(sidebar[0].subcategories.map((s) => s.name)).toEqual(["Aaa", "Bbb"]);
   });
 
   it("returns [] for no deck", () => {
     expect(buildCategorySidebarData(undefined)).toEqual([]);
+  });
+});
+
+describe("placeByTags", () => {
+  it("places a card by its #ANKOMA tag, with name normalization", () => {
+    expect(placeByTags(["x", "#ANKOMA::AP::Pulmonary::Neoplastic"])).toEqual({
+      deckType: "AP",
+      categoryId: "AP::Thoracic",
+      categoryName: "Thoracic",
+      subcategoryName: "Neoplastic",
+    });
+  });
+
+  it("returns null without a usable #ANKOMA tag", () => {
+    expect(placeByTags(["#other"])).toBeNull();
+    expect(placeByTags(["#ANKOMA::AP"])).toBeNull();
+    expect(placeByTags(undefined)).toBeNull();
+  });
+});
+
+describe("summarizeDecks", () => {
+  it("keeps counts and drops card bodies", () => {
+    const decks = organizeDecks({
+      sections: [
+        section([card("c1", ["#ANKOMA::AP::Bone"]), card("c2", ["#ANKOMA::AP::Bone::Tumors"])]),
+      ],
+    });
+    const [ap] = summarizeDecks(decks);
+    expect(ap.totalCards).toBe(2);
+    expect(ap.categories[0]).toEqual({
+      id: "AP::Bone",
+      name: "Bone",
+      cardCount: 2,
+      subcategories: [{ name: "Tumors", cardCount: 1 }],
+    });
+    expect("cards" in ap.categories[0]).toBe(false);
   });
 });

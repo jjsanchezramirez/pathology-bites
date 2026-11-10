@@ -2,23 +2,26 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { useClientAnkoma } from "@/shared/hooks/use-client-ankoma";
 import { useMobile } from "@/shared/hooks/use-mobile";
+import { prefetchAroundCard } from "@/features/user/anki/utils/prefetch-card-images";
+import { log } from "@/shared/utils/logging";
 import {
-  organizeDecks,
-  getAllCards,
-  formatTagName,
+  placeByTags,
   getSubcategoryCards,
   buildDeckSidebarData,
   buildCategorySidebarData,
+  type CategoryData,
 } from "./anki-data";
+import { findCategoryForCardId } from "./anki-sections";
+import { useAnkomaIndex, useCategoryCards, loadCardIdMap } from "./anki-loader";
 import { AnkiDeckSidebar } from "./anki-deck-sidebar";
 import { AnkiCategorySidebar } from "./anki-category-sidebar";
 import { AnkiMobileSidebar } from "./anki-mobile-sidebar";
 import { AnkiCardArea } from "./anki-card-area";
 
 export default function AnkiPage() {
-  const { ankomaData, isLoading } = useClientAnkoma();
+  // Page load fetches only the small index; a category's cards load when it is opened.
+  const { data: index, isLoading } = useAnkomaIndex();
   const [leftSidebarExpanded, setLeftSidebarExpanded] = useState(true); // Start expanded
   const [rightSidebarExpanded, setRightSidebarExpanded] = useState(false); // Start collapsed
   const [selectedDeckId, setSelectedDeckId] = useState<string | null>(null);
@@ -29,6 +32,8 @@ export default function AnkiPage() {
   const [expandedCategoryId, setExpandedCategoryId] = useState<string | null>(null);
   const [isAnimating, setIsAnimating] = useState(false);
   const [mobileSidebarOpen, setMobileSidebarOpen] = useState(false);
+  // ?cardId= deep link waiting for its category's cards to arrive.
+  const [pendingCardId, setPendingCardId] = useState<string | null>(null);
   const isMobileView = useMobile();
 
   // Detect mobile device once (useMemo ensures stable value)
@@ -37,60 +42,62 @@ export default function AnkiPage() {
     return /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
   }, []);
 
-  // Handle direct cardId navigation from URL
+  // ?cardId= deep link, step 1: find the card's category (card-id map, fetched only here).
   useEffect(() => {
-    if (!ankomaData || !window) return;
+    if (!index || typeof window === "undefined") return;
+    const cardId = new URLSearchParams(window.location.search).get("cardId");
+    if (!cardId) return;
+    let active = true;
+    loadCardIdMap(index.cardIds)
+      .then((cardIds) => {
+        const categoryId = active ? findCategoryForCardId(cardIds, cardId) : null;
+        if (!categoryId) return;
+        setSelectedDeckId(categoryId.split("::")[0]);
+        setSelectedCategoryId(categoryId);
+        setPendingCardId(cardId);
+        setLeftSidebarExpanded(false);
+        setRightSidebarExpanded(true);
+      })
+      .catch((e) => log.warn("[Anki] Could not resolve ?cardId= link", e));
+    return () => {
+      active = false;
+    };
+  }, [index]);
 
-    const urlParams = new URLSearchParams(window.location.search);
-    const cardId = urlParams.get("cardId");
+  const decks = useMemo(() => index?.decks ?? [], [index]);
+  const selectedDeck = decks.find((d) => d.id === selectedDeckId);
+  const selectedSummary = selectedDeck?.categories.find((c) => c.id === selectedCategoryId);
 
-    if (cardId) {
-      const allCards = getAllCards(ankomaData.sections);
+  const { cards: categoryCards, isLoading: isLoadingCards } = useCategoryCards(
+    selectedCategoryId ? index?.categories[selectedCategoryId] : undefined
+  );
 
-      // Try to find by exact card.id match first, then by GUID prefix
-      let targetCard = allCards.find((card) => card.id === cardId);
-      if (!targetCard) {
-        targetCard = allCards.find(
-          (card) => card.id.startsWith(cardId + "-") || card.id === cardId
-        );
-      }
-
-      if (targetCard) {
-        // Extract deck and category from the card's tags
-        const ankomaTag = targetCard.tags.find((tag) => tag.startsWith("#ANKOMA::"));
-        if (ankomaTag) {
-          const tagParts = ankomaTag.replace("#ANKOMA::", "").split("::");
-          if (tagParts.length >= 2) {
-            const deckType = tagParts[0] as "AP" | "CP";
-            const rawCategoryName = tagParts[1];
-            const categoryName = formatTagName(rawCategoryName);
-            const subcategoryName = tagParts[2]
-              ? formatTagName(tagParts[2], rawCategoryName)
-              : null;
-
-            const deckId = deckType;
-            const categoryId = `${deckType}::${categoryName}`;
-
-            setSelectedDeckId(deckId);
-            setSelectedCategoryId(categoryId);
-            if (subcategoryName) {
-              setSelectedSubcategory(subcategoryName);
-              setExpandedCategoryId(categoryId);
-            }
-
-            setLeftSidebarExpanded(false);
-            setRightSidebarExpanded(true);
+  const selectedCategory = useMemo<CategoryData | undefined>(
+    () =>
+      selectedSummary
+        ? {
+            id: selectedSummary.id,
+            name: selectedSummary.name,
+            subcategories: selectedSummary.subcategories,
+            cards: categoryCards,
           }
-        }
-      }
+        : undefined,
+    [selectedSummary, categoryCards]
+  );
+
+  // ?cardId= deep link, step 2: once the category's cards are in, open its subcategory.
+  useEffect(() => {
+    if (!pendingCardId || categoryCards.length === 0) return;
+    const card =
+      categoryCards.find((c) => c.id === pendingCardId) ??
+      categoryCards.find((c) => c.id.startsWith(pendingCardId + "-"));
+    const subcategoryName = card ? placeByTags(card.tags)?.subcategoryName : null;
+    if (subcategoryName) {
+      setSelectedSubcategory(subcategoryName);
+      setExpandedCategoryId(selectedCategoryId);
     }
-  }, [ankomaData]);
-
-  // Organize data by decks and categories
-  const organizedDecks = useMemo(() => organizeDecks(ankomaData), [ankomaData]);
-
-  const selectedDeck = organizedDecks.find((d) => d.id === selectedDeckId);
-  const selectedCategory = selectedDeck?.categories.find((c) => c.id === selectedCategoryId);
+    setPendingCardId(null);
+  }, [pendingCardId, categoryCards, selectedCategoryId]);
 
   const currentCards = useMemo(() => {
     if (!selectedCategory) return [];
@@ -101,6 +108,13 @@ export default function AnkiPage() {
   }, [selectedCategory, selectedSubcategory, isShuffled]);
 
   const currentCard = currentCards[currentCardIndex];
+
+  // Warm the cache with the neighbouring cards' images, after the current one has a head start.
+  useEffect(() => {
+    if (currentCards.length === 0) return;
+    const timer = setTimeout(() => prefetchAroundCard(currentCards, currentCardIndex), 150);
+    return () => clearTimeout(timer);
+  }, [currentCards, currentCardIndex]);
 
   // Set card index when navigating via URL with cardId
   useEffect(() => {
@@ -177,7 +191,7 @@ export default function AnkiPage() {
     setCurrentCardIndex(0);
   };
 
-  const deckSidebarData = buildDeckSidebarData(organizedDecks);
+  const deckSidebarData = buildDeckSidebarData(decks);
   const categorySidebarData = buildCategorySidebarData(selectedDeck);
 
   return (
@@ -213,6 +227,7 @@ export default function AnkiPage() {
         selectedSubcategory={selectedSubcategory}
         currentCards={currentCards}
         currentCard={currentCard}
+        isLoadingCards={isLoadingCards}
         currentCardIndex={currentCardIndex}
         isShuffled={isShuffled}
         isMobile={isMobile}

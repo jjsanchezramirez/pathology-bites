@@ -12,17 +12,20 @@ import {
   ExternalLink,
   BookOpen,
   PanelLeft,
+  Loader2,
 } from "lucide-react";
 import { InteractiveAnkiViewer } from "@/features/user/anki/components/interactive-anki-viewer";
 import { AnkiCard } from "@/features/user/anki/types/anki-card";
-import type { CategoryData, DeckData } from "./anki-data";
+import type { CategoryData, DeckSummary } from "./anki-data";
 
 interface AnkiCardAreaProps {
-  selectedDeck: DeckData | undefined;
+  selectedDeck: DeckSummary | undefined;
   selectedCategory: CategoryData | undefined;
   selectedSubcategory: string | null;
   currentCards: AnkiCard[];
   currentCard: AnkiCard | undefined;
+  /** The selected category's cards are still downloading. */
+  isLoadingCards?: boolean;
   currentCardIndex: number;
   isShuffled: boolean;
   isMobile: boolean;
@@ -39,6 +42,7 @@ export function AnkiCardArea({
   selectedSubcategory,
   currentCards,
   currentCard,
+  isLoadingCards = false,
   currentCardIndex,
   isShuffled,
   isMobile,
@@ -173,6 +177,15 @@ export function AnkiCardArea({
                   </div>
                 </div>
               </>
+            ) : selectedCategory && isLoadingCards ? (
+              <Card className="w-full">
+                <CardContent className="flex items-center justify-center py-16">
+                  <div className="text-center" role="status">
+                    <Loader2 className="h-8 w-8 text-muted-foreground mx-auto mb-3 animate-spin" />
+                    <p className="text-muted-foreground">Loading {selectedCategory.name} cards…</p>
+                  </div>
+                </CardContent>
+              </Card>
             ) : selectedCategory ? (
               <Card className="w-full">
                 <CardContent className="flex items-center justify-center py-16">
