@@ -19,26 +19,21 @@ export const TOP_MATCH_MIN_SCORE_WHO = 85;
 export const TOP_MATCH_MIN_SCORE_OTHER = 90;
 export const PATHPRESENTER_TIE_DELTA = 5;
 export const PATHPRESENTER_REPOSITORY = "PathPresenter";
-const WHO_REPOSITORY = "WHO Blue Books Online";
 
 export type TopMatch = { slide: VirtualSlide; score: number; isWho: boolean };
 
 /**
- * Choose which slide the inline-viewer action opens:
- *   1. the #1-ranked match if our viewer can render it (any repo);
- *   2. otherwise a WHO Blue Books slide (curated reference);
- *   3. otherwise the highest-ranked renderable match.
+ * Choose which slide the inline-viewer action opens: the highest-ranked match our viewer
+ * can render, in search order. No repository is preferred over rank (WHO used to be;
+ * see REPOSITORY_RANK_PRIORITY in virtual-slide-search.ts).
  * Returns null when nothing renderable is available (caller falls back to the link).
  */
 export function pickViewableSlide(
   topMatch: TopMatch | null,
   topMatches: VirtualSlide[]
 ): VirtualSlide | null {
-  if (!topMatch || topMatches.length === 0) return null;
-  if (isViewerSupported(topMatches[0].repository)) return topMatches[0];
-  const supported = topMatches.filter((s) => isViewerSupported(s.repository));
-  if (supported.length === 0) return null;
-  return supported.find((s) => s.repository === WHO_REPOSITORY) ?? supported[0];
+  if (!topMatch) return null;
+  return topMatches.find((s) => isViewerSupported(s.repository)) ?? null;
 }
 
 export function queryTokens(text: string): string[] {

@@ -587,16 +587,18 @@ function expandQuery(term: string): string[] {
 // Repository tiebreak for slides of EQUAL relevance (same score + frequency). Relevance always
 // wins first; this only decides the order within a genuine tie (e.g. the dozens of repos that
 // each have an exact "Follicular lymphoma" slide). Lower number = surfaced earlier:
-//   0  WHO Blue Books — curated reference; should lead a perfect match.
 //   1  Wirtualny / Leeds — tend to carry full cases (H&E + multiple IHCs).
 //   2  MGH — full cases too (more cyto-heavy, so just below Wirtualny/Leeds).
 //   3  everyone else — natural search/corpus order.
-//   4  PathPresenter / Recut Club — not embeddable in the in-house viewer, so they trail.
+//   4  WHO Blue Books / PathPresenter / Recut Club — open outside the in-house viewer
+//      (WHO is subscription-walled since Nov 2026, see whoSourceViewerUrl), so they trail.
+// WHO used to sit at 0 and lead every perfect match; do not restore that. Nothing should
+// prefer WHO over a slide the in-house viewer can open.
 const REPOSITORY_RANK_PRIORITY: Record<string, number> = {
-  "WHO Blue Books Online": 0,
   "Wirtualny Mikroskop": 1,
   "Leeds University": 1,
   "MGH Pathology": 2,
+  "WHO Blue Books Online": 4,
   PathPresenter: 4,
   "Recut Club": 4,
 };
