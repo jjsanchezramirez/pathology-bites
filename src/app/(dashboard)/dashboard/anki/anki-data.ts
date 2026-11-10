@@ -19,6 +19,31 @@ export interface DeckData {
   totalCards: number;
 }
 
+/** A category without its cards: what the sidebars and the published index carry. */
+export interface CategorySummary {
+  id: string;
+  name: string;
+  cardCount: number;
+  subcategories: Array<{ name: string; cardCount: number }>;
+}
+
+/** A deck without card bodies (see anki-sections.ts for the published index). */
+export interface DeckSummary {
+  id: string;
+  name: string;
+  type: "AP" | "CP";
+  totalCards: number;
+  categories: CategorySummary[];
+}
+
+/** Where a card belongs, derived from its #ANKOMA::<AP|CP>::<Category>[::<Sub>] tag. */
+export interface CardPlacement {
+  deckType: "AP" | "CP";
+  categoryId: string;
+  categoryName: string;
+  subcategoryName: string | null;
+}
+
 // Cards to ignore by ID (excluded from all views). Module-private: consumed
 // only inside this file (was exported but had no external importers).
 const IGNORED_CARD_IDS = new Set(["e;+G?PkVD5"]);
@@ -132,6 +157,33 @@ export function formatTagName(tagName: string, parentCategory?: string): string 
   return formatted;
 }
 
+/**
+ * The single source of truth for which deck/category/subcategory a card (or raw
+ * note — they share tags) belongs to. organizeDecks, getSubcategoryCards, the
+ * cardId deep link and the per-category publisher all go through this, so the
+ * sidebar index and the category files can never disagree.
+ */
+export function placeByTags(tags: readonly string[] | undefined): CardPlacement | null {
+  const ankomaTag = tags?.find((tag) => tag.startsWith("#ANKOMA::"));
+  if (!ankomaTag) return null;
+  const tagParts = ankomaTag.replace("#ANKOMA::", "").split("::");
+  if (tagParts.length < 2) return null;
+  const deckType = tagParts[0] as "AP" | "CP";
+  const rawCategoryName = tagParts[1];
+  const categoryName = formatTagName(rawCategoryName);
+  return {
+    deckType,
+    categoryId: `${deckType}::${categoryName}`,
+    categoryName,
+    subcategoryName: tagParts[2] ? formatTagName(tagParts[2], rawCategoryName) : null,
+  };
+}
+
+/** Cards excluded from every view (exported for the per-category publisher). */
+export function isIgnoredCard(id: string): boolean {
+  return IGNORED_CARD_IDS.has(id);
+}
+
 /** Flatten all cards across a section tree (depth-first). */
 export function getAllCards(sections: AnkomaSection[]): AnkiCard[] {
   const allCards: AnkiCard[] = [];
@@ -152,19 +204,10 @@ export function organizeDecks(ankomaData: { sections: AnkomaSection[] } | null):
   for (const card of allCards) {
     if (IGNORED_CARD_IDS.has(card.id)) continue;
 
-    const ankomaTag = card.tags.find((tag) => tag.startsWith("#ANKOMA::"));
-    if (!ankomaTag) continue;
-
-    const tagParts = ankomaTag.replace("#ANKOMA::", "").split("::");
-    if (tagParts.length < 2) continue;
-
-    const deckType = tagParts[0] as "AP" | "CP";
-    const rawCategoryName = tagParts[1];
-    const categoryName = formatTagName(rawCategoryName);
-    const subcategoryName = tagParts[2] ? formatTagName(tagParts[2], rawCategoryName) : null;
-
+    const placement = placeByTags(card.tags);
+    if (!placement) continue;
+    const { deckType, categoryId, categoryName, subcategoryName } = placement;
     const deckId = deckType;
-    const categoryId = `${deckType}::${categoryName}`;
 
     if (!deckMap.has(deckId)) {
       deckMap.set(deckId, {
@@ -202,14 +245,23 @@ export function organizeDecks(ankomaData: { sections: AnkomaSection[] } | null):
 
 /** Cards within a category that belong to a specific (normalized) subcategory. */
 export function getSubcategoryCards(category: CategoryData, subcategory: string): AnkiCard[] {
-  return category.cards.filter((card) => {
-    const ankomaTag = card.tags.find((tag) => tag.startsWith("#ANKOMA::"));
-    if (!ankomaTag) return false;
-    const tagParts = ankomaTag.replace("#ANKOMA::", "").split("::");
-    const rawCategoryName = tagParts[1];
-    const subcatName = tagParts[2] ? formatTagName(tagParts[2], rawCategoryName) : null;
-    return subcatName === subcategory;
-  });
+  return category.cards.filter((card) => placeByTags(card.tags)?.subcategoryName === subcategory);
+}
+
+/** Strip card bodies: the shape of the published index (and of the sidebars' input). */
+export function summarizeDecks(decks: DeckData[]): DeckSummary[] {
+  return decks.map((deck) => ({
+    id: deck.id,
+    name: deck.name,
+    type: deck.type,
+    totalCards: deck.totalCards,
+    categories: deck.categories.map((cat) => ({
+      id: cat.id,
+      name: cat.name,
+      cardCount: cat.cards.length,
+      subcategories: cat.subcategories.map((s) => ({ ...s })),
+    })),
+  }));
 }
 
 export interface DeckSidebarItem {
@@ -220,7 +272,7 @@ export interface DeckSidebarItem {
   categoryCount: number;
 }
 
-export function buildDeckSidebarData(organizedDecks: DeckData[]): DeckSidebarItem[] {
+export function buildDeckSidebarData(organizedDecks: DeckSummary[]): DeckSidebarItem[] {
   return organizedDecks.map((deck) => ({
     id: deck.id,
     name: deck.name,
@@ -238,14 +290,14 @@ export interface CategorySidebarItem {
 }
 
 export function buildCategorySidebarData(
-  selectedDeck: DeckData | undefined
+  selectedDeck: DeckSummary | undefined
 ): CategorySidebarItem[] {
   return (
     selectedDeck?.categories
       .map((cat) => ({
         id: cat.id,
         name: cat.name,
-        cardCount: cat.cards.length,
+        cardCount: cat.cardCount,
         subcategories: [...cat.subcategories].sort((a, b) => a.name.localeCompare(b.name)),
       }))
       .sort((a, b) => a.name.localeCompare(b.name)) || []

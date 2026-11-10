@@ -55,7 +55,9 @@ export function buildInlineImageTag(image: ExtractedImage | undefined, index: nu
 
     const isSmallIcon = hasSmallKeyword || isSmallByDimensions || isShortFilename;
     const className = isSmallIcon ? "inline-image-small" : "inline-image";
-    return `<img src="${image.src}" alt="${image.alt || "Image"}" class="${className}" loading="lazy" />`;
+    // Eager: the card image is the content the user is looking at, so lazy-loading
+    // only delays it; neighbouring cards are warmed by prefetch-card-images.ts.
+    return `<img src="${image.src}" alt="${image.alt || "Image"}" class="${className}" loading="eager" decoding="async" />`;
   }
   return `<span class="text-muted-foreground text-sm italic">[Image ${index + 1} not available]</span>`;
 }

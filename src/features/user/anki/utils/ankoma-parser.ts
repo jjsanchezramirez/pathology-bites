@@ -25,7 +25,9 @@ export function parseAnkomaData(rawData: AnkomaDeck): AnkomaData {
 
     // Convert notes to cards
     const cards =
-      deck.notes?.map((note, index) => convertNoteToCard(note, effectiveName, index)) || [];
+      deck.notes?.map((note, index) =>
+        convertNoteToCard(note, effectiveName, note._index ?? index)
+      ) || [];
     totalCards += cards.length;
 
     // Process subsections (children)
