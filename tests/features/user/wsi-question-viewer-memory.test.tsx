@@ -50,20 +50,38 @@ describe("WSIQuestionViewer — what it will open", () => {
       <WSIQuestionViewer
         slide={
           {
-            id: "who_31196",
-            slide_url: "https://tumourclassification.iarc.who.int/Viewer/Index2?fid=31196",
-            repository: "WHO Blue Books Online",
+            id: "leeds__Research_4_Teaching_166143.svs",
+            slide_url:
+              "https://www.virtualpathology.leeds.ac.uk/slides/library/view.php?path=%2FResearch_4%2FTeaching%2F166143.svs",
+            repository: "Leeds University",
             category: "Hematopathology",
           } as unknown as VirtualSlide
         }
       />
     );
 
-    // The resolver opens WHO by host — demanding a manifest rejected every
-    // curated haematolymphoid case with "no tile source".
+    // The resolver opens Leeds by host — demanding a manifest rejected every
+    // curated haematolymphoid case with "no tile source". (This case used a WHO
+    // slide until WHO's slides went subscription-only in Nov 2026.)
     await screen.findByTestId("osd");
     expect(last().tileSourceUrl).toBeUndefined();
-    expect(last().slideUrl).toContain("tumourclassification.iarc.who.int");
+    expect(last().slideUrl).toContain("virtualpathology.leeds.ac.uk");
+  });
+
+  it("refuses a WHO slide now that WHO's slides are subscription-only", () => {
+    render(
+      <WSIQuestionViewer
+        slide={
+          {
+            id: "who_63_177_60687",
+            slide_url: "https://tumourclassification.iarc.who.int/displayviewerhd/63/177/30389",
+            repository: "WHO Blue Books Online",
+            category: "Hematopathology",
+          } as unknown as VirtualSlide
+        }
+      />
+    );
+    expect(screen.queryByTestId("osd")).toBeNull();
   });
 
   it("refuses a slide from a repository the viewer cannot open", () => {

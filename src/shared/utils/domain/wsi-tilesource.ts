@@ -260,13 +260,15 @@ async function resolveKikoxp(slideUrl: string): Promise<WsiTileSourceResult> {
   return parseDzi(dziUrl, dziUrl.replace(/\.dzi$/, "_files/"));
 }
 
-// WHO/IARC: static DZI keyed by ?fid=, at /static/dzi/<fid>.dzi
-async function resolveWho(slideUrl: string): Promise<WsiTileSourceResult> {
-  const u = new URL(slideUrl);
-  const fid = u.searchParams.get("fid");
-  if (!fid) return { kind: "unsupported", reason: "WHO slide URL missing fid param" };
-  const root = `${u.origin}/static/dzi/${fid}`;
-  return parseDzi(`${root}.dzi`, `${root}_files/`);
+// WHO/IARC: no longer resolvable. The open DZIs at /static/dzi/<fid>.dzi were removed in
+// WHO's Nov 2026 rebuild; tiles now need a subscriber's session token (403 without one).
+// Kept as an explicit refusal so saved questions or old links fail with a clear reason
+// instead of trying to parse WHO's app shell as a DZI manifest. See whoSourceViewerUrl.
+async function resolveWho(_slideUrl: string): Promise<WsiTileSourceResult> {
+  return {
+    kind: "unsupported",
+    reason: "WHO Blue Books slides now require a WHO subscription and open on the WHO site only.",
+  };
 }
 
 // St. Jude: folder slug isn't guessable — read histology_image_index from the API.

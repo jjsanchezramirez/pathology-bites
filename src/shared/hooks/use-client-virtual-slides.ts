@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
-import { getRepositoryFromId } from "@/shared/utils/domain/repository";
+import { getRepositoryFromId, whoSourceViewerUrl } from "@/shared/utils/domain/repository";
 import {
   buildSearchIndex,
   rankSlidesWithExpansion,
@@ -171,7 +171,11 @@ function normalizeToVirtualSlide(v7: V7Entry): VirtualSlide {
 
   // Get primary URLs (first if array, string if single)
   const primaryPreview = Array.isArray(previewUrls) ? previewUrls[0] || "" : previewUrls;
-  const primaryCase = Array.isArray(caseUrls) ? caseUrls[0] || "" : caseUrls;
+  const rawPrimaryCase = Array.isArray(caseUrls) ? caseUrls[0] || "" : caseUrls;
+  // WHO slides are subscription-walled now: link to WHO's own viewer page instead of the
+  // dead Viewer/Index2 URL (see whoSourceViewerUrl).
+  const isWho = v7.x.startsWith("who_");
+  const primaryCase = isWho ? whoSourceViewerUrl(v7.x, rawPrimaryCase) : rawPrimaryCase;
   const otherUrlsArray = Array.isArray(otherUrls) ? otherUrls : otherUrls ? [otherUrls] : [];
 
   // LearnHaem's slide_url is a course page (no DZI in it); the tile source is derivable from
@@ -201,7 +205,7 @@ function normalizeToVirtualSlide(v7: V7Entry): VirtualSlide {
     other_urls: otherUrlsArray,
     source_metadata: {},
     groupId: v7.k,
-    loginWalled: v7.lw === 1,
+    loginWalled: v7.lw === 1 || isWho,
     tileSourceUrl,
     mghSlideCount: v7.n,
   };
