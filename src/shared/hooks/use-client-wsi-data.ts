@@ -7,6 +7,7 @@ import { createManifestResolver } from "@/shared/config/r2-manifest";
 import { toast } from "@/shared/utils/ui/toast";
 import { log } from "@/shared/utils/logging";
 import { slideMatchesCategory } from "@/features/user/wsi-questions/components/wsi-question-generator-utils";
+import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 
 /**
  * A case in the question corpus.
@@ -63,7 +64,7 @@ interface WsiQuestionCase {
 // Cache-Control and the loader fetches with `cache: "force-cache"`, so a browser
 // holding the pre-tile-source copy would keep serving slides the viewer cannot
 // render. Bump it whenever a republish adds a field the code depends on.
-const WSI_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/virtual-slides";
+const WSI_BASE = `${R2_DATA_PUBLIC_URL}/virtual-slides`;
 // FALLBACK: used only when the manifest is unreachable. The `?v=` cache-buster
 // is gone — virtual-slides/manifest.json now names a content-addressed object,
 // so a republish cannot be shadowed by a stale cached copy. CLAUDE.md "Caching".

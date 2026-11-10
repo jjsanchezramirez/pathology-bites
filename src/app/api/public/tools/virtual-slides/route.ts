@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 
 export const dynamic = 'force-dynamic' // Prevent pre-rendering during build
 export const revalidate = 86400 // 24h ISR-like caching
@@ -50,7 +51,7 @@ export const revalidate = 86400 // 24h ISR-like caching
  *                   type: number
  */
 export async function GET() {
-  const base = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
+  const base = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || R2_DATA_PUBLIC_URL
   const url = `${base}/virtual-slides/virtual-slides-v8-min.json.br`
   try {
     const res = await fetch(url, { next: { revalidate: 86400 } })

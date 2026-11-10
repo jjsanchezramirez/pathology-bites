@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 
 /**
  * @swagger
@@ -50,7 +51,7 @@ export async function GET() {
   // Hard-coded R2 data URL - this is a public, static URL that doesn't change.
   // Source object is `.json.br` w/ Content-Encoding: br — Node fetch (undici)
   // auto-decompresses, we still call .json() on the response normally.
-  const base = 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
+  const base = R2_DATA_PUBLIC_URL
   const url = `${base}/cell-quiz/cell-quiz-references.json.br?v=1`
   try {
     const res = await fetch(url, { next: { revalidate: 86400 } })

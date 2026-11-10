@@ -1,8 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { requireContentRole } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
+import { R2_IMAGES_HOSTS } from "@/shared/config/r2-public-urls";
 
-const ALLOWED_HOST = "pub-a4bec7073d99465f99043c842be6318c.r2.dev";
+// Our images bucket: the custom domain plus the legacy r2.dev host still stored in old rows.
+const ALLOWED_HOSTS = R2_IMAGES_HOSTS;
 
 /**
  * @swagger
@@ -20,7 +22,7 @@ const ALLOWED_HOST = "pub-a4bec7073d99465f99043c842be6318c.r2.dev";
  *           type: string
  *           format: uri
  *         description: Full URL to the R2 image (must be from allowed R2 bucket)
- *         example: https://pub-a4bec7073d99465f99043c842be6318c.r2.dev/image.jpg
+ *         example: https://img.pathologybites.com/image.jpg
  *     responses:
  *       200:
  *         description: Image successfully fetched and returned
@@ -78,7 +80,7 @@ const ALLOWED_HOST = "pub-a4bec7073d99465f99043c842be6318c.r2.dev";
  *                   example: Upstream fetch failed
  */
 export async function GET(req: NextRequest) {
-  // The ALLOWED_HOST check below stops open-proxy abuse, but middleware only
+  // The ALLOWED_HOSTS check below stops open-proxy abuse, but middleware only
   // guarantees a session on /api/admin/* — not a role. Gate it so any signed-in
   // user can't use this as a same-origin image proxy for the R2 bucket.
   const auth = requireContentRole(req);
@@ -97,7 +99,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Restrict to our own R2 bucket — never let this become an open proxy.
-  if (parsed.hostname !== ALLOWED_HOST) {
+  if (!ALLOWED_HOSTS.has(parsed.hostname)) {
     return NextResponse.json({ error: "URL not allowed" }, { status: 403 });
   }
 

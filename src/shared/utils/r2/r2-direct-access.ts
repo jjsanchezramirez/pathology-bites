@@ -1,4 +1,5 @@
 import { log } from "@/shared/utils/logging";
+import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 
 // src/shared/utils/r2-direct-access.ts
 /**
@@ -7,7 +8,7 @@ import { log } from "@/shared/utils/logging";
  */
 
 // R2 public URLs - no Vercel API calls needed
-const DATA_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev";
+const DATA_BASE = R2_DATA_PUBLIC_URL;
 
 export const R2_PUBLIC_URLS = {
   ABPATH_CONTENT_SPECS_JSON: `${DATA_BASE}/ab-path/content-specs.json`,

@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 
 export const dynamic = "force-dynamic";
 export const revalidate = 300;
@@ -14,7 +15,7 @@ export const revalidate = 300;
  * Content-Encoding: br).
  */
 
-const ANKI_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev";
+const ANKI_BASE = R2_DATA_PUBLIC_URL;
 
 export async function GET() {
   try {

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 
 /**
  * @swagger
@@ -49,7 +50,7 @@ import { NextResponse } from 'next/server'
 export async function GET() {
   // Source object is `.json.br` w/ Content-Encoding: br — Node fetch (undici)
   // auto-decompresses, we still call .json() on the response normally.
-  const base = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || 'https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev'
+  const base = process.env.CLOUDFLARE_R2_DATA_PUBLIC_URL || R2_DATA_PUBLIC_URL
   const url = `${base}/cell-quiz/cell-quiz-images.json.br?v=1`
   try {
     const res = await fetch(url, { next: { revalidate: 86400 } })

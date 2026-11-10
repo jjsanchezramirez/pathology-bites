@@ -16,6 +16,7 @@ import {
   GetObjectCommand,
 } from "@aws-sdk/client-s3";
 import { log } from "@/shared/utils/logging";
+import { R2_IMAGES_PUBLIC_URL, isR2PublicHost } from "@/shared/config/r2-public-urls";
 
 /**
  * The bucket used when a caller does not name one.
@@ -34,9 +35,7 @@ function getR2Config() {
   const CLOUDFLARE_ACCOUNT_ID = process.env.CLOUDFLARE_ACCOUNT_ID;
   const CLOUDFLARE_R2_ACCESS_KEY_ID = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID;
   const CLOUDFLARE_R2_SECRET_ACCESS_KEY = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY;
-  const CLOUDFLARE_R2_PUBLIC_URL =
-    process.env.CLOUDFLARE_R2_PUBLIC_URL ||
-    (CLOUDFLARE_ACCOUNT_ID ? `https://pub-${CLOUDFLARE_ACCOUNT_ID}.r2.dev` : "");
+  const CLOUDFLARE_R2_PUBLIC_URL = process.env.CLOUDFLARE_R2_PUBLIC_URL || R2_IMAGES_PUBLIC_URL;
 
   if (!CLOUDFLARE_ACCOUNT_ID || !CLOUDFLARE_R2_ACCESS_KEY_ID || !CLOUDFLARE_R2_SECRET_ACCESS_KEY) {
     throw new Error(
@@ -370,7 +369,7 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
       const publicUrl =
         process.env.NEXT_PUBLIC_CLOUDFLARE_R2_PUBLIC_URL ||
         process.env.CLOUDFLARE_R2_PUBLIC_URL ||
-        "https://pub-a4bec7073d99465f99043c842be6318c.r2.dev";
+        R2_IMAGES_PUBLIC_URL;
       return `${publicUrl}/${key}`;
     }
 
@@ -407,10 +406,7 @@ export function getR2PublicUrl(key: string, bucket?: string): string {
 export function extractR2KeyFromUrl(url: string): string | null {
   try {
     const urlObj = new URL(url);
-    if (
-      urlObj.hostname.includes("r2.dev") ||
-      urlObj.hostname.includes("r2.cloudflarestorage.com")
-    ) {
+    if (isR2PublicHost(urlObj.hostname)) {
       return urlObj.pathname.substring(1); // Remove leading slash
     }
     return null;

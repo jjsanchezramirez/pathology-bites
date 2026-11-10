@@ -12,6 +12,7 @@ import {
 import { Loader2, BookOpen, GraduationCap, Target } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import { log } from "@/shared/utils/logging";
+import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 
 export interface EducationalContent {
   category: string;
@@ -179,14 +180,11 @@ export async function loadContentFromR2(filename: string): Promise<ContentData |
 
   const compressedName = filename.endsWith(".br") ? filename : `${filename}.br`;
   try {
-    const response = await fetch(
-      `https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/context/${compressedName}?v=1`,
-      {
-        method: "GET",
-        headers: { Accept: "application/json" },
-        cache: "force-cache",
-      }
-    );
+    const response = await fetch(`${R2_DATA_PUBLIC_URL}/context/${compressedName}?v=1`, {
+      method: "GET",
+      headers: { Accept: "application/json" },
+      cache: "force-cache",
+    });
 
     if (response.ok) {
       const data = await response.json();

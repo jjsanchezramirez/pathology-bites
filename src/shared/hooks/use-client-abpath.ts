@@ -5,12 +5,13 @@ import type { ABPathData } from "@/shared/types/abpath";
 import { useR2Json } from "@/shared/hooks/use-r2-json";
 import { createManifestResolver } from "@/shared/config/r2-manifest";
 import { log } from "@/shared/utils/logging";
+import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 
 // Direct R2 access - CORS is configured on bucket.
 // `.json.br` object on R2 stored w/ HTTP `Content-Encoding: br` — browser
 // auto-decompresses, so the fetch sees plain JSON. Same pattern as
 // virtual-slides v8 / ankoma / cell-quiz.
-const ABPATH_BASE = "https://pub-cee35549242c4118a1e03da0d07182d3.r2.dev/ab-path";
+const ABPATH_BASE = `${R2_DATA_PUBLIC_URL}/ab-path`;
 // FALLBACK: used only when the manifest is unreachable. See CLAUDE.md "Caching".
 const ABPATH_API_URL = `${ABPATH_BASE}/content-specs.json.br`;
 const resolveAbPathUrl = (() => {
