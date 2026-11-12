@@ -8,6 +8,7 @@ import { toast } from "@/shared/utils/ui/toast";
 import { log } from "@/shared/utils/logging";
 import { slideMatchesCategory } from "@/features/user/wsi-questions/components/wsi-question-generator-utils";
 import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
+import { isHiddenRepository } from "@/shared/utils/domain/repository";
 
 /**
  * A case in the question corpus.
@@ -140,9 +141,11 @@ function transformWSIData(raw: unknown): VirtualSlide[] {
     };
   });
 
-  // Filter out any entries without valid URLs
+  // Filter out any entries without valid URLs, and cases from hidden repositories (MGH —
+  // see isHiddenRepository).
   const validEntries = entries.filter(
     (slide) =>
+      !isHiddenRepository(slide.repository) &&
       slide.image_url &&
       slide.image_url.startsWith("http") &&
       !slide.image_url.includes("localhost")
