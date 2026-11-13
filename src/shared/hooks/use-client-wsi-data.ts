@@ -9,6 +9,10 @@ import { log } from "@/shared/utils/logging";
 import { slideMatchesCategory } from "@/features/user/wsi-questions/components/wsi-question-generator-utils";
 import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
 import { isHiddenRepository } from "@/shared/utils/domain/repository";
+import {
+  hiddenSlidePrefixesFromManifest,
+  isHiddenSlideId,
+} from "@/shared/utils/domain/hidden-sources";
 
 /**
  * A case in the question corpus.
@@ -72,10 +76,18 @@ const WSI_BASE = `${R2_DATA_PUBLIC_URL}/virtual-slides`;
 const WSI_DATA_URL = `${WSI_BASE}/public_wsi_cases.json`;
 
 // virtual-slides/manifest.json carries BOTH the search corpus (top level) and
-// this cases dataset under `cases`, so the two share one pointer.
+// this cases dataset under `cases`, so the two share one pointer — and one source-health
+// block. The resolver runs before the fetch + transform in loadR2Json, so the hidden
+// prefixes it records are in place by the time transformWSIData filters the cases.
+// Empty when the manifest is unreachable or predates source health (hidden-sources.ts).
+let hiddenPrefixes: string[] = [];
 const resolveWsiCasesUrl = (() => {
   const r = createManifestResolver(`${WSI_BASE}/manifest.json`, { cases: WSI_DATA_URL });
-  return async () => (await r()).urls.cases;
+  return async () => {
+    const resolved = await r();
+    hiddenPrefixes = hiddenSlidePrefixesFromManifest(resolved.manifest);
+    return resolved.urls.cases;
+  };
 })();
 
 // Convert the PathPresenter cases JSON into VirtualSlide entries, dropping any
@@ -141,11 +153,14 @@ function transformWSIData(raw: unknown): VirtualSlide[] {
     };
   });
 
-  // Filter out any entries without valid URLs, and cases from hidden repositories (MGH —
-  // see isHiddenRepository).
+  // Filter out any entries without valid URLs, and cases from hidden sources — either the
+  // hard-coded list (MGH — see isHiddenRepository) or the manifest's hidden_sources, by
+  // the slide-id prefix the manifest declares (curated cases carry their corpus id;
+  // PathPresenter cases are minted "pathpresenter_<n>", so its prefix hides them too).
   const validEntries = entries.filter(
     (slide) =>
       !isHiddenRepository(slide.repository) &&
+      !isHiddenSlideId(slide.id, hiddenPrefixes) &&
       slide.image_url &&
       slide.image_url.startsWith("http") &&
       !slide.image_url.includes("localhost")

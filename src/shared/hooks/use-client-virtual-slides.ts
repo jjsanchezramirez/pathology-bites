@@ -8,6 +8,10 @@ import {
   whoSourceViewerUrl,
 } from "@/shared/utils/domain/repository";
 import {
+  hiddenSlidePrefixesFromManifest,
+  isHiddenSlideId,
+} from "@/shared/utils/domain/hidden-sources";
+import {
   buildSearchIndex,
   rankSlidesWithExpansion,
 } from "@/shared/utils/domain/virtual-slide-search";
@@ -232,6 +236,10 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
   // content-addressed + immutable. Fall back to the compiled URL if the manifest is
   // unreachable or malformed (degraded mode, never blocks the page).
   let corpusUrl = VIRTUAL_SLIDES_JSON_URL;
+  // Sources the crawler's liveness probe has marked hidden (manifest.hidden_sources +
+  // sources[s].prefix — see hidden-sources.ts). Empty when the manifest is unreachable
+  // or predates source health; the hard-coded HIDDEN_REPOS list still applies then.
+  let hiddenPrefixes: string[] = [];
   try {
     const mController = new AbortController();
     const mTimeout = setTimeout(() => mController.abort(), 4000);
@@ -244,6 +252,10 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
       if (manifest?.url) {
         corpusUrl = manifest.url as string;
         log.debug("[VirtualSlides] manifest →", manifest.hash, `(${manifest.total} slides)`);
+      }
+      hiddenPrefixes = hiddenSlidePrefixesFromManifest(manifest);
+      if (hiddenPrefixes.length > 0) {
+        log.debug("[VirtualSlides] manifest hides sources with prefixes", hiddenPrefixes);
       }
     }
   } catch (manifestError) {
@@ -386,11 +398,13 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
         other: reverseMapping(json.bases.other),
       };
 
-      // Hidden repositories (Toronto LMP, MGH — see isHiddenRepository) stay in the raw
-      // corpus but never reach search, browse, the teaser or the highlight look-up.
+      // Hidden sources stay in the raw corpus but never reach search, browse, the teaser
+      // or the highlight look-up. Two switches, either one hides: the hard-coded
+      // HIDDEN_REPOS list (Toronto LMP, MGH — see isHiddenRepository) and the manifest's
+      // hidden_sources, which the crawler flips when a source's slides stop opening.
       const processedSlides: VirtualSlide[] = json.data
         .map((e) => normalizeToVirtualSlide(e))
-        .filter((s) => !isHiddenRepository(s.repository));
+        .filter((s) => !isHiddenRepository(s.repository) && !isHiddenSlideId(s.id, hiddenPrefixes));
       log.debug("[VirtualSlides] ✅ Loaded v7/v8 production format");
 
       // Build the case-group sibling index (related slides). `groups` is absent on
