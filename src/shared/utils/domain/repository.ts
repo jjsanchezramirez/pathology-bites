@@ -41,6 +41,22 @@ export function isViewerSupported(repository: string): boolean {
   return VIEWER_SUPPORTED_REPOS.has(repository);
 }
 
+// Repositories hidden from the whole site: the corpus loader (search, browse, teaser,
+// highlight look-up), the WSI-question cases and the logo strips all drop them. The raw
+// corpus keeps them, so un-hiding is deleting a line here — no republish.
+//
+// - University of Toronto LMP: viewer links are Shibboleth-walled and don't open reliably.
+// - MGH Pathology (hidden Nov 2026): learn.mghpathology.org — and every other name under
+//   mghpathology.org and mgbpathology.org — now resolves in public DNS to private
+//   addresses (172.27.81.x / 172.31.153.x), so no browser outside the MGB network can reach
+//   /list, the DZIs or the tiles. All 8,083 MGH slides failed. Re-check before un-hiding:
+//   the slide-list API (/pv-http/wsi/case/<id>/list) must return JSON from a public network.
+const HIDDEN_REPOS = new Set(["University of Toronto LMP", "MGH Pathology"]);
+
+export function isHiddenRepository(repository: string | null | undefined): boolean {
+  return !!repository && HIDDEN_REPOS.has(repository);
+}
+
 // WHO rebuilt Classification of Tumours Online (Nov 2026). The open DZIs at
 // /static/dzi/<fid>.dzi are gone — every path there now returns the app shell with a 200,
 // which is why a status-only check misses it — and Viewer/Index2?fid= returns 400. Slides

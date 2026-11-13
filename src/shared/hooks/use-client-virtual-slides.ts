@@ -2,7 +2,11 @@
 
 import { useEffect, useMemo, useState, useCallback } from "react";
 import { VirtualSlide } from "@/shared/types/virtual-slides";
-import { getRepositoryFromId, whoSourceViewerUrl } from "@/shared/utils/domain/repository";
+import {
+  getRepositoryFromId,
+  isHiddenRepository,
+  whoSourceViewerUrl,
+} from "@/shared/utils/domain/repository";
 import {
   buildSearchIndex,
   rankSlidesWithExpansion,
@@ -382,11 +386,11 @@ async function loadClientSlides(): Promise<VirtualSlide[]> {
         other: reverseMapping(json.bases.other),
       };
 
-      // Toronto LMP is excluded from the search engine (kept in the raw corpus): its
-      // viewer links are Shibboleth-walled and don't open reliably.
+      // Hidden repositories (Toronto LMP, MGH — see isHiddenRepository) stay in the raw
+      // corpus but never reach search, browse, the teaser or the highlight look-up.
       const processedSlides: VirtualSlide[] = json.data
         .map((e) => normalizeToVirtualSlide(e))
-        .filter((s) => s.repository !== "University of Toronto LMP");
+        .filter((s) => !isHiddenRepository(s.repository));
       log.debug("[VirtualSlides] ✅ Loaded v7/v8 production format");
 
       // Build the case-group sibling index (related slides). `groups` is absent on

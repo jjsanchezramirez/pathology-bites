@@ -1,5 +1,10 @@
 import { describe, expect, it } from "vitest";
-import { isViewerSupported, whoSourceViewerUrl } from "@/shared/utils/domain/repository";
+import {
+  isHiddenRepository,
+  isViewerSupported,
+  whoSourceViewerUrl,
+} from "@/shared/utils/domain/repository";
+import { repositoryLogos } from "@/shared/components/common/repository-logos";
 
 describe("WHO Blue Books slides (subscription-only since Nov 2026)", () => {
   it("are no longer opened in the in-house viewer", () => {
@@ -22,5 +27,20 @@ describe("WHO Blue Books slides (subscription-only since Nov 2026)", () => {
     expect(whoSourceViewerUrl("who_odd", url)).toBe(url);
     const noFid = "https://tumourclassification.iarc.who.int/welcome";
     expect(whoSourceViewerUrl("who_63_177_60687", noFid)).toBe(noFid);
+  });
+});
+
+describe("hidden repositories (MGH unreachable since Nov 2026)", () => {
+  it("hides MGH and Toronto, and nothing else", () => {
+    expect(isHiddenRepository("MGH Pathology")).toBe(true);
+    expect(isHiddenRepository("University of Toronto LMP")).toBe(true);
+    expect(isHiddenRepository("Leeds University")).toBe(false);
+    expect(isHiddenRepository(undefined)).toBe(false);
+    expect(isHiddenRepository("")).toBe(false);
+  });
+
+  it("drops the MGH logo from the logo strips", () => {
+    expect(repositoryLogos.some((l) => l.id === "mgh")).toBe(false);
+    expect(repositoryLogos.some((l) => l.id === "leeds")).toBe(true);
   });
 });

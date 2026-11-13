@@ -1,6 +1,7 @@
 "use client";
 
 import { getR2PublicUrl } from "@/shared/services/r2-storage";
+import { isHiddenRepository } from "@/shared/utils/domain/repository";
 
 // Logos served from `logos/optimized/` — downsized to 240×176 (2× of the
 // ~120×88 display box). AVIF is the primary source; PNG is the legacy
@@ -19,8 +20,9 @@ function pngSrc(file: string): string {
 
 // Repository logos. hrefs point at each repository's home domain
 // (derived from the dataset base URLs). Exported for reuse (e.g. the static
-// strip on the virtual-slides page).
-export const repositoryLogos: Logo[] = [
+// strip on the virtual-slides page). Repositories hidden site-wide (see isHiddenRepository)
+// are filtered out below; their entries stay so un-hiding needs no edit here.
+const allRepositoryLogos: Logo[] = [
   {
     id: "leeds",
     file: "university-of-leeds-logo.png",
@@ -88,6 +90,10 @@ export const repositoryLogos: Logo[] = [
     href: "https://www.learnhaem.com/",
   },
 ];
+
+// `alt` is the dataset repository name for every logo a hidden repository could own
+// ("MGH Pathology").
+export const repositoryLogos: Logo[] = allRepositoryLogos.filter((l) => !isHiddenRepository(l.alt));
 
 // Map a dataset repository label (e.g. "Leeds University", "St. Jude Cloud") to its
 // logo. Keyword-matched since dataset names don't exactly equal the logo `alt`.
