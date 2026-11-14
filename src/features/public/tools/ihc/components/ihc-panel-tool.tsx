@@ -796,7 +796,14 @@ function mergeMolecular(
   memberIds: string[]
 ): MolecularEntry | undefined {
   if (!molecular) return undefined;
-  const entries = memberIds.map((id) => molecular.byDiagnosis[id]).filter(Boolean);
+  // The matrix ids carry a suffix the molecular keys do not — WHO chapter rows
+  // end in the volume token (`…--haematolymphoid`), subtype rows in the parent
+  // slug — while `build_molecular_matrix.mjs` keys on the bare entity-name slug.
+  // Try the full id first, then the name slug before the first `--`, so both
+  // shapes resolve and a republished molecular file needs no id rewriting.
+  const entries = memberIds
+    .map((id) => molecular.byDiagnosis[id] ?? molecular.byDiagnosis[id.split("--")[0]])
+    .filter(Boolean);
   if (entries.length === 0) return undefined;
   if (entries.length === 1) return entries[0];
 
