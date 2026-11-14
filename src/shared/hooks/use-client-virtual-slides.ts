@@ -16,6 +16,7 @@ import {
   rankSlidesWithExpansion,
 } from "@/shared/utils/domain/virtual-slide-search";
 import { log } from "@/shared/utils/logging";
+import { TILE_PROXY } from "@/shared/utils/domain/wsi-osd-tilesource";
 
 // Module-scope cache for request deduplication and in-session speed
 // HTTP browser cache handles persistence across sessions
@@ -178,7 +179,15 @@ function normalizeToVirtualSlide(v7: V7Entry): VirtualSlide {
   const otherUrls = reconstructV7Url(v7.w, urlBases?.other);
 
   // Get primary URLs (first if array, string if single)
-  const primaryPreview = Array.isArray(previewUrls) ? previewUrls[0] || "" : previewUrls;
+  const rawPrimaryPreview = Array.isArray(previewUrls) ? previewUrls[0] || "" : previewUrls;
+  // The corpus stores a preview exactly as its source serves it. An http-only host
+  // (Hematopathology eTutorial never answers on https; its previews are the
+  // pyramid's own whole-slide tile) cannot be loaded by a page served over https —
+  // the browser blocks the mixed content — so route it through the tile proxy, the
+  // same Worker that already carries that host's tiles for the viewer.
+  const primaryPreview = rawPrimaryPreview.startsWith("http://")
+    ? `${TILE_PROXY}${rawPrimaryPreview}`
+    : rawPrimaryPreview;
   const rawPrimaryCase = Array.isArray(caseUrls) ? caseUrls[0] || "" : caseUrls;
   // WHO slides are subscription-walled now: link to WHO's own viewer page instead of the
   // dead Viewer/Index2 URL (see whoSourceViewerUrl).

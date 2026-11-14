@@ -58,6 +58,12 @@ const nextConfig = {
         protocol: "https",
         hostname: "rosai.secondslide.com",
       },
+      // The tile proxy: http-only sources' previews (Hematopathology eTutorial) are
+      // loaded through it — see use-client-virtual-slides normalizeToVirtualSlide.
+      {
+        protocol: "https",
+        hostname: "wsi.pathologybites.com",
+      },
       {
         protocol: "https",
         hostname: "hematopathologyetutorial.com",

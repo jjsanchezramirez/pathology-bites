@@ -9,7 +9,7 @@ import type { WsiTileSource } from "./wsi-tilesource";
 // route: Cloudflare bills per-request not per-GB and edge-caches immutable tiles, so
 // tile traffic no longer burns Vercel origin transfer. Cross-origin now, so the host is
 // allow-listed in next.config.ts connect-src (img-src already permits https:).
-const TILE_PROXY = "https://wsi.pathologybites.com/?url=";
+export const TILE_PROXY = "https://wsi.pathologybites.com/?url=";
 
 export function buildOsdTileSource(ts: WsiTileSource, opts?: { proxy?: boolean }): unknown {
   if (ts.kind === "dzi") {
