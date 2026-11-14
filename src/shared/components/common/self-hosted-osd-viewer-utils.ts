@@ -282,6 +282,13 @@ export function buildOsdOptions(args: {
     showFullPageControl: false,
     showNavigator,
     navigatorPosition: "BOTTOM_LEFT",
+    // OSD registers the navigator as a "control" and, by default, fades every control
+    // to opacity 0 two seconds after the pointer leaves the viewer (autoHideControls),
+    // bringing it back on re-entry. None of our chrome behaves that way — the toolbar,
+    // logo, stain chip and dial stay put — so the minimap silently vanishing read as
+    // broken, and in the inline WSI-question layout, where the pointer lives outside
+    // the viewer most of the time, it was invisible more often than not.
+    autoHideControls: false,
     // Slower, finer zoom (smaller per-scroll step + longer glide).
     animationTime: 1.0,
     springStiffness: 5.5,

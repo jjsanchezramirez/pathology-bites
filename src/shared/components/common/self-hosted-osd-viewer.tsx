@@ -79,6 +79,13 @@ type OsdViewer = {
   addHandler: (ev: string, cb: (event?: { message?: string }) => void) => void;
   addOnceHandler: (ev: string, cb: () => void) => void;
   drawer?: { canvas?: HTMLCanvasElement };
+  // The minimap. Present once the viewer is built with showNavigator.
+  navigator?: {
+    setWidth: (w: number | string) => void;
+    setHeight: (h: number | string) => void;
+    updateSize: () => void;
+    update: (viewport: unknown) => void;
+  };
 };
 
 interface Props {
@@ -138,6 +145,20 @@ interface Props {
   initialView?: SavedView;
   /** Reports the view each time motion settles, so a host can hand it back later. */
   onViewChange?: (view: SavedView) => void;
+  /**
+   * Hands the live OSD instance (and the OpenSeadragon namespace) to the host,
+   * once the slide is open and its dimensions are known.
+   *
+   * For hosts that need to drive the viewport or draw on the slide — panning to
+   * a point, placing overlays — WITHOUT remounting. Remounting to move the view
+   * tears down and rebuilds the WebGL context each time, which is both slow and
+   * a reliable way to end up with a black canvas.
+   *
+   * Escape hatch: the returned objects are OSD's own, not a curated API, so
+   * treat them as read-mostly and do not fight the component for control of
+   * rotation, flip or slide switching.
+   */
+  onViewerReady?: (viewer: OsdViewer, osd: unknown) => void;
 }
 
 /**
@@ -190,6 +211,7 @@ export function SelfHostedOSDViewer({
   fitToken,
   initialView,
   onViewChange,
+  onViewerReady,
 }: Props) {
   const wrapperRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -202,6 +224,8 @@ export function SelfHostedOSDViewer({
   initialViewRef.current = initialView;
   const onViewChangeRef = useRef(onViewChange);
   onViewChangeRef.current = onViewChange;
+  const onViewerReadyRef = useRef(onViewerReady);
+  onViewerReadyRef.current = onViewerReady;
   const onErrorRef = useRef(onError);
   onErrorRef.current = onError;
   const onCssFullscreenChangeRef = useRef(onCssFullscreenChange);
@@ -712,6 +736,11 @@ export function SelfHostedOSDViewer({
             };
             setTimeout(poll, 80);
           }
+          // Only here is the slide genuinely open: imageToViewportCoordinates and
+          // addOverlay both need the image's dimensions, which do not exist until
+          // "open" FIRES. Registering the handler is not the same moment, and
+          // calling this alongside onReady placed every overlay at nowhere.
+          onViewerReadyRef.current?.(v, osdLibRef.current);
         });
         setStatus("ready");
         setEverReady(true);
@@ -996,6 +1025,38 @@ export function SelfHostedOSDViewer({
     setViewerHeight(box.height);
     return () => ro.disconnect();
   }, []);
+
+  // Re-size the minimap from the MEASURED viewer, every time that measurement or the
+  // minimap's visibility changes.
+  //
+  // OSD sizes the navigator's viewport exactly once, when it builds it, from the
+  // navigator container's clientWidth/Height at that instant — and giving it explicit
+  // navigatorWidth/Height (which we do, to match the slide's aspect) switches its own
+  // resize-with-viewer behaviour OFF, so nothing ever measures again. Init is the worst
+  // moment to measure: the slide-viewer modal opens at 384px and expands over 500ms,
+  // and under MINIMAP_MIN_W the wrapper carries wsi-hide-minimap, so the navigator is
+  // display:none while OSD measures it. clientWidth reads 0, OSD clamps to 1, and the
+  // minimap stays a 1x1 viewport for the life of the slide: a 2x2 canvas under a
+  // 120x106 glass box, the viewport rectangle 0x0 — an empty frosted square in the
+  // corner. Every repository was affected in the modal; the inline WSI-question
+  // viewer only when it first rendered narrow.
+  //
+  // setWidth/setHeight re-run OSD's updateSize(), which re-measures the container and
+  // resizes the navigator viewport; update() redraws the viewport rectangle against
+  // the new size rather than waiting for the next pan. Same-size calls are no-ops
+  // inside OSD (it compares against the last container size), so this is cheap to
+  // run on every resize tick.
+  useEffect(() => {
+    const v = viewerRef.current;
+    const nav = v?.navigator;
+    if (!v || !nav || !dims || !roomForMinimap || viewerWidth === 0) return;
+    const box = navigatorSize(dims.w, dims.h, viewerWidth, viewerHeight);
+    if (!box) return;
+    nav.setWidth(box.navigatorWidth);
+    nav.setHeight(box.navigatorHeight);
+    nav.update(v.viewport);
+    setNavHeight(parseFloat(box.navigatorHeight));
+  }, [dims, roomForMinimap, viewerWidth, viewerHeight, status]);
 
   const panelItems = buildPanelItems(
     corpusMode,
