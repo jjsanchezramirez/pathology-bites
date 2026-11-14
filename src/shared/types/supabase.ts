@@ -4,7 +4,7 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "13.0.5";
+    PostgrestVersion: "14.5";
   };
   public: {
     Tables: {
@@ -35,6 +35,24 @@ export type Database = {
           id?: string;
           requirement?: number;
           title?: string;
+        };
+        Relationships: [];
+      };
+      assays: {
+        Row: {
+          code: string;
+          id: string;
+          name: string;
+        };
+        Insert: {
+          code: string;
+          id?: string;
+          name: string;
+        };
+        Update: {
+          code?: string;
+          id?: string;
+          name?: string;
         };
         Relationships: [];
       };
@@ -96,6 +114,189 @@ export type Database = {
             columns: ["pathology_category_id"];
             isOneToOne: false;
             referencedRelation: "categories";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      authorities: {
+        Row: {
+          classification_id: string | null;
+          created_at: string;
+          edition_ord: number | null;
+          id: string;
+          kind: string;
+          name: string;
+          publisher: string | null;
+          slug: string;
+          tier: number;
+          volume_family: string | null;
+          year: number | null;
+        };
+        Insert: {
+          classification_id?: string | null;
+          created_at?: string;
+          edition_ord?: number | null;
+          id?: string;
+          kind: string;
+          name: string;
+          publisher?: string | null;
+          slug: string;
+          tier: number;
+          volume_family?: string | null;
+          year?: number | null;
+        };
+        Update: {
+          classification_id?: string | null;
+          created_at?: string;
+          edition_ord?: number | null;
+          id?: string;
+          kind?: string;
+          name?: string;
+          publisher?: string | null;
+          slug?: string;
+          tier?: number;
+          volume_family?: string | null;
+          year?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "authorities_classification_id_fkey";
+            columns: ["classification_id"];
+            isOneToOne: false;
+            referencedRelation: "classifications";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      axis_authority_ranks: {
+        Row: {
+          authority_id: string;
+          axis: string;
+          rank: number;
+          rationale: string | null;
+        };
+        Insert: {
+          authority_id: string;
+          axis: string;
+          rank: number;
+          rationale?: string | null;
+        };
+        Update: {
+          authority_id?: string;
+          axis?: string;
+          rank?: number;
+          rationale?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "axis_authority_ranks_authority_id_fkey";
+            columns: ["authority_id"];
+            isOneToOne: false;
+            referencedRelation: "authorities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "axis_authority_ranks_authority_id_fkey";
+            columns: ["authority_id"];
+            isOneToOne: false;
+            referencedRelation: "claim_quotes";
+            referencedColumns: ["authority_id"];
+          },
+          {
+            foreignKeyName: "axis_authority_ranks_authority_id_fkey";
+            columns: ["authority_id"];
+            isOneToOne: false;
+            referencedRelation: "entity_axis_verdicts";
+            referencedColumns: ["winner_authority_id"];
+          },
+          {
+            foreignKeyName: "axis_authority_ranks_axis_fkey";
+            columns: ["axis"];
+            isOneToOne: false;
+            referencedRelation: "monograph_axes";
+            referencedColumns: ["code"];
+          },
+        ];
+      };
+      axis_coverage: {
+        Row: {
+          axis: string;
+          computed_at: string;
+          document_id: string;
+          entity_id: string;
+          n_claims: number;
+          passage_id: string | null;
+          run_id: string | null;
+          state: string;
+        };
+        Insert: {
+          axis: string;
+          computed_at?: string;
+          document_id: string;
+          entity_id: string;
+          n_claims?: number;
+          passage_id?: string | null;
+          run_id?: string | null;
+          state: string;
+        };
+        Update: {
+          axis?: string;
+          computed_at?: string;
+          document_id?: string;
+          entity_id?: string;
+          n_claims?: number;
+          passage_id?: string | null;
+          run_id?: string | null;
+          state?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "axis_coverage_axis_fkey";
+            columns: ["axis"];
+            isOneToOne: false;
+            referencedRelation: "monograph_axes";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "axis_coverage_document_id_fkey";
+            columns: ["document_id"];
+            isOneToOne: false;
+            referencedRelation: "claim_quotes";
+            referencedColumns: ["document_id"];
+          },
+          {
+            foreignKeyName: "axis_coverage_document_id_fkey";
+            columns: ["document_id"];
+            isOneToOne: false;
+            referencedRelation: "documents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "axis_coverage_entity_id_fkey";
+            columns: ["entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "axis_coverage_passage_id_fkey";
+            columns: ["passage_id"];
+            isOneToOne: false;
+            referencedRelation: "claim_quotes";
+            referencedColumns: ["passage_id"];
+          },
+          {
+            foreignKeyName: "axis_coverage_passage_id_fkey";
+            columns: ["passage_id"];
+            isOneToOne: false;
+            referencedRelation: "passages";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "axis_coverage_run_id_fkey";
+            columns: ["run_id"];
+            isOneToOne: false;
+            referencedRelation: "extractor_runs";
             referencedColumns: ["id"];
           },
         ];
@@ -297,6 +498,381 @@ export type Database = {
           },
         ];
       };
+      claim_rejects: {
+        Row: {
+          cited_document_id: string | null;
+          content_key: string;
+          first_seen_at: string;
+          id: string;
+          legacy_evidence_id: string | null;
+          payload: Json;
+          predicate: string | null;
+          reason: string;
+          relocated_document_id: string | null;
+          run_id: string | null;
+          subject_entity_id: string | null;
+          supplied_quote: string | null;
+        };
+        Insert: {
+          cited_document_id?: string | null;
+          content_key: string;
+          first_seen_at?: string;
+          id?: string;
+          legacy_evidence_id?: string | null;
+          payload?: Json;
+          predicate?: string | null;
+          reason: string;
+          relocated_document_id?: string | null;
+          run_id?: string | null;
+          subject_entity_id?: string | null;
+          supplied_quote?: string | null;
+        };
+        Update: {
+          cited_document_id?: string | null;
+          content_key?: string;
+          first_seen_at?: string;
+          id?: string;
+          legacy_evidence_id?: string | null;
+          payload?: Json;
+          predicate?: string | null;
+          reason?: string;
+          relocated_document_id?: string | null;
+          run_id?: string | null;
+          subject_entity_id?: string | null;
+          supplied_quote?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "claim_rejects_cited_document_id_fkey";
+            columns: ["cited_document_id"];
+            isOneToOne: false;
+            referencedRelation: "claim_quotes";
+            referencedColumns: ["document_id"];
+          },
+          {
+            foreignKeyName: "claim_rejects_cited_document_id_fkey";
+            columns: ["cited_document_id"];
+            isOneToOne: false;
+            referencedRelation: "documents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claim_rejects_legacy_evidence_id_fkey";
+            columns: ["legacy_evidence_id"];
+            isOneToOne: false;
+            referencedRelation: "evidence";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claim_rejects_legacy_evidence_id_fkey";
+            columns: ["legacy_evidence_id"];
+            isOneToOne: false;
+            referencedRelation: "kg_evidence_live";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claim_rejects_relocated_document_id_fkey";
+            columns: ["relocated_document_id"];
+            isOneToOne: false;
+            referencedRelation: "claim_quotes";
+            referencedColumns: ["document_id"];
+          },
+          {
+            foreignKeyName: "claim_rejects_relocated_document_id_fkey";
+            columns: ["relocated_document_id"];
+            isOneToOne: false;
+            referencedRelation: "documents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claim_rejects_run_id_fkey";
+            columns: ["run_id"];
+            isOneToOne: false;
+            referencedRelation: "extractor_runs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claim_rejects_subject_entity_id_fkey";
+            columns: ["subject_entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      claims: {
+        Row: {
+          assay_id: string | null;
+          axis: string;
+          content_key: string;
+          created_at: string;
+          cue_end: number | null;
+          cue_start: number | null;
+          denominator_kind: string | null;
+          document_id: string;
+          id: string;
+          mention_end: number | null;
+          mention_start: number | null;
+          modality: string;
+          n_positive: number | null;
+          n_supports: number;
+          n_total: number | null;
+          object_code: string | null;
+          object_code_system: string | null;
+          object_entity_id: string | null;
+          object_key: string;
+          object_marker_id: string | null;
+          object_site_id: string | null;
+          object_source_id: string | null;
+          object_text: string | null;
+          passage_id: string;
+          pattern: string | null;
+          polarity: string | null;
+          polarity_nuance: string | null;
+          predicate: string;
+          qty_high: number | null;
+          qty_high_si: number | null;
+          qty_low: number | null;
+          qty_low_si: number | null;
+          qty_unit: string | null;
+          qty_unit_si: string | null;
+          qualifier: Json;
+          retracted_at: string | null;
+          run_id: string;
+          scope_key: string;
+          span_end: number;
+          span_start: number;
+          subject_entity_id: string;
+          subject_kind: string;
+          support_class: string;
+          value_key: string;
+        };
+        Insert: {
+          assay_id?: string | null;
+          axis: string;
+          content_key: string;
+          created_at?: string;
+          cue_end?: number | null;
+          cue_start?: number | null;
+          denominator_kind?: string | null;
+          document_id: string;
+          id?: string;
+          mention_end?: number | null;
+          mention_start?: number | null;
+          modality?: string;
+          n_positive?: number | null;
+          n_supports?: number;
+          n_total?: number | null;
+          object_code?: string | null;
+          object_code_system?: string | null;
+          object_entity_id?: string | null;
+          object_key: string;
+          object_marker_id?: string | null;
+          object_site_id?: string | null;
+          object_source_id?: string | null;
+          object_text?: string | null;
+          passage_id: string;
+          pattern?: string | null;
+          polarity?: string | null;
+          polarity_nuance?: string | null;
+          predicate: string;
+          qty_high?: number | null;
+          qty_high_si?: number | null;
+          qty_low?: number | null;
+          qty_low_si?: number | null;
+          qty_unit?: string | null;
+          qty_unit_si?: string | null;
+          qualifier?: Json;
+          retracted_at?: string | null;
+          run_id: string;
+          scope_key: string;
+          span_end: number;
+          span_start: number;
+          subject_entity_id: string;
+          subject_kind: string;
+          support_class?: string;
+          value_key: string;
+        };
+        Update: {
+          assay_id?: string | null;
+          axis?: string;
+          content_key?: string;
+          created_at?: string;
+          cue_end?: number | null;
+          cue_start?: number | null;
+          denominator_kind?: string | null;
+          document_id?: string;
+          id?: string;
+          mention_end?: number | null;
+          mention_start?: number | null;
+          modality?: string;
+          n_positive?: number | null;
+          n_supports?: number;
+          n_total?: number | null;
+          object_code?: string | null;
+          object_code_system?: string | null;
+          object_entity_id?: string | null;
+          object_key?: string;
+          object_marker_id?: string | null;
+          object_site_id?: string | null;
+          object_source_id?: string | null;
+          object_text?: string | null;
+          passage_id?: string;
+          pattern?: string | null;
+          polarity?: string | null;
+          polarity_nuance?: string | null;
+          predicate?: string;
+          qty_high?: number | null;
+          qty_high_si?: number | null;
+          qty_low?: number | null;
+          qty_low_si?: number | null;
+          qty_unit?: string | null;
+          qty_unit_si?: string | null;
+          qualifier?: Json;
+          retracted_at?: string | null;
+          run_id?: string;
+          scope_key?: string;
+          span_end?: number;
+          span_start?: number;
+          subject_entity_id?: string;
+          subject_kind?: string;
+          support_class?: string;
+          value_key?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "claims_assay_id_fkey";
+            columns: ["assay_id"];
+            isOneToOne: false;
+            referencedRelation: "assays";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_axis_fkey";
+            columns: ["axis"];
+            isOneToOne: false;
+            referencedRelation: "monograph_axes";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "claims_object_entity_id_fkey";
+            columns: ["object_entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_object_marker_id_fkey";
+            columns: ["object_marker_id"];
+            isOneToOne: false;
+            referencedRelation: "markers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_object_site_id_fkey";
+            columns: ["object_site_id"];
+            isOneToOne: false;
+            referencedRelation: "sites";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_object_source_id_fkey";
+            columns: ["object_source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_passage_id_fkey";
+            columns: ["passage_id"];
+            isOneToOne: false;
+            referencedRelation: "claim_quotes";
+            referencedColumns: ["passage_id"];
+          },
+          {
+            foreignKeyName: "claims_passage_id_fkey";
+            columns: ["passage_id"];
+            isOneToOne: false;
+            referencedRelation: "passages";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_passage_in_document";
+            columns: ["passage_id", "document_id"];
+            isOneToOne: false;
+            referencedRelation: "passages";
+            referencedColumns: ["id", "document_id"];
+          },
+          {
+            foreignKeyName: "claims_predicate_fkey";
+            columns: ["predicate"];
+            isOneToOne: false;
+            referencedRelation: "predicates";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "claims_run_id_fkey";
+            columns: ["run_id"];
+            isOneToOne: false;
+            referencedRelation: "extractor_runs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_subject_kind_fk";
+            columns: ["subject_entity_id", "subject_kind"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id", "kind"];
+          },
+        ];
+      };
+      classifications: {
+        Row: {
+          created_at: string;
+          edition: string | null;
+          id: string;
+          name: string;
+          notes: string | null;
+          precedence: number;
+          publisher: string | null;
+          slug: string;
+          source_id: string | null;
+          year: number | null;
+        };
+        Insert: {
+          created_at?: string;
+          edition?: string | null;
+          id?: string;
+          name: string;
+          notes?: string | null;
+          precedence?: number;
+          publisher?: string | null;
+          slug: string;
+          source_id?: string | null;
+          year?: number | null;
+        };
+        Update: {
+          created_at?: string;
+          edition?: string | null;
+          id?: string;
+          name?: string;
+          notes?: string | null;
+          precedence?: number;
+          publisher?: string | null;
+          slug?: string;
+          source_id?: string | null;
+          year?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "classifications_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       demo_questions: {
         Row: {
           display_order: number | null;
@@ -323,6 +899,607 @@ export type Database = {
             isOneToOne: true;
             referencedRelation: "questions";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      documents: {
+        Row: {
+          authority_id: string;
+          captured_at: string | null;
+          content_sha256: string;
+          created_at: string;
+          entity_id: string | null;
+          id: string;
+          is_current: boolean;
+          raw: Json;
+          ref: string;
+          source_id: string | null;
+          superseded_by: string | null;
+          supersedes: string | null;
+          title: string | null;
+          url: string | null;
+        };
+        Insert: {
+          authority_id: string;
+          captured_at?: string | null;
+          content_sha256: string;
+          created_at?: string;
+          entity_id?: string | null;
+          id: string;
+          is_current?: boolean;
+          raw?: Json;
+          ref: string;
+          source_id?: string | null;
+          superseded_by?: string | null;
+          supersedes?: string | null;
+          title?: string | null;
+          url?: string | null;
+        };
+        Update: {
+          authority_id?: string;
+          captured_at?: string | null;
+          content_sha256?: string;
+          created_at?: string;
+          entity_id?: string | null;
+          id?: string;
+          is_current?: boolean;
+          raw?: Json;
+          ref?: string;
+          source_id?: string | null;
+          superseded_by?: string | null;
+          supersedes?: string | null;
+          title?: string | null;
+          url?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "documents_authority_id_fkey";
+            columns: ["authority_id"];
+            isOneToOne: false;
+            referencedRelation: "authorities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "documents_authority_id_fkey";
+            columns: ["authority_id"];
+            isOneToOne: false;
+            referencedRelation: "claim_quotes";
+            referencedColumns: ["authority_id"];
+          },
+          {
+            foreignKeyName: "documents_authority_id_fkey";
+            columns: ["authority_id"];
+            isOneToOne: false;
+            referencedRelation: "entity_axis_verdicts";
+            referencedColumns: ["winner_authority_id"];
+          },
+          {
+            foreignKeyName: "documents_entity_id_fkey";
+            columns: ["entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "documents_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "documents_superseded_by_fkey";
+            columns: ["superseded_by"];
+            isOneToOne: false;
+            referencedRelation: "claim_quotes";
+            referencedColumns: ["document_id"];
+          },
+          {
+            foreignKeyName: "documents_superseded_by_fkey";
+            columns: ["superseded_by"];
+            isOneToOne: false;
+            referencedRelation: "documents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "documents_supersedes_fkey";
+            columns: ["supersedes"];
+            isOneToOne: false;
+            referencedRelation: "claim_quotes";
+            referencedColumns: ["document_id"];
+          },
+          {
+            foreignKeyName: "documents_supersedes_fkey";
+            columns: ["supersedes"];
+            isOneToOne: false;
+            referencedRelation: "documents";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      entities: {
+        Row: {
+          created_at: string;
+          definition: string | null;
+          icd_o: string | null;
+          id: string;
+          kind: string;
+          name: string;
+          sites_curated: boolean;
+          slug: string;
+          source_id: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          definition?: string | null;
+          icd_o?: string | null;
+          id?: string;
+          kind?: string;
+          name: string;
+          sites_curated?: boolean;
+          slug: string;
+          source_id?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          definition?: string | null;
+          icd_o?: string | null;
+          id?: string;
+          kind?: string;
+          name?: string;
+          sites_curated?: boolean;
+          slug?: string;
+          source_id?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "entities_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      entity_differentials: {
+        Row: {
+          evidence: string | null;
+          from_entity: string;
+          id: string;
+          source_id: string | null;
+          to_entity: string;
+        };
+        Insert: {
+          evidence?: string | null;
+          from_entity: string;
+          id?: string;
+          source_id?: string | null;
+          to_entity: string;
+        };
+        Update: {
+          evidence?: string | null;
+          from_entity?: string;
+          id?: string;
+          source_id?: string | null;
+          to_entity?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "entity_differentials_from_entity_fkey";
+            columns: ["from_entity"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "entity_differentials_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "entity_differentials_to_entity_fkey";
+            columns: ["to_entity"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      entity_merge_redirects: {
+        Row: {
+          entity_id: string | null;
+          from_name: string;
+          from_slug: string;
+          merged_at: string;
+          note: string | null;
+        };
+        Insert: {
+          entity_id?: string | null;
+          from_name: string;
+          from_slug: string;
+          merged_at?: string;
+          note?: string | null;
+        };
+        Update: {
+          entity_id?: string | null;
+          from_name?: string;
+          from_slug?: string;
+          merged_at?: string;
+          note?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "entity_merge_redirects_entity_id_fkey";
+            columns: ["entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      entity_placements: {
+        Row: {
+          chapter_name: string | null;
+          classification_id: string | null;
+          created_at: string;
+          entity_id: string;
+          id: string;
+          organ_system: string | null;
+          parent_id: string | null;
+          rank: string;
+          source_id: string | null;
+          volume: string | null;
+        };
+        Insert: {
+          chapter_name?: string | null;
+          classification_id?: string | null;
+          created_at?: string;
+          entity_id: string;
+          id?: string;
+          organ_system?: string | null;
+          parent_id?: string | null;
+          rank: string;
+          source_id?: string | null;
+          volume?: string | null;
+        };
+        Update: {
+          chapter_name?: string | null;
+          classification_id?: string | null;
+          created_at?: string;
+          entity_id?: string;
+          id?: string;
+          organ_system?: string | null;
+          parent_id?: string | null;
+          rank?: string;
+          source_id?: string | null;
+          volume?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "entity_placements_classification_id_fkey";
+            columns: ["classification_id"];
+            isOneToOne: false;
+            referencedRelation: "classifications";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "entity_placements_entity_id_fkey";
+            columns: ["entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "entity_placements_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "entity_placements_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      entity_sites: {
+        Row: {
+          created_at: string;
+          entity_id: string;
+          id: string;
+          note: string | null;
+          provenance: string;
+          salience: string | null;
+          site_id: string;
+          source_id: string | null;
+        };
+        Insert: {
+          created_at?: string;
+          entity_id: string;
+          id?: string;
+          note?: string | null;
+          provenance?: string;
+          salience?: string | null;
+          site_id: string;
+          source_id?: string | null;
+        };
+        Update: {
+          created_at?: string;
+          entity_id?: string;
+          id?: string;
+          note?: string | null;
+          provenance?: string;
+          salience?: string | null;
+          site_id?: string;
+          source_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "entity_sites_entity_id_fkey";
+            columns: ["entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "entity_sites_site_id_fkey";
+            columns: ["site_id"];
+            isOneToOne: false;
+            referencedRelation: "sites";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "entity_sites_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      entity_synonyms: {
+        Row: {
+          bidirectional: boolean;
+          entity_id: string;
+          id: string;
+          kind: string;
+          source_id: string | null;
+          term: string;
+          term_normalized: string;
+        };
+        Insert: {
+          bidirectional?: boolean;
+          entity_id: string;
+          id?: string;
+          kind: string;
+          source_id?: string | null;
+          term: string;
+          term_normalized: string;
+        };
+        Update: {
+          bidirectional?: boolean;
+          entity_id?: string;
+          id?: string;
+          kind?: string;
+          source_id?: string | null;
+          term?: string;
+          term_normalized?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "entity_synonyms_entity_id_fkey";
+            columns: ["entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "entity_synonyms_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      evidence: {
+        Row: {
+          assay_id: string | null;
+          call: string;
+          certainty: string;
+          claim_id: string | null;
+          created_at: string;
+          denominator_kind: string | null;
+          entity_id: string;
+          extraction: string | null;
+          id: string;
+          marker_id: string;
+          n_positive: number | null;
+          n_total: number | null;
+          pattern: string | null;
+          pct_high: number | null;
+          pct_low: number | null;
+          quote: string;
+          quote_located: string;
+          review_status: string;
+          source_id: string;
+        };
+        Insert: {
+          assay_id?: string | null;
+          call: string;
+          certainty?: string;
+          claim_id?: string | null;
+          created_at?: string;
+          denominator_kind?: string | null;
+          entity_id: string;
+          extraction?: string | null;
+          id?: string;
+          marker_id: string;
+          n_positive?: number | null;
+          n_total?: number | null;
+          pattern?: string | null;
+          pct_high?: number | null;
+          pct_low?: number | null;
+          quote: string;
+          quote_located?: string;
+          review_status?: string;
+          source_id: string;
+        };
+        Update: {
+          assay_id?: string | null;
+          call?: string;
+          certainty?: string;
+          claim_id?: string | null;
+          created_at?: string;
+          denominator_kind?: string | null;
+          entity_id?: string;
+          extraction?: string | null;
+          id?: string;
+          marker_id?: string;
+          n_positive?: number | null;
+          n_total?: number | null;
+          pattern?: string | null;
+          pct_high?: number | null;
+          pct_low?: number | null;
+          quote?: string;
+          quote_located?: string;
+          review_status?: string;
+          source_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "evidence_assay_id_fkey";
+            columns: ["assay_id"];
+            isOneToOne: false;
+            referencedRelation: "assays";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evidence_entity_id_fkey";
+            columns: ["entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evidence_marker_id_fkey";
+            columns: ["marker_id"];
+            isOneToOne: false;
+            referencedRelation: "markers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evidence_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      extractor_runs: {
+        Row: {
+          claims_written: number | null;
+          documents_read: number | null;
+          extractor: string;
+          finished_at: string | null;
+          id: string;
+          input_filter: string | null;
+          model: string | null;
+          notes: string | null;
+          params: Json;
+          slug: string;
+          started_at: string;
+          status: string;
+          version: string;
+        };
+        Insert: {
+          claims_written?: number | null;
+          documents_read?: number | null;
+          extractor: string;
+          finished_at?: string | null;
+          id?: string;
+          input_filter?: string | null;
+          model?: string | null;
+          notes?: string | null;
+          params?: Json;
+          slug: string;
+          started_at?: string;
+          status?: string;
+          version: string;
+        };
+        Update: {
+          claims_written?: number | null;
+          documents_read?: number | null;
+          extractor?: string;
+          finished_at?: string | null;
+          id?: string;
+          input_filter?: string | null;
+          model?: string | null;
+          notes?: string | null;
+          params?: Json;
+          slug?: string;
+          started_at?: string;
+          status?: string;
+          version?: string;
+        };
+        Relationships: [];
+      };
+      genes: {
+        Row: {
+          id: string;
+          locus: string | null;
+          name: string | null;
+          symbol: string;
+        };
+        Insert: {
+          id?: string;
+          locus?: string | null;
+          name?: string | null;
+          symbol: string;
+        };
+        Update: {
+          id?: string;
+          locus?: string | null;
+          name?: string | null;
+          symbol?: string;
+        };
+        Relationships: [];
+      };
+      heading_axis_map: {
+        Row: {
+          axis: string | null;
+          heading_norm: string;
+          heading_seen: string;
+          source_kind: string;
+        };
+        Insert: {
+          axis?: string | null;
+          heading_norm: string;
+          heading_seen: string;
+          source_kind: string;
+        };
+        Update: {
+          axis?: string | null;
+          heading_norm?: string;
+          heading_seen?: string;
+          source_kind?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "heading_axis_map_axis_fkey";
+            columns: ["axis"];
+            isOneToOne: false;
+            referencedRelation: "monograph_axes";
+            referencedColumns: ["code"];
           },
         ];
       };
@@ -490,6 +1667,54 @@ export type Database = {
           },
         ];
       };
+      kb_refresh_log: {
+        Row: {
+          n_rows: number | null;
+          object: string;
+          refreshed_at: string;
+        };
+        Insert: {
+          n_rows?: number | null;
+          object: string;
+          refreshed_at?: string;
+        };
+        Update: {
+          n_rows?: number | null;
+          object?: string;
+          refreshed_at?: string;
+        };
+        Relationships: [];
+      };
+      kg_curation_log: {
+        Row: {
+          after_state: Json | null;
+          before_state: Json;
+          created_at: string;
+          id: string;
+          op: string;
+          summary: string;
+          undone_at: string | null;
+        };
+        Insert: {
+          after_state?: Json | null;
+          before_state: Json;
+          created_at?: string;
+          id?: string;
+          op: string;
+          summary: string;
+          undone_at?: string | null;
+        };
+        Update: {
+          after_state?: Json | null;
+          before_state?: Json;
+          created_at?: string;
+          id?: string;
+          op?: string;
+          summary?: string;
+          undone_at?: string | null;
+        };
+        Relationships: [];
+      };
       learning_subjects: {
         Row: {
           category_id: string;
@@ -605,6 +1830,134 @@ export type Database = {
           },
         ];
       };
+      marker_synonyms: {
+        Row: {
+          id: string;
+          kind: string;
+          marker_id: string;
+          term: string;
+          term_normalized: string;
+        };
+        Insert: {
+          id?: string;
+          kind: string;
+          marker_id: string;
+          term: string;
+          term_normalized: string;
+        };
+        Update: {
+          id?: string;
+          kind?: string;
+          marker_id?: string;
+          term?: string;
+          term_normalized?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "marker_synonyms_marker_id_fkey";
+            columns: ["marker_id"];
+            isOneToOne: false;
+            referencedRelation: "markers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      markers: {
+        Row: {
+          compartment: string | null;
+          created_at: string;
+          cytoband: string | null;
+          definition: string | null;
+          gene_symbols: string[] | null;
+          hgvs: string | null;
+          id: string;
+          kind: string;
+          name: string;
+          parent_id: string | null;
+          rung: string | null;
+          slug: string;
+          source_id: string | null;
+          status: string;
+          updated_at: string;
+        };
+        Insert: {
+          compartment?: string | null;
+          created_at?: string;
+          cytoband?: string | null;
+          definition?: string | null;
+          gene_symbols?: string[] | null;
+          hgvs?: string | null;
+          id?: string;
+          kind: string;
+          name: string;
+          parent_id?: string | null;
+          rung?: string | null;
+          slug: string;
+          source_id?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Update: {
+          compartment?: string | null;
+          created_at?: string;
+          cytoband?: string | null;
+          definition?: string | null;
+          gene_symbols?: string[] | null;
+          hgvs?: string | null;
+          id?: string;
+          kind?: string;
+          name?: string;
+          parent_id?: string | null;
+          rung?: string | null;
+          slug?: string;
+          source_id?: string | null;
+          status?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "markers_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "markers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "markers_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      monograph_axes: {
+        Row: {
+          code: string;
+          holds: string;
+          is_prose: boolean;
+          label: string;
+          notes: string | null;
+          ord: number;
+        };
+        Insert: {
+          code: string;
+          holds?: string;
+          is_prose?: boolean;
+          label: string;
+          notes?: string | null;
+          ord: number;
+        };
+        Update: {
+          code?: string;
+          holds?: string;
+          is_prose?: boolean;
+          label?: string;
+          notes?: string | null;
+          ord?: number;
+        };
+        Relationships: [];
+      };
       notification_states: {
         Row: {
           created_at: string | null;
@@ -640,6 +1993,239 @@ export type Database = {
             isOneToOne: false;
             referencedRelation: "users";
             referencedColumns: ["id"];
+          },
+        ];
+      };
+      passage_citations: {
+        Row: {
+          cited_document_id: string | null;
+          id: string;
+          kind: string;
+          ordinal: number;
+          passage_id: string;
+          pos: number;
+          ref: string;
+          ref_norm: string | null;
+        };
+        Insert: {
+          cited_document_id?: string | null;
+          id?: string;
+          kind: string;
+          ordinal: number;
+          passage_id: string;
+          pos: number;
+          ref: string;
+          ref_norm?: string | null;
+        };
+        Update: {
+          cited_document_id?: string | null;
+          id?: string;
+          kind?: string;
+          ordinal?: number;
+          passage_id?: string;
+          pos?: number;
+          ref?: string;
+          ref_norm?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "passage_citations_cited_document_id_fkey";
+            columns: ["cited_document_id"];
+            isOneToOne: false;
+            referencedRelation: "claim_quotes";
+            referencedColumns: ["document_id"];
+          },
+          {
+            foreignKeyName: "passage_citations_cited_document_id_fkey";
+            columns: ["cited_document_id"];
+            isOneToOne: false;
+            referencedRelation: "documents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "passage_citations_passage_id_fkey";
+            columns: ["passage_id"];
+            isOneToOne: false;
+            referencedRelation: "claim_quotes";
+            referencedColumns: ["passage_id"];
+          },
+          {
+            foreignKeyName: "passage_citations_passage_id_fkey";
+            columns: ["passage_id"];
+            isOneToOne: false;
+            referencedRelation: "passages";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      passages: {
+        Row: {
+          axis: string | null;
+          block_kind: string;
+          block_ordinal: number;
+          body: string;
+          body_sha256: string | null;
+          char_len: number | null;
+          created_at: string;
+          document_id: string;
+          entity_id: string | null;
+          has_html_residue: boolean | null;
+          has_unresolved_xref: boolean | null;
+          id: string;
+          nesting_depth: number;
+          ordinal: number;
+          parent_passage_id: string | null;
+          section_ordinal: number;
+          section_title_raw: string;
+        };
+        Insert: {
+          axis?: string | null;
+          block_kind: string;
+          block_ordinal: number;
+          body: string;
+          body_sha256?: string | null;
+          char_len?: number | null;
+          created_at?: string;
+          document_id: string;
+          entity_id?: string | null;
+          has_html_residue?: boolean | null;
+          has_unresolved_xref?: boolean | null;
+          id: string;
+          nesting_depth?: number;
+          ordinal: number;
+          parent_passage_id?: string | null;
+          section_ordinal: number;
+          section_title_raw: string;
+        };
+        Update: {
+          axis?: string | null;
+          block_kind?: string;
+          block_ordinal?: number;
+          body?: string;
+          body_sha256?: string | null;
+          char_len?: number | null;
+          created_at?: string;
+          document_id?: string;
+          entity_id?: string | null;
+          has_html_residue?: boolean | null;
+          has_unresolved_xref?: boolean | null;
+          id?: string;
+          nesting_depth?: number;
+          ordinal?: number;
+          parent_passage_id?: string | null;
+          section_ordinal?: number;
+          section_title_raw?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "passages_axis_fkey";
+            columns: ["axis"];
+            isOneToOne: false;
+            referencedRelation: "monograph_axes";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "passages_document_id_fkey";
+            columns: ["document_id"];
+            isOneToOne: false;
+            referencedRelation: "claim_quotes";
+            referencedColumns: ["document_id"];
+          },
+          {
+            foreignKeyName: "passages_document_id_fkey";
+            columns: ["document_id"];
+            isOneToOne: false;
+            referencedRelation: "documents";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "passages_entity_agrees";
+            columns: ["document_id", "entity_id"];
+            isOneToOne: false;
+            referencedRelation: "documents";
+            referencedColumns: ["id", "entity_id"];
+          },
+          {
+            foreignKeyName: "passages_parent_passage_id_fkey";
+            columns: ["parent_passage_id"];
+            isOneToOne: false;
+            referencedRelation: "claim_quotes";
+            referencedColumns: ["passage_id"];
+          },
+          {
+            foreignKeyName: "passages_parent_passage_id_fkey";
+            columns: ["parent_passage_id"];
+            isOneToOne: false;
+            referencedRelation: "passages";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      polarity_cues: {
+        Row: {
+          cue: string;
+          implied_modality: string | null;
+          notes: string | null;
+          polarity: string;
+        };
+        Insert: {
+          cue: string;
+          implied_modality?: string | null;
+          notes?: string | null;
+          polarity: string;
+        };
+        Update: {
+          cue?: string;
+          implied_modality?: string | null;
+          notes?: string | null;
+          polarity?: string;
+        };
+        Relationships: [];
+      };
+      predicates: {
+        Row: {
+          axis: string;
+          cardinality: string;
+          code: string;
+          label: string;
+          object_slot: string | null;
+          polar: boolean;
+          requires_diagnosable_subject: boolean;
+          scope_keys: string[];
+          unit_dimension: string | null;
+          value_kind: string;
+        };
+        Insert: {
+          axis: string;
+          cardinality?: string;
+          code: string;
+          label: string;
+          object_slot?: string | null;
+          polar?: boolean;
+          requires_diagnosable_subject?: boolean;
+          scope_keys?: string[];
+          unit_dimension?: string | null;
+          value_kind: string;
+        };
+        Update: {
+          axis?: string;
+          cardinality?: string;
+          code?: string;
+          label?: string;
+          object_slot?: string | null;
+          polar?: boolean;
+          requires_diagnosable_subject?: boolean;
+          scope_keys?: string[];
+          unit_dimension?: string | null;
+          value_kind?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "predicates_axis_fkey";
+            columns: ["axis"];
+            isOneToOne: false;
+            referencedRelation: "monograph_axes";
+            referencedColumns: ["code"];
           },
         ];
       };
@@ -1034,6 +2620,7 @@ export type Database = {
           created_at: string | null;
           created_by: string;
           difficulty: Database["public"]["Enums"]["difficulty_level"] | null;
+          entity_id: string | null;
           id: string;
           lesson: string | null;
           published_at: string | null;
@@ -1059,6 +2646,7 @@ export type Database = {
           created_at?: string | null;
           created_by: string;
           difficulty?: Database["public"]["Enums"]["difficulty_level"] | null;
+          entity_id?: string | null;
           id?: string;
           lesson?: string | null;
           published_at?: string | null;
@@ -1084,6 +2672,7 @@ export type Database = {
           created_at?: string | null;
           created_by?: string;
           difficulty?: Database["public"]["Enums"]["difficulty_level"] | null;
+          entity_id?: string | null;
           id?: string;
           lesson?: string | null;
           published_at?: string | null;
@@ -1115,6 +2704,13 @@ export type Database = {
             columns: ["created_by"];
             isOneToOne: false;
             referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "questions_entity_id_fkey";
+            columns: ["entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
             referencedColumns: ["id"];
           },
           {
@@ -1325,6 +2921,141 @@ export type Database = {
           total_size_bytes?: number;
         };
         Relationships: [];
+      };
+      sites: {
+        Row: {
+          created_at: string;
+          id: string;
+          name: string;
+          parent_id: string | null;
+          slug: string;
+        };
+        Insert: {
+          created_at?: string;
+          id?: string;
+          name: string;
+          parent_id?: string | null;
+          slug: string;
+        };
+        Update: {
+          created_at?: string;
+          id?: string;
+          name?: string;
+          parent_id?: string | null;
+          slug?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "sites_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "sites";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      sources: {
+        Row: {
+          authors: string[] | null;
+          citation: string;
+          created_at: string;
+          doi: string | null;
+          id: string;
+          journal: string | null;
+          kind: string;
+          pmid: string | null;
+          ref: string;
+          title: string | null;
+          url: string | null;
+          work: string | null;
+          year: number | null;
+        };
+        Insert: {
+          authors?: string[] | null;
+          citation: string;
+          created_at?: string;
+          doi?: string | null;
+          id?: string;
+          journal?: string | null;
+          kind: string;
+          pmid?: string | null;
+          ref: string;
+          title?: string | null;
+          url?: string | null;
+          work?: string | null;
+          year?: number | null;
+        };
+        Update: {
+          authors?: string[] | null;
+          citation?: string;
+          created_at?: string;
+          doi?: string | null;
+          id?: string;
+          journal?: string | null;
+          kind?: string;
+          pmid?: string | null;
+          ref?: string;
+          title?: string | null;
+          url?: string | null;
+          work?: string | null;
+          year?: number | null;
+        };
+        Relationships: [];
+      };
+      surrogates: {
+        Row: {
+          alteration_id: string;
+          direction: string;
+          evidence: string | null;
+          id: string;
+          marker_id: string;
+          sensitivity_pct: number | null;
+          source_id: string | null;
+          specificity_pct: number | null;
+        };
+        Insert: {
+          alteration_id: string;
+          direction: string;
+          evidence?: string | null;
+          id?: string;
+          marker_id: string;
+          sensitivity_pct?: number | null;
+          source_id?: string | null;
+          specificity_pct?: number | null;
+        };
+        Update: {
+          alteration_id?: string;
+          direction?: string;
+          evidence?: string | null;
+          id?: string;
+          marker_id?: string;
+          sensitivity_pct?: number | null;
+          source_id?: string | null;
+          specificity_pct?: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "surrogates_alteration_id_fkey";
+            columns: ["alteration_id"];
+            isOneToOne: false;
+            referencedRelation: "markers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "surrogates_marker_id_fkey";
+            columns: ["marker_id"];
+            isOneToOne: false;
+            referencedRelation: "markers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "surrogates_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
       };
       svg_assets: {
         Row: {
@@ -1677,8 +3408,564 @@ export type Database = {
         };
         Relationships: [];
       };
+      wsi_question_events: {
+        Row: {
+          answered_at: string | null;
+          category: string | null;
+          completion_tokens: number | null;
+          created_at: string;
+          delivered_at: string | null;
+          diagnosis: string | null;
+          error_detail: string | null;
+          generation_time_ms: number | null;
+          id: string;
+          model: string | null;
+          outcome: string;
+          prompt_tokens: number | null;
+          question_kind: string | null;
+          repository: string | null;
+          stain_type: string | null;
+          subcategory: string | null;
+          surface: string;
+          user_id: string | null;
+          was_correct: boolean | null;
+          wsi_id: string | null;
+        };
+        Insert: {
+          answered_at?: string | null;
+          category?: string | null;
+          completion_tokens?: number | null;
+          created_at?: string;
+          delivered_at?: string | null;
+          diagnosis?: string | null;
+          error_detail?: string | null;
+          generation_time_ms?: number | null;
+          id?: string;
+          model?: string | null;
+          outcome: string;
+          prompt_tokens?: number | null;
+          question_kind?: string | null;
+          repository?: string | null;
+          stain_type?: string | null;
+          subcategory?: string | null;
+          surface?: string;
+          user_id?: string | null;
+          was_correct?: boolean | null;
+          wsi_id?: string | null;
+        };
+        Update: {
+          answered_at?: string | null;
+          category?: string | null;
+          completion_tokens?: number | null;
+          created_at?: string;
+          delivered_at?: string | null;
+          diagnosis?: string | null;
+          error_detail?: string | null;
+          generation_time_ms?: number | null;
+          id?: string;
+          model?: string | null;
+          outcome?: string;
+          prompt_tokens?: number | null;
+          question_kind?: string | null;
+          repository?: string | null;
+          stain_type?: string | null;
+          subcategory?: string | null;
+          surface?: string;
+          user_id?: string | null;
+          was_correct?: boolean | null;
+          wsi_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "wsi_question_events_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "users";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: {
+      claim_dissent: {
+        Row: {
+          axis: string | null;
+          entity_id: string | null;
+          losing_authority: string | null;
+          losing_claim_id: string | null;
+          losing_code: string | null;
+          losing_polarity: string | null;
+          losing_qty_low: number | null;
+          losing_quote: string | null;
+          losing_text: string | null;
+          losing_year: number | null;
+          object_key: string | null;
+          predicate: string | null;
+          scope_key: string | null;
+          winner_claim_id: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "claims_axis_fkey";
+            columns: ["axis"];
+            isOneToOne: false;
+            referencedRelation: "monograph_axes";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "claims_predicate_fkey";
+            columns: ["predicate"];
+            isOneToOne: false;
+            referencedRelation: "predicates";
+            referencedColumns: ["code"];
+          },
+        ];
+      };
+      claim_quotes: {
+        Row: {
+          assay_id: string | null;
+          authority: string | null;
+          authority_id: string | null;
+          authority_name: string | null;
+          axis: string | null;
+          claim_id: string | null;
+          cue: string | null;
+          denominator_kind: string | null;
+          document_id: string | null;
+          document_ref: string | null;
+          edition_ord: number | null;
+          eff_rank: number | null;
+          is_current: boolean | null;
+          modality: string | null;
+          n_positive: number | null;
+          n_supports: number | null;
+          n_total: number | null;
+          object_code: string | null;
+          object_code_system: string | null;
+          object_entity_id: string | null;
+          object_key: string | null;
+          object_marker_id: string | null;
+          object_site_id: string | null;
+          object_text: string | null;
+          passage_id: string | null;
+          passage_ordinal: number | null;
+          pattern: string | null;
+          polarity: string | null;
+          polarity_nuance: string | null;
+          predicate: string | null;
+          qty_high_si: number | null;
+          qty_low_si: number | null;
+          qty_unit_si: string | null;
+          qualifier: Json | null;
+          quote: string | null;
+          run_id: string | null;
+          said_under_axis: string | null;
+          scope_key: string | null;
+          subject_entity_id: string | null;
+          support_class: string | null;
+          tier: number | null;
+          value_key: string | null;
+          year: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "claims_assay_id_fkey";
+            columns: ["assay_id"];
+            isOneToOne: false;
+            referencedRelation: "assays";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_axis_fkey";
+            columns: ["axis"];
+            isOneToOne: false;
+            referencedRelation: "monograph_axes";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "claims_object_entity_id_fkey";
+            columns: ["object_entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_object_marker_id_fkey";
+            columns: ["object_marker_id"];
+            isOneToOne: false;
+            referencedRelation: "markers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_object_site_id_fkey";
+            columns: ["object_site_id"];
+            isOneToOne: false;
+            referencedRelation: "sites";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_predicate_fkey";
+            columns: ["predicate"];
+            isOneToOne: false;
+            referencedRelation: "predicates";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "claims_run_id_fkey";
+            columns: ["run_id"];
+            isOneToOne: false;
+            referencedRelation: "extractor_runs";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "passages_axis_fkey";
+            columns: ["said_under_axis"];
+            isOneToOne: false;
+            referencedRelation: "monograph_axes";
+            referencedColumns: ["code"];
+          },
+        ];
+      };
+      entity_axis_verdicts: {
+        Row: {
+          agreement: string | null;
+          axis: string | null;
+          entity_id: string | null;
+          modality: string | null;
+          n_authorities: number | null;
+          n_claims: number | null;
+          n_positive: number | null;
+          n_total: number | null;
+          object_code: string | null;
+          object_code_system: string | null;
+          object_entity_id: string | null;
+          object_key: string | null;
+          object_marker_id: string | null;
+          object_site_id: string | null;
+          object_text: string | null;
+          polarity: string | null;
+          polarity_nuance: string | null;
+          predicate: string | null;
+          qty_high_si: number | null;
+          qty_low_si: number | null;
+          qty_unit_si: string | null;
+          scope_key: string | null;
+          winner_authority: string | null;
+          winner_authority_id: string | null;
+          winner_claim_id: string | null;
+          winner_quote: string | null;
+          winner_value_key: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "claims_axis_fkey";
+            columns: ["axis"];
+            isOneToOne: false;
+            referencedRelation: "monograph_axes";
+            referencedColumns: ["code"];
+          },
+          {
+            foreignKeyName: "claims_object_entity_id_fkey";
+            columns: ["object_entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_object_marker_id_fkey";
+            columns: ["object_marker_id"];
+            isOneToOne: false;
+            referencedRelation: "markers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_object_site_id_fkey";
+            columns: ["object_site_id"];
+            isOneToOne: false;
+            referencedRelation: "sites";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_predicate_fkey";
+            columns: ["predicate"];
+            isOneToOne: false;
+            referencedRelation: "predicates";
+            referencedColumns: ["code"];
+          },
+        ];
+      };
+      evidence_compat: {
+        Row: {
+          assay_id: string | null;
+          call: string | null;
+          certainty: string | null;
+          created_at: string | null;
+          denominator_kind: string | null;
+          entity_id: string | null;
+          extraction: string | null;
+          id: string | null;
+          marker_id: string | null;
+          n_positive: number | null;
+          n_total: number | null;
+          pattern: string | null;
+          pct_high: number | null;
+          pct_low: number | null;
+          quote: string | null;
+          quote_located: string | null;
+          review_status: string | null;
+          source_id: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "claims_assay_id_fkey";
+            columns: ["assay_id"];
+            isOneToOne: false;
+            referencedRelation: "assays";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "claims_object_marker_id_fkey";
+            columns: ["marker_id"];
+            isOneToOne: false;
+            referencedRelation: "markers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "documents_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      kb_extraction_health: {
+        Row: {
+          claims: number | null;
+          count_bearing: number | null;
+          distinct_polarities: number | null;
+          predicate: string | null;
+          run: string | null;
+          uncited: number | null;
+          unwitnessed: number | null;
+          zero_numerator: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "claims_predicate_fkey";
+            columns: ["predicate"];
+            isOneToOne: false;
+            referencedRelation: "predicates";
+            referencedColumns: ["code"];
+          },
+        ];
+      };
+      kb_modality_audit: {
+        Row: {
+          claim_id: string | null;
+          modality: string | null;
+          object_marker_id: string | null;
+          quote: string | null;
+          subject_entity_id: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "claims_object_marker_id_fkey";
+            columns: ["object_marker_id"];
+            isOneToOne: false;
+            referencedRelation: "markers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      kg_evidence_live: {
+        Row: {
+          assay_id: string | null;
+          call: string | null;
+          certainty: string | null;
+          created_at: string | null;
+          denominator_kind: string | null;
+          entity_id: string | null;
+          extraction: string | null;
+          id: string | null;
+          marker_id: string | null;
+          n_positive: number | null;
+          n_total: number | null;
+          pattern: string | null;
+          pct_high: number | null;
+          pct_low: number | null;
+          polarity: string | null;
+          quote: string | null;
+          quote_located: string | null;
+          review_status: string | null;
+          source_id: string | null;
+        };
+        Insert: {
+          assay_id?: string | null;
+          call?: string | null;
+          certainty?: string | null;
+          created_at?: string | null;
+          denominator_kind?: string | null;
+          entity_id?: string | null;
+          extraction?: string | null;
+          id?: string | null;
+          marker_id?: string | null;
+          n_positive?: number | null;
+          n_total?: number | null;
+          pattern?: string | null;
+          pct_high?: number | null;
+          pct_low?: number | null;
+          polarity?: never;
+          quote?: string | null;
+          quote_located?: string | null;
+          review_status?: string | null;
+          source_id?: string | null;
+        };
+        Update: {
+          assay_id?: string | null;
+          call?: string | null;
+          certainty?: string | null;
+          created_at?: string | null;
+          denominator_kind?: string | null;
+          entity_id?: string | null;
+          extraction?: string | null;
+          id?: string | null;
+          marker_id?: string | null;
+          n_positive?: number | null;
+          n_total?: number | null;
+          pattern?: string | null;
+          pct_high?: number | null;
+          pct_low?: number | null;
+          polarity?: never;
+          quote?: string | null;
+          quote_located?: string | null;
+          review_status?: string | null;
+          source_id?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "evidence_assay_id_fkey";
+            columns: ["assay_id"];
+            isOneToOne: false;
+            referencedRelation: "assays";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evidence_entity_id_fkey";
+            columns: ["entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evidence_marker_id_fkey";
+            columns: ["marker_id"];
+            isOneToOne: false;
+            referencedRelation: "markers";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evidence_source_id_fkey";
+            columns: ["source_id"];
+            isOneToOne: false;
+            referencedRelation: "sources";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      kg_pooled: {
+        Row: {
+          assays: number | null;
+          call: string | null;
+          definite_conflict: boolean | null;
+          entity_id: string | null;
+          has_dissent: boolean | null;
+          marker_id: string | null;
+          pct_high: number | null;
+          pct_low: number | null;
+          pooled_pct: number | null;
+          sources: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "evidence_entity_id_fkey";
+            columns: ["entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evidence_marker_id_fkey";
+            columns: ["marker_id"];
+            isOneToOne: false;
+            referencedRelation: "markers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      marker_summary: {
+        Row: {
+          assay_id: string | null;
+          call: string | null;
+          claim_strength: string | null;
+          definite_conflict: boolean | null;
+          denominator_kind: string | null;
+          entity_id: string | null;
+          has_dissent: boolean | null;
+          marker_id: string | null;
+          n_positive: number | null;
+          n_total: number | null;
+          pct_high: number | null;
+          pct_low: number | null;
+          pooled_pct: number | null;
+          pooled_sources: number | null;
+          quote_verified_sources: number | null;
+          sources: number | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "evidence_assay_id_fkey";
+            columns: ["assay_id"];
+            isOneToOne: false;
+            referencedRelation: "assays";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evidence_entity_id_fkey";
+            columns: ["entity_id"];
+            isOneToOne: false;
+            referencedRelation: "entities";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "evidence_marker_id_fkey";
+            columns: ["marker_id"];
+            isOneToOne: false;
+            referencedRelation: "markers";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      set_membership_changes: {
+        Row: {
+          current_authority: string | null;
+          dropped_from: string | null;
+          entity_id: string | null;
+          object_key: string | null;
+          object_text: string | null;
+          original_quote: string | null;
+          predicate: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "claims_predicate_fkey";
+            columns: ["predicate"];
+            isOneToOne: false;
+            referencedRelation: "predicates";
+            referencedColumns: ["code"];
+          },
+        ];
+      };
       v_dashboard_stats: {
         Row: {
           active_users: number | null;
@@ -1768,8 +4055,39 @@ export type Database = {
         };
         Relationships: [];
       };
+      wsi_question_daily: {
+        Row: {
+          answered: number | null;
+          attempts: number | null;
+          avg_ms: number | null;
+          correct: number | null;
+          correct_pct: number | null;
+          day: string | null;
+          delivered: number | null;
+          delivered_per_user: number | null;
+          failed: number | null;
+          failure_pct: number | null;
+          generated: number | null;
+          never_seen: number | null;
+          p95_ms: number | null;
+          users: number | null;
+        };
+        Relationships: [];
+      };
     };
     Functions: {
+      claim_run_diff: {
+        Args: { p_a: string; p_b: string };
+        Returns: {
+          entity_id: string;
+          object_marker_id: string;
+          passage_id: string;
+          polarity_a: string;
+          polarity_b: string;
+          span_start: number;
+          verdict: string;
+        }[];
+      };
       count_active_users_since: {
         Args: { since_date: string };
         Returns: number;
@@ -1897,6 +4215,86 @@ export type Database = {
         Returns: undefined;
       };
       is_email_confirmed: { Args: { p_email: string }; Returns: boolean };
+      kb_canonical_qty: {
+        Args: { hi: number; lo: number; unit: string };
+        Returns: Record<string, unknown>;
+      };
+      kb_effective_rank: {
+        Args: { p_authority: string; p_axis: string };
+        Returns: number;
+      };
+      kb_entity_marker_rollup: { Args: { p_slug: string }; Returns: Json };
+      kb_marker_entity_rollup: { Args: { p_slug: string }; Returns: Json };
+      kb_entity_monograph: { Args: { p_slug: string }; Returns: Json };
+      kb_first_sentence: { Args: { cap?: number; t: string }; Returns: string };
+      kb_locate_exact: {
+        Args: { p_document: string; p_needle: string };
+        Returns: {
+          passage_id: string;
+          span_end: number;
+          span_start: number;
+        }[];
+      };
+      kb_norm: { Args: { t: string }; Returns: string };
+      kb_refresh_verdicts: { Args: never; Returns: undefined };
+      kb_sha: { Args: { t: string }; Returns: string };
+      kg_atlas_entity: {
+        Args: {
+          p_child_cap?: number;
+          p_entity: string;
+          p_marker_cap?: number;
+          p_probe_cap?: number;
+          p_sibling_cap?: number;
+          p_twin_cap?: number;
+        };
+        Returns: Json;
+      };
+      kg_atlas_grid: {
+        Args: {
+          p_col_cap?: number;
+          p_entities?: string[];
+          p_keep_empty?: boolean;
+          p_min_rows?: number;
+          p_root?: string;
+          p_volume?: string;
+        };
+        Returns: Json;
+      };
+      kg_atlas_index: { Args: never; Returns: Json };
+      kg_atlas_marker: {
+        Args: {
+          p_entity_cap?: number;
+          p_marker: string;
+          p_sibling_cap?: number;
+        };
+        Returns: Json;
+      };
+      kg_atlas_pair: { Args: { p_a: string; p_b: string }; Returns: Json };
+      kg_marker_index: {
+        Args: never;
+        Returns: {
+          evidence: number;
+          gene_symbols: string[];
+          id: string;
+          kind: string;
+          name: string;
+          slug: string;
+          status: string;
+          synonym_terms: string[];
+          synonyms: number;
+        }[];
+      };
+      kg_merge_entity: {
+        Args: { p_loser: string; p_winner: string };
+        Returns: {
+          n: number;
+          step: string;
+        }[];
+      };
+      kg_merge_marker: {
+        Args: { p_loser: string; p_winner: string };
+        Returns: undefined;
+      };
       select_quiz_questions: {
         Args: {
           p_category_ids?: string[];

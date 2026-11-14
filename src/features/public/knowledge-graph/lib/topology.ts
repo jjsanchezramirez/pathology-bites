@@ -1,5 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck knowledge base tables are not in the generated Supabase types
 /**
  * The knowledge graph's topology, built from the database.
  *
@@ -10,6 +8,7 @@
  * baked homepage snapshot and the live explorer disagree about the data.
  */
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
+import type { Database } from "@/shared/types/supabase";
 
 export type TopologyPart = "all" | "nodes" | "edges";
 
@@ -24,10 +23,42 @@ const PAGE = 1000;
 
 export type Sb = ReturnType<typeof createServiceRoleClient>;
 
+/**
+ * The tables this module reads. Narrowing from `string` is what lets
+ * supabase-js pick a `.from()` overload at all -- with a bare string it matches
+ * neither the Tables nor the Views union, and the whole file needed a
+ * blanket type suppression.
+ */
+type Relation = keyof Database["public"]["Tables"];
+
+/**
+ * One edge before pooling. The variants genuinely differ -- a subtype edge has
+ * no polarity, an expression edge has a percentage, a surrogate edge has
+ * sensitivity -- so the shared shape carries them as optional rather than
+ * letting TypeScript infer a union that `prev.r !== e.r` cannot index.
+ */
+interface RawEdge {
+  s: unknown;
+  t: unknown;
+  e: string;
+  /** polarity / role: present|absent, the raw call, or a fusion gene role. */
+  r?: unknown;
+  /** certainty */
+  c?: unknown;
+  /** review_status */
+  v?: unknown;
+  /** pct_low */
+  p?: number;
+  /** surrogate direction */
+  d?: unknown;
+  sn?: number;
+  sp?: number;
+}
+
 /** How many page requests for one table are in flight at once. */
 const FANOUT = 6;
 
-async function all<T = Record<string, unknown>>(sb: Sb, table: string, cols: string): Promise<T[]> {
+async function all<T = Record<string, unknown>>(sb: Sb, table: Relation, cols: string): Promise<T[]> {
   /* The first page also asks for the row count, which turns the rest of the
    * read from a chain into a fan-out. It used to walk the pages one after
    * another: `evidence` alone is 25 pages, so the edges half of the payload
@@ -241,7 +272,7 @@ export async function buildTopology(sb: Sb, part: TopologyPart): Promise<Topolog
   // into nothing; the force layout then flings the orphan off-screen.
   const entityIds = new Set(entities.map((e) => e.id));
 
-  const rawEdges = !wantEdges
+  const rawEdges: RawEdge[] = !wantEdges
     ? []
     : [
         ...placements

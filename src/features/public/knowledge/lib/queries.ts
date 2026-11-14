@@ -1,9 +1,3 @@
-/* eslint-disable @typescript-eslint/ban-ts-comment */
-// @ts-nocheck knowledge base tables are not in the generated Supabase types --
-// same reason topology.ts carries this. The suppression stops HERE: every export
-// below declares its own return type, so the pages that consume them are fully
-// checked. Regenerating types would lift it; until then one untyped file beats
-// a @ts-nocheck in each page.
 /**
  * Reads behind the public /e, /m and /g pages.
  *
@@ -18,6 +12,8 @@
  * for a missing SELECT policy before anything else.
  */
 import "server-only";
+
+import { cache } from "react";
 
 import { createClient } from "@/shared/services/server";
 
@@ -36,15 +32,6 @@ export interface Placement {
   rank: string;
   chapter_name: string | null;
   parent: { slug: string; name: string } | null;
-}
-
-export interface Finding {
-  marker: { slug: string; name: string; kind: string };
-  call: string | null;
-  certainty: string | null;
-  pct_low: number | null;
-  pct_high: number | null;
-  quote: string | null;
 }
 
 const PAGE = 1000;
@@ -102,15 +89,22 @@ export async function resolveEntity(
 export interface EntityDetail {
   placements: Placement[];
   synonyms: { term: string; kind: string }[];
-  findings: (Finding & { sources: number })[];
   differentials: { other: { slug: string; name: string }; evidence: string | null }[];
   children: { slug: string; name: string }[];
 }
 
+/**
+ * Placements, aliases, differentials and subtype pages for one entity.
+ *
+ * Marker findings are NOT read here any more. They used to be pooled from the
+ * `evidence` table into one line per marker; the /e page now asks
+ * `entityMarkerRollup` instead, which keeps every attestation separate and
+ * attributed. Nothing on the entity page should blend sources.
+ */
 export async function entityDetail(entity: EntityRow): Promise<EntityDetail> {
   const sb = await createClient();
 
-  const [placementsRaw, synonyms, evidenceRaw, diffOut, diffIn] = await Promise.all([
+  const [placementsRaw, synonyms, diffOut, diffIn] = await Promise.all([
     all<{ volume: string; organ_system: string | null; rank: string; chapter_name: string | null; parent_id: string | null }>(
       () => sb.from("entity_placements")
         .select("volume, organ_system, rank, chapter_name, parent_id")
@@ -125,11 +119,6 @@ export async function entityDetail(entity: EntityRow): Promise<EntityDetail> {
           .eq("entity_id", entity.id)
           .order("term") as never
     ),
-    all<{ marker_id: string; call: string | null; certainty: string | null; pct_low: number | null; pct_high: number | null; quote: string | null; review_status: string | null }>(
-      () => sb.from("evidence")
-        .select("marker_id, call, certainty, pct_low, pct_high, quote, review_status")
-        .eq("entity_id", entity.id) as never
-    ),
     all<{ to_entity: string; evidence: string | null }>(
       () => sb.from("entity_differentials").select("to_entity, evidence").eq("from_entity", entity.id) as never
     ),
@@ -138,26 +127,19 @@ export async function entityDetail(entity: EntityRow): Promise<EntityDetail> {
     ),
   ]);
 
-  // Resolve every referenced entity and marker in one round trip each.
+  // Resolve every referenced entity in one round trip.
   const entityIds = [
     ...new Set([
-      ...placementsRaw.map((p) => p.parent_id).filter(Boolean) as string[],
+      ...(placementsRaw.map((p) => p.parent_id).filter(Boolean) as string[]),
       ...diffOut.map((d) => d.to_entity),
       ...diffIn.map((d) => d.from_entity),
     ]),
   ];
-  const markerIds = [...new Set(evidenceRaw.map((e) => e.marker_id).filter(Boolean))];
 
-  const [ents, marks] = await Promise.all([
-    entityIds.length
-      ? sb.from("entities").select("id, slug, name").in("id", entityIds)
-      : Promise.resolve({ data: [] as { id: string; slug: string; name: string }[] }),
-    markerIds.length
-      ? sb.from("markers").select("id, slug, name, kind").in("id", markerIds)
-      : Promise.resolve({ data: [] as { id: string; slug: string; name: string; kind: string }[] }),
-  ]);
+  const ents = entityIds.length
+    ? await sb.from("entities").select("id, slug, name").in("id", entityIds)
+    : { data: [] as { id: string; slug: string; name: string }[] };
   const eById = new Map((ents.data ?? []).map((e) => [e.id, e]));
-  const mById = new Map((marks.data ?? []).map((m) => [m.id, m]));
 
   /* Two spellings of one alias can still differ only by punctuation, so fold
    * for display.
@@ -187,38 +169,6 @@ export async function entityDetail(entity: EntityRow): Promise<EntityDetail> {
       : null,
   }));
 
-  /* One row per (marker, source) — two books reporting the same thing are two
-   * attestations, not a duplicate. Collapse to one line per marker for reading,
-   * keeping the strongest call and counting the rest. Rejected rows never
-   * surface: they failed review and asserting them would be worse than silence. */
-  const byMarker = new Map<string, { f: Finding; n: number }>();
-  for (const e of evidenceRaw) {
-    if (e.review_status === "rejected") continue;
-    const m = mById.get(e.marker_id);
-    if (!m) continue;
-    const prev = byMarker.get(m.slug);
-    if (prev) {
-      prev.n += 1;
-      if (!prev.f.quote && e.quote) prev.f.quote = e.quote;
-      continue;
-    }
-    byMarker.set(m.slug, {
-      n: 1,
-      f: {
-        marker: { slug: m.slug, name: m.name, kind: m.kind },
-        call: e.call,
-        certainty: e.certainty,
-        pct_low: e.pct_low,
-        pct_high: e.pct_high,
-        quote: e.quote,
-      },
-    });
-  }
-
-  const findings = [...byMarker.values()]
-    .map((v) => ({ ...v.f, sources: v.n }))
-    .sort((a, b) => b.sources - a.sources || a.marker.name.localeCompare(b.marker.name));
-
   const differentials = [
     ...diffOut.map((d) => ({ other: eById.get(d.to_entity), evidence: d.evidence })),
     ...diffIn.map((d) => ({ other: eById.get(d.from_entity), evidence: d.evidence })),
@@ -238,7 +188,6 @@ export async function entityDetail(entity: EntityRow): Promise<EntityDetail> {
   return {
     placements,
     synonyms: uniqueSynonyms,
-    findings,
     differentials,
     children: (childEnts ?? []).sort((a, b) => a.name.localeCompare(b.name)),
   };
@@ -250,46 +199,28 @@ export interface MarkerDetail {
     compartment: string | null; gene_symbols: string[] | null; definition: string | null;
   };
   synonyms: { term: string }[];
-  entities: { slug: string; name: string; kind: string; call: string | null; sources: number }[];
 }
 
+/**
+ * The marker's own record and its synonyms. The entities it is reported in
+ * come from `markerEntityRollup`, per source — this used to read `evidence`
+ * and keep the first row's call per entity, which is the first-row-wins
+ * defect the 2026-08-29 audit filed (D4).
+ */
 export async function markerDetail(slug: string): Promise<MarkerDetail | null> {
   const sb = await createClient();
   const { data: marker } = await sb
     .from("markers")
     .select("id, slug, name, kind, compartment, gene_symbols, definition")
     .eq("slug", slug)
+    .eq("status", "active")
     .maybeSingle();
   if (!marker) return null;
 
-  const [synonyms, ev] = await Promise.all([
-    all<{ term: string }>(() => sb.from("marker_synonyms").select("term").eq("marker_id", marker.id).order("term") as never),
-    all<{ entity_id: string; call: string | null; certainty: string | null; review_status: string | null }>(
-      () => sb.from("evidence").select("entity_id, call, certainty, review_status").eq("marker_id", marker.id) as never
-    ),
-  ]);
-
-  const ids = [...new Set(ev.filter((e) => e.review_status !== "rejected").map((e) => e.entity_id))];
-  const { data: ents } = ids.length
-    ? await sb.from("entities").select("id, slug, name, kind").in("id", ids)
-    : { data: [] as { id: string; slug: string; name: string; kind: string }[] };
-  const byId = new Map((ents ?? []).map((e) => [e.id, e]));
-
-  const seen = new Map<string, { slug: string; name: string; kind: string; call: string | null; sources: number }>();
-  for (const e of ev) {
-    if (e.review_status === "rejected") continue;
-    const ent = byId.get(e.entity_id);
-    if (!ent) continue;
-    const prev = seen.get(ent.slug);
-    if (prev) prev.sources += 1;
-    else seen.set(ent.slug, { slug: ent.slug, name: ent.name, kind: ent.kind, call: e.call, sources: 1 });
-  }
-
-  return {
-    marker,
-    synonyms,
-    entities: [...seen.values()].sort((a, b) => b.sources - a.sources || a.name.localeCompare(b.name)),
-  };
+  const synonyms = await all<{ term: string }>(
+    () => sb.from("marker_synonyms").select("term").eq("marker_id", marker.id).order("term") as never
+  );
+  return { marker, synonyms };
 }
 
 export interface GeneDetail {
@@ -315,3 +246,240 @@ export async function geneDetail(symbol: string): Promise<GeneDetail | null> {
 
   return { gene, markers: markers ?? [] };
 }
+
+/* ------------------------------------------------------------------ M3 --- */
+
+/**
+ * One source document's contribution to one axis, reduced to an attributed
+ * excerpt. The chapter text itself never leaves the database: `excerpt` is the
+ * first sentence, capped at 240 characters, and `n_passages` / `n_chars` say how
+ * much sits behind the link. It may still carry the inline `{12345678}` PMID
+ * markers, which `ProseText` turns into links.
+ */
+export interface Excerpt {
+  /** Source slug, e.g. `who-digestive-ed6`. */
+  authority: string;
+  /** e.g. "Digestive System Tumours (6th ed.)". */
+  authority_name: string;
+  edition: number | null;
+  year: number | null;
+  /** Document ref within the authority, e.g. "72/123". */
+  ref: string;
+  /** Chapter URL at the publisher, when known. */
+  url: string | null;
+  /** The publisher's own section heading. */
+  heading: string;
+  /** First sentence, <= 240 chars, may end in "…". */
+  excerpt: string;
+  n_passages: number;
+  n_chars: number;
+  n_citations: number;
+}
+
+export interface MonographClaimDissent {
+  authority: string;
+  polarity: string | null;
+  code: string | null;
+  text: string | null;
+  quote: string | null;
+}
+
+/** One resolved claim from the verdicts matview. */
+export interface MonographClaim {
+  predicate: string;
+  object_key: string | null;
+  scope: string | null;
+  agreement: string;
+  polarity: "present" | "absent" | "indeterminate" | null;
+  nuance: string | null;
+  code: string | null;
+  code_system: string | null;
+  text: string | null;
+  marker_id: string | null;
+  /** [low, high, unit] as the source printed it; all three may be null. */
+  qty: [number | null, number | null, string | null] | null;
+  authority: string;
+  quote: string | null;
+  dissent: MonographClaimDissent[];
+}
+
+export type AxisCoverage =
+  | "asserted"
+  | "declared_absent"
+  | "section_empty"
+  | "section_missing"
+  | "not_extracted";
+
+export interface MonographAxis {
+  ord: number;
+  axis: string;
+  label: string;
+  /** full | partial | delegated | none — how well any source covers this axis. */
+  holds: "full" | "partial" | "delegated" | "none";
+  /** Whether the axis is running text (Epidemiology) rather than a list or code (ICD-O). */
+  is_prose: boolean;
+  /** One per source document. */
+  excerpts: Excerpt[];
+  claims: MonographClaim[];
+  coverage: AxisCoverage[];
+}
+
+interface Monograph {
+  entity:
+    | (EntityRow & { created_at: string; updated_at: string; sites_curated: boolean })
+    | null;
+  axes: MonographAxis[];
+  verdicts_computed_at: string | null;
+}
+
+/**
+ * The whole monograph in ONE request.
+ *
+ * `kb_entity_monograph` returns a single scalar jsonb row, so the number of axes
+ * is a SQL detail rather than a client one — PostgREST's 1,000-row cap cannot
+ * truncate it, and there is no N+1 to tune. It also resolves merged slugs
+ * internally, so a retired slug is a hit rather than a 404; the page still
+ * prefers `resolveEntity` first so it can answer with a real 308 instead.
+ *
+ * Returns null when the slug matches nothing, which the page turns into a 404.
+ */
+export const entityMonograph = cache(async (slug: string): Promise<Monograph | null> => {
+  const sb = await createClient();
+  const { data, error } = await sb.rpc("kb_entity_monograph", { p_slug: slug });
+  if (error) throw new Error(error.message);
+  const m = data as unknown as Monograph | null;
+  if (!m || !m.entity) return null;
+  return {
+    ...m,
+    axes: (m.axes ?? []).map((a) => ({
+      ...a,
+      excerpts: a.excerpts ?? [],
+      claims: a.claims ?? [],
+      coverage: a.coverage ?? [],
+    })),
+  };
+});
+
+/* ------------------------------------------------------------------ M4 --- */
+
+/**
+ * One source saying one thing about one marker in this entity.
+ *
+ * `claim` is a verified character span in the source document; `legacy` is an
+ * older evidence row whose quote is stored but has not yet been re-found as a
+ * span (`quote_located` says whether a later pass managed to). Every figure is
+ * as PRINTED by that source — `pct_bound: "upper"` with `pct_high: 5` is the
+ * source's "<5%", not ours — and nothing here is pooled.
+ */
+export interface MarkerAttestation {
+  kind: "claim" | "legacy";
+  claim_id?: string;
+  evidence_id?: string;
+  /** Source slug (`who-digestive-ed6`) or, for legacy rows, the source kind (`pubmed`, `who_chapter`, `pathoutlines`). */
+  authority: string;
+  /** "Digestive System Tumours (6th ed.)", or a journal name for PubMed rows. */
+  authority_name: string;
+  tier: number | null;
+  eff_rank: number | null;
+  edition: number | null;
+  year: number | null;
+  /** "72/123" for a chapter, or a PMID. */
+  document_ref: string;
+  url: string | null;
+  /** Legacy only. */
+  pmid?: string | null;
+  /** Legacy only. */
+  title?: string | null;
+  polarity: "present" | "absent" | "indeterminate";
+  nuance: "loss" | "retained" | "wildtype" | "index" | "aberrant" | null;
+  modality: "asserted" | "typical" | "frequent" | "occasional" | "rare" | "reported" | "disputed";
+  pct_low: number | null;
+  pct_high: number | null;
+  /** "upper" = the source printed "<x%"; "lower" = ">x%"; "approx" = "~x%". */
+  pct_bound: "upper" | "lower" | "approx" | null;
+  n_positive: number | null;
+  n_total: number | null;
+  denominator: "cases" | "cells" | null;
+  /** e.g. "dot-like". */
+  pattern: string | null;
+  /** e.g. "clone_epitope=cytoplasmic domain". */
+  scope: string | null;
+  /** The sentence, verbatim, inline PMID markers included. */
+  quote: string;
+  /** PMIDs the source cites IN that sentence. */
+  pmids: string[];
+  support: "ex_cathedra" | "cited_primary" | "cited_textbook" | null;
+  runs: string[];
+  /** The same source states both polarities for this marker/scope. Show both; flag it. */
+  contested: boolean;
+  /** Legacy only. */
+  quote_located?: "verified" | "unverified";
+}
+
+export interface MarkerRollupRow {
+  marker: { id: string; slug: string; name: string; kind: string; compartment: string | null };
+  /** none | single | unanimous | split — the only aggregate the page is allowed. */
+  agreement: "none" | "single" | "unanimous" | "split";
+  /** Claims first, then legacy; then eff_rank asc, edition desc, year desc. */
+  attestations: MarkerAttestation[];
+}
+
+export interface MarkerRollup {
+  entity: { id: string; slug: string; name: string; kind: string };
+  generated_at: string;
+  counts: { claims: number; attestations: number; legacy: number };
+  /** Ordered by number of sources desc, then name. */
+  markers: MarkerRollupRow[];
+}
+
+/**
+ * Every marker statement attributed to one entity, per source, in ONE request.
+ *
+ * Like `entityMonograph` this is a single scalar jsonb row from a SECURITY
+ * DEFINER function granted to anon, so the anon cookie client can call it and
+ * PostgREST's row cap cannot truncate it. Returns null when the slug matches
+ * nothing.
+ */
+export const entityMarkerRollup = cache(async (slug: string): Promise<MarkerRollup | null> => {
+  const sb = await createClient();
+  const { data, error } = await sb.rpc("kb_entity_marker_rollup", { p_slug: slug });
+  if (error) throw new Error(error.message);
+  const r = data as unknown as MarkerRollup | null;
+  if (!r || !r.entity) return null;
+  return {
+    ...r,
+    markers: (r.markers ?? []).map((m) => ({ ...m, attestations: m.attestations ?? [] })),
+  };
+});
+
+/* ------------------------------------------------------ marker side --- */
+
+export interface MarkerEntityRollupRow {
+  entity: { id: string; slug: string; name: string; kind: string };
+  agreement: "none" | "single" | "unanimous" | "split";
+  attestations: MarkerAttestation[];
+}
+
+export interface MarkerEntityRollup {
+  marker: { id: string; slug: string; name: string; kind: string; compartment: string | null };
+  generated_at: string;
+  counts: { claims: number; attestations: number; legacy: number };
+  /** Ordered by number of sources desc, then entity name. */
+  entities: MarkerEntityRollupRow[];
+}
+
+/**
+ * The inverse of `entityMarkerRollup`: every entity one marker is reported in,
+ * each source's own statement, same rules (never pooled, disagreement shown).
+ */
+export const markerEntityRollup = cache(async (slug: string): Promise<MarkerEntityRollup | null> => {
+  const sb = await createClient();
+  const { data, error } = await sb.rpc("kb_marker_entity_rollup", { p_slug: slug });
+  if (error) throw new Error(error.message);
+  const r = data as unknown as MarkerEntityRollup | null;
+  if (!r || !r.marker) return null;
+  return {
+    ...r,
+    entities: (r.entities ?? []).map((e) => ({ ...e, attestations: e.attestations ?? [] })),
+  };
+});

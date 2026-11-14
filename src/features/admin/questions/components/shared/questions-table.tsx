@@ -180,6 +180,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
           topic,
           anki_card_id,
           anki_deck_name,
+          entity_id,
           created_by,
           updated_by,
           reviewer_id,
