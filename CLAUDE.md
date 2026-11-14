@@ -16,6 +16,23 @@ mistakes everyone makes: assuming the IHC matrix is built from the database (it
 is not — it is upstream of it), and trusting `seed_knowledge_graph.ts --dry`
 (it stubs the id maps, so it cannot rehearse the part that matters).
 
+**Adding knowledge is one command.** A question, a pasted answer, or a PDF:
+
+    npx tsx dev/resources/who_classification/add.ts "What molecular alterations distinguish X from Y?"
+    npx tsx dev/resources/who_classification/add.ts answer.txt       # a pasted chat answer (or `-` for stdin)
+    npx tsx dev/resources/who_classification/add.ts paper.pdf        # needs a DOI in its text
+    ... --yes                                                         # unattended: write without asking
+
+It retrieves source passages (PathTalk, the answer's PMIDs, or the PDF), has
+OpenCode's free Big Pickle extract claims (`--extractor cloudflare` for the paid
+API), runs the ingest gates, writes what passes, then republishes the graph
+snapshot and verifies the backup. It ends on one `RESULT:` line saying what
+happened and what to do next. It never mints a marker and never guesses: a
+claim it cannot place is HELD with a `fix:` line. Your judgement goes there —
+corroborate against WHO / PathologyOutlines / PathTalk, edit the claim in the
+file it names, then `add.ts --file <name> --yes`. Do not hand-build files for
+`ingest_manual.ts` or orchestrate agents to do this — that is rebuilding `add.ts`.
+
 **Naming: knowledge base vs knowledge graph.** They are two layers, not
 synonyms. The **knowledge base** is the dataset and everything that reads it as
 a dataset — `entities` / `markers` / `evidence` / `sources` and their kin, the
@@ -92,11 +109,11 @@ The app resolves URLs from the manifest (`cache: "no-cache"`, short timeout) and
 
 Do not hand-roll either side — both halves exist:
 
-| use | helper |
-|---|---|
-| publish | `publishVersioned()` in `dev/resources/scrapers/r2_common.mjs` |
-| migrate an existing object | `dev/resources/scrapers/r2_migrate_to_manifest.mjs` (no rebuild needed) |
-| consume | `createManifestResolver()` in `src/shared/config/r2-manifest.ts`, or pass `resolveUrl` to `useR2Json` |
+| use                        | helper                                                                                                |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- |
+| publish                    | `publishVersioned()` in `dev/resources/scrapers/r2_common.mjs`                                        |
+| migrate an existing object | `dev/resources/scrapers/r2_migrate_to_manifest.mjs` (no rebuild needed)                               |
+| consume                    | `createManifestResolver()` in `src/shared/config/r2-manifest.ts`, or pass `resolveUrl` to `useR2Json` |
 
 All seven datasets are converted (anki, cell-quiz, ab-path, virtual-slides corpus + cases, who-curation, IHC matrix + molecular). Two traps when adding another: a prefix may **already** have a `manifest.json` (`virtual-slides/` holds both the corpus and cases — merge, never overwrite), and the legacy fixed key must keep a SHORT ttl since it is the mutable fallback.
 

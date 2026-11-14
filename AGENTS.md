@@ -1,0 +1,148 @@
+# AGENTS.md
+
+## Before you build anything
+
+**Read `dev/docs/tooling/TOOLING-INDEX.md` first** (local, gitignored). It indexes the
+scripts, shared helpers, R2 keys, data fields and MCP servers that already
+exist. It is there because the recurring failure in this repo is a lookup gap,
+not a knowledge gap — rebuilding a worse version of something already present.
+
+**Working on the WHO knowledge base, the IHC matrix or the 3D explorer? Read
+`dev/docs/tooling/KNOWLEDGE-GRAPH.md`** (local, gitignored) as well. TOOLING-INDEX is the
+log of what broke; KNOWLEDGE-GRAPH is the map — the data model, the seven build
+stages, all 115 pipeline scripts by stage with their traps, and the runbook for
+adding a WHO volume, new evidence, or a new marker. It will save you the two
+mistakes everyone makes: assuming the IHC matrix is built from the database (it
+is not — it is upstream of it), and trusting `seed_knowledge_graph.ts --dry`
+(it stubs the id maps, so it cannot rehearse the part that matters).
+
+**Adding knowledge is one command.** A question, a pasted answer, or a PDF:
+
+    npx tsx dev/resources/who_classification/add.ts "What molecular alterations distinguish X from Y?"
+    npx tsx dev/resources/who_classification/add.ts answer.txt       # a pasted chat answer (or `-` for stdin)
+    npx tsx dev/resources/who_classification/add.ts paper.pdf        # needs a DOI in its text
+    ... --yes                                                         # unattended: write without asking
+
+It retrieves source passages (PathTalk, the answer's PMIDs, or the PDF), has
+OpenCode's free Big Pickle extract claims (`--extractor cloudflare` for the paid
+API), runs the ingest gates, writes what passes, then republishes the graph
+snapshot and verifies the backup. It ends on one `RESULT:` line saying what
+happened and what to do next. It never mints a marker and never guesses: a
+claim it cannot place is HELD with a `fix:` line. Your judgement goes there —
+corroborate against WHO / PathologyOutlines / PathTalk, edit the claim in the
+file it names, then `add.ts --file <name> --yes`. Do not hand-build files for
+`ingest_manual.ts` or orchestrate agents to do this — that is rebuilding `add.ts`.
+
+**Naming: knowledge base vs knowledge graph.** They are two layers, not
+synonyms. The **knowledge base** is the dataset and everything that reads it as
+a dataset — `entities` / `markers` / `evidence` / `sources` and their kin, the
+WHO pipeline that seeds them, the curation tools, and the public pages
+`/e/<slug>`, `/m/<slug>`, `/g/<symbol>` (`features/public/knowledge/`). The
+**knowledge graph** is the one layer that treats it as a graph: the 3D explorer
+and its topology, Leiden communities, force layout and baked snapshot
+(`features/public/knowledge-graph/`, `/debug/entity-cloud`, the hero cloud).
+Write "knowledge base" for the data, "knowledge graph" only for the
+visualisation. Existing identifiers keep their spelling — `KNOWLEDGE-GRAPH.md`,
+`kg_curation_log`, KG Atlas, `/api/debug/knowledge-graph`, the R2
+`knowledge-graph/` prefix, `npm run graph:snapshot` — all name the graph layer
+or are load-bearing; do not rename them to chase the prose.
+
+Three questions, in order, before writing any script, matcher or publisher:
+does a script already do this, does a shared helper already do this, does the
+data already carry this. "Nearly, but not quite" means extend the existing
+thing; a second implementation is how the two diverge and one silently rots.
+
+## Stack
+
+Next.js 15 (App Router) + React 19 + TypeScript + Supabase (auth/DB) + Cloudflare R2 (storage) + Tailwind + shadcn/ui + Vitest
+
+## Commands
+
+- `npm run dev` — local dev server
+- `npm run build` — production build
+- `npm run lint` — ESLint (uses `next lint`)
+- `npm run format` — prettier (debug/ files ignored by .gitignore; use `--ignore-path .prettierignore` to format them)
+- `npm run test` — Vitest unit tests
+
+## Project layout
+
+```
+src/
+  app/
+    (public)/     — public pages
+    (auth)/       — login/signup
+    (dashboard)/  — user dashboard
+    (admin)/      — admin panel
+    api/          — API routes
+    debug/        — dev-only test pages (gitignored)
+  features/       — domain modules (admin/, auth/, user/, public/)
+  shared/         — reusable components, hooks, utils, services, config, types, contexts
+```
+
+## Conventions
+
+- Feature code → `src/features/{domain}/`. Shared code → `src/shared/`.
+- Route groups map to layouts: (admin) uses UnifiedLayoutClient w/ admin nav, (dashboard) w/ user nav.
+- Auth: Supabase JWT. Middleware checks roles (admin/creator/reviewer/user). Public APIs under `api/public/*`, `api/auth/*`, `api/content/*`.
+- Imports: use `@/` alias (maps to `src/`).
+- Toasts: import from `@/shared/utils/toast`, never direct from `sonner` (ESLint enforced).
+- Components: shadcn/ui in `src/shared/components/ui/`. Prefer existing over new.
+- Confirmation modals: always use `Dialog` (`shared/components/ui/dialog.tsx`) — never `AlertDialog`. Repo `AlertDialog` ships `slide-in-from-left-1/2` / `slide-in-from-top-[48%]` animations layered on `translate-x-[-50%] translate-y-[-50%]` centering transform; two stack, panel pinned upper-left not centered. Whole codebase uses `Dialog` for "are you sure?" flows (see `quiz/[id]/components/dialogs/*`); follow pattern.
+- **Badges.** Visual reference live at `/debug/badges` (gitignored). Three rules:
+  - **Status/type/category w/ text label** → canonical outline: `variant="outline"` + `border-X-300 bg-X-50 text-X-700`. Use existing wrappers when possible: `CategoryBadge`, `StatusBadge`, `DifficultyBadge`, `RoleBadge`, `UserStatusBadge`, `ImageTypeBadge`, `InquiryStatusBadge`. New domain badge → new wrapper in `shared/components/ui/`, not inline.
+  - **Single-number / counter chips** (tab counts, quick-action counts, sidebar nav counters) → solid Shadcn variant: `variant="secondary"` (neutral), `variant="destructive"` (alert). No border (cva sets `border-transparent`). Never apply canonical outline to a single-number badge.
+  - **Sidebar/dashboard nav pills** ("New", "Soon", count dots) → inline `<span>` w/ `rounded-full bg-X-100 text-X-700 px-2 py-0.5` (no border), not `Badge` component. See `unified-sidebar.tsx` + `student-quick-actions.tsx`.
+  - Sizes: tables use `text-[10px] px-1.5 py-0`. Cards/dialogs use Badge cva default (`text-xs px-2.5 py-0.5`). Tab counters use `h-5 px-1.5 text-xs`.
+
+## Caching
+
+Cloudflare CDN front of Vercel. Debug deploy/cache issues → purge BOTH caches. No custom Cache-Control headers for paths Next.js manages (`/_next/static/`).
+
+**Rebuildable R2 artifacts: content-address the payload, point at it with one short-TTL manifest.** Any dataset that gets regenerated (corpus, WSI, IHC, curation) must be published as an immutable, content-addressed object plus a small mutable pointer the app reads at runtime:
+
+```
+data/<x>/<name>-<hash>.json.br   Cache-Control: max-age=31536000, immutable
+data/<x>/manifest.json           Cache-Control: max-age=60   ← the only mutable thing
+```
+
+The app resolves URLs from the manifest (`cache: "no-cache"`, short timeout) and falls back to a compiled URL only if it is unreachable. **A republish then needs no redeploy.**
+
+Do not hand-roll either side — both halves exist:
+
+| use                        | helper                                                                                                |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- |
+| publish                    | `publishVersioned()` in `dev/resources/scrapers/r2_common.mjs`                                        |
+| migrate an existing object | `dev/resources/scrapers/r2_migrate_to_manifest.mjs` (no rebuild needed)                               |
+| consume                    | `createManifestResolver()` in `src/shared/config/r2-manifest.ts`, or pass `resolveUrl` to `useR2Json` |
+
+All seven datasets are converted (anki, cell-quiz, ab-path, virtual-slides corpus + cases, who-curation, IHC matrix + molecular). Two traps when adding another: a prefix may **already** have a `manifest.json` (`virtual-slides/` holds both the corpus and cases — merge, never overwrite), and the legacy fixed key must keep a SHORT ttl since it is the mutable fallback.
+
+The anti-pattern — and how IHC was wrong until Aug 2026 — is a **mutable key carrying a long/immutable TTL**, cache-busted by a `?v=<hash>` compiled into the app. That works, but it makes every data change a code deploy, and the stale-cache failure is silent. If you find one, convert it; don't paste a new hash.
+
+## Security
+
+Real defense = Cloudflare + Supabase auth/RLS + middleware. App-layer is thin on purpose. **Before re-adding any of these, read README.md "Security & Performance" first — they were removed deliberately in the Apr–May 2026 audit and have rationale documented there:**
+
+- Browser fingerprinting + `security_events` table — placebo against real session hijack; Supabase refresh-token reuse detection is the actual defense.
+- Custom CSRF token machinery — never validated server-side; `sameSite: lax` cookie + JSON CORS preflight already cover it.
+- Per-action rate limiters (signup / password-reset / email-verify / admin-API / quiz-API) — Supabase rate-limits `/auth/v1/*` server-side.
+
+Active app-layer protections worth knowing: honeypot field `referral_source` on signup-form.tsx + contact-form.tsx (silent reject if non-empty). Turnstile plumbing wired in 3 forms but currently disabled (`isCaptchaEnabled() === false`) due to non-Gmail-auth breakage.
+
+## Lint rules
+
+- `prettier/prettier` enforced via ESLint plugin
+- `react-hooks/rules-of-hooks` error-level
+- `@next/next/no-img-element` warn — suppress w/ eslint-disable comment when `<img>` intentional (SVGs, dynamic URLs)
+- Unused vars must start w/ `_`
+
+## Gotchas
+
+- **Cross-user aggregation needs `SECURITY DEFINER`.** Any DB function comparing caller to other users (percentiles, ranks, leaderboards, "X% of users do Y") must be `SECURITY DEFINER`. Default `SECURITY INVOKER` runs under caller's RLS context — if `quiz_sessions` / `quiz_attempts` / etc. RLS scopes reads to `auth.uid()`, function only sees caller's own data, aggregates collapse to "1st of 1". Litmus test: function returns different output under service role vs authenticated user → RLS mediating → decide which correct. `get_user_percentile` canonical example.
+- **Windowed vs lifetime counts.** `/api/user/performance-data` uses `.limit(100)` + `quiz_attempts!inner(...)` for heavy per-attempt math. Anything needing true lifetime count (e.g. "completed quizzes") must use separate `COUNT(*)` query, not windowed `sessions.length`. See `lifetimeCompletedQuizzes` pattern in route.
+- **`||` vs `??` for SQL fallbacks.** Mapping RPC results into API responses → use `??`. `||` treats `0` as falsy, silently overwrites legit zero values (e.g., 0th-percentile rank) w/ defaults — bakes nonsense into SWR cache that lives forever.
+- **Custom SWR provider isolates cache.** `swr-cache-provider.tsx` gives `SWRConfig` custom `provider` map → isolated cache instance. **Global `mutate` imported from `"swr"`** targets SWR's default cache, not this one — calling from outside React context = silent no-op against cache `useSWR` hooks read. Use `useSWRConfig().mutate` (provider-scoped) when invalidating from inside React; pass down to anything else that invalidates.
+- **SECURITY DEFINER RPC + cookie-auth client = silent 404.** Any `public.*` function `SECURITY DEFINER` and not granted `EXECUTE` to `authenticated` (default we keep, avoid `authenticated_security_definer_function_executable` Supabase lint) **cannot** be called via cookie-auth Supabase client. Browser/server cookie client used everywhere (`createClient` from `@/shared/services/{server,client}`) calls PostgREST as `authenticated`, gets 404 w/ no error surfaced through `supabase-js`, caller silently sees `null`/`[]` — manifests as fallback values (50% percentile, 0% question success rate), empty admin stats, or "no data yet" empty states. **Fix pattern**: (1) **server-side caller** → inline service-role client, call RPC through it: `createSupabaseClient(NEXT_PUBLIC_SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!).rpc(...)`. (2) **browser-side caller** → add thin Next.js API route gating on `x-user-id` / `x-user-role` headers from middleware, proxy RPC through service-role client; browser `fetch()` route. users-stats / audio-stats routes canonical examples. Watch files that _look_ browser-side because import `@/shared/services/client` but only called from server route handlers (e.g. `quiz-service.ts`) — use server-side service-role pattern direct, not `fetch()` proxy. If SECURITY DEFINER function has internal `auth.uid()` check, must drop (or move to API route) — service-role calls have `auth.uid()` = NULL — see `get_user_statistics` migration.
+- **Read-then-write UPDATEs in API routes race themselves.** Route doing `select row → check status → conditionally call update` = TOCTOU window: second request lands between read and write, sees same "still in progress" state, overwrites terminal transition committed between. Bit us w/ `/api/user/quiz/sessions/[id]` PATCH overwriting just-completed quiz back to `in_progress`. **Fix pattern**: push guard into actual `UPDATE` via Supabase filter chain (e.g. `.eq("id", id).neq("status", "completed")`). Postgres serializes writes → stale "demote me" PATCH matches zero rows. Read-then-check fine for _short-circuiting early_ (skip update, return 200), never only barrier — WHERE clause must enforce. Allow legit transition by skipping guard when incoming update _is_ terminal one (see `quizService.updateQuizSession`).
+- **`useReducer` dispatches not visible to synchronous reads, even after `await`.** React 18 batches reducer dispatches, commits on next render — `await` inside same handler chain doesn't force render. Ref assigned during render (`stateRef.current = state`) also stale until next commit. Flow doing `dispatch(action) → await something → read state` reads pre-dispatch value. Bit us hard on timer-expiry path (pending answer dispatched, `runCompletion` reads state, finds 0 answers, ships empty `/complete` POST). **Fix pattern**: mirror dispatch into ref synchronously by running pure reducer right after dispatch (`stateRef.current = reducer(stateRef.current, action)`), expose `getCurrentState()` accessor reading from ref. On-render `stateRef.current = state` line converges harmlessly next commit. See `use-quiz-state-machine.ts`'s `dispatchAndMirror`. "Proper" fix = `useSyncExternalStore` w/ reducer hosted in external store — half-day work plus testing, not worth without independent trigger.
+- **OSD DZI tiles: build the URL yourself, never hand OSD a `{Image}` descriptor.** OpenSeadragon's native `DziTileSource.getTileUrl` appends `this.queryParams` to every tile; when you construct the descriptor in-memory (no source URL for OSD to parse params from) that value is `undefined` and stringifies onto the URL → `0_0.jpegundefined`. Dynamic tile servers (MGH) ignore the junk suffix so they "work"; strict static hosts (WHO, LearnHaem) 404 → our same-origin tile proxy surfaces it as a **502 that reads like CSP/egress but isn't**. **Fix**: `wsi-osd-tilesource.ts` `dzi` branch returns a custom `getTileUrl` (`tileOverlap` + `maxLevel = ceil(log2(max(w,h)))` reproduce OSD's native DZI math) instead of `{Image:{...}}`. **Corollary**: WSI tiles are proxied through the **Cloudflare Worker** `https://wsi.pathologybites.com/?url=` (`TILE_PROXY` in `wsi-osd-tilesource.ts`; source `~/Pathology Bites/pathology-bites-wsi-proxy`), but only when `opts.proxy` is set — proxied sources need `wsi.pathologybites.com` in CSP and the upstream host needs no entry _for tiles_, while non-proxied sources (CORS-open repos like Leeds) are fetched directly by the browser and do need their own `connect-src`/`img-src` entry. When a slide won't load, read the proxy request's HTTP status (502 = Worker→upstream unreachable or malformed URL, 403 = SSRF allowlist reject, 200 = look elsewhere) **before** touching CSP / Cloudflare / Vercel. The old same-origin Vercel route (`/api/public/tools/virtual-slides/wsi-tile-proxy`) was deleted Aug 2026 — it had been orphaned since the Jun 2026 Worker migration. (`frame-src` entries are still legit — they gate the iframe-fallback viewer.)
