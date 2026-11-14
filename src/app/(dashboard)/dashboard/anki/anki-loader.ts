@@ -42,7 +42,7 @@ export function useAnkomaIndex() {
   return result;
 }
 
-export function loadCategoryCards(file: PublishedFile): Promise<AnkiCard[]> {
+function loadCategoryCards(file: PublishedFile): Promise<AnkiCard[]> {
   return loadR2Json<AnkiCard[]>({
     url: file.url,
     transform: (raw) => cardsFromCategoryFile(raw as AnkomaCategoryFile),
