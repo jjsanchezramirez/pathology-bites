@@ -236,6 +236,16 @@ export function getUserNavigationSections(): NavigationSection[] {
       ],
     },
     {
+      title: "Tools",
+      items: [
+        {
+          name: "Cell Counter",
+          href: "/tools/cell-counter",
+          icon: "Calculator",
+        },
+      ],
+    },
+    {
       title: "Analytics",
       items: [
         {

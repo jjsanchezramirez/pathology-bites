@@ -31,6 +31,7 @@ import {
   AudioLines,
   Clapperboard,
   CalendarDays,
+  Calculator,
   type LucideIcon,
 } from "lucide-react";
 import { cn } from "@/shared/utils";
@@ -70,6 +71,7 @@ const iconMap: Record<string, LucideIcon> = {
   AudioLines,
   Clapperboard,
   CalendarDays,
+  Calculator,
 };
 
 interface UnifiedSidebarProps {
