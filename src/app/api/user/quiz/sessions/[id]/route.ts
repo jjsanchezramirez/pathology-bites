@@ -105,7 +105,13 @@ const batchAnswerSchema = z.object({
 const quizSessionPatchSchema = z
   .object({
     action: z.string().optional(),
-    timeRemaining: z.number().optional(),
+    // Untimed quizzes (and timed ones before the timer loads) send null. Treat
+    // null as "not provided" so the save goes through and time_remaining is
+    // left untouched, instead of 400ing the whole save (answers included).
+    timeRemaining: z
+      .number()
+      .nullish()
+      .transform((v) => v ?? undefined),
     currentQuestionIndex: z.number().optional(),
     totalTimeSpent: z.number().optional(),
     status: z.string().optional(),

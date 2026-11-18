@@ -89,7 +89,14 @@ export class OfflineQueueManager {
   private saveQueue(queue: OfflineQueueItem[]): void {
     try {
       if (typeof window === "undefined") return; // SSR guard
-      localStorage.setItem(OfflineQueueManager.QUEUE_KEY, JSON.stringify(queue));
+      // A Map stringifies to {}, which silently dropped every queued answer.
+      // Store it as entries; getQueue() turns it back into a Map.
+      localStorage.setItem(
+        OfflineQueueManager.QUEUE_KEY,
+        JSON.stringify(queue, (_key, value) =>
+          value instanceof Map ? Array.from(value.entries()) : value
+        )
+      );
     } catch (error) {
       log.error("Failed to save offline queue:", error);
     }

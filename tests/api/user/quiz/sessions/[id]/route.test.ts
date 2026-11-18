@@ -390,6 +390,64 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
     });
   });
 
+  describe("Untimed quiz progress (timeRemaining: null)", () => {
+    beforeEach(() => {
+      (quizService.getQuizSession as any).mockResolvedValue({
+        id: mockSessionId,
+        userId: mockUserId,
+        status: "in_progress",
+      });
+      (quizService.updateQuizSession as any).mockResolvedValue(undefined);
+    });
+
+    it("accepts timeRemaining: null, saves the answers, and leaves time_remaining alone", async () => {
+      const request = createAuthenticatedRequest(mockUserId, {
+        method: "PATCH",
+        url: `http://localhost:3000/api/user/quiz/sessions/${mockSessionId}`,
+        body: {
+          status: "in_progress",
+          currentQuestionIndex: 3,
+          timeRemaining: null,
+          totalTimeSpent: 90,
+          answers: [{ questionId: "q1", selectedAnswerId: "a1", timeSpent: 30, timestamp: 1 }],
+        },
+      });
+
+      const response = await PATCH(request, { params: mockParams });
+
+      expect(response.status).toBe(200);
+      expect(mockQuery.upsert).toHaveBeenCalled();
+      const updates = (quizService.updateQuizSession as any).mock.calls[0][1];
+      expect(updates.currentQuestionIndex).toBe(3);
+      expect(updates.timeRemaining).toBeUndefined();
+    });
+
+    it("pauses an untimed quiz with timeRemaining: null", async () => {
+      (quizService.pauseQuizSession as any).mockResolvedValue(undefined);
+      const request = createAuthenticatedRequest(mockUserId, {
+        method: "PATCH",
+        url: `http://localhost:3000/api/user/quiz/sessions/${mockSessionId}`,
+        body: { action: "pause", timeRemaining: null },
+      });
+
+      const response = await PATCH(request, { params: mockParams });
+
+      expect(response.status).toBe(200);
+      expect(quizService.pauseQuizSession).toHaveBeenCalledWith(mockSessionId, 0, mockSupabase);
+    });
+
+    it("still rejects a non-number timeRemaining", async () => {
+      const request = createAuthenticatedRequest(mockUserId, {
+        method: "PATCH",
+        url: `http://localhost:3000/api/user/quiz/sessions/${mockSessionId}`,
+        body: { timeRemaining: "soon" },
+      });
+
+      const response = await PATCH(request, { params: mockParams });
+      expect(response.status).toBe(400);
+    });
+  });
+
   describe("Answer Submission Optimization", () => {
     beforeEach(() => {
       (quizService.getQuizSession as any).mockResolvedValue({
