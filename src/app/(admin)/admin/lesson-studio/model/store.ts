@@ -6,6 +6,7 @@ import { create } from "zustand";
 import type { Lesson, Slide, SlideElement, Framing } from "./types";
 import { newBlankLesson } from "./slide-factory";
 import { migrateLesson } from "@/shared/lesson/normalize";
+import { applyNarrationCues, type SlideCue } from "@/shared/lesson/narration";
 
 const HISTORY_LIMIT = 50;
 
@@ -57,6 +58,8 @@ interface StoreActions {
   setLesson: (lesson: Lesson) => void;
   setLessonMeta: (meta: Partial<Pick<Lesson, "id" | "title" | "description">>) => void;
   setAudio: (audio: Lesson["audio"]) => void;
+  /** Set a generated narration track and retime slides/elements to its cues (one undo step). */
+  applyNarration: (audio: NonNullable<Lesson["audio"]>, cues: SlideCue[]) => void;
 
   // Slides
   addSlide: (slide: Slide, atIndex?: number) => void;
@@ -185,6 +188,10 @@ export const useEditorStore = create<EditorStore>((set, get) => ({
 
   setAudio: (audio) => {
     get()._commit((l) => ({ ...l, audio }));
+  },
+
+  applyNarration: (audio, cues) => {
+    get()._commit((l) => ({ ...applyNarrationCues(l, cues), audio }));
   },
 
   // ---- Slides ----------------------------------------------------------------

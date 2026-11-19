@@ -29,6 +29,7 @@ import { SaveToDatabaseDialog } from "./components/save-to-database-dialog";
 import { LoadFromDatabaseDialog } from "./components/load-from-database-dialog";
 import { ExportDialog } from "./components/export-dialog";
 import { GenerateLessonDialog } from "./components/generate-lesson-dialog";
+import { NarrationDialog } from "./components/narration-dialog";
 import { log } from "@/shared/utils/logging";
 
 export default function LessonStudioPage() {
@@ -126,6 +127,7 @@ export default function LessonStudioPage() {
   const [loadOpen, setLoadOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
+  const [narrateOpen, setNarrateOpen] = useState(false);
 
   const markClean = useEditorStore((s) => s.markClean);
 
@@ -213,6 +215,7 @@ export default function LessonStudioPage() {
         onSaveAsNew={onSaveAsNew}
         onClearAudio={onClearAudio}
         onGenerate={onGenerate}
+        onNarrateOpen={() => setNarrateOpen(true)}
         totalDuration={totalDuration}
       />
 
@@ -274,6 +277,7 @@ export default function LessonStudioPage() {
         audioUrl={audioUrl}
       />
       <GenerateLessonDialog open={generateOpen} onOpenChange={setGenerateOpen} />
+      <NarrationDialog open={narrateOpen} onOpenChange={setNarrateOpen} />
     </div>
   );
 }

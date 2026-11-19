@@ -5,6 +5,7 @@
 import type { Slide, SlideTransition, ImageCategory } from "../model/types";
 import { useEditorStore } from "../model/store";
 import { Section, Row, NumberInput, TimeInput, Select, ColorInput } from "./inputs";
+import { NarrationSection } from "./narration-section";
 
 interface SlidePropertiesProps {
   slide: Slide;
@@ -38,6 +39,8 @@ export function SlideProperties({ slide }: SlidePropertiesProps) {
           />
         </Row>
       </Section>
+
+      <NarrationSection slide={slide} />
 
       <Section title="Transition (in)">
         <Row label="Kind">
