@@ -1,10 +1,12 @@
 // Voiceover helpers shared by the narration API route and the lesson studio.
 //
-// The narration track is built one sentence at a time: each sentence is spoken
-// by TTS as its own clip, trimmed of edge silence, and laid end to end with
-// fixed pauses. Because we place every clip ourselves, each sentence's start
-// and end are exact. Word times inside a sentence are estimated from syllable
-// weight (no aligner needed), which is typically within ~0.2–0.3 s.
+// Each slide's script is spoken by TTS as one clip (one request per slide keeps
+// us under Gemini's per-minute limit). The clip is cut into sentences at the
+// pauses between them, each sentence is trimmed of edge silence, and the
+// sentences are laid end to end with fixed pauses. Sentence cues therefore
+// match the track exactly; which words fall in which piece depends on the
+// pause detection. Word times inside a sentence are estimated from syllable
+// weight (typically within ~0.2–0.3 s), or refined with Whisper.
 //
 // Everything here is pure (no Node or browser APIs) so it can be unit tested
 // and used on both sides.
@@ -310,6 +312,112 @@ export function refineWordTimings(
     timings: out.map((w) => ({ ...w, start: round3(w.start), end: round3(w.end) })),
     matched,
   };
+}
+
+/** Spoken weight of a sentence (syllables plus internal pauses). */
+function sentenceWeight(text: string): number {
+  const words = text.split(/\s+/).filter(Boolean);
+  return words.reduce(
+    (n, w, i) => n + wordWeight(w) + (i < words.length - 1 ? pauseAfter(w) : 0),
+    0
+  );
+}
+
+/**
+ * Cut one clip that speaks several sentences into one clip per sentence.
+ *
+ * Gemini pauses between sentences, so we look for silent stretches and pick,
+ * for each boundary in order, the pause nearest to where the sentence lengths
+ * say it should fall (longer pauses win ties). Where no pause is close enough
+ * we cut at the expected point. Each piece is then trimmed of edge silence.
+ */
+export function splitClipBySentences(pcm: Pcm16, sentences: string[]): Pcm16[] {
+  if (sentences.length <= 1) return [trimSilence(pcm)];
+  const voiced = trimSilence(pcm, 0.01, 0);
+  const { samples, sampleRate } = voiced;
+  const win = Math.max(1, Math.round(sampleRate * 0.01));
+  const frames = Math.floor(samples.length / win);
+  if (frames < sentences.length * 10) {
+    // Too short to analyse; fall back to proportional cuts.
+    return proportionalCuts(voiced, sentences);
+  }
+  const rms = new Float32Array(frames);
+  let peak = 0;
+  for (let f = 0; f < frames; f++) {
+    let sum = 0;
+    for (let i = f * win; i < (f + 1) * win; i++) sum += samples[i] * samples[i];
+    rms[f] = Math.sqrt(sum / win);
+    if (rms[f] > peak) peak = rms[f];
+  }
+  const quiet = Math.max(0.01 * 32768, peak * 0.06);
+
+  // Silent runs of at least 120 ms.
+  const gaps: { start: number; end: number }[] = [];
+  let runStart = -1;
+  for (let f = 0; f <= frames; f++) {
+    const isQuiet = f < frames && rms[f] < quiet;
+    if (isQuiet && runStart < 0) runStart = f;
+    if (!isQuiet && runStart >= 0) {
+      if (f - runStart >= 12) gaps.push({ start: runStart, end: f });
+      runStart = -1;
+    }
+  }
+
+  const weights = sentences.map(sentenceWeight);
+  const total = weights.reduce((a, b) => a + b, 0);
+  const cuts: number[] = []; // frame indices
+  let acc = 0;
+  let after = 0;
+  for (let b = 0; b < sentences.length - 1; b++) {
+    acc += weights[b];
+    const expected = (acc / total) * frames;
+    const window = frames * 0.18;
+    let best: { start: number; end: number } | null = null;
+    let bestScore = Infinity;
+    for (const g of gaps) {
+      if (g.start <= after) continue;
+      const mid = (g.start + g.end) / 2;
+      const dist = Math.abs(mid - expected);
+      if (dist > window) continue;
+      const score = dist - (g.end - g.start) * 1.5;
+      if (score < bestScore) {
+        bestScore = score;
+        best = g;
+      }
+    }
+    const cut = best
+      ? Math.round((best.start + best.end) / 2)
+      : Math.round(Math.max(expected, after + 1));
+    cuts.push(cut);
+    after = best ? best.end : cut;
+  }
+
+  const pieces: Pcm16[] = [];
+  let prev = 0;
+  for (const c of [...cuts, frames]) {
+    const end = c === frames ? samples.length : c * win;
+    pieces.push(trimSilence({ sampleRate, samples: samples.slice(prev, end) }, 0.01, 0.03));
+    prev = end;
+  }
+  return pieces;
+}
+
+function proportionalCuts(pcm: Pcm16, sentences: string[]): Pcm16[] {
+  const weights = sentences.map(sentenceWeight);
+  const total = weights.reduce((a, b) => a + b, 0);
+  const out: Pcm16[] = [];
+  let acc = 0;
+  let prev = 0;
+  weights.forEach((w, i) => {
+    acc += w;
+    const end =
+      i === weights.length - 1
+        ? pcm.samples.length
+        : Math.round((acc / total) * pcm.samples.length);
+    out.push({ sampleRate: pcm.sampleRate, samples: pcm.samples.slice(prev, end) });
+    prev = end;
+  });
+  return out;
 }
 
 // ---------------------------------------------------------------------------

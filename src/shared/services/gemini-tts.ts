@@ -186,17 +186,23 @@ export async function synthesize(
       const res = await fetchWithTimeout(
         `${BASE}/models/${model}:generateContent`,
         { method: "POST", headers: headers(), body: JSON.stringify(body) },
-        60_000,
+        90_000,
         opts.signal,
         "Gemini TTS"
       );
-      if (res.status === 429 || res.status >= 500) {
+      if (res.status === 429) {
+        // Retrying here would only spend more of the per-minute quota; hand the
+        // wait back to the caller, who paces requests and resumes.
+        const { message, retryDelay } = await rateLimitInfo(res);
+        throw new RateLimitError(message, retryDelay);
+      }
+      if (res.status >= 500) {
         lastErr = new Error(`Gemini TTS ${res.status}: ${await errorText(res)}`);
         await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
         continue;
       }
       if (!res.ok) {
-        // 4xx other than 429 won't improve on retry (bad voice id, bad model, quota off).
+        // Other 4xx won't improve on retry (bad voice id, bad model, quota off).
         const e = new Error(`Gemini TTS failed: ${await errorText(res)}`);
         (e as Error & { fatal?: boolean }).fatal = true;
         throw e;
@@ -212,6 +218,7 @@ export async function synthesize(
       if (!inline?.data) throw new Error("Gemini TTS returned no audio");
       return decodeTtsAudio(new Uint8Array(Buffer.from(inline.data, "base64")), inline.mimeType);
     } catch (err) {
+      if (err instanceof RateLimitError) throw err;
       lastErr = err;
       if ((err as { fatal?: boolean }).fatal || attempt === 2) break;
     }
@@ -219,20 +226,31 @@ export async function synthesize(
   throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));
 }
 
-/** Run `fn` over `items` with at most `limit` in flight, preserving order. */
-export async function mapLimit<T, R>(
-  items: T[],
-  limit: number,
-  fn: (item: T, i: number) => Promise<R>
-): Promise<R[]> {
-  const out = new Array<R>(items.length);
-  let next = 0;
-  const workers = Array.from({ length: Math.min(limit, items.length) }, async () => {
-    while (next < items.length) {
-      const i = next++;
-      out[i] = await fn(items[i], i);
-    }
-  });
-  await Promise.all(workers);
-  return out;
+/** Gemini said "too many requests"; `retryAfter` is in seconds. */
+export class RateLimitError extends Error {
+  constructor(
+    message: string,
+    public retryAfter: number
+  ) {
+    super(message);
+    this.name = "RateLimitError";
+  }
+}
+
+async function rateLimitInfo(res: Response): Promise<{ message: string; retryDelay: number }> {
+  let message = "Gemini rate limit reached";
+  let retryDelay = Number(res.headers.get("retry-after")) || 0;
+  try {
+    const j = (await res.json()) as {
+      error?: { message?: string; details?: Array<{ "@type"?: string; retryDelay?: string }> };
+    };
+    message = j.error?.message ?? message;
+    const info = j.error?.details?.find((d) => d["@type"]?.includes("RetryInfo"));
+    const fromDetails = parseFloat(info?.retryDelay ?? "");
+    const fromText = parseFloat(/retry in ([\d.]+)s/i.exec(message)?.[1] ?? "");
+    retryDelay = fromDetails || fromText || retryDelay;
+  } catch {
+    /* keep defaults */
+  }
+  return { message, retryDelay: Math.ceil(retryDelay || 60) };
 }

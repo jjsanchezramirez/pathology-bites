@@ -9,6 +9,7 @@ import {
   resample,
   estimateWordTimings,
   refineWordTimings,
+  splitClipBySentences,
   assembleNarration,
   retimeSlide,
   applyNarrationCues,
@@ -244,5 +245,67 @@ describe("applyNarrationCues", () => {
     } as Lesson;
     const same = applyNarrationCues(lesson, [{ slideId: "s1", duration: 3, lines: [] }]);
     expect(same.slides[0].duration).toBe(10);
+  });
+});
+
+describe("splitClipBySentences", () => {
+  const sec = (p: Pcm16) => p.samples.length / p.sampleRate;
+
+  it("cuts at the pauses between sentences", () => {
+    const sentences = [
+      "Line one is the mucin droplet.",
+      "Line two is the base of the vacuole.",
+      "Done.",
+    ];
+    const pcm = {
+      sampleRate: 24000,
+      samples: cat(
+        silence(0.2),
+        tone(1.6),
+        silence(0.45),
+        tone(1.9),
+        silence(0.5),
+        tone(0.5),
+        silence(0.3)
+      ),
+    };
+    const pieces = splitClipBySentences(pcm, sentences);
+    expect(pieces).toHaveLength(3);
+    expect(Math.abs(sec(pieces[0]) - 1.6)).toBeLessThan(0.1);
+    expect(Math.abs(sec(pieces[1]) - 1.9)).toBeLessThan(0.1);
+    expect(Math.abs(sec(pieces[2]) - 0.5)).toBeLessThan(0.1);
+  });
+
+  it("prefers the sentence pause over a shorter comma pause nearby", () => {
+    const sentences = ["On the left, the surface matures.", "On the right, nuclei crowd."];
+    const pcm = {
+      sampleRate: 24000,
+      // comma pause 0.15 s inside sentence 1, sentence pause 0.5 s
+      samples: cat(
+        tone(0.7),
+        silence(0.15),
+        tone(1.2),
+        silence(0.5),
+        tone(0.7),
+        silence(0.15),
+        tone(1.0)
+      ),
+    };
+    const [a, b] = splitClipBySentences(pcm, sentences);
+    expect(Math.abs(sec(a) - (0.7 + 0.15 + 1.2))).toBeLessThan(0.1);
+    expect(Math.abs(sec(b) - (0.7 + 0.15 + 1.0))).toBeLessThan(0.1);
+  });
+
+  it("falls back to proportional cuts when there are no pauses", () => {
+    const pcm = { sampleRate: 24000, samples: tone(3) };
+    const pieces = splitClipBySentences(pcm, ["One two three.", "Four five six."]);
+    expect(pieces).toHaveLength(2);
+    expect(sec(pieces[0]) + sec(pieces[1])).toBeGreaterThan(2.8);
+  });
+
+  it("returns one trimmed clip for a single sentence", () => {
+    const pcm = { sampleRate: 24000, samples: cat(silence(0.5), tone(1), silence(0.5)) };
+    const [only] = splitClipBySentences(pcm, ["Just one."]);
+    expect(sec(only)).toBeLessThan(1.1);
   });
 });

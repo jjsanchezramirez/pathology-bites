@@ -3,7 +3,7 @@
 // Generate the lesson's voiceover from each slide's narration script with
 // Gemini, store it in the audio library, and retime slides to it.
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -56,6 +56,9 @@ const DEFAULT_STYLE =
 
 const PREFERRED_DEFAULTS = ["mako", "charon"];
 
+/** Gemini Tier 1 allows 10 TTS requests a minute; stay under it. */
+const MIN_GAP_MS = 7000;
+
 interface NarrationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -72,6 +75,8 @@ export function NarrationDialog({ open, onOpenChange }: NarrationDialogProps) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<string | null>(null);
+  const [progress, setProgress] = useState({ done: 0, total: 0, message: "" });
+  const cancelRef = useRef(false);
 
   const [designOpen, setDesignOpen] = useState(false);
   const [designName, setDesignName] = useState("");
@@ -141,23 +146,93 @@ export function NarrationDialog({ open, onOpenChange }: NarrationDialogProps) {
     }
   }
 
+  function wait(seconds: number, label: string) {
+    return new Promise<void>((resolve) => {
+      let left = Math.ceil(seconds);
+      setProgress((p) => ({ ...p, message: `${label} ${left} s…` }));
+      const t = setInterval(() => {
+        left -= 1;
+        if (cancelRef.current || left <= 0) {
+          clearInterval(t);
+          resolve();
+          return;
+        }
+        setProgress((p) => ({ ...p, message: `${label} ${left} s…` }));
+      }, 1000);
+    });
+  }
+
   async function generate() {
     setBusy(true);
     setError(null);
     setResult(null);
+    cancelRef.current = false;
+    const todo = lesson.slides.filter((s) => (s.narration?.lines.length ?? 0) > 0);
+    const keys: Record<string, string> = {};
+    let lastCall = 0;
     try {
-      const r = await fetch("/api/admin/lesson-studio/narration/generate", {
+      // 1. Speak each slide (one Gemini request per slide). Clips are cached on
+      //    the server, so a rerun after an error skips slides already spoken.
+      for (let i = 0; i < todo.length; i++) {
+        const s = todo[i];
+        const sentences = (s.narration?.lines ?? []).map((l) => l.text);
+        for (let attempt = 0; ; attempt++) {
+          if (cancelRef.current) throw new Error("Stopped. Slides already spoken are kept.");
+          setProgress({
+            done: i,
+            total: todo.length,
+            message: `Speaking slide ${i + 1} of ${todo.length}…`,
+          });
+          const sinceLast = Date.now() - lastCall;
+          if (lastCall && sinceLast < MIN_GAP_MS) {
+            await wait((MIN_GAP_MS - sinceLast) / 1000, `Pacing for Gemini's per-minute limit:`);
+            if (cancelRef.current) continue;
+          }
+          const r = await fetch("/api/admin/lesson-studio/narration/speak", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ voice, style, model, sentences }),
+          });
+          const j = await r.json().catch(() => ({}));
+          if (r.status === 429) {
+            lastCall = Date.now();
+            if (attempt >= 8)
+              throw new Error(
+                "Gemini kept refusing for being over its limit. Try again in a few minutes; finished slides are kept."
+              );
+            await wait(
+              (Number(j.retryAfter) || 60) + 1,
+              `Gemini's per-minute limit reached. Waiting`
+            );
+            continue;
+          }
+          if (!r.ok) throw new Error(j.error ?? `Slide ${i + 1} failed`);
+          if (!j.cached) lastCall = Date.now();
+          keys[s.id] = j.key;
+          break;
+        }
+      }
+
+      // 2. Build the track, cut sentences, time words, store it.
+      setProgress({
+        done: todo.length,
+        total: todo.length,
+        message:
+          align === "whisper"
+            ? "Building the track and timing words with Whisper…"
+            : "Building the track…",
+      });
+      const r = await fetch("/api/admin/lesson-studio/narration/assemble", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           title: lesson.title || "Untitled lesson",
           voice,
-          style,
-          model,
           align,
           slides: lesson.slides.map((s) => ({
             slideId: s.id,
             duration: s.duration,
+            clipKey: keys[s.id],
             lines: (s.narration?.lines ?? []).map((l) => ({ id: l.id, text: l.text })),
           })),
         }),
@@ -180,6 +255,7 @@ export function NarrationDialog({ open, onOpenChange }: NarrationDialogProps) {
       setError(e instanceof Error ? e.message : String(e));
     } finally {
       setBusy(false);
+      setProgress({ done: 0, total: 0, message: "" });
     }
   }
 
@@ -194,8 +270,8 @@ export function NarrationDialog({ open, onOpenChange }: NarrationDialogProps) {
           <DialogHeader>
             <DialogTitle>Narrate with Gemini</DialogTitle>
             <DialogDescription>
-              Speaks each slide&apos;s narration script, times every sentence, and fits the slides
-              to the voice.
+              Speaks each slide&apos;s script (one Gemini request per slide), finds each sentence,
+              and fits the slides to the voice. Slides already spoken are reused.
             </DialogDescription>
           </DialogHeader>
 
@@ -314,13 +390,30 @@ export function NarrationDialog({ open, onOpenChange }: NarrationDialogProps) {
             </div>
           </div>
 
+          {busy && progress.total > 0 && (
+            <div className="grid gap-1">
+              <div className="h-1.5 w-full overflow-hidden rounded bg-gray-100">
+                <div
+                  className="h-full bg-blue-600 transition-all"
+                  style={{ width: `${Math.round((progress.done / progress.total) * 100)}%` }}
+                />
+              </div>
+              <p className="text-xs text-muted-foreground">{progress.message}</p>
+            </div>
+          )}
           {error && <p className="text-sm text-red-600">{error}</p>}
           {result && <p className="text-sm text-green-700">{result}</p>}
 
           <div className="flex justify-end gap-2">
-            <Button variant="ghost" onClick={() => onOpenChange(false)} disabled={busy}>
-              Close
-            </Button>
+            {busy ? (
+              <Button variant="ghost" onClick={() => (cancelRef.current = true)}>
+                Stop
+              </Button>
+            ) : (
+              <Button variant="ghost" onClick={() => onOpenChange(false)}>
+                Close
+              </Button>
+            )}
             <Button onClick={generate} disabled={busy || !voice || scripted.length === 0}>
               {busy ? (
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
