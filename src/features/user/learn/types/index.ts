@@ -71,6 +71,19 @@ export interface LessonQuiz {
   questions: LessonQuizQuestion[];
 }
 
+// =============================================================================
+// QUESTION-BANK CHECKPOINTS (resolved server-side from :::question[id] directives)
+// =============================================================================
+
+export interface LessonCheckpoint {
+  id: string;
+  stem: string;
+  teachingPoint: string | null;
+  stemImages: { url: string; alt: string }[];
+  explanationImages: { url: string; alt: string }[];
+  options: { id: string; text: string; isCorrect: boolean; explanation: string | null }[];
+}
+
 export interface LessonQuizQuestion {
   id: string;
   stem: string;

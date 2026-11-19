@@ -11,6 +11,12 @@ import { Lightbulb, Loader2 } from "lucide-react";
 import type { Lesson } from "@/shared/lesson/types";
 import { normalizeStoredLesson } from "@/shared/lesson/normalize";
 import dynamic from "next/dynamic";
+import type { LessonCheckpoint as LessonCheckpointData } from "../types";
+import { LessonCheckpoint } from "./lesson-checkpoint";
+import { extractImageIds } from "../utils/lesson-references";
+import { unwrapSelfContainedDirectives } from "../utils/unwrap-block-directives";
+
+export { extractImageIds };
 
 const ExplainerPlayer = dynamic(
   () => import("@/shared/components/explainer/explainer-player").then((mod) => mod.ExplainerPlayer),
@@ -29,6 +35,9 @@ const ExplainerPlayer = dynamic(
 function remarkCustomDirectives() {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   return (tree: any) => {
+    // An unclosed `:::image[...]`, `:::explainer[...]` or `:::question[...]`
+    // would otherwise swallow the rest of the lesson as its children.
+    unwrapSelfContainedDirectives(tree);
     visit(
       tree,
       (node: { type: string }) =>
@@ -69,6 +78,12 @@ function remarkCustomDirectives() {
           data.hProperties = {
             sequenceId: getLabel(),
           };
+        } else if (name === "question") {
+          // Leaf directive: :::question[question-id] (question-bank checkpoint)
+          data.hName = "question-directive";
+          data.hProperties = {
+            questionId: getLabel().trim(),
+          };
         } else if (name === "key-points") {
           // Container directive: :::key-points ... :::
           data.hName = "key-points-directive";
@@ -81,23 +96,18 @@ function remarkCustomDirectives() {
   };
 }
 
-// Extract all image UUIDs from markdown content
-export function extractImageIds(markdown: string): string[] {
-  const matches = [...markdown.matchAll(/:::image\[([^\]]+)\]/g)];
-  return matches.flatMap((m) =>
-    m[1]
-      .split(",")
-      .map((s) => s.trim())
-      .filter(Boolean)
-  );
-}
-
 interface MarkdownLessonRendererProps {
   markdown: string;
   images: { id: string; url: string; alt_text: string | null }[];
+  /** Resolved question-bank checkpoints keyed by question id (from the lesson API). */
+  checkpoints?: Record<string, LessonCheckpointData>;
 }
 
-export function MarkdownLessonRenderer({ markdown, images }: MarkdownLessonRendererProps) {
+export function MarkdownLessonRenderer({
+  markdown,
+  images,
+  checkpoints,
+}: MarkdownLessonRendererProps) {
   const remarkPlugins = useMemo(() => [remarkDirective, remarkCustomDirectives, remarkGfm], []);
 
   return (
@@ -190,6 +200,23 @@ export function MarkdownLessonRenderer({ markdown, images }: MarkdownLessonRende
           // Custom element from remark-directive
           "explainer-directive": ({ sequenceId }: { sequenceId: string }) => {
             return <ExplainerDirective sequenceId={sequenceId} />;
+          },
+
+          // Custom element from remark-directive
+          "question-directive": ({ questionId }: { questionId: string }) => {
+            const checkpoint = checkpoints?.[questionId];
+            if (checkpoint) return <LessonCheckpoint checkpoint={checkpoint} />;
+            // Admin preview has no resolved checkpoints; learners never see
+            // unpublished questions, so render a quiet placeholder.
+            if (checkpoints === undefined) {
+              return (
+                <div className="my-6 rounded-lg border border-dashed p-4 text-sm text-muted-foreground">
+                  Checkpoint question {questionId.slice(0, 8)} (shown to learners once the question
+                  is published)
+                </div>
+              );
+            }
+            return null;
           },
 
           // Custom element from remark-directive

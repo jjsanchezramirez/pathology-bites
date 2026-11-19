@@ -32,6 +32,7 @@ import {
   Image as ImageIcon,
   Play,
   Lightbulb,
+  CircleHelp,
   Table2,
   Heading2,
   List,
@@ -271,6 +272,13 @@ export function LessonEditor({ lessonId, subjectId, subjectTitle }: LessonEditor
       icon: Play,
       label: "Explainer",
       action: () => setSequencePickerOpen(true),
+    },
+    {
+      icon: CircleHelp,
+      label: "Checkpoint question",
+      // Paste a question-bank question id between the brackets. Only published
+      // questions are shown to learners.
+      action: () => insertText("\n:::question[question-id]\n", 13, 24),
     },
     {
       icon: Lightbulb,

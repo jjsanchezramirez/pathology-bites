@@ -1,6 +1,6 @@
 // src/features/user/learn/types/lesson.ts
 
-import { LessonContent, LessonQuiz } from "./index";
+import { LessonCheckpoint, LessonContent, LessonQuiz } from "./index";
 
 // =============================================================================
 // DATABASE ROW TYPES
@@ -85,4 +85,8 @@ export interface LessonWithProgress extends Lesson {
   };
   prev_lesson: { slug: string; title: string } | null;
   next_lesson: { slug: string; title: string } | null;
+  /** Library images referenced by the lesson, resolved by the API. */
+  images?: { id: string; url: string; alt_text: string | null }[];
+  /** Published question-bank checkpoints referenced by :::question[id], keyed by id. */
+  checkpoints?: Record<string, LessonCheckpoint>;
 }

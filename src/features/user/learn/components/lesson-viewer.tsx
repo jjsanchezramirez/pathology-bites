@@ -4,14 +4,14 @@ import { useState, useEffect, useCallback } from "react";
 import Link from "next/link";
 import { learnService } from "../services/learn-service";
 import { LessonWithProgress } from "../types/lesson";
-import { LessonSection, LessonContent } from "../types";
+import { LessonContent, LessonSection } from "../types";
 import { TextSection } from "./sections/text-section";
 import { ImageSection } from "./sections/image-section";
 import { ExplainerSection } from "./sections/explainer-section";
 import { KeyPointsSection } from "./sections/key-points-section";
 import { ComparisonTableSection } from "./sections/comparison-table-section";
 import { LessonQuiz } from "./lesson-quiz";
-import { MarkdownLessonRenderer, extractImageIds } from "./markdown-lesson-renderer";
+import { MarkdownLessonRenderer } from "./markdown-lesson-renderer";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Library } from "lucide-react";
@@ -46,33 +46,9 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
         setLesson(data);
         setIsCompleted(!!data.progress?.completed_at);
 
-        // Load images referenced in content
-        let imageIds: string[] = [];
-        if (data.content_markdown) {
-          imageIds = extractImageIds(data.content_markdown);
-        } else {
-          const content = data.content as LessonContent;
-          if (content?.sections) {
-            imageIds = content.sections
-              .filter(
-                (s): s is { type: "image"; imageIds: string[] } & LessonSection =>
-                  s.type === "image"
-              )
-              .flatMap((s) => s.imageIds);
-          }
-        }
-
-        if (imageIds.length > 0) {
-          try {
-            const res = await fetch(`/api/admin/library/images?ids=${imageIds.join(",")}`);
-            if (res.ok) {
-              const imgData = await res.json();
-              setImages(Array.isArray(imgData) ? imgData : imgData.images || []);
-            }
-          } catch {
-            // Images are non-critical
-          }
-        }
+        // Images referenced in the content are resolved by the lesson API
+        // (the old admin-only library endpoint 403'd for regular users).
+        setImages(data.images || []);
       } catch (err) {
         setError(err instanceof Error ? err.message : "Failed to load lesson");
       } finally {
@@ -159,7 +135,11 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
 
       {/* Content: markdown or legacy sections */}
       {isMarkdown ? (
-        <MarkdownLessonRenderer markdown={lesson.content_markdown!} images={images} />
+        <MarkdownLessonRenderer
+          markdown={lesson.content_markdown!}
+          images={images}
+          checkpoints={lesson.checkpoints || {}}
+        />
       ) : (
         content?.sections?.map((section) => (
           <SectionRenderer key={section.id} section={section} images={images} />

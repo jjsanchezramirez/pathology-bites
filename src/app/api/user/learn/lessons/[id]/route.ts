@@ -2,13 +2,23 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
+import type { LessonContent } from "@/features/user/learn/types";
+import {
+  buildCheckpoints,
+  extractImageIds,
+  extractQuestionIds,
+  imageIdsFromSections,
+  type CheckpointImageRow,
+  type CheckpointOptionRow,
+  type CheckpointQuestionRow,
+} from "@/features/user/learn/utils/lesson-references";
 
 /**
  * @swagger
  * /api/user/learn/lessons/{id}:
  *   get:
  *     summary: Get a published lesson by id
- *     description: Returns a single published lesson (within a published subject) along with the authenticated user's progress and the prev/next sibling lessons in the same subject. As a side effect, upserts the user's lesson progress to record last_accessed_at. Requires the x-user-id header injected by middleware.
+ *     description: Returns a single published lesson (within a published subject) along with the authenticated user's progress, the prev/next sibling lessons in the same subject, the library images the lesson references (images), and the published question-bank checkpoints referenced by :::question[id] directives (checkpoints, keyed by question id; draft questions are omitted). As a side effect, upserts the user's lesson progress to record last_accessed_at. Requires the x-user-id header injected by middleware.
  *     tags:
  *       - User - Learn
  *     security:
@@ -102,14 +112,73 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
         ? { slug: siblings[currentIdx + 1].slug, title: siblings[currentIdx + 1].title }
         : null;
 
+    const markdown: string = lesson.content_markdown || "";
+    const imageIds = markdown
+      ? extractImageIds(markdown)
+      : imageIdsFromSections(lesson.content as unknown as LessonContent);
+    const [images, checkpoints] = await Promise.all([
+      resolveImages(supabase, imageIds),
+      resolveCheckpoints(supabase, extractQuestionIds(markdown)),
+    ]);
+
     return NextResponse.json({
       ...lesson,
       progress: progress || null,
       prev_lesson: prevLesson,
       next_lesson: nextLesson,
+      images,
+      checkpoints,
     });
   } catch (error) {
     log.error("[Learn API] Failed to fetch lesson:", error);
     return NextResponse.json({ error: "Failed to fetch lesson" }, { status: 500 });
+  }
+}
+
+type ServerClient = Awaited<ReturnType<typeof createClient>>;
+
+/** Library images referenced by the lesson (images are publicly readable). */
+async function resolveImages(supabase: ServerClient, ids: string[]) {
+  const unique = [...new Set(ids)];
+  if (unique.length === 0) return [];
+  const { data, error } = await supabase
+    .from("images")
+    .select("id, url, alt_text")
+    .in("id", unique);
+  if (error) {
+    log.error("[Learn API] Failed to resolve lesson images:", error);
+    return [];
+  }
+  return data || [];
+}
+
+/** Published question-bank checkpoints referenced by :::question[id]. */
+async function resolveCheckpoints(supabase: ServerClient, ids: string[]) {
+  if (ids.length === 0) return {};
+  try {
+    const [questionsRes, optionsRes, imagesRes] = await Promise.all([
+      supabase
+        .from("questions")
+        .select("id, stem, teaching_point, status")
+        .in("id", ids)
+        .eq("status", "published"),
+      supabase
+        .from("question_options")
+        .select("id, question_id, text, is_correct, explanation, order_index")
+        .in("question_id", ids),
+      supabase
+        .from("question_images")
+        .select("question_id, question_section, order_index, image:images(id, url, alt_text)")
+        .in("question_id", ids),
+    ]);
+    if (questionsRes.error) throw questionsRes.error;
+    return buildCheckpoints(
+      (questionsRes.data || []) as CheckpointQuestionRow[],
+      (optionsRes.data || []) as CheckpointOptionRow[],
+      (imagesRes.data || []) as unknown as CheckpointImageRow[]
+    );
+  } catch (err) {
+    log.error("[Learn API] Failed to resolve lesson checkpoints:", err);
+    return {};
   }
 }
