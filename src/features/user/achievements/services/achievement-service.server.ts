@@ -26,12 +26,26 @@ export async function getUserStats(userId: string): Promise<UserStats> {
   // 3. recent quizzes for accuracy metrics
   // 4. all quizzes for streak calculation
   // 5. perfect quizzes for speed records
-  const { data: allQuizSessions } = await supabase
-    .from("quiz_sessions")
-    .select("score, created_at, completed_at, total_questions, total_time_spent")
-    .eq("user_id", userId)
-    .eq("status", "completed")
-    .order("created_at", { ascending: false });
+  // The three reads below are independent, so run them in parallel (each was a
+  // separate round trip on the quiz-submit path).
+  const [{ data: allQuizSessions }, { data: correctAttempts }, { data: categoriesWithQuestions }] =
+    await Promise.all([
+      supabase
+        .from("quiz_sessions")
+        .select("score, created_at, completed_at, total_questions, total_time_spent")
+        .eq("user_id", userId)
+        .eq("status", "completed")
+        .order("created_at", { ascending: false }),
+      // Correct answers grouped by subject (for differential diagnosis achievements),
+      // category_id via nested select (JOIN)
+      supabase
+        .from("quiz_attempts")
+        .select("questions!inner(category_id)")
+        .eq("user_id", userId)
+        .eq("is_correct", true),
+      // Total number of categories that have questions
+      supabase.from("questions").select("category_id").not("category_id", "is", null),
+    ]);
 
   // Count total completed quizzes and perfect scores
   const totalQuizzes = allQuizSessions?.length || 0;
@@ -59,14 +73,6 @@ export async function getUserStats(userId: string): Promise<UserStats> {
     accuracyOver15,
   });
 
-  // Get correct answers grouped by subject (for differential diagnosis achievements)
-  // OPTIMIZATION: Use nested select to get category_id in single query (JOIN)
-  const { data: correctAttempts } = await supabase
-    .from("quiz_attempts")
-    .select("questions!inner(category_id)")
-    .eq("user_id", userId)
-    .eq("is_correct", true);
-
   // Count correct answers per subject
   const subjectCounts = new Map<string, number>();
   correctAttempts?.forEach((attempt) => {
@@ -89,12 +95,6 @@ export async function getUserStats(userId: string): Promise<UserStats> {
   const subjectsWith100Questions = Array.from(subjectCounts.values()).filter(
     (count) => count >= 100
   ).length;
-
-  // Get total number of categories that have questions
-  const { data: categoriesWithQuestions } = await supabase
-    .from("questions")
-    .select("category_id")
-    .not("category_id", "is", null);
 
   const totalCategories = new Set(categoriesWithQuestions?.map((q) => q.category_id) || []).size;
 
@@ -206,14 +206,21 @@ export async function awardAchievements(
 }> {
   const supabase = await createClient();
 
-  // Get user stats for validation
-  const stats = await getUserStats(userId);
-
-  // Get already unlocked achievements
-  const { data: existingAchievements } = await supabase
-    .from("user_achievements")
-    .select("achievement_id")
-    .eq("user_id", userId);
+  // Stats, already-unlocked achievements and the last-quiz timestamp are
+  // independent reads; fetch them together instead of one after another.
+  const [stats, { data: existingAchievements }, { data: lastQuiz }] = await Promise.all([
+    getUserStats(userId),
+    supabase.from("user_achievements").select("achievement_id").eq("user_id", userId),
+    // Last quiz timestamp for cache validation
+    supabase
+      .from("quiz_sessions")
+      .select("completed_at, created_at")
+      .eq("user_id", userId)
+      .eq("status", "completed")
+      .order("completed_at", { ascending: false })
+      .limit(1)
+      .single(),
+  ]);
 
   const existingIds = new Set(existingAchievements?.map((a) => a.achievement_id) || []);
 
@@ -301,16 +308,6 @@ export async function awardAchievements(
   } else {
     log.debug("No new achievements to insert");
   }
-
-  // Get last quiz timestamp for cache validation
-  const { data: lastQuiz } = await supabase
-    .from("quiz_sessions")
-    .select("completed_at, created_at")
-    .eq("user_id", userId)
-    .eq("status", "completed")
-    .order("completed_at", { ascending: false })
-    .limit(1)
-    .single();
 
   const lastQuizTimestamp =
     lastQuiz?.completed_at || lastQuiz?.created_at || new Date().toISOString();

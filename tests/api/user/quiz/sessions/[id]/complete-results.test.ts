@@ -16,6 +16,23 @@ import {
   createMockAnswerSubmission,
 } from "@tests/helpers/api-test-helpers";
 
+// `after()` needs a Next request scope; collect callbacks so tests can run them
+// once the response is built (as Vercel does after sending it).
+const afterCallbacks = vi.hoisted(() => [] as Array<() => unknown>);
+vi.mock("next/server", async (importOriginal) => {
+  const actual = await importOriginal<typeof import("next/server")>();
+  return {
+    ...actual,
+    after: (cb: () => unknown) => {
+      afterCallbacks.push(cb);
+    },
+  };
+});
+async function runAfterCallbacks() {
+  const callbacks = afterCallbacks.splice(0);
+  for (const cb of callbacks) await cb();
+}
+
 // Mock dependencies
 vi.mock("@/shared/services/server", () => ({
   createClient: vi.fn(),
@@ -56,6 +73,7 @@ describe("POST /api/user/quiz/sessions/[id]/complete (Complete Quiz)", () => {
   let mockSupabase: any;
 
   beforeEach(() => {
+    afterCallbacks.length = 0;
     vi.clearAllMocks();
 
     mockQuery = {
@@ -283,6 +301,10 @@ describe("POST /api/user/quiz/sessions/[id]/complete (Complete Quiz)", () => {
       const response = await POST(request, { params: mockParams });
 
       expect(response.status).toBe(200);
+      // Not awaited before the response is returned...
+      expect(quizAnalyticsService.updateQuizSessionAnalytics).not.toHaveBeenCalled();
+      // ...but runs after it.
+      await runAfterCallbacks();
       expect(quizAnalyticsService.updateQuizSessionAnalytics).toHaveBeenCalledWith(
         mockSessionId,
         expect.anything()
@@ -305,6 +327,7 @@ describe("POST /api/user/quiz/sessions/[id]/complete (Complete Quiz)", () => {
       const response = await POST(request, { params: mockParams });
 
       expect(response.status).toBe(200);
+      await expect(runAfterCallbacks()).resolves.toBeUndefined();
       expect(quizAnalyticsService.updateQuizSessionAnalytics).toHaveBeenCalled();
     });
   });

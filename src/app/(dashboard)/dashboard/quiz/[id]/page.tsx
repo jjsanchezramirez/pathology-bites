@@ -2,7 +2,7 @@
 
 "use client";
 
-import { useParams, useSearchParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { useState, useEffect, useCallback, useRef } from "react";
 import { useHybridQuiz, HybridPresets } from "@/features/user/quiz/hybrid";
 import { QuizSession, QuizResult } from "@/features/user/quiz/types/quiz";
@@ -45,6 +45,7 @@ function isNetworkErrorPattern(msg: string | undefined): boolean {
 export default function QuizSessionPage() {
   const params = useParams();
   const searchParams = useSearchParams();
+  const router = useRouter();
   const sessionId = Array.isArray(params?.id) ? params.id[0] : params?.id;
   const isReviewMode = searchParams.get("review") === "true";
   const questionParam = searchParams.get("question");
@@ -153,7 +154,7 @@ export default function QuizSessionPage() {
       // Commit any pending answer selection (practice mode) before the hook
       // proceeds to forced completion. The dispatch is queued; what actually
       // lets it land in stateRef before handleCompleteQuiz reads it is the
-      // `await autoSaveManager.waitForIdle(1500)` inside handleCompleteQuiz —
+      // `await Promise.resolve()` at the top of handleCompleteQuiz —
       // that await yields the microtask checkpoint, React commits the queued
       // SUBMIT_ANSWER reducer update, stateRef gets the new value, and
       // handleCompleteQuiz then reads it on the next line. Without that
@@ -273,8 +274,11 @@ export default function QuizSessionPage() {
             // redirects immediately.
             const delay = timerExpired ? 2000 : 0;
             isNavigatingAwayRef.current = true;
+            // Client-side navigation: the results are already cached in
+            // localStorage by the completion sync, and a full reload re-ran
+            // middleware and refetched the whole dashboard shell (~2 s).
             setTimeout(() => {
-              window.location.href = `/dashboard/quiz/${sessionId}/results`;
+              router.push(`/dashboard/quiz/${sessionId}/results`);
             }, delay);
             return;
           }
@@ -316,7 +320,7 @@ export default function QuizSessionPage() {
         isCompletionRunningRef.current = false;
       }
     }
-  }, [hybridActions, sessionId, timerExpired]);
+  }, [hybridActions, router, sessionId, timerExpired]);
 
   // The hook's onTimerExpired callback runs before runCompletion exists in
   // scope (callback is defined inside useHybridQuiz's options object). Bridge

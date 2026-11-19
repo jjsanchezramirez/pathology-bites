@@ -218,11 +218,18 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
     const updates = await parseBody(request, quizSessionPatchSchema);
     if (updates instanceof NextResponse) return updates;
 
-    // Get existing quiz session to verify ownership
-    const existingSession = await quizService.getQuizSession(id, supabase);
-    if (!existingSession) {
+    // Verify ownership and read status. Only these two columns are needed —
+    // getQuizSession() also loaded every question with options and images,
+    // which made each autosave several round trips slower.
+    const { data: sessionRow, error: sessionError } = await supabase
+      .from("quiz_sessions")
+      .select("user_id, status")
+      .eq("id", id)
+      .single();
+    if (sessionError || !sessionRow) {
       return NextResponse.json({ error: "Quiz session not found" }, { status: 404 });
     }
+    const existingSession = { userId: sessionRow.user_id as string, status: sessionRow.status };
 
     if (existingSession.userId !== userId) {
       return NextResponse.json(

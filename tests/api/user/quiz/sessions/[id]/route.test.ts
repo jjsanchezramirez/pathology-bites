@@ -161,6 +161,13 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
   const mockParams = Promise.resolve({ id: mockSessionId });
   let mockQuery: any;
   let mockSupabase: any;
+  // The PATCH route reads only user_id/status to check ownership.
+  const mockOwnership = (session: { userId: string; status: string } | null) =>
+    mockQuery.single.mockResolvedValue(
+      session
+        ? { data: { user_id: session.userId, status: session.status }, error: null }
+        : { data: null, error: { message: "not found" } }
+    );
 
   beforeEach(() => {
     vi.clearAllMocks();
@@ -204,7 +211,7 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
 
   describe("Authorization", () => {
     it("should return 404 when quiz session not found", async () => {
-      (quizService.getQuizSession as any).mockResolvedValue(null);
+      mockOwnership(null);
 
       const request = createAuthenticatedRequest(mockUserId, {
         method: "PATCH",
@@ -226,7 +233,7 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
         status: "in_progress",
       };
 
-      (quizService.getQuizSession as any).mockResolvedValue(mockSession);
+      mockOwnership(mockSession);
 
       const request = createAuthenticatedRequest(mockUserId, {
         method: "PATCH",
@@ -250,7 +257,7 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
         status: "completed",
       };
 
-      (quizService.getQuizSession as any).mockResolvedValue(mockSession);
+      mockOwnership(mockSession);
 
       const request = createAuthenticatedRequest(mockUserId, {
         method: "PATCH",
@@ -272,7 +279,7 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
         status: "completed",
       };
 
-      (quizService.getQuizSession as any).mockResolvedValue(mockSession);
+      mockOwnership(mockSession);
 
       const request = createAuthenticatedRequest(mockUserId, {
         method: "PATCH",
@@ -292,7 +299,7 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
 
   describe("Quiz Actions", () => {
     beforeEach(() => {
-      (quizService.getQuizSession as any).mockResolvedValue({
+      mockOwnership({
         id: mockSessionId,
         userId: mockUserId,
         status: "not_started",
@@ -317,7 +324,7 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
     });
 
     it("should pause quiz when action is 'pause'", async () => {
-      (quizService.getQuizSession as any).mockResolvedValue({
+      mockOwnership({
         id: mockSessionId,
         userId: mockUserId,
         status: "in_progress",
@@ -340,7 +347,7 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
     });
 
     it("should resume quiz when action is 'resume'", async () => {
-      (quizService.getQuizSession as any).mockResolvedValue({
+      mockOwnership({
         id: mockSessionId,
         userId: mockUserId,
         status: "paused",
@@ -387,12 +394,15 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
         mockSupabase
       );
       expect(json.success).toBe(true);
+      // Ownership check reads two columns, not the full session with questions.
+      expect(quizService.getQuizSession).not.toHaveBeenCalled();
+      expect(mockQuery.select).toHaveBeenCalledWith("user_id, status");
     });
   });
 
   describe("Untimed quiz progress (timeRemaining: null)", () => {
     beforeEach(() => {
-      (quizService.getQuizSession as any).mockResolvedValue({
+      mockOwnership({
         id: mockSessionId,
         userId: mockUserId,
         status: "in_progress",
@@ -450,7 +460,7 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
 
   describe("Answer Submission Optimization", () => {
     beforeEach(() => {
-      (quizService.getQuizSession as any).mockResolvedValue({
+      mockOwnership({
         id: mockSessionId,
         userId: mockUserId,
         status: "in_progress",
@@ -529,7 +539,7 @@ describe("PATCH /api/user/quiz/sessions/[id] (Update Quiz Session)", () => {
 
   describe("Error Handling", () => {
     it("should return 500 when service throws error", async () => {
-      (quizService.getQuizSession as any).mockRejectedValue(new Error("Database error"));
+      mockQuery.single.mockRejectedValue(new Error("Database error"));
 
       const request = createAuthenticatedRequest(mockUserId, {
         method: "PATCH",

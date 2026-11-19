@@ -1,5 +1,5 @@
 // src/app/api/user/quiz/sessions/[id]/complete/route.ts
-import { NextRequest, NextResponse } from "next/server";
+import { NextRequest, NextResponse, after } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { requireUser } from "@/shared/utils/api/api-guard";
 import { quizAnalyticsService } from "@/features/user/quiz/services/analytics-service";
@@ -225,16 +225,16 @@ export async function POST(request: NextRequest, { params }: { params: Promise<{
     // OPTIMIZATION: Extract question IDs from result to avoid redundant fetch
     const questionIds = result.attempts?.map((attempt) => attempt.questionId) || [];
 
-    // Update analytics for all questions in this quiz session (batch update)
-    try {
-      log.debug("[Quiz Complete] Starting batch analytics update for session:", id);
-      // Pass question IDs to avoid re-fetching them from database
-      await quizAnalyticsService.updateQuizSessionAnalytics(id, questionIds);
-      log.debug("[Quiz Complete] Batch analytics update completed successfully");
-    } catch (analyticsError) {
-      // Don't fail the quiz completion if analytics update fails
-      log.error("[Quiz Complete] Failed to update analytics:", analyticsError);
-    }
+    // Question analytics (success rates / difficulty) don't affect this
+    // response, so update them after it is sent instead of making the user wait.
+    after(async () => {
+      try {
+        await quizAnalyticsService.updateQuizSessionAnalytics(id, questionIds);
+      } catch (analyticsError) {
+        // Don't fail the quiz completion if analytics update fails
+        log.error("[Quiz Complete] Failed to update analytics:", analyticsError);
+      }
+    });
 
     // Note: Activity generation removed - dashboard now gets activities directly
     // from quiz_sessions and user_achievements tables via unified API

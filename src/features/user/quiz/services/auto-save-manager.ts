@@ -21,6 +21,7 @@ export class AutoSaveManager {
   private lastSaveTime: number = 0;
   private lastAnswerCount: number = 0;
   private saveInProgress: boolean = false;
+  private queueProcessorTimer: ReturnType<typeof setInterval> | null = null;
   private syncStatusCallback?: (status: SyncStatus) => void;
 
   constructor(syncManager: DatabaseSyncManager, onSyncStatusChange?: (status: SyncStatus) => void) {
@@ -260,13 +261,26 @@ export class AutoSaveManager {
   }
 
   /**
-   * Start offline queue processor
+   * Stop the offline queue processor. Called when the quiz page unmounts: with
+   * client-side navigation to /results the page no longer dies with a full
+   * reload, so the interval has to be cleared explicitly.
    */
-  private startQueueProcessor(): void {
+  stopQueueProcessor(): void {
+    if (this.queueProcessorTimer) {
+      clearInterval(this.queueProcessorTimer);
+      this.queueProcessorTimer = null;
+    }
+  }
+
+  /**
+   * Start offline queue processor (idempotent)
+   */
+  startQueueProcessor(): void {
     if (!AUTO_SAVE_CONFIG.enableOfflineQueue) return;
+    if (this.queueProcessorTimer) return; // Already running
 
     // Process queue every 10 seconds
-    setInterval(async () => {
+    this.queueProcessorTimer = setInterval(async () => {
       // Skip the network round-trip when the browser knows we're offline. The
       // queue items will stay in localStorage; the next online-tick (or the
       // browser's `online` event handler elsewhere) will drain them.

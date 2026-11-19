@@ -169,6 +169,14 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
     });
   }
 
+  // Run the offline-queue processor only while this quiz is mounted. Start is
+  // idempotent, so StrictMode's mount/unmount/mount in dev restarts it cleanly.
+  useEffect(() => {
+    const manager = autoSaveManager.current;
+    manager?.startQueueProcessor();
+    return () => manager?.stopQueueProcessor();
+  }, []);
+
   // Initialize state machine
   const {
     state: quizState,
@@ -376,15 +384,14 @@ export function useHybridQuiz(options: UseHybridQuizOptions): [HybridQuizState, 
 
       hasCompletedRef.current = true;
 
-      // Wait for any in-flight autosave to settle so the /complete POST doesn't race
-      // a still-in-flight PATCH for the most recent answer. Server upserts with
-      // ignoreDuplicates on (session_id, question_id), so this isn't required for
-      // correctness — purely a latency-shave to avoid extra UPSERT round-trips.
-      try {
-        await autoSaveManager.current?.waitForIdle(1500);
-      } catch (err) {
-        log.warn("[Hybrid] waitForIdle threw:", err);
-      }
+      // Don't wait for an in-flight autosave: /complete sends every answer and the
+      // server upserts with ignoreDuplicates on (session_id, question_id), and a
+      // late progress PATCH can't demote a completed session (status guard in
+      // updateQuizSession). Waiting used to add up to 1.5 s to every submit.
+      // Keep one microtask yield: it's what lets a pending answer committed on
+      // timer expiry settle before we read state (see the quiz page's
+      // onTimerExpired comment).
+      await Promise.resolve();
 
       // Read state via the state machine's synchronously-mirrored ref, not the
       // render-time `stateRef` defined in this hook. useReducer batches updates,
