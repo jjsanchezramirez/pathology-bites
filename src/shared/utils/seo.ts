@@ -21,7 +21,11 @@ const DEFAULT_TITLE = "Pathology Bites - Free Pathology Education & Practice Que
 const DEFAULT_DESCRIPTION =
   "Master pathology with free practice questions, detailed explanations, and comprehensive study materials. Perfect for medical students, residents, and pathology professionals.";
 const DEFAULT_IMAGE = "/images/og-image.png";
-const SITE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://pathologybites.com";
+// Trimmed: the production env value carries a trailing newline, which would
+// otherwise end up inside canonical and og:url links.
+const SITE_URL = (process.env.NEXT_PUBLIC_SITE_URL || "https://pathologybites.com")
+  .trim()
+  .replace(/\/+$/, "");
 
 export function generateMetadata(config: SEOConfig = {}): Metadata {
   const {

@@ -2,7 +2,11 @@
 import { MetadataRoute } from "next";
 
 export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pathologybites.com";
+  // Trim like robots.ts: the production env value carries a trailing newline,
+  // which otherwise lands inside every <loc> after the homepage.
+  const baseUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://pathologybites.com")
+    .trim()
+    .replace(/\/+$/, "");
   const currentDate = new Date();
 
   return [
