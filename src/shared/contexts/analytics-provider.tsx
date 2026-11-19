@@ -6,6 +6,7 @@ import { SpeedInsights } from "@vercel/speed-insights/next";
 import Script from "next/script";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useEffect, Suspense } from "react";
+import { captureSignupSource } from "@/shared/utils/analytics/signup-source";
 
 // Google Analytics 4 configuration
 const GA_MEASUREMENT_ID = process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID;
@@ -134,6 +135,11 @@ interface AnalyticsProviderProps {
 }
 
 export function AnalyticsProvider({ children }: AnalyticsProviderProps) {
+  // First-touch signup attribution (referrer + utm), saved to the user at signup.
+  useEffect(() => {
+    captureSignupSource();
+  }, []);
+
   return (
     <>
       {/* Google Analytics 4 */}

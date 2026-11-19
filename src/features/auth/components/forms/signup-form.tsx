@@ -23,6 +23,7 @@ import { createClient } from "@/shared/services/client";
 import { useTurnstile } from "@/features/auth/hooks/use-turnstile";
 import { getCaptchaSiteKey } from "@/features/auth/utils/captcha-config";
 import { log } from "@/shared/utils/logging";
+import { getSignupSource } from "@/shared/utils/analytics/signup-source";
 
 // Enhanced form schema with proper password validation
 const formSchema = z
@@ -153,6 +154,7 @@ export function SignupForm() {
             first_name: values.firstName,
             last_name: values.lastName,
             user_type: values.userType,
+            signup_source: getSignupSource(),
           },
           emailRedirectTo: redirectTo,
           captchaToken: captchaToken || undefined,

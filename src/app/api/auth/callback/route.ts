@@ -8,6 +8,10 @@ import {
   DEFAULT_UI_SETTINGS,
 } from "@/shared/config/user-settings-defaults";
 import { log } from "@/shared/utils/logging";
+import { SIGNUP_SOURCE_COOKIE, parseSignupSource } from "@/shared/utils/analytics/signup-source";
+
+// An OAuth account counts as a fresh signup for attribution if it was created this recently.
+const NEW_ACCOUNT_WINDOW_MS = 10 * 60 * 1000;
 
 const rateLimitedHandler = withRateLimit(authRateLimiter);
 
@@ -231,12 +235,22 @@ export const GET = rateLimitedHandler(async function (request: NextRequest) {
 
       // OPTIMIZATION: Store role in user_metadata to avoid database lookups
       // This allows middleware to read role from JWT without hitting database
-      if (userData?.role) {
+      const metadataUpdate: Record<string, unknown> = {};
+      if (userData?.role) metadataUpdate.role = userData.role;
+
+      // First-touch attribution for new OAuth signups (email signups set it at signUp).
+      const createdAt = data.user.created_at ? Date.parse(data.user.created_at) : NaN;
+      const isNewAccount =
+        Number.isFinite(createdAt) && Date.now() - createdAt < NEW_ACCOUNT_WINDOW_MS;
+      if (isNewAccount && !data.user.user_metadata?.signup_source) {
+        const source = parseSignupSource(request.cookies.get(SIGNUP_SOURCE_COOKIE)?.value);
+        if (source) metadataUpdate.signup_source = source;
+      }
+
+      if (Object.keys(metadataUpdate).length > 0) {
         try {
-          await supabase.auth.updateUser({
-            data: { role: userData.role },
-          });
-          log.debug("[Auth Callback] Updated user_metadata with role:", userData.role);
+          await supabase.auth.updateUser({ data: metadataUpdate });
+          log.debug("[Auth Callback] Updated user_metadata:", Object.keys(metadataUpdate));
         } catch (metadataError) {
           log.error("[Auth Callback] Failed to update user_metadata:", metadataError);
           // Non-critical error, continue with redirect
