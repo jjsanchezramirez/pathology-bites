@@ -173,6 +173,23 @@ export interface Slide {
   transitionIn: SlideTransition;
   initialFraming: Framing;
   elements: SlideElement[];
+  /** Voiceover script for this slide (editor-only; the player ignores it). */
+  narration?: SlideNarration;
+}
+
+/** One spoken sentence of a slide's voiceover, tied to the elements it introduces. */
+export interface NarrationLine {
+  id: string;
+  text: string;
+  /** Elements that should appear when this line starts. */
+  elementIds: string[];
+  /** Filled in after generation: seconds from slide start. */
+  start?: number;
+  end?: number;
+}
+
+export interface SlideNarration {
+  lines: NarrationLine[];
 }
 
 export interface LessonAudio {
@@ -182,6 +199,12 @@ export interface LessonAudio {
   duration?: number;
   /** Forced-alignment word timestamps (absolute seconds), when available. */
   wordTimings?: WordTiming[];
+  /** How wordTimings were produced: "estimated" (from each sentence's clip) or "whisper". */
+  timingSource?: "estimated" | "whisper";
+  /** Voice id used for generated narration (e.g. "Kore" or a designed voice id). */
+  voice?: string;
+  /** audio table row id, when the track lives in the audio library. */
+  audioId?: string;
 }
 
 /** A single aligned word with absolute start/end (seconds from audio start). */
