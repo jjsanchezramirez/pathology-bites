@@ -165,8 +165,8 @@ export default function robots(): MetadataRoute.Robots {
           "/reset-success",
           "/verify-email",
 
-          // Technical paths
-          "/_next/",
+          // Technical paths. /_next/ stays crawlable: it holds the fonts, CSS
+          // and JS Google needs to render pages (Search Console flagged it).
           "/debug/",
           "/private/",
           "/temp/",
