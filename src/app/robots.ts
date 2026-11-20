@@ -14,16 +14,14 @@ import { MetadataRoute } from "next";
  * Sorted alphabetically. Add new bots here rather than inline.
  */
 const AI_AND_SCRAPER_BOTS: readonly string[] = [
-  // OpenAI
+  // OpenAI (OAI-SearchBot is allowed, see note below the list)
   "GPTBot",
   "ChatGPT-User",
-  "OAI-SearchBot",
 
-  // Anthropic
+  // Anthropic (Claude-SearchBot is allowed)
   "ClaudeBot",
   "Claude-Web", // legacy
   "Claude-User",
-  "Claude-SearchBot",
   "anthropic-ai", // legacy
 
   // Google AI (Bard / Gemini / training opt-out)
@@ -51,8 +49,7 @@ const AI_AND_SCRAPER_BOTS: readonly string[] = [
   // Bytedance / TikTok
   "Bytespider",
 
-  // Perplexity
-  "PerplexityBot",
+  // Perplexity (PerplexityBot, its search index, is allowed)
   "Perplexity-User",
 
   // Common Crawl (most LLM training datasets seed from this)
@@ -134,6 +131,13 @@ const AI_AND_SCRAPER_BOTS: readonly string[] = [
   "Scrapy",
   "Diffbot",
 ];
+
+/*
+ * AI search crawlers are deliberately NOT in the list above, so the site can
+ * appear and be cited in AI search results: OAI-SearchBot (ChatGPT search),
+ * PerplexityBot and Claude-SearchBot. They index for search, not training,
+ * and follow the same "*" rules as Googlebot (auth, admin and API blocked).
+ */
 
 export default function robots(): MetadataRoute.Robots {
   const rawBaseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://pathologybites.com";
