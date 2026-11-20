@@ -33,6 +33,7 @@ import {
   QUIZ_TIMING_CONFIG,
 } from "@/features/user/quiz/types/quiz";
 import { QuestionWithDetails } from "@/shared/types/questions";
+import { orderOptionsForSession } from "@/features/user/quiz/utils/answer-order";
 import { unifiedCache } from "@/shared/services/unified-cache";
 import { log } from "@/shared/utils/logging";
 
@@ -336,7 +337,10 @@ export class QuizService {
       const sessionRow = session as unknown as QuizSessionRow;
 
       // Get questions for this session
-      const questions = await this.getQuestionsForSession(sessionRow.question_ids, supabaseClient);
+      const questions = await this.getQuestionsForSession(sessionRow.question_ids, supabaseClient, {
+        sessionId: sessionRow.id,
+        shuffleAnswers: (sessionRow.config as Partial<QuizConfig> | null)?.shuffleAnswers === true,
+      });
 
       // Get quiz attempts (answers) for this session
       const { data: attempts, error: attemptsError } = await supabaseClient
@@ -394,7 +398,8 @@ export class QuizService {
    */
   private async getQuestionsForSession(
     questionIds: string[],
-    supabaseClient: SupabaseClient
+    supabaseClient: SupabaseClient,
+    answerOrder: { sessionId: string; shuffleAnswers: boolean }
   ): Promise<QuestionWithDetails[]> {
     if (!questionIds || questionIds.length === 0) {
       return [];
@@ -441,10 +446,18 @@ export class QuizService {
       .map((id) => questionMap.get(id))
       .filter(Boolean) as QuestionRow[];
 
-    // Map to QuestionWithDetails format
+    // Map to QuestionWithDetails format. Options come back from PostgREST in no
+    // guaranteed order; put them in authored order, or the session's seeded
+    // shuffle when "shuffle answers" is on. Same session → same order on every
+    // load, so the quiz, resume and review all match. Grading is by option id.
     const mappedQuestions = orderedQuestions.map((q) => ({
       ...q,
-      question_options: q.question_options || [],
+      question_options: orderOptionsForSession(
+        q.question_options || [],
+        answerOrder.sessionId,
+        q.id,
+        answerOrder.shuffleAnswers
+      ),
     }));
 
     return mappedQuestions as unknown as QuestionWithDetails[];
