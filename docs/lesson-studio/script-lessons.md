@@ -93,6 +93,9 @@ Script lessons are saved in `interactive_sequences.sequence_data` like canvas
 lessons, marked with `"format": "script-lesson"`. No schema change. The player
 picks the right renderer from that marker.
 
-## Not yet
+## Video export
 
-Video export (the MP4 exporter) only handles canvas lessons so far.
+**Export → Video (MP4)** renders the lesson frame by frame in the browser and
+adds the narration audio. It draws the same five templates and motion as the
+player (`src/shared/lesson/script/draw.ts`), in Instrument Sans. Captions can be
+burned in; they're on by default when the lesson has no narration yet.

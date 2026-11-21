@@ -46,6 +46,7 @@ import {
 } from "@/shared/lesson/script/types";
 
 import { SaveToDatabaseDialog } from "./components/save-to-database-dialog";
+import { ExportDialog } from "./components/export-dialog";
 import { LoadFromDatabaseDialog } from "./components/load-from-database-dialog";
 import { NarrationDialogBase } from "./components/narration-dialog";
 import { ImagePickerDialog } from "./script/image-picker-dialog";
@@ -107,6 +108,7 @@ export default function ScriptStudioPage() {
   const [loadOpen, setLoadOpen] = useState(false);
   const [importOpen, setImportOpen] = useState(false);
   const [narrateOpen, setNarrateOpen] = useState(false);
+  const [videoOpen, setVideoOpen] = useState(false);
   const [imageTarget, setImageTarget] = useState<{ sceneId: string; beatId?: string } | null>(null);
   const [regionTarget, setRegionTarget] = useState<{ sceneId: string; beatId: string } | null>(
     null
@@ -269,14 +271,22 @@ export default function ScriptStudioPage() {
             <Upload />
             Import
           </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => download(`${slug(lesson.title)}.json`, exportScriptJson(lesson))}
-          >
-            <Download />
-            Export
-          </Button>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="sm">
+                <Download />
+                Export
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                onSelect={() => download(`${slug(lesson.title)}.json`, exportScriptJson(lesson))}
+              >
+                Script (JSON)
+              </DropdownMenuItem>
+              <DropdownMenuItem onSelect={() => setVideoOpen(true)}>Video (MP4)…</DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" size="sm">
@@ -364,6 +374,12 @@ export default function ScriptStudioPage() {
         </aside>
       </div>
 
+      <ExportDialog
+        open={videoOpen}
+        onOpenChange={setVideoOpen}
+        previewLesson={lesson}
+        audioUrl=""
+      />
       <SaveToDatabaseDialog
         open={saveOpen}
         onOpenChange={setSaveOpen}
