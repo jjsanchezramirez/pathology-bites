@@ -162,6 +162,31 @@ export async function designVoice(input: {
   };
 }
 
+// ---- Rate limit -----------------------------------------------------------------
+// Gemini TTS on the site's tier allows 10 requests a minute. Narration speaks
+// one request per sentence, so requests are spaced out here instead of firing
+// at once and failing with 429. Override with GEMINI_TTS_RPM if the tier changes.
+
+const TTS_RPM = Math.max(1, Number(process.env.GEMINI_TTS_RPM) || 10);
+const TTS_SPACING_MS = Math.ceil(60_000 / TTS_RPM) + 150;
+let nextSlotAt = 0;
+
+/** Wait for the next free request slot (per server instance). */
+async function takeSlot(): Promise<void> {
+  const now = Date.now();
+  const at = Math.max(now, nextSlotAt);
+  nextSlotAt = at + TTS_SPACING_MS;
+  if (at > now) await new Promise((r) => setTimeout(r, at - now));
+}
+
+/** Seconds Gemini asks us to wait in a 429 body ("retryDelay": "23s"), if any. */
+export function retryDelaySeconds(message: string): number | null {
+  const m =
+    /"?retryDelay"?\s*:\s*"?(\d+(?:\.\d+)?)s/.exec(message) ??
+    /retry in (\d+(?:\.\d+)?)s/i.exec(message);
+  return m ? Number(m[1]) : null;
+}
+
 /**
  * Speak one sentence. The text is read verbatim; `style` steers delivery
  * (pace, tone) without being spoken.
@@ -181,8 +206,10 @@ export async function synthesize(
     },
   };
   let lastErr: unknown;
-  for (let attempt = 0; attempt < 3; attempt++) {
+  const attempts = 4;
+  for (let attempt = 0; attempt < attempts; attempt++) {
     try {
+      await takeSlot();
       const res = await fetchWithTimeout(
         `${BASE}/models/${model}:generateContent`,
         { method: "POST", headers: headers(), body: JSON.stringify(body) },
@@ -191,8 +218,13 @@ export async function synthesize(
         "Gemini TTS"
       );
       if (res.status === 429 || res.status >= 500) {
-        lastErr = new Error(`Gemini TTS ${res.status}: ${await errorText(res)}`);
-        await new Promise((r) => setTimeout(r, 1000 * 2 ** attempt));
+        const text = await errorText(res);
+        lastErr = new Error(`Gemini TTS ${res.status}: ${text}`);
+        if (attempt === attempts - 1) break;
+        const asked = res.status === 429 ? retryDelaySeconds(text) : null;
+        const waitMs = Math.min(60_000, asked != null ? asked * 1000 + 250 : 2000 * 2 ** attempt);
+        // Hold every other request back too, so the limit can recover.
+        nextSlotAt = Math.max(nextSlotAt, Date.now() + waitMs);
         continue;
       }
       if (!res.ok) {
@@ -213,7 +245,7 @@ export async function synthesize(
       return decodeTtsAudio(new Uint8Array(Buffer.from(inline.data, "base64")), inline.mimeType);
     } catch (err) {
       lastErr = err;
-      if ((err as { fatal?: boolean }).fatal || attempt === 2) break;
+      if ((err as { fatal?: boolean }).fatal || attempt === attempts - 1) break;
     }
   }
   throw lastErr instanceof Error ? lastErr : new Error(String(lastErr));

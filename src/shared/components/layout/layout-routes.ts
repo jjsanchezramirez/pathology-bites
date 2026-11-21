@@ -18,7 +18,7 @@ export function isFullHeightPath(pathname: string | null): boolean {
   if (!pathname) return false;
 
   // Anki has its own full-height layout; lesson studio needs full width.
-  if (pathname === "/dashboard/anki" || pathname === "/admin/lesson-studio") return true;
+  if (pathname === "/dashboard/anki" || pathname.startsWith("/admin/lesson-studio")) return true;
   if (pathname === "/dashboard/quiz/new") return false;
 
   return QUIZ_ACTIVE_PATTERN.test(pathname) || QUIZ_REVIEW_PATTERN.test(pathname);

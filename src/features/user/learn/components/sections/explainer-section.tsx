@@ -4,7 +4,8 @@ import { useState, useEffect } from "react";
 import { ExplainerSection as ExplainerSectionType } from "../../types";
 import { Loader2 } from "lucide-react";
 import type { Lesson } from "@/shared/lesson/types";
-import { normalizeStoredLesson } from "@/shared/lesson/normalize";
+import { normalizeStoredSequence } from "@/shared/lesson/normalize";
+import type { ScriptLesson } from "@/shared/lesson/script/types";
 
 // Lazy import the ExplainerPlayer since it has heavy dependencies
 import dynamic from "next/dynamic";
@@ -25,7 +26,7 @@ interface ExplainerSectionProps {
 }
 
 export function ExplainerSection({ section }: ExplainerSectionProps) {
-  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [lesson, setLesson] = useState<Lesson | ScriptLesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -39,7 +40,7 @@ export function ExplainerSection({ section }: ExplainerSectionProps) {
         }
         if (!res.ok) throw new Error("Failed to load sequence");
         const { sequence } = await res.json();
-        const normalized = normalizeStoredLesson(sequence.sequence_data);
+        const normalized = normalizeStoredSequence(sequence.sequence_data);
         if (!normalized) {
           setError("This sequence is in a legacy format and needs to be re-saved.");
           return;

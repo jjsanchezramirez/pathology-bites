@@ -11,6 +11,19 @@ import { useReducedMotion } from "./use-reduced-motion";
 import type { ExplainerPlayerProps, CaptionChunk } from "@/shared/types/explainer";
 import { slideStarts, stepPointsForLesson } from "@/shared/lesson/evaluate";
 import { captionsForAudio } from "@/shared/lesson/captions";
+import { emptyLesson, type Lesson } from "@/shared/lesson/types";
+import { isScriptLesson } from "@/shared/lesson/script/types";
+import {
+  computeTimeline,
+  sceneMarkers,
+  scriptCaptions,
+  scriptStepPoints,
+} from "@/shared/lesson/script/timeline";
+import { ScriptStage } from "./script-stage";
+
+// Script lessons render through ScriptStage; the canvas engine gets an empty
+// lesson so its hooks still run in the same order.
+const EMPTY_CANVAS_LESSON: Lesson = emptyLesson();
 
 export function ExplainerPlayer({
   lesson,
@@ -26,19 +39,33 @@ export function ExplainerPlayer({
   const containerRef = useRef<HTMLDivElement>(null);
 
   const audioUrl = audioUrlProp ?? lesson.audio?.url ?? "";
-  const duration = useMemo(() => slideStarts(lesson).duration, [lesson]);
+  const script = isScriptLesson(lesson) ? lesson : null;
+  const canvasLesson = script ? EMPTY_CANVAS_LESSON : (lesson as Lesson);
+  const timeline = useMemo(() => (script ? computeTimeline(script) : null), [script]);
+  const duration = useMemo(
+    () => (timeline ? timeline.duration : slideStarts(canvasLesson).duration),
+    [timeline, canvasLesson]
+  );
   const captions = useMemo(
-    () => captionsProp ?? captionsForAudio(lesson.audio),
-    [captionsProp, lesson.audio]
+    () =>
+      captionsProp ??
+      (script && timeline ? scriptCaptions(script, timeline) : captionsForAudio(lesson.audio)),
+    [captionsProp, script, timeline, lesson.audio]
   );
   // Slide-boundary ticks for the scrubber (absolute seconds, excluding 0).
-  const markers = useMemo(() => slideStarts(lesson).starts.slice(1), [lesson]);
+  const markers = useMemo(
+    () => (timeline ? sceneMarkers(timeline) : slideStarts(canvasLesson).starts.slice(1)),
+    [timeline, canvasLesson]
+  );
   // Reduced-motion multiplier (0 pins camera + suppresses scale-pop).
   const motion = useReducedMotion();
   // Stable key for resume-position persistence.
   const resumeKey = lesson.id ?? audioUrl;
   // Step points (slide starts + element appearance times) for step mode.
-  const stepPoints = useMemo(() => stepPointsForLesson(lesson), [lesson]);
+  const stepPoints = useMemo(
+    () => (timeline ? scriptStepPoints(timeline) : stepPointsForLesson(canvasLesson)),
+    [timeline, canvasLesson]
+  );
 
   // Hover-scrub preview time (null = not hovering) and step mode.
   const [hoverTime, setHoverTime] = useState<number | null>(null);
@@ -114,7 +141,7 @@ export function ExplainerPlayer({
   const displayTime = hoverTime ?? audio.currentTime;
 
   const engine = useExplainerEngine({
-    lesson,
+    lesson: canvasLesson,
     currentTime: displayTime,
     motion,
   });
@@ -189,13 +216,14 @@ export function ExplainerPlayer({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [autoPlay, preloader.isReady, audio.isLoaded]);
 
-  // Seek when seekToTime changes
+  // Seek when seekToTime changes, and once the audio (or silent clock) is ready,
+  // so a player mounted with a start time opens there.
   useEffect(() => {
     if (seekToTime !== undefined && audio.isLoaded) {
       audio.seek(seekToTime);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [seekToTime]);
+  }, [seekToTime, audio.isLoaded]);
 
   // Notify parent when audio duration is available
   useEffect(() => {
@@ -315,22 +343,34 @@ export function ExplainerPlayer({
         )}
         style={isFullscreen ? { aspectRatio: lesson.aspectRatio.replace(":", "/") } : undefined}
       >
-        <ExplainerViewport
-          imageUrl={engine.imageUrl}
-          backgroundColor={engine.backgroundColor}
-          incomingImageUrl={engine.incomingImageUrl}
-          incomingBackgroundColor={engine.incomingBackgroundColor}
-          transform={engine.transform}
-          incomingTransform={engine.incomingTransform}
-          highlights={engine.highlights}
-          arrows={engine.arrows}
-          textOverlays={engine.textOverlays}
-          svgOverlays={engine.svgOverlays}
-          transitionOpacity={engine.transitionOpacity}
-          incomingOpacity={engine.incomingOpacity}
-          aspectRatio={lesson.aspectRatio}
-          onClick={handleViewportClick}
-        />
+        {script && timeline ? (
+          <div className="relative w-full" style={{ aspectRatio: "16 / 9" }}>
+            <ScriptStage
+              lesson={script}
+              timeline={timeline}
+              time={displayTime}
+              motion={motion}
+              onClick={handleViewportClick}
+            />
+          </div>
+        ) : (
+          <ExplainerViewport
+            imageUrl={engine.imageUrl}
+            backgroundColor={engine.backgroundColor}
+            incomingImageUrl={engine.incomingImageUrl}
+            incomingBackgroundColor={engine.incomingBackgroundColor}
+            transform={engine.transform}
+            incomingTransform={engine.incomingTransform}
+            highlights={engine.highlights}
+            arrows={engine.arrows}
+            textOverlays={engine.textOverlays}
+            svgOverlays={engine.svgOverlays}
+            transitionOpacity={engine.transitionOpacity}
+            incomingOpacity={engine.incomingOpacity}
+            aspectRatio={lesson.aspectRatio}
+            onClick={handleViewportClick}
+          />
+        )}
 
         {/* Caption overlay — rendered outside the engine to avoid interpolation blinks */}
         {activeCaption && (

@@ -56,13 +56,65 @@ const DEFAULT_STYLE =
 
 const PREFERRED_DEFAULTS = ["mako", "charon"];
 
+/** One slide (or scene) of script for the narration route. */
+export interface NarrationSlideRequest {
+  slideId: string;
+  duration: number;
+  lines: { id: string; text: string }[];
+}
+
+interface NarrationDialogBaseProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+  title: string;
+  /** Voice used last time, preselected when present. */
+  previousVoice?: string;
+  slides: NarrationSlideRequest[];
+  /** What a slide is called in this editor ("slides" or "scenes"). */
+  unit: string;
+  onNarrated: (audio: LessonAudio, cues: SlideCue[]) => void;
+}
+
 interface NarrationDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
 
+/** Classic canvas studio: narrates each slide's script and retimes the slides. */
 export function NarrationDialog({ open, onOpenChange }: NarrationDialogProps) {
   const lesson = useEditorStore((s) => s.lesson);
+  const slides = useMemo(
+    () =>
+      lesson.slides.map((s) => ({
+        slideId: s.id,
+        duration: s.duration,
+        lines: (s.narration?.lines ?? []).map((l) => ({ id: l.id, text: l.text })),
+      })),
+    [lesson.slides]
+  );
+  return (
+    <NarrationDialogBase
+      open={open}
+      onOpenChange={onOpenChange}
+      title={lesson.title}
+      previousVoice={lesson.audio?.voice}
+      slides={slides}
+      unit="slides"
+      onNarrated={(audio, cues) => useEditorStore.getState().applyNarration(audio, cues)}
+    />
+  );
+}
+
+/** Voice picker and narration request, shared by the classic and script studios. */
+export function NarrationDialogBase({
+  open,
+  onOpenChange,
+  title,
+  previousVoice,
+  slides,
+  unit,
+  onNarrated,
+}: NarrationDialogBaseProps) {
   const [meta, setMeta] = useState<VoicesResponse | null>(null);
   const [loadError, setLoadError] = useState<string | null>(null);
   const [voice, setVoice] = useState("");
@@ -94,25 +146,19 @@ export function NarrationDialog({ open, onOpenChange }: NarrationDialogProps) {
         const byName = (n: string) =>
           j.voices.find((v) => v.id.toLowerCase() === n || v.label.toLowerCase() === n);
         const pick = PREFERRED_DEFAULTS.map(byName).find(Boolean) ?? j.voices[0];
-        setVoice(lesson.audio?.voice ?? pick?.id ?? "");
+        setVoice(previousVoice ?? pick?.id ?? "");
       })
       .catch((e) => !cancelled && setLoadError(e instanceof Error ? e.message : String(e)));
     return () => {
       cancelled = true;
     };
-  }, [open, meta, lesson.audio?.voice]);
+  }, [open, meta, previousVoice]);
 
-  const scripted = useMemo(
-    () => lesson.slides.filter((s) => (s.narration?.lines.length ?? 0) > 0),
-    [lesson.slides]
-  );
+  const scripted = useMemo(() => slides.filter((s) => s.lines.length > 0), [slides]);
+  const sentences = useMemo(() => scripted.reduce((n, s) => n + s.lines.length, 0), [scripted]);
   const words = useMemo(
     () =>
-      scripted.reduce(
-        (n, s) =>
-          n + (s.narration?.lines ?? []).reduce((m, l) => m + l.text.split(/\s+/).length, 0),
-        0
-      ),
+      scripted.reduce((n, s) => n + s.lines.reduce((m, l) => m + l.text.split(/\s+/).length, 0), 0),
     [scripted]
   );
 
@@ -150,30 +196,30 @@ export function NarrationDialog({ open, onOpenChange }: NarrationDialogProps) {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          title: lesson.title || "Untitled lesson",
+          title: title || "Untitled lesson",
           voice,
           style,
           model,
           align,
-          slides: lesson.slides.map((s) => ({
-            slideId: s.id,
-            duration: s.duration,
-            lines: (s.narration?.lines ?? []).map((l) => ({ id: l.id, text: l.text })),
-          })),
+          slides,
         }),
       });
       const j = await r.json();
       if (!r.ok) throw new Error(j.error ?? "Narration failed");
-      const { audio, slides, timingNote } = j as {
+      const {
+        audio,
+        slides: cues,
+        timingNote,
+      } = j as {
         audio: LessonAudio;
         slides: SlideCue[];
         timingNote?: string;
       };
-      useEditorStore.getState().applyNarration(audio, slides);
+      onNarrated(audio, cues);
       const total = audio.duration ?? 0;
       setResult(
         `Narration ready: ${Math.floor(total / 60)}:${String(Math.round(total % 60)).padStart(2, "0")}, ` +
-          `slides retimed to the voice. ${timingNote ?? "Word times are estimated from each sentence."} ` +
+          `${unit} retimed to the voice. ${timingNote ?? "Word times are estimated from each sentence."} ` +
           `Saved to the audio library; save the lesson to keep it.`
       );
     } catch (e) {
@@ -194,14 +240,16 @@ export function NarrationDialog({ open, onOpenChange }: NarrationDialogProps) {
           <DialogHeader>
             <DialogTitle>Narrate with Gemini</DialogTitle>
             <DialogDescription>
-              Speaks each slide&apos;s narration script, times every sentence, and fits the slides
-              to the voice.
+              Speaks the script one sentence at a time, times every sentence, and fits the {unit} to
+              the voice.
             </DialogDescription>
           </DialogHeader>
 
           <div className="text-sm text-muted-foreground">
-            {scripted.length} of {lesson.slides.length} slides have a script · {words} words · about{" "}
-            {Math.round((words / 150) * 60)} s of speech
+            {scripted.length} of {slides.length} {unit} have a script · {words} words · about{" "}
+            {Math.round((words / 150) * 60)} s of speech. Gemini speaks one sentence at a time
+            within its rate limit, so this takes about{" "}
+            {Math.max(1, Math.ceil((sentences * 6.2) / 60))} min.
           </div>
 
           {loadError && <p className="text-sm text-red-600">{loadError}</p>}
@@ -327,11 +375,7 @@ export function NarrationDialog({ open, onOpenChange }: NarrationDialogProps) {
               ) : (
                 <Mic className="mr-2 h-4 w-4" />
               )}
-              {busy
-                ? "Generating…"
-                : lesson.audio?.voice
-                  ? "Regenerate narration"
-                  : "Generate narration"}
+              {busy ? "Generating…" : previousVoice ? "Regenerate narration" : "Generate narration"}
             </Button>
           </div>
         </DialogContent>

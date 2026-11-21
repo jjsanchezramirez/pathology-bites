@@ -1,10 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import type { Lesson } from "@/shared/lesson/types";
+import { isScriptLesson, type ScriptLesson } from "@/shared/lesson/script/types";
+import { scriptImageUrls } from "@/shared/lesson/script/timeline";
 
 interface UseResourcePreloaderOptions {
-  lesson: Lesson;
+  lesson: Lesson | ScriptLesson;
   audioUrl: string;
 }
 
@@ -25,6 +27,22 @@ export function useResourcePreloader({
   const [progress, setProgress] = useState(0);
   const loadedResourcesRef = useRef<Set<string>>(new Set());
 
+  // Key on the set of image URLs, not the lesson object, so edits that don't
+  // change the pictures (typing in the script editor) don't reload everything.
+  const imageKey = useMemo(() => {
+    const urls = new Set<string>();
+    if (isScriptLesson(lesson)) {
+      for (const url of scriptImageUrls(lesson)) urls.add(url);
+    } else {
+      for (const slide of lesson.slides) {
+        for (const el of slide.elements) {
+          if (el.kind === "image" && el.imageUrl) urls.add(el.imageUrl);
+        }
+      }
+    }
+    return [...urls].join("\n");
+  }, [lesson]);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -36,13 +54,8 @@ export function useResourcePreloader({
       loadedResourcesRef.current.clear();
 
       try {
-        // Collect all unique image URLs from the lesson's slides.
-        const imageUrls = new Set<string>();
-        for (const slide of lesson.slides) {
-          for (const el of slide.elements) {
-            if (el.kind === "image" && el.imageUrl) imageUrls.add(el.imageUrl);
-          }
-        }
+        // All unique image URLs in the lesson.
+        const imageUrls = new Set(imageKey ? imageKey.split("\n") : []);
 
         const hasAudio = !!audioUrl;
         const totalResources = imageUrls.size + (hasAudio ? 1 : 0);
@@ -124,7 +137,7 @@ export function useResourcePreloader({
     return () => {
       cancelled = true;
     };
-  }, [lesson, audioUrl]);
+  }, [imageKey, audioUrl]);
 
   return {
     isLoading,

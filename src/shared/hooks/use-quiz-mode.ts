@@ -54,7 +54,7 @@ export function useLessonStudioMode() {
 
   const isInLessonStudioMode = useMemo(() => {
     if (!pathname) return false;
-    return pathname === "/admin/lesson-studio";
+    return pathname.startsWith("/admin/lesson-studio");
   }, [pathname]);
 
   return {

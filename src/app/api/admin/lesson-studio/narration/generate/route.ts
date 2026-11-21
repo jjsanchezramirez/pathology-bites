@@ -18,12 +18,17 @@ import type { LessonAudio } from "@/shared/lesson/types";
 import type { Json } from "@/shared/types/supabase";
 import { log } from "@/shared/utils/logging";
 
-// One TTS call per sentence, four at a time. A 2-minute lesson is ~20
-// sentences, which finishes well inside this budget.
+// One TTS call per sentence. Calls are spaced to Gemini's per-minute limit
+// (see gemini-tts.ts), about 6 s apart on the 10-a-minute tier, so a 2-minute
+// lesson of ~25 sentences takes about 2.5 minutes and fits this budget.
 export const maxDuration = 300;
 
 const SAMPLE_RATE = 24000;
-const MAX_LINES = 150;
+// At ~6 s a sentence, 45 sentences is the most that fits in maxDuration.
+const MAX_LINES = Math.max(
+  1,
+  Math.floor(280 / (60 / Math.max(1, Number(process.env.GEMINI_TTS_RPM) || 10)))
+);
 const MAX_CHARS = 12_000;
 
 const schema = z.object({
@@ -132,7 +137,7 @@ export async function POST(request: NextRequest) {
   let storagePath: string | null = null;
   try {
     const started = Date.now();
-    const clips: ClipInput[] = await mapLimit(jobs, 4, async (job) => {
+    const clips: ClipInput[] = await mapLimit(jobs, 2, async (job) => {
       const pcm = await synthesize(job.text, {
         voice: body.voice,
         style: body.style,
