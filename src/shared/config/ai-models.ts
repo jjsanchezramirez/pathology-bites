@@ -280,6 +280,8 @@ export const TEXT_FALLBACK_CHAIN: string[] = [
   // stayed in the chain long enough to 404 on every single failure, wasting an
   // attempt that could not possibly answer — and, because the chain is walked in
   // order, delaying the one backstop that still works. Live models only.
+  // LOCKED until MISTRAL_ENABLED=true (workspace limit 0 RPM, 2026-11-22) —
+  // skipped instantly with no network call while locked. See ai-keys.ts.
   "mistral-small-2603", // Mistral — 8.0s, ~1B tokens/mo free but 2 RPM
   "gemini-3.5-flash-lite", // Google — 3.1s but $20.68/mo; last on cost, not speed
 ];

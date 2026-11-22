@@ -11,7 +11,7 @@ async function loadKeys() {
   return import("@/shared/config/ai-keys");
 }
 
-describe("Cerebras lock", () => {
+describe("provider locks (Cerebras, Mistral)", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
   });
@@ -36,9 +36,25 @@ describe("Cerebras lock", () => {
     expect(hasApiKey("cerebras")).toBe(true);
   });
 
+  it("locks Mistral the same way until MISTRAL_ENABLED=true", async () => {
+    vi.stubEnv("MISTRAL_API_KEY", "ms-test");
+    vi.stubEnv("MISTRAL_ENABLED", "");
+    let keys = await loadKeys();
+    expect(keys.getApiKey("mistral")).toBe("");
+    expect(keys.getAvailableProviders()).not.toContain("mistral");
+
+    vi.stubEnv("MISTRAL_ENABLED", "true");
+    keys = await loadKeys();
+    expect(keys.getApiKey("mistral")).toBe("ms-test");
+  });
+
   it("does not lock other providers", async () => {
     vi.stubEnv("GROQ_API_KEY", "gsk-test");
+    vi.stubEnv("GOOGLE_AI_STUDIO_API_KEY", "goog-test");
     vi.stubEnv("CEREBRAS_ENABLED", "");
-    expect((await loadKeys()).hasApiKey("groq")).toBe(true);
+    vi.stubEnv("MISTRAL_ENABLED", "");
+    const keys = await loadKeys();
+    expect(keys.hasApiKey("groq")).toBe(true);
+    expect(keys.hasApiKey("google")).toBe(true);
   });
 });
