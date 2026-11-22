@@ -1,8 +1,9 @@
 /**
- * Cerebras is prepaid and out of funds (402 on every model). Its key stays
- * configured, but the provider must read as unconfigured until someone sets
- * CEREBRAS_ENABLED=true after confirming funds — otherwise a catalog flip or a
- * pinned model would spend a chain attempt on a guaranteed failure.
+ * Every AI provider has an on/off switch in the environment. Working providers
+ * default on (only "false" turns them off); Cerebras (402, no funds) and
+ * Mistral (0 RPM) default off (only "true" turns them on). A switched-off
+ * provider keeps its key but must read as unconfigured, so no chain, pinned
+ * model or catalog flip spends an attempt on it.
  */
 import { describe, it, expect, vi, afterEach } from "vitest";
 
@@ -11,7 +12,7 @@ async function loadKeys() {
   return import("@/shared/config/ai-keys");
 }
 
-describe("provider locks (Cerebras, Mistral)", () => {
+describe("AI provider switches", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
   });
@@ -46,6 +47,31 @@ describe("provider locks (Cerebras, Mistral)", () => {
     vi.stubEnv("MISTRAL_ENABLED", "true");
     keys = await loadKeys();
     expect(keys.getApiKey("mistral")).toBe("ms-test");
+  });
+
+  it.each([
+    ["groq", "GROQ_API_KEY", "GROQ_ENABLED"],
+    ["google", "GOOGLE_AI_STUDIO_API_KEY", "GEMINI_ENABLED"],
+    ["cloudflare", "CLOUDFLARE_AI_API_TOKEN", "CLOUDFLARE_AI_ENABLED"],
+    ["openai", "OPENAI_API_KEY", "OPENAI_ENABLED"],
+  ])("switches %s off only on an explicit %s=false", async (provider, keyEnv, switchEnv) => {
+    vi.stubEnv(keyEnv, "test-key");
+    vi.stubEnv("CLOUDFLARE_ACCOUNT_ID", "acct");
+    vi.stubEnv(switchEnv, "");
+    expect((await loadKeys()).hasApiKey(provider)).toBe(true);
+
+    vi.stubEnv(switchEnv, "0");
+    expect((await loadKeys()).hasApiKey(provider)).toBe(true);
+
+    vi.stubEnv(switchEnv, "false");
+    const keys = await loadKeys();
+    expect(keys.hasApiKey(provider)).toBe(false);
+    expect(keys.getApiKey(provider)).toBe("");
+  });
+
+  it("treats the gemini catalog alias like google", async () => {
+    vi.stubEnv("GEMINI_ENABLED", "false");
+    expect((await loadKeys()).isProviderLocked("gemini")).toBe(true);
   });
 
   it("does not lock other providers", async () => {
