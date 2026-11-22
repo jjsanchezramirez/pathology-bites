@@ -5,10 +5,9 @@
 // apart: Google silently dropped the system prompt in all of them, WSI's Mistral
 // dropped it too, and neither Google nor Mistral had any request timeout.
 //
-// Groq and Cerebras speak the OpenAI shape (openai-compat.ts); Claude has its own
-// client (claude-api.ts); Google and Mistral are called directly here.
+// Groq, Cerebras and Cloudflare speak the OpenAI shape (openai-compat.ts);
+// Google and Mistral are called directly here.
 
-import { callClaudeText } from "@/shared/services/claude-api";
 import { callOpenAICompatText } from "@/shared/services/openai-compat";
 import { fetchWithTimeout } from "@/shared/utils/fetch-with-timeout";
 
@@ -207,15 +206,6 @@ export async function callModel(
       return callGoogle(prompt, modelId, apiKey, merged);
     case "mistral":
       return callMistral(prompt, modelId, apiKey, merged);
-    case "claude": {
-      const res = await callClaudeText(prompt, modelId, apiKey, {
-        system: merged.system,
-        maxTokens: merged.maxTokens,
-        temperature: merged.temperature,
-        timeoutMs: merged.timeoutMs,
-      });
-      return { content: res.content, tokenUsage: res.tokenUsage };
-    }
     default:
       throw new Error(`Unsupported model provider: ${provider}`);
   }
@@ -289,17 +279,6 @@ export async function callVisionModel(
         messages as Parameters<typeof callOpenAICompatChat>[3],
         { maxTokens, temperature, timeoutMs, signal }
       );
-      return { content: res.content, tokenUsage: res.tokenUsage };
-    }
-
-    case "claude": {
-      const { callClaudeVision } = await import("@/shared/services/claude-api");
-      const res = await callClaudeVision(prompt, imageUrl, modelId, apiKey, {
-        system,
-        maxTokens,
-        temperature,
-        timeoutMs,
-      });
       return { content: res.content, tokenUsage: res.tokenUsage };
     }
 

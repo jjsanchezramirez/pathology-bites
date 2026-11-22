@@ -119,9 +119,13 @@ describe("route: POST /api/user/wsi-questions/generate", () => {
   });
 
   it("pins an explicitly requested model instead of walking the chain", async () => {
-    runAITask.mockResolvedValue({ content: "{}", parsed: QUESTION, model: "claude-sonnet-4" });
-    await POST(postRequest({ wsi: SLIDE, modelOverride: "claude-opus-5" }));
-    expect(runAITask.mock.calls[0][2].modelOverride).toBe("claude-opus-5");
+    runAITask.mockResolvedValue({
+      content: "{}",
+      parsed: QUESTION,
+      model: "gemini-2.5-flash-lite",
+    });
+    await POST(postRequest({ wsi: SLIDE, modelOverride: "gemini-2.5-flash-lite" }));
+    expect(runAITask.mock.calls[0][2].modelOverride).toBe("gemini-2.5-flash-lite");
   });
 });
 
