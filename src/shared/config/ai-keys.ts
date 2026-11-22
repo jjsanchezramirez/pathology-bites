@@ -16,22 +16,23 @@ import { log } from "@/shared/utils/logging";
  * file is what makes the guarantee real — the catalog stays importable from the
  * client, the keys cannot be.
  *
- * The `NEXT_PUBLIC_` names are kept because they are what is configured in
- * Vercel today; renaming them is an env migration, not a code change. The
- * import guard is what actually contains them.
+ * Keys are read from server-only names (no `NEXT_PUBLIC_` prefix) and stored
+ * in Vercel as Sensitive. The `NEXT_PUBLIC_` reads below are a TEMPORARY
+ * fallback so a deploy never runs keyless while the env migration is in
+ * flight — delete them once the old variables are removed from Vercel.
  */
 export const API_KEYS = {
-  groq: process.env.NEXT_PUBLIC_GROQ_API_KEY || process.env.GROQ_API_KEY || "",
-  cerebras: process.env.NEXT_PUBLIC_CEREBRAS_API_KEY || process.env.CEREBRAS_API_KEY || "",
+  groq: process.env.GROQ_API_KEY || process.env.NEXT_PUBLIC_GROQ_API_KEY || "",
+  cerebras: process.env.CEREBRAS_API_KEY || process.env.NEXT_PUBLIC_CEREBRAS_API_KEY || "",
   google:
+    process.env.GOOGLE_AI_STUDIO_API_KEY ||
+    process.env.GEMINI_API_KEY ||
     process.env.NEXT_PUBLIC_GOOGLE_AI_STUDIO_API_KEY ||
     process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
     "",
-  claude: process.env.NEXT_PUBLIC_CLAUDE_API_KEY || "",
-  mistral: process.env.NEXT_PUBLIC_MISTRAL_API_KEY || "",
-  // Workers AI. A plain Cloudflare API token with the Workers AI Read binding —
-  // deliberately NOT NEXT_PUBLIC_, since this one is new and nothing configured
-  // in Vercel depends on the old naming.
+  claude: process.env.CLAUDE_API_KEY || process.env.NEXT_PUBLIC_CLAUDE_API_KEY || "",
+  mistral: process.env.MISTRAL_API_KEY || process.env.NEXT_PUBLIC_MISTRAL_API_KEY || "",
+  // Workers AI. A plain Cloudflare API token with the Workers AI Read binding.
   cloudflare: process.env.CLOUDFLARE_AI_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN || "",
 };
 
@@ -60,7 +61,7 @@ export function getApiKey(provider: string): string {
   }
   if (!key) {
     log.warn(
-      `⚠️ No API key found for provider: ${provider}. Please set NEXT_PUBLIC_${provider.toUpperCase()}_API_KEY in your environment variables.`
+      `⚠️ No API key found for provider: ${provider}. Please set ${provider.toUpperCase()}_API_KEY in your environment variables.`
     );
   }
   return key || "";
