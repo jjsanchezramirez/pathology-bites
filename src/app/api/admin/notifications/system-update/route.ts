@@ -14,7 +14,7 @@ const systemUpdateSchema = z.object({
   message: z.string().min(1),
   updateType: z.enum(["maintenance", "feature", "announcement", "security"]),
   severity: z.enum(["info", "warning", "critical"]).default("info"),
-  targetAudience: z.enum(["all", "admin", "user", "creator", "reviewer"]).default("all"),
+  targetAudience: z.enum(["all", "user", "staff"]).default("all"),
 });
 
 /**
@@ -59,7 +59,7 @@ const systemUpdateSchema = z.object({
  *                 example: "info"
  *               targetAudience:
  *                 type: string
- *                 enum: [all, admin, user, creator, reviewer]
+ *                 enum: [all, user, staff]
  *                 default: all
  *                 description: Target audience for the notification
  *                 example: "all"
@@ -188,7 +188,7 @@ export async function POST(request: NextRequest) {
  *                         enum: [info, warning, critical]
  *                       targetAudience:
  *                         type: string
- *                         enum: [all, admin, user, creator, reviewer]
+ *                         enum: [all, user, staff]
  *                       created_at:
  *                         type: string
  *                         format: date-time

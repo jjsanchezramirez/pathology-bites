@@ -2,8 +2,13 @@
 // Generator functions for creating user notifications
 
 import { createClient } from "@/shared/services/server";
-import { isUserRole } from "@/shared/types/database";
 import { log } from "@/shared/utils/logging";
+
+/** Announcement audiences other than "all", mapped to the user roles they reach. */
+const AUDIENCE_ROLES = {
+  user: ["user"],
+  staff: ["admin", "creator", "reviewer"],
+} as const;
 
 export const notificationGenerators = {
   async createPerfectScoreNotification(
@@ -108,37 +113,21 @@ export const notificationGenerators = {
       // Get target users based on audience
       let targetUserIds: string[] = [];
 
-      if (targetAudience === "all") {
-        // Get all users
-        const { data: users, error: usersError } = await supabase
-          .from("users")
-          .select("id")
-          .eq("status", "active");
+      // "all" = every active account; otherwise the roles behind the audience.
+      const roles = AUDIENCE_ROLES[targetAudience as keyof typeof AUDIENCE_ROLES];
+      if (targetAudience !== "all" && !roles) {
+        log.warn("Unknown notification target audience:", targetAudience);
+      } else {
+        let query = supabase.from("users").select("id").eq("status", "active");
+        if (roles) query = query.in("role", roles);
+        const { data: users, error: usersError } = await query;
 
         if (usersError) {
-          log.error("Error fetching users:", usersError);
+          log.error("Error fetching target users:", usersError);
           throw new Error(`Failed to fetch users: ${usersError.message}`);
         }
 
         targetUserIds = users?.map((u) => u.id) || [];
-      } else if (isUserRole(targetAudience)) {
-        // Get users with specific role
-        const { data: users, error: usersError } = await supabase
-          .from("users")
-          .select("id")
-          .eq("role", targetAudience)
-          .eq("status", "active");
-
-        if (usersError) {
-          log.error("Error fetching users by role:", usersError);
-          throw new Error(`Failed to fetch users by role: ${usersError.message}`);
-        }
-
-        targetUserIds = users?.map((u) => u.id) || [];
-      } else {
-        // Unknown audience matched no rows before the typed client either
-        log.warn("Unknown notification target audience:", targetAudience);
-        targetUserIds = [];
       }
 
       // Create notification_states for each target user

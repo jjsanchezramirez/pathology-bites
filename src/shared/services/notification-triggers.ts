@@ -233,7 +233,7 @@ export class NotificationTriggers {
   async onNewFeatureAnnouncement(
     featureName: string,
     description: string,
-    targetAudience: "all" | "admin" | "user" | "creator" | "reviewer" = "all"
+    targetAudience: "all" | "user" | "staff" = "all"
   ): Promise<void> {
     try {
       await notificationGenerators.broadcastSystemUpdate(

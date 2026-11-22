@@ -26,7 +26,7 @@ interface SystemUpdateForm {
   message: string;
   updateType: "maintenance" | "feature" | "announcement" | "security";
   severity: "info" | "warning" | "critical";
-  targetAudience: "all" | "admin" | "user" | "creator" | "reviewer";
+  targetAudience: "all" | "user" | "staff";
 }
 
 export function SystemUpdateBroadcaster({ onSent }: { onSent?: () => void } = {}) {
@@ -58,7 +58,7 @@ export function SystemUpdateBroadcaster({ onSent }: { onSent?: () => void } = {}
       }
 
       const result = await response.json();
-      toast.success("System update broadcasted successfully!");
+      toast.success("Announcement sent");
 
       // Reset form
       setForm({
@@ -102,11 +102,9 @@ export function SystemUpdateBroadcaster({ onSent }: { onSent?: () => void } = {}
   ];
 
   const audienceOptions = [
-    { value: "all", label: "All Users", description: "Everyone on the platform" },
-    { value: "user", label: "Users Only", description: "Regular users only" },
-    { value: "admin", label: "Admins Only", description: "Administrators only" },
-    { value: "creator", label: "Creators Only", description: "Content creators only" },
-    { value: "reviewer", label: "Reviewers Only", description: "Content reviewers only" },
+    { value: "all", label: "Everyone", description: "Every active account" },
+    { value: "user", label: "Learners", description: "Accounts with the user role" },
+    { value: "staff", label: "Staff", description: "Admins, creators and reviewers" },
   ];
 
   return (
@@ -118,7 +116,7 @@ export function SystemUpdateBroadcaster({ onSent }: { onSent?: () => void } = {}
           id="title"
           value={form.title}
           onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-          placeholder="Enter notification title..."
+          placeholder="Short headline"
           required
         />
       </div>
@@ -130,7 +128,7 @@ export function SystemUpdateBroadcaster({ onSent }: { onSent?: () => void } = {}
           id="message"
           value={form.message}
           onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))}
-          placeholder="Enter notification message..."
+          placeholder="What do people need to know?"
           rows={4}
           required
         />
@@ -138,27 +136,27 @@ export function SystemUpdateBroadcaster({ onSent }: { onSent?: () => void } = {}
 
       {/* Update Type */}
       <div className="space-y-2">
-        <Label htmlFor="updateType">Update Type</Label>
+        <Label htmlFor="updateType">Type</Label>
         <Select
           value={form.updateType}
           onValueChange={(value: SystemUpdateForm["updateType"]) =>
             setForm((prev) => ({ ...prev, updateType: value }))
           }
         >
-          <SelectTrigger>
+          <SelectTrigger id="updateType">
             <SelectValue placeholder="Select update type" />
           </SelectTrigger>
           <SelectContent>
             {updateTypeOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
-                <div>
-                  <div className="font-medium">{option.label}</div>
-                  <div className="text-xs text-muted-foreground">{option.description}</div>
-                </div>
+                {option.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+        <p className="text-xs text-muted-foreground">
+          {updateTypeOptions.find((o) => o.value === form.updateType)?.description}
+        </p>
       </div>
 
       {/* Severity */}
@@ -170,45 +168,45 @@ export function SystemUpdateBroadcaster({ onSent }: { onSent?: () => void } = {}
             setForm((prev) => ({ ...prev, severity: value }))
           }
         >
-          <SelectTrigger>
+          <SelectTrigger id="severity">
             <SelectValue placeholder="Select severity" />
           </SelectTrigger>
           <SelectContent>
             {severityOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
-                <div>
-                  <div className={`font-medium ${option.color}`}>{option.label}</div>
-                  <div className="text-xs text-muted-foreground">{option.description}</div>
-                </div>
+                <span className={option.color}>{option.label}</span>
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+        <p className="text-xs text-muted-foreground">
+          {severityOptions.find((o) => o.value === form.severity)?.description}
+        </p>
       </div>
 
       {/* Target Audience */}
       <div className="space-y-2">
-        <Label htmlFor="targetAudience">Target Audience</Label>
+        <Label htmlFor="targetAudience">Audience</Label>
         <Select
           value={form.targetAudience}
           onValueChange={(value: SystemUpdateForm["targetAudience"]) =>
             setForm((prev) => ({ ...prev, targetAudience: value }))
           }
         >
-          <SelectTrigger>
+          <SelectTrigger id="targetAudience">
             <SelectValue placeholder="Select target audience" />
           </SelectTrigger>
           <SelectContent>
             {audienceOptions.map((option) => (
               <SelectItem key={option.value} value={option.value}>
-                <div>
-                  <div className="font-medium">{option.label}</div>
-                  <div className="text-xs text-muted-foreground">{option.description}</div>
-                </div>
+                {option.label}
               </SelectItem>
             ))}
           </SelectContent>
         </Select>
+        <p className="text-xs text-muted-foreground">
+          {audienceOptions.find((o) => o.value === form.targetAudience)?.description}
+        </p>
       </div>
 
       {/* Preview */}
@@ -258,12 +256,12 @@ export function SystemUpdateBroadcaster({ onSent }: { onSent?: () => void } = {}
         {isSubmitting ? (
           <>
             <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            Broadcasting...
+            Sending...
           </>
         ) : (
           <>
             <Send className="mr-2 h-4 w-4" />
-            Broadcast System Update
+            Send announcement
           </>
         )}
       </Button>
