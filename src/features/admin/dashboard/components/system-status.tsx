@@ -2,7 +2,14 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Database, Gauge, Server, Timer } from "lucide-react";
+import {
+  PageSection,
+  SectionCard,
+  StatCard,
+  StatGrid,
+  StatTone,
+} from "@/shared/components/ui/page-layout";
 import { createClient } from "@/shared/services/client";
 import { log } from "@/shared/utils/logging";
 
@@ -134,138 +141,77 @@ export function SystemStatus() {
     return () => clearInterval(interval);
   }, [checkSystemHealth]);
 
-  const getStatusColor = (status: string) => {
+  const getStatusTone = (status: string): StatTone => {
     switch (status) {
       case "operational":
-        return "bg-emerald-500";
+        return "success";
       case "error":
-        return "bg-red-500";
+        return "danger";
       default:
-        return "bg-gray-500";
+        return "default";
     }
   };
 
+  const getLatencyTone = (ms: number, warnAt: number, errorAt: number): StatTone =>
+    ms > errorAt ? "danger" : ms > warnAt ? "warning" : "success";
+
   return (
-    <div className="space-y-4">
-      {/* System Status Header */}
-      <Card>
-        <CardHeader>
-          <CardTitle>System Health & Monitoring</CardTitle>
-          <p className="text-xs text-muted-foreground">
-            Last updated: {metrics.lastUpdated.toLocaleTimeString()}
-          </p>
-        </CardHeader>
-      </Card>
-
+    <PageSection
+      title="System Health & Monitoring"
+      description={
+        <span className="text-xs">Last updated: {metrics.lastUpdated.toLocaleTimeString()}</span>
+      }
+    >
       {/* Service Status Grid */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {/* Vercel Status */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Vercel</p>
-                <p className="text-xs text-muted-foreground">Hosting</p>
-              </div>
-              <div className={`h-3 w-3 rounded-full ${getStatusColor(metrics.vercelStatus)}`} />
-            </div>
-            <div className="mt-4">
-              <p className="text-xs text-muted-foreground">
-                {metrics.vercelStatus === "operational" ? "Operational" : "Error"}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Supabase Status */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">Supabase</p>
-                <p className="text-xs text-muted-foreground">Database</p>
-              </div>
-              <div className={`h-3 w-3 rounded-full ${getStatusColor(metrics.supabaseStatus)}`} />
-            </div>
-            <div className="mt-4">
-              <p className="text-xs text-muted-foreground">
-                {metrics.supabaseStatus === "operational" ? "Operational" : "Error"}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* API Response Time */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">API Response</p>
-                <p className="text-xs text-muted-foreground">Total Time</p>
-              </div>
-              <div
-                className={`h-3 w-3 rounded-full ${metrics.responseTime > 1000 ? "bg-red-500" : metrics.responseTime > 300 ? "bg-yellow-500" : "bg-emerald-500"}`}
-              />
-            </div>
-            <div className="mt-4">
-              <p className="text-xs text-muted-foreground">{metrics.responseTime}ms</p>
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Database Query Time */}
-        <Card>
-          <CardContent className="pt-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium">DB Query</p>
-                <p className="text-xs text-muted-foreground">Query Time</p>
-              </div>
-              <div
-                className={`h-3 w-3 rounded-full ${metrics.dbQueryTime > 500 ? "bg-red-500" : metrics.dbQueryTime > 100 ? "bg-yellow-500" : "bg-emerald-500"}`}
-              />
-            </div>
-            <div className="mt-4">
-              <p className="text-xs text-muted-foreground">{metrics.dbQueryTime}ms</p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+      <StatGrid>
+        <StatCard
+          label="Vercel"
+          value={metrics.vercelStatus === "operational" ? "Operational" : "Error"}
+          hint="Hosting"
+          icon={Server}
+          tone={getStatusTone(metrics.vercelStatus)}
+        />
+        <StatCard
+          label="Supabase"
+          value={metrics.supabaseStatus === "operational" ? "Operational" : "Error"}
+          hint="Database"
+          icon={Database}
+          tone={getStatusTone(metrics.supabaseStatus)}
+        />
+        <StatCard
+          label="API Response"
+          value={`${metrics.responseTime}ms`}
+          hint="Total Time"
+          icon={Gauge}
+          tone={getLatencyTone(metrics.responseTime, 300, 1000)}
+        />
+        <StatCard
+          label="DB Query"
+          value={`${metrics.dbQueryTime}ms`}
+          hint="Query Time"
+          icon={Timer}
+          tone={getLatencyTone(metrics.dbQueryTime, 100, 500)}
+        />
+      </StatGrid>
 
       {/* System Metrics */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-base">System Metrics</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid gap-4 md:grid-cols-3 lg:grid-cols-6">
-            <div className="text-center">
-              <p className="text-2xl font-bold">1</p>
-              <p className="text-xs text-muted-foreground">DB Connections</p>
+      <SectionCard title="System Metrics">
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 lg:grid-cols-6">
+          {[
+            { label: "DB Connections", value: 1 },
+            { label: "Daily Active", value: metrics.activeUsers },
+            { label: "Weekly Active", value: metrics.activeUsersWeekly },
+            { label: "Monthly Active", value: metrics.activeUsersMonthly },
+            { label: "Cloudflare R2", value: metrics.r2StorageFormatted },
+            { label: "Supabase Storage", value: `${(metrics.storageUsage / 1024).toFixed(1)}GB` },
+          ].map((item) => (
+            <div key={item.label} className="min-w-0 text-center">
+              <p className="truncate text-2xl font-bold tabular-nums">{item.value}</p>
+              <p className="text-xs text-muted-foreground">{item.label}</p>
             </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold">{metrics.activeUsers}</p>
-              <p className="text-xs text-muted-foreground">Daily Active</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold">{metrics.activeUsersWeekly}</p>
-              <p className="text-xs text-muted-foreground">Weekly Active</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold">{metrics.activeUsersMonthly}</p>
-              <p className="text-xs text-muted-foreground">Monthly Active</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold">{metrics.r2StorageFormatted}</p>
-              <p className="text-xs text-muted-foreground">Cloudflare R2</p>
-            </div>
-            <div className="text-center">
-              <p className="text-2xl font-bold">{(metrics.storageUsage / 1024).toFixed(1)}GB</p>
-              <p className="text-xs text-muted-foreground">Supabase Storage</p>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
+          ))}
+        </div>
+      </SectionCard>
+    </PageSection>
   );
 }

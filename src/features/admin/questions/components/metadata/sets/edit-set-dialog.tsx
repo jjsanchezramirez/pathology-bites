@@ -197,7 +197,7 @@ export function EditSetDialog({ open, onOpenChange, onSuccess, questionSet }: Ed
           </Select>
         </div>
 
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2">
           <Switch
             id="isActive"
             checked={isActive}

@@ -1,13 +1,8 @@
 // src/app/(admin)/admin/questions/metadata/page.tsx
 import { Metadata } from "next";
 import { QuestionManagementTable } from "@/features/admin/questions/components/shared/question-management-table";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
 
 export const metadata: Metadata = {
   title: "Question Metadata - Admin Dashboard",
@@ -16,26 +11,18 @@ export const metadata: Metadata = {
 
 export default function QuestionMetadataPage() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Question Metadata</h1>
-        <p className="text-muted-foreground">
-          Manage tags, categories, and question sets to organize your question bank
-        </p>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="Question Metadata"
+        description="Manage tags, categories, and question sets to organize your question bank"
+      />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Organization Tools</CardTitle>
-          <CardDescription>
-            Create and manage tags, categories, and question sets to organize your questions
-            effectively
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <QuestionManagementTable />
-        </CardContent>
-      </Card>
-    </div>
+      <SectionCard
+        title="Organization Tools"
+        description="Create and manage tags, categories, and question sets to organize your questions effectively"
+      >
+        <QuestionManagementTable />
+      </SectionCard>
+    </PageContainer>
   );
 }

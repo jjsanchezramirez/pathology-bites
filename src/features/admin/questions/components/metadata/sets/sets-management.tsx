@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { TableShell, Toolbar } from "@/shared/components/ui/page-layout";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
@@ -309,9 +310,9 @@ export function SetsManagement() {
   return (
     <div className="space-y-4">
       {/* Header with search and create button */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative w-64">
+      <Toolbar className="sm:justify-between">
+        <div className="flex flex-1 flex-wrap items-center gap-2">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search question sets..."
@@ -328,7 +329,7 @@ export function SetsManagement() {
             Refresh
           </Button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {selectedSetIds.size > 0 && (
             <>
               <Button
@@ -358,18 +359,61 @@ export function SetsManagement() {
             Create Question Set
           </Button>
         </div>
-      </div>
+      </Toolbar>
 
       {/* Stats */}
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <span>Total: {totalSets} question sets</span>
         {searchTerm && <span>Showing results for "{searchTerm}"</span>}
       </div>
 
       {/* Table */}
-      <div className="rounded-md border bg-card">
+      <TableShell
+        footer={
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="text-sm text-muted-foreground">
+              Page {page + 1} of {totalPages}
+            </div>
+            <div className="flex flex-wrap items-center gap-2">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page - 1)}
+                disabled={page === 0}
+              >
+                Previous
+              </Button>
+              {getPageNumbers(page, totalPages).map((p, idx) =>
+                p === "ellipsis" ? (
+                  <span key={`ellipsis-${idx}`} className="px-2 text-sm text-muted-foreground">
+                    ...
+                  </span>
+                ) : (
+                  <Button
+                    key={p}
+                    variant={p === page ? "default" : "outline"}
+                    size="sm"
+                    className="min-w-[36px]"
+                    onClick={() => setPage(p)}
+                  >
+                    {p + 1}
+                  </Button>
+                )
+              )}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setPage(page + 1)}
+                disabled={page >= totalPages - 1}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        }
+      >
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader>
             <TableRow>
               <TableHead className="w-[50px]">
                 <Checkbox
@@ -379,8 +423,8 @@ export function SetsManagement() {
                 />
               </TableHead>
               <TableHead>Name</TableHead>
-              <TableHead>Source Type</TableHead>
-              <TableHead>Questions</TableHead>
+              <TableHead className="hidden md:table-cell">Source Type</TableHead>
+              <TableHead className="hidden md:table-cell">Questions</TableHead>
               <TableHead>Status</TableHead>
               <TableHead className="w-[70px] text-right">Actions</TableHead>
             </TableRow>
@@ -411,16 +455,16 @@ export function SetsManagement() {
                     />
                   </TableCell>
                   <TableCell>
-                    <div>
+                    <div className="min-w-0">
                       <div className="font-medium">{set.name}</div>
                       {set.description && (
-                        <div className="text-sm text-muted-foreground max-w-xs truncate">
+                        <div className="text-xs text-muted-foreground max-w-xs truncate">
                           {set.description}
                         </div>
                       )}
                     </div>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <Badge
                       variant="outline"
                       className={
@@ -432,7 +476,7 @@ export function SetsManagement() {
                         ?.label || set.source_type}
                     </Badge>
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <Badge
                       variant="outline"
                       className="bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-900/20 dark:text-slate-300 dark:border-slate-800"
@@ -502,49 +546,7 @@ export function SetsManagement() {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      {/* Pagination */}
-      <div className="flex items-center justify-between">
-        <div className="text-sm text-muted-foreground">
-          Page {page + 1} of {totalPages}
-        </div>
-        <div className="flex items-center gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(page - 1)}
-            disabled={page === 0}
-          >
-            Previous
-          </Button>
-          {getPageNumbers(page, totalPages).map((p, idx) =>
-            p === "ellipsis" ? (
-              <span key={`ellipsis-${idx}`} className="px-2 text-sm text-muted-foreground">
-                ...
-              </span>
-            ) : (
-              <Button
-                key={p}
-                variant={p === page ? "default" : "outline"}
-                size="sm"
-                className="min-w-[36px]"
-                onClick={() => setPage(p)}
-              >
-                {p + 1}
-              </Button>
-            )
-          )}
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setPage(page + 1)}
-            disabled={page >= totalPages - 1}
-          >
-            Next
-          </Button>
-        </div>
-      </div>
+      </TableShell>
 
       {/* Delete Dialog */}
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>

@@ -37,6 +37,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
+import { TableShell } from "@/shared/components/ui/page-layout";
 import { ImagePreview } from "./image-preview";
 import { EditImageDialog } from "./edit-dialog";
 import { UploadDialog } from "./upload-dialog";
@@ -80,8 +81,8 @@ function ImagesTablePagination({
   const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   return (
-    <div className="flex justify-between items-center">
-      <div className="flex items-center gap-4">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4">
         <p className="text-sm text-muted-foreground">
           Showing {totalItems > 0 ? currentPage * pageSize + 1 : 0} to{" "}
           {Math.min((currentPage + 1) * pageSize, totalItems)} of {totalItems} images
@@ -107,7 +108,7 @@ function ImagesTablePagination({
           </Select>
         </div>
       </div>
-      <div className="flex gap-1 items-center">
+      <div className="flex flex-wrap items-center gap-1">
         <Button
           variant="outline"
           size="sm"
@@ -332,8 +333,8 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
 
   if (error && !loading) {
     return (
-      <div className="text-center p-8 text-destructive">
-        <p>{error}</p>
+      <div className="p-8 text-center text-destructive">
+        <p className="text-sm">{error}</p>
         <Button onClick={loadImages} className="mt-4">
           Retry
         </Button>
@@ -386,14 +387,30 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
           onClick={() => setShowUploadDialog(true)}
           className="bg-primary hover:bg-primary/90"
         >
-          <Upload className="h-4 w-4 mr-2" />
+          <Upload className="mr-2 h-4 w-4" />
           Upload Images
         </Button>
       </TableControlBar>
 
-      <div className="rounded-md border bg-card">
+      <TableShell
+        footer={
+          totalPages > 0 ? (
+            <ImagesTablePagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              totalItems={totalItems}
+              pageSize={pageSize}
+              onPageSizeChange={(size) => {
+                setPageSize(size);
+                setPage(0); // Reset to first page when changing page size
+              }}
+            />
+          ) : undefined
+        }
+      >
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader>
             <TableRow>
               <TableHead className="w-24">Preview</TableHead>
               <TableHead>Image Details</TableHead>
@@ -547,21 +564,7 @@ export function ImagesTable({ onImageChange }: ImagesTableProps = {}) {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      {totalPages > 0 && (
-        <ImagesTablePagination
-          currentPage={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
-          totalItems={totalItems}
-          pageSize={pageSize}
-          onPageSizeChange={(size) => {
-            setPageSize(size);
-            setPage(0); // Reset to first page when changing page size
-          }}
-        />
-      )}
+      </TableShell>
 
       {/* Dialogs */}
       <EditImageDialog

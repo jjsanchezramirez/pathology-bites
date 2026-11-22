@@ -17,7 +17,8 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Checkbox } from "@/shared/components/ui/checkbox";
-import { Card } from "@/shared/components/ui/card";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { PageContainer, TableShell, Toolbar } from "@/shared/components/ui/page-layout";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/shared/components/ui/tabs";
 import {
   Search,
@@ -454,53 +455,57 @@ export default function MyQuestionsPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">My Questions</h1>
-        <p className="text-muted-foreground mt-2">
-          Manage your questions across all stages of the review process
-        </p>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="My Questions"
+        description="Manage your questions across all stages of the review process"
+        actions={
+          <>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => fetchMyQuestions()}
+              disabled={loading}
+            >
+              <RefreshCw className={`mr-2 h-4 w-4 ${loading ? "animate-spin" : ""}`} />
+              Refresh
+            </Button>
+            <Button size="sm" onClick={() => router.push("/admin/questions/create")}>
+              <Plus className="mr-2 h-4 w-4" />
+              Create Question
+            </Button>
+          </>
+        }
+      />
 
       {/* Filters */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <div className="relative w-64">
-            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-            <Input
-              placeholder="Search questions..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8"
-            />
-          </div>
-          <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
-            <SelectTrigger className="w-[150px]">
-              <SelectValue placeholder="Difficulty" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Difficulties</SelectItem>
-              <SelectItem value="easy">Easy</SelectItem>
-              <SelectItem value="medium">Medium</SelectItem>
-              <SelectItem value="hard">Hard</SelectItem>
-            </SelectContent>
-          </Select>
+      <Toolbar>
+        <div className="relative sm:w-64">
+          <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+          <Input
+            placeholder="Search questions..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="pl-8"
+          />
         </div>
-        <Button variant="outline" size="sm" onClick={() => fetchMyQuestions()} disabled={loading}>
-          <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
-          Refresh
-        </Button>
-        <Button size="sm" onClick={() => router.push("/admin/questions/create")}>
-          <Plus className="h-4 w-4 mr-2" />
-          Create Question
-        </Button>
-      </div>
+        <Select value={difficultyFilter} onValueChange={setDifficultyFilter}>
+          <SelectTrigger className="sm:w-[160px]">
+            <SelectValue placeholder="Difficulty" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">All Difficulties</SelectItem>
+            <SelectItem value="easy">Easy</SelectItem>
+            <SelectItem value="medium">Medium</SelectItem>
+            <SelectItem value="hard">Hard</SelectItem>
+          </SelectContent>
+        </Select>
+      </Toolbar>
 
       {/* Bulk Actions Bar (only show for drafts tab) */}
       {selectedQuestions.size > 0 && activeTab === "drafts" && (
-        <div className="flex items-center gap-4 p-4 bg-muted rounded-lg">
-          <span className="text-sm font-medium">
+        <div className="flex flex-wrap items-center gap-2 rounded-lg bg-muted p-4">
+          <span className="mr-2 text-sm font-medium">
             {selectedQuestions.size} question{selectedQuestions.size !== 1 ? "s" : ""} selected
           </span>
           <Button size="sm" onClick={handleBulkSubmitForReview}>
@@ -520,7 +525,7 @@ export default function MyQuestionsPage() {
 
       {/* Tabs */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList className="grid w-full grid-cols-5">
+        <TabsList className="flex h-auto w-full justify-start overflow-x-auto [&>button]:shrink-0">
           <TabsTrigger
             value="revision"
             className="flex items-center gap-2 data-[state=active]:bg-destructive/10 data-[state=active]:text-destructive"
@@ -550,51 +555,49 @@ export default function MyQuestionsPage() {
         </TabsList>
 
         <TabsContent value={activeTab} className="space-y-4">
-          <Card>
-            <div className="rounded-md border bg-card overflow-x-auto">
-              <Table>
-                <TableHeader className="bg-muted/50">
-                  <TableRow>
-                    {activeTab === "drafts" && (
-                      <TableHead className="w-12">
-                        <Checkbox checked={allSelected} onCheckedChange={handleSelectAll} />
-                      </TableHead>
-                    )}
-                    <TableHead>Question</TableHead>
-                    {activeTab === "published" && <TableHead className="w-24">Version</TableHead>}
-                    <TableHead className="text-right">Actions</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {filteredQuestions.length === 0 ? (
-                    <TableRow>
-                      <TableCell colSpan={colSpan} className="h-24 text-center">
-                        <MyQuestionsEmptyState activeTab={activeTab} hasFilters={hasFilters} />
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    filteredQuestions.map((question) => (
-                      <MyQuestionRow
-                        key={question.id}
-                        question={question}
-                        activeTab={activeTab}
-                        isCollapsed={collapsedFeedback.has(question.id)}
-                        isSelected={selectedQuestions.has(question.id)}
-                        colSpan={colSpan}
-                        onToggleFeedback={toggleFeedback}
-                        onSelectQuestion={handleSelectQuestion}
-                        onPreview={handlePreview}
-                        onEditAndResubmit={handleEditAndResubmit}
-                        onSubmitForReview={handleSubmitForReview}
-                        onEdit={handleEdit}
-                        onDelete={openDeleteDialog}
-                      />
-                    ))
+          <TableShell>
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  {activeTab === "drafts" && (
+                    <TableHead className="w-12">
+                      <Checkbox checked={allSelected} onCheckedChange={handleSelectAll} />
+                    </TableHead>
                   )}
-                </TableBody>
-              </Table>
-            </div>
-          </Card>
+                  <TableHead>Question</TableHead>
+                  {activeTab === "published" && <TableHead className="w-24">Version</TableHead>}
+                  <TableHead className="text-right">Actions</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {filteredQuestions.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={colSpan} className="h-24 text-center">
+                      <MyQuestionsEmptyState activeTab={activeTab} hasFilters={hasFilters} />
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  filteredQuestions.map((question) => (
+                    <MyQuestionRow
+                      key={question.id}
+                      question={question}
+                      activeTab={activeTab}
+                      isCollapsed={collapsedFeedback.has(question.id)}
+                      isSelected={selectedQuestions.has(question.id)}
+                      colSpan={colSpan}
+                      onToggleFeedback={toggleFeedback}
+                      onSelectQuestion={handleSelectQuestion}
+                      onPreview={handlePreview}
+                      onEditAndResubmit={handleEditAndResubmit}
+                      onSubmitForReview={handleSubmitForReview}
+                      onEdit={handleEdit}
+                      onDelete={openDeleteDialog}
+                    />
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </TableShell>
         </TabsContent>
       </Tabs>
 
@@ -631,6 +634,6 @@ export default function MyQuestionsPage() {
         deleting={deleting}
         onConfirm={handleDeleteConfirm}
       />
-    </div>
+    </PageContainer>
   );
 }

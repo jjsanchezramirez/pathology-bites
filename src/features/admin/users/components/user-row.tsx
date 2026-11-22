@@ -41,15 +41,15 @@ export const UserRow = memo(function UserRow({
   return (
     <TableRow key={user.id}>
       <TableCell>
-        <div>
-          <div className="font-medium">{getUserDisplayName(user)}</div>
-          <div className="text-sm text-muted-foreground">{user.email}</div>
+        <div className="min-w-0">
+          <div className="truncate font-medium">{getUserDisplayName(user)}</div>
+          <div className="truncate text-xs text-muted-foreground">{user.email}</div>
         </div>
       </TableCell>
       <TableCell>
         <RoleBadge role={user.role} className="text-[10px] px-1.5 py-0" />
       </TableCell>
-      <TableCell>
+      <TableCell className="hidden md:table-cell">
         <span className="text-sm">
           {userTypeConfig[user.user_type as keyof typeof userTypeConfig] || user.user_type}
         </span>
@@ -57,7 +57,7 @@ export const UserRow = memo(function UserRow({
       <TableCell>
         <UserStatusBadge status={user.status} className="text-[10px] px-1.5 py-0" />
       </TableCell>
-      <TableCell className="text-sm text-muted-foreground">
+      <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
         {format(new Date(user.created_at), "MMM d, yyyy")}
       </TableCell>
       {isAdmin && (

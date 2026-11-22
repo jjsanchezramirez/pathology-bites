@@ -3,15 +3,10 @@
 
 import { useRef, useState, useEffect } from "react";
 import { UserStatsCards, UserStatsRef } from "@/features/admin/users/components/user-stats-cards";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { PageContainer, SectionCard, StatCard } from "@/shared/components/ui/page-layout";
 import { UsersManagementTabs } from "@/features/admin/users/components/users-management-tabs";
-import { Loader2 } from "lucide-react";
+import { Loader2, UserPlus } from "lucide-react";
 import { log } from "@/shared/utils/logging";
 
 export default function UsersPage() {
@@ -45,49 +40,35 @@ export default function UsersPage() {
   }, []);
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">User Management</h1>
-        <p className="text-muted-foreground">Manage users, roles, permissions, and waitlist</p>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="User Management"
+        description="Manage users, roles, permissions, and waitlist"
+      />
 
-      {/* User Statistics Cards */}
-      <UserStatsCards ref={userStatsRef} />
-
-      {/* Waitlist Summary Card */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Waitlist Summary</CardTitle>
-          <CardDescription>Users waiting for platform access</CardDescription>
-        </CardHeader>
-        <CardContent>
-          {loadingWaitlistCount ? (
-            <div className="flex items-center gap-2">
-              <Loader2 className="h-4 w-4 animate-spin" />
-              <span className="text-sm text-muted-foreground">Loading waitlist count...</span>
-            </div>
-          ) : (
-            <div className="text-3xl font-bold">{waitlistCount}</div>
-          )}
-          <p className="text-sm text-muted-foreground mt-1">
-            {waitlistCount === 1 ? "user" : "users"} on waitlist
-          </p>
-        </CardContent>
-      </Card>
+      {/* User Statistics Cards (waitlist count shares the grid) */}
+      <UserStatsCards ref={userStatsRef}>
+        <StatCard
+          label="Waitlist"
+          icon={UserPlus}
+          value={
+            loadingWaitlistCount ? (
+              <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+            ) : (
+              waitlistCount
+            )
+          }
+          hint={`${waitlistCount === 1 ? "User" : "Users"} waiting for platform access`}
+        />
+      </UserStatsCards>
 
       {/* Main Management Card with Tabs */}
-      <Card>
-        <CardHeader>
-          <CardTitle>User Management Tools</CardTitle>
-          <CardDescription>
-            Manage registered users and view waitlist submissions in a unified interface
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <UsersManagementTabs onUserChange={handleUserChange} />
-        </CardContent>
-      </Card>
-    </div>
+      <SectionCard
+        title="User Management Tools"
+        description="Manage registered users and view waitlist submissions in a unified interface"
+      >
+        <UsersManagementTabs onUserChange={handleUserChange} />
+      </SectionCard>
+    </PageContainer>
   );
 }

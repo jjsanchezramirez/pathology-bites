@@ -17,6 +17,7 @@ import { Input } from "@/shared/components/ui/input";
 import { Search, MessageSquare, Trash2 } from "lucide-react";
 import { Checkbox } from "@/shared/components/ui/checkbox";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { TableShell, Toolbar } from "@/shared/components/ui/page-layout";
 import { InquiryDetailsDialog } from "./inquiry-details-dialog";
 import { InquiryActionsDropdown } from "./inquiry-actions-dropdown";
 import { InquiryStatusBadge, getStatusSortOrder } from "./inquiry-status-badge";
@@ -215,7 +216,7 @@ export function GeneralInquiriesTable({
       <InquiryStatusBadge
         status={inquiry.status || "pending"}
         createdAt={inquiry.created_at}
-        className="text-[10px] px-1.5 py-0"
+        className="px-1.5 py-0 text-[10px]"
       />
     );
   };
@@ -255,10 +256,10 @@ export function GeneralInquiriesTable({
   if (loading) {
     return (
       <div className="space-y-4">
-        <div className="flex gap-4">
+        <Toolbar>
           <Skeleton className="h-10 flex-1" />
-        </div>
-        <div className="border rounded-lg">
+        </Toolbar>
+        <TableShell>
           <Table>
             <TableHeader>
               <TableRow>
@@ -267,7 +268,7 @@ export function GeneralInquiriesTable({
                 </TableHead>
                 <TableHead>Contact & Inquiry</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead>Created</TableHead>
+                <TableHead className="hidden md:table-cell">Created</TableHead>
                 <TableHead className="w-[100px]">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -286,7 +287,7 @@ export function GeneralInquiriesTable({
                   <TableCell>
                     <Skeleton className="h-4 w-16 rounded-full" />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <Skeleton className="h-4 w-20" />
                   </TableCell>
                   <TableCell>
@@ -296,7 +297,7 @@ export function GeneralInquiriesTable({
               ))}
             </TableBody>
           </Table>
-        </div>
+        </TableShell>
       </div>
     );
   }
@@ -305,26 +306,26 @@ export function GeneralInquiriesTable({
     <div className="space-y-4">
       {/* Filters and Bulk Actions */}
       <div className="space-y-4">
-        <div className="flex gap-4">
+        <Toolbar>
           <div className="relative flex-1">
-            <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search inquiries..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="pl-8"
+              className="pl-9"
             />
           </div>
-        </div>
+        </Toolbar>
 
         {/* Bulk Actions Bar */}
         {selectedInquiries.length > 0 && (
-          <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg border border-blue-200">
+          <div className="flex flex-wrap items-center gap-2 rounded-lg border border-blue-200 bg-blue-50 p-3">
             <span className="text-sm text-blue-800">
               {selectedInquiries.length} inquiry{selectedInquiries.length !== 1 ? "ies" : ""}{" "}
               selected
             </span>
-            <div className="flex gap-2 ml-auto">
+            <div className="ml-auto flex flex-wrap gap-2">
               <Button
                 size="sm"
                 variant="destructive"
@@ -340,7 +341,7 @@ export function GeneralInquiriesTable({
       </div>
 
       {/* Table */}
-      <div className="border rounded-lg">
+      <TableShell>
         <Table>
           <TableHeader>
             <TableRow>
@@ -356,14 +357,14 @@ export function GeneralInquiriesTable({
               </TableHead>
               <TableHead>Contact & Inquiry</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Created</TableHead>
+              <TableHead className="hidden md:table-cell">Created</TableHead>
               <TableHead className="w-[100px]">Actions</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredInquiries.length === 0 ? (
               <TableRow>
-                <TableCell colSpan={5} className="text-center py-12">
+                <TableCell colSpan={5} className="py-12 text-center">
                   <div className="flex flex-col items-center gap-3">
                     <MessageSquare className="h-12 w-12 text-muted-foreground/50" />
                     <div className="space-y-1">
@@ -394,9 +395,9 @@ export function GeneralInquiriesTable({
                     />
                   </TableCell>
                   <TableCell>
-                    <div className="space-y-1">
+                    <div className="min-w-0 space-y-1">
                       {/* Line 1: Name • Email */}
-                      <div className="text-sm">
+                      <div className="break-words text-sm">
                         <span className="font-medium">
                           {inquiry.first_name} {inquiry.last_name}
                         </span>
@@ -412,7 +413,9 @@ export function GeneralInquiriesTable({
                     </div>
                   </TableCell>
                   <TableCell>{getStatusBadge(inquiry)}</TableCell>
-                  <TableCell>{new Date(inquiry.created_at).toLocaleDateString()}</TableCell>
+                  <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
+                    {new Date(inquiry.created_at).toLocaleDateString()}
+                  </TableCell>
                   <TableCell>
                     <InquiryActionsDropdown
                       inquiry={inquiry}
@@ -426,7 +429,7 @@ export function GeneralInquiriesTable({
             )}
           </TableBody>
         </Table>
-      </div>
+      </TableShell>
 
       {/* Details Dialog */}
       <InquiryDetailsDialog

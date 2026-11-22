@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Button } from "@/shared/components/ui/button";
 
 import { Input } from "@/shared/components/ui/input";
@@ -232,22 +232,22 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
               </Button>
             </DialogTrigger>
             <DialogPortal>
-              <div className="fixed inset-0 z-50 flex items-center justify-center">
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
                 <div
                   className="fixed inset-0 bg-black/50 backdrop-blur-sm"
                   onClick={() => setShowImagePicker(false)}
                 />
-                <div className="relative bg-background border rounded-lg shadow-lg w-[1200px] max-w-[95vw] h-[75vh] flex flex-col overflow-hidden">
-                  <div className="p-6 border-b flex-shrink-0">
-                    <h2 className="text-xl font-semibold">
+                <div className="relative bg-background border rounded-lg shadow-lg w-[1200px] max-w-[calc(100vw-2rem)] h-[75vh] flex flex-col overflow-hidden">
+                  <div className="p-4 sm:p-6 border-b flex-shrink-0">
+                    <h2 className="text-lg font-semibold">
                       Select Images for {section === "stem" ? "Question Body" : "Explanation"}
                     </h2>
                   </div>
 
-                  <div className="p-6 space-y-4 flex flex-col flex-1 overflow-hidden">
+                  <div className="p-4 sm:p-6 space-y-4 flex flex-col flex-1 overflow-hidden">
                     {/* Search Controls */}
-                    <div className="flex gap-2 flex-shrink-0">
-                      <div className="relative flex-1">
+                    <div className="flex flex-wrap gap-2 flex-shrink-0">
+                      <div className="relative min-w-0 flex-1 basis-48">
                         <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                         <Input
                           placeholder="Search images..."
@@ -275,14 +275,14 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
 
                     {/* Image Grid - 6 columns with smaller thumbnails */}
                     <div
-                      className="grid grid-cols-6 gap-2 overflow-y-auto flex-1"
+                      className="grid grid-cols-3 gap-2 overflow-y-auto flex-1 sm:grid-cols-4 md:grid-cols-6"
                       style={{ minHeight: 0 }}
                     >
                       {availableImages.length === 0 && !loading ? (
-                        <div className="col-span-6 flex flex-col items-center justify-center h-full text-muted-foreground">
+                        <div className="col-span-full flex flex-col items-center justify-center h-full text-muted-foreground">
                           <ImageIcon className="h-12 w-12 mb-2 opacity-50" />
-                          <p>No images found</p>
-                          {searchTerm && <p className="text-sm">Try a different search term</p>}
+                          <p className="text-sm">No images found</p>
+                          {searchTerm && <p className="text-xs">Try a different search term</p>}
                         </div>
                       ) : (
                         availableImages.map((image) => {
@@ -325,7 +325,7 @@ function MediaSection({ images, section, maxImages, onImagesChange }: MediaSecti
                     </div>
 
                     {/* Action Buttons */}
-                    <div className="flex justify-end gap-2 pt-4 border-t">
+                    <div className="flex flex-wrap justify-end gap-2 pt-4 border-t">
                       <Button type="button" variant="outline" onClick={handleCancelSelection}>
                         Cancel
                       </Button>
@@ -362,78 +362,64 @@ export function ImageAttachmentsTab({
   const explanationImages = attachedImages.filter((img) => img.question_section === "explanation");
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Question Body Images */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ImageIcon className="h-5 w-5" />
+      <SectionCard
+        icon={ImageIcon}
+        title={
+          <>
             Question Body Images{" "}
             {isClinicalPathology && (
               <span className="text-sm font-normal text-muted-foreground">(Optional)</span>
             )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!isClinicalPathology && (
-            <p className="text-sm text-muted-foreground mb-4">
-              Add histological images, gross pathology images, or other visual content to the
-              question stem.
-            </p>
-          )}
-          {isClinicalPathology && (
-            <p className="text-sm text-muted-foreground mb-4">
-              Add laboratory data, graphs, flow cytometry plots, or other relevant visual aids
-              (optional for Clinical Pathology).
-            </p>
-          )}
-          <MediaSection
-            images={stemImages}
-            section="stem"
-            maxImages={5}
-            onImagesChange={(newImages) => {
-              const explanationImages = attachedImages.filter(
-                (img) => img.question_section === "explanation"
-              );
-              handleImagesChange([...newImages, ...explanationImages]);
-            }}
-          />
-        </CardContent>
-      </Card>
+          </>
+        }
+        description={
+          isClinicalPathology
+            ? "Add laboratory data, graphs, flow cytometry plots, or other relevant visual aids (optional for Clinical Pathology)."
+            : "Add histological images, gross pathology images, or other visual content to the question stem."
+        }
+      >
+        <MediaSection
+          images={stemImages}
+          section="stem"
+          maxImages={5}
+          onImagesChange={(newImages) => {
+            const explanationImages = attachedImages.filter(
+              (img) => img.question_section === "explanation"
+            );
+            handleImagesChange([...newImages, ...explanationImages]);
+          }}
+        />
+      </SectionCard>
 
       {/* Explanation Images */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <ImageIcon className="h-5 w-5" />
+      <SectionCard
+        icon={ImageIcon}
+        title={
+          <>
             Explanation Images{" "}
             {isClinicalPathology && (
               <span className="text-sm font-normal text-muted-foreground">(Optional)</span>
             )}
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          {!isClinicalPathology && (
-            <p className="text-sm text-muted-foreground mb-4">
-              Add images to support the teaching point or explanation of correct/incorrect answers.
-            </p>
-          )}
-          {isClinicalPathology && (
-            <p className="text-sm text-muted-foreground mb-4">
-              Add visual aids to support the teaching point (optional for Clinical Pathology).
-            </p>
-          )}
-          <MediaSection
-            images={explanationImages}
-            section="explanation"
-            maxImages={5}
-            onImagesChange={(newImages) => {
-              const stemImages = attachedImages.filter((img) => img.question_section === "stem");
-              handleImagesChange([...stemImages, ...newImages]);
-            }}
-          />
-        </CardContent>
-      </Card>
+          </>
+        }
+        description={
+          isClinicalPathology
+            ? "Add visual aids to support the teaching point (optional for Clinical Pathology)."
+            : "Add images to support the teaching point or explanation of correct/incorrect answers."
+        }
+      >
+        <MediaSection
+          images={explanationImages}
+          section="explanation"
+          maxImages={5}
+          onImagesChange={(newImages) => {
+            const stemImages = attachedImages.filter((img) => img.question_section === "stem");
+            handleImagesChange([...stemImages, ...newImages]);
+          }}
+        />
+      </SectionCard>
     </div>
   );
 }

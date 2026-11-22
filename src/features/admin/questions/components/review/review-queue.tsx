@@ -15,7 +15,16 @@ import {
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
 import { Input } from "@/shared/components/ui/input";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import {
+  PageContainer,
+  StatCard,
+  StatCardSkeleton,
+  StatGrid,
+  TableShell,
+  Toolbar,
+} from "@/shared/components/ui/page-layout";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import {
   Eye,
@@ -351,43 +360,26 @@ export function ReviewQueue() {
       (Date.now() - new Date(createdAt).getTime()) / (1000 * 60 * 60 * 24)
     );
     if (daysOld > 7) {
-      return (
-        <Badge variant="destructive" className="ml-2">
-          Urgent
-        </Badge>
-      );
+      return <Badge variant="destructive">Urgent</Badge>;
     } else if (daysOld > 3) {
-      return (
-        <Badge variant="secondary" className="ml-2">
-          Aging
-        </Badge>
-      );
+      return <Badge variant="secondary">Aging</Badge>;
     }
     return null;
   };
 
   if (loading) {
     return (
-      <div className="space-y-6">
-        <div>
-          <Skeleton className="h-8 w-64 mb-2" />
-          <Skeleton className="h-4 w-80" />
+      <PageContainer>
+        <div className="space-y-1">
+          <Skeleton className="h-8 w-64" />
+          <Skeleton className="h-4 w-80 max-w-full" />
         </div>
-        <div className="grid gap-4 md:grid-cols-3">
+        <StatGrid columns={3}>
           {Array.from({ length: 3 }).map((_, i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-4 rounded" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-16 mb-2" />
-                <Skeleton className="h-3 w-32" />
-              </CardContent>
-            </Card>
+            <StatCardSkeleton key={i} />
           ))}
-        </div>
-        <div className="space-y-3">
+        </StatGrid>
+        <div className="space-y-2">
           {Array.from({ length: 6 }).map((_, i) => (
             <Card key={i}>
               <CardContent className="p-4 space-y-2">
@@ -406,58 +398,43 @@ export function ReviewQueue() {
             </Card>
           ))}
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="space-y-6">
+    <PageContainer>
       {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">My Review Queue</h1>
-        <p className="text-muted-foreground mt-2">Questions assigned to you for review</p>
-      </div>
+      <PageHeader title="My Review Queue" description="Questions assigned to you for review" />
 
       {/* Stats Cards */}
-      <div className="grid gap-4 md:grid-cols-3">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Total Pending</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">{questions.length}</div>
-            <p className="text-xs text-muted-foreground">Questions awaiting review</p>
-          </CardContent>
-        </Card>
+      <StatGrid columns={3}>
+        <StatCard
+          label="Total Pending"
+          value={questions.length}
+          icon={Clock}
+          hint="Questions awaiting review"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Urgent</CardTitle>
-            <AlertCircle className="h-4 w-4 text-destructive" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
-              {
-                questions.filter((q) => {
-                  const daysOld = Math.floor(
-                    (Date.now() - new Date(q.created_at).getTime()) / (1000 * 60 * 60 * 24)
-                  );
-                  return daysOld > 7;
-                }).length
-              }
-            </div>
-            <p className="text-xs text-muted-foreground">Over 7 days old</p>
-          </CardContent>
-        </Card>
+        <StatCard
+          label="Urgent"
+          value={
+            questions.filter((q) => {
+              const daysOld = Math.floor(
+                (Date.now() - new Date(q.created_at).getTime()) / (1000 * 60 * 60 * 24)
+              );
+              return daysOld > 7;
+            }).length
+          }
+          icon={AlertCircle}
+          tone="danger"
+          hint="Over 7 days old"
+        />
 
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">Avg. Age</CardTitle>
-            <Clock className="h-4 w-4 text-muted-foreground" />
-          </CardHeader>
-          <CardContent>
-            <div className="text-2xl font-bold">
+        <StatCard
+          label="Avg. Age"
+          value={
+            <>
               {questions.length > 0
                 ? Math.floor(
                     questions.reduce((sum, q) => {
@@ -469,16 +446,17 @@ export function ReviewQueue() {
                   )
                 : 0}
               d
-            </div>
-            <p className="text-xs text-muted-foreground">Average wait time</p>
-          </CardContent>
-        </Card>
-      </div>
+            </>
+          }
+          icon={Clock}
+          hint="Average wait time"
+        />
+      </StatGrid>
 
       {/* Search, Bulk Actions, and Refresh */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="relative w-64">
+      <Toolbar className="sm:justify-between">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search questions..."
@@ -510,12 +488,12 @@ export function ReviewQueue() {
           <RefreshCw className={`h-4 w-4 mr-2 ${loading ? "animate-spin" : ""}`} />
           Refresh
         </Button>
-      </div>
+      </Toolbar>
 
       {/* Questions Table */}
-      <div className="rounded-md border bg-card">
+      <TableShell>
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader>
             <TableRow>
               <TableHead className="w-10">
                 <Checkbox
@@ -554,7 +532,7 @@ export function ReviewQueue() {
                   </TableCell>
                   <TableCell>
                     <div className="space-y-1.5">
-                      <div className="font-medium flex items-center">
+                      <div className="font-medium flex flex-wrap items-center gap-2">
                         {question.title}
                         {getAgeIndicator(question.created_at)}
                       </div>
@@ -600,7 +578,7 @@ export function ReviewQueue() {
                     </div>
                   </TableCell>
                   <TableCell className="text-right">
-                    <div className="flex items-center justify-end gap-2">
+                    <div className="flex flex-wrap items-center justify-end gap-2">
                       <Button variant="ghost" size="sm" onClick={() => handlePreview(question)}>
                         <Eye className="h-4 w-4 mr-1" />
                         Preview
@@ -628,7 +606,7 @@ export function ReviewQueue() {
             )}
           </TableBody>
         </Table>
-      </div>
+      </TableShell>
 
       {/* Dialogs */}
       {selectedQuestion && (
@@ -649,6 +627,6 @@ export function ReviewQueue() {
           )}
         </>
       )}
-    </div>
+    </PageContainer>
   );
 }

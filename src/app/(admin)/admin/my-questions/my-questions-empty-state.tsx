@@ -42,7 +42,7 @@ export function MyQuestionsEmptyState({
   return (
     <div className="text-center py-6">
       {config.icon}
-      <h3 className="text-lg font-medium mb-2">{config.heading}</h3>
+      <h3 className="mb-2 text-lg font-semibold">{config.heading}</h3>
       <p className="text-muted-foreground">
         {hasFilters ? "No questions match your filters" : config.message}
       </p>

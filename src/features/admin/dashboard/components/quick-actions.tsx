@@ -1,7 +1,7 @@
 "use client";
 
 // src/shared/components/layout/dashboard/quick-actions.tsx
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Badge } from "@/shared/components/ui/badge";
 import { ArrowRight, AlertCircle, Zap } from "lucide-react";
 import Link from "next/link";
@@ -23,39 +23,31 @@ export function QuickActionsCard({ actions }: QuickActionsProps) {
   });
 
   return (
-    <Card className="col-span-3">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Zap className="h-5 w-5" />
-          Quick Actions
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {filteredActions.map((action, index) => (
-            <Link key={index} href={action.href}>
-              <div className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors cursor-pointer group">
-                <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-medium">{action.title}</p>
-                    {action.urgent && <AlertCircle className="h-4 w-4 text-orange-500" />}
-                    {action.count !== undefined && (
-                      <Badge
-                        variant={action.urgent ? "destructive" : "secondary"}
-                        className="text-xs"
-                      >
-                        {action.count}
-                      </Badge>
-                    )}
-                  </div>
-                  <p className="text-sm text-muted-foreground">{action.description}</p>
+    <SectionCard title="Quick Actions" icon={Zap}>
+      <div className="space-y-2">
+        {filteredActions.map((action, index) => (
+          <Link key={index} href={action.href} className="block">
+            <div className="group flex cursor-pointer items-center justify-between gap-2 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50">
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="flex flex-wrap items-center gap-2">
+                  <p className="min-w-0 truncate text-sm font-medium">{action.title}</p>
+                  {action.urgent && <AlertCircle className="h-4 w-4 shrink-0 text-orange-500" />}
+                  {action.count !== undefined && (
+                    <Badge
+                      variant={action.urgent ? "destructive" : "secondary"}
+                      className="text-xs"
+                    >
+                      {action.count}
+                    </Badge>
+                  )}
                 </div>
-                <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
+                <p className="text-xs text-muted-foreground">{action.description}</p>
               </div>
-            </Link>
-          ))}
-        </div>
-      </CardContent>
-    </Card>
+              <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground transition-colors group-hover:text-foreground" />
+            </div>
+          </Link>
+        ))}
+      </div>
+    </SectionCard>
   );
 }

@@ -1,4 +1,6 @@
 import { Metadata } from "next";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { PageContainer } from "@/shared/components/ui/page-layout";
 import { RequirePermission } from "@/shared/components/auth/role-guard";
 import { PageErrorBoundary } from "@/shared/components/common";
 import { EditQuestionClient } from "./edit-question-client";
@@ -14,14 +16,14 @@ export default async function EditQuestionPage({ params }: { params: Promise<{ i
   return (
     <RequirePermission permission="questions.update">
       <PageErrorBoundary pageName="Edit Question" showHomeButton={true} showBackButton={true}>
-        <div className="space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">Edit Question</h1>
-            <p className="text-muted-foreground">Update question content, images, and metadata</p>
-          </div>
+        <PageContainer>
+          <PageHeader
+            title="Edit Question"
+            description="Update question content, images, and metadata"
+          />
 
           <EditQuestionClient questionId={id} />
-        </div>
+        </PageContainer>
       </PageErrorBoundary>
     </RequirePermission>
   );

@@ -24,8 +24,12 @@ export function EditTypeCard({
             Select the type of changes you're making to this published question
           </p>
         </div>
-        <RadioGroup value={updateType} onValueChange={onUpdateTypeChange} className="flex gap-4">
-          <div className="flex items-center space-x-2">
+        <RadioGroup
+          value={updateType}
+          onValueChange={onUpdateTypeChange}
+          className="flex flex-wrap gap-x-4 gap-y-2"
+        >
+          <div className="flex items-center gap-2">
             <RadioGroupItem value="patch" id="patch" disabled={isPatchEditDisabled} />
             <Label
               htmlFor="patch"
@@ -34,13 +38,13 @@ export function EditTypeCard({
               Patch <span className="text-xs text-muted-foreground">(typos, formatting)</span>
             </Label>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <RadioGroupItem value="minor" id="minor" />
             <Label htmlFor="minor" className="font-normal cursor-pointer">
               Minor <span className="text-xs text-muted-foreground">(content changes)</span>
             </Label>
           </div>
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center gap-2">
             <RadioGroupItem value="major" id="major" />
             <Label htmlFor="major" className="font-normal cursor-pointer">
               Major <span className="text-xs text-muted-foreground">(answer change, overhaul)</span>

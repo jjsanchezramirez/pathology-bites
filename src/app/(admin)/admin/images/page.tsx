@@ -7,14 +7,8 @@ import {
   StorageStatsCards,
   StorageStatsRef,
 } from "@/features/admin/images/components/storage-stats";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
 import { PageHeader } from "@/shared/components/ui/page-header";
+import { PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
 
 export default function ImagesPage() {
   const storageStatsRef = useRef<StorageStatsRef>(null);
@@ -25,8 +19,7 @@ export default function ImagesPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <PageContainer>
       <PageHeader
         title="Image Library"
         description="Manage and organize pathology images, diagrams, and illustrations"
@@ -35,19 +28,12 @@ export default function ImagesPage() {
       {/* Storage Statistics Cards */}
       <StorageStatsCards ref={storageStatsRef} />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Image Management</CardTitle>
-          <CardDescription>
-            Upload, edit, and organize your image collection. All images will be automatically
-            compressed for optimal performance. Use the search to find images by name, description,
-            or source reference.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <ImagesTable onImageChange={handleImageChange} />
-        </CardContent>
-      </Card>
-    </div>
+      <SectionCard
+        title="Image Management"
+        description="Upload, edit, and organize your image collection. All images are compressed automatically. Search by name, description, or source reference."
+      >
+        <ImagesTable onImageChange={handleImageChange} />
+      </SectionCard>
+    </PageContainer>
   );
 }

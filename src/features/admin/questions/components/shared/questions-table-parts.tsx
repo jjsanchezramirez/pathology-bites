@@ -1,6 +1,7 @@
 "use client";
 
 import { TableCell, TableRow } from "@/shared/components/ui/table";
+import { Toolbar } from "@/shared/components/ui/page-layout";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Badge } from "@/shared/components/ui/badge";
@@ -92,8 +93,8 @@ export function TableControls({
   return (
     <div className="space-y-4">
       {/* Search and Filters Row */}
-      <div className="flex gap-3 items-center flex-wrap">
-        <div className="relative flex-1 min-w-[200px]">
+      <Toolbar>
+        <div className="relative flex-1 sm:min-w-[200px]">
           <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
             placeholder="Search by title or stem..."
@@ -102,7 +103,7 @@ export function TableControls({
           />
         </div>
         <Select value={categoryFilter} onValueChange={onCategoryChange}>
-          <SelectTrigger className="w-[160px]">
+          <SelectTrigger className="w-full sm:w-[160px]">
             <SelectValue placeholder="Category" />
           </SelectTrigger>
           <SelectContent className="max-h-[300px]">
@@ -115,7 +116,7 @@ export function TableControls({
           </SelectContent>
         </Select>
         <Select value={difficultyFilter} onValueChange={onDifficultyChange}>
-          <SelectTrigger className="w-[140px]">
+          <SelectTrigger className="w-full sm:w-[140px]">
             <SelectValue placeholder="Difficulty" />
           </SelectTrigger>
           <SelectContent>
@@ -126,7 +127,7 @@ export function TableControls({
           </SelectContent>
         </Select>
         <Select value={statusFilter} onValueChange={onStatusChange}>
-          <SelectTrigger className="w-[120px]">
+          <SelectTrigger className="w-full sm:w-[120px]">
             <SelectValue placeholder="Status" />
           </SelectTrigger>
           <SelectContent>
@@ -141,7 +142,7 @@ export function TableControls({
           </SelectContent>
         </Select>
         <Select value={questionSetFilter} onValueChange={onQuestionSetChange}>
-          <SelectTrigger className="w-[180px]">
+          <SelectTrigger className="w-full sm:w-[180px]">
             <SelectValue placeholder="Question Set" />
           </SelectTrigger>
           <SelectContent>
@@ -157,12 +158,12 @@ export function TableControls({
           <Download className="h-4 w-4 mr-2" />
           Export All
         </Button>
-      </div>
+      </Toolbar>
 
       {/* Bulk Operations Row - Only shown for admins when questions are selected */}
       {isAdmin && selectedQuestions.length > 0 && (
-        <div className="flex gap-2 items-center p-3 bg-muted/50 rounded-lg border">
-          <span className="text-sm font-medium mr-2">{selectedQuestions.length} selected</span>
+        <div className="flex flex-wrap gap-2 items-center p-3 bg-muted/50 rounded-lg border">
+          <span className="text-sm font-medium">{selectedQuestions.length} selected</span>
           <Button variant="outline" size="sm" onClick={() => onBulkOperation("submit_for_review")}>
             <Send className="h-4 w-4 mr-2" />
             Submit for Review
@@ -240,8 +241,8 @@ export function TablePagination({
   const pageNumbers = getPageNumbers(currentPage, totalPages);
 
   return (
-    <div className="flex justify-between items-center">
-      <div className="flex items-center gap-4">
+    <div className="flex flex-wrap justify-between items-center gap-2">
+      <div className="flex flex-wrap items-center gap-2 sm:gap-4">
         <p className="text-sm text-muted-foreground">
           Showing {totalItems > 0 ? currentPage * pageSize + 1 : 0} to{" "}
           {Math.min((currentPage + 1) * pageSize, totalItems)} of {totalItems} questions
@@ -261,7 +262,7 @@ export function TablePagination({
           </select>
         </div>
       </div>
-      <div className="flex items-center gap-1">
+      <div className="flex flex-wrap items-center gap-1">
         <Button
           variant="outline"
           size="sm"
@@ -427,17 +428,17 @@ export function QuestionRow({
   return (
     <TableRow key={question.id}>
       {isAdmin && (
-        <TableCell className="text-center">
+        <TableCell className="w-10 px-2 text-center">
           <Checkbox
             checked={isSelected}
             onCheckedChange={(checked) => onSelect(question.id, checked as boolean)}
           />
         </TableCell>
       )}
-      <TableCell className="text-center">
+      <TableCell className="w-8 px-1 text-center">
         {(question.flag_count || 0) > 0 && <Flag className="h-4 w-4 text-red-500" />}
       </TableCell>
-      <TableCell className="min-w-[320px]">
+      <TableCell className="min-w-[240px] sm:min-w-[320px]">
         <div className="flex-1 min-w-0 space-y-1.5">
           <p className="line-clamp-2 text-sm font-medium">{question.title}</p>
           <div className="flex items-center flex-wrap gap-1.5">
@@ -478,7 +479,7 @@ export function QuestionRow({
           </div>
         </div>
       </TableCell>
-      <TableCell className="text-center">
+      <TableCell className="w-10 px-2 text-center">
         {onPreview && (
           <Button
             variant="ghost"

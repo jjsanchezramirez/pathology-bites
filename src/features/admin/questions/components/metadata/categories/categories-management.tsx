@@ -11,6 +11,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { TableShell, Toolbar } from "@/shared/components/ui/page-layout";
 import { Input } from "@/shared/components/ui/input";
 import { Button } from "@/shared/components/ui/button";
 import { Checkbox } from "@/shared/components/ui/checkbox";
@@ -242,9 +243,9 @@ export function CategoriesManagement() {
   return (
     <div className="space-y-4">
       {/* Header with search and create button */}
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4 flex-1">
-          <div className="relative w-64">
+      <Toolbar className="sm:justify-between">
+        <div className="flex flex-1 flex-wrap items-center gap-2">
+          <div className="relative w-full sm:w-64">
             <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Search categories..."
@@ -261,7 +262,7 @@ export function CategoriesManagement() {
             Refresh
           </Button>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {selectedCategoryIds.size > 0 && (
             <>
               <Button
@@ -289,18 +290,20 @@ export function CategoriesManagement() {
             Create Category
           </Button>
         </div>
-      </div>
+      </Toolbar>
 
       {/* Stats */}
-      <div className="flex items-center gap-4 text-sm text-muted-foreground">
+      <div className="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
         <span>Total: {totalCategories} categories</span>
         {searchTerm && <span>Showing results for "{searchTerm}"</span>}
       </div>
 
       {/* Table */}
-      <div className="rounded-md border bg-card">
+      <TableShell
+        footer={<CategoriesPagination page={page} totalPages={totalPages} onPageChange={setPage} />}
+      >
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader>
             <TableRow>
               <TableHead className="w-[50px]">
                 <Checkbox
@@ -311,8 +314,8 @@ export function CategoriesManagement() {
               </TableHead>
               <TableHead>Name</TableHead>
               <TableHead>Short Form</TableHead>
-              <TableHead>Parent</TableHead>
-              <TableHead>Questions</TableHead>
+              <TableHead className="hidden md:table-cell">Parent</TableHead>
+              <TableHead className="hidden md:table-cell">Questions</TableHead>
               <TableHead className="w-[70px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -349,10 +352,7 @@ export function CategoriesManagement() {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      {/* Pagination */}
-      <CategoriesPagination page={page} totalPages={totalPages} onPageChange={setPage} />
+      </TableShell>
 
       {/* Delete Dialog */}
       <DeleteCategoryDialog

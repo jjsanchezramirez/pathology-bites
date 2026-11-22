@@ -14,7 +14,6 @@ import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Loader2, CheckCircle, XCircle, AlertCircle, MessageSquare } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
 import { createClient } from "@/shared/services/client";
 import { log } from "@/shared/utils/logging";
 
@@ -142,7 +141,7 @@ export function ReviewActionDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[600px]">
+      <DialogContent className="max-h-[90vh] overflow-y-auto sm:max-w-[600px]">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             {action === "approve" ? (
@@ -173,33 +172,27 @@ export function ReviewActionDialog({
 
           {/* Resubmission Notes - Show if creator provided change notes */}
           {resubmissionNotes && (
-            <Card className="border-blue-200 bg-blue-50 dark:bg-blue-950/30 dark:border-blue-800">
-              <CardHeader className="pb-2">
-                <CardTitle className="text-sm font-medium text-blue-900 dark:text-blue-100 flex items-center gap-2">
-                  <MessageSquare className="h-4 w-4" />
-                  Creator's Changes Summary
-                </CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-sm text-blue-800 dark:text-blue-300 whitespace-pre-wrap">
-                  {resubmissionNotes}
-                </p>
-                <p className="text-xs text-blue-600 dark:text-blue-400 mt-2">
-                  The creator provided this summary of changes made since the last review.
-                </p>
-              </CardContent>
-            </Card>
+            <div className="space-y-2 rounded-lg border border-blue-200 bg-blue-50 p-4 dark:border-blue-800 dark:bg-blue-950/30">
+              <p className="flex items-center gap-2 text-sm font-medium text-blue-900 dark:text-blue-100">
+                <MessageSquare className="h-4 w-4" />
+                Creator's Changes Summary
+              </p>
+              <p className="text-sm text-blue-800 dark:text-blue-300 whitespace-pre-wrap">
+                {resubmissionNotes}
+              </p>
+              <p className="text-xs text-blue-600 dark:text-blue-400">
+                The creator provided this summary of changes made since the last review.
+              </p>
+            </div>
           )}
 
           {loadingResubmissionNotes && (
-            <Card className="border-gray-200 bg-gray-50">
-              <CardContent className="pt-6">
-                <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-gray-600"></div>
-                  Loading change notes...
-                </div>
-              </CardContent>
-            </Card>
+            <div className="rounded-lg border bg-muted/50 p-4">
+              <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                <Loader2 className="h-4 w-4 animate-spin" />
+                Loading change notes...
+              </div>
+            </div>
           )}
 
           {/* Feedback (required for rejection) */}
@@ -226,7 +219,7 @@ export function ReviewActionDialog({
           {/* Confirmation Warning */}
           {action === "approve" && (
             <div className="rounded-lg bg-green-50 dark:bg-green-950 p-4 border border-green-200 dark:border-green-800">
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <CheckCircle className="h-5 w-5 text-green-600 flex-shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-green-900 dark:text-green-100">
@@ -243,7 +236,7 @@ export function ReviewActionDialog({
 
           {action === "reject" && (
             <div className="rounded-lg bg-amber-50 dark:bg-amber-950 p-4 border border-amber-200 dark:border-amber-800">
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <AlertCircle className="h-5 w-5 text-amber-600 flex-shrink-0 mt-0.5" />
                 <div className="space-y-1">
                   <p className="text-sm font-medium text-amber-900 dark:text-amber-100">

@@ -4,7 +4,8 @@ import { useState } from "react";
 import { Input } from "@/shared/components/ui/input";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Label } from "@/shared/components/ui/label";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Sparkles, Loader2, RefreshCw } from "lucide-react";
@@ -172,10 +173,10 @@ export function StepContentEdit({
   };
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Question Title */}
-      <div className="space-y-2.5">
-        <Label htmlFor="title" className="text-base font-semibold">
+      <div className="space-y-2">
+        <Label htmlFor="title" className="font-semibold">
           Question Title
         </Label>
         <Input
@@ -183,13 +184,12 @@ export function StepContentEdit({
           value={formState.title}
           onChange={(e) => updateFormState({ title: e.target.value })}
           placeholder="Brief descriptive title for the question"
-          className="text-base"
         />
       </div>
 
       {/* Question Stem */}
-      <div className="space-y-2.5">
-        <Label htmlFor="stem" className="text-base font-semibold">
+      <div className="space-y-2">
+        <Label htmlFor="stem" className="font-semibold">
           Question Stem
         </Label>
         <Textarea
@@ -198,14 +198,14 @@ export function StepContentEdit({
           onChange={(e) => updateFormState({ stem: e.target.value })}
           placeholder="The main question text..."
           rows={6}
-          className="text-base resize-none"
+          className="resize-none"
         />
       </div>
 
       {/* Answer Options */}
-      <div className="space-y-3">
-        <Label className="text-base font-semibold">Answer Options</Label>
-        <div className="space-y-3">
+      <div className="space-y-2">
+        <Label className="font-semibold">Answer Options</Label>
+        <div className="space-y-2">
           {formState.answerOptions.map((option, index) => (
             <Card
               key={index}
@@ -215,9 +215,9 @@ export function StepContentEdit({
                   : "border-border hover:border-muted-foreground/30"
               }`}
             >
-              <CardContent className="p-4 space-y-3">
+              <CardContent className="p-4 space-y-2">
                 {/* Option Row */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <input
                     type="radio"
                     name="correct-answer"
@@ -226,7 +226,7 @@ export function StepContentEdit({
                     className="h-5 w-5 text-primary focus:ring-primary cursor-pointer"
                   />
                   <Label
-                    className="text-sm font-semibold min-w-[70px] cursor-pointer"
+                    className="text-sm font-medium shrink-0 sm:min-w-[70px] cursor-pointer"
                     onClick={() => updateAnswerOption(index, "is_correct", true)}
                   >
                     Option {String.fromCharCode(65 + index)}
@@ -235,18 +235,18 @@ export function StepContentEdit({
                     value={option.text}
                     onChange={(e) => updateAnswerOption(index, "text", e.target.value)}
                     placeholder="Answer option text..."
-                    className="flex-1"
+                    className="min-w-0 flex-1"
                   />
                   {option.is_correct && (
-                    <Badge variant="default" className="ml-2 bg-primary">
+                    <Badge variant="default" className="shrink-0 bg-primary">
                       Correct
                     </Badge>
                   )}
                 </div>
 
                 {/* Explanation Row */}
-                <div className="flex items-start gap-3 pl-8">
-                  <Label className="text-xs text-muted-foreground min-w-[70px] pt-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:pl-8">
+                  <Label className="text-xs text-muted-foreground sm:min-w-[70px] sm:pt-2">
                     Explanation
                   </Label>
                   <Textarea
@@ -254,7 +254,7 @@ export function StepContentEdit({
                     onChange={(e) => updateAnswerOption(index, "explanation", e.target.value)}
                     placeholder="Explanation for this option..."
                     rows={2}
-                    className="flex-1 text-sm resize-none"
+                    className="min-w-0 flex-1 text-sm resize-none"
                   />
                 </div>
               </CardContent>
@@ -264,8 +264,8 @@ export function StepContentEdit({
       </div>
 
       {/* Teaching Point */}
-      <div className="space-y-2.5">
-        <Label htmlFor="teaching_point" className="text-base font-semibold">
+      <div className="space-y-2">
+        <Label htmlFor="teaching_point" className="font-semibold">
           Teaching Point
         </Label>
         <Textarea
@@ -279,9 +279,9 @@ export function StepContentEdit({
       </div>
 
       {/* References */}
-      <div className="space-y-2.5">
-        <div className="flex items-center justify-between">
-          <Label htmlFor="question_references" className="text-base font-semibold">
+      <div className="space-y-2">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <Label htmlFor="question_references" className="font-semibold">
             References <span className="text-muted-foreground font-normal">(Optional)</span>
           </Label>
           <Button
@@ -307,55 +307,47 @@ export function StepContentEdit({
       </div>
 
       {/* AI Enhancement Section */}
-      <div className="border-t pt-8 mt-8">
-        <Card className="bg-primary/5 border-primary/20">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Enhance with AI
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <p className="text-sm text-muted-foreground">
-              Let AI improve your question's clarity, accuracy, and pedagogical value. The AI will
-              use the context from your educational content to enhance the question.
-            </p>
+      <div className="border-t pt-6">
+        <SectionCard
+          className="bg-primary/5 border-primary/20"
+          title="Enhance with AI"
+          icon={Sparkles}
+          description="Let AI improve your question's clarity, accuracy, and pedagogical value. The AI will use the context from your educational content to enhance the question."
+        >
+          <div className="space-y-2">
+            <Label htmlFor="enhancement-request" className="text-sm font-medium">
+              Enhancement Request{" "}
+              <span className="text-muted-foreground font-normal">(Optional)</span>
+            </Label>
+            <Textarea
+              id="enhancement-request"
+              placeholder="e.g., 'Make the question more challenging', 'Focus on differential diagnosis', 'Simplify the language'"
+              value={enhancementRequest}
+              onChange={(e) => setEnhancementRequest(e.target.value)}
+              rows={2}
+              className="resize-none text-sm"
+            />
+          </div>
 
-            <div className="space-y-2.5">
-              <Label htmlFor="enhancement-request" className="text-sm font-medium">
-                Enhancement Request{" "}
-                <span className="text-muted-foreground font-normal">(Optional)</span>
-              </Label>
-              <Textarea
-                id="enhancement-request"
-                placeholder="e.g., 'Make the question more challenging', 'Focus on differential diagnosis', 'Simplify the language'"
-                value={enhancementRequest}
-                onChange={(e) => setEnhancementRequest(e.target.value)}
-                rows={2}
-                className="resize-none text-sm"
-              />
-            </div>
-
-            <Button
-              onClick={handleAIEnhancement}
-              disabled={isEnhancing}
-              className="w-full"
-              variant="default"
-            >
-              {isEnhancing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Enhancing...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Enhance Question
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
+          <Button
+            onClick={handleAIEnhancement}
+            disabled={isEnhancing}
+            className="w-full"
+            variant="default"
+          >
+            {isEnhancing ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Enhancing...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4 mr-2" />
+                Enhance Question
+              </>
+            )}
+          </Button>
+        </SectionCard>
       </div>
 
       {/* Fetch References Dialog */}

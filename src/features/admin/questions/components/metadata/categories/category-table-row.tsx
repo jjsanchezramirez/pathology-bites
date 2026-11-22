@@ -60,7 +60,7 @@ export function CategoryTableRow({
           <span className="text-muted-foreground">-</span>
         )}
       </TableCell>
-      <TableCell>
+      <TableCell className="hidden md:table-cell">
         {category.parent_short_form ? (
           <CategoryBadge
             category={{
@@ -81,7 +81,7 @@ export function CategoryTableRow({
           <span className="text-muted-foreground">-</span>
         )}
       </TableCell>
-      <TableCell>
+      <TableCell className="hidden md:table-cell">
         <Badge
           variant="outline"
           className="bg-slate-100 text-slate-800 border-slate-200 dark:bg-slate-900/20 dark:text-slate-300 dark:border-slate-800"

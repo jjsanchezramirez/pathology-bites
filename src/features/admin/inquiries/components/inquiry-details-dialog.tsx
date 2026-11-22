@@ -12,8 +12,7 @@ import { Badge } from "@/shared/components/ui/badge";
 import { Button } from "@/shared/components/ui/button";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Label } from "@/shared/components/ui/label";
-
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Mail, Calendar, User, Send, MessageSquare } from "lucide-react";
 import { useState } from "react";
 import { toast } from "@/shared/utils/ui/toast";
@@ -108,130 +107,106 @@ export function InquiryDetailsDialog({ inquiry, open, onOpenChange }: InquiryDet
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-6xl max-h-[85vh] overflow-y-auto">
-        <DialogHeader className="space-y-3">
-          <DialogTitle className="flex items-center gap-3 text-xl">
-            <MessageSquare className="h-6 w-6 text-primary" />
+      <DialogContent className="max-h-[85vh] max-w-[calc(100vw-2rem)] overflow-y-auto sm:max-w-3xl">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <MessageSquare className="h-5 w-5 text-primary" />
             Inquiry Details
           </DialogTitle>
-          <DialogDescription className="text-base">
-            Review and respond to this user inquiry
-          </DialogDescription>
+          <DialogDescription>Review and respond to this user inquiry</DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-6 mt-6">
+        <div className="min-w-0 space-y-6">
           {/* Header with Type and Status */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div className="flex flex-wrap items-center gap-2">
               <Badge className={getTypeColor(inquiry.request_type)} variant="outline">
                 {inquiry.request_type === "general" ? "General Inquiry" : "Technical Support"}
               </Badge>
               <InquiryStatusBadge status={inquiry.status} />
             </div>
-            <span className="text-sm text-muted-foreground flex items-center gap-1">
+            <span className="flex items-center gap-2 text-xs text-muted-foreground">
               <Calendar className="h-4 w-4" />
               {new Date(inquiry.created_at).toLocaleDateString()}
             </span>
           </div>
 
           {/* Contact Information Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <User className="h-5 w-5" />
-                Contact Information
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium text-muted-foreground">Name</Label>
-                  <p className="text-base font-medium">
-                    {inquiry.first_name} {inquiry.last_name}
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  <Label className="text-sm font-medium text-muted-foreground">Email</Label>
-                  <p className="text-base font-medium text-primary">{inquiry.email}</p>
-                </div>
-
-                {inquiry.organization && (
-                  <div className="space-y-1 md:col-span-2">
-                    <Label className="text-sm font-medium text-muted-foreground">
-                      Organization
-                    </Label>
-                    <p className="text-base font-medium">{inquiry.organization}</p>
-                  </div>
-                )}
-
-                <div className="space-y-1 md:col-span-2">
-                  <Label className="text-sm font-medium text-muted-foreground">Submitted</Label>
-                  <p className="text-base font-medium">
-                    {new Date(inquiry.created_at).toLocaleString()}
-                  </p>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Inquiry Message Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <MessageSquare className="h-5 w-5" />
-                Inquiry Message
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <div className="bg-muted/30 p-4 rounded-lg border">
-                <p className="text-base leading-relaxed whitespace-pre-wrap">{inquiry.inquiry}</p>
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Response Section Card */}
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg flex items-center gap-2">
-                <Send className="h-5 w-5" />
-                Send Response
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="response" className="text-sm font-medium">
-                  Your Response
-                </Label>
-                <Textarea
-                  id="response"
-                  placeholder="Type your response here..."
-                  value={response}
-                  onChange={(e) => setResponse(e.target.value)}
-                  rows={6}
-                  className="resize-none"
-                />
-                <p className="text-sm text-muted-foreground flex items-center gap-1">
-                  <Mail className="h-4 w-4" />
-                  This response will be sent to {inquiry.email}
+          <SectionCard title="Contact Information" icon={User}>
+            <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+              <div className="min-w-0 space-y-1">
+                <Label className="text-xs text-muted-foreground">Name</Label>
+                <p className="text-sm font-medium">
+                  {inquiry.first_name} {inquiry.last_name}
                 </p>
               </div>
-            </CardContent>
-          </Card>
+
+              <div className="min-w-0 space-y-1">
+                <Label className="text-xs text-muted-foreground">Email</Label>
+                <p className="break-all text-sm font-medium text-primary">{inquiry.email}</p>
+              </div>
+
+              {inquiry.organization && (
+                <div className="min-w-0 space-y-1 md:col-span-2">
+                  <Label className="text-xs text-muted-foreground">Organization</Label>
+                  <p className="text-sm font-medium">{inquiry.organization}</p>
+                </div>
+              )}
+
+              <div className="min-w-0 space-y-1 md:col-span-2">
+                <Label className="text-xs text-muted-foreground">Submitted</Label>
+                <p className="text-sm font-medium">
+                  {new Date(inquiry.created_at).toLocaleString()}
+                </p>
+              </div>
+            </div>
+          </SectionCard>
+
+          {/* Inquiry Message Card */}
+          <SectionCard title="Inquiry Message" icon={MessageSquare}>
+            <div className="rounded-lg border bg-muted/30 p-4">
+              <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                {inquiry.inquiry}
+              </p>
+            </div>
+          </SectionCard>
+
+          {/* Response Section Card */}
+          <SectionCard title="Send Response" icon={Send}>
+            <div className="space-y-2">
+              <Label htmlFor="response" className="text-sm font-medium">
+                Your Response
+              </Label>
+              <Textarea
+                id="response"
+                placeholder="Type your response here..."
+                value={response}
+                onChange={(e) => setResponse(e.target.value)}
+                rows={6}
+                className="resize-none"
+              />
+              <p className="flex items-center gap-2 text-xs text-muted-foreground">
+                <Mail className="h-4 w-4 shrink-0" />
+                <span className="min-w-0 break-all">
+                  This response will be sent to {inquiry.email}
+                </span>
+              </p>
+            </div>
+          </SectionCard>
 
           {/* Actions */}
-          <div className="flex justify-end gap-3 pt-2">
-            <Button variant="outline" onClick={() => onOpenChange(false)} className="px-6">
+          <div className="flex flex-wrap justify-end gap-2">
+            <Button variant="outline" onClick={() => onOpenChange(false)}>
               Close
             </Button>
             <Button
               onClick={handleSendResponse}
               disabled={!response.trim() || sending}
-              className="px-6 flex items-center gap-2"
+              className="flex items-center gap-2"
             >
               {sending ? (
                 <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                  <div className="h-4 w-4 animate-spin rounded-full border-b-2 border-white"></div>
                   Sending...
                 </>
               ) : (

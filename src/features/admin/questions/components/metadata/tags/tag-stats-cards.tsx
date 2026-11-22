@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { StatCard, StatCardSkeleton, StatGrid } from "@/shared/components/ui/page-layout";
 import { Tag, TagIcon, AlertCircle, TrendingUp } from "lucide-react";
 
 interface TagStatsCardsProps {
@@ -41,78 +41,47 @@ export function TagStatsCards({ tags, totalTags, loading = false }: TagStatsCard
 
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      <StatGrid>
         {Array.from({ length: 4 }).map((_, idx) => (
-          <Card key={idx}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <div className="h-4 w-24 bg-muted rounded animate-pulse" />
-              <div className="h-4 w-4 bg-muted rounded animate-pulse" />
-            </CardHeader>
-            <CardContent>
-              <div className="h-8 w-16 bg-muted rounded animate-pulse mb-2" />
-              <div className="h-3 w-32 bg-muted rounded animate-pulse" />
-            </CardContent>
-          </Card>
+          <StatCardSkeleton key={idx} />
         ))}
-      </div>
+      </StatGrid>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      {/* Total Tags Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Tags</CardTitle>
-          <Tag className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.total}</div>
-          <p className="text-xs text-muted-foreground">
-            {stats.used} used, {stats.unused} unused
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Unused Tags Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Unused Tags</CardTitle>
-          <AlertCircle className="h-4 w-4 text-amber-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-amber-600">{stats.unused}</div>
-          <p className="text-xs text-muted-foreground">{stats.unusedPercentage}% of all tags</p>
-        </CardContent>
-      </Card>
-
-      {/* Most Used Tag Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Most Used Tag</CardTitle>
-          <TrendingUp className="h-4 w-4 text-green-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-lg font-bold text-green-600 truncate" title={stats.mostUsed.name}>
+    <StatGrid>
+      <StatCard
+        label="Total Tags"
+        value={stats.total}
+        icon={Tag}
+        hint={`${stats.used} used, ${stats.unused} unused`}
+      />
+      <StatCard
+        label="Unused Tags"
+        value={stats.unused}
+        icon={AlertCircle}
+        tone="warning"
+        hint={`${stats.unusedPercentage}% of all tags`}
+      />
+      <StatCard
+        label="Most Used Tag"
+        value={
+          <span className="block truncate" title={stats.mostUsed.name}>
             {stats.mostUsed.name}
-          </div>
-          <p className="text-xs text-muted-foreground">
-            {stats.mostUsed.question_count || 0} questions
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Average Usage Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Average Usage</CardTitle>
-          <TagIcon className="h-4 w-4 text-blue-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-blue-600">{stats.avgUsage}</div>
-          <p className="text-xs text-muted-foreground">Questions per used tag</p>
-        </CardContent>
-      </Card>
-    </div>
+          </span>
+        }
+        icon={TrendingUp}
+        tone="success"
+        hint={`${stats.mostUsed.question_count || 0} questions`}
+      />
+      <StatCard
+        label="Average Usage"
+        value={stats.avgUsage}
+        icon={TagIcon}
+        tone="info"
+        hint="Questions per used tag"
+      />
+    </StatGrid>
   );
 }

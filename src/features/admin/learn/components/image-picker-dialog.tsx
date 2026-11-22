@@ -89,14 +89,14 @@ export function ImagePickerDialog({
       <DialogPortal>
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={handleCancel} />
-          <div className="relative bg-background border rounded-lg shadow-lg w-[1200px] max-w-[95vw] h-[75vh] flex flex-col overflow-hidden">
-            <div className="p-6 border-b flex-shrink-0">
-              <h2 className="text-xl font-semibold">Select Images</h2>
+          <div className="relative flex h-[75vh] w-[1200px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-lg border bg-background shadow-lg">
+            <div className="shrink-0 border-b p-4 sm:p-6">
+              <h2 className="text-lg font-semibold">Select Images</h2>
             </div>
 
-            <div className="p-6 space-y-4 flex flex-col flex-1 overflow-hidden">
-              <div className="flex gap-2 flex-shrink-0">
-                <div className="relative flex-1">
+            <div className="flex flex-1 flex-col space-y-4 overflow-hidden p-4 sm:p-6">
+              <div className="flex shrink-0 flex-wrap gap-2">
+                <div className="relative min-w-0 flex-1 basis-48">
                   <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                   <Input
                     placeholder="Search images..."
@@ -123,13 +123,13 @@ export function ImagePickerDialog({
               </div>
 
               <div
-                className="grid grid-cols-6 gap-2 overflow-y-auto flex-1"
+                className="grid flex-1 grid-cols-3 gap-2 overflow-y-auto sm:grid-cols-4 md:grid-cols-6"
                 style={{ minHeight: 0 }}
               >
                 {availableImages.length === 0 && !loading ? (
-                  <div className="col-span-6 flex flex-col items-center justify-center h-full text-muted-foreground">
-                    <ImageIcon className="h-12 w-12 mb-2 opacity-50" />
-                    <p>No images found</p>
+                  <div className="col-span-full flex h-full flex-col items-center justify-center text-muted-foreground">
+                    <ImageIcon className="mb-2 h-10 w-10 opacity-50" />
+                    <p className="text-sm font-medium">No images found</p>
                     {searchTerm && <p className="text-sm">Try a different search term</p>}
                   </div>
                 ) : (
@@ -170,7 +170,7 @@ export function ImagePickerDialog({
                 )}
               </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t">
+              <div className="flex shrink-0 flex-wrap justify-end gap-2 border-t pt-4">
                 <Button variant="outline" onClick={handleCancel}>
                   Cancel
                 </Button>
