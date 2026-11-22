@@ -2,8 +2,12 @@
 
 // Simplified storage statistics cards for image management
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Skeleton } from "@/shared/components/ui/skeleton";
+import {
+  SectionCard,
+  StatCard,
+  StatCardSkeleton,
+  StatGrid,
+} from "@/shared/components/ui/page-layout";
 import { Images, ImageOff, Trash2, Database } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
 import { toast } from "@/shared/utils/ui/toast";
@@ -121,89 +125,58 @@ export const StorageStatsCards = forwardRef<StorageStatsRef>(
 
     if (loading) {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <StatGrid>
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i}>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <Skeleton className="h-4 w-24" />
-                <Skeleton className="h-4 w-4 rounded" />
-              </CardHeader>
-              <CardContent>
-                <Skeleton className="h-8 w-16 mb-2" />
-                <Skeleton className="h-3 w-32" />
-              </CardContent>
-            </Card>
+            <StatCardSkeleton key={i} />
           ))}
-        </div>
+        </StatGrid>
       );
     }
 
     if (!stats) {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          <Card>
-            <CardContent className="p-6">
-              <p className="text-muted-foreground">Failed to load storage statistics</p>
-            </CardContent>
-          </Card>
-        </div>
+        <SectionCard>
+          <p className="text-sm text-muted-foreground">Failed to load storage statistics</p>
+        </SectionCard>
       );
     }
 
     return (
       <>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-          {/* Total Images Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Total Images</CardTitle>
-              <Images className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.total_images}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.formatted_total_size} total size
-              </p>
-            </CardContent>
-          </Card>
+        <StatGrid>
+          <StatCard
+            label="Total Images"
+            value={stats.total_images}
+            icon={Images}
+            hint={`${stats.formatted_total_size} total size`}
+          />
 
-          {/* Storage Usage Card - moved to position 2 */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Storage Used</CardTitle>
-              <Database className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold">{stats.formatted_total_size}</div>
-              <p className="text-xs text-muted-foreground">
+          <StatCard
+            label="Storage Used"
+            value={stats.formatted_total_size}
+            icon={Database}
+            hint={
+              <>
                 of {formattedAvailable || "Unknown"} available ({usagePercentage}%)
-                {!r2Stats && <span className="text-orange-500 ml-1">*</span>}
-              </p>
-              {!r2Stats && <p className="text-xs text-orange-500 mt-1">*Using cached values</p>}
-            </CardContent>
-          </Card>
+                {!r2Stats && <span className="ml-1 text-orange-500">*</span>}
+              </>
+            }
+          >
+            {!r2Stats && <p className="text-xs text-orange-500">*Using cached values</p>}
+          </StatCard>
 
-          {/* Unused Images Card - moved to position 3 */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Unused Images</CardTitle>
-              <ImageOff className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-orange-600">{stats.orphaned_count}</div>
-              <p className="text-xs text-muted-foreground">
-                {stats.formatted_orphaned_size} not in use
-              </p>
-            </CardContent>
-          </Card>
+          <StatCard
+            label="Unused Images"
+            value={stats.orphaned_count}
+            icon={ImageOff}
+            tone={stats.orphaned_count > 0 ? "warning" : "default"}
+            hint={`${stats.formatted_orphaned_size} not in use`}
+          />
 
-          {/* Cleanup Card */}
-          <Card>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cleanup</CardTitle>
-              <Trash2 className="h-4 w-4 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
+          <StatCard
+            label="Cleanup"
+            icon={Trash2}
+            value={
               <Button
                 variant={stats.orphaned_count > 0 ? "destructive" : "outline"}
                 size="sm"
@@ -211,21 +184,12 @@ export const StorageStatsCards = forwardRef<StorageStatsRef>(
                 disabled={stats.orphaned_count === 0}
                 className="w-full"
               >
-                {stats.orphaned_count > 0 ? (
-                  <>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Clean Up ({stats.orphaned_count})
-                  </>
-                ) : (
-                  <>
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    All Clean
-                  </>
-                )}
+                <Trash2 className="mr-2 h-4 w-4" />
+                {stats.orphaned_count > 0 ? `Clean Up (${stats.orphaned_count})` : "All Clean"}
               </Button>
-            </CardContent>
-          </Card>
-        </div>
+            }
+          />
+        </StatGrid>
 
         {/* Cleanup Dialog */}
         <CleanupDialog

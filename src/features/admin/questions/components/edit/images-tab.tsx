@@ -164,9 +164,9 @@ function ImageSection({
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-medium capitalize">{section} Images</h3>
-        <span className="text-sm text-muted-foreground">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-lg font-semibold capitalize">{section} Images</h3>
+        <span className="text-xs text-muted-foreground">
           {sectionImages.length}/{maxImages} images
         </span>
       </div>
@@ -225,17 +225,17 @@ function ImageSection({
                   className="fixed inset-0 bg-black/50 backdrop-blur-sm"
                   onClick={() => setShowImagePicker(false)}
                 />
-                <div className="relative bg-background border rounded-lg shadow-lg w-full max-w-5xl flex flex-col max-h-[90vh]">
+                <div className="relative bg-background border rounded-lg shadow-lg w-full max-w-[calc(100vw-2rem)] sm:max-w-5xl flex flex-col max-h-[90vh]">
                   {/* Header */}
                   <div className="px-4 py-2.5 border-b flex-shrink-0">
-                    <h2 className="text-base font-semibold">
+                    <h2 className="text-lg font-semibold">
                       Select Images for {section === "stem" ? "Question Body" : "Explanation"}
                     </h2>
                   </div>
 
                   {/* Search Controls */}
-                  <div className="px-4 py-2.5 border-b flex gap-2 flex-shrink-0">
-                    <div className="relative flex-1">
+                  <div className="px-4 py-2.5 border-b flex flex-wrap gap-2 flex-shrink-0">
+                    <div className="relative min-w-0 flex-1 basis-48">
                       <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                       <Input
                         placeholder="Search images..."
@@ -268,12 +268,12 @@ function ImageSection({
 
                   {/* Image Grid - Scrollable content area */}
                   <div className="flex-1 overflow-y-auto p-3">
-                    <div className="grid grid-cols-7 gap-2">
+                    <div className="grid grid-cols-3 gap-2 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-7">
                       {availableImages.length === 0 && !loading ? (
-                        <div className="col-span-7 text-center py-12 text-muted-foreground">
+                        <div className="col-span-full text-center py-12 text-muted-foreground">
                           <ImageIcon className="h-12 w-12 mx-auto mb-2 opacity-50" />
-                          <p>No images found</p>
-                          {searchTerm && <p className="text-sm">Try a different search term</p>}
+                          <p className="text-sm">No images found</p>
+                          {searchTerm && <p className="text-xs">Try a different search term</p>}
                         </div>
                       ) : (
                         availableImages.map((image) => {
@@ -375,10 +375,10 @@ export function ImagesTab({
   };
 
   return (
-    <div className="space-y-8">
-      <div className="space-y-2">
-        <h2 className="text-xl font-semibold">Question Images</h2>
-        <p className="text-muted-foreground">
+    <div className="space-y-6">
+      <div className="space-y-1">
+        <h2 className="text-lg font-semibold">Question Images</h2>
+        <p className="text-sm text-muted-foreground">
           Add images to enhance your question. You can add up to 3 images in the question stem and 1
           image in the explanation.
         </p>

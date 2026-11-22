@@ -1,7 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { Loader2 } from "lucide-react";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { ContentGrid, PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
 import { Button } from "@/shared/components/ui/button";
 
 interface ApiResponse {
@@ -42,105 +44,88 @@ export default function ApiTestPage() {
   };
 
   return (
-    <div className="container mx-auto p-6 space-y-6">
-      <h1 className="text-3xl font-bold">API Testing Dashboard</h1>
+    <PageContainer>
+      <PageHeader
+        title="API Testing Dashboard"
+        description="Hit admin endpoints and inspect the raw response."
+      />
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Admin APIs</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button
-              onClick={() => testApi("/api/admin/system-status")}
-              disabled={loading}
-              className="w-full"
-            >
-              Test System Status API
-            </Button>
-          </CardContent>
-        </Card>
+      <ContentGrid>
+        <SectionCard title="Admin APIs">
+          <Button
+            onClick={() => testApi("/api/admin/system-status")}
+            disabled={loading}
+            className="w-full"
+          >
+            Test System Status API
+          </Button>
+        </SectionCard>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Dashboard APIs</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            <Button
-              onClick={() => testApi("/api/admin/dashboard/stats")}
-              disabled={loading}
-              className="w-full"
-            >
-              Test Dashboard Stats API
-            </Button>
-          </CardContent>
-        </Card>
-      </div>
+        <SectionCard title="Dashboard APIs">
+          <Button
+            onClick={() => testApi("/api/admin/dashboard/stats")}
+            disabled={loading}
+            className="w-full"
+          >
+            Test Dashboard Stats API
+          </Button>
+        </SectionCard>
+      </ContentGrid>
 
       {loading && (
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-center">
-              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
-              <span className="ml-3">Loading...</span>
-            </div>
-          </CardContent>
-        </Card>
+        <SectionCard>
+          <div className="flex items-center justify-center gap-3">
+            <Loader2 className="h-6 w-6 animate-spin text-primary" />
+            <span className="text-sm">Loading...</span>
+          </div>
+        </SectionCard>
       )}
 
       {error && (
-        <Card className="border-red-500">
-          <CardHeader>
-            <CardTitle className="text-red-600">Error</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre className="bg-red-50 p-4 rounded overflow-auto">{error}</pre>
-          </CardContent>
-        </Card>
+        <SectionCard title="Error" className="border-destructive/50">
+          <pre className="overflow-auto rounded-md bg-destructive/10 p-4 text-xs text-destructive">
+            {error}
+          </pre>
+        </SectionCard>
       )}
 
       {response && (
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex justify-between items-center">
-              <span>Response</span>
-              <span className="text-sm font-normal text-muted-foreground">{response.time}</span>
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="text-sm font-semibold mb-2">Status:</p>
-              <p className={response.status === 200 ? "text-green-600" : "text-red-600"}>
-                {response.status} {response.statusText}
-              </p>
-            </div>
-
-            <div>
-              <p className="text-sm font-semibold mb-2">Data:</p>
-              <pre className="bg-muted p-4 rounded overflow-auto text-xs max-h-96">
-                {JSON.stringify(response.data, null, 2)}
-              </pre>
-            </div>
-          </CardContent>
-        </Card>
+        <SectionCard
+          title="Response"
+          actions={<span className="text-sm text-muted-foreground">{response.time}</span>}
+        >
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Status</p>
+            <p
+              className={
+                response.status === 200
+                  ? "text-sm text-green-600 dark:text-green-400"
+                  : "text-sm text-red-600 dark:text-red-400"
+              }
+            >
+              {response.status} {response.statusText}
+            </p>
+          </div>
+          <div className="space-y-2">
+            <p className="text-sm font-medium">Data</p>
+            <pre className="max-h-96 overflow-auto rounded-md bg-muted p-4 text-xs">
+              {JSON.stringify(response.data, null, 2)}
+            </pre>
+          </div>
+        </SectionCard>
       )}
 
-      <Card>
-        <CardHeader>
-          <CardTitle>Instructions</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          <p className="text-sm text-muted-foreground">
-            Click any button above to test the corresponding API endpoint.
-          </p>
-          <ul className="list-disc list-inside text-sm text-muted-foreground space-y-1">
-            <li>Response time is measured in milliseconds</li>
-            <li>Green status = successful (200)</li>
-            <li>Red status = error (4xx/5xx)</li>
-            <li>Check browser console for detailed logs</li>
-          </ul>
-        </CardContent>
-      </Card>
-    </div>
+      <SectionCard title="Instructions">
+        <p className="text-sm text-muted-foreground">
+          Click any button above to test the corresponding API endpoint.
+        </p>
+        <ul className="list-inside list-disc space-y-1 text-sm text-muted-foreground">
+          <li>Response time is measured in milliseconds</li>
+          <li>Green status = successful (200)</li>
+          <li>Red status = error (4xx/5xx)</li>
+          <li>Check browser console for detailed logs</li>
+        </ul>
+      </SectionCard>
+    </PageContainer>
   );
 }

@@ -8,6 +8,15 @@ import { Download, Users } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "@/shared/utils/ui/toast";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/shared/components/ui/table";
+import { PageSection, TableShell } from "@/shared/components/ui/page-layout";
 import { UsersTable } from "./users-table";
 import { log } from "@/shared/utils/logging";
 
@@ -146,56 +155,54 @@ export function UsersManagementTabs({ onUserChange }: UsersManagementTabsProps) 
         <TabsContent value="users" className="space-y-4">
           {loadingRegisteredUsers ? (
             <div className="space-y-4">
-              <div className="flex gap-3">
+              <div className="flex flex-col gap-2 sm:flex-row">
                 <Skeleton className="h-10 flex-1" />
                 <Skeleton className="h-10 w-32" />
               </div>
-              <div className="rounded-md border">
-                <div className="overflow-x-auto">
-                  <table className="w-full">
-                    <thead>
-                      <tr className="border-b bg-muted/50">
-                        <th className="h-12 px-4 text-left">
+              <TableShell>
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>
+                        <Skeleton className="h-4 w-20" />
+                      </TableHead>
+                      <TableHead>
+                        <Skeleton className="h-4 w-16" />
+                      </TableHead>
+                      <TableHead>
+                        <Skeleton className="h-4 w-16" />
+                      </TableHead>
+                      <TableHead>
+                        <Skeleton className="h-4 w-16" />
+                      </TableHead>
+                      <TableHead>
+                        <Skeleton className="h-4 w-16" />
+                      </TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {Array.from({ length: 6 }).map((_, i) => (
+                      <TableRow key={`skeleton-${i}`}>
+                        <TableCell>
+                          <Skeleton className="h-4 w-3/4" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-20 rounded-full" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-5 w-16 rounded-full" />
+                        </TableCell>
+                        <TableCell>
                           <Skeleton className="h-4 w-20" />
-                        </th>
-                        <th className="h-12 px-4 text-left">
-                          <Skeleton className="h-4 w-16" />
-                        </th>
-                        <th className="h-12 px-4 text-left">
-                          <Skeleton className="h-4 w-16" />
-                        </th>
-                        <th className="h-12 px-4 text-left">
-                          <Skeleton className="h-4 w-16" />
-                        </th>
-                        <th className="h-12 px-4 text-left">
-                          <Skeleton className="h-4 w-16" />
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {Array.from({ length: 6 }).map((_, i) => (
-                        <tr key={`skeleton-${i}`} className="border-b">
-                          <td className="p-4">
-                            <Skeleton className="h-4 w-3/4" />
-                          </td>
-                          <td className="p-4">
-                            <Skeleton className="h-5 w-20 rounded-full" />
-                          </td>
-                          <td className="p-4">
-                            <Skeleton className="h-5 w-16 rounded-full" />
-                          </td>
-                          <td className="p-4">
-                            <Skeleton className="h-4 w-20" />
-                          </td>
-                          <td className="p-4">
-                            <Skeleton className="h-8 w-8 rounded" />
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </div>
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-8 w-8 rounded" />
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableShell>
             </div>
           ) : (
             <UsersTable onUserChange={onUserChange} />
@@ -204,96 +211,81 @@ export function UsersManagementTabs({ onUserChange }: UsersManagementTabsProps) 
 
         {/* Waitlist Tab */}
         <TabsContent value="waitlist" className="space-y-4">
-          <div className="space-y-4">
-            {/* Waitlist Header with Export */}
-            <div className="flex justify-between items-center">
-              <div>
-                <h3 className="text-xl font-semibold">Waitlist Management</h3>
-                <p className="text-muted-foreground text-sm">Users waiting for platform access</p>
-              </div>
+          <PageSection
+            title="Waitlist Management"
+            description="Users waiting for platform access"
+            actions={
               <Button onClick={handleExportWaitlist} variant="outline" size="sm">
-                <Download className="w-4 h-4 mr-2" />
+                <Download className="mr-2 h-4 w-4" />
                 Export CSV
               </Button>
-            </div>
-
+            }
+          >
             {/* Waitlist Table */}
-            <div className="rounded-md border">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead>
-                    <tr className="border-b bg-muted/50">
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                        Email
-                      </th>
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                        Status
-                      </th>
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                        Joined
-                      </th>
-                      <th className="h-12 px-4 text-left align-middle font-medium text-muted-foreground">
-                        Time Ago
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {loadingWaitlist ? (
-                      Array.from({ length: 6 }).map((_, i) => (
-                        <tr key={`skeleton-${i}`} className="border-b">
-                          <td className="p-4">
-                            <Skeleton className="h-4 w-1/2" />
-                          </td>
-                          <td className="p-4">
-                            <Skeleton className="h-4 w-20" />
-                          </td>
-                          <td className="p-4">
-                            <Skeleton className="h-4 w-24" />
-                          </td>
-                          <td className="p-4">
-                            <Skeleton className="h-4 w-20" />
-                          </td>
-                        </tr>
-                      ))
-                    ) : filteredWaitlistData.length === 0 ? (
-                      <tr>
-                        <td colSpan={4} className="h-24 text-center text-muted-foreground">
-                          No waitlist entries found
-                        </td>
-                      </tr>
-                    ) : (
-                      filteredWaitlistData.map((entry) => (
-                        <tr key={entry.id} className="border-b transition-colors hover:bg-muted/50">
-                          <td className="p-4 align-middle">
-                            <div className="font-medium">{entry.email}</div>
-                          </td>
-                          <td className="p-4 align-middle">
-                            <div
-                              className={`text-sm ${getStatusForEmail(entry.email) === "registered" ? "text-green-600" : "text-orange-600"}`}
-                            >
-                              {getStatusForEmail(entry.email) === "registered"
-                                ? "Registered"
-                                : "Waitlisted"}
-                            </div>
-                          </td>
-                          <td className="p-4 align-middle">
-                            <div className="text-sm text-muted-foreground">
-                              {new Date(entry.created_at).toLocaleDateString()}
-                            </div>
-                          </td>
-                          <td className="p-4 align-middle">
-                            <div className="text-sm text-muted-foreground">
-                              {formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })}
-                            </div>
-                          </td>
-                        </tr>
-                      ))
-                    )}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
+            <TableShell>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Email</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead className="hidden md:table-cell">Joined</TableHead>
+                    <TableHead className="hidden md:table-cell">Time Ago</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {loadingWaitlist ? (
+                    Array.from({ length: 6 }).map((_, i) => (
+                      <TableRow key={`skeleton-${i}`}>
+                        <TableCell>
+                          <Skeleton className="h-4 w-1/2" />
+                        </TableCell>
+                        <TableCell>
+                          <Skeleton className="h-4 w-20" />
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Skeleton className="h-4 w-24" />
+                        </TableCell>
+                        <TableCell className="hidden md:table-cell">
+                          <Skeleton className="h-4 w-20" />
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  ) : filteredWaitlistData.length === 0 ? (
+                    <TableRow>
+                      <TableCell colSpan={4} className="h-24 text-center text-muted-foreground">
+                        No waitlist entries found
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    filteredWaitlistData.map((entry) => (
+                      <TableRow key={entry.id}>
+                        <TableCell>
+                          <div className="max-w-[16rem] truncate font-medium sm:max-w-none">
+                            {entry.email}
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div
+                            className={`text-sm ${getStatusForEmail(entry.email) === "registered" ? "text-green-600" : "text-orange-600"}`}
+                          >
+                            {getStatusForEmail(entry.email) === "registered"
+                              ? "Registered"
+                              : "Waitlisted"}
+                          </div>
+                        </TableCell>
+                        <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
+                          {new Date(entry.created_at).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell className="hidden text-sm text-muted-foreground md:table-cell">
+                          {formatDistanceToNow(new Date(entry.created_at), { addSuffix: true })}
+                        </TableCell>
+                      </TableRow>
+                    ))
+                  )}
+                </TableBody>
+              </Table>
+            </TableShell>
+          </PageSection>
         </TabsContent>
       </Tabs>
     </div>

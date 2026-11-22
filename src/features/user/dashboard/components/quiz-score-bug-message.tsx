@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { X } from "lucide-react";
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Button } from "@/shared/components/ui/button";
 import { userSettingsService } from "@/shared/services/user-settings";
 import { log } from "@/shared/utils/logging";
@@ -28,31 +28,32 @@ export function QuizScoreBugMessage({ onDismiss }: QuizScoreBugMessageProps) {
   };
 
   return (
-    <Card className="bg-card border border-gray-200 overflow-hidden">
-      <CardContent className="p-4 md:p-6">
-        <div className="flex items-start justify-between gap-2 mb-2">
-          <h3 className="text-lg font-semibold text-foreground">Quiz scoring bug fixed</h3>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 w-8 p-0 shrink-0 hover:bg-gray-100"
-            onClick={handleDismiss}
-            disabled={isLoading}
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
+    <SectionCard>
+      <div className="flex items-start justify-between gap-2">
+        <h3 className="min-w-0 text-lg font-semibold leading-tight tracking-tight">
+          Quiz scoring bug fixed
+        </h3>
+        <Button
+          variant="ghost"
+          size="sm"
+          className="h-8 w-8 shrink-0 p-0"
+          aria-label="Dismiss"
+          onClick={handleDismiss}
+          disabled={isLoading}
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
 
-        <div className="text-sm text-muted-foreground space-y-2">
-          <p>
-            Between April 13 and May 12, a server issue prevented quiz answers from being recorded.
-            This issue has since been resolved. Affected quizzes are now labeled{" "}
-            <strong>Data Lost</strong>
-            in your history and excluded from your stats.
-          </p>
-          <p>— Pathology Bites Admin</p>
-        </div>
-      </CardContent>
-    </Card>
+      <div className="text-sm text-muted-foreground space-y-2">
+        <p>
+          Between April 13 and May 12, a server issue prevented quiz answers from being recorded.
+          This issue has since been resolved. Affected quizzes are now labeled{" "}
+          <strong>Data Lost</strong>
+          in your history and excluded from your stats.
+        </p>
+        <p>— Pathology Bites Admin</p>
+      </div>
+    </SectionCard>
   );
 }

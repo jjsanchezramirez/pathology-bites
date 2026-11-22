@@ -1,13 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { TrendingUp } from "lucide-react";
 import { cn } from "@/shared/utils";
@@ -115,128 +109,113 @@ export function PerformanceTimelineChart({
     </div>
   );
 
-  const headerBlock = (
-    <CardHeader className="pb-3">
-      <div className="flex items-start justify-between gap-2 flex-wrap">
-        <div className="min-w-0">
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="h-5 w-5" />
-            Performance Timeline
-          </CardTitle>
-          <CardDescription>{description}</CardDescription>
-        </div>
-        {rangeSelector}
-      </div>
-    </CardHeader>
-  );
+  // Shared heading props so every state renders the same header row.
+  const heading = {
+    title: "Performance Timeline",
+    description,
+    icon: TrendingUp,
+    actions: rangeSelector,
+  };
 
   // Card grows to match its grid sibling (the 400px-tall radar). To kill the
-  // empty space below the chart, we let Card flex vertically and stretch the
-  // content + ResponsiveContainer to fill whatever height the row settles at.
-  // The min-h floor stops the chart from collapsing when this card is the
-  // taller sibling.
-  const cardClass = "flex flex-col h-full";
-  const contentClass = "flex-1 min-h-[300px]";
+  // empty space below the chart, SectionCard's body already flexes to fill the
+  // card, and the ResponsiveContainer stretches to whatever height the row
+  // settles at. The min-h floor stops the chart from collapsing when this card
+  // is the taller sibling.
+  const cardClass = "h-full";
+  const contentClass = "min-h-[300px]";
 
   if (loading) {
     return (
-      <Card className={cardClass}>
-        {headerBlock}
-        <CardContent className={contentClass}>
-          <Skeleton className="h-full w-full" />
-        </CardContent>
-      </Card>
+      <SectionCard {...heading} className={cardClass} contentClassName={contentClass}>
+        <Skeleton className="h-full w-full" />
+      </SectionCard>
     );
   }
 
   if (error) {
     return (
-      <Card className={cardClass}>
-        {headerBlock}
-        <CardContent className={contentClass}>
-          <div className="h-full flex items-center justify-center text-destructive">
-            Error loading timeline data: {error}
-          </div>
-        </CardContent>
-      </Card>
+      <SectionCard {...heading} className={cardClass} contentClassName={contentClass}>
+        <div className="flex h-full items-center justify-center text-sm text-destructive">
+          Error loading timeline data: {error}
+        </div>
+      </SectionCard>
     );
   }
 
   if (bucketedData.length === 0) {
     return (
-      <Card className={cardClass}>
-        {headerBlock}
-        <CardContent className={cn(contentClass, "flex items-center justify-center")}>
-          <p className="text-muted-foreground text-center px-4">
-            {data.length === 0
-              ? "No quiz data available yet. Start taking quizzes to see your progress!"
-              : "No completed quizzes in the selected range. Try a longer timeframe."}
-          </p>
-        </CardContent>
-      </Card>
+      <SectionCard
+        {...heading}
+        className={cardClass}
+        contentClassName={cn(contentClass, "flex items-center justify-center")}
+      >
+        <p className="px-4 text-center text-sm text-muted-foreground">
+          {data.length === 0
+            ? "No quiz data available yet. Start taking quizzes to see your progress!"
+            : "No completed quizzes in the selected range. Try a longer timeframe."}
+        </p>
+      </SectionCard>
     );
   }
 
   return (
-    <Card className={cardClass}>
-      {headerBlock}
-      <CardContent className={contentClass}>
-        <ResponsiveContainer width="100%" height="100%">
-          <AreaChart data={bucketedData}>
-            <defs>
-              <linearGradient id="colorAccuracy" x1="0" y1="0" x2="0" y2="1">
-                <stop offset="5%" stopColor={primaryColor} stopOpacity={0.4} />
-                <stop offset="95%" stopColor={primaryColor} stopOpacity={0.05} />
-              </linearGradient>
-            </defs>
-            <CartesianGrid strokeDasharray="3 3" stroke={primaryColor} opacity={0.1} />
-            <XAxis
-              dataKey="date"
-              tickFormatter={formatAxisDate}
-              tick={{ fill: mutedFgColor, fontSize: 12 }}
-              minTickGap={20}
-            />
-            <YAxis
-              label={{
-                value: "Accuracy (%)",
-                angle: -90,
-                position: "insideLeft",
-                style: { fill: mutedFgColor },
-              }}
-              domain={[0, 100]}
-              tick={{ fill: mutedFgColor, fontSize: 12 }}
-            />
-            <Tooltip
-              content={({ active, payload }) => {
-                if (active && payload && payload.length) {
-                  return (
-                    <div className="bg-popover border rounded-lg p-3 shadow-lg">
-                      <p className="font-semibold">{formatTooltipDate(payload[0].payload.date)}</p>
-                      <p className="text-sm" style={{ color: primaryColor }}>
-                        Accuracy: {payload[0].value?.toFixed(1)}%
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        {payload[0].payload.quizzes} quiz
-                        {payload[0].payload.quizzes !== 1 ? "zes" : ""}
-                      </p>
-                    </div>
-                  );
-                }
-                return null;
-              }}
-            />
-            <Area
-              type="monotone"
-              dataKey="accuracy"
-              stroke={primaryColor}
-              strokeWidth={2}
-              fill="url(#colorAccuracy)"
-              dot={{ fill: primaryColor, r: 4 }}
-              activeDot={{ r: 6 }}
-            />
-          </AreaChart>
-        </ResponsiveContainer>
-      </CardContent>
-    </Card>
+    <SectionCard {...heading} className={cardClass} contentClassName={contentClass}>
+      <ResponsiveContainer width="100%" height="100%">
+        <AreaChart data={bucketedData}>
+          <defs>
+            <linearGradient id="colorAccuracy" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="5%" stopColor={primaryColor} stopOpacity={0.4} />
+              <stop offset="95%" stopColor={primaryColor} stopOpacity={0.05} />
+            </linearGradient>
+          </defs>
+          <CartesianGrid strokeDasharray="3 3" stroke={primaryColor} opacity={0.1} />
+          <XAxis
+            dataKey="date"
+            tickFormatter={formatAxisDate}
+            tick={{ fill: mutedFgColor, fontSize: 12 }}
+            minTickGap={20}
+          />
+          <YAxis
+            label={{
+              value: "Accuracy (%)",
+              angle: -90,
+              position: "insideLeft",
+              style: { fill: mutedFgColor },
+            }}
+            domain={[0, 100]}
+            tick={{ fill: mutedFgColor, fontSize: 12 }}
+          />
+          <Tooltip
+            content={({ active, payload }) => {
+              if (active && payload && payload.length) {
+                return (
+                  <div className="bg-popover border rounded-lg p-3 shadow-lg">
+                    <p className="font-semibold">{formatTooltipDate(payload[0].payload.date)}</p>
+                    <p className="text-sm" style={{ color: primaryColor }}>
+                      Accuracy: {payload[0].value?.toFixed(1)}%
+                    </p>
+                    <p className="text-sm text-muted-foreground">
+                      {payload[0].payload.quizzes} quiz
+                      {payload[0].payload.quizzes !== 1 ? "zes" : ""}
+                    </p>
+                  </div>
+                );
+              }
+              return null;
+            }}
+          />
+          <Area
+            type="monotone"
+            dataKey="accuracy"
+            stroke={primaryColor}
+            strokeWidth={2}
+            fill="url(#colorAccuracy)"
+            dot={{ fill: primaryColor, r: 4 }}
+            activeDot={{ r: 6 }}
+          />
+        </AreaChart>
+      </ResponsiveContainer>
+    </SectionCard>
   );
 }

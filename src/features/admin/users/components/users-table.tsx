@@ -23,6 +23,7 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Search, Loader2, RefreshCw } from "lucide-react";
+import { TableShell, Toolbar } from "@/shared/components/ui/page-layout";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { apiClient } from "@/shared/utils/api/api-client";
@@ -295,7 +296,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
   return (
     <div className="space-y-4">
       {/* Filters */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center">
+      <Toolbar>
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
@@ -305,7 +306,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
             className="pl-9"
           />
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
           <Select
             value={roleFilter}
             onValueChange={(value) => {
@@ -345,18 +346,28 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
             <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
           </Button>
         </div>
-      </div>
+      </Toolbar>
 
       {/* Table */}
-      <div className="rounded-md border bg-card">
+      <TableShell
+        footer={
+          <UsersPagination
+            page={page}
+            totalPages={totalPages}
+            totalUsers={totalUsers}
+            shownCount={users.length}
+            onPageChange={setPage}
+          />
+        }
+      >
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader>
             <TableRow>
               <TableHead>User</TableHead>
               <TableHead>Role</TableHead>
-              <TableHead>Type</TableHead>
+              <TableHead className="hidden md:table-cell">Type</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead>Joined</TableHead>
+              <TableHead className="hidden md:table-cell">Joined</TableHead>
               {isAdmin && <TableHead className="w-[70px] text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
@@ -364,7 +375,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
             {isLoading ? (
               <TableRow>
                 <TableCell colSpan={isAdmin ? 6 : 5} className="h-24 text-center">
-                  <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                  <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                 </TableCell>
               </TableRow>
             ) : users.length === 0 ? (
@@ -393,16 +404,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      {/* Pagination */}
-      <UsersPagination
-        page={page}
-        totalPages={totalPages}
-        totalUsers={totalUsers}
-        shownCount={users.length}
-        onPageChange={setPage}
-      />
+      </TableShell>
 
       {/* Role Change Dialog */}
       <UserFieldChangeDialog

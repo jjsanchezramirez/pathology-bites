@@ -138,15 +138,15 @@ export function FetchReferencesDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="!max-w-[1100px] w-[95vw] h-[85vh] flex flex-col p-0 gap-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b bg-muted/30">
-          <DialogTitle className="text-xl">Fetch References from Semantic Scholar</DialogTitle>
+      <DialogContent className="!max-w-[min(1100px,calc(100vw-2rem))] w-[95vw] h-[85vh] flex flex-col p-0 gap-0">
+        <DialogHeader className="px-4 pt-4 pb-4 sm:px-6 sm:pt-6 border-b bg-muted/30">
+          <DialogTitle>Fetch References from Semantic Scholar</DialogTitle>
           <DialogDescription>
             Search for academic papers and select references to insert
           </DialogDescription>
         </DialogHeader>
 
-        <div className="flex-1 overflow-y-auto px-6 py-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6">
           <div className="space-y-6">
             {/* Search Query */}
             <div className="space-y-2">
@@ -168,7 +168,7 @@ export function FetchReferencesDialog({
             </div>
 
             {/* Search Parameters Grid */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
               {/* Sort By */}
               <div className="space-y-2">
                 <Label htmlFor="sort-by" className="text-sm font-medium">
@@ -241,8 +241,8 @@ export function FetchReferencesDialog({
             </div>
 
             {/* Open Access Checkbox and Search Button Row */}
-            <div className="flex items-center justify-between gap-4">
-              <div className="flex items-center space-x-2">
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex items-center gap-2">
                 <Checkbox
                   id="open-access"
                   checked={onlyOpenAccess}
@@ -282,12 +282,14 @@ export function FetchReferencesDialog({
             {/* Results */}
             {results.length > 0 && (
               <div className="space-y-4">
-                <div className="flex items-center justify-between py-2 border-b">
-                  <h3 className="font-semibold text-foreground">Results ({results.length})</h3>
-                  <p className="text-sm text-muted-foreground">{selectedPapers.size} selected</p>
+                <div className="flex items-center justify-between gap-2 py-2 border-b">
+                  <h3 className="text-sm font-semibold text-foreground">
+                    Results ({results.length})
+                  </h3>
+                  <p className="text-xs text-muted-foreground">{selectedPapers.size} selected</p>
                 </div>
 
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {results.map((paper) => (
                     <div
                       key={paper.paperId}
@@ -307,7 +309,7 @@ export function FetchReferencesDialog({
                         />
                         <div className="flex-1 min-w-0 space-y-2">
                           {/* Title */}
-                          <h4 className="font-semibold leading-tight text-foreground">
+                          <h4 className="text-sm font-semibold leading-tight text-foreground">
                             {paper.title}
                           </h4>
 
@@ -358,7 +360,7 @@ export function FetchReferencesDialog({
 
             {/* No Results Message */}
             {!loading && results.length === 0 && query && (
-              <div className="text-center py-12 text-muted-foreground bg-muted/30 rounded-lg">
+              <div className="text-center py-12 text-sm text-muted-foreground bg-muted/30 rounded-lg">
                 No results found. Try adjusting your search parameters.
               </div>
             )}
@@ -366,7 +368,7 @@ export function FetchReferencesDialog({
         </div>
 
         {/* Footer Actions */}
-        <div className="flex justify-end gap-3 px-6 py-4 border-t bg-muted/30">
+        <div className="flex flex-wrap justify-end gap-2 px-4 py-4 sm:px-6 border-t bg-muted/30">
           <Button variant="outline" onClick={() => onOpenChange(false)}>
             Cancel
           </Button>

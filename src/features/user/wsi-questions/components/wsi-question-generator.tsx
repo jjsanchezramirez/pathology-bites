@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback } from "react";
 import { Button } from "@/shared/components/ui/button";
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { AlertCircle, RefreshCw, Loader2, Highlighter } from "lucide-react";
 import { WSIQuestionViewer } from "./wsi-question-viewer";
 import { LoadingNote, OptionsSkeleton, StemSkeleton } from "./wsi-loading-parts";
@@ -414,21 +414,17 @@ export function WSIQuestionGenerator({
   if (error && !currentQuestion) {
     return (
       <div className={`space-y-4 ${className}`}>
-        <Card className="w-full">
-          <CardContent className="p-6">
-            <div className="text-center space-y-4">
-              <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
-              <div className="space-y-2">
-                <p className="font-medium text-destructive">Error Loading Question</p>
-                <p className="text-sm text-muted-foreground">{error}</p>
-              </div>
-              <Button onClick={newQuestion} disabled={isGenerating}>
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Try Again
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <SectionCard className="w-full" contentClassName="text-center">
+          <AlertCircle className="mx-auto h-8 w-8 text-destructive" />
+          <div className="space-y-1">
+            <p className="text-sm font-medium text-destructive">Error Loading Question</p>
+            <p className="text-sm text-muted-foreground">{error}</p>
+          </div>
+          <Button onClick={newQuestion} disabled={isGenerating}>
+            <RefreshCw className="mr-2 h-4 w-4" />
+            Try Again
+          </Button>
+        </SectionCard>
       </div>
     );
   }
@@ -487,15 +483,16 @@ export function WSIQuestionGenerator({
   if (!activeSlide) {
     return (
       <div className={`w-full max-w-4xl mx-auto ${className}`} style={{ minHeight: "600px" }}>
-        <Card className="h-full">
-          <CardContent className="flex items-center justify-center py-12">
-            <div className="text-center space-y-3">
-              <Loader2 className="h-8 w-8 animate-spin mx-auto text-primary" />
-              <p className="text-sm font-medium">Initializing WSI Question Generator...</p>
-              <p className="text-xs text-muted-foreground">Preparing your pathology challenge</p>
-            </div>
-          </CardContent>
-        </Card>
+        <SectionCard
+          className="h-full"
+          contentClassName="flex items-center justify-center py-12 sm:py-12"
+        >
+          <div className="space-y-2 text-center">
+            <Loader2 className="mx-auto h-8 w-8 animate-spin text-primary" />
+            <p className="text-sm font-medium">Initializing WSI Question Generator...</p>
+            <p className="text-xs text-muted-foreground">Preparing your pathology challenge</p>
+          </div>
+        </SectionCard>
       </div>
     );
   }
@@ -504,19 +501,20 @@ export function WSIQuestionGenerator({
   if (currentQuestion && (!currentQuestion.wsi || !currentQuestion.question)) {
     return (
       <div className={`w-full max-w-4xl mx-auto ${className}`} style={{ minHeight: "600px" }}>
-        <Card className="h-full">
-          <CardContent className="flex items-center justify-center py-12">
-            <div className="text-center space-y-3">
-              <AlertCircle className="h-8 w-8 text-destructive mx-auto" />
-              <p className="text-sm font-medium text-destructive">Invalid question data</p>
-              <p className="text-xs text-muted-foreground">Please try generating a new question</p>
-              <Button onClick={newQuestion} variant="outline">
-                <RefreshCw className="h-4 w-4 mr-2" />
-                Try Again
-              </Button>
-            </div>
-          </CardContent>
-        </Card>
+        <SectionCard
+          className="h-full"
+          contentClassName="flex items-center justify-center py-12 sm:py-12"
+        >
+          <div className="space-y-2 text-center">
+            <AlertCircle className="mx-auto h-8 w-8 text-destructive" />
+            <p className="text-sm font-medium text-destructive">Invalid question data</p>
+            <p className="text-xs text-muted-foreground">Please try generating a new question</p>
+            <Button onClick={newQuestion} variant="outline">
+              <RefreshCw className="mr-2 h-4 w-4" />
+              Try Again
+            </Button>
+          </div>
+        </SectionCard>
       </div>
     );
   }
@@ -524,7 +522,7 @@ export function WSIQuestionGenerator({
   // The remaining pieces are shared by both layouts so the two can't drift apart.
   const stem = !currentQuestion ? null : (
     <FakeSelectionHighlight allSlides={allSlides} onViewSlide={setLookupSlide}>
-      <div className="text-xs sm:text-sm text-foreground/90 leading-relaxed">
+      <div className="text-sm leading-relaxed text-foreground/90">
         {currentQuestion.question.stem}
       </div>
     </FakeSelectionHighlight>
@@ -628,30 +626,28 @@ export function WSIQuestionGenerator({
     >
       {controls}
 
-      <Card className="h-full">
-        <CardContent className="space-y-3 sm:space-y-4 pt-4 sm:pt-6 px-3 sm:px-6">
-          {currentQuestion ? (
-            stem
-          ) : (
-            <>
-              <LoadingNote currentLoadingMessage={currentLoadingMessage} compact />
-              <StemSkeleton />
-            </>
-          )}
+      <SectionCard className="h-full">
+        {currentQuestion ? (
+          stem
+        ) : (
+          <>
+            <LoadingNote currentLoadingMessage={currentLoadingMessage} compact />
+            <StemSkeleton />
+          </>
+        )}
 
-          {/* WSI Viewer — not selectable */}
-          <div className="w-full">
-            {viewer}
-            <WSISlideCredits wsi={activeSlide} />
-          </div>
+        {/* WSI Viewer — not selectable */}
+        <div className="w-full">
+          {viewer}
+          <WSISlideCredits wsi={activeSlide} />
+        </div>
 
-          {unavailableNotice}
-          {currentQuestion ? options : <OptionsSkeleton />}
-          {explanation}
-          {currentQuestion ? highlightHint : null}
-          <SlideViewerModal slide={lookupSlide} onClose={() => setLookupSlide(null)} />
-        </CardContent>
-      </Card>
+        {unavailableNotice}
+        {currentQuestion ? options : <OptionsSkeleton />}
+        {explanation}
+        {currentQuestion ? highlightHint : null}
+        <SlideViewerModal slide={lookupSlide} onClose={() => setLookupSlide(null)} />
+      </SectionCard>
     </div>
   );
 }

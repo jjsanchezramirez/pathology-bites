@@ -15,7 +15,7 @@
 
 import dynamic from "next/dynamic";
 import { useCallback, useEffect } from "react";
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Loader2 } from "lucide-react";
 import type { VirtualSlide } from "@/shared/types/virtual-slides";
 import type { SavedView } from "@/shared/components/common/self-hosted-osd-viewer";
@@ -89,11 +89,9 @@ export function WSIQuestionViewer({
 
   if (!openable) {
     return (
-      <Card>
-        <CardContent className="flex items-center justify-center py-10 text-sm text-muted-foreground">
-          This slide cannot be opened in the viewer.
-        </CardContent>
-      </Card>
+      <SectionCard contentClassName="flex items-center justify-center py-10 text-sm text-muted-foreground sm:py-10">
+        This slide cannot be opened in the viewer.
+      </SectionCard>
     );
   }
 

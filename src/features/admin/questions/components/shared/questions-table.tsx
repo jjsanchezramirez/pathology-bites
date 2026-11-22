@@ -9,6 +9,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { TableShell } from "@/shared/components/ui/page-layout";
 import { Button } from "@/shared/components/ui/button";
 import { toast } from "@/shared/utils/ui/toast";
 import { Loader2 } from "lucide-react";
@@ -445,12 +446,23 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
           isAdmin={showAdminFeatures}
         />
 
-        <div className="rounded-md border bg-card">
+        <TableShell
+          footer={
+            <TablePagination
+              currentPage={page}
+              totalPages={totalPages}
+              onPageChange={setPage}
+              totalItems={total}
+              pageSize={pageSize}
+              onPageSizeChange={handlePageSizeChange}
+            />
+          }
+        >
           <Table>
-            <TableHeader className="bg-muted/50">
+            <TableHeader>
               <TableRow>
                 {showAdminFeatures && (
-                  <TableHead className="w-[50px]">
+                  <TableHead className="w-10 px-2">
                     <Checkbox
                       checked={
                         selectedQuestions.length === questions?.length && questions.length > 0
@@ -459,9 +471,9 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
                     />
                   </TableHead>
                 )}
-                <TableHead className="w-[50px]"></TableHead>
-                <TableHead className="min-w-[320px]">Title</TableHead>
-                <TableHead className="w-[50px]"></TableHead>
+                <TableHead className="w-8 px-1"></TableHead>
+                <TableHead className="min-w-[240px] sm:min-w-[320px]">Title</TableHead>
+                <TableHead className="w-10 px-2"></TableHead>
                 <TableHead className="w-[70px] text-right">Actions</TableHead>
               </TableRow>
             </TableHeader>
@@ -477,7 +489,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
                     <TableCell className="text-center">
                       <Skeleton className="h-4 w-4 mx-auto" />
                     </TableCell>
-                    <TableCell className="min-w-[320px]">
+                    <TableCell className="min-w-[240px] sm:min-w-[320px]">
                       <div className="space-y-1.5">
                         <Skeleton className="h-4 w-3/4" />
                         <div className="flex items-center gap-1.5">
@@ -532,16 +544,7 @@ export function QuestionsTable({ adminMode = "admin" }: QuestionsTableProps) {
               )}
             </TableBody>
           </Table>
-        </div>
-
-        <TablePagination
-          currentPage={page}
-          totalPages={totalPages}
-          onPageChange={setPage}
-          totalItems={total}
-          pageSize={pageSize}
-          onPageSizeChange={handlePageSizeChange}
-        />
+        </TableShell>
 
         {/* Preview Dialog */}
         <QuestionPreviewDialog

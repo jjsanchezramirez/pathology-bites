@@ -11,7 +11,17 @@ import { StatsCards } from "@/features/admin/dashboard/components/stats-cards";
 import { RecentActivityCard } from "@/features/admin/dashboard/components/recent-activity";
 import { QuickActionsCard } from "@/features/admin/dashboard/components/quick-actions";
 import { SystemStatus } from "@/features/admin/dashboard/components/system-status";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { AlertTriangle } from "lucide-react";
+import { Button } from "@/shared/components/ui/button";
+import { EmptyState } from "@/shared/components/ui/empty-state";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import {
+  ContentGrid,
+  PageContainer,
+  SectionCard,
+  StatCardSkeleton,
+  StatGrid,
+} from "@/shared/components/ui/page-layout";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { UserRole } from "@/shared/utils/auth/auth-helpers";
 
@@ -70,153 +80,87 @@ export default function AdminDashboardPage() {
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
 
-  return (
-    <div className="space-y-6">
-      {/* Hide content when transitioning OR when adminMode is "user" to prevent showing student content on admin page */}
-      {!mounted || isTransitioning || adminMode === "user" ? (
-        <>
-          {/* Title skeleton */}
-          <div className="space-y-2">
-            <div className="h-9 bg-muted animate-pulse rounded w-64"></div>
-            <div className="h-5 bg-muted animate-pulse rounded w-96"></div>
-          </div>
+  const title =
+    adminMode === "creator"
+      ? "Creator Dashboard"
+      : adminMode === "reviewer"
+        ? "Reviewer Dashboard"
+        : "Admin Dashboard";
+  const description =
+    adminMode === "creator"
+      ? "Question creation and content management."
+      : adminMode === "reviewer"
+        ? "Review queue and question approval."
+        : "Administrative overview and system management.";
 
-          {/* Stats skeleton */}
-          <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-            {Array.from({ length: 8 }).map((_, i) => (
-              <Card key={i}>
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-4 w-4" />
-                </CardHeader>
-                <CardContent>
-                  <Skeleton className="h-8 w-16 mb-2" />
-                  <Skeleton className="h-3 w-32" />
-                </CardContent>
-              </Card>
+  const statsSkeleton = (
+    <StatGrid>
+      {Array.from({ length: 8 }).map((_, i) => (
+        <StatCardSkeleton key={i} />
+      ))}
+    </StatGrid>
+  );
+
+  // Hide content when transitioning OR when adminMode is "user" to prevent showing student content on admin page
+  if (!mounted || isTransitioning || adminMode === "user") {
+    return (
+      <PageContainer>
+        <div className="space-y-2">
+          <Skeleton className="h-8 w-64 sm:h-9" />
+          <Skeleton className="h-5 w-full max-w-96" />
+        </div>
+        {statsSkeleton}
+      </PageContainer>
+    );
+  }
+
+  return (
+    <PageContainer>
+      <PageHeader title={title} description={description} />
+
+      {error ? (
+        <SectionCard className="border-destructive/30">
+          <EmptyState
+            icon={AlertTriangle}
+            title="Error loading dashboard"
+            description={error}
+            action={
+              <Button variant="outline" onClick={() => window.location.reload()}>
+                Retry
+              </Button>
+            }
+          />
+        </SectionCard>
+      ) : isLoading ? (
+        <>
+          {statsSkeleton}
+          <ContentGrid>
+            {["Recent Activity", "Quick Actions"].map((t) => (
+              <SectionCard key={t} title={t}>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <div key={i} className="flex items-start gap-4">
+                    <Skeleton className="mt-1 h-4 w-4" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-48 max-w-full" />
+                      <Skeleton className="h-3 w-64 max-w-full" />
+                    </div>
+                  </div>
+                ))}
+              </SectionCard>
             ))}
-          </div>
+          </ContentGrid>
         </>
       ) : (
         <>
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight" suppressHydrationWarning>
-              {adminMode === "creator"
-                ? "Creator Dashboard"
-                : adminMode === "reviewer"
-                  ? "Reviewer Dashboard"
-                  : "Admin Dashboard"}
-            </h1>
-            <p className="text-muted-foreground" suppressHydrationWarning>
-              {adminMode === "creator"
-                ? "Question creation and content management."
-                : adminMode === "reviewer"
-                  ? "Review queue and question approval."
-                  : "Administrative overview and system management."}
-            </p>
-          </div>
-
-          {error ? (
-            <Card className="border-red-200 bg-red-50">
-              <CardContent className="pt-6">
-                <div className="text-center">
-                  <h3 className="text-lg font-semibold text-red-800 mb-2">
-                    Error Loading Dashboard
-                  </h3>
-                  <p className="text-red-600 mb-4">{error}</p>
-                  <button
-                    onClick={() => {
-                      if (typeof window !== "undefined") {
-                        window.location.reload();
-                      }
-                    }}
-                    className="px-4 py-2 bg-red-600 text-white rounded hover:bg-red-700"
-                  >
-                    Retry
-                  </button>
-                </div>
-              </CardContent>
-            </Card>
-          ) : isLoading ? (
-            <>
-              {/* Stats Loading */}
-              <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
-                {Array.from({ length: 8 }).map((_, i) => (
-                  <Card key={i}>
-                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                      <Skeleton className="h-4 w-24" />
-                      <Skeleton className="h-4 w-4" />
-                    </CardHeader>
-                    <CardContent>
-                      <Skeleton className="h-8 w-16 mb-2" />
-                      <Skeleton className="h-3 w-32" />
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-
-              {/* Activity and Actions Loading */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                <Card className="col-span-4">
-                  <CardHeader>
-                    <CardTitle>Recent Activity</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      {Array.from({ length: 5 }).map((_, i) => (
-                        <div key={i} className="flex items-start space-x-4 p-3">
-                          <Skeleton className="h-4 w-4 mt-1" />
-                          <div className="flex-1">
-                            <Skeleton className="h-4 w-48 mb-2" />
-                            <Skeleton className="h-3 w-64" />
-                          </div>
-                          <Skeleton className="h-3 w-12" />
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-
-                <Card className="col-span-3">
-                  <CardHeader>
-                    <CardTitle>Quick Actions</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-3">
-                      {Array.from({ length: 6 }).map((_, i) => (
-                        <div key={i} className="flex items-center justify-between p-3">
-                          <div className="flex-1">
-                            <Skeleton className="h-4 w-32 mb-2" />
-                            <Skeleton className="h-3 w-48" />
-                          </div>
-                          <Skeleton className="h-4 w-4" />
-                        </div>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
-              </div>
-            </>
-          ) : (
-            <>
-              {/* Stats Cards */}
-              <StatsCards stats={stats} />
-
-              {/* Main Content Area */}
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-7">
-                {/* Recent Activity */}
-                <RecentActivityCard activities={activities} />
-
-                {/* Quick Actions */}
-                <QuickActionsCard actions={quickActions} />
-              </div>
-
-              {/* System Status - Only show for admin mode */}
-              {adminMode === "admin" && <SystemStatus />}
-            </>
-          )}
+          <StatsCards stats={stats} />
+          <ContentGrid>
+            <RecentActivityCard activities={activities} />
+            <QuickActionsCard actions={quickActions} />
+          </ContentGrid>
+          {/* System Status - Only show for admin mode */}
+          {adminMode === "admin" && <SystemStatus />}
         </>
       )}
-    </div>
+    </PageContainer>
   );
 }

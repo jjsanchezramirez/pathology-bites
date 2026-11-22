@@ -30,6 +30,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { TableShell } from "@/shared/components/ui/page-layout";
 import { fetchAudio } from "@/features/admin/audio/services/audio";
 import type { Audio, AudioListFilters } from "@/features/admin/audio/types";
 import { toast } from "@/shared/utils/ui/toast";
@@ -159,14 +160,85 @@ export function AudioTable({ onEdit, onDelete, refreshKey }: AudioTableProps) {
       </TableControlBar>
 
       {/* Table */}
-      <div className="rounded-md border bg-card">
+      <TableShell
+        footer={
+          totalItems > 0 ? (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <span>
+                  Showing {page * pageSize + 1} to {Math.min((page + 1) * pageSize, totalItems)} of{" "}
+                  {totalItems}
+                </span>
+                <Select
+                  value={String(pageSize)}
+                  onValueChange={(val) => {
+                    setPageSize(Number(val));
+                    setPage(0);
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-[110px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAGE_SIZE_OPTIONS.map((size) => (
+                      <SelectItem key={size} value={String(size)}>
+                        {size} per page
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+
+                {getPageNumbers(page, totalPages).map((p, i) =>
+                  p === "ellipsis" ? (
+                    <span key={`ellipsis-${i}`} className="px-2 text-muted-foreground">
+                      ...
+                    </span>
+                  ) : (
+                    <Button
+                      key={p}
+                      variant={p === page ? "default" : "outline"}
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => setPage(p)}
+                    >
+                      {p + 1}
+                    </Button>
+                  )
+                )}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page >= totalPages - 1}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ) : undefined
+        }
+      >
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader>
             <TableRow>
               <TableHead className="min-w-[250px]">Audio Details</TableHead>
               <TableHead className="w-[110px]">Category</TableHead>
-              <TableHead className="w-[80px]">Size</TableHead>
-              <TableHead className="w-[100px]">Created</TableHead>
+              <TableHead className="hidden w-[80px] md:table-cell">Size</TableHead>
+              <TableHead className="hidden w-[100px] md:table-cell">Created</TableHead>
               <TableHead className="min-w-[300px]">Player</TableHead>
               <TableHead className="w-[70px]"></TableHead>
             </TableRow>
@@ -187,10 +259,10 @@ export function AudioTable({ onEdit, onDelete, refreshKey }: AudioTableProps) {
                   <TableCell>
                     <Skeleton className="h-5 w-16 rounded-full" />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <Skeleton className="h-3 w-12" />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <Skeleton className="h-3 w-16" />
                   </TableCell>
                   <TableCell>
@@ -224,7 +296,9 @@ export function AudioTable({ onEdit, onDelete, refreshKey }: AudioTableProps) {
                     <TableCell>
                       <div className="space-y-1">
                         <div className="flex items-start justify-between gap-2">
-                          <p className="text-sm font-medium line-clamp-1 flex-1">{item.title}</p>
+                          <p className="min-w-0 flex-1 line-clamp-1 text-sm font-medium">
+                            {item.title}
+                          </p>
                           <div className="text-xs text-muted-foreground shrink-0">
                             {formatDuration(audioDurations[item.id] ?? item.duration_seconds)}
                           </div>
@@ -251,10 +325,10 @@ export function AudioTable({ onEdit, onDelete, refreshKey }: AudioTableProps) {
                         <span className="text-xs text-muted-foreground">Uncategorized</span>
                       )}
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
+                    <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
                       {formatBytes(item.file_size_bytes)}
                     </TableCell>
-                    <TableCell className="text-xs text-muted-foreground">
+                    <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
                       {new Date(item.created_at).toLocaleDateString()}
                     </TableCell>
                     <TableCell>
@@ -322,77 +396,7 @@ export function AudioTable({ onEdit, onDelete, refreshKey }: AudioTableProps) {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      {/* Pagination */}
-      {totalItems > 0 && (
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>
-              Showing {page * pageSize + 1} to {Math.min((page + 1) * pageSize, totalItems)} of{" "}
-              {totalItems}
-            </span>
-            <Select
-              value={String(pageSize)}
-              onValueChange={(val) => {
-                setPageSize(Number(val));
-                setPage(0);
-              }}
-            >
-              <SelectTrigger className="w-[110px] h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAGE_SIZE_OPTIONS.map((size) => (
-                  <SelectItem key={size} value={String(size)}>
-                    {size} per page
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={page === 0}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-
-            {getPageNumbers(page, totalPages).map((p, i) =>
-              p === "ellipsis" ? (
-                <span key={`ellipsis-${i}`} className="px-2 text-muted-foreground">
-                  ...
-                </span>
-              ) : (
-                <Button
-                  key={p}
-                  variant={p === page ? "default" : "outline"}
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() => setPage(p)}
-                >
-                  {p + 1}
-                </Button>
-              )
-            )}
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page >= totalPages - 1}
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      </TableShell>
     </div>
   );
 }

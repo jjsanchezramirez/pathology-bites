@@ -3,8 +3,8 @@
 
 import { useState, useEffect } from "react";
 import { createClient } from "@/shared/services/client";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { MessageSquare, CheckCircle, Clock, HelpCircle, type LucideIcon } from "lucide-react";
+import { StatCard, StatCardSkeleton, StatGrid } from "@/shared/components/ui/page-layout";
+import { MessageSquare, CheckCircle, Clock, HelpCircle } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import { INQUIRY_TYPES } from "../types/inquiries";
 import { log } from "@/shared/utils/logging";
@@ -82,34 +82,22 @@ export function InquiryStatistics({ onStatsChange, refreshTrigger }: InquiryStat
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [refreshTrigger]);
 
-  const StatCard = ({
-    title,
-    value,
-    icon: Icon,
-  }: {
-    title: string;
-    value: number;
-    icon: LucideIcon;
-  }) => (
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-        <CardTitle className="text-sm font-medium">{title}</CardTitle>
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </CardHeader>
-      <CardContent>
-        <div className="text-2xl font-bold">
-          {loading ? <div className="h-8 w-12 bg-muted rounded animate-pulse" /> : value}
-        </div>
-      </CardContent>
-    </Card>
-  );
+  if (loading) {
+    return (
+      <StatGrid>
+        {[1, 2, 3, 4].map((i) => (
+          <StatCardSkeleton key={i} />
+        ))}
+      </StatGrid>
+    );
+  }
 
   return (
-    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-      <StatCard title="Total Inquiries" value={stats.totalInquiries} icon={MessageSquare} />
-      <StatCard title="Pending General" value={stats.pendingGeneral} icon={Clock} />
-      <StatCard title="Pending Tech" value={stats.pendingTech} icon={HelpCircle} />
-      <StatCard title="Resolved" value={stats.resolvedInquiries} icon={CheckCircle} />
-    </div>
+    <StatGrid>
+      <StatCard label="Total Inquiries" value={stats.totalInquiries} icon={MessageSquare} />
+      <StatCard label="Pending General" value={stats.pendingGeneral} icon={Clock} />
+      <StatCard label="Pending Tech" value={stats.pendingTech} icon={HelpCircle} />
+      <StatCard label="Resolved" value={stats.resolvedInquiries} icon={CheckCircle} />
+    </StatGrid>
   );
 }

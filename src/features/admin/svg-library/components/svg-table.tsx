@@ -32,6 +32,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/shared/components/ui/table";
+import { TableShell } from "@/shared/components/ui/page-layout";
 import { fetchSvgAssets } from "@/features/admin/svg-library/services/svg-assets";
 import type { SvgAsset, SvgListFilters } from "@/features/admin/svg-library/types";
 import { toast } from "@/shared/utils/ui/toast";
@@ -137,16 +138,87 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
       />
 
       {/* Table */}
-      <div className="rounded-md border bg-card">
+      <TableShell
+        footer={
+          totalItems > 0 ? (
+            <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <span>
+                  Showing {page * pageSize + 1} to {Math.min((page + 1) * pageSize, totalItems)} of{" "}
+                  {totalItems}
+                </span>
+                <Select
+                  value={String(pageSize)}
+                  onValueChange={(val) => {
+                    setPageSize(Number(val));
+                    setPage(0);
+                  }}
+                >
+                  <SelectTrigger className="h-8 w-[110px]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {PAGE_SIZE_OPTIONS.map((size) => (
+                      <SelectItem key={size} value={String(size)}>
+                        {size} per page
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="flex flex-wrap items-center gap-1">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => Math.max(0, p - 1))}
+                  disabled={page === 0}
+                >
+                  <ChevronLeft className="h-4 w-4" />
+                  Previous
+                </Button>
+
+                {getPageNumbers(page, totalPages).map((p, i) =>
+                  p === "ellipsis" ? (
+                    <span key={`ellipsis-${i}`} className="px-2 text-muted-foreground">
+                      ...
+                    </span>
+                  ) : (
+                    <Button
+                      key={p}
+                      variant={p === page ? "default" : "outline"}
+                      size="sm"
+                      className="h-8 w-8 p-0"
+                      onClick={() => setPage(p)}
+                    >
+                      {p + 1}
+                    </Button>
+                  )
+                )}
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setPage((p) => p + 1)}
+                  disabled={page >= totalPages - 1}
+                >
+                  Next
+                  <ChevronRight className="h-4 w-4" />
+                </Button>
+              </div>
+            </div>
+          ) : undefined
+        }
+      >
         <Table>
-          <TableHeader className="bg-muted/50">
+          <TableHeader>
             <TableRow>
               <TableHead className="w-[60px]">Preview</TableHead>
               <TableHead className="min-w-[200px]">Name</TableHead>
               <TableHead className="w-[120px]">Category</TableHead>
-              <TableHead className="w-[120px]">Dimensions</TableHead>
-              <TableHead className="w-[80px]">Size</TableHead>
-              <TableHead className="w-[100px]">Created</TableHead>
+              <TableHead className="hidden w-[120px] md:table-cell">Dimensions</TableHead>
+              <TableHead className="hidden w-[80px] md:table-cell">Size</TableHead>
+              <TableHead className="hidden w-[100px] md:table-cell">Created</TableHead>
               <TableHead className="w-[70px] text-right">Actions</TableHead>
             </TableRow>
           </TableHeader>
@@ -166,13 +238,13 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
                   <TableCell>
                     <Skeleton className="h-5 w-20 rounded-full" />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <Skeleton className="h-3 w-16" />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <Skeleton className="h-3 w-12" />
                   </TableCell>
-                  <TableCell>
+                  <TableCell className="hidden md:table-cell">
                     <Skeleton className="h-3 w-16" />
                   </TableCell>
                   <TableCell>
@@ -196,7 +268,7 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
               assets.map((asset) => (
                 <TableRow key={asset.id}>
                   <TableCell>
-                    <div className="w-10 h-10 rounded border bg-white flex items-center justify-center overflow-hidden">
+                    <div className="flex h-10 w-10 items-center justify-center overflow-hidden rounded border bg-white">
                       {/* eslint-disable-next-line @next/next/no-img-element */}
                       <img
                         src={asset.url}
@@ -241,13 +313,13 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
                       <span className="text-xs text-muted-foreground">-</span>
                     )}
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
+                  <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
                     {asset.width && asset.height ? `${asset.width} x ${asset.height}` : "-"}
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
+                  <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
                     {formatBytes(asset.file_size_bytes)}
                   </TableCell>
-                  <TableCell className="text-xs text-muted-foreground">
+                  <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
                     {new Date(asset.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
@@ -258,77 +330,7 @@ export function SvgTable({ onEdit, onDelete, refreshKey }: SvgTableProps) {
             )}
           </TableBody>
         </Table>
-      </div>
-
-      {/* Pagination */}
-      {totalItems > 0 && (
-        <div className="flex items-center justify-between pt-2">
-          <div className="flex items-center gap-2 text-sm text-muted-foreground">
-            <span>
-              Showing {page * pageSize + 1} to {Math.min((page + 1) * pageSize, totalItems)} of{" "}
-              {totalItems}
-            </span>
-            <Select
-              value={String(pageSize)}
-              onValueChange={(val) => {
-                setPageSize(Number(val));
-                setPage(0);
-              }}
-            >
-              <SelectTrigger className="w-[110px] h-8">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {PAGE_SIZE_OPTIONS.map((size) => (
-                  <SelectItem key={size} value={String(size)}>
-                    {size} per page
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-1">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => Math.max(0, p - 1))}
-              disabled={page === 0}
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Previous
-            </Button>
-
-            {getPageNumbers(page, totalPages).map((p, i) =>
-              p === "ellipsis" ? (
-                <span key={`ellipsis-${i}`} className="px-2 text-muted-foreground">
-                  ...
-                </span>
-              ) : (
-                <Button
-                  key={p}
-                  variant={p === page ? "default" : "outline"}
-                  size="sm"
-                  className="h-8 w-8 p-0"
-                  onClick={() => setPage(p)}
-                >
-                  {p + 1}
-                </Button>
-              )
-            )}
-
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => setPage((p) => p + 1)}
-              disabled={page >= totalPages - 1}
-            >
-              Next
-              <ChevronRight className="h-4 w-4" />
-            </Button>
-          </div>
-        </div>
-      )}
+      </TableShell>
     </div>
   );
 }

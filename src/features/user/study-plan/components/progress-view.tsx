@@ -67,10 +67,10 @@ export function ProgressView({ schedule, config, completedTasks, colorMap }: Pro
 
   return (
     <div className="space-y-6">
-      <div className="rounded-2xl border border-border bg-card p-5 lg:p-6">
-        <div className="flex items-end justify-between">
-          <div>
-            <div className="text-3xl font-bold tabular-nums text-foreground">{overallPct}%</div>
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+        <div className="flex items-end justify-between gap-2">
+          <div className="min-w-0">
+            <div className="text-2xl font-bold tabular-nums text-foreground">{overallPct}%</div>
             <div className="mt-0.5 text-sm text-muted-foreground">Overall Progress</div>
           </div>
           <div className="text-right text-xs tabular-nums text-muted-foreground">
@@ -96,7 +96,7 @@ export function ProgressView({ schedule, config, completedTasks, colorMap }: Pro
             Phases
           </h3>
           <div
-            className={`grid gap-3 ${
+            className={`grid gap-4 ${
               byPhase.length === 1 ? "grid-cols-1" : "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
             }`}
           >
@@ -105,15 +105,15 @@ export function ProgressView({ schedule, config, completedTasks, colorMap }: Pro
               const pct = p.total > 0 ? Math.round((p.completed / p.total) * 100) : 0;
               return (
                 <div key={p.name} className="rounded-2xl border border-border bg-card p-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <div className="text-sm font-medium text-foreground">{p.name}</div>
-                      <div className="mt-0.5 text-[11px] text-muted-foreground">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="min-w-0">
+                      <div className="truncate text-sm font-medium text-foreground">{p.name}</div>
+                      <div className="mt-0.5 text-xs text-muted-foreground">
                         {p.completed}/{p.total} tasks
                       </div>
                     </div>
                     <div
-                      className="text-xl font-bold tabular-nums"
+                      className="shrink-0 text-lg font-semibold tabular-nums"
                       style={{ color: palette.accent }}
                     >
                       {pct}%
@@ -125,7 +125,7 @@ export function ProgressView({ schedule, config, completedTasks, colorMap }: Pro
                       style={{ width: `${pct}%`, backgroundColor: palette.accent }}
                     />
                   </div>
-                  <div className="mt-1.5 text-[10px] tabular-nums text-muted-foreground">
+                  <div className="mt-1.5 text-xs tabular-nums text-muted-foreground">
                     {fmtHours(p.completedMin)} / {fmtHours(p.minutes)}
                   </div>
                 </div>
@@ -140,7 +140,7 @@ export function ProgressView({ schedule, config, completedTasks, colorMap }: Pro
           <h3 className="mb-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground">
             Resources
           </h3>
-          <div className="grid gap-3 sm:grid-cols-2">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
             {Object.entries(byResource).map(([resName, stats]) => {
               const colors = colorMap[resName] || { bg: "#e5e5e5", text: "#000000" };
               const pct = stats.total > 0 ? Math.round((stats.completed / stats.total) * 100) : 0;
@@ -169,7 +169,7 @@ export function ProgressView({ schedule, config, completedTasks, colorMap }: Pro
                           style={{ width: `${pct}%`, backgroundColor: colors.bg }}
                         />
                       </div>
-                      <div className="mt-1.5 flex items-center justify-between text-[11px] tabular-nums text-muted-foreground">
+                      <div className="mt-1.5 flex items-center justify-between gap-2 text-xs tabular-nums text-muted-foreground">
                         <span>
                           {stats.completed}/{stats.total} tasks
                         </span>

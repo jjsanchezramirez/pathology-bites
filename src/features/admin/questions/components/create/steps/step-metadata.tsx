@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Label } from "@/shared/components/ui/label";
 import {
   Select,
@@ -220,48 +220,39 @@ export function StepMetadata({
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="mx-auto w-full max-w-4xl space-y-6">
       {/* AI Metadata Suggestion Banner */}
-      <Card className="border-primary/20 bg-primary/5">
-        <CardContent className="pt-6">
-          <div className="flex items-start gap-4">
-            <div className="p-3 rounded-lg bg-primary/10">
-              <Brain className="h-6 w-6 text-primary" />
-            </div>
-            <div className="flex-1 space-y-3">
-              <div>
-                <h3 className="font-semibold text-base mb-1">AI Metadata Suggestions</h3>
-                <p className="text-sm text-muted-foreground">
-                  Let AI analyze your question content and suggest appropriate category, question
-                  set, difficulty, and tags.
-                </p>
-              </div>
-              <Button
-                onClick={handleAIMetadataSuggestion}
-                disabled={isGeneratingMetadata || !formState.title || !formState.stem}
-                variant="default"
-                size="default"
-              >
-                {isGeneratingMetadata ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4 mr-2" />
-                    Suggest All Metadata
-                  </>
-                )}
-              </Button>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <SectionCard
+        className="border-primary/20 bg-primary/5"
+        title="AI Metadata Suggestions"
+        icon={Brain}
+        description="Let AI analyze your question content and suggest appropriate category, question set, difficulty, and tags."
+      >
+        <div>
+          <Button
+            onClick={handleAIMetadataSuggestion}
+            disabled={isGeneratingMetadata || !formState.title || !formState.stem}
+            variant="default"
+            size="default"
+          >
+            {isGeneratingMetadata ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4 mr-2" />
+                Suggest All Metadata
+              </>
+            )}
+          </Button>
+        </div>
+      </SectionCard>
 
       {/* Category Selection */}
-      <div className="space-y-3">
-        <Label htmlFor="category" className="text-base font-semibold">
+      <div className="space-y-2">
+        <Label htmlFor="category" className="font-semibold">
           Category <span className="text-destructive">*</span>
         </Label>
         <Select
@@ -282,8 +273,8 @@ export function StepMetadata({
       </div>
 
       {/* Question Set Selection */}
-      <div className="space-y-3">
-        <Label htmlFor="question_set" className="text-base font-semibold">
+      <div className="space-y-2">
+        <Label htmlFor="question_set" className="font-semibold">
           Question Set <span className="text-destructive">*</span>
         </Label>
         <Select
@@ -306,8 +297,8 @@ export function StepMetadata({
       </div>
 
       {/* Difficulty Selection */}
-      <div className="space-y-3">
-        <Label htmlFor="difficulty" className="text-base font-semibold">
+      <div className="space-y-2">
+        <Label htmlFor="difficulty" className="font-semibold">
           Difficulty
         </Label>
         <Select
@@ -343,8 +334,8 @@ export function StepMetadata({
       </div>
 
       {/* Tags */}
-      <div className="space-y-3">
-        <Label className="text-base font-semibold">
+      <div className="space-y-2">
+        <Label className="font-semibold">
           Tags <span className="text-muted-foreground font-normal">(Optional)</span>
         </Label>
         <TagAutocomplete

@@ -17,7 +17,6 @@ import {
   SelectValue,
 } from "@/shared/components/ui/select";
 import { Label } from "@/shared/components/ui/label";
-import { Card, CardContent } from "@/shared/components/ui/card";
 
 import { QuestionWithDetails } from "@/shared/types/questions";
 import { createClient } from "@/shared/services/client";
@@ -156,7 +155,7 @@ export function MetadataTab({
         name="difficulty"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-base font-semibold">Difficulty</FormLabel>
+            <FormLabel className="font-semibold">Difficulty</FormLabel>
             <Select
               onValueChange={(value) => {
                 field.onChange(value);
@@ -181,14 +180,12 @@ export function MetadataTab({
       />
 
       {/* Category */}
-      <div className="space-y-3">
-        <Label className="text-base font-semibold">Category</Label>
+      <div className="space-y-2">
+        <Label className="font-semibold">Category</Label>
         {hasCategory ? (
-          <Card className="bg-muted/50">
-            <CardContent className="p-3">
-              <p className="text-sm font-medium">{categoryName}</p>
-            </CardContent>
-          </Card>
+          <div className="rounded-lg border bg-muted/50 p-3">
+            <p className="text-sm font-medium">{categoryName}</p>
+          </div>
         ) : (
           <FormField
             control={form.control}
@@ -223,14 +220,12 @@ export function MetadataTab({
       </div>
 
       {/* Question Set */}
-      <div className="space-y-3">
-        <Label className="text-base font-semibold">Question Set</Label>
+      <div className="space-y-2">
+        <Label className="font-semibold">Question Set</Label>
         {hasQuestionSet ? (
-          <Card className="bg-muted/50">
-            <CardContent className="p-3">
-              <p className="text-sm font-medium">{questionSetName}</p>
-            </CardContent>
-          </Card>
+          <div className="rounded-lg border bg-muted/50 p-3">
+            <p className="text-sm font-medium">{questionSetName}</p>
+          </div>
         ) : (
           <FormField
             control={form.control}
@@ -265,8 +260,8 @@ export function MetadataTab({
       </div>
 
       {/* Tags */}
-      <div className="space-y-3">
-        <Label className="text-base font-semibold">
+      <div className="space-y-2">
+        <Label className="font-semibold">
           Tags <span className="text-muted-foreground font-normal">(Optional)</span>
         </Label>
         <TagAutocomplete

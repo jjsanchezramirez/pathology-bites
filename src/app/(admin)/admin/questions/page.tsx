@@ -5,13 +5,9 @@ import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useDashboardTheme } from "@/shared/contexts/dashboard-theme-context";
 import { QuestionsTable } from "@/features/admin/questions/components/shared/questions-table";
 import { QuestionsStatsCards } from "@/features/admin/questions/components/shared/questions-stats-cards";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
+import { Loader2 } from "lucide-react";
 import { AccessDenied, AccessDeniedPresets } from "@/shared/components/common/access-denied";
 
 export default function QuestionsPage() {
@@ -21,11 +17,9 @@ export default function QuestionsPage() {
   // Show loading while checking role
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary mx-auto"></div>
-          <p className="text-sm text-muted-foreground mt-2">Loading...</p>
-        </div>
+      <div className="flex flex-col items-center justify-center gap-2 py-12">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm text-muted-foreground">Loading...</p>
       </div>
     );
   }
@@ -70,25 +64,15 @@ export default function QuestionsPage() {
   const content = getPageContent();
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">{content.title}</h1>
-        <p className="text-muted-foreground">{content.description}</p>
-      </div>
+    <PageContainer>
+      <PageHeader title={content.title} description={content.description} />
 
       {/* Statistics Cards */}
       <QuestionsStatsCards />
 
-      <Card>
-        <CardHeader>
-          <CardTitle>{content.cardTitle}</CardTitle>
-          <CardDescription>{content.cardDescription}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <QuestionsTable adminMode={adminMode} />
-        </CardContent>
-      </Card>
-    </div>
+      <SectionCard title={content.cardTitle} description={content.cardDescription}>
+        <QuestionsTable adminMode={adminMode} />
+      </SectionCard>
+    </PageContainer>
   );
 }

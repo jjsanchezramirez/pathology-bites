@@ -1,6 +1,6 @@
 // src/shared/components/layout/dashboard/recent-activity.tsx
 import { memo, useMemo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Badge } from "@/shared/components/ui/badge";
 import { FileQuestion, Users, MessageSquare, Image as ImageIcon, Clock } from "lucide-react";
 import { RecentActivity } from "@/features/admin/dashboard/services/service";
@@ -101,45 +101,37 @@ export const RecentActivityCard = memo(function RecentActivityCard({
   };
 
   return (
-    <Card className="col-span-4">
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Clock className="h-5 w-5" />
-          Recent Activity
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        {activities.length === 0 ? (
-          <div className="text-center py-8 text-muted-foreground">
-            <Clock className="h-12 w-12 mx-auto mb-4 opacity-50" />
-            <p>No recent activity</p>
-          </div>
-        ) : (
-          <div className="space-y-4">
-            {activities.map((activity) => (
-              <div
-                key={activity.id}
-                className="flex items-start space-x-4 p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-              >
-                <div className="shrink-0 mt-1">{getActivityIcon(activity.type)}</div>
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 mb-1">
-                    <p className="text-sm font-medium truncate">{activity.title}</p>
-                    {getActivityBadge(activity.type)}
-                  </div>
-                  <p className="text-sm text-muted-foreground truncate">{activity.description}</p>
-                  {activity.user && (
-                    <p className="text-xs text-muted-foreground mt-1">by {activity.user}</p>
-                  )}
+    <SectionCard title="Recent Activity" icon={Clock}>
+      {activities.length === 0 ? (
+        <div className="py-8 text-center text-muted-foreground">
+          <Clock className="mx-auto mb-4 h-12 w-12 opacity-50" />
+          <p className="text-sm">No recent activity</p>
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {activities.map((activity) => (
+            <div
+              key={activity.id}
+              className="flex items-start gap-3 rounded-lg border bg-card p-3 transition-colors hover:bg-accent/50"
+            >
+              <div className="mt-0.5 shrink-0">{getActivityIcon(activity.type)}</div>
+              <div className="min-w-0 flex-1 space-y-1">
+                <div className="flex min-w-0 items-center gap-2">
+                  <p className="min-w-0 truncate text-sm font-medium">{activity.title}</p>
+                  {getActivityBadge(activity.type)}
                 </div>
-                <div className="shrink-0 text-xs text-muted-foreground">
-                  {formatTimestamp(activity.timestamp)}
-                </div>
+                <p className="truncate text-sm text-muted-foreground">{activity.description}</p>
+                {activity.user && (
+                  <p className="text-xs text-muted-foreground">by {activity.user}</p>
+                )}
               </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              <div className="shrink-0 text-xs text-muted-foreground">
+                {formatTimestamp(activity.timestamp)}
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </SectionCard>
   );
 });

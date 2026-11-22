@@ -2,8 +2,12 @@
 
 // User statistics cards for user management dashboard
 import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
-import { Skeleton } from "@/shared/components/ui/skeleton";
+import {
+  SectionCard,
+  StatCard,
+  StatCardSkeleton,
+  StatGrid,
+} from "@/shared/components/ui/page-layout";
 import { Users, UserCheck, UserX, UserMinus, UserCog } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import {
@@ -19,7 +23,12 @@ export interface UserStatsRef {
 
 const CACHE_KEY = "user-stats";
 
-export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
+interface UserStatsCardsProps {
+  /** Extra StatCards rendered in the same grid (e.g. the waitlist count). */
+  children?: React.ReactNode;
+}
+
+export const UserStatsCards = forwardRef<UserStatsRef, UserStatsCardsProps>(({ children }, ref) => {
   const [stats, setStats] = useState<UserStatsFormatted | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -65,110 +74,73 @@ export const UserStatsCards = forwardRef<UserStatsRef>((props, ref) => {
     refresh: () => loadStats(true),
   }));
 
+  // 5 cards + the waitlist slot = 6: 1 → 2 → 3 columns, so rows stay full.
+
   if (loading) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        {[1, 2, 3, 4, 5].map((i) => (
-          <Card key={i}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-4 rounded" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-16 mb-2" />
-              <Skeleton className="h-3 w-32" />
-            </CardContent>
-          </Card>
+      <StatGrid columns={3}>
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <StatCardSkeleton key={i} />
         ))}
-      </div>
+      </StatGrid>
     );
   }
 
   if (!stats) {
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-        <Card>
-          <CardContent className="p-6">
-            <p className="text-muted-foreground">Failed to load user statistics</p>
-          </CardContent>
-        </Card>
-      </div>
+      <SectionCard>
+        <p className="text-sm text-muted-foreground">Failed to load user statistics</p>
+      </SectionCard>
     );
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-      {/* Total Users Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{stats.totalUsers.label}</CardTitle>
-          <Users className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.totalUsers.count}</div>
-          <div className="text-xs text-muted-foreground">
+    <StatGrid columns={3}>
+      <StatCard
+        label={stats.totalUsers.label}
+        value={stats.totalUsers.count}
+        icon={Users}
+        hint={
+          <>
             Internal Users: {stats.totalUsers.breakdown.internal}, End Users:{" "}
             {stats.totalUsers.breakdown.endUsers}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Internal Users Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{stats.internalUsers.label}</CardTitle>
-          <UserCog className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{stats.internalUsers.count}</div>
-          <div className="text-xs text-muted-foreground">
+          </>
+        }
+      />
+      <StatCard
+        label={stats.internalUsers.label}
+        value={stats.internalUsers.count}
+        icon={UserCog}
+        hint={
+          <>
             Admin: {stats.internalUsers.breakdown.admins}, Creator:{" "}
             {stats.internalUsers.breakdown.creators}, Reviewer:{" "}
             {stats.internalUsers.breakdown.reviewers}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Active Users Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{stats.activeUsers.label}</CardTitle>
-          <UserCheck className="h-4 w-4 text-green-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-green-600">{stats.activeUsers.count}</div>
-          <p className="text-xs text-muted-foreground">{stats.activeUsers.description}</p>
-        </CardContent>
-      </Card>
-
-      {/* Inactive Users Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{stats.inactiveUsers.label}</CardTitle>
-          <UserMinus className="h-4 w-4 text-gray-500" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-gray-500">{stats.inactiveUsers.count}</div>
-          <p className="text-xs text-muted-foreground">
-            {stats.inactiveUsers.description} ({stats.inactiveUsers.percentage})
-          </p>
-        </CardContent>
-      </Card>
-
-      {/* Suspended Users Card */}
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">{stats.suspendedUsers.label}</CardTitle>
-          <UserX className="h-4 w-4 text-red-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold text-red-600">{stats.suspendedUsers.count}</div>
-          <p className="text-xs text-muted-foreground">
-            {stats.suspendedUsers.description} ({stats.suspendedUsers.percentage})
-          </p>
-        </CardContent>
-      </Card>
-    </div>
+          </>
+        }
+      />
+      <StatCard
+        label={stats.activeUsers.label}
+        value={stats.activeUsers.count}
+        icon={UserCheck}
+        tone="success"
+        hint={stats.activeUsers.description}
+      />
+      <StatCard
+        label={stats.inactiveUsers.label}
+        value={stats.inactiveUsers.count}
+        icon={UserMinus}
+        hint={`${stats.inactiveUsers.description} (${stats.inactiveUsers.percentage})`}
+      />
+      <StatCard
+        label={stats.suspendedUsers.label}
+        value={stats.suspendedUsers.count}
+        icon={UserX}
+        tone="danger"
+        hint={`${stats.suspendedUsers.description} (${stats.suspendedUsers.percentage})`}
+      />
+      {children}
+    </StatGrid>
   );
 });
 

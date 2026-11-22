@@ -1,76 +1,75 @@
 // src/features/performance/components/performance-loading.tsx
 
-import { Card, CardContent, CardHeader } from "@/shared/components/ui/card";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { ContentGrid, PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
 import { Skeleton } from "@/shared/components/ui/skeleton";
+import { cn } from "@/shared/utils";
 
+// Inline placeholder for SectionCard title/description slots (they render inside
+// <h2>/<p>, so this must be a span rather than Skeleton's div).
+function HeadingSkeleton({ className }: { className: string }) {
+  return <span className={cn("block animate-pulse rounded-md bg-muted", className)} />;
+}
+
+// Mirrors the loaded performance page: header, overview cards, timeline + radar,
+// activity calendar, then the category breakdown.
 export function PerformanceLoading() {
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Performance Analytics</h1>
-        <p className="text-muted-foreground">
-          Detailed insights into your learning progress and areas for improvement.
-        </p>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="Performance Analytics"
+        description="Detailed insights into your learning progress and areas for improvement."
+      />
 
       {/* Performance Overview Skeleton */}
-      <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
-        {Array.from({ length: 4 }).map((_, i) => (
-          <Card key={i}>
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-4 w-4" />
-            </CardHeader>
-            <CardContent>
-              <Skeleton className="h-8 w-16 mb-2" />
-              <Skeleton className="h-3 w-32" />
-            </CardContent>
-          </Card>
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        {Array.from({ length: 3 }).map((_, i) => (
+          <SectionCard
+            key={i}
+            title={<HeadingSkeleton className="h-5 w-32" />}
+            contentClassName="flex flex-col items-center justify-center"
+          >
+            <Skeleton className="h-[120px] w-[120px] rounded-full" />
+            <Skeleton className="h-3 w-40" />
+          </SectionCard>
         ))}
       </div>
 
       {/* Performance Charts Skeleton */}
-      <div className="grid gap-6 md:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-40" />
-            <Skeleton className="h-4 w-56" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-32" />
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-2 w-24" />
-                    <Skeleton className="h-4 w-8" />
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
+      <ContentGrid>
+        {Array.from({ length: 2 }).map((_, i) => (
+          <SectionCard
+            key={i}
+            title={<HeadingSkeleton className="h-5 w-40" />}
+            description={<HeadingSkeleton className="h-4 w-56" />}
+          >
+            <Skeleton className="h-[400px] w-full" />
+          </SectionCard>
+        ))}
+      </ContentGrid>
 
-        <Card>
-          <CardHeader>
-            <Skeleton className="h-6 w-36" />
-            <Skeleton className="h-4 w-48" />
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} className="flex items-center justify-between">
-                  <Skeleton className="h-4 w-28" />
-                  <div className="flex items-center gap-2">
-                    <Skeleton className="h-2 w-20" />
-                    <Skeleton className="h-4 w-8" />
-                  </div>
-                </div>
-              ))}
+      {/* Activity Calendar Skeleton */}
+      <SectionCard
+        title={<HeadingSkeleton className="h-5 w-40" />}
+        description={<HeadingSkeleton className="h-4 w-32" />}
+      >
+        <Skeleton className="h-[120px] w-full" />
+      </SectionCard>
+
+      {/* Category Breakdown Skeleton */}
+      <SectionCard title={<HeadingSkeleton className="h-5 w-48" />}>
+        <div className="space-y-2">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <div key={i} className="space-y-2 rounded-lg border p-3">
+              <div className="flex items-center justify-between gap-3">
+                <Skeleton className="h-4 w-32" />
+                <Skeleton className="h-6 w-24" />
+              </div>
+              <Skeleton className="h-2 w-full" />
             </div>
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+          ))}
+        </div>
+      </SectionCard>
+    </PageContainer>
   );
 }

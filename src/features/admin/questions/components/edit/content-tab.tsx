@@ -14,13 +14,8 @@ import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { Label } from "@/shared/components/ui/label";
 import { Badge } from "@/shared/components/ui/badge";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { Card, CardContent } from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { BookOpen, Sparkles, Loader2 } from "lucide-react";
 import { toast } from "@/shared/utils/ui/toast";
 import {
@@ -216,7 +211,7 @@ export function ContentTab({
         name="title"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-base font-semibold">Question Title</FormLabel>
+            <FormLabel className="font-semibold">Question Title</FormLabel>
             <FormControl>
               <Input
                 {...field}
@@ -225,7 +220,6 @@ export function ContentTab({
                   field.onChange(e);
                   onUnsavedChanges();
                 }}
-                className="text-base"
               />
             </FormControl>
             <FormMessage />
@@ -239,7 +233,7 @@ export function ContentTab({
         name="stem"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-base font-semibold">Question Stem</FormLabel>
+            <FormLabel className="font-semibold">Question Stem</FormLabel>
             <FormControl>
               <Textarea
                 {...field}
@@ -249,7 +243,7 @@ export function ContentTab({
                   field.onChange(e);
                   onUnsavedChanges();
                 }}
-                className="text-base resize-none"
+                className="resize-none"
               />
             </FormControl>
             <FormMessage />
@@ -258,9 +252,9 @@ export function ContentTab({
       />
 
       {/* Answer Options */}
-      <div className="space-y-3">
-        <Label className="text-base font-semibold">Answer Options</Label>
-        <div className="space-y-3">
+      <div className="space-y-2">
+        <Label className="font-semibold">Answer Options</Label>
+        <div className="space-y-2">
           {answerOptions.map((option, index) => (
             <Card
               key={index}
@@ -270,9 +264,9 @@ export function ContentTab({
                   : "border-border hover:border-muted-foreground/30"
               }`}
             >
-              <CardContent className="p-4 space-y-3">
+              <CardContent className="p-4 space-y-2">
                 {/* Option Row */}
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2">
                   <input
                     type="radio"
                     name="correct-answer"
@@ -281,7 +275,7 @@ export function ContentTab({
                     className="h-5 w-5 text-primary focus:ring-primary cursor-pointer"
                   />
                   <Label
-                    className="text-sm font-semibold min-w-[70px] cursor-pointer"
+                    className="text-sm font-medium shrink-0 sm:min-w-[70px] cursor-pointer"
                     onClick={() => updateAnswerOption(index, "is_correct", true)}
                   >
                     Option {String.fromCharCode(65 + index)}
@@ -290,18 +284,18 @@ export function ContentTab({
                     value={option.text}
                     onChange={(e) => updateAnswerOption(index, "text", e.target.value)}
                     placeholder="Answer option text..."
-                    className="flex-1"
+                    className="min-w-0 flex-1"
                   />
                   {option.is_correct && (
-                    <Badge variant="default" className="ml-2 bg-primary">
+                    <Badge variant="default" className="shrink-0 bg-primary">
                       Correct
                     </Badge>
                   )}
                 </div>
 
                 {/* Explanation Row */}
-                <div className="flex items-start gap-3 pl-8">
-                  <Label className="text-xs text-muted-foreground min-w-[70px] pt-2">
+                <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:pl-8">
+                  <Label className="text-xs text-muted-foreground sm:min-w-[70px] sm:pt-2">
                     Explanation
                   </Label>
                   <Textarea
@@ -309,7 +303,7 @@ export function ContentTab({
                     onChange={(e) => updateAnswerOption(index, "explanation", e.target.value)}
                     placeholder="Explanation for this option..."
                     rows={2}
-                    className="flex-1 text-sm resize-none"
+                    className="min-w-0 flex-1 text-sm resize-none"
                   />
                 </div>
               </CardContent>
@@ -324,7 +318,7 @@ export function ContentTab({
         name="teaching_point"
         render={({ field }) => (
           <FormItem>
-            <FormLabel className="text-base font-semibold">Teaching Point</FormLabel>
+            <FormLabel className="font-semibold">Teaching Point</FormLabel>
             <FormControl>
               <Textarea
                 {...field}
@@ -348,8 +342,8 @@ export function ContentTab({
         name="question_references"
         render={({ field }) => (
           <FormItem>
-            <div className="flex items-center justify-between mb-2">
-              <FormLabel className="text-base font-semibold">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <FormLabel className="font-semibold">
                 References <span className="text-muted-foreground font-normal">(Optional)</span>
               </FormLabel>
               <Button
@@ -388,69 +382,63 @@ export function ContentTab({
       />
 
       {/* AI Enhancement Section */}
-      <div className="border-t pt-8 mt-8">
-        <Card className="bg-primary/5 border-primary/20">
-          <CardHeader className="pb-4">
-            <CardTitle className="flex items-center gap-2 text-base">
-              <Sparkles className="h-5 w-5 text-primary" />
-              Enhance with AI
-            </CardTitle>
-            <CardDescription>
-              Use AI to improve clarity, accuracy, and pedagogical value of this question.
-            </CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div className="space-y-2">
-              <Label className="text-sm font-medium">AI Model</Label>
-              <Select value={selectedModel} onValueChange={setSelectedModel}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Default: the question's generating model" />
-                </SelectTrigger>
-                <SelectContent>
-                  {ACTIVE_AI_MODELS.map((model) => (
-                    <SelectItem key={model.id} value={model.id}>
-                      {model.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
+      <div className="border-t pt-6">
+        <SectionCard
+          className="bg-primary/5 border-primary/20"
+          title="Enhance with AI"
+          icon={Sparkles}
+          description="Use AI to improve clarity, accuracy, and pedagogical value of this question."
+        >
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">AI Model</Label>
+            <Select value={selectedModel} onValueChange={setSelectedModel}>
+              <SelectTrigger>
+                <SelectValue placeholder="Default: the question's generating model" />
+              </SelectTrigger>
+              <SelectContent>
+                {ACTIVE_AI_MODELS.map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    {model.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-            <div className="space-y-2.5">
-              <Label htmlFor="enhancement-request" className="text-sm font-medium">
-                Enhancement Request{" "}
-                <span className="text-muted-foreground font-normal">(Optional)</span>
-              </Label>
-              <Textarea
-                id="enhancement-request"
-                placeholder="e.g., 'Make the question more challenging', 'Focus on differential diagnosis', 'Simplify the language'"
-                value={enhancementRequest}
-                onChange={(e) => setEnhancementRequest(e.target.value)}
-                rows={2}
-                className="resize-none text-sm"
-              />
-            </div>
+          <div className="space-y-2">
+            <Label htmlFor="enhancement-request" className="text-sm font-medium">
+              Enhancement Request{" "}
+              <span className="text-muted-foreground font-normal">(Optional)</span>
+            </Label>
+            <Textarea
+              id="enhancement-request"
+              placeholder="e.g., 'Make the question more challenging', 'Focus on differential diagnosis', 'Simplify the language'"
+              value={enhancementRequest}
+              onChange={(e) => setEnhancementRequest(e.target.value)}
+              rows={2}
+              className="resize-none text-sm"
+            />
+          </div>
 
-            <Button
-              onClick={handleAIEnhancement}
-              disabled={isEnhancing}
-              className="w-full"
-              variant="default"
-            >
-              {isEnhancing ? (
-                <>
-                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Enhancing...
-                </>
-              ) : (
-                <>
-                  <Sparkles className="h-4 w-4 mr-2" />
-                  Enhance Question
-                </>
-              )}
-            </Button>
-          </CardContent>
-        </Card>
+          <Button
+            onClick={handleAIEnhancement}
+            disabled={isEnhancing}
+            className="w-full"
+            variant="default"
+          >
+            {isEnhancing ? (
+              <>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                Enhancing...
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-4 w-4 mr-2" />
+                Enhance Question
+              </>
+            )}
+          </Button>
+        </SectionCard>
       </div>
 
       <FetchReferencesDialog

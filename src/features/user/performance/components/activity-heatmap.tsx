@@ -1,13 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { Button } from "@/shared/components/ui/button";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
@@ -91,56 +85,41 @@ export function ActivityHeatmap({
 
   if (loading) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Activity Calendar
-          </CardTitle>
-          <CardDescription>Your quiz activity for {new Date().getFullYear()}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <Skeleton className="h-[200px] w-full" />
-        </CardContent>
-      </Card>
+      <SectionCard
+        title="Activity Calendar"
+        description={`Your quiz activity for ${new Date().getFullYear()}`}
+        icon={Calendar}
+      >
+        <Skeleton className="h-[200px] w-full" />
+      </SectionCard>
     );
   }
 
   if (error) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Activity Calendar
-          </CardTitle>
-          <CardDescription>Your quiz activity for {new Date().getFullYear()}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[200px] flex items-center justify-center text-destructive">
-            Error loading activity data: {error}
-          </div>
-        </CardContent>
-      </Card>
+      <SectionCard
+        title="Activity Calendar"
+        description={`Your quiz activity for ${new Date().getFullYear()}`}
+        icon={Calendar}
+      >
+        <div className="flex h-[200px] items-center justify-center text-sm text-destructive">
+          Error loading activity data: {error}
+        </div>
+      </SectionCard>
     );
   }
 
   if (data.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
-            Activity Calendar
-          </CardTitle>
-          <CardDescription>Your quiz activity for {new Date().getFullYear()}</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="h-[200px] flex items-center justify-center text-muted-foreground">
-            No activity data available yet.
-          </div>
-        </CardContent>
-      </Card>
+      <SectionCard
+        title="Activity Calendar"
+        description={`Your quiz activity for ${new Date().getFullYear()}`}
+        icon={Calendar}
+      >
+        <div className="flex h-[200px] items-center justify-center text-sm text-muted-foreground">
+          No activity data available yet.
+        </div>
+      </SectionCard>
     );
   }
 
@@ -286,21 +265,19 @@ export function ActivityHeatmap({
   ) : null;
 
   return (
-    <Card ref={containerRef}>
-      <CardHeader className="pb-3">
-        <div className="flex items-start justify-between gap-3 flex-wrap">
-          <div className="min-w-0">
-            <CardTitle className="flex items-center gap-2">
-              <Calendar className="h-5 w-5" />
-              Activity Calendar
-            </CardTitle>
-            <CardDescription>{getPeriodDescription()}</CardDescription>
-          </div>
-          <div className="flex items-center gap-1 shrink-0">
+    // containerRef measures the card width to pick how many months fit.
+    <div ref={containerRef} className="min-w-0">
+      <SectionCard
+        title="Activity Calendar"
+        description={getPeriodDescription()}
+        icon={Calendar}
+        actions={
+          <div className="flex shrink-0 items-center gap-1">
             <Button
               variant="outline"
               size="sm"
               onClick={goToPreviousPeriod}
+              aria-label="Previous period"
               className="h-8 w-8 p-0"
             >
               <ChevronLeft className="h-4 w-4" />
@@ -321,93 +298,88 @@ export function ActivityHeatmap({
               variant="outline"
               size="sm"
               onClick={goToNextPeriod}
+              aria-label="Next period"
               disabled={!canGoForward()}
               className="h-8 w-8 p-0"
             >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
-        </div>
+        }
+      >
         {statsInline}
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {/* CSS Grid based calendar */}
-          <div className="w-full overflow-x-auto">
-            <div className="min-w-0">
-              {/* Month labels with CSS Grid */}
+        {/* CSS Grid based calendar */}
+        <div className="w-full overflow-x-auto">
+          <div className="min-w-0">
+            {/* Month labels with CSS Grid */}
+            <div
+              className="grid mb-2 text-[10px] sm:text-xs text-muted-foreground font-medium pl-6"
+              style={{
+                gridTemplateColumns: `repeat(${weeks.length}, minmax(10px, 1fr))`,
+                gap: "2px",
+              }}
+            >
+              {monthLabels.map((label, index) => {
+                const nextLabelIndex = monthLabels[index + 1]?.weekIndex || weeks.length;
+                const span = nextLabelIndex - label.weekIndex;
+
+                // Only show month label if it spans 3 or more weeks
+                if (span < 3) return null;
+
+                const yearSuffix = `'${String(label.year).slice(-2)}`;
+
+                return (
+                  <div key={index} style={{ gridColumn: `${label.weekIndex + 1} / span ${span}` }}>
+                    {label.showYear ? (
+                      <>
+                        {label.month}{" "}
+                        <span className="text-foreground/80 font-semibold">{yearSuffix}</span>
+                      </>
+                    ) : (
+                      label.month
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Calendar Grid */}
+            <div className="flex gap-2">
+              {/* Day labels */}
+              <div className="flex flex-col justify-between py-0.5">
+                {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
+                  <div key={index} className="h-[10px] flex items-center">
+                    <span className="text-[9px] sm:text-[10px] text-muted-foreground w-3 text-right">
+                      {day}
+                    </span>
+                  </div>
+                ))}
+              </div>
+
+              {/* Activity grid - CSS Grid for automatic responsiveness */}
               <div
-                className="grid mb-2 text-[10px] sm:text-xs text-muted-foreground font-medium pl-6"
+                className="grid flex-1 gap-[2px]"
                 style={{
                   gridTemplateColumns: `repeat(${weeks.length}, minmax(10px, 1fr))`,
-                  gap: "2px",
+                  gridTemplateRows: "repeat(7, 10px)",
+                  gridAutoFlow: "column",
                 }}
               >
-                {monthLabels.map((label, index) => {
-                  const nextLabelIndex = monthLabels[index + 1]?.weekIndex || weeks.length;
-                  const span = nextLabelIndex - label.weekIndex;
-
-                  // Only show month label if it spans 3 or more weeks
-                  if (span < 3) return null;
-
-                  const yearSuffix = `'${String(label.year).slice(-2)}`;
-
+                {allDays.map((day, index) => {
+                  const hasActivity = day.questions > 0;
                   return (
                     <div
                       key={index}
-                      style={{ gridColumn: `${label.weekIndex + 1} / span ${span}` }}
-                    >
-                      {label.showYear ? (
-                        <>
-                          {label.month}{" "}
-                          <span className="text-foreground/80 font-semibold">{yearSuffix}</span>
-                        </>
-                      ) : (
-                        label.month
-                      )}
-                    </div>
+                      className={`rounded-sm ${getColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-2 hover:ring-primary/80" : "cursor-default"} transition-all min-w-[10px] min-h-[10px]`}
+                      title={`${new Date(day.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}\n${day.questions} question${day.questions !== 1 ? "s" : ""}\n${day.quizzes} quiz${day.quizzes !== 1 ? "zes" : ""}`}
+                    />
                   );
                 })}
-              </div>
-
-              {/* Calendar Grid */}
-              <div className="flex gap-2">
-                {/* Day labels */}
-                <div className="flex flex-col justify-between py-0.5">
-                  {["S", "M", "T", "W", "T", "F", "S"].map((day, index) => (
-                    <div key={index} className="h-[10px] flex items-center">
-                      <span className="text-[9px] sm:text-[10px] text-muted-foreground w-3 text-right">
-                        {day}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Activity grid - CSS Grid for automatic responsiveness */}
-                <div
-                  className="grid flex-1 gap-[2px]"
-                  style={{
-                    gridTemplateColumns: `repeat(${weeks.length}, minmax(10px, 1fr))`,
-                    gridTemplateRows: "repeat(7, 10px)",
-                    gridAutoFlow: "column",
-                  }}
-                >
-                  {allDays.map((day, index) => {
-                    const hasActivity = day.questions > 0;
-                    return (
-                      <div
-                        key={index}
-                        className={`rounded-sm ${getColor(day.questions)} ${hasActivity ? "cursor-pointer hover:ring-2 hover:ring-primary/80" : "cursor-default"} transition-all min-w-[10px] min-h-[10px]`}
-                        title={`${new Date(day.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric", year: "numeric" })}\n${day.questions} question${day.questions !== 1 ? "s" : ""}\n${day.quizzes} quiz${day.quizzes !== 1 ? "zes" : ""}`}
-                      />
-                    );
-                  })}
-                </div>
               </div>
             </div>
           </div>
         </div>
-      </CardContent>
-    </Card>
+      </SectionCard>
+    </div>
   );
 }

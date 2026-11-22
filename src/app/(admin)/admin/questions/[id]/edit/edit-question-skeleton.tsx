@@ -12,8 +12,8 @@ export function EditQuestionSkeleton() {
 
       {/* Tab Navigation Skeleton */}
       <Card className="overflow-hidden">
-        <div className="border-b bg-muted/50 px-6 py-3">
-          <div className="flex gap-4">
+        <div className="border-b bg-muted/50 px-4 py-3 sm:px-6">
+          <div className="flex gap-2 overflow-hidden">
             <Skeleton className="h-10 w-24" />
             <Skeleton className="h-10 w-24" />
             <Skeleton className="h-10 w-28" />
@@ -21,7 +21,7 @@ export function EditQuestionSkeleton() {
         </div>
 
         {/* Form Content Skeleton */}
-        <div className="p-6 space-y-6">
+        <div className="space-y-6 p-4 sm:p-6">
           {/* Question Title */}
           <div className="space-y-2">
             <Skeleton className="h-4 w-32" />

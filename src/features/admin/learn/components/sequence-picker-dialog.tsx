@@ -59,13 +59,13 @@ export function SequencePickerDialog({ open, onOpenChange, onSelect }: SequenceP
       <DialogPortal>
         <div className="fixed inset-0 z-50 flex items-center justify-center">
           <div className="fixed inset-0 bg-black/50 backdrop-blur-sm" onClick={handleCancel} />
-          <div className="relative bg-background border rounded-lg shadow-lg w-[700px] max-w-[95vw] h-[60vh] flex flex-col overflow-hidden">
-            <div className="p-6 border-b flex-shrink-0">
-              <h2 className="text-xl font-semibold">Select Explainer Sequence</h2>
+          <div className="relative flex h-[60vh] w-[700px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-lg border bg-background shadow-lg">
+            <div className="shrink-0 border-b p-4 sm:p-6">
+              <h2 className="text-lg font-semibold">Select Explainer Sequence</h2>
             </div>
 
-            <div className="p-6 space-y-4 flex flex-col flex-1 overflow-hidden">
-              <div className="relative flex-shrink-0">
+            <div className="flex flex-1 flex-col space-y-4 overflow-hidden p-4 sm:p-6">
+              <div className="relative shrink-0">
                 <Search className="absolute left-2 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
                 <Input
                   placeholder="Search sequences..."
@@ -75,15 +75,15 @@ export function SequencePickerDialog({ open, onOpenChange, onSelect }: SequenceP
                 />
               </div>
 
-              <div className="space-y-2 overflow-y-auto flex-1" style={{ minHeight: 0 }}>
+              <div className="flex-1 space-y-2 overflow-y-auto" style={{ minHeight: 0 }}>
                 {loading ? (
                   <div className="flex justify-center py-8">
                     <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
                   </div>
                 ) : sequences.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
-                    <Play className="h-12 w-12 mb-2 opacity-50" />
-                    <p>No sequences found</p>
+                  <div className="flex h-full flex-col items-center justify-center text-muted-foreground">
+                    <Play className="mb-2 h-10 w-10 opacity-50" />
+                    <p className="text-sm font-medium">No sequences found</p>
                   </div>
                 ) : (
                   sequences.map((seq) => (
@@ -96,14 +96,17 @@ export function SequencePickerDialog({ open, onOpenChange, onSelect }: SequenceP
                           : "border-border hover:border-primary/50"
                       }`}
                     >
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm">{seq.title}</span>
-                        <Badge variant={seq.status === "published" ? "default" : "outline"}>
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="min-w-0 truncate text-sm font-medium">{seq.title}</span>
+                        <Badge
+                          className="shrink-0"
+                          variant={seq.status === "published" ? "default" : "outline"}
+                        >
                           {seq.status}
                         </Badge>
                       </div>
                       {seq.description && (
-                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">
+                        <p className="mt-1 line-clamp-2 text-xs text-muted-foreground">
                           {seq.description}
                         </p>
                       )}
@@ -112,7 +115,7 @@ export function SequencePickerDialog({ open, onOpenChange, onSelect }: SequenceP
                 )}
               </div>
 
-              <div className="flex justify-end gap-2 pt-4 border-t">
+              <div className="flex shrink-0 flex-wrap justify-end gap-2 border-t pt-4">
                 <Button variant="outline" onClick={handleCancel}>
                   Cancel
                 </Button>

@@ -5,7 +5,8 @@ import { useRouter } from "next/navigation";
 import { adminLearnService } from "../services/admin-learn-service";
 import { Lesson } from "@/features/user/learn/types/lesson";
 import { LessonContent, LessonQuiz, LessonQuizQuestion } from "@/features/user/learn/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
+import { PageHeader } from "@/shared/components/ui/page-header";
 import { Button } from "@/shared/components/ui/button";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
@@ -325,159 +326,152 @@ export function LessonEditor({ lessonId, subjectId, subjectTitle }: LessonEditor
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
+    <PageContainer width="narrow">
       {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
+      <PageHeader
+        eyebrow={
           <Link href="/admin/learn">
-            <Button variant="ghost" size="sm" className="-ml-2 mb-1">
+            <Button variant="ghost" size="sm" className="-ml-2">
               <ArrowLeft className="mr-2 h-4 w-4" />
               Back to modules
             </Button>
           </Link>
-          <h1 className="text-3xl font-bold tracking-tight">
-            {isEditing ? "Edit Lesson" : "Create Lesson"}
-          </h1>
-          {subjectTitle && <p className="text-muted-foreground">Subject: {subjectTitle}</p>}
-        </div>
-        <Button onClick={handleSave} disabled={saving || !title || !slug}>
-          {saving ? (
-            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-          ) : (
-            <Save className="mr-2 h-4 w-4" />
-          )}
-          Save
-        </Button>
-      </div>
+        }
+        title={isEditing ? "Edit Lesson" : "Create Lesson"}
+        description={subjectTitle ? `Subject: ${subjectTitle}` : undefined}
+        actions={
+          <Button onClick={handleSave} disabled={saving || !title || !slug}>
+            {saving ? (
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="mr-2 h-4 w-4" />
+            )}
+            Save
+          </Button>
+        }
+      />
 
       {/* Metadata */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Lesson Details</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label>Title</Label>
-              <Input
-                value={title}
-                onChange={(e) => {
-                  setTitle(e.target.value);
-                  if (!isEditing) setSlug(generateSlug(e.target.value));
-                }}
-                placeholder="e.g., Solid Papillary Carcinoma"
-              />
-            </div>
-            <div>
-              <Label>Slug</Label>
-              <Input
-                value={slug}
-                onChange={(e) => setSlug(e.target.value)}
-                placeholder="solid-papillary-carcinoma"
-              />
-            </div>
-          </div>
+      <SectionCard title="Lesson Details">
+        <div className="grid gap-4 sm:grid-cols-2">
           <div>
-            <Label>Description</Label>
+            <Label>Title</Label>
             <Input
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              placeholder="Brief description of the lesson"
+              value={title}
+              onChange={(e) => {
+                setTitle(e.target.value);
+                if (!isEditing) setSlug(generateSlug(e.target.value));
+              }}
+              placeholder="e.g., Solid Papillary Carcinoma"
             />
           </div>
-          <div className="grid gap-4 sm:grid-cols-2">
-            <div>
-              <Label>Estimated Minutes</Label>
-              <Input
-                type="number"
-                value={estimatedMinutes}
-                onChange={(e) => setEstimatedMinutes(e.target.value)}
-                placeholder="10"
-              />
-            </div>
-            <div>
-              <Label>Status</Label>
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="draft">Draft</SelectItem>
-                  <SelectItem value="published">Published</SelectItem>
-                  <SelectItem value="archived">Archived</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+          <div>
+            <Label>Slug</Label>
+            <Input
+              value={slug}
+              onChange={(e) => setSlug(e.target.value)}
+              placeholder="solid-papillary-carcinoma"
+            />
           </div>
-        </CardContent>
-      </Card>
+        </div>
+        <div>
+          <Label>Description</Label>
+          <Input
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            placeholder="Brief description of the lesson"
+          />
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <Label>Estimated Minutes</Label>
+            <Input
+              type="number"
+              value={estimatedMinutes}
+              onChange={(e) => setEstimatedMinutes(e.target.value)}
+              placeholder="10"
+            />
+          </div>
+          <div>
+            <Label>Status</Label>
+            <Select value={status} onValueChange={setStatus}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="draft">Draft</SelectItem>
+                <SelectItem value="published">Published</SelectItem>
+                <SelectItem value="archived">Archived</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      </SectionCard>
 
       {/* Markdown Content */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Content</CardTitle>
-            <Button variant="outline" size="sm" onClick={() => setShowPreview(!showPreview)}>
-              {showPreview ? (
-                <>
-                  <Edit3 className="mr-1 h-3 w-3" /> Edit
-                </>
-              ) : (
-                <>
-                  <Eye className="mr-1 h-3 w-3" /> Preview
-                </>
-              )}
-            </Button>
+      <SectionCard
+        title="Content"
+        actions={
+          <Button variant="outline" size="sm" onClick={() => setShowPreview(!showPreview)}>
+            {showPreview ? (
+              <>
+                <Edit3 className="mr-1 h-4 w-4" /> Edit
+              </>
+            ) : (
+              <>
+                <Eye className="mr-1 h-4 w-4" /> Preview
+              </>
+            )}
+          </Button>
+        }
+      >
+        {showPreview ? (
+          <div className="min-h-[400px] rounded-lg border p-4 sm:p-6">
+            {markdown ? (
+              <MarkdownLessonRenderer markdown={markdown} images={previewImages} />
+            ) : (
+              <p className="py-12 text-center text-sm text-muted-foreground">
+                No content yet. Switch to edit mode to start writing.
+              </p>
+            )}
           </div>
-        </CardHeader>
-        <CardContent>
-          {showPreview ? (
-            <div className="min-h-[400px] rounded-lg border p-6">
-              {markdown ? (
-                <MarkdownLessonRenderer markdown={markdown} images={previewImages} />
-              ) : (
-                <p className="text-muted-foreground text-center py-12">
-                  No content yet. Switch to edit mode to start writing.
-                </p>
-              )}
-            </div>
-          ) : (
-            <div className="space-y-2">
-              {/* Toolbar */}
-              <TooltipProvider delayDuration={300}>
-                <div className="flex flex-wrap items-center gap-0.5 rounded-lg border bg-muted/50 p-1">
-                  {toolbarActions.map((action, i) => {
-                    if ("type" in action && action.type === "separator") {
-                      return <div key={i} className="mx-1 h-6 w-px bg-border" />;
-                    }
-                    const Icon = action.icon!;
-                    return (
-                      <Tooltip key={i}>
-                        <TooltipTrigger asChild>
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="h-8 w-8 p-0"
-                            onClick={action.action}
-                          >
-                            <Icon className="h-4 w-4" />
-                          </Button>
-                        </TooltipTrigger>
-                        <TooltipContent side="bottom">
-                          <p>{action.label}</p>
-                        </TooltipContent>
-                      </Tooltip>
-                    );
-                  })}
-                </div>
-              </TooltipProvider>
+        ) : (
+          <div className="space-y-2">
+            {/* Toolbar */}
+            <TooltipProvider delayDuration={300}>
+              <div className="flex flex-wrap items-center gap-0.5 rounded-lg border bg-muted/50 p-1">
+                {toolbarActions.map((action, i) => {
+                  if ("type" in action && action.type === "separator") {
+                    return <div key={i} className="mx-1 h-6 w-px bg-border" />;
+                  }
+                  const Icon = action.icon!;
+                  return (
+                    <Tooltip key={i}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          onClick={action.action}
+                        >
+                          <Icon className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom">
+                        <p>{action.label}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  );
+                })}
+              </div>
+            </TooltipProvider>
 
-              {/* Textarea */}
-              <Textarea
-                ref={textareaRef}
-                value={markdown}
-                onChange={(e) => setMarkdown(e.target.value)}
-                placeholder={`Write your lesson content in Markdown...
+            {/* Textarea */}
+            <Textarea
+              ref={textareaRef}
+              value={markdown}
+              onChange={(e) => setMarkdown(e.target.value)}
+              placeholder={`Write your lesson content in Markdown...
 
 ## Section Heading
 
@@ -488,51 +482,44 @@ Regular text with **bold** and *italic*.
 | Size    | Small  | Large  |
 
 Use the toolbar to insert images, explainers, and key points.`}
-                className="min-h-[400px] font-mono text-sm leading-relaxed resize-y"
-              />
-              <p className="text-xs text-muted-foreground">
-                Supports Markdown with tables, lists, and custom directives for images, explainers,
-                and key points.
-              </p>
-            </div>
-          )}
-        </CardContent>
-      </Card>
+              className="min-h-[400px] resize-y font-mono text-sm leading-relaxed"
+            />
+            <p className="text-xs text-muted-foreground">
+              Supports Markdown with tables, lists, and custom directives for images, explainers,
+              and key points.
+            </p>
+          </div>
+        )}
+      </SectionCard>
 
       {/* Quiz */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Quiz Questions</CardTitle>
-            <Button variant="outline" size="sm" onClick={addQuizQuestion}>
-              <Plus className="mr-1 h-3 w-3" /> Add Question
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {quizQuestions.length === 0 && (
-            <p className="text-sm text-muted-foreground text-center py-4">
-              No quiz questions. Add questions for an end-of-lesson knowledge check.
-            </p>
-          )}
-          {quizQuestions.map((q, index) => (
-            <QuizQuestionForm
-              key={q.id}
-              question={q}
-              index={index}
-              onChange={(updated) => updateQuizQuestion(index, updated)}
-              onRemove={() => removeQuizQuestion(index)}
-            />
-          ))}
-        </CardContent>
-      </Card>
+      <SectionCard
+        title="Quiz Questions"
+        actions={
+          <Button variant="outline" size="sm" onClick={addQuizQuestion}>
+            <Plus className="mr-1 h-4 w-4" /> Add Question
+          </Button>
+        }
+      >
+        {quizQuestions.length === 0 && (
+          <p className="py-4 text-center text-sm text-muted-foreground">
+            No quiz questions. Add questions for an end-of-lesson knowledge check.
+          </p>
+        )}
+        {quizQuestions.map((q, index) => (
+          <QuizQuestionForm
+            key={q.id}
+            question={q}
+            index={index}
+            onChange={(updated) => updateQuizQuestion(index, updated)}
+            onRemove={() => removeQuizQuestion(index)}
+          />
+        ))}
+      </SectionCard>
 
       {/* Anki Reference */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="text-lg">Anki Reference</CardTitle>
-        </CardHeader>
-        <CardContent>
+      <SectionCard title="Anki Reference">
+        <div>
           <Label>Anki Deck Name (optional)</Label>
           <Input
             value={ankiDeckRef}
@@ -542,8 +529,8 @@ Use the toolbar to insert images, explainers, and key points.`}
           <p className="mt-1 text-xs text-muted-foreground">
             Links to the matching deck in the Ankoma Deck Viewer
           </p>
-        </CardContent>
-      </Card>
+        </div>
+      </SectionCard>
 
       {/* Picker Dialogs */}
       <ImagePickerDialog
@@ -556,7 +543,7 @@ Use the toolbar to insert images, explainers, and key points.`}
         onOpenChange={setSequencePickerOpen}
         onSelect={handleSequenceSelect}
       />
-    </div>
+    </PageContainer>
   );
 }
 
@@ -572,8 +559,8 @@ function QuizQuestionForm({
   onRemove: () => void;
 }) {
   return (
-    <div className="rounded-lg border p-4 space-y-3">
-      <div className="flex items-center justify-between">
+    <div className="space-y-4 rounded-lg border p-4">
+      <div className="flex items-center justify-between gap-2">
         <span className="text-sm font-medium">Question {index + 1}</span>
         <Button variant="ghost" size="sm" onClick={onRemove}>
           <Trash2 className="h-4 w-4 text-destructive" />

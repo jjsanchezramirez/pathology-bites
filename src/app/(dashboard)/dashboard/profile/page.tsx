@@ -5,7 +5,8 @@ import { useState, useEffect, useCallback, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import { createClient } from "@/shared/services/client";
 import type { Database } from "@/shared/types/supabase";
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { PasswordChangeForm } from "@/features/auth/components/forms/password-change-form";
 import {
@@ -142,44 +143,42 @@ function ProfilePageContent() {
 
   if (!isAuthenticated || !user || !userProfile) {
     return (
-      <div className="py-8">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Please log in to view your profile.</p>
-          </CardContent>
-        </Card>
-      </div>
+      <PageContainer width="narrow">
+        <SectionCard>
+          <p className="text-center text-sm text-muted-foreground">
+            Please log in to view your profile.
+          </p>
+        </SectionCard>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">My Profile</h1>
-          <p className="text-muted-foreground">Manage your account information and preferences.</p>
-        </div>
+    <PageContainer width="narrow">
+      <PageHeader
+        title="My Profile"
+        description="Manage your account information and preferences."
+      />
 
-        <div className="space-y-6">
-          {/* Profile Information */}
-          <ProfileInformationCard
-            formData={formData}
-            isEditMode={isEditMode}
-            saving={saving}
-            onFormDataChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
-            onEdit={handleEdit}
-            onCancel={handleCancel}
-            onSave={handleSave}
-          />
+      <div className="space-y-6">
+        {/* Profile Information */}
+        <ProfileInformationCard
+          formData={formData}
+          isEditMode={isEditMode}
+          saving={saving}
+          onFormDataChange={(data) => setFormData((prev) => ({ ...prev, ...data }))}
+          onEdit={handleEdit}
+          onCancel={handleCancel}
+          onSave={handleSave}
+        />
 
-          {/* Account Details */}
-          <AccountDetailsCard userProfile={userProfile} />
+        {/* Account Details */}
+        <AccountDetailsCard userProfile={userProfile} />
 
-          {/* Password Change */}
-          <PasswordChangeForm />
-        </div>
+        {/* Password Change */}
+        <PasswordChangeForm />
       </div>
-    </div>
+    </PageContainer>
   );
 }
 

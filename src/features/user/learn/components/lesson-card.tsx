@@ -13,35 +13,35 @@ interface LessonCardProps {
 
 export function LessonCard({ lesson, index, subjectSlug }: LessonCardProps) {
   return (
-    <Link href={`/dashboard/learn/${subjectSlug}/${lesson.slug}`}>
+    <Link href={`/dashboard/learn/${subjectSlug}/${lesson.slug}`} className="block min-w-0">
       <Card className="group transition-colors hover:border-primary/50 hover:shadow-md">
         <CardContent className="flex items-center gap-4 p-4">
           {/* Status icon */}
           <div className="shrink-0">
             {lesson.is_completed ? (
-              <CheckCircle2 className="h-6 w-6 text-green-500" />
+              <CheckCircle2 className="h-5 w-5 text-green-500" />
             ) : (
-              <Circle className="h-6 w-6 text-muted-foreground/30" />
+              <Circle className="h-5 w-5 text-muted-foreground/30" />
             )}
           </div>
 
           {/* Lesson info */}
           <div className="min-w-0 flex-1">
-            <div className="flex items-baseline gap-2">
-              <span className="text-sm font-medium text-muted-foreground">{index}.</span>
-              <h3 className="text-base font-medium group-hover:text-primary transition-colors truncate">
+            <div className="flex min-w-0 items-baseline gap-2">
+              <span className="shrink-0 text-sm font-medium text-muted-foreground">{index}.</span>
+              <h3 className="truncate text-base font-semibold transition-colors group-hover:text-primary">
                 {lesson.title}
               </h3>
             </div>
             {lesson.description && (
-              <p className="mt-0.5 text-sm text-muted-foreground line-clamp-1">
+              <p className="mt-1 line-clamp-1 text-sm text-muted-foreground">
                 {lesson.description}
               </p>
             )}
           </div>
 
           {/* Meta */}
-          <div className="shrink-0 flex items-center gap-3 text-sm text-muted-foreground">
+          <div className="flex shrink-0 items-center gap-2 text-xs text-muted-foreground">
             {lesson.quiz_score !== undefined && lesson.quiz_score !== null && (
               <span className="font-medium text-foreground">{lesson.quiz_score}%</span>
             )}

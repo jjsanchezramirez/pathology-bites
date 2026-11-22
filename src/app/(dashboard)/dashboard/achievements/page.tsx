@@ -9,6 +9,8 @@ import {
   AchievementProgress,
 } from "@/features/user/achievements/types/achievement";
 import { Card, CardContent } from "@/shared/components/ui/card";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { PageContainer } from "@/shared/components/ui/page-layout";
 import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 import { ScrollReveal } from "@/shared/components/common";
@@ -21,22 +23,22 @@ const SKELETON_CATEGORY_SIZES = [4, 3, 6, 4, 6, 4];
 
 function AchievementsLoadingSkeleton() {
   return (
-    <div className="space-y-6">
-      <div>
-        <Skeleton className="h-9 w-48 mb-3" />
-        <Skeleton className="h-4 w-64" />
+    <PageContainer>
+      <div className="space-y-2">
+        <Skeleton className="h-8 w-48 sm:h-9" />
+        <Skeleton className="h-5 w-64 max-w-full" />
       </div>
-      <div className="space-y-8">
+      <div className="space-y-6">
         {SKELETON_CATEGORY_SIZES.map((count, sectionIdx) => (
           <div key={sectionIdx} className="space-y-4">
             <div>
               <Skeleton className="h-6 w-56 mb-2" />
               <Skeleton className="h-4 w-72" />
             </div>
-            <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+            <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
               {Array.from({ length: count }).map((_, cardIdx) => (
                 <Card key={cardIdx} className="text-center">
-                  <CardContent className="pt-6 pb-4 px-4">
+                  <CardContent className="p-4">
                     <div className="mb-4 flex justify-center">
                       <Skeleton className="w-24 h-24 rounded-full" />
                     </div>
@@ -56,7 +58,7 @@ function AchievementsLoadingSkeleton() {
           </div>
         ))}
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
@@ -173,23 +175,20 @@ export default function AchievementsPage() {
     totalAchievements > 0 ? Math.round((unlockedAchievements / totalAchievements) * 100) : 0;
 
   return (
-    <div className="space-y-6">
-      {/* Page Header */}
-      <div>
-        <h1 className="text-3xl font-bold mb-2">Achievements</h1>
-        <p className="text-muted-foreground">
-          {unlockedAchievements} of {totalAchievements} unlocked ({completionPercentage}%)
-        </p>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="Achievements"
+        description={`${unlockedAchievements} of ${totalAchievements} unlocked (${completionPercentage}%)`}
+      />
 
       {/* Achievement Categories */}
-      <div className="space-y-8">
+      <div className="space-y-6">
         {achievementCategories.map((category, index) => (
           <ScrollReveal key={category.id} animation="fade-up" delay={index * 100}>
             <AchievementsSection category={category} />
           </ScrollReveal>
         ))}
       </div>
-    </div>
+    </PageContainer>
   );
 }

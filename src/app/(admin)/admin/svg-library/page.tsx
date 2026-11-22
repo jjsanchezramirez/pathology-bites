@@ -2,13 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/components/ui/page-header";
 import { SvgTable } from "@/features/admin/svg-library/components/svg-table";
@@ -38,37 +32,24 @@ export default function AdminSvgLibraryPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <PageContainer>
       <PageHeader
         title="SVG Assets"
         description="Manage SVG illustrations, diagrams, and vector graphics"
       />
 
-      {/* SVG Management Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>SVG Library</CardTitle>
-              <CardDescription>
-                Upload, edit, and organize your SVG asset collection. Use the search to find assets
-                by name or description.
-              </CardDescription>
-            </div>
-            <Button
-              onClick={() => setUploadDialogOpen(true)}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Upload SVG
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <SvgTable onEdit={handleEdit} onDelete={handleDelete} refreshKey={refreshKey} />
-        </CardContent>
-      </Card>
+      <SectionCard
+        title="SVG Library"
+        description="Upload, edit, and organize your SVG asset collection. Search by name or description."
+        actions={
+          <Button onClick={() => setUploadDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Upload SVG
+          </Button>
+        }
+      >
+        <SvgTable onEdit={handleEdit} onDelete={handleDelete} refreshKey={refreshKey} />
+      </SectionCard>
 
       {/* Upload Dialog */}
       <SvgUploadDialog
@@ -92,6 +73,6 @@ export default function AdminSvgLibraryPage() {
         onOpenChange={setDeleteDialogOpen}
         onSuccess={refresh}
       />
-    </div>
+    </PageContainer>
   );
 }

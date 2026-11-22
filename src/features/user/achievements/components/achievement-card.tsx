@@ -1,6 +1,6 @@
 // src/features/achievements/components/achievement-card.tsx
 
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Progress } from "@/shared/components/ui/progress";
 import { AchievementLottie } from "./achievement-lottie";
 
@@ -40,38 +40,38 @@ export function AchievementCard({
   const hasMinimalProgress = !isUnlocked && progressPercentage < 25;
 
   return (
-    <Card className="text-center">
-      <CardContent className="pt-6 pb-4 px-4">
-        {/* Lottie Animation */}
-        <div className="mb-4 flex justify-center">
-          <AchievementLottie
-            animationType={animationType}
-            isUnlocked={isUnlocked}
-            className="w-24 h-24"
-          />
-        </div>
+    <SectionCard className="text-center">
+      {/* Lottie Animation */}
+      <div className="flex justify-center">
+        <AchievementLottie
+          animationType={animationType}
+          isUnlocked={isUnlocked}
+          className="h-24 w-24"
+        />
+      </div>
 
+      <div className="space-y-1">
         {/* Title */}
-        <h3 className="font-semibold mb-2">{title}</h3>
+        <h3 className="text-sm font-semibold">{title}</h3>
 
         {/* Description */}
-        <p className="text-sm text-muted-foreground mb-4 min-h-[40px]">{description}</p>
+        <p className="min-h-[40px] text-sm text-muted-foreground">{description}</p>
+      </div>
 
-        {/* Progress - only show for certain categories and when meaningful */}
-        {shouldShowProgressBar && !hasMinimalProgress && (
-          <div className="space-y-2">
-            <Progress value={progressPercentage} className="h-2" />
-            <p className="text-xs text-muted-foreground">
-              {progress}/{maxProgress}
-            </p>
-          </div>
-        )}
+      {/* Progress - only show for certain categories and when meaningful */}
+      {shouldShowProgressBar && !hasMinimalProgress && (
+        <div className="space-y-2">
+          <Progress value={progressPercentage} className="h-2" />
+          <p className="text-xs text-muted-foreground">
+            {progress}/{maxProgress}
+          </p>
+        </div>
+      )}
 
-        {/* Show "Locked" for achievements with no meaningful progress yet */}
-        {((!shouldShowProgressBar && !isUnlocked) || hasMinimalProgress) && (
-          <p className="text-xs text-muted-foreground">Locked</p>
-        )}
-      </CardContent>
-    </Card>
+      {/* Show "Locked" for achievements with no meaningful progress yet */}
+      {((!shouldShowProgressBar && !isUnlocked) || hasMinimalProgress) && (
+        <p className="text-xs text-muted-foreground">Locked</p>
+      )}
+    </SectionCard>
   );
 }

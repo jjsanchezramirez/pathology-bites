@@ -106,7 +106,7 @@ export function AchievementCelebrationModal({
   return (
     <Dialog open={open} onOpenChange={onClose}>
       <DialogContent
-        className="max-w-lg border-none bg-transparent shadow-none p-8 overflow-visible"
+        className="max-w-[calc(100vw-2rem)] overflow-visible border-none bg-transparent p-6 shadow-none sm:max-w-lg sm:p-8"
         showCloseButton={false}
       >
         <VisuallyHidden>
@@ -115,18 +115,18 @@ export function AchievementCelebrationModal({
 
         <div
           className={`
-            flex flex-col items-center gap-8
+            flex flex-col items-center gap-6 sm:gap-8
             transition-all duration-500 ease-out
             ${isVisible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}
           `}
         >
           {/* Title */}
-          <h2 className="text-2xl font-bold text-foreground text-center">
+          <h2 className="text-center text-2xl font-bold tracking-tight text-foreground sm:text-3xl">
             New Achievement Unlocked!
           </h2>
 
           {/* Achievement animation */}
-          <div className="w-48 h-48">
+          <div className="h-40 w-40 sm:h-48 sm:w-48">
             <AchievementLottie
               animationType={currentAchievement.animationType}
               isUnlocked={true}
@@ -136,8 +136,8 @@ export function AchievementCelebrationModal({
 
           {/* Achievement details */}
           <div className="text-center space-y-2">
-            <h3 className="text-xl font-bold text-foreground">{currentAchievement.title}</h3>
-            <p className="text-sm text-primary font-semibold uppercase">
+            <h3 className="text-lg font-bold text-foreground">{currentAchievement.title}</h3>
+            <p className="text-xs font-semibold uppercase tracking-wide text-primary">
               {currentAchievement.category}
             </p>
             <p className="text-sm text-muted-foreground max-w-sm">
@@ -164,7 +164,7 @@ export function AchievementCelebrationModal({
           )}
 
           {/* Actions */}
-          <div className="flex gap-3 w-full">
+          <div className="flex w-full gap-2">
             {currentIndex < achievements.length - 1 ? (
               <>
                 <Button onClick={handleSkip} variant="ghost" className="flex-1">

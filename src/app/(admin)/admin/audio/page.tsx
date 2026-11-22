@@ -2,13 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
 import { Plus } from "lucide-react";
 import { PageHeader } from "@/shared/components/ui/page-header";
 import type { Audio } from "@/features/admin/audio/types";
@@ -102,8 +96,7 @@ export default function AdminAudioPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <PageContainer>
       <PageHeader
         title="Audio Library"
         description="Manage educational audio files and TTS-generated content"
@@ -112,30 +105,18 @@ export default function AdminAudioPage() {
       {/* Stats */}
       <AudioStatsCards refreshKey={refreshKey} />
 
-      {/* Audio Management Card */}
-      <Card>
-        <CardHeader>
-          <div className="flex items-center justify-between">
-            <div>
-              <CardTitle>Audio Management</CardTitle>
-              <CardDescription>
-                Upload, edit, and organize your audio collection. Use the search to find audio files
-                by title, description, or transcript.
-              </CardDescription>
-            </div>
-            <Button
-              onClick={() => setUploadDialogOpen(true)}
-              className="bg-primary hover:bg-primary/90"
-            >
-              <Plus className="h-4 w-4 mr-2" />
-              Upload Audio
-            </Button>
-          </div>
-        </CardHeader>
-        <CardContent>
-          <AudioTable onEdit={handleEdit} onDelete={handleDelete} refreshKey={refreshKey} />
-        </CardContent>
-      </Card>
+      <SectionCard
+        title="Audio Management"
+        description="Upload, edit, and organize your audio collection. Search by title, description, or transcript."
+        actions={
+          <Button onClick={() => setUploadDialogOpen(true)}>
+            <Plus className="mr-2 h-4 w-4" />
+            Upload Audio
+          </Button>
+        }
+      >
+        <AudioTable onEdit={handleEdit} onDelete={handleDelete} refreshKey={refreshKey} />
+      </SectionCard>
 
       {/* Hidden file input owned by the page so FFmpeg dynamic imports work */}
       <input
@@ -182,6 +163,6 @@ export default function AdminAudioPage() {
         onOpenChange={setDeleteDialogOpen}
         onSuccess={refresh}
       />
-    </div>
+    </PageContainer>
   );
 }

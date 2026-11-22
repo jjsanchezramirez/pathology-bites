@@ -19,12 +19,12 @@ export function UsersPagination({
   onPageChange,
 }: UsersPaginationProps) {
   return (
-    <div className="flex justify-between items-center">
+    <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
       <p className="text-sm text-muted-foreground">
         Showing {shownCount > 0 ? page * PAGE_SIZE + 1 : 0} to{" "}
         {Math.min((page + 1) * PAGE_SIZE, totalUsers)} of {totalUsers} users
       </p>
-      <div className="flex gap-2 items-center">
+      <div className="flex flex-wrap items-center gap-2">
         <Button
           variant="outline"
           size="sm"

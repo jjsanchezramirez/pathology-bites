@@ -1,7 +1,7 @@
 "use client";
 
 // src/shared/components/layout/dashboard/stats-cards.tsx
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { StatCard, StatGrid, StatTone } from "@/shared/components/ui/page-layout";
 import {
   FileQuestion,
   Users,
@@ -144,17 +144,17 @@ export function StatsCards({ stats }: StatsCardsProps) {
     }
   };
 
-  const getCardBorderColor = (_trend: string) => {
-    // All cards have the same border and background
-    return "";
-  };
-
-  const getValueColor = (trend: string) => {
+  const getTone = (trend: string): StatTone => {
     switch (trend) {
       case "critical":
-        return "text-destructive";
+      case "negative":
+        return "danger";
+      case "warning":
+        return "warning";
+      case "positive":
+        return "success";
       default:
-        return "";
+        return "default";
     }
   };
 
@@ -173,38 +173,23 @@ export function StatsCards({ stats }: StatsCardsProps) {
     }
   };
 
-  const getIconColor = (trend: string) => {
-    switch (trend) {
-      case "critical":
-        return "text-destructive";
-      case "negative":
-        return "text-destructive";
-      case "warning":
-        return "text-yellow-500 dark:text-yellow-400";
-      case "positive":
-        return "text-green-500 dark:text-green-400";
-      default:
-        return "text-muted-foreground";
-    }
-  };
-
   return (
-    <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-4">
+    <StatGrid>
       {cards.map((card, index) => (
-        <Card key={index} className={getCardBorderColor(card.trend)}>
-          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-            <CardTitle className="text-sm font-medium">{card.title}</CardTitle>
-            <card.icon className={`h-4 w-4 ${getIconColor(card.trend)}`} />
-          </CardHeader>
-          <CardContent>
-            <div className={`text-2xl font-bold ${getValueColor(card.trend)}`}>{card.value}</div>
-            <div className={`text-xs flex items-center gap-1 ${getTrendColor(card.trend)}`}>
+        <StatCard
+          key={index}
+          label={card.title}
+          value={card.value}
+          icon={card.icon}
+          tone={getTone(card.trend)}
+          hint={
+            <span className={`flex items-center gap-1 ${getTrendColor(card.trend)}`}>
               {getTrendIcon(card.trend)}
               <span>{card.description}</span>
-            </div>
-          </CardContent>
-        </Card>
+            </span>
+          }
+        />
       ))}
-    </div>
+    </StatGrid>
   );
 }

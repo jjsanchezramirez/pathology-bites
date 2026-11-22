@@ -1,13 +1,7 @@
 "use client";
 
 import { useState, useCallback, useEffect } from "react";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Textarea } from "@/shared/components/ui/textarea";
 import { Button } from "@/shared/components/ui/button";
 import { Alert, AlertDescription } from "@/shared/components/ui/alert";
@@ -433,190 +427,152 @@ export function StepSourceConfig({ formState, updateFormState, onNext }: StepSou
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="mx-auto w-full max-w-4xl space-y-6">
       {/* AI Model Selection Card */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Sparkles className="h-5 w-5 text-primary" />
-            </div>
-            Select AI Model
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <Select
-            value={formState.selectedAIModel || ""}
-            onValueChange={(value) => updateFormState({ selectedAIModel: value })}
-          >
-            <SelectTrigger className="w-full">
-              <SelectValue placeholder="Choose an AI model..." />
-            </SelectTrigger>
-            <SelectContent>
-              {ACTIVE_AI_MODELS.map((model) => (
-                <SelectItem key={model.id} value={model.id}>
-                  {model.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </CardContent>
-      </Card>
+      <SectionCard title="Select AI Model" icon={Sparkles}>
+        <Select
+          value={formState.selectedAIModel || ""}
+          onValueChange={(value) => updateFormState({ selectedAIModel: value })}
+        >
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder="Choose an AI model..." />
+          </SelectTrigger>
+          <SelectContent>
+            {ACTIVE_AI_MODELS.map((model) => (
+              <SelectItem key={model.id} value={model.id}>
+                {model.name}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </SectionCard>
 
       {/* AI Generation from Educational Content - FIRST */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Brain className="h-5 w-5 text-primary" />
-            </div>
-            Generate with AI
-          </CardTitle>
-          <CardDescription>Create a question using AI based on educational content</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-6">
-          {/* Educational Content Selection */}
-          <div className="space-y-3">
-            <Label className="text-base font-semibold">Educational Content</Label>
-            <ContentSelector
-              selectedContent={formState.selectedContent}
-              onContentSelect={handleContentSelected}
-            />
-          </div>
+      <SectionCard
+        title="Generate with AI"
+        icon={Brain}
+        description="Create a question using AI based on educational content"
+      >
+        {/* Educational Content Selection */}
+        <div className="space-y-2">
+          <Label className="font-semibold">Educational Content</Label>
+          <ContentSelector
+            selectedContent={formState.selectedContent}
+            onContentSelect={handleContentSelected}
+          />
+        </div>
 
-          {/* Additional Content */}
-          <div className="space-y-3">
-            <Label htmlFor="additional-content" className="text-base font-semibold">
-              Additional Context{" "}
-              <span className="text-muted-foreground font-normal">(Optional)</span>
-            </Label>
-            <Textarea
-              id="additional-content"
-              placeholder="Add any additional instructions or context for the AI (e.g., 'Focus on differential diagnosis', 'Include clinical presentation')"
-              value={additionalContent}
-              onChange={(e) => setAdditionalContent(e.target.value)}
-              rows={3}
-              className="resize-none"
-            />
-          </div>
+        {/* Additional Content */}
+        <div className="space-y-2">
+          <Label htmlFor="additional-content" className="font-semibold">
+            Additional Context <span className="text-muted-foreground font-normal">(Optional)</span>
+          </Label>
+          <Textarea
+            id="additional-content"
+            placeholder="Add any additional instructions or context for the AI (e.g., 'Focus on differential diagnosis', 'Include clinical presentation')"
+            value={additionalContent}
+            onChange={(e) => setAdditionalContent(e.target.value)}
+            rows={3}
+            className="resize-none"
+          />
+        </div>
 
-          {/* Generate Button */}
-          <Button
-            onClick={handleGenerateFromContent}
-            disabled={isGenerating || !formState.selectedContent}
-            className="w-full"
-            size="lg"
-          >
-            {isGenerating ? (
-              <>
-                <Loader2 className="h-5 w-5 mr-2 animate-spin" />
-                Generating Question...
-              </>
-            ) : (
-              <>
-                <Brain className="h-5 w-5 mr-2" />
-                Generate Question with AI
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
+        {/* Generate Button */}
+        <Button
+          onClick={handleGenerateFromContent}
+          disabled={isGenerating || !formState.selectedContent}
+          className="w-full"
+          size="lg"
+        >
+          {isGenerating ? (
+            <>
+              <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              Generating Question...
+            </>
+          ) : (
+            <>
+              <Brain className="h-4 w-4 mr-2" />
+              Generate Question with AI
+            </>
+          )}
+        </Button>
+      </SectionCard>
 
       {/* OR Divider */}
       <div className="relative py-4">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-muted" />
         </div>
-        <div className="relative flex justify-center text-sm uppercase">
+        <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-4 text-muted-foreground font-medium">Or</span>
         </div>
       </div>
 
       {/* JSON Import Section - SIMPLIFIED */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <FileJson className="h-5 w-5 text-primary" />
-            </div>
-            Import from JSON
-          </CardTitle>
-          <CardDescription>
-            Paste JSON from WSI Question Generator or drag & drop file
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div
-            className={`border-2 border-dashed rounded-lg p-8 transition-all ${
-              isDragging
-                ? "border-primary bg-primary/5 scale-[1.02]"
-                : "border-muted hover:border-muted-foreground/30"
-            }`}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDragging(true);
-            }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={handleDrop}
-          >
-            <div className="flex flex-col items-center justify-center gap-3">
-              <Upload className="h-8 w-8 text-muted-foreground" />
-              <div className="text-center">
-                <p className="text-sm font-medium">Drop JSON file here</p>
-                <p className="text-xs text-muted-foreground mt-1">
-                  or paste in the text area below
-                </p>
-              </div>
+      <SectionCard
+        title="Import from JSON"
+        icon={FileJson}
+        description="Paste JSON from WSI Question Generator or drag & drop file"
+      >
+        <div
+          className={`border-2 border-dashed rounded-lg p-6 sm:p-8 transition-all ${
+            isDragging
+              ? "border-primary bg-primary/5 scale-[1.02]"
+              : "border-muted hover:border-muted-foreground/30"
+          }`}
+          onDragOver={(e) => {
+            e.preventDefault();
+            setIsDragging(true);
+          }}
+          onDragLeave={() => setIsDragging(false)}
+          onDrop={handleDrop}
+        >
+          <div className="flex flex-col items-center justify-center gap-2">
+            <Upload className="h-8 w-8 text-muted-foreground" />
+            <div className="text-center">
+              <p className="text-sm font-medium">Drop JSON file here</p>
+              <p className="text-xs text-muted-foreground mt-1">or paste in the text area below</p>
             </div>
           </div>
+        </div>
 
-          <Textarea
-            placeholder='{"title": "Question Title", "stem": "Question text...", ...}'
-            value={formState.jsonData}
-            onChange={(e) => handleJSONInput(e.target.value)}
-            rows={5}
-            className="font-mono text-xs resize-none"
-          />
+        <Textarea
+          placeholder='{"title": "Question Title", "stem": "Question text...", ...}'
+          value={formState.jsonData}
+          onChange={(e) => handleJSONInput(e.target.value)}
+          rows={5}
+          className="font-mono text-xs resize-none"
+        />
 
-          {jsonError && (
-            <Alert variant="destructive">
-              <AlertCircle className="h-4 w-4" />
-              <AlertDescription>{jsonError}</AlertDescription>
-            </Alert>
-          )}
-        </CardContent>
-      </Card>
+        {jsonError && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertDescription>{jsonError}</AlertDescription>
+          </Alert>
+        )}
+      </SectionCard>
 
       {/* OR Divider for Manual Creation */}
       <div className="relative py-4">
         <div className="absolute inset-0 flex items-center">
           <span className="w-full border-t border-muted" />
         </div>
-        <div className="relative flex justify-center text-sm uppercase">
+        <div className="relative flex justify-center text-xs uppercase">
           <span className="bg-background px-4 text-muted-foreground font-medium">Or</span>
         </div>
       </div>
 
       {/* Manual Creation Section */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Edit3 className="h-5 w-5 text-primary" />
-            </div>
-            Create Manually
-          </CardTitle>
-          <CardDescription>
-            Skip this step and create your question manually in the next section
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">
-            You can proceed to the next step to manually enter all question details, including
-            title, stem, answer options, and explanations.
-          </p>
-        </CardContent>
-      </Card>
+      <SectionCard
+        title="Create Manually"
+        icon={Edit3}
+        description="Skip this step and create your question manually in the next section"
+      >
+        <p className="text-sm text-muted-foreground">
+          You can proceed to the next step to manually enter all question details, including title,
+          stem, answer options, and explanations.
+        </p>
+      </SectionCard>
     </div>
   );
 }

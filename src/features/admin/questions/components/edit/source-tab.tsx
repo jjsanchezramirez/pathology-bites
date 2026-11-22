@@ -2,13 +2,7 @@
 
 import React, { useMemo, useState } from "react";
 import { UseFormReturn } from "react-hook-form";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Brain, FileJson } from "lucide-react";
 
 import { QuestionWithDetails } from "@/shared/types/questions";
@@ -85,74 +79,58 @@ export function SourceTab({ question, form, onUnsavedChanges }: SourceTabProps) 
   }, [question.category]);
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="mx-auto w-full max-w-4xl space-y-6">
       {/* AI Model Display (Read-Only) */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <Brain className="h-5 w-5 text-primary" />
-            </div>
-            AI Model
-          </CardTitle>
-          <CardDescription>The AI model used to generate this question</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <div className="p-3 bg-muted/50 rounded-lg border border-muted">
-            <p className="text-sm font-medium text-muted-foreground">AI Model</p>
-            <p className="text-base font-semibold mt-1">{aiModelName}</p>
-          </div>
-        </CardContent>
-      </Card>
+      <SectionCard
+        title="AI Model"
+        description="The AI model used to generate this question"
+        icon={Brain}
+      >
+        <div className="rounded-lg border border-muted bg-muted/50 p-3">
+          <p className="text-xs font-medium text-muted-foreground">AI Model</p>
+          <p className="mt-1 text-sm font-semibold">{aiModelName}</p>
+        </div>
+      </SectionCard>
 
       {/* Educational Context Display (Read-Only) */}
-      <Card className="shadow-sm">
-        <CardHeader className="pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
-            <div className="p-2 rounded-lg bg-primary/10">
-              <FileJson className="h-5 w-5 text-primary" />
-            </div>
-            Educational Context
-          </CardTitle>
-          <CardDescription>
-            The subject, lesson, and topic context for this question
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {needsLessonTopic ? (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                Please select a lesson and topic for this question
-              </p>
-              <ContentSelector
-                onContentSelect={handleContentSelect}
-                selectedContent={selectedContent}
-              />
-            </div>
-          ) : (
-            <div className="space-y-3">
-              {subjectName && (
-                <div className="p-3 bg-muted/50 rounded-lg border border-muted">
-                  <p className="text-sm font-medium text-muted-foreground">Subject</p>
-                  <p className="text-base font-semibold mt-1">{subjectName}</p>
-                </div>
-              )}
-              {question.lesson && (
-                <div className="p-3 bg-muted/50 rounded-lg border border-muted">
-                  <p className="text-sm font-medium text-muted-foreground">Lesson</p>
-                  <p className="text-base font-semibold mt-1">{question.lesson}</p>
-                </div>
-              )}
-              {question.topic && (
-                <div className="p-3 bg-muted/50 rounded-lg border border-muted">
-                  <p className="text-sm font-medium text-muted-foreground">Topic</p>
-                  <p className="text-base font-semibold mt-1">{question.topic}</p>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
+      <SectionCard
+        title="Educational Context"
+        description="The subject, lesson, and topic context for this question"
+        icon={FileJson}
+      >
+        {needsLessonTopic ? (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">
+              Please select a lesson and topic for this question
+            </p>
+            <ContentSelector
+              onContentSelect={handleContentSelect}
+              selectedContent={selectedContent}
+            />
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {subjectName && (
+              <div className="rounded-lg border border-muted bg-muted/50 p-3">
+                <p className="text-xs font-medium text-muted-foreground">Subject</p>
+                <p className="mt-1 text-sm font-semibold">{subjectName}</p>
+              </div>
+            )}
+            {question.lesson && (
+              <div className="rounded-lg border border-muted bg-muted/50 p-3">
+                <p className="text-xs font-medium text-muted-foreground">Lesson</p>
+                <p className="mt-1 text-sm font-semibold">{question.lesson}</p>
+              </div>
+            )}
+            {question.topic && (
+              <div className="rounded-lg border border-muted bg-muted/50 p-3">
+                <p className="text-xs font-medium text-muted-foreground">Topic</p>
+                <p className="mt-1 text-sm font-semibold">{question.topic}</p>
+              </div>
+            )}
+          </div>
+        )}
+      </SectionCard>
     </div>
   );
 }

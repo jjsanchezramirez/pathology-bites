@@ -23,9 +23,9 @@ export function LessonCheckpoint({ checkpoint }: { checkpoint: LessonCheckpointD
 
   return (
     <Card className="my-6 border-primary/30">
-      <CardContent className="p-6 space-y-4">
+      <CardContent className="space-y-4 p-4 sm:p-6">
         <div className="flex items-center gap-2 text-primary">
-          <CircleHelp className="h-5 w-5" />
+          <CircleHelp className="h-5 w-5 shrink-0" />
           <h3 className="text-lg font-semibold">Checkpoint</h3>
         </div>
 

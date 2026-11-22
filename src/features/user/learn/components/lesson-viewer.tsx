@@ -15,6 +15,8 @@ import { MarkdownLessonRenderer } from "./markdown-lesson-renderer";
 import { Button } from "@/shared/components/ui/button";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { ArrowLeft, ArrowRight, CheckCircle2, Loader2, Library } from "lucide-react";
+import { PageContainer } from "@/shared/components/ui/page-layout";
+import { PageHeader } from "@/shared/components/ui/page-header";
 import { log } from "@/shared/utils/logging";
 
 interface LessonViewerProps {
@@ -91,17 +93,19 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
 
   if (error || !lesson) {
     return (
-      <div className="space-y-4">
-        <Link href={`/dashboard/learn/${subjectSlug}`}>
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back
-          </Button>
-        </Link>
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
-          <p className="text-destructive">{error || "Lesson not found"}</p>
+      <PageContainer>
+        <div>
+          <Link href={`/dashboard/learn/${subjectSlug}`}>
+            <Button variant="ghost" size="sm" className="-ml-2">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back
+            </Button>
+          </Link>
         </div>
-      </div>
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center sm:p-6">
+          <p className="text-sm text-destructive">{error || "Lesson not found"}</p>
+        </div>
+      </PageContainer>
     );
   }
 
@@ -117,21 +121,32 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
   const ankiDeckRef = lesson.anki_deck_ref || content?.ankiDeckRef || null;
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      {/* Header */}
-      <div>
-        <Link href={`/dashboard/learn/${subjectSlug}`}>
-          <Button variant="ghost" size="sm" className="mb-2 -ml-2">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            {lesson.subject?.title || "Back"}
-          </Button>
-        </Link>
-        <h1 className="text-3xl font-bold tracking-tight">{lesson.title}</h1>
-        {lesson.description && <p className="mt-1 text-muted-foreground">{lesson.description}</p>}
-        {lesson.estimated_minutes && (
-          <p className="mt-1 text-sm text-muted-foreground">~{lesson.estimated_minutes} min read</p>
-        )}
-      </div>
+    // Reading column: lesson prose stays at a comfortable line length.
+    <PageContainer className="mx-auto w-full max-w-3xl">
+      <PageHeader
+        eyebrow={
+          <Link
+            href={`/dashboard/learn/${subjectSlug}`}
+            className="inline-block max-w-full align-top"
+          >
+            <Button variant="ghost" size="sm" className="-ml-2 max-w-full">
+              <ArrowLeft className="mr-2 h-4 w-4 shrink-0" />
+              <span className="truncate">{lesson.subject?.title || "Back"}</span>
+            </Button>
+          </Link>
+        }
+        title={lesson.title}
+        description={
+          lesson.description || lesson.estimated_minutes ? (
+            <>
+              {lesson.description}
+              {lesson.estimated_minutes && (
+                <span className="mt-1 block text-xs">~{lesson.estimated_minutes} min read</span>
+              )}
+            </>
+          ) : undefined
+        }
+      />
 
       {/* Content: markdown or legacy sections */}
       {isMarkdown ? (
@@ -148,7 +163,7 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
 
       {/* Quiz */}
       {hasQuiz && (
-        <div className="border-t pt-8">
+        <div className="border-t pt-6">
           <LessonQuiz quiz={quiz!} onComplete={handleQuizComplete} />
         </div>
       )}
@@ -156,11 +171,11 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
       {/* Anki link */}
       {ankiDeckRef && (
         <Card>
-          <CardContent className="flex items-center gap-3 p-4">
-            <Library className="h-5 w-5 text-primary" />
-            <div className="flex-1">
+          <CardContent className="flex flex-wrap items-center gap-4 p-4">
+            <Library className="h-5 w-5 shrink-0 text-primary" />
+            <div className="min-w-0 flex-1">
               <p className="text-sm font-medium">Review with Anki</p>
-              <p className="text-xs text-muted-foreground">Deck: {ankiDeckRef}</p>
+              <p className="truncate text-xs text-muted-foreground">Deck: {ankiDeckRef}</p>
             </div>
             <Link href="/dashboard/anki">
               <Button variant="outline" size="sm">
@@ -173,11 +188,11 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
 
       {/* Mark complete (if no quiz) */}
       {!hasQuiz && (
-        <div className="border-t pt-6 flex justify-center">
+        <div className="flex justify-center border-t pt-6">
           {isCompleted ? (
             <div className="flex items-center gap-2 text-green-600">
               <CheckCircle2 className="h-5 w-5" />
-              <span className="font-medium">Lesson completed</span>
+              <span className="text-sm font-medium">Lesson completed</span>
             </div>
           ) : (
             <Button onClick={handleMarkComplete} size="lg">
@@ -193,32 +208,38 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
         <div className="flex justify-center">
           <div className="flex items-center gap-2 text-green-600">
             <CheckCircle2 className="h-5 w-5" />
-            <span className="font-medium">Lesson completed</span>
+            <span className="text-sm font-medium">Lesson completed</span>
           </div>
         </div>
       )}
 
       {/* Prev/Next navigation */}
-      <div className="border-t pt-6 flex justify-between">
+      <div className="flex flex-wrap justify-between gap-2 border-t pt-6">
         {lesson.prev_lesson ? (
-          <Link href={`/dashboard/learn/${subjectSlug}/${lesson.prev_lesson.slug}`}>
-            <Button variant="outline">
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              {lesson.prev_lesson.title}
+          <Link
+            href={`/dashboard/learn/${subjectSlug}/${lesson.prev_lesson.slug}`}
+            className="min-w-0 max-w-full"
+          >
+            <Button variant="outline" className="max-w-full">
+              <ArrowLeft className="mr-2 h-4 w-4 shrink-0" />
+              <span className="truncate">{lesson.prev_lesson.title}</span>
             </Button>
           </Link>
         ) : (
           <div />
         )}
         {lesson.next_lesson ? (
-          <Link href={`/dashboard/learn/${subjectSlug}/${lesson.next_lesson.slug}`}>
-            <Button variant="outline">
-              {lesson.next_lesson.title}
-              <ArrowRight className="ml-2 h-4 w-4" />
+          <Link
+            href={`/dashboard/learn/${subjectSlug}/${lesson.next_lesson.slug}`}
+            className="ml-auto min-w-0 max-w-full"
+          >
+            <Button variant="outline" className="max-w-full">
+              <span className="truncate">{lesson.next_lesson.title}</span>
+              <ArrowRight className="ml-2 h-4 w-4 shrink-0" />
             </Button>
           </Link>
         ) : (
-          <Link href={`/dashboard/learn/${subjectSlug}`}>
+          <Link href={`/dashboard/learn/${subjectSlug}`} className="ml-auto">
             <Button variant="outline">
               Back to subject
               <ArrowRight className="ml-2 h-4 w-4" />
@@ -226,7 +247,7 @@ export function LessonViewer({ subjectSlug, lessonSlug }: LessonViewerProps) {
           </Link>
         )}
       </div>
-    </div>
+    </PageContainer>
   );
 }
 
