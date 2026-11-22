@@ -1,7 +1,8 @@
 // middleware.ts
 // Runs on every route except static assets (see `config.matcher`). Gates dashboard, admin, and
 // private API routes against the Supabase session, and injects `x-user-id` / `x-user-role`
-// headers on authenticated API requests for downstream handlers.
+// headers on authenticated API requests for downstream handlers. Client-supplied copies of those
+// headers are stripped on every path, and the role comes only from app_metadata (see trustedRole).
 // Identity comes from the cookie session, or from an `Authorization: Bearer <access-token>`
 // header (native clients like the iOS app, which have no cookies).
 
@@ -35,6 +36,36 @@ function devFallbackIdentity(): { id: string; role: string } | null {
   return { id, role: process.env.DEBUG_USER_ROLE || "admin" };
 }
 
+const ROLES = ["admin", "creator", "reviewer", "user"] as const;
+const CONTENT_ROLES = ["admin", "creator", "reviewer"];
+
+/**
+ * The only role the server trusts: `app_metadata.role`, which users cannot edit.
+ * A database trigger (internal.sync_user_role_to_app_metadata) mirrors
+ * public.users.role into it. Never read `user_metadata.role` for authorization —
+ * any signed-in user can rewrite their own user_metadata.
+ */
+function trustedRole(user: { app_metadata?: object } | null): string | null {
+  const role = (user?.app_metadata as { role?: unknown } | undefined)?.role;
+  return typeof role === "string" && (ROLES as readonly string[]).includes(role) ? role : null;
+}
+
+/**
+ * Request headers with any client-supplied identity removed. Route handlers trust
+ * `x-user-id` / `x-user-role`, so only this middleware may set them — on every
+ * path, public ones included.
+ */
+function withoutIdentityHeaders(request: NextRequest): Headers {
+  const headers = new Headers(request.headers);
+  headers.delete("x-user-id");
+  headers.delete("x-user-role");
+  return headers;
+}
+
+function passThrough(request: NextRequest) {
+  return NextResponse.next({ request: { headers: withoutIdentityHeaders(request) } });
+}
+
 export async function middleware(request: NextRequest) {
   const pathname = request.nextUrl.pathname;
 
@@ -45,7 +76,7 @@ export async function middleware(request: NextRequest) {
       pathname.startsWith("/api/public/maintenance") ||
       pathname.startsWith("/api/auth/");
     return allowed
-      ? NextResponse.next()
+      ? passThrough(request)
       : NextResponse.redirect(new URL("/maintenance", request.url));
   }
 
@@ -73,15 +104,15 @@ export async function middleware(request: NextRequest) {
   );
 
   if (isPublicRoute || (isApiRoute && isPublicApi)) {
-    return NextResponse.next();
+    return passThrough(request);
   }
 
   const needsAuth = isDashboardRoute || isAdminRoute || (isApiRoute && !isPublicApi);
   if (!needsAuth) {
-    return NextResponse.next();
+    return passThrough(request);
   }
 
-  let response = NextResponse.next({ request: { headers: request.headers } });
+  let response = passThrough(request);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -93,7 +124,7 @@ export async function middleware(request: NextRequest) {
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value }) => request.cookies.set(name, value));
-          response = NextResponse.next({ request });
+          response = passThrough(request);
           cookiesToSet.forEach(({ name, value, options }) =>
             response.cookies.set(name, value, options)
           );
@@ -121,8 +152,8 @@ export async function middleware(request: NextRequest) {
     if (!user) {
       return redirectToLogin(request, pathname);
     }
-    const role = user.app_metadata?.role || user.user_metadata?.role;
-    const isAuthorized = role === "admin" || role === "creator" || role === "reviewer";
+    const role = trustedRole(user);
+    const isAuthorized = role !== null && CONTENT_ROLES.includes(role);
     if (!isAuthorized) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
     }
@@ -135,8 +166,12 @@ export async function middleware(request: NextRequest) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
     const userId = user?.id ?? fallback!.id;
-    const role = user ? user.app_metadata?.role || user.user_metadata?.role : fallback!.role;
-    const requestHeaders = new Headers(request.headers);
+    const role = user ? trustedRole(user) : fallback!.role;
+    // Admin APIs: privileged role required here too, not only inside each handler.
+    if (pathname.startsWith("/api/admin/") && !(role && CONTENT_ROLES.includes(role))) {
+      return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    }
+    const requestHeaders = withoutIdentityHeaders(request);
     requestHeaders.set("x-user-id", userId);
     if (role) {
       requestHeaders.set("x-user-role", role);

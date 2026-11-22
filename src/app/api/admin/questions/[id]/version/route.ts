@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
-import { requireUser } from "@/shared/utils/api/api-guard";
+import { requireContentRole, requireUser } from "@/shared/utils/api/api-guard";
 import { parseBody } from "@/shared/utils/api/parse-body";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { formatVersion } from "@/shared/utils/version";
@@ -121,8 +121,12 @@ const createVersionSchema = z.object({
  */
 export async function POST(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
+    // Bumps the version of a published question with the service-role client, so it
+    // needs a privileged role (it had no check at all before).
+    const auth = requireContentRole(request);
+    if (auth instanceof NextResponse) return auth;
+    const userId = auth.userId;
     const { id: questionId } = await params;
-    const userId = request.headers.get("x-user-id"); // Still need user ID for changed_by
     const body = await parseBody(request, createVersionSchema);
     if (body instanceof NextResponse) return body;
     const changeSummary = body.changeSummary;

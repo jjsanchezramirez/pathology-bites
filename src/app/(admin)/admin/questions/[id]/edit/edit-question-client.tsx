@@ -10,7 +10,6 @@ import { Form } from "@/shared/components/ui/form";
 
 import { QuestionWithDetails } from "@/shared/types/questions";
 import { useEditQuestionForm } from "@/features/admin/questions/hooks/use-edit-question-form";
-import { EducationalContent } from "@/features/admin/questions/components/create/content-selector";
 
 // Import tab components
 import { TabNavigation } from "@/features/admin/questions/components/edit/tab-navigation";
@@ -39,7 +38,6 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
   const [showReviewerDialog, setShowReviewerDialog] = useState(false);
   const [_pendingChangeSummary, setPendingChangeSummary] = useState("");
   const [isPatchEditDisabled, setIsPatchEditDisabled] = useState(false);
-  const [educationalContext, setEducationalContext] = useState<EducationalContent | null>(null);
   const [assignedReviewerId, setAssignedReviewerId] = useState<string | null>(null);
   const [selectedReviewerId, setSelectedReviewerId] = useState<string>("");
   const [isSubmittingForReview, setIsSubmittingForReview] = useState(false);
@@ -109,47 +107,6 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
       }
     }
   }, [question, activeTab]);
-
-  // Load educational context when question has lesson/topic
-  useEffect(() => {
-    const loadEducationalContext = async () => {
-      if (!question?.lesson || !question?.topic) {
-        return;
-      }
-
-      try {
-        const { getContentFileInfo } = await import("@/shared/config/content-index");
-        const { loadContentFromR2 } =
-          await import("@/features/admin/questions/components/create/content-selector");
-
-        // Look up the content file by lesson+topic (reliable, avoids category name mismatches)
-        const fileInfo = getContentFileInfo(question.lesson, question.topic);
-
-        if (fileInfo) {
-          const contextData = await loadContentFromR2(fileInfo.filename);
-          if (contextData) {
-            // Extract the specific topic content
-            const lesson = contextData.subject.lessons[question.lesson];
-            const topic = lesson?.topics[question.topic];
-
-            if (topic?.content) {
-              setEducationalContext({
-                category: contextData.category,
-                subject: contextData.subject.name,
-                lesson: question.lesson,
-                topic: question.topic,
-                content: topic.content,
-              });
-            }
-          }
-        }
-      } catch (error) {
-        log.error("Error loading educational context:", error);
-      }
-    };
-
-    loadEducationalContext();
-  }, [question]);
 
   // Use the edit question form hook
   const skipNavigationRef = useRef(false);
@@ -447,12 +404,7 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
           {/* Tab Content */}
           <div>
             {activeTab === "source" && (
-              <SourceTab
-                question={question}
-                form={form}
-                onUnsavedChanges={handleUnsavedChanges}
-                onEducationalContextChange={setEducationalContext}
-              />
+              <SourceTab question={question} form={form} onUnsavedChanges={handleUnsavedChanges} />
             )}
             {activeTab === "content" && (
               <ContentTab
@@ -461,7 +413,6 @@ export function EditQuestionClient({ questionId }: EditQuestionClientProps) {
                 onUnsavedChanges={handleUnsavedChanges}
                 answerOptions={answerOptions}
                 onAnswerOptionsChange={setAnswerOptions}
-                educationalContext={educationalContext}
               />
             )}
             {activeTab === "images" && (

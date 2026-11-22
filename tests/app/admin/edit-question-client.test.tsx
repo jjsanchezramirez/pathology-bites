@@ -66,10 +66,6 @@ vi.mock("@/features/admin/questions/components/edit/metadata-tab", () => ({
 vi.mock("@/features/admin/questions/components/edit/save-confirmation-dialog", () => ({
   SaveConfirmationDialog: () => null,
 }));
-vi.mock("@/features/admin/questions/components/create/content-selector", () => ({
-  loadContentFromR2: vi.fn(),
-}));
-vi.mock("@/shared/config/content-index", () => ({ getContentFileInfo: vi.fn() }));
 vi.mock("@/shared/utils/ui/toast", () => ({ toast: { success: vi.fn(), error: vi.fn() } }));
 vi.mock("@/shared/utils/logging", () => ({
   log: { error: vi.fn(), info: vi.fn(), debug: vi.fn(), warn: vi.fn() },
