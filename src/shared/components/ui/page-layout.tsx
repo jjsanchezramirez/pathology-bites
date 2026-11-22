@@ -221,9 +221,14 @@ export function StatCard({
 }
 
 /** Loading placeholder with the exact footprint of a StatCard. */
-export function StatCardSkeleton() {
+export function StatCardSkeleton({ className }: { className?: string }) {
   return (
-    <div className="flex flex-col gap-2 rounded-lg border bg-card p-4 shadow-xs sm:p-6">
+    <div
+      className={cn(
+        "flex flex-col gap-2 rounded-lg border bg-card p-4 shadow-xs sm:p-6",
+        className
+      )}
+    >
       <div className="flex items-center justify-between">
         <div className="h-4 w-24 animate-pulse rounded bg-muted" />
         <div className="h-4 w-4 animate-pulse rounded bg-muted" />

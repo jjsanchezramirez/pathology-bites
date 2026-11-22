@@ -187,54 +187,58 @@ export function QuizCard({ quiz, onDelete, formatDate, formatTimeSpent }: QuizCa
   };
 
   const getTimingIcon = (quiz: QuizSessionListItem) => {
-    return quiz.isTimedMode ? <Timer className="h-4 w-4" /> : <TimerOff className="h-4 w-4" />;
+    return quiz.isTimedMode ? (
+      <Timer className="h-3.5 w-3.5" />
+    ) : (
+      <TimerOff className="h-3.5 w-3.5" />
+    );
   };
 
   const getModeIcon = (quiz: QuizSessionListItem) => {
     return quiz.mode === "tutor" ? (
-      <GraduationCap className="h-4 w-4" />
+      <GraduationCap className="h-3.5 w-3.5" />
     ) : (
-      <BookOpen className="h-4 w-4" />
+      <BookOpen className="h-3.5 w-3.5" />
     );
   };
 
   const getQuestionTypeIcon = (quiz: QuizSessionListItem) => {
     const questionType = quiz.config?.questionType || "all";
     const iconMap = {
-      all: <HelpCircle className="h-4 w-4" />,
-      unused: <Circle className="h-4 w-4" />,
-      needsReview: <Target className="h-4 w-4" />,
-      marked: <Star className="h-4 w-4" />,
-      mastered: <CheckCircle2 className="h-4 w-4" />,
+      all: <HelpCircle className="h-3.5 w-3.5" />,
+      unused: <Circle className="h-3.5 w-3.5" />,
+      needsReview: <Target className="h-3.5 w-3.5" />,
+      marked: <Star className="h-3.5 w-3.5" />,
+      mastered: <CheckCircle2 className="h-3.5 w-3.5" />,
     };
-    return iconMap[questionType as keyof typeof iconMap] || <HelpCircle className="h-4 w-4" />;
+    return iconMap[questionType as keyof typeof iconMap] || <HelpCircle className="h-3.5 w-3.5" />;
   };
 
   return (
     <Card className="hover:shadow-md transition-shadow">
       <CardContent className="p-4">
         {/* Desktop Layout */}
-        <div className="hidden md:flex items-center justify-between">
+        <div className="hidden items-center justify-between gap-4 md:flex">
           {/* Left side content */}
-          <div className="flex-1 space-y-2">
+          <div className="min-w-0 flex-1 space-y-2">
             {/* Top left: Quiz title and status */}
-            <div className="flex items-center gap-3">
-              <h3 className="text-lg font-semibold">{quiz.title}</h3>
+            <div className="flex min-w-0 items-center gap-2">
+              <h3 className="truncate text-base font-semibold">{quiz.title}</h3>
               {getStatusBadge(quiz.status)}
             </div>
 
             {/* Bottom left: All metadata in one row */}
-            <div className="flex items-center gap-4 text-sm text-muted-foreground flex-wrap">
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
               {/* Total Questions */}
               <div className="flex items-center gap-1">
-                <Hash className="h-4 w-4" />
+                <Hash className="h-3.5 w-3.5" />
                 <span>{quiz.totalQuestions} Qs</span>
               </div>
 
               {/* Questions Remaining (for in-progress quizzes) */}
               {quiz.status === "in_progress" && (
                 <div className="flex items-center gap-1">
-                  <Target className="h-4 w-4" />
+                  <Target className="h-3.5 w-3.5" />
                   <span>{quiz.totalQuestions - (quiz.currentQuestionIndex || 0)} remaining</span>
                 </div>
               )}
@@ -245,7 +249,7 @@ export function QuizCard({ quiz, onDelete, formatDate, formatTimeSpent }: QuizCa
                 currentTimeRemaining !== undefined &&
                 currentTimeRemaining !== null && (
                   <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
+                    <Clock className="h-3.5 w-3.5" />
                     <span>{timeFormatter(currentTimeRemaining)} left</span>
                   </div>
                 )}
@@ -253,13 +257,13 @@ export function QuizCard({ quiz, onDelete, formatDate, formatTimeSpent }: QuizCa
               {/* Score (for completed quizzes) */}
               {quiz.score !== undefined && quiz.score !== null && (
                 <div className="flex items-center gap-1">
-                  <Trophy className="h-4 w-4" />
+                  <Trophy className="h-3.5 w-3.5" />
                   <span>Score {Math.round(quiz.score)}%</span>
                 </div>
               )}
 
               <div className="flex items-center gap-1">
-                <Calendar className="h-4 w-4" />
+                <Calendar className="h-3.5 w-3.5" />
                 <span>{formatDate(quiz.createdAt)}</span>
               </div>
 
@@ -284,7 +288,7 @@ export function QuizCard({ quiz, onDelete, formatDate, formatTimeSpent }: QuizCa
                 quiz.totalTimeSpent !== null &&
                 quiz.totalTimeSpent > 0 && (
                   <div className="flex items-center gap-1">
-                    <Clock className="h-4 w-4" />
+                    <Clock className="h-3.5 w-3.5" />
                     <span>{timeFormatter(quiz.totalTimeSpent)}</span>
                   </div>
                 )}
@@ -292,7 +296,7 @@ export function QuizCard({ quiz, onDelete, formatDate, formatTimeSpent }: QuizCa
           </div>
 
           {/* Right side: Action buttons */}
-          <div className="flex items-center gap-2 ml-4">
+          <div className="flex shrink-0 items-center gap-2">
             {quiz.status === "not_started" && (
               <Link href={`/dashboard/quiz/${quiz.id}`}>
                 <Button size="sm" className="w-[180px]">
@@ -338,11 +342,11 @@ export function QuizCard({ quiz, onDelete, formatDate, formatTimeSpent }: QuizCa
         {/* Mobile Layout */}
         <div className="md:hidden space-y-2">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-base font-semibold truncate flex-1">{quiz.title}</h3>
+            <h3 className="min-w-0 flex-1 truncate text-base font-semibold">{quiz.title}</h3>
             {getStatusBadge(quiz.status)}
           </div>
 
-          <div className="flex items-center gap-3 text-xs text-muted-foreground flex-wrap">
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
             {/* Total Questions */}
             <div className="flex items-center gap-1">
               <Hash className="h-3.5 w-3.5" />

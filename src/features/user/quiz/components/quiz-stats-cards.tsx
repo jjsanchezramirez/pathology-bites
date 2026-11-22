@@ -1,6 +1,8 @@
 "use client";
 
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { CheckCircle2, Clock, Hash, Timer, Trophy } from "lucide-react";
+
+import { StatCard, StatGrid } from "@/shared/components/ui/page-layout";
 
 interface QuizStatsCardsProps {
   stats: {
@@ -15,37 +17,18 @@ interface QuizStatsCardsProps {
 
 export function QuizStatsCards({ stats, formatTimeSpent }: QuizStatsCardsProps) {
   return (
-    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
-      <Card>
-        <CardContent className="p-4">
-          <div className="text-sm text-muted-foreground">Total Quizzes</div>
-          <div className="text-2xl font-bold">{stats.total}</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="p-4">
-          <div className="text-sm text-muted-foreground">Completed</div>
-          <div className="text-2xl font-bold text-primary">{stats.completed}</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="p-4">
-          <div className="text-sm text-muted-foreground">In Progress</div>
-          <div className="text-2xl font-bold text-secondary-foreground">{stats.inProgress}</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="p-4">
-          <div className="text-sm text-muted-foreground">Avg Score</div>
-          <div className="text-2xl font-bold">{stats.averageScore}%</div>
-        </CardContent>
-      </Card>
-      <Card>
-        <CardContent className="p-4">
-          <div className="text-sm text-muted-foreground">Total Time</div>
-          <div className="text-2xl font-bold">{formatTimeSpent(stats.totalTimeSpent)}</div>
-        </CardContent>
-      </Card>
-    </div>
+    // Five stats: two per row on phones, all five in one row from `lg`.
+    <StatGrid className="lg:grid-cols-5">
+      <StatCard
+        label="Total Quizzes"
+        value={stats.total}
+        icon={Hash}
+        className="col-span-2 lg:col-span-1"
+      />
+      <StatCard label="Completed" value={stats.completed} icon={CheckCircle2} tone="success" />
+      <StatCard label="In Progress" value={stats.inProgress} icon={Clock} tone="warning" />
+      <StatCard label="Avg Score" value={`${stats.averageScore}%`} icon={Trophy} tone="info" />
+      <StatCard label="Total Time" value={formatTimeSpent(stats.totalTimeSpent)} icon={Timer} />
+    </StatGrid>
   );
 }

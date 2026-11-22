@@ -1,6 +1,6 @@
 // src/features/performance/components/category-performance-card.tsx
 
-import { Card, CardContent, CardHeader, CardTitle } from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Progress } from "@/shared/components/ui/progress";
 import { TrendingUp, TrendingDown, MoveRight, BarChart3 } from "lucide-react";
 import { getCategoryByName } from "@/shared/config/categories";
@@ -57,95 +57,77 @@ const getAccuracyColor = (accuracy: number) => {
 export function CategoryPerformanceCard({ categoryDetails }: CategoryPerformanceCardProps) {
   if (categoryDetails.length === 0) {
     return (
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <BarChart3 className="h-5 w-5" />
-            Category Performance
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="text-center py-8 text-muted-foreground">
-            <p>No category performance data available yet.</p>
-            <p className="text-sm mt-2">
-              Start taking quizzes to see your performance by category!
-            </p>
-          </div>
-        </CardContent>
-      </Card>
+      <SectionCard title="Category Performance" icon={BarChart3}>
+        <div className="space-y-2 py-8 text-center text-sm text-muted-foreground">
+          <p>No category performance data available yet.</p>
+          <p>Start taking quizzes to see your performance by category!</p>
+        </div>
+      </SectionCard>
     );
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <BarChart3 className="h-5 w-5" />
-          Category Performance
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
-        <div className="space-y-3">
-          {categoryDetails.map((category, index) => {
-            const trendInfo = getTrendInfo(category.trend);
+    <SectionCard title="Category Performance" icon={BarChart3}>
+      <div className="space-y-2">
+        {categoryDetails.map((category, index) => {
+          const trendInfo = getTrendInfo(category.trend);
 
-            return (
-              <div
-                key={category.category_id || index}
-                className="py-3 px-3 sm:px-4 rounded-lg border bg-card hover:bg-muted/50 transition-colors"
-              >
-                <div className="flex items-center justify-between mb-2">
-                  {/* Category Name - short form on mobile, full on sm+ */}
-                  <div className="flex-1 min-w-0">
-                    <h3 className="font-medium text-sm sm:text-base truncate">
-                      <span className="sm:hidden">
-                        {getCategoryByName(category.category_name)?.shortForm ||
-                          category.category_name}
-                      </span>
-                      <span className="hidden sm:inline">{category.category_name}</span>
-                    </h3>
+          return (
+            <div
+              key={category.category_id || index}
+              className="space-y-2 rounded-lg border bg-card p-3 transition-colors hover:bg-muted/50"
+            >
+              <div className="flex items-center justify-between gap-3 sm:gap-4">
+                {/* Category Name - short form on mobile, full on sm+ */}
+                <div className="min-w-0 flex-1">
+                  <h3 className="truncate text-sm font-medium">
+                    <span className="sm:hidden">
+                      {getCategoryByName(category.category_name)?.shortForm ||
+                        category.category_name}
+                    </span>
+                    <span className="hidden sm:inline">{category.category_name}</span>
+                  </h3>
+                </div>
+
+                {/* Stats */}
+                <div className="flex shrink-0 items-center gap-3 sm:gap-6">
+                  {/* Score */}
+                  <div className="text-right">
+                    <div className="hidden text-xs text-muted-foreground sm:block">Score</div>
+                    <span
+                      className={`text-lg font-bold tabular-nums sm:text-2xl ${getAccuracyColor(category.accuracy)}`}
+                    >
+                      {category.accuracy}%
+                    </span>
                   </div>
 
-                  {/* Stats */}
-                  <div className="flex items-center gap-3 sm:gap-6 ml-3 sm:ml-4">
-                    {/* Score */}
-                    <div className="text-right">
-                      <div className="hidden sm:block text-sm text-muted-foreground">Score</div>
-                      <span
-                        className={`text-lg sm:text-2xl font-bold tabular-nums ${getAccuracyColor(category.accuracy)}`}
-                      >
-                        {category.accuracy}%
-                      </span>
+                  {/* Questions - hidden on mobile */}
+                  <div className="hidden sm:block text-right">
+                    <div className="text-xs text-muted-foreground">Questions</div>
+                    <div className="text-sm font-medium tabular-nums">
+                      {category.correct_attempts} / {category.total_attempts}
                     </div>
+                  </div>
 
-                    {/* Questions - hidden on mobile */}
-                    <div className="hidden sm:block text-right">
-                      <div className="text-sm text-muted-foreground">Questions</div>
-                      <div className="font-medium tabular-nums">
-                        {category.correct_attempts} / {category.total_attempts}
-                      </div>
-                    </div>
-
-                    {/* Trend - icon only on mobile, full on sm+ */}
-                    <div className="text-right">
-                      <div className="hidden sm:block text-sm text-muted-foreground">Trend</div>
-                      <div
-                        className={`flex items-center gap-1 justify-end font-medium ${trendInfo.color}`}
-                      >
-                        {trendInfo.icon}
-                        <span className="hidden sm:inline text-sm">{trendInfo.text}</span>
-                      </div>
+                  {/* Trend - icon only on mobile, full on sm+ */}
+                  <div className="text-right">
+                    <div className="hidden text-xs text-muted-foreground sm:block">Trend</div>
+                    <div
+                      className={`flex items-center gap-1 justify-end font-medium ${trendInfo.color}`}
+                    >
+                      {trendInfo.icon}
+                      <span className="hidden sm:inline text-sm">{trendInfo.text}</span>
                     </div>
                   </div>
                 </div>
-
-                {/* Progress Bar */}
-                <Progress value={category.accuracy} className="h-1.5 sm:h-2" />
               </div>
-            );
-          })}
-        </div>
-      </CardContent>
-    </Card>
+
+              {/* Progress Bar */}
+              <Progress value={category.accuracy} className="h-1.5 sm:h-2" />
+            </div>
+          );
+        })}
+      </div>
+    </SectionCard>
   );
 }

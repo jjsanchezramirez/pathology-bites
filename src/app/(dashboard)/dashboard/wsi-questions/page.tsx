@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 
+import { PageHeader } from "@/shared/components/ui/page-header";
 import { WSIQuestionGenerator } from "@/features/user/wsi-questions/components/wsi-question-generator";
 import { hydrateWsiLayout, useWsiLayout } from "@/features/user/wsi-questions/utils/wsi-layout";
 import { useWsiLayoutShortcut } from "@/features/user/wsi-questions/utils/use-wsi-layout-shortcut";
@@ -35,12 +36,10 @@ export default function WSIQuestionsPage() {
       {/* The heading is the first thing to go when the reader asks for room —
           they know what page they are on. */}
       {!fullscreen && (
-        <div>
-          <h1 className="text-3xl font-bold">Slide-Based Questions</h1>
-          <p className="text-muted-foreground">
-            Generate unlimited AI-powered pathology questions from whole slide images.
-          </p>
-        </div>
+        <PageHeader
+          title="Slide-Based Questions"
+          description="Generate unlimited AI-powered pathology questions from whole slide images."
+        />
       )}
 
       <WSIQuestionGenerator showCategoryFilter={true} compact={false} className="w-full" />

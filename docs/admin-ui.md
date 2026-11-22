@@ -1,6 +1,6 @@
-# Admin UI standard
+# Admin & dashboard UI standard
 
-Every admin page is built from the same few pieces so spacing, type and
+Every admin page and every student dashboard page is built from the same few pieces so spacing, type and
 breakpoints line up. Primitives live in `src/shared/components/ui/page-layout.tsx`
 and `page-header.tsx`; the shared `Table` primitives carry the table defaults.
 
@@ -73,5 +73,11 @@ it: the body loses its padding so rows run edge to edge.
 
 ## Exceptions
 
-Lesson Studio (`/admin/lesson-studio`) is a full-bleed editor with its own dense
-tool chrome and is intentionally outside this standard.
+These are immersive, full-height screens with their own chrome and are
+intentionally outside this standard:
+
+- Lesson Studio (`/admin/lesson-studio`), a full-bleed editor
+- The live quiz (`/dashboard/quiz/[id]`) and its dialogs
+- The Anki flashcard viewer (`/dashboard/anki`)
+- Lesson content inside the lesson viewer (the page chrome around it follows the standard)
+- Study Plan's sidebar, calendar and setup sheet (its cards and headings follow the standard)

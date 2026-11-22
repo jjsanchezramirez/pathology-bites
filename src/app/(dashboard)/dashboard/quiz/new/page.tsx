@@ -4,7 +4,8 @@
 import React, { useState, useEffect, useCallback } from "react";
 import { useZeroApiNetworkStatus } from "@/shared/hooks/use-zero-api-network-status";
 import { useRouter } from "next/navigation";
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
 import { Separator } from "@/shared/components/ui/separator";
 import { useQuizSettings } from "@/shared/hooks/use-user-settings";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
@@ -293,16 +294,16 @@ export default function NewQuizPage() {
 
   if (!quizOptions) {
     return (
-      <div className="container mx-auto py-8">
-        <div className="max-w-2xl mx-auto space-y-6">
-          <div>
-            <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
-            <p className="text-muted-foreground text-red-600">
+      <PageContainer width="narrow">
+        <PageHeader
+          title="New Quiz"
+          description={
+            <span className="text-destructive">
               Failed to load quiz options. Please refresh the page.
-            </p>
-          </div>
-        </div>
-      </div>
+            </span>
+          }
+        />
+      </PageContainer>
     );
   }
 
@@ -326,84 +327,76 @@ export default function NewQuizPage() {
   };
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="max-w-2xl mx-auto space-y-6">
-        {/* Header */}
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">New Quiz</h1>
-          <p className="text-muted-foreground">Configure your quiz settings and start learning</p>
+    <PageContainer width="narrow">
+      <PageHeader title="New Quiz" description="Configure your quiz settings and start learning" />
+
+      {/* Main Configuration Card */}
+      <SectionCard contentClassName="space-y-6">
+        {/* Quiz Name */}
+        <QuizNameInput
+          value={formData.title || ""}
+          placeholder={formData && previousQuizTitles ? generateQuizTitle() : "New Quiz"}
+          loadingTitles={loadingTitles}
+          onChange={(value) => setFormData((prev) => ({ ...prev, title: value }))}
+        />
+
+        <Separator />
+
+        {/* Question Count */}
+        <QuestionCountSelector
+          questionCount={effectiveFormData.questionCount}
+          availableQuestions={availableQuestions}
+          questionCountOptions={questionCountOptions}
+          onChange={(count) => setFormData((prev) => ({ ...prev, questionCount: count }))}
+        />
+
+        <Separator />
+
+        {/* Learning Mode & Timing */}
+        <ModeTimingSelector
+          mode={formData.mode}
+          timing={formData.timing}
+          onModeChange={(mode) => setFormData((prev) => ({ ...prev, mode }))}
+          onTimingChange={(timing) => setFormData((prev) => ({ ...prev, timing }))}
+        />
+
+        <Separator />
+
+        {/* Question Type and Categories - Vertical Layout */}
+        <div className="space-y-6">
+          {/* Question Type */}
+          <QuestionTypeSelector
+            questionType={formData.questionType}
+            categorySelection={formData.categorySelection}
+            selectedCategories={formData.selectedCategories}
+            categories={quizOptions.categories}
+            questionTypeStats={quizOptions.questionTypeStats}
+            onChange={handleQuestionTypeChange}
+          />
+
+          {/* Categories */}
+          <CategorySelector
+            categorySelection={formData.categorySelection}
+            selectedCategories={formData.selectedCategories}
+            questionType={formData.questionType}
+            categories={quizOptions.categories}
+            questionTypeStats={quizOptions.questionTypeStats}
+            onCategorySelectionChange={handleCategorySelectionChange}
+            onCategoryToggle={handleCategoryToggle}
+          />
         </div>
 
-        {/* Main Configuration Card */}
-        <Card>
-          <CardContent className="p-6 space-y-6">
-            {/* Quiz Name */}
-            <QuizNameInput
-              value={formData.title || ""}
-              placeholder={formData && previousQuizTitles ? generateQuizTitle() : "New Quiz"}
-              loadingTitles={loadingTitles}
-              onChange={(value) => setFormData((prev) => ({ ...prev, title: value }))}
-            />
+        <Separator />
 
-            <Separator />
-
-            {/* Question Count */}
-            <QuestionCountSelector
-              questionCount={effectiveFormData.questionCount}
-              availableQuestions={availableQuestions}
-              questionCountOptions={questionCountOptions}
-              onChange={(count) => setFormData((prev) => ({ ...prev, questionCount: count }))}
-            />
-
-            <Separator />
-
-            {/* Learning Mode & Timing */}
-            <ModeTimingSelector
-              mode={formData.mode}
-              timing={formData.timing}
-              onModeChange={(mode) => setFormData((prev) => ({ ...prev, mode }))}
-              onTimingChange={(timing) => setFormData((prev) => ({ ...prev, timing }))}
-            />
-
-            <Separator />
-
-            {/* Question Type and Categories - Vertical Layout */}
-            <div className="space-y-6">
-              {/* Question Type */}
-              <QuestionTypeSelector
-                questionType={formData.questionType}
-                categorySelection={formData.categorySelection}
-                selectedCategories={formData.selectedCategories}
-                categories={quizOptions.categories}
-                questionTypeStats={quizOptions.questionTypeStats}
-                onChange={handleQuestionTypeChange}
-              />
-
-              {/* Categories */}
-              <CategorySelector
-                categorySelection={formData.categorySelection}
-                selectedCategories={formData.selectedCategories}
-                questionType={formData.questionType}
-                categories={quizOptions.categories}
-                questionTypeStats={quizOptions.questionTypeStats}
-                onCategorySelectionChange={handleCategorySelectionChange}
-                onCategoryToggle={handleCategoryToggle}
-              />
-            </div>
-
-            <Separator />
-
-            {/* Start Button */}
-            <StartQuizButton
-              creating={creating}
-              isOnline={isOnline}
-              isValid={validateQuizConfig().isValid}
-              validationError={validateQuizConfig().error}
-              onClick={handleSubmit}
-            />
-          </CardContent>
-        </Card>
-      </div>
-    </div>
+        {/* Start Button */}
+        <StartQuizButton
+          creating={creating}
+          isOnline={isOnline}
+          isValid={validateQuizConfig().isValid}
+          validationError={validateQuizConfig().error}
+          onClick={handleSubmit}
+        />
+      </SectionCard>
+    </PageContainer>
   );
 }

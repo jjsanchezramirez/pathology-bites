@@ -14,6 +14,8 @@ import {
   StudentQuickActions,
   StudentQuickActionsLoading,
 } from "@/features/user/dashboard/components";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { ContentGrid, PageContainer } from "@/shared/components/ui/page-layout";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { useUserSettings } from "@/shared/hooks/use-user-settings";
 import { PageErrorBoundary, FeatureErrorBoundary, ScrollReveal } from "@/shared/components/common";
@@ -216,17 +218,17 @@ export default function DashboardPage() {
         steps={DASHBOARD_TUTORIAL}
       />
       */}
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Dashboard</h1>
-          <p className="text-muted-foreground">
-            {isFirstTimeUser
+      <PageContainer>
+        <PageHeader
+          title="Dashboard"
+          description={
+            isFirstTimeUser
               ? "Nice to meet you! Let's get you started with a quick quiz."
               : isReturningUser
                 ? "Good to see you again! Ready to pick up where you left off?"
-                : "Welcome back! Ready to continue your learning journey?"}
-          </p>
-        </div>
+                : "Welcome back! Ready to continue your learning journey?"
+          }
+        />
 
         {/* Welcome Message for First-Time Users */}
         {showWelcomeMessage && <WelcomeMessage onDismiss={() => setShowWelcomeMessage(false)} />}
@@ -245,10 +247,10 @@ export default function DashboardPage() {
         {loading || !stats || isTransitioning ? (
           <>
             <StudentStatsCardsLoading />
-            <div className="grid gap-4 lg:grid-cols-7">
+            <ContentGrid className="lg:items-start">
               <StudentRecentActivityLoading />
               <StudentQuickActionsLoading />
-            </div>
+            </ContentGrid>
           </>
         ) : (
           <>
@@ -259,10 +261,10 @@ export default function DashboardPage() {
 
             {/* Recent Activity Section */}
             <ScrollReveal animation="fade-up">
-              <div className="grid gap-4 lg:grid-cols-7">
+              <ContentGrid className="lg:items-start">
                 <StudentRecentActivity activities={stats.recentActivity} />
                 <StudentQuickActions />
-              </div>
+              </ContentGrid>
             </ScrollReveal>
 
             {/* Performance Analytics */}
@@ -275,7 +277,7 @@ export default function DashboardPage() {
             )}
           </>
         )}
-      </div>
+      </PageContainer>
     </PageErrorBoundary>
   );
 }

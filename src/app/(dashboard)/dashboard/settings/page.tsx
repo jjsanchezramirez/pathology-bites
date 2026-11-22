@@ -2,7 +2,8 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { useTheme } from "next-themes";
 import { toast } from "@/shared/utils/ui/toast";
@@ -284,72 +285,68 @@ export default function SettingsPage() {
 
   if (!isAuthenticated || !user) {
     return (
-      <div className="py-8">
-        <Card>
-          <CardContent className="pt-6">
-            <p className="text-center text-muted-foreground">Please log in to access settings.</p>
-          </CardContent>
-        </Card>
-      </div>
+      <PageContainer width="narrow">
+        <SectionCard>
+          <p className="text-center text-sm text-muted-foreground">
+            Please log in to access settings.
+          </p>
+        </SectionCard>
+      </PageContainer>
     );
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="max-w-2xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold">Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your account preferences and quiz settings.
-          </p>
-        </div>
+    <PageContainer width="narrow">
+      <PageHeader
+        title="Settings"
+        description="Manage your account preferences and quiz settings."
+      />
 
-        <div className="space-y-6">
-          <AppearanceSettings
-            theme={theme || "system"}
-            mounted={mounted}
-            saving={saving}
-            dashboardTheme={dashboardTheme}
-            availableThemes={availableThemes}
-            textZoom={textZoom}
-            onThemeChange={setTheme}
-            onDashboardThemeChange={handleDashboardThemeChange}
-            onTextZoomChange={handleTextZoomChange}
-          />
-
-          <NotificationSettingsCard
-            preferences={preferences}
-            saving={saving}
-            onPreferenceChange={handlePreferenceChange}
-          />
-
-          <QuizSettingsCard
-            quizSettings={quizSettings}
-            saving={saving}
-            onQuizSettingChange={handleQuizSettingChange}
-          />
-
-          <PrivacySecuritySettings isExporting={isExporting} onDataExport={handleDataExport} />
-
-          <ResetSettingsCard saving={saving} onResetClick={() => setShowResetDialog(true)} />
-
-          <DangerZone onDeleteAccountClick={() => setShowDeleteDialog(true)} />
-        </div>
-
-        <DeleteAccountDialog
-          open={showDeleteDialog}
-          isDeleting={isDeleting}
-          onOpenChange={setShowDeleteDialog}
-          onConfirm={handleDeleteAccount}
+      <div className="space-y-6">
+        <AppearanceSettings
+          theme={theme || "system"}
+          mounted={mounted}
+          saving={saving}
+          dashboardTheme={dashboardTheme}
+          availableThemes={availableThemes}
+          textZoom={textZoom}
+          onThemeChange={setTheme}
+          onDashboardThemeChange={handleDashboardThemeChange}
+          onTextZoomChange={handleTextZoomChange}
         />
 
-        <ResetSettingsDialog
-          open={showResetDialog}
-          isResetting={isResetting}
-          onOpenChange={setShowResetDialog}
-          onConfirm={handleResetAllSettings}
+        <NotificationSettingsCard
+          preferences={preferences}
+          saving={saving}
+          onPreferenceChange={handlePreferenceChange}
         />
+
+        <QuizSettingsCard
+          quizSettings={quizSettings}
+          saving={saving}
+          onQuizSettingChange={handleQuizSettingChange}
+        />
+
+        <PrivacySecuritySettings isExporting={isExporting} onDataExport={handleDataExport} />
+
+        <ResetSettingsCard saving={saving} onResetClick={() => setShowResetDialog(true)} />
+
+        <DangerZone onDeleteAccountClick={() => setShowDeleteDialog(true)} />
       </div>
-    </div>
+
+      <DeleteAccountDialog
+        open={showDeleteDialog}
+        isDeleting={isDeleting}
+        onOpenChange={setShowDeleteDialog}
+        onConfirm={handleDeleteAccount}
+      />
+
+      <ResetSettingsDialog
+        open={showResetDialog}
+        isResetting={isResetting}
+        onOpenChange={setShowResetDialog}
+        onConfirm={handleResetAllSettings}
+      />
+    </PageContainer>
   );
 }

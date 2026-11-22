@@ -4,13 +4,7 @@
 import { useState } from "react";
 import { toast } from "@/shared/utils/ui/toast";
 import { Button } from "@/shared/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { RefreshCw, Mail, Key } from "lucide-react";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { log } from "@/shared/utils/logging";
@@ -83,53 +77,47 @@ export function PasswordChangeForm({ className, onSuccess }: PasswordChangeFormP
   };
 
   return (
-    <Card className={className}>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Key className="h-5 w-5" />
-          Change Password
-        </CardTitle>
-        <CardDescription>Change your password via a secure email link.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-4">
-          <div className="text-sm text-muted-foreground">
-            <p>
-              We'll send a secure password reset link to <strong>{user?.email}</strong>
+    <SectionCard
+      className={className}
+      title="Change Password"
+      description="Change your password via a secure email link."
+      icon={Key}
+    >
+      <div className="text-sm text-muted-foreground">
+        <p>
+          We'll send a secure password reset link to <strong>{user?.email}</strong>
+        </p>
+      </div>
+
+      {lastResetTime && (
+        <div className="text-sm text-muted-foreground">
+          <p>Last reset email sent: {lastResetTime.toLocaleTimeString()}</p>
+          {!canRequestReset() && (
+            <p className="text-amber-600 dark:text-amber-400">
+              Please wait {Math.ceil(getRemainingCooldown() / 1000)} seconds before requesting
+              another reset.
             </p>
-          </div>
-
-          {lastResetTime && (
-            <div className="text-sm text-muted-foreground">
-              <p>Last reset email sent: {lastResetTime.toLocaleTimeString()}</p>
-              {!canRequestReset() && (
-                <p className="text-amber-600 dark:text-amber-400">
-                  Please wait {Math.ceil(getRemainingCooldown() / 1000)} seconds before requesting
-                  another reset.
-                </p>
-              )}
-            </div>
           )}
-
-          <Button
-            onClick={handlePasswordReset}
-            className="w-full"
-            disabled={loading || !canRequestReset()}
-          >
-            {loading ? (
-              <>
-                <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
-                Sending Reset Email...
-              </>
-            ) : (
-              <>
-                <Mail className="h-4 w-4 mr-2" />
-                Send Password Reset Email
-              </>
-            )}
-          </Button>
         </div>
-      </CardContent>
-    </Card>
+      )}
+
+      <Button
+        onClick={handlePasswordReset}
+        className="w-full"
+        disabled={loading || !canRequestReset()}
+      >
+        {loading ? (
+          <>
+            <RefreshCw className="h-4 w-4 mr-2 animate-spin" />
+            Sending Reset Email...
+          </>
+        ) : (
+          <>
+            <Mail className="h-4 w-4 mr-2" />
+            Send Password Reset Email
+          </>
+        )}
+      </Button>
+    </SectionCard>
   );
 }

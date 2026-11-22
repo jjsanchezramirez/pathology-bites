@@ -13,6 +13,8 @@ import {
   CategoryRadarChart,
   ActivityHeatmap,
 } from "@/features/user/performance/components/interactive-charts";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { ContentGrid, PageContainer } from "@/shared/components/ui/page-layout";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 import { ScrollReveal } from "@/shared/components/common";
 
@@ -63,25 +65,21 @@ export default function PerformancePage() {
 
   if (!stats?.performance) {
     return (
-      <div className="space-y-6">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">Performance Analytics</h1>
-          <p className="text-muted-foreground">
-            No performance data available yet. Start taking quizzes to see your analytics!
-          </p>
-        </div>
-      </div>
+      <PageContainer>
+        <PageHeader
+          title="Performance Analytics"
+          description="No performance data available yet. Start taking quizzes to see your analytics!"
+        />
+      </PageContainer>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold tracking-tight">Performance Analytics</h1>
-        <p className="text-muted-foreground">
-          Detailed insights into your learning progress and areas for improvement.
-        </p>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="Performance Analytics"
+        description="Detailed insights into your learning progress and areas for improvement."
+      />
 
       {/* Performance Overview Cards */}
       <ScrollReveal animation="fade-up">
@@ -90,7 +88,7 @@ export default function PerformancePage() {
 
       {/* Interactive Charts - All data from single API call */}
       <ScrollReveal animation="fade-up">
-        <div className="grid gap-6 lg:grid-cols-2">
+        <ContentGrid>
           <PerformanceTimelineChart data={unifiedData?.timeline || []} loading={isLoading} />
           <CategoryRadarChart
             data={
@@ -101,7 +99,7 @@ export default function PerformancePage() {
             }
             loading={isLoading}
           />
-        </div>
+        </ContentGrid>
       </ScrollReveal>
 
       <ScrollReveal animation="fade-up">
@@ -116,6 +114,6 @@ export default function PerformancePage() {
       <ScrollReveal animation="fade-up">
         <CategoryPerformanceCard categoryDetails={unifiedData?.categories || []} />
       </ScrollReveal>
-    </div>
+    </PageContainer>
   );
 }

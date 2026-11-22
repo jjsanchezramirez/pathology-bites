@@ -1,5 +1,6 @@
 // src/features/achievements/components/achievements-section.tsx
 
+import { PageSection } from "@/shared/components/ui/page-layout";
 import { AchievementCard } from "./achievement-card";
 import { AchievementCategory } from "../types/achievement";
 
@@ -12,17 +13,16 @@ export function AchievementsSection({ category }: AchievementsSectionProps) {
   const totalCount = category.achievements.length;
 
   return (
-    <div className="space-y-4">
-      {/* Section Header */}
-      <div>
-        <h2 className="text-xl font-semibold">{category.title}</h2>
-        <p className="text-sm text-muted-foreground">
+    <PageSection
+      title={category.title}
+      description={
+        <>
           {category.description} • {unlockedCount} of {totalCount} unlocked
-        </p>
-      </div>
-
+        </>
+      }
+    >
       {/* Achievement Cards Grid */}
-      <div className="grid gap-4 grid-cols-2 lg:grid-cols-3">
+      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3">
         {category.achievements.map((achievement) => (
           <AchievementCard
             key={achievement.id}
@@ -36,6 +36,6 @@ export function AchievementsSection({ category }: AchievementsSectionProps) {
           />
         ))}
       </div>
-    </div>
+    </PageSection>
   );
 }

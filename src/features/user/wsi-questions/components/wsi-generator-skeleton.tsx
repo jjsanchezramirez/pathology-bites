@@ -10,7 +10,7 @@
  * arrived.
  */
 
-import { Card, CardContent } from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { WsiFullscreenShell } from "./wsi-fullscreen-shell";
 import { LoadingNote, OptionsSkeleton, StemSkeleton, ViewerPlaceholder } from "./wsi-loading-parts";
 import type { ReactNode } from "react";
@@ -63,16 +63,14 @@ export function WSIGeneratorSkeleton({
     <div className={`w-full max-w-4xl mx-auto ${className}`} style={{ minHeight: "600px" }}>
       {controls}
 
-      <Card className="h-full">
-        <CardContent className="space-y-4 pt-6">
-          <StemSkeleton />
-          <ViewerPlaceholder
-            isWSIDataLoading={isWSIDataLoading}
-            currentLoadingMessage={currentLoadingMessage}
-          />
-          <OptionsSkeleton />
-        </CardContent>
-      </Card>
+      <SectionCard className="h-full">
+        <StemSkeleton />
+        <ViewerPlaceholder
+          isWSIDataLoading={isWSIDataLoading}
+          currentLoadingMessage={currentLoadingMessage}
+        />
+        <OptionsSkeleton />
+      </SectionCard>
     </div>
   );
 }

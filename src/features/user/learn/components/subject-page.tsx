@@ -7,6 +7,8 @@ import { LessonSummary } from "../types/lesson";
 import { LessonCard } from "./lesson-card";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/shared/components/ui/button";
+import { PageContainer } from "@/shared/components/ui/page-layout";
+import { PageHeader } from "@/shared/components/ui/page-header";
 
 interface SubjectPageProps {
   slug: string;
@@ -51,54 +53,63 @@ export function SubjectPage({ slug }: SubjectPageProps) {
 
   if (error || !subject) {
     return (
-      <div className="space-y-4">
-        <Link href="/dashboard/learn">
-          <Button variant="ghost" size="sm">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to modules
-          </Button>
-        </Link>
-        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-6 text-center">
-          <p className="text-destructive">{error || "Subject not found"}</p>
+      <PageContainer>
+        <div>
+          <Link href="/dashboard/learn">
+            <Button variant="ghost" size="sm" className="-ml-2">
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              Back to modules
+            </Button>
+          </Link>
         </div>
-      </div>
+        <div className="rounded-lg border border-destructive/50 bg-destructive/10 p-4 text-center sm:p-6">
+          <p className="text-sm text-destructive">{error || "Subject not found"}</p>
+        </div>
+      </PageContainer>
     );
   }
 
   const completedCount = subject.lessons.filter((l) => l.is_completed).length;
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div>
-        <Link href="/dashboard/learn">
-          <Button variant="ghost" size="sm" className="mb-2 -ml-2">
-            <ArrowLeft className="mr-2 h-4 w-4" />
-            Back to modules
-          </Button>
-        </Link>
-        <div className="flex items-center gap-3">
-          {subject.category.color && (
-            <div
-              className="h-3 w-3 rounded-full"
-              style={{ backgroundColor: subject.category.color }}
-            />
-          )}
-          <span className="text-sm font-medium text-muted-foreground">{subject.category.name}</span>
-        </div>
-        <h1 className="mt-1 text-3xl font-bold tracking-tight">{subject.title}</h1>
-        {subject.description && <p className="mt-1 text-muted-foreground">{subject.description}</p>}
-        <p className="mt-2 text-sm text-muted-foreground">
-          {completedCount} of {subject.lessons.length} lessons complete
-        </p>
-      </div>
+    <PageContainer>
+      <PageHeader
+        eyebrow={
+          <div className="space-y-1">
+            <Link href="/dashboard/learn">
+              <Button variant="ghost" size="sm" className="-ml-2">
+                <ArrowLeft className="mr-2 h-4 w-4" />
+                Back to modules
+              </Button>
+            </Link>
+            <div className="flex min-w-0 items-center gap-2">
+              {subject.category.color && (
+                <div
+                  className="h-3 w-3 shrink-0 rounded-full"
+                  style={{ backgroundColor: subject.category.color }}
+                />
+              )}
+              <span className="truncate text-sm font-medium text-muted-foreground">
+                {subject.category.name}
+              </span>
+            </div>
+          </div>
+        }
+        title={subject.title}
+        description={subject.description || undefined}
+        actions={
+          <span className="text-sm text-muted-foreground">
+            {completedCount} of {subject.lessons.length} lessons complete
+          </span>
+        }
+      />
 
       {/* Lesson list */}
-      <div className="space-y-3">
+      <div className="space-y-2">
         {subject.lessons.map((lesson, index) => (
           <LessonCard key={lesson.id} lesson={lesson} index={index + 1} subjectSlug={slug} />
         ))}
       </div>
-    </div>
+    </PageContainer>
   );
 }

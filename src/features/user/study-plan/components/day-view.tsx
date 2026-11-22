@@ -291,7 +291,7 @@ export function DayView({
       </div>
 
       <div className="mb-4 flex items-end justify-between gap-2">
-        <div>
+        <div className="min-w-0">
           <h2
             className={`text-2xl font-bold tracking-tight ${isToday ? "text-primary" : "text-foreground"}`}
           >
@@ -300,7 +300,7 @@ export function DayView({
           <p className="text-sm text-muted-foreground">{daySubtitle}</p>
         </div>
         {studyTasks.length > 0 && (
-          <div className="text-right">
+          <div className="shrink-0 text-right">
             <div className="text-sm font-semibold tabular-nums text-foreground">
               {completedCount}/{studyTasks.length} done
             </div>
@@ -348,10 +348,15 @@ export function DayView({
               const groupMin = tasks.reduce((s, t) => s + t.minutes, 0);
               return (
                 <div key={resource}>
-                  <div className="mb-2 flex items-center gap-2">
-                    <div className="size-2.5 rounded-sm" style={{ backgroundColor: colors.bg }} />
-                    <span className="text-xs font-medium text-muted-foreground">{resource}</span>
-                    <span className="text-[10px] text-muted-foreground/50">
+                  <div className="mb-2 flex min-w-0 items-center gap-2">
+                    <div
+                      className="size-2.5 shrink-0 rounded-sm"
+                      style={{ backgroundColor: colors.bg }}
+                    />
+                    <span className="truncate text-xs font-medium text-muted-foreground">
+                      {resource}
+                    </span>
+                    <span className="shrink-0 text-xs text-muted-foreground/50">
                       {tasks.length} {tasks.length === 1 ? "task" : "tasks"} · {fmtTime(groupMin)}
                     </span>
                   </div>

@@ -1,12 +1,6 @@
 // src/features/profile/components/account-details-card.tsx
 
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/shared/components/ui/card";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { RoleBadge } from "@/shared/components/ui/role-badge";
 import { UserStatusBadge } from "@/shared/components/ui/user-status-badge";
 import { Separator } from "@/shared/components/ui/separator";
@@ -29,37 +23,34 @@ interface AccountDetailsCardProps {
 
 export function AccountDetailsCard({ userProfile }: AccountDetailsCardProps) {
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Shield className="h-5 w-5" />
-          Account Details
-        </CardTitle>
-        <CardDescription>View your account status and role information.</CardDescription>
-      </CardHeader>
-      <CardContent className="space-y-4">
-        <div className="space-y-3">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Role</span>
-            <RoleBadge role={userProfile.role} />
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Status</span>
-            <UserStatusBadge status={userProfile.status} />
-          </div>
-          <Separator />
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">User ID</span>
-            <span className="text-xs font-mono text-muted-foreground">{userProfile.id}</span>
-          </div>
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-medium">Last Updated</span>
-            <span className="text-sm text-muted-foreground">
-              {new Date(userProfile.updated_at).toLocaleDateString()}
-            </span>
-          </div>
+    <SectionCard
+      title="Account Details"
+      description="View your account status and role information."
+      icon={Shield}
+    >
+      <div className="space-y-3">
+        <div className="flex items-center justify-between gap-2">
+          <span className="shrink-0 text-sm font-medium">Role</span>
+          <RoleBadge role={userProfile.role} />
         </div>
-      </CardContent>
-    </Card>
+        <div className="flex items-center justify-between gap-2">
+          <span className="shrink-0 text-sm font-medium">Status</span>
+          <UserStatusBadge status={userProfile.status} />
+        </div>
+        <Separator />
+        <div className="flex items-center justify-between gap-2">
+          <span className="shrink-0 text-sm font-medium">User ID</span>
+          <span className="min-w-0 truncate font-mono text-xs text-muted-foreground">
+            {userProfile.id}
+          </span>
+        </div>
+        <div className="flex items-center justify-between gap-2">
+          <span className="shrink-0 text-sm font-medium">Last Updated</span>
+          <span className="text-sm text-muted-foreground">
+            {new Date(userProfile.updated_at).toLocaleDateString()}
+          </span>
+        </div>
+      </div>
+    </SectionCard>
   );
 }

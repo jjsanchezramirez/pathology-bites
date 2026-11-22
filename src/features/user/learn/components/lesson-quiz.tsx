@@ -50,10 +50,10 @@ export function LessonQuiz({ quiz, onComplete }: LessonQuizProps) {
     const score = Math.round((correctCount / quiz.questions.length) * 100);
     return (
       <Card className="border-primary/20">
-        <CardContent className="p-8 text-center">
-          <Trophy className="mx-auto h-10 w-10 text-primary mb-3" />
-          <h3 className="text-2xl font-bold">Quiz Complete!</h3>
-          <p className="mt-2 text-lg text-muted-foreground">
+        <CardContent className="space-y-2 p-4 text-center sm:p-6">
+          <Trophy className="mx-auto h-10 w-10 text-primary" />
+          <h3 className="text-lg font-semibold">Quiz Complete!</h3>
+          <p className="text-sm text-muted-foreground">
             You got {correctCount} out of {quiz.questions.length} correct ({score}%)
           </p>
         </CardContent>
@@ -63,9 +63,9 @@ export function LessonQuiz({ quiz, onComplete }: LessonQuizProps) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2">
         <h3 className="text-lg font-semibold">Knowledge Check</h3>
-        <span className="text-sm text-muted-foreground">
+        <span className="text-xs text-muted-foreground">
           Question {currentIndex + 1} of {quiz.questions.length}
         </span>
       </div>
@@ -104,7 +104,7 @@ function QuestionCard({
 
   return (
     <Card>
-      <CardContent className="p-6 space-y-4">
+      <CardContent className="space-y-4 p-4 sm:p-6">
         <QuestionMarkdown className="text-base font-medium">{question.stem}</QuestionMarkdown>
 
         <div className="space-y-2">

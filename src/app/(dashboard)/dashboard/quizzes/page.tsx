@@ -18,6 +18,8 @@ import {
   QuizzesLoading,
   type QuizSessionListItem,
 } from "@/features/user/quiz/components";
+import { PageHeader } from "@/shared/components/ui/page-header";
+import { PageContainer } from "@/shared/components/ui/page-layout";
 import { log } from "@/shared/utils/logging";
 
 export default function QuizzesPage() {
@@ -196,22 +198,19 @@ export default function QuizzesPage() {
   }
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold tracking-tight">My Quizzes</h1>
-          <p className="text-muted-foreground">
-            Track your quiz history and continue where you left off
-          </p>
-        </div>
-        <Link href="/dashboard/quiz/new">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            New Quiz
-          </Button>
-        </Link>
-      </div>
+    <PageContainer>
+      <PageHeader
+        title="My Quizzes"
+        description="Track your quiz history and continue where you left off"
+        actions={
+          <Link href="/dashboard/quiz/new">
+            <Button>
+              <Plus className="mr-2 h-4 w-4" />
+              New Quiz
+            </Button>
+          </Link>
+        }
+      />
 
       {/* Statistics Summary */}
       {!isLoading && quizzes.length > 0 && (
@@ -246,12 +245,12 @@ export default function QuizzesPage() {
 
             {/* Pagination Controls */}
             {totalPages > 1 && (
-              <div className="flex items-center justify-between pt-4">
+              <div className="flex flex-col gap-2 pt-2 sm:flex-row sm:items-center sm:justify-between">
                 <div className="text-sm text-muted-foreground">
                   Showing {startIndex + 1}-{Math.min(endIndex, sortedQuizzes.length)} of{" "}
                   {sortedQuizzes.length} quizzes
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Button
                     variant="outline"
                     size="sm"
@@ -275,7 +274,7 @@ export default function QuizzesPage() {
 
                       if (showEllipsisBefore || showEllipsisAfter) {
                         return (
-                          <span key={page} className="px-2 text-muted-foreground">
+                          <span key={page} className="px-2 text-sm text-muted-foreground">
                             ...
                           </span>
                         );
@@ -319,6 +318,6 @@ export default function QuizzesPage() {
         onOpenChange={setShowDeleteDialog}
         onConfirm={handleDeleteConfirm}
       />
-    </div>
+    </PageContainer>
   );
 }

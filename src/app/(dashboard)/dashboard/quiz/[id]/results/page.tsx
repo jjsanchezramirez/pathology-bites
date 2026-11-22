@@ -1,6 +1,7 @@
 // src/app/(dashboard)/dashboard/quiz/[id]/results/page.tsx
 "use client";
 
+import { PageContainer } from "@/shared/components/ui/page-layout";
 import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { Button } from "@/shared/components/ui/button";
@@ -171,9 +172,9 @@ export default function QuizResultsPage() {
   // Loading state
   if (loading) {
     return (
-      <div className="container mx-auto py-8">
+      <PageContainer width="narrow">
         <QuizResultsSkeleton />
-      </div>
+      </PageContainer>
     );
   }
 
@@ -188,83 +189,76 @@ export default function QuizResultsPage() {
         window.location.href = `/dashboard/quiz/${sessionId}`;
       }
       return (
-        <div className="container mx-auto py-8">
-          <div className="max-w-2xl mx-auto space-y-6">
-            <div className="text-center py-12">
-              <h1 className="text-2xl font-bold">Redirecting to Quiz...</h1>
-              <p className="text-muted-foreground mt-2">
-                This quiz hasn&apos;t been completed yet. Taking you back to finish it.
-              </p>
-            </div>
+        <PageContainer width="narrow">
+          <div className="space-y-2 py-12 text-center">
+            <h1 className="text-2xl font-bold tracking-tight">Redirecting to Quiz...</h1>
+            <p className="text-sm text-muted-foreground">
+              This quiz hasn&apos;t been completed yet. Taking you back to finish it.
+            </p>
           </div>
-        </div>
+        </PageContainer>
       );
     }
 
     return (
-      <div className="container mx-auto py-8">
-        <div className="max-w-2xl mx-auto">
-          <div
-            className="w-full min-h-[400px] flex items-center justify-center relative overflow-hidden rounded-lg border bg-card"
-            role="alert"
-            aria-live="assertive"
-          >
-            {/* Subtle gradient background */}
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(239,68,68,0.05),transparent_50%)]" />
+      <PageContainer width="narrow">
+        <div
+          className="w-full min-h-[400px] flex items-center justify-center relative overflow-hidden rounded-lg border bg-card"
+          role="alert"
+          aria-live="assertive"
+        >
+          {/* Subtle gradient background */}
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(239,68,68,0.05),transparent_50%)]" />
 
-            {/* Content */}
-            <div className="relative z-10 flex flex-col items-center text-center space-y-4 px-6 py-8">
-              {/* Lottie animation */}
-              <div className="w-32 h-32 flex items-center justify-center">
-                {errorAnimationLoading || !errorAnimation ? (
-                  <div className="w-full h-full bg-muted/20 rounded-full animate-pulse" />
-                ) : (
-                  <Lottie
-                    animationData={errorAnimation}
-                    loop={false}
-                    autoplay={true}
-                    style={{ width: "100%", height: "100%" }}
-                  />
-                )}
-              </div>
+          {/* Content */}
+          <div className="relative z-10 flex flex-col items-center text-center space-y-4 px-6 py-8">
+            {/* Lottie animation */}
+            <div className="w-32 h-32 flex items-center justify-center">
+              {errorAnimationLoading || !errorAnimation ? (
+                <div className="w-full h-full bg-muted/20 rounded-full animate-pulse" />
+              ) : (
+                <Lottie
+                  animationData={errorAnimation}
+                  loop={false}
+                  autoplay={true}
+                  style={{ width: "100%", height: "100%" }}
+                />
+              )}
+            </div>
 
-              {/* Error message */}
-              <div className="space-y-2 max-w-md">
-                <h1 className="text-2xl font-bold text-destructive flex items-center justify-center gap-2">
-                  <AlertCircle className="w-6 h-6" />
-                  Quiz Results Not Available
-                </h1>
-                <p className="text-sm text-muted-foreground">
-                  {error ||
-                    "The quiz results you're looking for don't exist or couldn't be loaded."}
-                </p>
-              </div>
+            {/* Error message */}
+            <div className="space-y-2 max-w-md">
+              <h1 className="flex items-center justify-center gap-2 text-lg font-semibold text-destructive">
+                <AlertCircle className="h-5 w-5" />
+                Quiz Results Not Available
+              </h1>
+              <p className="text-sm text-muted-foreground">
+                {error || "The quiz results you're looking for don't exist or couldn't be loaded."}
+              </p>
+            </div>
 
-              {/* Action buttons */}
-              <div className="flex justify-center gap-2 mt-4">
-                <Button onClick={() => window.location.reload()}>Try Again</Button>
-                <Link href="/dashboard">
-                  <Button variant="outline">Back to Dashboard</Button>
-                </Link>
-              </div>
+            {/* Action buttons */}
+            <div className="flex flex-wrap justify-center gap-2">
+              <Button onClick={() => window.location.reload()}>Try Again</Button>
+              <Link href="/dashboard">
+                <Button variant="outline">Back to Dashboard</Button>
+              </Link>
             </div>
           </div>
         </div>
-      </div>
+      </PageContainer>
     );
   }
 
   // Results display
   return (
-    <div className="container mx-auto py-8 px-4">
-      <div className="max-w-4xl mx-auto">
-        <QuizResultsSummary
-          result={result}
-          onReviewQuestions={() => {
-            window.location.href = `/dashboard/quiz/${sessionId}?review=true`;
-          }}
-        />
-      </div>
-    </div>
+    <PageContainer width="narrow">
+      <QuizResultsSummary
+        result={result}
+        onReviewQuestions={() => {
+          window.location.href = `/dashboard/quiz/${sessionId}?review=true`;
+        }}
+      />
+    </PageContainer>
   );
 }
