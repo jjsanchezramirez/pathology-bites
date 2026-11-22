@@ -23,7 +23,7 @@ const ADMIN_AI_MODELS = ACTIVE_AI_MODELS.filter((model) => model.available).map(
  * /api/admin/questions/ai-generate:
  *   post:
  *     summary: AI-generate or refine questions
- *     description: Use AI models to generate new questions from educational content, refine existing questions, or suggest metadata. Supports multiple AI models (Groq, Cerebras, Google Gemini, Mistral). Requires admin, creator, or reviewer role.
+ *     description: Use AI models to generate new questions from educational content, refine existing questions, or suggest metadata. Supports multiple AI models (Groq, Cloudflare Workers AI, Google Gemini). Requires admin, creator, or reviewer role.
  *     tags:
  *       - Admin - Questions
  *     security:

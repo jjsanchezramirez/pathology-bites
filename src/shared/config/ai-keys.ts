@@ -25,7 +25,6 @@ export const API_KEYS = {
   groq: process.env.GROQ_API_KEY || "",
   cerebras: process.env.CEREBRAS_API_KEY || "",
   google: process.env.GOOGLE_AI_STUDIO_API_KEY || process.env.GEMINI_API_KEY || "",
-  mistral: process.env.MISTRAL_API_KEY || "",
   // Workers AI. A plain Cloudflare API token with the Workers AI Read binding.
   cloudflare: process.env.CLOUDFLARE_AI_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN || "",
   // OpenAI — only Whisper word timing for lesson narration (optional).
@@ -58,8 +57,6 @@ function missingCompanionConfig(provider: string): boolean {
  *
  * Off by default, and why (unlock only once the account works again):
  * - Cerebras: prepaid, balance empty — every model answers 402 (2026-11-21).
- * - Mistral: workspace limit is 0 requests/minute — `x-ratelimit-limit-req-
- *   minute: 0`, no active plan; the key itself is valid (2026-11-22).
  */
 const PROVIDER_SWITCHES: Record<string, { env: string; defaultOn: boolean }> = {
   groq: { env: "GROQ_ENABLED", defaultOn: true },
@@ -68,7 +65,6 @@ const PROVIDER_SWITCHES: Record<string, { env: string; defaultOn: boolean }> = {
   cloudflare: { env: "CLOUDFLARE_AI_ENABLED", defaultOn: true },
   openai: { env: "OPENAI_ENABLED", defaultOn: true },
   cerebras: { env: "CEREBRAS_ENABLED", defaultOn: false },
-  mistral: { env: "MISTRAL_ENABLED", defaultOn: false },
 };
 
 /** The env variable that switches a provider on or off, if it has one. */
@@ -88,7 +84,7 @@ export function isProviderLocked(provider: string): boolean {
 export function getApiKey(provider: string): string {
   if (isProviderLocked(provider)) {
     // debug, not warn: the fallback walk already warns when it skips a keyless
-    // provider, and Mistral sits in the chain, so this would fire every request.
+    // provider, so a warning here would fire twice on every chain walk.
     log.debug(`${provider} is switched off (${providerSwitchEnv(provider)}).`);
     return "";
   }

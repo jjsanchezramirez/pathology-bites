@@ -1,12 +1,12 @@
 // Single provider dispatcher for every text AI call in the app.
 //
-// Replaces four near-identical `callAIService` / `callGoogleAPI` / `callMistralAPI`
-// copies (WSI questions, admin questions, admin audio, debug) that had drifted
-// apart: Google silently dropped the system prompt in all of them, WSI's Mistral
-// dropped it too, and neither Google nor Mistral had any request timeout.
+// Replaces four near-identical `callAIService` / `callGoogleAPI` copies (WSI
+// questions, admin questions, admin audio, debug) that had drifted apart:
+// Google silently dropped the system prompt in all of them and had no request
+// timeout.
 //
 // Groq, Cerebras and Cloudflare speak the OpenAI shape (openai-compat.ts);
-// Google and Mistral are called directly here.
+// Google is called directly here.
 
 import { callOpenAICompatText } from "@/shared/services/openai-compat";
 import { fetchWithTimeout } from "@/shared/utils/fetch-with-timeout";
@@ -131,58 +131,6 @@ async function callGoogle(
   };
 }
 
-async function callMistral(
-  prompt: string,
-  model: string,
-  apiKey: string,
-  options: AICallOptions
-): Promise<AICallResult> {
-  const { system, maxTokens, temperature, timeoutMs, jsonMode, signal } = {
-    ...DEFAULTS,
-    ...options,
-  };
-
-  const response = await fetchWithTimeout(
-    "https://api.mistral.ai/v1/chat/completions",
-    {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        model,
-        messages: [
-          ...(system ? [{ role: "system", content: system }] : []),
-          { role: "user", content: prompt },
-        ],
-        max_tokens: maxTokens,
-        temperature,
-        ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
-      }),
-    },
-    timeoutMs,
-    signal,
-    "Mistral API"
-  );
-
-  if (!response.ok) {
-    throw new Error(`Mistral API error: ${response.status} ${response.statusText}`);
-  }
-
-  const data = await response.json();
-  return {
-    content: data.choices?.[0]?.message?.content || "",
-    tokenUsage: data.usage
-      ? {
-          prompt_tokens: data.usage.prompt_tokens,
-          completion_tokens: data.usage.completion_tokens,
-          total_tokens: data.usage.total_tokens,
-        }
-      : undefined,
-  };
-}
-
 /**
  * Call one model on one provider. No retries, no fallback — that is
  * `callWithFallback`'s job; this is the leaf it drives.
@@ -204,8 +152,6 @@ export async function callModel(
     case "google":
     case "gemini":
       return callGoogle(prompt, modelId, apiKey, merged);
-    case "mistral":
-      return callMistral(prompt, modelId, apiKey, merged);
     default:
       throw new Error(`Unsupported model provider: ${provider}`);
   }

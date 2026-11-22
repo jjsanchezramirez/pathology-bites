@@ -2,9 +2,8 @@
  * The unified provider dispatcher.
  *
  * These assertions exist because the four copies this replaced had each drifted:
- * every one of them built the Google request body without a system prompt, and
- * WSI's Mistral copy dropped it too — so the role instruction the caller passed
- * was silently discarded on those providers.
+ * every one of them built the Google request body without a system prompt — so
+ * the role instruction the caller passed was silently discarded.
  */
 import { describe, it, expect, beforeEach, vi } from "vitest";
 
@@ -27,11 +26,6 @@ function jsonResponse(body: unknown) {
 const GOOGLE_OK = jsonResponse({
   candidates: [{ content: { parts: [{ text: "generated" }] } }],
   usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 20, totalTokenCount: 30 },
-});
-
-const MISTRAL_OK = jsonResponse({
-  choices: [{ message: { content: "generated" } }],
-  usage: { prompt_tokens: 10, completion_tokens: 20, total_tokens: 30 },
 });
 
 function bodyOf(call: unknown[]) {
@@ -80,38 +74,11 @@ describe("callModel — Google", () => {
   });
 });
 
-describe("callModel — Mistral", () => {
-  it("sends the system prompt as a system message", async () => {
-    fetchMock.mockResolvedValue(MISTRAL_OK);
-    await callModel("mistral", "mistral-large-latest", "k", "prompt", {
-      system: "You are a pathologist.",
-      maxTokens: 500,
-    });
-
-    const body = bodyOf(fetchMock.mock.calls[0]);
-    expect(body.messages).toEqual([
-      { role: "system", content: "You are a pathologist." },
-      { role: "user", content: "prompt" },
-    ]);
-    expect(body.max_tokens).toBe(500);
-  });
-
-  it("only requests JSON mode when asked", async () => {
-    fetchMock.mockResolvedValue(MISTRAL_OK);
-    await callModel("mistral", "mistral-large-latest", "k", "p", { jsonMode: true });
-    expect(bodyOf(fetchMock.mock.calls[0]).response_format).toEqual({ type: "json_object" });
-
-    fetchMock.mockClear();
-    await callModel("mistral", "mistral-large-latest", "k", "p");
-    expect(bodyOf(fetchMock.mock.calls[0]).response_format).toBeUndefined();
-  });
-});
-
 describe("callModel — failures", () => {
   it("surfaces a non-OK response as an error carrying the status", async () => {
     fetchMock.mockResolvedValue({ ok: false, status: 429, statusText: "Too Many Requests" });
-    await expect(callModel("mistral", "mistral-large-latest", "k", "p")).rejects.toThrow(
-      /Mistral API error: 429/
+    await expect(callModel("google", "gemini-2.5-flash-lite", "k", "p")).rejects.toThrow(
+      /Google API error: 429/
     );
   });
 
@@ -122,7 +89,7 @@ describe("callModel — failures", () => {
   });
 
   it("reports a timeout as a timeout, so it classifies as fallback not a bad request", async () => {
-    // Google and Mistral previously ran with no timeout at all; a hung provider
+    // Google previously ran with no timeout at all; a hung provider
     // could eat the whole serverless budget instead of failing over.
     fetchMock.mockImplementation((_url: string, init: RequestInit) => {
       return new Promise((_resolve, reject) => {

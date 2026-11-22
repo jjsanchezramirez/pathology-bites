@@ -15,7 +15,7 @@ vi.mock("@/shared/config/ai-models", () => ({
   resolveModelId: (model: string) => model,
   AI_TASKS: {
     "wsi-question": {
-      chain: ["groq:a", "cerebras:a", "mistral:a"],
+      chain: ["groq:a", "cerebras:a", "cloudflare:a"],
       maxTokens: 2000,
       temperature: 0.7,
       timeoutMs: 12_000,
@@ -240,10 +240,10 @@ describe("callWithFallback", () => {
         return `ok:${model}`;
       },
       "test",
-      { modelOverride: "mistral:x" }
+      { modelOverride: "cloudflare:x" }
     );
-    expect(result).toBe("ok:mistral:x");
-    expect(calls).toEqual(["mistral:x"]);
+    expect(result).toBe("ok:cloudflare:x");
+    expect(calls).toEqual(["cloudflare:x"]);
   });
 
   it("throws when every model is exhausted", async () => {
@@ -269,7 +269,7 @@ describe("callWithFallback deadline budget", () => {
     const calls: string[] = [];
     await expect(
       callWithFallback(
-        ["groq:a", "cerebras:a", "mistral:a"],
+        ["groq:a", "cerebras:a", "cloudflare:a"],
         async (model) => {
           calls.push(model);
           return slowFailure(50)();
@@ -286,7 +286,7 @@ describe("callWithFallback deadline budget", () => {
 
   it("names the deadline in the error so a timeout is not mistaken for a provider fault", async () => {
     await expect(
-      callWithFallback(["groq:a", "cerebras:a", "mistral:a"], slowFailure(50), "test", {
+      callWithFallback(["groq:a", "cerebras:a", "cloudflare:a"], slowFailure(50), "test", {
         deadlineMs: 60,
         maxRetries: 0,
       })
@@ -297,7 +297,7 @@ describe("callWithFallback deadline budget", () => {
     const calls: string[] = [];
     await expect(
       callWithFallback(
-        ["groq:a", "cerebras:a", "mistral:a"],
+        ["groq:a", "cerebras:a", "cloudflare:a"],
         async (model) => {
           calls.push(model);
           return slowFailure(20)();
@@ -306,7 +306,7 @@ describe("callWithFallback deadline budget", () => {
         { maxRetries: 0 }
       )
     ).rejects.toThrow(/All models exhausted/);
-    expect(calls).toEqual(["groq:a", "cerebras:a", "mistral:a"]);
+    expect(calls).toEqual(["groq:a", "cerebras:a", "cloudflare:a"]);
   });
 });
 

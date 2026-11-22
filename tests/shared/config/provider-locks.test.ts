@@ -1,7 +1,7 @@
 /**
  * Every AI provider has an on/off switch in the environment. Working providers
- * default on (only "false" turns them off); Cerebras (402, no funds) and
- * Mistral (0 RPM) default off (only "true" turns them on). A switched-off
+ * default on (only "false" turns them off); Cerebras (402, no funds) defaults
+ * off (only "true" turns it on). A switched-off
  * provider keeps its key but must read as unconfigured, so no chain, pinned
  * model or catalog flip spends an attempt on it.
  */
@@ -37,18 +37,6 @@ describe("AI provider switches", () => {
     expect(hasApiKey("cerebras")).toBe(true);
   });
 
-  it("locks Mistral the same way until MISTRAL_ENABLED=true", async () => {
-    vi.stubEnv("MISTRAL_API_KEY", "ms-test");
-    vi.stubEnv("MISTRAL_ENABLED", "");
-    let keys = await loadKeys();
-    expect(keys.getApiKey("mistral")).toBe("");
-    expect(keys.getAvailableProviders()).not.toContain("mistral");
-
-    vi.stubEnv("MISTRAL_ENABLED", "true");
-    keys = await loadKeys();
-    expect(keys.getApiKey("mistral")).toBe("ms-test");
-  });
-
   it.each([
     ["groq", "GROQ_API_KEY", "GROQ_ENABLED"],
     ["google", "GOOGLE_AI_STUDIO_API_KEY", "GEMINI_ENABLED"],
@@ -78,7 +66,6 @@ describe("AI provider switches", () => {
     vi.stubEnv("GROQ_API_KEY", "gsk-test");
     vi.stubEnv("GOOGLE_AI_STUDIO_API_KEY", "goog-test");
     vi.stubEnv("CEREBRAS_ENABLED", "");
-    vi.stubEnv("MISTRAL_ENABLED", "");
     const keys = await loadKeys();
     expect(keys.hasApiKey("groq")).toBe(true);
     expect(keys.hasApiKey("google")).toBe(true);

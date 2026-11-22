@@ -21,24 +21,7 @@ function sanitizeJSONString(jsonStr: string): string {
 export function extractJSON(text: string): unknown {
   log.debug(`[Admin AI] Extracting JSON from response (${text.length} chars)`);
 
-  // Handle Mistral thinking format first
-  let cleanedText = text;
-  try {
-    // Check if it's a Mistral thinking format (array with thinking objects)
-    if (text.trim().startsWith("[")) {
-      const parsed = JSON.parse(text);
-      if (Array.isArray(parsed)) {
-        // Find the actual text response (not thinking)
-        const textResponse = parsed.find((item) => item.type === "text" && !item.thinking);
-        if (textResponse?.text) {
-          cleanedText = textResponse.text;
-          log.debug("[Admin AI] Extracted content from Mistral thinking format");
-        }
-      }
-    }
-  } catch {
-    // Continue with original text if parsing fails
-  }
+  const cleanedText = text;
 
   // Strategy 1: Smart brace counting (handles extra content after JSON)
   const firstBrace = cleanedText.indexOf("{");

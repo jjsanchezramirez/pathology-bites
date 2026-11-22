@@ -80,7 +80,7 @@ describe("Cloudflare Workers AI wiring", () => {
     expect(body.max_completion_tokens).toBeGreaterThanOrEqual(1024);
   });
 
-  it("sends max_completion_tokens, not Mistral's max_tokens", async () => {
+  it("sends max_completion_tokens, not the deprecated max_tokens", async () => {
     await call();
     expect(sentBody().max_tokens).toBeUndefined();
   });

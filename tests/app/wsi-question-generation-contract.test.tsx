@@ -103,7 +103,7 @@ describe("route: POST /api/user/wsi-questions/generate", () => {
     runAITask.mockResolvedValue({
       content: "{}",
       parsed: QUESTION,
-      model: "mistral-large-latest",
+      model: "gemini-2.5-flash-lite",
     });
     await POST(postRequest({ wsi: SLIDE }));
 
