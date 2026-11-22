@@ -21,6 +21,7 @@ import {
   LEGACY_MODEL_REMAP,
   VISION_CAPABLE_MODELS,
   VISION_FALLBACK_CHAIN,
+  getModelProvider,
   TEXT_FALLBACK_CHAIN,
 } from "@/shared/config/ai-models";
 
@@ -140,6 +141,14 @@ describe("AI call standardization", () => {
         );
       }
     }
+  });
+
+  it("keeps a second provider in the vision chain", () => {
+    // The vision chain was Google-only after Cerebras archived gemma-4-31b: one
+    // Google outage or free-tier 429 stopped image questions entirely. Groq's
+    // Qwen restored a second provider (benched 2026-11-22).
+    const providers = new Set(VISION_FALLBACK_CHAIN.map((m) => getModelProvider(m)));
+    expect(providers.size).toBeGreaterThanOrEqual(2);
   });
 
   it("does not put a known-unusable model back in a chain", () => {
