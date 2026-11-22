@@ -21,6 +21,8 @@ import { log } from "@/shared/utils/logging";
 // One TTS call per sentence. Calls are spaced to Gemini's per-minute limit
 // (see gemini-tts.ts), about 6 s apart on the 10-a-minute tier, so a 2-minute
 // lesson of ~25 sentences takes about 2.5 minutes and fits this budget.
+// 300 s needs Fluid Compute (`"fluid": true` in vercel.json): without it the
+// Hobby plan caps functions at 60 s and the production build fails.
 export const maxDuration = 300;
 
 const SAMPLE_RATE = 24000;
