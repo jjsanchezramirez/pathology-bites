@@ -145,12 +145,7 @@ describe("AI call standardization", () => {
   it("does not put a known-unusable model back in a chain", () => {
     // Each of these was measured on the real WSI prompt spending its entire
     // token budget without ever closing the JSON. Slow is recoverable; this is not.
-    const unusable = [
-      "zai-glm-4.7",
-      "openai/gpt-oss-20b",
-      "qwen/qwen3.6-27b",
-      "ministral-14b-2512",
-    ];
+    const unusable = ["zai-glm-4.7", "openai/gpt-oss-20b", "qwen/qwen3.6-27b"];
     for (const model of unusable) {
       expect(TEXT_FALLBACK_CHAIN, `${model} was measured unusable`).not.toContain(model);
       expect(VISION_FALLBACK_CHAIN, `${model} was measured unusable`).not.toContain(model);

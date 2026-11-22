@@ -4,7 +4,7 @@
 export interface AIModel {
   id: string;
   name: string;
-  provider: "groq" | "cerebras" | "gemini" | "mistral" | "cloudflare";
+  provider: "groq" | "cerebras" | "gemini" | "cloudflare";
   available: boolean;
   deprecated?: boolean;
   description?: string;
@@ -54,14 +54,6 @@ export function getModelProvider(model: string): string {
   if (known) return known.provider === "gemini" ? "google" : known.provider;
   if (model.startsWith("@cf/")) return "cloudflare";
   if (model.startsWith("gemini-")) return "google";
-  if (
-    model.startsWith("mistral-") ||
-    model.startsWith("open-mistral") ||
-    model.startsWith("open-mixtral") ||
-    model.startsWith("magistral-") ||
-    model.startsWith("ministral-")
-  )
-    return "mistral";
   return "google";
 }
 
@@ -143,70 +135,13 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     contextLength: "1M tokens",
     tpmLimit: 1000000,
   },
-
-  // Medium rate limit models (500K TPM)
-  {
-    id: "mistral-large-latest",
-    name: "Mistral Large",
-    provider: "mistral",
-    available: true,
-    description: "Mistral's largest and most capable model",
-    contextLength: "128K tokens",
-    tpmLimit: 500000,
-  },
-  {
-    id: "mistral-medium-2505",
-    name: "Mistral Medium 3",
-    provider: "mistral",
-    available: true,
-    description: "Latest Mistral Medium 3 model - enhanced capabilities",
-    contextLength: "128K tokens",
-    tpmLimit: 500000,
-  },
-  // Current-generation Mistral. The 25xx small/medium entries below are the
-  // older releases the chain was measured against; kept for comparison.
-  {
-    id: "mistral-small-2603",
-    name: "Mistral Small (2603)",
-    provider: "mistral",
-    available: true,
-    description: "Current Mistral Small release - bench candidate",
-    contextLength: "128K tokens",
-    tpmLimit: 500000,
-  },
-  {
-    id: "mistral-small-2506",
-    name: "Mistral Small 3.2",
-    provider: "mistral",
-    available: true,
-    description: "Mistral Small 3.2 model - balanced performance",
-    contextLength: "32K tokens",
-    tpmLimit: 500000,
-  },
-  {
-    id: "mistral-small-2503",
-    name: "Mistral Small 3.1",
-    provider: "mistral",
-    available: true,
-    description: "Mistral Small 3.1 model - enhanced efficiency",
-    contextLength: "32K tokens",
-    tpmLimit: 500000,
-  },
-  {
-    id: "mistral-small-2501",
-    name: "Mistral Small 3",
-    provider: "mistral",
-    available: true,
-    description: "Mistral Small 3 model - fast inference",
-    contextLength: "32K tokens",
-    tpmLimit: 500000,
-  },
 ];
 
 // ---------------------------------------------------------------------------
 // Unified fallback chains
 // ---------------------------------------------------------------------------
-// Ordering: Groq → Cerebras → Cloudflare → Mistral → Gemini.
+// Ordering: Groq → Cloudflare → Gemini. (Cerebras is parked; Mistral was
+// removed 2026-11-22 — its API is no longer free and needs pay-as-you-go.)
 // (Meta's Llama API shut down July 6, 2026; Groq serves the same Llama
 // models, Cerebras adds a 1M-token/day pool.)
 //
@@ -216,7 +151,6 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
 //
 //   Cloudflare gpt-oss-20b   $0.66   (after 10K free neurons/day)
 //   Groq                     $5.69
-//   Mistral small            $5.69
 //   Cerebras                 $8.62
 //   Gemini 3.5 Flash-Lite   $20.68
 //
@@ -235,7 +169,6 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
 //   gemini-3.5-flash-lite   3.1s   282 tok/s   Google
 //   openai/gpt-oss-120b     3.6s   439 tok/s   Groq
 //   llama-3.3-70b-versatile 3.4s   310 tok/s   Groq
-//   mistral-small-2603      8.0s   129 tok/s   Mistral
 //
 // Every slot is a DIFFERENT provider on purpose. That matters more than raw
 // speed ordering: only ~3 models are ever reachable on a timeout path — with
@@ -262,8 +195,6 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
 //                          Cloudflare's serving of the same model is in the
 //                          chain instead, which adds a provider rather than
 //                          repeating one. Still selectable.
-//   mistral-large/medium   17.4s / 17.6s — past the 12s WSI timeout every time.
-//                          Selectable for admin tasks (20s timeout) only.
 //   gemini-2.5-flash-lite  4.3s, superseded by 3.5-flash-lite (3.1s) which is
 //                          also free tier. Kept selectable as the Gemini
 //                          fallback in VISION_FALLBACK_CHAIN.
@@ -280,9 +211,6 @@ export const TEXT_FALLBACK_CHAIN: string[] = [
   // stayed in the chain long enough to 404 on every single failure, wasting an
   // attempt that could not possibly answer — and, because the chain is walked in
   // order, delaying the one backstop that still works. Live models only.
-  // LOCKED until MISTRAL_ENABLED=true (workspace limit 0 RPM, 2026-11-22) —
-  // skipped instantly with no network call while locked. See ai-keys.ts.
-  "mistral-small-2603", // Mistral — 8.0s, ~1B tokens/mo free but 2 RPM
   "gemini-3.5-flash-lite", // Google — 3.1s but $20.68/mo; last on cost, not speed
 ];
 
@@ -337,11 +265,12 @@ export interface AITaskProfile {
 // behaves this way — see callGoogle.
 export const VISION_FALLBACK_CHAIN: string[] = [
   "gemini-3.5-flash-lite", // Google — 1.9s
-  // gemma-4-31b (Cerebras, 1.2s) was the non-Google leg; Cerebras archived it. THIS CHAIN IS NOW SINGLE-PROVIDER: a Google outage or a 429 on the
-  // free tier empties it, where the text chain would still have three providers
-  // to fall through. That is a known gap, not an oversight — filling it needs a
-  // vision model benchmarked on a real image (/debug/vision-bench), and the
-  // candidates are Cloudflare Workers AI and Mistral's pixtral line.
+  // gemma-4-31b (Cerebras, 1.2s) was the non-Google leg; Cerebras archived it.
+  // THIS CHAIN IS NOW SINGLE-PROVIDER: a Google outage or a 429 on the free
+  // tier empties it, where the text chain would still have three providers to
+  // fall through. That is a known gap, not an oversight — filling it needs a
+  // vision model benchmarked on a real image (/debug/vision-bench); Cloudflare
+  // Workers AI is the obvious candidate.
   "gemini-2.5-flash-lite", // Google — 2.8s
 ];
 
@@ -420,15 +349,6 @@ export type AITaskName = keyof typeof AI_TASKS;
 
 // Disabled models (show in UI but not selectable)
 export const DISABLED_AI_MODELS: AIModel[] = [
-  // Mistral models (disabled due to issues)
-  {
-    id: "mistral-small-2407",
-    name: "Mistral Small 2",
-    provider: "mistral",
-    available: false,
-    description: "Mistral Small 2 model (disabled - API issues)",
-  },
-
   // Retired by the provider — Groq removed Llama 4 Scout from the catalog and
   // the API now answers `model_not_found`. It was VISION_FALLBACK_CHAIN[0], so
   // every vision call had been silently failing over to Gemini.
@@ -515,13 +435,6 @@ export const DISABLED_AI_MODELS: AIModel[] = [
     provider: "groq",
     available: false,
     description: "Hit the 2000-token cap without closing the JSON",
-  },
-  {
-    id: "ministral-14b-2512",
-    name: "Ministral 14B",
-    provider: "mistral",
-    available: false,
-    description: "15.7s and hit the 2000-token cap without closing the JSON",
   },
 ];
 

@@ -24,7 +24,6 @@ const MEASURED_SECONDS: Record<string, number> = {
   // is an invitation to put it back in the chain.
   "llama-3.3-70b-versatile": 3.58,
   "gemini-2.5-flash-lite": 4.4,
-  "mistral-large-latest": 19.8,
 };
 
 describe("TEXT_FALLBACK_CHAIN", () => {
@@ -74,10 +73,8 @@ describe("TEXT_FALLBACK_CHAIN", () => {
 
   it("does not contain models that cannot serve a WSI question", () => {
     // zai-glm-4.7 spends the whole 2000-token budget on reasoning and returns
-    // content that fails to parse; mistral-medium took 17.8s against a 12s
-    // timeout. Both were in the chain and neither could ever succeed.
+    // content that fails to parse. It was in the chain and could never succeed.
     expect(TEXT_FALLBACK_CHAIN).not.toContain("zai-glm-4.7");
-    expect(TEXT_FALLBACK_CHAIN).not.toContain("mistral-medium-2505");
   });
 
   it("puts every model that fits the WSI deadline ahead of every model that does not", () => {

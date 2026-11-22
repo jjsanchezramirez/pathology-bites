@@ -64,7 +64,7 @@ Return ONLY the script text with no additional commentary, metadata, titles, or 
  * /api/admin/audio/generate-script:
  *   post:
  *     summary: Generate audio script using AI
- *     description: Generate an educational audio script using AI based on educational content metadata. Supports multiple AI models (Groq, Cerebras, Google Gemini, Mistral). Requires admin role.
+ *     description: Generate an educational audio script using AI based on educational content metadata. Supports multiple AI models (Groq, Cloudflare Workers AI, Google Gemini). Requires admin role.
  *     tags:
  *       - Admin - Audio
  *     security:
@@ -110,7 +110,7 @@ Return ONLY the script text with no additional commentary, metadata, titles, or 
  *                 type: string
  *                 description: AI model to use
  *                 default: "gemini-2.5-flash-lite"
- *                 enum: ["gemini-3.5-flash-lite", "openai/gpt-oss-120b", "gpt-oss-120b", "mistral-large-latest"]
+ *                 enum: ["gemini-3.5-flash-lite", "openai/gpt-oss-120b", "gpt-oss-120b"]
  *     responses:
  *       200:
  *         description: Script generated successfully

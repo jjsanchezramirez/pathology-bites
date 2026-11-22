@@ -1,8 +1,8 @@
 // Shared caller for OpenAI-compatible chat-completions providers
-// (Groq, Cerebras, Mistral, Cloudflare Workers AI). Added when Meta shut down
+// (Groq, Cerebras, Cloudflare Workers AI). Added when Meta shut down
 // the Llama API (July 6, 2026) — its replacements all speak the OpenAI dialect,
 // so one caller covers them. Provider-specific quirks live here, not in routes:
-//   - Groq/Cerebras/Cloudflare take `max_completion_tokens`; Mistral only `max_tokens`.
+//   - They take `max_completion_tokens`, not the deprecated `max_tokens`.
 //   - Reasoning models (gpt-oss on any provider) spend completion budget on
 //     thinking before emitting content — we floor the budget and pin them to low
 //     reasoning effort so short-output calls still finish.
@@ -14,7 +14,6 @@ import { log } from "@/shared/utils/logging";
 const ENDPOINTS: Record<string, string> = {
   groq: "https://api.groq.com/openai/v1/chat/completions",
   cerebras: "https://api.cerebras.ai/v1/chat/completions",
-  mistral: "https://api.mistral.ai/v1/chat/completions",
 };
 
 /**
@@ -115,15 +114,10 @@ export async function callOpenAICompatChat(
     temperature,
     ...(jsonMode ? { response_format: { type: "json_object" } } : {}),
   };
-  if (provider === "mistral") {
-    body.max_tokens = effectiveMaxTokens;
-  } else {
-    body.max_completion_tokens = effectiveMaxTokens;
-  }
+  body.max_completion_tokens = effectiveMaxTokens;
   // Measured on Groq (Aug 2026), same prompt: default effort spent 228 tokens
   // reasoning in 2.4s; "low" spent 37 in 1.7s and returned MORE content. Free
   // latency, and it moves the model further from the maxTokens ceiling.
-  // Mistral does not accept the parameter.
   if (
     isReasoningModel(model) &&
     (provider === "groq" || provider === "cerebras" || provider === "cloudflare")
