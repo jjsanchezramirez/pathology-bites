@@ -15,6 +15,7 @@ import { Skeleton } from "@/shared/components/ui/skeleton";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 import { ScrollReveal } from "@/shared/components/common";
 import { log } from "@/shared/utils/logging";
+import { useHydrated } from "@/shared/hooks/use-hydrated";
 
 // Mirrors the real layout — page header, then six category sections each with
 // a header + 2/3-col grid of cards. Keeping the structure identical avoids the
@@ -64,6 +65,9 @@ function AchievementsLoadingSkeleton() {
 
 export default function AchievementsPage() {
   const { data: unifiedData, isLoading } = useUnifiedData();
+  // SWR cache is restored from localStorage on the client: render the loading
+  // state until hydrated so the first client render matches the server's.
+  const hydrated = useHydrated();
   const [achievementCategories, setAchievementCategories] = useState<AchievementCategory[]>([]);
 
   const processAchievementsData = useCallback(() => {
@@ -158,7 +162,7 @@ export default function AchievementsPage() {
     processAchievementsData();
   }, [processAchievementsData]);
 
-  if (isLoading) {
+  if (isLoading || !hydrated) {
     return <AchievementsLoadingSkeleton />;
   }
 

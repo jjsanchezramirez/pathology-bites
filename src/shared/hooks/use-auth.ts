@@ -15,7 +15,7 @@
 // In dev, we always skip the cache so restarts pick up changes immediately.
 const AUTH_CACHE_VERSION = "v1";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useLayoutEffect, useRef } from "react";
 import { usePathname } from "next/navigation";
 import { realtimeService } from "@/shared/services/realtime-service";
 import { createClient } from "@/shared/services/client";
@@ -23,6 +23,9 @@ import { isPublicRoute } from "@/shared/utils/route-helpers";
 import type { User, Session } from "@supabase/supabase-js";
 import type { UserRole } from "@/shared/utils/auth/auth-helpers";
 import { log } from "@/shared/utils/logging";
+
+// useLayoutEffect on the client, useEffect on the server (where neither runs).
+const useIsomorphicLayoutEffect = typeof window !== "undefined" ? useLayoutEffect : useEffect;
 
 interface UseAuthOptions {
   /** Enable security validation (session monitoring) */
@@ -74,43 +77,19 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
   // Skip auth on public pages in minimal mode
   const skipAuth = minimal && isPublicPage;
 
-  // Initialize state from sessionStorage for faster perceived load
-  const [authState, setAuthState] = useState<AuthState>(() => {
-    // Try to restore from sessionStorage on mount
-    // In development, always skip cache so server restarts pick up auth/middleware changes immediately.
-    const isDev = process.env.NODE_ENV === "development";
-    if (typeof window !== "undefined" && !skipAuth && !isDev) {
-      try {
-        const cached = sessionStorage.getItem("auth-state");
-
-        if (cached) {
-          const parsed = JSON.parse(cached);
-          // Only use cache if it has a user, valid session, and matching version
-          if (parsed.user && parsed.session && parsed._v === AUTH_CACHE_VERSION) {
-            const cachedState = {
-              ...parsed,
-              isLoading: false, // Cache is ready, no need to show loading
-              error: null,
-            };
-            return cachedState;
-          }
-          // Stale or version-mismatched cache — discard it
-          sessionStorage.removeItem("auth-state");
-        }
-      } catch (e) {
-        // Ignore parse errors
-        log.error("[useAuth] ❌ Failed to parse cached auth:", e);
-      }
-    }
-
-    return {
-      user: null,
-      session: null,
-      role: null,
-      isAuthenticated: false,
-      isLoading: !skipAuth, // Don't load if skipping
-      error: null,
-    };
+  // Initial state must match the server render: the server has no
+  // sessionStorage, so it always renders the "loading, signed out" state.
+  // Restoring the cached session here (in the useState initializer) made the
+  // client's first render differ in production and caused hydration
+  // mismatches. The cached session is restored in a layout effect below
+  // instead — after hydration, but before the browser paints.
+  const [authState, setAuthState] = useState<AuthState>({
+    user: null,
+    session: null,
+    role: null,
+    isAuthenticated: false,
+    isLoading: true,
+    error: null,
   });
 
   const [isHydrated, setIsHydrated] = useState(false);
@@ -157,8 +136,36 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
     }
   };
 
-  // Hydration - set to true immediately since we initialize from sessionStorage synchronously
-  // The initial useState already handles sessionStorage restoration
+  // Restore the cached session from sessionStorage for faster perceived load.
+  // A layout effect runs after hydration (so the first render matches the
+  // server) but before paint, so users never see a loading flash. Runs before
+  // the passive "Initialize auth" effect, which then verifies the session.
+  // In development, always skip the cache so server restarts pick up
+  // auth/middleware changes immediately.
+  useIsomorphicLayoutEffect(() => {
+    if (skipAuth || process.env.NODE_ENV === "development") return;
+    try {
+      const cached = sessionStorage.getItem("auth-state");
+      if (!cached) return;
+      const parsed = JSON.parse(cached);
+      // Only use cache if it has a user, valid session, and matching version
+      if (parsed.user && parsed.session && parsed._v === AUTH_CACHE_VERSION) {
+        setAuthState({
+          ...parsed,
+          isLoading: false, // Cache is ready, no need to show loading
+          error: null,
+        });
+        return;
+      }
+      // Stale or version-mismatched cache — discard it
+      sessionStorage.removeItem("auth-state");
+    } catch (e) {
+      // Ignore parse errors
+      log.error("[useAuth] ❌ Failed to parse cached auth:", e);
+    }
+    // Mount-only: restore once; later auth changes come from Supabase.
+  }, []);
+
   useEffect(() => {
     setIsHydrated(true);
   }, []);

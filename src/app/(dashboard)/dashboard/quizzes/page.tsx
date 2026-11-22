@@ -21,6 +21,7 @@ import {
 import { PageHeader } from "@/shared/components/ui/page-header";
 import { PageContainer } from "@/shared/components/ui/page-layout";
 import { log } from "@/shared/utils/logging";
+import { useHydrated } from "@/shared/hooks/use-hydrated";
 
 export default function QuizzesPage() {
   // All hooks must be called before any conditional returns
@@ -33,6 +34,10 @@ export default function QuizzesPage() {
   const [isDeleting, setIsDeleting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 20;
+  // Gate on hydration: the SWR cache is restored from localStorage on the
+  // client, so the first client render would otherwise skip the loading state
+  // the server rendered and fail hydration.
+  const hydrated = useHydrated();
 
   // Optimized quiz fetching with caching (fetch all, filter client-side).
   // Uses the app-wide SWR provider (persisted to unifiedCache), so quiz
@@ -193,7 +198,7 @@ export default function QuizzesPage() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || !hydrated) {
     return <QuizzesLoading />;
   }
 
