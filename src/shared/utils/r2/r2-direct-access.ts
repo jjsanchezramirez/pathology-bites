@@ -6,7 +6,7 @@ import { R2_DATA_PUBLIC_URL } from "@/shared/config/r2-public-urls";
  *
  * Only app-owned datasets belong here. Scraped third-party corpora (PathPrimer,
  * ExpertPath, PathologyOutlines, WHO) live in the private bucket
- * pathology-bites-scraped and are never fetched by the app.
+ * pathology-bites-sources (no domain) and are never fetched by the app.
  */
 const DATA_BASE = R2_DATA_PUBLIC_URL;
 
