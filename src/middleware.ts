@@ -38,8 +38,21 @@ function devFallbackIdentity(): { id: string; role: string } | null {
 
 const ROLES = ["admin", "creator", "reviewer", "user"] as const;
 const CONTENT_ROLES = ["admin", "creator", "reviewer"];
-/** /admin pages only admins may open; other staff are sent to the admin dashboard. */
-const ADMIN_ONLY_PAGES = ["/admin/media"];
+/**
+ * /admin pages only admins may open (each path covers its subpages); other staff are sent
+ * to the admin dashboard. Keep in step with the adminOnly items in shared/config/navigation.ts.
+ * Staff keep /admin, /admin/questions (+ create/edit), /admin/my-questions, /admin/review-queue.
+ */
+const ADMIN_ONLY_PAGES = [
+  "/admin/media",
+  "/admin/users",
+  "/admin/settings",
+  "/admin/analytics",
+  "/admin/lesson-studio",
+  "/admin/learn",
+  "/admin/questions/metadata",
+  "/admin/api-test",
+];
 
 /**
  * The only role the server trusts: `app_metadata.role`, which users cannot edit.

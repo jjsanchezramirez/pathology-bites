@@ -139,7 +139,7 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/settings",
         icon: "Settings",
         requiredPermission: "settings.manage",
-        showToRoles: ["admin", "creator", "reviewer"],
+        adminOnly: true,
       },
     ],
   },
