@@ -1,0 +1,64 @@
+# Templates in the canvas editor
+
+Lesson Studio (`/admin/lesson-studio`) is the canvas editor: library on the
+left, canvas in the middle, inspector on the right, timeline and filmstrip
+below. Scene templates live inside it. The script studio moved to
+`/admin/lesson-studio/script`; `/admin/lesson-studio/classic` redirects.
+
+## Add scene
+
+The **+** at the end of the filmstrip offers the five templates (title, image
+with callouts, side by side, step ladder, take-home) and a blank slide. A
+template drops in ordinary elements: text, shapes, pictures, spotlights and
+camera moves. Move, restyle or delete any of them. On an image scene, drag a
+library picture onto the grey slot (or onto an existing picture) to swap it.
+
+**File → Import script…** turns a whole script (JSON or plain text, same
+formats as the script studio) into template scenes. Loading a script-studio
+lesson opens an editable copy; saving the copy creates a new lesson.
+
+## Narration sets the timing
+
+Each slide's narration is one block per sentence on the timeline's top row.
+Every template element is tied to a sentence with a **cue**:
+
+- **Auto: appear and stay** (`cue: "build"`): fades in as its sentence starts
+  and stays to the end of the slide. With no sentence, it's there the whole
+  slide.
+- **Auto: only during its sentence** (`cue: "beat"`): fades in with its
+  sentence and leaves when the next one starts (rings, spotlights, zooms, the
+  highlighted step).
+
+Template slides also take their length from the narration
+(`slide.autoDuration`). Before the voice exists, sentence lengths are
+estimated from word count; drag a sentence block to move it (its elements
+follow, and so do the sentences after it), double-click to put it back. Once
+the voice is recorded, its times win and the blocks lock.
+
+Dragging an element's bar, or typing a time in the inspector, switches that
+element to manual timing. The inspector's Narration section switches it back
+or ties it to another sentence. Auto bars have a dashed edge and say "auto".
+
+Code: `src/shared/lesson/auto-timing.ts` (pure; the editor store runs it after
+every change).
+
+## The clean look
+
+Template slides set `look: "clean"`: elements draw strictly in list order inside
+the camera, text sits in its box (Instrument Sans, no shadows), and every
+entrance is the same fade with a small rise on one easing curve. Camera moves
+use the same curve. A spotlight on a template slide can be limited to the
+picture (`within`). Slides without `look` render exactly as before, so older
+lessons play unchanged.
+
+Code: `src/shared/lesson/clean.ts` (items + canvas drawing for export),
+`src/shared/components/explainer/clean-layer.tsx` (player and editor),
+`src/shared/lesson/templates.ts` (scene → slide).
+
+## Known limits of the prototype
+
+- Zooms move the whole frame (classic camera), not just the picture, so
+  callouts beside the picture leave the frame while zoomed.
+- Text heights in templates are estimated, so a long label can need a nudge.
+- Narration audio from the script studio is not carried over; narrate again
+  in the canvas editor.

@@ -10,6 +10,7 @@ import { useEditorStore, selectCurrentSlide } from "../model/store";
 import type { SlideElement } from "../model/types";
 import { SlideProperties } from "./slide-properties";
 import { TimingSection } from "./timing-section";
+import { AutoTimingSection } from "./auto-timing-section";
 import { AlignTools } from "./align-tools";
 import {
   ShapeForm,
@@ -82,6 +83,7 @@ function SingleElementForm({
   return (
     <div>
       {renderForm(element, slideId)}
+      <AutoTimingSection element={element} slideId={slideId} />
       <TimingSection
         timing={element.timing}
         onChange={updateTiming}

@@ -8,6 +8,8 @@ import type {
   TextOverlay,
   SvgOverlayElement,
 } from "@/shared/types/explainer";
+import type { CleanFrame } from "@/shared/lesson/clean";
+import { CleanLayer } from "./clean-layer";
 
 interface ExplainerViewportProps {
   imageUrl: string;
@@ -24,6 +26,9 @@ interface ExplainerViewportProps {
   incomingOpacity?: number;
   aspectRatio: string;
   onClick?: () => void;
+  /** Clean-look slides (template look); null for classic slides. */
+  clean?: CleanFrame | null;
+  incomingClean?: CleanFrame | null;
 }
 
 function getAspectRatioValue(ratio: string): string {
@@ -424,6 +429,8 @@ export function ExplainerViewport({
   incomingOpacity = 0,
   aspectRatio,
   onClick,
+  clean = null,
+  incomingClean = null,
 }: ExplainerViewportProps) {
   return (
     <div
@@ -448,6 +455,9 @@ export function ExplainerViewport({
           }}
         />
       )}
+
+      {/* Current clean-look slide (template look): background and elements in order */}
+      {clean && <CleanLayer frame={clean} transform={transform} opacity={transitionOpacity} />}
 
       {/* Incoming image layer (fades in on top of current) */}
       {incomingOpacity > 0 &&
@@ -499,6 +509,16 @@ export function ExplainerViewport({
       {textOverlays.map((o) => (
         <TextOverlayElement key={o.id} overlay={o} />
       ))}
+
+      {/* An incoming clean-look slide fades in on top of everything */}
+      {incomingClean && incomingOpacity > 0 && (
+        <CleanLayer
+          frame={incomingClean}
+          transform={incomingTransform}
+          opacity={incomingOpacity}
+          zIndex={25}
+        />
+      )}
     </div>
   );
 }

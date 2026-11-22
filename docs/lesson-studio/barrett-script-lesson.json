@@ -1,0 +1,90 @@
+{
+  "format": "script-lesson",
+  "version": 1,
+  "title": "Barrett esophagus",
+  "description": "Diagnosis, the four lines of surface maturation, and dysplasia grading.",
+  "scenes": [
+    {
+      "template": "title",
+      "heading": "Barrett esophagus",
+      "beats": [
+        { "say": "Barrett esophagus: how to make the diagnosis, and how to grade dysplasia.", "text": "Diagnosis and dysplasia grading" }
+      ]
+    },
+    {
+      "template": "compare",
+      "heading": "What makes it Barrett",
+      "beats": [
+        "Barrett esophagus needs two things.",
+        { "say": "At endoscopy, at least one centimeter of columnar mucosa above the gastroesophageal junction.", "side": "left", "text": "Endoscopy", "detail": "At least 1 cm of columnar mucosa above the GE junction" },
+        { "say": "On histology, intestinal metaplasia with goblet cells.", "side": "right", "text": "Histology", "detail": "Intestinal metaplasia with goblet cells" },
+        { "say": "You need both, so a biopsy alone cannot make the diagnosis.", "text": "You need both. A biopsy alone cannot make the diagnosis." }
+      ]
+    },
+    {
+      "template": "image",
+      "heading": "Four lines",
+      "image": {
+        "url": "https://img.pathologybites.com/library/20261119030055-barrett-esophagus-four-lines.jpg",
+        "alt": "Barrett mucosa with the four surface lines",
+        "width": 487,
+        "height": 329
+      },
+      "credit": "Figure: Voltaggio L, Montgomery EA. Surg Pathol Clin 2017;10:781",
+      "beats": [
+        "To judge the surface, look for four lines.",
+        { "say": "Line one is the mucin droplet.", "text": "Mucin droplet", "region": { "x": 46.1, "y": 6.8, "w": 9.6, "h": 7 }, "mark": "ring" },
+        { "say": "Line two is the base of the mucin vacuole.", "text": "Base of the mucin vacuole", "region": { "x": 50.2, "y": 11.7, "w": 9.6, "h": 7 }, "mark": "ring" },
+        { "say": "Line three is the cytoplasm below it.", "text": "Cytoplasm below the vacuole", "region": { "x": 57.4, "y": 18.7, "w": 9.6, "h": 7 }, "mark": "ring" },
+        { "say": "And line four is the row of nuclei.", "text": "Row of nuclei", "region": { "x": 52.7, "y": 38.1, "w": 9.6, "h": 7 }, "mark": "ring" },
+        { "say": "When the four lines run parallel, the surface is maturing and nondysplastic.", "text": "Parallel: maturing, nondysplastic" },
+        { "say": "When they are lost, look closely for dysplasia.", "text": "Lost: look closely for dysplasia" }
+      ]
+    },
+    {
+      "template": "image",
+      "heading": "Maturing or dysplastic?",
+      "image": {
+        "url": "https://img.pathologybites.com/library/20260319155835-esophageal-adenocarcinoma.png",
+        "alt": "Barrett mucosa: maturing surface on the left, dysplastic surface on the right",
+        "width": 2048,
+        "height": 1182
+      },
+      "beats": [
+        { "say": "On the left, the surface matures, with mucin at the top.", "text": "Left: the surface matures, mucin on top", "region": { "x": 0, "y": 30.5, "w": 18, "h": 43.9 }, "mark": "spotlight" },
+        { "say": "On the right, crowded, dark nuclei run all the way up to the surface.", "text": "Right: crowded nuclei reach the surface", "region": { "x": 71, "y": 25.6, "w": 25, "h": 34.1 }, "mark": "spotlight" },
+        { "say": "No maturation at the surface means dysplasia, here high grade.", "text": "No surface maturation: dysplasia (high grade)", "region": { "x": 52, "y": 25, "w": 40, "h": 40 }, "mark": "zoom" }
+      ]
+    },
+    {
+      "template": "ladder",
+      "heading": "The dysplasia ladder",
+      "beats": [
+        "Then grade it on a ladder.",
+        { "say": "Negative: the atypia matures toward the surface.", "text": "Negative", "detail": "Atypia matures toward the surface" },
+        { "say": "Indefinite: you can't call it, usually because of inflammation, erosion, or a technical problem.", "text": "Indefinite", "detail": "Can't call it: inflammation, erosion, technical" },
+        { "say": "Low grade: the atypia reaches the surface, but polarity is kept.", "text": "Low grade", "detail": "Atypia reaches the surface, polarity kept" },
+        { "say": "High grade: marked atypia, lost polarity, and complex glands.", "text": "High grade", "detail": "Marked atypia, polarity lost, complex glands" },
+        { "say": "And intramucosal carcinoma invades the lamina propria or muscularis mucosae.", "text": "Intramucosal carcinoma", "detail": "Into the lamina propria or muscularis mucosae" }
+      ]
+    },
+    {
+      "template": "ladder",
+      "heading": "What the grade means for the patient",
+      "beats": [
+        "The grade drives management.",
+        { "say": "Nondysplastic Barrett is followed with surveillance every three to five years.", "text": "Nondysplastic", "detail": "Surveillance every 3 to 5 years" },
+        { "say": "Low grade dysplasia should be confirmed by an expert GI pathologist, and is then usually ablated.", "text": "Low grade", "detail": "Confirm with an expert GI pathologist, then usually ablation" },
+        { "say": "High grade dysplasia or T1a carcinoma gets endoscopic eradication.", "text": "High grade or T1a carcinoma", "detail": "Endoscopic eradication" }
+      ]
+    },
+    {
+      "template": "takehome",
+      "heading": "Take-home",
+      "beats": [
+        { "say": "The take-home: a maturing surface is negative.", "text": "A maturing surface is negative" },
+        { "say": "Atypia that reaches the surface is dysplasia.", "text": "Atypia that reaches the surface is dysplasia" }
+      ]
+    }
+  ]
+}

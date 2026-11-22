@@ -7,6 +7,10 @@ import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { X } from "lucide-react";
 import type { Slide } from "../model/types";
+import { rectAt, arrowPointsAt } from "@/shared/lesson/evaluate";
+import { cleanStillItems } from "@/shared/lesson/clean";
+import { CleanItemView } from "@/shared/components/explainer/clean-layer";
+import { lessonSans } from "@/shared/fonts/lesson-fonts";
 
 interface SlideThumbnailProps {
   slide: Slide;
@@ -67,7 +71,16 @@ export function SlideThumbnail({
       ].join(" ")}
     >
       <div className="relative" style={{ aspectRatio: "16 / 9" }}>
-        {thumbBg ? (
+        {slide.look === "clean" ? (
+          <div
+            className={`${lessonSans.className} absolute inset-0 overflow-hidden`}
+            style={{ background: slide.backgroundColor ?? "#fff", containerType: "inline-size" }}
+          >
+            {cleanStillItems(slide, rectAt, arrowPointsAt).map((it) => (
+              <CleanItemView key={it.id} item={it} />
+            ))}
+          </div>
+        ) : thumbBg ? (
           /* eslint-disable-next-line @next/next/no-img-element */
           <img src={thumbBg} alt="" className="h-full w-full object-cover" draggable={false} />
         ) : (

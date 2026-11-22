@@ -252,7 +252,12 @@ export function TrackBar({
         className="absolute inset-0 cursor-grab rounded-sm"
         style={{
           background: `linear-gradient(90deg, ${color.fade} 0%, ${color.bg} ${fadeInEndRel}%, ${color.bg} ${fadeOutStartRel}%, ${color.fade} 100%)`,
-          outline: selected ? "2px solid rgba(59,130,246,0.9)" : "1px solid rgba(0,0,0,0.2)",
+          // Bars that follow the narration get a dashed edge; dragging one takes it off auto.
+          outline: selected
+            ? "2px solid rgba(59,130,246,0.9)"
+            : element.cue
+              ? "1px dashed rgba(0,0,0,0.45)"
+              : "1px solid rgba(0,0,0,0.2)",
           outlineOffset: selected ? 0 : 0,
         }}
       />
@@ -370,6 +375,7 @@ export function TrackBar({
       {/* Label */}
       <div className="pointer-events-none absolute inset-0 flex items-center justify-center px-2 text-[10px] font-medium text-white drop-shadow truncate">
         {labelFor(element)}
+        {element.cue && <span className="ml-1 opacity-75">· auto</span>}
       </div>
     </div>
   );

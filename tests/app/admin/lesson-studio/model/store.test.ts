@@ -156,3 +156,32 @@ describe("editor store — drag coalescing", () => {
     expect(useEditorStore.getState().history.past.length).toBe(historyBefore);
   });
 });
+
+describe("auto timing in the editor", () => {
+  it("retimes elements that follow the narration and lets a manual edit take over", async () => {
+    const { slideFromScene, starterScene } = await import("@/shared/lesson/templates");
+    const slide = slideFromScene(starterScene("takehome"));
+    useEditorStore.getState().setLesson({ ...emptyLesson(), slides: [slide] });
+    const store = useEditorStore.getState();
+    const line = slide.narration!.lines[1];
+    const elId = line.elementIds[0];
+    const before = store.lesson.slides[0].elements.find((e) => e.id === elId)!.timing.start;
+
+    // Pinning the second sentence later moves its elements with it.
+    store.updateSlide(slide.id, {
+      narration: {
+        lines: slide.narration!.lines.map((l, i) => (i === 1 ? { ...l, at: before + 3 } : l)),
+      },
+    });
+    const moved = useEditorStore.getState().lesson.slides[0].elements.find((e) => e.id === elId)!;
+    expect(moved.timing.start).toBeCloseTo(before + 3 - 0.1, 2);
+
+    // Setting the timing by hand clears the cue, and auto timing leaves it alone after.
+    useEditorStore.getState().updateElement(slide.id, elId, {
+      timing: { start: 0.5, fadeIn: 0.2, hold: 1, fadeOut: 0.2 },
+    } as Partial<ShapeElement>);
+    const manual = useEditorStore.getState().lesson.slides[0].elements.find((e) => e.id === elId)!;
+    expect(manual.cue).toBeUndefined();
+    expect(manual.timing.start).toBe(0.5);
+  });
+});

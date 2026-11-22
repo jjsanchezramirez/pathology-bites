@@ -59,7 +59,16 @@ interface ElementBase {
   opacity?: number;
   /** Whether to render a drop shadow. Default true for text/arrows, false for shapes. */
   shadow?: boolean;
+  /**
+   * Auto timing from the narration. "build" appears with its sentence and stays
+   * to the end of the slide; "beat" appears with its sentence and leaves when
+   * the next sentence starts. Absent = timed by hand. Editing the timing by
+   * hand clears it.
+   */
+  cue?: ElementCue;
 }
+
+export type ElementCue = "build" | "beat";
 
 export type ShapeKind = "rectangle" | "circle" | "oval";
 
@@ -73,6 +82,8 @@ export interface ShapeElement extends ElementBase {
     style: "solid" | "dashed" | "dotted";
   };
   fill?: string;
+  /** Corner radius for rectangles, in percent of canvas width. */
+  radius?: number;
   waypoints?: Waypoint[];
 }
 
@@ -82,6 +93,8 @@ export interface SpotlightElement extends ElementBase {
   rect: Rect;
   /** 0–1, how dark the non-spotlight area gets (default 0.7). */
   dimOpacity: number;
+  /** Clean look only: dim just this box (e.g. the picture) instead of the whole frame. */
+  within?: Rect;
   waypoints?: Waypoint[];
 }
 
@@ -173,6 +186,35 @@ export interface Slide {
   transitionIn: SlideTransition;
   initialFraming: Framing;
   elements: SlideElement[];
+  /** Voiceover script for this slide (editor-only; the player ignores it). */
+  narration?: SlideNarration;
+  /**
+   * "clean": the template look. Elements draw in list order on the slide
+   * background (text anchored to its box, Instrument Sans, no shadows) and
+   * enter with a fade and a small rise. Absent: the original canvas look.
+   */
+  look?: "clean";
+  /** Slide length follows the narration (spoken or estimated). */
+  autoDuration?: boolean;
+  /** Which template made this slide, for the editor's labels. */
+  template?: "title" | "image" | "compare" | "ladder" | "takehome";
+}
+
+/** One spoken sentence of a slide's voiceover, tied to the elements it introduces. */
+export interface NarrationLine {
+  id: string;
+  text: string;
+  /** Elements that should appear when this line starts. */
+  elementIds: string[];
+  /** Filled in after generation: seconds from slide start. */
+  start?: number;
+  end?: number;
+  /** Start pinned by hand on the timeline (seconds from slide start), before narration exists. */
+  at?: number;
+}
+
+export interface SlideNarration {
+  lines: NarrationLine[];
 }
 
 export interface LessonAudio {
@@ -182,6 +224,12 @@ export interface LessonAudio {
   duration?: number;
   /** Forced-alignment word timestamps (absolute seconds), when available. */
   wordTimings?: WordTiming[];
+  /** How wordTimings were produced: "estimated" (from each sentence's clip) or "whisper". */
+  timingSource?: "estimated" | "whisper";
+  /** Voice id used for generated narration (e.g. "Kore" or a designed voice id). */
+  voice?: string;
+  /** audio table row id, when the track lives in the audio library. */
+  audioId?: string;
 }
 
 /** A single aligned word with absolute start/end (seconds from audio start). */

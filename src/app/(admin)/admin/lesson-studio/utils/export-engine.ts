@@ -3,6 +3,7 @@
 
 import type { Transform } from "@/shared/types/explainer";
 import { evaluate, type FrameState } from "@/shared/lesson/evaluate";
+import { drawCleanFrame } from "@/shared/lesson/clean";
 
 // Re-export for callers that currently import from this module.
 export type { FrameState };
@@ -13,7 +14,9 @@ export function drawExportFrame(
   W: number,
   H: number,
   state: FrameState,
-  images: Map<string, HTMLImageElement>
+  images: Map<string, HTMLImageElement>,
+  /** Typeface for clean-look slides (must already be loaded). */
+  fontFamily?: string
 ) {
   ctx.clearRect(0, 0, W, H);
   ctx.fillStyle = "#000";
@@ -32,6 +35,18 @@ export function drawExportFrame(
   }
 
   if (state.imageUrl) drawImage(state.imageUrl, state.transform, state.transitionOpacity);
+  // A clean-look slide draws its background and elements in order, through the camera.
+  if (state.clean)
+    drawCleanFrame(
+      ctx,
+      W,
+      H,
+      state.clean,
+      state.transform,
+      state.transitionOpacity,
+      images,
+      fontFamily
+    );
   if (state.incomingImageUrl && state.incomingOpacity > 0)
     drawImage(state.incomingImageUrl, state.incomingTransform, state.incomingOpacity);
 
@@ -177,4 +192,17 @@ export function drawExportFrame(
     lines.forEach((l, i) => ctx.fillText(l, x, y - totalH / 2 + lineHeight * i + lineHeight / 2));
     ctx.restore();
   }
+
+  // An incoming clean-look slide fades in on top.
+  if (state.incomingClean && state.incomingOpacity > 0)
+    drawCleanFrame(
+      ctx,
+      W,
+      H,
+      state.incomingClean,
+      state.incomingTransform,
+      state.incomingOpacity,
+      images,
+      fontFamily
+    );
 }

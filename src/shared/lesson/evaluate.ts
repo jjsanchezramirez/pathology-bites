@@ -28,6 +28,7 @@ import type {
   ArrowElement,
 } from "./types";
 import { Easing, applyEase } from "./easing";
+import { cleanItemsAt, isClean, type CleanFrame } from "./clean";
 
 const DEFAULT_TRANSFORM: Transform = { x: 0, y: 0, scale: 1 };
 
@@ -455,6 +456,13 @@ export interface FrameState {
   incomingImageUrl: string;
   incomingBackgroundColor?: string;
   incomingTransform: Transform;
+  /**
+   * Clean-look slides draw from these instead of the lists above: the slide's
+   * background and its elements in order, inside the camera. Null for classic
+   * slides.
+   */
+  clean: CleanFrame | null;
+  incomingClean: CleanFrame | null;
 }
 
 const EMPTY_FRAME: FrameState = {
@@ -472,6 +480,8 @@ const EMPTY_FRAME: FrameState = {
   incomingImageUrl: "",
   incomingBackgroundColor: undefined,
   incomingTransform: DEFAULT_TRANSFORM,
+  clean: null,
+  incomingClean: null,
 };
 
 /** Cumulative absolute start time (seconds) of each slide, plus total duration. */
@@ -569,8 +579,19 @@ export function evaluate(lesson: Lesson, t: number, opts: EvaluateOptions = {}):
     }
   }
 
-  const { bgEl, imageUrl } = resolveBackground(current);
-  const render = buildRenderState(current, slideLocal, motion, bgEl?.id);
+  const currentClean = isClean(current);
+  const { bgEl, imageUrl } = currentClean
+    ? { bgEl: undefined, imageUrl: "" }
+    : resolveBackground(current);
+  const render = currentClean
+    ? { highlights: [], arrows: [], textOverlays: [], svgOverlays: [] }
+    : buildRenderState(current, slideLocal, motion, bgEl?.id);
+  const clean: CleanFrame | null = currentClean
+    ? {
+        background: current.backgroundColor ?? "#ffffff",
+        items: cleanItemsAt(current, slideLocal, motion, rectAt, arrowPointsAt),
+      }
+    : null;
 
   // Camera transform, eased, then damped toward the slide-start transform for
   // reduced motion.
@@ -587,11 +608,20 @@ export function evaluate(lesson: Lesson, t: number, opts: EvaluateOptions = {}):
   let incomingImageUrl = "";
   let incomingBackgroundColor: string | undefined;
   let incomingTransform: Transform = DEFAULT_TRANSFORM;
+  let incomingClean: CleanFrame | null = null;
   if (incoming) {
-    const ib = resolveBackground(incoming);
-    incomingImageUrl = ib.imageUrl;
-    incomingBackgroundColor = ib.imageUrl ? undefined : incoming.backgroundColor;
     incomingTransform = slideTransform(incoming, 0) as Transform;
+    if (isClean(incoming)) {
+      // The incoming clean slide draws its own background and content.
+      incomingClean = {
+        background: incoming.backgroundColor ?? "#ffffff",
+        items: cleanItemsAt(incoming, 0, motion, rectAt, arrowPointsAt),
+      };
+    } else {
+      const ib = resolveBackground(incoming);
+      incomingImageUrl = ib.imageUrl;
+      incomingBackgroundColor = ib.imageUrl ? undefined : incoming.backgroundColor;
+    }
   }
 
   return {
@@ -605,9 +635,11 @@ export function evaluate(lesson: Lesson, t: number, opts: EvaluateOptions = {}):
     transitionOpacity,
     incomingOpacity,
     imageUrl,
-    backgroundColor: imageUrl ? undefined : current.backgroundColor,
+    backgroundColor: imageUrl || currentClean ? undefined : current.backgroundColor,
     incomingImageUrl,
     incomingBackgroundColor,
     incomingTransform,
+    clean,
+    incomingClean,
   };
 }

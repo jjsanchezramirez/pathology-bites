@@ -1,4 +1,8 @@
-// Lesson Studio — the new editor (Phase 7 integration).
+// Lesson Studio: the canvas editor (timed elements, camera moves, waypoints),
+// with scene templates whose elements time themselves from the narration.
+// Script lessons (made in the script studio at ./script) open here as an
+// editable canvas copy.
+//
 // Layout: top bar · library | canvas | inspector · animation track · filmstrip.
 // Preview mode swaps the canvas for ExplainerPlayer using a sequence derived
 // from the current Lesson via to-sequence.ts.
@@ -11,6 +15,8 @@ import { fetchAudio, fetchAudioById } from "@/features/admin/audio/services/audi
 import type { Audio as AudioRecord } from "@/features/admin/audio/types";
 import { slideStarts } from "@/shared/lesson/evaluate";
 import { normalizeStoredLesson } from "@/shared/lesson/normalize";
+import { isScriptLesson, type ScriptLesson } from "@/shared/lesson/script/types";
+import { lessonFromScript } from "@/shared/lesson/templates";
 
 import { useEditorStore } from "./model/store";
 import { newBlankLesson } from "./model/slide-factory";
@@ -29,6 +35,8 @@ import { SaveToDatabaseDialog } from "./components/save-to-database-dialog";
 import { LoadFromDatabaseDialog } from "./components/load-from-database-dialog";
 import { ExportDialog } from "./components/export-dialog";
 import { GenerateLessonDialog } from "./components/generate-lesson-dialog";
+import { NarrationDialog } from "./components/narration-dialog";
+import { ImportDialog } from "./script/import-dialog";
 import { log } from "@/shared/utils/logging";
 
 export default function LessonStudioPage() {
@@ -126,6 +134,8 @@ export default function LessonStudioPage() {
   const [loadOpen, setLoadOpen] = useState(false);
   const [exportOpen, setExportOpen] = useState(false);
   const [generateOpen, setGenerateOpen] = useState(false);
+  const [narrateOpen, setNarrateOpen] = useState(false);
+  const [importOpen, setImportOpen] = useState(false);
 
   const markClean = useEditorStore((s) => s.markClean);
 
@@ -148,6 +158,21 @@ export default function LessonStudioPage() {
     if (!confirmDiscardIfDirty()) return;
     setLesson(newBlankLesson());
   }, [confirmDiscardIfDirty, setLesson]);
+
+  // A script (JSON or text) becomes template scenes: editable elements that
+  // time themselves from the narration.
+  const onImportScriptOpen = useCallback(() => {
+    if (!confirmDiscardIfDirty()) return;
+    setImportOpen(true);
+  }, [confirmDiscardIfDirty]);
+
+  const onImportScript = useCallback(
+    (script: ScriptLesson) => {
+      setLesson(lessonFromScript(script));
+      setImportOpen(false);
+    },
+    [setLesson]
+  );
 
   const onSaveAsNew = useCallback(() => {
     if (useEditorStore.getState().lesson.slides.length === 0) return;
@@ -182,6 +207,16 @@ export default function LessonStudioPage() {
 
   const onLoadSequence = useCallback(
     (loaded: unknown, sequenceId: string, title: string, description: string) => {
+      if (isScriptLesson(loaded)) {
+        const ok = window.confirm(
+          "This lesson was written in the script studio. Open an editable copy here? Saving the copy creates a new lesson; the script version stays as it is."
+        );
+        if (!ok) return;
+        // id stays null so Save creates a new row.
+        setLesson({ ...lessonFromScript(loaded), title, description });
+        setLoadOpen(false);
+        return;
+      }
       const next = normalizeStoredLesson(loaded);
       if (!next) {
         window.alert("This sequence can't be opened (legacy format). Please re-create it.");
@@ -213,6 +248,8 @@ export default function LessonStudioPage() {
         onSaveAsNew={onSaveAsNew}
         onClearAudio={onClearAudio}
         onGenerate={onGenerate}
+        onNarrateOpen={() => setNarrateOpen(true)}
+        onImportScript={onImportScriptOpen}
         totalDuration={totalDuration}
       />
 
@@ -274,6 +311,8 @@ export default function LessonStudioPage() {
         audioUrl={audioUrl}
       />
       <GenerateLessonDialog open={generateOpen} onOpenChange={setGenerateOpen} />
+      <NarrationDialog open={narrateOpen} onOpenChange={setNarrateOpen} />
+      <ImportDialog open={importOpen} onOpenChange={setImportOpen} onImport={onImportScript} />
     </div>
   );
 }

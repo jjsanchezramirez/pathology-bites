@@ -8,6 +8,7 @@ import { useEditorStore, selectCurrentSlide } from "../model/store";
 import { TimeRuler } from "./time-ruler";
 import { TrackBar } from "./track-bar";
 import { TrackPlayhead } from "./track-playhead";
+import { NarrationRow } from "./narration-row";
 import type { SlideElement } from "../model/types";
 
 const ROW_HEIGHT = 22;
@@ -159,6 +160,12 @@ export function AnimationTrack() {
           />
           <div className="absolute left-1/2 top-0 bottom-0 w-0.5 -translate-x-1/2 bg-red-500/50" />
         </div>
+      </div>
+
+      {/* Narration sentences: auto-timed elements follow these */}
+      <div className="relative">
+        <NarrationRow slide={slide} widthPx={widthPx} />
+        <TrackPlayhead time={viewTime} duration={duration} />
       </div>
 
       {/* Track body */}

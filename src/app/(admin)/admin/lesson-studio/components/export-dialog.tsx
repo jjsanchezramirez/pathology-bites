@@ -13,8 +13,60 @@ import {
 import { Download } from "lucide-react";
 import type { Lesson } from "@/shared/lesson/types";
 import { slideStarts } from "@/shared/lesson/evaluate";
+import { isScriptLesson, type ScriptLesson } from "@/shared/lesson/script/types";
+import { computeTimeline, scriptCaptions } from "@/shared/lesson/script/timeline";
+import { drawScriptFrame, scriptImageUrls } from "@/shared/lesson/script/draw";
+import { lessonSans } from "@/shared/fonts/lesson-fonts";
 import { computeFrameState, drawExportFrame } from "../utils/export-engine";
 import { log } from "@/shared/utils/logging";
+
+type ExportableLesson = Lesson | ScriptLesson;
+
+function lessonDuration(lesson: ExportableLesson): number {
+  return isScriptLesson(lesson) ? computeTimeline(lesson).duration : slideStarts(lesson).duration;
+}
+
+function lessonImageUrls(lesson: ExportableLesson): string[] {
+  if (isScriptLesson(lesson)) return scriptImageUrls(lesson);
+  return [
+    ...new Set(
+      lesson.slides.flatMap((s) =>
+        s.elements.flatMap((e) =>
+          e.kind === "image"
+            ? [e.imageUrl]
+            : e.kind === "svg" && s.look === "clean"
+              ? [e.svgUrl]
+              : []
+        )
+      )
+    ),
+  ].filter(Boolean);
+}
+
+/** One function that draws the frame at time t, for either lesson format. */
+async function frameDrawer(
+  lesson: ExportableLesson,
+  images: Map<string, HTMLImageElement>,
+  captions: boolean
+): Promise<(ctx: CanvasRenderingContext2D, w: number, h: number, t: number) => void> {
+  const fontFamily = lessonSans.style.fontFamily;
+  const needsFont = isScriptLesson(lesson) || lesson.slides.some((s) => s.look === "clean");
+  // Canvas only uses a web font once it's loaded.
+  if (needsFont) {
+    await Promise.all([
+      document.fonts.load(`400 24px ${fontFamily}`),
+      document.fonts.load(`600 24px ${fontFamily}`),
+    ]).catch((err) => log.warn("[export] lesson font failed to load:", err));
+  }
+  if (!isScriptLesson(lesson)) {
+    return (ctx, w, h, t) =>
+      drawExportFrame(ctx, w, h, computeFrameState(lesson, t), images, fontFamily);
+  }
+  const timeline = computeTimeline(lesson);
+  const chunks = captions ? scriptCaptions(lesson, timeline) : null;
+  return (ctx, w, _h, t) =>
+    drawScriptFrame(ctx, w, lesson, timeline, t, images, { fontFamily, captions: chunks });
+}
 
 // Export resolution options
 const EXPORT_RESOLUTIONS = [
@@ -28,7 +80,7 @@ const EXPORT_FPS_OPTIONS = [24, 30, 60];
 interface ExportDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  previewLesson: Lesson | null;
+  previewLesson: ExportableLesson | null;
   audioUrl: string;
 }
 
@@ -50,6 +102,13 @@ export function ExportDialog({ open, onOpenChange, previewLesson, audioUrl }: Ex
   const [exportName, setExportName] = useState("");
   const [exportResolution, setExportResolution] = useState(1); // default 720p
   const [exportFps, setExportFps] = useState(30);
+  const isScript = isScriptLesson(previewLesson);
+  // Burned-in captions: on by default for a script lesson with no narration.
+  const [burnCaptions, setBurnCaptions] = useState(false);
+  useEffect(() => {
+    if (open && isScriptLesson(previewLesson)) setBurnCaptions(!previewLesson.audio?.url);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
   const exportCancelRef = useRef(false);
 
   // Clean up on unmount
@@ -76,7 +135,8 @@ export function ExportDialog({ open, onOpenChange, previewLesson, audioUrl }: Ex
     try {
       // ── 1. Fetch audio ────────────────────────────────────────────────────
       let audioData: ArrayBuffer | null = null;
-      let totalDuration = slideStarts(lesson).duration;
+      const lessonLength = lessonDuration(lesson);
+      let totalDuration = lessonLength;
       if (resolvedAudioUrl) {
         try {
           const resp = await fetch(resolvedAudioUrl);
@@ -84,7 +144,10 @@ export function ExportDialog({ open, onOpenChange, previewLesson, audioUrl }: Ex
             audioData = await resp.arrayBuffer();
             const ac = new AudioContext();
             const decoded = await ac.decodeAudioData(audioData.slice(0));
-            totalDuration = decoded.duration;
+            // Script lessons keep their closing pause after the voice ends.
+            totalDuration = isScriptLesson(lesson)
+              ? Math.max(decoded.duration, lessonLength)
+              : decoded.duration;
             ac.close();
           }
         } catch (err) {
@@ -102,13 +165,7 @@ export function ExportDialog({ open, onOpenChange, previewLesson, audioUrl }: Ex
       setExportPhase("loading-images");
       setExportStatus("Loading images…");
       setExportProgress(5);
-      const uniqueUrls = [
-        ...new Set(
-          lesson.slides.flatMap((s) =>
-            s.elements.flatMap((e) => (e.kind === "image" ? [e.imageUrl] : []))
-          )
-        ),
-      ].filter(Boolean);
+      const uniqueUrls = lessonImageUrls(lesson);
       const imgMap = new Map<string, HTMLImageElement>();
       // Route each image through the server-side proxy so the browser receives
       // it as a same-origin response — no CORS restriction, no canvas taint.
@@ -135,7 +192,7 @@ export function ExportDialog({ open, onOpenChange, previewLesson, audioUrl }: Ex
           }
         })
       );
-      if (imgMap.size === 0)
+      if (uniqueUrls.length > 0 && imgMap.size === 0)
         throw new Error(`Failed to load any images (${uniqueUrls.length} attempted).`);
       if (exportCancelRef.current) {
         blobUrls.forEach(URL.revokeObjectURL);
@@ -165,13 +222,14 @@ export function ExportDialog({ open, onOpenChange, previewLesson, audioUrl }: Ex
       canvas.width = w;
       canvas.height = h;
       const ctx = canvas.getContext("2d")!;
+      const drawFrame = await frameDrawer(lesson, imgMap, burnCaptions);
       const useJpeg = w >= 1280;
       const imgMime = useJpeg ? "image/jpeg" : "image/png";
       const imgExt = useJpeg ? "jpg" : "png";
       const imgQ = useJpeg ? 0.92 : undefined;
       for (let fi = 0; fi < totalFrames; fi++) {
         if (exportCancelRef.current) return;
-        drawExportFrame(ctx, w, h, computeFrameState(lesson, fi * frameDuration), imgMap);
+        drawFrame(ctx, w, h, fi * frameDuration);
         const blob = await new Promise<Blob>((res, rej) =>
           canvas.toBlob((b) => (b ? res(b) : rej(new Error("toBlob failed"))), imgMime, imgQ)
         );
@@ -222,7 +280,13 @@ export function ExportDialog({ open, onOpenChange, previewLesson, audioUrl }: Ex
       setExportStatus("Packaging…");
       const mp4Data = await ffmpeg.readFile("output.mp4");
       const mp4Blob = new Blob([mp4Data as unknown as BlobPart], { type: "video/mp4" });
-      const name = `explainer-${Date.now()}.mp4`;
+      const slugTitle = isScriptLesson(lesson)
+        ? lesson.title
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, "-")
+            .replace(/^-|-$/g, "")
+        : "";
+      const name = `${slugTitle || "explainer"}-${Date.now()}.mp4`;
       setExportUrl(URL.createObjectURL(mp4Blob));
       setExportName(name);
       setExportProgress(100);
@@ -258,7 +322,7 @@ export function ExportDialog({ open, onOpenChange, previewLesson, audioUrl }: Ex
   };
 
   const isRunning = exportPhase !== "idle" && exportPhase !== "done" && exportPhase !== "error";
-  const totalDuration = previewLesson ? slideStarts(previewLesson).duration : 0;
+  const totalDuration = previewLesson ? lessonDuration(previewLesson) : 0;
   const totalFrames = Math.ceil(totalDuration * exportFps);
   const { w, h } = EXPORT_RESOLUTIONS[exportResolution];
   const BASE_FPS = 8;
@@ -314,6 +378,25 @@ export function ExportDialog({ open, onOpenChange, previewLesson, audioUrl }: Ex
                 </select>
               </div>
             </div>
+
+            {isScript && (
+              <label className="flex items-center gap-2 text-sm">
+                <input
+                  type="checkbox"
+                  checked={burnCaptions}
+                  onChange={(e) => setBurnCaptions(e.target.checked)}
+                  disabled={isRunning}
+                  className="h-4 w-4 rounded border-input"
+                />
+                Burn in captions
+              </label>
+            )}
+            {isScript && !previewLesson?.audio?.url && (
+              <p className="text-xs text-muted-foreground">
+                No narration yet, so the video will be silent. Record narration first to include the
+                voice.
+              </p>
+            )}
 
             {/* Info row */}
             <p className="text-xs text-muted-foreground">

@@ -27,6 +27,8 @@ import {
   Music2,
   ChevronDown,
   Wand2,
+  Mic,
+  FileText,
 } from "lucide-react";
 import { useEditorStore, selectCanUndo, selectCanRedo } from "./model/store";
 
@@ -47,6 +49,10 @@ interface TopBarProps {
   onClearAudio: () => void;
   /** Open AI generation dialog. */
   onGenerate: () => void;
+  /** Open the Gemini narration dialog. */
+  onNarrateOpen: () => void;
+  /** Open the script import dialog (JSON or text → template scenes). */
+  onImportScript: () => void;
   /** Total duration in seconds, used for the display chip. */
   totalDuration: number;
 }
@@ -67,6 +73,8 @@ export function TopBar({
   onSaveAsNew,
   onClearAudio,
   onGenerate,
+  onNarrateOpen,
+  onImportScript,
   totalDuration,
 }: TopBarProps) {
   const title = useEditorStore((s) => s.lesson.title);
@@ -108,6 +116,10 @@ export function TopBar({
             Load from library…
             <DropdownMenuShortcut>⌘O</DropdownMenuShortcut>
           </DropdownMenuItem>
+          <DropdownMenuItem onSelect={onImportScript}>
+            <FileText className="mr-2 h-4 w-4" />
+            Import script…
+          </DropdownMenuItem>
           <DropdownMenuSeparator />
           <DropdownMenuItem onSelect={onSaveOpen} disabled={noSlides}>
             <Save className="mr-2 h-4 w-4" />
@@ -124,6 +136,10 @@ export function TopBar({
             Export video…
           </DropdownMenuItem>
           <DropdownMenuSeparator />
+          <DropdownMenuItem onSelect={onNarrateOpen} disabled={noSlides}>
+            <Mic className="mr-2 h-4 w-4" />
+            Narrate with Gemini…
+          </DropdownMenuItem>
           <DropdownMenuItem onSelect={onAudioPickerOpen}>
             <Music2 className="mr-2 h-4 w-4" />
             {hasAudio ? `Audio: ${audio?.title ?? "set"}` : "Choose audio…"}

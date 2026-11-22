@@ -1,6 +1,7 @@
 // src/shared/types/explainer.ts
 
 import type { Lesson } from "@/shared/lesson/types";
+import type { ScriptLesson } from "@/shared/lesson/script/types";
 
 // ---- Geometry & Animation Primitives ----
 
@@ -114,8 +115,8 @@ export interface CaptionChunk {
 // ---- Component Props ----
 
 export interface ExplainerPlayerProps {
-  /** The lesson to play (the single canonical model). */
-  lesson: Lesson;
+  /** The lesson to play: a canvas Lesson or a script-first ScriptLesson. */
+  lesson: Lesson | ScriptLesson;
   /** Audio track URL. Defaults to `lesson.audio?.url`. */
   audioUrl?: string;
   autoPlay?: boolean;

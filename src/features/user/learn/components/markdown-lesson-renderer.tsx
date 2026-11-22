@@ -9,7 +9,8 @@ import { ImageCarousel } from "@/shared/components/media/image-carousel";
 import { Card, CardContent } from "@/shared/components/ui/card";
 import { Lightbulb, Loader2 } from "lucide-react";
 import type { Lesson } from "@/shared/lesson/types";
-import { normalizeStoredLesson } from "@/shared/lesson/normalize";
+import { normalizeStoredSequence } from "@/shared/lesson/normalize";
+import type { ScriptLesson } from "@/shared/lesson/script/types";
 import dynamic from "next/dynamic";
 import type { LessonCheckpoint as LessonCheckpointData } from "../types";
 import { LessonCheckpoint } from "./lesson-checkpoint";
@@ -250,7 +251,7 @@ export function MarkdownLessonRenderer({
 }
 
 function ExplainerDirective({ sequenceId }: { sequenceId: string }) {
-  const [lesson, setLesson] = useState<Lesson | null>(null);
+  const [lesson, setLesson] = useState<Lesson | ScriptLesson | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -264,7 +265,7 @@ function ExplainerDirective({ sequenceId }: { sequenceId: string }) {
         }
         if (!res.ok) throw new Error("Failed to load sequence");
         const { sequence } = await res.json();
-        const normalized = normalizeStoredLesson(sequence.sequence_data);
+        const normalized = normalizeStoredSequence(sequence.sequence_data);
         if (!normalized) {
           setError("This sequence is in a legacy format and needs to be re-saved.");
           return;
