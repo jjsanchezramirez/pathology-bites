@@ -17,6 +17,32 @@ export const revalidate = 300;
 
 const ANKI_BASE = R2_DATA_PUBLIC_URL;
 
+/**
+ * @swagger
+ * /api/public/tools/anki:
+ *   get:
+ *     summary: Get the ankoma deck as plain JSON
+ *     description: Resolves the current ankoma deck through the R2 manifest and returns it as uncompressed JSON, for clients that cannot decode brotli (the native iOS app). The web client reads the .json.br object directly.
+ *     tags:
+ *       - Public - Tools
+ *     responses:
+ *       200:
+ *         description: Ankoma deck data (structure varies)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *         headers:
+ *           Cache-Control:
+ *             schema:
+ *               type: string
+ *               example: public, max-age=300, stale-while-revalidate=600
+ *       502:
+ *         description: Manifest or deck fetch failed, or the manifest has no ankoma URL
+ *       500:
+ *         description: Proxy fetch error
+ */
+
 export async function GET() {
   try {
     const manifestRes = await fetch(`${ANKI_BASE}/anki/manifest.json`, {
