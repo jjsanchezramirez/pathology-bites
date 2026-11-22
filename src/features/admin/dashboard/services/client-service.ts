@@ -249,12 +249,6 @@ class ClientDashboardService {
         urgent: stats.rejectedQuestions > 0,
         permission: "questions.create",
       },
-      {
-        title: "Upload Images",
-        description: "Add images to library",
-        href: "/admin/media",
-        permission: "images.manage",
-      },
     ];
   }
 

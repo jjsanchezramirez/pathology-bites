@@ -38,6 +38,8 @@ function devFallbackIdentity(): { id: string; role: string } | null {
 
 const ROLES = ["admin", "creator", "reviewer", "user"] as const;
 const CONTENT_ROLES = ["admin", "creator", "reviewer"];
+/** /admin pages only admins may open; other staff are sent to the admin dashboard. */
+const ADMIN_ONLY_PAGES = ["/admin/media"];
 
 /**
  * The only role the server trusts: `app_metadata.role`, which users cannot edit.
@@ -153,6 +155,10 @@ export async function middleware(request: NextRequest) {
     const isAuthorized = role !== null && CONTENT_ROLES.includes(role);
     if (!isAuthorized) {
       return NextResponse.redirect(new URL("/dashboard", request.url));
+    }
+    const adminOnly = ADMIN_ONLY_PAGES.some((p) => pathname === p || pathname.startsWith(p + "/"));
+    if (adminOnly && role !== "admin") {
+      return NextResponse.redirect(new URL("/admin", request.url));
     }
   }
 

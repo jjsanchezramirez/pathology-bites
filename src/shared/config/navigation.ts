@@ -88,7 +88,7 @@ export const adminNavigationSections: NavigationSection[] = [
         href: "/admin/media",
         icon: "Image",
         requiredPermission: "images.manage",
-        showToRoles: ["admin", "creator", "reviewer"],
+        adminOnly: true,
       },
     ],
   },
