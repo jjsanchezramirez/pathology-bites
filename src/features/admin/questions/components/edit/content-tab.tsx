@@ -29,10 +29,6 @@ import {
 import { QuestionWithDetails } from "@/shared/types/questions";
 import { EditQuestionFormData } from "@/features/admin/questions/hooks/use-edit-question-form";
 import { FetchReferencesDialog } from "@/features/admin/questions/components/dialogs/fetch-references-dialog";
-import {
-  ContentSelector,
-  EducationalContent,
-} from "@/features/admin/questions/components/create/content-selector";
 import { ACTIVE_AI_MODELS, DEFAULT_AI_MODEL } from "@/shared/config/ai-models";
 import { log } from "@/shared/utils/logging";
 
@@ -50,7 +46,6 @@ interface ContentTabProps {
   onUnsavedChanges: () => void;
   answerOptions: QuestionOptionFormData[];
   onAnswerOptionsChange: (options: QuestionOptionFormData[]) => void;
-  educationalContext?: EducationalContent | null;
 }
 
 export function ContentTab({
@@ -59,16 +54,11 @@ export function ContentTab({
   onUnsavedChanges,
   answerOptions,
   onAnswerOptionsChange,
-  educationalContext,
 }: ContentTabProps) {
   const [fetchDialogOpen, setFetchDialogOpen] = useState(false);
   const [isEnhancing, setIsEnhancing] = useState(false);
   const [enhancementRequest, setEnhancementRequest] = useState("");
-  const [inlineContent, setInlineContent] = useState<EducationalContent | null>(null);
   const [selectedModel, setSelectedModel] = useState<string>("");
-
-  // The effective educational context — either from the question or selected inline
-  const effectiveContext = educationalContext || inlineContent;
 
   // Determine which AI model to use for refinement
   const refinementModel = useMemo(() => {
@@ -397,39 +387,23 @@ export function ContentTab({
           className="bg-primary/5 border-primary/20"
           title="Enhance with AI"
           icon={Sparkles}
-          description={
-            effectiveContext
-              ? "Use AI to improve clarity, accuracy, and pedagogical value using the linked educational content."
-              : "Select educational content and an AI model to enable enhancement."
-          }
+          description="Use AI to improve clarity, accuracy, and pedagogical value of this question."
         >
-          {/* Show inline selectors when no educational context exists */}
-          {!educationalContext && (
-            <div className="space-y-4">
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">Educational Content</Label>
-                <ContentSelector
-                  onContentSelect={setInlineContent}
-                  selectedContent={inlineContent}
-                />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-sm font-medium">AI Model</Label>
-                <Select value={selectedModel} onValueChange={setSelectedModel}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select an AI model..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ACTIVE_AI_MODELS.map((model) => (
-                      <SelectItem key={model.id} value={model.id}>
-                        {model.name}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          )}
+          <div className="space-y-2">
+            <Label className="text-sm font-medium">AI Model</Label>
+            <Select value={selectedModel} onValueChange={setSelectedModel}>
+              <SelectTrigger>
+                <SelectValue placeholder="Default: the question's generating model" />
+              </SelectTrigger>
+              <SelectContent>
+                {ACTIVE_AI_MODELS.map((model) => (
+                  <SelectItem key={model.id} value={model.id}>
+                    {model.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
           <div className="space-y-2">
             <Label htmlFor="enhancement-request" className="text-sm font-medium">
@@ -448,7 +422,7 @@ export function ContentTab({
 
           <Button
             onClick={handleAIEnhancement}
-            disabled={isEnhancing || !effectiveContext}
+            disabled={isEnhancing}
             className="w-full"
             variant="default"
           >

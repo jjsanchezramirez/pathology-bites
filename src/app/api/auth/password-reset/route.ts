@@ -3,7 +3,6 @@ import { NextRequest, NextResponse } from "next/server";
 import { createClient } from "@/shared/services/server";
 import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { z } from "zod";
-import { requireUser } from "@/shared/utils/api/api-guard";
 import { log } from "@/shared/utils/logging";
 
 const passwordResetSchema = z.object({
@@ -254,13 +253,15 @@ export async function PATCH(request: NextRequest) {
   try {
     const supabase = await createClient();
 
-    // Check if user is authenticated (should have valid reset token)
-    const auth = requireUser(request);
-    if (auth instanceof NextResponse) {
-      // Preserve the route-specific 401 message (reset-token context, not a generic gate)
+    // /api/auth/* is public, so middleware sets no identity headers here: check the
+    // session itself (the reset link signs the user in) rather than x-user-id.
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+    if (!user) {
       return NextResponse.json({ error: "Invalid or expired reset token" }, { status: 401 });
     }
-    const userId = auth.userId;
+    const userId = user.id;
 
     const body = await request.json();
 

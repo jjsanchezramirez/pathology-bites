@@ -8,12 +8,10 @@ import { Brain, FileJson } from "lucide-react";
 import { QuestionWithDetails } from "@/shared/types/questions";
 import { EditQuestionFormData } from "@/features/admin/questions/hooks/use-edit-question-form";
 import { ACTIVE_AI_MODELS } from "@/shared/config/ai-models";
-import { getContentFileInfo } from "@/shared/config/content-index";
 import {
   ContentSelector,
   EducationalContent,
 } from "@/features/admin/questions/components/create/content-selector";
-import { log } from "@/shared/utils/logging";
 
 interface SourceDetails {
   primary_model?: string;
@@ -24,15 +22,9 @@ interface SourceTabProps {
   question: QuestionWithDetails;
   form?: UseFormReturn<EditQuestionFormData>;
   onUnsavedChanges?: () => void;
-  onEducationalContextChange?: (context: EducationalContent | null) => void;
 }
 
-export function SourceTab({
-  question,
-  form,
-  onUnsavedChanges,
-  onEducationalContextChange,
-}: SourceTabProps) {
+export function SourceTab({ question, form, onUnsavedChanges }: SourceTabProps) {
   // State for content selector
   const [selectedContent, setSelectedContent] = useState<EducationalContent | null>(null);
 
@@ -46,10 +38,6 @@ export function SourceTab({
       form.setValue("lesson", content.lesson);
       form.setValue("topic", content.topic);
       onUnsavedChanges();
-    }
-    // Pass the educational context up to the parent
-    if (onEducationalContextChange) {
-      onEducationalContextChange(content);
     }
   };
 
@@ -87,17 +75,8 @@ export function SourceTab({
     if (question.category && typeof question.category === "object" && "name" in question.category) {
       return question.category.name;
     }
-    // Try to get from content index as last resort
-    if (question.lesson && question.topic) {
-      try {
-        const fileInfo = getContentFileInfo(question.lesson, question.topic);
-        return fileInfo?.subject || null;
-      } catch (error) {
-        log.error("Error loading subject from content index:", error);
-      }
-    }
     return null;
-  }, [question.category, question.lesson, question.topic]);
+  }, [question.category]);
 
   return (
     <div className="mx-auto w-full max-w-4xl space-y-6">

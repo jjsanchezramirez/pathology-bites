@@ -203,8 +203,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
           previousSessionRef.current = session;
 
           // Extract role from JWT
-          const role =
-            session?.user?.app_metadata?.role || session?.user?.user_metadata?.role || null;
+          const role = session?.user?.app_metadata?.role || null;
 
           const newAuthState = {
             user: session?.user ?? null,
@@ -257,7 +256,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
       previousSessionRef.current = session;
 
       // Extract role from JWT
-      const role = session?.user?.app_metadata?.role || session?.user?.user_metadata?.role || null;
+      const role = session?.user?.app_metadata?.role || null;
 
       const newAuthState = {
         user: session?.user ?? null,
@@ -297,7 +296,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
       // Skip if session unchanged (avoid pointless re-renders)
       if (session?.access_token === previousSessionRef.current?.access_token) return;
       previousSessionRef.current = session;
-      const role = session?.user?.app_metadata?.role || session?.user?.user_metadata?.role || null;
+      const role = session?.user?.app_metadata?.role || null;
       const newState = {
         user: session?.user ?? null,
         session,
@@ -323,7 +322,7 @@ export function useAuth(options: UseAuthOptions = {}): UseAuthReturn {
       } = await supabase.auth.refreshSession();
       if (error) throw error;
 
-      const role = session?.user?.app_metadata?.role || session?.user?.user_metadata?.role || null;
+      const role = session?.user?.app_metadata?.role || null;
 
       const newAuthState = {
         user: session?.user ?? null,

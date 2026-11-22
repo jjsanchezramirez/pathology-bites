@@ -135,6 +135,16 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     contextLength: "1M tokens",
     tpmLimit: 1000000,
   },
+  // Groq's vision model — slot 2 of VISION_FALLBACK_CHAIN (benched Nov 2026).
+  {
+    id: "qwen/qwen3.8-27b",
+    name: "Qwen3.8 27B (Groq)",
+    provider: "groq",
+    available: true,
+    description: "Text + image on Groq - vision chain slot 2 (0.9-1.5s)",
+    contextLength: "131K tokens",
+    tpmLimit: 8000,
+  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -253,25 +263,29 @@ export interface AITaskProfile {
 
 // Groq's Llama 4 Scout led this chain until Groq removed it from their catalog;
 // the API returns `model_not_found`, so every vision call had been failing over
-// to Gemini regardless. Groq serves no vision model on our account at all now.
+// to Gemini regardless. Cerebras' gemma-4-31b was the next second-provider leg
+// until Cerebras archived it (404, Nov 2026).
 //
-// Cerebras' gemma-4-31b used to be the second-provider leg here. Cerebras has
-// since archived it (404 "archived and unavailable", Nov 2026) and removed it
-// from the catalog — it is not coming back.
+// Measured on a real R2 histology image (/debug/vision-bench, Castleman
+// disease, 3 runs each, 2026-11-22). All passing models saw the image, named
+// the feature ("onion skin") and returned a feature position:
 //
-// Measured on a real R2 histology image (Aug 2026): 3.5-flash-lite 1.9s,
-// gemma-4-31b 1.2s, 2.5-flash-lite 2.8s. All three saw the image and returned
-// parseable JSON with no thinking tokens. Among Gemini only the "lite" line
-// behaves this way — see callGoogle.
+//   gemini-3.5-flash-lite                    1.8-1.9s   Google
+//   gemini-2.5-flash-lite                    1.0-1.4s   Google
+//   qwen/qwen3.8-27b                         0.9-1.5s   Groq
+//   @cf/google/gemma-4-26b-a4b-it           11.8-15.0s  Cloudflare — too close
+//                                                       to the 15s timeout
+//   @cf/meta/llama-4-scout-17b-16e-instruct  timeout    Cloudflare — 0/3
+//
+// Among Gemini only the "lite" line behaves this way (no thinking tokens) —
+// see callGoogle. Groq's Qwen sits at slot 2 so a Google outage or free-tier
+// 429 falls to a DIFFERENT provider in one hop; it is faster than Gemini but
+// Gemini stays first as the longest-proven. Groq's free tier caps each model at
+// 200K tokens/day, so watch it if vision volume grows.
 export const VISION_FALLBACK_CHAIN: string[] = [
   "gemini-3.5-flash-lite", // Google — 1.9s
-  // gemma-4-31b (Cerebras, 1.2s) was the non-Google leg; Cerebras archived it.
-  // THIS CHAIN IS NOW SINGLE-PROVIDER: a Google outage or a 429 on the free
-  // tier empties it, where the text chain would still have three providers to
-  // fall through. That is a known gap, not an oversight — filling it needs a
-  // vision model benchmarked on a real image (/debug/vision-bench); Cloudflare
-  // Workers AI is the obvious candidate.
-  "gemini-2.5-flash-lite", // Google — 2.8s
+  "qwen/qwen3.8-27b", // Groq — 0.9-1.5s, the non-Google leg
+  "gemini-2.5-flash-lite", // Google — 1.0-1.4s
 ];
 
 // Vision-capable model IDs.
@@ -349,6 +363,24 @@ export type AITaskName = keyof typeof AI_TASKS;
 
 // Disabled models (show in UI but not selectable)
 export const DISABLED_AI_MODELS: AIModel[] = [
+  // Cloudflare vision candidates, benched on a real histology image
+  // (/debug/vision-bench, 2026-11-22). Both read the slide when they finished;
+  // neither is fast enough for the 15s lesson-vision timeout.
+  {
+    id: "@cf/meta/llama-4-scout-17b-16e-instruct",
+    name: "Llama 4 Scout (Cloudflare)",
+    provider: "cloudflare",
+    available: false,
+    description: "Timed out at 15s on 3/3 vision runs",
+  },
+  {
+    id: "@cf/google/gemma-4-26b-a4b-it",
+    name: "Gemma 4 26B A4B (Cloudflare)",
+    provider: "cloudflare",
+    available: false,
+    description: "Saw the image but took 11.8-15.0s - too close to the 15s timeout",
+  },
+
   // Retired by the provider — Groq removed Llama 4 Scout from the catalog and
   // the API now answers `model_not_found`. It was VISION_FALLBACK_CHAIN[0], so
   // every vision call had been silently failing over to Gemini.
