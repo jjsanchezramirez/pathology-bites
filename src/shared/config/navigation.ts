@@ -84,25 +84,11 @@ export const adminNavigationSections: NavigationSection[] = [
     title: "Media",
     items: [
       {
-        name: "Images",
-        href: "/admin/images",
+        name: "Media",
+        href: "/admin/media",
         icon: "Image",
         requiredPermission: "images.manage",
         showToRoles: ["admin", "creator", "reviewer"],
-      },
-      {
-        name: "Audio",
-        href: "/admin/audio",
-        icon: "AudioLines",
-        requiredPermission: "audio.manage",
-        showToRoles: ["admin"],
-      },
-      {
-        name: "SVG Assets",
-        href: "/admin/svg-library",
-        icon: "Shapes",
-        requiredPermission: "images.manage",
-        adminOnly: true,
       },
     ],
   },

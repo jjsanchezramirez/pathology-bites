@@ -2,9 +2,8 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Button } from "@/shared/components/ui/button";
-import { PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Plus } from "lucide-react";
-import { PageHeader } from "@/shared/components/ui/page-header";
 import type { Audio } from "@/features/admin/audio/types";
 import { toast } from "@/shared/utils/ui/toast";
 import { AudioTable } from "@/features/admin/audio/components/audio-table";
@@ -40,7 +39,7 @@ async function getAudioDuration(file: File): Promise<number | null> {
   });
 }
 
-export default function AdminAudioPage() {
+export function AudioTab() {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [audioFileReady, setAudioFileReady] = useState<AudioFileReadyState | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -96,12 +95,7 @@ export default function AdminAudioPage() {
   };
 
   return (
-    <PageContainer>
-      <PageHeader
-        title="Audio Library"
-        description="Manage educational audio files and TTS-generated content"
-      />
-
+    <>
       {/* Stats */}
       <AudioStatsCards refreshKey={refreshKey} />
 
@@ -163,6 +157,6 @@ export default function AdminAudioPage() {
         onOpenChange={setDeleteDialogOpen}
         onSuccess={refresh}
       />
-    </PageContainer>
+    </>
   );
 }

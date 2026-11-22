@@ -73,7 +73,7 @@ export function revalidateImages(options?: { imageId?: string; includeDashboard?
   }
 
   // Revalidate admin pages
-  revalidatePath("/admin/images", "page");
+  revalidatePath("/admin/media", "page");
   revalidatePath("/admin", "page");
 }
 

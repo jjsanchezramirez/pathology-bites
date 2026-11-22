@@ -2,16 +2,15 @@
 
 import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
-import { PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Plus } from "lucide-react";
-import { PageHeader } from "@/shared/components/ui/page-header";
 import { SvgTable } from "@/features/admin/svg-library/components/svg-table";
 import { SvgUploadDialog } from "@/features/admin/svg-library/components/upload-dialog";
 import { EditSvgDialog } from "@/features/admin/svg-library/components/edit-dialog";
 import { DeleteSvgDialog } from "@/features/admin/svg-library/components/delete-dialog";
 import type { SvgAsset } from "@/features/admin/svg-library/types";
 
-export default function AdminSvgLibraryPage() {
+export function SvgTab() {
   const [uploadDialogOpen, setUploadDialogOpen] = useState(false);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [selectedAsset, setSelectedAsset] = useState<SvgAsset | null>(null);
@@ -32,12 +31,7 @@ export default function AdminSvgLibraryPage() {
   };
 
   return (
-    <PageContainer>
-      <PageHeader
-        title="SVG Assets"
-        description="Manage SVG illustrations, diagrams, and vector graphics"
-      />
-
+    <>
       <SectionCard
         title="SVG Library"
         description="Upload, edit, and organize your SVG asset collection. Search by name or description."
@@ -73,6 +67,6 @@ export default function AdminSvgLibraryPage() {
         onOpenChange={setDeleteDialogOpen}
         onSuccess={refresh}
       />
-    </PageContainer>
+    </>
   );
 }

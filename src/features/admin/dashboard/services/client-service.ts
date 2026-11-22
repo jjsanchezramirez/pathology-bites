@@ -220,7 +220,7 @@ class ClientDashboardService {
         title: "Manage Images",
         description: `${stats.totalImages} images available`,
         count: stats.totalImages,
-        href: "/admin/images",
+        href: "/admin/media",
         permission: "images.manage",
       },
     ];
@@ -252,7 +252,7 @@ class ClientDashboardService {
       {
         title: "Upload Images",
         description: "Add images to library",
-        href: "/admin/images/upload",
+        href: "/admin/media",
         permission: "images.manage",
       },
     ];

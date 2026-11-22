@@ -1,4 +1,3 @@
-// src/app/(admin)/admin/images/page.tsx
 "use client";
 
 import { useRef } from "react";
@@ -7,10 +6,9 @@ import {
   StorageStatsCards,
   StorageStatsRef,
 } from "@/features/admin/images/components/storage-stats";
-import { PageHeader } from "@/shared/components/ui/page-header";
-import { PageContainer, SectionCard } from "@/shared/components/ui/page-layout";
+import { SectionCard } from "@/shared/components/ui/page-layout";
 
-export default function ImagesPage() {
+export function ImagesTab() {
   const storageStatsRef = useRef<StorageStatsRef>(null);
 
   const handleImageChange = () => {
@@ -19,12 +17,7 @@ export default function ImagesPage() {
   };
 
   return (
-    <PageContainer>
-      <PageHeader
-        title="Image Library"
-        description="Manage and organize pathology images, diagrams, and illustrations"
-      />
-
+    <>
       {/* Storage Statistics Cards */}
       <StorageStatsCards ref={storageStatsRef} />
 
@@ -34,6 +27,6 @@ export default function ImagesPage() {
       >
         <ImagesTable onImageChange={handleImageChange} />
       </SectionCard>
-    </PageContainer>
+    </>
   );
 }
