@@ -16,21 +16,16 @@ import { log } from "@/shared/utils/logging";
  * file is what makes the guarantee real — the catalog stays importable from the
  * client, the keys cannot be.
  *
- * Keys are read from server-only names (no `NEXT_PUBLIC_` prefix) and stored
- * in Vercel as Sensitive. The `NEXT_PUBLIC_` reads below are a TEMPORARY
- * fallback so a deploy never runs keyless while the env migration is in
- * flight — delete them once the old variables are removed from Vercel.
+ * Keys are read from server-only names and stored in Vercel as Sensitive.
+ * Never give them a `NEXT_PUBLIC_` prefix: that inlines the value into the
+ * browser bundle wherever it is referenced (Vercel flags it as exposed). The
+ * old `NEXT_PUBLIC_*_API_KEY` variables were deleted from Vercel 2026-11-22.
  */
 export const API_KEYS = {
-  groq: process.env.GROQ_API_KEY || process.env.NEXT_PUBLIC_GROQ_API_KEY || "",
-  cerebras: process.env.CEREBRAS_API_KEY || process.env.NEXT_PUBLIC_CEREBRAS_API_KEY || "",
-  google:
-    process.env.GOOGLE_AI_STUDIO_API_KEY ||
-    process.env.GEMINI_API_KEY ||
-    process.env.NEXT_PUBLIC_GOOGLE_AI_STUDIO_API_KEY ||
-    process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
-    "",
-  mistral: process.env.MISTRAL_API_KEY || process.env.NEXT_PUBLIC_MISTRAL_API_KEY || "",
+  groq: process.env.GROQ_API_KEY || "",
+  cerebras: process.env.CEREBRAS_API_KEY || "",
+  google: process.env.GOOGLE_AI_STUDIO_API_KEY || process.env.GEMINI_API_KEY || "",
+  mistral: process.env.MISTRAL_API_KEY || "",
   // Workers AI. A plain Cloudflare API token with the Workers AI Read binding.
   cloudflare: process.env.CLOUDFLARE_AI_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN || "",
 };
