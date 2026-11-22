@@ -17,6 +17,7 @@ import { PageHeader } from "@/shared/components/ui/page-header";
 import { ContentGrid, PageContainer } from "@/shared/components/ui/page-layout";
 import { useUnifiedData } from "@/shared/hooks/use-unified-data";
 import { ScrollReveal } from "@/shared/components/common";
+import { useHydrated } from "@/shared/hooks/use-hydrated";
 
 interface DashboardStats {
   performance?: {
@@ -40,6 +41,9 @@ interface DashboardStats {
 
 export default function PerformancePage() {
   const { data: unifiedData, isLoading } = useUnifiedData();
+  // SWR cache is restored from localStorage on the client: render the loading
+  // state until hydrated so the first client render matches the server's.
+  const hydrated = useHydrated();
   const [stats, setStats] = useState<DashboardStats | null>(null);
 
   useEffect(() => {
@@ -59,7 +63,7 @@ export default function PerformancePage() {
     });
   }, [unifiedData]);
 
-  if (isLoading) {
+  if (isLoading || !hydrated) {
     return <PerformanceLoading />;
   }
 

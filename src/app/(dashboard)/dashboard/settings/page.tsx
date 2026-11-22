@@ -28,6 +28,7 @@ import {
   SettingsLoading,
 } from "@/features/user/settings/components";
 import { log } from "@/shared/utils/logging";
+import { useHydrated } from "@/shared/hooks/use-hydrated";
 
 export default function SettingsPage() {
   const { user, isAuthenticated, isLoading } = useAuthContext();
@@ -61,6 +62,10 @@ export default function SettingsPage() {
   });
   const [saving, setSaving] = useState(false);
   const [mounted, setMounted] = useState(false);
+  // Settings (localStorage SWR cache) and auth (sessionStorage, prod only) are
+  // restored on the client: render the loading state until hydrated so the
+  // first client render matches the server's.
+  const hydrated = useHydrated();
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
   const [showResetDialog, setShowResetDialog] = useState(false);
   const [isDeleting, setIsDeleting] = useState(false);
@@ -279,7 +284,7 @@ export default function SettingsPage() {
     }
   };
 
-  if (isLoading || settingsLoading) {
+  if (isLoading || settingsLoading || !hydrated) {
     return <SettingsLoading />;
   }
 
