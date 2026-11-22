@@ -447,7 +447,11 @@ export const DISABLED_AI_MODELS: AIModel[] = [
   // deleted so the numbers survive: at ~$8.62/month for our volume it is the
   // dearest text option after Gemini, which is why parking it costs little.
   //
-  // To restore: top up at console.cerebras.ai, flip these to available: true,
+  // LOCKED: ai-keys.ts ignores the Cerebras key unless CEREBRAS_ENABLED=true.
+  // Do not unlock without confirmation that the account has funds.
+  //
+  // To restore: top up at console.cerebras.ai, set CEREBRAS_ENABLED=true in
+  // Vercel, flip these to available: true,
   // put "gpt-oss-120b" back at slot 2 of TEXT_FALLBACK_CHAIN. The chain tests
   // will need their expectations moved back. Re-checked 2026-11-21: still 402 on
   // every model; the account now serves only gpt-oss-120b and qwen-3.8-27b
