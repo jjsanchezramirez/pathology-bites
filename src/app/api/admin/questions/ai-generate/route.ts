@@ -10,7 +10,7 @@ import {
 } from "./ai-question-prompt";
 import { extractJSON } from "./ai-json-parsing";
 
-// Vercel Hobby caps at 60s; Claude calls observed up to 17-80s.
+// Vercel Hobby caps at 60s; slow models have been observed at 17-80s.
 export const maxDuration = 60;
 
 // Accept all available models for admin question generation
@@ -149,7 +149,7 @@ export async function POST(request: NextRequest) {
     }
 
     // A model named in the request is honoured exactly — no silent fallback, so
-    // an admin who picks Claude gets Claude or an error, never a cheaper
+    // an admin who picks a model gets that model or an error, never a silent
     // substitute. With no model named we walk the shared chain instead, which is
     // resilience this route previously had none of.
     const requestedModel = modelOverride || model;

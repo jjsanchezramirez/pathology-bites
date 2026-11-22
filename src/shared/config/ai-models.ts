@@ -4,7 +4,7 @@
 export interface AIModel {
   id: string;
   name: string;
-  provider: "groq" | "cerebras" | "gemini" | "mistral" | "claude" | "cloudflare";
+  provider: "groq" | "cerebras" | "gemini" | "mistral" | "cloudflare";
   available: boolean;
   deprecated?: boolean;
   description?: string;
@@ -62,7 +62,6 @@ export function getModelProvider(model: string): string {
     model.startsWith("ministral-")
   )
     return "mistral";
-  if (model.startsWith("claude-")) return "claude";
   return "google";
 }
 
@@ -87,15 +86,14 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     tpmLimit: 8000,
   },
 
-  // Groq's serving of the same model that leads the chain on Cerebras. Free tier
-  // gives it 200K TPD — double the 100K the llama models get — so it is the
-  // natural landing spot when Cerebras' 5 RPM runs out.
+  // Groq's serving of gpt-oss-120b (also served by Cerebras, parked below).
+  // Free tier gives it 200K TPD — double the 100K the llama models get.
   {
     id: "openai/gpt-oss-120b",
     name: "GPT-OSS 120B (Groq)",
     provider: "groq",
     available: true,
-    description: "Same model as the Cerebras chain leader, second provider",
+    description: "OpenAI open-weight 120B on Groq - text chain leader",
     contextLength: "128K tokens",
     tpmLimit: 8000,
   },
@@ -113,15 +111,6 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     contextLength: "128K tokens",
   },
 
-  {
-    id: "gemma-4-31b",
-    name: "Gemma 4 31B (Cerebras)",
-    provider: "cerebras",
-    available: true,
-    description: "Gemma 4 31B on Cerebras - bench candidate",
-    contextLength: "128K tokens",
-    tpmLimit: 30000,
-  },
   {
     id: "gemini-2.5-flash-lite",
     name: "Gemini 2.5 Flash Lite",
@@ -212,25 +201,6 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
     contextLength: "32K tokens",
     tpmLimit: 500000,
   },
-
-  // Anthropic Claude — the paid escape hatch. Never selected by automatic
-  // fallback (see VISION_FALLBACK_CHAIN); reachable only via modelOverride.
-  //
-  // claude-sonnet-4-20250514 sat here until 2026-08-13 and had been RETIRED by
-  // Anthropic since 2026-06-15 — the API answered `not_found_error`, so the one
-  // non-Google vision option in the catalog did not exist. Verified on a real
-  // histology image: opus-5 4.2s, and the only one of the three current models
-  // to read the atrophic/regressed germinal centre correctly (sonnet-5 called
-  // the organ spleen; haiku-4-5 was vaguer but 10x cheaper at ~$0.002/image).
-  {
-    id: "claude-opus-5",
-    name: "Claude Opus 5",
-    provider: "claude",
-    available: true,
-    description: "Paid escape hatch - best vision read, high-res tier (~$0.02/image)",
-    contextLength: "1M tokens",
-    tpmLimit: 200000,
-  },
 ];
 
 // ---------------------------------------------------------------------------
@@ -256,11 +226,6 @@ export const ACTIVE_AI_MODELS: AIModel[] = [
 // dropped. That was invisible only because ~324 req/day fits inside Google's
 // free 1,000/day; the first busy month would have started billing at the worst
 // rate in the table with no code change. Hence last.
-//
-// Claude is INTENTIONALLY EXCLUDED — it's paid, and we never want production
-// traffic to silently cascade into paid models. Claude is still callable via
-// `modelOverride` from the debug page or by explicit caller request; it just
-// won't be selected by automatic fallback.
 
 // Ordered by measured wall-clock on a real WSI question prompt (~813 prompt
 // tokens, maxTokens 2000, /debug/wsi-bench, Aug 2026), then by provider
@@ -360,22 +325,17 @@ export interface AITaskProfile {
 // the API returns `model_not_found`, so every vision call had been failing over
 // to Gemini regardless. Groq serves no vision model on our account at all now.
 //
-// Cerebras' gemma-4-31b sits at slot 2 to keep a SECOND PROVIDER in the chain —
-// with Google in slots 1 and 3, a Google outage would otherwise take vision down
-// completely. It refuses remote image URLs and needs the bytes inlined as a data
-// URI; callVisionModel handles that.
+// Cerebras' gemma-4-31b used to be the second-provider leg here. Cerebras has
+// since archived it (404 "archived and unavailable", Nov 2026) and removed it
+// from the catalog — it is not coming back.
 //
 // Measured on a real R2 histology image (Aug 2026): 3.5-flash-lite 1.9s,
 // gemma-4-31b 1.2s, 2.5-flash-lite 2.8s. All three saw the image and returned
 // parseable JSON with no thinking tokens. Among Gemini only the "lite" line
 // behaves this way — see callGoogle.
-//
-// Claude stays in VISION_CAPABLE_MODELS but out of the chain: it is paid, and
-// automatic fallback must never cascade into a paid model.
 export const VISION_FALLBACK_CHAIN: string[] = [
   "gemini-3.5-flash-lite", // Google — 1.9s
-  // gemma-4-31b (Cerebras, 1.2s) was the non-Google leg and went with the
-  // billing. THIS CHAIN IS NOW SINGLE-PROVIDER: a Google outage or a 429 on the
+  // gemma-4-31b (Cerebras, 1.2s) was the non-Google leg; Cerebras archived it. THIS CHAIN IS NOW SINGLE-PROVIDER: a Google outage or a 429 on the
   // free tier empties it, where the text chain would still have three providers
   // to fall through. That is a known gap, not an oversight — filling it needs a
   // vision model benchmarked on a real image (/debug/vision-bench), and the
@@ -383,9 +343,8 @@ export const VISION_FALLBACK_CHAIN: string[] = [
   "gemini-2.5-flash-lite", // Google — 2.8s
 ];
 
-// Vision-capable model IDs (includes Claude for modelOverride even though
-// Claude is excluded from VISION_FALLBACK_CHAIN's automatic ordering).
-export const VISION_CAPABLE_MODELS = new Set<string>([...VISION_FALLBACK_CHAIN, "claude-opus-5"]);
+// Vision-capable model IDs.
+export const VISION_CAPABLE_MODELS = new Set<string>(VISION_FALLBACK_CHAIN);
 
 export const AI_TASKS = {
   /** User-facing WSI question generation. maxDuration 45s. */
@@ -459,16 +418,6 @@ export type AITaskName = keyof typeof AI_TASKS;
 
 // Disabled models (show in UI but not selectable)
 export const DISABLED_AI_MODELS: AIModel[] = [
-  // Claude models retired by Anthropic — the API answers `not_found_error`.
-  {
-    id: "claude-3-5-sonnet-20241022",
-    name: "Claude 3.5 Sonnet",
-    provider: "claude",
-    available: false,
-    deprecated: true,
-    description: "Retired by Anthropic (404)",
-  },
-
   // Mistral models (disabled due to issues)
   {
     id: "mistral-small-2407",
@@ -499,9 +448,10 @@ export const DISABLED_AI_MODELS: AIModel[] = [
   // dearest text option after Gemini, which is why parking it costs little.
   //
   // To restore: top up at console.cerebras.ai, flip these to available: true,
-  // put "gpt-oss-120b" back at slot 2 of TEXT_FALLBACK_CHAIN and "gemma-4-31b"
-  // at slot 2 of VISION_FALLBACK_CHAIN — the latter also un-does vision being
-  // single-provider. The chain tests will need their expectations moved back.
+  // put "gpt-oss-120b" back at slot 2 of TEXT_FALLBACK_CHAIN. The chain tests
+  // will need their expectations moved back. Re-checked 2026-11-21: still 402 on
+  // every model; the account now serves only gpt-oss-120b and qwen-3.8-27b
+  // (gemma-4-31b was archived), so vision stays single-provider either way.
   // Cerebras — fastest inference (~2000+ tok/s), free tier: 5 RPM, 1M tokens/day
   {
     id: "gpt-oss-120b",

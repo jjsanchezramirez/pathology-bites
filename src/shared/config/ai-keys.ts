@@ -30,7 +30,6 @@ export const API_KEYS = {
     process.env.NEXT_PUBLIC_GOOGLE_AI_STUDIO_API_KEY ||
     process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
     "",
-  claude: process.env.CLAUDE_API_KEY || process.env.NEXT_PUBLIC_CLAUDE_API_KEY || "",
   mistral: process.env.MISTRAL_API_KEY || process.env.NEXT_PUBLIC_MISTRAL_API_KEY || "",
   // Workers AI. A plain Cloudflare API token with the Workers AI Read binding.
   cloudflare: process.env.CLOUDFLARE_AI_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN || "",

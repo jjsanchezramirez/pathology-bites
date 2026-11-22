@@ -9,7 +9,7 @@ import type { ImageInput } from "../generate-sequence/prompt";
 import { log } from "@/shared/utils/logging";
 
 // ---------------------------------------------------------------------------
-// Prompt — simplified for Claude's better spatial reasoning
+// Prompt
 // ---------------------------------------------------------------------------
 
 function buildVisionPrompt(image: ImageInput): string {
@@ -62,7 +62,7 @@ Position should point to the CENTER of the most important diagnostic feature.
 }
 
 // ---------------------------------------------------------------------------
-// Parse Claude's JSON response
+// Parse the model's JSON response
 // ---------------------------------------------------------------------------
 
 /** @internal exported for testing */
@@ -244,7 +244,7 @@ async function analyzeOneImage(image: ImageInput, modelOverride?: string): Promi
         return p;
       },
     });
-    // Override Claude's tool suggestion with deterministic decision table
+    // Override the model's tool suggestion with deterministic decision table
     return overrideToolDeterministically(result, imageWithMag);
   } catch (err) {
     log.warn(`[vision-v2] All models failed for "${image.title}":`, err);

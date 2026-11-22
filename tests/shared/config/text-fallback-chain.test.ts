@@ -118,13 +118,4 @@ describe("TEXT_FALLBACK_CHAIN", () => {
       expect(available.has(model), `${model} missing from ACTIVE_AI_MODELS`).toBe(true);
     }
   });
-
-  it("excludes Claude from automatic fallback", () => {
-    // This used to read "excludes paid models", which is no longer true of the
-    // chain: Cerebras is prepaid and Cloudflare meters past its free neurons.
-    // What the rule actually protects against is a cascade into frontier-priced
-    // models — roughly 20-100x the rest of the chain per token. Claude stays
-    // callable by explicit override, never by automatic fallback.
-    expect(TEXT_FALLBACK_CHAIN.some((m) => m.startsWith("claude-"))).toBe(false);
-  });
 });

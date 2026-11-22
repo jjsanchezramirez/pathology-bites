@@ -6,7 +6,7 @@ import { getModelProvider, resolveModelId, ACTIVE_AI_MODELS } from "@/shared/con
 import { runAITask } from "@/shared/services/ai-fallback";
 import { log } from "@/shared/utils/logging";
 
-// Vercel Hobby caps at 60s; Claude calls observed ~10s, chain walk worst case ~15s.
+// Vercel Hobby caps at 60s; chain walk worst case ~15s.
 export const maxDuration = 30;
 
 const AUDIO_SCRIPT_SYSTEM =
