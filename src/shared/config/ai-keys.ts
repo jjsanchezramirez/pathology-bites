@@ -45,25 +45,33 @@ function missingCompanionConfig(provider: string): boolean {
 }
 
 /**
- * Providers locked off until someone confirms the account has funds.
+ * Providers locked off until their account is usable again. Each stays
+ * configured so it can be switched back on without a key hunt, but reads as
+ * unconfigured — so no chain, pinned model or catalog flip can spend an
+ * attempt on it — until its `*_ENABLED` variable is exactly "true".
  *
- * Cerebras is prepaid and its balance is empty: every model answers 402
- * (re-checked 2026-11-21). The key stays configured so it can be switched back
- * on without a key hunt, but the provider reads as unconfigured — so no chain,
- * pinned model or catalog flip can spend an attempt on it — until
- * CEREBRAS_ENABLED=true is set. Only set it after confirming funds at
- * console.cerebras.ai.
+ * - Cerebras: prepaid, balance empty — every model answers 402 (re-checked
+ *   2026-11-21). Unlock only after confirming funds at console.cerebras.ai.
+ * - Mistral: the workspace has a 0 requests/minute limit on every model
+ *   (`x-ratelimit-limit-req-minute: 0`, 2026-11-22) — no active plan. The key
+ *   is valid. Unlock only after admin.mistral.ai shows a non-zero limit.
  */
+const PROVIDER_LOCKS: Record<string, string> = {
+  cerebras: "CEREBRAS_ENABLED",
+  mistral: "MISTRAL_ENABLED",
+};
+
 export function isProviderLocked(provider: string): boolean {
-  return provider === "cerebras" && process.env.CEREBRAS_ENABLED !== "true";
+  const flag = PROVIDER_LOCKS[provider];
+  return !!flag && process.env[flag] !== "true";
 }
 
 /** Get the API key for a provider. Empty string when unconfigured or locked. */
 export function getApiKey(provider: string): string {
   if (isProviderLocked(provider)) {
-    log.warn(
-      `⚠️ ${provider} is locked (no funds). Set CEREBRAS_ENABLED=true only after topping up.`
-    );
+    // debug, not warn: the fallback walk already warns when it skips a keyless
+    // provider, and Mistral sits in the chain, so this would fire every request.
+    log.debug(`${provider} is locked; set ${PROVIDER_LOCKS[provider]}=true to re-enable.`);
     return "";
   }
   const key = API_KEYS[provider as keyof typeof API_KEYS];
