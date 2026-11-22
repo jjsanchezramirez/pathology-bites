@@ -308,3 +308,209 @@ export function createWaitlistAnnouncementEmail(data: WaitlistAnnouncementData):
       "You received this email because you signed up for our waitlist. If you no longer wish to receive updates, please contact us.",
   });
 }
+
+// Waitlist invite: "the doors are open, it's free, come in."
+// One-off email that retired the launch waitlist. Sent 2026-11-22 to 108 waitlist
+// addresses (registered users skipped) by dev/scripts/email/send-waitlist-invite.ts.
+// Kept as a record of what went out, NOT as a model to copy: the owner did not like it.
+// Verdict: too long, too cheesy (the gift/"unwrap it" framing), too generic. Next time:
+// shorter, more to the point, distinctive, a handful of features rather than everything.
+// Feature list mirrors the student dashboard nav (shared/config/navigation.ts) and the
+// public tools in the footer (shared/components/layout/footer.tsx); update both together.
+interface WaitlistInviteSection {
+  emoji: string;
+  heading: string;
+  items: { name: string; desc: string; href: string }[];
+}
+
+const SITE = "https://www.pathologybites.com";
+
+const WAITLIST_INVITE_SECTIONS: WaitlistInviteSection[] = [
+  {
+    emoji: "🔬",
+    heading: "Practice like it's board day",
+    items: [
+      {
+        name: "Custom quizzes",
+        desc: "400+ board-style questions with images and explanations, built to whatever you choose: topics, length, timed or tutor mode.",
+        href: `${SITE}/dashboard/quiz/new`,
+      },
+      {
+        name: "Slide-based questions",
+        desc: "Whole-slide images you pan and zoom yourself, then commit to a diagnosis.",
+        href: `${SITE}/dashboard/wsi-questions`,
+      },
+      {
+        name: "Bone marrow morphology quiz",
+        desc: "Rapid-fire cell identification until you can tell a myelocyte from a metamyelocyte half asleep.",
+        href: `${SITE}/tools/cell-quiz`,
+      },
+    ],
+  },
+  {
+    emoji: "📚",
+    heading: "Study smarter",
+    items: [
+      {
+        name: "Learning modules",
+        desc: "Short guided lessons for when you want to learn something properly.",
+        href: `${SITE}/dashboard/learn`,
+      },
+      {
+        name: "Ankoma deck viewer",
+        desc: "The Ankoma pathology Anki deck, readable and searchable right in your browser.",
+        href: `${SITE}/dashboard/anki`,
+      },
+      {
+        name: "Study plan, progress and performance",
+        desc: "A plan to follow, analytics that show where you're strong and where you're shaky, and achievements to unlock along the way.",
+        href: `${SITE}/dashboard/study-plan`,
+      },
+    ],
+  },
+  {
+    emoji: "🧭",
+    heading: "Look anything up",
+    items: [
+      {
+        name: "Virtual slide search engine",
+        desc: "66,000+ whole-slide images from teaching collections worldwide, searchable by diagnosis.",
+        href: `${SITE}/tools/virtual-slides`,
+      },
+      {
+        name: "Histologic image library",
+        desc: "A curated collection of pathology images.",
+        href: `${SITE}/tools/images`,
+      },
+      {
+        name: "IHC panel builder",
+        desc: "Pick your differential and get the antibodies ranked by how well they tell them apart, with citations.",
+        href: `${SITE}/tools/ihc`,
+      },
+    ],
+  },
+  {
+    emoji: "🧰",
+    heading: "Bench and sign-out helpers",
+    items: [
+      {
+        name: "Differential cell counter",
+        desc: "A customizable counter for peripheral smears and marrows.",
+        href: `${SITE}/tools/cell-counter`,
+      },
+      {
+        name: "MILAN and GENOVA",
+        desc: "Gene and biomarker lookup, plus automated variant classification.",
+        href: `${SITE}/tools/milan`,
+      },
+      {
+        name: "Lupus anticoagulant calculator, ABPath content specs, citation manager and image converter",
+        desc: "Small, well-made tools for the jobs nobody else bothered to make easier.",
+        href: `${SITE}/tools/abpath`,
+      },
+    ],
+  },
+];
+
+export function createWaitlistInviteEmail(): {
+  subject: string;
+  html: string;
+  text: string;
+} {
+  const subject = "Something wonderful has arrived for you 🎁";
+  const signupUrl = `${SITE}/signup`;
+
+  const p = (inner: string, extra = "") =>
+    `<p style="margin: 0 0 18px; font-size: 16px; line-height: 26px; color: #374151;${extra}">${inner}</p>`;
+
+  const sectionsHtml = WAITLIST_INVITE_SECTIONS.map(
+    (section) => `
+    <div style="margin: 0 0 22px;">
+      <p style="margin: 0 0 10px; font-size: 17px; line-height: 24px; font-weight: 700; color: #111827;">
+        <span style="font-size: 18px;">${section.emoji}</span>&nbsp; ${section.heading}
+      </p>
+      ${section.items
+        .map(
+          (item) => `
+      <table role="presentation" cellspacing="0" cellpadding="0" border="0" width="100%" style="margin: 0 0 10px;">
+        <tr>
+          <td width="14" valign="top" style="padding-top: 9px;">
+            <div style="width: 6px; height: 6px; border-radius: 3px; background: #5BA4A4;"></div>
+          </td>
+          <td valign="top" style="font-size: 15px; line-height: 23px; color: #4b5563;">
+            <a href="${item.href}" style="color: #2f7f7f; font-weight: 600; text-decoration: none;">${item.name}</a>: ${item.desc}
+          </td>
+        </tr>
+      </table>`
+        )
+        .join("")}
+    </div>`
+  ).join("");
+
+  const content = `
+    ${p("Hello, friend of Pathology Bites,")}
+    ${p(
+      "A while back you put your name on a little list and asked us to tell you when the doors opened. We've been in the workshop ever since, wrapping something for you."
+    )}
+    ${p("It's ready. The doors are open, and it's yours.")}
+
+    <div style="margin: 26px 0; padding: 20px 22px; background-color: #f0f8f8; border-radius: 12px; border: 1px dashed #5BA4A4; text-align: center;">
+      <p style="margin: 0 0 6px; font-size: 20px; line-height: 28px; font-weight: 700; color: #1f5f5f;">
+        Free. Completely, genuinely free.
+      </p>
+      <p style="margin: 0; font-size: 15px; line-height: 23px; color: #4b5563;">
+        No trial, no paywall, no credit card. No biopsy required.
+      </p>
+    </div>
+
+    ${p("Here's what's inside the box:", " font-weight: 600; color: #111827;")}
+
+    ${sectionsHtml}
+
+    ${p(
+      "All of it is built by a pathologist, for residents, fellows, students and anyone else who loves looking down a microscope. Make an account, pour yourself a coffee and have a wander."
+    )}
+  `;
+
+  const { html } = createEmailTemplate({
+    title: "The doors are open! 🎉",
+    preheaderText:
+      "You asked us to tell you when Pathology Bites opened. It's open, and it's completely free.",
+    content,
+    buttonText: "Unwrap it: create your free account",
+    buttonUrl: signupUrl,
+    footerText:
+      "You're getting this one-time note because you joined the Pathology Bites waitlist. We're retiring the waitlist now that everyone can sign up, so you won't hear from it again.",
+  });
+
+  const sectionsText = WAITLIST_INVITE_SECTIONS.map(
+    (s) =>
+      `${s.emoji} ${s.heading}\n` +
+      s.items.map((i) => `  • ${i.name}: ${i.desc}\n    ${i.href}`).join("\n")
+  ).join("\n\n");
+
+  const text = `The doors are open!
+
+Hello, friend of Pathology Bites,
+
+A while back you put your name on a little list and asked us to tell you when the doors opened. We've been in the workshop ever since, wrapping something for you.
+
+It's ready. The doors are open, and it's yours.
+
+FREE. Completely, genuinely free. No trial, no paywall, no credit card. No biopsy required.
+
+Here's what's inside the box:
+
+${sectionsText}
+
+All of it is built by a pathologist, for residents, fellows, students and anyone else who loves looking down a microscope. Make an account, pour yourself a coffee and have a wander.
+
+Unwrap it (create your free account): ${signupUrl}
+
+---
+You're getting this one-time note because you joined the Pathology Bites waitlist. We're retiring the waitlist now that everyone can sign up, so you won't hear from it again.
+Pathology Bites
+${SITE}`;
+
+  return { subject, html, text };
+}
