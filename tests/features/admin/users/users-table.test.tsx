@@ -44,6 +44,12 @@ type MockUser = {
   status: string;
   created_at: string;
   updated_at: string;
+  institution: string | null;
+  last_sign_in_at: string | null;
+  email_confirmed_at: string | null;
+  quizzes_completed: number;
+  quizzes_started: number;
+  last_quiz_at: string | null;
 };
 
 function user(p: Partial<MockUser> & { id: string }): MockUser {
@@ -56,6 +62,12 @@ function user(p: Partial<MockUser> & { id: string }): MockUser {
     status: "active",
     created_at: "2024-03-15T12:00:00", // local (no Z) → tz-independent format
     updated_at: "2024-03-15T12:00:00",
+    institution: null,
+    last_sign_in_at: null,
+    email_confirmed_at: null,
+    quizzes_completed: 0,
+    quizzes_started: 0,
+    last_quiz_at: null,
     ...p,
   };
 }
@@ -139,5 +151,54 @@ describe("UsersTable — characterization", () => {
     render(<UsersTable />);
     const body = screen.getAllByRole("rowgroup")[1]; // [0]=thead, [1]=tbody
     expect(within(body).getAllByRole("row")).toHaveLength(2);
+  });
+
+  it("shows institution, quiz count, and 'Never' for users who never signed in", () => {
+    mockSWR([
+      user({
+        id: "u1",
+        institution: "University of Iowa",
+        quizzes_completed: 7,
+        last_sign_in_at: null,
+      }),
+    ]);
+    render(<UsersTable />);
+    expect(screen.getByText("University of Iowa")).toBeTruthy();
+    expect(screen.getByText("7")).toBeTruthy();
+    expect(screen.getByText("Never")).toBeTruthy();
+  });
+
+  it("requests newest-first by default and re-sorts when a header is clicked", () => {
+    mockSWR([user({ id: "u1" })]);
+    render(<UsersTable />);
+    const lastKey = () => String(mockedUseSWR.mock.calls.at(-1)?.[0]);
+
+    expect(lastKey()).toContain("sort=created_at");
+    expect(lastKey()).toContain("dir=desc");
+
+    // A new column starts on its natural direction: counts most-first...
+    fireEvent.click(screen.getByRole("button", { name: /Quizzes/ }));
+    expect(lastKey()).toContain("sort=quizzes_completed");
+    expect(lastKey()).toContain("dir=desc");
+
+    // ...the same column flips...
+    fireEvent.click(screen.getByRole("button", { name: /Quizzes/ }));
+    expect(lastKey()).toContain("dir=asc");
+
+    // ...and names start A to Z.
+    fireEvent.click(screen.getByRole("button", { name: /User/ }));
+    expect(lastKey()).toContain("sort=name");
+    expect(lastKey()).toContain("dir=asc");
+  });
+
+  it("marks the active sort column for assistive tech", () => {
+    mockSWR([user({ id: "u1" })]);
+    render(<UsersTable />);
+    expect(screen.getByRole("columnheader", { name: /Joined/ }).getAttribute("aria-sort")).toBe(
+      "descending"
+    );
+    expect(screen.getByRole("columnheader", { name: /Quizzes/ }).getAttribute("aria-sort")).toBe(
+      "none"
+    );
   });
 });

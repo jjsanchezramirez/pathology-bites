@@ -220,7 +220,7 @@ export function createContactNotificationEmail(data: {
     preheaderText: `New ${data.requestType} inquiry from ${data.firstName} ${data.lastName}`,
     content,
     buttonText: "View in Admin Panel",
-    buttonUrl: "https://pathologybites.com/admin/inquiries",
+    buttonUrl: "https://pathologybites.com/admin/users?tab=inquiries",
     footerText: "This notification was sent because you are an administrator of Pathology Bites.",
   });
 }

@@ -4055,6 +4055,36 @@ export type Database = {
       };
     };
     Functions: {
+      admin_list_users: {
+        Args: {
+          p_dir?: string;
+          p_limit?: number;
+          p_offset?: number;
+          p_role?: Database["public"]["Enums"]["user_role"] | null;
+          p_search?: string | null;
+          p_sort?: string;
+          p_status?: Database["public"]["Enums"]["user_status"] | null;
+          p_user_type?: Database["public"]["Enums"]["user_type"] | null;
+        };
+        Returns: {
+          created_at: string;
+          email: string;
+          email_confirmed_at: string | null;
+          first_name: string | null;
+          id: string;
+          institution: string | null;
+          last_name: string | null;
+          last_quiz_at: string | null;
+          last_sign_in_at: string | null;
+          quizzes_completed: number;
+          quizzes_started: number;
+          role: Database["public"]["Enums"]["user_role"];
+          status: Database["public"]["Enums"]["user_status"];
+          total_count: number;
+          updated_at: string;
+          user_type: Database["public"]["Enums"]["user_type"];
+        }[];
+      };
       claim_run_diff: {
         Args: { p_a: string; p_b: string };
         Returns: {

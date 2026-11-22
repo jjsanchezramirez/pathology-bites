@@ -12,7 +12,6 @@ import {
   Users,
   Image,
   BarChart,
-  MessageSquare,
   Settings,
   Plus,
   BarChart2,
@@ -51,7 +50,6 @@ const iconMap: Record<string, LucideIcon> = {
   Users,
   Image,
   BarChart,
-  MessageSquare,
   Settings,
   Plus,
   BarChart2,
@@ -201,7 +199,7 @@ export function UnifiedSidebar({
                             <IconComponent className="h-5 w-5 shrink-0" />
                             {isOpen && <span className="truncate ml-2.5">{item.name}</span>}
                             {isOpen &&
-                              item.href === "/admin/inquiries" &&
+                              item.href === "/admin/users" &&
                               pendingInquiriesCount > 0 && (
                                 <span className="ml-auto text-xs bg-red-500 text-white px-3 rounded-full font-semibold">
                                   {pendingInquiriesCount}

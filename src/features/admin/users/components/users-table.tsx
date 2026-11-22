@@ -22,14 +22,23 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/shared/components/ui/select";
-import { Search, Loader2, RefreshCw } from "lucide-react";
+import { Search, Loader2, RefreshCw, ArrowDown, ArrowUp, ArrowUpDown } from "lucide-react";
 import { TableShell, Toolbar } from "@/shared/components/ui/page-layout";
 import { useUserRole } from "@/shared/hooks/use-user-role";
 import { useAuthContext } from "@/features/auth/components/auth-provider";
 import { apiClient } from "@/shared/utils/api/api-client";
 import { log } from "@/shared/utils/logging";
-import { type User, PAGE_SIZE, getUserDisplayName } from "./users-table-utils";
+import {
+  type User,
+  type UserSortKey,
+  type SortDir,
+  PAGE_SIZE,
+  DEFAULT_SORT,
+  nextSort,
+  getUserDisplayName,
+} from "./users-table-utils";
 import { UserRow } from "./user-row";
+import { UserDetailsSheet } from "./user-details-sheet";
 import { UsersPagination } from "./users-pagination";
 import {
   UserFieldChangeDialog,
@@ -43,11 +52,46 @@ interface UsersTableProps {
   onUserChange?: () => void;
 }
 
+function SortableHead({
+  label,
+  sortKey,
+  sort,
+  onSort,
+  className,
+}: {
+  label: string;
+  sortKey: UserSortKey;
+  sort: { key: UserSortKey; dir: SortDir };
+  onSort: (key: UserSortKey) => void;
+  className?: string;
+}) {
+  const active = sort.key === sortKey;
+  const Icon = !active ? ArrowUpDown : sort.dir === "asc" ? ArrowUp : ArrowDown;
+  return (
+    <TableHead
+      className={className}
+      aria-sort={active ? (sort.dir === "asc" ? "ascending" : "descending") : "none"}
+    >
+      <button
+        type="button"
+        onClick={() => onSort(sortKey)}
+        className={`-ml-1 inline-flex items-center gap-1 rounded px-1 py-0.5 hover:text-foreground ${active ? "text-foreground" : ""}`}
+      >
+        {label}
+        <Icon className={`h-3.5 w-3.5 ${active ? "" : "opacity-40"}`} aria-hidden="true" />
+      </button>
+    </TableHead>
+  );
+}
+
 export function UsersTable({ onUserChange }: UsersTableProps = {}) {
   const [searchTerm, setSearchTerm] = useState("");
   const [roleFilter, setRoleFilter] = useState<string>("all");
   const [statusFilter, setStatusFilter] = useState<string>("all");
+  const [typeFilter, setTypeFilter] = useState<string>("all");
+  const [sort, setSort] = useState(DEFAULT_SORT);
   const [page, setPage] = useState(0);
+  const [detailUserId, setDetailUserId] = useState<string | null>(null);
   const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const [showRoleDialog, setShowRoleDialog] = useState(false);
   const [showStatusDialog, setShowStatusDialog] = useState(false);
@@ -77,11 +121,14 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
       ...(searchTerm && { search: searchTerm }),
       ...(roleFilter !== "all" && { role: roleFilter }),
       ...(statusFilter !== "all" && { status: statusFilter }),
+      ...(typeFilter !== "all" && { type: typeFilter }),
+      sort: sort.key,
+      dir: sort.dir,
     });
     const url = `/api/admin/users?${params.toString()}`;
     log.debug("[UsersTable] API URL:", url);
     return url;
-  }, [page, searchTerm, roleFilter, statusFilter]);
+  }, [page, searchTerm, roleFilter, statusFilter, typeFilter, sort]);
 
   // Use SWR for data fetching with caching and deduplication
   const { data, isLoading, mutate } = useSWR(
@@ -101,6 +148,16 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
   const users = data?.users || [];
   const totalUsers = data?.totalUsers || 0;
   const totalPages = data?.totalPages || 0;
+  // Looked up from the live page so the drawer reflects edits after revalidation
+  // (and closes on its own if the user is deleted).
+  const detailUser = detailUserId ? (users.find((u) => u.id === detailUserId) ?? null) : null;
+
+  const handleSort = useCallback((key: UserSortKey) => {
+    setSort((current) => nextSort(current, key));
+    setPage(0);
+  }, []);
+
+  const handleSelect = useCallback((user: User) => setDetailUserId(user.id), []);
 
   // Helper functions for safety checks
   const canModifyUser = (targetUser: User) => {
@@ -300,7 +357,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
           <Input
-            placeholder="Search by name or email..."
+            placeholder="Search by name, email or institution..."
             value={searchTerm}
             onChange={(e) => handleSearch(e.target.value)}
             className="pl-9"
@@ -342,7 +399,32 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
               <SelectItem value="suspended">Suspended</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" onClick={() => mutate()} disabled={isLoading}>
+          <Select
+            value={typeFilter}
+            onValueChange={(value) => {
+              setTypeFilter(value);
+              setPage(0);
+            }}
+          >
+            <SelectTrigger className="w-[130px]" aria-label="Filter by type">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              {TYPE_OPTIONS.map((o) => (
+                <SelectItem key={o.value} value={o.value}>
+                  {o.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={() => mutate()}
+            disabled={isLoading}
+            aria-label="Refresh users"
+          >
             <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
           </Button>
         </div>
@@ -363,25 +445,45 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>User</TableHead>
+              <SortableHead label="User" sortKey="name" sort={sort} onSort={handleSort} />
               <TableHead>Role</TableHead>
               <TableHead className="hidden md:table-cell">Type</TableHead>
               <TableHead>Status</TableHead>
-              <TableHead className="hidden md:table-cell">Joined</TableHead>
+              <SortableHead
+                label="Joined"
+                sortKey="created_at"
+                sort={sort}
+                onSort={handleSort}
+                className="hidden md:table-cell"
+              />
+              <SortableHead
+                label="Last sign-in"
+                sortKey="last_sign_in_at"
+                sort={sort}
+                onSort={handleSort}
+                className="hidden lg:table-cell"
+              />
+              <SortableHead
+                label="Quizzes"
+                sortKey="quizzes_completed"
+                sort={sort}
+                onSort={handleSort}
+                className="hidden lg:table-cell"
+              />
               {isAdmin && <TableHead className="w-[70px] text-right">Actions</TableHead>}
             </TableRow>
           </TableHeader>
           <TableBody>
             {isLoading ? (
               <TableRow>
-                <TableCell colSpan={isAdmin ? 6 : 5} className="h-24 text-center">
+                <TableCell colSpan={isAdmin ? 8 : 7} className="h-24 text-center">
                   <Loader2 className="mx-auto h-6 w-6 animate-spin text-muted-foreground" />
                 </TableCell>
               </TableRow>
             ) : users.length === 0 ? (
               <TableRow>
                 <TableCell
-                  colSpan={isAdmin ? 6 : 5}
+                  colSpan={isAdmin ? 8 : 7}
                   className="h-24 text-center text-muted-foreground"
                 >
                   No users found
@@ -397,6 +499,7 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
                   onStatusChange={handleStatusDialogOpen}
                   onTypeChange={handleTypeDialogOpen}
                   onDelete={handleDeleteDialogOpen}
+                  onSelect={handleSelect}
                   canModifyUser={canModifyUser}
                   canDeleteUser={canDeleteUser}
                 />
@@ -405,6 +508,17 @@ export function UsersTable({ onUserChange }: UsersTableProps = {}) {
           </TableBody>
         </Table>
       </TableShell>
+
+      <UserDetailsSheet
+        user={detailUser}
+        onOpenChange={(open) => !open && setDetailUserId(null)}
+        canModify={!!detailUser && canModifyUser(detailUser)}
+        canDelete={!!detailUser && canDeleteUser(detailUser)}
+        onRoleChange={handleRoleDialogOpen}
+        onStatusChange={handleStatusDialogOpen}
+        onTypeChange={handleTypeDialogOpen}
+        onDelete={handleDeleteDialogOpen}
+      />
 
       {/* Role Change Dialog */}
       <UserFieldChangeDialog

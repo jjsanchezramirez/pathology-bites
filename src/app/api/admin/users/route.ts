@@ -1,5 +1,5 @@
 import { UserRole } from "@/shared/utils/auth/auth-helpers";
-import { isUserRole, isUserStatus } from "@/shared/types/database";
+import { isUserRole, isUserStatus, isUserType } from "@/shared/types/database";
 import { requireAdmin } from "@/shared/utils/api/api-guard";
 import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
@@ -23,7 +23,7 @@ const deleteUserSchema = z.object({
  * /api/admin/users:
  *   get:
  *     summary: Get paginated list of users
- *     description: Retrieve a paginated list of users with optional filtering by search term, role, and status. Requires admin role.
+ *     description: Retrieve a paginated, sortable list of users with sign-in and quiz activity, optionally filtered by search term, role, status and user type. Requires admin role.
  *     tags:
  *       - Admin - Users
  *     security:
@@ -40,17 +40,18 @@ const deleteUserSchema = z.object({
  *         schema:
  *           type: integer
  *           default: 10
+ *           maximum: 100
  *         description: Number of users per page
  *       - in: query
  *         name: search
  *         schema:
  *           type: string
- *         description: Search term to filter by email, first name, or last name
+ *         description: Matches email, first name, last name, full name or institution
  *       - in: query
  *         name: role
  *         schema:
  *           type: string
- *           enum: [all, admin, creator, reviewer, student, user]
+ *           enum: [all, admin, creator, reviewer, user]
  *           default: all
  *         description: Filter by user role
  *       - in: query
@@ -60,6 +61,27 @@ const deleteUserSchema = z.object({
  *           enum: [all, active, inactive, suspended]
  *           default: all
  *         description: Filter by user status
+ *       - in: query
+ *         name: type
+ *         schema:
+ *           type: string
+ *           enum: [all, student, resident, fellow, attending, faculty, other]
+ *           default: all
+ *         description: Filter by user type
+ *       - in: query
+ *         name: sort
+ *         schema:
+ *           type: string
+ *           enum: [created_at, name, email, last_sign_in_at, quizzes_completed, last_quiz_at]
+ *           default: created_at
+ *         description: Sort column
+ *       - in: query
+ *         name: dir
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: desc
+ *         description: Sort direction (users with no value for the column always sort last)
  *     responses:
  *       200:
  *         description: Successfully retrieved users
@@ -85,76 +107,57 @@ const deleteUserSchema = z.object({
  *       500:
  *         description: Internal server error
  */
+const SORT_COLUMNS = [
+  "created_at",
+  "name",
+  "email",
+  "last_sign_in_at",
+  "quizzes_completed",
+  "last_quiz_at",
+] as const;
+
 export async function GET(request: NextRequest) {
   try {
-    const supabase = await createClient();
-
     const auth = requireAdmin(request);
     if (auth instanceof NextResponse) return auth;
 
-    // Parse query parameters
     const { searchParams } = new URL(request.url);
-    const page = parseInt(searchParams.get("page") || "0");
-    const pageSize = parseInt(searchParams.get("pageSize") || "10");
-    const search = searchParams.get("search") || "";
-    const roleFilter = searchParams.get("role") || "all";
-    const statusFilter = searchParams.get("status") || "all";
+    const page = Math.max(0, parseInt(searchParams.get("page") || "0") || 0);
+    const pageSize = Math.min(
+      100,
+      Math.max(1, parseInt(searchParams.get("pageSize") || "10") || 10)
+    );
+    const search = searchParams.get("search")?.trim() || null;
+    const role = searchParams.get("role") || "all";
+    const status = searchParams.get("status") || "all";
+    const type = searchParams.get("type") || "all";
+    const sortParam = searchParams.get("sort") || "created_at";
+    const sort = (SORT_COLUMNS as readonly string[]).includes(sortParam) ? sortParam : "created_at";
+    const dir = searchParams.get("dir") === "asc" ? "asc" : "desc";
 
-    // Build query for counting
-    let countQuery = supabase
-      .from("users")
-      .select("*", { count: "exact", head: true })
-      .is("deleted_at", null); // Exclude soft-deleted users
+    // admin_list_users is SECURITY DEFINER (it reads auth.users) and granted to
+    // service_role only, so it must go through the service-role client.
+    const { data, error } = await createServiceRoleClient().rpc("admin_list_users", {
+      p_search: search,
+      // Unknown filter values are ignored rather than matching nothing
+      p_role: role !== "all" && isUserRole(role) ? role : null,
+      p_status: status !== "all" && isUserStatus(status) ? status : null,
+      p_user_type: type !== "all" && isUserType(type) ? type : null,
+      p_sort: sort,
+      p_dir: dir,
+      p_limit: pageSize,
+      p_offset: page * pageSize,
+    });
+    if (error) throw error;
 
-    // Build query for data
-    let dataQuery = supabase.from("users").select("*").is("deleted_at", null); // Exclude soft-deleted users
-
-    // Apply search filter
-    if (search) {
-      const searchPattern = `%${search}%`;
-      countQuery = countQuery.or(
-        `email.ilike.${searchPattern},first_name.ilike.${searchPattern},last_name.ilike.${searchPattern}`
-      );
-      dataQuery = dataQuery.or(
-        `email.ilike.${searchPattern},first_name.ilike.${searchPattern},last_name.ilike.${searchPattern}`
-      );
-    }
-
-    // Apply role filter (unknown values are ignored rather than matching nothing)
-    if (roleFilter !== "all" && isUserRole(roleFilter)) {
-      countQuery = countQuery.eq("role", roleFilter);
-      dataQuery = dataQuery.eq("role", roleFilter);
-    }
-
-    // Apply status filter
-    if (statusFilter !== "all" && isUserStatus(statusFilter)) {
-      countQuery = countQuery.eq("status", statusFilter);
-      dataQuery = dataQuery.eq("status", statusFilter);
-    }
-
-    // Get total count
-    const { count, error: countError } = await countQuery;
-    if (countError) {
-      throw countError;
-    }
-
-    // Calculate pagination
-    const from = page * pageSize;
-    const to = from + pageSize - 1;
-
-    // Get paginated data
-    const { data, error: dataError } = await dataQuery
-      .order("created_at", { ascending: false })
-      .range(from, to);
-
-    if (dataError) {
-      throw dataError;
-    }
+    const rows = data ?? [];
+    const totalUsers = rows[0]?.total_count ?? 0;
+    const users = rows.map(({ total_count: _total, ...user }) => user);
 
     return NextResponse.json({
-      users: data || [],
-      totalUsers: count || 0,
-      totalPages: Math.ceil((count || 0) / pageSize),
+      users,
+      totalUsers,
+      totalPages: Math.ceil(totalUsers / pageSize),
       currentPage: page,
     });
   } catch (error) {

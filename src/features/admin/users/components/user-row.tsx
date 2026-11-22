@@ -14,8 +14,12 @@ import {
   DropdownMenuTrigger,
 } from "@/shared/components/ui/dropdown-menu";
 import { MoreVertical, Shield, UserCheck, GraduationCap, Trash2 } from "lucide-react";
-import { format } from "date-fns";
+import { format, formatDistanceToNowStrict } from "date-fns";
 import { type User, userTypeConfig, getUserDisplayName } from "./users-table-utils";
+
+function ago(iso: string | null): string | null {
+  return iso ? `${formatDistanceToNowStrict(new Date(iso))} ago` : null;
+}
 
 interface UserRowProps {
   user: User;
@@ -24,6 +28,7 @@ interface UserRowProps {
   onStatusChange: (user: User) => void;
   onTypeChange: (user: User) => void;
   onDelete: (user: User) => void;
+  onSelect: (user: User) => void;
   canModifyUser: (user: User) => boolean;
   canDeleteUser: (user: User) => boolean;
 }
@@ -35,15 +40,30 @@ export const UserRow = memo(function UserRow({
   onStatusChange,
   onTypeChange,
   onDelete,
+  onSelect,
   canModifyUser,
   canDeleteUser,
 }: UserRowProps) {
+  const lastQuiz = ago(user.last_quiz_at);
   return (
-    <TableRow key={user.id}>
+    <TableRow key={user.id} onClick={() => onSelect(user)} className="cursor-pointer">
       <TableCell>
         <div className="min-w-0">
-          <div className="truncate font-medium">{getUserDisplayName(user)}</div>
+          {/* The row is clickable for mouse users; this button is the keyboard path. */}
+          <button
+            type="button"
+            onClick={(e) => {
+              e.stopPropagation();
+              onSelect(user);
+            }}
+            className="block max-w-full truncate text-left font-medium hover:underline focus-visible:underline focus-visible:outline-none"
+          >
+            {getUserDisplayName(user)}
+          </button>
           <div className="truncate text-xs text-muted-foreground">{user.email}</div>
+          {user.institution && (
+            <div className="truncate text-xs text-muted-foreground">{user.institution}</div>
+          )}
         </div>
       </TableCell>
       <TableCell>
@@ -60,8 +80,15 @@ export const UserRow = memo(function UserRow({
       <TableCell className="hidden text-xs text-muted-foreground md:table-cell">
         {format(new Date(user.created_at), "MMM d, yyyy")}
       </TableCell>
+      <TableCell className="hidden text-xs text-muted-foreground lg:table-cell">
+        {ago(user.last_sign_in_at) ?? "Never"}
+      </TableCell>
+      <TableCell className="hidden lg:table-cell">
+        <div className="text-sm tabular-nums">{user.quizzes_completed}</div>
+        {lastQuiz && <div className="text-xs text-muted-foreground">last {lastQuiz}</div>}
+      </TableCell>
       {isAdmin && (
-        <TableCell>
+        <TableCell onClick={(e) => e.stopPropagation()}>
           <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="h-8 w-8">

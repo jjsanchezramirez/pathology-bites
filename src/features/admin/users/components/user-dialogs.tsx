@@ -45,6 +45,7 @@ export const TYPE_OPTIONS: FieldOption[] = [
   { value: "resident", label: "Resident" },
   { value: "fellow", label: "Fellow" },
   { value: "attending", label: "Attending" },
+  { value: "faculty", label: "Faculty" },
   { value: "other", label: "Other" },
 ];
 

@@ -1,11 +1,11 @@
-// src/features/admin/components/system-update-broadcaster.tsx
-// Admin component for broadcasting system update notifications
+// src/features/admin/notifications/components/system-update-broadcaster.tsx
+// Form for broadcasting a system update notification. Rendered inside the
+// "Send announcement" dialog on the admin Users page.
 
 "use client";
 
 import { useState } from "react";
 import { Button } from "@/shared/components/ui/button";
-import { SectionCard } from "@/shared/components/ui/page-layout";
 import { Input } from "@/shared/components/ui/input";
 import { Label } from "@/shared/components/ui/label";
 import { Textarea } from "@/shared/components/ui/textarea";
@@ -29,7 +29,7 @@ interface SystemUpdateForm {
   targetAudience: "all" | "admin" | "user" | "creator" | "reviewer";
 }
 
-export function SystemUpdateBroadcaster() {
+export function SystemUpdateBroadcaster({ onSent }: { onSent?: () => void } = {}) {
   const [form, setForm] = useState<SystemUpdateForm>({
     title: "",
     message: "",
@@ -70,6 +70,7 @@ export function SystemUpdateBroadcaster() {
       });
 
       log.debug("System update broadcasted:", result);
+      onSent?.();
     } catch (error) {
       log.error("Error broadcasting system update:", error);
       toast.error(error instanceof Error ? error.message : "Failed to broadcast system update");
@@ -109,169 +110,163 @@ export function SystemUpdateBroadcaster() {
   ];
 
   return (
-    <SectionCard
-      title="Broadcast System Update"
-      icon={Megaphone}
-      description="Send notifications to users about system updates, new features, or important announcements."
-    >
-      <form onSubmit={handleSubmit} className="space-y-4">
-        {/* Title */}
-        <div className="space-y-2">
-          <Label htmlFor="title">Title *</Label>
-          <Input
-            id="title"
-            value={form.title}
-            onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
-            placeholder="Enter notification title..."
-            required
-          />
-        </div>
+    <form onSubmit={handleSubmit} className="space-y-4">
+      {/* Title */}
+      <div className="space-y-2">
+        <Label htmlFor="title">Title *</Label>
+        <Input
+          id="title"
+          value={form.title}
+          onChange={(e) => setForm((prev) => ({ ...prev, title: e.target.value }))}
+          placeholder="Enter notification title..."
+          required
+        />
+      </div>
 
-        {/* Message */}
-        <div className="space-y-2">
-          <Label htmlFor="message">Message *</Label>
-          <Textarea
-            id="message"
-            value={form.message}
-            onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))}
-            placeholder="Enter notification message..."
-            rows={4}
-            required
-          />
-        </div>
+      {/* Message */}
+      <div className="space-y-2">
+        <Label htmlFor="message">Message *</Label>
+        <Textarea
+          id="message"
+          value={form.message}
+          onChange={(e) => setForm((prev) => ({ ...prev, message: e.target.value }))}
+          placeholder="Enter notification message..."
+          rows={4}
+          required
+        />
+      </div>
 
-        {/* Update Type */}
-        <div className="space-y-2">
-          <Label htmlFor="updateType">Update Type</Label>
-          <Select
-            value={form.updateType}
-            onValueChange={(value: SystemUpdateForm["updateType"]) =>
-              setForm((prev) => ({ ...prev, updateType: value }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select update type" />
-            </SelectTrigger>
-            <SelectContent>
-              {updateTypeOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  <div>
-                    <div className="font-medium">{option.label}</div>
-                    <div className="text-xs text-muted-foreground">{option.description}</div>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Severity */}
-        <div className="space-y-2">
-          <Label htmlFor="severity">Severity</Label>
-          <Select
-            value={form.severity}
-            onValueChange={(value: SystemUpdateForm["severity"]) =>
-              setForm((prev) => ({ ...prev, severity: value }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select severity" />
-            </SelectTrigger>
-            <SelectContent>
-              {severityOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  <div>
-                    <div className={`font-medium ${option.color}`}>{option.label}</div>
-                    <div className="text-xs text-muted-foreground">{option.description}</div>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Target Audience */}
-        <div className="space-y-2">
-          <Label htmlFor="targetAudience">Target Audience</Label>
-          <Select
-            value={form.targetAudience}
-            onValueChange={(value: SystemUpdateForm["targetAudience"]) =>
-              setForm((prev) => ({ ...prev, targetAudience: value }))
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Select target audience" />
-            </SelectTrigger>
-            <SelectContent>
-              {audienceOptions.map((option) => (
-                <SelectItem key={option.value} value={option.value}>
-                  <div>
-                    <div className="font-medium">{option.label}</div>
-                    <div className="text-xs text-muted-foreground">{option.description}</div>
-                  </div>
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Preview */}
-        {(form.title || form.message) && (
-          <div className="space-y-2">
-            <Label>Preview</Label>
-            <div className="rounded-lg border bg-muted/50 p-4">
-              <div className="flex items-start gap-2">
-                <div className="mt-0.5 shrink-0">
-                  <Megaphone className="h-4 w-4 text-blue-500" />
+      {/* Update Type */}
+      <div className="space-y-2">
+        <Label htmlFor="updateType">Update Type</Label>
+        <Select
+          value={form.updateType}
+          onValueChange={(value: SystemUpdateForm["updateType"]) =>
+            setForm((prev) => ({ ...prev, updateType: value }))
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select update type" />
+          </SelectTrigger>
+          <SelectContent>
+            {updateTypeOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                <div>
+                  <div className="font-medium">{option.label}</div>
+                  <div className="text-xs text-muted-foreground">{option.description}</div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <div className="break-words text-sm font-medium">
-                    {form.title || "Notification Title"}
-                  </div>
-                  <div className="break-words text-sm text-muted-foreground">
-                    {form.message || "Notification message will appear here..."}
-                  </div>
-                  <div className="mt-1 flex flex-wrap items-center gap-2">
-                    <span
-                      className={`rounded-full px-2 py-0.5 text-xs ${
-                        form.severity === "critical"
-                          ? "bg-red-100 text-red-800"
-                          : form.severity === "warning"
-                            ? "bg-yellow-100 text-yellow-800"
-                            : "bg-blue-100 text-blue-800"
-                      }`}
-                    >
-                      {form.updateType.replace("_", " ")}
-                    </span>
-                    <span className="text-xs text-muted-foreground">
-                      {new Date().toLocaleDateString()}
-                    </span>
-                  </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Severity */}
+      <div className="space-y-2">
+        <Label htmlFor="severity">Severity</Label>
+        <Select
+          value={form.severity}
+          onValueChange={(value: SystemUpdateForm["severity"]) =>
+            setForm((prev) => ({ ...prev, severity: value }))
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select severity" />
+          </SelectTrigger>
+          <SelectContent>
+            {severityOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                <div>
+                  <div className={`font-medium ${option.color}`}>{option.label}</div>
+                  <div className="text-xs text-muted-foreground">{option.description}</div>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Target Audience */}
+      <div className="space-y-2">
+        <Label htmlFor="targetAudience">Target Audience</Label>
+        <Select
+          value={form.targetAudience}
+          onValueChange={(value: SystemUpdateForm["targetAudience"]) =>
+            setForm((prev) => ({ ...prev, targetAudience: value }))
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select target audience" />
+          </SelectTrigger>
+          <SelectContent>
+            {audienceOptions.map((option) => (
+              <SelectItem key={option.value} value={option.value}>
+                <div>
+                  <div className="font-medium">{option.label}</div>
+                  <div className="text-xs text-muted-foreground">{option.description}</div>
+                </div>
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
+      {/* Preview */}
+      {(form.title || form.message) && (
+        <div className="space-y-2">
+          <Label>Preview</Label>
+          <div className="rounded-lg border bg-muted/50 p-4">
+            <div className="flex items-start gap-2">
+              <div className="mt-0.5 shrink-0">
+                <Megaphone className="h-4 w-4 text-blue-500" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <div className="break-words text-sm font-medium">
+                  {form.title || "Notification Title"}
+                </div>
+                <div className="break-words text-sm text-muted-foreground">
+                  {form.message || "Notification message will appear here..."}
+                </div>
+                <div className="mt-1 flex flex-wrap items-center gap-2">
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs ${
+                      form.severity === "critical"
+                        ? "bg-red-100 text-red-800"
+                        : form.severity === "warning"
+                          ? "bg-yellow-100 text-yellow-800"
+                          : "bg-blue-100 text-blue-800"
+                    }`}
+                  >
+                    {form.updateType.replace("_", " ")}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {new Date().toLocaleDateString()}
+                  </span>
                 </div>
               </div>
             </div>
           </div>
-        )}
+        </div>
+      )}
 
-        {/* Submit Button */}
-        <Button
-          type="submit"
-          className="w-full"
-          disabled={isSubmitting || !form.title.trim() || !form.message.trim()}
-        >
-          {isSubmitting ? (
-            <>
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-              Broadcasting...
-            </>
-          ) : (
-            <>
-              <Send className="mr-2 h-4 w-4" />
-              Broadcast System Update
-            </>
-          )}
-        </Button>
-      </form>
-    </SectionCard>
+      {/* Submit Button */}
+      <Button
+        type="submit"
+        className="w-full"
+        disabled={isSubmitting || !form.title.trim() || !form.message.trim()}
+      >
+        {isSubmitting ? (
+          <>
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+            Broadcasting...
+          </>
+        ) : (
+          <>
+            <Send className="mr-2 h-4 w-4" />
+            Broadcast System Update
+          </>
+        )}
+      </Button>
+    </form>
   );
 }

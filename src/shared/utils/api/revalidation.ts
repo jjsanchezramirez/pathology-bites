@@ -84,7 +84,7 @@ export function revalidateInquiries() {
   revalidateTag(CACHE_TAGS.RECENT_ACTIVITY);
 
   // Revalidate admin pages
-  revalidatePath("/admin/inquiries", "page");
+  revalidatePath("/admin/users", "page");
   revalidatePath("/admin", "page");
 }
 

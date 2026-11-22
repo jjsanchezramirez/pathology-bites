@@ -135,20 +135,6 @@ export const adminNavigationSections: NavigationSection[] = [
         requiredPermission: "users.manage",
         adminOnly: true,
       },
-      {
-        name: "Notifications",
-        href: "/admin/notifications",
-        icon: "Bell",
-        requiredPermission: "notifications.manage",
-        adminOnly: true,
-      },
-      {
-        name: "Manage Inquiries",
-        href: "/admin/inquiries",
-        icon: "MessageSquare",
-        requiredPermission: "inquiries.manage",
-        adminOnly: true,
-      },
     ],
   },
   {

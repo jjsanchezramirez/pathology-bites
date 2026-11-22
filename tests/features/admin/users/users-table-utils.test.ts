@@ -5,6 +5,7 @@ import { describe, it, expect } from "vitest";
 import {
   getPageNumbers,
   getUserDisplayName,
+  nextSort,
   type User,
 } from "@/features/admin/users/components/users-table-utils";
 
@@ -19,6 +20,12 @@ function u(p: Partial<User>): User {
     status: "active",
     created_at: "",
     updated_at: "",
+    institution: null,
+    last_sign_in_at: null,
+    email_confirmed_at: null,
+    quizzes_completed: 0,
+    quizzes_started: 0,
+    last_quiz_at: null,
     ...p,
   };
 }
@@ -57,5 +64,20 @@ describe("getPageNumbers", () => {
 
   it("shows both ellipses in the middle", () => {
     expect(getPageNumbers(5, 12)).toEqual([0, "ellipsis", 4, 5, 6, "ellipsis", 11]);
+  });
+});
+
+describe("nextSort", () => {
+  it("flips direction when the same column is clicked again", () => {
+    expect(nextSort({ key: "created_at", dir: "desc" }, "created_at")).toEqual({
+      key: "created_at",
+      dir: "asc",
+    });
+  });
+
+  it("starts text columns A to Z and dates/counts newest or most first", () => {
+    expect(nextSort({ key: "created_at", dir: "desc" }, "name").dir).toBe("asc");
+    expect(nextSort({ key: "name", dir: "asc" }, "last_sign_in_at").dir).toBe("desc");
+    expect(nextSort({ key: "name", dir: "asc" }, "quizzes_completed").dir).toBe("desc");
   });
 });
