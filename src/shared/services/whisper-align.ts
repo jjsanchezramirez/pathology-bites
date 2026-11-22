@@ -2,18 +2,20 @@ import "server-only";
 
 // Optional: word timestamps from OpenAI Whisper, used only to sharpen the
 // estimated word times of generated narration. Off unless OPENAI_API_KEY is
-// set on the server. Never required: narration works without it.
+// set on the server (and OPENAI_ENABLED is not "false"). Never required:
+// narration works without it.
 
+import { getApiKey, hasApiKey } from "@/shared/config/ai-keys";
 import { fetchWithTimeout } from "@/shared/utils/fetch-with-timeout";
 import type { WordTiming } from "@/shared/lesson/types";
 
 export function whisperAvailable(): boolean {
-  return Boolean(process.env.OPENAI_API_KEY);
+  return hasApiKey("openai");
 }
 
 export async function transcribeWords(wav: Uint8Array, prompt?: string): Promise<WordTiming[]> {
-  const apiKey = process.env.OPENAI_API_KEY;
-  if (!apiKey) throw new Error("OPENAI_API_KEY is not set");
+  const apiKey = getApiKey("openai");
+  if (!apiKey) throw new Error("OPENAI_API_KEY is not set or OpenAI is switched off");
   const form = new FormData();
   form.append("file", new Blob([new Uint8Array(wav)], { type: "audio/wav" }), "narration.wav");
   form.append("model", "whisper-1");

@@ -28,6 +28,8 @@ export const API_KEYS = {
   mistral: process.env.MISTRAL_API_KEY || "",
   // Workers AI. A plain Cloudflare API token with the Workers AI Read binding.
   cloudflare: process.env.CLOUDFLARE_AI_API_TOKEN || process.env.CLOUDFLARE_API_TOKEN || "",
+  // OpenAI — only Whisper word timing for lesson narration (optional).
+  openai: process.env.OPENAI_API_KEY || "",
 };
 
 /**
@@ -45,25 +47,41 @@ function missingCompanionConfig(provider: string): boolean {
 }
 
 /**
- * Providers locked off until their account is usable again. Each stays
- * configured so it can be switched back on without a key hunt, but reads as
- * unconfigured — so no chain, pinned model or catalog flip can spend an
- * attempt on it — until its `*_ENABLED` variable is exactly "true".
+ * One on/off switch per AI provider, set in Vercel — so any provider can be
+ * turned off (outage, runaway bill, dead account) or back on without a code
+ * change. A switched-off provider keeps its key but reads as unconfigured, so
+ * no chain, pinned model or catalog flip can spend an attempt on it.
  *
- * - Cerebras: prepaid, balance empty — every model answers 402 (re-checked
- *   2026-11-21). Unlock only after confirming funds at console.cerebras.ai.
- * - Mistral: the workspace has a 0 requests/minute limit on every model
- *   (`x-ratelimit-limit-req-minute: 0`, 2026-11-22) — no active plan. The key
- *   is valid. Unlock only after admin.mistral.ai shows a non-zero limit.
+ * Defaults keep production unchanged when a variable is unset:
+ * - default ON  → switched off only by exactly "false"
+ * - default OFF → switched on only by exactly "true"
+ *
+ * Off by default, and why (unlock only once the account works again):
+ * - Cerebras: prepaid, balance empty — every model answers 402 (2026-11-21).
+ * - Mistral: workspace limit is 0 requests/minute — `x-ratelimit-limit-req-
+ *   minute: 0`, no active plan; the key itself is valid (2026-11-22).
  */
-const PROVIDER_LOCKS: Record<string, string> = {
-  cerebras: "CEREBRAS_ENABLED",
-  mistral: "MISTRAL_ENABLED",
+const PROVIDER_SWITCHES: Record<string, { env: string; defaultOn: boolean }> = {
+  groq: { env: "GROQ_ENABLED", defaultOn: true },
+  google: { env: "GEMINI_ENABLED", defaultOn: true },
+  gemini: { env: "GEMINI_ENABLED", defaultOn: true }, // catalog alias of google
+  cloudflare: { env: "CLOUDFLARE_AI_ENABLED", defaultOn: true },
+  openai: { env: "OPENAI_ENABLED", defaultOn: true },
+  cerebras: { env: "CEREBRAS_ENABLED", defaultOn: false },
+  mistral: { env: "MISTRAL_ENABLED", defaultOn: false },
 };
 
+/** The env variable that switches a provider on or off, if it has one. */
+export function providerSwitchEnv(provider: string): string | undefined {
+  return PROVIDER_SWITCHES[provider]?.env;
+}
+
+/** Whether a provider is switched off. Unknown providers are never switched off. */
 export function isProviderLocked(provider: string): boolean {
-  const flag = PROVIDER_LOCKS[provider];
-  return !!flag && process.env[flag] !== "true";
+  const sw = PROVIDER_SWITCHES[provider];
+  if (!sw) return false;
+  const value = process.env[sw.env];
+  return sw.defaultOn ? value === "false" : value !== "true";
 }
 
 /** Get the API key for a provider. Empty string when unconfigured or locked. */
@@ -71,7 +89,7 @@ export function getApiKey(provider: string): string {
   if (isProviderLocked(provider)) {
     // debug, not warn: the fallback walk already warns when it skips a keyless
     // provider, and Mistral sits in the chain, so this would fire every request.
-    log.debug(`${provider} is locked; set ${PROVIDER_LOCKS[provider]}=true to re-enable.`);
+    log.debug(`${provider} is switched off (${providerSwitchEnv(provider)}).`);
     return "";
   }
   const key = API_KEYS[provider as keyof typeof API_KEYS];
