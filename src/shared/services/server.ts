@@ -1,6 +1,6 @@
 // lib/supabase/server.ts
 import { createServerClient } from "@supabase/ssr";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import type { Database } from "@/shared/types/supabase";
 
 export async function createClient() {
@@ -16,7 +16,15 @@ export async function createClient() {
       throw new Error("Missing Supabase environment variables");
     }
 
+    // Native clients (the iOS app) authenticate with `Authorization: Bearer <access-token>`
+    // and send no cookies. Middleware already accepts that token for identity; forward it
+    // here too, or every query runs as `anon` and RLS hides the caller's own rows. A global
+    // Authorization header takes precedence over the (absent) cookie session in supabase-js.
+    const authorization = (await headers()).get("authorization");
+    const bearer = authorization && /^Bearer\s+\S+/i.test(authorization) ? authorization : null;
+
     return createServerClient<Database>(url, anonKey, {
+      ...(bearer && { global: { headers: { Authorization: bearer } } }),
       cookies: {
         getAll() {
           return cookieStore.getAll();
