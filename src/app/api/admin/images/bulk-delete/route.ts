@@ -195,13 +195,23 @@ export async function DELETE(request: NextRequest) {
     }
 
     // Delete database records
-    const { error: dbError } = await supabase.from("images").delete().in("id", imageIds);
+    // .select("id") returns the rows actually deleted, so the response reports those, not
+    // every id the client sent (unknown ids used to come back as "deleted").
+    const { data: deletedRows, error: dbError } = await supabase
+      .from("images")
+      .delete()
+      .in("id", imageIds)
+      .select("id");
 
     if (dbError) {
       return NextResponse.json({ error: "Failed to delete images from database" }, { status: 500 });
     }
 
-    results.deleted = imageIds;
+    results.deleted = (deletedRows ?? []).map((row) => row.id as string);
+    const deletedSet = new Set(results.deleted);
+    for (const id of imageIds) {
+      if (!deletedSet.has(id)) results.errors.push(`Image not found: ${id}`);
+    }
 
     return NextResponse.json({
       success: true,

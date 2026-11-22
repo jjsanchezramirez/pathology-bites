@@ -200,6 +200,9 @@ export async function PATCH(request: NextRequest, { params }: { params: Promise<
       .select()
       .single();
 
+    if (dbError?.code === "PGRST116") {
+      return NextResponse.json({ error: "SVG asset not found." }, { status: 404 });
+    }
     if (dbError) {
       return NextResponse.json(
         { error: `Failed to update SVG asset: ${dbError.message}` },

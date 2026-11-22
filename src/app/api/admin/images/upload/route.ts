@@ -7,6 +7,7 @@ import { isImageCategory } from "@/shared/types/database";
 import { parseImageFilename } from "@/shared/utils/images/filename-parser";
 import { revalidateImages } from "@/shared/utils/api/revalidation";
 import { log } from "@/shared/utils/logging";
+import { parseFormData } from "@/shared/utils/api/parse-body";
 
 /**
  * @swagger
@@ -163,7 +164,8 @@ export async function POST(request: NextRequest) {
     }
 
     // Parse form data
-    const formData = await request.formData();
+    const formData = await parseFormData(request);
+    if (formData instanceof NextResponse) return formData;
     const file = formData.get("file") as File;
     const category = formData.get("category") as string;
     const sourceRef = formData.get("sourceRef") as string | null;

@@ -68,6 +68,9 @@ export async function GET(request: NextRequest, { params }: { params: Promise<{ 
       .eq("id", id)
       .single();
 
+    if (error?.code === "PGRST116") {
+      return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
+    }
     if (error) throw error;
 
     return NextResponse.json(data);
@@ -185,6 +188,9 @@ export async function PUT(request: NextRequest, { params }: { params: Promise<{ 
       .single();
 
     if (error) {
+      if (error.code === "PGRST116") {
+        return NextResponse.json({ error: "Lesson not found" }, { status: 404 });
+      }
       if (error.code === "23505") {
         return NextResponse.json(
           { error: "A lesson with this slug already exists in this subject" },

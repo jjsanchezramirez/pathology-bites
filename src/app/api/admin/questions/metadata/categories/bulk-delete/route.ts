@@ -100,7 +100,10 @@ export async function POST(request: NextRequest) {
     }
 
     // Delete the categories
-    const { error, count } = await supabase.from("categories").delete().in("id", categoryIds);
+    const { error, count } = await supabase
+      .from("categories")
+      .delete({ count: "exact" })
+      .in("id", categoryIds);
 
     if (error) {
       throw error;
@@ -108,7 +111,7 @@ export async function POST(request: NextRequest) {
 
     return NextResponse.json({
       success: true,
-      deletedCount: count || categoryIds.length,
+      deletedCount: count ?? 0,
     });
   } catch (error) {
     log.error("Error bulk deleting categories:", error);
