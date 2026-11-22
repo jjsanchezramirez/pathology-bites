@@ -2,7 +2,10 @@
 // Generator functions for creating user notifications
 
 import { createClient } from "@/shared/services/server";
+import { createServiceRoleClient } from "@/shared/services/service-role-client";
 import { log } from "@/shared/utils/logging";
+
+const PAGE = 1000;
 
 /** Announcement audiences other than "all", mapped to the user roles they reach. */
 const AUDIENCE_ROLES = {
@@ -74,6 +77,13 @@ export const notificationGenerators = {
     log.debug("Creating reminder notification for user:", _userId);
   },
 
+  /**
+   * Saves an announcement and creates one notification per recipient.
+   *
+   * Server-only, and only after the caller has been checked as an admin: the writes go through
+   * the service-role client because notification_states RLS lets a user insert rows only for
+   * themselves, so the admin's own client can never notify anyone else.
+   */
   async broadcastSystemUpdate(
     title: string,
     message: string,
@@ -81,80 +91,69 @@ export const notificationGenerators = {
     severity: string,
     targetAudience: string
   ): Promise<void> {
-    const supabase = await createClient();
+    // "all" = every active account; otherwise the roles behind the audience.
+    const roles =
+      targetAudience === "all"
+        ? null
+        : AUDIENCE_ROLES[targetAudience as keyof typeof AUDIENCE_ROLES];
+    if (roles === undefined) throw new Error(`Unknown target audience: ${targetAudience}`);
 
-    try {
-      // Get the current authenticated user (admin who is creating the notification)
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
+    // The admin's own session, only to record who sent it.
+    const {
+      data: { user },
+    } = await (await createClient()).auth.getUser();
+    const admin = createServiceRoleClient();
 
-      // Create the system update record
-      const { data: systemUpdate, error: systemUpdateError } = await supabase
-        .from("system_updates")
-        .insert({
-          title,
-          message,
-          update_type: updateType,
-          severity,
-          target_audience: targetAudience,
-          created_by: user?.id || null,
-        })
-        .select()
-        .single();
+    // Recipients first, so a failure here leaves nothing behind. Paged in id order: a single
+    // select is capped at 1,000 rows, and unordered pages can skip rows.
+    const targetUserIds: string[] = [];
+    for (let from = 0; ; from += PAGE) {
+      let query = admin.from("users").select("id").eq("status", "active");
+      if (roles) query = query.in("role", roles);
+      const { data, error } = await query.order("id").range(from, from + PAGE - 1);
+      if (error) throw new Error(`Failed to fetch users: ${error.message}`);
+      targetUserIds.push(...data.map((u) => u.id));
+      if (data.length < PAGE) break;
+    }
 
-      if (systemUpdateError) {
-        log.error("Error creating system update:", systemUpdateError);
-        throw new Error(`Failed to create system update: ${systemUpdateError.message}`);
-      }
+    const { data: systemUpdate, error: systemUpdateError } = await admin
+      .from("system_updates")
+      .insert({
+        title,
+        message,
+        update_type: updateType,
+        severity,
+        target_audience: targetAudience,
+        created_by: user?.id ?? null,
+      })
+      .select("id")
+      .single();
+    if (systemUpdateError) {
+      throw new Error(`Failed to create system update: ${systemUpdateError.message}`);
+    }
 
-      log.debug("System update created:", systemUpdate.id);
-
-      // Get target users based on audience
-      let targetUserIds: string[] = [];
-
-      // "all" = every active account; otherwise the roles behind the audience.
-      const roles = AUDIENCE_ROLES[targetAudience as keyof typeof AUDIENCE_ROLES];
-      if (targetAudience !== "all" && !roles) {
-        log.warn("Unknown notification target audience:", targetAudience);
-      } else {
-        let query = supabase.from("users").select("id").eq("status", "active");
-        if (roles) query = query.in("role", roles);
-        const { data: users, error: usersError } = await query;
-
-        if (usersError) {
-          log.error("Error fetching target users:", usersError);
-          throw new Error(`Failed to fetch users: ${usersError.message}`);
-        }
-
-        targetUserIds = users?.map((u) => u.id) || [];
-      }
-
-      // Create notification_states for each target user
-      if (targetUserIds.length > 0) {
-        const notificationStates = targetUserIds.map((userId) => ({
+    for (let i = 0; i < targetUserIds.length; i += PAGE) {
+      const { error } = await admin.from("notification_states").insert(
+        targetUserIds.slice(i, i + PAGE).map((userId) => ({
           user_id: userId,
           source_type: "system_update",
           source_id: systemUpdate.id,
           read: false,
-        }));
-
-        const { error: notificationError } = await supabase
+        }))
+      );
+      if (error) {
+        // Don't leave a half-sent announcement behind.
+        await admin
           .from("notification_states")
-          .insert(notificationStates);
-
-        if (notificationError) {
-          log.error("Error creating notification states:", notificationError);
-          throw new Error(`Failed to create notification states: ${notificationError.message}`);
-        }
-
-        log.debug(`Broadcast complete: ${targetUserIds.length} users notified`);
-      } else {
-        log.warn("No target users found for notification");
+          .delete()
+          .eq("source_type", "system_update")
+          .eq("source_id", systemUpdate.id);
+        await admin.from("system_updates").delete().eq("id", systemUpdate.id);
+        log.error("Error creating notification states:", error);
+        throw new Error(`Failed to create notification states: ${error.message}`);
       }
-    } catch (error) {
-      log.error("Error in broadcastSystemUpdate:", error);
-      throw error;
     }
+
+    log.debug(`Broadcast complete: ${targetUserIds.length} users notified`);
   },
 };
