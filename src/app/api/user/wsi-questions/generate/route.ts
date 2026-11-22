@@ -176,7 +176,7 @@ function buildOptimizedPrompt(
  *                           type: integer
  *                         total_tokens:
  *                           type: integer
- * *                 debug:
+ *                 debug:
  *                   type: object
  *       400:
  *         description: Bad request - missing WSI parameter or all models exhausted
