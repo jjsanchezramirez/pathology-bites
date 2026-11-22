@@ -18,9 +18,9 @@ export function InquiryStatusBadge({ status, createdAt, className }: InquiryStat
   const getStatusConfig = (status: string) => {
     const statusLower = status.toLowerCase();
 
-    if (statusLower === "resolved" || statusLower === "closed") {
+    if (statusLower === "resolved") {
       return {
-        label: statusLower === "resolved" ? "Resolved" : "Closed",
+        label: "Resolved",
         icon: CheckCircle,
         className: "border-emerald-300 bg-emerald-50 text-emerald-700",
       };
@@ -58,30 +58,4 @@ export function InquiryStatusBadge({ status, createdAt, className }: InquiryStat
       {config.label}
     </Badge>
   );
-}
-
-// Helper function to get status sort order for "All Inquiries" tab
-export function getStatusSortOrder(status: string, createdAt: string): number {
-  const statusLower = status.toLowerCase();
-
-  // Check if pending inquiry is delayed (>7 days old)
-  const isDelayed = () => {
-    const inquiryDate = new Date(createdAt);
-    const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
-    return inquiryDate < sevenDaysAgo;
-  };
-
-  // Red (Delayed) = 0, Yellow (Pending) = 1, Green (Resolved/Closed) = 2
-  if (statusLower === "pending" && isDelayed()) {
-    return 0; // Red - Delayed
-  }
-  if (statusLower === "pending") {
-    return 1; // Yellow - Pending
-  }
-  if (statusLower === "resolved" || statusLower === "closed") {
-    return 2; // Green - Resolved/Closed
-  }
-
-  return 3; // Unknown
 }

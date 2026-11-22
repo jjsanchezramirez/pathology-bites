@@ -15,19 +15,7 @@ import { BlurredDialog } from "@/shared/components/ui/blurred-dialog";
 import { toast } from "@/shared/utils/ui/toast";
 import { useNotificationRefresh } from "@/shared/contexts/notification-refresh-context";
 import { log } from "@/shared/utils/logging";
-
-interface Inquiry {
-  id: string;
-  request_type: string;
-  first_name: string;
-  last_name: string;
-  organization: string | null;
-  email: string;
-  inquiry: string;
-  status: string;
-  created_at: string;
-  updated_at: string;
-}
+import type { Inquiry } from "../types/inquiries";
 
 interface InquiryActionsDropdownProps {
   inquiry: Inquiry;

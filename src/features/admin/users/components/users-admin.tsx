@@ -19,7 +19,6 @@ import {
   DialogTitle,
 } from "@/shared/components/ui/dialog";
 import { SystemUpdateBroadcaster } from "@/features/admin/notifications/components/system-update-broadcaster";
-import { InquiryStatistics } from "@/features/admin/inquiries/components/inquiry-statistics";
 import { usePendingInquiriesCount } from "@/shared/hooks/use-pending-inquiries-count";
 
 // Client-only: UsersTable reads the SWR cache, which is persisted to localStorage, so its
@@ -40,7 +39,6 @@ export function UsersAdmin({ initialTab }: { initialTab: UsersAdminTab }) {
   const router = useRouter();
   const userStatsRef = useRef<UserStatsRef>(null);
   const [tab, setTab] = useState<UsersAdminTab>(initialTab);
-  const [inquiriesRefresh, setInquiriesRefresh] = useState(0);
   const [announceOpen, setAnnounceOpen] = useState(false);
   const { count: pendingInquiries } = usePendingInquiriesCount();
 
@@ -90,12 +88,11 @@ export function UsersAdmin({ initialTab }: { initialTab: UsersAdminTab }) {
         </TabsContent>
 
         <TabsContent value="inquiries" className="space-y-6">
-          <InquiryStatistics refreshTrigger={inquiriesRefresh} />
           <SectionCard
             title="Inquiries"
-            description="General inquiries and technical support requests from the contact form."
+            description="Messages from the contact form. Click one to read and reply."
           >
-            <InquiriesTable onInquiriesChange={setInquiriesRefresh} />
+            <InquiriesTable />
           </SectionCard>
         </TabsContent>
       </Tabs>

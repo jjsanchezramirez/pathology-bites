@@ -5,7 +5,7 @@ import { z } from "zod";
 import { log } from "@/shared/utils/logging";
 
 const statusUpdateSchema = z.object({
-  status: z.enum(["pending", "resolved", "closed"]),
+  status: z.enum(["pending", "resolved"]),
 });
 
 /**
@@ -13,7 +13,7 @@ const statusUpdateSchema = z.object({
  * /api/admin/inquiries/{id}/status:
  *   patch:
  *     summary: Update inquiry status
- *     description: Update the status of a specific inquiry. Status can be changed to pending, resolved, or closed. The updated_at timestamp is automatically updated. Requires admin role.
+ *     description: Update the status of a specific inquiry. Status can be changed to pending or resolved. The updated_at timestamp is automatically updated. Requires admin role.
  *     tags:
  *       - Admin - Inquiries
  *     security:
@@ -37,7 +37,7 @@ const statusUpdateSchema = z.object({
  *             properties:
  *               status:
  *                 type: string
- *                 enum: [pending, resolved, closed]
+ *                 enum: [pending, resolved]
  *                 description: The new status for the inquiry
  *     responses:
  *       200:

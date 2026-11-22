@@ -18,7 +18,14 @@ export const INQUIRY_TYPES = {
 export const INQUIRY_STATUSES = {
   PENDING: "pending",
   RESOLVED: "resolved",
-  CLOSED: "closed",
 } as const;
+
+export const INQUIRY_TYPE_LABELS: Record<string, string> = {
+  general: "General",
+  technical: "Technical",
+};
+
+/** The shape the admin inquiries UI works with (a full row). */
+export type Inquiry = InquiryData;
 
 export type InquiryType = (typeof INQUIRY_TYPES)[keyof typeof INQUIRY_TYPES];
