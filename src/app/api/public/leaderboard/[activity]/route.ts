@@ -36,6 +36,117 @@ async function currentUserId(): Promise<string | null> {
 
 type Ctx = { params: Promise<{ activity: string }> };
 
+/**
+ * @swagger
+ * /api/public/leaderboard/{activity}:
+ *   get:
+ *     summary: Get the top 25 leaderboard scores for an activity
+ *     description: Returns the top 25 scores for a registered activity (currently `cell-quiz`). Rows never expose player identifiers; the caller's own rows are flagged with `isYou` (signed-in session, or the `guestId` query parameter for guests). Not cached.
+ *     tags:
+ *       - Public - Tools
+ *     parameters:
+ *       - in: path
+ *         name: activity
+ *         required: true
+ *         schema:
+ *           type: string
+ *           example: cell-quiz
+ *       - in: query
+ *         name: period
+ *         schema:
+ *           type: string
+ *           enum: [all, weekly]
+ *           default: all
+ *       - in: query
+ *         name: guestId
+ *         description: The guest's locally stored UUID, used only to flag their own rows
+ *         schema:
+ *           type: string
+ *           format: uuid
+ *     responses:
+ *       200:
+ *         description: Leaderboard rows, best first
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 rows:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       rank:
+ *                         type: integer
+ *                       display_name:
+ *                         type: string
+ *                       score:
+ *                         type: number
+ *                       duration_ms:
+ *                         type: integer
+ *                         nullable: true
+ *                       meta:
+ *                         type: object
+ *                       isYou:
+ *                         type: boolean
+ *       404:
+ *         description: Unknown activity
+ *       500:
+ *         description: Leaderboard unavailable
+ *   post:
+ *     summary: Submit a leaderboard score
+ *     description: Submits the raw result of a round. The server validates the payload and computes the score itself; clients never send a total. Signed-in users rank under their profile name; guests must send a nickname (2-24 characters, filtered) and their guest UUID. A non-empty `referral_source` honeypot is accepted and silently dropped.
+ *     tags:
+ *       - Public - Tools
+ *     parameters:
+ *       - in: path
+ *         name: activity
+ *         required: true
+ *         schema:
+ *           type: string
+ *           example: cell-quiz
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - payload
+ *             properties:
+ *               payload:
+ *                 type: object
+ *                 description: Activity-specific raw result. For cell-quiz, an `answers` array with one `{ correct, ms }` entry per question.
+ *               nickname:
+ *                 type: string
+ *                 description: Required for guests
+ *               guestId:
+ *                 type: string
+ *                 format: uuid
+ *                 description: Required for guests
+ *               referral_source:
+ *                 type: string
+ *                 description: Honeypot — leave empty
+ *     responses:
+ *       200:
+ *         description: Score saved (or honeypot submission dropped)
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 ok:
+ *                   type: boolean
+ *                 score:
+ *                   type: number
+ *       400:
+ *         description: Invalid JSON, invalid submission, or missing guest nickname/id
+ *       404:
+ *         description: Unknown activity
+ *       500:
+ *         description: Could not save score
+ */
+
 export async function GET(request: NextRequest, { params }: Ctx) {
   const { activity } = await params;
   if (!LEADERBOARD_ACTIVITIES[activity]) {
