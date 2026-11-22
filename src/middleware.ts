@@ -71,10 +71,7 @@ export async function middleware(request: NextRequest) {
 
   // Maintenance mode: redirect everything except the maintenance page + essential APIs.
   if (process.env.NEXT_PUBLIC_MAINTENANCE_MODE === "true") {
-    const allowed =
-      pathname === "/maintenance" ||
-      pathname.startsWith("/api/public/maintenance") ||
-      pathname.startsWith("/api/auth/");
+    const allowed = pathname === "/maintenance" || pathname.startsWith("/api/auth/");
     return allowed
       ? passThrough(request)
       : NextResponse.redirect(new URL("/maintenance", request.url));

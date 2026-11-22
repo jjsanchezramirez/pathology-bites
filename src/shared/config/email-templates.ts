@@ -271,44 +271,6 @@ export function createAdminResponseEmail(data: {
   });
 }
 
-// Waitlist announcement email template
-interface WaitlistAnnouncementData {
-  subject: string;
-  message: string;
-  buttonText?: string;
-  buttonUrl?: string;
-}
-
-export function createWaitlistAnnouncementEmail(data: WaitlistAnnouncementData): {
-  html: string;
-  text: string;
-} {
-  const content = `
-    <p style="margin: 0 0 20px; font-size: 16px; line-height: 26px; color: #374151;">
-      Hello from the Pathology Bites team!
-    </p>
-
-    <div style="margin: 20px 0; padding: 20px; background-color: #f8fafc; border-radius: 8px; border-left: 4px solid #5BA4A4;">
-      <p style="margin: 0; font-size: 16px; line-height: 26px; color: #374151; white-space: pre-wrap;">${data.message}</p>
-    </div>
-
-    <p style="margin: 20px 0 0; font-size: 16px; line-height: 26px; color: #6b7280;">
-      Thank you for your patience and interest in Pathology Bites!<br>
-      <strong>The Pathology Bites Team</strong>
-    </p>
-  `;
-
-  return createEmailTemplate({
-    title: data.subject,
-    preheaderText: "Update from the Pathology Bites team",
-    content,
-    buttonText: data.buttonText,
-    buttonUrl: data.buttonUrl,
-    footerText:
-      "You received this email because you signed up for our waitlist. If you no longer wish to receive updates, please contact us.",
-  });
-}
-
 // Waitlist invite: "the doors are open, it's free, come in."
 // One-off email that retired the launch waitlist. Sent 2026-11-22 to 108 waitlist
 // addresses (registered users skipped) by dev/scripts/email/send-waitlist-invite.ts.

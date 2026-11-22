@@ -23,12 +23,7 @@ export interface UserStatsRef {
 
 const CACHE_KEY = "user-stats";
 
-interface UserStatsCardsProps {
-  /** Extra StatCards rendered in the same grid (e.g. the waitlist count). */
-  children?: React.ReactNode;
-}
-
-export const UserStatsCards = forwardRef<UserStatsRef, UserStatsCardsProps>(({ children }, ref) => {
+export const UserStatsCards = forwardRef<UserStatsRef>((_props, ref) => {
   const [stats, setStats] = useState<UserStatsFormatted | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -74,12 +69,10 @@ export const UserStatsCards = forwardRef<UserStatsRef, UserStatsCardsProps>(({ c
     refresh: () => loadStats(true),
   }));
 
-  // 5 cards + the waitlist slot = 6: 1 → 2 → 3 columns, so rows stay full.
-
   if (loading) {
     return (
       <StatGrid columns={3}>
-        {[1, 2, 3, 4, 5, 6].map((i) => (
+        {[1, 2, 3, 4, 5].map((i) => (
           <StatCardSkeleton key={i} />
         ))}
       </StatGrid>
@@ -139,7 +132,6 @@ export const UserStatsCards = forwardRef<UserStatsRef, UserStatsCardsProps>(({ c
         tone="danger"
         hint={`${stats.suspendedUsers.description} (${stats.suspendedUsers.percentage})`}
       />
-      {children}
     </StatGrid>
   );
 });

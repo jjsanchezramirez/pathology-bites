@@ -3,10 +3,6 @@
 
 import dynamic from "next/dynamic";
 import { Button } from "@/shared/components/ui/button";
-import { Input } from "@/shared/components/ui/input";
-import { Label } from "@/shared/components/ui/label";
-import { useMaintenanceNotifications } from "@/shared/hooks/use-maintenance-notifications";
-import { toast } from "@/shared/utils/ui/toast";
 import { useLottieAnimation } from "@/shared/hooks/use-lottie-animation";
 import Link from "next/link";
 
@@ -15,18 +11,6 @@ const Lottie = dynamic(() => import("lottie-react"), { ssr: false });
 
 export default function MaintenancePage() {
   const { animationData } = useLottieAnimation("under_construction");
-
-  const { email, setEmail, isSubmitting, handleSubmit } = useMaintenanceNotifications({
-    onSuccess: () => {
-      toast.success("Thanks! We'll notify you when we're back online.");
-      setEmail("");
-    },
-    onError: (error) => {
-      toast.error(
-        error instanceof Error ? error.message : "Failed to subscribe. Please try again later."
-      );
-    },
-  });
 
   return (
     <main className="relative flex flex-col min-h-screen">
@@ -60,53 +44,9 @@ export default function MaintenancePage() {
               </h1>
 
               <p className="text-xl text-muted-foreground max-w-2xl mx-auto leading-relaxed">
-                We're performing scheduled maintenance to improve your experience. Get notified when
-                we're back online.
+                We're performing scheduled maintenance to improve your experience. Please check back
+                shortly.
               </p>
-            </div>
-
-            {/* Subscription Form */}
-            <div className="max-w-md mx-auto">
-              <form onSubmit={handleSubmit} className="space-y-3">
-                <div className="flex items-center rounded-full bg-background p-2 pl-4 shadow-sm border border-border">
-                  <span className="sr-only">
-                    <Label htmlFor="email-input">Email address</Label>
-                  </span>
-                  <svg
-                    className="w-5 h-5 text-muted-foreground mr-2 flex-shrink-0"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                    xmlns="http://www.w3.org/2000/svg"
-                    aria-hidden="true"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"
-                    />
-                  </svg>
-                  <Input
-                    id="email-input"
-                    type="email"
-                    placeholder="email@example.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 text-sm flex-1"
-                    aria-label="Email address"
-                  />
-                  <Button
-                    type="submit"
-                    disabled={isSubmitting}
-                    className="rounded-full px-6 bg-primary hover:bg-primary/90"
-                    aria-label="Subscribe for maintenance notification"
-                  >
-                    {isSubmitting ? "..." : "Notify Me"}
-                  </Button>
-                </div>
-              </form>
             </div>
 
             {/* Additional CTA */}

@@ -3387,27 +3387,6 @@ export type Database = {
         };
         Relationships: [];
       };
-      waitlist: {
-        Row: {
-          created_at: string;
-          email: string;
-          id: string;
-          type: string | null;
-        };
-        Insert: {
-          created_at?: string;
-          email: string;
-          id?: string;
-          type?: string | null;
-        };
-        Update: {
-          created_at?: string;
-          email?: string;
-          id?: string;
-          type?: string | null;
-        };
-        Relationships: [];
-      };
       wsi_question_events: {
         Row: {
           answered_at: string | null;
